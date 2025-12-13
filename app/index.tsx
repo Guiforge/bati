@@ -37,7 +37,7 @@ export default function Index() {
         >
           <Text color="white" fontWeight="600" fontSize="$5">
             {t("language")}: {i18n.language.toUpperCase()}
-  
+   
           </Text>
         </Button>
 

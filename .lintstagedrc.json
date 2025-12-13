@@ -1,0 +1,4 @@
+{
+  "*.{ts,tsx,js}": ["biome check --write", "biome check"],
+  "*.json": ["biome check --write", "biome check"]
+}

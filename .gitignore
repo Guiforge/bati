@@ -28,6 +28,27 @@ yarn-error.*
 
 # macOS
 .DS_Store
+
+# Environment variables - NEVER commit sensitive data
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Secrets (CRITICAL - NEVER commit)
+secrets/
+.secrets/
+private/
+credentials.json
+*.pem
+*.pass
+.env.production.local
 *.pem
 
 # local env files

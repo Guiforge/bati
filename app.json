@@ -21,6 +21,7 @@
     "orientation": "portrait",
     "plugins": [
       [
+        "expo-splash-screen",
         {
           "backgroundColor": "#ffffff",
           "dark": {
@@ -29,8 +30,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain"
-        },
-        "expo-splash-screen"
+        }
       ],
       "expo-router"
     ],

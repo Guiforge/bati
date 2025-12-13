@@ -1,7 +1,7 @@
-import { useThemeStore } from "@/stores/theme";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { Button, H1, Text, YStack } from "tamagui";
+import { useThemeStore } from "@/stores/theme";
 
 export default function Index() {
   const { t } = useTranslation();

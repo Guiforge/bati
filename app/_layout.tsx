@@ -1,6 +1,6 @@
-import { useAppColorScheme } from "@/stores/theme";
 import { Stack } from "expo-router";
 import { TamaguiProvider, Theme } from "tamagui";
+import { useAppColorScheme } from "@/stores/theme";
 import "../i18n";
 import config from "../tamagui.config";
 

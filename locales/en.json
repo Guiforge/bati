@@ -4,5 +4,8 @@
     "home": "Home",
     "settings": "Settings",
     "language": "Language",
-    "change_language": "Change Language"
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
 }

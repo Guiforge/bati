@@ -4,5 +4,8 @@
     "home": "Accueil",
     "settings": "Paramètres",
     "language": "Langue",
-    "change_language": "Changer de langue"
+    "theme": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
 }

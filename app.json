@@ -6,7 +6,8 @@
         "foregroundImage": "./assets/app-icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.bati"
     },
     "experiments": {
       "reactCompiler": true,
@@ -14,7 +15,8 @@
     },
     "icon": "./assets/app-icon.png",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.bati"
     },
     "name": "bati",
     "newArchEnabled": true,

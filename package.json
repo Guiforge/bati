@@ -1,16 +1,4 @@
 {
-  "name": "bati",
-  "main": "expo-router/entry",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "check": "biome check .",
-    "format": "biome check --write ."
-  },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@react-navigation/bottom-tabs": "^7.4.0",
@@ -49,5 +37,16 @@
     "tailwindcss": "^3.4.19",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "main": "expo-router/entry",
+  "name": "bati",
+  "private": true,
+  "scripts": {
+    "android": "expo run:android",
+    "check": "biome check .",
+    "format": "biome check --write .",
+    "ios": "expo run:ios",
+    "start": "expo start",
+    "web": "expo start --web"
+  },
+  "version": "1.0.0"
 }

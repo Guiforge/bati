@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/app-icon.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "experiments": {
+      "reactCompiler": true,
+      "typedRoutes": true
+    },
+    "icon": "./assets/app-icon.png",
+    "ios": {
+      "supportsTablet": true
+    },
+    "name": "bati",
+    "newArchEnabled": true,
+    "orientation": "portrait",
+    "plugins": [
+      [
+        {
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          },
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        },
+        "expo-splash-screen"
+      ],
+      "expo-router"
+    ],
+    "scheme": "bati",
+    "slug": "bati",
+    "userInterfaceStyle": "automatic",
+    "version": "1.0.0",
+    "web": {
+      "favicon": "./assets/app-icon.png",
+      "output": "static"
+    }
+  }
+}

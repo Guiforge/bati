@@ -47,9 +47,9 @@
     "check": "biome check .",
     "format": "biome check --write .",
     "ios": "expo run:ios",
+    "prepare": "husky install",
     "start": "expo start",
-    "web": "expo start --web",
-    "prepare": "husky install"
+    "web": "expo start --web"
   },
   "version": "1.0.0"
 }

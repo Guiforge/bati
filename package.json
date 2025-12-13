@@ -49,7 +49,7 @@
     "ios": "expo run:ios",
     "start": "expo start",
     "web": "expo start --web",
-    "prepare": "husky && husky install"
+    "prepare": "husky install"
   },
   "version": "1.0.0"
 }

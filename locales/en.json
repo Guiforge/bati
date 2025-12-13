@@ -1,11 +1,11 @@
 {
-    "welcome": "Welcome to Bati!",
-    "explore": "Explore",
-    "home": "Home",
-    "settings": "Settings",
-    "language": "Language",
-    "theme": "Theme",
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System"
+  "welcome": "Welcome to Bati!",
+  "explore": "Explore",
+  "home": "Home",
+  "settings": "Settings",
+  "language": "Language",
+  "theme": "Theme",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System"
 }

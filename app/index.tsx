@@ -1,14 +1,11 @@
-import { useAppColorScheme, useThemeStore } from "@/stores/theme";
+import { useThemeStore } from "@/stores/theme";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View } from "react-native";
+import { Button, H1, Text, YStack } from "tamagui";
 
 export default function Index() {
   const { t } = useTranslation();
-  const colorScheme = useAppColorScheme();
   const { theme, setTheme } = useThemeStore();
-  const isDark = colorScheme === "dark";
-
 
   const toggleLanguage = () => {
     const newLang = i18n.language === "en" ? "fr" : "en";
@@ -23,32 +20,40 @@ export default function Index() {
   };
 
   return (
-    <View
-      className={`flex-1 items-center justify-center p-6 ${isDark ? "bg-base-content" : "bg-base-100"}`}
-    >
-      <Text className={`text-4xl font-bold mb-8 ${isDark ? "text-base-100" : "text-base-content"}`}>
+    <YStack flex={1} items="center" justify="center" p="$4" bg="$background" gap="$4">
+      <H1 color="$color" fontWeight="bold">
         {t("welcome")}
-      </Text>
+      </H1>
 
-      <View className="gap-4 w-full max-w-xs">
-        <Pressable
+      <YStack gap="$3" width={280}>
+        <Button
+          size="$5"
+          bg="$primary"
+          color="white"
+          rounded="$4"
+          pressStyle={{ opacity: 0.8, scale: 0.98 }}
+          animation="quick"
           onPress={toggleLanguage}
-          className="bg-primary py-4 px-6 rounded-xl active:opacity-80"
         >
-          <Text className="text-white text-center font-semibold text-lg">
+          <Text color="white" fontWeight="600" fontSize="$5">
             {t("language")}: {i18n.language.toUpperCase()}
           </Text>
-        </Pressable>
+        </Button>
 
-        <Pressable
+        <Button
+          size="$5"
+          bg="$secondary"
+          color="white"
+          rounded="$4"
+          pressStyle={{ opacity: 0.8, scale: 0.98 }}
+          animation="quick"
           onPress={cycleTheme}
-          className="bg-secondary py-4 px-6 rounded-xl active:opacity-80"
         >
-          <Text className="text-white text-center font-semibold text-lg">
+          <Text color="white" fontWeight="600" fontSize="$5">
             {t("theme")}: {t(theme)}
           </Text>
-        </Pressable>
-      </View>
-    </View>
+        </Button>
+      </YStack>
+    </YStack>
   );
 }

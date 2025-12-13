@@ -1,11 +1,11 @@
 {
-    "welcome": "Bienvenue sur Bati !",
-    "explore": "Explorer",
-    "home": "Accueil",
-    "settings": "Paramètres",
-    "language": "Langue",
-    "theme": "Thème",
-    "light": "Clair",
-    "dark": "Sombre",
-    "system": "Système"
+  "welcome": "Bienvenue sur Bati !",
+  "explore": "Explorer",
+  "home": "Accueil",
+  "settings": "Paramètres",
+  "language": "Langue",
+  "theme": "Thème",
+  "light": "Clair",
+  "dark": "Sombre",
+  "system": "Système"
 }

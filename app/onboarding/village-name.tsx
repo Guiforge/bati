@@ -1,6 +1,3 @@
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useUserStore } from "@/stores/user";
 import { Check, Pencil } from "@tamagui/lucide-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
@@ -9,6 +6,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { H1, H2, Input, Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { useUserStore } from "@/stores/user";
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 3;

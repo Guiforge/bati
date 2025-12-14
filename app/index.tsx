@@ -1,58 +1,55 @@
-import i18n from "i18next";
+import { SpriteAnimation } from "@/components/SpriteAnimation";
+import { useUserStore } from "@/stores/user";
 import { useTranslation } from "react-i18next";
-import { Button, H1, Text, YStack } from "tamagui";
-import { useThemeStore } from "@/stores/theme";
+import { H1, Paragraph, YStack } from "tamagui";
 
-export default function Index() {
+export default function Home() {
   const { t } = useTranslation();
-  const { theme, setTheme } = useThemeStore();
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === "en" ? "fr" : "en";
-    i18n.changeLanguage(newLang);
-  };
-
-  const cycleTheme = () => {
-    const themes: Array<"light" | "dark" | "system"> = ["light", "dark", "system"];
-    const currentIndex = themes.indexOf(theme);
-    const nextTheme = themes[(currentIndex + 1) % themes.length];
-    setTheme(nextTheme);
-  };
+  const { villageName } = useUserStore();
 
   return (
-    <YStack flex={1} items="center" justify="center" p="$4" bg="$background" gap="$4">
-      <H1 color="$color" fontWeight="bold">
-        {t("welcome")}
-      </H1>
+    <YStack
+      flex={1}
+      alignItems="center"
+      justifyContent="center"
+      padding="$5"
+      backgroundColor="$background"
+      gap="$6"
+    >
+      <YStack
+        padding="$4"
+        backgroundColor="$bgLight"
+        borderRadius={16}
+        borderWidth={4}
+        borderColor="$color"
+        shadowColor="$color"
+        shadowRadius={0}
+        shadowOffset={{ width: 5, height: 5 }}
+      >
+        <SpriteAnimation
+          source={require("../assets/Characters/Human/IDLE/base_idle_strip9.png")}
+          frameCount={9}
+          frameWidth={96}
+          frameHeight={64}
+          fps={15}
+          scale={3}
+        />
+      </YStack>
 
-      <YStack gap="$3" width={280}>
-        <Button
-          size="$5"
-          bg="$primary"
-          color="white"
-          rounded="$4"
-          pressStyle={{ opacity: 0.8, scale: 0.98 }}
-          animation="quick"
-          onPress={toggleLanguage}
-        >
-          <Text color="white" fontWeight="600" fontSize="$5">
-            {t("language")}: {i18n.language.toUpperCase()}
-          </Text>
-        </Button>
+      <YStack alignItems="center" gap="$2">
+        <H1 color="$color" fontWeight="900" fontSize={36} textAlign="center">
+          {t("welcome")} 👋
+        </H1>
 
-        <Button
-          size="$5"
-          bg="$secondary"
-          color="white"
-          rounded="$4"
-          pressStyle={{ opacity: 0.8, scale: 0.98 }}
-          animation="quick"
-          onPress={cycleTheme}
-        >
-          <Text color="white" fontWeight="600" fontSize="$5">
-            {t("theme")}: {t(theme)}
-          </Text>
-        </Button>
+        {villageName ? (
+          <Paragraph color="$primary" fontWeight="700" fontSize={24}>
+            🏰 {villageName}
+          </Paragraph>
+        ) : null}
+
+        <Paragraph color="$color" opacity={0.6} fontSize={16} textAlign="center" maxWidth={300}>
+          Train, battle & build your empire!
+        </Paragraph>
       </YStack>
     </YStack>
   );

@@ -7,5 +7,14 @@
   "theme": "Theme",
   "light": "Light",
   "dark": "Dark",
-  "system": "System"
+  "system": "System",
+  "onboarding": {
+    "language_selection": "Pick your language",
+    "presentation_title": "Welcome to Bati",
+    "presentation_description": "Train, battle & build your empire. Compete with players worldwide!",
+    "village_name_title": "Name your empire",
+    "village_name_placeholder": "Your epic name",
+    "next": "Let's go",
+    "finish": "Start playing"
+  }
 }

@@ -7,5 +7,14 @@
   "theme": "Thème",
   "light": "Clair",
   "dark": "Sombre",
-  "system": "Système"
+  "system": "Système",
+  "onboarding": {
+    "language_selection": "Choisis ta langue",
+    "presentation_title": "Bienvenue sur Bati",
+    "presentation_description": "Entraîne-toi, combats et construis ton empire. Affronte des joueurs du monde entier !",
+    "village_name_title": "Nomme ton empire",
+    "village_name_placeholder": "Ton nom épique",
+    "next": "C'est parti",
+    "finish": "Commencer"
+  }
 }

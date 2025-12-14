@@ -1,4 +1,3 @@
-import { useColorScheme as useRNColorScheme } from "react-native";
 import { create } from "zustand";
 
 type Theme = "light" | "dark" | "system";
@@ -9,16 +8,11 @@ interface ThemeStore {
 }
 
 export const useThemeStore = create<ThemeStore>((set) => ({
-  theme: "system",
+  theme: "light",
   setTheme: (theme) => set({ theme }),
 }));
 
-export function useAppColorScheme() {
-  const systemScheme = useRNColorScheme();
-  const { theme } = useThemeStore();
-
-  if (theme === "system") {
-    return systemScheme ?? "light";
-  }
-  return theme;
+export function useAppColorScheme(): "light" | "dark" {
+  // Force light theme for Bati app
+  return "light";
 }

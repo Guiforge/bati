@@ -1,10 +1,13 @@
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { H1, Paragraph, YStack } from "tamagui";
 import { useUserStore } from "@/stores/user";
+import { AppButton } from "./common/AppButton";
 
 export function Home() {
   const { t } = useTranslation();
   const { villageName } = useUserStore();
+  const router = useRouter();
 
   return (
     <YStack
@@ -25,6 +28,12 @@ export function Home() {
       <Paragraph color="$color" opacity={0.4} fontSize={14}>
         Coming soon...
       </Paragraph>
+
+      {__DEV__ && (
+        <AppButton onPress={() => router.push("/dev")} variant="secondary" marginTop="$8">
+          🛠️ Dev Tools
+        </AppButton>
+      )}
     </YStack>
   );
 }

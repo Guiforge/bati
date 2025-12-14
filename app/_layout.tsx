@@ -1,7 +1,8 @@
 import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { TamaguiProvider, Theme } from "tamagui";
+import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { useAppColorScheme } from "@/stores/theme";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
@@ -11,10 +12,15 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useAppColorScheme();
-  const { hasFinishedOnboarding } = useUserStore();
+  const { hasFinishedOnboarding, isLoaded, loadFromDatabase } = useUserStore();
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
+
+  // Called when database migrations are complete
+  const handleDatabaseReady = useCallback(() => {
+    loadFromDatabase();
+  }, [loadFromDatabase]);
 
   useEffect(() => {
     // Wait for first render to complete
@@ -22,7 +28,7 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (!isNavigationReady) return;
+    if (!isNavigationReady || !isLoaded) return;
 
     const inOnboardingGroup = segments[0] === "onboarding";
 
@@ -33,12 +39,14 @@ export default function RootLayout() {
     }
 
     SplashScreen.hideAsync();
-  }, [hasFinishedOnboarding, segments, router, isNavigationReady]);
+  }, [hasFinishedOnboarding, segments, router, isNavigationReady, isLoaded]);
 
   return (
     <TamaguiProvider config={config} defaultTheme={colorScheme}>
       <Theme name={colorScheme}>
-        <Slot />
+        <DatabaseProvider onReady={handleDatabaseReady}>
+          <Slot />
+        </DatabaseProvider>
       </Theme>
     </TamaguiProvider>
   );

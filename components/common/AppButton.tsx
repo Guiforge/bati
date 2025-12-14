@@ -10,6 +10,7 @@ interface AppButtonProps {
   disabled?: boolean;
   opacity?: number;
   marginBottom?: string;
+  marginTop?: string;
   backgroundColor?: string;
 }
 
@@ -20,6 +21,7 @@ export function AppButton({
   disabled,
   opacity,
   marginBottom,
+  marginTop,
   backgroundColor,
 }: AppButtonProps) {
   const getBackgroundColor = () => {
@@ -40,6 +42,7 @@ export function AppButton({
       disabled={disabled}
       opacity={opacity}
       marginBottom={marginBottom}
+      marginTop={marginTop}
       size="$6"
       width="100%"
       borderWidth={3}

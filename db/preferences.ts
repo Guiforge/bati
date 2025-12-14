@@ -1,0 +1,65 @@
+import { eq } from "drizzle-orm";
+import { db, schema } from "./client";
+
+const { userPreferences } = schema;
+
+// Get a preference value by key
+export async function getPreference(key: string): Promise<string | null> {
+  const result = await db
+    .select()
+    .from(userPreferences)
+    .where(eq(userPreferences.key, key))
+    .limit(1);
+
+  return result[0]?.value ?? null;
+}
+
+// Set a preference value
+export async function setPreference(key: string, value: string): Promise<void> {
+  await db
+    .insert(userPreferences)
+    .values({ key, value })
+    .onConflictDoUpdate({
+      target: userPreferences.key,
+      set: { value, updatedAt: new Date() },
+    });
+}
+
+// Delete a preference
+export async function deletePreference(key: string): Promise<void> {
+  await db.delete(userPreferences).where(eq(userPreferences.key, key));
+}
+
+// Get all preferences as object
+export async function getAllPreferences(): Promise<Record<string, string>> {
+  const results = await db.select().from(userPreferences);
+  return Object.fromEntries(results.map((r: { key: string; value: string }) => [r.key, r.value]));
+}
+
+// Specific preference helpers
+export const preferences = {
+  async getVillageName(): Promise<string> {
+    return (await getPreference("villageName")) ?? "";
+  },
+
+  async setVillageName(name: string): Promise<void> {
+    await setPreference("villageName", name);
+  },
+
+  async getHasFinishedOnboarding(): Promise<boolean> {
+    const value = await getPreference("hasFinishedOnboarding");
+    return value === "true";
+  },
+
+  async setHasFinishedOnboarding(finished: boolean): Promise<void> {
+    await setPreference("hasFinishedOnboarding", String(finished));
+  },
+
+  async getLanguage(): Promise<string | null> {
+    return await getPreference("language");
+  },
+
+  async setLanguage(lang: string): Promise<void> {
+    await setPreference("language", lang);
+  },
+};

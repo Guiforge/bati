@@ -1,16 +1,18 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { Castle, Swords, Trophy } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button, H2, Paragraph, XStack, YStack } from "tamagui";
-import { ProgressDots } from "@/components/ProgressDots";
+import { H2, Paragraph, XStack, YStack } from "tamagui";
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;
 
 const FEATURES = [
-  { emoji: "⚔️", key: "battle" },
-  { emoji: "🏆", key: "compete" },
-  { emoji: "🏰", key: "build" },
+  { icon: Swords, key: "battle", color: "$secondary" },
+  { icon: Trophy, key: "compete", color: "$primary" },
+  { icon: Castle, key: "build", color: "$success" },
 ];
 
 export default function Presentation() {
@@ -21,11 +23,11 @@ export default function Presentation() {
     <YStack flex={1} padding="$5" backgroundColor="$background">
       <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
 
-      <YStack flex={1} justifyContent="center" alignItems="center" gap="$5">
+      <YStack flex={1} justifyContent="center" alignItems="center" gap="$6">
         <YStack
           width="100%"
           aspectRatio={4 / 3}
-          maxHeight={280}
+          maxHeight={260}
           backgroundColor="$bgLight"
           borderRadius="$10"
           justifyContent="center"
@@ -37,7 +39,7 @@ export default function Presentation() {
           shadowOffset={{ width: 6, height: 6 }}
           overflow="hidden"
           animation="lazy"
-          enterStyle={{ opacity: 0, scale: 0.8, rotate: "3deg" }}
+          enterStyle={{ opacity: 0, scale: 0.9, y: -20 }}
         >
           <Image
             source={require("../../assets/onboardings/battle.jpg")}
@@ -46,25 +48,26 @@ export default function Presentation() {
           />
         </YStack>
 
-        <YStack gap="$3" alignItems="center">
+        <YStack gap="$4" alignItems="center">
           <H2
             textAlign="center"
             color="$color"
             fontWeight="900"
-            fontSize={28}
+            fontSize={26}
             animation="lazy"
             enterStyle={{ opacity: 0, y: 20 }}
           >
-            {t("onboarding.presentation_title")} 🎮
+            {t("onboarding.presentation_title")}
           </H2>
 
           <Paragraph
             textAlign="center"
-            size="$5"
+            size="$4"
             color="$color"
             fontWeight="500"
-            opacity={0.7}
-            maxWidth={300}
+            opacity={0.6}
+            maxWidth={280}
+            lineHeight={22}
             animation="lazy"
             enterStyle={{ opacity: 0, y: 15 }}
           >
@@ -72,48 +75,39 @@ export default function Presentation() {
           </Paragraph>
         </YStack>
 
-        <XStack gap="$4" justifyContent="center" paddingTop="$2">
-          {FEATURES.map((feature) => (
-            <YStack
-              key={feature.key}
-              width={70}
-              height={70}
-              backgroundColor="$bgLight"
-              borderRadius="$6"
-              borderWidth={3}
-              borderColor="$color"
-              justifyContent="center"
-              alignItems="center"
-              animation="bouncy"
-              enterStyle={{ opacity: 0, scale: 0.5, y: 30 }}
-              animateOnly={["opacity", "scale", "transform"]}
-            >
-              <Paragraph fontSize={32}>{feature.emoji}</Paragraph>
-            </YStack>
-          ))}
+        <XStack gap="$5" justifyContent="center">
+          {FEATURES.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <YStack
+                key={feature.key}
+                width={80}
+                height={80}
+                backgroundColor="$bgLight"
+                borderRadius="$8"
+                borderWidth={3}
+                borderColor="$color"
+                justifyContent="center"
+                alignItems="center"
+                animation="bouncy"
+                enterStyle={{ opacity: 0, scale: 0.5, y: 40 }}
+                animateOnly={["opacity", "scale", "transform"]}
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <Icon size={36} color={feature.color} strokeWidth={2.5} />
+              </YStack>
+            );
+          })}
         </XStack>
       </YStack>
 
-      <Button
+      <AppButton
+        variant="secondary"
         onPress={() => router.push("/onboarding/village-name")}
-        size="$6"
-        width="100%"
-        backgroundColor="$secondary"
-        borderColor="$color"
-        borderWidth={3}
-        borderRadius="$8"
-        color="white"
-        fontWeight="900"
-        fontSize={20}
-        shadowColor="$color"
-        shadowRadius={0}
-        shadowOffset={{ width: 4, height: 4 }}
-        pressStyle={{ x: 4, y: 4, shadowOffset: { width: 0, height: 0 } }}
-        animation="quick"
         marginBottom="$4"
       >
         {t("onboarding.next")} →
-      </Button>
+      </AppButton>
     </YStack>
   );
 }

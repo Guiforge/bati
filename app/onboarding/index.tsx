@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Button, H2, Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { ProgressDots } from "@/components/ProgressDots";
 
 const TOTAL_STEPS = 3;
@@ -84,26 +85,13 @@ export default function LanguageSelection() {
         </XStack>
       </YStack>
 
-      <Button
+      <AppButton
+        variant="secondary"
         onPress={() => router.push("/onboarding/presentation")}
-        size="$6"
-        width="100%"
-        backgroundColor="$secondary"
-        borderColor="$color"
-        borderWidth={3}
-        borderRadius="$8"
-        color="white"
-        fontWeight="900"
-        fontSize={20}
-        shadowColor="$color"
-        shadowRadius={0}
-        shadowOffset={{ width: 4, height: 4 }}
-        pressStyle={{ x: 4, y: 4, shadowOffset: { width: 0, height: 0 } }}
-        animation="quick"
         marginBottom="$4"
       >
         {t("onboarding.next")} →
-      </Button>
+      </AppButton>
     </YStack>
   );
 }

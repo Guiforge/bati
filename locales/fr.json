@@ -14,6 +14,8 @@
     "presentation_description": "Entraîne-toi, combats et construis ton empire. Affronte des joueurs du monde entier !",
     "village_name_title": "Nomme ton empire",
     "village_name_placeholder": "Ton nom épique",
+    "chars_min": "car. min",
+    "valid": "Parfait !",
     "next": "C'est parti",
     "finish": "Commencer"
   }

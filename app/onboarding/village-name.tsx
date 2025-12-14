@@ -1,11 +1,13 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { useUserStore } from "@/stores/user";
+import { Check, Pencil } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { Button, H2, Input, Text, XStack, YStack } from "tamagui";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useUserStore } from "../../stores/user";
+import { H2, Input, Text, XStack, YStack } from "tamagui";
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 3;
@@ -33,15 +35,16 @@ export default function VillageName() {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <YStack flex={1} padding="$5">
+        <YStack flex={1} padding="$5" justifyContent="space-between">
           <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
 
           <YStack flex={1} justifyContent="center" alignItems="center" gap="$5">
             <YStack
               width="100%"
               aspectRatio={16 / 9}
-              maxHeight={220}
+              maxHeight={180}
               backgroundColor="$bgLight"
               borderRadius="$10"
               justifyContent="center"
@@ -53,7 +56,7 @@ export default function VillageName() {
               shadowOffset={{ width: 6, height: 6 }}
               overflow="hidden"
               animation="lazy"
-              enterStyle={{ opacity: 0, scale: 0.8, rotate: "-3deg" }}
+              enterStyle={{ opacity: 0, scale: 0.9, y: -20 }}
             >
               <Image
                 source={require("../../assets/onboardings/new_city.jpg")}
@@ -62,18 +65,26 @@ export default function VillageName() {
               />
             </YStack>
 
-            <H2
-              textAlign="center"
-              color="$color"
-              fontWeight="900"
-              fontSize={28}
-              animation="lazy"
-              enterStyle={{ opacity: 0, y: 20 }}
-            >
-              {t("onboarding.village_name_title")} 🏰
-            </H2>
+            <YStack gap="$2" alignItems="center">
+              <H2
+                textAlign="center"
+                color="$color"
+                fontWeight="900"
+                fontSize={24}
+                animation="lazy"
+                enterStyle={{ opacity: 0, y: 20 }}
+              >
+                {t("onboarding.village_name_title")}
+              </H2>
+              <XStack alignItems="center" gap="$2">
+                <Pencil size={16} color="$color" opacity={0.5} />
+                <Text fontSize={13} color="$color" opacity={0.5}>
+                  {t("onboarding.village_name_placeholder")}
+                </Text>
+              </XStack>
+            </YStack>
 
-            <YStack width="100%" gap="$2">
+            <YStack width="100%" gap="$3">
               <Input
                 value={name}
                 onChangeText={(text) => setName(text.slice(0, MAX_NAME_LENGTH))}
@@ -89,12 +100,20 @@ export default function VillageName() {
                 fontSize={18}
                 textAlign="center"
               />
-              <XStack justifyContent="space-between" paddingHorizontal="$2">
-                <Text fontSize={12} color="$color" opacity={0.5}>
-                  {name.length < MIN_NAME_LENGTH
-                    ? `${MIN_NAME_LENGTH - name.length} chars min`
-                    : "✓"}
-                </Text>
+              <XStack justifyContent="space-between" paddingHorizontal="$3">
+                <XStack alignItems="center" gap="$1">
+                  {isValidName ? <Check size={14} color="$success" /> : null}
+                  <Text
+                    fontSize={12}
+                    color={isValidName ? "$success" : "$color"}
+                    opacity={isValidName ? 1 : 0.5}
+                    fontWeight={isValidName ? "700" : "400"}
+                  >
+                    {name.length < MIN_NAME_LENGTH
+                      ? `${MIN_NAME_LENGTH - name.length} ${t("onboarding.chars_min") || "chars min"}`
+                      : t("onboarding.valid") || "Valid!"}
+                  </Text>
+                </XStack>
                 <Text fontSize={12} color="$color" opacity={0.5}>
                   {name.length}/{MAX_NAME_LENGTH}
                 </Text>
@@ -102,28 +121,17 @@ export default function VillageName() {
             </YStack>
           </YStack>
 
-          <Button
-            onPress={handleFinish}
-            size="$6"
-            width="100%"
-            backgroundColor={isValidName ? "$success" : "$color"}
-            borderColor="$color"
-            borderWidth={3}
-            borderRadius="$8"
-            color="white"
-            fontWeight="900"
-            fontSize={20}
-            shadowColor="$color"
-            shadowRadius={0}
-            shadowOffset={{ width: 4, height: 4 }}
-            pressStyle={isValidName ? { x: 4, y: 4, shadowOffset: { width: 0, height: 0 } } : {}}
-            disabled={!isValidName}
-            opacity={isValidName ? 1 : 0.4}
-            animation="quick"
-            marginBottom="$4"
-          >
-            {t("onboarding.finish")} 🚀
-          </Button>
+          <YStack paddingBottom="$4" paddingTop="$3">
+            <AppButton
+              variant="primary"
+              onPress={handleFinish}
+              disabled={!isValidName}
+              opacity={isValidName ? 1 : 0.4}
+              backgroundColor={isValidName ? "$success" : "$color"}
+            >
+              {t("onboarding.finish")} 🚀
+            </AppButton>
+          </YStack>
         </YStack>
       </KeyboardAvoidingView>
     </YStack>

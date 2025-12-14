@@ -1,22 +1,22 @@
 {
-  "welcome": "Bienvenue sur Bati !",
+  "dark": "Sombre",
   "explore": "Explorer",
   "home": "Accueil",
-  "settings": "Paramètres",
   "language": "Langue",
-  "theme": "Thème",
   "light": "Clair",
-  "dark": "Sombre",
-  "system": "Système",
   "onboarding": {
-    "language_selection": "Choisis ta langue",
-    "presentation_title": "Bienvenue sur Bati",
-    "presentation_description": "Entraîne-toi, combats et construis ton empire. Affronte des joueurs du monde entier !",
-    "village_name_title": "Nomme ton empire",
-    "village_name_placeholder": "Ton nom épique",
     "chars_min": "car. min",
-    "valid": "Parfait !",
+    "finish": "Commencer",
+    "language_selection": "Choisis ta langue",
     "next": "C'est parti",
-    "finish": "Commencer"
-  }
+    "presentation_description": "Entraîne-toi, combats et construis ton empire. Affronte des joueurs du monde entier !",
+    "presentation_title": "Bienvenue sur Bati",
+    "valid": "Parfait !",
+    "village_name_placeholder": "Ton nom de village",
+    "village_name_title": "Nomme ton village"
+  },
+  "settings": "Paramètres",
+  "system": "Système",
+  "theme": "Thème",
+  "welcome": "Bienvenue sur Bati !"
 }

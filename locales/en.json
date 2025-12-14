@@ -1,22 +1,22 @@
 {
-  "welcome": "Welcome to Bati!",
+  "dark": "Dark",
   "explore": "Explore",
   "home": "Home",
-  "settings": "Settings",
   "language": "Language",
-  "theme": "Theme",
   "light": "Light",
-  "dark": "Dark",
-  "system": "System",
   "onboarding": {
-    "language_selection": "Pick your language",
-    "presentation_title": "Welcome to Bati",
-    "presentation_description": "Train, battle & build your empire. Compete with players worldwide!",
-    "village_name_title": "Name your empire",
-    "village_name_placeholder": "Your epic name",
     "chars_min": "chars min",
-    "valid": "Valid!",
+    "finish": "Start playing",
+    "language_selection": "Pick your language",
     "next": "Let's go",
-    "finish": "Start playing"
-  }
+    "presentation_description": "Train, battle & build your empire. Compete with players worldwide!",
+    "presentation_title": "Welcome to Bati",
+    "valid": "Valid!",
+    "village_name_placeholder": "Your village name",
+    "village_name_title": "Name your village"
+  },
+  "settings": "Settings",
+  "system": "System",
+  "theme": "Theme",
+  "welcome": "Welcome to Bati!"
 }

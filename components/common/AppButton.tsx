@@ -53,7 +53,7 @@ export function AppButton({
       shadowColor="$color"
       shadowRadius={0}
       shadowOffset={{ width: 4, height: 4 }}
-      pressStyle={{ x: 4, y: 4, shadowOffset: { width: 0, height: 0 } }}
+      pressStyle={{ scale: 0.98, opacity: 0.92, shadowOffset: { width: 0, height: 0 } }}
       animation="quick"
       backgroundColor={getBackgroundColor()}
       color={getColor()}

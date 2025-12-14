@@ -1,6 +1,6 @@
-import { useUserStore } from "@/stores/user";
 import { useTranslation } from "react-i18next";
 import { H1, Paragraph, YStack } from "tamagui";
+import { useUserStore } from "@/stores/user";
 
 export default function Home() {
   const { t } = useTranslation();

@@ -11,13 +11,13 @@ interface DatabaseProviderProps {
 
 export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const { success, error } = useMigrations(db, migrations);
-  const hasCalledOnReady = useRef(false);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (success && onReady && !hasCalledOnReady.current) {
-      hasCalledOnReady.current = true;
-      onReady();
-    }
+    if (!success || hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    onReady?.();
   }, [success, onReady]);
 
   if (error) {

@@ -8,6 +8,20 @@
       "when": 1765720844147,
       "tag": "0000_flaky_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1765820098422,
+      "tag": "0001_narrow_giant_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1765820098423,
+      "tag": "0002_seed_exercises",
+      "breakpoints": true
     }
   ]
 }

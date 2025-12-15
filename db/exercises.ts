@@ -11,6 +11,7 @@ export type Exercise = {
   enDescription: string;
   frDescription: string;
   imagePath: string;
+  creator: string;
   difficulty: DifficultyCode;
   muscles: MuscleCode[];
 };
@@ -37,6 +38,7 @@ export async function listExercises(): Promise<Exercise[]> {
       enDescription: exercises.enDescription,
       frDescription: exercises.frDescription,
       imagePath: exercises.imagePath,
+      creator: exercises.creator,
       difficulty: exercises.difficulty,
       muscle: exerciseMuscles.muscle,
     })
@@ -55,6 +57,7 @@ export async function listExercises(): Promise<Exercise[]> {
         enDescription: r.enDescription,
         frDescription: r.frDescription,
         imagePath: r.imagePath,
+        creator: r.creator,
         difficulty: r.difficulty,
         muscles: [],
       });
@@ -78,6 +81,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
       enDescription: exercises.enDescription,
       frDescription: exercises.frDescription,
       imagePath: exercises.imagePath,
+      creator: exercises.creator,
       difficulty: exercises.difficulty,
       muscle: exerciseMuscles.muscle,
     })
@@ -95,6 +99,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
     enDescription: first.enDescription,
     frDescription: first.frDescription,
     imagePath: first.imagePath,
+    creator: first.creator,
     difficulty: first.difficulty,
     muscles: [],
   };

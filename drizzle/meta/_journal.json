@@ -36,6 +36,13 @@
       "when": 1765830957716,
       "tag": "0004_seed_quest_couper_du_bois",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1765830957717,
+      "tag": "0005_add_exercises_creator",
+      "breakpoints": true
     }
   ]
 }

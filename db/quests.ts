@@ -230,6 +230,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exEnDescription: exercises.enDescription,
       exFrDescription: exercises.frDescription,
       exImagePath: exercises.imagePath,
+      exCreator: exercises.creator,
       exDifficulty: exercises.difficulty,
 
       muscle: exerciseMuscles.muscle,
@@ -273,6 +274,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
           enDescription: r.exEnDescription,
           frDescription: r.exFrDescription,
           imagePath: r.exImagePath,
+          creator: r.exCreator,
           difficulty: r.exDifficulty,
           muscles: [],
         },

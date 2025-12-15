@@ -1,11 +1,12 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { useSettingsStore } from "@/stores/settings";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Text, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useSettingsStore } from "@/stores/settings";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 1;
@@ -14,6 +15,7 @@ export default function LanguageSelection() {
   const router = useRouter();
   const { t } = useTranslation();
   const { language, setLanguage } = useSettingsStore();
+  const insets = useSafeAreaInsets();
 
   const languages = [
     { code: "en", label: "English", flag: "🇬🇧" },
@@ -22,7 +24,10 @@ export default function LanguageSelection() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 16 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <YStack
           width="100%"
           aspectRatio={16 / 11}

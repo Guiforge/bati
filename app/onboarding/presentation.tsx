@@ -1,11 +1,12 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
 import { Castle, Swords, Trophy } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 2;
@@ -19,10 +20,14 @@ const FEATURES = [
 export default function Presentation() {
   const router = useRouter();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 16 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <YStack
           width="100%"
           aspectRatio={16 / 11}

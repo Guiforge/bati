@@ -1,3 +1,6 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { useUserStore } from "@/stores/user";
 import { Check, Pencil } from "@tamagui/lucide-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
@@ -5,10 +8,8 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Input, Text, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useUserStore } from "@/stores/user";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 4;
@@ -18,6 +19,7 @@ const MAX_NAME_LENGTH = 20;
 export default function VillageName() {
   const router = useRouter();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   const [status, setStatus] = useState<"editing" | "submitting" | "stamped">("editing");
   const { setVillageName, setHasFinishedOnboarding } = useUserStore();
@@ -80,7 +82,10 @@ export default function VillageName() {
           style={{ flex: 1 }}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
-          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 16 }}
+          >
             <YStack flex={1} justify="space-between" style={{ flexGrow: 1 }}>
               <YStack
                 width="100%"

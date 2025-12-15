@@ -75,7 +75,7 @@ const USER_LEVEL_MULTIPLIER: Record<UserLevel, number> = {
 
 export function generateTarget(
   base: { type: QuestTargetType; min: number; max: number },
-  userLevel: UserLevel
+  userLevel: UserLevel,
 ): Target {
   const min = Math.min(base.min, base.max);
   const max = Math.max(base.min, base.max);
@@ -91,9 +91,7 @@ export function generateTarget(
 function safeParseImages(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed)
-      ? parsed.filter((x) => typeof x === "string")
-      : [];
+    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
   } catch {
     return [];
   }
@@ -103,9 +101,7 @@ function safeParseImages(value: string): string[] {
 // DB helpers
 // ------------------------------------------------------------
 
-export async function createQuestTemplate(
-  input: Omit<QuestTemplate, "id">
-): Promise<number> {
+export async function createQuestTemplate(input: Omit<QuestTemplate, "id">): Promise<number> {
   await db.insert(quests).values({
     enTitle: input.enTitle,
     frTitle: input.frTitle,
@@ -136,7 +132,7 @@ export async function createQuestTemplate(
         targetMin: qex.baseTarget.min,
         targetMax: qex.baseTarget.max,
         imagesJson: JSON.stringify(qex.images ?? []),
-      }))
+      })),
     );
   }
 
@@ -205,9 +201,7 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
   return [...byId.values()];
 }
 
-export async function getQuestTemplateById(
-  id: number
-): Promise<QuestTemplate | null> {
+export async function getQuestTemplateById(id: number): Promise<QuestTemplate | null> {
   const rows = await db
     .select({
       questId: quests.id,
@@ -269,10 +263,7 @@ export async function getQuestTemplateById(
   return quest;
 }
 
-export async function getQuestById(
-  id: number,
-  userLevel: UserLevel
-): Promise<Quest | null> {
+export async function getQuestById(id: number, userLevel: UserLevel): Promise<Quest | null> {
   // Join quests -> quest_exercises -> exercises -> exercise_muscles and aggregate.
   const rows = await db
     .select({
@@ -365,11 +356,8 @@ export async function deleteQuest(id: number): Promise<void> {
 export async function updateQuestMeta(
   id: number,
   patch: Partial<
-    Pick<
-      QuestTemplate,
-      "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds"
-    >
-  >
+    Pick<QuestTemplate, "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds">
+  >,
 ): Promise<void> {
   await db
     .update(quests)
@@ -382,7 +370,7 @@ export async function updateQuestMeta(
 
 export async function setQuestExercises(
   questId: number,
-  next: QuestTemplateExercise[]
+  next: QuestTemplateExercise[],
 ): Promise<void> {
   await db.transaction(async (tx) => {
     await tx.delete(questExercises).where(eq(questExercises.questId, questId));
@@ -398,7 +386,7 @@ export async function setQuestExercises(
         targetMin: qex.baseTarget.min,
         targetMax: qex.baseTarget.max,
         imagesJson: JSON.stringify(qex.images ?? []),
-      }))
+      })),
     );
   });
 }
@@ -406,17 +394,12 @@ export async function setQuestExercises(
 export async function ensureQuestHasExercise(
   questId: number,
   exerciseId: number,
-  baseTarget: { type: QuestTargetType; min: number; max: number }
+  baseTarget: { type: QuestTargetType; min: number; max: number },
 ): Promise<void> {
   const existing = await db
     .select({ id: questExercises.id })
     .from(questExercises)
-    .where(
-      and(
-        eq(questExercises.questId, questId),
-        eq(questExercises.exerciseId, exerciseId)
-      )
-    )
+    .where(and(eq(questExercises.questId, questId), eq(questExercises.exerciseId, exerciseId)))
     .limit(1);
 
   if (existing.length > 0) return;

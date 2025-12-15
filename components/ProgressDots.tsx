@@ -12,15 +12,15 @@ export function ProgressDots({ current, total }: ProgressDotsProps) {
       key={i}
       width={i === current - 1 ? 24 : 10}
       height={10}
-      borderRadius={5}
-      backgroundColor={i < current ? "$primary" : "$color"}
+      rounded={5}
+      bg={i < current ? "$primary" : "$color"}
       opacity={i < current ? 1 : 0.3}
       animation="bouncy"
     />
   ));
 
   return (
-    <XStack gap="$2" justifyContent="center" paddingVertical="$4">
+    <XStack gap="$2" justify="center" py="$4">
       {dots}
     </XStack>
   );

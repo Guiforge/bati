@@ -6,6 +6,8 @@
   "light": "Light",
   "onboarding": {
     "chars_min": "chars min",
+    "avatar_subtitle": "Pick a hero face. You can change it later.",
+    "avatar_title": "Choose your avatar",
     "finish": "Start playing",
     "language_selection": "Pick your language",
     "next": "Let's go",
@@ -15,6 +17,7 @@
     "village_name_placeholder": "Your village name",
     "village_name_title": "Name your village"
   },
+  "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",
   "system": "System",
   "theme": "Theme",

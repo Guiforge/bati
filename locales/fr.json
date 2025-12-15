@@ -6,6 +6,8 @@
   "light": "Clair",
   "onboarding": {
     "chars_min": "car. min",
+    "avatar_subtitle": "Choisis un visage de héros. Tu peux le changer plus tard.",
+    "avatar_title": "Choisis ton avatar",
     "finish": "Commencer",
     "language_selection": "Choisis ta langue",
     "next": "C'est parti",
@@ -15,6 +17,7 @@
     "village_name_placeholder": "Ton nom de village",
     "village_name_title": "Nomme ton village"
   },
+  "settings_avatar_hint": "Tape sur un avatar pour changer.",
   "settings": "Paramètres",
   "system": "Système",
   "theme": "Thème",

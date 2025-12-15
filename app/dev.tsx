@@ -1,10 +1,10 @@
+import { getAllPreferences } from "@/db";
+import { resetDatabase } from "@/db/client";
+import { useUserStore } from "@/stores/user";
 import { Stack } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView } from "react-native";
 import { Button, H3, Paragraph, Separator, YStack } from "tamagui";
-import { getAllPreferences } from "@/db";
-import { resetDatabase } from "@/db/client";
-import { useUserStore } from "@/stores/user";
 
 export default function DevTools() {
   const [prefs, setPrefs] = useState<Record<string, string>>({});
@@ -54,7 +54,7 @@ export default function DevTools() {
       <ScrollView contentContainerStyle={{ padding: 20 }}>
         <YStack gap="$4">
           <H3>Database Management</H3>
-          <Button backgroundColor="$red10" color="white" onPress={handleReset}>
+          <Button bg="$secondary" color="white" onPress={handleReset}>
             Reset Database (Nuke)
           </Button>
 
@@ -67,9 +67,9 @@ export default function DevTools() {
 
           <YStack
             gap="$2"
-            backgroundColor="$background"
-            padding="$4"
-            borderRadius="$4"
+            bg="$background"
+            p="$4"
+            rounded="$4"
             borderWidth={1}
             borderColor="$color"
           >
@@ -77,7 +77,7 @@ export default function DevTools() {
               <Paragraph>No preferences found.</Paragraph>
             ) : (
               Object.entries(prefs).map(([key, value]) => (
-                <YStack key={key} borderBottomWidth={1} borderColor="$color" paddingVertical="$2">
+                <YStack key={key} borderBottomWidth={1} borderColor="$color" py="$2">
                   <Paragraph fontWeight="bold">{key}</Paragraph>
                   <Paragraph>{value}</Paragraph>
                 </YStack>

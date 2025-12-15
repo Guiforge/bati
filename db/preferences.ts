@@ -33,7 +33,9 @@ export async function deletePreference(key: string): Promise<void> {
 // Get all preferences as object
 export async function getAllPreferences(): Promise<Record<string, string>> {
   const results = await db.select().from(userPreferences);
-  return Object.fromEntries(results.map((r: { key: string; value: string }) => [r.key, r.value]));
+  return Object.fromEntries(
+    results.map((r: { key: string; value: string }) => [r.key, r.value])
+  );
 }
 
 // Specific preference helpers
@@ -61,5 +63,21 @@ export const preferences = {
 
   async setLanguage(lang: string): Promise<void> {
     await setPreference("language", lang);
+  },
+
+  async getTheme(): Promise<string | null> {
+    return await getPreference("theme");
+  },
+
+  async setTheme(theme: string): Promise<void> {
+    await setPreference("theme", theme);
+  },
+
+  async getAvatarId(): Promise<string | null> {
+    return await getPreference("avatarId");
+  },
+
+  async setAvatarId(avatarId: string): Promise<void> {
+    await setPreference("avatarId", avatarId);
   },
 };

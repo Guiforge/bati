@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Button } from "tamagui";
+import { Button, type ColorTokens, type SpaceTokens } from "tamagui";
 
 type AppButtonVariant = "primary" | "secondary" | "outline";
 
@@ -9,9 +9,9 @@ interface AppButtonProps {
   onPress?: () => void;
   disabled?: boolean;
   opacity?: number;
-  marginBottom?: string;
-  marginTop?: string;
-  backgroundColor?: string;
+  marginBottom?: SpaceTokens | number;
+  marginTop?: SpaceTokens | number;
+  backgroundColor?: ColorTokens;
 }
 
 export function AppButton({
@@ -24,10 +24,10 @@ export function AppButton({
   marginTop,
   backgroundColor,
 }: AppButtonProps) {
-  const getBackgroundColor = () => {
+  const getBackgroundColor = (): ColorTokens => {
     if (backgroundColor) return backgroundColor;
     if (variant === "secondary") return "$secondary";
-    if (variant === "outline") return "transparent";
+    if (variant === "outline") return "$background";
     return "$primary";
   };
 
@@ -41,12 +41,12 @@ export function AppButton({
       onPress={onPress}
       disabled={disabled}
       opacity={opacity}
-      marginBottom={marginBottom}
-      marginTop={marginTop}
+      mb={marginBottom}
+      mt={marginTop}
       size="$6"
       width="100%"
       borderWidth={3}
-      borderRadius="$8"
+      rounded="$8"
       borderColor={variant === "outline" ? "$color" : "$color"}
       fontWeight="900"
       fontSize={20}
@@ -55,7 +55,7 @@ export function AppButton({
       shadowOffset={{ width: 4, height: 4 }}
       pressStyle={{ scale: 0.98, opacity: 0.92, shadowOffset: { width: 0, height: 0 } }}
       animation="quick"
-      backgroundColor={getBackgroundColor()}
+      bg={getBackgroundColor()}
       color={getColor()}
     >
       {children}

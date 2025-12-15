@@ -1,3 +1,6 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { useUserStore } from "@/stores/user";
 import { Check, Pencil } from "@tamagui/lucide-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
@@ -6,12 +9,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { H1, H2, Input, Text, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useUserStore } from "@/stores/user";
 
-const TOTAL_STEPS = 3;
-const CURRENT_STEP = 3;
+const TOTAL_STEPS = 4;
+const CURRENT_STEP = 4;
 const MIN_NAME_LENGTH = 3;
 const MAX_NAME_LENGTH = 20;
 
@@ -56,14 +56,14 @@ export default function VillageName() {
   }, [status, completeOnboarding]);
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} bg="$background">
       {/* Stamp Animation Layer */}
       {status === "stamped" && (
         <YStack
           fullscreen
-          justifyContent="center"
-          alignItems="center"
-          zIndex={100}
+          justify="center"
+          items="center"
+          z={100}
           pointerEvents="none"
           animation="bouncy"
           enterStyle={{
@@ -77,14 +77,14 @@ export default function VillageName() {
             color="$color"
             fontSize={42}
             fontWeight="900"
-            textAlign="center"
+            text="center"
             textShadowColor="rgba(0,0,0,0.1)"
             textShadowOffset={{ width: 0, height: 4 }}
             textShadowRadius={10}
           >
             {name}
           </H1>
-          <Text textAlign="center" fontSize={24} opacity={0.6}>
+          <Text text="center" fontSize={24} opacity={0.6}>
             🏰
           </Text>
         </YStack>
@@ -101,11 +101,11 @@ export default function VillageName() {
           style={{ flex: 1 }}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
-          <YStack flex={1} justifyContent="space-between">
+          <YStack flex={1} justify="space-between">
             <YStack
               width="100%"
               aspectRatio={16 / 11}
-              backgroundColor="$bgLight"
+              bg="$bgLight"
               borderBottomWidth={4}
               borderColor="$color"
               shadowColor="$color"
@@ -123,13 +123,13 @@ export default function VillageName() {
               />
             </YStack>
 
-            <YStack flex={1} padding="$5" justifyContent="space-between" gap="$5">
+            <YStack flex={1} p="$5" justify="space-between" gap="$5">
               <YStack gap="$3">
                 <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
 
-                <YStack gap="$2" alignItems="center">
+                <YStack gap="$2" items="center">
                   <H2
-                    textAlign="center"
+                    text="center"
                     color="$color"
                     fontWeight="900"
                     fontSize={24}
@@ -138,7 +138,7 @@ export default function VillageName() {
                   >
                     {t("onboarding.village_name_title")}
                   </H2>
-                  <XStack alignItems="center" gap="$2">
+                  <XStack items="center" gap="$2">
                     <Pencil size={16} color="$color" opacity={0.5} />
                     <Text fontSize={13} color="$color" opacity={0.5}>
                       {t("onboarding.village_name_placeholder")}
@@ -155,16 +155,16 @@ export default function VillageName() {
                     size="$6"
                     borderWidth={3}
                     borderColor={isValidName ? "$success" : "$color"}
-                    borderRadius={16}
-                    backgroundColor="$bgLight"
+                    rounded={16}
+                    bg="$bgLight"
                     focusStyle={{ borderColor: "$primary", borderWidth: 4 }}
                     fontWeight="700"
                     fontSize={18}
-                    textAlign="center"
+                    text="center"
                   />
 
-                  <XStack justifyContent="space-between" paddingHorizontal="$3">
-                    <XStack alignItems="center" gap="$1">
+                  <XStack justify="space-between" px="$3">
+                    <XStack items="center" gap="$1">
                       {isValidName ? <Check size={14} color="$success" /> : null}
                       <Text
                         fontSize={12}

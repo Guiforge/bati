@@ -24,14 +24,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
   }, [onFinish]);
 
   return (
-    <YStack
-      flex={1}
-      backgroundColor="$background"
-      justifyContent="center"
-      alignItems="center"
-      padding="$6"
-      gap="$6"
-    >
+    <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$6">
       <H1 color="$color" fontWeight="900" fontSize={48}>
         🏰 Bati
       </H1>
@@ -40,10 +33,10 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
       </Paragraph>
 
       <YStack width="80%" gap="$2">
-        <Progress value={progress} size="$2" backgroundColor="$bgLight">
-          <Progress.Indicator animation="bouncy" backgroundColor="$primary" />
+        <Progress value={progress} size="$2" background="$bgLight">
+          <Progress.Indicator animation="bouncy" background="$primary" />
         </Progress>
-        <Paragraph color="$color" opacity={0.4} fontSize={12} textAlign="center">
+        <Paragraph color="$color" opacity={0.4} fontSize={12} text="center">
           {progress}%
         </Paragraph>
       </YStack>

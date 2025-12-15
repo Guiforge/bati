@@ -1,26 +1,39 @@
+import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
 import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useState } from "react";
+import { useColorScheme } from "react-native";
 import { TamaguiProvider, Theme } from "tamagui";
-import { DatabaseProvider } from "@/components/DatabaseProvider";
-import { useAppColorScheme } from "@/stores/theme";
-import { useUserStore } from "@/stores/user";
 import "../i18n";
 import config from "../tamagui.config";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useAppColorScheme();
-  const { hasFinishedOnboarding, isLoaded, loadFromDatabase } = useUserStore();
+  const systemScheme = useColorScheme() ?? "light";
+  const {
+    hasFinishedOnboarding,
+    isLoaded: userLoaded,
+    loadFromDatabase: loadUserFromDatabase,
+  } = useUserStore();
+  const {
+    theme,
+    isLoaded: settingsLoaded,
+    loadFromDatabase: loadSettingsFromDatabase,
+  } = useSettingsStore();
+
+  const colorScheme = theme === "system" ? systemScheme : theme;
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
 
   // Called when database migrations are complete
   const handleDatabaseReady = useCallback(() => {
-    loadFromDatabase();
-  }, [loadFromDatabase]);
+    loadUserFromDatabase();
+    loadSettingsFromDatabase();
+  }, [loadUserFromDatabase, loadSettingsFromDatabase]);
 
   useEffect(() => {
     // Wait for first render to complete
@@ -28,7 +41,7 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (!isNavigationReady || !isLoaded) return;
+    if (!isNavigationReady || !userLoaded || !settingsLoaded) return;
 
     const inOnboardingGroup = segments[0] === "onboarding";
 
@@ -39,7 +52,7 @@ export default function RootLayout() {
     }
 
     SplashScreen.hideAsync();
-  }, [hasFinishedOnboarding, segments, router, isNavigationReady, isLoaded]);
+  }, [hasFinishedOnboarding, segments, router, isNavigationReady, userLoaded, settingsLoaded]);
 
   return (
     <TamaguiProvider config={config} defaultTheme={colorScheme}>

@@ -1,12 +1,12 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
 import { Castle, Swords, Trophy } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { H2, Paragraph, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 const CURRENT_STEP = 2;
 
 const FEATURES = [
@@ -20,11 +20,11 @@ export default function Presentation() {
   const { t } = useTranslation();
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} bg="$background">
       <YStack
         width="100%"
         aspectRatio={16 / 11}
-        backgroundColor="$bgLight"
+        bg="$bgLight"
         borderBottomWidth={4}
         borderColor="$color"
         shadowColor="$color"
@@ -42,12 +42,12 @@ export default function Presentation() {
         />
       </YStack>
 
-      <YStack flex={1} padding="$5" justifyContent="space-between" gap="$5">
-        <YStack gap="$3" alignItems="center">
+      <YStack flex={1} p="$5" justify="space-between" gap="$5">
+        <YStack gap="$3" items="center">
           <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
 
           <H2
-            textAlign="center"
+            text="center"
             color="$color"
             fontWeight="900"
             fontSize={26}
@@ -58,12 +58,12 @@ export default function Presentation() {
           </H2>
 
           <Paragraph
-            textAlign="center"
+            text="center"
             size="$4"
             color="$color"
             fontWeight="500"
             opacity={0.65}
-            maxWidth={320}
+            maxW={320}
             lineHeight={22}
             animation="lazy"
             enterStyle={{ opacity: 0, y: 14 }}
@@ -71,7 +71,7 @@ export default function Presentation() {
             {t("onboarding.presentation_description")}
           </Paragraph>
 
-          <XStack gap="$4" justifyContent="center" paddingTop="$2">
+          <XStack gap="$4" justify="center" pt="$2">
             {FEATURES.map((feature, index) => {
               const Icon = feature.icon;
 
@@ -80,12 +80,12 @@ export default function Presentation() {
                   key={feature.key}
                   width={72}
                   height={72}
-                  backgroundColor="$bgLight"
-                  borderRadius="$8"
+                  bg="$bgLight"
+                  rounded="$8"
                   borderWidth={3}
                   borderColor="$color"
-                  justifyContent="center"
-                  alignItems="center"
+                  justify="center"
+                  items="center"
                   animation="bouncy"
                   enterStyle={{ opacity: 0, scale: 0.6, y: 30 }}
                   animateOnly={["opacity", "scale", "transform"]}
@@ -100,7 +100,7 @@ export default function Presentation() {
 
         <AppButton
           variant="secondary"
-          onPress={() => router.push("/onboarding/village-name")}
+          onPress={() => router.push("/onboarding/choose-avatar")}
           marginBottom="$4"
         >
           {t("onboarding.next")} →

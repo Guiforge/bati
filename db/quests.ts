@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
-import type { Exercise } from "./exercises";
+import { type Exercise, isMuscleCode } from "./exercises";
 import type { QuestTargetType } from "./schema";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
@@ -75,7 +75,7 @@ const USER_LEVEL_MULTIPLIER: Record<UserLevel, number> = {
 
 export function generateTarget(
   base: { type: QuestTargetType; min: number; max: number },
-  userLevel: UserLevel,
+  userLevel: UserLevel
 ): Target {
   const min = Math.min(base.min, base.max);
   const max = Math.max(base.min, base.max);
@@ -91,7 +91,9 @@ export function generateTarget(
 function safeParseImages(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((x) => typeof x === "string")
+      : [];
   } catch {
     return [];
   }
@@ -101,7 +103,9 @@ function safeParseImages(value: string): string[] {
 // DB helpers
 // ------------------------------------------------------------
 
-export async function createQuestTemplate(input: Omit<QuestTemplate, "id">): Promise<number> {
+export async function createQuestTemplate(
+  input: Omit<QuestTemplate, "id">
+): Promise<number> {
   await db.insert(quests).values({
     enTitle: input.enTitle,
     frTitle: input.frTitle,
@@ -132,7 +136,7 @@ export async function createQuestTemplate(input: Omit<QuestTemplate, "id">): Pro
         targetMin: qex.baseTarget.min,
         targetMax: qex.baseTarget.max,
         imagesJson: JSON.stringify(qex.images ?? []),
-      })),
+      }))
     );
   }
 
@@ -201,12 +205,74 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
   return [...byId.values()];
 }
 
-export async function getQuestTemplateById(id: number): Promise<QuestTemplate | null> {
-  const all = await listQuestTemplates();
-  return all.find((q) => q.id === id) ?? null;
+export async function getQuestTemplateById(
+  id: number
+): Promise<QuestTemplate | null> {
+  const rows = await db
+    .select({
+      questId: quests.id,
+      enTitle: quests.enTitle,
+      frTitle: quests.frTitle,
+      enDescription: quests.enDescription,
+      frDescription: quests.frDescription,
+      rounds: quests.rounds,
+
+      questExerciseId: questExercises.id,
+      sortOrder: questExercises.sortOrder,
+      exerciseId: questExercises.exerciseId,
+      targetType: questExercises.targetType,
+      targetMin: questExercises.targetMin,
+      targetMax: questExercises.targetMax,
+      imagesJson: questExercises.imagesJson,
+    })
+    .from(quests)
+    .leftJoin(questExercises, eq(questExercises.questId, quests.id))
+    .where(eq(quests.id, id))
+    .orderBy(questExercises.sortOrder);
+
+  if (rows.length === 0) return null;
+
+  const first = rows[0];
+  const quest: QuestTemplate = {
+    id: first.questId,
+    enTitle: first.enTitle,
+    frTitle: first.frTitle,
+    enDescription: first.enDescription,
+    frDescription: first.frDescription,
+    rounds: first.rounds,
+    exercises: [],
+  };
+
+  for (const r of rows) {
+    if (
+      r.questExerciseId == null ||
+      r.exerciseId == null ||
+      r.targetType == null ||
+      r.targetMin == null ||
+      r.targetMax == null ||
+      r.imagesJson == null
+    ) {
+      continue;
+    }
+
+    quest.exercises.push({
+      exerciseId: r.exerciseId,
+      images: safeParseImages(r.imagesJson),
+      baseTarget: {
+        type: r.targetType,
+        min: r.targetMin,
+        max: r.targetMax,
+      },
+    });
+  }
+
+  return quest;
 }
 
-export async function getQuestById(id: number, userLevel: UserLevel): Promise<Quest | null> {
+export async function getQuestById(
+  id: number,
+  userLevel: UserLevel
+): Promise<Quest | null> {
   // Join quests -> quest_exercises -> exercises -> exercise_muscles and aggregate.
   const rows = await db
     .select({
@@ -285,7 +351,9 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       quest.exercises.push(qex);
     }
 
-    if (r.muscle && !qex.exercise.muscles.includes(r.muscle)) qex.exercise.muscles.push(r.muscle);
+    if (isMuscleCode(r.muscle) && !qex.exercise.muscles.includes(r.muscle)) {
+      qex.exercise.muscles.push(r.muscle);
+    }
   }
   return quest;
 }
@@ -297,8 +365,11 @@ export async function deleteQuest(id: number): Promise<void> {
 export async function updateQuestMeta(
   id: number,
   patch: Partial<
-    Pick<QuestTemplate, "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds">
-  >,
+    Pick<
+      QuestTemplate,
+      "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds"
+    >
+  >
 ): Promise<void> {
   await db
     .update(quests)
@@ -311,7 +382,7 @@ export async function updateQuestMeta(
 
 export async function setQuestExercises(
   questId: number,
-  next: QuestTemplateExercise[],
+  next: QuestTemplateExercise[]
 ): Promise<void> {
   await db.transaction(async (tx) => {
     await tx.delete(questExercises).where(eq(questExercises.questId, questId));
@@ -327,7 +398,7 @@ export async function setQuestExercises(
         targetMin: qex.baseTarget.min,
         targetMax: qex.baseTarget.max,
         imagesJson: JSON.stringify(qex.images ?? []),
-      })),
+      }))
     );
   });
 }
@@ -335,12 +406,17 @@ export async function setQuestExercises(
 export async function ensureQuestHasExercise(
   questId: number,
   exerciseId: number,
-  baseTarget: { type: QuestTargetType; min: number; max: number },
+  baseTarget: { type: QuestTargetType; min: number; max: number }
 ): Promise<void> {
   const existing = await db
     .select({ id: questExercises.id })
     .from(questExercises)
-    .where(and(eq(questExercises.questId, questId), eq(questExercises.exerciseId, exerciseId)))
+    .where(
+      and(
+        eq(questExercises.questId, questId),
+        eq(questExercises.exerciseId, exerciseId)
+      )
+    )
     .limit(1);
 
   if (existing.length > 0) return;

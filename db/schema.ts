@@ -1,10 +1,24 @@
-import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  int,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 // ------------------------------------------------------------
 // Exercises catalogue
 // ------------------------------------------------------------
 
-export const muscleCodes = ["arms", "back", "shoulder", "chest", "abs", "calf"] as const;
+export const muscleCodes = [
+  "arms",
+  "back",
+  "shoulder",
+  "chest",
+  "abs",
+  "calf",
+] as const;
 export type MuscleCode = (typeof muscleCodes)[number];
 
 export const difficultyCodes = ["easy", "medium", "hard"] as const;
@@ -38,14 +52,14 @@ export const exercises = sqliteTable(
     creator: text().notNull().default("Admin"),
 
     // Stored as lowercase string: easy | medium | hard
-    difficulty: text().notNull().default("easy").$type<DifficultyCode>(),
+    difficulty: text().notNull().default("medium").$type<DifficultyCode>(),
 
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({
     enNameUnique: uniqueIndex("exercises_en_name_unique").on(table.enName),
-  }),
+  })
 );
 
 export const exerciseMuscles = sqliteTable(
@@ -59,7 +73,7 @@ export const exerciseMuscles = sqliteTable(
   (table) => ({
     pk: primaryKey({ columns: [table.exerciseId, table.muscle] }),
     muscleIdx: index("exercise_muscles_muscle_idx").on(table.muscle),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -104,6 +118,9 @@ export const questExercises = sqliteTable(
   },
   (table) => ({
     questIdx: index("quest_exercises_quest_idx").on(table.questId),
-    sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(table.questId, table.sortOrder),
-  }),
+    sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(
+      table.questId,
+      table.sortOrder
+    ),
+  })
 );

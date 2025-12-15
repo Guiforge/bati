@@ -7,7 +7,7 @@ import { ScrollView } from "react-native";
 import { H2, Paragraph, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ProgressDots } from "@/components/ProgressDots";
-import { AVATARS } from "@/constants/avatars";
+import { AVATARS, getAvatarById } from "@/constants/avatars";
 import { useSettingsStore } from "@/stores/settings";
 
 const TOTAL_STEPS = 4;
@@ -33,7 +33,7 @@ export default function ChooseAvatar() {
           overflow="hidden"
         >
           <Image
-            source={require("../../assets/onboardings/new_city.jpg")}
+            source={getAvatarById(avatarId).source}
             style={{ width: "100%", height: "100%" }}
             contentFit="cover"
             transition={0}

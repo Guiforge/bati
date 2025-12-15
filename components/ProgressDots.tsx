@@ -15,7 +15,6 @@ export function ProgressDots({ current, total }: ProgressDotsProps) {
       rounded={5}
       bg={i < current ? "$primary" : "$color"}
       opacity={i < current ? 1 : 0.3}
-      animation="bouncy"
     />
   ));
 

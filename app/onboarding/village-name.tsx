@@ -1,14 +1,14 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { useUserStore } from "@/stores/user";
 import { Check, Pencil } from "@tamagui/lucide-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { H1, H2, Input, Text, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useUserStore } from "@/stores/user";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 4;
@@ -32,26 +32,19 @@ export default function VillageName() {
 
   const handleFinish = () => {
     if (isValidName) {
-      setStatus("submitting");
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-      // Sequence the animations using timeouts
-      setTimeout(() => {
-        setStatus("stamped");
-      }, 300);
+      setStatus("stamped");
     }
   };
 
   useEffect(() => {
     if (status === "stamped") {
-      // Wait for the stamp "impact"
-      setTimeout(() => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        // Navigate after a short delay
-        setTimeout(() => {
-          completeOnboarding();
-        }, 800);
-      }, 300);
+      const id = setTimeout(() => {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        completeOnboarding();
+      }, 350);
+
+      return () => clearTimeout(id);
     }
   }, [status, completeOnboarding]);
 
@@ -59,20 +52,7 @@ export default function VillageName() {
     <YStack flex={1} bg="$background">
       {/* Stamp Animation Layer */}
       {status === "stamped" && (
-        <YStack
-          fullscreen
-          justify="center"
-          items="center"
-          z={100}
-          pointerEvents="none"
-          animation="bouncy"
-          enterStyle={{
-            opacity: 0,
-            scale: 3,
-          }}
-          opacity={1}
-          scale={1}
-        >
+        <YStack fullscreen justify="center" items="center" z={100} pointerEvents="none" opacity={1}>
           <H1
             color="$color"
             fontSize={42}
@@ -92,7 +72,6 @@ export default function VillageName() {
 
       <YStack
         flex={1}
-        animation="lazy"
         opacity={status === "editing" ? 1 : 0}
         pointerEvents={status === "editing" ? "auto" : "none"}
       >
@@ -101,101 +80,94 @@ export default function VillageName() {
           style={{ flex: 1 }}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
-          <YStack flex={1} justify="space-between">
-            <YStack
-              width="100%"
-              aspectRatio={16 / 11}
-              bg="$bgLight"
-              borderBottomWidth={4}
-              borderColor="$color"
-              shadowColor="$color"
-              shadowRadius={0}
-              shadowOffset={{ width: 0, height: 6 }}
-              overflow="hidden"
-              animation="lazy"
-              enterStyle={{ opacity: 0, y: -20 }}
-            >
-              <Image
-                source={require("../../assets/onboardings/new_city.jpg")}
-                style={{ width: "100%", height: "100%" }}
-                contentFit="cover"
-                transition={180}
-              />
-            </YStack>
-
-            <YStack flex={1} p="$5" justify="space-between" gap="$5">
-              <YStack gap="$3">
-                <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
-
-                <YStack gap="$2" items="center">
-                  <H2
-                    text="center"
-                    color="$color"
-                    fontWeight="900"
-                    fontSize={24}
-                    animation="lazy"
-                    enterStyle={{ opacity: 0, y: 18 }}
-                  >
-                    {t("onboarding.village_name_title")}
-                  </H2>
-                  <XStack items="center" gap="$2">
-                    <Pencil size={16} color="$color" opacity={0.5} />
-                    <Text fontSize={13} color="$color" opacity={0.5}>
-                      {t("onboarding.village_name_placeholder")}
-                    </Text>
-                  </XStack>
-                </YStack>
-
-                <YStack width="100%" gap="$3" animation="lazy" enterStyle={{ opacity: 0, y: 12 }}>
-                  <Input
-                    value={name}
-                    onChangeText={(text) => setName(text.slice(0, MAX_NAME_LENGTH))}
-                    placeholder={t("onboarding.village_name_placeholder")}
-                    width="100%"
-                    size="$6"
-                    borderWidth={3}
-                    borderColor={isValidName ? "$success" : "$color"}
-                    rounded={16}
-                    bg="$bgLight"
-                    focusStyle={{ borderColor: "$primary", borderWidth: 4 }}
-                    fontWeight="700"
-                    fontSize={18}
-                    text="center"
-                  />
-
-                  <XStack justify="space-between" px="$3">
-                    <XStack items="center" gap="$1">
-                      {isValidName ? <Check size={14} color="$success" /> : null}
-                      <Text
-                        fontSize={12}
-                        color={isValidName ? "$success" : "$color"}
-                        opacity={isValidName ? 1 : 0.5}
-                        fontWeight={isValidName ? "700" : "400"}
-                      >
-                        {name.length < MIN_NAME_LENGTH
-                          ? `${MIN_NAME_LENGTH - name.length} ${t("onboarding.chars_min") || "chars min"}`
-                          : t("onboarding.valid") || "Valid!"}
-                      </Text>
-                    </XStack>
-                    <Text fontSize={12} color="$color" opacity={0.5}>
-                      {name.length}/{MAX_NAME_LENGTH}
-                    </Text>
-                  </XStack>
-                </YStack>
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
+            <YStack flex={1} justify="space-between" style={{ flexGrow: 1 }}>
+              <YStack
+                width="100%"
+                aspectRatio={16 / 11}
+                bg="$bgLight"
+                borderBottomWidth={4}
+                borderColor="$color"
+                shadowColor="$color"
+                shadowRadius={0}
+                shadowOffset={{ width: 0, height: 6 }}
+                overflow="hidden"
+              >
+                <Image
+                  source={require("../../assets/onboardings/new_city.jpg")}
+                  style={{ width: "100%", height: "100%" }}
+                  contentFit="cover"
+                  transition={0}
+                />
               </YStack>
 
-              <AppButton
-                variant="primary"
-                onPress={handleFinish}
-                disabled={!isValidName}
-                opacity={isValidName ? 1 : 0.4}
-                backgroundColor={isValidName ? "$success" : "$color"}
-                marginBottom="$4"
-              >
-                {t("onboarding.finish")} 🚀
-              </AppButton>
+              <YStack flex={1} p="$5" justify="space-between" gap="$5" style={{ flexGrow: 1 }}>
+                <YStack gap="$3">
+                  <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
+
+                  <YStack gap="$2" items="center">
+                    <H2 text="center" color="$color" fontWeight="900" fontSize={24}>
+                      {t("onboarding.village_name_title")}
+                    </H2>
+                    <XStack items="center" gap="$2">
+                      <Pencil size={16} color="$color" opacity={0.5} />
+                      <Text fontSize={13} color="$color" opacity={0.5}>
+                        {t("onboarding.village_name_placeholder")}
+                      </Text>
+                    </XStack>
+                  </YStack>
+
+                  <YStack width="100%" gap="$3">
+                    <Input
+                      value={name}
+                      onChangeText={(text) => setName(text.slice(0, MAX_NAME_LENGTH))}
+                      placeholder={t("onboarding.village_name_placeholder")}
+                      width="100%"
+                      size="$6"
+                      borderWidth={3}
+                      borderColor={isValidName ? "$success" : "$color"}
+                      rounded={16}
+                      bg="$bgLight"
+                      focusStyle={{ borderColor: "$primary", borderWidth: 4 }}
+                      fontWeight="700"
+                      fontSize={18}
+                      text="center"
+                    />
+
+                    <XStack justify="space-between" px="$3">
+                      <XStack items="center" gap="$1">
+                        {isValidName ? <Check size={14} color="$success" /> : null}
+                        <Text
+                          fontSize={12}
+                          color={isValidName ? "$success" : "$color"}
+                          opacity={isValidName ? 1 : 0.5}
+                          fontWeight={isValidName ? "700" : "400"}
+                        >
+                          {name.length < MIN_NAME_LENGTH
+                            ? `${MIN_NAME_LENGTH - name.length} ${t("onboarding.chars_min") || "chars min"}`
+                            : t("onboarding.valid") || "Valid!"}
+                        </Text>
+                      </XStack>
+                      <Text fontSize={12} color="$color" opacity={0.5}>
+                        {name.length}/{MAX_NAME_LENGTH}
+                      </Text>
+                    </XStack>
+                  </YStack>
+                </YStack>
+
+                <AppButton
+                  variant="primary"
+                  onPress={handleFinish}
+                  disabled={!isValidName}
+                  opacity={isValidName ? 1 : 0.4}
+                  backgroundColor={isValidName ? "$success" : "$color"}
+                  mb="$4"
+                >
+                  {t("onboarding.finish")} 🚀
+                </AppButton>
+              </YStack>
             </YStack>
-          </YStack>
+          </ScrollView>
         </KeyboardAvoidingView>
       </YStack>
     </YStack>

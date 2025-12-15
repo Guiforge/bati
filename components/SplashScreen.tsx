@@ -34,7 +34,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
 
       <YStack width="80%" gap="$2">
         <Progress value={progress} size="$2" background="$bgLight">
-          <Progress.Indicator animation="bouncy" background="$primary" />
+          <Progress.Indicator background="$primary" />
         </Progress>
         <Paragraph color="$color" opacity={0.4} fontSize={12} text="center">
           {progress}%

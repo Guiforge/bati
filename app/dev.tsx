@@ -1,10 +1,11 @@
-import { Stack } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView } from "react-native";
-import { Button, H3, Paragraph, Separator, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { getAllPreferences } from "@/db";
 import { resetDatabase } from "@/db/client";
 import { useUserStore } from "@/stores/user";
+import { Stack } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, ScrollView } from "react-native";
+import { H3, Paragraph, Separator, YStack } from "tamagui";
 
 export default function DevTools() {
   const [prefs, setPrefs] = useState<Record<string, string>>({});
@@ -54,16 +55,16 @@ export default function DevTools() {
       <ScrollView contentContainerStyle={{ padding: 20 }}>
         <YStack gap="$4">
           <H3>Database Management</H3>
-          <Button bg="$secondary" color="white" onPress={handleReset}>
+          <AppButton variant="secondary" onPress={handleReset}>
             Reset Database (Nuke)
-          </Button>
+          </AppButton>
 
           <Separator />
 
           <H3>User Preferences</H3>
-          <Button onPress={loadPrefs} size="$3">
+          <AppButton variant="outline" onPress={loadPrefs} size="$3" fullWidth={false}>
             Refresh
-          </Button>
+          </AppButton>
 
           <YStack
             gap="$2"

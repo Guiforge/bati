@@ -1,28 +1,27 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { Button, type ColorTokens, type SpaceTokens } from "tamagui";
 
 type AppButtonVariant = "primary" | "secondary" | "outline";
 
-interface AppButtonProps {
+type TamaguiButtonProps = ComponentProps<typeof Button>;
+
+interface AppButtonProps extends Omit<TamaguiButtonProps, "children" | "variant"> {
   variant?: AppButtonVariant;
   children: ReactNode;
-  onPress?: () => void;
-  disabled?: boolean;
-  opacity?: number;
   marginBottom?: SpaceTokens | number;
   marginTop?: SpaceTokens | number;
   backgroundColor?: ColorTokens;
+  fullWidth?: boolean;
 }
 
 export function AppButton({
   variant = "primary",
   children,
-  onPress,
-  disabled,
-  opacity,
   marginBottom,
   marginTop,
   backgroundColor,
+  fullWidth = true,
+  ...buttonProps
 }: AppButtonProps) {
   const getBackgroundColor = (): ColorTokens => {
     if (backgroundColor) return backgroundColor;
@@ -38,25 +37,41 @@ export function AppButton({
 
   return (
     <Button
-      onPress={onPress}
-      disabled={disabled}
-      opacity={opacity}
       mb={marginBottom}
       mt={marginTop}
-      size="$6"
-      width="100%"
-      borderWidth={3}
-      rounded="$8"
-      borderColor={variant === "outline" ? "$color" : "$color"}
-      fontWeight="900"
-      fontSize={20}
-      shadowColor="$color"
-      shadowRadius={0}
-      shadowOffset={{ width: 4, height: 4 }}
-      pressStyle={{ scale: 0.98, opacity: 0.92, shadowOffset: { width: 0, height: 0 } }}
-      animation="quick"
       bg={getBackgroundColor()}
       color={getColor()}
+      size="$6"
+      width={fullWidth ? "100%" : undefined}
+      borderWidth={3}
+      rounded="$8"
+      borderColor="$color"
+      fontWeight="900"
+      fontSize={20}
+      pressStyle={{ opacity: 0.9 }}
+      {...buttonProps}
+    >
+      {children}
+    </Button>
+  );
+}
+
+type AppIconButtonProps = Omit<TamaguiButtonProps, "children" | "variant"> & {
+  children: ReactNode;
+};
+
+export function AppIconButton({ children, ...buttonProps }: AppIconButtonProps) {
+  return (
+    <Button
+      width={44}
+      height={44}
+      p={0}
+      rounded={22}
+      bg="$bgLight"
+      borderWidth={3}
+      borderColor="$color"
+      pressStyle={{ opacity: 0.9 }}
+      {...buttonProps}
     >
       {children}
     </Button>

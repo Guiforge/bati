@@ -1,11 +1,11 @@
-import { HomeSettingsMenu } from "@/components/HomeSettingsMenu";
-import { getAvatarById } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
-import { useUserStore } from "@/stores/user";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { H1, Paragraph, YStack } from "tamagui";
+import { HomeSettingsMenu } from "@/components/HomeSettingsMenu";
+import { getAvatarById } from "@/constants/avatars";
+import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
 import { AppButton } from "./common/AppButton";
 
 export function Home() {

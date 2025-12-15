@@ -31,10 +31,7 @@ export const AVATARS: Avatar[] = [
 ];
 
 export function isAvatarId(value: unknown): value is AvatarId {
-  return (
-    typeof value === "string" &&
-    (avatarIds as readonly string[]).includes(value)
-  );
+  return typeof value === "string" && (avatarIds as readonly string[]).includes(value);
 }
 
 export function getAvatarById(id: AvatarId): Avatar {

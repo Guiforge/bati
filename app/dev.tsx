@@ -1,10 +1,10 @@
-import { getAllPreferences } from "@/db";
-import { resetDatabase } from "@/db/client";
-import { useUserStore } from "@/stores/user";
 import { Stack } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView } from "react-native";
 import { Button, H3, Paragraph, Separator, YStack } from "tamagui";
+import { getAllPreferences } from "@/db";
+import { resetDatabase } from "@/db/client";
+import { useUserStore } from "@/stores/user";
 
 export default function DevTools() {
   const [prefs, setPrefs] = useState<Record<string, string>>({});

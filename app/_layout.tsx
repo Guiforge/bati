@@ -1,11 +1,11 @@
-import { DatabaseProvider } from "@/components/DatabaseProvider";
-import { useSettingsStore } from "@/stores/settings";
-import { useUserStore } from "@/stores/user";
 import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
 import { TamaguiProvider, Theme } from "tamagui";
+import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
 import "../i18n";
 import config from "../tamagui.config";
 

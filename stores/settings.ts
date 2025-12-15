@@ -1,7 +1,7 @@
+import { create } from "zustand";
 import { type AvatarId, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
 import i18n from "@/i18n";
-import { create } from "zustand";
 
 export type AppLanguage = "en" | "fr";
 export type ThemePreference = "light" | "dark" | "system";
@@ -11,9 +11,7 @@ function normalizeLanguage(value: string | null | undefined): AppLanguage {
 }
 
 function normalizeTheme(value: string | null | undefined): ThemePreference {
-  return value === "dark" || value === "light" || value === "system"
-    ? value
-    : "system";
+  return value === "dark" || value === "light" || value === "system" ? value : "system";
 }
 
 function normalizeAvatarId(value: string | null | undefined): AvatarId {

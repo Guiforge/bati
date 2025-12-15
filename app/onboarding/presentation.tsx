@@ -1,10 +1,10 @@
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
 import { Castle, Swords, Trophy } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { H2, Paragraph, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 2;

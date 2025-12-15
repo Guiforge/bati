@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "./client";
-import { type MuscleCode, muscleCodes } from "./schema";
+import { type DifficultyCode, type MuscleCode, muscleCodes } from "./schema";
 
 const { exercises, exerciseMuscles } = schema;
 
@@ -11,6 +11,7 @@ export type Exercise = {
   enDescription: string;
   frDescription: string;
   imagePath: string;
+  difficulty: DifficultyCode;
   muscles: MuscleCode[];
 };
 
@@ -36,6 +37,7 @@ export async function listExercises(): Promise<Exercise[]> {
       enDescription: exercises.enDescription,
       frDescription: exercises.frDescription,
       imagePath: exercises.imagePath,
+      difficulty: exercises.difficulty,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -53,6 +55,7 @@ export async function listExercises(): Promise<Exercise[]> {
         enDescription: r.enDescription,
         frDescription: r.frDescription,
         imagePath: r.imagePath,
+        difficulty: r.difficulty,
         muscles: [],
       });
     }
@@ -75,6 +78,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
       enDescription: exercises.enDescription,
       frDescription: exercises.frDescription,
       imagePath: exercises.imagePath,
+      difficulty: exercises.difficulty,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -91,6 +95,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
     enDescription: first.enDescription,
     frDescription: first.frDescription,
     imagePath: first.imagePath,
+    difficulty: first.difficulty,
     muscles: [],
   };
 

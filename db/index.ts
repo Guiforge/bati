@@ -7,3 +7,14 @@ export {
   preferences,
   setPreference,
 } from "./preferences";
+export {
+  createQuestTemplate,
+  Difficulty,
+  deleteQuest,
+  generateTarget,
+  getQuestById,
+  getQuestTemplateById,
+  listQuestTemplates,
+  setQuestExercises,
+  updateQuestMeta,
+} from "./quests";

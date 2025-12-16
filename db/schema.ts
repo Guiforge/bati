@@ -107,3 +107,78 @@ export const questExercises = sqliteTable(
     sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(table.questId, table.sortOrder),
   }),
 );
+
+// ------------------------------------------------------------
+// Completed workouts (history)
+// ------------------------------------------------------------
+
+export const completedQuest = sqliteTable(
+  "completed_sessions",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+
+    // If the session comes from a quest template, keep a link.
+    questId: int().references(() => quests.id, { onDelete: "set null" }),
+
+    // User level used to generate targets at the time of the session.
+    userLevel: text().notNull().default("medium").$type<DifficultyCode>(),
+
+    // Optional: total session duration.
+    durationSeconds: int(),
+
+    // Optional: free text notes.
+    notes: text().notNull().default(""),
+
+    // When the session was performed.
+    performedAt: int({ mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    performedAtIdx: index("completed_sessions_performed_at_idx").on(table.performedAt),
+    questIdx: index("completed_sessions_quest_idx").on(table.questId),
+  }),
+);
+
+export const completedExercises = sqliteTable(
+  "completed_exercises",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+
+    sessionId: int()
+      .notNull()
+      .references(() => completedQuest.id, { onDelete: "cascade" }),
+
+    exerciseId: int()
+      .notNull()
+      .references(() => exercises.id),
+
+    // For quests with multiple rounds; default 0 for a single pass.
+    roundIndex: int().notNull().default(0),
+
+    // Display/order within a round.
+    sortOrder: int().notNull(),
+
+    // What the user actually did.
+    resultType: text().notNull().$type<QuestTargetType>(),
+    resultValue: int().notNull(),
+
+    // Optional: what was asked (target) at the time.
+    targetType: text().$type<QuestTargetType>(),
+    targetValue: int(),
+
+    notes: text().notNull().default(""),
+    performedAt: int({ mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    sessionIdx: index("completed_exercises_session_idx").on(table.sessionId),
+    exerciseIdx: index("completed_exercises_exercise_idx").on(table.exerciseId),
+    orderUnique: uniqueIndex("completed_exercises_session_round_sort_unique").on(
+      table.sessionId,
+      table.roundIndex,
+      table.sortOrder,
+    ),
+  }),
+);

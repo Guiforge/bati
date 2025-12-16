@@ -1,5 +1,10 @@
 // Database exports
 export { db, schema } from "./client";
+export {
+  createCompletedSession,
+  getCompletedSessionById,
+  listCompletedSessions,
+} from "./completed";
 export { getExerciseById, listExercises } from "./exercises";
 export {
   getAllPreferences,

@@ -1,19 +1,14 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
+  "$schema": "https://biomejs.dev/schemas/2.3.9/schema.json",
   "files": {
     "ignoreUnknown": false,
     "includes": [
-      "**",
       "!**/.expo",
-      "!**/dist",
-      "!**/node_modules",
       "!**/babel.config.js",
-      "!**/metro.config.js"
+      "!**/dist",
+      "!**/metro.config.js",
+      "!**/node_modules",
+      "**"
     ]
   },
   "formatter": {
@@ -21,6 +16,11 @@
     "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
   },
   "linter": {
     "enabled": true,
@@ -33,7 +33,9 @@
   },
   "overrides": [
     {
-      "includes": ["**/*.css"],
+      "includes": [
+        "**/*.css"
+      ],
       "linter": {
         "rules": {
           "suspicious": {
@@ -43,15 +45,17 @@
       }
     },
     {
-      "includes": ["**/*.md"],
+      "includes": [
+        "**/*.md"
+      ],
       "linter": {
         "enabled": false
       }
     }
   ],
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double"
-    }
+  "vcs": {
+    "clientKind": "git",
+    "enabled": true,
+    "useIgnoreFile": true
   }
 }

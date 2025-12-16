@@ -1,7 +1,9 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
-import { type Exercise, isMuscleCode } from "./exercises";
+import type { Exercise } from "./exercises";
+import { isMuscleCode } from "./muscles";
 import type { QuestTargetType } from "./schema";
+import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
 
@@ -9,18 +11,8 @@ const { exercises, exerciseMuscles, questExercises, quests } = schema;
 // Types
 // ------------------------------------------------------------
 
-export enum Difficulty {
-  Easy = "easy",
-  Medium = "medium",
-  Hard = "hard",
-}
-
-export type UserLevel = Difficulty;
-
-export type Target = {
-  type: QuestTargetType;
-  value: number;
-};
+export { Difficulty, generateTarget };
+export type { Target, UserLevel };
 
 export interface QuestExercise {
   /** Reference to the base exercise definition */
@@ -67,26 +59,7 @@ export type Quest = {
 // Target generation
 // ------------------------------------------------------------
 
-const USER_LEVEL_MULTIPLIER: Record<UserLevel, number> = {
-  [Difficulty.Easy]: 0.75,
-  [Difficulty.Medium]: 1.0,
-  [Difficulty.Hard]: 1.25,
-};
-
-export function generateTarget(
-  base: { type: QuestTargetType; min: number; max: number },
-  userLevel: UserLevel,
-): Target {
-  const min = Math.min(base.min, base.max);
-  const max = Math.max(base.min, base.max);
-  const m = USER_LEVEL_MULTIPLIER[userLevel];
-
-  const scaledMin = Math.max(1, Math.round(min * m));
-  const scaledMax = Math.max(1, Math.round(max * m));
-
-  const value = Math.max(1, Math.round((scaledMin + scaledMax) / 2));
-  return { type: base.type, value };
-}
+// generateTarget moved to `db/targets.ts` for testability
 
 function safeParseImages(value: string): string[] {
   try {
@@ -372,7 +345,10 @@ export async function setQuestExercises(
   questId: number,
   next: QuestTemplateExercise[],
 ): Promise<void> {
-  await db.transaction(async (tx) => {
+  type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
+  type TransactionTx = Parameters<TransactionCallback>[0];
+
+  const run = async (tx: TransactionTx) => {
     await tx.delete(questExercises).where(eq(questExercises.questId, questId));
 
     if (next.length === 0) return;
@@ -388,7 +364,21 @@ export async function setQuestExercises(
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );
-  });
+  };
+
+  try {
+    await db.transaction(run);
+  } catch (e) {
+    if (
+      e instanceof TypeError &&
+      typeof e.message === "string" &&
+      e.message.includes("Transaction function cannot return a promise")
+    ) {
+      await run(db as unknown as TransactionTx);
+      return;
+    }
+    throw e;
+  }
 }
 
 export async function ensureQuestHasExercise(

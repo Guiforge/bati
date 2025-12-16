@@ -9,10 +9,10 @@ INSERT INTO `quests` (
         `updatedAt`
     )
 VALUES (
-        "Chop Wood",
-        "Couper du bois",
-        "Grab your axe (imaginary counts). Your village needs warmth, so let's chop some wood the heroic way — sweat included.",
-        "Attrape ta hache (imaginaire, ça compte). Le village a besoin de chaleur : on coupe du bois version héros — sueur incluse.",
+        'Chop Wood',
+        'Couper du bois',
+        'Grab your axe (imaginary counts). Your village needs warmth, so let''s chop some wood the heroic way — sweat included.',
+        'Attrape ta hache (imaginaire, ça compte). Le village a besoin de chaleur : on coupe du bois version héros — sueur incluse.',
         3,
         CAST(strftime('%s', 'now') AS integer),
         CAST(strftime('%s', 'now') AS integer)

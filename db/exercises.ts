@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "./client";
-import { type DifficultyCode, type MuscleCode, muscleCodes } from "./schema";
+import { isMuscleCode, MUSCLE_LABELS } from "./muscles";
+import { type DifficultyCode, type MuscleCode } from "./schema";
 
 const { exercises, exerciseMuscles } = schema;
 
@@ -16,18 +17,7 @@ export type Exercise = {
   muscles: MuscleCode[];
 };
 
-export const MUSCLE_LABELS: Record<MuscleCode, { en: string; fr: string }> = {
-  arms: { en: "Arms", fr: "Bras" },
-  back: { en: "Back", fr: "Dos" },
-  shoulder: { en: "Shoulders", fr: "Épaules" },
-  chest: { en: "Chest", fr: "Pectoraux" },
-  abs: { en: "Abs", fr: "Abdos" },
-  calf: { en: "Calves", fr: "Mollets" },
-};
-
-export function isMuscleCode(value: unknown): value is MuscleCode {
-  return typeof value === "string" && (muscleCodes as readonly string[]).includes(value);
-}
+export { isMuscleCode, MUSCLE_LABELS };
 
 export async function listExercises(): Promise<Exercise[]> {
   const rows = await db

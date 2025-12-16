@@ -1,0 +1,4 @@
+test.skip("db/client can be imported in Jest", () => {
+  // This test intentionally skipped: importing the real Expo SQLite client
+  // requires a native runtime.
+});

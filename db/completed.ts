@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
-import { type Exercise, isMuscleCode } from "./exercises";
+import type { Exercise } from "./exercises";
+import { isMuscleCode } from "./muscles";
 import type { DifficultyCode, QuestTargetType } from "./schema";
 
 const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
@@ -48,10 +49,30 @@ export type CompletedSession = {
   exercises: CompletedExercise[];
 };
 
+type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
+type TransactionTx = Parameters<TransactionCallback>[0];
+
+async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
+  try {
+    // Expo SQLite supports async transaction callbacks.
+    return await db.transaction(fn);
+  } catch (e) {
+    // better-sqlite3 (used in Node unit tests) only supports sync callbacks.
+    if (
+      e instanceof TypeError &&
+      typeof e.message === "string" &&
+      e.message.includes("Transaction function cannot return a promise")
+    ) {
+      return await fn(db as unknown as TransactionTx);
+    }
+    throw e;
+  }
+}
+
 export async function createCompletedSession(input: CompletedSessionInput): Promise<number> {
   if (input.exercises.length === 0) throw new Error("A completed session must have exercises");
 
-  return db.transaction(async (tx) => {
+  return transactionOrFallback(async (tx) => {
     const inserted = await tx
       .insert(completedQuest)
       .values({

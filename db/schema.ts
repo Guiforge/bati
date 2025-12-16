@@ -7,6 +7,17 @@ import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-
 export const muscleCodes = ["arms", "back", "shoulder", "chest", "abs", "calf"] as const;
 export type MuscleCode = (typeof muscleCodes)[number];
 
+export const equipmentCodes = [
+  "none",
+  "pullup_bar",
+  "dumbbell",
+  "barbell",
+  "kettlebell",
+  "band",
+  "bench",
+] as const;
+export type EquipmentCode = (typeof equipmentCodes)[number];
+
 export const difficultyCodes = ["easy", "medium", "hard"] as const;
 export type DifficultyCode = (typeof difficultyCodes)[number];
 
@@ -39,6 +50,13 @@ export const exercises = sqliteTable(
 
     // Stored as lowercase string: easy | medium | hard
     difficulty: text().notNull().default("medium").$type<DifficultyCode>(),
+
+    // Minimal equipment requirements (used for filtering + UI hints)
+    equipment: text().notNull().default("none").$type<EquipmentCode>(),
+
+    // For rep-based targets: rough average seconds per repetition.
+    // Used to estimate quest duration. (Time-based exercises ignore it.)
+    secondsPerRep: int().notNull().default(3),
 
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
@@ -75,6 +93,9 @@ export const quests = sqliteTable("quests", {
   frDescription: text().notNull(),
 
   rounds: int().notNull().default(1),
+
+  // Rest between sets (a "set" = one exercise target). In seconds.
+  restSeconds: int().notNull().default(30),
 
   createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),

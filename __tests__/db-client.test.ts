@@ -1,5 +1,5 @@
 describe("db/client", () => {
-  test("resetDatabase calls expo-sqlite deleteDatabaseSync", () => {
+  test("resetDatabase calls expo-sqlite deleteDatabaseSync", async () => {
     jest.resetModules();
 
     const deleteDatabaseSync = jest.fn();
@@ -21,7 +21,7 @@ describe("db/client", () => {
     });
     expect(drizzle).toHaveBeenCalled();
 
-    client.resetDatabase();
+    await client.resetDatabase();
     expect(deleteDatabaseSync).toHaveBeenCalledWith("bati.db");
   });
 });

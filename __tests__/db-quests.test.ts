@@ -19,11 +19,17 @@ describe("db/quests", () => {
     const quests = require("../db/quests") as typeof import("../db/quests");
 
     const all = await quests.listQuestTemplates();
+    expect(all.length).toBeGreaterThanOrEqual(5);
     const seeded = all.find((q) => q.frTitle === "Couper du bois");
+    const extra = all.find((q) => q.frTitle === "Forge du tronc");
 
     expect(seeded).toBeTruthy();
     expect(seeded?.rounds).toBe(3);
+    expect(typeof seeded?.restSeconds).toBe("number");
     expect(seeded?.exercises.length).toBe(3);
+
+    expect(extra).toBeTruthy();
+    expect(extra?.exercises.length).toBeGreaterThan(0);
   });
 
   test("getQuestById computes targets from user level", async () => {
@@ -72,6 +78,7 @@ describe("db/quests", () => {
       enDescription: "Test",
       frDescription: "Test",
       rounds: 1,
+      restSeconds: 20,
       exercises: [
         {
           exerciseId: squat.id,

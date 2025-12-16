@@ -11,8 +11,9 @@ import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
-import { Difficulty, getQuestById } from "@/db";
-import { MUSCLE_LABELS } from "@/db/exercises";
+import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
+import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { MUSCLE_LABELS } from "@/db/muscles";
 import type { Quest, Target } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -99,6 +100,7 @@ export default function QuestDetails() {
   const quest = state.status === "ready" ? state.quest : state.quest;
   const questTitle = quest ? (language === "fr" ? quest.frTitle : quest.enTitle) : "";
   const questDesc = quest ? (language === "fr" ? quest.frDescription : quest.enDescription) : "";
+  const estimate = quest ? formatDuration(estimateQuestSeconds(quest), language) : null;
 
   const headerImage = resolveQuestImage(quest?.exercises?.[0]?.images?.[0]);
 
@@ -224,6 +226,22 @@ export default function QuestDetails() {
                     })}
                     tone="primary"
                   />
+                  <Chip
+                    label={t("quests.rest", {
+                      count: quest.restSeconds,
+                      defaultValue: `Rest ${quest.restSeconds}s`,
+                    })}
+                    tone="warning"
+                  />
+                  {estimate ? (
+                    <Chip
+                      label={t("quests.estimate", {
+                        duration: estimate,
+                        defaultValue: `≈ ${estimate}`,
+                      })}
+                      tone="secondary"
+                    />
+                  ) : null}
                 </XStack>
 
                 <XStack gap="$2" flexWrap="wrap" pt="$2">
@@ -281,6 +299,21 @@ export default function QuestDetails() {
                         </Paragraph>
 
                         <XStack gap="$2" flexWrap="wrap" pt="$2">
+                          <Chip
+                            label={
+                              EQUIPMENT_LABELS[qex.exercise.equipment]?.[language] ??
+                              qex.exercise.equipment
+                            }
+                          />
+                          {qex.target.type === "reps" ? (
+                            <Chip
+                              label={t("quests.seconds_per_rep", {
+                                count: qex.exercise.secondsPerRep,
+                                defaultValue: `${qex.exercise.secondsPerRep}s/rep`,
+                              })}
+                              tone="secondary"
+                            />
+                          ) : null}
                           {qex.exercise.muscles.slice(0, 4).map((m) => (
                             <Chip key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
                           ))}

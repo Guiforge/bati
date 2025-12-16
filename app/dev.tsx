@@ -35,7 +35,7 @@ export default function DevTools() {
           style: "destructive",
           onPress: async () => {
             try {
-              resetDatabase();
+              await resetDatabase();
               // Reset store state
               setHasFinishedOnboarding(false);
               setVillageName("");

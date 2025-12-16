@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "./client";
+import { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
 import { isMuscleCode, MUSCLE_LABELS } from "./muscles";
-import { type DifficultyCode, type MuscleCode } from "./schema";
+import { type DifficultyCode, type EquipmentCode, type MuscleCode } from "./schema";
 
 const { exercises, exerciseMuscles } = schema;
 
@@ -14,10 +15,12 @@ export type Exercise = {
   imagePath: string;
   creator: string;
   difficulty: DifficultyCode;
+  equipment: EquipmentCode;
+  secondsPerRep: number;
   muscles: MuscleCode[];
 };
 
-export { isMuscleCode, MUSCLE_LABELS };
+export { EQUIPMENT_LABELS, isEquipmentCode, isMuscleCode, MUSCLE_LABELS };
 
 export async function listExercises(): Promise<Exercise[]> {
   const rows = await db
@@ -30,6 +33,8 @@ export async function listExercises(): Promise<Exercise[]> {
       imagePath: exercises.imagePath,
       creator: exercises.creator,
       difficulty: exercises.difficulty,
+      equipment: exercises.equipment,
+      secondsPerRep: exercises.secondsPerRep,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -49,6 +54,8 @@ export async function listExercises(): Promise<Exercise[]> {
         imagePath: r.imagePath,
         creator: r.creator,
         difficulty: r.difficulty,
+        equipment: isEquipmentCode(r.equipment) ? r.equipment : "none",
+        secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
         muscles: [],
       });
     }
@@ -73,6 +80,8 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
       imagePath: exercises.imagePath,
       creator: exercises.creator,
       difficulty: exercises.difficulty,
+      equipment: exercises.equipment,
+      secondsPerRep: exercises.secondsPerRep,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -91,6 +100,8 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
     imagePath: first.imagePath,
     creator: first.creator,
     difficulty: first.difficulty,
+    equipment: isEquipmentCode(first.equipment) ? first.equipment : "none",
+    secondsPerRep: typeof first.secondsPerRep === "number" ? first.secondsPerRep : 3,
     muscles: [],
   };
 

@@ -26,6 +26,8 @@ describe("db/exercises", () => {
     expect(squat?.imagePath).toBe("assets/placeholder.jpg");
     expect(squat?.creator).toBeTruthy();
     expect(squat?.difficulty).toBeTruthy();
+    expect(squat?.equipment).toBeTruthy();
+    expect(typeof squat?.secondsPerRep).toBe("number");
     expect(squat?.muscles.sort()).toEqual(["calf", "chest"].sort());
   });
 

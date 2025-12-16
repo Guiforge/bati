@@ -5,6 +5,12 @@ export {
   getCompletedSessionById,
   listCompletedSessions,
 } from "./completed";
+export { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
+export {
+  estimateExerciseSeconds,
+  estimateQuestSeconds,
+  formatDuration,
+} from "./estimate";
 export { getExerciseById, listExercises } from "./exercises";
 export {
   getAllPreferences,

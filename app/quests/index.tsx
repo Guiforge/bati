@@ -8,14 +8,23 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
-import { listQuestTemplates } from "@/db";
+import { listExercises, listQuestTemplates } from "@/db";
+import { EQUIPMENT_LABELS } from "@/db/equipment";
+import type { Exercise } from "@/db/exercises";
+import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
+import type { EquipmentCode, MuscleCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
-  | { status: "loading"; quests: QuestTemplate[] }
-  | { status: "ready"; quests: QuestTemplate[] }
-  | { status: "error"; quests: QuestTemplate[]; message: string };
+  | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
+  | { status: "ready"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
+  | {
+      status: "error";
+      quests: QuestTemplate[];
+      exercisesById: Record<number, Exercise>;
+      message: string;
+    };
 
 function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
@@ -29,16 +38,29 @@ export default function QuestsGallery() {
   const { t } = useTranslation();
   const { language } = useSettingsStore();
 
-  const [state, setState] = useState<LoadState>({ status: "loading", quests: [] });
+  const [state, setState] = useState<LoadState>({
+    status: "loading",
+    quests: [],
+    exercisesById: {},
+  });
+
+  const [selectedMuscle, setSelectedMuscle] = useState<MuscleCode | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentCode | null>(null);
 
   const load = useCallback(async () => {
-    setState((s) => ({ status: "loading", quests: s.quests }));
+    setState((s) => ({ status: "loading", quests: s.quests, exercisesById: s.exercisesById }));
     try {
-      const quests = await listQuestTemplates();
-      setState({ status: "ready", quests });
+      const [quests, exercises] = await Promise.all([listQuestTemplates(), listExercises()]);
+      const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
+      setState({ status: "ready", quests, exercisesById });
     } catch (e) {
       const message = e instanceof Error ? e.message : "Unknown error";
-      setState((s) => ({ status: "error", quests: s.quests, message }));
+      setState((s) => ({
+        status: "error",
+        quests: s.quests,
+        exercisesById: s.exercisesById,
+        message,
+      }));
     }
   }, []);
 
@@ -47,6 +69,43 @@ export default function QuestsGallery() {
   }, [load]);
 
   const quests = state.quests;
+  const exercisesById = state.exercisesById;
+
+  const questMeta = useMemo(() => {
+    return quests.map((q) => {
+      const muscles = new Set<MuscleCode>();
+      const equipment = new Set<EquipmentCode>();
+
+      for (const qex of q.exercises) {
+        const ex = exercisesById[qex.exerciseId];
+        if (!ex) continue;
+        equipment.add(ex.equipment);
+        for (const m of ex.muscles) muscles.add(m);
+      }
+
+      return { quest: q, muscles: [...muscles], equipment: [...equipment] };
+    });
+  }, [exercisesById, quests]);
+
+  const availableMuscles = useMemo(() => {
+    const s = new Set<MuscleCode>();
+    for (const m of questMeta) for (const code of m.muscles) s.add(code);
+    return [...s];
+  }, [questMeta]);
+
+  const availableEquipment = useMemo(() => {
+    const s = new Set<EquipmentCode>();
+    for (const m of questMeta) for (const code of m.equipment) s.add(code);
+    return [...s];
+  }, [questMeta]);
+
+  const filtered = useMemo(() => {
+    return questMeta.filter((m) => {
+      const okMuscle = selectedMuscle ? m.muscles.includes(selectedMuscle) : true;
+      const okEquip = selectedEquipment ? m.equipment.includes(selectedEquipment) : true;
+      return okMuscle && okEquip;
+    });
+  }, [questMeta, selectedEquipment, selectedMuscle]);
 
   const title = useMemo(() => t("quests.gallery_title", "Quest gallery"), [t]);
   const subtitle = useMemo(
@@ -78,10 +137,63 @@ export default function QuestsGallery() {
             </XStack>
 
             <Chip
-              label={t("quests.count", { count: quests.length, defaultValue: "{{count}}" })}
+              label={t("quests.count", {
+                count: filtered.length,
+                defaultValue: "{{count}}",
+              })}
               tone="secondary"
             />
           </XStack>
+
+          <Card bg="$bgLight">
+            <YStack gap="$3">
+              <Text fontWeight="900" fontSize={16} color="$color">
+                {t("quests.filters_title", "Filters")}
+              </Text>
+
+              <YStack gap="$2">
+                <Text fontWeight="900" color="$color" opacity={0.7}>
+                  {t("quests.filter_muscles", "Muscles")}
+                </Text>
+                <XStack gap="$2" flexWrap="wrap">
+                  <Chip
+                    label={t("quests.all", "All")}
+                    tone={!selectedMuscle ? "primary" : "default"}
+                    onPress={() => setSelectedMuscle(null)}
+                  />
+                  {availableMuscles.map((m) => (
+                    <Chip
+                      key={m}
+                      label={MUSCLE_LABELS[m]?.[language] ?? m}
+                      tone={selectedMuscle === m ? "primary" : "default"}
+                      onPress={() => setSelectedMuscle(m)}
+                    />
+                  ))}
+                </XStack>
+              </YStack>
+
+              <YStack gap="$2">
+                <Text fontWeight="900" color="$color" opacity={0.7}>
+                  {t("quests.filter_equipment", "Equipment")}
+                </Text>
+                <XStack gap="$2" flexWrap="wrap">
+                  <Chip
+                    label={t("quests.all", "All")}
+                    tone={!selectedEquipment ? "secondary" : "default"}
+                    onPress={() => setSelectedEquipment(null)}
+                  />
+                  {availableEquipment.map((e) => (
+                    <Chip
+                      key={e}
+                      label={EQUIPMENT_LABELS[e]?.[language] ?? e}
+                      tone={selectedEquipment === e ? "secondary" : "default"}
+                      onPress={() => setSelectedEquipment(e)}
+                    />
+                  ))}
+                </XStack>
+              </YStack>
+            </YStack>
+          </Card>
 
           {state.status === "error" ? (
             <Card bg="$bgLight">
@@ -128,7 +240,7 @@ export default function QuestsGallery() {
           ) : null}
 
           <YStack gap="$3">
-            {quests.map((q) => {
+            {filtered.map(({ quest: q, muscles, equipment }) => {
               const qTitle = language === "fr" ? q.frTitle : q.enTitle;
               const qDesc = language === "fr" ? q.frDescription : q.enDescription;
 
@@ -171,6 +283,22 @@ export default function QuestsGallery() {
                           })}
                           tone="primary"
                         />
+                        <Chip
+                          label={t("quests.rest", {
+                            count: q.restSeconds,
+                            defaultValue: `Rest ${q.restSeconds}s`,
+                          })}
+                          tone="warning"
+                        />
+                      </XStack>
+
+                      <XStack gap="$2" flexWrap="wrap">
+                        {equipment.slice(0, 2).map((e) => (
+                          <Chip key={e} label={EQUIPMENT_LABELS[e]?.[language] ?? e} />
+                        ))}
+                        {muscles.slice(0, 3).map((m) => (
+                          <Chip key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
+                        ))}
                       </XStack>
                     </YStack>
                   </XStack>

@@ -42,6 +42,7 @@ export type QuestTemplate = {
   enDescription: string;
   frDescription: string;
   rounds: number;
+  restSeconds: number;
   exercises: QuestTemplateExercise[];
 };
 
@@ -52,6 +53,7 @@ export type Quest = {
   enDescription: string;
   frDescription: string;
   rounds: number;
+  restSeconds: number;
   exercises: QuestExercise[];
 };
 
@@ -81,6 +83,7 @@ export async function createQuestTemplate(input: Omit<QuestTemplate, "id">): Pro
     enDescription: input.enDescription,
     frDescription: input.frDescription,
     rounds: input.rounds,
+    restSeconds: input.restSeconds,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -121,6 +124,7 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
       enDescription: quests.enDescription,
       frDescription: quests.frDescription,
       rounds: quests.rounds,
+      restSeconds: quests.restSeconds,
 
       questExerciseId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -145,6 +149,7 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
         enDescription: r.enDescription,
         frDescription: r.frDescription,
         rounds: r.rounds,
+        restSeconds: r.restSeconds,
         exercises: [],
       });
     }
@@ -183,6 +188,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
       enDescription: quests.enDescription,
       frDescription: quests.frDescription,
       rounds: quests.rounds,
+      restSeconds: quests.restSeconds,
 
       questExerciseId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -207,6 +213,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
     enDescription: first.enDescription,
     frDescription: first.frDescription,
     rounds: first.rounds,
+    restSeconds: first.restSeconds,
     exercises: [],
   };
 
@@ -246,6 +253,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       enDescription: quests.enDescription,
       frDescription: quests.frDescription,
       rounds: quests.rounds,
+      restSeconds: quests.restSeconds,
 
       qexId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -262,6 +270,8 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exImagePath: exercises.imagePath,
       exCreator: exercises.creator,
       exDifficulty: exercises.difficulty,
+      exEquipment: exercises.equipment,
+      exSecondsPerRep: exercises.secondsPerRep,
 
       muscle: exerciseMuscles.muscle,
     })
@@ -282,6 +292,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     enDescription: first.enDescription,
     frDescription: first.frDescription,
     rounds: first.rounds,
+    restSeconds: first.restSeconds,
     exercises: [],
   };
 
@@ -306,6 +317,8 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
           imagePath: r.exImagePath,
           creator: r.exCreator,
           difficulty: r.exDifficulty,
+          equipment: r.exEquipment,
+          secondsPerRep: r.exSecondsPerRep,
           muscles: [],
         },
         images: safeParseImages(r.imagesJson),
@@ -329,7 +342,10 @@ export async function deleteQuest(id: number): Promise<void> {
 export async function updateQuestMeta(
   id: number,
   patch: Partial<
-    Pick<QuestTemplate, "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds">
+    Pick<
+      QuestTemplate,
+      "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds" | "restSeconds"
+    >
   >,
 ): Promise<void> {
   await db

@@ -32,6 +32,8 @@
     "retry": "Retry",
     "empty_title": "No quests yet",
     "empty_subtitle": "Come back soon — the village is preparing adventures.",
+    "empty_filters_title": "No quests match",
+    "empty_filters_subtitle": "Try removing filters.",
     "rounds": "{{count}} rounds",
     "exercises": "{{count}} exercises",
     "exercises_list": "Exercises",

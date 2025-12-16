@@ -32,6 +32,8 @@
     "retry": "Réessayer",
     "empty_title": "Aucune quête pour l'instant",
     "empty_subtitle": "Reviens bientôt — le village prépare des aventures.",
+    "empty_filters_title": "Aucune quête ne correspond",
+    "empty_filters_subtitle": "Essaie d'enlever des filtres.",
     "rounds": "{{count}} manches",
     "exercises": "{{count}} exercices",
     "exercises_list": "Exercices",

@@ -22,16 +22,14 @@ type LoadState =
   | { status: "ready"; quest: Quest }
   | { status: "error"; quest: Quest | null; message: string };
 
-function resolveQuestImage(path?: string | null): ImageSourcePropType | { uri: string } | null {
+function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  if (path.startsWith("http://") || path.startsWith("https://")) return { uri: path };
   if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
   return null;
 }
 
-function resolveExerciseImage(path?: string | null): ImageSourcePropType | { uri: string } | null {
+function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  if (path.startsWith("http://") || path.startsWith("https://")) return { uri: path };
   if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
   return null;
 }

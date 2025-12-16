@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
+    "@legendapp/list": "^2.0.18",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
@@ -40,8 +41,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.3.8",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/react": "~19.1.0",
     "@types/jest": "^29.5.14",
+    "@types/react": "~19.1.0",
     "babel-plugin-inline-import": "^3.0.0",
     "better-sqlite3": "^12.4.1",
     "drizzle-kit": "^0.31.0",

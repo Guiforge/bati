@@ -1,3 +1,4 @@
+import { LegendList } from "@legendapp/list";
 import { ChevronLeft, Map as MapIcon } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -34,12 +35,19 @@ function questEmoji(rounds: number, exerciseCount: number) {
   return "🪓";
 }
 
-function resolveQuestImage(path?: string | null): ImageSourcePropType | { uri: string } | null {
+function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  if (path.startsWith("http://") || path.startsWith("https://")) return { uri: path };
   if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
   return null;
 }
+
+type QuestMeta = {
+  quest: QuestTemplate;
+  muscles: MuscleCode[];
+  equipment: EquipmentCode[];
+};
+
+const PAGE_SIZE = 10;
 
 export default function QuestsGallery() {
   const router = useRouter();
@@ -55,6 +63,7 @@ export default function QuestsGallery() {
 
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleCode | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentCode | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const load = useCallback(async () => {
     setState((s) => ({ status: "loading", quests: s.quests, exercisesById: s.exercisesById }));
@@ -81,7 +90,7 @@ export default function QuestsGallery() {
   const exercisesById = state.exercisesById;
 
   const questMeta = useMemo(() => {
-    return quests.map((q) => {
+    return quests.map((q): QuestMeta => {
       const muscles = new Set<MuscleCode>();
       const equipment = new Set<EquipmentCode>();
 
@@ -109,6 +118,9 @@ export default function QuestsGallery() {
   }, [questMeta]);
 
   const filtered = useMemo(() => {
+    // Reset pagination when filters change
+    setVisibleCount(PAGE_SIZE);
+
     return questMeta.filter((m) => {
       const okMuscle = selectedMuscle ? m.muscles.includes(selectedMuscle) : true;
       const okEquip = selectedEquipment ? m.equipment.includes(selectedEquipment) : true;
@@ -116,255 +128,298 @@ export default function QuestsGallery() {
     });
   }, [questMeta, selectedEquipment, selectedMuscle]);
 
-  const title = useMemo(() => t("quests.gallery_title", "Quest gallery"), [t]);
-  const subtitle = useMemo(
-    () => t("quests.gallery_subtitle", "Pick a quest and see the full details."),
-    [t],
-  );
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+  const canLoadMore = visible.length < filtered.length;
 
-  return (
-    <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
-        <YStack p="$5" pt={insets.top + 12} gap="$4">
-          <XStack items="center" justify="space-between">
-            <XStack items="center" gap="$3">
-              <AppIconButton onPress={() => router.back()}>
-                <ChevronLeft size={22} color="#1A1A2E" strokeWidth={2.5} />
-              </AppIconButton>
+  const onEndReached = useCallback(() => {
+    if (!canLoadMore) return;
+    setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
+  }, [canLoadMore, filtered.length]);
 
-              <YStack>
-                <XStack items="center" gap="$2">
-                  <MapIcon size={18} color="#1A1A2E" />
-                  <Text fontWeight="900" fontSize={20} color="$color">
-                    {title}
-                  </Text>
-                </XStack>
-                <Paragraph color="$color" opacity={0.65} mt="$1" size="$3">
-                  {subtitle}
-                </Paragraph>
-              </YStack>
-            </XStack>
+  const title = t("quests.gallery_title", "Quests");
 
-            <Chip
-              label={t("quests.count", {
-                count: filtered.length,
-                defaultValue: "{{count}}",
-              })}
-              tone="secondary"
-            />
-          </XStack>
+  const renderItem = useCallback(
+    ({ item }: { item: QuestMeta }) => {
+      const q = item.quest;
+      const muscles = item.muscles;
+      const equipment = item.equipment;
 
-          <Card bg="$bgLight">
-            <YStack gap="$3">
-              <Text fontWeight="900" fontSize={16} color="$color">
-                {t("quests.filters_title", "Filters")}
-              </Text>
+      const qTitle = language === "fr" ? q.frTitle : q.enTitle;
+      const qDesc = language === "fr" ? q.frDescription : q.enDescription;
 
-              <YStack gap="$2">
-                <Text fontWeight="900" color="$color" opacity={0.7}>
-                  {t("quests.filter_muscles", "Muscles")}
-                </Text>
-                <XStack gap="$2" flexWrap="wrap">
-                  <Chip
-                    label={t("quests.all", "All")}
-                    tone={!selectedMuscle ? "primary" : "default"}
-                    onPress={() => setSelectedMuscle(null)}
-                  />
-                  {availableMuscles.map((m) => (
-                    <Chip
-                      key={m}
-                      label={MUSCLE_LABELS[m]?.[language] ?? m}
-                      tone={selectedMuscle === m ? "primary" : "default"}
-                      onPress={() => setSelectedMuscle(m)}
-                    />
-                  ))}
-                </XStack>
-              </YStack>
+      const imagePaths = q.exercises.flatMap((qex) => qex.images ?? []).filter(Boolean);
+      const uniqueImagePaths = Array.from(new Set(imagePaths));
+      const thumbPaths =
+        uniqueImagePaths.length > 0 ? uniqueImagePaths.slice(0, 8) : ["assets/placeholder.jpg"];
 
-              <YStack gap="$2">
-                <Text fontWeight="900" color="$color" opacity={0.7}>
-                  {t("quests.filter_equipment", "Equipment")}
-                </Text>
-                <XStack gap="$2" flexWrap="wrap">
-                  <Chip
-                    label={t("quests.all", "All")}
-                    tone={!selectedEquipment ? "secondary" : "default"}
-                    onPress={() => setSelectedEquipment(null)}
-                  />
-                  {availableEquipment.map((e) => (
-                    <Chip
-                      key={e}
-                      label={EQUIPMENT_LABELS[e]?.[language] ?? e}
-                      tone={selectedEquipment === e ? "secondary" : "default"}
-                      onPress={() => setSelectedEquipment(e)}
-                    />
-                  ))}
-                </XStack>
-              </YStack>
-            </YStack>
-          </Card>
-
-          {state.status === "error" ? (
-            <Card bg="$bgLight">
-              <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$color">
-                  {t("quests.load_error", "Failed to load quests")}
-                </Text>
-                <Paragraph color="$color" opacity={0.7} size="$3">
-                  {state.message}
-                </Paragraph>
-
-                <AppButton fullWidth={false} variant="secondary" onPress={() => void load()}>
-                  {t("quests.retry", "Retry")} ↻
-                </AppButton>
-              </YStack>
-            </Card>
-          ) : null}
-
-          {state.status === "loading" && quests.length === 0 ? (
-            <Card bg="$bgLight">
-              <XStack items="center" justify="space-between">
-                <Text fontWeight="900" fontSize={16} color="$color">
-                  {t("quests.loading", "Loading quests...")}
-                </Text>
-                <Text fontSize={24}>🏗️</Text>
-              </XStack>
-            </Card>
-          ) : null}
-
-          {state.status !== "loading" && quests.length === 0 ? (
-            <Card bg="$bgLight">
-              <YStack gap="$2">
-                <Text fontWeight="900" fontSize={16} color="$color">
-                  {t("quests.empty_title", "No quests yet")}
-                </Text>
-                <Paragraph color="$color" opacity={0.7} size="$3">
-                  {t(
-                    "quests.empty_subtitle",
-                    "Come back soon — the village is preparing adventures.",
-                  )}
-                </Paragraph>
-              </YStack>
-            </Card>
-          ) : null}
-
-          <YStack gap="$3">
-            {filtered.map(({ quest: q, muscles, equipment }) => {
-              const qTitle = language === "fr" ? q.frTitle : q.enTitle;
-              const qDesc = language === "fr" ? q.frDescription : q.enDescription;
-
-              const imagePaths = q.exercises.flatMap((qex) => qex.images ?? []).filter(Boolean);
-              const uniqueImagePaths = Array.from(new Set(imagePaths));
-              const thumbPaths =
-                uniqueImagePaths.length > 0
-                  ? uniqueImagePaths.slice(0, 8)
-                  : ["assets/placeholder.jpg"];
-
-              return (
-                <Card key={q.id} onPress={() => router.push(`/quests/${q.id}` as never)}>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 10 }}
-                  >
-                    <XStack gap="$2">
-                      {thumbPaths.map((p, idx) => {
-                        const src = resolveQuestImage(p);
-                        return (
-                          <YStack
-                            // biome-ignore lint/suspicious/noArrayIndexKey: stable enough for static image lists
-                            key={`${p}-${idx}`}
-                            width={56}
-                            height={56}
-                            rounded={14}
-                            overflow="hidden"
-                            bg="$bgLight"
-                            borderWidth={3}
-                            borderColor="$color"
-                            shadowColor="$color"
-                            shadowRadius={0}
-                            shadowOffset={{ width: 0, height: 4 }}
-                            items="center"
-                            justify="center"
-                          >
-                            {src ? (
-                              <Image
-                                source={src}
-                                style={{ width: "100%", height: "100%" }}
-                                contentFit="cover"
-                                transition={0}
-                              />
-                            ) : (
-                              <Text fontSize={22}>{questEmoji(q.rounds, q.exercises.length)}</Text>
-                            )}
-                          </YStack>
-                        );
-                      })}
-                    </XStack>
-                  </ScrollView>
-
-                  <XStack gap="$3" items="flex-start">
+      return (
+        <YStack px="$5">
+          <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 10 }}
+            >
+              <XStack gap="$2">
+                {thumbPaths.map((p, idx) => {
+                  const src = resolveQuestImage(p);
+                  return (
                     <YStack
-                      width={54}
-                      height={54}
-                      rounded={27}
+                      // biome-ignore lint/suspicious/noArrayIndexKey: stable enough for static image lists
+                      key={`${p}-${idx}`}
+                      width={56}
+                      height={56}
+                      rounded={14}
+                      overflow="hidden"
                       bg="$bgLight"
                       borderWidth={3}
                       borderColor="$color"
-                      justify="center"
+                      shadowColor="$color"
+                      shadowRadius={0}
+                      shadowOffset={{ width: 0, height: 4 }}
                       items="center"
+                      justify="center"
                     >
-                      <Text fontSize={26}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+                      {src ? (
+                        <Image
+                          source={src}
+                          style={{ width: "100%", height: "100%" }}
+                          contentFit="cover"
+                          transition={0}
+                        />
+                      ) : (
+                        <Text fontSize={22}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+                      )}
                     </YStack>
+                  );
+                })}
+              </XStack>
+            </ScrollView>
 
-                    <YStack flex={1} gap="$2">
-                      <Text fontWeight="900" fontSize={18} color="$color">
-                        {qTitle}
-                      </Text>
+            <XStack gap="$3" items="flex-start">
+              <YStack
+                width={54}
+                height={54}
+                rounded={27}
+                bg="$bgLight"
+                borderWidth={3}
+                borderColor="$color"
+                justify="center"
+                items="center"
+              >
+                <Text fontSize={26}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+              </YStack>
 
-                      <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={3}>
-                        {qDesc}
-                      </Paragraph>
+              <YStack flex={1} gap="$2">
+                <Text fontWeight="900" fontSize={18} color="$color">
+                  {qTitle}
+                </Text>
 
-                      <XStack gap="$2" flexWrap="wrap" pt="$1">
-                        <Chip
-                          label={t("quests.rounds", {
-                            count: q.rounds,
-                            defaultValue: `${q.rounds} rounds`,
-                          })}
-                        />
-                        <Chip
-                          label={t("quests.exercises", {
-                            count: q.exercises.length,
-                            defaultValue: `${q.exercises.length} exercises`,
-                          })}
-                          tone="primary"
-                        />
-                        <Chip
-                          label={t("quests.rest", {
-                            count: q.restSeconds,
-                            defaultValue: `Rest ${q.restSeconds}s`,
-                          })}
-                          tone="warning"
-                        />
-                      </XStack>
+                <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={3}>
+                  {qDesc}
+                </Paragraph>
 
-                      <XStack gap="$2" flexWrap="wrap">
-                        {equipment.slice(0, 2).map((e) => (
-                          <Chip key={e} label={EQUIPMENT_LABELS[e]?.[language] ?? e} />
-                        ))}
-                        {muscles.slice(0, 3).map((m) => (
-                          <Chip key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
-                        ))}
-                      </XStack>
-                    </YStack>
-                  </XStack>
-                </Card>
-              );
-            })}
-          </YStack>
+                <XStack gap="$2" flexWrap="wrap" pt="$1">
+                  <Chip
+                    label={t("quests.rounds", {
+                      count: q.rounds,
+                      defaultValue: `${q.rounds} rounds`,
+                    })}
+                  />
+                  <Chip
+                    label={t("quests.exercises", {
+                      count: q.exercises.length,
+                      defaultValue: `${q.exercises.length} exercises`,
+                    })}
+                    tone="primary"
+                  />
+                  <Chip
+                    label={t("quests.rest", {
+                      count: q.restSeconds,
+                      defaultValue: `Rest ${q.restSeconds}s`,
+                    })}
+                    tone="warning"
+                  />
+                </XStack>
+
+                <XStack gap="$2" flexWrap="wrap">
+                  {equipment.slice(0, 2).map((e) => (
+                    <Chip key={e} label={EQUIPMENT_LABELS[e]?.[language] ?? e} />
+                  ))}
+                  {muscles.slice(0, 3).map((m) => (
+                    <Chip key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
+                  ))}
+                </XStack>
+              </YStack>
+            </XStack>
+          </Card>
         </YStack>
-      </ScrollView>
+      );
+    },
+    [language, router, t],
+  );
+
+  // Status messages shown when list is empty
+  const StatusMessage = () => {
+    if (state.status === "error") {
+      return (
+        <YStack px="$5">
+          <Card>
+            <YStack gap="$3" items="center" py="$2">
+              <Text fontSize={32}>😵</Text>
+              <Text fontWeight="900" fontSize={16} color="$color">
+                {t("quests.load_error", "Oops!")}
+              </Text>
+              <Paragraph color="$color" opacity={0.6} size="$3">
+                {state.message}
+              </Paragraph>
+              <AppButton fullWidth={false} variant="secondary" onPress={() => void load()}>
+                {t("quests.retry", "Retry")} ↻
+              </AppButton>
+            </YStack>
+          </Card>
+        </YStack>
+      );
+    }
+
+    if (state.status === "loading" && quests.length === 0) {
+      return (
+        <YStack px="$5">
+          <Card>
+            <XStack items="center" justify="center" gap="$3" py="$4">
+              <Text fontSize={28}>🏗️</Text>
+              <Text fontWeight="900" fontSize={16} color="$color">
+                {t("quests.loading", "Loading...")}
+              </Text>
+            </XStack>
+          </Card>
+        </YStack>
+      );
+    }
+
+    if (state.status !== "loading" && quests.length === 0) {
+      return (
+        <YStack px="$5">
+          <Card>
+            <YStack gap="$3" items="center" py="$2">
+              <Text fontSize={32}>🏚️</Text>
+              <Text fontWeight="900" fontSize={16} color="$color">
+                {t("quests.empty_title", "No quests yet")}
+              </Text>
+              <Paragraph color="$color" opacity={0.6} size="$3">
+                {t("quests.empty_subtitle", "Come back soon!")}
+              </Paragraph>
+            </YStack>
+          </Card>
+        </YStack>
+      );
+    }
+
+    if (state.status !== "loading" && quests.length > 0 && filtered.length === 0) {
+      return (
+        <YStack px="$5">
+          <Card>
+            <YStack gap="$3" items="center" py="$2">
+              <Text fontSize={32}>🔍</Text>
+              <Text fontWeight="900" fontSize={16} color="$color">
+                {t("quests.empty_filters_title", "No matches")}
+              </Text>
+              <Paragraph color="$color" opacity={0.6} size="$3">
+                {t("quests.empty_filters_subtitle", "Try removing filters.")}
+              </Paragraph>
+            </YStack>
+          </Card>
+        </YStack>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <YStack flex={1} bg="$background">
+      {/* Fixed Header - stays in place */}
+      <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$4">
+        {/* Title Row */}
+        <XStack items="center" justify="space-between">
+          <XStack items="center" gap="$3">
+            <AppIconButton onPress={() => router.back()}>
+              <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
+            </AppIconButton>
+            <XStack items="center" gap="$2">
+              <MapIcon size={18} color="$color" strokeWidth={2.5} />
+              <Text fontWeight="900" fontSize={20} color="$color">
+                {title}
+              </Text>
+            </XStack>
+          </XStack>
+          <Chip
+            label={t("quests.count", { count: filtered.length, defaultValue: "{{count}}" })}
+            tone="secondary"
+          />
+        </XStack>
+
+        {/* Filters */}
+        <Card>
+          <YStack gap="$3">
+            <Text fontWeight="900" fontSize={14} color="$color" opacity={0.5}>
+              {t("quests.filters_title", "FILTERS").toUpperCase()}
+            </Text>
+
+            {/* Muscles */}
+            <XStack gap="$2" flexWrap="wrap">
+              <Chip
+                label={t("quests.all", "All")}
+                tone={!selectedMuscle ? "primary" : "default"}
+                onPress={() => setSelectedMuscle(null)}
+              />
+              {availableMuscles.map((m) => (
+                <Chip
+                  key={m}
+                  label={MUSCLE_LABELS[m]?.[language] ?? m}
+                  tone={selectedMuscle === m ? "primary" : "default"}
+                  onPress={() => setSelectedMuscle(m)}
+                />
+              ))}
+            </XStack>
+
+            {/* Equipment */}
+            <XStack gap="$2" flexWrap="wrap">
+              <Chip
+                label={t("quests.all", "All")}
+                tone={!selectedEquipment ? "secondary" : "default"}
+                onPress={() => setSelectedEquipment(null)}
+              />
+              {availableEquipment.map((e) => (
+                <Chip
+                  key={e}
+                  label={EQUIPMENT_LABELS[e]?.[language] ?? e}
+                  tone={selectedEquipment === e ? "secondary" : "default"}
+                  onPress={() => setSelectedEquipment(e)}
+                />
+              ))}
+            </XStack>
+          </YStack>
+        </Card>
+      </YStack>
+
+      {/* Status Messages */}
+      <StatusMessage />
+
+      {/* Scrollable Quest List */}
+      {filtered.length > 0 && (
+        <LegendList
+          data={visible}
+          renderItem={renderItem}
+          keyExtractor={(m) => String(m.quest.id)}
+          ItemSeparatorComponent={() => <YStack height={12} />}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
+          recycleItems
+          estimatedItemSize={260}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 16 }}
+        />
+      )}
     </YStack>
   );
 }

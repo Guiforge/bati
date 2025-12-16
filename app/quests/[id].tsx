@@ -29,6 +29,13 @@ function resolveQuestImage(path?: string | null): ImageSourcePropType | { uri: s
   return null;
 }
 
+function resolveExerciseImage(path?: string | null): ImageSourcePropType | { uri: string } | null {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return { uri: path };
+  if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
+  return null;
+}
+
 function formatTarget(target: Target, lang: "en" | "fr") {
   if (target.type === "time") return lang === "fr" ? `${target.value}s` : `${target.value}s`;
   return lang === "fr" ? `${target.value} reps` : `${target.value} reps`;
@@ -267,8 +274,18 @@ export default function QuestDetails() {
                 const exDesc =
                   language === "fr" ? qex.exercise.frDescription : qex.exercise.enDescription;
 
+                const thumbPaths = [qex.exercise.imagePath, ...qex.images].filter(Boolean);
+                const uniqueThumbPaths = Array.from(new Set(thumbPaths));
+                const thumbs =
+                  uniqueThumbPaths.length > 0
+                    ? uniqueThumbPaths.slice(0, 10)
+                    : ["assets/placeholder.jpg"];
+
                 return (
-                  <Card key={`${qex.exercise.id}-${i}`}>
+                  <Card
+                    key={`${qex.exercise.id}-${i}`}
+                    onPress={() => router.push(`/exercises/${qex.exercise.id}` as never)}
+                  >
                     <XStack gap="$3" items="flex-start">
                       <YStack
                         width={52}
@@ -293,6 +310,40 @@ export default function QuestDetails() {
                             tone={qex.target.type === "time" ? "secondary" : "primary"}
                           />
                         </XStack>
+
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                          <XStack gap="$2" pt="$2" pb="$1">
+                            {thumbs.map((p, idx) => {
+                              const src = resolveExerciseImage(p);
+                              return (
+                                <YStack
+                                  // biome-ignore lint/suspicious/noArrayIndexKey: stable enough for static lists
+                                  key={`${p}-${idx}`}
+                                  width={42}
+                                  height={42}
+                                  rounded={12}
+                                  overflow="hidden"
+                                  bg="$bgLight"
+                                  borderWidth={3}
+                                  borderColor="$color"
+                                  items="center"
+                                  justify="center"
+                                >
+                                  {src ? (
+                                    <Image
+                                      source={src}
+                                      style={{ width: "100%", height: "100%" }}
+                                      contentFit="cover"
+                                      transition={0}
+                                    />
+                                  ) : (
+                                    <Text fontSize={16}>🎯</Text>
+                                  )}
+                                </YStack>
+                              );
+                            })}
+                          </XStack>
+                        </ScrollView>
 
                         <Paragraph color="$color" opacity={0.65} size="$3" numberOfLines={3}>
                           {exDesc}

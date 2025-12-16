@@ -1,7 +1,9 @@
 import { ChevronLeft, Map as MapIcon } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
@@ -30,6 +32,13 @@ function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
   if (exerciseCount >= 4) return "⚔️";
   return "🪓";
+}
+
+function resolveQuestImage(path?: string | null): ImageSourcePropType | { uri: string } | null {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return { uri: path };
+  if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
+  return null;
 }
 
 export default function QuestsGallery() {
@@ -244,8 +253,56 @@ export default function QuestsGallery() {
               const qTitle = language === "fr" ? q.frTitle : q.enTitle;
               const qDesc = language === "fr" ? q.frDescription : q.enDescription;
 
+              const imagePaths = q.exercises.flatMap((qex) => qex.images ?? []).filter(Boolean);
+              const uniqueImagePaths = Array.from(new Set(imagePaths));
+              const thumbPaths =
+                uniqueImagePaths.length > 0
+                  ? uniqueImagePaths.slice(0, 8)
+                  : ["assets/placeholder.jpg"];
+
               return (
                 <Card key={q.id} onPress={() => router.push(`/quests/${q.id}` as never)}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 10 }}
+                  >
+                    <XStack gap="$2">
+                      {thumbPaths.map((p, idx) => {
+                        const src = resolveQuestImage(p);
+                        return (
+                          <YStack
+                            // biome-ignore lint/suspicious/noArrayIndexKey: stable enough for static image lists
+                            key={`${p}-${idx}`}
+                            width={56}
+                            height={56}
+                            rounded={14}
+                            overflow="hidden"
+                            bg="$bgLight"
+                            borderWidth={3}
+                            borderColor="$color"
+                            shadowColor="$color"
+                            shadowRadius={0}
+                            shadowOffset={{ width: 0, height: 4 }}
+                            items="center"
+                            justify="center"
+                          >
+                            {src ? (
+                              <Image
+                                source={src}
+                                style={{ width: "100%", height: "100%" }}
+                                contentFit="cover"
+                                transition={0}
+                              />
+                            ) : (
+                              <Text fontSize={22}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+                            )}
+                          </YStack>
+                        );
+                      })}
+                    </XStack>
+                  </ScrollView>
+
                   <XStack gap="$3" items="flex-start">
                     <YStack
                       width={54}

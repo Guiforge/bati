@@ -52,5 +52,15 @@
     "home_cta_title": "Quest Gallery",
     "home_cta_subtitle": "Train fast. Win big. Pick a quest.",
     "home_cta_button": "Open gallery"
+  },
+  "exercises": {
+    "details_title": "Exercise",
+    "loading": "Loading...",
+    "load_error": "Failed to load exercise",
+    "retry": "Retry",
+    "not_found": "Exercise not found",
+    "invalid_id": "Invalid exercise",
+    "go_back": "Go back",
+    "seconds_per_rep": "{{count}}s/rep"
   }
 }

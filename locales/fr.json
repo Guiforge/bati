@@ -52,5 +52,15 @@
     "home_cta_title": "Galerie des quêtes",
     "home_cta_subtitle": "Entraîne-toi vite. Gagne gros. Choisis une quête.",
     "home_cta_button": "Ouvrir la galerie"
+  },
+  "exercises": {
+    "details_title": "Exercice",
+    "loading": "Chargement...",
+    "load_error": "Échec du chargement de l'exercice",
+    "retry": "Réessayer",
+    "not_found": "Exercice introuvable",
+    "invalid_id": "Exercice invalide",
+    "go_back": "Retour",
+    "seconds_per_rep": "{{count}}s/reps"
   }
 }

@@ -21,5 +21,29 @@
   "settings": "Settings",
   "system": "System",
   "theme": "Theme",
-  "welcome": "Welcome to Bati!"
+  "welcome": "Welcome to Bati!",
+  "quests": {
+    "gallery_title": "Quest gallery",
+    "gallery_subtitle": "Pick a quest and see the full details.",
+    "details_title": "Quest",
+    "count": "{{count}}",
+    "loading": "Loading...",
+    "load_error": "Failed to load",
+    "retry": "Retry",
+    "empty_title": "No quests yet",
+    "empty_subtitle": "Come back soon — the village is preparing adventures.",
+    "rounds": "{{count}} rounds",
+    "exercises": "{{count}} exercises",
+    "exercises_list": "Exercises",
+    "level": "Level",
+    "level_easy": "Easy",
+    "level_medium": "Medium",
+    "level_hard": "Hard",
+    "not_found": "Quest not found",
+    "invalid_id": "Invalid quest",
+    "go_back": "Go back",
+    "home_cta_title": "Quest Gallery",
+    "home_cta_subtitle": "Train fast. Win big. Pick a quest.",
+    "home_cta_button": "Open gallery"
+  }
 }

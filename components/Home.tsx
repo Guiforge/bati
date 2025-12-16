@@ -1,7 +1,9 @@
+import { Map as MapIcon } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { H1, Paragraph, YStack } from "tamagui";
+import { H1, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
 import { HomeSettingsMenu } from "@/components/HomeSettingsMenu";
 import { getAvatarById } from "@/constants/avatars";
 import { useSettingsStore } from "@/stores/settings";
@@ -50,6 +52,39 @@ export function Home() {
       <Paragraph color="$color" opacity={0.4} fontSize={14}>
         Coming soon...
       </Paragraph>
+
+      <Card
+        width="100%"
+        maxW={420}
+        bg="$bgLight"
+        mt="$4"
+        onPress={() => router.push("/quests" as never)}
+      >
+        <XStack items="center" justify="space-between" gap="$3">
+          <YStack flex={1} gap="$1">
+            <XStack items="center" gap="$2">
+              <MapIcon size={18} color="#1A1A2E" />
+              <Text fontWeight="900" fontSize={16} color="$color">
+                {t("quests.home_cta_title")}
+              </Text>
+            </XStack>
+            <Paragraph color="$color" opacity={0.7} size="$3">
+              {t("quests.home_cta_subtitle")}
+            </Paragraph>
+          </YStack>
+
+          <AppButton
+            fullWidth={false}
+            variant="secondary"
+            onPress={() => router.push("/quests" as never)}
+            height={44}
+            px="$3"
+            fontSize={14}
+          >
+            {t("quests.home_cta_button")} →
+          </AppButton>
+        </XStack>
+      </Card>
 
       {__DEV__ && (
         <AppButton onPress={() => router.push("/dev")} variant="secondary" marginTop="$8">

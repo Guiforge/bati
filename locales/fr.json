@@ -21,5 +21,29 @@
   "settings": "Paramètres",
   "system": "Système",
   "theme": "Thème",
-  "welcome": "Bienvenue sur Bati !"
+  "welcome": "Bienvenue sur Bati !",
+  "quests": {
+    "gallery_title": "Galerie des quêtes",
+    "gallery_subtitle": "Choisis une quête et découvre tous les détails.",
+    "details_title": "Quête",
+    "count": "{{count}}",
+    "loading": "Chargement...",
+    "load_error": "Échec du chargement",
+    "retry": "Réessayer",
+    "empty_title": "Aucune quête pour l'instant",
+    "empty_subtitle": "Reviens bientôt — le village prépare des aventures.",
+    "rounds": "{{count}} manches",
+    "exercises": "{{count}} exercices",
+    "exercises_list": "Exercices",
+    "level": "Niveau",
+    "level_easy": "Facile",
+    "level_medium": "Moyen",
+    "level_hard": "Difficile",
+    "not_found": "Quête introuvable",
+    "invalid_id": "Quête invalide",
+    "go_back": "Retour",
+    "home_cta_title": "Galerie des quêtes",
+    "home_cta_subtitle": "Entraîne-toi vite. Gagne gros. Choisis une quête.",
+    "home_cta_button": "Ouvrir la galerie"
+  }
 }

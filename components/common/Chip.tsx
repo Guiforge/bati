@@ -1,0 +1,42 @@
+import type { ReactNode } from "react";
+import { Text, XStack, YStack, type YStackProps } from "tamagui";
+
+export type ChipProps = Omit<YStackProps, "children"> & {
+  label: string;
+  icon?: ReactNode;
+  tone?: "default" | "primary" | "secondary" | "success" | "warning";
+};
+
+function toneToBg(tone: ChipProps["tone"]) {
+  if (tone === "primary") return "$primary";
+  if (tone === "secondary") return "$secondary";
+  if (tone === "success") return "$success";
+  if (tone === "warning") return "$warning";
+  return "$bgLight";
+}
+
+function toneToText(tone: ChipProps["tone"]) {
+  if (tone && tone !== "default") return "white";
+  return "$color";
+}
+
+export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
+  return (
+    <YStack
+      bg={toneToBg(tone)}
+      borderWidth={2}
+      borderColor="$color"
+      rounded="$10"
+      px="$3"
+      py="$2"
+      {...props}
+    >
+      <XStack items="center" gap="$2">
+        {icon}
+        <Text fontWeight="900" fontSize={13} color={toneToText(tone)}>
+          {label}
+        </Text>
+      </XStack>
+    </YStack>
+  );
+}

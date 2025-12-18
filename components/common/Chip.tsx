@@ -4,14 +4,13 @@ import { Text, XStack, YStack, type YStackProps } from "tamagui";
 export type ChipProps = Omit<YStackProps, "children"> & {
   label: string;
   icon?: ReactNode;
-  tone?: "default" | "primary" | "secondary" | "success" | "warning";
+  tone?: "default" | "primary" | "secondary" | "success";
 };
 
 function toneToBg(tone: ChipProps["tone"]) {
   if (tone === "primary") return "$primary";
   if (tone === "secondary") return "$secondary";
   if (tone === "success") return "$success";
-  if (tone === "warning") return "$warning";
   return "$bgLight";
 }
 

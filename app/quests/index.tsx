@@ -1,13 +1,3 @@
-import { LegendList } from "@legendapp/list";
-import { ChevronLeft, Map as MapIcon } from "@tamagui/lucide-icons";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
-import { Platform, ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -19,16 +9,26 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
+import { LegendList } from "@legendapp/list";
+import { ChevronLeft, Map as MapIcon } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
+import { Platform, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
   | { status: "ready"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
   | {
-      status: "error";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
+    status: "error";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+    message: string;
+  };
 
 function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
@@ -248,7 +248,6 @@ export default function QuestsGallery() {
                       count: q.restSeconds,
                       defaultValue: `Rest ${q.restSeconds}s`,
                     })}
-                    tone="warning"
                   />
                 </XStack>
 

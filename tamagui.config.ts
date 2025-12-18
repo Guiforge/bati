@@ -2,24 +2,21 @@ import { createAnimations } from "@tamagui/animations-react-native";
 import { defaultConfig } from "@tamagui/config/v4";
 import { createTamagui, createTokens } from "tamagui";
 
-// Custom tokens with Bati color palette
+// Minimalist 3-core color palette: neon blue, hot pink, lime green
 const tokens = createTokens({
   ...defaultConfig.tokens,
   color: {
-    primary: "#3A86FF",
-    secondary: "#FF6B35",
-    success: "#8BC34A",
-    accent: "#8E24AA",
+    // Core palette
+    primary: "#00D9FF", // neon electric blue
+    secondary: "#FF4081", // hot pink
+    success: "#76FF03", // lime green
 
-    warning: "#FFD700",
-    pink: "#FF4081",
-    info: "#00BCD4",
-
-    bgLight: "#F5F5F5",
-    bgDark: "#121212",
-
+    // Keep for error states
     error: "#FF1744",
-    neonGreen: "#76FF03",
+
+    // Backgrounds
+    bgLight: "#F5F5F5",
+    bgDark: "#0D0D0D",
 
     white: "#FFFFFF",
     black: "#000000",
@@ -53,25 +50,21 @@ export const config = createTamagui({
   themes: {
     light: {
       background: tokens.color.bgLight,
+      bgLight: tokens.color.bgLight,
       color: tokens.color.bgDark,
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
       success: tokens.color.success,
-      accent: tokens.color.accent,
-      warning: tokens.color.warning,
       error: tokens.color.error,
-      info: tokens.color.info,
     },
     dark: {
       background: tokens.color.bgDark,
+      bgLight: "#1A1A1A",
       color: tokens.color.bgLight,
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
       success: tokens.color.success,
-      accent: tokens.color.accent,
-      warning: tokens.color.warning,
       error: tokens.color.error,
-      info: tokens.color.info,
     },
   },
 });

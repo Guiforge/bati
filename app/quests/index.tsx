@@ -1,16 +1,7 @@
-import { LegendList } from "@legendapp/list";
-import { ChevronLeft, Map as MapIcon } from "@tamagui/lucide-icons";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
-import { ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
 import { listExercises, listQuestTemplates } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
@@ -18,16 +9,26 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
+import { LegendList } from "@legendapp/list";
+import { ChevronLeft, Map as MapIcon } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
+import { Platform, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
   | { status: "ready"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
   | {
-      status: "error";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
+    status: "error";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+    message: string;
+  };
 
 function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
@@ -48,6 +49,8 @@ type QuestMeta = {
 };
 
 const PAGE_SIZE = 10;
+const FILTER_HANDLE_HEIGHT = 64;
+const ANDROID_MIN_BOTTOM_INSET = 24;
 
 export default function QuestsGallery() {
   const router = useRouter();
@@ -64,6 +67,16 @@ export default function QuestsGallery() {
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleCode | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentCode | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const selectMuscle = useCallback((m: MuscleCode | null) => {
+    setSelectedMuscle(m);
+    setVisibleCount(PAGE_SIZE);
+  }, []);
+
+  const selectEquipment = useCallback((e: EquipmentCode | null) => {
+    setSelectedEquipment(e);
+    setVisibleCount(PAGE_SIZE);
+  }, []);
 
   const load = useCallback(async () => {
     setState((s) => ({ status: "loading", quests: s.quests, exercisesById: s.exercisesById }));
@@ -118,9 +131,6 @@ export default function QuestsGallery() {
   }, [questMeta]);
 
   const filtered = useMemo(() => {
-    // Reset pagination when filters change
-    setVisibleCount(PAGE_SIZE);
-
     return questMeta.filter((m) => {
       const okMuscle = selectedMuscle ? m.muscles.includes(selectedMuscle) : true;
       const okEquip = selectedEquipment ? m.equipment.includes(selectedEquipment) : true;
@@ -339,7 +349,7 @@ export default function QuestsGallery() {
   return (
     <YStack flex={1} bg="$background">
       {/* Fixed Header - stays in place */}
-      <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$4">
+      <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$3">
         {/* Title Row */}
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$3">
@@ -358,49 +368,6 @@ export default function QuestsGallery() {
             tone="secondary"
           />
         </XStack>
-
-        {/* Filters */}
-        <Card>
-          <YStack gap="$3">
-            <Text fontWeight="900" fontSize={14} color="$color" opacity={0.5}>
-              {t("quests.filters_title", "FILTERS").toUpperCase()}
-            </Text>
-
-            {/* Muscles */}
-            <XStack gap="$2" flexWrap="wrap">
-              <Chip
-                label={t("quests.all", "All")}
-                tone={!selectedMuscle ? "primary" : "default"}
-                onPress={() => setSelectedMuscle(null)}
-              />
-              {availableMuscles.map((m) => (
-                <Chip
-                  key={m}
-                  label={MUSCLE_LABELS[m]?.[language] ?? m}
-                  tone={selectedMuscle === m ? "primary" : "default"}
-                  onPress={() => setSelectedMuscle(m)}
-                />
-              ))}
-            </XStack>
-
-            {/* Equipment */}
-            <XStack gap="$2" flexWrap="wrap">
-              <Chip
-                label={t("quests.all", "All")}
-                tone={!selectedEquipment ? "secondary" : "default"}
-                onPress={() => setSelectedEquipment(null)}
-              />
-              {availableEquipment.map((e) => (
-                <Chip
-                  key={e}
-                  label={EQUIPMENT_LABELS[e]?.[language] ?? e}
-                  tone={selectedEquipment === e ? "secondary" : "default"}
-                  onPress={() => setSelectedEquipment(e)}
-                />
-              ))}
-            </XStack>
-          </YStack>
-        </Card>
       </YStack>
 
       {/* Status Messages */}
@@ -417,9 +384,27 @@ export default function QuestsGallery() {
           onEndReachedThreshold={0.5}
           recycleItems
           estimatedItemSize={260}
-          contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 16 }}
+          contentContainerStyle={{
+            paddingTop: 8,
+            paddingBottom:
+              Math.max(insets.bottom, Platform.OS === "android" ? ANDROID_MIN_BOTTOM_INSET : 0) +
+              FILTER_HANDLE_HEIGHT +
+              30,
+          }}
         />
       )}
+
+      <QuestFiltersSheet
+        language={language}
+        availableMuscles={availableMuscles}
+        selectedMuscle={selectedMuscle}
+        onSelectMuscle={selectMuscle}
+        availableEquipment={availableEquipment}
+        selectedEquipment={selectedEquipment}
+        onSelectEquipment={selectEquipment}
+        bottomInset={insets.bottom}
+        handleHeight={FILTER_HANDLE_HEIGHT}
+      />
     </YStack>
   );
 }

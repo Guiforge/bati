@@ -21,6 +21,9 @@ function toneToText(tone: ChipProps["tone"]) {
 }
 
 export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
+  const isPressable = typeof props.onPress === "function";
+  const minTapStyle = isPressable ? { minHeight: 44, justifyContent: "center" } : undefined;
+
   return (
     <YStack
       bg={toneToBg(tone)}
@@ -30,6 +33,7 @@ export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
       px="$3"
       py="$2"
       {...props}
+      style={isPressable ? [minTapStyle, props.style] : props.style}
     >
       <XStack items="center" gap="$2">
         {icon}

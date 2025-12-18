@@ -1,11 +1,14 @@
-import { Slot, useRouter, useSegments } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useCallback, useEffect, useState } from "react";
-import { useColorScheme } from "react-native";
-import { TamaguiProvider, Theme } from "tamagui";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
+import { Slot, useRouter, useSegments } from "expo-router";
+import Head from "expo-router/head";
+import * as SplashScreen from "expo-splash-screen";
+import { useCallback, useEffect, useState } from "react";
+import { useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { TamaguiProvider, Theme } from "tamagui";
 import "../i18n";
 import config from "../tamagui.config";
 
@@ -55,12 +58,24 @@ export default function RootLayout() {
   }, [hasFinishedOnboarding, segments, router, isNavigationReady, userLoaded, settingsLoaded]);
 
   return (
-    <TamaguiProvider config={config} defaultTheme={colorScheme}>
-      <Theme name={colorScheme}>
-        <DatabaseProvider onReady={handleDatabaseReady}>
-          <Slot />
-        </DatabaseProvider>
-      </Theme>
-    </TamaguiProvider>
+    <>
+      <Head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css"
+        />
+      </Head>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <TamaguiProvider config={config} defaultTheme={colorScheme}>
+            <Theme name={colorScheme}>
+              <DatabaseProvider onReady={handleDatabaseReady}>
+                <Slot />
+              </DatabaseProvider>
+            </Theme>
+          </TamaguiProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </>
   );
 }

@@ -83,16 +83,65 @@
     "resume_button": "Reprendre",
     "quit_button": "Quitter la quête",
     "adjust_reps_label": "Ajuster les reps",
-    "adjust_reps_hint": "En as-tu fait plus ou moins ?"
+    "adjust_reps_hint": "En as-tu fait plus ou moins ?",
+    "overtime": "TEMPS BONUS",
+    "target_reached": "Objectif atteint !",
+    "keep_going_hint": "Continue ! Le chrono continue après l'objectif.",
+    "complete_overtime": "TERMINÉ ! 🎉"
   },
   "journal": {
     "title": "Journal de quête",
+    "subtitle": "Ton histoire héroïque",
     "empty_title": "Pas encore de récits",
     "empty_subtitle": "Termine des quêtes pour remplir ton journal.",
     "duration": "Durée",
-    "level": "Niveau"
+    "level": "Niveau",
+    "session_details": "Détails de la session",
+    "session_not_found": "Session introuvable",
+    "invalid_session": "Session introuvable",
+    "quest_completed": "Quête accomplie",
+    "rounds_completed": "{{count}} manches",
+    "round": "Manche",
+    "result": "Résultat",
+    "target": "Objectif",
+    "notes": "Notes",
+    "tab_stats": "Stats",
+    "tab_history": "Historique",
+    "days": "jours",
+    "streak_active": "Série en cours 🔥",
+    "streak_inactive": "Série en pause",
+    "best_streak": "Record",
+    "total_workouts": "Total Entraînements",
+    "total_minutes": "Total Minutes",
+    "avg_duration": "Durée Moy.",
+    "recent_activity": "Activité Récente",
+    "this_week": "Cette Semaine",
+    "minutes_this_week": "Mins Cette Semaine",
+    "this_month": "Ce Mois",
+    "last_7_days": "7 Derniers Jours",
+    "minutes_per_day": "Minutes d'entraînement par jour",
+    "workout_days": "Jours d'Entraînement",
+    "when_you_train": "Quand tu t'entraînes habituellement",
+    "difficulty_split": "Répartition Difficulté"
+  },
+  "chart": {
+    "loading": "Chargement du graphique...",
+    "error": "Échec du chargement du graphique",
+    "no_data": "Pas encore de données",
+    "complete_more": "Termine plus d'entraînements pour voir ta progression !",
+    "progression_title": "Ta progression",
+    "your_progress": "Ta progression sur cette quête",
+    "quest_history": "Durée d'entraînement au fil du temps",
+    "all_history": "Durées des entraînements récents",
+    "workouts": "Entraînements",
+    "total_mins": "Total mins",
+    "avg_mins": "Moy. mins"
   },
   "common": {
-    "saving": "Sauvegarde..."
+    "saving": "Sauvegarde...",
+    "loading": "Chargement...",
+    "error": "Oups !",
+    "retry": "Réessayer",
+    "go_back": "Retour"
   }
 }

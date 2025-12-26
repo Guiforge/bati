@@ -1,15 +1,21 @@
-import { ChevronLeft } from "@tamagui/lucide-icons";
+import { BarChart2, ChevronLeft, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, YStack } from "tamagui";
-import { AppIconButton } from "@/components/common/AppButton";
-import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
+import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import {
+  type JournalEntry,
+  SessionCard,
+} from "@/components/journal/SessionCard";
+import { JournalStats } from "@/components/journal/JournalStats";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
+
+type TabType = "history" | "stats";
 
 export default function JournalScreen() {
   const { t } = useTranslation();
@@ -19,13 +25,14 @@ export default function JournalScreen() {
 
   const [history, setHistory] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>("stats");
 
   const loadHistory = useCallback(async () => {
     try {
       setLoading(true);
       // Fetch sessions and quest templates to resolve titles
       const [sessions, quests] = await Promise.all([
-        listCompletedSessions(50),
+        listCompletedSessions(100),
         listQuestTemplates(),
       ]);
 
@@ -62,9 +69,45 @@ export default function JournalScreen() {
     }, [loadHistory]),
   );
 
+  const TabButton = ({
+    tab,
+    icon,
+    label,
+  }: {
+    tab: TabType;
+    icon: React.ReactNode;
+    label: string;
+  }) => {
+    const isActive = activeTab === tab;
+    return (
+      <AppButton
+        fullWidth={false}
+        flex={1}
+        height={44}
+        bg={isActive ? "$primary" : "$bgLight"}
+        borderColor={isActive ? "$primary" : "$color"}
+        borderWidth={2}
+        rounded="$4"
+        onPress={() => setActiveTab(tab)}
+        pressStyle={{ opacity: 0.9 }}
+      >
+        <XStack items="center" gap="$2">
+          {icon}
+          <Text
+            color={isActive ? "white" : "$color"}
+            fontWeight="800"
+            fontSize={14}
+          >
+            {label}
+          </Text>
+        </XStack>
+      </AppButton>
+    );
+  };
+
   return (
     <YStack flex={1} bg="$background">
-      <YStack pt={insets.top + 12} px="$4" pb="$4" gap="$4">
+      <YStack pt={insets.top + 12} px="$4" pb="$3" gap="$4">
         <YStack gap="$4" items="flex-start">
           <AppIconButton onPress={() => router.back()}>
             <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
@@ -78,6 +121,32 @@ export default function JournalScreen() {
             </Paragraph>
           </YStack>
         </YStack>
+
+        {/* Tab Navigation */}
+        {history.length > 0 && (
+          <XStack gap="$2">
+            <TabButton
+              tab="stats"
+              icon={
+                <BarChart2
+                  size={16}
+                  color={activeTab === "stats" ? "white" : "$color"}
+                />
+              }
+              label={t("journal.tab_stats", "Stats")}
+            />
+            <TabButton
+              tab="history"
+              icon={
+                <List
+                  size={16}
+                  color={activeTab === "history" ? "white" : "$color"}
+                />
+              }
+              label={t("journal.tab_history", "History")}
+            />
+          </XStack>
+        )}
       </YStack>
 
       <ScrollView
@@ -86,9 +155,15 @@ export default function JournalScreen() {
           paddingBottom: insets.bottom + 20,
           gap: 12,
         }}
+        showsVerticalScrollIndicator={false}
       >
         {loading && history.length === 0 ? (
-          <Text style={{ textAlign: "center" }} mt="$10" opacity={0.5} color="$color">
+          <Text
+            style={{ textAlign: "center" }}
+            mt="$10"
+            opacity={0.5}
+            color="$color"
+          >
             {t("common.loading", "Loading...")}
           </Text>
         ) : history.length === 0 ? (
@@ -97,12 +172,27 @@ export default function JournalScreen() {
             <H2 fontSize={20} style={{ textAlign: "center" }} color="$color">
               {t("journal.empty_title", "No tales yet")}
             </H2>
-            <Paragraph style={{ textAlign: "center" }} opacity={0.6} color="$color">
-              {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
+            <Paragraph
+              style={{ textAlign: "center" }}
+              opacity={0.6}
+              color="$color"
+            >
+              {t(
+                "journal.empty_subtitle",
+                "Complete quests to fill your journal.",
+              )}
             </Paragraph>
           </YStack>
+        ) : activeTab === "stats" ? (
+          <JournalStats sessions={history} />
         ) : (
-          history.map((entry) => <SessionCard key={entry.id} entry={entry} />)
+          history.map((entry) => (
+            <SessionCard
+              key={entry.id}
+              entry={entry}
+              onPress={() => router.push(`/journal/${entry.id}` as never)}
+            />
+          ))
         )}
       </ScrollView>
     </YStack>

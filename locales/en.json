@@ -83,16 +83,65 @@
     "resume_button": "Resume",
     "quit_button": "Quit Quest",
     "adjust_reps_label": "Adjust Reps",
-    "adjust_reps_hint": "Did you do more or less?"
+    "adjust_reps_hint": "Did you do more or less?",
+    "overtime": "BONUS TIME",
+    "target_reached": "Target reached!",
+    "keep_going_hint": "Keep going! Timer continues after target.",
+    "complete_overtime": "FINISH! 🎉"
   },
   "journal": {
     "title": "Quest Journal",
+    "subtitle": "Your heroic history",
     "empty_title": "No tales yet",
     "empty_subtitle": "Complete quests to fill your journal.",
     "duration": "Duration",
-    "level": "Level"
+    "level": "Level",
+    "session_details": "Session Details",
+    "session_not_found": "Session not found",
+    "invalid_session": "Session not found",
+    "quest_completed": "Quest Completed",
+    "rounds_completed": "{{count}} rounds",
+    "round": "Round",
+    "result": "Result",
+    "target": "Target",
+    "notes": "Notes",
+    "tab_stats": "Stats",
+    "tab_history": "History",
+    "days": "days",
+    "streak_active": "Current streak 🔥",
+    "streak_inactive": "Streak paused",
+    "best_streak": "Best",
+    "total_workouts": "Total Workouts",
+    "total_minutes": "Total Minutes",
+    "avg_duration": "Avg Duration",
+    "recent_activity": "Recent Activity",
+    "this_week": "This Week",
+    "minutes_this_week": "Mins This Week",
+    "this_month": "This Month",
+    "last_7_days": "Last 7 Days",
+    "minutes_per_day": "Minutes trained each day",
+    "workout_days": "Workout Days",
+    "when_you_train": "When you usually train",
+    "difficulty_split": "Difficulty Split"
+  },
+  "chart": {
+    "loading": "Loading chart...",
+    "error": "Failed to load chart",
+    "no_data": "No data yet",
+    "complete_more": "Complete more workouts to see your progress!",
+    "progression_title": "Your Progress",
+    "your_progress": "Your Progress on this Quest",
+    "quest_history": "Workout duration over time",
+    "all_history": "Recent workout durations",
+    "workouts": "Workouts",
+    "total_mins": "Total mins",
+    "avg_mins": "Avg mins"
   },
   "common": {
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "error": "Oops!",
+    "retry": "Retry",
+    "go_back": "Go back"
   }
 }

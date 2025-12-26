@@ -3,8 +3,11 @@ export { db, schema } from "./client";
 export {
   createCompletedSession,
   getCompletedSessionById,
+  getQuestSessionHistory,
+  getRecentSessionHistory,
   listCompletedSessions,
 } from "./completed";
+export type { SessionSummary } from "./completed";
 export { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
 export {
   estimateExerciseSeconds,

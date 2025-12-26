@@ -10,15 +10,22 @@ export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
-  const { quest, currentExerciseIndex, skipRest, addRestTime, results, updateLastResult } =
-    useSessionStore();
+  const {
+    quest,
+    currentExerciseIndex,
+    skipRest,
+    addRestTime,
+    results,
+    updateLastResult,
+  } = useSessionStore();
   const { remainingSeconds } = useSessionTimer();
 
   if (!quest) return null;
 
   // In 'resting' state, currentExerciseIndex points to the UPCOMING exercise
   const nextEx = quest.exercises[currentExerciseIndex];
-  const nextExName = language === "fr" ? nextEx.exercise.frName : nextEx.exercise.enName;
+  const nextExName =
+    language === "fr" ? nextEx.exercise.frName : nextEx.exercise.enName;
 
   const lastResult = results[results.length - 1];
   const isLastRepBased = lastResult?.result.type === "reps";
@@ -54,7 +61,9 @@ export function RestView() {
             borderColor="$color"
             onPress={() => addRestTime(10)}
           >
-            <Text fontWeight="800">+10s</Text>
+            <Text fontWeight="800" color="$color">
+              +10s
+            </Text>
           </Button>
           <Button
             size="$3"
@@ -63,14 +72,23 @@ export function RestView() {
             borderColor="$color"
             onPress={() => addRestTime(30)}
           >
-            <Text fontWeight="800">+30s</Text>
+            <Text fontWeight="800" color="$color">
+              +30s
+            </Text>
           </Button>
         </XStack>
       </YStack>
 
       {/* Last Set Review (if reps) */}
       {isLastRepBased && (
-        <YStack bg="$background" p="$4" rounded="$6" borderWidth={2} borderColor="$color" gap="$2">
+        <YStack
+          bg="$background"
+          p="$4"
+          rounded="$6"
+          borderWidth={2}
+          borderColor="$color"
+          gap="$2"
+        >
           <XStack justify="space-between" items="center">
             <YStack>
               <Text
@@ -92,9 +110,16 @@ export function RestView() {
                 size="$3"
                 circular
                 icon={<Minus size={16} />}
-                onPress={() => updateLastResult(Math.max(0, lastResult.result.value - 1))}
+                onPress={() =>
+                  updateLastResult(Math.max(0, lastResult.result.value - 1))
+                }
               />
-              <Text fontWeight="900" fontSize={20} style={{ minWidth: 30, textAlign: "center" }}>
+              <Text
+                fontWeight="900"
+                fontSize={20}
+                color="$color"
+                style={{ minWidth: 30, textAlign: "center" }}
+              >
                 {lastResult.result.value}
               </Text>
               <Button
@@ -109,19 +134,44 @@ export function RestView() {
       )}
 
       {/* Up Next Card */}
-      <YStack bg="$background" p="$4" rounded="$6" borderWidth={2} borderColor="$color" gap="$2">
-        <Text color="$color" opacity={0.6} fontSize={12} fontWeight="800" textTransform="uppercase">
+      <YStack
+        bg="$background"
+        p="$4"
+        rounded="$6"
+        borderWidth={2}
+        borderColor="$color"
+        gap="$2"
+      >
+        <Text
+          color="$color"
+          opacity={0.6}
+          fontSize={12}
+          fontWeight="800"
+          textTransform="uppercase"
+        >
           {t("session.up_next", "Up Next")}
         </Text>
         <XStack gap="$3" items="center">
-          <YStack width={50} height={50} bg="$bgLight" rounded="$3" items="center" justify="center">
+          <YStack
+            width={50}
+            height={50}
+            bg="$bgLight"
+            rounded="$3"
+            items="center"
+            justify="center"
+          >
             <Text fontSize={24}>🏋️</Text>
           </YStack>
           <YStack flex={1}>
-            <Text fontWeight="900" fontSize={18} numberOfLines={1}>
+            <Text
+              fontWeight="900"
+              fontSize={18}
+              numberOfLines={1}
+              color="$color"
+            >
               {nextExName}
             </Text>
-            <Text opacity={0.7}>
+            <Text opacity={0.7} color="$color">
               {nextEx.target.type === "time"
                 ? `${nextEx.target.value}s`
                 : `${nextEx.target.value} reps`}
@@ -141,7 +191,12 @@ export function RestView() {
         rounded="$6"
         mt="auto"
       >
-        <Text color="white" fontSize={20} fontWeight="900" textTransform="uppercase">
+        <Text
+          color="white"
+          fontSize={20}
+          fontWeight="900"
+          textTransform="uppercase"
+        >
           {t("session.skip_rest", "I'm Ready!")}
         </Text>
       </Button>

@@ -11,7 +11,12 @@ import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
-import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
+import {
+  Difficulty,
+  estimateQuestSeconds,
+  formatDuration,
+  getQuestById,
+} from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { Quest, Target } from "@/db/quests";
@@ -25,18 +30,23 @@ type LoadState =
 
 function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
+  if (path === "assets/placeholder.jpg")
+    return require("../../assets/placeholder.jpg");
   return null;
 }
 
-function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
+function resolveExerciseImage(
+  path?: string | null,
+): ImageSourcePropType | null {
   if (!path) return null;
-  if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
+  if (path === "assets/placeholder.jpg")
+    return require("../../assets/placeholder.jpg");
   return null;
 }
 
 function formatTarget(target: Target, lang: "en" | "fr") {
-  if (target.type === "time") return lang === "fr" ? `${target.value}s` : `${target.value}s`;
+  if (target.type === "time")
+    return lang === "fr" ? `${target.value}s` : `${target.value}s`;
   return lang === "fr" ? `${target.value} reps` : `${target.value} reps`;
 }
 
@@ -96,11 +106,22 @@ export default function QuestDetails() {
 
   if (!questId) {
     return (
-      <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
+      <YStack
+        flex={1}
+        bg="$background"
+        justify="center"
+        items="center"
+        p="$6"
+        gap="$3"
+      >
         <Text fontWeight="900" fontSize={18} color="$color">
           {t("quests.invalid_id", "Invalid quest")}
         </Text>
-        <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
+        <AppButton
+          fullWidth={false}
+          variant="secondary"
+          onPress={() => router.back()}
+        >
           {t("quests.go_back", "Go back")}
         </AppButton>
       </YStack>
@@ -108,9 +129,19 @@ export default function QuestDetails() {
   }
 
   const quest = state.status === "ready" ? state.quest : state.quest;
-  const questTitle = quest ? (language === "fr" ? quest.frTitle : quest.enTitle) : "";
-  const questDesc = quest ? (language === "fr" ? quest.frDescription : quest.enDescription) : "";
-  const estimate = quest ? formatDuration(estimateQuestSeconds(quest), language) : null;
+  const questTitle = quest
+    ? language === "fr"
+      ? quest.frTitle
+      : quest.enTitle
+    : "";
+  const questDesc = quest
+    ? language === "fr"
+      ? quest.frDescription
+      : quest.enDescription
+    : "";
+  const estimate = quest
+    ? formatDuration(estimateQuestSeconds(quest), language)
+    : null;
 
   const handleStart = () => {
     if (quest) {
@@ -146,16 +177,18 @@ export default function QuestDetails() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+      >
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
               <AppIconButton onPress={() => router.back()}>
-                <ChevronLeft size={22} color="#1A1A2E" strokeWidth={2.5} />
+                <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
               </AppIconButton>
 
               <XStack items="center" gap="$2">
-                <Sparkles size={18} color="#1A1A2E" />
+                <Sparkles size={18} color="$color" />
                 <Text fontWeight="900" fontSize={20} color="$color">
                   {t("quests.details_title", "Quest")}
                 </Text>
@@ -225,7 +258,12 @@ export default function QuestDetails() {
                   {questTitle}
                 </H2>
 
-                <Paragraph color="$color" opacity={0.7} size="$4" lineHeight={22}>
+                <Paragraph
+                  color="$color"
+                  opacity={0.7}
+                  size="$4"
+                  lineHeight={22}
+                >
                   {questDesc}
                 </Paragraph>
 
@@ -279,11 +317,17 @@ export default function QuestDetails() {
               </Text>
 
               {quest.exercises.map((qex, i) => {
-                const exName = language === "fr" ? qex.exercise.frName : qex.exercise.enName;
+                const exName =
+                  language === "fr" ? qex.exercise.frName : qex.exercise.enName;
                 const exDesc =
-                  language === "fr" ? qex.exercise.frDescription : qex.exercise.enDescription;
+                  language === "fr"
+                    ? qex.exercise.frDescription
+                    : qex.exercise.enDescription;
 
-                const thumbPaths = [qex.exercise.imagePath, ...qex.images].filter(Boolean);
+                const thumbPaths = [
+                  qex.exercise.imagePath,
+                  ...qex.images,
+                ].filter(Boolean);
                 const uniqueThumbPaths = Array.from(new Set(thumbPaths));
                 const thumbs =
                   uniqueThumbPaths.length > 0
@@ -293,7 +337,9 @@ export default function QuestDetails() {
                 return (
                   <Card
                     key={`${qex.exercise.id}-${i}`}
-                    onPress={() => router.push(`/exercises/${qex.exercise.id}` as never)}
+                    onPress={() =>
+                      router.push(`/exercises/${qex.exercise.id}` as never)
+                    }
                   >
                     <XStack gap="$3" items="flex-start">
                       <YStack
@@ -306,21 +352,33 @@ export default function QuestDetails() {
                         justify="center"
                         items="center"
                       >
-                        <Dumbbell size={24} color="#1A1A2E" strokeWidth={2.5} />
+                        <Dumbbell size={24} color="$color" strokeWidth={2.5} />
                       </YStack>
 
                       <YStack flex={1} gap="$1">
                         <XStack items="center" justify="space-between" gap="$2">
-                          <Text fontWeight="900" fontSize={17} color="$color" flex={1}>
+                          <Text
+                            fontWeight="900"
+                            fontSize={17}
+                            color="$color"
+                            flex={1}
+                          >
                             {i + 1}. {exName}
                           </Text>
                           <Chip
                             label={formatTarget(qex.target, language)}
-                            tone={qex.target.type === "time" ? "secondary" : "primary"}
+                            tone={
+                              qex.target.type === "time"
+                                ? "secondary"
+                                : "primary"
+                            }
                           />
                         </XStack>
 
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <ScrollView
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                        >
                           <XStack gap="$2" pt="$2" pb="$1">
                             {thumbs.map((p, idx) => {
                               const src = resolveExerciseImage(p);
@@ -354,15 +412,21 @@ export default function QuestDetails() {
                           </XStack>
                         </ScrollView>
 
-                        <Paragraph color="$color" opacity={0.65} size="$3" numberOfLines={3}>
+                        <Paragraph
+                          color="$color"
+                          opacity={0.65}
+                          size="$3"
+                          numberOfLines={3}
+                        >
                           {exDesc}
                         </Paragraph>
 
                         <XStack gap="$2" flexWrap="wrap" pt="$2">
                           <Chip
                             label={
-                              EQUIPMENT_LABELS[qex.exercise.equipment]?.[language] ??
-                              qex.exercise.equipment
+                              EQUIPMENT_LABELS[qex.exercise.equipment]?.[
+                                language
+                              ] ?? qex.exercise.equipment
                             }
                           />
                           {qex.target.type === "reps" ? (
@@ -375,10 +439,15 @@ export default function QuestDetails() {
                             />
                           ) : null}
                           {qex.exercise.muscles.slice(0, 4).map((m) => (
-                            <Chip key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
+                            <Chip
+                              key={m}
+                              label={MUSCLE_LABELS[m]?.[language] ?? m}
+                            />
                           ))}
                           {qex.exercise.muscles.length > 4 ? (
-                            <Chip label={`+${qex.exercise.muscles.length - 4}`} />
+                            <Chip
+                              label={`+${qex.exercise.muscles.length - 4}`}
+                            />
                           ) : null}
                         </XStack>
                       </YStack>
@@ -409,7 +478,12 @@ export default function QuestDetails() {
             borderColor="$color"
             rounded="$6"
           >
-            <Text color="white" fontSize={22} fontWeight="900" textTransform="uppercase">
+            <Text
+              color="white"
+              fontSize={22}
+              fontWeight="900"
+              textTransform="uppercase"
+            >
               {t("quests.start_button", "Start Quest")}
             </Text>
           </AppButton>

@@ -50,7 +50,7 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
           items="center"
           justify="center"
         >
-          <Trophy size={24} color="#1A1A2E" />
+          <Trophy size={24} color="$color" />
         </YStack>
 
         <YStack flex={1} gap="$1">
@@ -67,7 +67,10 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
 
           <XStack gap="$2" mt="$1" flexWrap="wrap">
             <Chip label={durationLabel} tone="secondary" />
-            <Chip label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
+            <Chip
+              label={t(`quests.level_${entry.userLevel}`, entry.userLevel)}
+              tone="primary"
+            />
           </XStack>
         </YStack>
       </XStack>

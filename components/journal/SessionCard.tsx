@@ -67,10 +67,7 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
 
           <XStack gap="$2" mt="$1" flexWrap="wrap">
             <Chip label={durationLabel} tone="secondary" />
-            <Chip
-              label={t(`quests.level_${entry.userLevel}`, entry.userLevel)}
-              tone="primary"
-            />
+            <Chip label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
           </XStack>
         </YStack>
       </XStack>

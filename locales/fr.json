@@ -53,7 +53,8 @@
     "go_back": "Retour",
     "home_cta_title": "Galerie des quêtes",
     "home_cta_subtitle": "Entraîne-toi vite. Gagne gros. Choisis une quête.",
-    "home_cta_button": "Ouvrir la galerie"
+    "home_cta_button": "Ouvrir la galerie",
+    "start_button": "Commencer la quête"
   },
   "exercises": {
     "details_title": "Exercice",
@@ -64,5 +65,34 @@
     "invalid_id": "Exercice invalide",
     "go_back": "Retour",
     "seconds_per_rep": "{{count}}s/reps"
+  },
+  "session": {
+    "round_label": "MANCHE {{count}} / {{total}}",
+    "exercise_label": "EXERCICE {{count}} / {{total}}",
+    "seconds": "Secondes",
+    "reps": "Reps",
+    "complete_button": "TERMINÉ !",
+    "rest_title": "Repos & Récup",
+    "up_next": "À suivre",
+    "skip_rest": "Je suis prêt !",
+    "victory_title": "Quête accomplie !",
+    "total_time": "Temps total",
+    "xp_earned": "XP gagnés",
+    "finish_button": "Récupérer le butin",
+    "paused_title": "Jeu en pause",
+    "resume_button": "Reprendre",
+    "quit_button": "Quitter la quête",
+    "adjust_reps_label": "Ajuster les reps",
+    "adjust_reps_hint": "En as-tu fait plus ou moins ?"
+  },
+  "journal": {
+    "title": "Journal de quête",
+    "empty_title": "Pas encore de récits",
+    "empty_subtitle": "Termine des quêtes pour remplir ton journal.",
+    "duration": "Durée",
+    "level": "Niveau"
+  },
+  "common": {
+    "saving": "Sauvegarde..."
   }
 }

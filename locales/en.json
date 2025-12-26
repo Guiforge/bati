@@ -53,7 +53,8 @@
     "go_back": "Go back",
     "home_cta_title": "Quest Gallery",
     "home_cta_subtitle": "Train fast. Win big. Pick a quest.",
-    "home_cta_button": "Open gallery"
+    "home_cta_button": "Open gallery",
+    "start_button": "Start Quest"
   },
   "exercises": {
     "details_title": "Exercise",
@@ -64,5 +65,34 @@
     "invalid_id": "Invalid exercise",
     "go_back": "Go back",
     "seconds_per_rep": "{{count}}s/rep"
+  },
+  "session": {
+    "round_label": "ROUND {{count}} / {{total}}",
+    "exercise_label": "EXERCISE {{count}} / {{total}}",
+    "seconds": "Seconds",
+    "reps": "Reps",
+    "complete_button": "DONE!",
+    "rest_title": "Rest & Recover",
+    "up_next": "Up Next",
+    "skip_rest": "I'm Ready!",
+    "victory_title": "Quest Complete!",
+    "total_time": "Total Time",
+    "xp_earned": "XP Earned",
+    "finish_button": "Collect Loot",
+    "paused_title": "Game Paused",
+    "resume_button": "Resume",
+    "quit_button": "Quit Quest",
+    "adjust_reps_label": "Adjust Reps",
+    "adjust_reps_hint": "Did you do more or less?"
+  },
+  "journal": {
+    "title": "Quest Journal",
+    "empty_title": "No tales yet",
+    "empty_subtitle": "Complete quests to fill your journal.",
+    "duration": "Duration",
+    "level": "Level"
+  },
+  "common": {
+    "saving": "Saving..."
   }
 }

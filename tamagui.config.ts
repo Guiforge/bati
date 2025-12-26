@@ -15,8 +15,15 @@ const tokens = createTokens({
     error: "#FF1744",
 
     // Backgrounds
-    bgLight: "#F5F5F5",
+    bgLight: "#EEF2F6",
     bgDark: "#0D0D0D",
+
+    // Pastels
+    pastelBlue: "#E3F2FD",
+    pastelPink: "#FCE4EC",
+    pastelGreen: "#E8F5E9",
+    pastelYellow: "#FFFDE7",
+    pastelPurple: "#F3E5F5",
 
     white: "#FFFFFF",
     black: "#000000",
@@ -50,21 +57,33 @@ export const config = createTamagui({
   themes: {
     light: {
       background: tokens.color.bgLight,
+      cardBackground: tokens.color.white,
       bgLight: tokens.color.bgLight,
       color: tokens.color.bgDark,
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
       success: tokens.color.success,
       error: tokens.color.error,
+      pastelBlue: tokens.color.pastelBlue,
+      pastelPink: tokens.color.pastelPink,
+      pastelGreen: tokens.color.pastelGreen,
+      pastelYellow: tokens.color.pastelYellow,
+      pastelPurple: tokens.color.pastelPurple,
     },
     dark: {
       background: tokens.color.bgDark,
+      cardBackground: "#1A1A1A",
       bgLight: "#1A1A1A",
       color: tokens.color.bgLight,
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
       success: tokens.color.success,
       error: tokens.color.error,
+      pastelBlue: "#153E5C",
+      pastelPink: "#5C1532",
+      pastelGreen: "#155C26",
+      pastelYellow: "#5C5200",
+      pastelPurple: "#40155C",
     },
   },
 });

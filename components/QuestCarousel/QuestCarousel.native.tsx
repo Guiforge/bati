@@ -28,7 +28,10 @@ export function QuestCarousel() {
   const { language } = useSettingsStore();
   const { width } = useWindowDimensions();
 
-  const [state, setState] = useState<LoadState>({ status: "loading", quests: [] });
+  const [state, setState] = useState<LoadState>({
+    status: "loading",
+    quests: [],
+  });
   const [active, setActive] = useState(1);
 
   useEffect(() => {
@@ -55,9 +58,12 @@ export function QuestCarousel() {
 
   const quests = state.quests;
 
-  const slideWidth = useMemo(() => Math.min(420, Math.max(280, width - 48)), [width]);
+  const slideWidth = useMemo(
+    () => Math.floor(Math.min(420, width * 0.85)),
+    [width],
+  );
   const sidePad = useMemo(
-    () => Math.max(18, Math.floor((width - slideWidth) / 2)),
+    () => Math.floor((width - slideWidth) / 2),
     [width, slideWidth],
   );
 
@@ -115,8 +121,8 @@ export function QuestCarousel() {
   }
 
   return (
-    <YStack gap="$2" width="100%">
-      <XStack items="center" justify="space-between" px="$1">
+    <YStack gap="$2" width={width}>
+      <XStack items="center" justify="space-between" px={sidePad}>
         <Text fontWeight="900" fontSize={16} color="$color">
           {t("quests.home_overview_title", "Pick a quest")}
         </Text>
@@ -146,14 +152,14 @@ export function QuestCarousel() {
           const emoji = questEmoji(q.rounds, q.exercises.length);
 
           return (
-            <YStack key={q.id} width={slideWidth} pr={12}>
+            <YStack key={q.id} width={slideWidth} px={6}>
               <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
                 <XStack gap="$3" items="flex-start">
                   <YStack
                     width={54}
                     height={54}
                     rounded={27}
-                    bg="$bgLight"
+                    bg="$pastelPurple"
                     borderWidth={3}
                     borderColor="$color"
                     justify="center"
@@ -163,10 +169,20 @@ export function QuestCarousel() {
                   </YStack>
 
                   <YStack flex={1} gap="$2">
-                    <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
+                    <Text
+                      fontWeight="900"
+                      fontSize={18}
+                      color="$color"
+                      numberOfLines={2}
+                    >
                       {title}
                     </Text>
-                    <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
+                    <Paragraph
+                      color="$color"
+                      opacity={0.7}
+                      size="$3"
+                      numberOfLines={2}
+                    >
                       {desc}
                     </Paragraph>
 

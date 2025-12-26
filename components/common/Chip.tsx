@@ -15,13 +15,16 @@ function toneToBg(tone: ChipProps["tone"]) {
 }
 
 function toneToText(tone: ChipProps["tone"]) {
-  if (tone && tone !== "default") return "white";
+  if (tone === "secondary") return "white";
+  if (tone === "primary" || tone === "success") return "$bgDark";
   return "$color";
 }
 
 export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
   const isPressable = typeof props.onPress === "function";
-  const minTapStyle = isPressable ? { minHeight: 44, justifyContent: "center" } : undefined;
+  const minTapStyle = isPressable
+    ? { minHeight: 44, justifyContent: "center" }
+    : undefined;
 
   return (
     <YStack

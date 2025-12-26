@@ -43,7 +43,7 @@ export function Home() {
           overflow="hidden"
           borderWidth={4}
           borderColor="$primary"
-          bg="$bgLight"
+          bg="$pastelBlue"
           shadowColor="$color"
           shadowRadius={0}
           shadowOffset={{ width: 0, height: 6 }}
@@ -68,11 +68,14 @@ export function Home() {
         <YStack width="100%" maxW={420} gap="$4">
           <QuestCarousel />
 
-          <Card bg="$bgLight" onPress={() => router.push("/quests" as never)}>
+          <Card
+            bg="$pastelYellow"
+            onPress={() => router.push("/quests" as never)}
+          >
             <XStack items="center" justify="space-between" gap="$3">
               <YStack flex={1} gap="$1">
                 <XStack items="center" gap="$2">
-                  <MapIcon size={18} color="#1A1A2E" />
+                  <MapIcon size={18} color="$color" />
                   <Text fontWeight="900" fontSize={16} color="$color">
                     {t("quests.home_cta_title")}
                   </Text>
@@ -97,7 +100,11 @@ export function Home() {
         </YStack>
 
         {__DEV__ && (
-          <AppButton onPress={() => router.push("/dev")} variant="secondary" marginTop="$6">
+          <AppButton
+            onPress={() => router.push("/dev")}
+            variant="secondary"
+            marginTop="$6"
+          >
             🛠️ Dev Tools
           </AppButton>
         )}

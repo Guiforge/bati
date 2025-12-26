@@ -5,7 +5,8 @@ type AppButtonVariant = "primary" | "secondary" | "outline";
 
 type TamaguiButtonProps = ComponentProps<typeof Button>;
 
-interface AppButtonProps extends Omit<TamaguiButtonProps, "children" | "variant"> {
+interface AppButtonProps
+  extends Omit<TamaguiButtonProps, "children" | "variant"> {
   variant?: AppButtonVariant;
   children: ReactNode;
   marginBottom?: SpaceTokens | number;
@@ -32,7 +33,8 @@ export function AppButton({
 
   const getColor = () => {
     if (variant === "outline") return "$color";
-    return "white";
+    if (variant === "secondary") return "white";
+    return "$bgDark";
   };
 
   return (
@@ -60,7 +62,10 @@ type AppIconButtonProps = Omit<TamaguiButtonProps, "children" | "variant"> & {
   children: ReactNode;
 };
 
-export function AppIconButton({ children, ...buttonProps }: AppIconButtonProps) {
+export function AppIconButton({
+  children,
+  ...buttonProps
+}: AppIconButtonProps) {
   return (
     <Button
       width={44}

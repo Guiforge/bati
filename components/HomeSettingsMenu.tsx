@@ -1,4 +1,12 @@
-import { ChevronDown, Languages, MoonStar, Palette, Sun, SunMoon, X } from "@tamagui/lucide-icons";
+import {
+  ChevronDown,
+  Languages,
+  MoonStar,
+  Palette,
+  Sun,
+  SunMoon,
+  X,
+} from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -7,7 +15,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { AVATARS } from "@/constants/avatars";
-import { type AppLanguage, type ThemePreference, useSettingsStore } from "@/stores/settings";
+import {
+  type AppLanguage,
+  type ThemePreference,
+  useSettingsStore,
+} from "@/stores/settings";
 
 function Chip({
   active,
@@ -47,41 +59,64 @@ export function HomeSettingsMenu() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
-  const { language, theme, avatarId, setLanguage, setTheme, setAvatarId } = useSettingsStore();
+  const { language, theme, avatarId, setLanguage, setTheme, setAvatarId } =
+    useSettingsStore();
 
-  const languageOptions: Array<{ code: AppLanguage; label: string; flag: string }> = [
+  const languageOptions: Array<{
+    code: AppLanguage;
+    label: string;
+    flag: string;
+  }> = [
     { code: "en", label: "EN", flag: "🇬🇧" },
     { code: "fr", label: "FR", flag: "🇫🇷" },
   ];
 
-  const themeOptions: Array<{ key: ThemePreference; label: string; icon: ReactNode }> = [
+  const themeOptions: Array<{
+    key: ThemePreference;
+    label: string;
+    icon: ReactNode;
+  }> = [
     {
       key: "system",
       label: t("system"),
-      icon: <SunMoon size={16} color={theme === "system" ? "white" : "#1A1A2E"} />,
+      icon: (
+        <SunMoon size={16} color={theme === "system" ? "white" : "$color"} />
+      ),
     },
     {
       key: "light",
       label: t("light"),
-      icon: <Sun size={16} color={theme === "light" ? "white" : "#1A1A2E"} />,
+      icon: <Sun size={16} color={theme === "light" ? "white" : "$color"} />,
     },
     {
       key: "dark",
       label: t("dark"),
-      icon: <MoonStar size={16} color={theme === "dark" ? "white" : "#1A1A2E"} />,
+      icon: (
+        <MoonStar size={16} color={theme === "dark" ? "white" : "$color"} />
+      ),
     },
   ];
 
   return (
     <>
-      <XStack position="absolute" t={insets.top + 12} r={insets.right + 16} z={50}>
+      <XStack
+        position="absolute"
+        t={insets.top + 12}
+        r={insets.right + 16}
+        z={50}
+      >
         <AppIconButton onPress={() => setOpen(true)}>
-          <Palette size={20} color="#1A1A2E" strokeWidth={2.5} />
+          <Palette size={20} color="$color" strokeWidth={2.5} />
         </AppIconButton>
       </XStack>
 
       {open ? (
-        <YStack fullscreen z={49} bg="rgba(0,0,0,0.25)" onPress={() => setOpen(false)}>
+        <YStack
+          fullscreen
+          z={49}
+          bg="rgba(0,0,0,0.25)"
+          onPress={() => setOpen(false)}
+        >
           <YStack
             position="absolute"
             t={insets.top + 72}
@@ -102,7 +137,7 @@ export function HomeSettingsMenu() {
                 <Text fontWeight="900" fontSize={18} color="$color">
                   {t("settings")}
                 </Text>
-                <ChevronDown size={16} color="#1A1A2E" opacity={0.6} />
+                <ChevronDown size={16} color="$color" opacity={0.6} />
               </XStack>
 
               <AppIconButton
@@ -113,14 +148,14 @@ export function HomeSettingsMenu() {
                 height={32}
                 rounded={16}
               >
-                <X size={16} color="#1A1A2E" />
+                <X size={16} color="$color" />
               </AppIconButton>
             </XStack>
 
             <YStack gap="$4">
               <YStack gap="$2">
                 <XStack items="center" gap="$2">
-                  <Palette size={16} color="#1A1A2E" />
+                  <Palette size={16} color="$color" />
                   <Text color="$color" fontWeight="900">
                     {t("theme")}
                   </Text>
@@ -141,7 +176,7 @@ export function HomeSettingsMenu() {
 
               <YStack gap="$2">
                 <XStack items="center" gap="$2">
-                  <Languages size={16} color="#1A1A2E" />
+                  <Languages size={16} color="$color" />
                   <Text color="$color" fontWeight="900">
                     {t("language")}
                   </Text>
@@ -161,7 +196,7 @@ export function HomeSettingsMenu() {
 
               <YStack gap="$2">
                 <XStack items="center" gap="$2">
-                  <SunMoon size={16} color="#1A1A2E" opacity={0} />
+                  <SunMoon size={16} color="$color" opacity={0} />
                   <Text color="$color" fontWeight="900">
                     {t("onboarding.avatar_title")}
                   </Text>

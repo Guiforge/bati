@@ -8,7 +8,7 @@ export type CardProps = Omit<YStackProps, "children"> & {
 export function Card({ children, ...props }: CardProps) {
   return (
     <YStack
-      bg="$background"
+      bg="$cardBackground"
       borderWidth={3}
       borderColor="$color"
       rounded="$8"

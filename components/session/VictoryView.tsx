@@ -13,8 +13,7 @@ export function VictoryView() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { quest, startTime, totalPausedTime, saveSession, quitSession } =
-    useSessionStore();
+  const { quest, startTime, totalPausedTime, saveSession, quitSession } = useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
 
   if (!quest || !startTime) return null;
@@ -22,9 +21,7 @@ export function VictoryView() {
   // Calculate duration for display
   // Note: saveSession recalculates this accurately based on DB timestamp logic,
   // but this is good enough for the UI summary.
-  const durationSeconds = Math.floor(
-    (Date.now() - startTime - totalPausedTime) / 1000,
-  );
+  const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
 
   const handleFinish = async () => {
     try {
@@ -64,12 +61,7 @@ export function VictoryView() {
           >
             {t("session.victory_title", "Quest Complete!")}
           </H1>
-          <Paragraph
-            size="$5"
-            fontWeight="700"
-            opacity={0.7}
-            style={{ textAlign: "center" }}
-          >
+          <Paragraph size="$5" fontWeight="700" opacity={0.7} style={{ textAlign: "center" }}>
             {quest.enTitle}
           </Paragraph>
         </YStack>
@@ -105,12 +97,7 @@ export function VictoryView() {
           >
             {t("session.total_time", "Total Time")}
           </Text>
-          <Text
-            fontWeight="900"
-            fontSize={24}
-            color="$color"
-            fontFamily="$body"
-          >
+          <Text fontWeight="900" fontSize={24} color="$color" fontFamily="$body">
             {formatTime(durationSeconds)}
           </Text>
         </XStack>
@@ -125,12 +112,7 @@ export function VictoryView() {
           >
             {t("session.xp_earned", "XP Earned")}
           </Text>
-          <Text
-            fontWeight="900"
-            fontSize={24}
-            color="$secondary"
-            fontFamily="$body"
-          >
+          <Text fontWeight="900" fontSize={24} color="$secondary" fontFamily="$body">
             +150 XP
           </Text>
         </XStack>
@@ -150,15 +132,8 @@ export function VictoryView() {
         width="100%"
         borderWidth={0}
       >
-        <Text
-          color="$background"
-          fontSize={20}
-          fontWeight="900"
-          textTransform="uppercase"
-        >
-          {isSaving
-            ? t("common.saving", "Saving...")
-            : t("session.finish_button", "Collect Loot")}
+        <Text color="$background" fontSize={20} fontWeight="900" textTransform="uppercase">
+          {isSaving ? t("common.saving", "Saving...") : t("session.finish_button", "Collect Loot")}
         </Text>
       </Button>
 

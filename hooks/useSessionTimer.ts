@@ -8,8 +8,7 @@ export function formatTime(seconds: number) {
 }
 
 export function useSessionTimer() {
-  const { timerStartTimestamp, timerDuration, status, lastPauseTimestamp } =
-    useSessionStore();
+  const { timerStartTimestamp, timerDuration, status, lastPauseTimestamp } = useSessionStore();
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [progress, setProgress] = useState(0); // 0 (start) to 1 (end)
 

@@ -1,17 +1,9 @@
 import { create } from "zustand";
-import {
-  createCompletedSession,
-  type CompletedExerciseInput,
-} from "@/db/completed";
+import { type CompletedExerciseInput, createCompletedSession } from "@/db/completed";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode } from "@/db/schema";
 
-export type SessionStatus =
-  | "idle"
-  | "running"
-  | "resting"
-  | "paused"
-  | "finished";
+export type SessionStatus = "idle" | "running" | "resting" | "paused" | "finished";
 
 interface SessionState {
   // Static Data
@@ -88,8 +80,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   pauseSession: () => {
     const { status } = get();
-    if (status === "paused" || status === "idle" || status === "finished")
-      return;
+    if (status === "paused" || status === "idle" || status === "finished") return;
 
     set({
       status: "paused",
@@ -99,20 +90,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   resumeSession: () => {
-    const {
-      status,
-      lastPauseTimestamp,
-      totalPausedTime,
-      timerStartTimestamp,
-      prePauseStatus,
-    } = get();
+    const { status, lastPauseTimestamp, totalPausedTime, timerStartTimestamp, prePauseStatus } =
+      get();
     if (status !== "paused") return;
 
     const now = Date.now();
     const pauseDuration = lastPauseTimestamp ? now - lastPauseTimestamp : 0;
-    const newTimerStart = timerStartTimestamp
-      ? timerStartTimestamp + pauseDuration
-      : null;
+    const newTimerStart = timerStartTimestamp ? timerStartTimestamp + pauseDuration : null;
 
     set({
       status: prePauseStatus || "running",
@@ -158,8 +142,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const nextResults = [...results, newResult];
 
     // Determine next step
-    const isLastExerciseInRound =
-      currentExerciseIndex === quest.exercises.length - 1;
+    const isLastExerciseInRound = currentExerciseIndex === quest.exercises.length - 1;
     const isLastRound = currentRoundIndex === quest.rounds - 1;
 
     if (isLastExerciseInRound && isLastRound) {
@@ -252,9 +235,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const { quest, userLevel, startTime, totalPausedTime, results } = get();
     if (!quest || !startTime) throw new Error("No active session");
 
-    const durationSeconds = Math.floor(
-      (Date.now() - startTime - totalPausedTime) / 1000,
-    );
+    const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
 
     const sessionId = await createCompletedSession({
       questId: quest.id,

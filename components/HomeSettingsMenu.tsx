@@ -17,14 +17,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  AnimatePresence,
-  Button,
-  Text,
-  XStack,
-  YStack,
-  type ColorTokens,
-} from "tamagui";
+import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
 import { AVATARS } from "@/constants/avatars";
 import { useSettingsStore } from "@/stores/settings";
@@ -38,8 +31,7 @@ export function HomeSettingsMenu() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<MenuStep>("main");
 
-  const { language, theme, avatarId, setLanguage, setTheme, setAvatarId } =
-    useSettingsStore();
+  const { language, theme, avatarId, setLanguage, setTheme, setAvatarId } = useSettingsStore();
 
   const closeMenu = () => {
     setOpen(false);
@@ -113,11 +105,7 @@ export function HomeSettingsMenu() {
     >
       <XStack items="center" gap="$3">
         {icon}
-        <Text
-          fontWeight="900"
-          fontSize={16}
-          color={active ? "white" : "$color"}
-        >
+        <Text fontWeight="900" fontSize={16} color={active ? "white" : "$color"}>
           {label}
         </Text>
       </XStack>
@@ -125,12 +113,7 @@ export function HomeSettingsMenu() {
   );
 
   const renderMain = () => (
-    <YStack
-      animation="quick"
-      enterStyle={{ opacity: 0, x: -20 }}
-      opacity={1}
-      x={0}
-    >
+    <YStack animation="quick" enterStyle={{ opacity: 0, x: -20 }} opacity={1} x={0}>
       <MenuItem
         icon={<Scroll size={24} color="$color" />}
         label={t("journal.title", "Quest Journal")}
@@ -162,19 +145,11 @@ export function HomeSettingsMenu() {
   );
 
   const renderTheme = () => (
-    <YStack
-      animation="quick"
-      enterStyle={{ opacity: 0, x: 20 }}
-      opacity={1}
-      x={0}
-      gap="$2"
-    >
+    <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
       <OptionItem
         active={theme === "system"}
         label={t("system")}
-        icon={
-          <SunMoon size={20} color={theme === "system" ? "white" : "$color"} />
-        }
+        icon={<SunMoon size={20} color={theme === "system" ? "white" : "$color"} />}
         onPress={() => setTheme("system")}
       />
       <OptionItem
@@ -186,27 +161,15 @@ export function HomeSettingsMenu() {
       <OptionItem
         active={theme === "dark"}
         label={t("dark")}
-        icon={
-          <MoonStar size={20} color={theme === "dark" ? "white" : "$color"} />
-        }
+        icon={<MoonStar size={20} color={theme === "dark" ? "white" : "$color"} />}
         onPress={() => setTheme("dark")}
       />
     </YStack>
   );
 
   const renderLanguage = () => (
-    <YStack
-      animation="quick"
-      enterStyle={{ opacity: 0, x: 20 }}
-      opacity={1}
-      x={0}
-      gap="$2"
-    >
-      <OptionItem
-        active={language === "en"}
-        label="English 🇬🇧"
-        onPress={() => setLanguage("en")}
-      />
+    <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
+      <OptionItem active={language === "en"} label="English 🇬🇧" onPress={() => setLanguage("en")} />
       <OptionItem
         active={language === "fr"}
         label="Français 🇫🇷"
@@ -276,12 +239,7 @@ export function HomeSettingsMenu() {
 
   return (
     <>
-      <XStack
-        position="absolute"
-        t={insets.top + 12}
-        r={insets.right + 16}
-        z={50}
-      >
+      <XStack position="absolute" t={insets.top + 12} r={insets.right + 16} z={50}>
         <AppIconButton onPress={() => setOpen(true)}>
           <Menu size={24} color="$color" strokeWidth={3} />
         </AppIconButton>
@@ -339,12 +297,7 @@ export function HomeSettingsMenu() {
                       <ChevronLeft size={20} color="$color" />
                     </AppIconButton>
                   )}
-                  <Text
-                    fontWeight="900"
-                    fontSize={20}
-                    color="$color"
-                    textTransform="uppercase"
-                  >
+                  <Text fontWeight="900" fontSize={20} color="$color" textTransform="uppercase">
                     {getTitle()}
                   </Text>
                 </XStack>

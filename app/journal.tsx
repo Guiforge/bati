@@ -6,10 +6,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
-import {
-  SessionCard,
-  type JournalEntry,
-} from "@/components/journal/SessionCard";
+import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
@@ -91,12 +88,7 @@ export default function JournalScreen() {
         }}
       >
         {loading && history.length === 0 ? (
-          <Text
-            style={{ textAlign: "center" }}
-            mt="$10"
-            opacity={0.5}
-            color="$color"
-          >
+          <Text style={{ textAlign: "center" }} mt="$10" opacity={0.5} color="$color">
             {t("common.loading", "Loading...")}
           </Text>
         ) : history.length === 0 ? (
@@ -105,15 +97,8 @@ export default function JournalScreen() {
             <H2 fontSize={20} style={{ textAlign: "center" }} color="$color">
               {t("journal.empty_title", "No tales yet")}
             </H2>
-            <Paragraph
-              style={{ textAlign: "center" }}
-              opacity={0.6}
-              color="$color"
-            >
-              {t(
-                "journal.empty_subtitle",
-                "Complete quests to fill your journal.",
-              )}
+            <Paragraph style={{ textAlign: "center" }} opacity={0.6} color="$color">
+              {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
             </Paragraph>
           </YStack>
         ) : (

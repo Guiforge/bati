@@ -26,10 +26,7 @@ export default function SessionScreen() {
       return false;
     };
 
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      onBackPress,
-    );
+    const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress);
     return () => subscription.remove();
   }, [status, pauseSession]);
 

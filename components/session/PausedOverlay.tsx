@@ -49,12 +49,7 @@ export function PausedOverlay() {
           borderColor="white"
           rounded="$6"
         >
-          <Text
-            color="white"
-            fontSize={20}
-            fontWeight="900"
-            textTransform="uppercase"
-          >
+          <Text color="white" fontSize={20} fontWeight="900" textTransform="uppercase">
             {t("session.resume_button", "Resume")}
           </Text>
         </Button>
@@ -68,12 +63,7 @@ export function PausedOverlay() {
           borderColor="white"
           rounded="$6"
         >
-          <Text
-            color="white"
-            fontSize={18}
-            fontWeight="900"
-            textTransform="uppercase"
-          >
+          <Text color="white" fontSize={18} fontWeight="900" textTransform="uppercase">
             {t("session.quit_button", "Quit Quest")}
           </Text>
         </Button>

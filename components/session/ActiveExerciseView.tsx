@@ -1,20 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  Button,
-  H1,
-  H2,
-  Paragraph,
-  Progress,
-  Text,
-  XStack,
-  YStack,
-} from "tamagui";
-import {
-  formatTime,
-  formatOvertime,
-  useSessionTimer,
-} from "@/hooks/useSessionTimer";
+import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -22,13 +9,8 @@ export function ActiveExerciseView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
-  const {
-    quest,
-    currentRoundIndex,
-    currentExerciseIndex,
-    completeExercise,
-    pauseSession,
-  } = useSessionStore();
+  const { quest, currentRoundIndex, currentExerciseIndex, completeExercise, pauseSession } =
+    useSessionStore();
   const { remainingSeconds, elapsedSeconds, isOvertime } = useSessionTimer();
 
   if (!quest) return null;
@@ -37,14 +19,12 @@ export function ActiveExerciseView() {
   const isTimeBased = currentEx.target.type === "time";
   const targetValue = currentEx.target.value;
 
-  const exerciseName =
-    language === "fr" ? currentEx.exercise.frName : currentEx.exercise.enName;
+  const exerciseName = language === "fr" ? currentEx.exercise.frName : currentEx.exercise.enName;
 
   // Progress calculation
   const exercisesPerRound = quest.exercises.length;
   const totalSteps = exercisesPerRound * quest.rounds;
-  const currentStep =
-    currentRoundIndex * exercisesPerRound + currentExerciseIndex + 1;
+  const currentStep = currentRoundIndex * exercisesPerRound + currentExerciseIndex + 1;
   const progressPercent = (currentStep / totalSteps) * 100;
 
   const handleComplete = () => {
@@ -61,14 +41,7 @@ export function ActiveExerciseView() {
   const overtimeSeconds = isOvertime ? Math.abs(remainingSeconds) : 0;
 
   return (
-    <YStack
-      flex={1}
-      bg="$background"
-      pt={insets.top + 16}
-      pb={insets.bottom + 16}
-      px="$4"
-      gap="$4"
-    >
+    <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16} px="$4" gap="$4">
       {/* Header: Progress & Pause */}
       <XStack items="center" justify="space-between">
         <YStack>
@@ -85,12 +58,7 @@ export function ActiveExerciseView() {
               defaultValue: `ROUND ${currentRoundIndex + 1} / ${quest.rounds}`,
             })}
           </Text>
-          <Text
-            color="$color"
-            fontSize={16}
-            fontWeight="900"
-            textTransform="uppercase"
-          >
+          <Text color="$color" fontSize={16} fontWeight="900" textTransform="uppercase">
             {t("session.exercise_label", {
               count: currentExerciseIndex + 1,
               total: exercisesPerRound,
@@ -168,13 +136,7 @@ export function ActiveExerciseView() {
 
         {/* Big Counter */}
         <YStack
-          bg={
-            isTimeBased
-              ? isOvertime
-                ? "$success"
-                : "$pastelBlue"
-              : "$pastelYellow"
-          }
+          bg={isTimeBased ? (isOvertime ? "$success" : "$pastelBlue") : "$pastelYellow"}
           py="$6"
           px="$8"
           rounded="$8"
@@ -199,32 +161,17 @@ export function ActiveExerciseView() {
                   >
                     🔥 {t("session.overtime", "BONUS TIME")} 🔥
                   </Text>
-                  <H1
-                    fontSize={72}
-                    fontWeight="900"
-                    fontFamily="$body"
-                    color="white"
-                  >
+                  <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="white">
                     {formatOvertime(overtimeSeconds)}
                   </H1>
-                  <Paragraph
-                    fontWeight="800"
-                    opacity={0.9}
-                    textTransform="uppercase"
-                    color="white"
-                  >
+                  <Paragraph fontWeight="800" opacity={0.9} textTransform="uppercase" color="white">
                     {t("session.target_reached", "Target reached!")}
                   </Paragraph>
                 </>
               ) : (
                 <>
                   {/* Normal countdown */}
-                  <H1
-                    fontSize={72}
-                    fontWeight="900"
-                    fontFamily="$body"
-                    color="$color"
-                  >
+                  <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="$color">
                     {formatTime(remainingSeconds)}
                   </H1>
                   <Paragraph
@@ -240,20 +187,10 @@ export function ActiveExerciseView() {
             </YStack>
           ) : (
             <YStack items="center">
-              <H1
-                fontSize={80}
-                fontWeight="900"
-                fontFamily="$body"
-                color="$color"
-              >
+              <H1 fontSize={80} fontWeight="900" fontFamily="$body" color="$color">
                 {targetValue}
               </H1>
-              <Paragraph
-                fontWeight="800"
-                opacity={0.8}
-                textTransform="uppercase"
-                color="$color"
-              >
+              <Paragraph fontWeight="800" opacity={0.8} textTransform="uppercase" color="$color">
                 {t("session.reps", "Reps")}
               </Paragraph>
             </YStack>
@@ -262,16 +199,8 @@ export function ActiveExerciseView() {
 
         {/* Hint for time-based exercises */}
         {isTimeBased && !isOvertime && (
-          <Text
-            fontSize={12}
-            color="$color"
-            opacity={0.5}
-            style={{ textAlign: "center" }}
-          >
-            {t(
-              "session.keep_going_hint",
-              "Keep going! Timer continues after target.",
-            )}
+          <Text fontSize={12} color="$color" opacity={0.5} style={{ textAlign: "center" }}>
+            {t("session.keep_going_hint", "Keep going! Timer continues after target.")}
           </Text>
         )}
       </YStack>
@@ -286,12 +215,7 @@ export function ActiveExerciseView() {
         borderColor="$color"
         rounded="$6"
       >
-        <Text
-          color="white"
-          fontSize={24}
-          fontWeight="900"
-          textTransform="uppercase"
-        >
+        <Text color="white" fontSize={24} fontWeight="900" textTransform="uppercase">
           {isOvertime
             ? t("session.complete_overtime", "FINISH! 🎉")
             : t("session.complete_button", "DONE!")}

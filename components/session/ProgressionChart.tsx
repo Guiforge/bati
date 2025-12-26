@@ -4,8 +4,8 @@ import { useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
 import type { SessionSummary } from "@/db";
+import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
 import { useSettingsStore } from "@/stores/settings";
 
 type ChartMode = "quest" | "all";
@@ -26,11 +26,7 @@ type ChartDataPoint = {
   topLabelComponent?: () => React.ReactNode;
 };
 
-export function ProgressionChart({
-  questId,
-  limit = 10,
-  title,
-}: ProgressionChartProps) {
+export function ProgressionChart({ questId, limit = 10, title }: ProgressionChartProps) {
   const { t } = useTranslation();
   const { language } = useSettingsStore();
   const { width } = useWindowDimensions();
@@ -107,16 +103,8 @@ export function ProgressionChart({
           <Text fontWeight="900" fontSize={14} color="$color">
             {t("chart.no_data", "No data yet")}
           </Text>
-          <Paragraph
-            color="$color"
-            opacity={0.6}
-            size="$2"
-            style={{ textAlign: "center" }}
-          >
-            {t(
-              "chart.complete_more",
-              "Complete more workouts to see your progress!",
-            )}
+          <Paragraph color="$color" opacity={0.6} size="$2" style={{ textAlign: "center" }}>
+            {t("chart.complete_more", "Complete more workouts to see your progress!")}
           </Paragraph>
         </YStack>
       </Card>
@@ -125,9 +113,7 @@ export function ProgressionChart({
 
   // Prepare chart data - show duration in minutes
   const chartData: ChartDataPoint[] = sessions.map((session) => {
-    const durationMinutes = session.durationSeconds
-      ? Math.round(session.durationSeconds / 60)
-      : 0;
+    const durationMinutes = session.durationSeconds ? Math.round(session.durationSeconds / 60) : 0;
 
     const dateLabel = new Intl.DateTimeFormat(language, {
       day: "numeric",
@@ -150,10 +136,7 @@ export function ProgressionChart({
   });
 
   // Calculate stats
-  const totalDuration = sessions.reduce(
-    (acc, s) => acc + (s.durationSeconds || 0),
-    0,
-  );
+  const totalDuration = sessions.reduce((acc, s) => acc + (s.durationSeconds || 0), 0);
   const avgDuration = sessions.length > 0 ? totalDuration / sessions.length : 0;
   const avgMinutes = Math.round(avgDuration / 60);
   const totalMinutes = Math.round(totalDuration / 60);

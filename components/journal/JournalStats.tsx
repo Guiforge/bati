@@ -1,16 +1,9 @@
-import {
-  Flame,
-  Target,
-  Timer,
-  TrendingUp,
-  Trophy,
-  Zap,
-} from "@tamagui/lucide-icons";
+import { Flame, Target, Timer, TrendingUp, Trophy, Zap } from "@tamagui/lucide-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { BarChart, LineChart } from "react-native-gifted-charts";
-import { Paragraph, Text, XStack, YStack, type ColorTokens } from "tamagui";
+import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { useSettingsStore } from "@/stores/settings";
@@ -42,8 +35,7 @@ function calculateStreak(sessions: JournalStatsProps["sessions"]): StreakInfo {
 
   // Sort by date descending (most recent first)
   const sorted = [...sessions].sort(
-    (a, b) =>
-      new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime(),
+    (a, b) => new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime(),
   );
 
   // Get unique days
@@ -114,10 +106,7 @@ function calculateStreak(sessions: JournalStatsProps["sessions"]): StreakInfo {
   };
 }
 
-function getWeekdayStats(
-  sessions: JournalStatsProps["sessions"],
-  language: string,
-): WeekdayData[] {
+function getWeekdayStats(sessions: JournalStatsProps["sessions"], language: string): WeekdayData[] {
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const weekdaysFr = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
   const counts = [0, 0, 0, 0, 0, 0, 0];
@@ -131,10 +120,7 @@ function getWeekdayStats(
   return labels.map((day, i) => ({ day, count: counts[i] }));
 }
 
-function getLast7DaysData(
-  sessions: JournalStatsProps["sessions"],
-  language: string,
-) {
+function getLast7DaysData(sessions: JournalStatsProps["sessions"], language: string) {
   const days: { date: string; label: string; minutes: number }[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -222,12 +208,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
 
     const totalWorkouts = sessions.length;
     const totalMinutes = sessions.reduce(
-      (acc, s) =>
-        acc + (s.durationSeconds ? Math.round(s.durationSeconds / 60) : 0),
+      (acc, s) => acc + (s.durationSeconds ? Math.round(s.durationSeconds / 60) : 0),
       0,
     );
-    const avgMinutes =
-      totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
+    const avgMinutes = totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
 
     // Level distribution
     const levels = { easy: 0, medium: 0, hard: 0 };
@@ -243,20 +227,15 @@ export function JournalStats({ sessions }: JournalStatsProps) {
     startOfWeek.setDate(today.getDate() - today.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const thisWeekSessions = sessions.filter(
-      (s) => new Date(s.performedAt) >= startOfWeek,
-    );
+    const thisWeekSessions = sessions.filter((s) => new Date(s.performedAt) >= startOfWeek);
     const thisWeekMinutes = thisWeekSessions.reduce(
-      (acc, s) =>
-        acc + (s.durationSeconds ? Math.round(s.durationSeconds / 60) : 0),
+      (acc, s) => acc + (s.durationSeconds ? Math.round(s.durationSeconds / 60) : 0),
       0,
     );
 
     // This month stats
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const thisMonthSessions = sessions.filter(
-      (s) => new Date(s.performedAt) >= startOfMonth,
-    );
+    const thisMonthSessions = sessions.filter((s) => new Date(s.performedAt) >= startOfMonth);
 
     return {
       totalWorkouts,
@@ -270,14 +249,8 @@ export function JournalStats({ sessions }: JournalStatsProps) {
   }, [sessions]);
 
   const streak = useMemo(() => calculateStreak(sessions), [sessions]);
-  const weekdayData = useMemo(
-    () => getWeekdayStats(sessions, language),
-    [sessions, language],
-  );
-  const last7Days = useMemo(
-    () => getLast7DaysData(sessions, language),
-    [sessions, language],
-  );
+  const weekdayData = useMemo(() => getWeekdayStats(sessions, language), [sessions, language]);
+  const last7Days = useMemo(() => getLast7DaysData(sessions, language), [sessions, language]);
 
   if (!stats || sessions.length === 0) {
     return null;
@@ -316,17 +289,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               items="center"
               justify="center"
             >
-              <Flame
-                size={28}
-                color={streak.isActive ? "white" : "$secondary"}
-              />
+              <Flame size={28} color={streak.isActive ? "white" : "$secondary"} />
             </YStack>
             <YStack>
-              <Text
-                fontWeight="900"
-                fontSize={28}
-                color={streak.isActive ? "white" : "$color"}
-              >
+              <Text fontWeight="900" fontSize={28} color={streak.isActive ? "white" : "$color"}>
                 {streak.current} {t("journal.days", "days")}
               </Text>
               <Text
@@ -342,18 +308,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
             </YStack>
           </XStack>
           <YStack items="center">
-            <Text
-              fontSize={12}
-              color={streak.isActive ? "white" : "$color"}
-              opacity={0.7}
-            >
+            <Text fontSize={12} color={streak.isActive ? "white" : "$color"} opacity={0.7}>
               {t("journal.best_streak", "Best")}
             </Text>
-            <Text
-              fontWeight="900"
-              fontSize={20}
-              color={streak.isActive ? "white" : "$secondary"}
-            >
+            <Text fontWeight="900" fontSize={20} color={streak.isActive ? "white" : "$secondary"}>
               {streak.best}
             </Text>
           </YStack>

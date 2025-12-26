@@ -4,8 +4,7 @@ import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import type { DifficultyCode, QuestTargetType } from "./schema";
 
-const { completedExercises, completedQuest, exerciseMuscles, exercises } =
-  schema;
+const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
 
 export type CompletedExerciseInput = {
   exerciseId: number;
@@ -53,9 +52,7 @@ export type CompletedSession = {
 type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
 type TransactionTx = Parameters<TransactionCallback>[0];
 
-async function transactionOrFallback<T>(
-  fn: (tx: TransactionTx) => Promise<T>,
-): Promise<T> {
+async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
   try {
     // Expo SQLite supports async transaction callbacks.
     return await db.transaction(fn);
@@ -72,11 +69,8 @@ async function transactionOrFallback<T>(
   }
 }
 
-export async function createCompletedSession(
-  input: CompletedSessionInput,
-): Promise<number> {
-  if (input.exercises.length === 0)
-    throw new Error("A completed session must have exercises");
+export async function createCompletedSession(input: CompletedSessionInput): Promise<number> {
+  if (input.exercises.length === 0) throw new Error("A completed session must have exercises");
 
   return transactionOrFallback(async (tx) => {
     const inserted = await tx
@@ -102,8 +96,7 @@ export async function createCompletedSession(
       sessionId = last[0]?.id;
     }
 
-    if (sessionId == null)
-      throw new Error("Failed to create completed session");
+    if (sessionId == null) throw new Error("Failed to create completed session");
 
     await tx.insert(completedExercises).values(
       input.exercises.map((ex) => ({
@@ -150,9 +143,7 @@ export async function listCompletedSessions(
   }));
 }
 
-export async function getCompletedSessionById(
-  id: number,
-): Promise<CompletedSession | null> {
+export async function getCompletedSessionById(id: number): Promise<CompletedSession | null> {
   const rows = await db
     .select({
       sessionId: completedQuest.id,
@@ -186,18 +177,11 @@ export async function getCompletedSessionById(
       muscle: exerciseMuscles.muscle,
     })
     .from(completedQuest)
-    .innerJoin(
-      completedExercises,
-      eq(completedExercises.sessionId, completedQuest.id),
-    )
+    .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
     .leftJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
     .where(eq(completedQuest.id, id))
-    .orderBy(
-      completedExercises.roundIndex,
-      completedExercises.sortOrder,
-      completedExercises.id,
-    );
+    .orderBy(completedExercises.roundIndex, completedExercises.sortOrder, completedExercises.id);
 
   if (rows.length === 0) return null;
 
@@ -299,9 +283,7 @@ export async function getQuestSessionHistory(
  * Get recent session history across all quests, ordered by date ascending.
  * Useful for overall progression charts.
  */
-export async function getRecentSessionHistory(
-  limit = 30,
-): Promise<SessionSummary[]> {
+export async function getRecentSessionHistory(limit = 30): Promise<SessionSummary[]> {
   const rows = await db
     .select({
       id: completedQuest.id,

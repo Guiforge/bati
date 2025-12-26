@@ -1,5 +1,6 @@
 // Database exports
 export { db, schema } from "./client";
+export type { SessionSummary } from "./completed";
 export {
   createCompletedSession,
   getCompletedSessionById,
@@ -7,7 +8,6 @@ export {
   getRecentSessionHistory,
   listCompletedSessions,
 } from "./completed";
-export type { SessionSummary } from "./completed";
 export { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
 export {
   estimateExerciseSeconds,

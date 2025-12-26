@@ -6,11 +6,8 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import {
-  type JournalEntry,
-  SessionCard,
-} from "@/components/journal/SessionCard";
 import { JournalStats } from "@/components/journal/JournalStats";
+import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
@@ -93,11 +90,7 @@ export default function JournalScreen() {
       >
         <XStack items="center" gap="$2">
           {icon}
-          <Text
-            color={isActive ? "white" : "$color"}
-            fontWeight="800"
-            fontSize={14}
-          >
+          <Text color={isActive ? "white" : "$color"} fontWeight="800" fontSize={14}>
             {label}
           </Text>
         </XStack>
@@ -127,22 +120,12 @@ export default function JournalScreen() {
           <XStack gap="$2">
             <TabButton
               tab="stats"
-              icon={
-                <BarChart2
-                  size={16}
-                  color={activeTab === "stats" ? "white" : "$color"}
-                />
-              }
+              icon={<BarChart2 size={16} color={activeTab === "stats" ? "white" : "$color"} />}
               label={t("journal.tab_stats", "Stats")}
             />
             <TabButton
               tab="history"
-              icon={
-                <List
-                  size={16}
-                  color={activeTab === "history" ? "white" : "$color"}
-                />
-              }
+              icon={<List size={16} color={activeTab === "history" ? "white" : "$color"} />}
               label={t("journal.tab_history", "History")}
             />
           </XStack>
@@ -158,12 +141,7 @@ export default function JournalScreen() {
         showsVerticalScrollIndicator={false}
       >
         {loading && history.length === 0 ? (
-          <Text
-            style={{ textAlign: "center" }}
-            mt="$10"
-            opacity={0.5}
-            color="$color"
-          >
+          <Text style={{ textAlign: "center" }} mt="$10" opacity={0.5} color="$color">
             {t("common.loading", "Loading...")}
           </Text>
         ) : history.length === 0 ? (
@@ -172,15 +150,8 @@ export default function JournalScreen() {
             <H2 fontSize={20} style={{ textAlign: "center" }} color="$color">
               {t("journal.empty_title", "No tales yet")}
             </H2>
-            <Paragraph
-              style={{ textAlign: "center" }}
-              opacity={0.6}
-              color="$color"
-            >
-              {t(
-                "journal.empty_subtitle",
-                "Complete quests to fill your journal.",
-              )}
+            <Paragraph style={{ textAlign: "center" }} opacity={0.6} color="$color">
+              {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
             </Paragraph>
           </YStack>
         ) : activeTab === "stats" ? (

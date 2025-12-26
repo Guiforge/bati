@@ -76,14 +76,7 @@ export default function SessionDetailScreen() {
 
   if (!sessionId) {
     return (
-      <YStack
-        flex={1}
-        bg="$background"
-        justify="center"
-        items="center"
-        p="$6"
-        gap="$4"
-      >
+      <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$4">
         <Text fontSize={48}>🤷</Text>
         <Text fontWeight="900" fontSize={18} color="$color">
           {t("journal.invalid_session", "Session not found")}
@@ -173,11 +166,7 @@ export default function SessionDetailScreen() {
                 <Paragraph color="$color" opacity={0.6} size="$3">
                   {error}
                 </Paragraph>
-                <AppButton
-                  fullWidth={false}
-                  variant="secondary"
-                  onPress={() => load(sessionId)}
-                >
+                <AppButton fullWidth={false} variant="secondary" onPress={() => load(sessionId)}>
                   {t("common.retry", "Retry")} ↻
                 </AppButton>
               </YStack>
@@ -210,10 +199,7 @@ export default function SessionDetailScreen() {
                       tone="secondary"
                     />
                     <Chip
-                      label={t(
-                        `quests.level_${session.userLevel}`,
-                        session.userLevel,
-                      )}
+                      label={t(`quests.level_${session.userLevel}`, session.userLevel)}
                       tone="primary"
                     />
                     <Chip
@@ -239,11 +225,7 @@ export default function SessionDetailScreen() {
                       items="center"
                       justify="center"
                     >
-                      <Text
-                        color="white"
-                        fontWeight="900"
-                        fontSize={14}
-                      >
+                      <Text color="white" fontWeight="900" fontSize={14}>
                         {roundIndex + 1}
                       </Text>
                     </YStack>
@@ -253,10 +235,7 @@ export default function SessionDetailScreen() {
                   </XStack>
 
                   {exercisesByRound[roundIndex].map((cex, idx) => {
-                    const exName =
-                      language === "fr"
-                        ? cex.exercise.frName
-                        : cex.exercise.enName;
+                    const exName = language === "fr" ? cex.exercise.frName : cex.exercise.enName;
                     const equipmentLabel =
                       EQUIPMENT_LABELS[cex.exercise.equipment]?.[language] ??
                       cex.exercise.equipment;
@@ -272,8 +251,7 @@ export default function SessionDetailScreen() {
                         : `${cex.target.value} reps`
                       : null;
 
-                    const hitTarget =
-                      cex.target && cex.result.value >= cex.target.value;
+                    const hitTarget = cex.target && cex.result.value >= cex.target.value;
 
                     return (
                       <Card key={`${cex.id}-${idx}`}>
@@ -296,21 +274,13 @@ export default function SessionDetailScreen() {
                           </YStack>
 
                           <YStack flex={1} gap="$2">
-                            <Text
-                              fontWeight="900"
-                              fontSize={16}
-                              color="$color"
-                            >
+                            <Text fontWeight="900" fontSize={16} color="$color">
                               {exName}
                             </Text>
 
                             <XStack gap="$3" items="center">
                               <YStack>
-                                <Text
-                                  fontSize={12}
-                                  color="$color"
-                                  opacity={0.6}
-                                >
+                                <Text fontSize={12} color="$color" opacity={0.6}>
                                   {t("journal.result", "Result")}
                                 </Text>
                                 <Text
@@ -324,19 +294,11 @@ export default function SessionDetailScreen() {
 
                               {targetLabel && (
                                 <YStack>
-                                  <Text
-                                    fontSize={12}
-                                    color="$color"
-                                    opacity={0.6}
-                                  >
+                                  <Text fontSize={12} color="$color" opacity={0.6}>
                                     {t("journal.target", "Target")}
                                   </Text>
                                   <XStack items="center" gap="$1">
-                                    <Target
-                                      size={14}
-                                      color="$color"
-                                      opacity={0.7}
-                                    />
+                                    <Target size={14} color="$color" opacity={0.7} />
                                     <Text
                                       fontWeight="700"
                                       fontSize={16}

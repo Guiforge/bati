@@ -58,14 +58,8 @@ export function QuestCarousel() {
 
   const quests = state.quests;
 
-  const slideWidth = useMemo(
-    () => Math.floor(Math.min(420, width * 0.85)),
-    [width],
-  );
-  const sidePad = useMemo(
-    () => Math.floor((width - slideWidth) / 2),
-    [width, slideWidth],
-  );
+  const slideWidth = useMemo(() => Math.floor(Math.min(420, width * 0.85)), [width]);
+  const sidePad = useMemo(() => Math.floor((width - slideWidth) / 2), [width, slideWidth]);
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (quests.length === 0) return;
@@ -169,20 +163,10 @@ export function QuestCarousel() {
                   </YStack>
 
                   <YStack flex={1} gap="$2">
-                    <Text
-                      fontWeight="900"
-                      fontSize={18}
-                      color="$color"
-                      numberOfLines={2}
-                    >
+                    <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
                       {title}
                     </Text>
-                    <Paragraph
-                      color="$color"
-                      opacity={0.7}
-                      size="$3"
-                      numberOfLines={2}
-                    >
+                    <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
                       {desc}
                     </Paragraph>
 

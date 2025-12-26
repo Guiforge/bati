@@ -132,10 +132,7 @@ export function QuestCarousel() {
             const emoji = questEmoji(q.rounds, q.exercises.length);
 
             return (
-              <SwiperSlide
-                key={q.id}
-                style={{ display: "flex", justifyContent: "center" }}
-              >
+              <SwiperSlide key={q.id} style={{ display: "flex", justifyContent: "center" }}>
                 <YStack width={slideWidth}>
                   <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
                     <XStack gap="$3" items="flex-start">
@@ -153,20 +150,10 @@ export function QuestCarousel() {
                       </YStack>
 
                       <YStack flex={1} gap="$2">
-                        <Text
-                          fontWeight="900"
-                          fontSize={18}
-                          color="$color"
-                          numberOfLines={2}
-                        >
+                        <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
                           {title}
                         </Text>
-                        <Paragraph
-                          color="$color"
-                          opacity={0.7}
-                          size="$3"
-                          numberOfLines={2}
-                        >
+                        <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
                           {desc}
                         </Paragraph>
 

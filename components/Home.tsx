@@ -68,10 +68,7 @@ export function Home() {
         <YStack width="100%" maxW={420} gap="$4">
           <QuestCarousel />
 
-          <Card
-            bg="$pastelYellow"
-            onPress={() => router.push("/quests" as never)}
-          >
+          <Card bg="$pastelYellow" onPress={() => router.push("/quests" as never)}>
             <XStack items="center" justify="space-between" gap="$3">
               <YStack flex={1} gap="$1">
                 <XStack items="center" gap="$2">
@@ -100,11 +97,7 @@ export function Home() {
         </YStack>
 
         {__DEV__ && (
-          <AppButton
-            onPress={() => router.push("/dev")}
-            variant="secondary"
-            marginTop="$6"
-          >
+          <AppButton onPress={() => router.push("/dev")} variant="secondary" marginTop="$6">
             🛠️ Dev Tools
           </AppButton>
         )}

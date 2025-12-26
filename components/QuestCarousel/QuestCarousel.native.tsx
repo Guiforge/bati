@@ -58,8 +58,14 @@ export function QuestCarousel() {
 
   const quests = state.quests;
 
-  const slideWidth = useMemo(() => Math.floor(Math.min(420, width * 0.85)), [width]);
-  const sidePad = useMemo(() => Math.floor((width - slideWidth) / 2), [width, slideWidth]);
+  const slideWidth = useMemo(
+    () => Math.floor(Math.min(420, width * 0.85)),
+    [width],
+  );
+  const sidePad = useMemo(
+    () => Math.floor((width - slideWidth) / 2),
+    [width, slideWidth],
+  );
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (quests.length === 0) return;
@@ -68,6 +74,79 @@ export function QuestCarousel() {
     const clamped = Math.min(Math.max(idx, 1), quests.length);
     if (clamped !== active) setActive(clamped);
   };
+
+  const slides = useMemo(
+    () =>
+      quests.map((q) => {
+        const title = language === "fr" ? q.frTitle : q.enTitle;
+        const desc = language === "fr" ? q.frDescription : q.enDescription;
+        const emoji = questEmoji(q.rounds, q.exercises.length);
+
+        return (
+          <YStack key={q.id} width={slideWidth} px={6}>
+            <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
+              <XStack gap="$3" items="flex-start">
+                <YStack
+                  width={54}
+                  height={54}
+                  rounded={27}
+                  bg="$pastelPurple"
+                  borderWidth={3}
+                  borderColor="$color"
+                  justify="center"
+                  items="center"
+                >
+                  <Text fontSize={26}>{emoji}</Text>
+                </YStack>
+
+                <YStack flex={1} gap="$2">
+                  <Text
+                    fontWeight="900"
+                    fontSize={18}
+                    color="$color"
+                    numberOfLines={2}
+                  >
+                    {title}
+                  </Text>
+                  <Paragraph
+                    color="$color"
+                    opacity={0.7}
+                    size="$3"
+                    numberOfLines={2}
+                  >
+                    {desc}
+                  </Paragraph>
+
+                  <XStack gap="$2" flexWrap="wrap" pt="$1">
+                    <Chip
+                      label={t("quests.rounds", {
+                        count: q.rounds,
+                        defaultValue: `${q.rounds} rounds`,
+                      })}
+                      tone="secondary"
+                    />
+                    <Chip
+                      label={t("quests.exercises", {
+                        count: q.exercises.length,
+                        defaultValue: `${q.exercises.length} exercises`,
+                      })}
+                      tone="primary"
+                    />
+                    <Chip
+                      label={t("quests.rest", {
+                        count: q.restSeconds,
+                        defaultValue: `Rest ${q.restSeconds}s`,
+                      })}
+                    />
+                  </XStack>
+                </YStack>
+              </XStack>
+            </Card>
+          </YStack>
+        );
+      }),
+    [quests, language, slideWidth, t, router],
+  );
 
   if (state.status === "loading") {
     return (
@@ -140,64 +219,7 @@ export function QuestCarousel() {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        {quests.map((q) => {
-          const title = language === "fr" ? q.frTitle : q.enTitle;
-          const desc = language === "fr" ? q.frDescription : q.enDescription;
-          const emoji = questEmoji(q.rounds, q.exercises.length);
-
-          return (
-            <YStack key={q.id} width={slideWidth} px={6}>
-              <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
-                <XStack gap="$3" items="flex-start">
-                  <YStack
-                    width={54}
-                    height={54}
-                    rounded={27}
-                    bg="$pastelPurple"
-                    borderWidth={3}
-                    borderColor="$color"
-                    justify="center"
-                    items="center"
-                  >
-                    <Text fontSize={26}>{emoji}</Text>
-                  </YStack>
-
-                  <YStack flex={1} gap="$2">
-                    <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
-                      {title}
-                    </Text>
-                    <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
-                      {desc}
-                    </Paragraph>
-
-                    <XStack gap="$2" flexWrap="wrap" pt="$1">
-                      <Chip
-                        label={t("quests.rounds", {
-                          count: q.rounds,
-                          defaultValue: `${q.rounds} rounds`,
-                        })}
-                        tone="secondary"
-                      />
-                      <Chip
-                        label={t("quests.exercises", {
-                          count: q.exercises.length,
-                          defaultValue: `${q.exercises.length} exercises`,
-                        })}
-                        tone="primary"
-                      />
-                      <Chip
-                        label={t("quests.rest", {
-                          count: q.restSeconds,
-                          defaultValue: `Rest ${q.restSeconds}s`,
-                        })}
-                      />
-                    </XStack>
-                  </YStack>
-                </XStack>
-              </Card>
-            </YStack>
-          );
-        })}
+        {slides}
       </ScrollView>
 
       <ProgressDots current={active} total={quests.length} />

@@ -16,7 +16,7 @@ const tokens = createTokens({
 
     // Backgrounds
     bgLight: "#EEF2F6",
-    bgDark: "#0D0D0D",
+    bgDark: "#121212",
 
     // Pastels
     pastelBlue: "#E3F2FD",
@@ -33,9 +33,9 @@ const tokens = createTokens({
 const animations = createAnimations({
   bouncy: {
     type: "spring",
-    damping: 10,
-    mass: 0.9,
-    stiffness: 100,
+    damping: 14,
+    mass: 0.8,
+    stiffness: 150,
   },
   lazy: {
     type: "spring",
@@ -71,19 +71,19 @@ export const config = createTamagui({
       pastelPurple: tokens.color.pastelPurple,
     },
     dark: {
-      background: tokens.color.bgDark,
-      cardBackground: "#1A1A1A",
-      bgLight: "#1A1A1A",
-      color: tokens.color.bgLight,
+      background: "#121212",
+      cardBackground: "#1E1E1E",
+      bgLight: "#252525",
+      color: "#E0E0E0",
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
       success: tokens.color.success,
       error: tokens.color.error,
-      pastelBlue: "#153E5C",
-      pastelPink: "#5C1532",
-      pastelGreen: "#155C26",
-      pastelYellow: "#5C5200",
-      pastelPurple: "#40155C",
+      pastelBlue: "#1A2633",
+      pastelPink: "#331A22",
+      pastelGreen: "#1A3320",
+      pastelYellow: "#33301A",
+      pastelPurple: "#261A33",
     },
   },
 });

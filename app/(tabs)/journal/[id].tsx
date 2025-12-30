@@ -1,3 +1,12 @@
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
+import { Tag } from "@/components/common/Tag";
+import { formatDuration, getCompletedSessionById } from "@/db";
+import type { CompletedSession } from "@/db/completed";
+import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { MUSCLE_LABELS } from "@/db/muscles";
+import { listQuestTemplates } from "@/db/quests";
+import { useSettingsStore } from "@/stores/settings";
 import { ChevronLeft, Clock, Dumbbell, Repeat, Target } from "@tamagui/lucide-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -5,15 +14,6 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
-import { formatDuration, getCompletedSessionById } from "@/db";
-import type { CompletedSession } from "@/db/completed";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { MUSCLE_LABELS } from "@/db/muscles";
-import { listQuestTemplates } from "@/db/quests";
-import { useSettingsStore } from "@/stores/settings";
 
 type Status = "loading" | "ready" | "error";
 
@@ -90,13 +90,13 @@ export default function SessionDetailScreen() {
 
   const dateLabel = session
     ? new Intl.DateTimeFormat(language, {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(session.performedAt))
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(session.performedAt))
     : "";
 
   const durationLabel = session?.durationSeconds
@@ -106,14 +106,14 @@ export default function SessionDetailScreen() {
   // Group exercises by round
   const exercisesByRound = session
     ? session.exercises.reduce(
-        (acc, ex) => {
-          const round = ex.roundIndex;
-          if (!acc[round]) acc[round] = [];
-          acc[round].push(ex);
-          return acc;
-        },
-        {} as Record<number, typeof session.exercises>,
-      )
+      (acc, ex) => {
+        const round = ex.roundIndex;
+        if (!acc[round]) acc[round] = [];
+        acc[round].push(ex);
+        return acc;
+      },
+      {} as Record<number, typeof session.exercises>,
+    )
     : {};
 
   const roundNumbers = Object.keys(exercisesByRound)
@@ -193,16 +193,16 @@ export default function SessionDetailScreen() {
                   </Text>
 
                   <XStack gap="$2" flexWrap="wrap">
-                    <Chip
+                    <Tag
                       icon={<Clock size={12} color="$color" />}
                       label={durationLabel}
                       tone="secondary"
                     />
-                    <Chip
+                    <Tag
                       label={t(`quests.level_${session.userLevel}`, session.userLevel)}
                       tone="primary"
                     />
-                    <Chip
+                    <Tag
                       icon={<Repeat size={12} color="$color" />}
                       label={t("journal.rounds_completed", {
                         count: roundNumbers.length,
@@ -221,11 +221,13 @@ export default function SessionDetailScreen() {
                       width={32}
                       height={32}
                       rounded={16}
-                      bg="$primary"
+                      bg="$pastelBlue"
+                      borderWidth={2}
+                      borderColor="$color"
                       items="center"
                       justify="center"
                     >
-                      <Text color="white" fontWeight="900" fontSize={14}>
+                      <Text color="$color" fontWeight="900" fontSize={14}>
                         {roundIndex + 1}
                       </Text>
                     </YStack>
@@ -260,7 +262,7 @@ export default function SessionDetailScreen() {
                             width={44}
                             height={44}
                             rounded={22}
-                            bg={hitTarget ? "$success" : "$bgLight"}
+                            bg={hitTarget ? "$pastelGreen" : "$bgLight"}
                             borderWidth={2}
                             borderColor="$color"
                             justify="center"
@@ -268,7 +270,7 @@ export default function SessionDetailScreen() {
                           >
                             <Dumbbell
                               size={20}
-                              color={hitTarget ? "white" : "$color"}
+                              color={hitTarget ? "$color" : "$color"}
                               strokeWidth={2.5}
                             />
                           </YStack>
@@ -313,9 +315,9 @@ export default function SessionDetailScreen() {
                             </XStack>
 
                             <XStack gap="$2" flexWrap="wrap">
-                              <Chip label={equipmentLabel} />
+                              <Tag label={equipmentLabel} />
                               {cex.exercise.muscles.slice(0, 3).map((m) => (
-                                <Chip
+                                <Tag
                                   key={m}
                                   label={MUSCLE_LABELS[m]?.[language] ?? m}
                                   tone="success"

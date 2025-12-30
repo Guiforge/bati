@@ -1,13 +1,12 @@
+import { AppIconButton } from "@/components/common/AppButton";
+import { AVATARS } from "@/constants/avatars";
+import { useSettingsStore } from "@/stores/settings";
 import {
   ChevronLeft,
   ChevronRight,
   Languages,
   Menu,
-  MoonStar,
-  Palette,
   Scroll,
-  Sun,
-  SunMoon,
   User,
   X,
 } from "@tamagui/lucide-icons";
@@ -18,11 +17,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack } from "tamagui";
-import { AppIconButton } from "@/components/common/AppButton";
-import { AVATARS } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
 
-type MenuStep = "main" | "theme" | "language" | "avatar";
+type MenuStep = "main" | "language" | "avatar";
 
 export function HomeSettingsMenu() {
   const { t } = useTranslation();
@@ -31,7 +27,7 @@ export function HomeSettingsMenu() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<MenuStep>("main");
 
-  const { language, theme, avatarId, setLanguage, setTheme, setAvatarId } = useSettingsStore();
+  const { language, avatarId, setLanguage, setAvatarId } = useSettingsStore();
 
   const closeMenu = () => {
     setOpen(false);
@@ -125,12 +121,6 @@ export function HomeSettingsMenu() {
         value=" " // Hide chevron
       />
       <MenuItem
-        icon={<Palette size={24} color="$color" />}
-        label={t("theme")}
-        onPress={() => setStep("theme")}
-        value={t(theme)}
-      />
-      <MenuItem
         icon={<Languages size={24} color="$color" />}
         label={t("language")}
         onPress={() => setStep("language")}
@@ -140,29 +130,6 @@ export function HomeSettingsMenu() {
         icon={<User size={24} color="$color" />}
         label={t("onboarding.avatar_title")}
         onPress={() => setStep("avatar")}
-      />
-    </YStack>
-  );
-
-  const renderTheme = () => (
-    <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
-      <OptionItem
-        active={theme === "system"}
-        label={t("system")}
-        icon={<SunMoon size={20} color={theme === "system" ? "white" : "$color"} />}
-        onPress={() => setTheme("system")}
-      />
-      <OptionItem
-        active={theme === "light"}
-        label={t("light")}
-        icon={<Sun size={20} color={theme === "light" ? "white" : "$color"} />}
-        onPress={() => setTheme("light")}
-      />
-      <OptionItem
-        active={theme === "dark"}
-        label={t("dark")}
-        icon={<MoonStar size={20} color={theme === "dark" ? "white" : "$color"} />}
-        onPress={() => setTheme("dark")}
       />
     </YStack>
   );
@@ -226,8 +193,6 @@ export function HomeSettingsMenu() {
 
   const getTitle = () => {
     switch (step) {
-      case "theme":
-        return t("theme");
       case "language":
         return t("language");
       case "avatar":
@@ -317,7 +282,6 @@ export function HomeSettingsMenu() {
               {/* Content */}
               <YStack p="$4" minH={300}>
                 {step === "main" && renderMain()}
-                {step === "theme" && renderTheme()}
                 {step === "language" && renderLanguage()}
                 {step === "avatar" && renderAvatar()}
               </YStack>

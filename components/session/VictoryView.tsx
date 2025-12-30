@@ -1,12 +1,14 @@
+import { Card } from "@/components/common/Card";
+import { formatTime } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Paragraph, Text, XStack, YStack } from "tamagui";
-import { formatTime } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
+import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { ProgressionChart } from "./ProgressionChart";
 
 export function VictoryView() {
@@ -14,6 +16,7 @@ export function VictoryView() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const { language } = useSettingsStore();
   const { quest, startTime, totalPausedTime, saveSession, quitSession } = useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -23,6 +26,7 @@ export function VictoryView() {
   // Note: saveSession recalculates this accurately based on DB timestamp logic,
   // but this is good enough for the UI summary.
   const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+  const questTitle = language === "fr" ? quest.frTitle : quest.enTitle;
 
   const handleFinish = async () => {
     try {
@@ -38,7 +42,7 @@ export function VictoryView() {
   };
 
   return (
-    <YStack flex={1} bg="$pastelYellow" pt={insets.top + 16} pb={insets.bottom + 16}>
+    <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -48,40 +52,34 @@ export function VictoryView() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Victory Icon/Illustration */}
-        <YStack items="center" gap="$4" mt="$8">
-          <Text fontSize={80}>🏆</Text>
-          <YStack items="center" gap="$2">
-            <H1
-              fontWeight="900"
-              textTransform="uppercase"
-              color="$color"
-              fontSize={36}
-              lineHeight={40}
-              style={{ textAlign: "center" }}
-            >
-              {t("session.victory_title", "Quest Complete!")}
-            </H1>
-            <Paragraph size="$5" fontWeight="700" opacity={0.7} style={{ textAlign: "center" }}>
-              {quest.enTitle}
-            </Paragraph>
+        <Card bg="$pastelYellow" width="100%" maxW={520} mt="$6">
+          <YStack items="center" gap="$3">
+            <Text fontSize={72}>🏆</Text>
+            <YStack items="center" gap="$1">
+              <Text
+                fontWeight="900"
+                textTransform="uppercase"
+                color="$color"
+                fontSize={14}
+                opacity={0.65}
+                style={{ textAlign: "center" }}
+              >
+                {t("session.victory_title", "Quest Complete!")}
+              </Text>
+              <H1
+                fontWeight="900"
+                color="$color"
+                fontSize={34}
+                lineHeight={38}
+                style={{ textAlign: "center" }}
+              >
+                {questTitle}
+              </H1>
+            </YStack>
           </YStack>
-        </YStack>
+        </Card>
 
-        {/* Stats Card */}
-        <YStack
-          bg="$background"
-          p="$6"
-          rounded="$6"
-          borderWidth={3}
-          borderColor="$color"
-          width="100%"
-          gap="$4"
-          shadowColor="black"
-          shadowOffset={{ width: 4, height: 4 }}
-          shadowOpacity={0.2}
-          shadowRadius={0}
-        >
+        <Card width="100%" maxW={520} bg="$bgLight" gap="$4">
           <XStack
             justify="space-between"
             items="center"
@@ -113,14 +111,14 @@ export function VictoryView() {
             >
               {t("session.xp_earned", "XP Earned")}
             </Text>
-            <Text fontWeight="900" fontSize={24} color="$secondary" fontFamily="$body">
+            <Text fontWeight="900" fontSize={24} color="$primary" fontFamily="$body">
               +150 XP
             </Text>
           </XStack>
-        </YStack>
+        </Card>
 
         {/* Progression Chart */}
-        <YStack width="100%">
+        <YStack width="100%" maxW={520}>
           <ProgressionChart
             questId={quest.id}
             limit={10}
@@ -137,6 +135,7 @@ export function VictoryView() {
           disabled={isSaving}
           rounded="$6"
           width="100%"
+          maxWidth={520}
           borderWidth={0}
         >
           <Text color="$background" fontSize={20} fontWeight="900" textTransform="uppercase">

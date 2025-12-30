@@ -2,28 +2,28 @@ import { createAnimations } from "@tamagui/animations-react-native";
 import { defaultConfig } from "@tamagui/config/v4";
 import { createTamagui, createTokens } from "tamagui";
 
-// Minimalist 3-core color palette: neon blue, hot pink, lime green
+// RPG-fun palette (light-first): keep punchy accents but avoid neon overload.
 const tokens = createTokens({
   ...defaultConfig.tokens,
   color: {
     // Core palette
-    primary: "#00D9FF", // neon electric blue
-    secondary: "#FF4081", // hot pink
-    success: "#76FF03", // lime green
+    primary: "#2563EB", // royal blue
+    secondary: "#DB2777", // magenta
+    success: "#16A34A", // green
 
     // Keep for error states
     error: "#FF1744",
 
-    // Backgrounds
-    bgLight: "#EEF2F6",
-    bgDark: "#121212",
+    // Backgrounds (slightly warm to feel more "fantasy parchment" than "app gray")
+    bgLight: "#F6F4EF",
+    bgDark: "#141416",
 
-    // Pastels
-    pastelBlue: "#E3F2FD",
-    pastelPink: "#FCE4EC",
-    pastelGreen: "#E8F5E9",
-    pastelYellow: "#FFFDE7",
-    pastelPurple: "#F3E5F5",
+    // Pastels (muted surfaces, not accents)
+    pastelBlue: "#EAF2FF",
+    pastelPink: "#FCEAF1",
+    pastelGreen: "#EAF7EF",
+    pastelYellow: "#FFF6D8",
+    pastelPurple: "#F1E9FF",
 
     white: "#FFFFFF",
     black: "#000000",

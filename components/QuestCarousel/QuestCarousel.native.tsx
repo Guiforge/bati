@@ -1,15 +1,15 @@
-import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { ScrollView, useWindowDimensions } from "react-native";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
+import { Tag } from "@/components/common/Tag";
 import { ProgressDots } from "@/components/ProgressDots";
 import { listQuestTemplates } from "@/db";
 import type { QuestTemplate } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import { ScrollView, useWindowDimensions } from "react-native";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[] }
@@ -61,13 +61,30 @@ export function QuestCarousel() {
   const slideWidth = useMemo(() => Math.floor(Math.min(420, width * 0.85)), [width]);
   const sidePad = useMemo(() => Math.floor((width - slideWidth) / 2), [width, slideWidth]);
 
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (quests.length === 0) return;
-    const x = e.nativeEvent.contentOffset.x;
-    const idx = Math.round(x / slideWidth) + 1;
-    const clamped = Math.min(Math.max(idx, 1), quests.length);
-    if (clamped !== active) setActive(clamped);
-  };
+  const updateActiveFromOffset = useCallback(
+    (x: number) => {
+      if (quests.length === 0) return;
+      const idx = Math.round(x / slideWidth) + 1;
+      const clamped = Math.min(Math.max(idx, 1), quests.length);
+      setActive((prev) => (prev === clamped ? prev : clamped));
+    },
+    [quests.length, slideWidth],
+  );
+
+  const onMomentumScrollEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      updateActiveFromOffset(e.nativeEvent.contentOffset.x);
+    },
+    [updateActiveFromOffset],
+  );
+
+  const onScrollEndDrag = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      // In some cases momentum doesn't fire (very short drags). This keeps dots in sync.
+      updateActiveFromOffset(e.nativeEvent.contentOffset.x);
+    },
+    [updateActiveFromOffset],
+  );
 
   const slides = useMemo(
     () =>
@@ -102,21 +119,21 @@ export function QuestCarousel() {
                   </Paragraph>
 
                   <XStack gap="$2" flexWrap="wrap" pt="$1">
-                    <Chip
+                    <Tag
                       label={t("quests.rounds", {
                         count: q.rounds,
                         defaultValue: `${q.rounds} rounds`,
                       })}
                       tone="secondary"
                     />
-                    <Chip
+                    <Tag
                       label={t("quests.exercises", {
                         count: q.exercises.length,
                         defaultValue: `${q.exercises.length} exercises`,
                       })}
                       tone="primary"
                     />
-                    <Chip
+                    <Tag
                       label={t("quests.rest", {
                         count: q.restSeconds,
                         defaultValue: `Rest ${q.restSeconds}s`,
@@ -197,11 +214,12 @@ export function QuestCarousel() {
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={slideWidth}
+        snapToAlignment="center"
         decelerationRate="fast"
         disableIntervalMomentum
         contentContainerStyle={{ paddingHorizontal: sidePad, paddingBottom: 4 }}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        onScrollEndDrag={onScrollEndDrag}
       >
         {slides}
       </ScrollView>

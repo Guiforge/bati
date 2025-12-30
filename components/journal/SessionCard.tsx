@@ -1,11 +1,11 @@
-import { Calendar, Trophy } from "@tamagui/lucide-icons";
-import { useTranslation } from "react-i18next";
-import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
+import { Tag } from "@/components/common/Tag";
 import { formatDuration } from "@/db";
 import type { DifficultyCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
+import { Calendar, Trophy } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
+import { Text, XStack, YStack } from "tamagui";
 
 export interface JournalEntry {
   id: number;
@@ -36,8 +36,15 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
     ? formatDuration(entry.durationSeconds, language)
     : "--";
 
+  const sessionBg =
+    entry.userLevel === "easy"
+      ? "$pastelGreen"
+      : entry.userLevel === "hard"
+        ? "$pastelPink"
+        : "$pastelBlue";
+
   return (
-    <Card onPress={onPress}>
+    <Card onPress={onPress} bg={sessionBg}>
       <XStack gap="$3" items="center">
         {/* Icon */}
         <YStack
@@ -66,8 +73,8 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
           </XStack>
 
           <XStack gap="$2" mt="$1" flexWrap="wrap">
-            <Chip label={durationLabel} tone="secondary" />
-            <Chip label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
+            <Tag label={durationLabel} tone="secondary" />
+            <Tag label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
           </XStack>
         </YStack>
       </XStack>

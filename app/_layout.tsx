@@ -1,33 +1,31 @@
+import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
 import { Slot, useRouter, useSegments } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useState } from "react";
-import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Theme } from "tamagui";
-import { DatabaseProvider } from "@/components/DatabaseProvider";
-import { useSettingsStore } from "@/stores/settings";
-import { useUserStore } from "@/stores/user";
 import "../i18n";
 import config from "../tamagui.config";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const systemScheme = useColorScheme() ?? "light";
   const {
     hasFinishedOnboarding,
     isLoaded: userLoaded,
     loadFromDatabase: loadUserFromDatabase,
   } = useUserStore();
   const {
-    theme,
     isLoaded: settingsLoaded,
     loadFromDatabase: loadSettingsFromDatabase,
   } = useSettingsStore();
 
-  const colorScheme = theme === "system" ? systemScheme : theme;
+  // UI decision: this app is intentionally light-only for a consistent RPG feel.
+  const colorScheme = "light" as const;
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);

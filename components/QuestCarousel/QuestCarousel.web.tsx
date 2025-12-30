@@ -1,14 +1,14 @@
+import { Card } from "@/components/common/Card";
+import { Tag } from "@/components/common/Tag";
+import { ProgressDots } from "@/components/ProgressDots";
+import { listQuestTemplates } from "@/db";
+import type { QuestTemplate } from "@/db/quests";
+import { useSettingsStore } from "@/stores/settings";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
-import { ProgressDots } from "@/components/ProgressDots";
-import { listQuestTemplates } from "@/db";
-import type { QuestTemplate } from "@/db/quests";
-import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[] }
@@ -55,7 +55,72 @@ export function QuestCarousel() {
   }, []);
 
   const quests = state.quests;
-  const slideWidth = useMemo(() => 420, []);
+  const slideWidth = useMemo(() => "min(420px, 85vw)", []);
+
+  const slides = useMemo(
+    () =>
+      quests.map((q) => {
+        const title = language === "fr" ? q.frTitle : q.enTitle;
+        const desc = language === "fr" ? q.frDescription : q.enDescription;
+        const emoji = questEmoji(q.rounds, q.exercises.length);
+
+        return (
+          <SwiperSlide key={q.id} style={{ display: "flex", justifyContent: "center" }}>
+            <YStack width={slideWidth}>
+              <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
+                <XStack gap="$3" items="flex-start">
+                  <YStack
+                    width={54}
+                    height={54}
+                    rounded={27}
+                    bg="$pastelPurple"
+                    borderWidth={3}
+                    borderColor="$color"
+                    justify="center"
+                    items="center"
+                  >
+                    <Text fontSize={26}>{emoji}</Text>
+                  </YStack>
+
+                  <YStack flex={1} gap="$2">
+                    <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
+                      {title}
+                    </Text>
+                    <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
+                      {desc}
+                    </Paragraph>
+
+                    <XStack gap="$2" flexWrap="wrap" pt="$1">
+                      <Tag
+                        label={t("quests.rounds", {
+                          count: q.rounds,
+                          defaultValue: `${q.rounds} rounds`,
+                        })}
+                        tone="secondary"
+                      />
+                      <Tag
+                        label={t("quests.exercises", {
+                          count: q.exercises.length,
+                          defaultValue: `${q.exercises.length} exercises`,
+                        })}
+                        tone="primary"
+                      />
+                      <Tag
+                        label={t("quests.rest", {
+                          count: q.restSeconds,
+                          defaultValue: `Rest ${q.restSeconds}s`,
+                        })}
+                      />
+                    </XStack>
+                  </YStack>
+                </XStack>
+              </Card>
+            </YStack>
+          </SwiperSlide>
+        );
+      }),
+    [quests, language, router, slideWidth, t],
+  );
 
   if (state.status === "loading") {
     return (
@@ -124,68 +189,9 @@ export function QuestCarousel() {
           centeredSlides
           spaceBetween={12}
           style={{ paddingBottom: 4 }}
-          onSlideChange={(s) => setActive((s.activeIndex ?? 0) + 1)}
+          onSlideChangeTransitionEnd={(s) => setActive((s.activeIndex ?? 0) + 1)}
         >
-          {quests.map((q) => {
-            const title = language === "fr" ? q.frTitle : q.enTitle;
-            const desc = language === "fr" ? q.frDescription : q.enDescription;
-            const emoji = questEmoji(q.rounds, q.exercises.length);
-
-            return (
-              <SwiperSlide key={q.id} style={{ display: "flex", justifyContent: "center" }}>
-                <YStack width={slideWidth}>
-                  <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
-                    <XStack gap="$3" items="flex-start">
-                      <YStack
-                        width={54}
-                        height={54}
-                        rounded={27}
-                        bg="$pastelPurple"
-                        borderWidth={3}
-                        borderColor="$color"
-                        justify="center"
-                        items="center"
-                      >
-                        <Text fontSize={26}>{emoji}</Text>
-                      </YStack>
-
-                      <YStack flex={1} gap="$2">
-                        <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
-                          {title}
-                        </Text>
-                        <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
-                          {desc}
-                        </Paragraph>
-
-                        <XStack gap="$2" flexWrap="wrap" pt="$1">
-                          <Chip
-                            label={t("quests.rounds", {
-                              count: q.rounds,
-                              defaultValue: `${q.rounds} rounds`,
-                            })}
-                            tone="secondary"
-                          />
-                          <Chip
-                            label={t("quests.exercises", {
-                              count: q.exercises.length,
-                              defaultValue: `${q.exercises.length} exercises`,
-                            })}
-                            tone="primary"
-                          />
-                          <Chip
-                            label={t("quests.rest", {
-                              count: q.restSeconds,
-                              defaultValue: `Rest ${q.restSeconds}s`,
-                            })}
-                          />
-                        </XStack>
-                      </YStack>
-                    </XStack>
-                  </Card>
-                </YStack>
-              </SwiperSlide>
-            );
-          })}
+          {slides}
         </Swiper>
       </YStack>
 

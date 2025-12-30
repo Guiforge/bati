@@ -1,7 +1,9 @@
+import { AppButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
+import { useSessionStore } from "@/stores/session";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button, Text, YStack } from "tamagui";
-import { useSessionStore } from "@/stores/session";
+import { Paragraph, Text, YStack } from "tamagui";
 
 export function PausedOverlay() {
   const { t } = useTranslation();
@@ -22,52 +24,38 @@ export function PausedOverlay() {
   return (
     <YStack
       fullscreen
-      bg="rgba(0,0,0,0.85)"
+      bg="rgba(0,0,0,0.6)"
       style={{ zIndex: 1000 }}
       items="center"
       justify="center"
       gap="$6"
       p="$6"
     >
-      <Text
-        color="white"
-        fontSize={32}
-        fontWeight="900"
-        textTransform="uppercase"
-        style={{ textAlign: "center" }}
-      >
-        {t("session.paused_title", "Game Paused")}
-      </Text>
-
-      <YStack width="100%" gap="$4" style={{ maxWidth: 300 }}>
-        <Button
-          size="$6"
-          bg="$primary"
-          pressStyle={{ bg: "$primary", opacity: 0.8 }}
-          onPress={resumeSession}
-          borderWidth={3}
-          borderColor="white"
-          rounded="$6"
-        >
-          <Text color="white" fontSize={20} fontWeight="900" textTransform="uppercase">
-            {t("session.resume_button", "Resume")}
+      <Card width="100%" maxW={360} bg="$background">
+        <YStack gap="$3" items="center">
+          <Text fontWeight="900" fontSize={28} color="$color" style={{ textAlign: "center" }}>
+            {t("session.paused_title", "Game Paused")}
           </Text>
-        </Button>
+          <Paragraph color="$color" opacity={0.65} size="$3" style={{ textAlign: "center" }}>
+            {t("session.paused_subtitle", "Catch your breath. Ready to jump back in?")}
+          </Paragraph>
 
-        <Button
-          size="$5"
-          bg="$error"
-          pressStyle={{ bg: "$error", opacity: 0.8 }}
-          onPress={handleQuit}
-          borderWidth={3}
-          borderColor="white"
-          rounded="$6"
-        >
-          <Text color="white" fontSize={18} fontWeight="900" textTransform="uppercase">
-            {t("session.quit_button", "Quit Quest")}
-          </Text>
-        </Button>
-      </YStack>
+          <YStack width="100%" gap="$3" pt="$2">
+            <AppButton onPress={resumeSession} variant="primary">
+              {t("session.resume_button", "Resume")}
+            </AppButton>
+
+            <AppButton
+              onPress={handleQuit}
+              variant="outline"
+              backgroundColor="$pastelPink"
+              pressStyle={{ opacity: 0.9 }}
+            >
+              {t("session.quit_button", "Quit Quest")}
+            </AppButton>
+          </YStack>
+        </YStack>
+      </Card>
     </YStack>
   );
 }

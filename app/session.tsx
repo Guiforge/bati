@@ -1,13 +1,14 @@
+import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
+import { CountdownView } from "@/components/session/CountdownView";
+import { PausedOverlay } from "@/components/session/PausedOverlay";
+import { RestView } from "@/components/session/RestView";
+import { VictoryView } from "@/components/session/VictoryView";
+import { useSessionStore } from "@/stores/session";
 import { useKeepAwake } from "expo-keep-awake";
 import { Redirect } from "expo-router";
 import { useEffect } from "react";
 import { BackHandler } from "react-native";
 import { YStack } from "tamagui";
-import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
-import { PausedOverlay } from "@/components/session/PausedOverlay";
-import { RestView } from "@/components/session/RestView";
-import { VictoryView } from "@/components/session/VictoryView";
-import { useSessionStore } from "@/stores/session";
 
 export default function SessionScreen() {
   // Prevent screen from dimming during workout
@@ -18,7 +19,7 @@ export default function SessionScreen() {
   // Handle Android Hardware Back Button
   useEffect(() => {
     const onBackPress = () => {
-      if (status === "running" || status === "resting") {
+      if (status === "countdown" || status === "running" || status === "resting") {
         pauseSession();
         return true; // Prevent default behavior (exit)
       }
@@ -41,6 +42,7 @@ export default function SessionScreen() {
 
   return (
     <YStack flex={1} bg="$background">
+      {displayStatus === "countdown" && <CountdownView />}
       {displayStatus === "running" && <ActiveExerciseView />}
       {displayStatus === "resting" && <RestView />}
       {status === "finished" && <VictoryView />}

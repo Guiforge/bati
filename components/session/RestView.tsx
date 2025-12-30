@@ -1,10 +1,10 @@
-import { Minus, Plus } from "@tamagui/lucide-icons";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Text, XStack, YStack } from "tamagui";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { Minus, Plus } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 
 export function RestView() {
   const { t } = useTranslation();
@@ -12,7 +12,7 @@ export function RestView() {
   const { language } = useSettingsStore();
   const { quest, currentExerciseIndex, skipRest, addRestTime, results, updateLastResult } =
     useSessionStore();
-  const { remainingSeconds } = useSessionTimer();
+  const { remainingSeconds, progress } = useSessionTimer();
 
   if (!quest) return null;
 
@@ -43,9 +43,21 @@ export function RestView() {
 
       {/* Timer */}
       <YStack items="center" gap="$2">
-        <H1 fontSize={90} fontWeight="900" fontFamily="$body" color="$color">
+        <H1 fontSize={112} fontWeight="900" fontFamily="$body" color="$color">
           {formatTime(remainingSeconds)}
         </H1>
+        <Progress
+          value={Math.min(1, Math.max(0, progress)) * 100}
+          size="$4"
+          bg="$bgLight"
+          borderWidth={2}
+          borderColor="$color"
+          rounded="$6"
+          width="100%"
+          style={{ maxWidth: 360 }}
+        >
+          <Progress.Indicator animation="quick" bg="$primary" />
+        </Progress>
         <XStack gap="$3">
           <Button
             size="$3"
@@ -142,15 +154,15 @@ export function RestView() {
       {/* Skip Button */}
       <Button
         size="$6"
-        bg="$primary"
-        pressStyle={{ bg: "$primary", opacity: 0.8 }}
+        bg="$pastelGreen"
+        pressStyle={{ opacity: 0.9 }}
         onPress={skipRest}
         borderWidth={3}
         borderColor="$color"
         rounded="$6"
         mt="auto"
       >
-        <Text color="white" fontSize={20} fontWeight="900" textTransform="uppercase">
+        <Text color="$color" fontSize={20} fontWeight="900" textTransform="uppercase">
           {t("session.skip_rest", "I'm Ready!")}
         </Text>
       </Button>

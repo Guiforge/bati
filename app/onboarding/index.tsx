@@ -1,12 +1,12 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { useSettingsStore } from "@/stores/settings";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Text, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useSettingsStore } from "@/stores/settings";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 1;
@@ -66,7 +66,7 @@ export default function LanguageSelection() {
                     fullWidth={false}
                     flex={1}
                     height={72}
-                    bg={isSelected ? "$primary" : "$bgLight"}
+                    bg={isSelected ? "$pastelBlue" : "$bgLight"}
                     borderColor={isSelected ? "$primary" : "$color"}
                     borderWidth={3}
                     rounded="$6"
@@ -75,7 +75,7 @@ export default function LanguageSelection() {
                   >
                     <YStack items="center" gap="$1">
                       <Text fontSize={28}>{lang.flag}</Text>
-                      <Text color={isSelected ? "white" : "$color"} fontWeight="800" fontSize={16}>
+                      <Text color="$color" fontWeight="800" fontSize={16}>
                         {lang.label}
                       </Text>
                     </YStack>

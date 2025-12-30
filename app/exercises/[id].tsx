@@ -1,3 +1,10 @@
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
+import { Tag } from "@/components/common/Tag";
+import { getExerciseById } from "@/db";
+import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { MUSCLE_LABELS } from "@/db/muscles";
+import { useSettingsStore } from "@/stores/settings";
 import { ChevronLeft, Dumbbell, Timer } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -7,13 +14,6 @@ import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
-import { getExerciseById } from "@/db";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { MUSCLE_LABELS } from "@/db/muscles";
-import { useSettingsStore } from "@/stores/settings";
 
 type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
 type Status = "loading" | "ready" | "error";
@@ -88,7 +88,7 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
     <YStack
       width="100%"
       aspectRatio={16 / 9}
-      bg="$primary"
+      bg="$bgLight"
       borderWidth={3}
       borderColor="$color"
       rounded="$8"
@@ -136,12 +136,12 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
 
           {/* Tags */}
           <XStack gap="$2" flexWrap="wrap">
-            <Chip
+            <Tag
               label={equipmentLabel}
               tone={exercise.equipment === "none" ? "default" : "secondary"}
             />
-            <Chip
-              icon={<Timer size={12} color="white" />}
+            <Tag
+              icon={<Timer size={12} color="$color" opacity={0.7} />}
               label={t("exercises.seconds_per_rep", {
                 count: exercise.secondsPerRep,
                 defaultValue: `${exercise.secondsPerRep}s`,
@@ -158,7 +158,7 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
               </Text>
               <XStack gap="$2" flexWrap="wrap">
                 {exercise.muscles.map((m) => (
-                  <Chip key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} tone="success" />
+                  <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} tone="success" />
                 ))}
               </XStack>
             </YStack>

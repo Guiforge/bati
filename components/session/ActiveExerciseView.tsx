@@ -1,9 +1,9 @@
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 
 export function ActiveExerciseView() {
   const { t } = useTranslation();
@@ -11,7 +11,7 @@ export function ActiveExerciseView() {
   const { language } = useSettingsStore();
   const { quest, currentRoundIndex, currentExerciseIndex, completeExercise, pauseSession } =
     useSessionStore();
-  const { remainingSeconds, elapsedSeconds, isOvertime } = useSessionTimer();
+  const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
 
   if (!quest) return null;
 
@@ -40,8 +40,10 @@ export function ActiveExerciseView() {
   // Calculate overtime seconds for display
   const overtimeSeconds = isOvertime ? Math.abs(remainingSeconds) : 0;
 
+  const screenBg = isTimeBased ? "$pastelBlue" : "$pastelYellow";
+
   return (
-    <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16} px="$4" gap="$4">
+    <YStack flex={1} bg={screenBg} pt={insets.top + 16} pb={insets.bottom + 16} px="$4" gap="$4">
       {/* Header: Progress & Pause */}
       <XStack items="center" justify="space-between">
         <YStack>
@@ -76,17 +78,17 @@ export function ActiveExerciseView() {
         />
       </XStack>
 
-      {/* Progress Bar */}
+      {/* Overall progress (subtle) */}
       <YStack gap="$1">
         <Progress
           value={progressPercent}
-          size="$4"
+          size="$2"
           bg="$bgLight"
-          borderWidth={2}
+          borderWidth={1}
           borderColor="$color"
           rounded="$4"
         >
-          <Progress.Indicator animation="bouncy" bg="$primary" />
+          <Progress.Indicator animation="bouncy" bg="$color" opacity={0.35} />
         </Progress>
         <XStack justify="space-between">
           <Text fontSize={10} fontWeight="900" opacity={0.5} color="$color">
@@ -101,6 +103,36 @@ export function ActiveExerciseView() {
           </Text>
         </XStack>
       </YStack>
+
+      {/* Within-exercise timer progress (only for time-based exercises) */}
+      {isTimeBased && (
+        <YStack gap="$2">
+          <XStack justify="space-between" items="baseline">
+            <Text fontSize={12} fontWeight="900" color="$color" opacity={0.75}>
+              {isOvertime
+                ? t("session.bonus_time", "BONUS TIME")
+                : t("session.time_progress", "TIME")}
+            </Text>
+            <Text fontSize={12} fontWeight="900" color="$color" opacity={0.6}>
+              {isOvertime ? formatOvertime(overtimeSeconds) : formatTime(remainingSeconds)}
+            </Text>
+          </XStack>
+          <Progress
+            value={Math.min(1, Math.max(0, progress)) * 100}
+            size="$4"
+            bg="$bgLight"
+            borderWidth={2}
+            borderColor="$color"
+            rounded="$6"
+          >
+            <Progress.Indicator
+              animation="quick"
+              bg={isOvertime ? "$success" : "$primary"}
+              opacity={isOvertime ? 0.9 : 1}
+            />
+          </Progress>
+        </YStack>
+      )}
 
       {/* Main Content */}
       <YStack flex={1} items="center" justify="center" gap="$5">
@@ -136,7 +168,13 @@ export function ActiveExerciseView() {
 
         {/* Big Counter */}
         <YStack
-          bg={isTimeBased ? (isOvertime ? "$success" : "$pastelBlue") : "$pastelYellow"}
+          bg={
+            isTimeBased
+              ? isOvertime
+                ? "$pastelGreen"
+                : "$background"
+              : "$background"
+          }
           py="$6"
           px="$8"
           rounded="$8"
@@ -155,16 +193,21 @@ export function ActiveExerciseView() {
                   <Text
                     fontSize={14}
                     fontWeight="800"
-                    color={isOvertime ? "white" : "$color"}
-                    opacity={0.8}
+                    color="$color"
+                    opacity={0.7}
                     textTransform="uppercase"
                   >
                     🔥 {t("session.overtime", "BONUS TIME")} 🔥
                   </Text>
-                  <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="white">
+                  <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="$success">
                     {formatOvertime(overtimeSeconds)}
                   </H1>
-                  <Paragraph fontWeight="800" opacity={0.9} textTransform="uppercase" color="white">
+                  <Paragraph
+                    fontWeight="800"
+                    opacity={0.8}
+                    textTransform="uppercase"
+                    color="$color"
+                  >
                     {t("session.target_reached", "Target reached!")}
                   </Paragraph>
                 </>
@@ -176,7 +219,7 @@ export function ActiveExerciseView() {
                   </H1>
                   <Paragraph
                     fontWeight="800"
-                    opacity={0.8}
+                    opacity={0.7}
                     textTransform="uppercase"
                     color="$color"
                   >

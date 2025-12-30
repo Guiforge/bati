@@ -1,3 +1,12 @@
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
+import { Tag } from "@/components/common/Tag";
+import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
+import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { MUSCLE_LABELS } from "@/db/muscles";
+import type { Quest, Target } from "@/db/quests";
+import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 import { ChevronLeft, Dumbbell, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -8,15 +17,6 @@ import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
-import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { MUSCLE_LABELS } from "@/db/muscles";
-import type { Quest, Target } from "@/db/quests";
-import { useSessionStore } from "@/stores/session";
-import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | { status: "loading"; quest: Quest | null }
@@ -25,13 +25,13 @@ type LoadState =
 
 function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
+  if (path === "assets/placeholder.jpg") return require("../../../assets/placeholder.jpg");
   return null;
 }
 
 function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  if (path === "assets/placeholder.jpg") return require("../../assets/placeholder.jpg");
+  if (path === "assets/placeholder.jpg") return require("../../../assets/placeholder.jpg");
   return null;
 }
 
@@ -162,7 +162,7 @@ export default function QuestDetails() {
               </XStack>
             </XStack>
 
-            <Chip label={levelLabel(level, t)} tone="secondary" />
+            <Tag label={levelLabel(level, t)} tone="secondary" />
           </XStack>
 
           {headerImage ? (
@@ -230,27 +230,27 @@ export default function QuestDetails() {
                 </Paragraph>
 
                 <XStack gap="$2" flexWrap="wrap" pt="$2">
-                  <Chip
+                  <Tag
                     label={t("quests.rounds", {
                       count: quest.rounds,
                       defaultValue: `${quest.rounds} rounds`,
                     })}
                   />
-                  <Chip
+                  <Tag
                     label={t("quests.exercises", {
                       count: quest.exercises.length,
                       defaultValue: `${quest.exercises.length} exercises`,
                     })}
                     tone="primary"
                   />
-                  <Chip
+                  <Tag
                     label={t("quests.rest", {
                       count: quest.restSeconds,
                       defaultValue: `Rest ${quest.restSeconds}s`,
                     })}
                   />
                   {estimate ? (
-                    <Chip
+                    <Tag
                       label={t("quests.estimate", {
                         duration: estimate,
                         defaultValue: `≈ ${estimate}`,
@@ -314,7 +314,7 @@ export default function QuestDetails() {
                           <Text fontWeight="900" fontSize={17} color="$color" flex={1}>
                             {i + 1}. {exName}
                           </Text>
-                          <Chip
+                          <Tag
                             label={formatTarget(qex.target, language)}
                             tone={qex.target.type === "time" ? "secondary" : "primary"}
                           />
@@ -359,14 +359,14 @@ export default function QuestDetails() {
                         </Paragraph>
 
                         <XStack gap="$2" flexWrap="wrap" pt="$2">
-                          <Chip
+                          <Tag
                             label={
                               EQUIPMENT_LABELS[qex.exercise.equipment]?.[language] ??
                               qex.exercise.equipment
                             }
                           />
                           {qex.target.type === "reps" ? (
-                            <Chip
+                            <Tag
                               label={t("quests.seconds_per_rep", {
                                 count: qex.exercise.secondsPerRep,
                                 defaultValue: `${qex.exercise.secondsPerRep}s/rep`,
@@ -375,10 +375,10 @@ export default function QuestDetails() {
                             />
                           ) : null}
                           {qex.exercise.muscles.slice(0, 4).map((m) => (
-                            <Chip key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
+                            <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
                           ))}
                           {qex.exercise.muscles.length > 4 ? (
-                            <Chip label={`+${qex.exercise.muscles.length - 4}`} />
+                            <Tag label={`+${qex.exercise.muscles.length - 4}`} />
                           ) : null}
                         </XStack>
                       </YStack>
@@ -402,11 +402,9 @@ export default function QuestDetails() {
         >
           <AppButton
             height={60}
-            bg="$success"
-            pressStyle={{ bg: "$success", opacity: 0.8 }}
+            variant="primary"
+            pressStyle={{ opacity: 0.9 }}
             onPress={handleStart}
-            borderWidth={3}
-            borderColor="$color"
             rounded="$6"
           >
             <Text color="white" fontSize={22} fontWeight="900" textTransform="uppercase">

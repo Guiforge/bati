@@ -27,17 +27,27 @@ export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
   return (
     <YStack
       bg={toneToBg(tone)}
-      borderWidth={2}
+      borderWidth={isPressable ? 2 : 1}
       borderColor="$color"
-      rounded="$10"
-      px="$3"
-      py="$2"
+      rounded={isPressable ? "$10" : "$4"}
+      px={isPressable ? "$3" : "$2"}
+      py={isPressable ? "$2" : "$1"}
+      opacity={isPressable ? 1 : 0.92}
+      pressStyle={
+        isPressable
+          ? {
+            opacity: 0.92,
+            scale: 0.99,
+            bg: tone === "default" ? "$background" : toneToBg(tone),
+          }
+          : undefined
+      }
       {...props}
       style={isPressable ? [minTapStyle, props.style] : props.style}
     >
       <XStack items="center" gap="$2">
         {icon}
-        <Text fontWeight="900" fontSize={13} color={toneToText(tone)}>
+        <Text fontWeight={isPressable ? "900" : "800"} fontSize={13} color={toneToText(tone)}>
           {label}
         </Text>
       </XStack>

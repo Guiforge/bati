@@ -1,3 +1,9 @@
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { JournalStats } from "@/components/journal/JournalStats";
+import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
+import { listCompletedSessions } from "@/db/completed";
+import { listQuestTemplates } from "@/db/quests";
+import { useSettingsStore } from "@/stores/settings";
 import { BarChart2, ChevronLeft, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -5,12 +11,6 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { JournalStats } from "@/components/journal/JournalStats";
-import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
-import { listCompletedSessions } from "@/db/completed";
-import { listQuestTemplates } from "@/db/quests";
-import { useSettingsStore } from "@/stores/settings";
 
 type TabType = "history" | "stats";
 
@@ -28,10 +28,7 @@ export default function JournalScreen() {
     try {
       setLoading(true);
       // Fetch sessions and quest templates to resolve titles
-      const [sessions, quests] = await Promise.all([
-        listCompletedSessions(100),
-        listQuestTemplates(),
-      ]);
+      const [sessions, quests] = await Promise.all([listCompletedSessions(100), listQuestTemplates()]);
 
       const questMap = new Map(quests.map((q) => [q.id, q]));
 
@@ -81,16 +78,16 @@ export default function JournalScreen() {
         fullWidth={false}
         flex={1}
         height={44}
-        bg={isActive ? "$primary" : "$bgLight"}
+        bg={isActive ? "$pastelBlue" : "$bgLight"}
         borderColor={isActive ? "$primary" : "$color"}
-        borderWidth={2}
-        rounded="$4"
+        borderWidth={3}
+        rounded="$5"
         onPress={() => setActiveTab(tab)}
         pressStyle={{ opacity: 0.9 }}
       >
         <XStack items="center" gap="$2">
           {icon}
-          <Text color={isActive ? "white" : "$color"} fontWeight="800" fontSize={14}>
+          <Text color="$color" fontWeight={isActive ? "900" : "800"} fontSize={14}>
             {label}
           </Text>
         </XStack>
@@ -120,12 +117,12 @@ export default function JournalScreen() {
           <XStack gap="$2">
             <TabButton
               tab="stats"
-              icon={<BarChart2 size={16} color={activeTab === "stats" ? "white" : "$color"} />}
+              icon={<BarChart2 size={16} color="$color" opacity={activeTab === "stats" ? 1 : 0.7} />}
               label={t("journal.tab_stats", "Stats")}
             />
             <TabButton
               tab="history"
-              icon={<List size={16} color={activeTab === "history" ? "white" : "$color"} />}
+              icon={<List size={16} color="$color" opacity={activeTab === "history" ? 1 : 0.7} />}
               label={t("journal.tab_history", "History")}
             />
           </XStack>

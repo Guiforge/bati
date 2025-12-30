@@ -1,10 +1,10 @@
-import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
-import { useSettingsStore } from "@/stores/settings";
 import { Minus, Plus } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
+import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 
 export function RestView() {
   const { t } = useTranslation();

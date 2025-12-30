@@ -1,14 +1,14 @@
+import { useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { ProgressDots } from "@/components/ProgressDots";
 import { listQuestTemplates } from "@/db";
 import type { QuestTemplate } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
-import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[] }

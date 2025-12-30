@@ -1,8 +1,8 @@
-import { useSessionTimer } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
 import { useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Text, YStack } from "tamagui";
+import { useSessionTimer } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
 
 export function CountdownView() {
   const insets = useSafeAreaInsets();

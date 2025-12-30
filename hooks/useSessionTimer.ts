@@ -1,5 +1,5 @@
-import { useSessionStore } from "@/stores/session";
 import { useEffect, useState } from "react";
+import { useSessionStore } from "@/stores/session";
 
 export function formatTime(seconds: number) {
   const absSeconds = Math.abs(seconds);
@@ -16,8 +16,7 @@ export function formatOvertime(seconds: number) {
 }
 
 export function useSessionTimer() {
-  const { timerStartTimestamp, timerDuration, status, lastPauseTimestamp } =
-    useSessionStore();
+  const { timerStartTimestamp, timerDuration, status, lastPauseTimestamp } = useSessionStore();
 
   // remainingSeconds: positive = time left, negative = overtime
   const [remainingSeconds, setRemainingSeconds] = useState(0);
@@ -68,11 +67,7 @@ export function useSessionTimer() {
       return;
     }
 
-    if (
-      status === "running" ||
-      status === "resting" ||
-      status === "countdown"
-    ) {
+    if (status === "running" || status === "resting" || status === "countdown") {
       const tick = () => calculate(Date.now());
       tick(); // Immediate update
       const interval = setInterval(tick, 100);

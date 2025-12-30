@@ -1,11 +1,11 @@
+import { Calendar, Trophy } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
+import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { formatDuration } from "@/db";
 import type { DifficultyCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
-import { Calendar, Trophy } from "@tamagui/lucide-icons";
-import { useTranslation } from "react-i18next";
-import { Text, XStack, YStack } from "tamagui";
 
 export interface JournalEntry {
   id: number;

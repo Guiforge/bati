@@ -1,10 +1,3 @@
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { Tag } from "@/components/common/Tag";
-import { getExerciseById } from "@/db";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { MUSCLE_LABELS } from "@/db/muscles";
-import { useSettingsStore } from "@/stores/settings";
 import { ChevronLeft, Dumbbell, Timer } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -14,6 +7,13 @@ import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
+import { Tag } from "@/components/common/Tag";
+import { getExerciseById } from "@/db";
+import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { MUSCLE_LABELS } from "@/db/muscles";
+import { useSettingsStore } from "@/stores/settings";
 
 type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
 type Status = "loading" | "ready" | "error";

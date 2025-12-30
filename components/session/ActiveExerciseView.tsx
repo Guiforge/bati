@@ -1,9 +1,9 @@
-import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
-import { useSettingsStore } from "@/stores/settings";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 
 export function ActiveExerciseView() {
   const { t } = useTranslation();
@@ -168,13 +168,7 @@ export function ActiveExerciseView() {
 
         {/* Big Counter */}
         <YStack
-          bg={
-            isTimeBased
-              ? isOvertime
-                ? "$pastelGreen"
-                : "$background"
-              : "$background"
-          }
+          bg={isTimeBased ? (isOvertime ? "$pastelGreen" : "$background") : "$background"}
           py="$6"
           px="$8"
           rounded="$8"

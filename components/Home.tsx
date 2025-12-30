@@ -1,8 +1,3 @@
-import { Card } from "@/components/common/Card";
-import { QuestCarousel } from "@/components/QuestCarousel";
-import { getAvatarById } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
-import { useUserStore } from "@/stores/user";
 import { Map as MapIcon } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -10,6 +5,11 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import { QuestCarousel } from "@/components/QuestCarousel";
+import { getAvatarById } from "@/constants/avatars";
+import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
 import { AppButton } from "./common/AppButton";
 import { HomeSettingsMenu } from "./HomeSettingsMenu";
 

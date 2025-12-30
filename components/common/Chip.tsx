@@ -36,10 +36,10 @@ export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
       pressStyle={
         isPressable
           ? {
-            opacity: 0.92,
-            scale: 0.99,
-            bg: tone === "default" ? "$background" : toneToBg(tone),
-          }
+              opacity: 0.92,
+              scale: 0.99,
+              bg: tone === "default" ? "$background" : toneToBg(tone),
+            }
           : undefined
       }
       {...props}

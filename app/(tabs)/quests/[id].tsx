@@ -1,12 +1,3 @@
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { Tag } from "@/components/common/Tag";
-import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { MUSCLE_LABELS } from "@/db/muscles";
-import type { Quest, Target } from "@/db/quests";
-import { useSessionStore } from "@/stores/session";
-import { useSettingsStore } from "@/stores/settings";
 import { ChevronLeft, Dumbbell, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -17,6 +8,15 @@ import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
+import { Tag } from "@/components/common/Tag";
+import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
+import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { MUSCLE_LABELS } from "@/db/muscles";
+import type { Quest, Target } from "@/db/quests";
+import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | { status: "loading"; quest: Quest | null }

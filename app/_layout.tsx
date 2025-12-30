@@ -1,6 +1,3 @@
-import { DatabaseProvider } from "@/components/DatabaseProvider";
-import { useSettingsStore } from "@/stores/settings";
-import { useUserStore } from "@/stores/user";
 import { Slot, useRouter, useSegments } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
@@ -8,6 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Theme } from "tamagui";
+import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
 import "../i18n";
 import config from "../tamagui.config";
 
@@ -19,10 +19,8 @@ export default function RootLayout() {
     isLoaded: userLoaded,
     loadFromDatabase: loadUserFromDatabase,
   } = useUserStore();
-  const {
-    isLoaded: settingsLoaded,
-    loadFromDatabase: loadSettingsFromDatabase,
-  } = useSettingsStore();
+  const { isLoaded: settingsLoaded, loadFromDatabase: loadSettingsFromDatabase } =
+    useSettingsStore();
 
   // UI decision: this app is intentionally light-only for a consistent RPG feel.
   const colorScheme = "light" as const;

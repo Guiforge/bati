@@ -7,21 +7,12 @@ import {
   dealDamage,
   getOrCreateBossFight,
 } from "@/db/bossFights";
-import {
-  type CompletedExerciseInput,
-  createCompletedSession,
-} from "@/db/completed";
+import { type CompletedExerciseInput, createCompletedSession } from "@/db/completed";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, MuscleCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 
-export type SessionStatus =
-  | "idle"
-  | "countdown"
-  | "running"
-  | "resting"
-  | "paused"
-  | "finished";
+export type SessionStatus = "idle" | "countdown" | "running" | "resting" | "paused" | "finished";
 
 const PRE_START_COUNTDOWN_SECONDS = 3;
 
@@ -60,7 +51,7 @@ interface SessionState {
     options?: {
       adventureRunStepId?: number | null;
       adventureId?: number | null;
-    }
+    },
   ) => Promise<void>;
   finishCountdown: () => void;
   pauseSession: () => void;
@@ -146,8 +137,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   pauseSession: () => {
     const { status } = get();
-    if (status === "paused" || status === "idle" || status === "finished")
-      return;
+    if (status === "paused" || status === "idle" || status === "finished") return;
 
     set({
       status: "paused",
@@ -157,20 +147,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   resumeSession: () => {
-    const {
-      status,
-      lastPauseTimestamp,
-      totalPausedTime,
-      timerStartTimestamp,
-      prePauseStatus,
-    } = get();
+    const { status, lastPauseTimestamp, totalPausedTime, timerStartTimestamp, prePauseStatus } =
+      get();
     if (status !== "paused") return;
 
     const now = Date.now();
     const pauseDuration = lastPauseTimestamp ? now - lastPauseTimestamp : 0;
-    const newTimerStart = timerStartTimestamp
-      ? timerStartTimestamp + pauseDuration
-      : null;
+    const newTimerStart = timerStartTimestamp ? timerStartTimestamp + pauseDuration : null;
 
     set({
       status: prePauseStatus || "running",
@@ -201,20 +184,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   completeExercise: async (resultValue) => {
-    const {
-      quest,
-      currentRoundIndex,
-      currentExerciseIndex,
-      results,
-      bossFight,
-    } = get();
+    const { quest, currentRoundIndex, currentExerciseIndex, results, bossFight } = get();
     if (!quest) return;
 
     // DB constraints (see migrations) require: resultValue > 0, roundIndex >= 0, sortOrder >= 0.
     // Guard against accidental 0/NaN when users tap "DONE" immediately on time-based exercises.
-    const safeResultValue = Number.isFinite(resultValue)
-      ? Math.max(1, Math.floor(resultValue))
-      : 1;
+    const safeResultValue = Number.isFinite(resultValue) ? Math.max(1, Math.floor(resultValue)) : 1;
 
     const currentEx = quest.exercises[currentExerciseIndex];
 
@@ -222,9 +197,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     let damageResult: DamageResult | null = null;
     if (bossFight && !bossFight.defeatedAt) {
       // Get primary muscle for the exercise
-      const primaryMuscle = currentEx.exercise.muscles[0] as
-        | MuscleCode
-        | undefined;
+      const primaryMuscle = currentEx.exercise.muscles[0] as MuscleCode | undefined;
 
       try {
         damageResult = await dealDamage(bossFight.id, {
@@ -261,8 +234,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const nextResults = [...results, newResult];
 
     // Determine next step
-    const isLastExerciseInRound =
-      currentExerciseIndex === quest.exercises.length - 1;
+    const isLastExerciseInRound = currentExerciseIndex === quest.exercises.length - 1;
     const isLastRound = currentRoundIndex === quest.rounds - 1;
 
     if (isLastExerciseInRound && isLastRound) {
@@ -343,9 +315,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const last = results[results.length - 1];
 
     // DB constraints require resultValue > 0.
-    const safeResultValue = Number.isFinite(resultValue)
-      ? Math.max(1, Math.floor(resultValue))
-      : 1;
+    const safeResultValue = Number.isFinite(resultValue) ? Math.max(1, Math.floor(resultValue)) : 1;
     const updated = {
       ...last,
       result: { ...last.result, value: safeResultValue },
@@ -357,19 +327,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   saveSession: async () => {
-    const {
-      quest,
-      userLevel,
-      startTime,
-      totalPausedTime,
-      results,
-      adventureRunStepId,
-    } = get();
+    const { quest, userLevel, startTime, totalPausedTime, results, adventureRunStepId } = get();
     if (!quest || !startTime) throw new Error("No active session");
 
-    const durationSeconds = Math.floor(
-      (Date.now() - startTime - totalPausedTime) / 1000
-    );
+    const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
     const xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
     const sessionId = await createCompletedSession({

@@ -3,115 +3,115 @@ import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
 
 type BossHpBarProps = {
-    currentHp: number;
-    totalHp: number;
-    bossName?: string;
-    lastDamage?: {
-        damage: number;
-        isCritical: boolean;
-        weaknessBonus: boolean;
-    } | null;
+  currentHp: number;
+  totalHp: number;
+  bossName?: string;
+  lastDamage?: {
+    damage: number;
+    isCritical: boolean;
+    weaknessBonus: boolean;
+  } | null;
 };
 
 export function BossHpBar({ currentHp, totalHp, bossName, lastDamage }: BossHpBarProps) {
-    const { t } = useTranslation();
-    const [showDamage, setShowDamage] = useState(false);
+  const { t } = useTranslation();
+  const [showDamage, setShowDamage] = useState(false);
 
-    const hpPercent = Math.max(0, Math.min(100, (currentHp / totalHp) * 100));
-    const isEnraged = hpPercent < 25;
-    const isLow = hpPercent < 50;
+  const hpPercent = Math.max(0, Math.min(100, (currentHp / totalHp) * 100));
+  const isEnraged = hpPercent < 25;
+  const isLow = hpPercent < 50;
 
-    // Flash damage indicator
-    useEffect(() => {
-        if (lastDamage) {
-            setShowDamage(true);
-            const timer = setTimeout(() => setShowDamage(false), 1500);
-            return () => clearTimeout(timer);
-        }
-    }, [lastDamage]);
+  // Flash damage indicator
+  useEffect(() => {
+    if (lastDamage) {
+      setShowDamage(true);
+      const timer = setTimeout(() => setShowDamage(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [lastDamage]);
 
-    // HP bar color based on remaining HP
-    const hpColor = isEnraged ? "$error" : isLow ? "$secondary" : "$success";
+  // HP bar color based on remaining HP
+  const hpColor = isEnraged ? "$error" : isLow ? "$secondary" : "$success";
 
-    return (
-        <YStack
-            bg="$bgLight"
-            borderWidth={3}
-            borderColor="$color"
-            rounded="$4"
-            px="$3"
-            py="$2"
-            gap="$2"
-            shadowColor="$color"
-            shadowRadius={0}
-            shadowOffset={{ width: 0, height: 3 }}
+  return (
+    <YStack
+      bg="$bgLight"
+      borderWidth={3}
+      borderColor="$color"
+      rounded="$4"
+      px="$3"
+      py="$2"
+      gap="$2"
+      shadowColor="$color"
+      shadowRadius={0}
+      shadowOffset={{ width: 0, height: 3 }}
+    >
+      {/* Boss Name & HP Text */}
+      <XStack justify="space-between" items="center">
+        <XStack items="center" gap="$2">
+          <Text fontSize={18}>👹</Text>
+          <Text fontWeight="900" fontSize={14} color="$color" textTransform="uppercase">
+            {bossName || t("adventures.kind_boss")}
+          </Text>
+        </XStack>
+        <XStack items="center" gap="$1">
+          <Text fontWeight="900" fontSize={16} color={hpColor} fontFamily="$body" animation="quick">
+            {currentHp}
+          </Text>
+          <Text fontWeight="700" fontSize={12} color="$color" opacity={0.5}>
+            /{totalHp}
+          </Text>
+        </XStack>
+      </XStack>
+
+      {/* HP Bar */}
+      <YStack position="relative">
+        <Progress
+          value={hpPercent}
+          size="$4"
+          bg="$pastelPink"
+          borderWidth={2}
+          borderColor="$color"
+          rounded="$4"
         >
-            {/* Boss Name & HP Text */}
-            <XStack justify="space-between" items="center">
-                <XStack items="center" gap="$2">
-                    <Text fontSize={18}>👹</Text>
-                    <Text fontWeight="900" fontSize={14} color="$color" textTransform="uppercase">
-                        {bossName || t("adventures.kind_boss")}
-                    </Text>
-                </XStack>
-                <XStack items="center" gap="$1">
-                    <Text fontWeight="900" fontSize={16} color={hpColor} fontFamily="$body" animation="quick">
-                        {currentHp}
-                    </Text>
-                    <Text fontWeight="700" fontSize={12} color="$color" opacity={0.5}>
-                        /{totalHp}
-                    </Text>
-                </XStack>
-            </XStack>
+          <Progress.Indicator animation={isEnraged ? "bouncy" : "quick"} bg={hpColor} />
+        </Progress>
 
-            {/* HP Bar */}
-            <YStack position="relative">
-                <Progress
-                    value={hpPercent}
-                    size="$4"
-                    bg="$pastelPink"
-                    borderWidth={2}
-                    borderColor="$color"
-                    rounded="$4"
-                >
-                    <Progress.Indicator animation={isEnraged ? "bouncy" : "quick"} bg={hpColor} />
-                </Progress>
+        {/* Damage Popup */}
+        {showDamage && lastDamage && (
+          <XStack
+            position="absolute"
+            t={-24}
+            r={0}
+            animation="bouncy"
+            enterStyle={{ opacity: 0, y: 10, scale: 0.8 }}
+            exitStyle={{ opacity: 0, y: -10 }}
+          >
+            <Text
+              fontWeight="900"
+              fontSize={lastDamage.isCritical ? 20 : 16}
+              color={lastDamage.isCritical ? "$error" : "$secondary"}
+            >
+              {lastDamage.isCritical ? "💥 CRIT! " : "⚔️ "}-{lastDamage.damage}
+              {lastDamage.weaknessBonus ? " 🎯" : ""}
+            </Text>
+          </XStack>
+        )}
+      </YStack>
 
-                {/* Damage Popup */}
-                {showDamage && lastDamage && (
-                    <XStack
-                        position="absolute"
-                        t={-24}
-                        r={0}
-                        animation="bouncy"
-                        enterStyle={{ opacity: 0, y: 10, scale: 0.8 }}
-                        exitStyle={{ opacity: 0, y: -10 }}
-                    >
-                        <Text
-                            fontWeight="900"
-                            fontSize={lastDamage.isCritical ? 20 : 16}
-                            color={lastDamage.isCritical ? "$error" : "$secondary"}
-                        >
-                            {lastDamage.isCritical ? "💥 CRIT! " : "⚔️ "}-{lastDamage.damage}
-                            {lastDamage.weaknessBonus ? " 🎯" : ""}
-                        </Text>
-                    </XStack>
-                )}
-            </YStack>
-
-            {/* Status Text */}
-            {isEnraged && (
-                <Text
-                    fontSize={11}
-                    fontWeight="800"
-                    color="$error"
-                    textTransform="uppercase"
-                    style={{ textAlign: "center" }}
-                    animation="bouncy"
-                >
-                    🔥 {t("boss.enraged", "ENRAGED!")} 🔥
-                </Text>
-            )}
-        </YStack>
-    );
+      {/* Status Text */}
+      {isEnraged && (
+        <Text
+          fontSize={11}
+          fontWeight="800"
+          color="$error"
+          textTransform="uppercase"
+          style={{ textAlign: "center" }}
+          animation="bouncy"
+        >
+          🔥 {t("boss.enraged", "ENRAGED!")} 🔥
+        </Text>
+      )}
+    </YStack>
+  );
 }

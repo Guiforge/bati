@@ -139,9 +139,9 @@ export function Home() {
                 <Paragraph color="$color" opacity={0.6} size="$3">
                   {activeStepIndex != null
                     ? t("adventures.step_label", {
-                      count: activeStepIndex + 1,
-                      defaultValue: `Step ${activeStepIndex + 1}`,
-                    })
+                        count: activeStepIndex + 1,
+                        defaultValue: `Step ${activeStepIndex + 1}`,
+                      })
                     : t("home_continue_adventure_subtitle", "Pick up where you left off.")}
                 </Paragraph>
                 <AppButton

@@ -1,13 +1,13 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Animated, PanResponder, Platform, Pressable } from "react-native";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { EquipmentCode, MuscleCode } from "@/db/schema";
 import type { AppLanguage } from "@/stores/settings";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Animated, PanResponder, Platform, Pressable } from "react-native";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 type Props = {
   language: AppLanguage;

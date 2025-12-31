@@ -1,12 +1,12 @@
-import { AppButton } from "@/components/common/AppButton";
-import { getAllPreferences } from "@/db";
-import { resetDatabase } from "@/db/client";
-import { useUserStore } from "@/stores/user";
 import { Stack } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, ScrollView } from "react-native";
 import { H3, Paragraph, Separator, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
+import { getAllPreferences } from "@/db";
+import { resetDatabase } from "@/db/client";
+import { useUserStore } from "@/stores/user";
 
 export default function DevTools() {
   const { t } = useTranslation();

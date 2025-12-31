@@ -32,11 +32,11 @@ type LoadState =
   | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
   | { status: "ready"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
   | {
-    status: "error";
-    quests: QuestTemplate[];
-    exercisesById: Record<number, Exercise>;
-    message: string;
-  };
+      status: "error";
+      quests: QuestTemplate[];
+      exercisesById: Record<number, Exercise>;
+      message: string;
+    };
 
 function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";

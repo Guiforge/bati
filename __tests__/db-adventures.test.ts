@@ -16,8 +16,7 @@ describe("db/adventures", () => {
   });
 
   test("listAdventures returns seeded campaign adventures", async () => {
-    const adventures =
-      require("../db/adventures") as typeof import("../db/adventures");
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
 
     const all = await adventures.listAdventures();
     expect(all.length).toBeGreaterThan(0);
@@ -25,8 +24,7 @@ describe("db/adventures", () => {
     // Campaign seed inserts a real multi-step adventure wrapping "Couper du bois".
     const starter = all.find((a) => a.frTitle === "La route du bûcheron");
     expect(starter).toBeTruthy();
-    if (!starter)
-      throw new Error("Expected seeded campaign 'La route du bûcheron'");
+    if (!starter) throw new Error("Expected seeded campaign 'La route du bûcheron'");
 
     expect(starter.author).toBe("Admin");
 
@@ -37,8 +35,7 @@ describe("db/adventures", () => {
   });
 
   test("listAdventures includes a seeded boss adventure", async () => {
-    const adventures =
-      require("../db/adventures") as typeof import("../db/adventures");
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
 
     const all = await adventures.listAdventures();
     expect(all.length).toBeGreaterThan(0);

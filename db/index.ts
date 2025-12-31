@@ -1,14 +1,5 @@
 // Database exports
 
-export {
-  completeAdventureRunStep,
-  getActiveAdventureRun,
-  getAdventureDetails,
-  getAnyActiveAdventureRun,
-  listAdventures,
-  setAdventureRunDifficultyOverride,
-  startAdventureRun,
-} from "./adventures";
 export type {
   ActiveAdventureRun,
   Adventure,
@@ -18,7 +9,17 @@ export type {
   AdventureRunStep,
   AdventureStepTemplate,
 } from "./adventures";
+export {
+  completeAdventureRunStep,
+  getActiveAdventureRun,
+  getAdventureDetails,
+  getAnyActiveAdventureRun,
+  listAdventures,
+  setAdventureRunDifficultyOverride,
+  startAdventureRun,
+} from "./adventures";
 export { db, schema } from "./client";
+export type { SessionSummary } from "./completed";
 export {
   createCompletedSession,
   getCompletedSessionById,
@@ -26,7 +27,6 @@ export {
   getRecentSessionHistory,
   listCompletedSessions,
 } from "./completed";
-export type { SessionSummary } from "./completed";
 export { suggestDifficultyFromSessions } from "./difficultySuggestion";
 export { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
 export {
@@ -43,8 +43,8 @@ export {
 } from "./preferences";
 export { estimateQuestTemplateSeconds } from "./preview";
 export {
-  Difficulty,
   createQuestTemplate,
+  Difficulty,
   deleteQuest,
   generateTarget,
   getQuestById,

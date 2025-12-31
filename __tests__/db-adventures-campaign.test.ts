@@ -16,20 +16,16 @@ describe("db/adventures campaign", () => {
   });
 
   test("startAdventureRun creates run steps and complete advances to next step", async () => {
-    const adventures =
-      require("../db/adventures") as typeof import("../db/adventures");
-    const exercises =
-      require("../db/exercises") as typeof import("../db/exercises");
-    const completed =
-      require("../db/completed") as typeof import("../db/completed");
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const completed = require("../db/completed") as typeof import("../db/completed");
 
     const all = await adventures.listAdventures();
     expect(all.length).toBeGreaterThan(0);
 
     const adv = all.find((a) => a.frTitle === "La route du bûcheron");
     expect(adv).toBeTruthy();
-    if (!adv)
-      throw new Error("Expected seeded campaign 'La route du bûcheron'");
+    if (!adv) throw new Error("Expected seeded campaign 'La route du bûcheron'");
 
     const details = await adventures.getAdventureDetails(adv.id);
     expect(details).toBeTruthy();
@@ -40,8 +36,7 @@ describe("db/adventures campaign", () => {
     const step1QuestId = details.steps[1]?.questId;
     expect(step0QuestId).toBeTruthy();
     expect(step1QuestId).toBeTruthy();
-    if (!step0QuestId || !step1QuestId)
-      throw new Error("Expected at least 2 campaign steps");
+    if (!step0QuestId || !step1QuestId) throw new Error("Expected at least 2 campaign steps");
 
     const allEx = await exercises.listExercises();
     const squat = allEx.find((e) => e.enName === "Squat");

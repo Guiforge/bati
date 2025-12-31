@@ -105,7 +105,6 @@ export function Home() {
             />
           </YStack>
 
-
           <YStack items="center" gap="$2">
             <H1 color="$color" fontWeight="900" fontSize={32}>
               {villageName || t("welcome")}
@@ -116,45 +115,43 @@ export function Home() {
           </YStack>
         </YStack>
 
-        {
-          activeAdventure ? (
-            <YStack px={24} items="center">
-              <Card
-                bg="$pastelGreen"
-                width="100%"
-                maxW={420}
-                onPress={() => router.push(`/adventures/${activeAdventure.adventureId}` as never)}
-              >
-                <YStack gap="$2">
-                  <Text fontWeight="900" fontSize={16} color="$color">
-                    {t("home_continue_adventure_title", "Continue your adventure")}
-                  </Text>
-                  <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
-                    {activeAdventureTitle || t("adventures.details_title", "Adventure")}
-                  </Paragraph>
-                  <Paragraph color="$color" opacity={0.6} size="$3">
-                    {activeStepIndex != null
-                      ? t("adventures.step_label", {
+        {activeAdventure ? (
+          <YStack px={24} items="center">
+            <Card
+              bg="$pastelGreen"
+              width="100%"
+              maxW={420}
+              onPress={() => router.push(`/adventures/${activeAdventure.adventureId}` as never)}
+            >
+              <YStack gap="$2">
+                <Text fontWeight="900" fontSize={16} color="$color">
+                  {t("home_continue_adventure_title", "Continue your adventure")}
+                </Text>
+                <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
+                  {activeAdventureTitle || t("adventures.details_title", "Adventure")}
+                </Paragraph>
+                <Paragraph color="$color" opacity={0.6} size="$3">
+                  {activeStepIndex != null
+                    ? t("adventures.step_label", {
                         count: activeStepIndex + 1,
                         defaultValue: `Step ${activeStepIndex + 1}`,
                       })
-                      : t("home_continue_adventure_subtitle", "Pick up where you left off.")}
-                  </Paragraph>
-                  <AppButton
-                    fullWidth={false}
-                    variant="secondary"
-                    onPress={() => router.push(`/adventures/${activeAdventure.adventureId}` as never)}
-                    height={44}
-                    px="$3"
-                    fontSize={14}
-                  >
-                    {t("adventures.continue", "Continue")} →
-                  </AppButton>
-                </YStack>
-              </Card>
-            </YStack>
-          ) : null
-        }
+                    : t("home_continue_adventure_subtitle", "Pick up where you left off.")}
+                </Paragraph>
+                <AppButton
+                  fullWidth={false}
+                  variant="secondary"
+                  onPress={() => router.push(`/adventures/${activeAdventure.adventureId}` as never)}
+                  height={44}
+                  px="$3"
+                  fontSize={14}
+                >
+                  {t("adventures.continue", "Continue")} →
+                </AppButton>
+              </YStack>
+            </Card>
+          </YStack>
+        ) : null}
 
         {/* Full-bleed slide gallery */}
         <QuestCarousel />
@@ -230,7 +227,7 @@ export function Home() {
             </Card>
           </YStack>
         </YStack>
-      </ScrollView >
-    </YStack >
+      </ScrollView>
+    </YStack>
   );
 }

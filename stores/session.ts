@@ -1,7 +1,10 @@
 import { create } from "zustand";
+
+import { completeAdventureRunStep } from "@/db";
 import { type CompletedExerciseInput, createCompletedSession } from "@/db/completed";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode } from "@/db/schema";
+import { computeSessionXp } from "@/db/xp";
 
 export type SessionStatus = "idle" | "countdown" | "running" | "resting" | "paused" | "finished";
 
@@ -11,6 +14,7 @@ interface SessionState {
   // Static Data
   quest: Quest | null;
   userLevel: DifficultyCode;
+  adventureRunStepId: number | null;
 
   // Dynamic State
   status: SessionStatus;
@@ -31,7 +35,11 @@ interface SessionState {
   results: CompletedExerciseInput[];
 
   // Actions
-  startSession: (quest: Quest, userLevel: DifficultyCode) => void;
+  startSession: (
+    quest: Quest,
+    userLevel: DifficultyCode,
+    options?: { adventureRunStepId?: number | null },
+  ) => void;
   finishCountdown: () => void;
   pauseSession: () => void;
   resumeSession: () => void;
@@ -44,12 +52,22 @@ interface SessionState {
   addRestTime: (seconds: number) => void;
 
   // DB
-  saveSession: () => Promise<number>;
+  saveSession: () => Promise<{
+    sessionId: number;
+    campaign: {
+      adventureId: number;
+      runId: number;
+      isFinished: boolean;
+      nextRunStepId: number | null;
+      nextQuestId: number | null;
+    } | null;
+  }>;
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
   quest: null,
   userLevel: "medium",
+  adventureRunStepId: null,
   status: "idle",
   prePauseStatus: null,
   currentRoundIndex: 0,
@@ -61,10 +79,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   timerDuration: 0,
   results: [],
 
-  startSession: (quest, userLevel) => {
+  startSession: (quest, userLevel, options) => {
     set({
       quest,
       userLevel,
+      adventureRunStepId: options?.adventureRunStepId ?? null,
       status: "countdown",
       prePauseStatus: null,
       currentRoundIndex: 0,
@@ -126,6 +145,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({
       quest: null,
       status: "idle",
+      adventureRunStepId: null,
       prePauseStatus: null,
       currentRoundIndex: 0,
       currentExerciseIndex: 0,
@@ -247,19 +267,29 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   saveSession: async () => {
-    const { quest, userLevel, startTime, totalPausedTime, results } = get();
+    const { quest, userLevel, startTime, totalPausedTime, results, adventureRunStepId } = get();
     if (!quest || !startTime) throw new Error("No active session");
 
     const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+    const xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
     const sessionId = await createCompletedSession({
       questId: quest.id,
       userLevel,
       durationSeconds,
+      xpEarned,
       exercises: results,
       performedAt: new Date(startTime),
     });
 
-    return sessionId;
+    const campaign =
+      adventureRunStepId != null
+        ? await completeAdventureRunStep({
+            runStepId: adventureRunStepId,
+            completedSessionId: sessionId,
+          })
+        : null;
+
+    return { sessionId, campaign };
   },
 }));

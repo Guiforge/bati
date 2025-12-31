@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { getExerciseBgForSessionStep } from "@/constants/exerciseColors";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -40,7 +41,10 @@ export function ActiveExerciseView() {
   // Calculate overtime seconds for display
   const overtimeSeconds = isOvertime ? Math.abs(remainingSeconds) : 0;
 
-  const screenBg = isTimeBased ? "$pastelBlue" : "$pastelYellow";
+  const screenBg = getExerciseBgForSessionStep({
+    exercise: currentEx.exercise,
+    targetType: currentEx.target.type,
+  });
 
   return (
     <YStack flex={1} bg={screenBg} pt={insets.top + 16} pb={insets.bottom + 16} px="$4" gap="$4">

@@ -8,27 +8,35 @@ import type { ImageSourcePropType } from "react-native";
 import { Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
+
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
-import { listExercises, listQuestTemplates } from "@/db";
+import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
+import {
+  estimateQuestTemplateSeconds,
+  formatDuration,
+  listExercises,
+  listQuestTemplates,
+} from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode } from "@/db/schema";
+import { computeSessionXp } from "@/db/xp";
 import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
   | { status: "ready"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
   | {
-      status: "error";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
+    status: "error";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+    message: string;
+  };
 
 function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
@@ -154,6 +162,24 @@ export default function QuestsGallery() {
       const muscles = item.muscles;
       const equipment = item.equipment;
 
+      const tokens = getQuestColorTokensFromTemplateWithExercises({
+        quest: q,
+        exercisesById,
+      });
+
+      const durationSeconds = estimateQuestTemplateSeconds({
+        template: q,
+        exercisesById,
+        userLevel: "medium",
+      });
+      const estimate = formatDuration(durationSeconds, language);
+      const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
+
+      const authorLabel = t("common.by", {
+        author: q.author,
+        defaultValue: `By ${q.author}`,
+      });
+
       const qTitle = language === "fr" ? q.frTitle : q.enTitle;
       const qDesc = language === "fr" ? q.frDescription : q.enDescription;
 
@@ -164,7 +190,7 @@ export default function QuestsGallery() {
 
       return (
         <YStack px="$5">
-          <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
+          <Card bg={tokens.bg} onPress={() => router.push(`/quests/${q.id}` as never)}>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -230,6 +256,7 @@ export default function QuestsGallery() {
                 </Paragraph>
 
                 <XStack gap="$2" flexWrap="wrap" pt="$1">
+                  <Chip label={authorLabel} />
                   <Chip
                     label={t("quests.rounds", {
                       count: q.rounds,
@@ -244,9 +271,22 @@ export default function QuestsGallery() {
                     tone="primary"
                   />
                   <Chip
+                    label={t("quests.reward_xp", {
+                      count: xp,
+                      defaultValue: `+${xp} XP`,
+                    })}
+                    tone="secondary"
+                  />
+                  <Chip
                     label={t("quests.rest", {
                       count: q.restSeconds,
                       defaultValue: `Rest ${q.restSeconds}s`,
+                    })}
+                  />
+                  <Chip
+                    label={t("quests.estimate", {
+                      duration: estimate,
+                      defaultValue: `≈ ${estimate}`,
                     })}
                   />
                 </XStack>
@@ -265,7 +305,7 @@ export default function QuestsGallery() {
         </YStack>
       );
     },
-    [language, router, t],
+    [exercisesById, language, router, t],
   );
 
   // Status messages shown when list is empty

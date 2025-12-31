@@ -1,10 +1,24 @@
-import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  int,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 // ------------------------------------------------------------
 // Exercises catalogue
 // ------------------------------------------------------------
 
-export const muscleCodes = ["arms", "back", "shoulder", "chest", "abs", "calf"] as const;
+export const muscleCodes = [
+  "arms",
+  "back",
+  "shoulder",
+  "chest",
+  "abs",
+  "calf",
+] as const;
 export type MuscleCode = (typeof muscleCodes)[number];
 
 export const equipmentCodes = [
@@ -63,7 +77,7 @@ export const exercises = sqliteTable(
   },
   (table) => ({
     enNameUnique: uniqueIndex("exercises_en_name_unique").on(table.enName),
-  }),
+  })
 );
 
 export const exerciseMuscles = sqliteTable(
@@ -77,7 +91,7 @@ export const exerciseMuscles = sqliteTable(
   (table) => ({
     pk: primaryKey({ columns: [table.exerciseId, table.muscle] }),
     muscleIdx: index("exercise_muscles_muscle_idx").on(table.muscle),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -91,6 +105,9 @@ export const quests = sqliteTable("quests", {
   frTitle: text().notNull(),
   enDescription: text().notNull(),
   frDescription: text().notNull(),
+
+  // Content attribution (user id / name or "Admin" for built-in content).
+  author: text().notNull().default("Admin"),
 
   rounds: int().notNull().default(1),
 
@@ -125,8 +142,136 @@ export const questExercises = sqliteTable(
   },
   (table) => ({
     questIdx: index("quest_exercises_quest_idx").on(table.questId),
-    sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(table.questId, table.sortOrder),
-  }),
+    sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(
+      table.questId,
+      table.sortOrder
+    ),
+  })
+);
+
+// ------------------------------------------------------------
+// Adventures (quest wrappers)
+// ------------------------------------------------------------
+
+export const adventures = sqliteTable(
+  "adventures",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+
+    // Adventure points to an existing quest template.
+    questId: int()
+      .notNull()
+      .references(() => quests.id, { onDelete: "cascade" }),
+
+    // Adventure-level narrative (can differ from the underlying quests).
+    enTitle: text().notNull().default(""),
+    frTitle: text().notNull().default(""),
+    enDescription: text().notNull().default(""),
+    frDescription: text().notNull().default(""),
+
+    // Content attribution (user id / name or "Admin" for built-in content).
+    author: text().notNull().default("Admin"),
+
+    // Ordering in the gallery.
+    sortOrder: int().notNull().default(0),
+
+    // Future-proofing (boss/route/event...).
+    kind: text().notNull().default("route"),
+
+    // Soft flag to hide adventures without deleting content.
+    isActive: int().notNull().default(1),
+
+    createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    questUnique: uniqueIndex("adventures_quest_unique").on(table.questId),
+    activeSortIdx: index("adventures_active_sort_idx").on(
+      table.isActive,
+      table.sortOrder
+    ),
+  })
+);
+
+export const adventureStepStatuses = ["locked", "active", "completed"] as const;
+export type AdventureStepStatus = (typeof adventureStepStatuses)[number];
+
+export const adventureRunStatuses = ["active", "finished"] as const;
+export type AdventureRunStatus = (typeof adventureRunStatuses)[number];
+
+export const adventureSteps = sqliteTable(
+  "adventure_steps",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    adventureId: int()
+      .notNull()
+      .references(() => adventures.id, { onDelete: "cascade" }),
+    stepIndex: int().notNull(),
+    questId: int()
+      .notNull()
+      .references(() => quests.id, { onDelete: "cascade" }),
+    narrative: text().notNull().default(""),
+    createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    adventureIdx: index("adventure_steps_adventure_idx").on(table.adventureId),
+    questIdx: index("adventure_steps_quest_idx").on(table.questId),
+    orderUnique: uniqueIndex("adventure_steps_adventure_step_unique").on(
+      table.adventureId,
+      table.stepIndex
+    ),
+  })
+);
+
+export const adventureRuns = sqliteTable(
+  "adventure_runs",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    adventureId: int()
+      .notNull()
+      .references(() => adventures.id, { onDelete: "cascade" }),
+    status: text().notNull().default("active").$type<AdventureRunStatus>(),
+    // If null: follow suggestion; if set: pins the whole campaign.
+    difficultyOverride: text().$type<DifficultyCode>(),
+    startedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+    finishedAt: int({ mode: "timestamp" }),
+  },
+  (table) => ({
+    adventureIdx: index("adventure_runs_adventure_idx").on(table.adventureId),
+  })
+);
+
+export const adventureRunSteps = sqliteTable(
+  "adventure_run_steps",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    runId: int()
+      .notNull()
+      .references(() => adventureRuns.id, { onDelete: "cascade" }),
+    stepIndex: int().notNull(),
+    questId: int()
+      .notNull()
+      .references(() => quests.id, { onDelete: "cascade" }),
+    status: text().notNull().default("locked").$type<AdventureStepStatus>(),
+    completedSessionId: int().references(() => completedQuest.id, {
+      onDelete: "set null",
+    }),
+    startedAt: int({ mode: "timestamp" }),
+    completedAt: int({ mode: "timestamp" }),
+  },
+  (table) => ({
+    runIdx: index("adventure_run_steps_run_idx").on(table.runId),
+    questIdx: index("adventure_run_steps_quest_idx").on(table.questId),
+    orderUnique: uniqueIndex("adventure_run_steps_run_step_unique").on(
+      table.runId,
+      table.stepIndex
+    ),
+    runStatusIdx: index("adventure_run_steps_run_status_idx").on(
+      table.runId,
+      table.status
+    ),
+  })
 );
 
 // ------------------------------------------------------------
@@ -147,6 +292,9 @@ export const completedQuest = sqliteTable(
     // Optional: total session duration.
     durationSeconds: int(),
 
+    // XP earned for this session (resources/items are intentionally out of scope for now).
+    xpEarned: int().notNull().default(0),
+
     // Optional: free text notes.
     notes: text().notNull().default(""),
 
@@ -156,9 +304,11 @@ export const completedQuest = sqliteTable(
       .$defaultFn(() => new Date()),
   },
   (table) => ({
-    performedAtIdx: index("completed_sessions_performed_at_idx").on(table.performedAt),
+    performedAtIdx: index("completed_sessions_performed_at_idx").on(
+      table.performedAt
+    ),
     questIdx: index("completed_sessions_quest_idx").on(table.questId),
-  }),
+  })
 );
 
 export const completedExercises = sqliteTable(
@@ -196,10 +346,8 @@ export const completedExercises = sqliteTable(
   (table) => ({
     sessionIdx: index("completed_exercises_session_idx").on(table.sessionId),
     exerciseIdx: index("completed_exercises_exercise_idx").on(table.exerciseId),
-    orderUnique: uniqueIndex("completed_exercises_session_round_sort_unique").on(
-      table.sessionId,
-      table.roundIndex,
-      table.sortOrder,
-    ),
-  }),
+    orderUnique: uniqueIndex(
+      "completed_exercises_session_round_sort_unique"
+    ).on(table.sessionId, table.roundIndex, table.sortOrder),
+  })
 );

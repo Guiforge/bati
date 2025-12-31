@@ -40,6 +40,7 @@ describe("db/completed", () => {
       questId: null,
       userLevel: "medium",
       durationSeconds: 120,
+      xpEarned: 42,
       notes: "Nice session",
       performedAt,
       exercises: [
@@ -61,6 +62,7 @@ describe("db/completed", () => {
     if (!full) throw new Error("Completed session not found after creation");
     expect(full?.notes).toBe("Nice session");
     expect(full?.durationSeconds).toBe(120);
+    expect(full?.xpEarned).toBe(42);
     expect(full?.performedAt.toISOString()).toBe(performedAt.toISOString());
 
     expect(full?.exercises.length).toBe(1);

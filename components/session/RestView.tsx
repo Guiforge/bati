@@ -2,6 +2,7 @@ import { Minus, Plus } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
+import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -23,10 +24,12 @@ export function RestView() {
   const lastResult = results[results.length - 1];
   const isLastRepBased = lastResult?.result.type === "reps";
 
+  const { bg: screenBg } = getQuestColorTokensFromQuest(quest);
+
   return (
     <YStack
       flex={1}
-      bg="$pastelPurple"
+      bg={screenBg}
       pt={insets.top + 16}
       pb={insets.bottom + 16}
       px="$4"

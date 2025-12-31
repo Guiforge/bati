@@ -6,6 +6,8 @@ import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { computeSessionXp } from "@/db/xp";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -17,7 +19,8 @@ export function VictoryView() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
-  const { quest, startTime, totalPausedTime, saveSession, quitSession } = useSessionStore();
+  const { quest, userLevel, startTime, totalPausedTime, saveSession, quitSession } =
+    useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
 
   if (!quest || !startTime) return null;
@@ -27,12 +30,27 @@ export function VictoryView() {
   // but this is good enough for the UI summary.
   const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
   const questTitle = language === "fr" ? quest.frTitle : quest.enTitle;
+  const { bg: questBg } = getQuestColorTokensFromQuest(quest);
+  const xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
   const handleFinish = async () => {
     try {
       setIsSaving(true);
-      await saveSession();
+      const { campaign } = await saveSession();
       quitSession();
+
+      if (campaign?.nextQuestId && campaign.nextRunStepId) {
+        router.replace(
+          `/quests/${campaign.nextQuestId}?level=${encodeURIComponent(userLevel)}&runStepId=${campaign.nextRunStepId}` as never,
+        );
+        return;
+      }
+
+      if (campaign?.isFinished) {
+        router.replace(`/adventures/${campaign.adventureId}` as never);
+        return;
+      }
+
       router.replace("/");
     } catch (e) {
       console.error("Failed to save session", e);
@@ -52,7 +70,7 @@ export function VictoryView() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <Card bg="$pastelYellow" width="100%" maxW={520} mt="$6">
+        <Card bg={questBg} width="100%" maxW={520} mt="$6">
           <YStack items="center" gap="$3">
             <Text fontSize={72}>🏆</Text>
             <YStack items="center" gap="$1">
@@ -112,7 +130,7 @@ export function VictoryView() {
               {t("session.xp_earned", "XP Earned")}
             </Text>
             <Text fontWeight="900" fontSize={24} color="$primary" fontFamily="$body">
-              +150 XP
+              +{xpEarned} XP
             </Text>
           </XStack>
         </Card>
@@ -135,7 +153,7 @@ export function VictoryView() {
           disabled={isSaving}
           rounded="$6"
           width="100%"
-          maxWidth={520}
+          maxW={520}
           borderWidth={0}
         >
           <Text color="$background" fontSize={20} fontWeight="900" textTransform="uppercase">

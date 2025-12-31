@@ -1,3 +1,6 @@
+import { AppIconButton } from "@/components/common/AppButton";
+import { AVATARS } from "@/constants/avatars";
+import { useSettingsStore } from "@/stores/settings";
 import { ChevronLeft, ChevronRight, Languages, Menu, Scroll, User, X } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -6,9 +9,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack } from "tamagui";
-import { AppIconButton } from "@/components/common/AppButton";
-import { AVATARS } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
 
 type MenuStep = "main" | "language" | "avatar";
 
@@ -123,15 +123,32 @@ export function HomeSettingsMenu() {
         label={t("onboarding.avatar_title")}
         onPress={() => setStep("avatar")}
       />
+
+      {__DEV__ ? (
+        <MenuItem
+          icon={<Menu size={24} color="$color" />}
+          label={t("dev.title", "Dev Tools")}
+          color="$pastelPurple"
+          onPress={() => {
+            closeMenu();
+            router.push("/dev" as never);
+          }}
+          value=" "
+        />
+      ) : null}
     </YStack>
   );
 
   const renderLanguage = () => (
     <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
-      <OptionItem active={language === "en"} label="English 🇬🇧" onPress={() => setLanguage("en")} />
+      <OptionItem
+        active={language === "en"}
+        label={`${t("common.language_en", "English")} 🇬🇧`}
+        onPress={() => setLanguage("en")}
+      />
       <OptionItem
         active={language === "fr"}
-        label="Français 🇫🇷"
+        label={`${t("common.language_fr", "Français")} 🇫🇷`}
         onPress={() => setLanguage("fr")}
       />
     </YStack>

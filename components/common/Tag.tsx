@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Text, XStack, YStack, type YStackProps } from "tamagui";
+import { type ColorTokens, Text, XStack, YStack, type YStackProps } from "tamagui";
 
 export type TagProps = Omit<YStackProps, "children"> & {
   label: string;
@@ -7,14 +7,14 @@ export type TagProps = Omit<YStackProps, "children"> & {
   tone?: "default" | "primary" | "secondary" | "success";
 };
 
-function toneToBg(tone: TagProps["tone"]) {
+function toneToBg(tone: TagProps["tone"]): ColorTokens {
   if (tone === "primary") return "$pastelBlue";
   if (tone === "secondary") return "$pastelPink";
   if (tone === "success") return "$pastelGreen";
   return "$bgLight";
 }
 
-function toneToText(tone: TagProps["tone"]) {
+function toneToText(tone: TagProps["tone"]): ColorTokens {
   if (tone === "primary") return "$color";
   if (tone === "secondary") return "$color";
   if (tone === "success") return "$color";

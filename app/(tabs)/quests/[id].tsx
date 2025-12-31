@@ -8,13 +8,17 @@ import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { Quest, Target } from "@/db/quests";
+import type { DifficultyCode } from "@/db/schema";
+import { computeSessionXp } from "@/db/xp";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -49,7 +53,11 @@ function levelLabel(level: Difficulty, t: TFunction) {
 export default function QuestDetails() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    id?: string | string[];
+    level?: string;
+    runStepId?: string;
+  }>();
   const { t } = useTranslation();
   const { language } = useSettingsStore();
   const { startSession } = useSessionStore();
@@ -61,7 +69,20 @@ export default function QuestDetails() {
     return Number.isFinite(n) ? n : null;
   }, [params]);
 
-  const [level, setLevel] = useState<Difficulty>(Difficulty.Medium);
+  const runStepId = useMemo(() => {
+    const raw = params.runStepId;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : null;
+  }, [params.runStepId]);
+
+  const initialLevel = useMemo((): Difficulty => {
+    if (params.level === "easy") return Difficulty.Easy;
+    if (params.level === "hard") return Difficulty.Hard;
+    if (params.level === "medium") return Difficulty.Medium;
+    return Difficulty.Medium;
+  }, [params.level]);
+
+  const [level, setLevel] = useState<Difficulty>(initialLevel);
   const [state, setState] = useState<LoadState>({
     status: "loading",
     quest: null,
@@ -110,11 +131,20 @@ export default function QuestDetails() {
   const quest = state.status === "ready" ? state.quest : state.quest;
   const questTitle = quest ? (language === "fr" ? quest.frTitle : quest.enTitle) : "";
   const questDesc = quest ? (language === "fr" ? quest.frDescription : quest.enDescription) : "";
-  const estimate = quest ? formatDuration(estimateQuestSeconds(quest), language) : null;
+  const questTokens = quest ? getQuestColorTokensFromQuest(quest) : null;
+  const estimatedSeconds = quest ? estimateQuestSeconds(quest) : null;
+  const estimate = estimatedSeconds != null ? formatDuration(estimatedSeconds, language) : null;
+  const xpReward =
+    estimatedSeconds != null
+      ? computeSessionXp({
+          durationSeconds: estimatedSeconds,
+          userLevel: level as unknown as DifficultyCode,
+        })
+      : null;
 
   const handleStart = () => {
     if (quest) {
-      startSession(quest, level);
+      startSession(quest, level, { adventureRunStepId: runStepId });
       router.push("/session" as never);
     }
   };
@@ -169,7 +199,7 @@ export default function QuestDetails() {
             <YStack
               width="100%"
               aspectRatio={16 / 9}
-              bg="$bgLight"
+              bg={questTokens?.bg ?? "$bgLight"}
               borderWidth={3}
               borderColor="$color"
               rounded="$8"
@@ -219,7 +249,7 @@ export default function QuestDetails() {
           ) : null}
 
           {quest ? (
-            <Card>
+            <Card bg={questTokens?.bg}>
               <YStack gap="$2">
                 <H2 color="$color" fontWeight="900" fontSize={26}>
                   {questTitle}
@@ -254,6 +284,15 @@ export default function QuestDetails() {
                       label={t("quests.estimate", {
                         duration: estimate,
                         defaultValue: `≈ ${estimate}`,
+                      })}
+                      tone="secondary"
+                    />
+                  ) : null}
+                  {xpReward != null ? (
+                    <Tag
+                      label={t("quests.reward_xp", {
+                        count: xpReward,
+                        defaultValue: `+${xpReward} XP`,
                       })}
                       tone="secondary"
                     />

@@ -3,7 +3,12 @@ import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import type { QuestTargetType } from "./schema";
-import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
+import {
+  Difficulty,
+  generateTarget,
+  type Target,
+  type UserLevel,
+} from "./targets";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
 
@@ -41,6 +46,7 @@ export type QuestTemplate = {
   frTitle: string;
   enDescription: string;
   frDescription: string;
+  author: string;
   rounds: number;
   restSeconds: number;
   exercises: QuestTemplateExercise[];
@@ -52,6 +58,7 @@ export type Quest = {
   frTitle: string;
   enDescription: string;
   frDescription: string;
+  author: string;
   rounds: number;
   restSeconds: number;
   exercises: QuestExercise[];
@@ -66,7 +73,9 @@ export type Quest = {
 function safeParseImages(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((x) => typeof x === "string")
+      : [];
   } catch {
     return [];
   }
@@ -76,12 +85,19 @@ function safeParseImages(value: string): string[] {
 // DB helpers
 // ------------------------------------------------------------
 
-export async function createQuestTemplate(input: Omit<QuestTemplate, "id">): Promise<number> {
+export type CreateQuestTemplateInput = Omit<QuestTemplate, "id" | "author"> & {
+  author?: string;
+};
+
+export async function createQuestTemplate(
+  input: CreateQuestTemplateInput
+): Promise<number> {
   await db.insert(quests).values({
     enTitle: input.enTitle,
     frTitle: input.frTitle,
     enDescription: input.enDescription,
     frDescription: input.frDescription,
+    author: input.author ?? "Admin",
     rounds: input.rounds,
     restSeconds: input.restSeconds,
     createdAt: new Date(),
@@ -108,7 +124,7 @@ export async function createQuestTemplate(input: Omit<QuestTemplate, "id">): Pro
         targetMin: qex.baseTarget.min,
         targetMax: qex.baseTarget.max,
         imagesJson: JSON.stringify(qex.images ?? []),
-      })),
+      }))
     );
   }
 
@@ -123,6 +139,7 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
       frTitle: quests.frTitle,
       enDescription: quests.enDescription,
       frDescription: quests.frDescription,
+      author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
 
@@ -148,6 +165,7 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
         frTitle: r.frTitle,
         enDescription: r.enDescription,
         frDescription: r.frDescription,
+        author: r.author,
         rounds: r.rounds,
         restSeconds: r.restSeconds,
         exercises: [],
@@ -179,7 +197,9 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
   return [...byId.values()];
 }
 
-export async function getQuestTemplateById(id: number): Promise<QuestTemplate | null> {
+export async function getQuestTemplateById(
+  id: number
+): Promise<QuestTemplate | null> {
   const rows = await db
     .select({
       questId: quests.id,
@@ -187,6 +207,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
       frTitle: quests.frTitle,
       enDescription: quests.enDescription,
       frDescription: quests.frDescription,
+      author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
 
@@ -212,6 +233,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
     frTitle: first.frTitle,
     enDescription: first.enDescription,
     frDescription: first.frDescription,
+    author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
     exercises: [],
@@ -243,7 +265,10 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
   return quest;
 }
 
-export async function getQuestById(id: number, userLevel: UserLevel): Promise<Quest | null> {
+export async function getQuestById(
+  id: number,
+  userLevel: UserLevel
+): Promise<Quest | null> {
   // Join quests -> quest_exercises -> exercises -> exercise_muscles and aggregate.
   const rows = await db
     .select({
@@ -252,6 +277,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       frTitle: quests.frTitle,
       enDescription: quests.enDescription,
       frDescription: quests.frDescription,
+      author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
 
@@ -291,6 +317,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     frTitle: first.frTitle,
     enDescription: first.enDescription,
     frDescription: first.frDescription,
+    author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
     exercises: [],
@@ -344,9 +371,14 @@ export async function updateQuestMeta(
   patch: Partial<
     Pick<
       QuestTemplate,
-      "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds" | "restSeconds"
+      | "enTitle"
+      | "frTitle"
+      | "enDescription"
+      | "frDescription"
+      | "rounds"
+      | "restSeconds"
     >
-  >,
+  >
 ): Promise<void> {
   await db
     .update(quests)
@@ -359,7 +391,7 @@ export async function updateQuestMeta(
 
 export async function setQuestExercises(
   questId: number,
-  next: QuestTemplateExercise[],
+  next: QuestTemplateExercise[]
 ): Promise<void> {
   type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
   type TransactionTx = Parameters<TransactionCallback>[0];
@@ -378,7 +410,7 @@ export async function setQuestExercises(
         targetMin: qex.baseTarget.min,
         targetMax: qex.baseTarget.max,
         imagesJson: JSON.stringify(qex.images ?? []),
-      })),
+      }))
     );
   };
 
@@ -400,12 +432,17 @@ export async function setQuestExercises(
 export async function ensureQuestHasExercise(
   questId: number,
   exerciseId: number,
-  baseTarget: { type: QuestTargetType; min: number; max: number },
+  baseTarget: { type: QuestTargetType; min: number; max: number }
 ): Promise<void> {
   const existing = await db
     .select({ id: questExercises.id })
     .from(questExercises)
-    .where(and(eq(questExercises.questId, questId), eq(questExercises.exerciseId, exerciseId)))
+    .where(
+      and(
+        eq(questExercises.questId, questId),
+        eq(questExercises.exerciseId, exerciseId)
+      )
+    )
     .limit(1);
 
   if (existing.length > 0) return;

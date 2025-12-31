@@ -22,6 +22,7 @@ export type CompletedSessionInput = {
   questId?: number | null;
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
+  xpEarned?: number;
   notes?: string;
   performedAt?: Date;
 
@@ -44,6 +45,7 @@ export type CompletedSession = {
   questId: number | null;
   userLevel: DifficultyCode;
   durationSeconds: number | null;
+  xpEarned: number;
   notes: string;
   performedAt: Date;
   exercises: CompletedExercise[];
@@ -79,6 +81,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         questId: input.questId ?? null,
         userLevel: input.userLevel ?? "medium",
         durationSeconds: input.durationSeconds ?? null,
+        xpEarned: Math.max(0, Math.round(input.xpEarned ?? 0)),
         notes: input.notes ?? "",
         performedAt: input.performedAt ?? new Date(),
       })
@@ -126,6 +129,7 @@ export async function listCompletedSessions(
       questId: completedQuest.questId,
       userLevel: completedQuest.userLevel,
       durationSeconds: completedQuest.durationSeconds,
+      xpEarned: completedQuest.xpEarned,
       notes: completedQuest.notes,
       performedAt: completedQuest.performedAt,
     })
@@ -138,6 +142,7 @@ export async function listCompletedSessions(
     questId: r.questId ?? null,
     userLevel: r.userLevel,
     durationSeconds: r.durationSeconds ?? null,
+    xpEarned: r.xpEarned,
     notes: r.notes,
     performedAt: r.performedAt,
   }));
@@ -150,6 +155,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       questId: completedQuest.questId,
       userLevel: completedQuest.userLevel,
       durationSeconds: completedQuest.durationSeconds,
+      xpEarned: completedQuest.xpEarned,
       sessionNotes: completedQuest.notes,
       sessionPerformedAt: completedQuest.performedAt,
 
@@ -191,6 +197,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
     questId: first.questId ?? null,
     userLevel: first.userLevel,
     durationSeconds: first.durationSeconds ?? null,
+    xpEarned: first.xpEarned,
     notes: first.sessionNotes,
     performedAt: first.sessionPerformedAt,
     exercises: [],

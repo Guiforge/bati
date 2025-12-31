@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.9/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
   "files": {
     "ignoreUnknown": false,
     "includes": [
@@ -9,6 +9,7 @@
       "!**/dist",
       "!**/metro.config.js",
       "!**/node_modules",
+      "**",
       "**"
     ]
   },

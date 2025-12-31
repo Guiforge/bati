@@ -1,13 +1,15 @@
-import { Stack } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView } from "react-native";
-import { H3, Paragraph, Separator, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { getAllPreferences } from "@/db";
 import { resetDatabase } from "@/db/client";
 import { useUserStore } from "@/stores/user";
+import { Stack } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Alert, ScrollView } from "react-native";
+import { H3, Paragraph, Separator, YStack } from "tamagui";
 
 export default function DevTools() {
+  const { t } = useTranslation();
   const [prefs, setPrefs] = useState<Record<string, string>>({});
   const { setHasFinishedOnboarding, setVillageName } = useUserStore();
 
@@ -26,12 +28,12 @@ export default function DevTools() {
 
   function handleReset() {
     Alert.alert(
-      "Reset Database",
-      "Are you sure? This will delete all data. You MUST restart the app manually after this.",
+      t("dev.reset_database_confirm_title", "Reset Database"),
+      t("dev.reset_database_confirm_message", "Are you sure? This will delete ALL local data."),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("dev.cancel", "Cancel"), style: "cancel" },
         {
-          text: "Reset",
+          text: t("dev.reset", "Reset"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -39,9 +41,12 @@ export default function DevTools() {
               // Reset store state
               setHasFinishedOnboarding(false);
               setVillageName("");
-              Alert.alert("Database Reset", "Please restart the app now to recreate the database.");
+              Alert.alert(
+                t("dev.reset_done_title", "Database Reset"),
+                t("dev.reset_done_message", "Please restart the app."),
+              );
             } catch (_e) {
-              Alert.alert("Error", "Failed to reset database");
+              Alert.alert(t("common.error", "Oops!"), t("dev.failed", "Failed"));
             }
           },
         },
@@ -51,19 +56,19 @@ export default function DevTools() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Dev Tools", presentation: "modal" }} />
+      <Stack.Screen options={{ title: t("dev.title", "Dev Tools"), presentation: "modal" }} />
       <ScrollView contentContainerStyle={{ padding: 20 }}>
         <YStack gap="$4">
-          <H3>Database Management</H3>
+          <H3>{t("dev.database_management", "Database Management")}</H3>
           <AppButton variant="secondary" onPress={handleReset}>
-            Reset Database (Nuke)
+            {t("dev.reset_database_nuke", "Reset Database (Nuke)")}
           </AppButton>
 
           <Separator />
 
-          <H3>User Preferences</H3>
+          <H3>{t("dev.user_preferences", "User Preferences")}</H3>
           <AppButton variant="outline" onPress={loadPrefs} size="$3" fullWidth={false}>
-            Refresh
+            {t("dev.refresh", "Refresh")}
           </AppButton>
 
           <YStack
@@ -75,7 +80,7 @@ export default function DevTools() {
             borderColor="$color"
           >
             {Object.entries(prefs).length === 0 ? (
-              <Paragraph>No preferences found.</Paragraph>
+              <Paragraph>{t("dev.no_preferences", "No preferences found.")}</Paragraph>
             ) : (
               Object.entries(prefs).map(([key, value]) => (
                 <YStack key={key} borderBottomWidth={1} borderColor="$color" py="$2">

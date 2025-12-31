@@ -13,7 +13,7 @@ function isObject(value: unknown): value is JsonObject {
 function collectLeafKeys(
   obj: JsonObject,
   prefix = "",
-  out: Map<string, string> = new Map()
+  out: Map<string, string> = new Map(),
 ): Map<string, string> {
   for (const [k, v] of Object.entries(obj)) {
     const keyPath = prefix ? `${prefix}.${k}` : k;

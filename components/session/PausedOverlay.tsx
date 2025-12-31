@@ -1,9 +1,9 @@
-import { AppButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { useSessionStore } from "@/stores/session";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Paragraph, Text, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
+import { useSessionStore } from "@/stores/session";
 
 export function PausedOverlay() {
   const { t } = useTranslation();

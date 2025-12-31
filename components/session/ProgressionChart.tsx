@@ -1,12 +1,12 @@
-import { Card } from "@/components/common/Card";
-import type { SessionSummary } from "@/db";
-import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
-import { useSettingsStore } from "@/stores/settings";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import type { SessionSummary } from "@/db";
+import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
+import { useSettingsStore } from "@/stores/settings";
 
 type ChartMode = "quest" | "all";
 

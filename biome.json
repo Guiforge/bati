@@ -34,9 +34,7 @@
   },
   "overrides": [
     {
-      "includes": [
-        "**/*.css"
-      ],
+      "includes": ["**/*.css"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -46,9 +44,7 @@
       }
     },
     {
-      "includes": [
-        "**/*.md"
-      ],
+      "includes": ["**/*.md"],
       "linter": {
         "enabled": false
       }

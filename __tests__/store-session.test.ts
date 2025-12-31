@@ -142,16 +142,12 @@ describe("useSessionStore", () => {
       result.current.updateLastResult(0);
     });
 
-    expect(
-      result.current.results[result.current.results.length - 1]?.result.value
-    ).toBe(1);
+    expect(result.current.results[result.current.results.length - 1]?.result.value).toBe(1);
 
     act(() => {
       result.current.updateLastResult(-5);
     });
 
-    expect(
-      result.current.results[result.current.results.length - 1]?.result.value
-    ).toBe(1);
+    expect(result.current.results[result.current.results.length - 1]?.result.value).toBe(1);
   });
 });

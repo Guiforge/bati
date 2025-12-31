@@ -2,16 +2,19 @@
 
 This document tracks all features, their implementation status, and future plans.
 
+**Last Audit:** January 1, 2026
+
 **Legend:**
 
 - ✅ Done
 - 🚧 In Progress
 - 📋 Planned
 - 💡 Idea (not confirmed)
+- ⚠️ Partial (started but incomplete)
 
 ---
 
-## Phase 1: Core Loop ✅
+## Phase 1: Core Loop ✅ (95% Complete)
 
 ### 1.1 Database Foundation ✅
 
@@ -25,6 +28,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Add completed sessions tracking
   - ✅ Add XP system
   - ✅ Localized narratives for adventure steps
+- ✅ DatabaseProvider component with loading state
 
 ### 1.2 Exercises System ✅
 
@@ -33,7 +37,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Localized descriptions
   - ✅ Difficulty levels (easy/medium/hard)
   - ✅ Equipment requirements
-  - ✅ Image/animation paths
+  - ⚠️ Image/animation paths (schema ready, using emoji placeholders)
   - ✅ Seconds per rep (for duration estimation)
   - ✅ Creator field (Admin/user)
 - ✅ Exercise-Muscle relationships
@@ -43,6 +47,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Get all exercises
   - ✅ Get by muscle filter
   - ✅ Get by equipment filter
+- ✅ Exercise detail screen (`/exercises/[id]`)
 
 ### 1.3 Quests System ✅
 
@@ -62,9 +67,11 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Get quest by ID
   - ✅ Duration estimation
 - ✅ Quest UI
-  - ✅ Quest cards
-  - ✅ Quest detail screen
+  - ✅ Quest cards with color coding
+  - ✅ Quest detail screen (`/quests/[id]`)
   - ✅ Quest carousel on home
+  - ✅ Quest gallery with filters
+  - ✅ Filter bottom sheet (muscle/equipment)
 
 ### 1.4 Adventures System ✅
 
@@ -93,6 +100,12 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Start adventure run
   - ✅ Complete step
   - ✅ Get active run
+- ✅ Adventure UI
+  - ✅ Adventures gallery (`/adventures`)
+  - ✅ Adventure detail screen (`/adventures/[id]`)
+  - ✅ Continue adventure card on home
+  - ✅ Step progress display
+  - ✅ Boss badge for `kind="boss"`
 
 ### 1.5 Session Flow ✅
 
@@ -102,23 +115,44 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Current round/exercise tracking
   - ✅ Timer timestamps
   - ✅ Pause time accumulator
+  - ✅ Exercise results accumulator
 - ✅ Session actions
   - ✅ Start session
   - ✅ Pause/resume
   - ✅ Complete exercise
   - ✅ Skip rest
-  - ✅ Add rest time
+  - ✅ Add rest time (on rest screen)
   - ✅ Quit session
 - ✅ Session timer hook
   - ✅ Accurate timer (timestamp-based)
   - ✅ Background handling
+  - ✅ Overtime tracking
 - ✅ Session UI
-  - ✅ Exercise display screen
-  - ✅ Rest screen
-  - ✅ Pause overlay
-  - ✅ Progress bar
+  - ✅ Pre-start countdown (3-2-1, "Let's go!")
+  - ✅ Exercise display screen (reps mode)
+  - ✅ Exercise display screen (time mode with countdown)
+  - ✅ Rest screen with next exercise preview
+  - ✅ Pause overlay (Resume/Quit)
+  - ✅ Progress bar (segmented by rounds)
+  - ✅ Overtime display for time-based exercises
+- 📋 Rep adjustment on exercise screen (only on rest currently)
+- 📋 "How to do it" expandable section
+- 📋 Restart Round option in pause overlay
 
-### 1.6 Completed Sessions ✅
+### 1.6 Victory Screen ✅
+
+- ✅ Victory screen component
+  - ✅ "Quest Complete" celebration
+  - ✅ Duration display
+  - ✅ XP earned display
+  - ✅ Confetti animation
+  - ✅ Return home button
+- ✅ Session saving on completion
+- ✅ Progression chart (bar chart of past sessions)
+- 📋 Post-workout feedback (Easy/Good/Hard buttons)
+- 📋 Resource loot display (when resources implemented)
+
+### 1.7 Completed Sessions ✅
 
 - ✅ Completed session schema
   - ✅ Quest reference
@@ -134,51 +168,96 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Save on completion
   - ✅ Calculate duration
   - ✅ Calculate XP
+  - ✅ Link to adventure run step (if applicable)
 
-### 1.7 XP System ✅
+### 1.8 XP System ✅
 
 - ✅ XP calculation
-  - ✅ Base XP from duration
-  - ✅ Difficulty multipliers
-  - ✅ Clamping to sane range
-- ✅ XP display on victory
+  - ✅ Base XP from duration (~12 XP/min)
+  - ✅ Difficulty multipliers (0.9x/1.0x/1.2x)
+  - ✅ Clamping to sane range (0-5000)
+- ✅ XP display on victory screen
+- 📋 Level progression system
+- 📋 Level display on home/profile
 
-### 1.8 Exercise Colors ✅
+### 1.9 Exercise Colors ✅
 
 - ✅ Color mapping
-  - ✅ Muscle to pastel color
+  - ✅ Muscle to pastel color (arms→pink, back→blue, etc.)
   - ✅ Target type fallback colors
   - ✅ Mixed/default handling
 - ✅ Color tokens in Tamagui
-- ✅ Quest color determination
-- ✅ Color application in UI
+- ✅ Quest color determination (dominant muscle)
+- ✅ Color application in quest cards
 
-### 1.9 Localization ✅
+### 1.10 Localization ✅
 
 - ✅ i18next setup
-- ✅ English translations
-- ✅ French translations
-- ✅ Language switching
+- ✅ English translations (`locales/en.json`)
+- ✅ French translations (`locales/fr.json`)
+- ✅ Language switching in settings
 - ✅ Database content in both languages
+- ⚠️ Some hardcoded strings (countdown "Let's go!", etc.)
 
-### 1.10 Navigation ✅
+### 1.11 Navigation ✅
 
 - ✅ Expo Router setup
-- ✅ Tab navigation
+- ✅ Tab navigation (defined but tabs hidden)
 - ✅ Stack navigation for details
-- ✅ Session screen
+- ✅ Session screen (modal)
+- ✅ Onboarding flow
+- ⚠️ Navigation via cards/buttons (no visible tab bar)
 
-### 1.11 UI Foundation ✅
+### 1.12 UI Foundation ✅
 
-- ✅ Tamagui setup
-- ✅ Theme configuration
+- ✅ Tamagui setup and configuration
+- ✅ Custom theme with pastel colors
 - ✅ Base components
-- ✅ Home screen
-- ✅ Settings menu
+  - ✅ Button (primary/secondary)
+  - ✅ IconButton (circular)
+  - ✅ Card (consistent styling)
+  - ✅ Chip (interactive pills)
+  - ✅ Tag (non-interactive labels)
+- ✅ Home screen with quest carousel
+- ✅ Settings menu (hamburger)
+- ✅ Safe area handling
+- ⚠️ Theme locked to light mode (dark mode not implemented)
+
+### 1.13 Onboarding ✅
+
+- ✅ Onboarding flow
+  - ✅ Language selection screen
+  - ✅ App presentation/intro
+  - ✅ Avatar selection
+  - ✅ Village name input
+- ✅ Onboarding state persistence
+- ✅ Skip to home if already onboarded
+
+### 1.14 Journal/History ✅
+
+- ✅ Journal screen (`/journal`)
+  - ✅ Stats summary card
+  - ✅ History list grouped by date
+  - ✅ Session entry cards
+- ✅ Session detail screen (`/journal/[id]`)
+  - ✅ Exercise breakdown
+  - ✅ Per-exercise results
+  - ✅ Duration, XP display
+- ✅ Weekly activity chart
+- ✅ Streak display (days count)
+- 📋 Monthly calendar view
+- 📋 Muscle balance chart
+
+### 1.15 Dev Tools ✅
+
+- ✅ Dev screen (`/dev`) - DEV builds only
+  - ✅ Reset database
+  - ✅ View preferences
+  - ✅ Debug info
 
 ---
 
-## Phase 2: Village & Economy 🚧
+## Phase 2: Village & Economy 📋 (0% Complete)
 
 ### 2.1 Resource System 📋
 
@@ -233,8 +312,9 @@ This document tracks all features, their implementation status, and future plans
 
 ### 2.3 Flame/Streak System 📋
 
+- ⚠️ Streak calculation (exists in stats, not persisted)
 - 📋 Streak schema
-  - 📋 Current streak count
+  - 📋 Current streak count (persisted)
   - 📋 Best streak record
   - 📋 Last workout date
 - 📋 Streak logic
@@ -256,6 +336,7 @@ This document tracks all features, their implementation status, and future plans
 
 ### 2.4 Boss HP System 📋
 
+- ⚠️ Boss kind label/badge (implemented)
 - 📋 Boss fight schema
   - 📋 Total HP
   - 📋 Current HP
@@ -344,6 +425,7 @@ This document tracks all features, their implementation status, and future plans
 
 ### 3.5 Smart Recommendations 📋
 
+- ✅ Difficulty suggestion (auto-suggests based on history)
 - 📋 Weak area detection
   - 📋 Analyze muscle balance
   - 📋 Suggest underworked muscles
@@ -356,27 +438,23 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 4: Statistics & Progress 📋
+## Phase 4: Statistics & Progress ⚠️ (30% Complete)
 
-### 4.1 Stats Dashboard 📋
+### 4.1 Stats Dashboard ⚠️
 
-- 📋 Dashboard UI
-  - 📋 Streak display
-  - 📋 Weekly activity chart
-  - 📋 Muscle balance visualization
-  - 📋 Personal records section
-- 📋 Quick stats
-  - 📋 Total sessions
-  - 📋 Total time trained
-  - 📋 Total XP earned
-  - 📋 Current level
+- ✅ Stats summary card on journal
+- ✅ Weekly activity chart
+- ✅ Streak display (calculated, not persisted)
+- 📋 Full stats dashboard screen
+- 📋 Total sessions counter
+- 📋 Total time trained
+- 📋 Total XP earned
+- 📋 Current level display
 
-### 4.2 Weekly/Monthly Views 📋
+### 4.2 Weekly/Monthly Views ⚠️
 
-- 📋 Weekly activity chart
-  - 📋 Sessions per day
-  - 📋 Goal comparison
-- 📋 Monthly calendar
+- ✅ Weekly activity chart (bar chart)
+- 📋 Monthly calendar view
   - 📋 Workout markers
   - 📋 Streak visualization
 - 📋 Historical data
@@ -409,15 +487,15 @@ This document tracks all features, their implementation status, and future plans
   - 📋 PR notification popup
   - 📋 PR badge in history
 
-### 4.5 Workout History 📋
+### 4.5 Workout History ✅
 
-- 📋 History list
-  - 📋 Grouped by date
-  - 📋 Session cards with summary
-- 📋 Session detail view
-  - 📋 Full exercise breakdown
-  - 📋 Per-exercise results
-  - 📋 Duration, XP, difficulty
+- ✅ History list
+  - ✅ Grouped by date
+  - ✅ Session cards with summary
+- ✅ Session detail view
+  - ✅ Full exercise breakdown
+  - ✅ Per-exercise results
+  - ✅ Duration, XP, difficulty
 
 ### 4.6 Achievements 📋
 
@@ -437,18 +515,16 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 5: Polish & Quality 📋
+## Phase 5: Polish & Quality ⚠️ (5% Complete)
 
-### 5.1 Animations 📋
+### 5.1 Animations ⚠️
 
+- ✅ Victory confetti animation
+- ✅ Countdown animation (3-2-1)
 - 📋 Session animations
   - 📋 Rep counter bump
   - 📋 Progress bar fill
   - 📋 Exercise transition
-- 📋 Victory animations
-  - 📋 Confetti burst
-  - 📋 XP bar fill
-  - 📋 Loot reveal
 - 📋 Village animations
   - 📋 Building construction
   - 📋 Level up sparkle
@@ -458,8 +534,9 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Card hover/press
   - 📋 Loading states
 
-### 5.2 Sound & Haptics 📋
+### 5.2 Sound & Haptics ⚠️
 
+- ⚠️ Haptic feedback (onboarding only, not session)
 - 📋 Sound effects
   - 📋 Session start (battle horn)
   - 📋 Exercise complete (sword swing)
@@ -467,7 +544,7 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Timer warning (tick-tock)
   - 📋 Victory fanfare
   - 📋 Level up chime
-- 📋 Haptic feedback
+- 📋 Haptic feedback during session
   - 📋 Heavy impact on "Done"
   - 📋 Light tick on countdown
   - 📋 Success pattern on complete
@@ -503,7 +580,7 @@ This document tracks all features, their implementation status, and future plans
   - 📋 High contrast mode
   - 📋 Colorblind modes
 - 📋 Motor accessibility
-  - 📋 Large touch targets
+  - ✅ Large touch targets (44pt+)
   - 📋 Reduced motion option
 
 ### 5.5 Error Handling 📋
@@ -517,6 +594,17 @@ This document tracks all features, their implementation status, and future plans
 - 📋 User feedback
   - 📋 Error messages
   - 📋 Retry options
+
+### 5.6 Dark Theme 📋
+
+- ⚠️ Theme system exists (forced light)
+- 📋 Dark mode colors
+  - 📋 Background colors
+  - 📋 Surface colors
+  - 📋 Text colors
+- 📋 Theme switching
+  - 📋 Settings toggle
+  - 📋 System preference
 
 ---
 
@@ -623,7 +711,7 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Feature-based structure
   - 📋 Shared utilities
 
-### Documentation 🚧
+### Documentation ✅
 
 - ✅ VISION.md
 - ✅ FEATURES.md
@@ -656,15 +744,42 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
+## Known Issues & Gaps ⚠️
+
+### UI Inconsistencies
+
+- ⚠️ Tab bar defined but hidden (navigation via cards only)
+- ⚠️ Some hardcoded strings not localized
+- ⚠️ Exercise images are emoji placeholders
+- ⚠️ Theme locked to light mode
+
+### Missing from Session (vs docs)
+
+- 📋 Rep adjustment during exercise (only on rest)
+- 📋 "How to do it" expandable
+- 📋 Restart Round in pause menu
+- 📋 Post-workout difficulty feedback
+- 📋 Haptics during session
+- 📋 Sound effects
+
+### Missing from Boss (vs docs)
+
+- 📋 HP mechanics (only badge exists)
+- 📋 Damage system
+- 📋 Boss-specific rewards
+- 📋 Boss tokens
+
+---
+
 ## Summary
 
 | Phase | Status | Completion |
 | ----- | ------ | ---------- |
-| Phase 1: Core Loop | ✅ Done | 100% |
+| Phase 1: Core Loop | ✅ Done | ~95% |
 | Phase 2: Village & Economy | 📋 Planned | 0% |
 | Phase 3: Coach & Planning | 📋 Planned | 0% |
-| Phase 4: Statistics | 📋 Planned | 0% |
-| Phase 5: Polish | 📋 Planned | 0% |
+| Phase 4: Statistics | ⚠️ Partial | ~30% |
+| Phase 5: Polish | ⚠️ Minimal | ~5% |
 | Phase 6: Future | 💡 Ideas | 0% |
 
 **Next Priority:** Phase 2 - Resource System & Village View

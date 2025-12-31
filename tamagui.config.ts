@@ -57,6 +57,9 @@ export const config = createTamagui({
   themes: {
     light: {
       background: tokens.color.bgLight,
+      backgroundHover: tokens.color.bgLight,
+      backgroundPress: tokens.color.bgLight,
+      backgroundFocus: tokens.color.bgLight,
       cardBackground: tokens.color.white,
       bgLight: tokens.color.bgLight,
       color: tokens.color.bgDark,
@@ -72,6 +75,9 @@ export const config = createTamagui({
     },
     dark: {
       background: "#121212",
+      backgroundHover: "#121212",
+      backgroundPress: "#121212",
+      backgroundFocus: "#121212",
       cardBackground: "#1E1E1E",
       bgLight: "#252525",
       color: "#E0E0E0",

@@ -92,6 +92,13 @@
       "when": 1767225600003,
       "tag": "0012_add_author_and_seed_campaigns",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1767225600004,
+      "tag": "0013_localize_adventure_steps_narrative",
+      "breakpoints": true
     }
   ]
 }

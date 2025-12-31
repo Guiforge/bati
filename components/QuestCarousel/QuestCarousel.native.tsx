@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { ScrollView, useWindowDimensions } from "react-native";
+import { FlatList, useWindowDimensions } from "react-native";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
@@ -16,21 +16,21 @@ import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | {
-      status: "loading";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-    }
+    status: "loading";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+  }
   | {
-      status: "ready";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-    }
+    status: "ready";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+  }
   | {
-      status: "error";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
+    status: "error";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+    message: string;
+  };
 
 function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
@@ -114,71 +114,70 @@ export function QuestCarousel() {
     [updateActiveFromOffset],
   );
 
-  const slides = useMemo(
-    () =>
-      quests.map((q) => {
-        const title = language === "fr" ? q.frTitle : q.enTitle;
-        const desc = language === "fr" ? q.frDescription : q.enDescription;
-        const emoji = questEmoji(q.rounds, q.exercises.length);
-        const tokens = getQuestColorTokensFromTemplateWithExercises({
-          quest: q,
-          exercisesById,
-        });
+  const renderItem = useCallback(
+    ({ item: q }: { item: QuestTemplate }) => {
+      const title = language === "fr" ? q.frTitle : q.enTitle;
+      const desc = language === "fr" ? q.frDescription : q.enDescription;
+      const emoji = questEmoji(q.rounds, q.exercises.length);
+      const tokens = getQuestColorTokensFromTemplateWithExercises({
+        quest: q,
+        exercisesById,
+      });
 
-        return (
-          <YStack key={q.id} width={slideWidth} mr={cardSpacing}>
-            <Card bg={tokens.bg} onPress={() => router.push(`/quests/${q.id}` as never)}>
-              <XStack gap="$3" items="flex-start">
-                <YStack
-                  width={54}
-                  height={54}
-                  rounded={27}
-                  bg="$bgLight"
-                  borderWidth={3}
-                  borderColor="$color"
-                  justify="center"
-                  items="center"
-                >
-                  <Text fontSize={26}>{emoji}</Text>
-                </YStack>
+      return (
+        <YStack width={slideWidth} mr={cardSpacing}>
+          <Card bg={tokens.bg} onPress={() => router.push(`/quests/${q.id}` as never)}>
+            <XStack gap="$3" items="flex-start">
+              <YStack
+                width={54}
+                height={54}
+                rounded={27}
+                bg="$bgLight"
+                borderWidth={3}
+                borderColor="$color"
+                justify="center"
+                items="center"
+              >
+                <Text fontSize={26}>{emoji}</Text>
+              </YStack>
 
-                <YStack flex={1} gap="$2">
-                  <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
-                    {title}
-                  </Text>
-                  <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
-                    {desc}
-                  </Paragraph>
+              <YStack flex={1} gap="$2">
+                <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
+                  {title}
+                </Text>
+                <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
+                  {desc}
+                </Paragraph>
 
-                  <XStack gap="$2" flexWrap="wrap" pt="$1">
-                    <Tag
-                      label={t("quests.rounds", {
-                        count: q.rounds,
-                        defaultValue: `${q.rounds} rounds`,
-                      })}
-                      tone="secondary"
-                    />
-                    <Tag
-                      label={t("quests.exercises", {
-                        count: q.exercises.length,
-                        defaultValue: `${q.exercises.length} exercises`,
-                      })}
-                      tone="primary"
-                    />
-                    <Tag
-                      label={t("quests.rest", {
-                        count: q.restSeconds,
-                        defaultValue: `Rest ${q.restSeconds}s`,
-                      })}
-                    />
-                  </XStack>
-                </YStack>
-              </XStack>
-            </Card>
-          </YStack>
-        );
-      }),
-    [quests, language, slideWidth, t, router, exercisesById],
+                <XStack gap="$2" flexWrap="wrap" pt="$1">
+                  <Tag
+                    label={t("quests.rounds", {
+                      count: q.rounds,
+                      defaultValue: `${q.rounds} rounds`,
+                    })}
+                    tone="secondary"
+                  />
+                  <Tag
+                    label={t("quests.exercises", {
+                      count: q.exercises.length,
+                      defaultValue: `${q.exercises.length} exercises`,
+                    })}
+                    tone="primary"
+                  />
+                  <Tag
+                    label={t("quests.rest", {
+                      count: q.restSeconds,
+                      defaultValue: `Rest ${q.restSeconds}s`,
+                    })}
+                  />
+                </XStack>
+              </YStack>
+            </XStack>
+          </Card>
+        </YStack>
+      );
+    },
+    [language, slideWidth, router, t, exercisesById],
   );
 
   if (state.status === "loading") {
@@ -242,7 +241,10 @@ export function QuestCarousel() {
         </Text>
       </XStack>
 
-      <ScrollView
+      <FlatList
+        data={quests}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={snapInterval}
@@ -252,9 +254,7 @@ export function QuestCarousel() {
         contentContainerStyle={{ paddingHorizontal: edgeInset, paddingBottom: 4 }}
         onMomentumScrollEnd={onMomentumScrollEnd}
         onScrollEndDrag={onScrollEndDrag}
-      >
-        {slides}
-      </ScrollView>
+      />
 
       <ProgressDots current={active} total={quests.length} />
     </YStack>

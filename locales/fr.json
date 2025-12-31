@@ -102,8 +102,12 @@
   "session": {
     "round_label": "MANCHE {{count}} / {{total}}",
     "exercise_label": "EXERCICE {{count}} / {{total}}",
+    "pause": "Mettre en pause",
+    "pause_accessibility": "Mettre la session en pause",
     "seconds": "Secondes",
     "reps": "Reps",
+    "complete_exercise_accessibility": "Terminer l’exercice",
+    "finish_exercise_accessibility": "Terminer l’exercice",
     "complete_button": "TERMINÉ !",
     "rest_title": "Repos & Récup",
     "up_next": "À suivre",

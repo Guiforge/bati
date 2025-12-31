@@ -3,6 +3,19 @@ module.exports = (api) => {
 
   return {
     presets: ["babel-preset-expo"],
-    plugins: [["inline-import", { extensions: [".sql"] }], "react-native-reanimated/plugin"],
+    plugins: [
+      ["inline-import", { extensions: [".sql"] }],
+      [
+        "@tamagui/babel-plugin",
+        {
+          components: ["tamagui"],
+          config: "./tamagui.config.ts",
+          logTimings: true,
+          disableExtraction: process.env.NODE_ENV === "development",
+        },
+      ],
+      // IMPORTANT: must be last
+      "react-native-reanimated/plugin",
+    ],
   };
 };

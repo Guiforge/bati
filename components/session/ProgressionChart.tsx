@@ -1,12 +1,12 @@
+import { Card } from "@/components/common/Card";
+import type { SessionSummary } from "@/db";
+import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
+import { useSettingsStore } from "@/stores/settings";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import type { SessionSummary } from "@/db";
-import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
-import { useSettingsStore } from "@/stores/settings";
 
 type ChartMode = "quest" | "all";
 
@@ -72,7 +72,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         <XStack items="center" justify="center" gap="$3" py="$4">
           <Text fontSize={24}>📊</Text>
           <Text fontWeight="900" fontSize={14} color="$color">
-            {t("chart.loading", "Loading chart...")}
+            {t("chart.loading")}
           </Text>
         </XStack>
       </Card>
@@ -85,7 +85,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         <YStack gap="$2" items="center" py="$2">
           <Text fontSize={24}>😵</Text>
           <Text fontWeight="900" fontSize={14} color="$color">
-            {t("chart.error", "Failed to load chart")}
+            {t("chart.error")}
           </Text>
           <Paragraph color="$color" opacity={0.6} size="$2">
             {error}
@@ -101,10 +101,10 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         <YStack gap="$2" items="center" py="$4">
           <Text fontSize={32}>📈</Text>
           <Text fontWeight="900" fontSize={14} color="$color">
-            {t("chart.no_data", "No data yet")}
+            {t("chart.no_data")}
           </Text>
           <Paragraph color="$color" opacity={0.6} size="$2" style={{ textAlign: "center" }}>
-            {t("chart.complete_more", "Complete more workouts to see your progress!")}
+            {t("chart.complete_more")}
           </Paragraph>
         </YStack>
       </Card>
@@ -156,12 +156,10 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         {/* Title */}
         <YStack gap="$1">
           <Text fontWeight="900" fontSize={16} color="$color">
-            {title || t("chart.progression_title", "Your Progress")}
+            {title || t("chart.progression_title")}
           </Text>
           <Paragraph color="$color" opacity={0.6} size="$2">
-            {mode === "quest"
-              ? t("chart.quest_history", "Workout duration over time")
-              : t("chart.all_history", "Recent workout durations")}
+            {mode === "quest" ? t("chart.quest_history") : t("chart.all_history")}
           </Paragraph>
         </YStack>
 
@@ -172,7 +170,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
               {sessions.length}
             </Text>
             <Text fontSize={12} color="$color" opacity={0.6}>
-              {t("chart.workouts", "Workouts")}
+              {t("chart.workouts")}
             </Text>
           </YStack>
           <YStack items="center">
@@ -180,7 +178,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
               {totalMinutes}
             </Text>
             <Text fontSize={12} color="$color" opacity={0.6}>
-              {t("chart.total_mins", "Total mins")}
+              {t("chart.total_mins")}
             </Text>
           </YStack>
           <YStack items="center">
@@ -188,7 +186,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
               {avgMinutes}
             </Text>
             <Text fontSize={12} color="$color" opacity={0.6}>
-              {t("chart.avg_mins", "Avg mins")}
+              {t("chart.avg_mins")}
             </Text>
           </YStack>
         </XStack>
@@ -227,19 +225,19 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
           <XStack items="center" gap="$2">
             <YStack width={12} height={12} rounded={6} bg="#22C55E" />
             <Text fontSize={11} color="$color" opacity={0.7}>
-              {t("quests.level_easy", "Easy")}
+              {t("quests.level_easy")}
             </Text>
           </XStack>
           <XStack items="center" gap="$2">
             <YStack width={12} height={12} rounded={6} bg="#6366F1" />
             <Text fontSize={11} color="$color" opacity={0.7}>
-              {t("quests.level_medium", "Medium")}
+              {t("quests.level_medium")}
             </Text>
           </XStack>
           <XStack items="center" gap="$2">
             <YStack width={12} height={12} rounded={6} bg="#EF4444" />
             <Text fontSize={11} color="$color" opacity={0.7}>
-              {t("quests.level_hard", "Hard")}
+              {t("quests.level_hard")}
             </Text>
           </XStack>
         </XStack>

@@ -5,12 +5,11 @@
     "includes": [
       "**",
       "!**/.expo",
-      "!**/babel.config.js",
+      "!**/.tamagui",
       "!**/dist",
-      "!**/metro.config.js",
       "!**/node_modules",
-      "**",
-      "**"
+      "!**/babel.config.js",
+      "!**/metro.config.js"
     ]
   },
   "formatter": {
@@ -35,7 +34,9 @@
   },
   "overrides": [
     {
-      "includes": ["**/*.css"],
+      "includes": [
+        "**/*.css"
+      ],
       "linter": {
         "rules": {
           "suspicious": {
@@ -45,7 +46,9 @@
       }
     },
     {
-      "includes": ["**/*.md"],
+      "includes": [
+        "**/*.md"
+      ],
       "linter": {
         "enabled": false
       }

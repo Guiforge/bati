@@ -1,3 +1,9 @@
+import { Card } from "@/components/common/Card";
+import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { computeSessionXp } from "@/db/xp";
+import { formatTime } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -5,12 +11,6 @@ import { ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
-import { computeSessionXp } from "@/db/xp";
-import { formatTime } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
-import { useSettingsStore } from "@/stores/settings";
 import { ProgressionChart } from "./ProgressionChart";
 
 export function VictoryView() {
@@ -82,7 +82,7 @@ export function VictoryView() {
                 opacity={0.65}
                 style={{ textAlign: "center" }}
               >
-                {t("session.victory_title", "Quest Complete!")}
+                {t("session.victory_title")}
               </Text>
               <H1
                 fontWeight="900"
@@ -112,7 +112,7 @@ export function VictoryView() {
               opacity={0.6}
               textTransform="uppercase"
             >
-              {t("session.total_time", "Total Time")}
+              {t("session.total_time")}
             </Text>
             <Text fontWeight="900" fontSize={24} color="$color" fontFamily="$body">
               {formatTime(durationSeconds)}
@@ -127,21 +127,17 @@ export function VictoryView() {
               opacity={0.6}
               textTransform="uppercase"
             >
-              {t("session.xp_earned", "XP Earned")}
+              {t("session.xp_earned")}
             </Text>
             <Text fontWeight="900" fontSize={24} color="$primary" fontFamily="$body">
-              +{xpEarned} XP
+              {t("quests.reward_xp", { count: xpEarned })}
             </Text>
           </XStack>
         </Card>
 
         {/* Progression Chart */}
         <YStack width="100%" maxW={520}>
-          <ProgressionChart
-            questId={quest.id}
-            limit={10}
-            title={t("chart.your_progress", "Your Progress on this Quest")}
-          />
+          <ProgressionChart questId={quest.id} limit={10} title={t("chart.your_progress")} />
         </YStack>
 
         {/* Finish Button */}
@@ -157,9 +153,7 @@ export function VictoryView() {
           borderWidth={0}
         >
           <Text color="$background" fontSize={20} fontWeight="900" textTransform="uppercase">
-            {isSaving
-              ? t("common.saving", "Saving...")
-              : t("session.finish_button", "Collect Loot")}
+            {isSaving ? t("common.saving") : t("session.finish_button")}
           </Text>
         </Button>
       </ScrollView>

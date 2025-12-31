@@ -1,9 +1,9 @@
-import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
-import { Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { useSessionStore } from "@/stores/session";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Paragraph, Text, YStack } from "tamagui";
 
 export function PausedOverlay() {
   const { t } = useTranslation();
@@ -34,15 +34,15 @@ export function PausedOverlay() {
       <Card width="100%" maxW={360} bg="$background">
         <YStack gap="$3" items="center">
           <Text fontWeight="900" fontSize={28} color="$color" style={{ textAlign: "center" }}>
-            {t("session.paused_title", "Game Paused")}
+            {t("session.paused_title")}
           </Text>
           <Paragraph color="$color" opacity={0.65} size="$3" style={{ textAlign: "center" }}>
-            {t("session.paused_subtitle", "Catch your breath. Ready to jump back in?")}
+            {t("session.paused_subtitle")}
           </Paragraph>
 
           <YStack width="100%" gap="$3" pt="$2">
             <AppButton onPress={resumeSession} variant="primary">
-              {t("session.resume_button", "Resume")}
+              {t("session.resume_button")}
             </AppButton>
 
             <AppButton
@@ -51,7 +51,7 @@ export function PausedOverlay() {
               backgroundColor="$pastelPink"
               pressStyle={{ opacity: 0.9 }}
             >
-              {t("session.quit_button", "Quit Quest")}
+              {t("session.quit_button")}
             </AppButton>
           </YStack>
         </YStack>

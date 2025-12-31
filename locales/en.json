@@ -102,8 +102,12 @@
   "session": {
     "round_label": "ROUND {{count}} / {{total}}",
     "exercise_label": "EXERCISE {{count}} / {{total}}",
+    "pause": "Pause session",
+    "pause_accessibility": "Pause session",
     "seconds": "Seconds",
     "reps": "Reps",
+    "complete_exercise_accessibility": "Complete exercise",
+    "finish_exercise_accessibility": "Finish exercise",
     "complete_button": "DONE!",
     "rest_title": "Rest & Recover",
     "up_next": "Up Next",

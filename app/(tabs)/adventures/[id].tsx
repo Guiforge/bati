@@ -30,32 +30,32 @@ import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | {
-      status: "loading";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
+    status: "loading";
+    details: AdventureDetails | null;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+  }
   | {
-      status: "ready";
-      details: AdventureDetails;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
+    status: "ready";
+    details: AdventureDetails;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+  }
   | {
-      status: "error";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-      message: string;
-    };
+    status: "error";
+    details: AdventureDetails | null;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+    message: string;
+  };
 
 function levelLabel(level: Difficulty, t: TFunction) {
-  if (level === Difficulty.Easy) return t("quests.level_easy", { defaultValue: "Easy" });
-  if (level === Difficulty.Hard) return t("quests.level_hard", { defaultValue: "Hard" });
-  return t("quests.level_medium", { defaultValue: "Medium" });
+  if (level === Difficulty.Easy) return t("quests.level_easy");
+  if (level === Difficulty.Hard) return t("quests.level_hard");
+  return t("quests.level_medium");
 }
 
 function toDifficultyEnum(code: "easy" | "medium" | "hard"): Difficulty {
@@ -105,7 +105,7 @@ export default function AdventureDetailsScreen() {
             activeRun: null,
             exercisesById: {},
             suggestedDifficulty: "medium",
-            message: t("adventures.not_found", "Adventure not found"),
+            message: t("adventures.not_found"),
           });
           return;
         }
@@ -144,8 +144,8 @@ export default function AdventureDetailsScreen() {
 
   const title = details
     ? langKey === "fr"
-      ? details.adventure.frTitle || t("adventures.details_title", "Adventure")
-      : details.adventure.enTitle || t("adventures.details_title", "Adventure")
+      ? details.adventure.frTitle || t("adventures.details_title")
+      : details.adventure.enTitle || t("adventures.details_title")
     : "";
 
   const description = details
@@ -214,10 +214,10 @@ export default function AdventureDetailsScreen() {
   const StepStatusTag = ({ status }: { status: "locked" | "active" | "completed" }) => {
     const label =
       status === "completed"
-        ? t("adventures.step_completed", "Completed")
+        ? t("adventures.step_completed")
         : status === "active"
-          ? t("adventures.step_active", "Active")
-          : t("adventures.step_locked", "Locked");
+          ? t("adventures.step_active")
+          : t("adventures.step_locked");
 
     const tone = status === "completed" ? "primary" : status === "active" ? "secondary" : "default";
 
@@ -228,10 +228,10 @@ export default function AdventureDetailsScreen() {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
         <Text fontWeight="900" fontSize={18} color="$color">
-          {t("adventures.invalid_id", "Invalid adventure")}
+          {t("adventures.invalid_id")}
         </Text>
         <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
-          {t("quests.go_back", "Go back")}
+          {t("quests.go_back")}
         </AppButton>
       </YStack>
     );
@@ -250,7 +250,7 @@ export default function AdventureDetailsScreen() {
               <XStack items="center" gap="$2">
                 <Sparkles size={18} color="$color" />
                 <Text fontWeight="900" fontSize={20} color="$color">
-                  {t("adventures.details_title", "Adventure")}
+                  {t("adventures.details_title")}
                 </Text>
               </XStack>
             </XStack>
@@ -262,7 +262,7 @@ export default function AdventureDetailsScreen() {
             <Card bg="$bgLight">
               <YStack gap="$2">
                 <Text fontWeight="900" fontSize={16} color="$color">
-                  {t("adventures.load_error", "Failed to load adventure")}
+                  {t("adventures.load_error")}
                 </Text>
                 <Paragraph color="$color" opacity={0.7} size="$3">
                   {"message" in state ? state.message : ""}
@@ -272,7 +272,7 @@ export default function AdventureDetailsScreen() {
                   variant="secondary"
                   onPress={() => void load(adventureId)}
                 >
-                  {t("quests.retry", "Retry")} ↻
+                  {t("quests.retry")} ↻
                 </AppButton>
               </YStack>
             </Card>
@@ -287,7 +287,7 @@ export default function AdventureDetailsScreen() {
 
                 {isBoss ? (
                   <XStack gap="$2" flexWrap="wrap">
-                    <Tag label={t("adventures.kind_boss", "BOSS")} tone="primary" />
+                    <Tag label={t("adventures.kind_boss")} tone="primary" />
                   </XStack>
                 ) : null}
 
@@ -301,7 +301,6 @@ export default function AdventureDetailsScreen() {
                   <Chip
                     label={t("adventures.steps", {
                       count: effectiveSteps.length,
-                      defaultValue: `${effectiveSteps.length} steps`,
                     })}
                   />
 
@@ -309,7 +308,6 @@ export default function AdventureDetailsScreen() {
                     <Chip
                       label={t("quests.estimate", {
                         duration: formatDuration(preview.durationSeconds, langKey),
-                        defaultValue: `≈ ${formatDuration(preview.durationSeconds, langKey)}`,
                       })}
                     />
                   ) : null}
@@ -318,7 +316,6 @@ export default function AdventureDetailsScreen() {
                     <Chip
                       label={t("quests.reward_xp", {
                         count: preview.xp,
-                        defaultValue: `+${preview.xp} XP`,
                       })}
                       tone="secondary"
                     />
@@ -332,7 +329,7 @@ export default function AdventureDetailsScreen() {
             <Card bg="$bgLight">
               <YStack gap="$3">
                 <Text fontWeight="900" fontSize={16} color="$color">
-                  {t("adventures.steps_title", "Campaign steps")}
+                  {t("adventures.steps_title")}
                 </Text>
 
                 <YStack gap="$2">
@@ -343,20 +340,24 @@ export default function AdventureDetailsScreen() {
 
                     const stepTitle = langKey === "fr" ? s.quest.frTitle : s.quest.enTitle;
 
+                    const narrative =
+                      langKey === "fr"
+                        ? s.frNarrative || s.enNarrative || s.narrative
+                        : s.enNarrative || s.frNarrative || s.narrative;
+
                     return (
                       <XStack key={s.stepIndex} items="center" justify="space-between" gap="$3">
                         <YStack flex={1}>
                           <Text fontWeight="900" color="$color">
                             {t("adventures.step_label", {
                               count: s.stepIndex + 1,
-                              defaultValue: `Step ${s.stepIndex + 1}`,
                             })}
                             {": "}
                             {stepTitle}
                           </Text>
-                          {s.narrative ? (
+                          {narrative ? (
                             <Paragraph color="$color" opacity={0.65} size="$3" numberOfLines={2}>
-                              {s.narrative}
+                              {narrative}
                             </Paragraph>
                           ) : null}
                         </YStack>
@@ -382,10 +383,10 @@ export default function AdventureDetailsScreen() {
           >
             <Text color="$background" fontWeight="900" fontSize={18}>
               {run?.activeStep
-                ? t("adventures.continue", "Continue")
+                ? t("adventures.continue")
                 : isBoss
-                  ? t("adventures.fight_boss", "Fight Boss")
-                  : t("adventures.start", "Start Adventure")}
+                  ? t("adventures.fight_boss")
+                  : t("adventures.start")}
             </Text>
           </AppButton>
         </YStack>

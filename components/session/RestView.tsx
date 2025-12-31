@@ -1,11 +1,11 @@
-import { Minus, Plus } from "@tamagui/lucide-icons";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { Minus, Plus } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 
 export function RestView() {
   const { t } = useTranslation();
@@ -40,7 +40,7 @@ export function RestView() {
       <YStack items="center" gap="$2">
         <Text fontSize={40}>🔥</Text>
         <H3 color="$color" fontWeight="900" textTransform="uppercase">
-          {t("session.rest_title", "Rest & Recover")}
+          {t("session.rest_title")}
         </H3>
       </YStack>
 
@@ -99,10 +99,10 @@ export function RestView() {
                 fontWeight="800"
                 textTransform="uppercase"
               >
-                {t("session.adjust_reps_label", "Adjust Reps")}
+                {t("session.adjust_reps_label")}
               </Text>
               <Text fontSize={12} opacity={0.5}>
-                {t("session.adjust_reps_hint", "Did you do more or less?")}
+                {t("session.adjust_reps_hint")}
               </Text>
             </YStack>
 
@@ -135,7 +135,7 @@ export function RestView() {
       {/* Up Next Card */}
       <YStack bg="$background" p="$4" rounded="$6" borderWidth={2} borderColor="$color" gap="$2">
         <Text color="$color" opacity={0.6} fontSize={12} fontWeight="800" textTransform="uppercase">
-          {t("session.up_next", "Up Next")}
+          {t("session.up_next")}
         </Text>
         <XStack gap="$3" items="center">
           <YStack width={50} height={50} bg="$bgLight" rounded="$3" items="center" justify="center">
@@ -166,7 +166,7 @@ export function RestView() {
         mt="auto"
       >
         <Text color="$color" fontSize={20} fontWeight="900" textTransform="uppercase">
-          {t("session.skip_rest", "I'm Ready!")}
+          {t("session.skip_rest")}
         </Text>
       </Button>
     </YStack>

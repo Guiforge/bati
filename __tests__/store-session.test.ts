@@ -11,6 +11,17 @@ jest.mock("@/db/completed", () => ({
 jest.mock("@/db/xp", () => ({
   computeSessionXp: jest.fn().mockReturnValue(100),
 }));
+jest.mock("@/db/bossFights", () => ({
+  getOrCreateBossFight: jest.fn().mockResolvedValue(null),
+  dealDamage: jest.fn().mockResolvedValue({
+    damage: 10,
+    isCritical: false,
+    newHp: 90,
+    defeated: false,
+    weaknessBonus: false,
+    resistancePenalty: false,
+  }),
+}));
 
 describe("useSessionStore", () => {
   beforeEach(() => {
@@ -142,12 +153,16 @@ describe("useSessionStore", () => {
       result.current.updateLastResult(0);
     });
 
-    expect(result.current.results[result.current.results.length - 1]?.result.value).toBe(1);
+    expect(
+      result.current.results[result.current.results.length - 1]?.result.value
+    ).toBe(1);
 
     act(() => {
       result.current.updateLastResult(-5);
     });
 
-    expect(result.current.results[result.current.results.length - 1]?.result.value).toBe(1);
+    expect(
+      result.current.results[result.current.results.length - 1]?.result.value
+    ).toBe(1);
   });
 });

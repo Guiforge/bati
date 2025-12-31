@@ -1,10 +1,12 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Text, YStack } from "tamagui";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 
 export function CountdownView() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { remainingSeconds } = useSessionTimer();
   const { status, finishCountdown } = useSessionStore();
@@ -47,10 +49,10 @@ export function CountdownView() {
             textTransform="uppercase"
             style={{ textAlign: "center" }}
           >
-            Let’s go!
+            {t("session.countdown_letsgo")}
           </H1>
           <Text fontWeight="800" opacity={0.6} color="$color" style={{ textAlign: "center" }}>
-            Warm-up done. Time to move.
+            {t("session.countdown_warmup_done")}
           </Text>
         </YStack>
       ) : (

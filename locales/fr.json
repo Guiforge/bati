@@ -89,6 +89,20 @@
     "home_cta_subtitle": "Nouvelles routes. Gros XP. Zéro excuse.",
     "home_cta_button": "Ouvrir"
   },
+  "boss": {
+    "hp": "PV",
+    "enraged": "ENRAGÉ !",
+    "defeated": "VAINCU !",
+    "victory_title": "Boss vaincu !",
+    "victory_subtitle": "La bête est tombée !",
+    "damage_dealt": "Dégâts infligés",
+    "critical_hit": "COUP CRITIQUE !",
+    "weakness_bonus": "Faiblesse !",
+    "resistance_penalty": "Résisté...",
+    "fight_intro": "Un ennemi puissant bloque ton chemin.",
+    "weakness": "Faiblesse",
+    "resistance": "Résistance"
+  },
   "exercises": {
     "details_title": "Exercice",
     "loading": "Chargement...",
@@ -100,6 +114,8 @@
     "seconds_per_rep": "{{count}}s/reps"
   },
   "session": {
+    "countdown_letsgo": "C'est parti !",
+    "countdown_warmup_done": "Échauffement terminé. En avant.",
     "round_label": "MANCHE {{count}} / {{total}}",
     "exercise_label": "EXERCICE {{count}} / {{total}}",
     "pause": "Mettre en pause",
@@ -116,6 +132,10 @@
     "total_time": "Temps total",
     "xp_earned": "XP gagnés",
     "finish_button": "Récupérer le butin",
+    "feedback_title": "Comment c'était ?",
+    "feedback_easy": "Trop facile",
+    "feedback_good": "Parfait",
+    "feedback_hard": "Trop dur",
     "paused_title": "Jeu en pause",
     "paused_subtitle": "Respire un coup. Prêt à repartir ?",
     "resume_button": "Reprendre",

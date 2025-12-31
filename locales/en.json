@@ -89,6 +89,20 @@
     "home_cta_subtitle": "New routes. Big XP. No excuses.",
     "home_cta_button": "Open"
   },
+  "boss": {
+    "hp": "HP",
+    "enraged": "ENRAGED!",
+    "defeated": "DEFEATED!",
+    "victory_title": "Boss Defeated!",
+    "victory_subtitle": "The beast has fallen!",
+    "damage_dealt": "Damage Dealt",
+    "critical_hit": "CRITICAL HIT!",
+    "weakness_bonus": "Weakness!",
+    "resistance_penalty": "Resisted...",
+    "fight_intro": "A powerful foe blocks your path.",
+    "weakness": "Weakness",
+    "resistance": "Resistance"
+  },
   "exercises": {
     "details_title": "Exercise",
     "loading": "Loading...",
@@ -100,6 +114,8 @@
     "seconds_per_rep": "{{count}}s/rep"
   },
   "session": {
+    "countdown_letsgo": "Let's go!",
+    "countdown_warmup_done": "Warm-up done. Time to move.",
     "round_label": "ROUND {{count}} / {{total}}",
     "exercise_label": "EXERCISE {{count}} / {{total}}",
     "pause": "Pause session",
@@ -116,6 +132,10 @@
     "total_time": "Total Time",
     "xp_earned": "XP Earned",
     "finish_button": "Collect Loot",
+    "feedback_title": "How did it feel?",
+    "feedback_easy": "Too Easy",
+    "feedback_good": "Just Right",
+    "feedback_hard": "Too Hard",
     "paused_title": "Game Paused",
     "paused_subtitle": "Catch your breath. Ready to jump back in?",
     "resume_button": "Resume",

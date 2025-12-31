@@ -1,4 +1,13 @@
-import { ChevronLeft, ChevronRight, Languages, Menu, Scroll, User, X } from "@tamagui/lucide-icons";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Languages,
+  Menu,
+  Moon,
+  Scroll,
+  User,
+  X,
+} from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import type { ReactNode } from "react";
@@ -9,8 +18,9 @@ import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack } from 
 import { AppIconButton } from "@/components/common/AppButton";
 import { AVATARS } from "@/constants/avatars";
 import { useSettingsStore } from "@/stores/settings";
+import { useThemeStore } from "@/stores/theme";
 
-type MenuStep = "main" | "language" | "avatar";
+type MenuStep = "main" | "language" | "avatar" | "theme";
 
 export function HomeSettingsMenu() {
   const { t } = useTranslation();
@@ -20,6 +30,7 @@ export function HomeSettingsMenu() {
   const [step, setStep] = useState<MenuStep>("main");
 
   const { language, avatarId, setLanguage, setAvatarId } = useSettingsStore();
+  const { theme, setTheme } = useThemeStore();
 
   const closeMenu = () => {
     setOpen(false);
@@ -123,6 +134,12 @@ export function HomeSettingsMenu() {
         label={t("onboarding.avatar_title")}
         onPress={() => setStep("avatar")}
       />
+      <MenuItem
+        icon={<Moon size={24} color="$color" />}
+        label={t("theme")}
+        onPress={() => setStep("theme")}
+        value={t(theme)}
+      />
 
       {__DEV__ ? (
         <MenuItem
@@ -200,12 +217,34 @@ export function HomeSettingsMenu() {
     </XStack>
   );
 
+  const renderTheme = () => (
+    <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
+      <OptionItem
+        active={theme === "light"}
+        label={`${t("light")} ☀️`}
+        onPress={() => setTheme("light")}
+      />
+      <OptionItem
+        active={theme === "dark"}
+        label={`${t("dark")} 🌙`}
+        onPress={() => setTheme("dark")}
+      />
+      <OptionItem
+        active={theme === "system"}
+        label={`${t("system")} 📱`}
+        onPress={() => setTheme("system")}
+      />
+    </YStack>
+  );
+
   const getTitle = () => {
     switch (step) {
       case "language":
         return t("language");
       case "avatar":
         return t("onboarding.avatar_title");
+      case "theme":
+        return t("theme");
       default:
         return t("settings");
     }
@@ -293,6 +332,7 @@ export function HomeSettingsMenu() {
                 {step === "main" && renderMain()}
                 {step === "language" && renderLanguage()}
                 {step === "avatar" && renderAvatar()}
+                {step === "theme" && renderTheme()}
               </YStack>
             </YStack>
           </YStack>

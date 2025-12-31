@@ -13,6 +13,8 @@ import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { ProgressionChart } from "./ProgressionChart";
 
+type Feedback = "easy" | "good" | "hard" | null;
+
 export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -22,6 +24,7 @@ export function VictoryView() {
   const { quest, userLevel, startTime, totalPausedTime, saveSession, quitSession } =
     useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback>(null);
 
   if (!quest || !startTime) return null;
 
@@ -139,6 +142,76 @@ export function VictoryView() {
         <YStack width="100%" maxW={520}>
           <ProgressionChart questId={quest.id} limit={10} title={t("chart.your_progress")} />
         </YStack>
+
+        {/* Post-workout Feedback */}
+        <Card width="100%" maxW={520} bg="$bgLight" gap="$3">
+          <Text
+            fontWeight="800"
+            fontSize={14}
+            color="$color"
+            opacity={0.7}
+            textTransform="uppercase"
+            style={{ textAlign: "center" }}
+          >
+            {t("session.feedback_title")}
+          </Text>
+          <XStack gap="$3" justify="center">
+            <Button
+              flex={1}
+              size="$4"
+              bg={feedback === "easy" ? "$pastelGreen" : "$bgLight"}
+              borderWidth={2}
+              borderColor={feedback === "easy" ? "$success" : "$color"}
+              opacity={feedback === "easy" ? 1 : 0.7}
+              pressStyle={{ opacity: 0.8, scale: 0.98 }}
+              onPress={() => setFeedback("easy")}
+              rounded="$4"
+            >
+              <YStack items="center" gap="$1">
+                <Text fontSize={20}>😊</Text>
+                <Text color="$color" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                  {t("session.feedback_easy")}
+                </Text>
+              </YStack>
+            </Button>
+            <Button
+              flex={1}
+              size="$4"
+              bg={feedback === "good" ? "$pastelBlue" : "$bgLight"}
+              borderWidth={2}
+              borderColor={feedback === "good" ? "$primary" : "$color"}
+              opacity={feedback === "good" ? 1 : 0.7}
+              pressStyle={{ opacity: 0.8, scale: 0.98 }}
+              onPress={() => setFeedback("good")}
+              rounded="$4"
+            >
+              <YStack items="center" gap="$1">
+                <Text fontSize={20}>💪</Text>
+                <Text color="$color" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                  {t("session.feedback_good")}
+                </Text>
+              </YStack>
+            </Button>
+            <Button
+              flex={1}
+              size="$4"
+              bg={feedback === "hard" ? "$pastelPink" : "$bgLight"}
+              borderWidth={2}
+              borderColor={feedback === "hard" ? "$secondary" : "$color"}
+              opacity={feedback === "hard" ? 1 : 0.7}
+              pressStyle={{ opacity: 0.8, scale: 0.98 }}
+              onPress={() => setFeedback("hard")}
+              rounded="$4"
+            >
+              <YStack items="center" gap="$1">
+                <Text fontSize={20}>😤</Text>
+                <Text color="$color" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                  {t("session.feedback_hard")}
+                </Text>
+              </YStack>
+            </Button>
+          </XStack>
+        </Card>
 
         {/* Finish Button */}
         <Button

@@ -1,10 +1,24 @@
-import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  int,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 // ------------------------------------------------------------
 // Exercises catalogue
 // ------------------------------------------------------------
 
-export const muscleCodes = ["arms", "back", "shoulder", "chest", "abs", "calf"] as const;
+export const muscleCodes = [
+  "arms",
+  "back",
+  "shoulder",
+  "chest",
+  "abs",
+  "calf",
+] as const;
 export type MuscleCode = (typeof muscleCodes)[number];
 
 export const equipmentCodes = [
@@ -63,7 +77,7 @@ export const exercises = sqliteTable(
   },
   (table) => ({
     enNameUnique: uniqueIndex("exercises_en_name_unique").on(table.enName),
-  }),
+  })
 );
 
 export const exerciseMuscles = sqliteTable(
@@ -77,7 +91,7 @@ export const exerciseMuscles = sqliteTable(
   (table) => ({
     pk: primaryKey({ columns: [table.exerciseId, table.muscle] }),
     muscleIdx: index("exercise_muscles_muscle_idx").on(table.muscle),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -128,8 +142,11 @@ export const questExercises = sqliteTable(
   },
   (table) => ({
     questIdx: index("quest_exercises_quest_idx").on(table.questId),
-    sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(table.questId, table.sortOrder),
-  }),
+    sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(
+      table.questId,
+      table.sortOrder
+    ),
+  })
 );
 
 // ------------------------------------------------------------
@@ -164,13 +181,21 @@ export const adventures = sqliteTable(
     // Soft flag to hide adventures without deleting content.
     isActive: int().notNull().default(1),
 
+    // Boss-specific fields (only used when kind = "boss")
+    bossTotalHp: int(),
+    bossWeaknessMuscle: text().$type<MuscleCode>(),
+    bossResistanceMuscle: text().$type<MuscleCode>(),
+
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({
     questUnique: uniqueIndex("adventures_quest_unique").on(table.questId),
-    activeSortIdx: index("adventures_active_sort_idx").on(table.isActive, table.sortOrder),
-  }),
+    activeSortIdx: index("adventures_active_sort_idx").on(
+      table.isActive,
+      table.sortOrder
+    ),
+  })
 );
 
 export const adventureStepStatuses = ["locked", "active", "completed"] as const;
@@ -204,9 +229,9 @@ export const adventureSteps = sqliteTable(
     questIdx: index("adventure_steps_quest_idx").on(table.questId),
     orderUnique: uniqueIndex("adventure_steps_adventure_step_unique").on(
       table.adventureId,
-      table.stepIndex,
+      table.stepIndex
     ),
-  }),
+  })
 );
 
 export const adventureRuns = sqliteTable(
@@ -224,7 +249,7 @@ export const adventureRuns = sqliteTable(
   },
   (table) => ({
     adventureIdx: index("adventure_runs_adventure_idx").on(table.adventureId),
-  }),
+  })
 );
 
 export const adventureRunSteps = sqliteTable(
@@ -250,10 +275,13 @@ export const adventureRunSteps = sqliteTable(
     questIdx: index("adventure_run_steps_quest_idx").on(table.questId),
     orderUnique: uniqueIndex("adventure_run_steps_run_step_unique").on(
       table.runId,
-      table.stepIndex,
+      table.stepIndex
     ),
-    runStatusIdx: index("adventure_run_steps_run_status_idx").on(table.runId, table.status),
-  }),
+    runStatusIdx: index("adventure_run_steps_run_status_idx").on(
+      table.runId,
+      table.status
+    ),
+  })
 );
 
 // ------------------------------------------------------------
@@ -286,9 +314,11 @@ export const completedQuest = sqliteTable(
       .$defaultFn(() => new Date()),
   },
   (table) => ({
-    performedAtIdx: index("completed_sessions_performed_at_idx").on(table.performedAt),
+    performedAtIdx: index("completed_sessions_performed_at_idx").on(
+      table.performedAt
+    ),
     questIdx: index("completed_sessions_quest_idx").on(table.questId),
-  }),
+  })
 );
 
 export const completedExercises = sqliteTable(
@@ -326,10 +356,66 @@ export const completedExercises = sqliteTable(
   (table) => ({
     sessionIdx: index("completed_exercises_session_idx").on(table.sessionId),
     exerciseIdx: index("completed_exercises_exercise_idx").on(table.exerciseId),
-    orderUnique: uniqueIndex("completed_exercises_session_round_sort_unique").on(
-      table.sessionId,
-      table.roundIndex,
-      table.sortOrder,
+    orderUnique: uniqueIndex(
+      "completed_exercises_session_round_sort_unique"
+    ).on(table.sessionId, table.roundIndex, table.sortOrder),
+  })
+);
+
+// ------------------------------------------------------------
+// Boss Fights (for adventures with kind = "boss")
+// ------------------------------------------------------------
+
+export const bossFights = sqliteTable(
+  "boss_fights",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    adventureId: int()
+      .notNull()
+      .references(() => adventures.id, { onDelete: "cascade" }),
+    // Total HP = sum of all exercise targets across all steps
+    totalHp: int().notNull(),
+    // Current HP remaining (persists across sessions)
+    currentHp: int().notNull(),
+    // Muscle group that deals bonus damage (1.5x)
+    weaknessMuscle: text().$type<MuscleCode>(),
+    // Muscle group that deals reduced damage (0.5x)
+    resistanceMuscle: text().$type<MuscleCode>(),
+    // Timestamp when boss was defeated (null if still alive)
+    defeatedAt: int({ mode: "timestamp" }),
+    createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    adventureUnique: uniqueIndex("boss_fights_adventure_unique").on(
+      table.adventureId
     ),
-  }),
+  })
+);
+
+export const bossDamageLog = sqliteTable(
+  "boss_damage_log",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    bossFightId: int()
+      .notNull()
+      .references(() => bossFights.id, { onDelete: "cascade" }),
+    completedSessionId: int().references(() => completedQuest.id, {
+      onDelete: "set null",
+    }),
+    exerciseId: int().references(() => exercises.id, { onDelete: "set null" }),
+    // Damage dealt (after weakness/resistance modifiers)
+    damageDealt: int().notNull(),
+    // Whether this was a critical hit (exceeded target)
+    isCritical: int().notNull().default(0),
+    // Muscle group that dealt the damage
+    muscle: text().$type<MuscleCode>(),
+    createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    fightIdx: index("boss_damage_log_fight_idx").on(table.bossFightId),
+    sessionIdx: index("boss_damage_log_session_idx").on(
+      table.completedSessionId
+    ),
+  })
 );

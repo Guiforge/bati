@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { StreakBadge } from "@/components/common/StreakBadge";
 import { QuestCarousel } from "@/components/QuestCarousel";
 import { getAvatarById } from "@/constants/avatars";
 import type { ActiveAdventureRun, AdventureDetails } from "@/db";
@@ -113,6 +114,9 @@ export function Home() {
               {t("onboarding.presentation_description")}
             </Paragraph>
           </YStack>
+
+          {/* Streak Badge */}
+          <StreakBadge />
         </YStack>
 
         {activeAdventure ? (

@@ -1,18 +1,27 @@
-import { Minus, Plus } from "@tamagui/lucide-icons";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { Minus, Plus } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
+import { BossHpBar } from "./BossHpBar";
 
 export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
-  const { quest, currentExerciseIndex, skipRest, addRestTime, results, updateLastResult } =
-    useSessionStore();
+  const {
+    quest,
+    currentExerciseIndex,
+    skipRest,
+    addRestTime,
+    results,
+    updateLastResult,
+    bossFight,
+    lastDamageResult,
+  } = useSessionStore();
   const { remainingSeconds, progress } = useSessionTimer();
 
   if (!quest) return null;
@@ -43,6 +52,23 @@ export function RestView() {
           {t("session.rest_title")}
         </H3>
       </YStack>
+
+      {/* Boss HP Bar (only for boss fights) */}
+      {bossFight && (
+        <BossHpBar
+          currentHp={bossFight.currentHp}
+          totalHp={bossFight.totalHp}
+          lastDamage={
+            lastDamageResult
+              ? {
+                damage: lastDamageResult.damage,
+                isCritical: lastDamageResult.isCritical,
+                weaknessBonus: lastDamageResult.weaknessBonus,
+              }
+              : null
+          }
+        />
+      )}
 
       {/* Timer */}
       <YStack items="center" gap="$2">

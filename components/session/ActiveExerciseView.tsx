@@ -1,10 +1,12 @@
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseBgForSessionStep } from "@/constants/exerciseColors";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { BossHpBar } from "./BossHpBar";
 
 export function ActiveExerciseView() {
   const { t } = useTranslation();
@@ -16,14 +18,19 @@ export function ActiveExerciseView() {
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
   const completeExercise = useSessionStore((s) => s.completeExercise);
   const pauseSession = useSessionStore((s) => s.pauseSession);
+  const bossFight = useSessionStore((s) => s.bossFight);
+  const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
 
   const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
 
-  if (!quest) return null;
+  // Get current exercise safely
+  const currentEx = quest?.exercises[currentExerciseIndex];
+  const targetValue = currentEx?.target.value ?? 0;
+  const [adjustedReps, setAdjustedReps] = useState(targetValue);
 
-  const currentEx = quest.exercises[currentExerciseIndex];
+  if (!quest || !currentEx) return null;
+
   const isTimeBased = currentEx.target.type === "time";
-  const targetValue = currentEx.target.value;
 
   const exerciseName = language === "fr" ? currentEx.exercise.frName : currentEx.exercise.enName;
 
@@ -35,13 +42,17 @@ export function ActiveExerciseView() {
 
   const handleComplete = () => {
     // For time-based exercises, record actual elapsed time
-    // For rep-based, record the target value
+    // For rep-based, record the adjusted value
     if (isTimeBased) {
       // DB constraints require resultValue > 0.
       completeExercise(Math.max(1, elapsedSeconds));
     } else {
-      completeExercise(targetValue);
+      completeExercise(Math.max(1, adjustedReps));
     }
+  };
+
+  const handleAdjustReps = (delta: number) => {
+    setAdjustedReps((prev) => Math.max(1, prev + delta));
   };
 
   // Calculate overtime seconds for display
@@ -87,6 +98,23 @@ export function ActiveExerciseView() {
           accessibilityRole="button"
         />
       </XStack>
+
+      {/* Boss HP Bar (only for boss fights) */}
+      {bossFight && (
+        <BossHpBar
+          currentHp={bossFight.currentHp}
+          totalHp={bossFight.totalHp}
+          lastDamage={
+            lastDamageResult
+              ? {
+                damage: lastDamageResult.damage,
+                isCritical: lastDamageResult.isCritical,
+                weaknessBonus: lastDamageResult.weaknessBonus,
+              }
+              : null
+          }
+        />
+      )}
 
       {/* Overall progress (subtle) */}
       <YStack gap="$1">
@@ -230,13 +258,55 @@ export function ActiveExerciseView() {
               )}
             </YStack>
           ) : (
-            <YStack items="center">
-              <H1 fontSize={80} fontWeight="900" fontFamily="$body" color="$color">
-                {targetValue}
-              </H1>
-              <Paragraph fontWeight="800" opacity={0.8} textTransform="uppercase" color="$color">
-                {t("session.reps")}
-              </Paragraph>
+            <YStack items="center" gap="$2">
+              <XStack items="center" gap="$4">
+                <Button
+                  size="$4"
+                  circular
+                  bg="$bgLight"
+                  borderWidth={2}
+                  borderColor="$color"
+                  onPress={() => handleAdjustReps(-1)}
+                  pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                  disabled={adjustedReps <= 1}
+                  opacity={adjustedReps <= 1 ? 0.4 : 1}
+                >
+                  <Text fontSize={24} fontWeight="900" color="$color">
+                    −
+                  </Text>
+                </Button>
+                <YStack items="center">
+                  <H1 fontSize={80} fontWeight="900" fontFamily="$body" color="$color">
+                    {adjustedReps}
+                  </H1>
+                  <Paragraph
+                    fontWeight="800"
+                    opacity={0.8}
+                    textTransform="uppercase"
+                    color="$color"
+                  >
+                    {t("session.reps")}
+                  </Paragraph>
+                </YStack>
+                <Button
+                  size="$4"
+                  circular
+                  bg="$bgLight"
+                  borderWidth={2}
+                  borderColor="$color"
+                  onPress={() => handleAdjustReps(1)}
+                  pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                >
+                  <Text fontSize={24} fontWeight="900" color="$color">
+                    +
+                  </Text>
+                </Button>
+              </XStack>
+              {adjustedReps !== targetValue && (
+                <Text fontSize={12} color="$color" opacity={0.6}>
+                  {t("session.adjust_reps_hint")}
+                </Text>
+              )}
             </YStack>
           )}
         </YStack>

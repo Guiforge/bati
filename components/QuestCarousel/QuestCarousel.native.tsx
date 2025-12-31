@@ -1,15 +1,15 @@
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { ScrollView, useWindowDimensions } from "react-native";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { ProgressDots } from "@/components/ProgressDots";
 import { listQuestTemplates } from "@/db";
 import type { QuestTemplate } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import { ScrollView, useWindowDimensions } from "react-native";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[] }
@@ -58,17 +58,25 @@ export function QuestCarousel() {
 
   const quests = state.quests;
 
-  const slideWidth = useMemo(() => Math.floor(Math.min(420, width * 0.85)), [width]);
-  const sidePad = useMemo(() => Math.floor((width - slideWidth) / 2), [width, slideWidth]);
+  // Full-bleed carousel container, but cards are narrower to show a "peek" of the next one.
+  const edgeInset = 24;
+  const cardSpacing = 12;
+  const peek = 40;
+  const slideWidth = useMemo(() => {
+    const computed = Math.floor(width - edgeInset * 2 - peek);
+    // Keep reasonable width on very small devices.
+    return Math.max(280, Math.min(420, computed));
+  }, [width]);
+  const snapInterval = slideWidth + cardSpacing;
 
   const updateActiveFromOffset = useCallback(
     (x: number) => {
       if (quests.length === 0) return;
-      const idx = Math.round(x / slideWidth) + 1;
+      const idx = Math.round(x / snapInterval) + 1;
       const clamped = Math.min(Math.max(idx, 1), quests.length);
       setActive((prev) => (prev === clamped ? prev : clamped));
     },
-    [quests.length, slideWidth],
+    [quests.length, snapInterval],
   );
 
   const onMomentumScrollEnd = useCallback(
@@ -94,7 +102,7 @@ export function QuestCarousel() {
         const emoji = questEmoji(q.rounds, q.exercises.length);
 
         return (
-          <YStack key={q.id} width={slideWidth} px={6}>
+          <YStack key={q.id} width={slideWidth} mr={cardSpacing}>
             <Card onPress={() => router.push(`/quests/${q.id}` as never)}>
               <XStack gap="$3" items="flex-start">
                 <YStack
@@ -196,7 +204,7 @@ export function QuestCarousel() {
 
   return (
     <YStack gap="$2" width="100%">
-      <XStack items="center" justify="space-between" px={sidePad}>
+      <XStack items="center" justify="space-between" px={24}>
         <Text fontWeight="900" fontSize={16} color="$color">
           {t("quests.home_overview_title", "Pick a quest")}
         </Text>
@@ -213,11 +221,11 @@ export function QuestCarousel() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        snapToInterval={slideWidth}
-        snapToAlignment="center"
+        snapToInterval={snapInterval}
+        snapToAlignment="start"
         decelerationRate="fast"
         disableIntervalMomentum
-        contentContainerStyle={{ paddingHorizontal: sidePad, paddingBottom: 4 }}
+        contentContainerStyle={{ paddingHorizontal: edgeInset, paddingBottom: 4 }}
         onMomentumScrollEnd={onMomentumScrollEnd}
         onScrollEndDrag={onScrollEndDrag}
       >

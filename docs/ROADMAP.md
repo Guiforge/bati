@@ -536,7 +536,7 @@ This document tracks all features, their implementation status, and future plans
 
 ### 5.2 Sound & Haptics ⚠️
 
-- ⚠️ Haptic feedback (onboarding only, not session)
+- ✅ Haptic feedback (onboarding + session)
 - 📋 Sound effects
   - 📋 Session start (battle horn)
   - 📋 Exercise complete (sword swing)
@@ -544,10 +544,10 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Timer warning (tick-tock)
   - 📋 Victory fanfare
   - 📋 Level up chime
-- 📋 Haptic feedback during session
-  - 📋 Heavy impact on "Done"
-  - 📋 Light tick on countdown
-  - 📋 Success pattern on complete
+- ✅ Haptic feedback during session
+  - ✅ Heavy impact on "Done"
+  - ✅ Light tick on countdown
+  - ✅ Success pattern on complete
 - 📋 Audio preferences
   - 📋 Sound enable/disable
   - 📋 Haptic enable/disable
@@ -758,8 +758,8 @@ This document tracks all features, their implementation status, and future plans
 - 📋 Rep adjustment during exercise (only on rest)
 - 📋 "How to do it" expandable
 - 📋 Restart Round in pause menu
-- 📋 Post-workout difficulty feedback
-- 📋 Haptics during session
+- ✅ Post-workout difficulty feedback
+- ✅ Haptics during session
 - 📋 Sound effects
 
 ### Missing from Boss (vs docs)

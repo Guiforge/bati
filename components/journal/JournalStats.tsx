@@ -6,6 +6,7 @@ import { BarChart, LineChart } from "react-native-gifted-charts";
 import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { TrendsCard } from "@/components/journal/TrendsCard";
 import { useSettingsStore } from "@/stores/settings";
 
 interface JournalStatsProps {
@@ -505,6 +506,9 @@ export function JournalStats({ sessions }: JournalStatsProps) {
           </XStack>
         </YStack>
       </Card>
+
+      {/* Historical Trends */}
+      <TrendsCard />
     </YStack>
   );
 }

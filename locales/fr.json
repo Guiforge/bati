@@ -277,7 +277,18 @@
     "rest_suggestion_overtraining": "Tu t'es beaucoup entraîné avec {{count}} séances cette semaine. Pense à une journée de récupération.",
     "user_level": "Niveau {{level}}",
     "xp_progress": "{{current}} / {{next}} XP",
-    "total_xp": "XP Total"
+    "total_xp": "XP Total",
+    "trends_title": "Ta Progression",
+    "trends_weekly": "Hebdomadaire",
+    "trends_monthly": "Mensuel",
+    "trends_sessions": "Séances",
+    "trends_minutes": "Minutes",
+    "trends_xp": "XP Gagnés",
+    "trends_vs_last_week": "vs semaine dernière",
+    "trends_up": "↑ {{change}}%",
+    "trends_down": "↓ {{change}}%",
+    "trends_stable": "stable",
+    "trends_no_data": "Entraîne-toi plus pour voir les tendances"
   },
   "achievements": {
     "title": "Succès",

@@ -1,4 +1,5 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, gte, sql } from "drizzle-orm";
+import { startOfWeek, subWeeks, subMonths, format, startOfMonth } from "date-fns";
 import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
@@ -377,4 +378,184 @@ export async function getRecentSessionHistory(limit = 30): Promise<SessionSummar
     performedAt: r.performedAt,
     feedback: r.feedback,
   }));
+}
+
+// ------------------------------------------------------------
+// Historical Trends
+// ------------------------------------------------------------
+
+export type WeeklyTrend = {
+  weekKey: string; // ISO week format "2026-W01"
+  weekStart: Date;
+  sessionCount: number;
+  totalMinutes: number;
+  totalXp: number;
+};
+
+export type MonthlyTrend = {
+  monthKey: string; // Format "2026-01"
+  monthStart: Date;
+  sessionCount: number;
+  totalMinutes: number;
+  totalXp: number;
+};
+
+export type TrendAnalysis = {
+  currentPeriod: number;
+  previousPeriod: number;
+  change: number; // percentage change
+  trend: "up" | "down" | "stable";
+};
+
+/**
+ * Get weekly trends for the past N weeks
+ */
+export async function getWeeklyTrends(weeks = 12): Promise<WeeklyTrend[]> {
+  const cutoff = startOfWeek(subWeeks(new Date(), weeks - 1), { weekStartsOn: 1 });
+
+  const rows = await db
+    .select({
+      id: completedQuest.id,
+      durationSeconds: completedQuest.durationSeconds,
+      xpEarned: completedQuest.xpEarned,
+      performedAt: completedQuest.performedAt,
+    })
+    .from(completedQuest)
+    .where(gte(completedQuest.performedAt, cutoff));
+
+  // Group by ISO week
+  const weekMap = new Map<string, WeeklyTrend>();
+
+  for (const row of rows) {
+    const date = row.performedAt;
+    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+    const weekKey = format(weekStart, "yyyy-'W'ww");
+
+    if (!weekMap.has(weekKey)) {
+      weekMap.set(weekKey, {
+        weekKey,
+        weekStart,
+        sessionCount: 0,
+        totalMinutes: 0,
+        totalXp: 0,
+      });
+    }
+
+    const week = weekMap.get(weekKey)!;
+    week.sessionCount += 1;
+    week.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
+    week.totalXp += row.xpEarned ?? 0;
+  }
+
+  // Sort by week key and return
+  return Array.from(weekMap.values()).sort((a, b) => a.weekKey.localeCompare(b.weekKey));
+}
+
+/**
+ * Get monthly trends for the past N months
+ */
+export async function getMonthlyTrends(months = 6): Promise<MonthlyTrend[]> {
+  const cutoff = startOfMonth(subMonths(new Date(), months - 1));
+
+  const rows = await db
+    .select({
+      id: completedQuest.id,
+      durationSeconds: completedQuest.durationSeconds,
+      xpEarned: completedQuest.xpEarned,
+      performedAt: completedQuest.performedAt,
+    })
+    .from(completedQuest)
+    .where(gte(completedQuest.performedAt, cutoff));
+
+  // Group by month
+  const monthMap = new Map<string, MonthlyTrend>();
+
+  for (const row of rows) {
+    const date = row.performedAt;
+    const monthStart = startOfMonth(date);
+    const monthKey = format(monthStart, "yyyy-MM");
+
+    if (!monthMap.has(monthKey)) {
+      monthMap.set(monthKey, {
+        monthKey,
+        monthStart,
+        sessionCount: 0,
+        totalMinutes: 0,
+        totalXp: 0,
+      });
+    }
+
+    const month = monthMap.get(monthKey)!;
+    month.sessionCount += 1;
+    month.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
+    month.totalXp += row.xpEarned ?? 0;
+  }
+
+  // Sort by month key and return
+  return Array.from(monthMap.values()).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+}
+
+/**
+ * Analyze trend between current and previous period
+ */
+export function analyzeTrend(current: number, previous: number): TrendAnalysis {
+  if (previous === 0) {
+    return {
+      currentPeriod: current,
+      previousPeriod: previous,
+      change: current > 0 ? 100 : 0,
+      trend: current > 0 ? "up" : "stable",
+    };
+  }
+
+  const change = Math.round(((current - previous) / previous) * 100);
+
+  let trend: "up" | "down" | "stable" = "stable";
+  if (change > 5) trend = "up";
+  else if (change < -5) trend = "down";
+
+  return {
+    currentPeriod: current,
+    previousPeriod: previous,
+    change,
+    trend,
+  };
+}
+
+/**
+ * Get comprehensive trend summary
+ */
+export async function getTrendSummary(): Promise<{
+  weeklyTrends: WeeklyTrend[];
+  monthlyTrends: MonthlyTrend[];
+  sessionsAnalysis: TrendAnalysis;
+  minutesAnalysis: TrendAnalysis;
+  xpAnalysis: TrendAnalysis;
+}> {
+  const weeklyTrends = await getWeeklyTrends(8);
+  const monthlyTrends = await getMonthlyTrends(6);
+
+  // Calculate week-over-week analysis
+  const thisWeek = weeklyTrends[weeklyTrends.length - 1];
+  const lastWeek = weeklyTrends[weeklyTrends.length - 2];
+
+  const sessionsAnalysis = analyzeTrend(
+    thisWeek?.sessionCount ?? 0,
+    lastWeek?.sessionCount ?? 0,
+  );
+
+  const minutesAnalysis = analyzeTrend(
+    thisWeek?.totalMinutes ?? 0,
+    lastWeek?.totalMinutes ?? 0,
+  );
+
+  const xpAnalysis = analyzeTrend(thisWeek?.totalXp ?? 0, lastWeek?.totalXp ?? 0);
+
+  return {
+    weeklyTrends,
+    monthlyTrends,
+    sessionsAnalysis,
+    minutesAnalysis,
+    xpAnalysis,
+  };
 }

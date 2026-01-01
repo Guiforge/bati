@@ -277,7 +277,18 @@
     "rest_suggestion_overtraining": "You've been training hard with {{count}} sessions this week. Consider a recovery day.",
     "user_level": "Level {{level}}",
     "xp_progress": "{{current}} / {{next}} XP",
-    "total_xp": "Total XP"
+    "total_xp": "Total XP",
+    "trends_title": "Your Progress",
+    "trends_weekly": "Weekly",
+    "trends_monthly": "Monthly",
+    "trends_sessions": "Sessions",
+    "trends_minutes": "Minutes",
+    "trends_xp": "XP Earned",
+    "trends_vs_last_week": "vs last week",
+    "trends_up": "↑ {{change}}%",
+    "trends_down": "↓ {{change}}%",
+    "trends_stable": "stable",
+    "trends_no_data": "Train more to see trends"
   },
   "achievements": {
     "title": "Achievements",

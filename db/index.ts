@@ -55,12 +55,22 @@ export {
   unlockBuilding,
 } from "./buildings";
 export { db, schema } from "./client";
-export type { CompletedSessionListItem, SessionSummary } from "./completed";
+export type {
+  CompletedSessionListItem,
+  MonthlyTrend,
+  SessionSummary,
+  TrendAnalysis,
+  WeeklyTrend,
+} from "./completed";
 export {
+  analyzeTrend,
   createCompletedSession,
   getCompletedSessionById,
+  getMonthlyTrends,
   getQuestSessionHistory,
   getRecentSessionHistory,
+  getTrendSummary,
+  getWeeklyTrends,
   listCompletedSessions,
   markSessionWithNewRecords,
 } from "./completed";

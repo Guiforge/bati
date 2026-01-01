@@ -503,9 +503,9 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Streak visualization (darker green for consecutive days)
   - ✅ Month navigation (prev/next)
   - ✅ MonthlyCalendarCard component
-- 📋 Historical data
-  - 📋 Previous weeks/months trends
-  - 📋 Trend analysis
+- ✅ Historical data
+  - ✅ Previous weeks/months trends (TrendsCard with getWeeklyTrends/getMonthlyTrends)
+  - ✅ Trend analysis (analyzeTrend, getTrendSummary)
 
 ### 4.3 Muscle Balance ✅
 

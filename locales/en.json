@@ -326,6 +326,9 @@
     "retry": "Retry",
     "go_back": "Go back"
   },
+  "splash": {
+    "loading": "Building your village..."
+  },
   "village": {
     "unlocked": "Building Unlocked!",
     "levelup": "Level Up!",

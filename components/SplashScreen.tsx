@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { H1, Paragraph, Progress, YStack } from "tamagui";
 
 interface SplashScreenProps {
@@ -6,6 +7,7 @@ interface SplashScreenProps {
 }
 
 export function SplashScreen({ onFinish }: SplashScreenProps) {
+  const { t } = useTranslation();
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
         🏰 Bati
       </H1>
       <Paragraph color="$color" opacity={0.6} fontSize={16}>
-        Building your village...
+        {t("splash.loading", "Building your village...")}
       </Paragraph>
 
       <YStack width="80%" gap="$2">

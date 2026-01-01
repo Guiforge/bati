@@ -326,6 +326,9 @@
     "retry": "Réessayer",
     "go_back": "Retour"
   },
+  "splash": {
+    "loading": "Construction du village..."
+  },
   "village": {
     "unlocked": "Bâtiment Débloqué !",
     "levelup": "Niveau Supérieur !",

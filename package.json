@@ -18,6 +18,7 @@
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.10",
     "expo-localization": "^17.0.8",
+    "expo-notifications": "~0.32.15",
     "expo-router": "~6.0.19",
     "expo-splash-screen": "~31.0.12",
     "expo-sqlite": "~16.0.5",

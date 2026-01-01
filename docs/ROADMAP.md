@@ -436,21 +436,21 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Reschedule session (move +1 day)
   - ✅ Skip session
 
-### 3.4 Notifications 📋
+### 3.4 Notifications ✅
 
-- 📋 Notification types
-  - 📋 Daily reminder
+- ✅ Notification types
+  - ✅ Daily reminder
   - 📋 Streak warning (before midnight)
   - 📋 Encouragement (after inactivity)
   - 📋 Achievement unlocked
   - 📋 Boss ready
-- 📋 Notification preferences
-  - 📋 Enable/disable per type
-  - 📋 Custom reminder time
-- 📋 Local notifications
-  - 📋 expo-notifications setup
-  - 📋 Schedule notifications
-  - 📋 Cancel on completion
+- ✅ Notification preferences
+  - ✅ Enable/disable per type (global toggle for now)
+  - ✅ Custom reminder time
+- ✅ Local notifications
+  - ✅ expo-notifications setup
+  - ✅ Schedule notifications
+  - ✅ Cancel on completion (via cancelAllNotifications)
 
 ### 3.5 Smart Recommendations ✅
 

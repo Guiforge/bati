@@ -1,4 +1,5 @@
 import {
+  Bell,
   ChevronLeft,
   ChevronRight,
   Languages,
@@ -19,9 +20,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
 import { AVATARS } from "@/constants/avatars";
+import { useNotifications } from "@/hooks/useNotifications";
 import { useSettingsStore } from "@/stores/settings";
 
-type MenuStep = "main" | "language" | "avatar" | "theme" | "haptics" | "motion";
+type MenuStep = "main" | "language" | "avatar" | "theme" | "haptics" | "motion" | "notifications";
 
 export function HomeSettingsMenu() {
   const { t } = useTranslation();
@@ -36,12 +38,18 @@ export function HomeSettingsMenu() {
     theme,
     hapticsEnabled,
     reducedMotion,
+    notificationsEnabled,
+    notificationTime,
     setLanguage,
     setAvatarId,
     setTheme,
     setHapticsEnabled,
     setReducedMotion,
+    setNotificationsEnabled,
+    setNotificationTime,
   } = useSettingsStore();
+
+  const { scheduleReminder, cancelAllNotifications } = useNotifications();
 
   const closeMenu = () => {
     setOpen(false);
@@ -156,6 +164,16 @@ export function HomeSettingsMenu() {
         label={t("settings.haptics_title")}
         onPress={() => setStep("haptics")}
         value={hapticsEnabled ? t("settings.haptics_on_short") : t("settings.haptics_off_short")}
+      />
+      <MenuItem
+        icon={<Bell size={24} color="$color" />}
+        label={t("settings.notifications_title", "Notifications")}
+        onPress={() => setStep("notifications")}
+        value={
+          notificationsEnabled
+            ? `${notificationTime.hour}:${notificationTime.minute.toString().padStart(2, "0")}`
+            : t("settings.notifications_off_short", "Off")
+        }
       />
       <MenuItem
         icon={<Sparkles size={24} color="$color" />}
@@ -290,6 +308,60 @@ export function HomeSettingsMenu() {
     </YStack>
   );
 
+  const renderNotifications = () => (
+    <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$4">
+      <YStack gap="$2">
+        <OptionItem
+          active={notificationsEnabled}
+          label={`${t("settings.notifications_on", "Enabled")} 🔔`}
+          onPress={async () => {
+            await setNotificationsEnabled(true);
+            await scheduleReminder(notificationTime.hour, notificationTime.minute);
+          }}
+        />
+        <OptionItem
+          active={!notificationsEnabled}
+          label={`${t("settings.notifications_off", "Disabled")} 🔕`}
+          onPress={async () => {
+            await setNotificationsEnabled(false);
+            await cancelAllNotifications();
+          }}
+        />
+      </YStack>
+
+      {notificationsEnabled && (
+        <YStack gap="$2">
+          <Text fontWeight="bold" fontSize="$4" color="$color">
+            {t("settings.reminder_time", "Reminder Time")}
+          </Text>
+          <XStack flexWrap="wrap" gap="$2">
+            {[6, 7, 8, 9, 12, 17, 18, 19, 20, 21].map((hour) => {
+              const isSelected = notificationTime.hour === hour;
+              return (
+                <Button
+                  key={hour}
+                  size="$3"
+                  bg={isSelected ? "$primary" : "$bgLight"}
+                  borderColor={isSelected ? "$primary" : "$color"}
+                  borderWidth={2}
+                  onPress={async () => {
+                    const newTime = { hour, minute: 0 };
+                    await setNotificationTime(newTime);
+                    await scheduleReminder(newTime.hour, newTime.minute);
+                  }}
+                >
+                  <Text color={isSelected ? "white" : "$color"} fontWeight="bold">
+                    {hour}:00
+                  </Text>
+                </Button>
+              );
+            })}
+          </XStack>
+        </YStack>
+      )}
+    </YStack>
+  );
+
   const getTitle = () => {
     switch (step) {
       case "language":
@@ -300,6 +372,8 @@ export function HomeSettingsMenu() {
         return t("theme");
       case "haptics":
         return t("settings.haptics_title");
+      case "notifications":
+        return t("settings.notifications_title", "Notifications");
       case "motion":
         return t("settings.motion_title");
       default:
@@ -391,6 +465,7 @@ export function HomeSettingsMenu() {
                 {step === "avatar" && renderAvatar()}
                 {step === "theme" && renderTheme()}
                 {step === "haptics" && renderHaptics()}
+                {step === "notifications" && renderNotifications()}
                 {step === "motion" && renderMotion()}
               </YStack>
             </YStack>

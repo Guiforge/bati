@@ -24,6 +24,8 @@ interface SettingsState {
   avatarId: AvatarId;
   hapticsEnabled: boolean;
   reducedMotion: boolean;
+  notificationsEnabled: boolean;
+  notificationTime: { hour: number; minute: number };
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
@@ -31,6 +33,8 @@ interface SettingsState {
   setAvatarId: (avatarId: AvatarId) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => Promise<void>;
   setReducedMotion: (enabled: boolean) => Promise<void>;
+  setNotificationsEnabled: (enabled: boolean) => Promise<void>;
+  setNotificationTime: (time: { hour: number; minute: number }) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
 }
@@ -41,6 +45,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   avatarId: "gamin",
   hapticsEnabled: true,
   reducedMotion: false,
+  notificationsEnabled: true,
+  notificationTime: { hour: 18, minute: 0 },
   isLoaded: false,
 
   setLanguage: async (language) => {
@@ -69,13 +75,33 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setReducedMotion(enabled);
   },
 
+  setNotificationsEnabled: async (enabled) => {
+    set({ notificationsEnabled: enabled });
+    await preferences.setNotificationsEnabled(enabled);
+  },
+
+  setNotificationTime: async (time) => {
+    set({ notificationTime: time });
+    await preferences.setNotificationTime(time);
+  },
+
   loadFromDatabase: async () => {
-    const [language, theme, avatarId, hapticsEnabled, reducedMotion] = await Promise.all([
+    const [
+      language,
+      theme,
+      avatarId,
+      hapticsEnabled,
+      reducedMotion,
+      notificationsEnabled,
+      notificationTime,
+    ] = await Promise.all([
       preferences.getLanguage(),
       preferences.getTheme(),
       preferences.getAvatarId(),
       preferences.getHapticsEnabled(),
       preferences.getReducedMotion(),
+      preferences.getNotificationsEnabled(),
+      preferences.getNotificationTime(),
     ]);
 
     const normalizedLanguage = normalizeLanguage(language);
@@ -86,6 +112,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       avatarId: normalizeAvatarId(avatarId),
       hapticsEnabled,
       reducedMotion,
+      notificationsEnabled,
+      notificationTime,
       isLoaded: true,
     });
 

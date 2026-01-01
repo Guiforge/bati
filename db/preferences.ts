@@ -111,4 +111,32 @@ export const preferences = {
   async clearSavedSession(): Promise<void> {
     await deletePreference("savedSession");
   },
+
+  async getNotificationsEnabled(): Promise<boolean> {
+    const value = await getPreference("notificationsEnabled");
+    // Default to true if not set
+    return value !== "false";
+  },
+
+  async setNotificationsEnabled(enabled: boolean): Promise<void> {
+    await setPreference("notificationsEnabled", String(enabled));
+  },
+
+  async getNotificationTime(): Promise<{ hour: number; minute: number }> {
+    const value = await getPreference("notificationTime");
+    if (value) {
+      try {
+        const parsed = JSON.parse(value);
+        if (typeof parsed.hour === "number" && typeof parsed.minute === "number") {
+          return parsed;
+        }
+      } catch {}
+    }
+    // Default to 18:00 (6 PM)
+    return { hour: 18, minute: 0 };
+  },
+
+  async setNotificationTime(time: { hour: number; minute: number }): Promise<void> {
+    await setPreference("notificationTime", JSON.stringify(time));
+  },
 };

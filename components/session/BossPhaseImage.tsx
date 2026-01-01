@@ -46,7 +46,6 @@ type BossPhaseImageProps = {
 export function BossPhaseImage({ currentHp, totalHp, size = 80 }: BossPhaseImageProps) {
   const hpPercent = totalHp > 0 ? (currentHp / totalHp) * 100 : 100;
   const currentPhase = getPhaseFromHp(hpPercent);
-  const config = getPhaseConfig(currentPhase);
 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayPhase, setDisplayPhase] = useState(currentPhase);

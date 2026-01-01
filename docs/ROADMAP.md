@@ -670,7 +670,6 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Daily quest rotation
   - ✅ Weekly challenges
   - ✅ Achievement badges display
-  - 📋 Leaderboard (optional, offline-friendly)
   - ✅ Share workout summary
 
 ---

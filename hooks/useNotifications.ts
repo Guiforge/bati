@@ -1,11 +1,11 @@
-import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db/adventures";
-import { getStreakInfo } from "@/db/streaks";
-import { useSettingsStore } from "@/stores/settings";
 import { addDays, isSameDay, isYesterday, set } from "date-fns";
 import * as Notifications from "expo-notifications";
 import i18n from "i18next";
 import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
+import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db/adventures";
+import { getStreakInfo } from "@/db/streaks";
+import { useSettingsStore } from "@/stores/settings";
 
 // Configure global notification handler
 Notifications.setNotificationHandler({
@@ -19,12 +19,10 @@ Notifications.setNotificationHandler({
 });
 
 export function useNotifications() {
-  const [expoPushToken, setExpoPushToken] = useState<string | undefined>(
-    undefined
+  const [expoPushToken, setExpoPushToken] = useState<string | undefined>(undefined);
+  const [notification, setNotification] = useState<Notifications.Notification | undefined>(
+    undefined,
   );
-  const [notification, setNotification] = useState<
-    Notifications.Notification | undefined
-  >(undefined);
   const notificationListener = useRef<Notifications.Subscription>(null);
   const responseListener = useRef<Notifications.Subscription>(null);
   const { notificationsEnabled, notificationTime } = useSettingsStore();
@@ -32,19 +30,15 @@ export function useNotifications() {
   useEffect(() => {
     if (!notificationsEnabled) return;
 
-    registerForPushNotificationsAsync().then((token) =>
-      setExpoPushToken(token)
-    );
+    registerForPushNotificationsAsync().then((token) => setExpoPushToken(token));
 
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        setNotification(notification);
-      });
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      setNotification(notification);
+    });
 
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(response);
-      });
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      console.log(response);
+    });
 
     return () => {
       if (notificationListener.current) {
@@ -88,9 +82,7 @@ export function useNotifications() {
     try {
       const streakInfo = await getStreakInfo();
       const now = new Date();
-      const lastWorkout = streakInfo.lastWorkoutDate
-        ? new Date(streakInfo.lastWorkoutDate)
-        : null;
+      const lastWorkout = streakInfo.lastWorkoutDate ? new Date(streakInfo.lastWorkoutDate) : null;
 
       // A. Streak Rescue (Warning before streak breaks)
       if (streakInfo.current > 0 && lastWorkout) {
@@ -199,11 +191,7 @@ export function useNotifications() {
     await Notifications.cancelAllScheduledNotificationsAsync();
   };
 
-  const showAchievementNotification = async (
-    title: string,
-    body: string,
-    icon?: string
-  ) => {
+  const showAchievementNotification = async (title: string, body: string, icon?: string) => {
     if (!notificationsEnabled) return;
 
     await Notifications.scheduleNotificationAsync({

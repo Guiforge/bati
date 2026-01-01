@@ -1,5 +1,6 @@
 import { addDays, startOfDay } from "date-fns";
 import { getGoalById } from "./goals";
+import { getSuggestedQuestsForWeakAreas } from "./muscleBalance";
 import { listQuestTemplates } from "./quests";
 import { createScheduledSession } from "./scheduling";
 
@@ -18,6 +19,9 @@ export async function generatePlanForGoal(goalId: number): Promise<void> {
     throw new Error("No quests available to generate plan");
   }
 
+  // Get suggested quests based on muscle balance (weak areas)
+  const suggestedQuests = await getSuggestedQuestsForWeakAreas(6);
+
   // Determine workout days based on daysPerWeek
   // Simple algorithm: spread days evenly
   // 1 day: Mon
@@ -32,21 +36,37 @@ export async function generatePlanForGoal(goalId: number): Promise<void> {
   // Generate for 4 weeks
   const startDate = startOfDay(new Date());
   const weeksToPlan = 4;
+  let sessionIndex = 0;
 
   for (let week = 0; week < weeksToPlan; week++) {
     for (const dayOffset of schedulePattern) {
       const scheduledDate = addDays(startDate, week * 7 + dayOffset);
 
-      // Pick a quest
-      // TODO: Smarter quest selection based on goal type and history
-      const randomQuest = quests[Math.floor(Math.random() * quests.length)];
+      // Smart quest selection:
+      // 1. Prioritize suggested quests (targeting weak areas)
+      // 2. Rotate through them to maintain variety
+      // 3. Fall back to random if no suggestions available
+      let selectedQuest: (typeof quests)[number] | undefined;
+      if (suggestedQuests.length > 0) {
+        // Rotate through suggested quests
+        const suggIdx = sessionIndex % suggestedQuests.length;
+        const suggId = suggestedQuests[suggIdx].id;
+        selectedQuest = quests.find((q) => q.id === suggId);
+      }
+
+      if (!selectedQuest) {
+        // Fallback: pick from all quests, but prefer those not recently used
+        selectedQuest = quests[sessionIndex % quests.length];
+      }
 
       await createScheduledSession({
-        questId: randomQuest.id,
+        questId: selectedQuest.id,
         scheduledDate,
         goalId: goal.id,
         note: `Week ${week + 1} - Day ${dayOffset + 1}`,
       });
+
+      sessionIndex++;
     }
   }
 }

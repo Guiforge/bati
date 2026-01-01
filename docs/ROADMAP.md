@@ -280,7 +280,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Gold calculation from duration
 - 📋 Resource UI
   - 📋 Resource display in header
-  - 📋 Victory screen loot display
+  - ✅ Victory screen loot display (LootDisplay component)
   - 📋 Resource animations
 
 ### 2.2 Village System 📋

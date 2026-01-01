@@ -1,8 +1,3 @@
-import { useIsFocused } from "@react-navigation/native";
-import { addDays, format, isSameDay, startOfWeek } from "date-fns";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Spinner, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import {
@@ -11,6 +6,11 @@ import {
   type ScheduledSessionWithQuest,
   skipScheduledSession,
 } from "@/db/scheduling";
+import { useIsFocused } from "@react-navigation/native";
+import { addDays, format, isSameDay, startOfWeek } from "date-fns";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Spinner, Text, XStack, YStack } from "tamagui";
 
 export function WeeklyCalendar() {
   const { t } = useTranslation();
@@ -140,11 +140,7 @@ export function WeeklyCalendar() {
                     >
                       {t("scheduling.reschedule_tomorrow", "Move +1 Day")}
                     </AppButton>
-                    <AppButton
-                      variant="secondary"
-                      size="$2"
-                      onPress={() => handleSkip(session.id)}
-                    >
+                    <AppButton variant="secondary" size="$2" onPress={() => handleSkip(session.id)}>
                       {t("scheduling.skip", "Skip")}
                     </AppButton>
                   </XStack>

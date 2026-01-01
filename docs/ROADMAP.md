@@ -258,7 +258,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 2: Village & Economy 🚧 (95% Complete)
+## Phase 2: Village & Economy ✅ (98% Complete)
 
 ### 2.1 Resource System ✅
 
@@ -366,10 +366,10 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Damage result in session store
   - ✅ Damage numbers during session (damage popup with crit/weakness indicators)
   - ✅ Enraged state visual (animated when HP < 25%)
-  - 📋 Defeat animation
-  - ✅ Enhanced confetti (triple cannon burst from top + sides)
-  - ✅ Boss defeat title with subtitle ("The beast has fallen!")
-  - ✅ Unique icon (⚔️ vs 🏆)
+  - ✅ Defeat animation
+    - ✅ Enhanced confetti (triple cannon burst from top + sides)
+    - ✅ Boss defeat title with subtitle ("The beast has fallen!")
+    - ✅ Unique icon (⚔️ vs 🏆)
   - ✅ Boss tokens reward
 - 📋 Multi-Phase Boss Images
   - 📋 Boss image schema (array of phase images)
@@ -574,7 +574,7 @@ This document tracks all features, their implementation status, and future plans
 
 ## Phase 5: Polish & Quality ✅ (92% Complete)
 
-### 5.1 Animations ⚠️
+### 5.1 Animations ✅
 
 - ✅ Victory confetti animation
 - ✅ Countdown animation (3-2-1)
@@ -583,7 +583,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Exercise transition (fade in with quick animation)
   - ✅ Rest view entrance animation
   - ✅ Up next card slide-in animation
-- 📋 Village animations
+- ✅ Village animations
   - ✅ Flame flickering (FlameFlicker component in VillageScreen)
   - ✅ Level up sparkle (LevelUpSparkle component created)
   - ✅ Construction animation (ConstructionAnimation component created)

@@ -1,9 +1,9 @@
-import { Card } from "@/components/common/Card";
-import { getRestSuggestion, type RestSuggestion } from "@/db/restSuggestions";
 import { Moon } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import { getRestSuggestion, type RestSuggestion } from "@/db/restSuggestions";
 
 export function RestSuggestionCard() {
   const { t } = useTranslation();

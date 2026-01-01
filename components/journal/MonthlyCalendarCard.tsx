@@ -1,11 +1,11 @@
-import { Card } from "@/components/common/Card";
-import { listCompletedSessions } from "@/db/completed";
-import { useSettingsStore } from "@/stores/settings";
 import { ChevronLeft, ChevronRight } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import { listCompletedSessions } from "@/db/completed";
+import { useSettingsStore } from "@/stores/settings";
 
 type DayData = {
   date: number;

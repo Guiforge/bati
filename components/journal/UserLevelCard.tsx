@@ -1,10 +1,10 @@
+import { Card } from "@/components/common/Card";
+import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
+import { useSettingsStore } from "@/stores/settings";
 import { Star, TrendingUp } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
-import { useSettingsStore } from "@/stores/settings";
 
 export function UserLevelCard() {
   const { t } = useTranslation();

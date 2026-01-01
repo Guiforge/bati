@@ -7,12 +7,7 @@ import type { ResourceCode } from "@/db/schema";
 
 const RESOURCE_EMOJI: Record<ResourceCode, string> = {
   gold: "💰",
-  wood: "🪵",
-  stone: "🪨",
-  fire: "🔥",
-  water: "💧",
-  wind: "💨",
-  grain: "🌾",
+  essence: "✨",
   boss_token: "🏆",
 };
 
@@ -20,20 +15,10 @@ function getResourceBgColor(resource: ResourceCode): ColorTokens {
   switch (resource) {
     case "gold":
       return "$pastelYellow";
-    case "wood":
-      return "$pastelPink"; // Arms - pink
-    case "stone":
-      return "$pastelBlue"; // Back - blue
-    case "fire":
-      return "$pastelYellow"; // Chest - yellow
-    case "water":
-      return "$pastelGreen"; // Abs - green
-    case "wind":
-      return "$pastelPurple"; // Shoulders - purple
-    case "grain":
-      return "$pastelOrange"; // Legs - orange
+    case "essence":
+      return "$pastelPurple"; // Essence - purple (magical)
     case "boss_token":
-      return "$pastelPurple"; // Special - purple
+      return "$pastelOrange"; // Special - orange
     default:
       return "$bgLight";
   }

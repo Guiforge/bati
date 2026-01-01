@@ -5,25 +5,12 @@ import type { ResourceCode } from "@/db/schema";
 
 const RESOURCE_EMOJI: Record<ResourceCode, string> = {
   gold: "💰",
-  wood: "🪵",
-  stone: "🪨",
-  fire: "🔥",
-  water: "💧",
-  wind: "💨",
-  grain: "🌾",
+  essence: "✨",
   boss_token: "🏆",
 };
 
-// Resources to always show in the header (the main currencies)
-const HEADER_RESOURCES: ResourceCode[] = [
-  "gold",
-  "wood",
-  "stone",
-  "fire",
-  "water",
-  "wind",
-  "grain",
-];
+// Resources to always show in the header (simplified)
+const HEADER_RESOURCES: ResourceCode[] = ["gold", "essence"];
 
 type Props = {
   /** Whether to show in compact mode (fewer resources) */

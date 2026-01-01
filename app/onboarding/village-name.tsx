@@ -126,8 +126,11 @@ export default function VillageName() {
                   <YStack width="100%" gap="$3">
                     <Input
                       value={name}
-                      onChangeText={(text) => setName(text.slice(0, MAX_NAME_LENGTH))}
-                      placeholder={t("onboarding.village_name_placeholder")}
+                      onChange={(e) => {
+                        const text = (e.nativeEvent as { text: string }).text ?? "";
+                        setName(text.slice(0, MAX_NAME_LENGTH));
+                      }}
+                      placeholder={t("onboarding.village_name_placeholder") ?? ""}
                       width="100%"
                       size="$6"
                       borderWidth={3}
@@ -135,9 +138,7 @@ export default function VillageName() {
                       rounded={16}
                       bg="$bgLight"
                       focusStyle={{ borderColor: "$primary", borderWidth: 4 }}
-                      fontWeight="700"
-                      fontSize={18}
-                      text="center"
+                      textAlign="center"
                     />
 
                     <XStack justify="space-between" px="$3">

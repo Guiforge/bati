@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { TamaguiProvider, Theme } from "tamagui";
+import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
@@ -73,14 +73,16 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <TamaguiProvider config={config} defaultTheme={colorScheme}>
             <Theme name={colorScheme}>
-              <DatabaseProvider onReady={handleDatabaseReady}>
-                <NotificationManager />
-                <ToastProvider>
-                  <ErrorBoundary>
-                    <Slot />
-                  </ErrorBoundary>
-                </ToastProvider>
-              </DatabaseProvider>
+              <PortalProvider>
+                <DatabaseProvider onReady={handleDatabaseReady}>
+                  <NotificationManager />
+                  <ToastProvider>
+                    <ErrorBoundary>
+                      <Slot />
+                    </ErrorBoundary>
+                  </ToastProvider>
+                </DatabaseProvider>
+              </PortalProvider>
             </Theme>
           </TamaguiProvider>
         </SafeAreaProvider>

@@ -162,6 +162,13 @@
       "when": 1767225600013,
       "tag": "0022_add_boss_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1767225600014,
+      "tag": "0023_simplify_resources",
+      "breakpoints": true
     }
   ]
 }

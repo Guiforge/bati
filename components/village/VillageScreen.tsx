@@ -38,26 +38,21 @@ const muscleNames: Record<MuscleCode, { en: string; fr: string }> = {
   calf: { en: "Legs", fr: "Jambes" },
 };
 
-// Resource localized names
+// Resource localized names (simplified)
 const resourceNames: Record<ResourceCode, { en: string; fr: string }> = {
   gold: { en: "Gold", fr: "Or" },
-  wood: { en: "Wood", fr: "Bois" },
-  stone: { en: "Stone", fr: "Pierre" },
-  fire: { en: "Fire", fr: "Feu" },
-  water: { en: "Water", fr: "Eau" },
-  wind: { en: "Wind", fr: "Vent" },
-  grain: { en: "Grain", fr: "Grain" },
+  essence: { en: "Essence", fr: "Essence" },
   boss_token: { en: "Boss Token", fr: "Jeton de Boss" },
 };
 
-// Muscle to resource mapping for display
+// All muscles now generate essence
 const muscleToResource: Record<MuscleCode, ResourceCode> = {
-  arms: "wood",
-  back: "stone",
-  chest: "fire",
-  abs: "water",
-  shoulder: "wind",
-  calf: "grain",
+  arms: "essence",
+  back: "essence",
+  chest: "essence",
+  abs: "essence",
+  shoulder: "essence",
+  calf: "essence",
 };
 
 // Building localized names

@@ -405,30 +405,25 @@ export const bossDamageLog = sqliteTable(
 );
 
 // ------------------------------------------------------------
-// Resources (Phase 2 - Village Economy)
+// Resources (Phase 2 - Village Economy) - SIMPLIFIED
 // ------------------------------------------------------------
 
-// Resource codes mapped to muscle groups + universal currency
+// Simplified resource codes: Gold + Essence + Boss Token
 export const resourceCodes = [
   "gold", // Universal currency (from all workouts)
-  "wood", // Arms exercises
-  "stone", // Back exercises
-  "fire", // Chest exercises
-  "water", // Abs exercises
-  "wind", // Shoulder exercises
-  "grain", // Legs/calf exercises
+  "essence", // Combined material resource (from all muscle groups)
   "boss_token", // From defeating bosses
 ] as const;
 export type ResourceCode = (typeof resourceCodes)[number];
 
-// Muscle to resource mapping
+// All muscles now generate essence
 export const muscleToResource: Record<MuscleCode, ResourceCode> = {
-  arms: "wood",
-  back: "stone",
-  chest: "fire",
-  abs: "water",
-  shoulder: "wind",
-  calf: "grain",
+  arms: "essence",
+  back: "essence",
+  chest: "essence",
+  abs: "essence",
+  shoulder: "essence",
+  calf: "essence",
 } as const;
 
 // User's current resource inventory

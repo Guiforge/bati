@@ -23,6 +23,7 @@ import m0019 from "./0019_add_has_new_records.sql";
 import m0020 from "./0020_add_scheduled_sessions.sql";
 import m0021 from "./0021_add_outro_narrative.sql";
 import m0022 from "./0022_add_boss_tokens.sql";
+import m0023 from "./0023_simplify_resources.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -51,5 +52,6 @@ export default {
     m0020,
     m0021,
     m0022,
+    m0023,
   },
 };

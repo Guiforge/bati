@@ -4,29 +4,25 @@
 
 Resources are the core economy of Bati's RPG layer. You earn resources by completing workouts, and they're used to build and upgrade your village.
 
+**Simplified Design**: We use only 3 resources to keep the game simple and fun.
+
 ---
 
 ## 💎 Resource Types
 
 ### Primary Resources
 
-| Resource | Icon | Earned From | Fantasy Link |
-|----------|------|-------------|--------------|
-| **Gold** | 🪙 | All workouts | Universal currency |
-| **Wood** | 🪵 | Arms exercises | Archery, strength |
-| **Stone** | 🪨 | Back exercises | Foundation, endurance |
-| **Fire Essence** | 🔥 | Chest exercises | Power, forging |
-| **Water** | 💧 | Abs exercises | Flexibility, flow |
-| **Wind Essence** | 🌬️ | Shoulder exercises | Agility, freedom |
-| **Grain** | 🌾 | Leg exercises | Stamina, grounding |
+| Resource | Icon | Earned From | Use |
+|----------|------|-------------|-----|
+| **Gold** | 🪙 | All workouts (based on duration) | Universal currency for buildings |
+| **Essence** | ✨ | All exercises (based on reps/time) | Material for construction |
+| **Boss Token** | 👹 | Defeating bosses | Legendary buildings |
 
-### Special Resources
+### XP (Separate System)
 
 | Resource | Icon | Earned From | Use |
 |----------|------|-------------|-----|
 | **XP** | ⭐ | All workouts | Level progression |
-| **Flame** | 🔥 | Daily streak | Unlock special content |
-| **Boss Tokens** | 👹 | Defeating bosses | Legendary buildings |
 
 ---
 
@@ -35,28 +31,27 @@ Resources are the core economy of Bati's RPG layer. You earn resources by comple
 ### Gold Calculation
 
 ```typescript
-gold = baseGold + (duration_minutes * 2) + (difficulty_bonus)
+gold = baseGold + (duration_minutes * 2)
 
 // Example: 20 min workout on Medium
-// gold = 10 + (20 * 2) + 0 = 50 gold
+// gold = 10 + (20 * 2) = 50 gold
 ```
 
-### Material Resources
+### Essence Calculation
 
 ```typescript
-// Based on exercises in the quest
+// All muscles now generate essence
 for each exercise:
-  resource_type = mapMuscleToResource(exercise.primaryMuscle)
-  amount = exercise.targetReps * difficulty_multiplier
+  essence += exercise.targetReps * difficulty_multiplier
 ```
 
 ### Difficulty Multipliers
 
-| Difficulty | XP | Gold | Materials |
-|------------|-----|------|-----------|
-| Easy | 0.8x | 1.0x | 0.8x |
+| Difficulty | XP | Gold | Essence |
+|------------|-----|------|---------|
+| Easy | 0.8x | 0.8x | 0.8x |
 | Medium | 1.0x | 1.0x | 1.0x |
-| Hard | 1.2x | 1.2x | 1.3x |
+| Hard | 1.2x | 1.2x | 1.2x |
 
 ---
 
@@ -64,14 +59,14 @@ for each exercise:
 
 ### Building Costs (Examples)
 
-| Building | Wood | Stone | Gold | Special |
-|----------|------|-------|------|---------|
-| Campfire (Starter) | 10 | 5 | 50 | - |
-| Archery Range | 100 | 20 | 200 | - |
-| Blacksmith | 50 | 100 | 300 | 10 Fire |
-| Castle Wall | 30 | 200 | 400 | - |
-| Watchtower | 80 | 60 | 250 | - |
-| Dragon Lair | 200 | 300 | 1000 | 5 Boss Tokens |
+| Building | Essence | Gold | Special |
+|----------|---------|------|---------|
+| Campfire (Starter) | 15 | 50 | - |
+| Archery Range | 120 | 200 | - |
+| Forge | 150 | 300 | - |
+| Castle Wall | 200 | 400 | - |
+| Watchtower | 140 | 250 | - |
+| Dragon Lair | 500 | 1000 | 5 Boss Tokens |
 
 ### Upgrade Costs
 
@@ -86,10 +81,10 @@ Each upgrade level increases cost by ~50%:
 ## 💾 Database Schema
 
 ```sql
--- Resource inventory
-CREATE TABLE resources (
+-- Resource inventory (simplified: gold, essence, boss_token)
+CREATE TABLE resource_inventory (
   id INTEGER PRIMARY KEY,
-  resource_type TEXT NOT NULL,  -- 'gold', 'wood', 'stone', etc.
+  resource TEXT NOT NULL,  -- 'gold', 'essence', 'boss_token'
   amount INTEGER NOT NULL DEFAULT 0,
   updated_at INTEGER
 );
@@ -97,10 +92,11 @@ CREATE TABLE resources (
 -- Resource transaction log (for analytics)
 CREATE TABLE resource_transactions (
   id INTEGER PRIMARY KEY,
-  resource_type TEXT NOT NULL,
+  resource TEXT NOT NULL,
   amount INTEGER NOT NULL,      -- positive = earned, negative = spent
-  source TEXT NOT NULL,         -- 'quest', 'adventure', 'building', etc.
-  source_id INTEGER,            -- quest_id, adventure_id, etc.
+  transaction_type TEXT NOT NULL, -- 'earned', 'spent', 'bonus'
+  completed_session_id INTEGER,
+  reason TEXT,
   created_at INTEGER
 );
 ```
@@ -117,8 +113,8 @@ async function completeQuest(questId, results) {
   // 1. Calculate XP (existing)
   const xp = computeSessionXp(results);
 
-  // 2. Calculate resources (new)
-  const resources = computeSessionResources(quest, results);
+  // 2. Calculate resources (simplified: gold + essence)
+  const loot = previewSessionLoot(results);
 
   // 3. Save to completed_sessions
   // 4. Update resource inventory
@@ -138,8 +134,7 @@ async function completeQuest(questId, results) {
 │                                     │
 │   LOOT COLLECTED:                   │
 │   🪙 +45 Gold                       │
-│   🪵 +30 Wood                       │
-│   🪨 +15 Stone                      │
+│   ✨ +80 Essence                    │
 │                                     │
 │   [Continue to Village]             │
 └─────────────────────────────────────┘
@@ -149,12 +144,12 @@ async function completeQuest(questId, results) {
 
 ## 🎮 Design Philosophy
 
-### Why This System?
+### Why Simplified Resources?
 
-1. **Meaningful Variety** — Different exercises = different resources = balanced village
-2. **Visible Progress** — Resources accumulate visibly
-3. **No Grinding** — Resources are earned naturally through workouts
-4. **Simple Math** — Easy to understand at a glance
+1. **Easy to Understand** — 3 resources instead of 8
+2. **No Mental Overhead** — Just workout and earn
+3. **Visible Progress** — Resources accumulate visibly
+4. **No Grinding** — Resources are earned naturally through workouts
 
 ### Balancing Principles
 

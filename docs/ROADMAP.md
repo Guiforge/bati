@@ -257,27 +257,27 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 2: Village & Economy 📋 (0% Complete)
+## Phase 2: Village & Economy � (10% Complete)
 
-### 2.1 Resource System 📋
+### 2.1 Resource System ✅
 
-- 📋 Resource schema
-  - 📋 Resource types table
-  - 📋 Resource inventory table
-  - 📋 Transaction log table
-- 📋 Resource types
-  - 📋 Gold (universal currency)
-  - 📋 Wood (from arms exercises)
-  - 📋 Stone (from back exercises)
-  - 📋 Fire Essence (from chest exercises)
-  - 📋 Water (from abs exercises)
-  - 📋 Wind Essence (from shoulder exercises)
-  - 📋 Grain (from leg exercises)
-- 📋 Earning resources
-  - 📋 Calculate from completed exercises
-  - 📋 Muscle-to-resource mapping
-  - 📋 Difficulty multipliers
-  - 📋 Gold calculation from duration
+- ✅ Resource schema
+  - ✅ Resource types (code, not separate table)
+  - ✅ Resource inventory table
+  - ✅ Transaction log table
+- ✅ Resource types
+  - ✅ Gold (universal currency)
+  - ✅ Wood (from arms exercises)
+  - ✅ Stone (from back exercises)
+  - ✅ Fire Essence (from chest exercises)
+  - ✅ Water (from abs exercises)
+  - ✅ Wind Essence (from shoulder exercises)
+  - ✅ Grain (from leg exercises)
+- ✅ Earning resources (db/resources.ts)
+  - ✅ Calculate from completed exercises
+  - ✅ Muscle-to-resource mapping
+  - ✅ Difficulty multipliers
+  - ✅ Gold calculation from duration
 - 📋 Resource UI
   - 📋 Resource display in header
   - 📋 Victory screen loot display

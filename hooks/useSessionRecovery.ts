@@ -1,10 +1,10 @@
+import { useCallback, useEffect, useState } from "react";
 import type { BossFight, DamageResult } from "@/db/bossFights";
 import type { CompletedExerciseInput } from "@/db/completed";
 import { preferences } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode } from "@/db/schema";
 import { type SessionStatus, useSessionStore } from "@/stores/session";
-import { useCallback, useEffect, useState } from "react";
 
 /**
  * Serializable session state for recovery
@@ -43,8 +43,7 @@ const SESSION_EXPIRY_MS = 4 * 60 * 60 * 1000; // 4 hours - session is stale afte
  * Check if there's a recoverable session and provide recovery actions
  */
 export function useSessionRecovery() {
-  const [recoverableSession, setRecoverableSession] =
-    useState<RecoverableSession | null>(null);
+  const [recoverableSession, setRecoverableSession] = useState<RecoverableSession | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
   const checkForRecoverableSession = useCallback(async () => {
@@ -78,9 +77,7 @@ export function useSessionRecovery() {
         questId: saved.quest.id,
         progress,
         savedAt: new Date(saved.savedAt),
-        elapsedTime: Math.floor(
-          (saved.savedAt - saved.startTime - saved.totalPausedTime) / 1000
-        ),
+        elapsedTime: Math.floor((saved.savedAt - saved.startTime - saved.totalPausedTime) / 1000),
       });
     } catch (error) {
       console.error("Failed to check for recoverable session:", error);
@@ -114,8 +111,7 @@ export function useSessionRecovery() {
         bossFight: saved.bossFight,
         lastDamageResult: saved.lastDamageResult,
         status: "paused", // Always resume in paused state
-        prePauseStatus:
-          saved.status === "paused" ? saved.prePauseStatus : saved.status,
+        prePauseStatus: saved.status === "paused" ? saved.prePauseStatus : saved.status,
         currentRoundIndex: saved.currentRoundIndex,
         currentExerciseIndex: saved.currentExerciseIndex,
         startTime: saved.startTime,

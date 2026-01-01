@@ -6,7 +6,70 @@ This document defines the visual design system for Bati, ensuring consistency ac
 
 ---
 
-## 🎨 Visual Identity
+## � UX Principles
+
+> Sport-first, rewarding, guided, fun.
+
+### 1. Many Small Rewards 🎁
+
+Users need constant encouragement. Show progress everywhere:
+
+- ✅ XP pop-up after every exercise
+- ✅ Loot reveal on victory screen
+- ✅ Building upgrades after sessions
+- ✅ Streak flame grows daily
+- ✅ Progress bars fill visibly
+
+### 2. Image-First, Less Text 🖼️
+
+Show, don't tell:
+
+- Use exercise illustrations over descriptions
+- Quest cards: big image, short title
+- Icons over labels when possible
+- Village is visual, not a list
+
+### 3. Minimal Animations 🎬
+
+Performance matters. Keep it subtle:
+
+- **DO:** Button feedback (100ms scale)
+- **DO:** Progress bar fill (smooth)
+- **DO:** Confetti on victory (once)
+- **DON'T:** Continuous loops
+- **DON'T:** Heavy particle effects
+- **DON'T:** Blocking animations
+
+### 4. Guided Flow, Not Choices ➡️
+
+This is a sport app, not a game:
+
+- **One primary action** per screen
+- Village builds **automatically** (no picking)
+- Quest carousel **pre-filtered** for user
+- Difficulty adjusts **based on history**
+
+### 5. Sport Focus 🏋️
+
+RPG enhances motivation, never distracts:
+
+- Timer/reps always **largest** on screen
+- Exercise name **front and center**
+- RPG elements in **secondary position**
+- No interrupting popups during workout
+
+### 6. Collecting & Building 🏰
+
+Village reflects the user's training:
+
+- Muscle → Resource → Building (automatic)
+- Visual progression without management
+- Loot screen shows what you earned
+- Flame/streak is a collectible too
+
+---
+
+## �🎨 Visual Identity
 
 ### Style: Franco-Belgian Comic Book (BD)
 

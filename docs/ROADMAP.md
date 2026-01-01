@@ -771,15 +771,111 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
+## 🔄 Quality & Workflow Checkpoints
+
+> Insert this checklist after completing each major phase (2, 3, 4, 5).
+
+### Quality Checkpoint Template
+
+After each major feature phase, complete these steps before moving on:
+
+#### UI Polish 🎨
+
+- [ ] Consistency check (colors, spacing, borders)
+- [ ] Fun & sport focus (rewards visible, minimal distraction)
+- [ ] Minimalist (remove unnecessary UI elements)
+- [ ] RPG layer (visual progression, collection, village reflects user)
+- [ ] Image-first (less text, more visuals)
+- [ ] Subtle animations (performance-friendly)
+
+#### Code Quality 🧹
+
+- [ ] Factorize (extract reusable logic)
+- [ ] Simplify (remove dead code, reduce complexity)
+- [ ] Readable (clear naming, comments where needed)
+- [ ] Efficient (no unnecessary re-renders, optimized queries)
+
+#### Linting ✅
+
+- [ ] Run `npm run check` (Biome + TypeScript)
+- [ ] Fix all lint errors and warnings
+- [ ] Run `npm run format` for consistency
+
+#### Testing 🧪
+
+- [ ] Write/update unit tests for new DB functions
+- [ ] Write component tests for critical UI
+- [ ] Run `npm test` — all tests pass
+- [ ] Check coverage for new code
+
+#### Commit & Push 📤
+
+- [ ] Commit with conventional message (feat/fix/refactor/docs)
+- [ ] Push to feature branch
+- [ ] Create PR with description
+
+---
+
+### Checkpoint: After Phase 2 (Village & Economy)
+
+- 📋 UI: Village view looks polished, rewards feel satisfying
+- 📋 Code: Resource calculations are simple and tested
+- 📋 Lint/Test/Commit
+
+### Checkpoint: After Phase 3 (Coach & Planning)
+
+- 📋 UI: Goal setting is guided, not overwhelming
+- 📋 Code: Plan generation logic is clean
+- 📋 Lint/Test/Commit
+
+### Checkpoint: After Phase 4 (Statistics & Progress)
+
+- 📋 UI: Charts are clear, PRs feel rewarding
+- 📋 Code: Stat calculations are optimized
+- 📋 Lint/Test/Commit
+
+### Checkpoint: After Phase 5 (Polish & Quality)
+
+- 📋 UI: Animations smooth, haptics satisfying
+- 📋 Code: Performance optimized
+- 📋 Lint/Test/Commit
+
+---
+
 ## Summary
 
 | Phase | Status | Completion |
 | ----- | ------ | ---------- |
 | Phase 1: Core Loop | ✅ Done | ~95% |
 | Phase 2: Village & Economy | 📋 Planned | 0% |
+| ↳ Quality Checkpoint | 📋 | - |
 | Phase 3: Coach & Planning | 📋 Planned | 0% |
+| ↳ Quality Checkpoint | 📋 | - |
 | Phase 4: Statistics | ⚠️ Partial | ~30% |
+| ↳ Quality Checkpoint | 📋 | - |
 | Phase 5: Polish | ⚠️ Minimal | ~5% |
+| ↳ Quality Checkpoint | 📋 | - |
 | Phase 6: Future | 💡 Ideas | 0% |
 
 **Next Priority:** Phase 2 - Resource System & Village View
+
+---
+
+## Workflow Reminders
+
+### Before Every Commit
+
+```bash
+npm run check     # Biome lint + TypeScript
+npm test          # All tests pass
+npm run format    # Auto-format
+```
+
+### Commit Convention
+
+- `feat:` New feature
+- `fix:` Bug fix
+- `refactor:` Code improvement (no behavior change)
+- `docs:` Documentation only
+- `test:` Adding/fixing tests
+- `chore:` Build, config, dependencies

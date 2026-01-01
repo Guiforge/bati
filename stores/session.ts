@@ -17,7 +17,8 @@ import {
 } from "@/db/completed";
 import { recordSessionForGoal } from "@/db/goals";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
-import { preferences } from "@/db/preferences";import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";import type { Quest } from "@/db/quests";
+import { preferences } from "@/db/preferences";
+import { isDailyQuest, type Quest } from "@/db/quests";
 import {
   awardSessionResources,
   type ExerciseResultForResources,
@@ -25,6 +26,7 @@ import {
 } from "@/db/resources";
 import type { DifficultyCode, FeedbackCode, MuscleCode } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
+import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { computeSessionXp } from "@/db/xp";
 
 export type SessionStatus = "idle" | "countdown" | "running" | "resting" | "paused" | "finished";
@@ -381,7 +383,11 @@ export const useSessionStore = create<SessionState>()(
       if (!quest || !startTime) throw new Error("No active session");
 
       const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
-      const xpEarned = computeSessionXp({ durationSeconds, userLevel });
+      let xpEarned = computeSessionXp({ durationSeconds, userLevel });
+
+      if (await isDailyQuest(quest.id)) {
+        xpEarned = Math.round(xpEarned * 1.5);
+      }
 
       // Calculate level before saving (current state)
       const oldTotalXp = await getTotalXp();

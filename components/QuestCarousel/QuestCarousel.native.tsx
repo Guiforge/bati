@@ -13,6 +13,7 @@ import { listExercises, listQuestTemplates } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import type { QuestTemplate } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
+import { DailyQuestCard } from "./DailyQuestCard";
 
 type LoadState =
   | {
@@ -114,8 +115,27 @@ export function QuestCarousel() {
     [updateActiveFromOffset],
   );
 
+  const dailyQuestIndex = useMemo(() => {
+    if (quests.length === 0) return -1;
+    const today = new Date().toISOString().split("T")[0];
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) {
+      hash = ((hash << 5) - hash) + today.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash) % quests.length;
+  }, [quests]);
+
   const renderItem = useCallback(
-    ({ item: q }: { item: QuestTemplate }) => {
+    ({ item: q, index }: { item: QuestTemplate; index: number }) => {
+      if (index === dailyQuestIndex) {
+        return (
+          <YStack width={slideWidth} mr={cardSpacing}>
+            <DailyQuestCard quest={q} exercisesById={exercisesById} />
+          </YStack>
+        );
+      }
+
       const title = language === "fr" ? q.frTitle : q.enTitle;
       const desc = language === "fr" ? q.frDescription : q.enDescription;
       const emoji = questEmoji(q.rounds, q.exercises.length);
@@ -177,7 +197,7 @@ export function QuestCarousel() {
         </YStack>
       );
     },
-    [language, slideWidth, router, t, exercisesById],
+    [language, slideWidth, router, t, exercisesById, dailyQuestIndex],
   );
 
   if (state.status === "loading") {

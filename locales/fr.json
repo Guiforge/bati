@@ -28,7 +28,9 @@
     "skip": "Passer"
   },
   "coach": {
-    "rest_suggestion_title": "Le Coach dit : Repos !"
+    "rest_suggestion_title": "Le Coach dit : Repos !",
+    "suggestion_title": "Suggestion du Coach",
+    "try_these_quests": "Essaie ces quêtes :"
   },
   "settings_avatar_hint": "Tape sur un avatar pour changer.",
   "settings": "Paramètres",

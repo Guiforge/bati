@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { CoachSuggestionCard } from "@/components/common/CoachSuggestionCard";
 import { LevelBadge } from "@/components/common/LevelBadge";
 import { RecentAchievements } from "@/components/common/RecentAchievements";
 import { ResourceHeader } from "@/components/common/ResourceHeader";
@@ -138,6 +139,9 @@ export function Home() {
 
           {/* Goal Progress */}
           <GoalCard onPress={() => router.push("/goals" as never)} />
+
+          {/* Coach Suggestion (Muscle Balance) */}
+          <CoachSuggestionCard />
 
           <AppButton
             variant="secondary"

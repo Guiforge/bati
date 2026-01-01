@@ -28,7 +28,9 @@
     "skip": "Skip"
   },
   "coach": {
-    "rest_suggestion_title": "Coach says: Rest!"
+    "rest_suggestion_title": "Coach says: Rest!",
+    "suggestion_title": "Coach Suggestion",
+    "try_these_quests": "Try these quests:"
   },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",

@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import * as Haptics from "expo-haptics";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Text, YStack } from "tamagui";
@@ -10,10 +11,23 @@ export function CountdownView() {
   const insets = useSafeAreaInsets();
   const { remainingSeconds } = useSessionTimer();
   const { status, finishCountdown } = useSessionStore();
+  const prevSecondsRef = useRef(remainingSeconds);
 
+  // Light haptic tick on each countdown second
+  useEffect(() => {
+    if (status !== "countdown") return;
+    if (remainingSeconds !== prevSecondsRef.current && remainingSeconds > 0) {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    prevSecondsRef.current = remainingSeconds;
+  }, [remainingSeconds, status]);
+
+  // Success haptic on "Let's go!"
   useEffect(() => {
     if (status !== "countdown") return;
     if (remainingSeconds !== 0) return;
+
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     const id = setTimeout(() => {
       finishCountdown();

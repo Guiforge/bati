@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Paragraph, Text, YStack } from "tamagui";
@@ -12,7 +13,13 @@ export function PausedOverlay() {
 
   if (status !== "paused") return null;
 
+  const handleResume = () => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    resumeSession();
+  };
+
   const handleQuit = () => {
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     quitSession();
     if (router.canGoBack()) {
       router.back();
@@ -41,7 +48,7 @@ export function PausedOverlay() {
           </Paragraph>
 
           <YStack width="100%" gap="$3" pt="$2">
-            <AppButton onPress={resumeSession} variant="primary">
+            <AppButton onPress={handleResume} variant="primary">
               {t("session.resume_button")}
             </AppButton>
 

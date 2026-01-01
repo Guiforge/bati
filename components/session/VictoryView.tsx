@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,6 +38,9 @@ export function VictoryView() {
   const xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
   const handleFinish = async () => {
+    // Success haptic on finishing
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
     try {
       setIsSaving(true);
       // Pass feedback as FeedbackCode or null
@@ -62,6 +66,11 @@ export function VictoryView() {
       // In a real app, show a toast/alert here
       setIsSaving(false);
     }
+  };
+
+  const handleFeedbackSelect = (value: Feedback) => {
+    void Haptics.selectionAsync();
+    setFeedback(value);
   };
 
   return (
@@ -166,7 +175,7 @@ export function VictoryView() {
               borderColor={feedback === "easy" ? "$success" : "$color"}
               opacity={feedback === "easy" ? 1 : 0.7}
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
-              onPress={() => setFeedback("easy")}
+              onPress={() => handleFeedbackSelect("easy")}
               rounded="$4"
             >
               <YStack items="center" gap="$1">
@@ -184,7 +193,7 @@ export function VictoryView() {
               borderColor={feedback === "good" ? "$primary" : "$color"}
               opacity={feedback === "good" ? 1 : 0.7}
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
-              onPress={() => setFeedback("good")}
+              onPress={() => handleFeedbackSelect("good")}
               rounded="$4"
             >
               <YStack items="center" gap="$1">
@@ -202,7 +211,7 @@ export function VictoryView() {
               borderColor={feedback === "hard" ? "$secondary" : "$color"}
               opacity={feedback === "hard" ? 1 : 0.7}
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
-              onPress={() => setFeedback("hard")}
+              onPress={() => handleFeedbackSelect("hard")}
               rounded="$4"
             >
               <YStack items="center" gap="$1">

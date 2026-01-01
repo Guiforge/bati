@@ -1,4 +1,5 @@
 import { Minus, Plus } from "@tamagui/lucide-icons";
+import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
@@ -34,6 +35,21 @@ export function RestView() {
   const isLastRepBased = lastResult?.result.type === "reps";
 
   const { bg: screenBg } = getQuestColorTokensFromQuest(quest);
+
+  const handleSkipRest = () => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    skipRest();
+  };
+
+  const handleAddRestTime = (seconds: number) => {
+    void Haptics.selectionAsync();
+    addRestTime(seconds);
+  };
+
+  const handleUpdateResult = (value: number) => {
+    void Haptics.selectionAsync();
+    updateLastResult(value);
+  };
 
   return (
     <YStack
@@ -93,7 +109,7 @@ export function RestView() {
             bg="transparent"
             borderWidth={2}
             borderColor="$color"
-            onPress={() => addRestTime(10)}
+            onPress={() => handleAddRestTime(10)}
           >
             <Text fontWeight="800" color="$color">
               +10s
@@ -104,7 +120,7 @@ export function RestView() {
             bg="transparent"
             borderWidth={2}
             borderColor="$color"
-            onPress={() => addRestTime(30)}
+            onPress={() => handleAddRestTime(30)}
           >
             <Text fontWeight="800" color="$color">
               +30s
@@ -137,7 +153,7 @@ export function RestView() {
                 size="$3"
                 circular
                 icon={<Minus size={16} />}
-                onPress={() => updateLastResult(Math.max(0, lastResult.result.value - 1))}
+                onPress={() => handleUpdateResult(Math.max(0, lastResult.result.value - 1))}
               />
               <Text
                 fontWeight="900"
@@ -151,7 +167,7 @@ export function RestView() {
                 size="$3"
                 circular
                 icon={<Plus size={16} />}
-                onPress={() => updateLastResult(lastResult.result.value + 1)}
+                onPress={() => handleUpdateResult(lastResult.result.value + 1)}
               />
             </XStack>
           </XStack>
@@ -185,7 +201,7 @@ export function RestView() {
         size="$6"
         bg="$pastelGreen"
         pressStyle={{ opacity: 0.9 }}
-        onPress={skipRest}
+        onPress={handleSkipRest}
         borderWidth={3}
         borderColor="$color"
         rounded="$6"

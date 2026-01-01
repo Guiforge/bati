@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -41,6 +42,9 @@ export function ActiveExerciseView() {
   const progressPercent = (currentStep / totalSteps) * 100;
 
   const handleComplete = () => {
+    // Heavy haptic feedback on exercise completion
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
     // For time-based exercises, record actual elapsed time
     // For rep-based, record the adjusted value
     if (isTimeBased) {
@@ -52,6 +56,7 @@ export function ActiveExerciseView() {
   };
 
   const handleAdjustReps = (delta: number) => {
+    void Haptics.selectionAsync();
     setAdjustedReps((prev) => Math.max(1, prev + delta));
   };
 

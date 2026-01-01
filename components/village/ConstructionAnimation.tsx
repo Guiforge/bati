@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal } from "react-native";
 import { Button, H2, Paragraph, Text, YStack } from "tamagui";

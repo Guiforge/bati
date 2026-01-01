@@ -24,7 +24,15 @@ import { AVATARS } from "@/constants/avatars";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useSettingsStore } from "@/stores/settings";
 
-type MenuStep = "main" | "language" | "avatar" | "theme" | "haptics" | "sound" | "motion" | "notifications";
+type MenuStep =
+  | "main"
+  | "language"
+  | "avatar"
+  | "theme"
+  | "haptics"
+  | "sound"
+  | "motion"
+  | "notifications";
 
 export function HomeSettingsMenu() {
   const { t } = useTranslation();

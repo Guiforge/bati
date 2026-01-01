@@ -1,15 +1,17 @@
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
+import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { Card } from "@/components/common/Card";
 import { useToast } from "@/components/common/Toast";
 import { ConstructionAnimation } from "@/components/village/ConstructionAnimation";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { SOUNDS } from "@/constants/sounds";
+import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import type { NewRecordResult } from "@/db/personalRecords";
 import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
 import type { BuildingCode } from "@/db/schema";
@@ -34,16 +36,37 @@ export function VictoryView() {
   const { success, selection } = useHaptics();
   const { playSound } = useSound();
   const { showError } = useToast();
-  const { quest, userLevel, startTime, totalPausedTime, results, saveSession, quitSession } =
-    useSessionStore();
+  const {
+    quest,
+    userLevel,
+    startTime,
+    totalPausedTime,
+    results,
+    saveSession,
+    quitSession,
+    adventureRunStepId,
+  } = useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [newRecords, setNewRecords] = useState<NewRecordResult[]>([]);
   const [hasSaved, setHasSaved] = useState(false);
+  const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
+  const [showOutroNarrative, setShowOutroNarrative] = useState(false);
 
   useEffect(() => {
     playSound(SOUNDS.victory);
   }, []);
+
+  useEffect(() => {
+    if (adventureRunStepId) {
+      getAdventureStepOutroNarrative(adventureRunStepId, language).then((text) => {
+        if (text) {
+          setOutroNarrative(text);
+          setShowOutroNarrative(true);
+        }
+      });
+    }
+  }, [adventureRunStepId, language]);
 
   const [constructionQueue, setConstructionQueue] = useState<
     { type: "unlock" | "levelup"; buildingType: BuildingCode; level?: number }[]
@@ -375,6 +398,14 @@ export function VictoryView() {
         origin={{ x: width / 2, y: -20 }}
         autoStart={true}
         fadeOut={true}
+      />
+
+      <NarrativeModal
+        visible={showOutroNarrative}
+        title={questTitle}
+        text={outroNarrative ?? ""}
+        onClose={() => setShowOutroNarrative(false)}
+        type="outro"
       />
     </YStack>
   );

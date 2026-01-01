@@ -148,6 +148,13 @@
       "when": 1767225600011,
       "tag": "0020_add_scheduled_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1767225600012,
+      "tag": "0021_add_outro_narrative",
+      "breakpoints": true
     }
   ]
 }

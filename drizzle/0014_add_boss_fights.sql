@@ -1,43 +1,43 @@
 -- Boss fight tracking for adventures with kind = "boss"
 CREATE TABLE boss_fights (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    adventure_id INTEGER NOT NULL REFERENCES adventures(id) ON DELETE CASCADE,
+    adventureId INTEGER NOT NULL REFERENCES adventures(id) ON DELETE CASCADE,
     -- Total HP = sum of all exercise targets across all steps
-    total_hp INTEGER NOT NULL,
+    totalHp INTEGER NOT NULL,
     -- Current HP remaining (persists across sessions)
-    current_hp INTEGER NOT NULL,
+    currentHp INTEGER NOT NULL,
     -- Muscle group that deals bonus damage (1.5x)
-    weakness_muscle TEXT,
+    weaknessMuscle TEXT,
     -- Muscle group that deals reduced damage (0.5x)
-    resistance_muscle TEXT,
+    resistanceMuscle TEXT,
     -- Timestamp when boss was defeated (null if still alive)
-    defeated_at INTEGER,
-    created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000),
-    updated_at INTEGER DEFAULT (strftime('%s', 'now') * 1000)
+    defeatedAt INTEGER,
+    createdAt INTEGER DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER DEFAULT (strftime('%s', 'now') * 1000)
 );
-CREATE UNIQUE INDEX boss_fights_adventure_unique ON boss_fights(adventure_id);
+CREATE UNIQUE INDEX boss_fights_adventure_unique ON boss_fights(adventureId);
 -- Damage log tracks each exercise completion during boss fights
 CREATE TABLE boss_damage_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    boss_fight_id INTEGER NOT NULL REFERENCES boss_fights(id) ON DELETE CASCADE,
-    completed_session_id INTEGER REFERENCES completed_sessions(id) ON DELETE
+    bossFightId INTEGER NOT NULL REFERENCES boss_fights(id) ON DELETE CASCADE,
+    completedSessionId INTEGER REFERENCES completed_sessions(id) ON DELETE
     SET NULL,
-        exercise_id INTEGER REFERENCES exercises(id) ON DELETE
+        exerciseId INTEGER REFERENCES exercises(id) ON DELETE
     SET NULL,
         -- Damage dealt (after weakness/resistance modifiers)
-        damage_dealt INTEGER NOT NULL,
+        damageDealt INTEGER NOT NULL,
         -- Whether this was a critical hit (exceeded target)
-        is_critical INTEGER NOT NULL DEFAULT 0,
+        isCritical INTEGER NOT NULL DEFAULT 0,
         -- Muscle group that dealt the damage
         muscle TEXT,
-        created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000)
+        createdAt INTEGER DEFAULT (strftime('%s', 'now') * 1000)
 );
-CREATE INDEX boss_damage_log_fight_idx ON boss_damage_log(boss_fight_id);
-CREATE INDEX boss_damage_log_session_idx ON boss_damage_log(completed_session_id);
+CREATE INDEX boss_damage_log_fight_idx ON boss_damage_log(bossFightId);
+CREATE INDEX boss_damage_log_session_idx ON boss_damage_log(completedSessionId);
 -- Add boss-specific fields to adventures table
 ALTER TABLE adventures
-ADD COLUMN boss_total_hp INTEGER;
+ADD COLUMN bossTotalHp INTEGER;
 ALTER TABLE adventures
-ADD COLUMN boss_weakness_muscle TEXT;
+ADD COLUMN bossWeaknessMuscle TEXT;
 ALTER TABLE adventures
-ADD COLUMN boss_resistance_muscle TEXT;
+ADD COLUMN bossResistanceMuscle TEXT;

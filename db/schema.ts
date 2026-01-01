@@ -204,6 +204,8 @@ export const adventureSteps = sqliteTable(
     // New localized narratives.
     enNarrative: text().notNull().default(""),
     frNarrative: text().notNull().default(""),
+    enOutroNarrative: text().notNull().default(""),
+    frOutroNarrative: text().notNull().default(""),
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },

@@ -9,11 +9,13 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
+import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
+import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { Quest, Target } from "@/db/quests";
@@ -87,6 +89,8 @@ export default function QuestDetails() {
     status: "loading",
     quest: null,
   });
+  const [narrative, setNarrative] = useState<string | null>(null);
+  const [showNarrative, setShowNarrative] = useState(false);
 
   const load = useCallback(
     async (id: number, nextLevel: Difficulty) => {
@@ -142,11 +146,30 @@ export default function QuestDetails() {
         })
       : null;
 
-  const handleStart = () => {
+  const proceedToSession = () => {
     if (quest) {
       startSession(quest, level, { adventureRunStepId: runStepId });
       router.push("/session" as never);
     }
+  };
+
+  const handleStart = async () => {
+    if (!quest) return;
+
+    if (runStepId) {
+      try {
+        const text = await getAdventureStepNarrative(runStepId, language);
+        if (text) {
+          setNarrative(text);
+          setShowNarrative(true);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to load narrative", e);
+      }
+    }
+
+    proceedToSession();
   };
 
   const headerImage = resolveQuestImage(quest?.exercises?.[0]?.images?.[0]);
@@ -452,6 +475,17 @@ export default function QuestDetails() {
           </AppButton>
         </YStack>
       ) : null}
+
+      <NarrativeModal
+        visible={showNarrative}
+        title={questTitle}
+        text={narrative ?? ""}
+        onClose={() => {
+          setShowNarrative(false);
+          proceedToSession();
+        }}
+        type="intro"
+      />
     </YStack>
   );
 }

@@ -1,3 +1,7 @@
+import { Award, Lock } from "@tamagui/lucide-icons";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
 import {
@@ -6,10 +10,6 @@ import {
   getAllAchievementsWithProgress,
 } from "@/db/achievements";
 import { useSettingsStore } from "@/stores/settings";
-import { Award, Lock } from "@tamagui/lucide-icons";
-import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Progress, Text, XStack, YStack } from "tamagui";
 
 type CategoryFilter = "all" | "sessions" | "streaks" | "xp" | "special";
 

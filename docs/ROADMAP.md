@@ -283,23 +283,28 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Victory screen loot display (LootDisplay component)
   - 📋 Resource animations
 
-### 2.2 Village System 📋
+### 2.2 Village System �
 
-- 📋 Building schema
-  - 📋 Building types
-  - 📋 Building levels (1-5)
-  - 📋 Building XP (progress to next level)
-  - 📋 Unlock conditions
-- 📋 Building types
-  - 📋 Tier 1: Campfire, Tent, Training Dummy (starter)
-  - 📋 Tier 2: Archery Range, Quarry, Forge, Well, Windmill, Farm
-  - 📋 Tier 3: Watchtower, Castle Wall, Armory, Fountain, Observatory, Barn
-  - 📋 Tier 4: Dragon Lair, Hero's Hall, Wizard Tower (legendary)
-- 📋 Auto-building logic
-  - 📋 Track exercise history by muscle
-  - 📋 Automatic unlock when thresholds met
-  - 📋 Building XP accumulation
-  - 📋 Level-up detection
+- ✅ Building schema
+  - ✅ Building types (19 types across 4 tiers)
+  - ✅ Building levels (1-5)
+  - ✅ Building XP (progress to next level)
+  - ✅ Unlock conditions (tier-based, level requirements)
+- ✅ Building types
+  - ✅ Tier 1: Campfire, Tent, Training Dummy (starter, unlocked by default)
+  - ✅ Tier 2: Archery Range, Quarry, Forge, Well, Windmill, Farm
+  - ✅ Tier 3: Watchtower, Castle Wall, Armory, Fountain, Observatory, Barn
+  - ✅ Tier 4: Dragon Lair, Hero's Hall, Wizard Tower, Phoenix Nest (legendary)
+- ✅ Building queries (db/buildings.ts)
+  - ✅ getAllBuildings, getUnlockedBuildings
+  - ✅ getBuildingByType, getVillageStats
+  - ✅ addBuildingXp with level-up detection
+  - ✅ unlockBuilding, processSessionBuildings
+  - ✅ Tier unlock condition checks
+- ✅ Building tests (10 passing)
+- 📋 Auto-building integration
+  - 📋 Wire processSessionBuildings to session completion
+  - 📋 Trigger building XP on workout finish
 - 📋 Village view
   - 📋 Isometric/2.5D layout
   - 📋 Building placement

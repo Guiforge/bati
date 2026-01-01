@@ -517,7 +517,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ MuscleBalanceCard component with progress bars
   - ✅ Weak area highlighting in $primary color
   - ✅ Status indicator (Balanced/Needs Work)
-  - 📋 Radar chart option
+  - ✅ Radar chart option (MuscleBalanceRadar component)
 - ✅ Balance tips
   - ✅ getSuggestedQuestsForWeakAreas() function
   - ✅ SuggestedQuestsCard component with quest recommendations

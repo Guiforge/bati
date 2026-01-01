@@ -150,11 +150,25 @@ export function useNotifications() {
     await Notifications.cancelAllScheduledNotificationsAsync();
   };
 
+  const showAchievementNotification = async (title: string, body: string, icon?: string) => {
+    if (!notificationsEnabled) return;
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: icon ? `${icon} ${title}` : `🏆 ${title}`,
+        body,
+        sound: true,
+      },
+      trigger: null, // Immediate notification
+    });
+  };
+
   return {
     expoPushToken,
     notification,
     scheduleSmartNotifications,
     cancelAllNotifications,
+    showAchievementNotification,
   };
 }
 

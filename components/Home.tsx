@@ -9,6 +9,7 @@ import { H1, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
 import { LevelBadge } from "@/components/common/LevelBadge";
+import { RecentAchievements } from "@/components/common/RecentAchievements";
 import { ResourceHeader } from "@/components/common/ResourceHeader";
 import { StreakBadge } from "@/components/common/StreakBadge";
 import { GoalCard } from "@/components/goals/GoalCard";
@@ -128,6 +129,9 @@ export function Home() {
 
           {/* Resource Inventory */}
           <ResourceHeader />
+
+          {/* Recent Achievements */}
+          <RecentAchievements />
 
           {/* Session Recovery Banner (if crashed/interrupted session) */}
           <SessionRecoveryBanner />

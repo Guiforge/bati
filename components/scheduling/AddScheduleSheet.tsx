@@ -6,10 +6,10 @@ import { FlatList } from "react-native";
 import { Sheet, Spinner, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { createScheduledSession } from "@/db/scheduling";
 import { listQuestTemplates, type QuestTemplate } from "@/db/quests";
-import { useSettingsStore } from "@/stores/settings";
+import { createScheduledSession } from "@/db/scheduling";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useSettingsStore } from "@/stores/settings";
 
 interface AddScheduleSheetProps {
   open: boolean;

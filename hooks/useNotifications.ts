@@ -2,6 +2,7 @@ import { addDays, isSameDay, isYesterday, set } from "date-fns";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
+import { getAnyActiveAdventureRun, getAdventureDetails } from "@/db/adventures";
 import { getStreakInfo } from "@/db/streaks";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -141,6 +142,39 @@ export function useNotifications() {
           date: inactivityTrigger,
         },
       });
+
+      // C. Boss Ready Notification
+      // Check if user has an active boss adventure on the final step
+      const activeAdventure = await getAnyActiveAdventureRun();
+      if (activeAdventure) {
+        const details = await getAdventureDetails(activeAdventure.adventureId);
+        if (details && details.adventure.kind === "boss") {
+          const { steps, activeStep } = activeAdventure.activeRun;
+          const totalSteps = steps.length;
+          // Check if on last step (boss fight)
+          if (activeStep && activeStep.stepIndex === totalSteps - 1) {
+            // Schedule for tomorrow at 9 AM as a reminder
+            const bossReminderDate = set(addDays(now, 1), {
+              hours: 9,
+              minutes: 0,
+              seconds: 0,
+              milliseconds: 0,
+            });
+
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "⚔️ The Boss Awaits!",
+                body: "You're at the final step. Face the boss and claim victory!",
+                sound: true,
+              },
+              trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.DATE,
+                date: bossReminderDate,
+              },
+            });
+          }
+        }
+      }
     } catch (e) {
       console.error("Failed to schedule smart notifications:", e);
     }

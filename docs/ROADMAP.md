@@ -408,7 +408,7 @@ This document tracks all features, their implementation status, and future plans
 
 - ✅ Plan generation algorithm
   - ✅ Analyze goal type (basic implementation)
-  - 📋 Check workout history for weak areas
+  - ✅ Check workout history for weak areas (smart quest selection)
   - ✅ Select appropriate quests (random for now)
   - ✅ Create adventure structure (using scheduled sessions)
 - ✅ Plan schema

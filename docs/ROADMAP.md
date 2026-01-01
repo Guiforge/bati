@@ -326,18 +326,19 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Current streak counting (consecutive days)
   - ✅ Best streak tracking
   - ✅ Active/inactive streak detection
+- ✅ Streak milestones
+  - ✅ 3 days: Spark ⚡
+  - ✅ 7 days: Ember ✨
+  - ✅ 14 days: Blaze 🔥
+  - ✅ 30 days: Inferno 🔥
+  - ✅ 100 days: Eternal 🌟
+  - ✅ Localized milestone names (EN/FR)
+  - ✅ Flame color by milestone tier
 - 📋 Streak schema (optimization)
   - 📋 Persisted streak count (avoid recalculation)
   - 📋 Last workout date cache
-- 📋 Streak milestones
-  - 📋 3 days: Spark
-  - 📋 7 days: Ember
-  - 📋 14 days: Blaze
-  - 📋 30 days: Inferno
-  - 📋 100 days: Eternal
 - 📋 Flame visual
   - 📋 Flame in village center
-  - 📋 Flame color/size by streak level
   - 📋 Flame animations
 - 📋 Streak warnings
   - 📋 "Don't lose your flame" reminder

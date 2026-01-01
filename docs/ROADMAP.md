@@ -317,7 +317,7 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Day/night cycle (optional)
 - ⚠️ Village interactions
   - ✅ Tap building for details (modal with level, XP progress, tier)
-  - 📋 Upgrade preview
+  - ✅ Upgrade preview
   - 📋 Building unlock animations
 
 ### 2.3 Flame/Streak System ⚠️

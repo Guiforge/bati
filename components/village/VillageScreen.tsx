@@ -15,10 +15,10 @@ import {
   type VillageBuildingWithMeta,
   type VillageStatsType,
 } from "@/db/buildings";
+import type { MuscleCode, ResourceCode } from "@/db/schema";
 import { type BuildingCode, buildingLevelBonuses, buildingLevelThresholds } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSettingsStore } from "@/stores/settings";
-import type { MuscleCode, ResourceCode } from "@/db/schema";
 
 // Tier background colors
 const tierColors: Record<number, string> = {

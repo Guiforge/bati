@@ -1,3 +1,7 @@
+import { AppIconButton } from "@/components/common/AppButton";
+import { AVATARS } from "@/constants/avatars";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useSettingsStore } from "@/stores/settings";
 import {
   Bell,
   ChevronLeft,
@@ -19,10 +23,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack } from "tamagui";
-import { AppIconButton } from "@/components/common/AppButton";
-import { AVATARS } from "@/constants/avatars";
-import { useNotifications } from "@/hooks/useNotifications";
-import { useSettingsStore } from "@/stores/settings";
 
 type MenuStep =
   | "main"

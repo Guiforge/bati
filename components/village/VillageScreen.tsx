@@ -236,7 +236,7 @@ export function VillageScreen() {
   // Get selected building name for modal
   const selectedBuildingName = selectedBuilding
     ? buildingNames[selectedBuilding.buildingType]?.[language === "fr" ? "fr" : "en"] ||
-      selectedBuilding.buildingType
+    selectedBuilding.buildingType
     : "";
 
   // Calculate selected building progress
@@ -353,7 +353,7 @@ export function VillageScreen() {
                           percent: buildingLevelBonuses[selectedBuilding.level + 1]?.xpPercent || 0,
                           muscle:
                             muscleNames[selectedBuilding.relatedMuscle]?.[
-                              language === "fr" ? "fr" : "en"
+                            language === "fr" ? "fr" : "en"
                             ],
                         })}
                       </Text>
@@ -363,7 +363,7 @@ export function VillageScreen() {
                             buildingLevelBonuses[selectedBuilding.level + 1]?.resourcePercent || 0,
                           resource:
                             resourceNames[muscleToResource[selectedBuilding.relatedMuscle]]?.[
-                              language === "fr" ? "fr" : "en"
+                            language === "fr" ? "fr" : "en"
                             ],
                         })}
                       </Text>
@@ -395,7 +395,7 @@ export function VillageScreen() {
                           percent: buildingLevelBonuses[5]?.xpPercent || 0,
                           muscle:
                             muscleNames[selectedBuilding.relatedMuscle]?.[
-                              language === "fr" ? "fr" : "en"
+                            language === "fr" ? "fr" : "en"
                             ],
                         })}
                       </Text>
@@ -404,7 +404,7 @@ export function VillageScreen() {
                           percent: buildingLevelBonuses[5]?.resourcePercent || 0,
                           resource:
                             resourceNames[muscleToResource[selectedBuilding.relatedMuscle]]?.[
-                              language === "fr" ? "fr" : "en"
+                            language === "fr" ? "fr" : "en"
                             ],
                         })}
                       </Text>

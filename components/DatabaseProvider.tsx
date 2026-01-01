@@ -1,8 +1,8 @@
+import { db } from "@/db/client";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { type ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
-import { db } from "@/db/client";
 import migrations from "../drizzle/migrations";
 
 interface DatabaseProviderProps {

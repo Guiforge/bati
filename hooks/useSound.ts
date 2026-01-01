@@ -1,6 +1,6 @@
+import { useSettingsStore } from "@/stores/settings";
 import { Audio, type AVPlaybackSource } from "expo-av";
 import { useEffect, useState } from "react";
-import { useSettingsStore } from "@/stores/settings";
 
 export function useSound() {
   const { soundEnabled } = useSettingsStore();

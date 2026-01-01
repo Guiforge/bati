@@ -45,7 +45,7 @@ Track user milestones and unlock rewards.
 ### Types
 
 ```typescript
-type AchievementCode = 
+type AchievementCode =
   | "first_quest" | "streak_3" | "streak_7" | "streak_30"
   | "xp_1000" | "xp_10000" | "sessions_10" | "sessions_50"
   | "boss_slayer" | "village_builder";
@@ -163,7 +163,7 @@ Fantasy buildings that level up as you train.
 ### Types
 
 ```typescript
-type BuildingType = 
+type BuildingType =
   | "campfire" | "tent" | "training_dummy"  // Tier 1
   | "archery_range" | "quarry" | "forge"    // Tier 2
   | "watchtower" | "castle_wall" | "armory" // Tier 3
@@ -413,7 +413,7 @@ Fantasy resources earned through workouts.
 ### Types
 
 ```typescript
-type ResourceCode = 
+type ResourceCode =
   | "wood" | "stone" | "fire" | "water" | "wind" | "grain"
   | "coins" | "boss_token";
 

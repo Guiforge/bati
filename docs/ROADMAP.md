@@ -369,22 +369,32 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 3: Coach & Planning 📋
+## Phase 3: Coach & Planning � (35% Complete)
 
-### 3.1 Goal Setting 📋
+### 3.1 Goal Setting ✅
 
-- 📋 Goal schema
-  - 📋 Goal type (strength/endurance/flexibility/balanced)
-  - 📋 Days per week
-  - 📋 Session duration preference
-  - 📋 Start date
-- 📋 Goal UI
-  - 📋 Goal selection screen
-  - 📋 Days per week picker
-  - 📋 Duration preference
-- 📋 Goal tracking
-  - 📋 Weekly progress vs goal
-  - 📋 Goal completion detection
+- ✅ Goal schema
+  - ✅ Goal type (strength/endurance/flexibility/balanced)
+  - ✅ Days per week
+  - ✅ Session duration preference
+  - ✅ Start date
+  - ✅ Goal status (active/paused/completed/abandoned)
+- ✅ Goal progress tracking
+  - ✅ Weekly progress table (ISO week keys)
+  - ✅ Sessions completed per week
+  - ✅ Total minutes and XP per week
+- ✅ Goal UI
+  - ✅ Goal card on Home screen
+  - ✅ Goal setting screen (`/goals`)
+  - ✅ Goal type selection with emojis
+  - ✅ Days per week picker
+  - ✅ Duration preference picker
+  - ✅ Weekly progress display with progress bar
+  - ✅ Progress history visualization
+  - ✅ Goal actions (pause, complete, edit)
+- ✅ Goal integration
+  - ✅ recordSessionForGoal on session completion
+  - ✅ Automatic progress updates
 
 ### 3.2 Auto-Generated Plans 📋
 

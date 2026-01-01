@@ -21,7 +21,7 @@ describe("db/resources", () => {
         require("../db/resources") as typeof import("../db/resources");
 
       const inventory = await getResourceInventory();
-      expect(inventory.length).toBe(7); // gold, wood, stone, fire, water, wind, grain
+      expect(inventory.length).toBe(8); // gold, wood, stone, fire, water, wind, grain, boss_token
       expect(inventory.find((r) => r.resource === "gold")).toBeDefined();
       expect(inventory.find((r) => r.resource === "wood")).toBeDefined();
       expect(inventory.find((r) => r.resource === "stone")).toBeDefined();
@@ -29,6 +29,7 @@ describe("db/resources", () => {
       expect(inventory.find((r) => r.resource === "water")).toBeDefined();
       expect(inventory.find((r) => r.resource === "wind")).toBeDefined();
       expect(inventory.find((r) => r.resource === "grain")).toBeDefined();
+      expect(inventory.find((r) => r.resource === "boss_token")).toBeDefined();
     });
   });
 

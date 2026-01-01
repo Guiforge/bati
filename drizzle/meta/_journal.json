@@ -155,6 +155,13 @@
       "when": 1767225600012,
       "tag": "0021_add_outro_narrative",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1767225600013,
+      "tag": "0022_add_boss_tokens",
+      "breakpoints": true
     }
   ]
 }

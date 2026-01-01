@@ -201,7 +201,8 @@
     "fire": "Fire Essence",
     "water": "Water",
     "wind": "Wind Essence",
-    "grain": "Grain"
+    "grain": "Grain",
+    "boss_token": "Boss Token"
   },
   "dev": {
     "title": "Dev Tools",

@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { MuscleCode } from "./schema";
+import { addResources } from "./resources";
 
 const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises } = schema;
 
@@ -38,6 +39,7 @@ export type DamageResult = {
   defeated: boolean;
   weaknessBonus: boolean;
   resistancePenalty: boolean;
+  bossTokensEarned: number; // Tokens earned when boss is defeated
 };
 
 // ------------------------------------------------------------
@@ -247,6 +249,10 @@ export async function dealDamage(
   const newHp = Math.max(0, fight.currentHp - damage);
   const defeated = newHp === 0;
 
+  // Calculate boss tokens if defeated (based on total HP)
+  // 1 token per 100 HP, minimum 1 token
+  const bossTokensEarned = defeated ? Math.max(1, Math.floor(fight.totalHp / 100)) : 0;
+
   // Update boss fight
   await db
     .update(bossFights)
@@ -267,6 +273,15 @@ export async function dealDamage(
     muscle: params.muscle ?? null,
   });
 
+  // Award boss tokens when defeated
+  if (defeated && bossTokensEarned > 0) {
+    await addResources([{ resource: "boss_token", amount: bossTokensEarned }], {
+      completedSessionId: params.completedSessionId,
+      reason: "Boss defeated",
+      transactionType: "earned",
+    });
+  }
+
   return {
     damage,
     isCritical,
@@ -274,6 +289,7 @@ export async function dealDamage(
     defeated,
     weaknessBonus,
     resistancePenalty,
+    bossTokensEarned,
   };
 }
 

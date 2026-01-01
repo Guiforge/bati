@@ -1,19 +1,3 @@
-import { Card } from "@/components/common/Card";
-import { PlanPreviewSheet } from "@/components/goals/PlanPreviewSheet";
-import {
-  createGoal,
-  getActiveGoal,
-  getGoalProgressHistory,
-  getOrCreateWeekProgress,
-  type Goal,
-  type GoalProgress,
-  goalTypeInfo,
-  updateGoalStatus,
-} from "@/db/goals";
-import { generatePlanForGoal, type PlannedSession, previewPlanForGoal } from "@/db/plans";
-import type { GoalStatusCode, GoalTypeCode } from "@/db/schema";
-import { useHaptics } from "@/hooks/useHaptics";
-import { useSettingsStore } from "@/stores/settings";
 import { ChevronLeft, Target } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -21,6 +5,22 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H4, Progress, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import { PlanPreviewSheet } from "@/components/goals/PlanPreviewSheet";
+import {
+  createGoal,
+  type Goal,
+  type GoalProgress,
+  getActiveGoal,
+  getGoalProgressHistory,
+  getOrCreateWeekProgress,
+  goalTypeInfo,
+  updateGoalStatus,
+} from "@/db/goals";
+import { generatePlanForGoal, type PlannedSession, previewPlanForGoal } from "@/db/plans";
+import type { GoalStatusCode, GoalTypeCode } from "@/db/schema";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useSettingsStore } from "@/stores/settings";
 
 const GOAL_TYPES: GoalTypeCode[] = ["strength", "endurance", "flexibility", "balanced"];
 const DAYS_OPTIONS = [2, 3, 4, 5, 6, 7];

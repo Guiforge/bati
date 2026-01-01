@@ -201,7 +201,8 @@
     "fire": "Essence de feu",
     "water": "Eau",
     "wind": "Essence de vent",
-    "grain": "Blé"
+    "grain": "Grain",
+    "boss_token": "Jeton de Boss"
   },
   "dev": {
     "title": "Outils dev",

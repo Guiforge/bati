@@ -1,5 +1,5 @@
-import { act, renderHook } from "@testing-library/react-hooks";
 import { useSessionStore } from "../stores/session";
+import type { Quest } from "@/db/quests";
 
 // Mock DB calls
 jest.mock("@/db", () => ({
@@ -22,143 +22,142 @@ jest.mock("@/db/bossFights", () => ({
     resistancePenalty: false,
   }),
 }));
+jest.mock("@/db/resources", () => ({
+  awardSessionResources: jest.fn().mockResolvedValue({
+    gold: 10,
+    wood: 5,
+    stone: 0,
+    fire: 0,
+    water: 0,
+    wind: 0,
+    grain: 0,
+  }),
+}));
+jest.mock("@/db/buildings", () => ({
+  processSessionBuildings: jest.fn().mockResolvedValue({
+    xpGained: [],
+    levelUps: [],
+    newUnlocks: [],
+  }),
+}));
 
 describe("useSessionStore", () => {
-  beforeEach(() => {
-    useSessionStore.setState({
-      quest: null,
-      status: "idle",
-      currentRoundIndex: 0,
-      currentExerciseIndex: 0,
-      results: [],
-    });
-  });
+  const store = useSessionStore;
 
-  const mockQuest: any = {
+  const mockQuest = {
     id: 1,
     rounds: 2,
     restSeconds: 30,
     exercises: [
       {
-        exercise: { id: 1, enName: "Pushups" },
+        exercise: { id: 1, enName: "Pushups", muscles: [] },
         target: { type: "reps", value: 10 },
       },
       {
-        exercise: { id: 2, enName: "Plank" },
+        exercise: { id: 2, enName: "Plank", muscles: [] },
         target: { type: "time", value: 60 },
       },
     ],
-  };
+  } as unknown as Quest;
+
+  beforeEach(() => {
+    store.setState({
+      quest: null,
+      status: "idle",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      results: [],
+      startTime: null,
+      totalPausedTime: 0,
+      lastPauseTimestamp: null,
+      timerStartTimestamp: null,
+      timerDuration: null,
+      prePauseStatus: null,
+      bossFight: null,
+      lastDamageResult: null,
+      adventureRunStepId: null,
+      userLevel: "medium",
+    });
+  });
 
   test("startSession initializes state correctly", () => {
-    const { result } = renderHook(() => useSessionStore());
+    store.getState().startSession(mockQuest, "medium");
 
-    act(() => {
-      result.current.startSession(mockQuest, "medium");
-    });
-
-    expect(result.current.status).toBe("countdown");
-    expect(result.current.quest).toEqual(mockQuest);
-    expect(result.current.currentRoundIndex).toBe(0);
-    expect(result.current.currentExerciseIndex).toBe(0);
-    expect(result.current.timerDuration).toBe(3); // Pre-start countdown
+    const state = store.getState();
+    expect(state.status).toBe("countdown");
+    expect(state.quest).toEqual(mockQuest);
+    expect(state.currentRoundIndex).toBe(0);
+    expect(state.currentExerciseIndex).toBe(0);
+    expect(state.timerDuration).toBe(3); // Pre-start countdown
   });
 
   test("finishCountdown transitions to running", () => {
-    const { result } = renderHook(() => useSessionStore());
+    store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
 
-    act(() => {
-      result.current.startSession(mockQuest, "medium");
-      result.current.finishCountdown();
-    });
-
-    expect(result.current.status).toBe("running");
+    expect(store.getState().status).toBe("running");
   });
 
-  test("completeExercise advances to next exercise", () => {
-    const { result } = renderHook(() => useSessionStore());
+  test("completeExercise advances to next exercise", async () => {
+    store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    await store.getState().completeExercise(10);
 
-    act(() => {
-      result.current.startSession(mockQuest, "medium");
-      result.current.finishCountdown();
-      result.current.completeExercise(10);
-    });
-
-    // Not finished, so we are either moving to next exercise or next round
-    // The store updates indices immediately for the next exercise
-    expect(result.current.currentExerciseIndex).toBe(1);
-    expect(result.current.results.length).toBe(1);
-    expect(result.current.results[0].result.value).toBe(10);
+    const state = store.getState();
+    expect(state.currentExerciseIndex).toBe(1);
+    expect(state.results.length).toBe(1);
+    expect(state.results[0].result.value).toBe(10);
   });
 
-  test("completeExercise triggers rest between rounds", () => {
-    const { result } = renderHook(() => useSessionStore());
+  test("completeExercise triggers rest between rounds", async () => {
+    store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    await store.getState().completeExercise(10);
+    await store.getState().completeExercise(60);
 
-    act(() => {
-      result.current.startSession(mockQuest, "medium");
-      result.current.finishCountdown();
-      // Complete Ex 1
-      result.current.completeExercise(10);
-      // Complete Ex 2 (End of Round 1)
-      result.current.completeExercise(60);
-    });
-
-    expect(result.current.status).toBe("resting");
-    expect(result.current.timerDuration).toBe(30); // Rest seconds
+    const state = store.getState();
+    expect(state.status).toBe("resting");
+    expect(state.timerDuration).toBe(30); // Rest seconds
   });
 
-  test("skipRest starts next round", () => {
-    const { result } = renderHook(() => useSessionStore());
+  test("skipRest starts next round", async () => {
+    store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    await store.getState().completeExercise(10);
+    await store.getState().completeExercise(60);
+    store.getState().skipRest();
 
-    act(() => {
-      result.current.startSession(mockQuest, "medium");
-      result.current.finishCountdown();
-      result.current.completeExercise(10);
-      result.current.completeExercise(60);
-      // Now resting...
-      result.current.skipRest();
-    });
-
-    expect(result.current.status).toBe("running");
-    expect(result.current.currentRoundIndex).toBe(1);
-    expect(result.current.currentExerciseIndex).toBe(0);
+    const state = store.getState();
+    expect(state.status).toBe("running");
+    expect(state.currentRoundIndex).toBe(1);
+    expect(state.currentExerciseIndex).toBe(0);
   });
 
   test("pauseSession and resumeSession work", () => {
-    const { result } = renderHook(() => useSessionStore());
+    store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    store.getState().pauseSession();
 
-    act(() => {
-      result.current.startSession(mockQuest, "medium");
-      result.current.finishCountdown();
-      result.current.pauseSession();
-    });
+    expect(store.getState().status).toBe("paused");
+    expect(store.getState().prePauseStatus).toBe("running");
 
-    expect(result.current.status).toBe("paused");
-    expect(result.current.prePauseStatus).toBe("running");
+    store.getState().resumeSession();
 
-    act(() => {
-      result.current.resumeSession();
-    });
-
-    expect(result.current.status).toBe("running");
+    expect(store.getState().status).toBe("running");
   });
 
-  test("updateLastResult clamps values to be > 0", () => {
-    const { result } = renderHook(() => useSessionStore());
+  test("updateLastResult clamps values to be > 0", async () => {
+    store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    await store.getState().completeExercise(10);
+    store.getState().updateLastResult(0);
 
-    act(() => {
-      result.current.startSession(mockQuest, "medium");
-      result.current.finishCountdown();
-      result.current.completeExercise(10);
-      result.current.updateLastResult(0);
-    });
+    let results = store.getState().results;
+    expect(results[results.length - 1]?.result.value).toBe(1);
 
-    expect(result.current.results[result.current.results.length - 1]?.result.value).toBe(1);
+    store.getState().updateLastResult(-5);
 
-    act(() => {
-      result.current.updateLastResult(-5);
-    });
-
-    expect(result.current.results[result.current.results.length - 1]?.result.value).toBe(1);
+    results = store.getState().results;
+    expect(results[results.length - 1]?.result.value).toBe(1);
   });
 });

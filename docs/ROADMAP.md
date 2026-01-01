@@ -366,6 +366,12 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Enraged state visual (animated when HP < 25%)
   - 📋 Defeat animation
   - 📋 Boss tokens reward
+- 📋 Multi-Phase Boss Images
+  - 📋 Boss image schema (array of phase images)
+  - 📋 Phase thresholds (100%, 75%, 50%, 25%)
+  - 📋 Dynamic boss image based on HP
+  - 📋 Transition animation between phases
+  - 📋 Enraged final phase visual
 
 ---
 
@@ -641,7 +647,30 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-### 6.6 Advanced RPG 💡
+### 6.6 Adventure Polish & Engagement 📋
+
+- 📋 UI Audit
+  - 📋 Consistency pass (colors, spacing, typography)
+  - 📋 Button style audit (all use AppButton with 3px borders)
+  - 📋 Card style audit (consistent border-radius, shadows)
+  - 📋 Empty state illustrations
+  - 📋 Loading state skeletons
+  - 📋 Error state designs
+- 📋 RPG/Game-like Enhancements
+  - 📋 Adventure intro cutscene (story text with background)
+  - 📋 Quest narrative before/after workout
+  - 📋 Boss taunt messages during fight
+  - 📋 Victory celebration animations
+  - 📋 Loot chest opening animation
+  - 📋 Level up fanfare
+- 📋 Engagement Features
+  - 📋 Daily quest rotation
+  - 📋 Weekly challenges
+  - 📋 Achievement badges display
+  - 📋 Leaderboard (optional, offline-friendly)
+  - 📋 Share workout summary
+
+### 6.7 Advanced RPG 💡
 
 - 💡 Seasons & events
   - 💡 Limited-time content
@@ -661,9 +690,16 @@ This document tracks all features, their implementation status, and future plans
 ### Code Quality 📋
 
 - 📋 Test coverage
-  - ✅ Database tests
+  - ✅ Database tests (20+ test suites, 96+ tests)
   - 📋 Component tests
   - 📋 E2E tests
+    - 📋 Detox or Maestro setup
+    - 📋 Onboarding flow test
+    - 📋 Complete workout session test
+    - 📋 Quest browsing and selection test
+    - 📋 Adventure progression test
+    - 📋 Boss fight completion test
+    - 📋 Settings and language switch test
 - 📋 Type safety
   - ✅ TypeScript strict mode
   - 📋 Zod schema validation
@@ -816,8 +852,88 @@ After each major feature phase, complete these steps before moving on:
 | Phase 5: Polish | ⚠️ Minimal | ~5% |
 | ↳ Quality Checkpoint | 📋 | - |
 | Phase 6: Future | 💡 Ideas | 0% |
+| Phase 7: Release & Distribution | 📋 Planned | 0% |
 
 **Next Priority:** Phase 2 - Resource System & Village View
+
+---
+
+## Phase 7: Release & Distribution 📋
+
+### 7.1 Build Optimization 📋
+
+- 📋 Bundle size analysis
+  - 📋 Tree shaking audit
+  - 📋 Unused dependency removal
+  - 📋 Code splitting
+- 📋 Asset optimization
+  - 📋 Image compression (WebP/AVIF)
+  - 📋 Font subsetting
+  - 📋 Splash screen optimization
+- 📋 Performance profiling
+  - 📋 Startup time optimization
+  - 📋 Memory usage audit
+  - 📋 Animation frame rate check
+
+### 7.2 Android Build 📋
+
+- 📋 EAS Build setup
+  - 📋 eas.json configuration
+  - 📋 Development build profile
+  - 📋 Preview build profile
+  - 📋 Production build profile
+- 📋 Android-specific
+  - 📋 App signing (keystore)
+  - 📋 ProGuard/R8 optimization
+  - 📋 Adaptive icons
+  - 📋 Android 12+ splash screen
+- 📋 Play Store preparation
+  - 📋 App listing assets
+  - 📋 Privacy policy
+  - 📋 Content rating
+  - 📋 Internal testing track
+  - 📋 Closed beta
+  - 📋 Production release
+
+### 7.3 iOS Build 📋
+
+- 📋 EAS Build setup
+  - 📋 Apple Developer account
+  - 📋 Provisioning profiles
+  - 📋 Certificates management
+- 📋 iOS-specific
+  - 📋 App icons (all sizes)
+  - 📋 Launch screen
+  - 📋 Permissions descriptions (NSCameraUsageDescription, etc.)
+  - 📋 iOS 15+ compatibility
+- 📋 App Store preparation
+  - 📋 App Store Connect setup
+  - 📋 Screenshots (all device sizes)
+  - 📋 App preview videos
+  - 📋 App description and keywords
+  - 📋 TestFlight beta
+  - 📋 App Review submission
+
+### 7.4 OTA Updates 📋
+
+- 📋 EAS Update setup
+  - 📋 Update channels (development, preview, production)
+  - 📋 Rollback strategy
+- 📋 Update policies
+  - 📋 Critical updates (force update)
+  - 📋 Optional updates (prompt)
+  - 📋 Silent updates (background)
+
+### 7.5 Release Management 📋
+
+- 📋 Version management
+  - 📋 Semantic versioning
+  - 📋 Changelog generation
+  - 📋 Release notes
+- 📋 CI/CD pipeline
+  - 📋 GitHub Actions for builds
+  - 📋 Automated testing before build
+  - 📋 Automated store submission
 
 ---
 

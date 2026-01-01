@@ -464,7 +464,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 4: Statistics & Progress ⚠️ (55% Complete)
+## Phase 4: Statistics & Progress ⚠️ (65% Complete)
 
 ### 4.1 Stats Dashboard ⚠️
 
@@ -503,7 +503,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ SuggestedQuestsCard component with quest recommendations
   - ✅ Muscle chips showing which weak areas each quest targets
 
-### 4.4 Personal Records ⚠️
+### 4.4 Personal Records ✅
 
 - ✅ Record types
   - ✅ Longest session
@@ -513,8 +513,9 @@ This document tracks all features, their implementation status, and future plans
 - ✅ Record tracking
   - ✅ checkForNewRecords() to detect PRs on completion
   - ✅ getPersonalRecordsSummary() for overview
-- ⚠️ Record celebration
-  - 📋 PR notification popup on victory screen
+- ✅ Record celebration
+  - ✅ NewRecordsBadge on victory screen with pulse animation
+  - ✅ PR displayed before navigation
   - 📋 PR badge in history
 - ✅ Record display
   - ✅ PersonalRecordsCard in Journal Stats tab

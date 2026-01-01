@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "./client";
-import type { MuscleCode } from "./schema";
 import { addResources } from "./resources";
+import type { MuscleCode } from "./schema";
 
 const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises } = schema;
 

@@ -410,14 +410,14 @@ export const bossDamageLog = sqliteTable(
 
 // Resource codes mapped to muscle groups + universal currency
 export const resourceCodes = [
-	"gold", // Universal currency (from all workouts)
-	"wood", // Arms exercises
-	"stone", // Back exercises
-	"fire", // Chest exercises
-	"water", // Abs exercises
-	"wind", // Shoulder exercises
-	"grain", // Legs/calf exercises
-	"boss_token", // From defeating bosses
+  "gold", // Universal currency (from all workouts)
+  "wood", // Arms exercises
+  "stone", // Back exercises
+  "fire", // Chest exercises
+  "water", // Abs exercises
+  "wind", // Shoulder exercises
+  "grain", // Legs/calf exercises
+  "boss_token", // From defeating bosses
 ] as const;
 export type ResourceCode = (typeof resourceCodes)[number];
 

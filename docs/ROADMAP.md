@@ -258,7 +258,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 2: Village & Economy 🚧 (87% Complete)
+## Phase 2: Village & Economy 🚧 (95% Complete)
 
 ### 2.1 Resource System ✅
 
@@ -279,10 +279,10 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Muscle-to-resource mapping
   - ✅ Difficulty multipliers
   - ✅ Gold calculation from duration
-- ⚠️ Resource UI
+- ✅ Resource UI
   - ✅ Resource display in header (ResourceHeader component)
   - ✅ Victory screen loot display (LootDisplay component)
-  - 📋 Resource animations
+  - ✅ Resource animations (staggered loot reveal in LootDisplay)
 
 ### 2.2 Village System �
 
@@ -315,12 +315,12 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Village card on Home screen
   - 📋 Isometric/2.5D layout (future enhancement)
   - 📋 Day/night cycle (optional)
-- ⚠️ Village interactions
+- ✅ Village interactions
   - ✅ Tap building for details (modal with level, XP progress, tier)
   - ✅ Upgrade preview
-  - 📋 Building unlock animations
+  - ✅ Building unlock animations (ConstructionAnimation in VictoryView)
 
-### 2.3 Flame/Streak System ⚠️
+### 2.3 Flame/Streak System ✅
 
 - ✅ Streak calculation (from completed sessions)
   - ✅ StreakBadge component on Home screen
@@ -339,9 +339,9 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Persisted streak count (db/streaks.ts with cache in userPreferences)
   - ✅ Last workout date cache
   - ✅ updateStreakAfterSession called in saveSession
-- 📋 Flame visual
-  - 📋 Flame in village center
-  - 📋 Flame animations
+- ✅ Flame visual
+  - ✅ FlameFlicker component in VillageScreen
+  - ✅ Animated flame with pulsing/scaling effects
 - ✅ Streak warnings
   - ✅ "Don't lose your flame" reminder (via smart notifications at 8 PM)
 
@@ -635,12 +635,6 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Feedback buttons (Easy, Good, Hard)
   - ✅ Pause overlay buttons (Resume, Restart, Quit)
   - ✅ Card components (auto accessibilityRole="button" when pressable)
-  - 📋 VoiceOver full audit
-  - 📋 TalkBack support
-- 📋 Visual accessibility
-  - 📋 Dynamic type support
-  - 📋 High contrast mode
-  - 📋 Colorblind modes
 - ✅ Motor accessibility
   - ✅ Large touch targets (44pt+)
   - ✅ Reduced motion option (useReducedMotion hook + settings toggle)

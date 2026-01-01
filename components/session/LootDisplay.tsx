@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
@@ -42,8 +43,40 @@ type Props = {
   loot: ResourceLoot;
 };
 
+// Stagger delay per item in ms
+const STAGGER_DELAY = 120;
+
 export function LootDisplay({ loot }: Props) {
   const { t } = useTranslation();
+  const [visibleCount, setVisibleCount] = useState(0);
+
+  // Combine all items for indexing
+  const allItems = useMemo(() => {
+    const items: Array<{
+      key: string;
+      resource: ResourceCode;
+      amount: number;
+    }> = [];
+
+    if (loot.gold > 0) {
+      items.push({ key: "gold", resource: "gold", amount: loot.gold });
+    }
+    for (const m of loot.materials) {
+      items.push({ key: m.resource, resource: m.resource, amount: m.amount });
+    }
+    return items;
+  }, [loot.gold, loot.materials]);
+
+  const totalItems = allItems.length;
+
+  // Staggered reveal
+  useEffect(() => {
+    if (visibleCount >= totalItems) return;
+    const timer = setTimeout(() => {
+      setVisibleCount((c) => c + 1);
+    }, STAGGER_DELAY);
+    return () => clearTimeout(timer);
+  }, [visibleCount, totalItems]);
 
   // Combine gold and materials for display
   const hasLoot = loot.gold > 0 || loot.materials.length > 0;
@@ -64,50 +97,34 @@ export function LootDisplay({ loot }: Props) {
       </Text>
 
       <XStack gap="$3" justify="center" flexWrap="wrap">
-        {/* Gold always first */}
-        {loot.gold > 0 && (
-          <YStack
-            items="center"
-            gap="$1"
-            bg="$pastelYellow"
-            p="$3"
-            rounded="$4"
-            borderWidth={2}
-            borderColor="$color"
-            minW={80}
-          >
-            <Text fontSize={28}>{RESOURCE_EMOJI.gold}</Text>
-            <Text fontWeight="900" fontSize={18} color="$color">
-              +{loot.gold}
-            </Text>
-            <Text fontSize={10} fontWeight="700" color="$color" opacity={0.7}>
-              {t("resources.gold")}
-            </Text>
-          </YStack>
-        )}
-
-        {/* Materials */}
-        {loot.materials.map(({ resource, amount }) => (
-          <YStack
-            key={resource}
-            items="center"
-            gap="$1"
-            bg={getResourceBgColor(resource)}
-            p="$3"
-            rounded="$4"
-            borderWidth={2}
-            borderColor="$color"
-            minW={80}
-          >
-            <Text fontSize={28}>{RESOURCE_EMOJI[resource]}</Text>
-            <Text fontWeight="900" fontSize={18} color="$color">
-              +{amount}
-            </Text>
-            <Text fontSize={10} fontWeight="700" color="$color" opacity={0.7}>
-              {t(`resources.${resource}`)}
-            </Text>
-          </YStack>
-        ))}
+        {allItems.map((item, index) => {
+          const isVisible = index < visibleCount;
+          return (
+            <YStack
+              key={item.key}
+              items="center"
+              gap="$1"
+              bg={getResourceBgColor(item.resource)}
+              p="$3"
+              rounded="$4"
+              borderWidth={2}
+              borderColor="$color"
+              minW={80}
+              animation="bouncy"
+              opacity={isVisible ? 1 : 0}
+              scale={isVisible ? 1 : 0.3}
+              y={isVisible ? 0 : 20}
+            >
+              <Text fontSize={28}>{RESOURCE_EMOJI[item.resource]}</Text>
+              <Text fontWeight="900" fontSize={18} color="$color">
+                +{item.amount}
+              </Text>
+              <Text fontSize={10} fontWeight="700" color="$color" opacity={0.7}>
+                {t(`resources.${item.resource}`)}
+              </Text>
+            </YStack>
+          );
+        })}
       </XStack>
     </Card>
   );

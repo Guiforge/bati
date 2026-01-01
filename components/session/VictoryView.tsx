@@ -49,6 +49,7 @@ export function VictoryView() {
     saveSession,
     quitSession,
     adventureRunStepId,
+    bossFight,
   } = useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
@@ -83,6 +84,9 @@ export function VictoryView() {
     buildingType: BuildingCode;
     level?: number;
   } | null>(null);
+
+  // Detect boss defeat (HP reduced to 0 or below)
+  const isBossDefeat = Boolean(bossFight && bossFight.currentHp <= 0);
 
   // Calculate duration for display
   // Note: saveSession recalculates this accurately based on DB timestamp logic,
@@ -281,7 +285,7 @@ export function VictoryView() {
       >
         <Card bg={questBg} width="100%" maxW={520} mt="$6">
           <YStack items="center" gap="$3">
-            <Text fontSize={72}>🏆</Text>
+            <Text fontSize={72}>{isBossDefeat ? "⚔️" : "🏆"}</Text>
             <YStack items="center" gap="$1">
               <Text
                 fontWeight="900"
@@ -291,7 +295,7 @@ export function VictoryView() {
                 opacity={0.65}
                 style={{ textAlign: "center" }}
               >
-                {t("session.victory_title")}
+                {isBossDefeat ? t("boss.victory_title") : t("session.victory_title")}
               </Text>
               <H1
                 fontWeight="900"
@@ -302,6 +306,17 @@ export function VictoryView() {
               >
                 {questTitle}
               </H1>
+              {isBossDefeat && (
+                <Text
+                  fontSize={16}
+                  color="$color"
+                  opacity={0.7}
+                  fontStyle="italic"
+                  style={{ textAlign: "center" }}
+                >
+                  {t("boss.victory_subtitle")}
+                </Text>
+              )}
             </YStack>
           </YStack>
         </Card>
@@ -446,12 +461,35 @@ export function VictoryView() {
         </AppButton>
       </ScrollView>
 
+      {/* Confetti - extra dramatic for boss defeats */}
       <ConfettiCannon
-        count={200}
+        count={isBossDefeat ? 400 : 200}
         origin={{ x: width / 2, y: -20 }}
         autoStart={true}
         fadeOut={true}
+        explosionSpeed={isBossDefeat ? 500 : 350}
+        fallSpeed={isBossDefeat ? 2500 : 3000}
       />
+
+      {/* Second burst from sides for boss defeat */}
+      {isBossDefeat && (
+        <>
+          <ConfettiCannon
+            count={150}
+            origin={{ x: 0, y: 200 }}
+            autoStart={true}
+            fadeOut={true}
+            explosionSpeed={400}
+          />
+          <ConfettiCannon
+            count={150}
+            origin={{ x: width, y: 200 }}
+            autoStart={true}
+            fadeOut={true}
+            explosionSpeed={400}
+          />
+        </>
+      )}
 
       <NarrativeModal
         visible={showOutroNarrative}

@@ -367,6 +367,9 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Damage numbers during session (damage popup with crit/weakness indicators)
   - ✅ Enraged state visual (animated when HP < 25%)
   - 📋 Defeat animation
+  - ✅ Enhanced confetti (triple cannon burst from top + sides)
+  - ✅ Boss defeat title with subtitle ("The beast has fallen!")
+  - ✅ Unique icon (⚔️ vs 🏆)
   - ✅ Boss tokens reward
 - 📋 Multi-Phase Boss Images
   - 📋 Boss image schema (array of phase images)

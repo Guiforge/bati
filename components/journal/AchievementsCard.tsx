@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Skeleton } from "@/components/common/Skeleton";
 import {
   type AchievementProgress,
   getAchievementStats,
@@ -60,11 +61,22 @@ export function AchievementsCard() {
 
   if (loading) {
     return (
-      <Card>
-        <YStack items="center" py="$4">
-          <Text color="$color" opacity={0.6}>
-            {t("common.loading")}
-          </Text>
+      <Card gap="$4">
+        <XStack items="center" gap="$3">
+          <Skeleton width={44} height={44} radius={22} />
+          <YStack flex={1} gap="$2">
+            <Skeleton height={18} width="50%" />
+            <Skeleton height={8} width="100%" />
+          </YStack>
+        </XStack>
+        <XStack gap="$2">
+          <Skeleton height={28} width={50} radius={14} />
+          <Skeleton height={28} width={70} radius={14} />
+          <Skeleton height={28} width={60} radius={14} />
+        </XStack>
+        <YStack gap="$3">
+          <Skeleton height={60} width="100%" radius={12} />
+          <Skeleton height={60} width="100%" radius={12} />
         </YStack>
       </Card>
     );

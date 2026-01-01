@@ -4,6 +4,7 @@ import { useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Skeleton } from "@/components/common/Skeleton";
 import type { SessionSummary } from "@/db";
 import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
 import { useSettingsStore } from "@/stores/settings";
@@ -69,12 +70,17 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   if (loading) {
     return (
       <Card>
-        <XStack items="center" justify="center" gap="$3" py="$4">
-          <Text fontSize={24}>📊</Text>
-          <Text fontWeight="900" fontSize={14} color="$color">
-            {t("chart.loading")}
-          </Text>
-        </XStack>
+        <YStack gap="$3">
+          <Skeleton height={16} width="40%" />
+          <XStack gap="$2" items="flex-end" justify="center" pt="$4">
+            <Skeleton width={24} height={60} radius={4} />
+            <Skeleton width={24} height={90} radius={4} />
+            <Skeleton width={24} height={45} radius={4} />
+            <Skeleton width={24} height={75} radius={4} />
+            <Skeleton width={24} height={100} radius={4} />
+            <Skeleton width={24} height={55} radius={4} />
+          </XStack>
+        </YStack>
       </Card>
     );
   }

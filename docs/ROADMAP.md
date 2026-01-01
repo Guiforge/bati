@@ -257,7 +257,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 2: Village & Economy � (10% Complete)
+## Phase 2: Village & Economy 🚧 (65% Complete)
 
 ### 2.1 Resource System ✅
 
@@ -319,17 +319,16 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Upgrade preview
   - 📋 Building unlock animations
 
-### 2.3 Flame/Streak System 📋
+### 2.3 Flame/Streak System ⚠️
 
-- ⚠️ Streak calculation (exists in stats, not persisted)
-- 📋 Streak schema
-  - 📋 Current streak count (persisted)
-  - 📋 Best streak record
-  - 📋 Last workout date
-- 📋 Streak logic
-  - 📋 Increment on daily workout
-  - 📋 Reset on missed day
-  - 📋 Grace period (optional)
+- ✅ Streak calculation (from completed sessions)
+  - ✅ StreakBadge component on Home screen
+  - ✅ Current streak counting (consecutive days)
+  - ✅ Best streak tracking
+  - ✅ Active/inactive streak detection
+- 📋 Streak schema (optimization)
+  - 📋 Persisted streak count (avoid recalculation)
+  - 📋 Last workout date cache
 - 📋 Streak milestones
   - 📋 3 days: Spark
   - 📋 7 days: Ember
@@ -343,24 +342,25 @@ This document tracks all features, their implementation status, and future plans
 - 📋 Streak warnings
   - 📋 "Don't lose your flame" reminder
 
-### 2.4 Boss HP System 📋
+### 2.4 Boss HP System ✅
 
-- ⚠️ Boss kind label/badge (implemented)
-- 📋 Boss fight schema
-  - 📋 Total HP
-  - 📋 Current HP
-  - 📋 Weakness muscle
-  - 📋 Resistance muscle
-- 📋 Damage calculation
-  - 📋 Base damage from reps/time
-  - 📋 Weakness bonus (1.5x)
-  - 📋 Resistance penalty (0.5x)
-  - 📋 Critical hits (exceed target = chance)
-- 📋 Boss fight log
-  - 📋 Damage per session
-  - 📋 Critical hit tracking
-- 📋 Boss UI updates
-  - 📋 HP bar display
+- ✅ Boss kind label/badge (implemented)
+- ✅ Boss fight schema (db/bossFights.ts)
+  - ✅ Total HP
+  - ✅ Current HP
+  - ✅ Weakness muscle
+  - ✅ Resistance muscle
+- ✅ Damage calculation
+  - ✅ Base damage from reps/time
+  - ✅ Weakness bonus (1.5x)
+  - ✅ Resistance penalty (0.5x)
+  - ✅ Critical hits (exceed target = 30% chance, 2x damage)
+- ✅ Boss fight log
+  - ✅ Damage per session
+  - ✅ Critical hit tracking
+- ⚠️ Boss UI updates
+  - ✅ HP bar display
+  - ✅ Damage result in session store
   - 📋 Damage numbers during session
   - 📋 Defeat animation
   - 📋 Boss tokens reward

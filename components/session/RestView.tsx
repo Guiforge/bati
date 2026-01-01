@@ -1,13 +1,13 @@
+import { Minus, Plus } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { Minus, Plus } from "@tamagui/lucide-icons";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "./BossHpBar";
 
 export function RestView() {
@@ -87,10 +87,10 @@ export function RestView() {
           lastDamage={
             lastDamageResult
               ? {
-                damage: lastDamageResult.damage,
-                isCritical: lastDamageResult.isCritical,
-                weaknessBonus: lastDamageResult.weaknessBonus,
-              }
+                  damage: lastDamageResult.damage,
+                  isCritical: lastDamageResult.isCritical,
+                  weaknessBonus: lastDamageResult.weaknessBonus,
+                }
               : null
           }
         />

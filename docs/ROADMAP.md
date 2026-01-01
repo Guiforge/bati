@@ -672,13 +672,13 @@ This document tracks all features, their implementation status, and future plans
 
 ### 6.6 Adventure Polish & Engagement ✅�
 
-- ⚠️ UI Audit
+- ✅ UI Audit
   - 📋 Consistency pass (colors, spacing, typography)
   - ✅ Button style audit (all use AppButton with 3px borders)
   - ✅ Card style audit (consistent border-radius, use Card component defaults)
   - ✅ Empty state component (EmptyState with emoji, title, subtitle)
   - ✅ Loading state skeletons (QuestCarousel, VillageScreen)
-  - 📋 Error state designs
+  - ✅ Error state designs (InlineError with emoji and consistent styling)
 - 🚧 RPG/Game-like Enhancements
   - ✅ Adventure intro cutscene (NarrativeModal implemented)
   - ✅ Quest narrative before/after workout (Intro/Outro narratives)

@@ -9,6 +9,7 @@ import {
   Sparkles,
   User,
   Vibrate,
+  Volume2,
   X,
 } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
@@ -23,7 +24,7 @@ import { AVATARS } from "@/constants/avatars";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useSettingsStore } from "@/stores/settings";
 
-type MenuStep = "main" | "language" | "avatar" | "theme" | "haptics" | "motion" | "notifications";
+type MenuStep = "main" | "language" | "avatar" | "theme" | "haptics" | "sound" | "motion" | "notifications";
 
 export function HomeSettingsMenu() {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ export function HomeSettingsMenu() {
     avatarId,
     theme,
     hapticsEnabled,
+    soundEnabled,
     reducedMotion,
     notificationsEnabled,
     notificationTime,
@@ -44,6 +46,7 @@ export function HomeSettingsMenu() {
     setAvatarId,
     setTheme,
     setHapticsEnabled,
+    setSoundEnabled,
     setReducedMotion,
     setNotificationsEnabled,
     setNotificationTime,
@@ -164,6 +167,12 @@ export function HomeSettingsMenu() {
         label={t("settings.haptics_title")}
         onPress={() => setStep("haptics")}
         value={hapticsEnabled ? t("settings.haptics_on_short") : t("settings.haptics_off_short")}
+      />
+      <MenuItem
+        icon={<Volume2 size={24} color="$color" />}
+        label={t("settings.sound_title")}
+        onPress={() => setStep("sound")}
+        value={soundEnabled ? t("settings.sound_on") : t("settings.sound_off")}
       />
       <MenuItem
         icon={<Bell size={24} color="$color" />}
@@ -293,6 +302,21 @@ export function HomeSettingsMenu() {
     </YStack>
   );
 
+  const renderSound = () => (
+    <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
+      <OptionItem
+        active={soundEnabled}
+        label={`${t("settings.sound_on")} 🔊`}
+        onPress={() => setSoundEnabled(true)}
+      />
+      <OptionItem
+        active={!soundEnabled}
+        label={`${t("settings.sound_off")} 🔇`}
+        onPress={() => setSoundEnabled(false)}
+      />
+    </YStack>
+  );
+
   const renderMotion = () => (
     <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
       <OptionItem
@@ -372,6 +396,8 @@ export function HomeSettingsMenu() {
         return t("theme");
       case "haptics":
         return t("settings.haptics_title");
+      case "sound":
+        return t("settings.sound_title");
       case "notifications":
         return t("settings.notifications_title", "Notifications");
       case "motion":
@@ -465,6 +491,7 @@ export function HomeSettingsMenu() {
                 {step === "avatar" && renderAvatar()}
                 {step === "theme" && renderTheme()}
                 {step === "haptics" && renderHaptics()}
+                {step === "sound" && renderSound()}
                 {step === "notifications" && renderNotifications()}
                 {step === "motion" && renderMotion()}
               </YStack>

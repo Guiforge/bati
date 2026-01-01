@@ -1,4 +1,4 @@
-import { Map as MapIcon, Sparkles } from "@tamagui/lucide-icons";
+import { Castle, Map as MapIcon, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -179,6 +179,33 @@ export function Home() {
                 {t("quests.see_all", "See all")} →
               </Text>
             </XStack>
+
+            <Card bg="$pastelOrange" onPress={() => router.push("/village" as never)}>
+              <XStack items="center" justify="space-between" gap="$3">
+                <YStack flex={1} gap="$1">
+                  <XStack items="center" gap="$2">
+                    <Castle size={18} color="$color" />
+                    <Text fontWeight="900" fontSize={16} color="$color">
+                      {t("village.home_card_title", "Your Village")}
+                    </Text>
+                  </XStack>
+                  <Paragraph color="$color" opacity={0.7} size="$3">
+                    {t("village.home_card_subtitle", "Build your empire")}
+                  </Paragraph>
+                </YStack>
+
+                <AppButton
+                  fullWidth={false}
+                  variant="secondary"
+                  onPress={() => router.push("/village" as never)}
+                  height={44}
+                  px="$3"
+                  fontSize={14}
+                >
+                  {t("village.view_village", "View")} →
+                </AppButton>
+              </XStack>
+            </Card>
 
             <Card bg="$pastelPurple" onPress={() => router.push("/adventures" as never)}>
               <XStack items="center" justify="space-between" gap="$3">

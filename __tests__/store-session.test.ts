@@ -1,5 +1,5 @@
-import { useSessionStore } from "../stores/session";
 import type { Quest } from "@/db/quests";
+import { useSessionStore } from "../stores/session";
 
 // Mock DB calls
 jest.mock("@/db", () => ({
@@ -71,7 +71,7 @@ describe("useSessionStore", () => {
       totalPausedTime: 0,
       lastPauseTimestamp: null,
       timerStartTimestamp: null,
-      timerDuration: null,
+      timerDuration: undefined,
       prePauseStatus: null,
       bossFight: null,
       lastDamageResult: null,

@@ -238,5 +238,18 @@
     "error": "Oops!",
     "retry": "Retry",
     "go_back": "Go back"
+  },
+  "village": {
+    "title": "My Village",
+    "stats_title": "Village Progress",
+    "buildings_unlocked": "Buildings Unlocked",
+    "highest_level": "Highest Building Level",
+    "prestige": "Prestige Score",
+    "level": "Lv.",
+    "max_level": "Max Level",
+    "locked": "Locked",
+    "home_card_title": "Your Village",
+    "home_card_subtitle": "Build your empire",
+    "view_village": "View Village"
   }
 }

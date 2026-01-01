@@ -7,6 +7,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import {
   getScheduledSessionsForWeek,
+  rescheduleSession,
   type ScheduledSessionWithQuest,
   skipScheduledSession,
 } from "@/db/scheduling";
@@ -49,6 +50,16 @@ export function WeeklyCalendar() {
       await loadSessions();
     } catch (e) {
       console.error("Failed to skip session:", e);
+    }
+  };
+
+  const handleReschedule = async (sessionId: number, currentDate: Date) => {
+    try {
+      const nextDay = addDays(new Date(currentDate), 1);
+      await rescheduleSession(sessionId, nextDay);
+      await loadSessions();
+    } catch (e) {
+      console.error("Failed to reschedule session:", e);
     }
   };
 
@@ -121,8 +132,19 @@ export function WeeklyCalendar() {
                   )}
                 </XStack>
                 {session.status === "pending" && (
-                  <XStack justify="flex-end" mt="$2">
-                    <AppButton variant="secondary" size="$2" onPress={() => handleSkip(session.id)}>
+                  <XStack justify="flex-end" mt="$2" gap="$2">
+                    <AppButton
+                      variant="secondary"
+                      size="$2"
+                      onPress={() => handleReschedule(session.id, session.scheduledDate)}
+                    >
+                      {t("scheduling.reschedule_tomorrow", "Move +1 Day")}
+                    </AppButton>
+                    <AppButton
+                      variant="secondary"
+                      size="$2"
+                      onPress={() => handleSkip(session.id)}
+                    >
                       {t("scheduling.skip", "Skip")}
                     </AppButton>
                   </XStack>

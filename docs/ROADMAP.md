@@ -696,8 +696,6 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Leaderboard (optional, offline-friendly)
   - ✅ Share workout summary
 
-
-
 ---
 
 ## Technical Debt & Improvements 📋

@@ -6,7 +6,7 @@ export function useSound() {
   const { soundEnabled } = useSettingsStore();
   const [sound, setSound] = useState<Audio.Sound>();
 
-  async function playSound(soundFile: any) {
+  async function playSound(soundFile: unknown) {
     if (!soundEnabled || !soundFile) return;
 
     try {

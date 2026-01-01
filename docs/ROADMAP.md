@@ -664,7 +664,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-### 6.6 Adventure Polish & Engagement 📋
+### 6.6 Adventure Polish & Engagement �
 
 - 📋 UI Audit
   - 📋 Consistency pass (colors, spacing, typography)
@@ -673,11 +673,11 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Empty state illustrations
   - 📋 Loading state skeletons
   - 📋 Error state designs
-- 📋 RPG/Game-like Enhancements
-  - 📋 Adventure intro cutscene (story text with background)
-  - 📋 Quest narrative before/after workout
+- 🚧 RPG/Game-like Enhancements
+  - ✅ Adventure intro cutscene (NarrativeModal implemented)
+  - ✅ Quest narrative before/after workout (Intro/Outro narratives)
   - 📋 Boss taunt messages during fight
-  - 📋 Victory celebration animations
+  - 📋 Victory celebration animations (Confetti done, need more?)
   - 📋 Loot chest opening animation
   - 📋 Level up fanfare
 - 📋 Engagement Features

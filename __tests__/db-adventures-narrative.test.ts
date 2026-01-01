@@ -49,7 +49,7 @@ describe("db/adventures-narrative", () => {
       .returning();
 
     // 2. Create a step with narratives
-    const [step] = await db
+    await db
       .insert(schema.adventureSteps)
       .values({
         adventureId: adventure.id,

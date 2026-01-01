@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { BackHandler } from "react-native";
 import { YStack } from "tamagui";
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
+import { BossTauntOverlay } from "@/components/session/BossTauntOverlay";
 import { CountdownView } from "@/components/session/CountdownView";
 import { PausedOverlay } from "@/components/session/PausedOverlay";
 import { RestView } from "@/components/session/RestView";
@@ -42,6 +43,7 @@ export default function SessionScreen() {
 
   return (
     <YStack flex={1} bg="$background">
+      <BossTauntOverlay />
       {displayStatus === "countdown" && <CountdownView />}
       {displayStatus === "running" && <ActiveExerciseView />}
       {displayStatus === "resting" && <RestView />}

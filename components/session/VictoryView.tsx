@@ -55,7 +55,7 @@ export function VictoryView() {
 
   useEffect(() => {
     playSound(SOUNDS.victory);
-  }, []);
+  }, [playSound]);
 
   useEffect(() => {
     if (adventureRunStepId) {

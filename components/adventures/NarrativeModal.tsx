@@ -1,8 +1,7 @@
 import { BlurView } from "expo-blur";
-import React from "react";
 import { useTranslation } from "react-i18next";
 import { Modal } from "react-native";
-import { Button, Card, H3, Paragraph, ScrollView, useTheme, YStack } from "tamagui";
+import { Button, Card, H3, Paragraph, ScrollView, YStack } from "tamagui";
 
 interface NarrativeModalProps {
   visible: boolean;
@@ -20,15 +19,14 @@ export function NarrativeModal({
   type = "intro",
 }: NarrativeModalProps) {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <BlurView intensity={80} tint="dark" style={{ flex: 1 }}>
-        <YStack flex={1} justifyContent="center" alignItems="center" p="$4">
+        <YStack flex={1} justify="center" items="center" p="$4">
           <Card
             bordered
-            elevated
+            elevate
             width="100%"
             maxWidth={500}
             maxHeight="80%"
@@ -39,15 +37,15 @@ export function NarrativeModal({
             overflow="hidden"
           >
             {/* Header */}
-            <YStack bg="$primary" p="$4" ai="center">
-              <H3 color="white" textAlign="center">
+            <YStack bg="$primary" p="$4" items="center">
+              <H3 color="white" style={{ textAlign: "center" }}>
                 {title}
               </H3>
             </YStack>
 
             {/* Content */}
             <ScrollView p="$5">
-              <Paragraph size="$5" lineHeight={28} textAlign="left" color="$color">
+              <Paragraph size="$5" lineHeight={28} style={{ textAlign: "left" }} color="$color">
                 {text}
               </Paragraph>
             </ScrollView>

@@ -1,3 +1,10 @@
+import { useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView, useWindowDimensions } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { Card } from "@/components/common/Card";
 import { useToast } from "@/components/common/Toast";
@@ -14,16 +21,10 @@ import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ScrollView, useWindowDimensions } from "react-native";
-import ConfettiCannon from "react-native-confetti-cannon";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { LootChest } from "./LootChest";
 import { NewRecordsBadge } from "./NewRecordsBadge";
 import { ProgressionChart } from "./ProgressionChart";
+import { LevelUpModal } from "./LevelUpModal";
 
 type Feedback = "easy" | "good" | "hard" | null;
 
@@ -52,6 +53,9 @@ export function VictoryView() {
   const [hasSaved, setHasSaved] = useState(false);
   const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
+  const [levelUpInfo, setLevelUpInfo] = useState<{ oldLevel: number; newLevel: number } | null>(
+    null,
+  );
 
   useEffect(() => {
     playSound(SOUNDS.victory);
@@ -128,7 +132,16 @@ export function VictoryView() {
       setIsSaving(true);
       // Pass feedback as FeedbackCode or null
       const feedbackCode = feedback as "easy" | "good" | "hard" | null;
-      const { campaign, newRecords: records, buildings } = await saveSession(feedbackCode);
+      const {
+        campaign,
+        newRecords: records,
+        buildings,
+        levelUp,
+      } = await saveSession(feedbackCode);
+
+      if (levelUp) {
+        setLevelUpInfo(levelUp);
+      }
 
       // Queue up building animations
       const queue: typeof constructionQueue = [];
@@ -205,6 +218,13 @@ export function VictoryView() {
 
   return (
     <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16}>
+      {levelUpInfo && (
+        <LevelUpModal
+          visible={!!levelUpInfo}
+          newLevel={levelUpInfo.newLevel}
+          onClose={() => setLevelUpInfo(null)}
+        />
+      )}
       {currentConstruction && (
         <ConstructionAnimation
           visible={!!currentConstruction}

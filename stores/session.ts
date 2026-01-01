@@ -17,8 +17,7 @@ import {
 } from "@/db/completed";
 import { recordSessionForGoal } from "@/db/goals";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
-import { preferences } from "@/db/preferences";
-import type { Quest } from "@/db/quests";
+import { preferences } from "@/db/preferences";import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";import type { Quest } from "@/db/quests";
 import {
   awardSessionResources,
   type ExerciseResultForResources,
@@ -94,6 +93,7 @@ interface SessionState {
       nextRunStepId: number | null;
       nextQuestId: number | null;
     } | null;
+    levelUp: { oldLevel: number; newLevel: number } | null;
   }>;
 }
 
@@ -383,6 +383,10 @@ export const useSessionStore = create<SessionState>()(
       const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
       const xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
+      // Calculate level before saving (current state)
+      const oldTotalXp = await getTotalXp();
+      const oldLevel = calculateLevelFromXp(oldTotalXp);
+
       const sessionId = await createCompletedSession({
         questId: quest.id,
         userLevel,
@@ -392,6 +396,11 @@ export const useSessionStore = create<SessionState>()(
         exercises: results,
         performedAt: new Date(startTime),
       });
+
+      // Calculate level after saving
+      const newTotalXp = oldTotalXp + xpEarned;
+      const newLevel = calculateLevelFromXp(newTotalXp);
+      const levelUp = newLevel > oldLevel ? { oldLevel, newLevel } : null;
 
       // Build exercise results with muscles for resource calculation
       const exerciseResults: ExerciseResultForResources[] = results.map((r) => {
@@ -464,6 +473,7 @@ export const useSessionStore = create<SessionState>()(
         newRecords,
         newAchievements,
         campaign,
+        levelUp,
       };
     },
   })),

@@ -14,7 +14,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 1: Core Loop ✅ (95% Complete)
+## Phase 1: Core Loop ✅ (100% Complete)
 
 ### 1.1 Database Foundation ✅
 
@@ -198,7 +198,7 @@ This document tracks all features, their implementation status, and future plans
 - ✅ French translations (`locales/fr.json`)
 - ✅ Language switching in settings
 - ✅ Database content in both languages
-- ⚠️ Some hardcoded strings (countdown "Let's go!", etc.)
+- ✅ Notification messages localized (EN/FR)
 
 ### 1.11 Navigation ✅
 

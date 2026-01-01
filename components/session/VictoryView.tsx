@@ -8,6 +8,7 @@ import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { useToast } from "@/components/common/Toast";
 import { ConstructionAnimation } from "@/components/village/ConstructionAnimation";
+import { SOUNDS } from "@/constants/sounds";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import type { NewRecordResult } from "@/db/personalRecords";
 import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
@@ -15,6 +16,7 @@ import type { BuildingCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime } from "@/hooks/useSessionTimer";
+import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { LootDisplay } from "./LootDisplay";
@@ -30,6 +32,7 @@ export function VictoryView() {
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
   const { success, selection } = useHaptics();
+  const { playSound } = useSound();
   const { showError } = useToast();
   const { quest, userLevel, startTime, totalPausedTime, results, saveSession, quitSession } =
     useSessionStore();
@@ -37,6 +40,11 @@ export function VictoryView() {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [newRecords, setNewRecords] = useState<NewRecordResult[]>([]);
   const [hasSaved, setHasSaved] = useState(false);
+
+  useEffect(() => {
+    playSound(SOUNDS.victory);
+  }, []);
+
   const [constructionQueue, setConstructionQueue] = useState<
     { type: "unlock" | "levelup"; buildingType: BuildingCode; level?: number }[]
   >([]);

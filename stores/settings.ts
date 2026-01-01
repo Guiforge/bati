@@ -23,6 +23,7 @@ interface SettingsState {
   theme: ThemePreference;
   avatarId: AvatarId;
   hapticsEnabled: boolean;
+  soundEnabled: boolean;
   reducedMotion: boolean;
   notificationsEnabled: boolean;
   notificationTime: { hour: number; minute: number };
@@ -32,6 +33,7 @@ interface SettingsState {
   setTheme: (theme: ThemePreference) => Promise<void>;
   setAvatarId: (avatarId: AvatarId) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => Promise<void>;
+  setSoundEnabled: (enabled: boolean) => Promise<void>;
   setReducedMotion: (enabled: boolean) => Promise<void>;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
   setNotificationTime: (time: { hour: number; minute: number }) => Promise<void>;
@@ -44,6 +46,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   theme: "system",
   avatarId: "gamin",
   hapticsEnabled: true,
+  soundEnabled: true,
   reducedMotion: false,
   notificationsEnabled: true,
   notificationTime: { hour: 18, minute: 0 },
@@ -70,6 +73,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setHapticsEnabled(enabled);
   },
 
+  setSoundEnabled: async (enabled) => {
+    set({ soundEnabled: enabled });
+    await preferences.setSoundEnabled(enabled);
+  },
+
   setReducedMotion: async (enabled) => {
     set({ reducedMotion: enabled });
     await preferences.setReducedMotion(enabled);
@@ -91,6 +99,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       theme,
       avatarId,
       hapticsEnabled,
+      soundEnabled,
       reducedMotion,
       notificationsEnabled,
       notificationTime,
@@ -99,6 +108,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       preferences.getTheme(),
       preferences.getAvatarId(),
       preferences.getHapticsEnabled(),
+      preferences.getSoundEnabled(),
       preferences.getReducedMotion(),
       preferences.getNotificationsEnabled(),
       preferences.getNotificationTime(),
@@ -111,6 +121,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       theme: normalizeTheme(theme),
       avatarId: normalizeAvatarId(avatarId),
       hapticsEnabled,
+      soundEnabled,
       reducedMotion,
       notificationsEnabled,
       notificationTime,

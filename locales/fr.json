@@ -325,7 +325,12 @@
     "loading": "Chargement...",
     "error": "Oups !",
     "retry": "Réessayer",
-    "go_back": "Retour"
+    "go_back": "Retour",
+    "xp": "XP",
+    "xp_value": "{{value}} XP",
+    "exercises_short": "ex",
+    "crit": "CRIT !",
+    "daily_xp_bonus": "+50% XP"
   },
   "splash": {
     "loading": "Construction du village..."

@@ -127,7 +127,7 @@ function PlanPreviewSheetComponent({
                           </Text>
                         </YStack>
                         <Text fontWeight="700" fontSize={12} color="$color" opacity={0.6}>
-                          {session.quest.exercises.length} ex
+                          {session.quest.exercises.length} {t("common.exercises_short")}
                         </Text>
                       </XStack>
                     </Card>

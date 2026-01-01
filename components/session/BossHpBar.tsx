@@ -92,7 +92,7 @@ export function BossHpBar({ currentHp, totalHp, bossName, lastDamage }: BossHpBa
               fontSize={lastDamage.isCritical ? 20 : 16}
               color={lastDamage.isCritical ? "$error" : "$secondary"}
             >
-              {lastDamage.isCritical ? "💥 CRIT! " : "⚔️ "}-{lastDamage.damage}
+              {lastDamage.isCritical ? `💥 ${t("common.crit")} ` : "⚔️ "}-{lastDamage.damage}
               {lastDamage.weaknessBonus ? " 🎯" : ""}
             </Text>
           </XStack>

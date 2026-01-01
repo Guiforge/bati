@@ -48,7 +48,7 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
             </Text>
           </XStack>
           <Text fontSize={12} fontWeight="bold" opacity={0.6}>
-            +50% XP
+            {t("common.daily_xp_bonus")}
           </Text>
         </XStack>
 

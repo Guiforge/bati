@@ -164,7 +164,7 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
                 <Text fontSize={12} color="$color" opacity={0.6}>
                   {building.level >= 5
                     ? t("village.max_level", "Max Level")
-                    : `${building.xp} / ${nextThreshold} XP`}
+                    : t("common.xp_value", { value: `${building.xp} / ${nextThreshold}` })}
                 </Text>
               </YStack>
             )}
@@ -324,7 +324,7 @@ export function VillageScreen() {
                           {t("village.xp_to_next")}
                         </Text>
                         <Text fontSize={12} fontWeight="700" color="$color">
-                          {selectedXpToNext} XP
+                          {t("common.xp_value", { value: selectedXpToNext })}
                         </Text>
                       </XStack>
                     </YStack>

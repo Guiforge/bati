@@ -121,7 +121,7 @@ export function PersonalRecordsCard() {
             icon={<Star size={20} color="$pastelYellow" />}
             label={t("journal.pr_most_xp")}
             value={mostXp}
-            subLabel="XP"
+            subLabel={t("common.xp")}
           />
           <RecordItem
             icon={<Zap size={20} color="$success" />}

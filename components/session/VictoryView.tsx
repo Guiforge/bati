@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, useWindowDimensions } from "react-native";
+import { ScrollView, Share, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
@@ -21,10 +21,10 @@ import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { LevelUpModal } from "./LevelUpModal";
 import { LootChest } from "./LootChest";
 import { NewRecordsBadge } from "./NewRecordsBadge";
 import { ProgressionChart } from "./ProgressionChart";
-import { LevelUpModal } from "./LevelUpModal";
 
 type Feedback = "easy" | "good" | "hard" | null;
 
@@ -115,6 +115,22 @@ export function VictoryView() {
   const { bg: questBg } = getQuestColorTokensFromQuest(quest);
   const xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
+  const handleShare = async () => {
+    try {
+      const message = t("session.share_message", {
+        quest: questTitle,
+        xp: xpEarned,
+        defaultValue: `I just completed the '${questTitle}' quest and earned ${xpEarned} XP in Bati! ⚔️ #BatiApp`,
+      });
+
+      await Share.share({
+        message,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleFinish = async () => {
     // If we've already saved and shown records, now navigate
     if (hasSaved) {
@@ -132,12 +148,7 @@ export function VictoryView() {
       setIsSaving(true);
       // Pass feedback as FeedbackCode or null
       const feedbackCode = feedback as "easy" | "good" | "hard" | null;
-      const {
-        campaign,
-        newRecords: records,
-        buildings,
-        levelUp,
-      } = await saveSession(feedbackCode);
+      const { campaign, newRecords: records, buildings, levelUp } = await saveSession(feedbackCode);
 
       if (levelUp) {
         setLevelUpInfo(levelUp);
@@ -394,6 +405,24 @@ export function VictoryView() {
             </Button>
           </XStack>
         </Card>
+
+        {/* Share Button */}
+        <Button
+          size="$4"
+          bg="$bgLight"
+          borderWidth={2}
+          borderColor="$color"
+          pressStyle={{ opacity: 0.9, scale: 0.98 }}
+          onPress={handleShare}
+          rounded="$6"
+          width="100%"
+          maxW={520}
+          mb="$2"
+        >
+          <Text color="$color" fontSize={16} fontWeight="800">
+            {t("session.share", "Share Result")} 📤
+          </Text>
+        </Button>
 
         {/* Finish Button */}
         <Button

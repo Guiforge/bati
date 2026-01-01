@@ -21,7 +21,11 @@
   },
   "scheduling": {
     "title": "Weekly Schedule",
-    "no_sessions": "No workouts scheduled"
+    "no_sessions": "No workouts scheduled",
+    "add_session": "Schedule Workout",
+    "no_quests": "No quests available",
+    "reschedule_tomorrow": "Move +1 Day",
+    "skip": "Skip"
   },
   "coach": {
     "rest_suggestion_title": "Coach says: Rest!"

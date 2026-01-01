@@ -1,3 +1,4 @@
+import { Plus } from "@tamagui/lucide-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { addDays, format, isSameDay, startOfWeek } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -5,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Spinner, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { AddScheduleSheet } from "@/components/scheduling/AddScheduleSheet";
 import {
   getScheduledSessionsForWeek,
   rescheduleSession,
@@ -18,6 +20,7 @@ export function WeeklyCalendar() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sessions, setSessions] = useState<ScheduledSessionWithQuest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddSheet, setShowAddSheet] = useState(false);
 
   // Start of current week (Monday)
   const weekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
@@ -155,7 +158,19 @@ export function WeeklyCalendar() {
             </Text>
           </Card>
         )}
+
+        {/* Add Session Button */}
+        <AppButton icon={Plus} onPress={() => setShowAddSheet(true)}>
+          {t("scheduling.add_session", "Schedule Workout")}
+        </AppButton>
       </YStack>
+
+      <AddScheduleSheet
+        open={showAddSheet}
+        onOpenChange={setShowAddSheet}
+        selectedDate={selectedDate}
+        onSessionAdded={loadSessions}
+      />
     </YStack>
   );
 }

@@ -21,7 +21,11 @@
   },
   "scheduling": {
     "title": "Planning Hebdomadaire",
-    "no_sessions": "Aucun entraînement prévu"
+    "no_sessions": "Aucun entraînement prévu",
+    "add_session": "Planifier un entraînement",
+    "no_quests": "Aucune quête disponible",
+    "reschedule_tomorrow": "Reporter +1 Jour",
+    "skip": "Passer"
   },
   "coach": {
     "rest_suggestion_title": "Le Coach dit : Repos !"

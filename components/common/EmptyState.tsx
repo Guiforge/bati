@@ -13,13 +13,7 @@ type EmptyStateProps = {
  * Consistent empty state component for when there's no data to display.
  * Used across quests, sessions, journal, etc.
  */
-export function EmptyState({
-  emoji = "📭",
-  title,
-  subtitle,
-  action,
-  ...props
-}: EmptyStateProps) {
+export function EmptyState({ emoji = "📭", title, subtitle, action, ...props }: EmptyStateProps) {
   return (
     <Card {...props}>
       <YStack gap="$3" items="center" py="$4">
@@ -27,21 +21,11 @@ export function EmptyState({
           {emoji}
         </Text>
         <YStack gap="$1" items="center">
-          <Text
-            fontWeight="900"
-            fontSize={18}
-            color="$color"
-            style={{ textAlign: "center" }}
-          >
+          <Text fontWeight="900" fontSize={18} color="$color" style={{ textAlign: "center" }}>
             {title}
           </Text>
           {subtitle && (
-            <Paragraph
-              color="$color"
-              opacity={0.6}
-              size="$3"
-              style={{ textAlign: "center" }}
-            >
+            <Paragraph color="$color" opacity={0.6} size="$3" style={{ textAlign: "center" }}>
               {subtitle}
             </Paragraph>
           )}

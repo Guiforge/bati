@@ -88,8 +88,8 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
           <YStack
             bg="$pastelPink"
             p="$3"
-            rounded="$4"
-            borderWidth={2}
+            rounded="$6"
+            borderWidth={3}
             borderColor="$color"
             maxW="100%"
           >
@@ -127,22 +127,32 @@ export function InlineError({ message, onRetry }: { message?: string; onRetry?: 
   const { t } = useTranslation();
 
   return (
-    <YStack bg="$pastelPink" p="$3" rounded="$4" borderWidth={2} borderColor="$color" gap="$2">
-      <Text fontWeight="700" color="$color">
+    <YStack
+      bg="$pastelPink"
+      p="$4"
+      rounded="$6"
+      borderWidth={3}
+      borderColor="$color"
+      gap="$3"
+      items="center"
+    >
+      <Text fontSize={32}>😵</Text>
+      <Text fontWeight="700" color="$color" style={{ textAlign: "center" }}>
         {message || t("errors.generic")}
       </Text>
       {onRetry && (
         <Button
-          size="$2"
+          size="$3"
           bg="$bgLight"
-          borderWidth={2}
+          borderWidth={3}
           borderColor="$color"
-          rounded="$3"
+          rounded="$6"
           onPress={onRetry}
+          pressStyle={{ opacity: 0.9, scale: 0.98 }}
         >
-          <Text fontSize={12} fontWeight="700" color="$color">
+          <Button.Text fontWeight="800" color="$color">
             {t("errors.try_again", "Try Again")}
-          </Text>
+          </Button.Text>
         </Button>
       )}
     </YStack>

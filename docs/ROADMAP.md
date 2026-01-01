@@ -432,8 +432,8 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Calendar display
   - ✅ Scheduled sessions
   - ✅ Completion indicators
-- ⚠️ Schedule management
-  - 📋 Reschedule session
+- ✅ Schedule management
+  - ✅ Reschedule session (move +1 day)
   - ✅ Skip session
 
 ### 3.4 Notifications 📋

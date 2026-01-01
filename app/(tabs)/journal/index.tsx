@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { JournalStats } from "@/components/journal/JournalStats";
+import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
@@ -157,7 +158,10 @@ export default function JournalScreen() {
             </Paragraph>
           </YStack>
         ) : activeTab === "stats" ? (
-          <JournalStats sessions={history} />
+          <>
+            <JournalStats sessions={history} />
+            <MuscleBalanceCard />
+          </>
         ) : (
           history.map((entry) => (
             <SessionCard

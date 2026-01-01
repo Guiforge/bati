@@ -214,7 +214,10 @@
     "minutes_per_day": "Minutes d'entraînement par jour",
     "workout_days": "Jours d'Entraînement",
     "when_you_train": "Quand tu t'entraînes habituellement",
-    "difficulty_split": "Répartition Difficulté"
+    "difficulty_split": "Répartition Difficulté",
+    "muscle_balance": "Équilibre Musculaire",
+    "balance_good": "Équilibré !",
+    "balance_needs_work": "À travailler"
   },
   "chart": {
     "loading": "Chargement du graphique...",

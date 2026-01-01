@@ -214,7 +214,10 @@
     "minutes_per_day": "Minutes trained each day",
     "workout_days": "Workout Days",
     "when_you_train": "When you usually train",
-    "difficulty_split": "Difficulty Split"
+    "difficulty_split": "Difficulty Split",
+    "muscle_balance": "Muscle Balance",
+    "balance_good": "Balanced!",
+    "balance_needs_work": "Needs Work"
   },
   "chart": {
     "loading": "Loading chart...",

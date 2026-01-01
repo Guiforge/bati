@@ -101,13 +101,7 @@ export function BossPhaseImage({ currentHp, totalHp, size = 80 }: BossPhaseImage
       </YStack>
 
       {/* Phase indicator (small dots) */}
-      <YStack
-        flexDirection="row"
-        gap="$1"
-        items="center"
-        animation="quick"
-        opacity={0.7}
-      >
+      <YStack flexDirection="row" gap="$1" items="center" animation="quick" opacity={0.7}>
         {[1, 2, 3, 4].map((phase) => (
           <YStack
             key={phase}

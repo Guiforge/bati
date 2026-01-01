@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
+import { DifficultyProgressionCard } from "@/components/journal/DifficultyProgressionCard";
 import { JournalStats } from "@/components/journal/JournalStats";
 import { MonthlyCalendarCard } from "@/components/journal/MonthlyCalendarCard";
 import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
@@ -168,6 +169,7 @@ export default function JournalScreen() {
           <>
             <UserLevelCard />
             <RestSuggestionCard />
+            <DifficultyProgressionCard />
             <PersonalRecordsCard />
             <AchievementsCard />
             <JournalStats sessions={history} />

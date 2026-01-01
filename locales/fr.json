@@ -36,6 +36,15 @@
   "system": "Système",
   "theme": "Thème",
   "welcome": "Bienvenue sur Bati !",
+  "progression": {
+    "title": "Suggestion du Coach",
+    "increase_title": "Niveau Supérieur Disponible !",
+    "increase_message": "Tu assures grave ces derniers temps. Essaie d'augmenter la difficulté pour de meilleures récompenses !",
+    "decrease_title": "Récupération Recommandée",
+    "decrease_message": "Ça semble dur ces derniers temps. Baisser la difficulté peut t'aider à rester régulier.",
+    "maintain_title": "Progrès Constant",
+    "maintain_message": "Tu as trouvé ton rythme. Continue comme ça !"
+  },
   "quests": {
     "gallery_title": "Galerie des quêtes",
     "gallery_subtitle": "Choisis une quête et découvre tous les détails.",

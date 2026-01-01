@@ -316,6 +316,7 @@ export type SessionSummary = {
   userLevel: DifficultyCode;
   durationSeconds: number | null;
   performedAt: Date;
+  feedback: FeedbackCode | null;
 };
 
 /**
@@ -333,6 +334,7 @@ export async function getQuestSessionHistory(
       userLevel: completedQuest.userLevel,
       durationSeconds: completedQuest.durationSeconds,
       performedAt: completedQuest.performedAt,
+      feedback: completedQuest.feedback,
     })
     .from(completedQuest)
     .where(eq(completedQuest.questId, questId))
@@ -345,6 +347,7 @@ export async function getQuestSessionHistory(
     userLevel: r.userLevel,
     durationSeconds: r.durationSeconds ?? null,
     performedAt: r.performedAt,
+    feedback: r.feedback,
   }));
 }
 
@@ -360,6 +363,7 @@ export async function getRecentSessionHistory(limit = 30): Promise<SessionSummar
       userLevel: completedQuest.userLevel,
       durationSeconds: completedQuest.durationSeconds,
       performedAt: completedQuest.performedAt,
+      feedback: completedQuest.feedback,
     })
     .from(completedQuest)
     .orderBy(completedQuest.performedAt, completedQuest.id)
@@ -371,5 +375,6 @@ export async function getRecentSessionHistory(limit = 30): Promise<SessionSummar
     userLevel: r.userLevel,
     durationSeconds: r.durationSeconds ?? null,
     performedAt: r.performedAt,
+    feedback: r.feedback,
   }));
 }

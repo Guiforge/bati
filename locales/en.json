@@ -36,6 +36,15 @@
   "system": "System",
   "theme": "Theme",
   "welcome": "Welcome to Bati!",
+  "progression": {
+    "title": "Coach Suggestion",
+    "increase_title": "Level Up Available!",
+    "increase_message": "You've been crushing it lately. Try increasing the difficulty for better rewards!",
+    "decrease_title": "Recovery Recommended",
+    "decrease_message": "It seems tough lately. Lowering difficulty can help you maintain consistency.",
+    "maintain_title": "Steady Progress",
+    "maintain_message": "You found your sweet spot. Keep it up!"
+  },
   "quests": {
     "gallery_title": "Quest gallery",
     "gallery_subtitle": "Pick a quest and see the full details.",

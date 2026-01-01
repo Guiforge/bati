@@ -467,9 +467,9 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Detect overtraining patterns (5+ consecutive days, 6+ sessions/week)
   - ✅ RestSuggestionCard component in Journal
   - ✅ Localized messages (EN/FR)
-- 📋 Difficulty progression
-  - 📋 Track completion rates
-  - 📋 Suggest difficulty changes
+- ✅ Difficulty progression
+  - ✅ Track completion rates (via feedback analysis)
+  - ✅ Suggest difficulty changes (DifficultyProgressionCard)
 
 ---
 

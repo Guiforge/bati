@@ -18,6 +18,7 @@ import m0014 from "./0014_add_boss_fights.sql";
 import m0015 from "./0015_add_session_feedback.sql";
 import m0016 from "./0016_add_resources.sql";
 import m0017 from "./0017_add_village_buildings.sql";
+import m0018 from "./0018_add_goals.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -41,5 +42,6 @@ export default {
     m0015,
     m0016,
     m0017,
+    m0018,
   },
 };

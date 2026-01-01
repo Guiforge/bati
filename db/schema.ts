@@ -721,3 +721,61 @@ export const villageStats = sqliteTable("village_stats", {
   highestBuildingLevel: int().notNull().default(1),
   updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
 });
+
+// ------------------------------------------------------------
+// Goals & Planning System (Phase 3)
+// ------------------------------------------------------------
+
+// Goal types for different training focuses
+export const goalTypeCodes = ["strength", "endurance", "flexibility", "balanced"] as const;
+export type GoalTypeCode = (typeof goalTypeCodes)[number];
+
+// Goal status
+export const goalStatusCodes = ["active", "paused", "completed", "abandoned"] as const;
+export type GoalStatusCode = (typeof goalStatusCodes)[number];
+
+// User goals table - tracks fitness objectives
+export const goals = sqliteTable("goals", {
+  id: int().primaryKey({ autoIncrement: true }),
+
+  // Goal configuration
+  goalType: text().notNull().$type<GoalTypeCode>(),
+  daysPerWeek: int().notNull().default(3), // 1-7
+  sessionMinutes: int().notNull().default(20), // Preferred session duration
+
+  // Status tracking
+  status: text().notNull().default("active").$type<GoalStatusCode>(),
+  startDate: int({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  endDate: int({ mode: "timestamp" }), // Optional end date for time-bound goals
+
+  // Timestamps
+  createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// Weekly goal progress tracking
+export const goalProgress = sqliteTable(
+  "goal_progress",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    goalId: int()
+      .notNull()
+      .references(() => goals.id, { onDelete: "cascade" }),
+
+    // Week identifier (ISO week: YYYY-WW format stored as text)
+    weekKey: text().notNull(),
+
+    // Progress data
+    targetSessions: int().notNull(), // Based on daysPerWeek
+    completedSessions: int().notNull().default(0),
+    totalMinutes: int().notNull().default(0),
+    totalXp: int().notNull().default(0),
+
+    // Timestamps
+    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    goalWeekUnique: uniqueIndex("goal_progress_goal_week_unique").on(table.goalId, table.weekKey),
+    goalIdx: index("goal_progress_goal_idx").on(table.goalId),
+  }),
+);

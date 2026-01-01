@@ -127,6 +127,13 @@
       "when": 1767225600008,
       "tag": "0017_add_village_buildings",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1767225600009,
+      "tag": "0018_add_goals",
+      "breakpoints": true
     }
   ]
 }

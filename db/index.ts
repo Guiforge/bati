@@ -89,3 +89,18 @@ export {
   previewSessionLoot,
   spendResources,
 } from "./resources";
+export type { Goal, GoalProgress, CreateGoalInput } from "./goals";
+export {
+  createGoal,
+  getActiveGoal,
+  getAllGoals,
+  getGoalById,
+  getGoalProgressHistory,
+  getOrCreateWeekProgress,
+  getCurrentWeekCompletion,
+  getWeekKey,
+  goalTypeInfo,
+  recordSessionForGoal,
+  updateGoal,
+  updateGoalStatus,
+} from "./goals";

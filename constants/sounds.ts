@@ -8,6 +8,7 @@ export const SOUNDS = {
   countdown: null,
   complete: null,
   rest: null,
+  chestOpen: null,
 };
 
 export type SoundName = keyof typeof SOUNDS;

@@ -1,10 +1,3 @@
-import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ScrollView, useWindowDimensions } from "react-native";
-import ConfettiCannon from "react-native-confetti-cannon";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { Card } from "@/components/common/Card";
 import { useToast } from "@/components/common/Toast";
@@ -21,7 +14,14 @@ import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { LootDisplay } from "./LootDisplay";
+import { useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView, useWindowDimensions } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, Text, XStack, YStack } from "tamagui";
+import { LootChest } from "./LootChest";
 import { NewRecordsBadge } from "./NewRecordsBadge";
 import { ProgressionChart } from "./ProgressionChart";
 
@@ -292,7 +292,7 @@ export function VictoryView() {
         {newRecords.length > 0 && <NewRecordsBadge records={newRecords} />}
 
         {/* Loot Display */}
-        <LootDisplay loot={lootPreview} />
+        <LootChest loot={lootPreview} />
 
         {/* Progression Chart */}
         <YStack width="100%" maxW={520}>

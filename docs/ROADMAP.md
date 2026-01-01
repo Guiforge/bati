@@ -575,7 +575,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Flame flickering (FlameFlicker component in VillageScreen)
   - ✅ Level up sparkle (LevelUpSparkle component created)
   - ✅ Construction animation (ConstructionAnimation component created)
-  - 📋 Building unlock animation integration
+  - ✅ Building unlock animation integration
 - ✅ Micro-interactions
   - ✅ Button press feedback (scale 0.98 + opacity)
   - ✅ Card hover/press (scale 0.99 + opacity)

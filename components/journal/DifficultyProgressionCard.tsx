@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp, Minus } from "@tamagui/lucide-icons";
+import { Minus, TrendingDown, TrendingUp } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { H3, Paragraph, XStack, YStack } from "tamagui";

@@ -292,6 +292,7 @@
     "avg_mins": "Avg mins"
   },
   "common": {
+    "awesome": "Awesome!",
     "by": "By {{author}}",
     "language_en": "English",
     "language_fr": "French",
@@ -302,6 +303,9 @@
     "go_back": "Go back"
   },
   "village": {
+    "unlocked": "Building Unlocked!",
+    "levelup": "Level Up!",
+    "level_label": "Level",
     "title": "My Village",
     "stats_title": "Village Progress",
     "buildings_unlocked": "Buildings Unlocked",

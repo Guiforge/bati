@@ -292,6 +292,7 @@
     "avg_mins": "Moy. mins"
   },
   "common": {
+    "awesome": "Génial !",
     "by": "Par {{author}}",
     "language_en": "Anglais",
     "language_fr": "Français",
@@ -302,6 +303,9 @@
     "go_back": "Retour"
   },
   "village": {
+    "unlocked": "Bâtiment Débloqué !",
+    "levelup": "Niveau Supérieur !",
+    "level_label": "Niveau",
     "title": "Mon Village",
     "stats_title": "Progression du village",
     "buildings_unlocked": "Bâtiments débloqués",

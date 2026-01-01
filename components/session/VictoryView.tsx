@@ -7,9 +7,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { useToast } from "@/components/common/Toast";
+import { ConstructionAnimation } from "@/components/village/ConstructionAnimation";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import type { NewRecordResult } from "@/db/personalRecords";
 import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
+import type { BuildingCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -35,6 +37,14 @@ export function VictoryView() {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [newRecords, setNewRecords] = useState<NewRecordResult[]>([]);
   const [hasSaved, setHasSaved] = useState(false);
+  const [constructionQueue, setConstructionQueue] = useState<
+    { type: "unlock" | "levelup"; buildingType: BuildingCode; level?: number }[]
+  >([]);
+  const [currentConstruction, setCurrentConstruction] = useState<{
+    type: "unlock" | "levelup";
+    buildingType: BuildingCode;
+    level?: number;
+  } | null>(null);
 
   // Calculate duration for display
   // Note: saveSession recalculates this accurately based on DB timestamp logic,
@@ -87,14 +97,39 @@ export function VictoryView() {
       setIsSaving(true);
       // Pass feedback as FeedbackCode or null
       const feedbackCode = feedback as "easy" | "good" | "hard" | null;
-      const { campaign, newRecords: records } = await saveSession(feedbackCode);
+      const { campaign, newRecords: records, buildings } = await saveSession(feedbackCode);
 
-      // If we got new records, show them before navigating
-      if (records.length > 0) {
+      // Queue up building animations
+      const queue: typeof constructionQueue = [];
+
+      if (buildings?.newUnlocks) {
+        for (const unlock of buildings.newUnlocks) {
+          queue.push({ type: "unlock", buildingType: unlock.buildingType, level: 1 });
+        }
+      }
+
+      if (buildings?.levelUps) {
+        for (const levelUp of buildings.levelUps) {
+          queue.push({
+            type: "levelup",
+            buildingType: levelUp.buildingType,
+            level: levelUp.newLevel,
+          });
+        }
+      }
+
+      // If we got new records or building updates, show them before navigating
+      if (records.length > 0 || queue.length > 0) {
         setNewRecords(records);
+
+        if (queue.length > 0) {
+          setConstructionQueue(queue);
+          setCurrentConstruction(queue[0]);
+        }
+
         setHasSaved(true);
         setIsSaving(false);
-        // Extra celebration haptic for PRs
+        // Extra celebration haptic
         success();
         return;
       }
@@ -126,8 +161,28 @@ export function VictoryView() {
     setFeedback(value);
   };
 
+  const handleNextConstruction = () => {
+    const nextQueue = constructionQueue.slice(1);
+    setConstructionQueue(nextQueue);
+
+    if (nextQueue.length > 0) {
+      setCurrentConstruction(nextQueue[0]);
+    } else {
+      setCurrentConstruction(null);
+    }
+  };
+
   return (
     <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16}>
+      {currentConstruction && (
+        <ConstructionAnimation
+          visible={!!currentConstruction}
+          buildingType={currentConstruction.buildingType}
+          type={currentConstruction.type}
+          level={currentConstruction.level}
+          onClose={handleNextConstruction}
+        />
+      )}
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,

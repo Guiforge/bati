@@ -302,9 +302,10 @@ This document tracks all features, their implementation status, and future plans
   - ✅ unlockBuilding, processSessionBuildings
   - ✅ Tier unlock condition checks
 - ✅ Building tests (10 passing)
-- 📋 Auto-building integration
-  - 📋 Wire processSessionBuildings to session completion
-  - 📋 Trigger building XP on workout finish
+- ✅ Auto-building integration
+  - ✅ Wire processSessionBuildings to session completion
+  - ✅ Trigger building XP on workout finish
+  - ✅ Include building results in saveSession return
 - 📋 Village view
   - 📋 Isometric/2.5D layout
   - 📋 Building placement

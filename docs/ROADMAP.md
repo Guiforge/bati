@@ -369,7 +369,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 3: Coach & Planning � (35% Complete)
+## Phase 3: Coach & Planning 🚧 (45% Complete)
 
 ### 3.1 Goal Setting ✅
 
@@ -444,7 +444,7 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Schedule notifications
   - 📋 Cancel on completion
 
-### 3.5 Smart Recommendations ⚠️
+### 3.5 Smart Recommendations ✅
 
 - ✅ Difficulty suggestion (auto-suggests based on history)
 - ✅ Weak area detection
@@ -453,6 +453,8 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Time period filtering (7d, 30d, 90d, all)
   - ✅ getSuggestedFocusAreas() for focus recommendations
   - ✅ getBalanceRecommendation() for status and message
+  - ✅ getSuggestedQuestsForWeakAreas() for quest recommendations
+  - ✅ SuggestedQuestsCard UI component in Journal
 - 📋 Rest suggestions
   - 📋 Detect overtraining patterns
   - 📋 Suggest rest days
@@ -462,7 +464,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 4: Statistics & Progress ⚠️ (30% Complete)
+## Phase 4: Statistics & Progress ⚠️ (45% Complete)
 
 ### 4.1 Stats Dashboard ⚠️
 
@@ -485,19 +487,21 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Previous weeks/months
   - 📋 Trend analysis
 
-### 4.3 Muscle Balance ⚠️
+### 4.3 Muscle Balance ✅
 
 - ✅ Balance calculation (db/muscleBalance.ts)
   - ✅ Track volume per muscle
   - ✅ Calculate percentages
   - ✅ Time period filtering (7d, 30d, 90d, all)
-- ⚠️ Balance visualization
+- ✅ Balance visualization
   - ✅ MuscleBalanceCard component with progress bars
   - ✅ Weak area highlighting in $primary color
   - ✅ Status indicator (Balanced/Needs Work)
   - 📋 Radar chart option
-- 📋 Balance tips
-  - 📋 Suggest quests for weak areas
+- ✅ Balance tips
+  - ✅ getSuggestedQuestsForWeakAreas() function
+  - ✅ SuggestedQuestsCard component with quest recommendations
+  - ✅ Muscle chips showing which weak areas each quest targets
 
 ### 4.4 Personal Records 📋
 

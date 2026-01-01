@@ -2,7 +2,7 @@
 
 This document tracks all features, their implementation status, and future plans.
 
-**Last Audit:** January 1, 2026
+**Last Audit:** January 1, 2026 (Phase 3 update)
 
 **Legend:**
 
@@ -377,7 +377,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 3: Coach & Planning 🚧 (55% Complete)
+## Phase 3: Coach & Planning ✅ (95% Complete)
 
 ### 3.1 Goal Setting ✅
 
@@ -420,7 +420,7 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Plan preview before confirming
   - ✅ Active plan display (in Schedule)
 
-### 3.3 Scheduling �
+### 3.3 Scheduling ✅
 
 - ✅ Scheduled session schema
   - ✅ Plan reference
@@ -435,13 +435,15 @@ This document tracks all features, their implementation status, and future plans
 - ✅ Schedule management
   - ✅ Reschedule session (move +1 day)
   - ✅ Skip session
+  - ✅ Add scheduled session (AddScheduleSheet component)
+  - ✅ Quest picker for scheduling
 
 ### 3.4 Notifications ✅
 
 - ✅ Notification types
   - ✅ Daily reminder
-  - 📋 Streak warning (before midnight)
-  - 📋 Encouragement (after inactivity)
+  - ✅ Streak warning (before midnight - 8 PM trigger)
+  - ✅ Encouragement (after 3 days inactivity)
   - 📋 Achievement unlocked
   - 📋 Boss ready
 - ✅ Notification preferences
@@ -451,6 +453,11 @@ This document tracks all features, their implementation status, and future plans
   - ✅ expo-notifications setup
   - ✅ Schedule notifications
   - ✅ Cancel on completion (via cancelAllNotifications)
+- ✅ Smart notification scheduling
+  - ✅ NotificationManager component (auto-reschedules on app open/resume)
+  - ✅ scheduleSmartNotifications function
+  - ✅ Streak rescue logic (isYesterday/isSameDay checks)
+  - ✅ Refresh notifications after workout completion (VictoryView integration)
 
 ### 3.5 Smart Recommendations ✅
 
@@ -463,9 +470,11 @@ This document tracks all features, their implementation status, and future plans
   - ✅ getBalanceRecommendation() for status and message
   - ✅ getSuggestedQuestsForWeakAreas() for quest recommendations
   - ✅ SuggestedQuestsCard UI component in Journal
+  - ✅ CoachSuggestionCard on Home screen (shows weak areas + suggested quests)
 - ✅ Rest suggestions
   - ✅ Detect overtraining patterns (5+ consecutive days, 6+ sessions/week)
   - ✅ RestSuggestionCard component in Journal
+  - ✅ Rest suggestion card on Schedule screen
   - ✅ Localized messages (EN/FR)
 - ✅ Difficulty progression
   - ✅ Track completion rates (via feedback analysis)
@@ -687,18 +696,7 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Leaderboard (optional, offline-friendly)
   - ✅ Share workout summary
 
-### 6.7 Advanced RPG 💡
 
-- 💡 Seasons & events
-  - 💡 Limited-time content
-  - 💡 Seasonal rewards
-- 💡 Cosmetics
-  - 💡 Avatar customization
-  - 💡 Village themes
-  - 💡 Flame colors
-- 💡 Equipment system
-  - 💡 Collect gear
-  - 💡 Buff effects
 
 ---
 

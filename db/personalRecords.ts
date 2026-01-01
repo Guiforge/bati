@@ -86,7 +86,9 @@ export async function getMostXpSession(): Promise<PersonalRecord | null> {
 /**
  * Get the max reps achieved for a specific exercise
  */
-export async function getExerciseMaxReps(exerciseId: number): Promise<PersonalRecord | null> {
+export async function getExerciseMaxReps(
+  exerciseId: number
+): Promise<PersonalRecord | null> {
   const rows = await db
     .select({
       sessionId: completedExercises.sessionId,
@@ -140,7 +142,9 @@ export async function getPersonalRecordsSummary(): Promise<{
  * Check if a completed session set any new records.
  * Call this after saving a session to detect PRs.
  */
-export async function checkForNewRecords(sessionId: number): Promise<NewRecordResult[]> {
+export async function checkForNewRecords(
+  sessionId: number
+): Promise<NewRecordResult[]> {
   const newRecords: NewRecordResult[] = [];
 
   // Get the session data
@@ -220,7 +224,7 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
       })
       .from(completedExercises)
       .where(
-        sql`${completedExercises.exerciseId} = ${result.exerciseId} AND ${completedExercises.sessionId} != ${sessionId}`,
+        sql`${completedExercises.exerciseId} = ${result.exerciseId} AND ${completedExercises.sessionId} != ${sessionId}`
       );
 
     const prevMax = previousMax[0]?.maxValue ?? 0;

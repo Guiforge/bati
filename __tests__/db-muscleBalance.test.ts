@@ -123,7 +123,9 @@ describe("db/muscleBalance", () => {
     // Should suggest muscles with 0 volume
     expect(suggestions.length).toBe(2);
     // These should be muscles not worked (back, calf, abs, shoulder)
-    expect(["back", "calf", "abs", "shoulder"]).toEqual(expect.arrayContaining(suggestions));
+    expect(["back", "calf", "abs", "shoulder"]).toEqual(
+      expect.arrayContaining(suggestions)
+    );
   });
 
   test("getBalanceRecommendation returns no_data status when no training", () => {
@@ -174,8 +176,22 @@ describe("db/muscleBalance", () => {
       totalVolume: 600,
       totalSessions: 10,
       muscles: [],
-      weakAreas: ["abs", "calf"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "calf")[],
-      strongAreas: ["chest"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "calf")[],
+      weakAreas: ["abs", "calf"] as (
+        | "arms"
+        | "back"
+        | "shoulder"
+        | "chest"
+        | "abs"
+        | "calf"
+      )[],
+      strongAreas: ["chest"] as (
+        | "arms"
+        | "back"
+        | "shoulder"
+        | "chest"
+        | "abs"
+        | "calf"
+      )[],
     };
 
     const rec = getBalanceRecommendation(balance);
@@ -208,8 +224,10 @@ describe("db/muscleBalance", () => {
     // Add many chest sessions to create imbalance
     for (let i = 1; i <= 10; i++) {
       t.sqlite.exec(`
-        INSERT INTO completed_sessions (id, performedAt) VALUES (${i}, ${now - i * 3600});
-        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) 
+        INSERT INTO completed_sessions (id, performedAt) VALUES (${i}, ${
+        now - i * 3600
+      });
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder)
         VALUES (${i}, ${pushupId}, 'reps', 50, ${now - i * 3600}, 0);
       `);
     }

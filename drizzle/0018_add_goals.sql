@@ -10,7 +10,6 @@ CREATE TABLE `goals` (
     `createdAt` integer,
     `updatedAt` integer
 );
-
 -- Weekly goal progress tracking
 CREATE TABLE `goal_progress` (
     `id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -22,6 +21,5 @@ CREATE TABLE `goal_progress` (
     `totalXp` integer DEFAULT 0 NOT NULL,
     `updatedAt` integer
 );
-
 CREATE UNIQUE INDEX `goal_progress_goal_week_unique` ON `goal_progress` (`goalId`, `weekKey`);
 CREATE INDEX `goal_progress_goal_idx` ON `goal_progress` (`goalId`);

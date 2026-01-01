@@ -59,7 +59,12 @@ export function getWeekKey(date: Date = new Date()): string {
   const week1 = new Date(d.getFullYear(), 0, 4);
   const weekNum =
     1 +
-    Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+    Math.round(
+      ((d.getTime() - week1.getTime()) / 86400000 -
+        3 +
+        ((week1.getDay() + 6) % 7)) /
+        7
+    );
   return `${d.getFullYear()}-${String(weekNum).padStart(2, "0")}`;
 }
 
@@ -68,7 +73,12 @@ export function getWeekKey(date: Date = new Date()): string {
  */
 export const goalTypeInfo: Record<
   GoalTypeCode,
-  { en: string; fr: string; emoji: string; description: { en: string; fr: string } }
+  {
+    en: string;
+    fr: string;
+    emoji: string;
+    description: { en: string; fr: string };
+  }
 > = {
   strength: {
     en: "Strength",
@@ -208,7 +218,11 @@ export async function createGoal(input: CreateGoalInput): Promise<number> {
   const goalId = inserted[0]?.id;
   if (goalId == null) {
     // Fallback for SQLite builds without RETURNING
-    const last = await db.select({ id: goals.id }).from(goals).orderBy(desc(goals.id)).limit(1);
+    const last = await db
+      .select({ id: goals.id })
+      .from(goals)
+      .orderBy(desc(goals.id))
+      .limit(1);
     return last[0]?.id ?? 0;
   }
 
@@ -218,8 +232,14 @@ export async function createGoal(input: CreateGoalInput): Promise<number> {
 /**
  * Update goal status
  */
-export async function updateGoalStatus(id: number, status: GoalStatusCode): Promise<void> {
-  await db.update(goals).set({ status, updatedAt: new Date() }).where(eq(goals.id, id));
+export async function updateGoalStatus(
+  id: number,
+  status: GoalStatusCode
+): Promise<void> {
+  await db
+    .update(goals)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(goals.id, id));
 }
 
 /**
@@ -227,7 +247,7 @@ export async function updateGoalStatus(id: number, status: GoalStatusCode): Prom
  */
 export async function updateGoal(
   id: number,
-  updates: Partial<Pick<CreateGoalInput, "daysPerWeek" | "sessionMinutes">>,
+  updates: Partial<Pick<CreateGoalInput, "daysPerWeek" | "sessionMinutes">>
 ): Promise<void> {
   await db
     .update(goals)
@@ -242,14 +262,18 @@ export async function updateGoal(
 /**
  * Get or create progress for current week
  */
-export async function getOrCreateWeekProgress(goalId: number): Promise<GoalProgress> {
+export async function getOrCreateWeekProgress(
+  goalId: number
+): Promise<GoalProgress> {
   const weekKey = getWeekKey();
 
   // Try to get existing progress
   const existing = await db
     .select()
     .from(goalProgress)
-    .where(and(eq(goalProgress.goalId, goalId), eq(goalProgress.weekKey, weekKey)))
+    .where(
+      and(eq(goalProgress.goalId, goalId), eq(goalProgress.weekKey, weekKey))
+    )
     .limit(1);
 
   if (existing.length > 0) {
@@ -333,7 +357,10 @@ export async function recordSessionForGoal(sessionData: {
 /**
  * Get progress history for a goal (recent weeks)
  */
-export async function getGoalProgressHistory(goalId: number, limit = 8): Promise<GoalProgress[]> {
+export async function getGoalProgressHistory(
+  goalId: number,
+  limit = 8
+): Promise<GoalProgress[]> {
   const rows = await db
     .select()
     .from(goalProgress)
@@ -368,7 +395,10 @@ export async function getCurrentWeekCompletion(): Promise<{
   }
 
   const progress = await getOrCreateWeekProgress(goal.id);
-  const percentage = Math.min(100, (progress.completedSessions / progress.targetSessions) * 100);
+  const percentage = Math.min(
+    100,
+    (progress.completedSessions / progress.targetSessions) * 100
+  );
   const isComplete = progress.completedSessions >= progress.targetSessions;
 
   return { goal, progress, percentage, isComplete };

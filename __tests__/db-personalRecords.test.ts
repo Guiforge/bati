@@ -34,7 +34,7 @@ describe("db/personalRecords", () => {
 
     // Add sessions with different durations
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, durationSeconds) VALUES 
+      INSERT INTO completed_sessions (id, performedAt, durationSeconds) VALUES
         (1, ${now - 3600}, 600),
         (2, ${now - 1800}, 1200),
         (3, ${now}, 800);
@@ -53,7 +53,7 @@ describe("db/personalRecords", () => {
     const now = Math.floor(Date.now() / 1000);
 
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, xpEarned) VALUES 
+      INSERT INTO completed_sessions (id, performedAt, xpEarned) VALUES
         (1, ${now - 3600}, 100),
         (2, ${now - 1800}, 250),
         (3, ${now}, 150);
@@ -79,14 +79,14 @@ describe("db/personalRecords", () => {
     const now = Math.floor(Date.now() / 1000);
 
     // Get a real exercise ID
-    const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
-      | { id: number }
-      | undefined;
+    const exerciseRow = t.sqlite
+      .prepare(`SELECT id FROM exercises LIMIT 1`)
+      .get() as { id: number } | undefined;
     const exerciseId = exerciseRow?.id ?? 1;
 
     t.sqlite.exec(`
       INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now}), (2, ${now});
-      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES 
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
         (1, ${exerciseId}, 'reps', 15, ${now}, 0),
         (2, ${exerciseId}, 'reps', 20, ${now}, 0);
     `);
@@ -103,7 +103,7 @@ describe("db/personalRecords", () => {
     const now = Math.floor(Date.now() / 1000);
 
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES 
+      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES
         (1, ${now - 3600}, 600, 100),
         (2, ${now}, 900, 200);
     `);
@@ -121,20 +121,22 @@ describe("db/personalRecords", () => {
 
     // Add an existing session
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES 
+      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES
         (1, ${now - 3600}, 600, 100);
     `);
 
     // Add a new longer session
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES 
+      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES
         (2, ${now}, 900, 150);
     `);
 
     const newRecords = await checkForNewRecords(2);
 
     // Should detect longest session PR
-    const longestPr = newRecords.find((r) => r.recordType === "longest_session");
+    const longestPr = newRecords.find(
+      (r) => r.recordType === "longest_session"
+    );
     expect(longestPr).toBeDefined();
     expect(longestPr?.newValue).toBe(900);
     expect(longestPr?.previousValue).toBe(600);
@@ -145,28 +147,32 @@ describe("db/personalRecords", () => {
       require("../db/personalRecords") as typeof import("../db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
-    const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
-      | { id: number }
-      | undefined;
+    const exerciseRow = t.sqlite
+      .prepare(`SELECT id FROM exercises LIMIT 1`)
+      .get() as { id: number } | undefined;
     const exerciseId = exerciseRow?.id ?? 1;
 
     // First session with 15 reps
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now - 3600});
-      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES 
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${
+        now - 3600
+      });
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
         (1, ${exerciseId}, 'reps', 15, ${now - 3600}, 0);
     `);
 
     // Second session with 25 reps (PR)
     t.sqlite.exec(`
       INSERT INTO completed_sessions (id, performedAt) VALUES (2, ${now});
-      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES 
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
         (2, ${exerciseId}, 'reps', 25, ${now}, 0);
     `);
 
     const newRecords = await checkForNewRecords(2);
 
-    const exercisePr = newRecords.find((r) => r.recordType === "exercise_max_reps");
+    const exercisePr = newRecords.find(
+      (r) => r.recordType === "exercise_max_reps"
+    );
     expect(exercisePr).toBeDefined();
     expect(exercisePr?.newValue).toBe(25);
     expect(exercisePr?.previousValue).toBe(15);
@@ -180,20 +186,22 @@ describe("db/personalRecords", () => {
 
     // Add a long session first
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES 
+      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES
         (1, ${now - 3600}, 1200, 300);
     `);
 
     // Add a shorter session
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES 
+      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES
         (2, ${now}, 600, 100);
     `);
 
     const newRecords = await checkForNewRecords(2);
 
     // Should not detect any PR for duration or XP (shorter/less than existing)
-    const durationPr = newRecords.find((r) => r.recordType === "longest_session");
+    const durationPr = newRecords.find(
+      (r) => r.recordType === "longest_session"
+    );
     const xpPr = newRecords.find((r) => r.recordType === "most_xp");
     expect(durationPr).toBeUndefined();
     expect(xpPr).toBeUndefined();

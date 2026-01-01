@@ -1,14 +1,5 @@
 // Database exports
 
-export type {
-  ActiveAdventureRun,
-  Adventure,
-  AdventureDetails,
-  AdventureKind,
-  AdventureRun,
-  AdventureRunStep,
-  AdventureStepTemplate,
-} from "./adventures";
 export {
   completeAdventureRunStep,
   getActiveAdventureRun,
@@ -19,13 +10,14 @@ export {
   startAdventureRun,
 } from "./adventures";
 export type {
-  BuildingLevelUp,
-  BuildingUnlock,
-  SessionBuildingResult,
-  VillageBuilding,
-  VillageBuildingWithMeta,
-  VillageStatsType,
-} from "./buildings";
+  ActiveAdventureRun,
+  Adventure,
+  AdventureDetails,
+  AdventureKind,
+  AdventureRun,
+  AdventureRunStep,
+  AdventureStepTemplate,
+} from "./adventures";
 export {
   addBuildingXp,
   calculateLevelFromXp,
@@ -37,8 +29,15 @@ export {
   processSessionBuildings,
   unlockBuilding,
 } from "./buildings";
+export type {
+  BuildingLevelUp,
+  BuildingUnlock,
+  SessionBuildingResult,
+  VillageBuilding,
+  VillageBuildingWithMeta,
+  VillageStatsType,
+} from "./buildings";
 export { db, schema } from "./client";
-export type { SessionSummary } from "./completed";
 export {
   createCompletedSession,
   getCompletedSessionById,
@@ -46,6 +45,7 @@ export {
   getRecentSessionHistory,
   listCompletedSessions,
 } from "./completed";
+export type { SessionSummary } from "./completed";
 export { suggestDifficultyFromSessions } from "./difficultySuggestion";
 export { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
 export {
@@ -54,7 +54,6 @@ export {
   formatDuration,
 } from "./estimate";
 export { getExerciseById, listExercises } from "./exercises";
-export type { CreateGoalInput, Goal, GoalProgress } from "./goals";
 export {
   createGoal,
   getActiveGoal,
@@ -69,6 +68,7 @@ export {
   updateGoal,
   updateGoalStatus,
 } from "./goals";
+export type { CreateGoalInput, Goal, GoalProgress } from "./goals";
 export {
   getAllPreferences,
   getPreference,
@@ -77,8 +77,8 @@ export {
 } from "./preferences";
 export { estimateQuestTemplateSeconds } from "./preview";
 export {
-  createQuestTemplate,
   Difficulty,
+  createQuestTemplate,
   deleteQuest,
   generateTarget,
   getQuestById,
@@ -87,12 +87,6 @@ export {
   setQuestExercises,
   updateQuestMeta,
 } from "./quests";
-export type {
-  ExerciseResultForResources,
-  ResourceAmount,
-  ResourceLoot,
-  ResourceTransaction,
-} from "./resources";
 export {
   addResources,
   awardSessionResources,
@@ -103,4 +97,10 @@ export {
   getResourceInventory,
   previewSessionLoot,
   spendResources,
+} from "./resources";
+export type {
+  ExerciseResultForResources,
+  ResourceAmount,
+  ResourceLoot,
+  ResourceTransaction,
 } from "./resources";

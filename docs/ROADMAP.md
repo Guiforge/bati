@@ -342,8 +342,8 @@ This document tracks all features, their implementation status, and future plans
 - 📋 Flame visual
   - 📋 Flame in village center
   - 📋 Flame animations
-- 📋 Streak warnings
-  - 📋 "Don't lose your flame" reminder
+- ✅ Streak warnings
+  - ✅ "Don't lose your flame" reminder (via smart notifications at 8 PM)
 
 ### 2.4 Boss HP System ✅
 

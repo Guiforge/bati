@@ -151,8 +151,13 @@ export function VictoryView() {
       setIsSaving(true);
       // Pass feedback as FeedbackCode or null
       const feedbackCode = feedback as "easy" | "good" | "hard" | null;
-      const { campaign, newRecords: records, buildings, levelUp, newAchievements } =
-        await saveSession(feedbackCode);
+      const {
+        campaign,
+        newRecords: records,
+        buildings,
+        levelUp,
+        newAchievements,
+      } = await saveSession(feedbackCode);
 
       // Update notifications (cancel streak warning if any, schedule next)
       scheduleSmartNotifications();
@@ -160,8 +165,12 @@ export function VictoryView() {
       // Show achievement notifications
       if (newAchievements && newAchievements.length > 0) {
         for (const achievement of newAchievements) {
-          const title = language === "fr" ? achievement.definition.frTitle : achievement.definition.enTitle;
-          const body = language === "fr" ? achievement.definition.frDescription : achievement.definition.enDescription;
+          const title =
+            language === "fr" ? achievement.definition.frTitle : achievement.definition.enTitle;
+          const body =
+            language === "fr"
+              ? achievement.definition.frDescription
+              : achievement.definition.enDescription;
           showAchievementNotification(title, body, achievement.definition.icon);
         }
       }

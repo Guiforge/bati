@@ -2,7 +2,7 @@ import { addDays, isSameDay, isYesterday, set } from "date-fns";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
-import { getAnyActiveAdventureRun, getAdventureDetails } from "@/db/adventures";
+import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db/adventures";
 import { getStreakInfo } from "@/db/streaks";
 import { useSettingsStore } from "@/stores/settings";
 

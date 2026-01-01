@@ -1,9 +1,10 @@
-import { desc, gte, sql } from "drizzle-orm";
+import { desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { MUSCLE_LABELS } from "./muscles";
 import { type MuscleCode, muscleCodes } from "./schema";
 
-const { completedQuest, completedExercises, exercises, exerciseMuscles } = schema;
+const { completedQuest, completedExercises, exercises, exerciseMuscles, quests, questExercises } =
+  schema;
 
 export type MuscleVolume = {
   muscle: MuscleCode;
@@ -200,4 +201,75 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
     },
     focusAreas: balance.weakAreas.slice(0, 2),
   };
+}
+
+export type SuggestedQuest = {
+  id: number;
+  enTitle: string;
+  frTitle: string;
+  matchingMuscles: MuscleCode[];
+  matchScore: number; // Higher = better match for weak areas
+};
+
+/**
+ * Get quests that focus on weak muscle areas.
+ * Ranks quests by how many weak-area muscles they target.
+ */
+export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<SuggestedQuest[]> {
+  const focusAreas = await getSuggestedFocusAreas(3);
+
+  if (focusAreas.length === 0) {
+    return [];
+  }
+
+  // Get all quests with their exercises and muscles
+  const rows = await db
+    .select({
+      questId: quests.id,
+      enTitle: quests.enTitle,
+      frTitle: quests.frTitle,
+      muscle: exerciseMuscles.muscle,
+    })
+    .from(quests)
+    .innerJoin(questExercises, eq(questExercises.questId, quests.id))
+    .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId))
+    .innerJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
+    .where(inArray(exerciseMuscles.muscle, focusAreas));
+
+  // Group by quest and count matching muscles
+  const questMap = new Map<
+    number,
+    { enTitle: string; frTitle: string; muscles: Set<MuscleCode> }
+  >();
+
+  for (const row of rows) {
+    if (!questMap.has(row.questId)) {
+      questMap.set(row.questId, {
+        enTitle: row.enTitle,
+        frTitle: row.frTitle,
+        muscles: new Set(),
+      });
+    }
+    const muscle = row.muscle as MuscleCode;
+    if (focusAreas.includes(muscle)) {
+      questMap.get(row.questId)?.muscles.add(muscle);
+    }
+  }
+
+  // Build result and sort by match score
+  const results: SuggestedQuest[] = [];
+  for (const [id, data] of questMap) {
+    results.push({
+      id,
+      enTitle: data.enTitle,
+      frTitle: data.frTitle,
+      matchingMuscles: [...data.muscles],
+      matchScore: data.muscles.size,
+    });
+  }
+
+  // Sort by match score descending, then by id for stability
+  results.sort((a, b) => b.matchScore - a.matchScore || a.id - b.id);
+
+  return results.slice(0, limit);
 }

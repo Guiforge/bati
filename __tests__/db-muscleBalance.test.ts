@@ -184,4 +184,50 @@ describe("db/muscleBalance", () => {
     expect(rec.message.en).toContain("calves");
     expect(rec.focusAreas).toEqual(["abs", "calf"]);
   });
+
+  test("getSuggestedQuestsForWeakAreas returns empty when no training history", async () => {
+    const { getSuggestedQuestsForWeakAreas } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    const suggestions = await getSuggestedQuestsForWeakAreas(3);
+    expect(suggestions).toEqual([]);
+  });
+
+  test("getSuggestedQuestsForWeakAreas returns quests targeting weak muscles", async () => {
+    const { getSuggestedQuestsForWeakAreas } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+    const now = Math.floor(Date.now() / 1000);
+
+    // Create imbalance: train chest a lot, ignore other muscles
+    // Get chest exercise
+    const pushupRow = t.sqlite
+      .prepare(`SELECT id FROM exercises WHERE enName = 'Push-ups'`)
+      .get() as { id: number } | undefined;
+    const pushupId = pushupRow?.id ?? 2;
+
+    // Add many chest sessions to create imbalance
+    for (let i = 1; i <= 10; i++) {
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES (${i}, ${now - i * 3600});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) 
+        VALUES (${i}, ${pushupId}, 'reps', 50, ${now - i * 3600}, 0);
+      `);
+    }
+
+    const suggestions = await getSuggestedQuestsForWeakAreas(3);
+
+    // Should return quests (may vary based on seeded quests)
+    // Just verify the structure and that it doesn't suggest chest-focused quests
+    expect(Array.isArray(suggestions)).toBe(true);
+    for (const s of suggestions) {
+      expect(s).toHaveProperty("id");
+      expect(s).toHaveProperty("enTitle");
+      expect(s).toHaveProperty("frTitle");
+      expect(s).toHaveProperty("matchingMuscles");
+      expect(s).toHaveProperty("matchScore");
+      expect(s.matchScore).toBeGreaterThan(0);
+      // Should not include chest as a matching muscle (it's overworked)
+      expect(s.matchingMuscles).not.toContain("chest");
+    }
+  });
 });

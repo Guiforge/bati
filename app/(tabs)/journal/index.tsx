@@ -9,6 +9,7 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { JournalStats } from "@/components/journal/JournalStats";
 import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
+import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
@@ -161,6 +162,7 @@ export default function JournalScreen() {
           <>
             <JournalStats sessions={history} />
             <MuscleBalanceCard />
+            <SuggestedQuestsCard />
           </>
         ) : (
           history.map((entry) => (

@@ -217,7 +217,9 @@
     "difficulty_split": "Répartition Difficulté",
     "muscle_balance": "Équilibre Musculaire",
     "balance_good": "Équilibré !",
-    "balance_needs_work": "À travailler"
+    "balance_needs_work": "À travailler",
+    "suggested_quests": "Recommandés Pour Toi",
+    "suggested_quests_desc": "Des quêtes pour renforcer tes points faibles"
   },
   "chart": {
     "loading": "Chargement du graphique...",

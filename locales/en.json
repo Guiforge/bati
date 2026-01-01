@@ -217,7 +217,9 @@
     "difficulty_split": "Difficulty Split",
     "muscle_balance": "Muscle Balance",
     "balance_good": "Balanced!",
-    "balance_needs_work": "Needs Work"
+    "balance_needs_work": "Needs Work",
+    "suggested_quests": "Recommended For You",
+    "suggested_quests_desc": "Quests to strengthen your weak areas"
   },
   "chart": {
     "loading": "Loading chart...",

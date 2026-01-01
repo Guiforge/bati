@@ -19,7 +19,7 @@ export type PlannedSession = {
  * Returns what would be scheduled for the given goal parameters
  */
 export async function previewPlanForGoal(
-  params: Pick<CreateGoalInput, "daysPerWeek">,
+  params: Pick<CreateGoalInput, "daysPerWeek">
 ): Promise<PlannedSession[]> {
   const quests = await listQuestTemplates();
   if (quests.length === 0) {

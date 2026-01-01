@@ -1,24 +1,10 @@
-import {
-  index,
-  int,
-  primaryKey,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // ------------------------------------------------------------
 // Exercises catalogue
 // ------------------------------------------------------------
 
-export const muscleCodes = [
-  "arms",
-  "back",
-  "shoulder",
-  "chest",
-  "abs",
-  "calf",
-] as const;
+export const muscleCodes = ["arms", "back", "shoulder", "chest", "abs", "calf"] as const;
 export type MuscleCode = (typeof muscleCodes)[number];
 
 export const equipmentCodes = [
@@ -80,7 +66,7 @@ export const exercises = sqliteTable(
   },
   (table) => ({
     enNameUnique: uniqueIndex("exercises_en_name_unique").on(table.enName),
-  })
+  }),
 );
 
 export const exerciseMuscles = sqliteTable(
@@ -94,7 +80,7 @@ export const exerciseMuscles = sqliteTable(
   (table) => ({
     pk: primaryKey({ columns: [table.exerciseId, table.muscle] }),
     muscleIdx: index("exercise_muscles_muscle_idx").on(table.muscle),
-  })
+  }),
 );
 
 // ------------------------------------------------------------
@@ -145,11 +131,8 @@ export const questExercises = sqliteTable(
   },
   (table) => ({
     questIdx: index("quest_exercises_quest_idx").on(table.questId),
-    sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(
-      table.questId,
-      table.sortOrder
-    ),
-  })
+    sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(table.questId, table.sortOrder),
+  }),
 );
 
 // ------------------------------------------------------------
@@ -194,11 +177,8 @@ export const adventures = sqliteTable(
   },
   (table) => ({
     questUnique: uniqueIndex("adventures_quest_unique").on(table.questId),
-    activeSortIdx: index("adventures_active_sort_idx").on(
-      table.isActive,
-      table.sortOrder
-    ),
-  })
+    activeSortIdx: index("adventures_active_sort_idx").on(table.isActive, table.sortOrder),
+  }),
 );
 
 export const adventureStepStatuses = ["locked", "active", "completed"] as const;
@@ -234,9 +214,9 @@ export const adventureSteps = sqliteTable(
     questIdx: index("adventure_steps_quest_idx").on(table.questId),
     orderUnique: uniqueIndex("adventure_steps_adventure_step_unique").on(
       table.adventureId,
-      table.stepIndex
+      table.stepIndex,
     ),
-  })
+  }),
 );
 
 export const adventureRuns = sqliteTable(
@@ -254,7 +234,7 @@ export const adventureRuns = sqliteTable(
   },
   (table) => ({
     adventureIdx: index("adventure_runs_adventure_idx").on(table.adventureId),
-  })
+  }),
 );
 
 export const adventureRunSteps = sqliteTable(
@@ -280,13 +260,10 @@ export const adventureRunSteps = sqliteTable(
     questIdx: index("adventure_run_steps_quest_idx").on(table.questId),
     orderUnique: uniqueIndex("adventure_run_steps_run_step_unique").on(
       table.runId,
-      table.stepIndex
+      table.stepIndex,
     ),
-    runStatusIdx: index("adventure_run_steps_run_status_idx").on(
-      table.runId,
-      table.status
-    ),
-  })
+    runStatusIdx: index("adventure_run_steps_run_status_idx").on(table.runId, table.status),
+  }),
 );
 
 // ------------------------------------------------------------
@@ -325,11 +302,9 @@ export const completedQuest = sqliteTable(
       .$defaultFn(() => new Date()),
   },
   (table) => ({
-    performedAtIdx: index("completed_sessions_performed_at_idx").on(
-      table.performedAt
-    ),
+    performedAtIdx: index("completed_sessions_performed_at_idx").on(table.performedAt),
     questIdx: index("completed_sessions_quest_idx").on(table.questId),
-  })
+  }),
 );
 
 export const completedExercises = sqliteTable(
@@ -367,10 +342,12 @@ export const completedExercises = sqliteTable(
   (table) => ({
     sessionIdx: index("completed_exercises_session_idx").on(table.sessionId),
     exerciseIdx: index("completed_exercises_exercise_idx").on(table.exerciseId),
-    orderUnique: uniqueIndex(
-      "completed_exercises_session_round_sort_unique"
-    ).on(table.sessionId, table.roundIndex, table.sortOrder),
-  })
+    orderUnique: uniqueIndex("completed_exercises_session_round_sort_unique").on(
+      table.sessionId,
+      table.roundIndex,
+      table.sortOrder,
+    ),
+  }),
 );
 
 // ------------------------------------------------------------
@@ -398,10 +375,8 @@ export const bossFights = sqliteTable(
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({
-    adventureUnique: uniqueIndex("boss_fights_adventure_unique").on(
-      table.adventureId
-    ),
-  })
+    adventureUnique: uniqueIndex("boss_fights_adventure_unique").on(table.adventureId),
+  }),
 );
 
 export const bossDamageLog = sqliteTable(
@@ -425,10 +400,8 @@ export const bossDamageLog = sqliteTable(
   },
   (table) => ({
     fightIdx: index("boss_damage_log_fight_idx").on(table.bossFightId),
-    sessionIdx: index("boss_damage_log_session_idx").on(
-      table.completedSessionId
-    ),
-  })
+    sessionIdx: index("boss_damage_log_session_idx").on(table.completedSessionId),
+  }),
 );
 
 // ------------------------------------------------------------
@@ -465,10 +438,8 @@ export const resourceInventory = sqliteTable(
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({
-    resourceUnique: uniqueIndex("resource_inventory_resource_unique").on(
-      table.resource
-    ),
-  })
+    resourceUnique: uniqueIndex("resource_inventory_resource_unique").on(table.resource),
+  }),
 );
 
 // Transaction types for analytics
@@ -485,10 +456,7 @@ export const resourceTransactions = sqliteTable(
     // Amount changed (positive for earn/bonus, could be negative for spend)
     amount: int().notNull(),
     // Transaction type
-    transactionType: text()
-      .notNull()
-      .default("earned")
-      .$type<ResourceTransactionType>(),
+    transactionType: text().notNull().default("earned").$type<ResourceTransactionType>(),
     // Optional: link to the session that earned this resource
     completedSessionId: int().references(() => completedQuest.id, {
       onDelete: "set null",
@@ -499,13 +467,9 @@ export const resourceTransactions = sqliteTable(
   },
   (table) => ({
     resourceIdx: index("resource_transactions_resource_idx").on(table.resource),
-    sessionIdx: index("resource_transactions_session_idx").on(
-      table.completedSessionId
-    ),
-    createdAtIdx: index("resource_transactions_created_at_idx").on(
-      table.createdAt
-    ),
-  })
+    sessionIdx: index("resource_transactions_session_idx").on(table.completedSessionId),
+    createdAtIdx: index("resource_transactions_created_at_idx").on(table.createdAt),
+  }),
 );
 
 // ------------------------------------------------------------
@@ -761,10 +725,8 @@ export const villageBuildings = sqliteTable(
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({
-    buildingTypeUnique: uniqueIndex("village_buildings_type_unique").on(
-      table.buildingType
-    ),
-  })
+    buildingTypeUnique: uniqueIndex("village_buildings_type_unique").on(table.buildingType),
+  }),
 );
 
 // Village stats table (aggregate stats for the village)
@@ -781,21 +743,11 @@ export const villageStats = sqliteTable("village_stats", {
 // ------------------------------------------------------------
 
 // Goal types for different training focuses
-export const goalTypeCodes = [
-  "strength",
-  "endurance",
-  "flexibility",
-  "balanced",
-] as const;
+export const goalTypeCodes = ["strength", "endurance", "flexibility", "balanced"] as const;
 export type GoalTypeCode = (typeof goalTypeCodes)[number];
 
 // Goal status
-export const goalStatusCodes = [
-  "active",
-  "paused",
-  "completed",
-  "abandoned",
-] as const;
+export const goalStatusCodes = ["active", "paused", "completed", "abandoned"] as const;
 export type GoalStatusCode = (typeof goalStatusCodes)[number];
 
 // User goals table - tracks fitness objectives
@@ -841,12 +793,9 @@ export const goalProgress = sqliteTable(
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({
-    goalWeekUnique: uniqueIndex("goal_progress_goal_week_unique").on(
-      table.goalId,
-      table.weekKey
-    ),
+    goalWeekUnique: uniqueIndex("goal_progress_goal_week_unique").on(table.goalId, table.weekKey),
     goalIdx: index("goal_progress_goal_idx").on(table.goalId),
-  })
+  }),
 );
 
 // ------------------------------------------------------------
@@ -854,14 +803,8 @@ export const goalProgress = sqliteTable(
 // ------------------------------------------------------------
 
 // Status of a scheduled session
-export const scheduledSessionStatusCodes = [
-  "pending",
-  "completed",
-  "skipped",
-  "missed",
-] as const;
-export type ScheduledSessionStatusCode =
-  (typeof scheduledSessionStatusCodes)[number];
+export const scheduledSessionStatusCodes = ["pending", "completed", "skipped", "missed"] as const;
+export type ScheduledSessionStatusCode = (typeof scheduledSessionStatusCodes)[number];
 
 // Scheduled sessions table - planned workouts for the future
 export const scheduledSessions = sqliteTable(
@@ -884,10 +827,7 @@ export const scheduledSessions = sqliteTable(
     preferredHour: int(),
 
     // Status tracking
-    status: text()
-      .notNull()
-      .default("pending")
-      .$type<ScheduledSessionStatusCode>(),
+    status: text().notNull().default("pending").$type<ScheduledSessionStatusCode>(),
 
     // Link to completed session if done
     completedSessionId: int().references(() => completedQuest.id, {
@@ -905,5 +845,5 @@ export const scheduledSessions = sqliteTable(
     dateIdx: index("scheduled_sessions_date_idx").on(table.scheduledDate),
     statusIdx: index("scheduled_sessions_status_idx").on(table.status),
     goalIdx: index("scheduled_sessions_goal_idx").on(table.goalId),
-  })
+  }),
 );

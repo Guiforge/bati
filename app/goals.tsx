@@ -1,25 +1,24 @@
+import { ChevronLeft, Target } from "@tamagui/lucide-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H4, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
-
+import { Button, H1, H4, Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import {
   createGoal,
+  type Goal,
+  type GoalProgress,
   getActiveGoal,
   getGoalProgressHistory,
   getOrCreateWeekProgress,
   goalTypeInfo,
   updateGoalStatus,
-  type Goal,
-  type GoalProgress,
 } from "@/db/goals";
-import type { GoalTypeCode, GoalStatusCode } from "@/db/schema";
+import type { GoalStatusCode, GoalTypeCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
-import { ChevronLeft, Target } from "@tamagui/lucide-icons";
 
 const GOAL_TYPES: GoalTypeCode[] = ["strength", "endurance", "flexibility", "balanced"];
 const DAYS_OPTIONS = [2, 3, 4, 5, 6, 7];
@@ -346,7 +345,10 @@ export default function GoalsScreen() {
                 </H4>
                 <YStack gap="$2">
                   <Progress size="$4" value={percentage} bg="$background" rounded="$4">
-                    <Progress.Indicator animation="bouncy" bg={isComplete ? "$success" : "$primary"} />
+                    <Progress.Indicator
+                      animation="bouncy"
+                      bg={isComplete ? "$success" : "$primary"}
+                    />
                   </Progress>
                   <XStack justify="space-between">
                     <Text fontSize={14} color="$color" opacity={0.7}>

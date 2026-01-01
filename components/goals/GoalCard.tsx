@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { getCurrentWeekCompletion, goalTypeInfo, type Goal, type GoalProgress } from "@/db/goals";
+import { type Goal, type GoalProgress, getCurrentWeekCompletion, goalTypeInfo } from "@/db/goals";
 import type { GoalTypeCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -108,10 +108,7 @@ export function GoalCard({ onPress }: { onPress?: () => void }) {
         {progress && (
           <YStack gap="$1">
             <Progress size="$3" value={percentage} bg="$background" rounded="$4">
-              <Progress.Indicator
-                animation="bouncy"
-                bg={isComplete ? "$success" : "$primary"}
-              />
+              <Progress.Indicator animation="bouncy" bg={isComplete ? "$success" : "$primary"} />
             </Progress>
             <XStack justify="space-between">
               <Text fontSize={12} color="$color" opacity={0.6}>

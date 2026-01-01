@@ -315,3 +315,16 @@ When adding features, always ask:
 3. **Does it work offline?** (Offline-first)
 4. **Is it fun?** (Gamification that motivates)
 5. **Is it respectful?** (Privacy, no dark patterns)
+
+### 6.7 Advanced RPG 💡
+
+- 💡 Seasons & events
+  - 💡 Limited-time content
+  - 💡 Seasonal rewards
+- 💡 Cosmetics
+  - 💡 Avatar customization
+  - 💡 Village themes
+  - 💡 Flame colors
+- 💡 Equipment system
+  - 💡 Collect gear
+  - 💡 Buff effects

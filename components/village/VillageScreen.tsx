@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H4, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { FlameFlicker } from "@/components/village/VillageAnimations";
 import {
   getAllBuildings,
@@ -426,10 +427,25 @@ export function VillageScreen() {
         })}
 
         {isLoading && (
-          <YStack items="center" py="$6">
-            <Text color="$color" opacity={0.6}>
-              {t("common.loading", "Loading...")}
-            </Text>
+          <YStack gap="$4" py="$4">
+            <SkeletonCard>
+              <XStack gap="$3" items="center">
+                <Skeleton width={48} height={48} radius={8} />
+                <YStack flex={1} gap="$2">
+                  <Skeleton height={18} width="60%" />
+                  <Skeleton height={10} width="100%" />
+                </YStack>
+              </XStack>
+            </SkeletonCard>
+            <SkeletonCard>
+              <XStack gap="$3" items="center">
+                <Skeleton width={48} height={48} radius={8} />
+                <YStack flex={1} gap="$2">
+                  <Skeleton height={18} width="50%" />
+                  <Skeleton height={10} width="100%" />
+                </YStack>
+              </XStack>
+            </SkeletonCard>
           </YStack>
         )}
       </ScrollView>

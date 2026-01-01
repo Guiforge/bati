@@ -6,6 +6,7 @@ import { FlatList, useWindowDimensions } from "react-native";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { Skeleton } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { ProgressDots } from "@/components/ProgressDots";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
@@ -203,11 +204,16 @@ export function QuestCarousel() {
   if (state.status === "loading") {
     return (
       <Card>
-        <XStack items="center" justify="center" gap="$3" py="$4">
-          <Text fontSize={28}>🗺️</Text>
-          <Text fontWeight="900" fontSize={16} color="$color">
-            {t("quests.loading", "Loading...")}
-          </Text>
+        <XStack gap="$4" p="$2">
+          <Skeleton width={100} height={100} radius={12} />
+          <YStack flex={1} gap="$3">
+            <Skeleton height={20} width="70%" />
+            <Skeleton height={14} width="90%" />
+            <XStack gap="$2">
+              <Skeleton height={24} width={60} radius={12} />
+              <Skeleton height={24} width={80} radius={12} />
+            </XStack>
+          </YStack>
         </XStack>
       </Card>
     );

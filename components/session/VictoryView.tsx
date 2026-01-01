@@ -6,6 +6,7 @@ import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
+import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { useToast } from "@/components/common/Toast";
 import { ConstructionAnimation } from "@/components/village/ConstructionAnimation";
@@ -407,39 +408,22 @@ export function VictoryView() {
         </Card>
 
         {/* Share Button */}
-        <Button
-          size="$4"
-          bg="$bgLight"
-          borderWidth={2}
-          borderColor="$color"
-          pressStyle={{ opacity: 0.9, scale: 0.98 }}
+        <AppButton
+          backgroundColor="$bgLight"
           onPress={handleShare}
-          rounded="$6"
-          width="100%"
-          maxW={520}
-          mb="$2"
+          marginBottom="$2"
         >
           <Text color="$color" fontSize={16} fontWeight="800">
             {t("session.share", "Share Result")} 📤
           </Text>
-        </Button>
+        </AppButton>
 
         {/* Finish Button */}
-        <Button
-          size="$6"
-          bg="$color"
-          pressStyle={{ opacity: 0.9, scale: 0.98 }}
-          onPress={handleFinish}
-          disabled={isSaving}
-          rounded="$6"
-          width="100%"
-          maxW={520}
-          borderWidth={0}
-        >
+        <AppButton onPress={handleFinish} disabled={isSaving}>
           <Text color="$background" fontSize={20} fontWeight="900" textTransform="uppercase">
             {isSaving ? t("common.saving") : t("session.finish_button")}
           </Text>
-        </Button>
+        </AppButton>
       </ScrollView>
 
       <ConfettiCannon

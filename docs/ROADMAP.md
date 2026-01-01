@@ -306,10 +306,13 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Wire processSessionBuildings to session completion
   - ✅ Trigger building XP on workout finish
   - ✅ Include building results in saveSession return
-- 📋 Village view
-  - 📋 Isometric/2.5D layout
-  - 📋 Building placement
-  - 📋 Building state visuals (locked/active/upgrading)
+- ⚠️ Village view
+  - ✅ Building list by tier
+  - ✅ Building progress bars (XP to next level)
+  - ✅ Locked/unlocked state display
+  - ✅ Village stats summary card
+  - ✅ Village card on Home screen
+  - 📋 Isometric/2.5D layout (future enhancement)
   - 📋 Day/night cycle (optional)
 - 📋 Village interactions
   - 📋 Tap building for details

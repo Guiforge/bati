@@ -23,7 +23,7 @@ export function useReducedMotion(): boolean {
  */
 export function useAnimationProps(
   animation: string = "quick",
-  enterStyle?: Record<string, number | string>
+  enterStyle?: Record<string, number | string>,
 ) {
   const reducedMotion = useReducedMotion();
 

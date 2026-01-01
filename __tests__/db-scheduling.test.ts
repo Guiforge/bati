@@ -28,18 +28,14 @@ describe("Scheduling", () => {
   // Helper to get a quest ID
   async function getFirstQuestId(): Promise<number> {
     const { db, schema } = require("../db/client");
-    const [quest] = await db
-      .select({ id: schema.quests.id })
-      .from(schema.quests)
-      .limit(1);
+    const [quest] = await db.select({ id: schema.quests.id }).from(schema.quests).limit(1);
     if (!quest) throw new Error("No quests found");
     return quest.id;
   }
 
   describe("createScheduledSession", () => {
     test("should create a scheduled session", async () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       const questId = await getFirstQuestId();
       const scheduledDate = new Date();
       scheduledDate.setHours(0, 0, 0, 0);
@@ -55,8 +51,7 @@ describe("Scheduling", () => {
     });
 
     test("should create with optional fields", async () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       const questId = await getFirstQuestId();
       const scheduledDate = new Date();
 
@@ -74,8 +69,7 @@ describe("Scheduling", () => {
 
   describe("getScheduledSessionsInRange", () => {
     test("should return sessions within date range", async () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       const questId = await getFirstQuestId();
 
       const today = new Date();
@@ -106,10 +100,7 @@ describe("Scheduling", () => {
       endOfWeek.setDate(endOfWeek.getDate() + 6);
       endOfWeek.setHours(23, 59, 59, 999);
 
-      const sessions = await scheduling.getScheduledSessionsInRange(
-        today,
-        endOfWeek
-      );
+      const sessions = await scheduling.getScheduledSessionsInRange(today, endOfWeek);
 
       // Should include today and tomorrow but not next week
       expect(sessions.length).toBe(2);
@@ -118,8 +109,7 @@ describe("Scheduling", () => {
 
   describe("getTodaysScheduledSessions", () => {
     test("should return only today's sessions with quest data", async () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       const questId = await getFirstQuestId();
 
       const today = new Date();
@@ -140,8 +130,7 @@ describe("Scheduling", () => {
 
   describe("updateScheduledSessionStatus", () => {
     test("should update status to skipped", async () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       const { db, schema } = require("../db/client");
       const { eq } = require("drizzle-orm");
 
@@ -162,8 +151,7 @@ describe("Scheduling", () => {
     });
 
     test("should update status to completed", async () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       const { db, schema } = require("../db/client");
       const { eq } = require("drizzle-orm");
 
@@ -187,8 +175,7 @@ describe("Scheduling", () => {
 
   describe("deleteScheduledSession", () => {
     test("should delete a session", async () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       const { db, schema } = require("../db/client");
       const { eq } = require("drizzle-orm");
 
@@ -211,8 +198,7 @@ describe("Scheduling", () => {
 
   describe("getWeekStartDate", () => {
     test("should return Monday for a Wednesday", () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       // January 8, 2025 is a Wednesday
       const wednesday = new Date(2025, 0, 8);
       const monday = scheduling.getWeekStartDate(wednesday);
@@ -222,8 +208,7 @@ describe("Scheduling", () => {
     });
 
     test("should return same Monday for Monday", () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       const monday = new Date(2025, 0, 6);
       const weekStart = scheduling.getWeekStartDate(monday);
 
@@ -232,8 +217,7 @@ describe("Scheduling", () => {
     });
 
     test("should return previous Monday for Sunday", () => {
-      const scheduling =
-        require("../db/scheduling") as typeof import("../db/scheduling");
+      const scheduling = require("../db/scheduling") as typeof import("../db/scheduling");
       // January 12, 2025 is a Sunday
       const sunday = new Date(2025, 0, 12);
       const monday = scheduling.getWeekStartDate(sunday);

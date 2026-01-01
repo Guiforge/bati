@@ -4,147 +4,147 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Text, YStack } from "tamagui";
 
 interface ErrorBoundaryProps {
-    children: ReactNode;
-    fallback?: ReactNode;
-    onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  children: ReactNode;
+  fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
-    hasError: boolean;
-    error: Error | null;
+  hasError: boolean;
+  error: Error | null;
 }
 
 /**
  * Error Boundary component to catch React errors and display a fallback UI
  */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    constructor(props: ErrorBoundaryProps) {
-        super(props);
-        this.state = { hasError: false, error: null };
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    this.props.onError?.(error, errorInfo);
+  }
+
+  handleRetry = () => {
+    this.setState({ hasError: false, error: null });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+      return <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />;
     }
 
-    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-        return { hasError: true, error };
-    }
-
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        console.error("ErrorBoundary caught an error:", error, errorInfo);
-        this.props.onError?.(error, errorInfo);
-    }
-
-    handleRetry = () => {
-        this.setState({ hasError: false, error: null });
-    };
-
-    render() {
-        if (this.state.hasError) {
-            if (this.props.fallback) {
-                return this.props.fallback;
-            }
-            return <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />;
-        }
-
-        return this.props.children;
-    }
+    return this.props.children;
+  }
 }
 
 interface ErrorFallbackProps {
-    error: Error | null;
-    onRetry?: () => void;
+  error: Error | null;
+  onRetry?: () => void;
 }
 
 /**
  * Default error fallback UI
  */
 function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
-    // Since this is a function component inside a class component's render,
-    // we can use hooks here
-    const FallbackContent = () => {
-        const { t } = useTranslation();
-        const insets = useSafeAreaInsets();
+  // Since this is a function component inside a class component's render,
+  // we can use hooks here
+  const FallbackContent = () => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
 
-        return (
-            <YStack
-                flex={1}
-                bg="$background"
-                pt={insets.top + 24}
-                pb={insets.bottom + 24}
-                px="$5"
-                items="center"
-                justify="center"
-                gap="$4"
-            >
-                <Text fontSize={64}>😵</Text>
-                <YStack items="center" gap="$2">
-                    <H1 color="$color" fontWeight="900" fontSize={24} style={{ textAlign: "center" }}>
-                        {t("errors.something_went_wrong", "Something went wrong")}
-                    </H1>
-                    <Paragraph color="$color" opacity={0.6} style={{ textAlign: "center" }}>
-                        {t("errors.try_again_message", "Don't worry, you can try again.")}
-                    </Paragraph>
-                </YStack>
+    return (
+      <YStack
+        flex={1}
+        bg="$background"
+        pt={insets.top + 24}
+        pb={insets.bottom + 24}
+        px="$5"
+        items="center"
+        justify="center"
+        gap="$4"
+      >
+        <Text fontSize={64}>😵</Text>
+        <YStack items="center" gap="$2">
+          <H1 color="$color" fontWeight="900" fontSize={24} style={{ textAlign: "center" }}>
+            {t("errors.something_went_wrong", "Something went wrong")}
+          </H1>
+          <Paragraph color="$color" opacity={0.6} style={{ textAlign: "center" }}>
+            {t("errors.try_again_message", "Don't worry, you can try again.")}
+          </Paragraph>
+        </YStack>
 
-                {__DEV__ && error && (
-                    <YStack
-                        bg="$pastelPink"
-                        p="$3"
-                        rounded="$4"
-                        borderWidth={2}
-                        borderColor="$color"
-                        maxW="100%"
-                    >
-                        <Text fontSize={12} color="$color" numberOfLines={5}>
-                            {error.message}
-                        </Text>
-                    </YStack>
-                )}
+        {__DEV__ && error && (
+          <YStack
+            bg="$pastelPink"
+            p="$3"
+            rounded="$4"
+            borderWidth={2}
+            borderColor="$color"
+            maxW="100%"
+          >
+            <Text fontSize={12} color="$color" numberOfLines={5}>
+              {error.message}
+            </Text>
+          </YStack>
+        )}
 
-                {onRetry && (
-                    <Button
-                        bg="$primary"
-                        borderWidth={3}
-                        borderColor="$color"
-                        rounded="$6"
-                        onPress={onRetry}
-                        pressStyle={{ opacity: 0.9, scale: 0.98 }}
-                    >
-                        <Text fontWeight="800" color="white">
-                            {t("errors.try_again", "Try Again")}
-                        </Text>
-                    </Button>
-                )}
-            </YStack>
-        );
-    };
+        {onRetry && (
+          <Button
+            bg="$primary"
+            borderWidth={3}
+            borderColor="$color"
+            rounded="$6"
+            onPress={onRetry}
+            pressStyle={{ opacity: 0.9, scale: 0.98 }}
+          >
+            <Text fontWeight="800" color="white">
+              {t("errors.try_again", "Try Again")}
+            </Text>
+          </Button>
+        )}
+      </YStack>
+    );
+  };
 
-    return <FallbackContent />;
+  return <FallbackContent />;
 }
 
 /**
  * A simpler inline error display for smaller sections
  */
 export function InlineError({ message, onRetry }: { message?: string; onRetry?: () => void }) {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    return (
-        <YStack bg="$pastelPink" p="$3" rounded="$4" borderWidth={2} borderColor="$color" gap="$2">
-            <Text fontWeight="700" color="$color">
-                {message || t("errors.generic")}
-            </Text>
-            {onRetry && (
-                <Button
-                    size="$2"
-                    bg="$bgLight"
-                    borderWidth={2}
-                    borderColor="$color"
-                    rounded="$3"
-                    onPress={onRetry}
-                >
-                    <Text fontSize={12} fontWeight="700" color="$color">
-                        {t("errors.try_again", "Try Again")}
-                    </Text>
-                </Button>
-            )}
-        </YStack>
-    );
+  return (
+    <YStack bg="$pastelPink" p="$3" rounded="$4" borderWidth={2} borderColor="$color" gap="$2">
+      <Text fontWeight="700" color="$color">
+        {message || t("errors.generic")}
+      </Text>
+      {onRetry && (
+        <Button
+          size="$2"
+          bg="$bgLight"
+          borderWidth={2}
+          borderColor="$color"
+          rounded="$3"
+          onPress={onRetry}
+        >
+          <Text fontSize={12} fontWeight="700" color="$color">
+            {t("errors.try_again", "Try Again")}
+          </Text>
+        </Button>
+      )}
+    </YStack>
+  );
 }

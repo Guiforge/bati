@@ -19,6 +19,10 @@
     "village_name_placeholder": "Ton nom de village",
     "village_name_title": "Nomme ton village"
   },
+  "scheduling": {
+    "title": "Planning Hebdomadaire",
+    "no_sessions": "Aucun entraînement prévu"
+  },
   "settings_avatar_hint": "Tape sur un avatar pour changer.",
   "settings": "Paramètres",
   "settings.haptics_title": "Vibrations",

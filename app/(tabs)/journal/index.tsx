@@ -1,3 +1,10 @@
+import { BarChart2, ChevronLeft, List } from "@tamagui/lucide-icons";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
 import { JournalStats } from "@/components/journal/JournalStats";
@@ -11,13 +18,6 @@ import { UserLevelCard } from "@/components/journal/UserLevelCard";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
-import { BarChart2, ChevronLeft, List } from "@tamagui/lucide-icons";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 type TabType = "history" | "stats";
 

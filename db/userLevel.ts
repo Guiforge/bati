@@ -115,9 +115,7 @@ export function getLevelTitle(level: number): { en: string; fr: string } {
  * Get the user's total XP from all completed sessions
  */
 export async function getTotalXp(): Promise<number> {
-  const result = await db
-    .select({ total: sum(completedQuest.xpEarned) })
-    .from(completedQuest);
+  const result = await db.select({ total: sum(completedQuest.xpEarned) }).from(completedQuest);
 
   return Number(result[0]?.total ?? 0);
 }
@@ -135,10 +133,7 @@ export async function getUserLevelInfo(): Promise<UserLevelInfo> {
   const xpToNextLevel = nextLevelStart - totalXp;
   const xpProgress =
     nextLevelStart > currentLevelStart
-      ? Math.min(
-          100,
-          (currentLevelXp / (nextLevelStart - currentLevelStart)) * 100
-        )
+      ? Math.min(100, (currentLevelXp / (nextLevelStart - currentLevelStart)) * 100)
       : 100;
 
   return {
@@ -162,10 +157,7 @@ export async function getTotalStats(): Promise<{
   // Fetch all sessions and compute stats
   const sessions = await db.select().from(completedQuest);
 
-  const totalSeconds = sessions.reduce(
-    (acc, s) => acc + (s.durationSeconds ?? 0),
-    0
-  );
+  const totalSeconds = sessions.reduce((acc, s) => acc + (s.durationSeconds ?? 0), 0);
   const totalXp = sessions.reduce((acc, s) => acc + s.xpEarned, 0);
 
   return {

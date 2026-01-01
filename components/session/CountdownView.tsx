@@ -1,11 +1,11 @@
-import { useHaptics } from "@/hooks/useHaptics";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { useSessionTimer } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Text, YStack } from "tamagui";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useSessionTimer } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
 
 export function CountdownView() {
   const { t } = useTranslation();

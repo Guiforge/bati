@@ -8,6 +8,7 @@
     "@tamagui/animations-react-native": "^1.140.3",
     "@tamagui/config": "^1.140.3",
     "@tamagui/lucide-icons": "^1.140.4",
+    "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.0",
     "expo": "~54.0.29",
     "expo-constants": "~18.0.12",

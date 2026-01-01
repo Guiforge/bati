@@ -277,9 +277,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
 ];
 
-export function getAchievementDefinition(
-  code: AchievementCode
-): AchievementDefinition | undefined {
+export function getAchievementDefinition(code: AchievementCode): AchievementDefinition | undefined {
   return achievementDefinitions.find((a) => a.code === code);
 }
 
@@ -291,9 +289,7 @@ export interface UnlockedAchievement {
   unlockedAt: string; // ISO date string
 }
 
-export async function getUnlockedAchievements(): Promise<
-  UnlockedAchievement[]
-> {
+export async function getUnlockedAchievements(): Promise<UnlockedAchievement[]> {
   const rows = await db
     .select()
     .from(userPreferences)
@@ -308,9 +304,7 @@ export async function getUnlockedAchievements(): Promise<
   }
 }
 
-export async function unlockAchievement(
-  code: AchievementCode
-): Promise<boolean> {
+export async function unlockAchievement(code: AchievementCode): Promise<boolean> {
   const unlocked = await getUnlockedAchievements();
 
   // Already unlocked
@@ -353,9 +347,7 @@ export interface AchievementProgress {
   targetValue: number;
 }
 
-export async function getAllAchievementsWithProgress(): Promise<
-  AchievementProgress[]
-> {
+export async function getAllAchievementsWithProgress(): Promise<AchievementProgress[]> {
   const unlocked = await getUnlockedAchievements();
   const unlockedMap = new Map(unlocked.map((a) => [a.code, a]));
 
@@ -363,9 +355,7 @@ export async function getAllAchievementsWithProgress(): Promise<
   const sessions = await listCompletedSessions(1000);
   const totalSessions = sessions.length;
   const totalXp = sessions.reduce((sum, s) => sum + s.xpEarned, 0);
-  const uniqueQuests = new Set(
-    sessions.filter((s) => s.questId).map((s) => s.questId)
-  ).size;
+  const uniqueQuests = new Set(sessions.filter((s) => s.questId).map((s) => s.questId)).size;
 
   // Get streak info
   const streakInfo = await getStreakInfo();
@@ -470,8 +460,7 @@ export async function getAllAchievementsWithProgress(): Promise<
         break;
     }
 
-    const progress =
-      targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0;
+    const progress = targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0;
 
     return {
       code: def.code,
@@ -508,9 +497,7 @@ export async function checkForNewAchievements(sessionInfo: {
   const sessions = await listCompletedSessions(1000);
   const totalSessions = sessions.length;
   const totalXp = sessions.reduce((sum, s) => sum + s.xpEarned, 0);
-  const uniqueQuests = new Set(
-    sessions.filter((s) => s.questId).map((s) => s.questId)
-  ).size;
+  const uniqueQuests = new Set(sessions.filter((s) => s.questId).map((s) => s.questId)).size;
 
   // Get streak info
   const streakInfo = await getStreakInfo();

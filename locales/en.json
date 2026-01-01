@@ -19,6 +19,10 @@
     "village_name_placeholder": "Your village name",
     "village_name_title": "Name your village"
   },
+  "scheduling": {
+    "title": "Weekly Schedule",
+    "no_sessions": "No workouts scheduled"
+  },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",
   "settings.haptics_title": "Haptics",

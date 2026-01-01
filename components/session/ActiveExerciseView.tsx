@@ -1,14 +1,14 @@
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Pressable } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseBgForSessionStep } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Pressable } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "./BossHpBar";
 
 export function ActiveExerciseView() {
@@ -133,10 +133,10 @@ export function ActiveExerciseView() {
           lastDamage={
             lastDamageResult
               ? {
-                damage: lastDamageResult.damage,
-                isCritical: lastDamageResult.isCritical,
-                weaknessBonus: lastDamageResult.weaknessBonus,
-              }
+                  damage: lastDamageResult.damage,
+                  isCritical: lastDamageResult.isCritical,
+                  weaknessBonus: lastDamageResult.weaknessBonus,
+                }
               : null
           }
         />

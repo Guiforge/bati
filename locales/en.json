@@ -23,6 +23,9 @@
     "title": "Weekly Schedule",
     "no_sessions": "No workouts scheduled"
   },
+  "coach": {
+    "rest_suggestion_title": "Coach says: Rest!"
+  },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",
   "settings.haptics_title": "Haptics",

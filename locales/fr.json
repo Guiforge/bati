@@ -23,6 +23,9 @@
     "title": "Planning Hebdomadaire",
     "no_sessions": "Aucun entraînement prévu"
   },
+  "coach": {
+    "rest_suggestion_title": "Le Coach dit : Repos !"
+  },
   "settings_avatar_hint": "Tape sur un avatar pour changer.",
   "settings": "Paramètres",
   "settings.haptics_title": "Vibrations",

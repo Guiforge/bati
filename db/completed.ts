@@ -1,18 +1,11 @@
-import {
-  format,
-  startOfMonth,
-  startOfWeek,
-  subMonths,
-  subWeeks,
-} from "date-fns";
+import { format, startOfMonth, startOfWeek, subMonths, subWeeks } from "date-fns";
 import { desc, eq, gte } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import type { DifficultyCode, FeedbackCode, QuestTargetType } from "./schema";
 
-const { completedExercises, completedQuest, exerciseMuscles, exercises } =
-  schema;
+const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
 
 export type CompletedExerciseInput = {
   exerciseId: number;
@@ -64,9 +57,7 @@ export type CompletedSession = {
 type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
 type TransactionTx = Parameters<TransactionCallback>[0];
 
-async function transactionOrFallback<T>(
-  fn: (tx: TransactionTx) => Promise<T>
-): Promise<T> {
+async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
   try {
     // Expo SQLite supports async transaction callbacks.
     return await db.transaction(fn);
@@ -83,11 +74,8 @@ async function transactionOrFallback<T>(
   }
 }
 
-export async function createCompletedSession(
-  input: CompletedSessionInput
-): Promise<number> {
-  if (input.exercises.length === 0)
-    throw new Error("A completed session must have exercises");
+export async function createCompletedSession(input: CompletedSessionInput): Promise<number> {
+  if (input.exercises.length === 0) throw new Error("A completed session must have exercises");
 
   return transactionOrFallback(async (tx) => {
     const inserted = await tx
@@ -115,8 +103,7 @@ export async function createCompletedSession(
       sessionId = last[0]?.id;
     }
 
-    if (sessionId == null)
-      throw new Error("Failed to create completed session");
+    if (sessionId == null) throw new Error("Failed to create completed session");
 
     const rowsToInsert = input.exercises.map((ex) => {
       const roundIndexRaw = ex.roundIndex;
@@ -141,10 +128,9 @@ export async function createCompletedSession(
       const targetValue =
         targetValueRaw == null
           ? null
-          : typeof targetValueRaw === "number" &&
-            Number.isFinite(targetValueRaw)
-          ? Math.max(1, Math.floor(targetValueRaw))
-          : null;
+          : typeof targetValueRaw === "number" && Number.isFinite(targetValueRaw)
+            ? Math.max(1, Math.floor(targetValueRaw))
+            : null;
 
       return {
         sessionId,
@@ -165,13 +151,9 @@ export async function createCompletedSession(
     } catch (e) {
       // Helpful when debugging SQLite CHECK constraint failures on-device.
       if (__DEV__) {
-        const minRoundIndex = Math.min(
-          ...rowsToInsert.map((r) => r.roundIndex)
-        );
+        const minRoundIndex = Math.min(...rowsToInsert.map((r) => r.roundIndex));
         const minSortOrder = Math.min(...rowsToInsert.map((r) => r.sortOrder));
-        const minResultValue = Math.min(
-          ...rowsToInsert.map((r) => r.resultValue)
-        );
+        const minResultValue = Math.min(...rowsToInsert.map((r) => r.resultValue));
 
         console.error("Failed to insert completed_exercises", {
           sessionId,
@@ -189,22 +171,15 @@ export async function createCompletedSession(
   });
 }
 
-export async function markSessionWithNewRecords(
-  sessionId: number
-): Promise<void> {
-  await db
-    .update(completedQuest)
-    .set({ hasNewRecords: 1 })
-    .where(eq(completedQuest.id, sessionId));
+export async function markSessionWithNewRecords(sessionId: number): Promise<void> {
+  await db.update(completedQuest).set({ hasNewRecords: 1 }).where(eq(completedQuest.id, sessionId));
 }
 
 export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
   hasNewRecords: boolean;
 };
 
-export async function listCompletedSessions(
-  limit = 20
-): Promise<CompletedSessionListItem[]> {
+export async function listCompletedSessions(limit = 20): Promise<CompletedSessionListItem[]> {
   const rows = await db
     .select({
       id: completedQuest.id,
@@ -234,9 +209,7 @@ export async function listCompletedSessions(
   }));
 }
 
-export async function getCompletedSessionById(
-  id: number
-): Promise<CompletedSession | null> {
+export async function getCompletedSessionById(id: number): Promise<CompletedSession | null> {
   const rows = await db
     .select({
       sessionId: completedQuest.id,
@@ -272,18 +245,11 @@ export async function getCompletedSessionById(
       muscle: exerciseMuscles.muscle,
     })
     .from(completedQuest)
-    .innerJoin(
-      completedExercises,
-      eq(completedExercises.sessionId, completedQuest.id)
-    )
+    .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
     .leftJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
     .where(eq(completedQuest.id, id))
-    .orderBy(
-      completedExercises.roundIndex,
-      completedExercises.sortOrder,
-      completedExercises.id
-    );
+    .orderBy(completedExercises.roundIndex, completedExercises.sortOrder, completedExercises.id);
 
   if (rows.length === 0) return null;
 
@@ -360,7 +326,7 @@ export type SessionSummary = {
  */
 export async function getQuestSessionHistory(
   questId: number,
-  limit = 30
+  limit = 30,
 ): Promise<SessionSummary[]> {
   const rows = await db
     .select({
@@ -390,9 +356,7 @@ export async function getQuestSessionHistory(
  * Get recent session history across all quests, ordered by date ascending.
  * Useful for overall progression charts.
  */
-export async function getRecentSessionHistory(
-  limit = 30
-): Promise<SessionSummary[]> {
+export async function getRecentSessionHistory(limit = 30): Promise<SessionSummary[]> {
   const rows = await db
     .select({
       id: completedQuest.id,
@@ -486,9 +450,7 @@ export async function getWeeklyTrends(weeks = 12): Promise<WeeklyTrend[]> {
   }
 
   // Sort by week key and return
-  return Array.from(weekMap.values()).sort((a, b) =>
-    a.weekKey.localeCompare(b.weekKey)
-  );
+  return Array.from(weekMap.values()).sort((a, b) => a.weekKey.localeCompare(b.weekKey));
 }
 
 /**
@@ -532,9 +494,7 @@ export async function getMonthlyTrends(months = 6): Promise<MonthlyTrend[]> {
   }
 
   // Sort by month key and return
-  return Array.from(monthMap.values()).sort((a, b) =>
-    a.monthKey.localeCompare(b.monthKey)
-  );
+  return Array.from(monthMap.values()).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
 }
 
 /**
@@ -581,20 +541,11 @@ export async function getTrendSummary(): Promise<{
   const thisWeek = weeklyTrends[weeklyTrends.length - 1];
   const lastWeek = weeklyTrends[weeklyTrends.length - 2];
 
-  const sessionsAnalysis = analyzeTrend(
-    thisWeek?.sessionCount ?? 0,
-    lastWeek?.sessionCount ?? 0
-  );
+  const sessionsAnalysis = analyzeTrend(thisWeek?.sessionCount ?? 0, lastWeek?.sessionCount ?? 0);
 
-  const minutesAnalysis = analyzeTrend(
-    thisWeek?.totalMinutes ?? 0,
-    lastWeek?.totalMinutes ?? 0
-  );
+  const minutesAnalysis = analyzeTrend(thisWeek?.totalMinutes ?? 0, lastWeek?.totalMinutes ?? 0);
 
-  const xpAnalysis = analyzeTrend(
-    thisWeek?.totalXp ?? 0,
-    lastWeek?.totalXp ?? 0
-  );
+  const xpAnalysis = analyzeTrend(thisWeek?.totalXp ?? 0, lastWeek?.totalXp ?? 0);
 
   return {
     weeklyTrends,

@@ -1,13 +1,13 @@
-import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
-import { TrendsCard } from "@/components/journal/TrendsCard";
-import { useSettingsStore } from "@/stores/settings";
 import { Flame, Target, Timer, TrendingUp, Trophy, Zap } from "@tamagui/lucide-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { BarChart, LineChart } from "react-native-gifted-charts";
 import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import { Chip } from "@/components/common/Chip";
+import { TrendsCard } from "@/components/journal/TrendsCard";
+import { useSettingsStore } from "@/stores/settings";
 
 interface JournalStatsProps {
   sessions: {

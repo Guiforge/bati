@@ -1,10 +1,7 @@
 import type { SessionSummary } from "../db/completed";
 import { suggestDifficultyFromSessions } from "../db/difficultySuggestion";
 
-function session(
-  level: "easy" | "medium" | "hard",
-  id: number
-): SessionSummary {
+function session(level: "easy" | "medium" | "hard", id: number): SessionSummary {
   return {
     id,
     questId: 1,

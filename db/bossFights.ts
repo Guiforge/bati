@@ -3,13 +3,7 @@ import { db, schema } from "./client";
 import { addResources } from "./resources";
 import type { MuscleCode } from "./schema";
 
-const {
-  bossFights,
-  bossDamageLog,
-  adventures,
-  adventureSteps,
-  questExercises,
-} = schema;
+const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises } = schema;
 
 // ------------------------------------------------------------
 // Types
@@ -56,9 +50,7 @@ export type DamageResult = {
  * Get or create a boss fight for an adventure.
  * If the adventure is kind="boss" and no fight exists, create one.
  */
-export async function getOrCreateBossFight(
-  adventureId: number
-): Promise<BossFight | null> {
+export async function getOrCreateBossFight(adventureId: number): Promise<BossFight | null> {
   // Check if adventure is a boss
   const adventureRows = await db
     .select({
@@ -133,9 +125,7 @@ export async function getOrCreateBossFight(
 /**
  * Get boss fight by adventure ID.
  */
-export async function getBossFightByAdventure(
-  adventureId: number
-): Promise<BossFight | null> {
+export async function getBossFightByAdventure(adventureId: number): Promise<BossFight | null> {
   const rows = await db
     .select()
     .from(bossFights)
@@ -202,7 +192,7 @@ export async function dealDamage(
     resultValue: number;
     targetValue: number;
     muscle?: MuscleCode;
-  }
+  },
 ): Promise<DamageResult> {
   // Get current boss fight state
   const fightRows = await db
@@ -248,8 +238,7 @@ export async function dealDamage(
   }
 
   // Check for critical hit (exceeded target = 30% crit chance)
-  const isCritical =
-    params.resultValue >= params.targetValue && Math.random() < 0.3;
+  const isCritical = params.resultValue >= params.targetValue && Math.random() < 0.3;
   if (isCritical) {
     damage = damage * 2;
   }
@@ -263,9 +252,7 @@ export async function dealDamage(
 
   // Calculate boss tokens if defeated (based on total HP)
   // 1 token per 100 HP, minimum 1 token
-  const bossTokensEarned = defeated
-    ? Math.max(1, Math.floor(fight.totalHp / 100))
-    : 0;
+  const bossTokensEarned = defeated ? Math.max(1, Math.floor(fight.totalHp / 100)) : 0;
 
   // Update boss fight
   await db
@@ -332,9 +319,7 @@ export async function resetBossFight(bossFightId: number): Promise<void> {
 /**
  * Get damage history for a boss fight.
  */
-export async function getBossDamageHistory(
-  bossFightId: number
-): Promise<BossDamageEntry[]> {
+export async function getBossDamageHistory(bossFightId: number): Promise<BossDamageEntry[]> {
   const rows = await db
     .select()
     .from(bossDamageLog)

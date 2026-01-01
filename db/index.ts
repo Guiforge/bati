@@ -1,5 +1,12 @@
 // Database exports
 
+export type {
+  AchievementCode,
+  AchievementDefinition,
+  AchievementProgress,
+  NewAchievementResult,
+  UnlockedAchievement,
+} from "./achievements";
 export {
   achievementCodes,
   achievementDefinitions,
@@ -11,12 +18,14 @@ export {
   unlockAchievement,
 } from "./achievements";
 export type {
-  AchievementCode,
-  AchievementDefinition,
-  AchievementProgress,
-  NewAchievementResult,
-  UnlockedAchievement,
-} from "./achievements";
+  ActiveAdventureRun,
+  Adventure,
+  AdventureDetails,
+  AdventureKind,
+  AdventureRun,
+  AdventureRunStep,
+  AdventureStepTemplate,
+} from "./adventures";
 export {
   completeAdventureRunStep,
   getActiveAdventureRun,
@@ -27,14 +36,13 @@ export {
   startAdventureRun,
 } from "./adventures";
 export type {
-  ActiveAdventureRun,
-  Adventure,
-  AdventureDetails,
-  AdventureKind,
-  AdventureRun,
-  AdventureRunStep,
-  AdventureStepTemplate,
-} from "./adventures";
+  BuildingLevelUp,
+  BuildingUnlock,
+  SessionBuildingResult,
+  VillageBuilding,
+  VillageBuildingWithMeta,
+  VillageStatsType,
+} from "./buildings";
 export {
   addBuildingXp,
   calculateLevelFromXp,
@@ -46,15 +54,14 @@ export {
   processSessionBuildings,
   unlockBuilding,
 } from "./buildings";
-export type {
-  BuildingLevelUp,
-  BuildingUnlock,
-  SessionBuildingResult,
-  VillageBuilding,
-  VillageBuildingWithMeta,
-  VillageStatsType,
-} from "./buildings";
 export { db, schema } from "./client";
+export type {
+  CompletedSessionListItem,
+  MonthlyTrend,
+  SessionSummary,
+  TrendAnalysis,
+  WeeklyTrend,
+} from "./completed";
 export {
   analyzeTrend,
   createCompletedSession,
@@ -67,13 +74,6 @@ export {
   listCompletedSessions,
   markSessionWithNewRecords,
 } from "./completed";
-export type {
-  CompletedSessionListItem,
-  MonthlyTrend,
-  SessionSummary,
-  TrendAnalysis,
-  WeeklyTrend,
-} from "./completed";
 export { suggestDifficultyFromSessions } from "./difficultySuggestion";
 export { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
 export {
@@ -82,6 +82,7 @@ export {
   formatDuration,
 } from "./estimate";
 export { getExerciseById, listExercises } from "./exercises";
+export type { CreateGoalInput, Goal, GoalProgress } from "./goals";
 export {
   createGoal,
   getActiveGoal,
@@ -96,11 +97,10 @@ export {
   updateGoal,
   updateGoalStatus,
 } from "./goals";
-export type { CreateGoalInput, Goal, GoalProgress } from "./goals";
 export {
   generatePlanForGoal,
-  previewPlanForGoal,
   type PlannedSession,
+  previewPlanForGoal,
 } from "./plans";
 export {
   getAllPreferences,
@@ -110,8 +110,8 @@ export {
 } from "./preferences";
 export { estimateQuestTemplateSeconds } from "./preview";
 export {
-  Difficulty,
   createQuestTemplate,
+  Difficulty,
   deleteQuest,
   generateTarget,
   getQuestById,
@@ -120,6 +120,12 @@ export {
   setQuestExercises,
   updateQuestMeta,
 } from "./quests";
+export type {
+  ExerciseResultForResources,
+  ResourceAmount,
+  ResourceLoot,
+  ResourceTransaction,
+} from "./resources";
 export {
   addResources,
   awardSessionResources,
@@ -131,14 +137,14 @@ export {
   previewSessionLoot,
   spendResources,
 } from "./resources";
-export type {
-  ExerciseResultForResources,
-  ResourceAmount,
-  ResourceLoot,
-  ResourceTransaction,
-} from "./resources";
-export { getQuickRestCheck, getRestSuggestion } from "./restSuggestions";
 export type { RestSuggestion } from "./restSuggestions";
+export { getQuickRestCheck, getRestSuggestion } from "./restSuggestions";
+export type {
+  CreateScheduledSessionInput,
+  ScheduledSession,
+  ScheduledSessionStatus,
+  ScheduledSessionWithQuest,
+} from "./scheduling";
 export {
   createScheduledSession,
   deleteScheduledSession,
@@ -154,19 +160,14 @@ export {
   skipScheduledSession,
   updateScheduledSessionStatus,
 } from "./scheduling";
-export type {
-  CreateScheduledSessionInput,
-  ScheduledSession,
-  ScheduledSessionStatus,
-  ScheduledSessionWithQuest,
-} from "./scheduling";
+export type { StreakInfo } from "./streaks";
 export {
   calculateAndCacheStreak,
   getCachedStreak,
   getStreakInfo,
   updateStreakAfterSession,
 } from "./streaks";
-export type { StreakInfo } from "./streaks";
+export type { UserLevelInfo } from "./userLevel";
 export {
   calculateLevelFromXp as calculateUserLevelFromXp,
   getLevelTitle,
@@ -175,4 +176,3 @@ export {
   getUserLevelInfo,
   getXpForLevel,
 } from "./userLevel";
-export type { UserLevelInfo } from "./userLevel";

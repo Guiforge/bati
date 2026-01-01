@@ -13,6 +13,7 @@ import { ResourceHeader } from "@/components/common/ResourceHeader";
 import { StreakBadge } from "@/components/common/StreakBadge";
 import { GoalCard } from "@/components/goals/GoalCard";
 import { QuestCarousel } from "@/components/QuestCarousel";
+import { WeeklyChallengeCard } from "@/components/QuestCarousel/WeeklyChallengeCard";
 import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard";
 import { getAvatarById } from "@/constants/avatars";
 import type { ActiveAdventureRun, AdventureDetails } from "@/db";
@@ -183,6 +184,10 @@ export function Home() {
 
         {/* Full-bleed slide gallery */}
         <QuestCarousel />
+
+        <YStack px={24} width="100%" maxW={420} alignSelf="center">
+          <WeeklyChallengeCard />
+        </YStack>
 
         <YStack px={24} items="center" gap={16}>
           <YStack width="100%" maxW={420} gap="$4">

@@ -88,8 +88,34 @@ function calculateStreak(sessions: { performedAt: Date }[]): StreakInfo {
   };
 }
 
+// Streak milestone definitions
+type StreakMilestone = {
+  minDays: number;
+  name: { en: string; fr: string };
+  color: string;
+  emoji: string;
+};
+
+const streakMilestones: StreakMilestone[] = [
+  { minDays: 100, name: { en: "Eternal", fr: "Éternel" }, color: "#FFD700", emoji: "🌟" },
+  { minDays: 30, name: { en: "Inferno", fr: "Inferno" }, color: "#FF4500", emoji: "🔥" },
+  { minDays: 14, name: { en: "Blaze", fr: "Brasier" }, color: "#FF6347", emoji: "🔥" },
+  { minDays: 7, name: { en: "Ember", fr: "Braise" }, color: "#FF8C00", emoji: "✨" },
+  { minDays: 3, name: { en: "Spark", fr: "Étincelle" }, color: "#FFA500", emoji: "⚡" },
+];
+
+function getStreakMilestone(days: number): StreakMilestone | null {
+  for (const milestone of streakMilestones) {
+    if (days >= milestone.minDays) {
+      return milestone;
+    }
+  }
+  return null;
+}
+
 export function StreakBadge() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const [streak, setStreak] = useState<StreakInfo | null>(null);
 
   const loadStreak = useCallback(async () => {
@@ -110,6 +136,7 @@ export function StreakBadge() {
     return null;
   }
 
+  const milestone = getStreakMilestone(streak.current);
   const flameColor = streak.isActive ? "$error" : "$color";
   const flameSize = Math.min(28, 20 + streak.current * 2);
 
@@ -130,14 +157,23 @@ export function StreakBadge() {
       <Flame
         size={flameSize}
         color={flameColor}
-        fill={streak.isActive ? "#FF6B35" : "transparent"}
+        fill={streak.isActive ? (milestone?.color ?? "#FF6B35") : "transparent"}
       />
       <YStack>
-        <Text fontWeight="900" fontSize={18} color="$color">
-          {streak.current} {t("journal.days")}
-        </Text>
+        <XStack items="center" gap="$1">
+          <Text fontWeight="900" fontSize={18} color="$color">
+            {streak.current} {t("journal.days")}
+          </Text>
+          {milestone && (
+            <Text fontSize={14}>{milestone.emoji}</Text>
+          )}
+        </XStack>
         <Text fontSize={10} color="$color" opacity={0.6} fontWeight="700">
-          {streak.isActive ? t("journal.streak_active") : t("journal.streak_inactive")}
+          {milestone
+            ? milestone.name[language === "fr" ? "fr" : "en"]
+            : streak.isActive
+              ? t("journal.streak_active")
+              : t("journal.streak_inactive")}
         </Text>
       </YStack>
     </XStack>

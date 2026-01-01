@@ -8,6 +8,7 @@ import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { JournalStats } from "@/components/journal/JournalStats";
 import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
+import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { listCompletedSessions } from "@/db/completed";
@@ -160,6 +161,7 @@ export default function JournalScreen() {
           </YStack>
         ) : activeTab === "stats" ? (
           <>
+            <PersonalRecordsCard />
             <JournalStats sessions={history} />
             <MuscleBalanceCard />
             <SuggestedQuestsCard />

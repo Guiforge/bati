@@ -219,7 +219,11 @@
     "balance_good": "Équilibré !",
     "balance_needs_work": "À travailler",
     "suggested_quests": "Recommandés Pour Toi",
-    "suggested_quests_desc": "Des quêtes pour renforcer tes points faibles"
+    "suggested_quests_desc": "Des quêtes pour renforcer tes points faibles",
+    "personal_records": "Records Personnels",
+    "pr_total_sessions": "Total Entraînements",
+    "pr_longest": "Plus Long",
+    "pr_most_xp": "Plus de XP"
   },
   "chart": {
     "loading": "Chargement du graphique...",

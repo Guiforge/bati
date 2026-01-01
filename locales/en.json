@@ -219,7 +219,11 @@
     "balance_good": "Balanced!",
     "balance_needs_work": "Needs Work",
     "suggested_quests": "Recommended For You",
-    "suggested_quests_desc": "Quests to strengthen your weak areas"
+    "suggested_quests_desc": "Quests to strengthen your weak areas",
+    "personal_records": "Personal Records",
+    "pr_total_sessions": "Total Workouts",
+    "pr_longest": "Longest",
+    "pr_most_xp": "Most XP"
   },
   "chart": {
     "loading": "Loading chart...",

@@ -30,7 +30,8 @@ describe("db/resources", () => {
 
   describe("getResourceAmount", () => {
     test("should return 0 for new resources", async () => {
-      const { getResourceAmount } = require("../db/resources") as typeof import("../db/resources");
+      const { getResourceAmount } =
+        require("../db/resources") as typeof import("../db/resources");
 
       const amount = await getResourceAmount("gold");
       expect(typeof amount).toBe("number");
@@ -64,7 +65,7 @@ describe("db/resources", () => {
           { resource: "gold", amount: 30 },
           { resource: "essence", amount: 20 },
         ],
-        { reason: "workout loot" },
+        { reason: "workout loot" }
       );
 
       const newGold = await getResourceAmount("gold");
@@ -131,7 +132,9 @@ describe("db/resources", () => {
 
       // All muscles now generate essence, so 50 + 30 = 80 total essence
       expect(result.materials).toHaveLength(1);
-      expect(result.materials.find((m) => m.resource === "essence")?.amount).toBe(80);
+      expect(
+        result.materials.find((m) => m.resource === "essence")?.amount
+      ).toBe(80);
     });
 
     test("should combine essence from all muscles", () => {
@@ -149,7 +152,9 @@ describe("db/resources", () => {
       });
 
       // All muscles → essence: 50 + 30 + 20 = 100
-      expect(result.materials.find((m) => m.resource === "essence")?.amount).toBe(100);
+      expect(
+        result.materials.find((m) => m.resource === "essence")?.amount
+      ).toBe(100);
     });
   });
 
@@ -166,7 +171,8 @@ describe("db/resources", () => {
 
   describe("previewSessionLoot", () => {
     test("should calculate loot preview from exercise results", () => {
-      const { previewSessionLoot } = require("../db/resources") as typeof import("../db/resources");
+      const { previewSessionLoot } =
+        require("../db/resources") as typeof import("../db/resources");
 
       const loot = previewSessionLoot({
         durationSeconds: 600, // 10 minutes
@@ -188,11 +194,14 @@ describe("db/resources", () => {
       // Gold = 10 + (10 * 2) = 30
       expect(loot.gold).toBe(30);
       // Arms + Back -> essence = 50 + 30 = 80
-      expect(loot.materials.find((m) => m.resource === "essence")?.amount).toBe(80);
+      expect(loot.materials.find((m) => m.resource === "essence")?.amount).toBe(
+        80
+      );
     });
 
     test("should apply difficulty multiplier", () => {
-      const { previewSessionLoot } = require("../db/resources") as typeof import("../db/resources");
+      const { previewSessionLoot } =
+        require("../db/resources") as typeof import("../db/resources");
 
       const lootHard = previewSessionLoot({
         durationSeconds: 600,
@@ -209,7 +218,9 @@ describe("db/resources", () => {
       // Gold = (10 + 20) * 1.2 = 36
       expect(lootHard.gold).toBe(36);
       // Arms -> essence = 50 * 1.2 = 60
-      expect(lootHard.materials.find((m) => m.resource === "essence")?.amount).toBe(60);
+      expect(
+        lootHard.materials.find((m) => m.resource === "essence")?.amount
+      ).toBe(60);
     });
   });
 });

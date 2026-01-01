@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Text, XStack } from "tamagui";
 import { getResourceInventory, type ResourceAmount } from "@/db/resources";
 import type { ResourceCode } from "@/db/schema";
+import { useEffect, useState } from "react";
+import { Text, XStack } from "tamagui";
 
 const RESOURCE_EMOJI: Record<ResourceCode, string> = {
   gold: "💰",

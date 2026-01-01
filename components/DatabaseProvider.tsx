@@ -1,5 +1,6 @@
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { type ReactNode, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { db } from "@/db/client";
 import migrations from "../drizzle/migrations";
@@ -10,6 +11,7 @@ interface DatabaseProviderProps {
 }
 
 export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
+  const { t } = useTranslation();
   const { success, error } = useMigrations(db, migrations);
   const hasInitialized = useRef(false);
 
@@ -30,7 +32,9 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
           backgroundColor: "#FFF5E6",
         }}
       >
-        <Text style={{ color: "#1A1A2E", fontSize: 16 }}>Database error: {error.message}</Text>
+        <Text style={{ color: "#1A1A2E", fontSize: 16 }}>
+          {t("common.error")}: {error.message}
+        </Text>
       </View>
     );
   }
@@ -46,7 +50,9 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         }}
       >
         <Text style={{ color: "#1A1A2E", fontSize: 18, fontWeight: "700" }}>🏰 Bati</Text>
-        <Text style={{ color: "#1A1A2E", opacity: 0.6, marginTop: 8 }}>Preparing database...</Text>
+        <Text style={{ color: "#1A1A2E", opacity: 0.6, marginTop: 8 }}>
+          {t("splash.loading", "Building your village...")}
+        </Text>
       </View>
     );
   }

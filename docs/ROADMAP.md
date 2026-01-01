@@ -650,10 +650,10 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-### 6.6 Adventure Polish & Engagement ✅�
+### 6.6 Adventure Polish & Engagement ✅
 
 - ✅ UI Audit
-  - 📋 Consistency pass (colors, spacing, typography)
+  - ✅ Consistency pass (borders: 3px for cards, 2px for small elements; rounded: $6 for cards)
   - ✅ Button style audit (all use AppButton with 3px borders)
   - ✅ Card style audit (consistent border-radius, use Card component defaults)
   - ✅ Empty state component (EmptyState with emoji, title, subtitle)

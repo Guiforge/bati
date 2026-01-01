@@ -1,7 +1,7 @@
-import { and, desc, gte, sql } from "drizzle-orm";
+import { desc, gte, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { MUSCLE_LABELS } from "./muscles";
-import { muscleCodes, type MuscleCode } from "./schema";
+import { type MuscleCode, muscleCodes } from "./schema";
 
 const { completedQuest, completedExercises, exercises, exerciseMuscles } = schema;
 
@@ -51,8 +51,7 @@ export async function getMuscleBalance(
   }
 
   // Get all completed exercises with their muscles in the time period
-  const whereClause =
-    period === "all" ? undefined : gte(completedQuest.performedAt, startDate);
+  const whereClause = period === "all" ? undefined : gte(completedQuest.performedAt, startDate);
 
   const rows = await db
     .select({
@@ -99,7 +98,8 @@ export async function getMuscleBalance(
 
   const muscleResults: MuscleVolume[] = [];
   for (const muscle of muscleCodes) {
-    const data = muscleVolumes.get(muscle)!;
+    const data = muscleVolumes.get(muscle);
+    if (!data) continue;
     muscleResults.push({
       muscle,
       label: MUSCLE_LABELS[muscle],

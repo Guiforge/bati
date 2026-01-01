@@ -46,7 +46,7 @@ export function BossHpBar({
       bg="$bgLight"
       borderWidth={3}
       borderColor="$color"
-      rounded="$4"
+      rounded="$6"
       px="$3"
       py="$2"
       gap="$2"

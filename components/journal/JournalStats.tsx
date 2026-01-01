@@ -166,8 +166,8 @@ function StatCard({
       flex={1}
       bg={bgColor}
       p="$3"
-      rounded="$4"
-      borderWidth={2}
+      rounded="$6"
+      borderWidth={3}
       borderColor="$color"
       items="center"
       gap="$1"

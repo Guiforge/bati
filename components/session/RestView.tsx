@@ -141,7 +141,7 @@ export function RestView() {
 
       {/* Last Set Review (if reps) */}
       {isLastRepBased && (
-        <YStack bg="$background" p="$4" rounded="$6" borderWidth={2} borderColor="$color" gap="$2">
+        <YStack bg="$background" p="$4" rounded="$6" borderWidth={3} borderColor="$color" gap="$2">
           <XStack justify="space-between" items="center">
             <YStack>
               <Text
@@ -189,7 +189,7 @@ export function RestView() {
         bg="$background"
         p="$4"
         rounded="$6"
-        borderWidth={2}
+        borderWidth={3}
         borderColor="$color"
         gap="$2"
         animation={reducedMotion ? undefined : "bouncy"}

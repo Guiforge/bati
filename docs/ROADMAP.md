@@ -417,7 +417,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Status tracking
 - ✅ Plan UI
   - ✅ "Generate My Plan" button (automatic on goal creation)
-  - 📋 Plan preview before confirming
+  - ✅ Plan preview before confirming
   - ✅ Active plan display (in Schedule)
 
 ### 3.3 Scheduling ✅

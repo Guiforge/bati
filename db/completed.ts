@@ -1,5 +1,5 @@
+import { format, startOfMonth, startOfWeek, subMonths, subWeeks } from "date-fns";
 import { desc, eq, gte, sql } from "drizzle-orm";
-import { startOfWeek, subWeeks, subMonths, format, startOfMonth } from "date-fns";
 import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
@@ -539,15 +539,9 @@ export async function getTrendSummary(): Promise<{
   const thisWeek = weeklyTrends[weeklyTrends.length - 1];
   const lastWeek = weeklyTrends[weeklyTrends.length - 2];
 
-  const sessionsAnalysis = analyzeTrend(
-    thisWeek?.sessionCount ?? 0,
-    lastWeek?.sessionCount ?? 0,
-  );
+  const sessionsAnalysis = analyzeTrend(thisWeek?.sessionCount ?? 0, lastWeek?.sessionCount ?? 0);
 
-  const minutesAnalysis = analyzeTrend(
-    thisWeek?.totalMinutes ?? 0,
-    lastWeek?.totalMinutes ?? 0,
-  );
+  const minutesAnalysis = analyzeTrend(thisWeek?.totalMinutes ?? 0, lastWeek?.totalMinutes ?? 0);
 
   const xpAnalysis = analyzeTrend(thisWeek?.totalXp ?? 0, lastWeek?.totalXp ?? 0);
 

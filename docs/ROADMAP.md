@@ -763,8 +763,8 @@ This document tracks all features, their implementation status, and future plans
 - ✅ HP mechanics (BossHpBar component)
 - ✅ Damage system (dealDamage with weakness/resistance)
 - ✅ Critical hits and enraged state
-- 📋 Boss-specific rewards
-- 📋 Boss tokens
+- ✅ Boss-specific rewards (XP bonus already in place)
+- ✅ Boss tokens (awarded 1 per 100 HP on defeat, stored in resource_inventory)
 
 ---
 

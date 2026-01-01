@@ -64,8 +64,13 @@ function TrendsCardComponent() {
     if (!analysis) return null;
 
     const color =
-      analysis.trend === "up" ? "$pastelGreen" : analysis.trend === "down" ? "$pastelPink" : "$bgLight";
-    const textColor = analysis.trend === "up" ? "green" : analysis.trend === "down" ? "red" : "$color";
+      analysis.trend === "up"
+        ? "$pastelGreen"
+        : analysis.trend === "down"
+          ? "$pastelPink"
+          : "$bgLight";
+    const textColor =
+      analysis.trend === "up" ? "green" : analysis.trend === "down" ? "red" : "$color";
     const Icon = analysis.trend === "up" ? TrendingUp : TrendingDown;
 
     return (
@@ -188,7 +193,12 @@ function TrendsCardComponent() {
                 {currentData.slice(-8).map((item) => {
                   const height = (item.sessionCount / maxSessions) * 100;
                   return (
-                    <YStack key={"weekKey" in item ? item.weekKey : item.monthKey} flex={1} items="center" gap="$1">
+                    <YStack
+                      key={"weekKey" in item ? item.weekKey : item.monthKey}
+                      flex={1}
+                      items="center"
+                      gap="$1"
+                    >
                       <YStack
                         width="100%"
                         height={`${Math.max(4, height)}%`}
@@ -215,7 +225,12 @@ function TrendsCardComponent() {
                 {currentData.slice(-8).map((item) => {
                   const height = (item.totalMinutes / maxMinutes) * 100;
                   return (
-                    <YStack key={"weekKey" in item ? item.weekKey : item.monthKey} flex={1} items="center" gap="$1">
+                    <YStack
+                      key={"weekKey" in item ? item.weekKey : item.monthKey}
+                      flex={1}
+                      items="center"
+                      gap="$1"
+                    >
                       <YStack
                         width="100%"
                         height={`${Math.max(4, height)}%`}

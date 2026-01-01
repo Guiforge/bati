@@ -444,7 +444,7 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Daily reminder
   - ✅ Streak warning (before midnight - 8 PM trigger)
   - ✅ Encouragement (after 3 days inactivity)
-  - 📋 Achievement unlocked
+  - ✅ Achievement unlocked (immediate notification on unlock)
   - 📋 Boss ready
 - ✅ Notification preferences
   - ✅ Enable/disable per type (global toggle for now)

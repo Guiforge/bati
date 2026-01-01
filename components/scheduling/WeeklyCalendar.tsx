@@ -1,10 +1,15 @@
 import { useIsFocused } from "@react-navigation/native";
 import { addDays, format, isSameDay, startOfWeek } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Spinner, Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { getScheduledSessionsForWeek, type ScheduledSessionWithQuest } from "@/db/scheduling";
+import {
+  getScheduledSessionsForWeek,
+  type ScheduledSessionWithQuest,
+  skipScheduledSession,
+} from "@/db/scheduling";
 
 export function WeeklyCalendar() {
   const { t } = useTranslation();
@@ -20,23 +25,32 @@ export function WeeklyCalendar() {
     [weekStart],
   );
 
-  useEffect(() => {
-    async function loadSessions() {
-      setLoading(true);
-      try {
-        const data = await getScheduledSessionsForWeek(weekStart);
-        setSessions(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+  const loadSessions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getScheduledSessionsForWeek(weekStart);
+      setSessions(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
+  }, [weekStart]);
 
+  useEffect(() => {
     if (isFocused) {
       loadSessions();
     }
-  }, [isFocused, weekStart]);
+  }, [isFocused, loadSessions]);
+
+  const handleSkip = async (sessionId: number) => {
+    try {
+      await skipScheduledSession(sessionId);
+      await loadSessions();
+    } catch (e) {
+      console.error("Failed to skip session:", e);
+    }
+  };
 
   const sessionsForSelectedDate = sessions.filter((s) =>
     isSameDay(new Date(s.scheduledDate), selectedDate),
@@ -96,7 +110,7 @@ export function WeeklyCalendar() {
                 <Text fontWeight="bold" fontSize="$4">
                   {session.quest.enTitle}
                 </Text>
-                <XStack justify="space-between">
+                <XStack justify="space-between" items="center">
                   <Text fontSize="$2" opacity={0.7}>
                     {session.status.toUpperCase()}
                   </Text>
@@ -106,6 +120,13 @@ export function WeeklyCalendar() {
                     </Text>
                   )}
                 </XStack>
+                {session.status === "pending" && (
+                  <XStack justify="flex-end" mt="$2">
+                    <AppButton variant="secondary" size="$2" onPress={() => handleSkip(session.id)}>
+                      {t("scheduling.skip", "Skip")}
+                    </AppButton>
+                  </XStack>
+                )}
               </YStack>
             </Card>
           ))

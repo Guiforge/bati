@@ -16,6 +16,7 @@ import {
   goalTypeInfo,
   updateGoalStatus,
 } from "@/db/goals";
+import { generatePlanForGoal } from "@/db/plans";
 import type { GoalStatusCode, GoalTypeCode } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSettingsStore } from "@/stores/settings";
@@ -76,11 +77,14 @@ export default function GoalsScreen() {
     mediumImpact();
 
     try {
-      await createGoal({
+      const goalId = await createGoal({
         goalType: selectedType,
         daysPerWeek: selectedDays,
         sessionMinutes: selectedDuration,
       });
+
+      await generatePlanForGoal(goalId);
+
       setIsEditing(false);
       await loadData();
     } catch (e) {

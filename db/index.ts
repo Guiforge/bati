@@ -87,6 +87,7 @@ export {
   updateGoal,
   updateGoalStatus,
 } from "./goals";
+export { generatePlanForGoal } from "./plans";
 export {
   getAllPreferences,
   getPreference,

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, Card, Paragraph, XStack, YStack } from "tamagui";
+import { Card, Paragraph, XStack, YStack } from "tamagui";
+import { BOSS_LOW_HP_TAUNTS, BOSS_TAUNTS } from "@/constants/bossTaunts";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { BOSS_TAUNTS, BOSS_LOW_HP_TAUNTS } from "@/constants/bossTaunts";
-import { Image } from "expo-image";
 
 export function BossTauntOverlay() {
   const { bossFight, status } = useSessionStore();
@@ -27,12 +26,12 @@ export function BossTauntOverlay() {
         const pool = isLowHp ? BOSS_LOW_HP_TAUNTS : BOSS_TAUNTS;
         const messages = pool[language as "en" | "fr"] || pool.en;
         const message = messages[Math.floor(Math.random() * messages.length)];
-        
+
         setTaunt(message);
 
         // Hide after 4 seconds
         setTimeout(() => setTaunt(null), 4000);
-        
+
         // Schedule next
         timeoutId = scheduleNextTaunt();
       }, delay);
@@ -69,7 +68,7 @@ export function BossTauntOverlay() {
             {taunt}
           </Paragraph>
         </Card>
-        
+
         {/* Boss Avatar Placeholder */}
         <YStack
           width={60}
@@ -82,7 +81,7 @@ export function BossTauntOverlay() {
           items="center"
           justify="center"
         >
-           <Paragraph fontSize={30}>👹</Paragraph>
+          <Paragraph fontSize={30}>👹</Paragraph>
         </YStack>
       </XStack>
     </YStack>

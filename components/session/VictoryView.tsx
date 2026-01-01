@@ -1,10 +1,3 @@
-import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ScrollView, Share, useWindowDimensions } from "react-native";
-import ConfettiCannon from "react-native-confetti-cannon";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
@@ -22,6 +15,13 @@ import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView, Share, useWindowDimensions } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { LevelUpModal } from "./LevelUpModal";
 import { LootChest } from "./LootChest";
 import { NewRecordsBadge } from "./NewRecordsBadge";
@@ -408,11 +408,7 @@ export function VictoryView() {
         </Card>
 
         {/* Share Button */}
-        <AppButton
-          backgroundColor="$bgLight"
-          onPress={handleShare}
-          marginBottom="$2"
-        >
+        <AppButton backgroundColor="$bgLight" onPress={handleShare} marginBottom="$2">
           <Text color="$color" fontSize={16} fontWeight="800">
             {t("session.share", "Share Result")} 📤
           </Text>

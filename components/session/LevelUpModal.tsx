@@ -10,82 +10,77 @@ import { getLevelTitle } from "@/db/userLevel";
 import { useSound } from "@/hooks/useSound";
 
 interface LevelUpModalProps {
-  visible: boolean;
-  newLevel: number;
-  onClose: () => void;
+    visible: boolean;
+    newLevel: number;
+    onClose: () => void;
 }
 
 export function LevelUpModal({ visible, newLevel, onClose }: LevelUpModalProps) {
-  const { t, i18n } = useTranslation();
-  const { playSound } = useSound();
+    const { t, i18n } = useTranslation();
+    const { playSound } = useSound();
 
-  const titleObj = getLevelTitle(newLevel);
-  const title = i18n.language === "fr" ? titleObj.fr : titleObj.en;
+    const titleObj = getLevelTitle(newLevel);
+    const title = i18n.language === "fr" ? titleObj.fr : titleObj.en;
 
-  useEffect(() => {
-    if (visible) {
-      playSound(SOUNDS.levelUp);
-    }
-  }, [visible, playSound]);
+    useEffect(() => {
+        if (visible) {
+            playSound(SOUNDS.levelUp);
+        }
+    }, [visible, playSound]);
 
-  if (!visible) return null;
+    if (!visible) return null;
 
-  return (
-    <Modal visible={visible} transparent animationType="slide">
-      <BlurView intensity={90} tint="dark" style={{ flex: 1 }}>
-        <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} fadeOut={true} />
-        <YStack flex={1} justify="center" items="center" p="$4">
-          <Card
-            bordered
-            elevate
-            width="100%"
-            maxWidth={400}
-            bg="$bgLight"
-            borderColor="$primary"
-            borderWidth={4}
-            p="$6"
-            items="center"
-            gap="$4"
-            animation="bouncy"
-            enterStyle={{ scale: 0.5, opacity: 0 }}
-          >
-            <Text fontSize={60}>🆙</Text>
+    return (
+        <Modal visible={visible} transparent animationType="slide">
+            <BlurView intensity={90} tint="dark" style={{ flex: 1 }}>
+                <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} fadeOut={true} />
+                <YStack flex={1} justify="center" items="center" p="$4">
+                    <Card
+                        bordered
+                        elevate
+                        width="100%"
+                        maxWidth={400}
+                        bg="$bgLight"
+                        borderColor="$primary"
+                        borderWidth={4}
+                        p="$6"
+                        items="center"
+                        gap="$4"
+                        animation="bouncy"
+                        enterStyle={{ scale: 0.5, opacity: 0 }}
+                    >
+                        <Text fontSize={60}>🆙</Text>
 
-            <YStack items="center" gap="$2">
-              <H3 color="$primary" textTransform="uppercase" fontWeight="900">
-                {t("session.level_up", "Level Up!")}
-              </H3>
+                        <YStack items="center" gap="$2">
+                            <H3 color="$primary" textTransform="uppercase" fontWeight="900">
+                                {t("session.level_up", "Level Up!")}
+                            </H3>
 
-              <H1 fontSize={80} color="$color" fontWeight="900" lineHeight={80}>
-                {newLevel}
-              </H1>
+                            <H1 fontSize={80} color="$color" fontWeight="900" lineHeight={80}>
+                                {newLevel}
+                            </H1>
 
-              <Paragraph
-                size="$6"
-                fontWeight="bold"
-                color="$secondary"
-                textTransform="uppercase"
-              >
-                {title}
-              </Paragraph>
-            </YStack>
+                            <Paragraph size="$6" fontWeight="bold" color="$secondary" textTransform="uppercase">
+                                {title}
+                            </Paragraph>
+                        </YStack>
 
-            <Button
-              size="$5"
-              bg="$primary"
-              width="100%"
-              onPress={onClose}
-              borderWidth={3}
-              borderColor="$color"
-              mt="$4"
-            >
-              <Button.Text color="white" fontWeight="bold" fontSize={18}>
-                {t("common.awesome", "Awesome!")}
-              </Button.Text>
-            </Button>
-          </Card>
-        </YStack>
-      </BlurView>
-    </Modal>
-  );
+                        <Button
+                            size="$5"
+                            bg="$primary"
+                            width="100%"
+                            onPress={onClose}
+                            borderWidth={3}
+                            borderColor="$color"
+                            mt="$4"
+                        >
+                            <Button.Text color="white" fontWeight="bold" fontSize={18}>
+                                {t("common.awesome", "Awesome!")}
+                            </Button.Text>
+                        </Button>
+                    </Card>
+                </YStack>
+            </BlurView>
+        </Modal>
+    );
 }

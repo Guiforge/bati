@@ -455,13 +455,13 @@ export async function getDailyQuest(userLevel: UserLevel): Promise<Quest | null>
   // Simple hash of the date string
   let hash = 0;
   for (let i = 0; i < today.length; i++) {
-    hash = ((hash << 5) - hash) + today.charCodeAt(i);
+    hash = (hash << 5) - hash + today.charCodeAt(i);
     hash |= 0; // Convert to 32bit integer
   }
-  
+
   const index = Math.abs(hash) % templates.length;
   const template = templates[index];
-  
+
   return getQuestById(template.id, userLevel);
 }
 
@@ -472,10 +472,10 @@ export async function isDailyQuest(questId: number): Promise<boolean> {
   const today = new Date().toISOString().split("T")[0];
   let hash = 0;
   for (let i = 0; i < today.length; i++) {
-    hash = ((hash << 5) - hash) + today.charCodeAt(i);
+    hash = (hash << 5) - hash + today.charCodeAt(i);
     hash |= 0;
   }
-  
+
   const index = Math.abs(hash) % templates.length;
   return templates[index].id === questId;
 }

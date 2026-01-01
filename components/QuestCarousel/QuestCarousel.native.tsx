@@ -17,21 +17,21 @@ import { DailyQuestCard } from "./DailyQuestCard";
 
 type LoadState =
   | {
-      status: "loading";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-    }
+    status: "loading";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+  }
   | {
-      status: "ready";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-    }
+    status: "ready";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+  }
   | {
-      status: "error";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
+    status: "error";
+    quests: QuestTemplate[];
+    exercisesById: Record<number, Exercise>;
+    message: string;
+  };
 
 function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
@@ -120,7 +120,7 @@ export function QuestCarousel() {
     const today = new Date().toISOString().split("T")[0];
     let hash = 0;
     for (let i = 0; i < today.length; i++) {
-      hash = ((hash << 5) - hash) + today.charCodeAt(i);
+      hash = (hash << 5) - hash + today.charCodeAt(i);
       hash |= 0;
     }
     return Math.abs(hash) % quests.length;

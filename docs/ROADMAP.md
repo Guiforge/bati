@@ -858,19 +858,19 @@ After each major feature phase, complete these steps before moving on:
 
 | Phase | Status | Completion |
 | ----- | ------ | ---------- |
-| Phase 1: Core Loop | ✅ Done | ~100% |
-| Phase 2: Village & Economy | ✅ Done | ~90% |
+| Phase 1: Core Loop | ✅ Done | 100% |
+| Phase 2: Village & Economy | ✅ Done | ~85% |
 | ↳ Quality Checkpoint | ✅ | - |
-| Phase 3: Coach & Planning | ⚠️ Partial | ~45% |
-| ↳ Quality Checkpoint | 📋 | - |
-| Phase 4: Statistics | ✅ Done | ~100% |
+| Phase 3: Coach & Planning | ✅ Done | 100% |
 | ↳ Quality Checkpoint | ✅ | - |
-| Phase 5: Polish | ✅ Done | ~95% |
+| Phase 4: Statistics | ✅ Done | 100% |
+| ↳ Quality Checkpoint | ✅ | - |
+| Phase 5: Polish | ✅ Done | ~90% |
 | ↳ Quality Checkpoint | ✅ | - |
 | Phase 6: Future | 💡 Ideas | 0% |
 | Phase 7: Release & Distribution | 📋 Planned | 0% |
 
-**Current Focus:** Phase 3 Coach & Planning - Implement scheduling, notifications, and auto-generated plans to complete the app's guidance features.
+**Current Focus:** Phase 2 Village & Economy - Remaining items are visual enhancements (flame animations, building unlock animations, resource animations).
 
 ---
 

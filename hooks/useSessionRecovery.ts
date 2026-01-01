@@ -171,7 +171,7 @@ export async function saveSessionState(): Promise<void> {
     prePauseStatus: state.prePauseStatus,
     currentRoundIndex: state.currentRoundIndex,
     currentExerciseIndex: state.currentExerciseIndex,
-    startTime: state.startTime!,
+    startTime: state.startTime ?? new Date(),
     totalPausedTime: state.totalPausedTime,
     timerDuration: state.timerDuration,
     results: state.results,

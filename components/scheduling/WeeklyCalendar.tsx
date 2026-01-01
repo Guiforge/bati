@@ -1,14 +1,10 @@
+import { useIsFocused } from "@react-navigation/native";
 import { addDays, format, isSameDay, startOfWeek } from "date-fns";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Spinner, Text, XStack, YStack } from "tamagui";
-
 import { Card } from "@/components/common/Card";
-import {
-  getScheduledSessionsForWeek,
-  type ScheduledSessionWithQuest,
-} from "@/db/scheduling";
-import { useIsFocused } from "@react-navigation/native";
+import { getScheduledSessionsForWeek, type ScheduledSessionWithQuest } from "@/db/scheduling";
 
 export function WeeklyCalendar() {
   const { t } = useTranslation();
@@ -18,31 +14,32 @@ export function WeeklyCalendar() {
   const [loading, setLoading] = useState(true);
 
   // Start of current week (Monday)
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 7 }).map((_, i) =>
-    addDays(weekStart, i)
+  const weekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
+  const weekDays = useMemo(
+    () => Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i)),
+    [weekStart],
   );
 
   useEffect(() => {
+    async function loadSessions() {
+      setLoading(true);
+      try {
+        const data = await getScheduledSessionsForWeek(weekStart);
+        setSessions(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     if (isFocused) {
       loadSessions();
     }
-  }, [isFocused]);
-
-  async function loadSessions() {
-    setLoading(true);
-    try {
-      const data = await getScheduledSessionsForWeek(weekStart);
-      setSessions(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [isFocused, weekStart]);
 
   const sessionsForSelectedDate = sessions.filter((s) =>
-    isSameDay(new Date(s.scheduledDate), selectedDate)
+    isSameDay(new Date(s.scheduledDate), selectedDate),
   );
 
   return (
@@ -51,9 +48,7 @@ export function WeeklyCalendar() {
       <XStack justify="space-between">
         {weekDays.map((day) => {
           const isSelected = isSameDay(day, selectedDate);
-          const hasSession = sessions.some((s) =>
-            isSameDay(new Date(s.scheduledDate), day)
-          );
+          const hasSession = sessions.some((s) => isSameDay(new Date(s.scheduledDate), day));
 
           return (
             <Card
@@ -66,18 +61,10 @@ export function WeeklyCalendar() {
               items="center"
               pressStyle={{ opacity: 0.8 }}
             >
-              <Text
-                fontSize="$2"
-                fontWeight="bold"
-                color={isSelected ? "white" : "$color"}
-              >
+              <Text fontSize="$2" fontWeight="bold" color={isSelected ? "white" : "$color"}>
                 {format(day, "EEE")}
               </Text>
-              <Text
-                fontSize="$4"
-                fontWeight="800"
-                color={isSelected ? "white" : "$color"}
-              >
+              <Text fontSize="$4" fontWeight="800" color={isSelected ? "white" : "$color"}>
                 {format(day, "d")}
               </Text>
               {hasSession && (

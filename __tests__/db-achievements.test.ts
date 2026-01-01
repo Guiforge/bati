@@ -115,7 +115,7 @@ describe("db/achievements", () => {
       // Create some sessions to trigger achievements
       const allExercises = await exercises.listExercises();
       const squat = allExercises.find((e) => e.enName === "Squat");
-      expect(squat).toBeTruthy();
+      if (!squat) throw new Error("Squat not found");
 
       // Create 10 sessions to trigger sessions_10
       for (let i = 0; i < 10; i++) {
@@ -125,7 +125,7 @@ describe("db/achievements", () => {
           durationSeconds: 600,
           exercises: [
             {
-              exerciseId: squat!.id,
+              exerciseId: squat.id,
               sortOrder: 0,
               result: { type: "reps", value: 10 },
             },

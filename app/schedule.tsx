@@ -15,11 +15,7 @@ export default function ScheduleScreen() {
   return (
     <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
       <YStack px="$4" py="$4" gap="$4">
-        <AppButton
-          icon={Calendar}
-          onPress={() => router.back()}
-          variant="secondary"
-        >
+        <AppButton icon={Calendar} onPress={() => router.back()} variant="secondary">
           {t("common.back", "Back")}
         </AppButton>
         <H2>{t("scheduling.title", "Weekly Schedule")}</H2>

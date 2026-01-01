@@ -9,7 +9,7 @@ import type { Quest } from "./quests";
 import { getQuestById } from "./quests";
 import { Difficulty, type UserLevel } from "./targets";
 
-const { scheduledSessions, quests } = schema;
+const { scheduledSessions } = schema;
 
 // Default user level for fetching quest details in scheduling
 const DEFAULT_USER_LEVEL: UserLevel = Difficulty.Medium;
@@ -220,7 +220,7 @@ export async function markMissedSessions(): Promise<number> {
   yesterday.setDate(yesterday.getDate() - 1);
   yesterday.setHours(23, 59, 59, 999);
 
-  const result = await db
+  await db
     .update(scheduledSessions)
     .set({
       status: "missed",

@@ -1,3 +1,9 @@
+import { Card } from "@/components/common/Card";
+import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { computeSessionXp } from "@/db/xp";
+import { formatTime } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -5,12 +11,6 @@ import { ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
-import { computeSessionXp } from "@/db/xp";
-import { formatTime } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
-import { useSettingsStore } from "@/stores/settings";
 import { ProgressionChart } from "./ProgressionChart";
 
 type Feedback = "easy" | "good" | "hard" | null;
@@ -39,7 +39,9 @@ export function VictoryView() {
   const handleFinish = async () => {
     try {
       setIsSaving(true);
-      const { campaign } = await saveSession();
+      // Pass feedback as FeedbackCode or null
+      const feedbackCode = feedback as "easy" | "good" | "hard" | null;
+      const { campaign } = await saveSession(feedbackCode);
       quitSession();
 
       if (campaign?.nextQuestId && campaign.nextRunStepId) {

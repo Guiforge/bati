@@ -1,3 +1,6 @@
+import { AppIconButton } from "@/components/common/AppButton";
+import { AVATARS } from "@/constants/avatars";
+import { useSettingsStore } from "@/stores/settings";
 import {
   ChevronLeft,
   ChevronRight,
@@ -15,10 +18,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack } from "tamagui";
-import { AppIconButton } from "@/components/common/AppButton";
-import { AVATARS } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
-import { useThemeStore } from "@/stores/theme";
 
 type MenuStep = "main" | "language" | "avatar" | "theme";
 
@@ -29,8 +28,7 @@ export function HomeSettingsMenu() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<MenuStep>("main");
 
-  const { language, avatarId, setLanguage, setAvatarId } = useSettingsStore();
-  const { theme, setTheme } = useThemeStore();
+  const { language, avatarId, theme, setLanguage, setAvatarId, setTheme } = useSettingsStore();
 
   const closeMenu = () => {
     setOpen(false);

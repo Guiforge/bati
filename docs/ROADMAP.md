@@ -588,7 +588,7 @@ This document tracks all features, their implementation status, and future plans
 - ✅ Micro-interactions
   - ✅ Button press feedback (scale 0.98 + opacity)
   - ✅ Card hover/press (scale 0.99 + opacity)
-  - 📋 Loading states
+  - ✅ Loading states (skeleton cards in QuestCarousel, VillageScreen)
 
 ### 5.2 Sound & Haptics ⚠️
 
@@ -680,7 +680,7 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Button style audit (all use AppButton with 3px borders)
   - 📋 Card style audit (consistent border-radius, shadows)
   - 📋 Empty state illustrations
-  - 📋 Loading state skeletons
+  - ✅ Loading state skeletons (QuestCarousel, VillageScreen)
   - 📋 Error state designs
 - 🚧 RPG/Game-like Enhancements
   - ✅ Adventure intro cutscene (NarrativeModal implemented)

@@ -9,6 +9,11 @@ import {
 } from "@/db/bossFights";
 import { type CompletedExerciseInput, createCompletedSession } from "@/db/completed";
 import type { Quest } from "@/db/quests";
+import {
+  awardSessionResources,
+  type ExerciseResultForResources,
+  type ResourceLoot,
+} from "@/db/resources";
 import type { DifficultyCode, FeedbackCode, MuscleCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 
@@ -67,6 +72,7 @@ interface SessionState {
   // DB
   saveSession: (feedback?: FeedbackCode | null) => Promise<{
     sessionId: number;
+    loot: ResourceLoot;
     campaign: {
       adventureId: number;
       runId: number;
@@ -343,6 +349,24 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       performedAt: new Date(startTime),
     });
 
+    // Build exercise results with muscles for resource calculation
+    const exerciseResults: ExerciseResultForResources[] = results.map((r) => {
+      const questExercise = quest.exercises.find((qe) => qe.exercise.id === r.exerciseId);
+      return {
+        exerciseId: r.exerciseId,
+        muscles: questExercise?.exercise.muscles ?? [],
+        result: { type: r.result.type, value: r.result.value },
+      };
+    });
+
+    // Award resources
+    const loot = await awardSessionResources({
+      durationSeconds,
+      userLevel,
+      completedSessionId: sessionId,
+      exerciseResults,
+    });
+
     const campaign =
       adventureRunStepId != null
         ? await completeAdventureRunStep({
@@ -351,6 +375,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           })
         : null;
 
-    return { sessionId, campaign };
+    return { sessionId, loot, campaign };
   },
 }));

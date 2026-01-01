@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
@@ -8,10 +8,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
 import { computeSessionXp } from "@/db/xp";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { LootDisplay } from "./LootDisplay";
 import { ProgressionChart } from "./ProgressionChart";
 
 type Feedback = "easy" | "good" | "hard" | null;
@@ -22,17 +24,41 @@ export function VictoryView() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
-  const { quest, userLevel, startTime, totalPausedTime, saveSession, quitSession } =
+  const { quest, userLevel, startTime, totalPausedTime, results, saveSession, quitSession } =
     useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
 
-  if (!quest || !startTime) return null;
-
   // Calculate duration for display
   // Note: saveSession recalculates this accurately based on DB timestamp logic,
   // but this is good enough for the UI summary.
-  const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+  const durationSeconds = useMemo(() => {
+    if (!startTime) return 0;
+    return Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+  }, [startTime, totalPausedTime]);
+
+  // Calculate loot preview
+  const lootPreview: ResourceLoot = useMemo(() => {
+    if (!quest) return { gold: 0, materials: [] };
+
+    const exerciseResults = results.map((r) => {
+      const questExercise = quest.exercises.find((qe) => qe.exercise.id === r.exerciseId);
+      return {
+        exerciseId: r.exerciseId,
+        muscles: questExercise?.exercise.muscles ?? [],
+        result: { type: r.result.type as "reps" | "time", value: r.result.value },
+      };
+    });
+
+    return previewSessionLoot({
+      durationSeconds,
+      userLevel,
+      exerciseResults,
+    });
+  }, [quest, results, durationSeconds, userLevel]);
+
+  if (!quest || !startTime) return null;
+
   const questTitle = language === "fr" ? quest.frTitle : quest.enTitle;
   const { bg: questBg } = getQuestColorTokensFromQuest(quest);
   const xpEarned = computeSessionXp({ durationSeconds, userLevel });
@@ -148,6 +174,9 @@ export function VictoryView() {
             </Text>
           </XStack>
         </Card>
+
+        {/* Loot Display */}
+        <LootDisplay loot={lootPreview} />
 
         {/* Progression Chart */}
         <YStack width="100%" maxW={520}>

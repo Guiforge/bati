@@ -131,6 +131,7 @@
     "victory_title": "Quête accomplie !",
     "total_time": "Temps total",
     "xp_earned": "XP gagnés",
+    "loot_title": "Butin gagné",
     "finish_button": "Récupérer le butin",
     "feedback_title": "Comment c'était ?",
     "feedback_easy": "Trop facile",
@@ -148,6 +149,15 @@
     "target_reached": "Objectif atteint !",
     "keep_going_hint": "Continue ! Le chrono continue après l'objectif.",
     "complete_overtime": "TERMINÉ ! 🎉"
+  },
+  "resources": {
+    "gold": "Or",
+    "wood": "Bois",
+    "stone": "Pierre",
+    "fire": "Essence de feu",
+    "water": "Eau",
+    "wind": "Essence de vent",
+    "grain": "Blé"
   },
   "dev": {
     "title": "Outils dev",

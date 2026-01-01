@@ -163,4 +163,43 @@ describe("db/resources", () => {
       expect(getDifficultyMultiplier("hard")).toBe(1.2);
     });
   });
+
+  describe("previewSessionLoot", () => {
+    test("should calculate loot preview from exercise results", () => {
+      const { previewSessionLoot } = require("../db/resources") as typeof import("../db/resources");
+
+      const loot = previewSessionLoot({
+        durationSeconds: 600, // 10 minutes
+        userLevel: "medium",
+        exerciseResults: [
+          { exerciseId: 1, muscles: ["arms"], result: { type: "reps", value: 50 } },
+          { exerciseId: 2, muscles: ["back"], result: { type: "reps", value: 30 } },
+        ],
+      });
+
+      // Gold = 10 + (10 * 2) = 30
+      expect(loot.gold).toBe(30);
+      // Arms -> wood = 50
+      expect(loot.materials.find((m) => m.resource === "wood")?.amount).toBe(50);
+      // Back -> stone = 30
+      expect(loot.materials.find((m) => m.resource === "stone")?.amount).toBe(30);
+    });
+
+    test("should apply difficulty multiplier", () => {
+      const { previewSessionLoot } = require("../db/resources") as typeof import("../db/resources");
+
+      const lootHard = previewSessionLoot({
+        durationSeconds: 600,
+        userLevel: "hard",
+        exerciseResults: [
+          { exerciseId: 1, muscles: ["arms"], result: { type: "reps", value: 50 } },
+        ],
+      });
+
+      // Gold = (10 + 20) * 1.2 = 36
+      expect(lootHard.gold).toBe(36);
+      // Arms -> wood = 50 * 1.2 = 60
+      expect(lootHard.materials.find((m) => m.resource === "wood")?.amount).toBe(60);
+    });
+  });
 });

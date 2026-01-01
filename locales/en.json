@@ -131,6 +131,7 @@
     "victory_title": "Quest Complete!",
     "total_time": "Total Time",
     "xp_earned": "XP Earned",
+    "loot_title": "Loot Earned",
     "finish_button": "Collect Loot",
     "feedback_title": "How did it feel?",
     "feedback_easy": "Too Easy",
@@ -148,6 +149,15 @@
     "target_reached": "Target reached!",
     "keep_going_hint": "Keep going! Timer continues after target.",
     "complete_overtime": "FINISH! 🎉"
+  },
+  "resources": {
+    "gold": "Gold",
+    "wood": "Wood",
+    "stone": "Stone",
+    "fire": "Fire Essence",
+    "water": "Water",
+    "wind": "Wind Essence",
+    "grain": "Grain"
   },
   "dev": {
     "title": "Dev Tools",

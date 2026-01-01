@@ -195,6 +195,35 @@ export function getDifficultyMultiplier(difficulty: "easy" | "medium" | "hard"):
   }
 }
 
+/**
+ * Preview the loot that would be earned from a session (without awarding)
+ * This is a pure calculation - does not touch the database
+ */
+export function previewSessionLoot(params: {
+  durationSeconds: number;
+  userLevel: "easy" | "medium" | "hard";
+  exerciseResults: ExerciseResultForResources[];
+}): ResourceLoot {
+  const { durationSeconds, userLevel, exerciseResults } = params;
+
+  // Build muscle → total value map
+  const muscleMap = new Map<MuscleCode, number>();
+  for (const result of exerciseResults) {
+    for (const muscle of result.muscles) {
+      const current = muscleMap.get(muscle) ?? 0;
+      muscleMap.set(muscle, current + result.result.value);
+    }
+  }
+
+  // Calculate loot
+  const difficultyMultiplier = getDifficultyMultiplier(userLevel);
+  return calculateSessionResources({
+    durationSeconds,
+    exercisesByMuscle: muscleMap,
+    difficultyMultiplier,
+  });
+}
+
 // ------------------------------------------------------------
 // Initialization
 // ------------------------------------------------------------
@@ -219,4 +248,64 @@ export async function ensureResourceInventoryExists(): Promise<void> {
       });
     }
   }
+}
+
+// ------------------------------------------------------------
+// Session Resource Awarding
+// ------------------------------------------------------------
+
+export type ExerciseResultForResources = {
+  exerciseId: number;
+  muscles: MuscleCode[];
+  result: { type: "reps" | "time"; value: number };
+};
+
+/**
+ * Calculate and award resources for a completed session
+ * Returns the loot that was awarded for display
+ */
+export async function awardSessionResources(params: {
+  durationSeconds: number;
+  userLevel: "easy" | "medium" | "hard";
+  completedSessionId: number;
+  exerciseResults: ExerciseResultForResources[];
+}): Promise<ResourceLoot> {
+  const { durationSeconds, userLevel, completedSessionId, exerciseResults } = params;
+
+  // Build muscle → total value map
+  const muscleMap = new Map<MuscleCode, number>();
+  for (const result of exerciseResults) {
+    for (const muscle of result.muscles) {
+      const current = muscleMap.get(muscle) ?? 0;
+      muscleMap.set(muscle, current + result.result.value);
+    }
+  }
+
+  // Calculate loot
+  const difficultyMultiplier = getDifficultyMultiplier(userLevel);
+  const loot = calculateSessionResources({
+    durationSeconds,
+    exercisesByMuscle: muscleMap,
+    difficultyMultiplier,
+  });
+
+  // Award gold
+  if (loot.gold > 0) {
+    await addResources([{ resource: "gold", amount: loot.gold }], {
+      completedSessionId,
+      reason: "session_complete",
+      transactionType: "earned",
+    });
+  }
+
+  // Award materials
+  if (loot.materials.length > 0) {
+    await addResources(loot.materials, {
+      completedSessionId,
+      reason: "session_complete",
+      transactionType: "earned",
+    });
+  }
+
+  return loot;
 }

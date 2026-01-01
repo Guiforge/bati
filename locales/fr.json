@@ -332,7 +332,12 @@
     "building_details": "Détails du bâtiment",
     "xp_to_next": "XP pour le prochain niveau",
     "tier": "Niveau {{tier}}",
-    "close": "Fermer"
+    "close": "Fermer",
+    "next_level": "Niveau suivant",
+    "bonus_xp": "+{{percent}}% XP pour {{muscle}}",
+    "bonus_resources": "+{{percent}}% {{resource}}",
+    "bonus_prestige": "+{{points}} Prestige",
+    "current_bonus": "Bonus actuel"
   },
   "goals": {
     "title": "Mon Objectif",

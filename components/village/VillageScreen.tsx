@@ -15,9 +15,10 @@ import {
   type VillageBuildingWithMeta,
   type VillageStatsType,
 } from "@/db/buildings";
-import { type BuildingCode, buildingLevelThresholds } from "@/db/schema";
+import { type BuildingCode, buildingLevelBonuses, buildingLevelThresholds } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSettingsStore } from "@/stores/settings";
+import type { MuscleCode, ResourceCode } from "@/db/schema";
 
 // Tier background colors
 const tierColors: Record<number, string> = {
@@ -25,6 +26,37 @@ const tierColors: Record<number, string> = {
   2: "$pastelBlue",
   3: "$pastelPurple",
   4: "$pastelOrange",
+};
+
+// Muscle localized names
+const muscleNames: Record<MuscleCode, { en: string; fr: string }> = {
+  arms: { en: "Arms", fr: "Bras" },
+  back: { en: "Back", fr: "Dos" },
+  chest: { en: "Chest", fr: "Poitrine" },
+  abs: { en: "Abs", fr: "Abdos" },
+  shoulder: { en: "Shoulders", fr: "Épaules" },
+  calf: { en: "Legs", fr: "Jambes" },
+};
+
+// Resource localized names
+const resourceNames: Record<ResourceCode, { en: string; fr: string }> = {
+  gold: { en: "Gold", fr: "Or" },
+  wood: { en: "Wood", fr: "Bois" },
+  stone: { en: "Stone", fr: "Pierre" },
+  fire: { en: "Fire", fr: "Feu" },
+  water: { en: "Water", fr: "Eau" },
+  wind: { en: "Wind", fr: "Vent" },
+  grain: { en: "Grain", fr: "Grain" },
+};
+
+// Muscle to resource mapping for display
+const muscleToResource: Record<MuscleCode, ResourceCode> = {
+  arms: "wood",
+  back: "stone",
+  chest: "fire",
+  abs: "water",
+  shoulder: "wind",
+  calf: "grain",
 };
 
 // Building localized names
@@ -299,6 +331,83 @@ export function VillageScreen() {
                     <Text fontSize={14} fontWeight="700" color="$primary">
                       ⭐ {t("village.max_level")} ⭐
                     </Text>
+                  )}
+
+                  {/* Upgrade Preview */}
+                  {selectedBuilding.level < 5 && selectedBuilding.relatedMuscle && (
+                    <YStack
+                      width="100%"
+                      bg="$pastelYellow"
+                      p="$3"
+                      rounded="$4"
+                      borderWidth={2}
+                      borderColor="$color"
+                      gap="$2"
+                    >
+                      <Text fontWeight="800" fontSize={14} color="$color">
+                        {t("village.next_level")} →
+                      </Text>
+                      <Text fontSize={13} color="$color">
+                        {t("village.bonus_xp", {
+                          percent: buildingLevelBonuses[selectedBuilding.level + 1]?.xpPercent || 0,
+                          muscle:
+                            muscleNames[selectedBuilding.relatedMuscle]?.[
+                              language === "fr" ? "fr" : "en"
+                            ],
+                        })}
+                      </Text>
+                      <Text fontSize={13} color="$color">
+                        {t("village.bonus_resources", {
+                          percent:
+                            buildingLevelBonuses[selectedBuilding.level + 1]?.resourcePercent || 0,
+                          resource:
+                            resourceNames[muscleToResource[selectedBuilding.relatedMuscle]]?.[
+                              language === "fr" ? "fr" : "en"
+                            ],
+                        })}
+                      </Text>
+                      <Text fontSize={13} color="$color">
+                        {t("village.bonus_prestige", {
+                          points:
+                            buildingLevelBonuses[selectedBuilding.level + 1]?.prestigePoints || 0,
+                        })}
+                      </Text>
+                    </YStack>
+                  )}
+
+                  {/* Current Bonus (for max level buildings) */}
+                  {selectedBuilding.level === 5 && selectedBuilding.relatedMuscle && (
+                    <YStack
+                      width="100%"
+                      bg="$pastelGreen"
+                      p="$3"
+                      rounded="$4"
+                      borderWidth={2}
+                      borderColor="$color"
+                      gap="$2"
+                    >
+                      <Text fontWeight="800" fontSize={14} color="$color">
+                        {t("village.current_bonus")}
+                      </Text>
+                      <Text fontSize={13} color="$color">
+                        {t("village.bonus_xp", {
+                          percent: buildingLevelBonuses[5]?.xpPercent || 0,
+                          muscle:
+                            muscleNames[selectedBuilding.relatedMuscle]?.[
+                              language === "fr" ? "fr" : "en"
+                            ],
+                        })}
+                      </Text>
+                      <Text fontSize={13} color="$color">
+                        {t("village.bonus_resources", {
+                          percent: buildingLevelBonuses[5]?.resourcePercent || 0,
+                          resource:
+                            resourceNames[muscleToResource[selectedBuilding.relatedMuscle]]?.[
+                              language === "fr" ? "fr" : "en"
+                            ],
+                        })}
+                      </Text>
+                    </YStack>
                   )}
                 </YStack>
               )}

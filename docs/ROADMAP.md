@@ -149,8 +149,8 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Return home button
 - ✅ Session saving on completion
 - ✅ Progression chart (bar chart of past sessions)
-- 📋 Post-workout feedback (Easy/Good/Hard buttons)
-- 📋 Resource loot display (when resources implemented)
+- ✅ Post-workout feedback (Easy/Good/Hard buttons)
+- ✅ Resource loot display (LootDisplay component)
 
 ### 1.7 Completed Sessions ✅
 
@@ -257,7 +257,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 2: Village & Economy 🚧 (65% Complete)
+## Phase 2: Village & Economy 🚧 (85% Complete)
 
 ### 2.1 Resource System ✅
 
@@ -359,10 +359,11 @@ This document tracks all features, their implementation status, and future plans
 - ✅ Boss fight log
   - ✅ Damage per session
   - ✅ Critical hit tracking
-- ⚠️ Boss UI updates
-  - ✅ HP bar display
+- ✅ Boss UI updates
+  - ✅ HP bar display (BossHpBar component)
   - ✅ Damage result in session store
-  - 📋 Damage numbers during session
+  - ✅ Damage numbers during session (damage popup with crit/weakness indicators)
+  - ✅ Enraged state visual (animated when HP < 25%)
   - 📋 Defeat animation
   - 📋 Boss tokens reward
 

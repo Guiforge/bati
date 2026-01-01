@@ -17,8 +17,7 @@ describe("db/buildings", () => {
 
   describe("getAllBuildings", () => {
     test("should return all building types", async () => {
-      const { getAllBuildings } =
-        require("../db/buildings") as typeof import("../db/buildings");
+      const { getAllBuildings } = require("../db/buildings") as typeof import("../db/buildings");
 
       const buildings = await getAllBuildings();
       expect(buildings.length).toBe(19); // 3 tier1 + 6 tier2 + 6 tier3 + 4 tier4
@@ -34,16 +33,13 @@ describe("db/buildings", () => {
       expect(unlocked.length).toBe(3); // campfire, tent, training_dummy
       expect(unlocked.find((b) => b.buildingType === "campfire")).toBeDefined();
       expect(unlocked.find((b) => b.buildingType === "tent")).toBeDefined();
-      expect(
-        unlocked.find((b) => b.buildingType === "training_dummy")
-      ).toBeDefined();
+      expect(unlocked.find((b) => b.buildingType === "training_dummy")).toBeDefined();
     });
   });
 
   describe("getBuildingByType", () => {
     test("should return a specific building", async () => {
-      const { getBuildingByType } =
-        require("../db/buildings") as typeof import("../db/buildings");
+      const { getBuildingByType } = require("../db/buildings") as typeof import("../db/buildings");
 
       const campfire = await getBuildingByType("campfire");
       expect(campfire).not.toBeNull();
@@ -54,8 +50,7 @@ describe("db/buildings", () => {
     });
 
     test("should return locked status for tier 2 buildings", async () => {
-      const { getBuildingByType } =
-        require("../db/buildings") as typeof import("../db/buildings");
+      const { getBuildingByType } = require("../db/buildings") as typeof import("../db/buildings");
 
       const archeryRange = await getBuildingByType("archery_range");
       expect(archeryRange).not.toBeNull();
@@ -66,8 +61,7 @@ describe("db/buildings", () => {
 
   describe("getVillageStats", () => {
     test("should return village stats", async () => {
-      const { getVillageStats } =
-        require("../db/buildings") as typeof import("../db/buildings");
+      const { getVillageStats } = require("../db/buildings") as typeof import("../db/buildings");
 
       const stats = await getVillageStats();
       expect(stats).not.toBeNull();

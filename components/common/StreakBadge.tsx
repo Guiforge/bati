@@ -1,8 +1,8 @@
-import { listCompletedSessions } from "@/db/completed";
 import { Flame } from "@tamagui/lucide-icons";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
+import { listCompletedSessions } from "@/db/completed";
 
 type StreakInfo = {
   current: number;

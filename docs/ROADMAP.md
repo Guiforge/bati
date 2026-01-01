@@ -444,12 +444,15 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Schedule notifications
   - 📋 Cancel on completion
 
-### 3.5 Smart Recommendations 📋
+### 3.5 Smart Recommendations ⚠️
 
 - ✅ Difficulty suggestion (auto-suggests based on history)
-- 📋 Weak area detection
-  - 📋 Analyze muscle balance
-  - 📋 Suggest underworked muscles
+- ✅ Weak area detection
+  - ✅ Analyze muscle balance (getMuscleBalance)
+  - ✅ Calculate percentages per muscle group
+  - ✅ Time period filtering (7d, 30d, 90d, all)
+  - ✅ getSuggestedFocusAreas() for focus recommendations
+  - ✅ getBalanceRecommendation() for status and message
 - 📋 Rest suggestions
   - 📋 Detect overtraining patterns
   - 📋 Suggest rest days
@@ -482,12 +485,12 @@ This document tracks all features, their implementation status, and future plans
   - 📋 Previous weeks/months
   - 📋 Trend analysis
 
-### 4.3 Muscle Balance 📋
+### 4.3 Muscle Balance ⚠️
 
-- 📋 Balance calculation
-  - 📋 Track volume per muscle
-  - 📋 Calculate percentages
-  - 📋 Time period filtering (30 days, etc.)
+- ✅ Balance calculation (db/muscleBalance.ts)
+  - ✅ Track volume per muscle
+  - ✅ Calculate percentages
+  - ✅ Time period filtering (7d, 30d, 90d, all)
 - 📋 Balance visualization
   - 📋 Bar chart or radar chart
   - 📋 Weak area highlighting

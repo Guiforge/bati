@@ -398,3 +398,75 @@ export const bossDamageLog = sqliteTable(
     sessionIdx: index("boss_damage_log_session_idx").on(table.completedSessionId),
   }),
 );
+
+// ------------------------------------------------------------
+// Resources (Phase 2 - Village Economy)
+// ------------------------------------------------------------
+
+// Resource codes mapped to muscle groups + universal currency
+export const resourceCodes = [
+  "gold", // Universal currency (from all workouts)
+  "wood", // Arms exercises
+  "stone", // Back exercises
+  "fire", // Chest exercises
+  "water", // Abs exercises
+  "wind", // Shoulder exercises
+  "grain", // Legs/calf exercises
+] as const;
+export type ResourceCode = (typeof resourceCodes)[number];
+
+// Muscle to resource mapping
+export const muscleToResource: Record<MuscleCode, ResourceCode> = {
+  arms: "wood",
+  back: "stone",
+  chest: "fire",
+  abs: "water",
+  shoulder: "wind",
+  calf: "grain",
+} as const;
+
+// User's current resource inventory
+export const resourceInventory = sqliteTable(
+  "resource_inventory",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    // Resource type
+    resource: text().notNull().$type<ResourceCode>(),
+    // Current amount (always >= 0)
+    amount: int().notNull().default(0),
+    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    resourceUnique: uniqueIndex("resource_inventory_resource_unique").on(table.resource),
+  }),
+);
+
+// Transaction types for analytics
+export const resourceTransactionTypes = ["earned", "spent", "bonus"] as const;
+export type ResourceTransactionType = (typeof resourceTransactionTypes)[number];
+
+// Resource transaction log (for analytics and debugging)
+export const resourceTransactions = sqliteTable(
+  "resource_transactions",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    // Resource type
+    resource: text().notNull().$type<ResourceCode>(),
+    // Amount changed (positive for earn/bonus, could be negative for spend)
+    amount: int().notNull(),
+    // Transaction type
+    transactionType: text().notNull().default("earned").$type<ResourceTransactionType>(),
+    // Optional: link to the session that earned this resource
+    completedSessionId: int().references(() => completedQuest.id, {
+      onDelete: "set null",
+    }),
+    // Optional: description/reason for the transaction
+    reason: text().notNull().default(""),
+    createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    resourceIdx: index("resource_transactions_resource_idx").on(table.resource),
+    sessionIdx: index("resource_transactions_session_idx").on(table.completedSessionId),
+    createdAtIdx: index("resource_transactions_created_at_idx").on(table.createdAt),
+  }),
+);

@@ -16,6 +16,7 @@ import m0012 from "./0012_add_author_and_seed_campaigns.sql";
 import m0013 from "./0013_localize_adventure_steps_narrative.sql";
 import m0014 from "./0014_add_boss_fights.sql";
 import m0015 from "./0015_add_session_feedback.sql";
+import m0016 from "./0016_add_resources.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -37,5 +38,6 @@ export default {
     m0013,
     m0014,
     m0015,
+    m0016,
   },
 };

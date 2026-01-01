@@ -53,3 +53,13 @@ export {
   setQuestExercises,
   updateQuestMeta,
 } from "./quests";
+export type { ResourceAmount, ResourceLoot, ResourceTransaction } from "./resources";
+export {
+  addResources,
+  calculateSessionResources,
+  ensureResourceInventoryExists,
+  getDifficultyMultiplier,
+  getResourceAmount,
+  getResourceInventory,
+  spendResources,
+} from "./resources";

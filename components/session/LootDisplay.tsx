@@ -12,6 +12,7 @@ const RESOURCE_EMOJI: Record<ResourceCode, string> = {
   water: "💧",
   wind: "💨",
   grain: "🌾",
+  boss_token: "🏆",
 };
 
 function getResourceBgColor(resource: ResourceCode): ColorTokens {
@@ -30,6 +31,8 @@ function getResourceBgColor(resource: ResourceCode): ColorTokens {
       return "$pastelPurple"; // Shoulders - purple
     case "grain":
       return "$pastelOrange"; // Legs - orange
+    case "boss_token":
+      return "$pastelPurple"; // Special - purple
     default:
       return "$bgLight";
   }

@@ -1,4 +1,4 @@
-import { Audio } from "expo-av";
+import { Audio, type AVPlaybackSource } from "expo-av";
 import { useEffect, useState } from "react";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -6,7 +6,7 @@ export function useSound() {
   const { soundEnabled } = useSettingsStore();
   const [sound, setSound] = useState<Audio.Sound>();
 
-  async function playSound(soundFile: unknown) {
+  async function playSound(soundFile: AVPlaybackSource | null | undefined) {
     if (!soundEnabled || !soundFile) return;
 
     try {

@@ -60,7 +60,7 @@ export function HomeSettingsMenu() {
     setNotificationTime,
   } = useSettingsStore();
 
-  const { scheduleReminder, cancelAllNotifications } = useNotifications();
+  const { scheduleSmartNotifications, cancelAllNotifications } = useNotifications();
 
   const closeMenu = () => {
     setOpen(false);
@@ -348,7 +348,7 @@ export function HomeSettingsMenu() {
           label={`${t("settings.notifications_on", "Enabled")} 🔔`}
           onPress={async () => {
             await setNotificationsEnabled(true);
-            await scheduleReminder(notificationTime.hour, notificationTime.minute);
+            await scheduleSmartNotifications();
           }}
         />
         <OptionItem
@@ -379,7 +379,7 @@ export function HomeSettingsMenu() {
                   onPress={async () => {
                     const newTime = { hour, minute: 0 };
                     await setNotificationTime(newTime);
-                    await scheduleReminder(newTime.hour, newTime.minute);
+                    await scheduleSmartNotifications();
                   }}
                 >
                   <Text color={isSelected ? "white" : "$color"} fontWeight="bold">

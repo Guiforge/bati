@@ -11,6 +11,7 @@ const RESOURCE_EMOJI: Record<ResourceCode, string> = {
   water: "💧",
   wind: "💨",
   grain: "🌾",
+  boss_token: "🏆",
 };
 
 // Resources to always show in the header (the main currencies)

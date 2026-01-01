@@ -193,7 +193,7 @@ export function Home() {
         {/* Full-bleed slide gallery */}
         <QuestCarousel />
 
-        <YStack px={24} width="100%" maxW={420} alignSelf="center">
+        <YStack px={24} width="100%" maxW={420} self="center">
           <WeeklyChallengeCard />
         </YStack>
 

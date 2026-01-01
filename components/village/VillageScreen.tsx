@@ -47,6 +47,7 @@ const resourceNames: Record<ResourceCode, { en: string; fr: string }> = {
   water: { en: "Water", fr: "Eau" },
   wind: { en: "Wind", fr: "Vent" },
   grain: { en: "Grain", fr: "Grain" },
+  boss_token: { en: "Boss Token", fr: "Jeton de Boss" },
 };
 
 // Muscle to resource mapping for display

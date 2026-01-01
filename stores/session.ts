@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
 import { completeAdventureRunStep } from "@/db";
-import { checkForNewAchievements } from "@/db/achievements";
+import { checkForNewAchievements, type NewAchievementResult } from "@/db/achievements";
 import {
   type BossFight,
   type DamageResult,
@@ -88,6 +88,7 @@ interface SessionState {
     loot: ResourceLoot;
     buildings: SessionBuildingResult;
     newRecords: NewRecordResult[];
+    newAchievements: NewAchievementResult[];
     campaign: {
       adventureId: number;
       runId: number;

@@ -216,6 +216,7 @@ export async function dealDamage(
       defeated: true,
       weaknessBonus: false,
       resistancePenalty: false,
+      bossTokensEarned: 0,
     };
   }
 

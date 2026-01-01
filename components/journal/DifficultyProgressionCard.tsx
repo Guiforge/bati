@@ -23,9 +23,9 @@ export function DifficultyProgressionCard() {
 
   const isIncrease = recommendation.action === "increase";
   const Icon = isIncrease ? TrendingUp : TrendingDown;
-  const color = isIncrease ? "$green10" : "$orange10";
-  const bgColor = isIncrease ? "$green2" : "$orange2";
-  const borderColor = isIncrease ? "$green8" : "$orange8";
+  const color = isIncrease ? "$success" : "$primary";
+  const bgColor = isIncrease ? "$pastelGreen" : "$pastelOrange";
+  const borderColor = isIncrease ? "$success" : "$primary";
 
   return (
     <Card bg={bgColor} borderColor={borderColor} borderWidth={2} p="$4">

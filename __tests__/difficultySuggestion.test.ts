@@ -8,6 +8,7 @@ function session(level: "easy" | "medium" | "hard", id: number): SessionSummary 
     userLevel: level,
     durationSeconds: 60,
     performedAt: new Date(2024, 0, id),
+    feedback: null,
   };
 }
 

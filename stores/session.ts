@@ -10,6 +10,7 @@ import {
 import { processSessionBuildings, type SessionBuildingResult } from "@/db/buildings";
 import { type CompletedExerciseInput, createCompletedSession } from "@/db/completed";
 import { recordSessionForGoal } from "@/db/goals";
+import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import type { Quest } from "@/db/quests";
 import {
   awardSessionResources,
@@ -76,6 +77,7 @@ interface SessionState {
     sessionId: number;
     loot: ResourceLoot;
     buildings: SessionBuildingResult;
+    newRecords: NewRecordResult[];
     campaign: {
       adventureId: number;
       runId: number;
@@ -397,6 +399,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       xpEarned,
     });
 
-    return { sessionId, loot, buildings, campaign };
+    // Check for personal records
+    const newRecords = await checkForNewRecords(sessionId);
+
+    return { sessionId, loot, buildings, newRecords, campaign };
   },
 }));

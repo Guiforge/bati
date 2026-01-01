@@ -148,7 +148,13 @@
     "time_progress": "TEMPS",
     "target_reached": "Objectif atteint !",
     "keep_going_hint": "Continue ! Le chrono continue après l'objectif.",
-    "complete_overtime": "TERMINÉ ! 🎉"
+    "complete_overtime": "TERMINÉ ! 🎉",
+    "new_records": "Nouveaux Records Personnels !",
+    "pr_longest_session": "Plus long entraînement",
+    "pr_most_xp": "Plus d'XP gagnés",
+    "pr_exercise": "Record {{exercise}}",
+    "pr_new_record": "Nouveau Record",
+    "pr_more": "+{{count}} autres records"
   },
   "resources": {
     "gold": "Or",

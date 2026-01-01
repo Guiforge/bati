@@ -148,7 +148,13 @@
     "time_progress": "TIME",
     "target_reached": "Target reached!",
     "keep_going_hint": "Keep going! Timer continues after target.",
-    "complete_overtime": "FINISH! 🎉"
+    "complete_overtime": "FINISH! 🎉",
+    "new_records": "New Personal Records!",
+    "pr_longest_session": "Longest Workout",
+    "pr_most_xp": "Most XP Earned",
+    "pr_exercise": "{{exercise}} PR",
+    "pr_new_record": "New Record",
+    "pr_more": "+{{count}} more records"
   },
   "resources": {
     "gold": "Gold",

@@ -8,12 +8,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import type { NewRecordResult } from "@/db/personalRecords";
 import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
 import { computeSessionXp } from "@/db/xp";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { LootDisplay } from "./LootDisplay";
+import { NewRecordsBadge } from "./NewRecordsBadge";
 import { ProgressionChart } from "./ProgressionChart";
 
 type Feedback = "easy" | "good" | "hard" | null;
@@ -28,6 +30,8 @@ export function VictoryView() {
     useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
+  const [newRecords, setNewRecords] = useState<NewRecordResult[]>([]);
+  const [hasSaved, setHasSaved] = useState(false);
 
   // Calculate duration for display
   // Note: saveSession recalculates this accurately based on DB timestamp logic,
@@ -64,6 +68,15 @@ export function VictoryView() {
   const xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
   const handleFinish = async () => {
+    // If we've already saved and shown records, now navigate
+    if (hasSaved) {
+      quitSession();
+
+      // Navigate based on campaign state (captured in first save)
+      router.replace("/");
+      return;
+    }
+
     // Success haptic on finishing
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -71,7 +84,18 @@ export function VictoryView() {
       setIsSaving(true);
       // Pass feedback as FeedbackCode or null
       const feedbackCode = feedback as "easy" | "good" | "hard" | null;
-      const { campaign } = await saveSession(feedbackCode);
+      const { campaign, newRecords: records } = await saveSession(feedbackCode);
+
+      // If we got new records, show them before navigating
+      if (records.length > 0) {
+        setNewRecords(records);
+        setHasSaved(true);
+        setIsSaving(false);
+        // Extra celebration haptic for PRs
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        return;
+      }
+
       quitSession();
 
       if (campaign?.nextQuestId && campaign.nextRunStepId) {
@@ -174,6 +198,9 @@ export function VictoryView() {
             </Text>
           </XStack>
         </Card>
+
+        {/* New Personal Records */}
+        {newRecords.length > 0 && <NewRecordsBadge records={newRecords} />}
 
         {/* Loot Display */}
         <LootDisplay loot={lootPreview} />

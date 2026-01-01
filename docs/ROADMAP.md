@@ -2,7 +2,7 @@
 
 This document tracks all features, their implementation status, and future plans.
 
-**Last Audit:** January 1, 2026 (Phase 3 update)
+**Last Audit:** January 1, 2026 (i18n cleanup + radar chart)
 
 **Legend:**
 
@@ -258,7 +258,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 2: Village & Economy 🚧 (85% Complete)
+## Phase 2: Village & Economy 🚧 (87% Complete)
 
 ### 2.1 Resource System ✅
 
@@ -745,7 +745,7 @@ This document tracks all features, their implementation status, and future plans
 ### UI Inconsistencies
 
 - ⚠️ Tab bar defined but hidden (navigation via cards only)
-- ⚠️ Some hardcoded strings not localized
+- ✅ Hardcoded UI strings localized (common.xp, common.crit, etc.)
 - ⚠️ Exercise images are emoji placeholders
 - ✅ Dark mode implemented and working
 

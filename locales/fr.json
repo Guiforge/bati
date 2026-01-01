@@ -362,7 +362,15 @@
     "cancel": "Annuler",
     "pause_goal": "Mettre en pause",
     "resume_goal": "Reprendre",
-    "complete_goal": "Marquer terminé"
+    "complete_goal": "Marquer terminé",
+    "preview_plan": "Voir le plan",
+    "preview_title": "Ton Plan d'Entraînement",
+    "preview_subtitle": "Voici ce qu'on a prévu pour toi",
+    "preview_week": "Semaine {{week}}",
+    "preview_confirm": "Commencer ce plan",
+    "preview_regenerate": "Générer un nouveau plan",
+    "preview_empty": "Aucune séance prévue",
+    "generating_plan": "Création du plan..."
   },
   "errors": {
     "save_session_failed": "Impossible de sauvegarder l'entraînement. Veuillez réessayer.",

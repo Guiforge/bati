@@ -362,7 +362,15 @@
     "cancel": "Cancel",
     "pause_goal": "Pause Goal",
     "resume_goal": "Resume Goal",
-    "complete_goal": "Mark Complete"
+    "complete_goal": "Mark Complete",
+    "preview_plan": "Preview Plan",
+    "preview_title": "Your Training Plan",
+    "preview_subtitle": "Here's what we've planned for you",
+    "preview_week": "Week {{week}}",
+    "preview_confirm": "Start This Plan",
+    "preview_regenerate": "Generate New Plan",
+    "preview_empty": "No sessions planned",
+    "generating_plan": "Creating your plan..."
   },
   "errors": {
     "save_session_failed": "Failed to save workout. Please try again.",

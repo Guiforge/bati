@@ -1,8 +1,69 @@
 import { addDays, startOfDay } from "date-fns";
-import { getGoalById } from "./goals";
+import { type CreateGoalInput, getGoalById } from "./goals";
 import { getSuggestedQuestsForWeakAreas } from "./muscleBalance";
-import { listQuestTemplates } from "./quests";
+import { listQuestTemplates, type QuestTemplate } from "./quests";
 import { createScheduledSession } from "./scheduling";
+
+/**
+ * A preview of a scheduled session (not yet saved)
+ */
+export type PlannedSession = {
+  scheduledDate: Date;
+  quest: QuestTemplate;
+  weekNumber: number;
+  dayOfWeek: number;
+};
+
+/**
+ * Preview a workout plan without saving it
+ * Returns what would be scheduled for the given goal parameters
+ */
+export async function previewPlanForGoal(
+  params: Pick<CreateGoalInput, "daysPerWeek">,
+): Promise<PlannedSession[]> {
+  const quests = await listQuestTemplates();
+  if (quests.length === 0) {
+    return [];
+  }
+
+  // Get suggested quests based on muscle balance (weak areas)
+  const suggestedQuests = await getSuggestedQuestsForWeakAreas(6);
+  const schedulePattern = getSchedulePattern(params.daysPerWeek);
+
+  const startDate = startOfDay(new Date());
+  const weeksToPlan = 4;
+  const plannedSessions: PlannedSession[] = [];
+  let sessionIndex = 0;
+
+  for (let week = 0; week < weeksToPlan; week++) {
+    for (const dayOffset of schedulePattern) {
+      const scheduledDate = addDays(startDate, week * 7 + dayOffset);
+
+      // Smart quest selection (same logic as generatePlanForGoal)
+      let selectedQuest: QuestTemplate | undefined;
+      if (suggestedQuests.length > 0) {
+        const suggIdx = sessionIndex % suggestedQuests.length;
+        const suggId = suggestedQuests[suggIdx].id;
+        selectedQuest = quests.find((q) => q.id === suggId);
+      }
+
+      if (!selectedQuest) {
+        selectedQuest = quests[sessionIndex % quests.length];
+      }
+
+      plannedSessions.push({
+        scheduledDate,
+        quest: selectedQuest,
+        weekNumber: week + 1,
+        dayOfWeek: dayOffset,
+      });
+
+      sessionIndex++;
+    }
+  }
+
+  return plannedSessions;
+}
 
 /**
  * Generate a workout plan for a goal

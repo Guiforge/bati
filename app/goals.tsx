@@ -6,6 +6,7 @@ import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H4, Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { PlanPreviewSheet } from "@/components/goals/PlanPreviewSheet";
 import {
   createGoal,
   type Goal,
@@ -16,7 +17,7 @@ import {
   goalTypeInfo,
   updateGoalStatus,
 } from "@/db/goals";
-import { generatePlanForGoal } from "@/db/plans";
+import { generatePlanForGoal, type PlannedSession, previewPlanForGoal } from "@/db/plans";
 import type { GoalStatusCode, GoalTypeCode } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSettingsStore } from "@/stores/settings";
@@ -37,6 +38,11 @@ export default function GoalsScreen() {
   const [progressHistory, setProgressHistory] = useState<GoalProgress[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Plan preview state
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewSessions, setPreviewSessions] = useState<PlannedSession[]>([]);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   // Form state for editing/creating
   const [selectedType, setSelectedType] = useState<GoalTypeCode>("balanced");
@@ -77,6 +83,26 @@ export default function GoalsScreen() {
     mediumImpact();
 
     try {
+      // Show preview first before creating goal
+      setShowPreview(true);
+      setIsGeneratingPreview(true);
+
+      // Generate preview with selected params
+      const sessions = await previewPlanForGoal({ daysPerWeek: selectedDays });
+      setPreviewSessions(sessions);
+    } catch (e) {
+      console.error("Failed to generate preview:", e);
+      setShowPreview(false);
+    } finally {
+      setIsGeneratingPreview(false);
+    }
+  };
+
+  const handleConfirmPlan = async () => {
+    mediumImpact();
+
+    try {
+      // Now create the goal and generate the actual plan
       const goalId = await createGoal({
         goalType: selectedType,
         daysPerWeek: selectedDays,
@@ -84,11 +110,26 @@ export default function GoalsScreen() {
       });
 
       await generatePlanForGoal(goalId);
-
+      setShowPreview(false);
       setIsEditing(false);
+      setPreviewSessions([]);
       await loadData();
     } catch (e) {
-      console.error("Failed to save goal:", e);
+      console.error("Failed to create goal:", e);
+    }
+  };
+
+  const handleRegeneratePlan = async () => {
+    selection();
+    setIsGeneratingPreview(true);
+
+    try {
+      const sessions = await previewPlanForGoal({ daysPerWeek: selectedDays });
+      setPreviewSessions(sessions);
+    } catch (e) {
+      console.error("Failed to regenerate plan:", e);
+    } finally {
+      setIsGeneratingPreview(false);
     }
   };
 
@@ -436,6 +477,16 @@ export default function GoalsScreen() {
           </YStack>
         ) : null}
       </ScrollView>
+
+      {/* Plan Preview Sheet */}
+      <PlanPreviewSheet
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        sessions={previewSessions}
+        isLoading={isGeneratingPreview}
+        onConfirm={handleConfirmPlan}
+        onRegenerate={handleRegeneratePlan}
+      />
     </YStack>
   );
 }

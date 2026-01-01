@@ -381,5 +381,15 @@
     "elapsed": "Temps : {{time}}",
     "resume": "Reprendre",
     "discard": "Abandonner"
+  },
+  "notifications": {
+    "daily_title": "C'est l'heure ! ⚔️",
+    "daily_body": "Ton village a besoin de toi. Accomplis une quête pour garder la flamme !",
+    "streak_title": "🔥 Série en danger !",
+    "streak_body": "Tu as une série de {{count}} jours. Ne laisse pas le feu s'éteindre !",
+    "inactivity_title": "Ton village te manque 🏚️",
+    "inactivity_body": "Ça fait longtemps. Les monstres se rapprochent...",
+    "boss_title": "⚔️ Le Boss t'attend !",
+    "boss_body": "Tu es à la dernière étape. Affronte le boss et remporte la victoire !"
   }
 }

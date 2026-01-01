@@ -1,5 +1,6 @@
 import { addDays, isSameDay, isYesterday, set } from "date-fns";
 import * as Notifications from "expo-notifications";
+import i18n from "i18next";
 import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db/adventures";
@@ -58,12 +59,16 @@ export function useNotifications() {
     // Cancel existing to avoid duplicates
     await Notifications.cancelAllScheduledNotificationsAsync();
 
+    // Helper to get translated string
+    const t = (key: string, options?: Record<string, unknown>) =>
+      i18n.t(key, options as Record<string, string>) as string;
+
     // 1. Standard Daily Reminder
     // Uses the user's preferred time
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Time to train! ⚔️",
-        body: "Your village needs you. Complete a quest to keep the flame alive!",
+        title: t("notifications.daily_title"),
+        body: t("notifications.daily_body"),
         sound: true,
       },
       trigger: {
@@ -107,8 +112,8 @@ export function useNotifications() {
         if (warningDate) {
           await Notifications.scheduleNotificationAsync({
             content: {
-              title: "🔥 Streak at Risk!",
-              body: `You have a ${streakInfo.current}-day streak. Don't let the fire die out!`,
+              title: t("notifications.streak_title"),
+              body: t("notifications.streak_body", { count: streakInfo.current }),
               sound: true,
             },
             trigger: {
@@ -133,8 +138,8 @@ export function useNotifications() {
 
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: "Your village misses you 🏚️",
-          body: "It's been a while. The monsters are getting closer...",
+          title: t("notifications.inactivity_title"),
+          body: t("notifications.inactivity_body"),
           sound: true,
         },
         trigger: {
@@ -163,8 +168,8 @@ export function useNotifications() {
 
             await Notifications.scheduleNotificationAsync({
               content: {
-                title: "⚔️ The Boss Awaits!",
-                body: "You're at the final step. Face the boss and claim victory!",
+                title: t("notifications.boss_title"),
+                body: t("notifications.boss_body"),
                 sound: true,
               },
               trigger: {

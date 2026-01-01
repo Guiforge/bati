@@ -381,5 +381,15 @@
     "elapsed": "Time: {{time}}",
     "resume": "Resume",
     "discard": "Discard"
+  },
+  "notifications": {
+    "daily_title": "Time to train! ⚔️",
+    "daily_body": "Your village needs you. Complete a quest to keep the flame alive!",
+    "streak_title": "🔥 Streak at Risk!",
+    "streak_body": "You have a {{count}}-day streak. Don't let the fire die out!",
+    "inactivity_title": "Your village misses you 🏚️",
+    "inactivity_body": "It's been a while. The monsters are getting closer...",
+    "boss_title": "⚔️ The Boss Awaits!",
+    "boss_body": "You're at the final step. Face the boss and claim victory!"
   }
 }

@@ -278,8 +278,8 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Muscle-to-resource mapping
   - ✅ Difficulty multipliers
   - ✅ Gold calculation from duration
-- 📋 Resource UI
-  - 📋 Resource display in header
+- ⚠️ Resource UI
+  - ✅ Resource display in header (ResourceHeader component)
   - ✅ Victory screen loot display (LootDisplay component)
   - 📋 Resource animations
 

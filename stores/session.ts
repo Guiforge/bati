@@ -9,6 +9,7 @@ import {
 } from "@/db/bossFights";
 import { processSessionBuildings, type SessionBuildingResult } from "@/db/buildings";
 import { type CompletedExerciseInput, createCompletedSession } from "@/db/completed";
+import { recordSessionForGoal } from "@/db/goals";
 import type { Quest } from "@/db/quests";
 import {
   awardSessionResources,
@@ -389,6 +390,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             completedSessionId: sessionId,
           })
         : null;
+
+    // Record session for active goal (if any)
+    await recordSessionForGoal({
+      durationMinutes: Math.ceil(durationSeconds / 60),
+      xpEarned,
+    });
 
     return { sessionId, loot, buildings, campaign };
   },

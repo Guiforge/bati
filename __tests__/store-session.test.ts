@@ -40,6 +40,9 @@ jest.mock("@/db/buildings", () => ({
     newUnlocks: [],
   }),
 }));
+jest.mock("@/db/goals", () => ({
+  recordSessionForGoal: jest.fn().mockResolvedValue(undefined),
+}));
 
 describe("useSessionStore", () => {
   const store = useSessionStore;

@@ -58,7 +58,8 @@ export function getWeekKey(date: Date = new Date()): string {
   d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
   const week1 = new Date(d.getFullYear(), 0, 4);
   const weekNum =
-    1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+    1 +
+    Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
   return `${d.getFullYear()}-${String(weekNum).padStart(2, "0")}`;
 }
 
@@ -184,7 +185,10 @@ export async function getAllGoals(): Promise<Goal[]> {
  */
 export async function createGoal(input: CreateGoalInput): Promise<number> {
   // Deactivate any existing active goals
-  await db.update(goals).set({ status: "paused", updatedAt: new Date() }).where(eq(goals.status, "active"));
+  await db
+    .update(goals)
+    .set({ status: "paused", updatedAt: new Date() })
+    .where(eq(goals.status, "active"));
 
   // Create new goal
   const inserted = await db
@@ -215,10 +219,7 @@ export async function createGoal(input: CreateGoalInput): Promise<number> {
  * Update goal status
  */
 export async function updateGoalStatus(id: number, status: GoalStatusCode): Promise<void> {
-  await db
-    .update(goals)
-    .set({ status, updatedAt: new Date() })
-    .where(eq(goals.id, id));
+  await db.update(goals).set({ status, updatedAt: new Date() }).where(eq(goals.id, id));
 }
 
 /**

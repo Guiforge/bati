@@ -54,6 +54,21 @@ export {
   formatDuration,
 } from "./estimate";
 export { getExerciseById, listExercises } from "./exercises";
+export type { CreateGoalInput, Goal, GoalProgress } from "./goals";
+export {
+  createGoal,
+  getActiveGoal,
+  getAllGoals,
+  getCurrentWeekCompletion,
+  getGoalById,
+  getGoalProgressHistory,
+  getOrCreateWeekProgress,
+  getWeekKey,
+  goalTypeInfo,
+  recordSessionForGoal,
+  updateGoal,
+  updateGoalStatus,
+} from "./goals";
 export {
   getAllPreferences,
   getPreference,
@@ -89,18 +104,3 @@ export {
   previewSessionLoot,
   spendResources,
 } from "./resources";
-export type { Goal, GoalProgress, CreateGoalInput } from "./goals";
-export {
-  createGoal,
-  getActiveGoal,
-  getAllGoals,
-  getGoalById,
-  getGoalProgressHistory,
-  getOrCreateWeekProgress,
-  getCurrentWeekCompletion,
-  getWeekKey,
-  goalTypeInfo,
-  recordSessionForGoal,
-  updateGoal,
-  updateGoalStatus,
-} from "./goals";

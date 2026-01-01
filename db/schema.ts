@@ -745,7 +745,9 @@ export const goals = sqliteTable("goals", {
 
   // Status tracking
   status: text().notNull().default("active").$type<GoalStatusCode>(),
-  startDate: int({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  startDate: int({ mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
   endDate: int({ mode: "timestamp" }), // Optional end date for time-bound goals
 
   // Timestamps

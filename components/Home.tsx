@@ -10,6 +10,7 @@ import { H1, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { ResourceHeader } from "@/components/common/ResourceHeader";
 import { StreakBadge } from "@/components/common/StreakBadge";
+import { GoalCard } from "@/components/goals/GoalCard";
 import { QuestCarousel } from "@/components/QuestCarousel";
 import { getAvatarById } from "@/constants/avatars";
 import type { ActiveAdventureRun, AdventureDetails } from "@/db";
@@ -121,6 +122,9 @@ export function Home() {
 
           {/* Resource Inventory */}
           <ResourceHeader />
+
+          {/* Goal Progress */}
+          <GoalCard onPress={() => router.push("/goals" as never)} />
         </YStack>
 
         {activeAdventure ? (

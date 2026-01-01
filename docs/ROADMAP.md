@@ -404,21 +404,21 @@ This document tracks all features, their implementation status, and future plans
   - ✅ recordSessionForGoal on session completion
   - ✅ Automatic progress updates
 
-### 3.2 Auto-Generated Plans 📋
+### 3.2 Auto-Generated Plans ✅
 
-- 📋 Plan generation algorithm
-  - 📋 Analyze goal type
+- ✅ Plan generation algorithm
+  - ✅ Analyze goal type (basic implementation)
   - 📋 Check workout history for weak areas
-  - 📋 Select appropriate quests
-  - 📋 Create adventure structure
-- 📋 Plan schema
-  - 📋 Link to generated adventure
-  - 📋 Schedule (days/times)
-  - 📋 Status tracking
-- 📋 Plan UI
-  - 📋 "Generate My Plan" button
+  - ✅ Select appropriate quests (random for now)
+  - ✅ Create adventure structure (using scheduled sessions)
+- ✅ Plan schema
+  - ✅ Link to generated adventure (via scheduledSessions)
+  - ✅ Schedule (days/times)
+  - ✅ Status tracking
+- ✅ Plan UI
+  - ✅ "Generate My Plan" button (automatic on goal creation)
   - 📋 Plan preview before confirming
-  - 📋 Active plan display
+  - ✅ Active plan display (in Schedule)
 
 ### 3.3 Scheduling �
 
@@ -432,9 +432,9 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Calendar display
   - ✅ Scheduled sessions
   - ✅ Completion indicators
-- 📋 Schedule management
+- ⚠️ Schedule management
   - 📋 Reschedule session
-  - 📋 Skip session
+  - ✅ Skip session
 
 ### 3.4 Notifications 📋
 

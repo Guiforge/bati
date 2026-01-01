@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Spinner, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { EmptyState } from "@/components/common/EmptyState";
 import { AddScheduleSheet } from "@/components/scheduling/AddScheduleSheet";
 import {
   getScheduledSessionsForWeek,
@@ -152,11 +153,12 @@ export function WeeklyCalendar() {
             </Card>
           ))
         ) : (
-          <Card p="$4" bg="$bgLight" opacity={0.7}>
-            <Text style={{ textAlign: "center" }}>
-              {t("scheduling.no_sessions", "No workouts scheduled")}
-            </Text>
-          </Card>
+          <EmptyState
+            emoji="📅"
+            title={t("scheduling.no_sessions", "No workouts scheduled")}
+            subtitle={t("scheduling.no_sessions_hint", "Add a workout to get started")}
+            p="$3"
+          />
         )}
 
         {/* Add Session Button */}

@@ -675,7 +675,7 @@ This document tracks all features, their implementation status, and future plans
 - ⚠️ UI Audit
   - 📋 Consistency pass (colors, spacing, typography)
   - ✅ Button style audit (all use AppButton with 3px borders)
-  - 📋 Card style audit (consistent border-radius, shadows)
+  - ✅ Card style audit (consistent border-radius, use Card component defaults)
   - 📋 Empty state illustrations
   - ✅ Loading state skeletons (QuestCarousel, VillageScreen)
   - 📋 Error state designs
@@ -885,13 +885,6 @@ After each major feature phase, complete these steps before moving on:
   - 📋 ProGuard/R8 optimization
   - 📋 Adaptive icons
   - 📋 Android 12+ splash screen
-- 📋 Play Store preparation
-  - 📋 App listing assets
-  - 📋 Privacy policy
-  - 📋 Content rating
-  - 📋 Internal testing track
-  - 📋 Closed beta
-  - 📋 Production release
 
 ### 7.3 iOS Build 📋
 
@@ -904,34 +897,6 @@ After each major feature phase, complete these steps before moving on:
   - 📋 Launch screen
   - 📋 Permissions descriptions (NSCameraUsageDescription, etc.)
   - 📋 iOS 15+ compatibility
-- 📋 App Store preparation
-  - 📋 App Store Connect setup
-  - 📋 Screenshots (all device sizes)
-  - 📋 App preview videos
-  - 📋 App description and keywords
-  - 📋 TestFlight beta
-  - 📋 App Review submission
-
-### 7.4 OTA Updates 📋
-
-- 📋 EAS Update setup
-  - 📋 Update channels (development, preview, production)
-  - 📋 Rollback strategy
-- 📋 Update policies
-  - 📋 Critical updates (force update)
-  - 📋 Optional updates (prompt)
-  - 📋 Silent updates (background)
-
-### 7.5 Release Management 📋
-
-- 📋 Version management
-  - 📋 Semantic versioning
-  - 📋 Changelog generation
-  - 📋 Release notes
-- 📋 CI/CD pipeline
-  - 📋 GitHub Actions for builds
-  - 📋 Automated testing before build
-  - 📋 Automated store submission
 
 ---
 

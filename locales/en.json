@@ -22,6 +22,7 @@
   "scheduling": {
     "title": "Weekly Schedule",
     "no_sessions": "No workouts scheduled",
+    "no_sessions_hint": "Add a workout to get started",
     "add_session": "Schedule Workout",
     "no_quests": "No quests available",
     "reschedule_tomorrow": "Move +1 Day",

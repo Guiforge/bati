@@ -6,6 +6,7 @@ import { FlatList, useWindowDimensions } from "react-native";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { ProgressDots } from "@/components/ProgressDots";
@@ -237,17 +238,11 @@ export function QuestCarousel() {
 
   if (quests.length === 0) {
     return (
-      <Card>
-        <YStack gap="$3" items="center" py="$2">
-          <Text fontSize={32}>🏚️</Text>
-          <Text fontWeight="900" fontSize={16} color="$color">
-            {t("quests.empty_title", "No quests yet")}
-          </Text>
-          <Paragraph color="$color" opacity={0.6} size="$3">
-            {t("quests.empty_subtitle", "Come back soon!")}
-          </Paragraph>
-        </YStack>
-      </Card>
+      <EmptyState
+        emoji="🏚️"
+        title={t("quests.empty_title", "No quests yet")}
+        subtitle={t("quests.empty_subtitle", "Come back soon!")}
+      />
     );
   }
 

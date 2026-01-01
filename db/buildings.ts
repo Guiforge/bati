@@ -86,7 +86,9 @@ export async function getAllBuildings(): Promise<VillageBuildingWithMeta[]> {
 /**
  * Get unlocked buildings only
  */
-export async function getUnlockedBuildings(): Promise<VillageBuildingWithMeta[]> {
+export async function getUnlockedBuildings(): Promise<
+  VillageBuildingWithMeta[]
+> {
   const all = await getAllBuildings();
   return all.filter((b) => b.isUnlocked);
 }
@@ -95,7 +97,7 @@ export async function getUnlockedBuildings(): Promise<VillageBuildingWithMeta[]>
  * Get a single building by type
  */
 export async function getBuildingByType(
-  buildingType: BuildingCode,
+  buildingType: BuildingCode
 ): Promise<VillageBuildingWithMeta | null> {
   const rows = await db
     .select()
@@ -167,7 +169,7 @@ export function calculateLevelFromXp(xp: number): number {
  */
 export async function addBuildingXp(
   buildingType: BuildingCode,
-  xpAmount: number,
+  xpAmount: number
 ): Promise<BuildingLevelUp | null> {
   if (xpAmount <= 0) return null;
 
@@ -237,7 +239,7 @@ async function updateVillageStatsAfterLevelUp(newLevel: number): Promise<void> {
  */
 export async function checkTier2Unlock(
   muscle: MuscleCode,
-  totalReps: number,
+  totalReps: number
 ): Promise<BuildingUnlock | null> {
   const buildingType = muscleToBuilding[muscle];
   if (!buildingType) return null;
@@ -260,7 +262,9 @@ export async function checkTier2Unlock(
 /**
  * Check if a Tier 3 building should be unlocked based on prerequisite
  */
-export async function checkTier3Unlock(buildingType: BuildingCode): Promise<BuildingUnlock | null> {
+export async function checkTier3Unlock(
+  buildingType: BuildingCode
+): Promise<BuildingUnlock | null> {
   const def = buildingDefinitions[buildingType];
   if (def.tier !== 3 || !def.prerequisiteBuilding) return null;
 
@@ -285,7 +289,9 @@ export async function checkTier3Unlock(buildingType: BuildingCode): Promise<Buil
 /**
  * Unlock a building
  */
-export async function unlockBuilding(buildingType: BuildingCode): Promise<void> {
+export async function unlockBuilding(
+  buildingType: BuildingCode
+): Promise<void> {
   await db
     .update(villageBuildings)
     .set({

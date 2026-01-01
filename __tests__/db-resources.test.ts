@@ -172,8 +172,16 @@ describe("db/resources", () => {
         durationSeconds: 600, // 10 minutes
         userLevel: "medium",
         exerciseResults: [
-          { exerciseId: 1, muscles: ["arms"], result: { type: "reps", value: 50 } },
-          { exerciseId: 2, muscles: ["back"], result: { type: "reps", value: 30 } },
+          {
+            exerciseId: 1,
+            muscles: ["arms"],
+            result: { type: "reps", value: 50 },
+          },
+          {
+            exerciseId: 2,
+            muscles: ["back"],
+            result: { type: "reps", value: 30 },
+          },
         ],
       });
 
@@ -192,7 +200,11 @@ describe("db/resources", () => {
         durationSeconds: 600,
         userLevel: "hard",
         exerciseResults: [
-          { exerciseId: 1, muscles: ["arms"], result: { type: "reps", value: 50 } },
+          {
+            exerciseId: 1,
+            muscles: ["arms"],
+            result: { type: "reps", value: 50 },
+          },
         ],
       });
 

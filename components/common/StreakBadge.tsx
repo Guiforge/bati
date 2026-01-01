@@ -1,8 +1,8 @@
+import { listCompletedSessions } from "@/db/completed";
 import { Flame } from "@tamagui/lucide-icons";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
-import { listCompletedSessions } from "@/db/completed";
 
 type StreakInfo = {
   current: number;
@@ -164,9 +164,7 @@ export function StreakBadge() {
           <Text fontWeight="900" fontSize={18} color="$color">
             {streak.current} {t("journal.days")}
           </Text>
-          {milestone && (
-            <Text fontSize={14}>{milestone.emoji}</Text>
-          )}
+          {milestone && <Text fontSize={14}>{milestone.emoji}</Text>}
         </XStack>
         <Text fontSize={10} color="$color" opacity={0.6} fontWeight="700">
           {milestone

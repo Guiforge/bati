@@ -75,6 +75,8 @@ batiV3/
 
 ## 🎨 Visual Design System
 
+> **Note**: Refer to [docs/UI_CHECKLIST.md](../docs/UI_CHECKLIST.md) for detailed UI/UX best practices and component checklists.
+
 ### Style: Franco-Belgian Comic Book (Bande Dessinée)
 
 - Thick, bold black outlines (3px borders on buttons/cards)

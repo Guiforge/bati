@@ -1,6 +1,18 @@
 import type { Quest } from "@/db/quests";
 import { useSessionStore } from "../stores/session";
 
+// Mock DB client to prevent actual SQLite initialization
+jest.mock("@/db/client", () => ({
+  db: {},
+  schema: {},
+  runMigrations: jest.fn().mockResolvedValue(undefined),
+}));
+
+// Mock quests module
+jest.mock("@/db/quests", () => ({
+  isDailyQuest: jest.fn().mockReturnValue(false),
+}));
+
 // Mock DB calls
 jest.mock("@/db", () => ({
   completeAdventureRunStep: jest.fn(),

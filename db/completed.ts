@@ -443,10 +443,12 @@ export async function getWeeklyTrends(weeks = 12): Promise<WeeklyTrend[]> {
       });
     }
 
-    const week = weekMap.get(weekKey)!;
-    week.sessionCount += 1;
-    week.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
-    week.totalXp += row.xpEarned ?? 0;
+    const week = weekMap.get(weekKey);
+    if (week) {
+      week.sessionCount += 1;
+      week.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
+      week.totalXp += row.xpEarned ?? 0;
+    }
   }
 
   // Sort by week key and return
@@ -487,10 +489,12 @@ export async function getMonthlyTrends(months = 6): Promise<MonthlyTrend[]> {
       });
     }
 
-    const month = monthMap.get(monthKey)!;
-    month.sessionCount += 1;
-    month.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
-    month.totalXp += row.xpEarned ?? 0;
+    const month = monthMap.get(monthKey);
+    if (month) {
+      month.sessionCount += 1;
+      month.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
+      month.totalXp += row.xpEarned ?? 0;
+    }
   }
 
   // Sort by month key and return

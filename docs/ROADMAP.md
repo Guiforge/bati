@@ -464,7 +464,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 4: Statistics & Progress ⚠️ (45% Complete)
+## Phase 4: Statistics & Progress ⚠️ (55% Complete)
 
 ### 4.1 Stats Dashboard ⚠️
 
@@ -503,19 +503,21 @@ This document tracks all features, their implementation status, and future plans
   - ✅ SuggestedQuestsCard component with quest recommendations
   - ✅ Muscle chips showing which weak areas each quest targets
 
-### 4.4 Personal Records 📋
+### 4.4 Personal Records ⚠️
 
-- 📋 Record types
-  - 📋 Longest session
-  - 📋 Most XP in session
+- ✅ Record types
+  - ✅ Longest session
+  - ✅ Most XP in session
   - 📋 Highest streak
-  - 📋 Per-exercise PRs (max reps, longest hold)
-- 📋 Record tracking
-  - 📋 Detect new records on completion
-  - 📋 Store record history
-- 📋 Record celebration
-  - 📋 PR notification popup
+  - ✅ Per-exercise PRs (max reps, longest hold)
+- ✅ Record tracking
+  - ✅ checkForNewRecords() to detect PRs on completion
+  - ✅ getPersonalRecordsSummary() for overview
+- ⚠️ Record celebration
+  - 📋 PR notification popup on victory screen
   - 📋 PR badge in history
+- ✅ Record display
+  - ✅ PersonalRecordsCard in Journal Stats tab
 
 ### 4.5 Workout History ✅
 

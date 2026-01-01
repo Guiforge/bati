@@ -328,3 +328,14 @@ When adding features, always ask:
 - 💡 Equipment system
   - 💡 Collect gear
   - 💡 Buff effects
+
+### DevOps 📋
+
+- 📋 CI/CD pipeline
+  - 📋 Automated tests
+  - 📋 Build automation
+  - 📋 Release management
+- 📋 Monitoring
+  - 📋 Crash reporting
+  - 📋 Performance monitoring
+  - 📋 Analytics (privacy-respecting)

@@ -203,7 +203,7 @@ export function VillageScreen() {
   // Get selected building name for modal
   const selectedBuildingName = selectedBuilding
     ? buildingNames[selectedBuilding.buildingType]?.[language === "fr" ? "fr" : "en"] ||
-      selectedBuilding.buildingType
+    selectedBuilding.buildingType
     : "";
 
   // Calculate selected building progress

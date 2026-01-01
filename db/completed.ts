@@ -170,9 +170,15 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
   });
 }
 
-export async function listCompletedSessions(
-  limit = 20,
-): Promise<Omit<CompletedSession, "exercises">[]> {
+export async function markSessionWithNewRecords(sessionId: number): Promise<void> {
+  await db.update(completedQuest).set({ hasNewRecords: 1 }).where(eq(completedQuest.id, sessionId));
+}
+
+export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
+  hasNewRecords: boolean;
+};
+
+export async function listCompletedSessions(limit = 20): Promise<CompletedSessionListItem[]> {
   const rows = await db
     .select({
       id: completedQuest.id,
@@ -183,6 +189,7 @@ export async function listCompletedSessions(
       notes: completedQuest.notes,
       feedback: completedQuest.feedback,
       performedAt: completedQuest.performedAt,
+      hasNewRecords: completedQuest.hasNewRecords,
     })
     .from(completedQuest)
     .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
@@ -197,6 +204,7 @@ export async function listCompletedSessions(
     notes: r.notes,
     feedback: (r.feedback as FeedbackCode | null) ?? null,
     performedAt: r.performedAt,
+    hasNewRecords: r.hasNewRecords === 1,
   }));
 }
 

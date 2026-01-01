@@ -1,3 +1,16 @@
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { AchievementsCard } from "@/components/journal/AchievementsCard";
+import { JournalStats } from "@/components/journal/JournalStats";
+import { MonthlyCalendarCard } from "@/components/journal/MonthlyCalendarCard";
+import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
+import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
+import { RestSuggestionCard } from "@/components/journal/RestSuggestionCard";
+import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
+import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
+import { UserLevelCard } from "@/components/journal/UserLevelCard";
+import { listCompletedSessions } from "@/db/completed";
+import { listQuestTemplates } from "@/db/quests";
+import { useSettingsStore } from "@/stores/settings";
 import { BarChart2, ChevronLeft, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -5,15 +18,6 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { JournalStats } from "@/components/journal/JournalStats";
-import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
-import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
-import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
-import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
-import { listCompletedSessions } from "@/db/completed";
-import { listQuestTemplates } from "@/db/quests";
-import { useSettingsStore } from "@/stores/settings";
 
 type TabType = "history" | "stats";
 
@@ -52,6 +56,7 @@ export default function JournalScreen() {
           performedAt: s.performedAt,
           durationSeconds: s.durationSeconds,
           userLevel: s.userLevel,
+          hasNewRecords: s.hasNewRecords,
         };
       });
 
@@ -161,8 +166,12 @@ export default function JournalScreen() {
           </YStack>
         ) : activeTab === "stats" ? (
           <>
+            <UserLevelCard />
+            <RestSuggestionCard />
             <PersonalRecordsCard />
+            <AchievementsCard />
             <JournalStats sessions={history} />
+            <MonthlyCalendarCard />
             <MuscleBalanceCard />
             <SuggestedQuestsCard />
           </>

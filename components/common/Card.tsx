@@ -17,6 +17,7 @@ export function Card({ children, ...props }: CardProps) {
       shadowRadius={0}
       shadowOffset={{ width: 0, height: 6 }}
       pressStyle={props.onPress ? { opacity: 0.92, scale: 0.99 } : undefined}
+      accessibilityRole={props.onPress ? "button" : undefined}
       {...props}
     >
       {children}

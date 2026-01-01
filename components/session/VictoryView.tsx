@@ -1,4 +1,13 @@
-import * as Haptics from "expo-haptics";
+import { Card } from "@/components/common/Card";
+import { useToast } from "@/components/common/Toast";
+import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import type { NewRecordResult } from "@/db/personalRecords";
+import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
+import { computeSessionXp } from "@/db/xp";
+import { useHaptics } from "@/hooks/useHaptics";
+import { formatTime } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,14 +15,6 @@ import { ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
-import type { NewRecordResult } from "@/db/personalRecords";
-import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
-import { computeSessionXp } from "@/db/xp";
-import { formatTime } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
-import { useSettingsStore } from "@/stores/settings";
 import { LootDisplay } from "./LootDisplay";
 import { NewRecordsBadge } from "./NewRecordsBadge";
 import { ProgressionChart } from "./ProgressionChart";
@@ -26,6 +27,8 @@ export function VictoryView() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
+  const { success, selection } = useHaptics();
+  const { showError } = useToast();
   const { quest, userLevel, startTime, totalPausedTime, results, saveSession, quitSession } =
     useSessionStore();
   const [isSaving, setIsSaving] = useState(false);
@@ -78,7 +81,7 @@ export function VictoryView() {
     }
 
     // Success haptic on finishing
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    success();
 
     try {
       setIsSaving(true);
@@ -92,7 +95,7 @@ export function VictoryView() {
         setHasSaved(true);
         setIsSaving(false);
         // Extra celebration haptic for PRs
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        success();
         return;
       }
 
@@ -113,13 +116,13 @@ export function VictoryView() {
       router.replace("/");
     } catch (e) {
       console.error("Failed to save session", e);
-      // In a real app, show a toast/alert here
+      showError(t("errors.save_session_failed"));
       setIsSaving(false);
     }
   };
 
   const handleFeedbackSelect = (value: Feedback) => {
-    void Haptics.selectionAsync();
+    selection();
     setFeedback(value);
   };
 
@@ -233,6 +236,8 @@ export function VictoryView() {
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
               onPress={() => handleFeedbackSelect("easy")}
               rounded="$4"
+              accessibilityLabel={t("session.feedback_easy")}
+              accessibilityRole="button"
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>😊</Text>
@@ -251,6 +256,8 @@ export function VictoryView() {
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
               onPress={() => handleFeedbackSelect("good")}
               rounded="$4"
+              accessibilityLabel={t("session.feedback_good")}
+              accessibilityRole="button"
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>💪</Text>
@@ -269,6 +276,8 @@ export function VictoryView() {
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
               onPress={() => handleFeedbackSelect("hard")}
               rounded="$4"
+              accessibilityLabel={t("session.feedback_hard")}
+              accessibilityRole="button"
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>😤</Text>

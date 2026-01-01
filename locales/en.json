@@ -21,6 +21,14 @@
   },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",
+  "settings.haptics_title": "Haptics",
+  "settings.haptics_on": "On",
+  "settings.haptics_off": "Off",
+  "settings.haptics_on_short": "On",
+  "settings.haptics_off_short": "Off",
+  "settings.motion_title": "Animations",
+  "settings.motion_full": "Full",
+  "settings.motion_reduced": "Reduced",
   "system": "System",
   "theme": "Theme",
   "welcome": "Welcome to Bati!",
@@ -124,10 +132,13 @@
     "reps": "Reps",
     "complete_exercise_accessibility": "Complete exercise",
     "finish_exercise_accessibility": "Finish exercise",
+    "decrease_reps_accessibility": "Decrease reps by one",
+    "increase_reps_accessibility": "Increase reps by one",
     "complete_button": "DONE!",
     "rest_title": "Rest & Recover",
     "up_next": "Up Next",
     "skip_rest": "I'm Ready!",
+    "skip_rest_accessibility": "Skip rest and start next exercise",
     "victory_title": "Quest Complete!",
     "total_time": "Total Time",
     "xp_earned": "XP Earned",
@@ -140,6 +151,7 @@
     "paused_title": "Game Paused",
     "paused_subtitle": "Catch your breath. Ready to jump back in?",
     "resume_button": "Resume",
+    "restart_round_button": "Restart Round",
     "quit_button": "Quit Quest",
     "adjust_reps_label": "Adjust Reps",
     "adjust_reps_hint": "Did you do more or less?",
@@ -149,6 +161,7 @@
     "target_reached": "Target reached!",
     "keep_going_hint": "Keep going! Timer continues after target.",
     "complete_overtime": "FINISH! 🎉",
+    "how_to_do_it": "How to do it",
     "new_records": "New Personal Records!",
     "pr_longest_session": "Longest Workout",
     "pr_most_xp": "Most XP Earned",
@@ -229,7 +242,28 @@
     "personal_records": "Personal Records",
     "pr_total_sessions": "Total Workouts",
     "pr_longest": "Longest",
-    "pr_most_xp": "Most XP"
+    "pr_most_xp": "Most XP",
+    "pr_best_streak": "Best Streak",
+    "pr_badge": "PR",
+    "rest_suggestion_title": "Rest Day Recommended",
+    "rest_suggestion_high_volume": "You've completed {{count}} workouts this week! Your body needs time to recover and grow stronger.",
+    "rest_suggestion_consecutive": "You've trained {{count}} days in a row! Take a rest day to prevent overtraining.",
+    "rest_suggestion_overtraining": "You've been training hard with {{count}} sessions this week. Consider a recovery day.",
+    "user_level": "Level {{level}}",
+    "xp_progress": "{{current}} / {{next}} XP",
+    "total_xp": "Total XP"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "progress": "{{unlocked}} / {{total}} unlocked",
+    "filter_all": "All",
+    "filter_sessions": "Sessions",
+    "filter_streaks": "Streaks",
+    "filter_xp": "XP",
+    "filter_special": "Special",
+    "more_count": "+{{count}} more achievements",
+    "new_unlock": "Achievement Unlocked!",
+    "new_unlocks": "{{count}} Achievements Unlocked!"
   },
   "chart": {
     "loading": "Loading chart...",
@@ -265,7 +299,11 @@
     "locked": "Locked",
     "home_card_title": "Your Village",
     "home_card_subtitle": "Build your empire",
-    "view_village": "View Village"
+    "view_village": "View Village",
+    "building_details": "Building Details",
+    "xp_to_next": "XP to Next Level",
+    "tier": "Tier {{tier}}",
+    "close": "Close"
   },
   "goals": {
     "title": "My Goal",
@@ -296,5 +334,23 @@
     "pause_goal": "Pause Goal",
     "resume_goal": "Resume Goal",
     "complete_goal": "Mark Complete"
+  },
+  "errors": {
+    "save_session_failed": "Failed to save workout. Please try again.",
+    "load_failed": "Failed to load data. Please try again.",
+    "generic": "Something went wrong. Please try again.",
+    "something_went_wrong": "Something went wrong",
+    "try_again_message": "Don't worry, you can try again.",
+    "try_again": "Try Again",
+    "database_error": "Database error occurred",
+    "migration_failed": "Database setup failed. Please restart the app."
+  },
+  "recovery": {
+    "title": "Resume workout?",
+    "description": "You have an unfinished session",
+    "progress": "Progress: {{progress}}",
+    "elapsed": "Time: {{time}}",
+    "resume": "Resume",
+    "discard": "Discard"
   }
 }

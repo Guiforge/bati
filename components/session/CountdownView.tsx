@@ -1,40 +1,43 @@
-import * as Haptics from "expo-haptics";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useSessionTimer } from "@/hooks/useSessionTimer";
+import { useSessionStore } from "@/stores/session";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Text, YStack } from "tamagui";
-import { useSessionTimer } from "@/hooks/useSessionTimer";
-import { useSessionStore } from "@/stores/session";
 
 export function CountdownView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { remainingSeconds } = useSessionTimer();
   const { status, finishCountdown } = useSessionStore();
+  const { lightImpact, success } = useHaptics();
+  const reducedMotion = useReducedMotion();
   const prevSecondsRef = useRef(remainingSeconds);
 
   // Light haptic tick on each countdown second
   useEffect(() => {
     if (status !== "countdown") return;
     if (remainingSeconds !== prevSecondsRef.current && remainingSeconds > 0) {
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      lightImpact();
     }
     prevSecondsRef.current = remainingSeconds;
-  }, [remainingSeconds, status]);
+  }, [remainingSeconds, status, lightImpact]);
 
   // Success haptic on "Let's go!"
   useEffect(() => {
     if (status !== "countdown") return;
     if (remainingSeconds !== 0) return;
 
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    success();
 
     const id = setTimeout(() => {
       finishCountdown();
     }, 450);
 
     return () => clearTimeout(id);
-  }, [finishCountdown, remainingSeconds, status]);
+  }, [finishCountdown, remainingSeconds, status, success]);
 
   const showLetsGo = remainingSeconds === 0;
 
@@ -54,7 +57,12 @@ export function CountdownView() {
       </Text>
 
       {showLetsGo ? (
-        <YStack items="center" gap="$2" animation="bouncy" enterStyle={{ scale: 0.9 }}>
+        <YStack
+          items="center"
+          gap="$2"
+          animation={reducedMotion ? undefined : "bouncy"}
+          enterStyle={reducedMotion ? undefined : { scale: 0.9 }}
+        >
           <H1
             fontWeight="900"
             fontSize={64}
@@ -76,9 +84,9 @@ export function CountdownView() {
           lineHeight={140}
           color="$color"
           fontFamily="$body"
-          animation="quick"
-          key={String(remainingSeconds)}
-          enterStyle={{ scale: 0.92, opacity: 0.6 }}
+          animation={reducedMotion ? undefined : "quick"}
+          key={reducedMotion ? undefined : String(remainingSeconds)}
+          enterStyle={reducedMotion ? undefined : { scale: 0.92, opacity: 0.6 }}
           style={{ textAlign: "center" }}
         >
           {remainingSeconds}

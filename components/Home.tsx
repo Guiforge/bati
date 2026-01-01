@@ -8,10 +8,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { LevelBadge } from "@/components/common/LevelBadge";
 import { ResourceHeader } from "@/components/common/ResourceHeader";
 import { StreakBadge } from "@/components/common/StreakBadge";
 import { GoalCard } from "@/components/goals/GoalCard";
 import { QuestCarousel } from "@/components/QuestCarousel";
+import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard";
 import { getAvatarById } from "@/constants/avatars";
 import type { ActiveAdventureRun, AdventureDetails } from "@/db";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db";
@@ -117,11 +119,17 @@ export function Home() {
             </Paragraph>
           </YStack>
 
-          {/* Streak Badge */}
-          <StreakBadge />
+          {/* Streak & Level Badges */}
+          <XStack gap="$3" items="center" flexWrap="wrap" justify="center">
+            <StreakBadge />
+            <LevelBadge />
+          </XStack>
 
           {/* Resource Inventory */}
           <ResourceHeader />
+
+          {/* Session Recovery Banner (if crashed/interrupted session) */}
+          <SessionRecoveryBanner />
 
           {/* Goal Progress */}
           <GoalCard onPress={() => router.push("/goals" as never)} />
@@ -145,9 +153,9 @@ export function Home() {
                 <Paragraph color="$color" opacity={0.6} size="$3">
                   {activeStepIndex != null
                     ? t("adventures.step_label", {
-                        count: activeStepIndex + 1,
-                        defaultValue: `Step ${activeStepIndex + 1}`,
-                      })
+                      count: activeStepIndex + 1,
+                      defaultValue: `Step ${activeStepIndex + 1}`,
+                    })
                     : t("home_continue_adventure_subtitle", "Pick up where you left off.")}
                 </Paragraph>
                 <AppButton

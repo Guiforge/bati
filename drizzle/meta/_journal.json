@@ -134,6 +134,20 @@
       "when": 1767225600009,
       "tag": "0018_add_goals",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1767225600010,
+      "tag": "0019_add_has_new_records",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1767225600011,
+      "tag": "0020_add_scheduled_sessions",
+      "breakpoints": true
     }
   ]
 }

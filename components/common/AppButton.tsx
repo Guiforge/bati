@@ -49,7 +49,8 @@ export function AppButton({
       borderColor="$color"
       fontWeight="900"
       fontSize={20}
-      pressStyle={{ opacity: 0.9 }}
+      animation="quick"
+      pressStyle={{ opacity: 0.9, scale: 0.98 }}
       {...buttonProps}
     >
       {children}

@@ -33,7 +33,9 @@ export async function deletePreference(key: string): Promise<void> {
 // Get all preferences as object
 export async function getAllPreferences(): Promise<Record<string, string>> {
   const results = await db.select().from(userPreferences);
-  return Object.fromEntries(results.map((r: { key: string; value: string }) => [r.key, r.value]));
+  return Object.fromEntries(
+    results.map((r: { key: string; value: string }) => [r.key, r.value])
+  );
 }
 
 // Specific preference helpers
@@ -77,5 +79,38 @@ export const preferences = {
 
   async setAvatarId(avatarId: string): Promise<void> {
     await setPreference("avatarId", avatarId);
+  },
+
+  async getHapticsEnabled(): Promise<boolean> {
+    const value = await getPreference("hapticsEnabled");
+    // Default to true if not set
+    return value !== "false";
+  },
+
+  async setHapticsEnabled(enabled: boolean): Promise<void> {
+    await setPreference("hapticsEnabled", String(enabled));
+  },
+
+  async getReducedMotion(): Promise<boolean> {
+    const value = await getPreference("reducedMotion");
+    // Default to false (animations enabled by default)
+    return value === "true";
+  },
+
+  async setReducedMotion(enabled: boolean): Promise<void> {
+    await setPreference("reducedMotion", String(enabled));
+  },
+
+  // Session recovery - store serialized session state for crash recovery
+  async getSavedSession(): Promise<string | null> {
+    return await getPreference("savedSession");
+  },
+
+  async setSavedSession(sessionJson: string): Promise<void> {
+    await setPreference("savedSession", sessionJson);
+  },
+
+  async clearSavedSession(): Promise<void> {
+    await deletePreference("savedSession");
   },
 };

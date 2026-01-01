@@ -1,18 +1,21 @@
-import { Minus, Plus } from "@tamagui/lucide-icons";
-import * as Haptics from "expo-haptics";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { Minus, Plus } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "./BossHpBar";
 
 export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
+  const { selection, mediumImpact } = useHaptics();
+  const reducedMotion = useReducedMotion();
   const {
     quest,
     currentExerciseIndex,
@@ -37,17 +40,17 @@ export function RestView() {
   const { bg: screenBg } = getQuestColorTokensFromQuest(quest);
 
   const handleSkipRest = () => {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    mediumImpact();
     skipRest();
   };
 
   const handleAddRestTime = (seconds: number) => {
-    void Haptics.selectionAsync();
+    selection();
     addRestTime(seconds);
   };
 
   const handleUpdateResult = (value: number) => {
-    void Haptics.selectionAsync();
+    selection();
     updateLastResult(value);
   };
 
@@ -60,9 +63,16 @@ export function RestView() {
       px="$4"
       gap="$6"
       justify="center"
+      animation={reducedMotion ? undefined : "quick"}
+      enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
       {/* Header */}
-      <YStack items="center" gap="$2">
+      <YStack
+        items="center"
+        gap="$2"
+        animation={reducedMotion ? undefined : "bouncy"}
+        enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
+      >
         <Text fontSize={40}>🔥</Text>
         <H3 color="$color" fontWeight="900" textTransform="uppercase">
           {t("session.rest_title")}
@@ -77,10 +87,10 @@ export function RestView() {
           lastDamage={
             lastDamageResult
               ? {
-                  damage: lastDamageResult.damage,
-                  isCritical: lastDamageResult.isCritical,
-                  weaknessBonus: lastDamageResult.weaknessBonus,
-                }
+                damage: lastDamageResult.damage,
+                isCritical: lastDamageResult.isCritical,
+                weaknessBonus: lastDamageResult.weaknessBonus,
+              }
               : null
           }
         />
@@ -175,7 +185,16 @@ export function RestView() {
       )}
 
       {/* Up Next Card */}
-      <YStack bg="$background" p="$4" rounded="$6" borderWidth={2} borderColor="$color" gap="$2">
+      <YStack
+        bg="$background"
+        p="$4"
+        rounded="$6"
+        borderWidth={2}
+        borderColor="$color"
+        gap="$2"
+        animation={reducedMotion ? undefined : "bouncy"}
+        enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
+      >
         <Text color="$color" opacity={0.6} fontSize={12} fontWeight="800" textTransform="uppercase">
           {t("session.up_next")}
         </Text>
@@ -206,6 +225,8 @@ export function RestView() {
         borderColor="$color"
         rounded="$6"
         mt="auto"
+        accessibilityLabel={t("session.skip_rest_accessibility")}
+        accessibilityRole="button"
       >
         <Text color="$color" fontSize={20} fontWeight="900" textTransform="uppercase">
           {t("session.skip_rest")}

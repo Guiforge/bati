@@ -1,5 +1,8 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useUserStore } from "@/stores/user";
 import { Check, Pencil } from "@tamagui/lucide-icons";
-import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -7,9 +10,6 @@ import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Input, Text, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useUserStore } from "@/stores/user";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 4;
@@ -20,6 +20,7 @@ export default function VillageName() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { mediumImpact, success } = useHaptics();
   const [name, setName] = useState("");
   const [status, setStatus] = useState<"editing" | "submitting" | "stamped">("editing");
   const { setVillageName, setHasFinishedOnboarding } = useUserStore();
@@ -34,7 +35,7 @@ export default function VillageName() {
 
   const handleFinish = () => {
     if (isValidName) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      mediumImpact();
       setStatus("stamped");
     }
   };
@@ -42,13 +43,13 @@ export default function VillageName() {
   useEffect(() => {
     if (status === "stamped") {
       const id = setTimeout(() => {
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        success();
         completeOnboarding();
       }, 350);
 
       return () => clearTimeout(id);
     }
-  }, [status, completeOnboarding]);
+  }, [status, completeOnboarding, success]);
 
   return (
     <YStack flex={1} bg="$background">

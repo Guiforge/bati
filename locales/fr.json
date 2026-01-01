@@ -21,6 +21,14 @@
   },
   "settings_avatar_hint": "Tape sur un avatar pour changer.",
   "settings": "Paramètres",
+  "settings.haptics_title": "Vibrations",
+  "settings.haptics_on": "Activées",
+  "settings.haptics_off": "Désactivées",
+  "settings.haptics_on_short": "Oui",
+  "settings.haptics_off_short": "Non",
+  "settings.motion_title": "Animations",
+  "settings.motion_full": "Complètes",
+  "settings.motion_reduced": "Réduites",
   "system": "Système",
   "theme": "Thème",
   "welcome": "Bienvenue sur Bati !",
@@ -124,10 +132,13 @@
     "reps": "Reps",
     "complete_exercise_accessibility": "Terminer l’exercice",
     "finish_exercise_accessibility": "Terminer l’exercice",
+    "decrease_reps_accessibility": "Diminuer les répétitions",
+    "increase_reps_accessibility": "Augmenter les répétitions",
     "complete_button": "TERMINÉ !",
     "rest_title": "Repos & Récup",
     "up_next": "À suivre",
     "skip_rest": "Je suis prêt !",
+    "skip_rest_accessibility": "Passer le repos et commencer le prochain exercice",
     "victory_title": "Quête accomplie !",
     "total_time": "Temps total",
     "xp_earned": "XP gagnés",
@@ -140,6 +151,7 @@
     "paused_title": "Jeu en pause",
     "paused_subtitle": "Respire un coup. Prêt à repartir ?",
     "resume_button": "Reprendre",
+    "restart_round_button": "Recommencer la manche",
     "quit_button": "Quitter la quête",
     "adjust_reps_label": "Ajuster les reps",
     "adjust_reps_hint": "En as-tu fait plus ou moins ?",
@@ -149,6 +161,7 @@
     "target_reached": "Objectif atteint !",
     "keep_going_hint": "Continue ! Le chrono continue après l'objectif.",
     "complete_overtime": "TERMINÉ ! 🎉",
+    "how_to_do_it": "Comment faire",
     "new_records": "Nouveaux Records Personnels !",
     "pr_longest_session": "Plus long entraînement",
     "pr_most_xp": "Plus d'XP gagnés",
@@ -229,7 +242,28 @@
     "personal_records": "Records Personnels",
     "pr_total_sessions": "Total Entraînements",
     "pr_longest": "Plus Long",
-    "pr_most_xp": "Plus de XP"
+    "pr_most_xp": "Plus de XP",
+    "pr_best_streak": "Meilleure Série",
+    "pr_badge": "RP",
+    "rest_suggestion_title": "Jour de Repos Recommandé",
+    "rest_suggestion_high_volume": "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",
+    "rest_suggestion_consecutive": "Tu t'es entraîné {{count}} jours d'affilée ! Prends un jour de repos pour éviter le surentraînement.",
+    "rest_suggestion_overtraining": "Tu t'es beaucoup entraîné avec {{count}} séances cette semaine. Pense à une journée de récupération.",
+    "user_level": "Niveau {{level}}",
+    "xp_progress": "{{current}} / {{next}} XP",
+    "total_xp": "XP Total"
+  },
+  "achievements": {
+    "title": "Succès",
+    "progress": "{{unlocked}} / {{total}} débloqués",
+    "filter_all": "Tous",
+    "filter_sessions": "Séances",
+    "filter_streaks": "Séries",
+    "filter_xp": "XP",
+    "filter_special": "Spéciaux",
+    "more_count": "+{{count}} autres succès",
+    "new_unlock": "Succès Débloqué !",
+    "new_unlocks": "{{count}} Succès Débloqués !"
   },
   "chart": {
     "loading": "Chargement du graphique...",
@@ -265,7 +299,11 @@
     "locked": "Verrouillé",
     "home_card_title": "Ton Village",
     "home_card_subtitle": "Construis ton empire",
-    "view_village": "Voir le Village"
+    "view_village": "Voir le Village",
+    "building_details": "Détails du bâtiment",
+    "xp_to_next": "XP pour le prochain niveau",
+    "tier": "Niveau {{tier}}",
+    "close": "Fermer"
   },
   "goals": {
     "title": "Mon Objectif",
@@ -296,5 +334,23 @@
     "pause_goal": "Mettre en pause",
     "resume_goal": "Reprendre",
     "complete_goal": "Marquer terminé"
+  },
+  "errors": {
+    "save_session_failed": "Impossible de sauvegarder l'entraînement. Veuillez réessayer.",
+    "load_failed": "Impossible de charger les données. Veuillez réessayer.",
+    "generic": "Une erreur s'est produite. Veuillez réessayer.",
+    "something_went_wrong": "Une erreur s'est produite",
+    "try_again_message": "Pas de panique, vous pouvez réessayer.",
+    "try_again": "Réessayer",
+    "database_error": "Erreur de base de données",
+    "migration_failed": "Échec de l'initialisation. Veuillez redémarrer l'application."
+  },
+  "recovery": {
+    "title": "Reprendre l'entraînement ?",
+    "description": "Vous avez une session inachevée",
+    "progress": "Progression : {{progress}}",
+    "elapsed": "Temps : {{time}}",
+    "resume": "Reprendre",
+    "discard": "Abandonner"
   }
 }

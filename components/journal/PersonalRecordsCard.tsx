@@ -1,4 +1,4 @@
-import { Clock, Flame, Star, Trophy } from "@tamagui/lucide-icons";
+import { Clock, Flame, Star, Trophy, Zap } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
@@ -8,11 +8,13 @@ import {
   getPersonalRecordsSummary,
   type PersonalRecord,
 } from "@/db/personalRecords";
+import { getStreakInfo } from "@/db/streaks";
 
 type RecordsSummary = {
   longestSession: PersonalRecord | null;
   mostXp: PersonalRecord | null;
   totalSessions: number;
+  bestStreak: number;
 };
 
 function RecordItem({
@@ -61,8 +63,14 @@ export function PersonalRecordsCard() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getPersonalRecordsSummary();
-        setSummary(data);
+        const [data, streakInfo] = await Promise.all([
+          getPersonalRecordsSummary(),
+          getStreakInfo(),
+        ]);
+        setSummary({
+          ...data,
+          bestStreak: streakInfo.best,
+        });
       } catch (e) {
         console.error("Failed to load personal records:", e);
       } finally {
@@ -106,11 +114,20 @@ export function PersonalRecordsCard() {
             label={t("journal.pr_longest")}
             value={longestDuration}
           />
+        </XStack>
+
+        <XStack gap="$2">
           <RecordItem
             icon={<Star size={20} color="$pastelYellow" />}
             label={t("journal.pr_most_xp")}
             value={mostXp}
             subLabel="XP"
+          />
+          <RecordItem
+            icon={<Zap size={20} color="$success" />}
+            label={t("journal.pr_best_streak")}
+            value={summary.bestStreak.toString()}
+            subLabel={t("journal.days")}
           />
         </XStack>
       </YStack>

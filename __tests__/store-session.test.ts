@@ -7,9 +7,17 @@ jest.mock("@/db", () => ({
 }));
 jest.mock("@/db/completed", () => ({
   createCompletedSession: jest.fn().mockResolvedValue(1),
+  markSessionWithNewRecords: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("@/db/xp", () => ({
   computeSessionXp: jest.fn().mockReturnValue(100),
+}));
+jest.mock("@/db/preferences", () => ({
+  preferences: {
+    getSavedSession: jest.fn().mockResolvedValue(null),
+    setSavedSession: jest.fn().mockResolvedValue(undefined),
+    clearSavedSession: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 jest.mock("@/db/bossFights", () => ({
   getOrCreateBossFight: jest.fn().mockResolvedValue(null),
@@ -45,6 +53,17 @@ jest.mock("@/db/goals", () => ({
 }));
 jest.mock("@/db/personalRecords", () => ({
   checkForNewRecords: jest.fn().mockResolvedValue([]),
+}));
+jest.mock("@/db/streaks", () => ({
+  updateStreakAfterSession: jest.fn().mockResolvedValue({
+    current: 1,
+    best: 1,
+    isActive: true,
+    lastWorkoutDate: null,
+  }),
+}));
+jest.mock("@/db/achievements", () => ({
+  checkForNewAchievements: jest.fn().mockResolvedValue([]),
 }));
 
 describe("useSessionStore", () => {

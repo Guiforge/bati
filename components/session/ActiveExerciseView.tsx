@@ -1,18 +1,22 @@
-import * as Haptics from "expo-haptics";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseBgForSessionStep } from "@/constants/exerciseColors";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Pressable } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "./BossHpBar";
 
 export function ActiveExerciseView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
+  const { selection, heavyImpact } = useHaptics();
+  const reducedMotion = useReducedMotion();
 
   const quest = useSessionStore((s) => s.quest);
   const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
@@ -28,12 +32,15 @@ export function ActiveExerciseView() {
   const currentEx = quest?.exercises[currentExerciseIndex];
   const targetValue = currentEx?.target.value ?? 0;
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
+  const [showHowTo, setShowHowTo] = useState(false);
 
   if (!quest || !currentEx) return null;
 
   const isTimeBased = currentEx.target.type === "time";
 
   const exerciseName = language === "fr" ? currentEx.exercise.frName : currentEx.exercise.enName;
+  const exerciseDescription =
+    language === "fr" ? currentEx.exercise.frDescription : currentEx.exercise.enDescription;
 
   // Progress calculation
   const exercisesPerRound = quest.exercises.length;
@@ -41,9 +48,14 @@ export function ActiveExerciseView() {
   const currentStep = currentRoundIndex * exercisesPerRound + currentExerciseIndex + 1;
   const progressPercent = (currentStep / totalSteps) * 100;
 
+  const handleToggleHowTo = () => {
+    selection();
+    setShowHowTo((prev) => !prev);
+  };
+
   const handleComplete = () => {
     // Heavy haptic feedback on exercise completion
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    heavyImpact();
 
     // For time-based exercises, record actual elapsed time
     // For rep-based, record the adjusted value
@@ -56,7 +68,7 @@ export function ActiveExerciseView() {
   };
 
   const handleAdjustReps = (delta: number) => {
-    void Haptics.selectionAsync();
+    selection();
     setAdjustedReps((prev) => Math.max(1, prev + delta));
   };
 
@@ -69,7 +81,16 @@ export function ActiveExerciseView() {
   });
 
   return (
-    <YStack flex={1} bg={screenBg} pt={insets.top + 16} pb={insets.bottom + 16} px="$4" gap="$4">
+    <YStack
+      flex={1}
+      bg={screenBg}
+      pt={insets.top + 16}
+      pb={insets.bottom + 16}
+      px="$4"
+      gap="$4"
+      animation={reducedMotion ? undefined : "quick"}
+      enterStyle={reducedMotion ? undefined : { opacity: 0 }}
+    >
       {/* Header: Progress & Pause */}
       <XStack items="center" justify="space-between">
         <YStack>
@@ -112,10 +133,10 @@ export function ActiveExerciseView() {
           lastDamage={
             lastDamageResult
               ? {
-                  damage: lastDamageResult.damage,
-                  isCritical: lastDamageResult.isCritical,
-                  weaknessBonus: lastDamageResult.weaknessBonus,
-                }
+                damage: lastDamageResult.damage,
+                isCritical: lastDamageResult.isCritical,
+                weaknessBonus: lastDamageResult.weaknessBonus,
+              }
               : null
           }
         />
@@ -192,8 +213,8 @@ export function ActiveExerciseView() {
           <Text fontSize={50}>🏋️</Text>
         </YStack>
 
-        {/* Exercise Name */}
-        <YStack items="center" gap="$1">
+        {/* Exercise Name + How to do it */}
+        <YStack items="center" gap="$2" width="100%">
           <H2
             fontWeight="900"
             textTransform="uppercase"
@@ -204,6 +225,45 @@ export function ActiveExerciseView() {
           >
             {exerciseName}
           </H2>
+
+          {/* How to do it - expandable */}
+          {exerciseDescription ? (
+            <YStack width="100%">
+              <Pressable onPress={handleToggleHowTo}>
+                <XStack
+                  items="center"
+                  justify="center"
+                  gap="$2"
+                  py="$1"
+                  opacity={0.7}
+                  hoverStyle={{ opacity: 1 }}
+                >
+                  <Text fontSize={12} fontWeight="700" color="$color">
+                    {t("session.how_to_do_it")}
+                  </Text>
+                  <Text fontSize={12} color="$color">
+                    {showHowTo ? "▲" : "▼"}
+                  </Text>
+                </XStack>
+              </Pressable>
+              {showHowTo && (
+                <YStack
+                  bg="$bgLight"
+                  p="$3"
+                  rounded="$4"
+                  borderWidth={2}
+                  borderColor="$color"
+                  mt="$2"
+                  animation="quick"
+                  enterStyle={{ opacity: 0, scale: 0.95 }}
+                >
+                  <Text fontSize={14} color="$color" opacity={0.9} lineHeight={20}>
+                    {exerciseDescription}
+                  </Text>
+                </YStack>
+              )}
+            </YStack>
+          ) : null}
         </YStack>
 
         {/* Big Counter */}
@@ -275,12 +335,20 @@ export function ActiveExerciseView() {
                   pressStyle={{ opacity: 0.8, scale: 0.95 }}
                   disabled={adjustedReps <= 1}
                   opacity={adjustedReps <= 1 ? 0.4 : 1}
+                  accessibilityLabel={t("session.decrease_reps_accessibility")}
+                  accessibilityRole="button"
                 >
                   <Text fontSize={24} fontWeight="900" color="$color">
                     −
                   </Text>
                 </Button>
-                <YStack items="center">
+                <YStack
+                  items="center"
+                  key={reducedMotion ? undefined : adjustedReps}
+                  animation={reducedMotion ? undefined : "bouncy"}
+                  enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
+                  scale={1}
+                >
                   <H1 fontSize={80} fontWeight="900" fontFamily="$body" color="$color">
                     {adjustedReps}
                   </H1>
@@ -301,6 +369,8 @@ export function ActiveExerciseView() {
                   borderColor="$color"
                   onPress={() => handleAdjustReps(1)}
                   pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                  accessibilityLabel={t("session.increase_reps_accessibility")}
+                  accessibilityRole="button"
                 >
                   <Text fontSize={24} fontWeight="900" color="$color">
                     +

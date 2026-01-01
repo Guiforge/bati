@@ -1,25 +1,31 @@
-import * as Haptics from "expo-haptics";
+import { AppButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useSessionStore } from "@/stores/session";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Paragraph, Text, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { useSessionStore } from "@/stores/session";
 
 export function PausedOverlay() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { status, resumeSession, quitSession } = useSessionStore();
+  const { mediumImpact, warning } = useHaptics();
+  const { status, resumeSession, restartRound, quitSession } = useSessionStore();
 
   if (status !== "paused") return null;
 
   const handleResume = () => {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    mediumImpact();
     resumeSession();
   };
 
+  const handleRestartRound = () => {
+    mediumImpact();
+    restartRound();
+  };
+
   const handleQuit = () => {
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    warning();
     quitSession();
     if (router.canGoBack()) {
       router.back();
@@ -48,8 +54,24 @@ export function PausedOverlay() {
           </Paragraph>
 
           <YStack width="100%" gap="$3" pt="$2">
-            <AppButton onPress={handleResume} variant="primary">
+            <AppButton
+              onPress={handleResume}
+              variant="primary"
+              accessibilityLabel={t("session.resume_button")}
+              accessibilityRole="button"
+            >
               {t("session.resume_button")}
+            </AppButton>
+
+            <AppButton
+              onPress={handleRestartRound}
+              variant="outline"
+              backgroundColor="$pastelBlue"
+              pressStyle={{ opacity: 0.9 }}
+              accessibilityLabel={t("session.restart_round_button")}
+              accessibilityRole="button"
+            >
+              {t("session.restart_round_button")}
             </AppButton>
 
             <AppButton
@@ -57,6 +79,8 @@ export function PausedOverlay() {
               variant="outline"
               backgroundColor="$pastelPink"
               pressStyle={{ opacity: 0.9 }}
+              accessibilityLabel={t("session.quit_button")}
+              accessibilityRole="button"
             >
               {t("session.quit_button")}
             </AppButton>

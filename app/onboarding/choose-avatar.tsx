@@ -1,15 +1,15 @@
+import { AppButton } from "@/components/common/AppButton";
+import { ProgressDots } from "@/components/ProgressDots";
+import { AVATARS, getAvatarById } from "@/constants/avatars";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useSettingsStore } from "@/stores/settings";
 import { Check } from "@tamagui/lucide-icons";
-import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { AVATARS, getAvatarById } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 3;
@@ -18,6 +18,7 @@ export default function ChooseAvatar() {
   const router = useRouter();
   const { t } = useTranslation();
   const { avatarId, setAvatarId } = useSettingsStore();
+  const { selection } = useHaptics();
   const insets = useSafeAreaInsets();
 
   return (
@@ -68,7 +69,7 @@ export default function ChooseAvatar() {
                     unstyled
                     onPress={() => {
                       void setAvatarId(avatar.id);
-                      void Haptics.selectionAsync();
+                      selection();
                     }}
                     fullWidth={false}
                     width="48%"

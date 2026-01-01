@@ -1,4 +1,4 @@
-import { Calendar, Trophy } from "@tamagui/lucide-icons";
+import { Calendar, Star, Trophy } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
@@ -13,6 +13,7 @@ export interface JournalEntry {
   performedAt: Date;
   durationSeconds: number | null;
   userLevel: DifficultyCode;
+  hasNewRecords?: boolean;
 }
 
 interface SessionCardProps {
@@ -61,9 +62,28 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
         </YStack>
 
         <YStack flex={1} gap="$1">
-          <Text fontWeight="900" fontSize={16} numberOfLines={1} color="$color">
-            {entry.questTitle}
-          </Text>
+          <XStack gap="$2" items="center">
+            <Text fontWeight="900" fontSize={16} numberOfLines={1} color="$color" flex={1}>
+              {entry.questTitle}
+            </Text>
+            {entry.hasNewRecords && (
+              <XStack
+                bg="$primary"
+                px="$2"
+                py="$1"
+                rounded="$3"
+                borderWidth={2}
+                borderColor="$color"
+                gap="$1"
+                items="center"
+              >
+                <Star size={12} color="$color" fill="$color" />
+                <Text fontSize={10} fontWeight="bold" color="$color">
+                  {t("journal.pr_badge")}
+                </Text>
+              </XStack>
+            )}
+          </XStack>
 
           <XStack gap="$2" items="center">
             <Calendar size={12} color="$color" opacity={0.5} />

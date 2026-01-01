@@ -1,3 +1,6 @@
+import { AppIconButton } from "@/components/common/AppButton";
+import { AVATARS } from "@/constants/avatars";
+import { useSettingsStore } from "@/stores/settings";
 import {
   ChevronLeft,
   ChevronRight,
@@ -5,7 +8,9 @@ import {
   Menu,
   Moon,
   Scroll,
+  Sparkles,
   User,
+  Vibrate,
   X,
 } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
@@ -15,11 +20,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack } from "tamagui";
-import { AppIconButton } from "@/components/common/AppButton";
-import { AVATARS } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
 
-type MenuStep = "main" | "language" | "avatar" | "theme";
+type MenuStep = "main" | "language" | "avatar" | "theme" | "haptics" | "motion";
 
 export function HomeSettingsMenu() {
   const { t } = useTranslation();
@@ -28,7 +30,18 @@ export function HomeSettingsMenu() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<MenuStep>("main");
 
-  const { language, avatarId, theme, setLanguage, setAvatarId, setTheme } = useSettingsStore();
+  const {
+    language,
+    avatarId,
+    theme,
+    hapticsEnabled,
+    reducedMotion,
+    setLanguage,
+    setAvatarId,
+    setTheme,
+    setHapticsEnabled,
+    setReducedMotion,
+  } = useSettingsStore();
 
   const closeMenu = () => {
     setOpen(false);
@@ -138,6 +151,18 @@ export function HomeSettingsMenu() {
         onPress={() => setStep("theme")}
         value={t(theme)}
       />
+      <MenuItem
+        icon={<Vibrate size={24} color="$color" />}
+        label={t("settings.haptics_title")}
+        onPress={() => setStep("haptics")}
+        value={hapticsEnabled ? t("settings.haptics_on_short") : t("settings.haptics_off_short")}
+      />
+      <MenuItem
+        icon={<Sparkles size={24} color="$color" />}
+        label={t("settings.motion_title")}
+        onPress={() => setStep("motion")}
+        value={reducedMotion ? t("settings.motion_reduced") : t("settings.motion_full")}
+      />
 
       {__DEV__ ? (
         <MenuItem
@@ -235,6 +260,36 @@ export function HomeSettingsMenu() {
     </YStack>
   );
 
+  const renderHaptics = () => (
+    <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
+      <OptionItem
+        active={hapticsEnabled}
+        label={`${t("settings.haptics_on")} 📳`}
+        onPress={() => setHapticsEnabled(true)}
+      />
+      <OptionItem
+        active={!hapticsEnabled}
+        label={`${t("settings.haptics_off")} 🔇`}
+        onPress={() => setHapticsEnabled(false)}
+      />
+    </YStack>
+  );
+
+  const renderMotion = () => (
+    <YStack animation="quick" enterStyle={{ opacity: 0, x: 20 }} opacity={1} x={0} gap="$2">
+      <OptionItem
+        active={!reducedMotion}
+        label={`${t("settings.motion_full")} ✨`}
+        onPress={() => setReducedMotion(false)}
+      />
+      <OptionItem
+        active={reducedMotion}
+        label={`${t("settings.motion_reduced")} 🐢`}
+        onPress={() => setReducedMotion(true)}
+      />
+    </YStack>
+  );
+
   const getTitle = () => {
     switch (step) {
       case "language":
@@ -243,6 +298,10 @@ export function HomeSettingsMenu() {
         return t("onboarding.avatar_title");
       case "theme":
         return t("theme");
+      case "haptics":
+        return t("settings.haptics_title");
+      case "motion":
+        return t("settings.motion_title");
       default:
         return t("settings");
     }
@@ -331,6 +390,8 @@ export function HomeSettingsMenu() {
                 {step === "language" && renderLanguage()}
                 {step === "avatar" && renderAvatar()}
                 {step === "theme" && renderTheme()}
+                {step === "haptics" && renderHaptics()}
+                {step === "motion" && renderMotion()}
               </YStack>
             </YStack>
           </YStack>

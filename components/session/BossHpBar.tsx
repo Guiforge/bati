@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
+import { BossPhaseImage } from "./BossPhaseImage";
 
 type BossHpBarProps = {
   currentHp: number;
@@ -11,9 +12,16 @@ type BossHpBarProps = {
     isCritical: boolean;
     weaknessBonus: boolean;
   } | null;
+  showPhaseImage?: boolean;
 };
 
-export function BossHpBar({ currentHp, totalHp, bossName, lastDamage }: BossHpBarProps) {
+export function BossHpBar({
+  currentHp,
+  totalHp,
+  bossName,
+  lastDamage,
+  showPhaseImage = true,
+}: BossHpBarProps) {
   const { t } = useTranslation();
   const [showDamage, setShowDamage] = useState(false);
 
@@ -46,10 +54,17 @@ export function BossHpBar({ currentHp, totalHp, bossName, lastDamage }: BossHpBa
       shadowRadius={0}
       shadowOffset={{ width: 0, height: 3 }}
     >
+      {/* Boss Phase Image */}
+      {showPhaseImage && (
+        <YStack items="center" py="$2">
+          <BossPhaseImage currentHp={currentHp} totalHp={totalHp} size={64} />
+        </YStack>
+      )}
+
       {/* Boss Name & HP Text */}
       <XStack justify="space-between" items="center">
         <XStack items="center" gap="$2">
-          <Text fontSize={18}>👹</Text>
+          {!showPhaseImage && <Text fontSize={18}>👹</Text>}
           <Text fontWeight="900" fontSize={14} color="$color" textTransform="uppercase">
             {bossName || t("adventures.kind_boss")}
           </Text>

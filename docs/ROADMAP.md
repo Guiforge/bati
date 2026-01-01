@@ -258,7 +258,7 @@ This document tracks all features, their implementation status, and future plans
 
 ---
 
-## Phase 2: Village & Economy ✅ (98% Complete)
+## Phase 2: Village & Economy ✅ (100% Complete)
 
 ### 2.1 Resource System ✅
 
@@ -313,8 +313,6 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Locked/unlocked state display
   - ✅ Village stats summary card
   - ✅ Village card on Home screen
-  - 📋 Isometric/2.5D layout (future enhancement)
-  - 📋 Day/night cycle (optional)
 - ✅ Village interactions
   - ✅ Tap building for details (modal with level, XP progress, tier)
   - ✅ Upgrade preview
@@ -371,12 +369,13 @@ This document tracks all features, their implementation status, and future plans
     - ✅ Boss defeat title with subtitle ("The beast has fallen!")
     - ✅ Unique icon (⚔️ vs 🏆)
   - ✅ Boss tokens reward
-- 📋 Multi-Phase Boss Images
-  - 📋 Boss image schema (array of phase images)
-  - 📋 Phase thresholds (100%, 75%, 50%, 25%)
-  - 📋 Dynamic boss image based on HP
-  - 📋 Transition animation between phases
-  - 📋 Enraged final phase visual
+- ✅ Multi-Phase Boss Images
+  - ✅ Boss phase system (4 phases at 100%, 75%, 50%, 25%)
+  - ✅ BossPhaseImage component with emoji placeholders
+  - ✅ Dynamic boss visual based on HP
+  - ✅ Transition animation between phases (scale + rotate)
+  - ✅ Enraged final phase visual (pulsing, red border)
+  - ✅ Phase indicator dots
 
 ---
 
@@ -592,25 +591,6 @@ This document tracks all features, their implementation status, and future plans
   - ✅ Button press feedback (scale 0.98 + opacity)
   - ✅ Card hover/press (scale 0.99 + opacity)
   - ✅ Loading states (skeleton cards in QuestCarousel, VillageScreen)
-
-### 5.2 Sound & Haptics ⚠️
-
-- ✅ Haptic feedback (onboarding + session)
-- ⚠️ Sound effects
-  - ✅ System setup (expo-av + useSound hook)
-  - 📋 Session start (battle horn)
-  - 📋 Exercise complete (sword swing)
-  - 📋 Rest start (campfire)
-  - 📋 Timer warning (tick-tock)
-  - ✅ Victory fanfare (hooked up, needs asset)
-  - 📋 Level up chime
-- ✅ Haptic feedback during session
-  - ✅ Heavy impact on "Done"
-  - ✅ Light tick on countdown
-  - ✅ Success pattern on complete
-- ✅ Audio preferences
-  - ✅ Sound enable/disable (settings toggle)
-  - ✅ Haptic enable/disable (useHaptics hook + settings toggle)
 
 ### 5.3 Performance 📋
 

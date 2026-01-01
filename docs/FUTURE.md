@@ -339,3 +339,22 @@ When adding features, always ask:
   - 📋 Crash reporting
   - 📋 Performance monitoring
   - 📋 Analytics (privacy-respecting)
+
+### 5.2 Sound & Haptics ⚠️
+
+- ✅ Haptic feedback (onboarding + session)
+- ⚠️ Sound effects
+  - ✅ System setup (expo-av + useSound hook)
+  - 📋 Session start (battle horn)
+  - 📋 Exercise complete (sword swing)
+  - 📋 Rest start (campfire)
+  - 📋 Timer warning (tick-tock)
+  - ✅ Victory fanfare (hooked up, needs asset)
+  - 📋 Level up chime
+- ✅ Haptic feedback during session
+  - ✅ Heavy impact on "Done"
+  - ✅ Light tick on countdown
+  - ✅ Success pattern on complete
+- ✅ Audio preferences
+  - ✅ Sound enable/disable (settings toggle)
+  - ✅ Haptic enable/disable (useHaptics hook + settings toggle)

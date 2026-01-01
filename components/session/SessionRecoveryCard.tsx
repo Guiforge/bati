@@ -77,26 +77,28 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
           <Button
             size="$3"
             bg="$bgLight"
-            borderWidth={2}
+            borderWidth={3}
             borderColor="$color"
-            rounded="$4"
+            rounded="$6"
             icon={<X size={16} />}
             onPress={handleDiscard}
             pressStyle={{ opacity: 0.8, scale: 0.98 }}
           >
-            {t("recovery.discard")}
+            <Button.Text fontWeight="800">{t("recovery.discard")}</Button.Text>
           </Button>
           <Button
             size="$3"
             bg="$primary"
-            borderWidth={2}
+            borderWidth={3}
             borderColor="$color"
-            rounded="$4"
+            rounded="$6"
             icon={<Play size={16} />}
             onPress={handleResume}
             pressStyle={{ opacity: 0.9, scale: 0.98 }}
           >
-            {t("recovery.resume")}
+            <Button.Text color="white" fontWeight="800">
+              {t("recovery.resume")}
+            </Button.Text>
           </Button>
         </XStack>
       </YStack>

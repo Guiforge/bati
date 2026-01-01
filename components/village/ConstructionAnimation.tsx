@@ -61,8 +61,19 @@ export function ConstructionAnimation({
             )}
           </YStack>
 
-          <Button bg="$primary" color="white" onPress={onClose} width="100%" size="$5">
-            {t("common.awesome", "Awesome!")}
+          <Button
+            bg="$primary"
+            onPress={onClose}
+            width="100%"
+            size="$5"
+            borderWidth={3}
+            borderColor="$color"
+            rounded="$6"
+            pressStyle={{ opacity: 0.9, scale: 0.98 }}
+          >
+            <Button.Text color="white" fontWeight="900">
+              {t("common.awesome", "Awesome!")}
+            </Button.Text>
           </Button>
         </YStack>
       </YStack>

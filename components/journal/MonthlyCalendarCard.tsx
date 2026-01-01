@@ -213,7 +213,7 @@ export function MonthlyCalendarCard() {
   const monthName = language === "fr" ? MONTHS_FR[monthData.month] : MONTHS_EN[monthData.month];
 
   return (
-    <Card p="$3" borderWidth={3} borderColor="$color" rounded="$6">
+    <Card p="$3">
       <YStack gap="$2">
         {/* Header with month navigation */}
         <XStack items="center" justify="space-between" px="$1">

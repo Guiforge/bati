@@ -1,9 +1,9 @@
-import { Card } from "@/components/common/Card";
-import type { ResourceLoot } from "@/db/resources";
-import type { ResourceCode } from "@/db/schema";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type ColorTokens, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import type { ResourceLoot } from "@/db/resources";
+import type { ResourceCode } from "@/db/schema";
 
 const RESOURCE_EMOJI: Record<ResourceCode, string> = {
   gold: "💰",

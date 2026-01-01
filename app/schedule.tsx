@@ -29,7 +29,7 @@ export default function ScheduleScreen() {
         <H2>{t("scheduling.title", "Weekly Schedule")}</H2>
 
         {suggestion?.shouldRest && (
-          <Card bg="$pastelPink" p="$4" rounded="$4" borderWidth={3} borderColor="$color">
+          <Card bg="$pastelPink" p="$4">
             <YStack gap="$2">
               <Text fontWeight="900" fontSize={18} color="$color">
                 🛌 {t("coach.rest_suggestion_title", "Coach says: Rest!")}

@@ -22,7 +22,7 @@ export function UserLevelCard() {
   const title = language === "fr" ? levelInfo.title.fr : levelInfo.title.en;
 
   return (
-    <Card bg="$pastelPurple" p="$4" borderWidth={3} borderColor="$color" rounded="$6">
+    <Card bg="$pastelPurple" p="$4">
       <YStack gap="$3">
         {/* Header with level and title */}
         <XStack items="center" justify="space-between">

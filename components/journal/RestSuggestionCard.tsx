@@ -31,7 +31,7 @@ export function RestSuggestionCard() {
   };
 
   return (
-    <Card bg="$pastelBlue" p="$4" borderWidth={3} borderColor="$color" rounded="$6">
+    <Card bg="$pastelBlue" p="$4">
       <YStack gap="$2">
         <XStack items="center" gap="$2">
           <Moon size={24} color="$color" />

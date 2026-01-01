@@ -672,9 +672,9 @@ This document tracks all features, their implementation status, and future plans
 
 ### 6.6 Adventure Polish & Engagement ✅�
 
-- 📋 UI Audit
+- ⚠️ UI Audit
   - 📋 Consistency pass (colors, spacing, typography)
-  - 📋 Button style audit (all use AppButton with 3px borders)
+  - ✅ Button style audit (all use AppButton with 3px borders)
   - 📋 Card style audit (consistent border-radius, shadows)
   - 📋 Empty state illustrations
   - ✅ Loading state skeletons (QuestCarousel, VillageScreen)

@@ -1,119 +1,119 @@
-import { Card } from "@/components/common/Card";
-import {
-    formatDuration,
-    getPersonalRecordsSummary,
-    type PersonalRecord,
-} from "@/db/personalRecords";
 import { Clock, Flame, Star, Trophy } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import {
+  formatDuration,
+  getPersonalRecordsSummary,
+  type PersonalRecord,
+} from "@/db/personalRecords";
 
 type RecordsSummary = {
-    longestSession: PersonalRecord | null;
-    mostXp: PersonalRecord | null;
-    totalSessions: number;
+  longestSession: PersonalRecord | null;
+  mostXp: PersonalRecord | null;
+  totalSessions: number;
 };
 
 function RecordItem({
-    icon,
-    label,
-    value,
-    subLabel,
+  icon,
+  label,
+  value,
+  subLabel,
 }: {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-    subLabel?: string;
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  subLabel?: string;
 }) {
-    return (
-        <YStack
-            bg="$background"
-            p="$3"
-            rounded="$4"
-            borderWidth={2}
-            borderColor="$color"
-            flex={1}
-            items="center"
-            gap="$1"
-        >
-            {icon}
-            <Text fontSize={11} color="$color" opacity={0.6} style={{ textAlign: "center" }}>
-                {label}
-            </Text>
-            <Text fontWeight="900" fontSize={18} color="$color" style={{ textAlign: "center" }}>
-                {value}
-            </Text>
-            {subLabel && (
-                <Text fontSize={10} color="$color" opacity={0.5} style={{ textAlign: "center" }}>
-                    {subLabel}
-                </Text>
-            )}
-        </YStack>
-    );
+  return (
+    <YStack
+      bg="$background"
+      p="$3"
+      rounded="$4"
+      borderWidth={2}
+      borderColor="$color"
+      flex={1}
+      items="center"
+      gap="$1"
+    >
+      {icon}
+      <Text fontSize={11} color="$color" opacity={0.6} style={{ textAlign: "center" }}>
+        {label}
+      </Text>
+      <Text fontWeight="900" fontSize={18} color="$color" style={{ textAlign: "center" }}>
+        {value}
+      </Text>
+      {subLabel && (
+        <Text fontSize={10} color="$color" opacity={0.5} style={{ textAlign: "center" }}>
+          {subLabel}
+        </Text>
+      )}
+    </YStack>
+  );
 }
 
 export function PersonalRecordsCard() {
-    const { t } = useTranslation();
-    const [summary, setSummary] = useState<RecordsSummary | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
+  const [summary, setSummary] = useState<RecordsSummary | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        async function load() {
-            try {
-                const data = await getPersonalRecordsSummary();
-                setSummary(data);
-            } catch (e) {
-                console.error("Failed to load personal records:", e);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        void load();
-    }, []);
-
-    if (isLoading) {
-        return null;
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getPersonalRecordsSummary();
+        setSummary(data);
+      } catch (e) {
+        console.error("Failed to load personal records:", e);
+      } finally {
+        setIsLoading(false);
+      }
     }
+    void load();
+  }, []);
 
-    if (!summary || summary.totalSessions === 0) {
-        return null;
-    }
+  if (isLoading) {
+    return null;
+  }
 
-    const longestDuration = summary.longestSession
-        ? formatDuration(summary.longestSession.value)
-        : "--";
-    const mostXp = summary.mostXp ? `${summary.mostXp.value}` : "--";
+  if (!summary || summary.totalSessions === 0) {
+    return null;
+  }
 
-    return (
-        <Card bg="$bgLight">
-            <YStack gap="$3">
-                <XStack items="center" gap="$2">
-                    <Trophy size={18} color="$primary" />
-                    <Text fontWeight="900" fontSize={16} color="$color">
-                        {t("journal.personal_records")}
-                    </Text>
-                </XStack>
+  const longestDuration = summary.longestSession
+    ? formatDuration(summary.longestSession.value)
+    : "--";
+  const mostXp = summary.mostXp ? `${summary.mostXp.value}` : "--";
 
-                <XStack gap="$2">
-                    <RecordItem
-                        icon={<Flame size={20} color="$primary" />}
-                        label={t("journal.pr_total_sessions")}
-                        value={summary.totalSessions.toString()}
-                    />
-                    <RecordItem
-                        icon={<Clock size={20} color="$secondary" />}
-                        label={t("journal.pr_longest")}
-                        value={longestDuration}
-                    />
-                    <RecordItem
-                        icon={<Star size={20} color="$pastelYellow" />}
-                        label={t("journal.pr_most_xp")}
-                        value={mostXp}
-                        subLabel="XP"
-                    />
-                </XStack>
-            </YStack>
-        </Card>
-    );
+  return (
+    <Card bg="$bgLight">
+      <YStack gap="$3">
+        <XStack items="center" gap="$2">
+          <Trophy size={18} color="$primary" />
+          <Text fontWeight="900" fontSize={16} color="$color">
+            {t("journal.personal_records")}
+          </Text>
+        </XStack>
+
+        <XStack gap="$2">
+          <RecordItem
+            icon={<Flame size={20} color="$primary" />}
+            label={t("journal.pr_total_sessions")}
+            value={summary.totalSessions.toString()}
+          />
+          <RecordItem
+            icon={<Clock size={20} color="$secondary" />}
+            label={t("journal.pr_longest")}
+            value={longestDuration}
+          />
+          <RecordItem
+            icon={<Star size={20} color="$pastelYellow" />}
+            label={t("journal.pr_most_xp")}
+            value={mostXp}
+            subLabel="XP"
+          />
+        </XStack>
+      </YStack>
+    </Card>
+  );
 }

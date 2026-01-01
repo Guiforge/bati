@@ -79,9 +79,9 @@ describe("db/personalRecords", () => {
     const now = Math.floor(Date.now() / 1000);
 
     // Get a real exercise ID
-    const exerciseRow = t.sqlite
-      .prepare(`SELECT id FROM exercises LIMIT 1`)
-      .get() as { id: number } | undefined;
+    const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
+      | { id: number }
+      | undefined;
     const exerciseId = exerciseRow?.id ?? 1;
 
     t.sqlite.exec(`
@@ -134,9 +134,7 @@ describe("db/personalRecords", () => {
     const newRecords = await checkForNewRecords(2);
 
     // Should detect longest session PR
-    const longestPr = newRecords.find(
-      (r) => r.recordType === "longest_session"
-    );
+    const longestPr = newRecords.find((r) => r.recordType === "longest_session");
     expect(longestPr).toBeDefined();
     expect(longestPr?.newValue).toBe(900);
     expect(longestPr?.previousValue).toBe(600);
@@ -147,16 +145,14 @@ describe("db/personalRecords", () => {
       require("../db/personalRecords") as typeof import("../db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
-    const exerciseRow = t.sqlite
-      .prepare(`SELECT id FROM exercises LIMIT 1`)
-      .get() as { id: number } | undefined;
+    const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
+      | { id: number }
+      | undefined;
     const exerciseId = exerciseRow?.id ?? 1;
 
     // First session with 15 reps
     t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${
-        now - 3600
-      });
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now - 3600});
       INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
         (1, ${exerciseId}, 'reps', 15, ${now - 3600}, 0);
     `);
@@ -170,9 +166,7 @@ describe("db/personalRecords", () => {
 
     const newRecords = await checkForNewRecords(2);
 
-    const exercisePr = newRecords.find(
-      (r) => r.recordType === "exercise_max_reps"
-    );
+    const exercisePr = newRecords.find((r) => r.recordType === "exercise_max_reps");
     expect(exercisePr).toBeDefined();
     expect(exercisePr?.newValue).toBe(25);
     expect(exercisePr?.previousValue).toBe(15);
@@ -199,9 +193,7 @@ describe("db/personalRecords", () => {
     const newRecords = await checkForNewRecords(2);
 
     // Should not detect any PR for duration or XP (shorter/less than existing)
-    const durationPr = newRecords.find(
-      (r) => r.recordType === "longest_session"
-    );
+    const durationPr = newRecords.find((r) => r.recordType === "longest_session");
     const xpPr = newRecords.find((r) => r.recordType === "most_xp");
     expect(durationPr).toBeUndefined();
     expect(xpPr).toBeUndefined();

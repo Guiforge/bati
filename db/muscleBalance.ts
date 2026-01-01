@@ -3,14 +3,8 @@ import { db, schema } from "./client";
 import { MUSCLE_LABELS } from "./muscles";
 import { type MuscleCode, muscleCodes } from "./schema";
 
-const {
-  completedQuest,
-  completedExercises,
-  exercises,
-  exerciseMuscles,
-  quests,
-  questExercises,
-} = schema;
+const { completedQuest, completedExercises, exercises, exerciseMuscles, quests, questExercises } =
+  schema;
 
 export type MuscleVolume = {
   muscle: MuscleCode;
@@ -36,7 +30,7 @@ export type MuscleBalance = {
  * Returns volume per muscle group and identifies weak/strong areas.
  */
 export async function getMuscleBalance(
-  period: "7d" | "30d" | "90d" | "all" = "30d"
+  period: "7d" | "30d" | "90d" | "all" = "30d",
 ): Promise<MuscleBalance> {
   const now = new Date();
   const endDate = now;
@@ -58,8 +52,7 @@ export async function getMuscleBalance(
   }
 
   // Get all completed exercises with their muscles in the time period
-  const whereClause =
-    period === "all" ? undefined : gte(completedQuest.performedAt, startDate);
+  const whereClause = period === "all" ? undefined : gte(completedQuest.performedAt, startDate);
 
   const rows = await db
     .select({
@@ -70,26 +63,14 @@ export async function getMuscleBalance(
       performedAt: completedQuest.performedAt,
     })
     .from(completedQuest)
-    .innerJoin(
-      completedExercises,
-      sql`${completedExercises.sessionId} = ${completedQuest.id}`
-    )
-    .innerJoin(
-      exercises,
-      sql`${exercises.id} = ${completedExercises.exerciseId}`
-    )
-    .innerJoin(
-      exerciseMuscles,
-      sql`${exerciseMuscles.exerciseId} = ${exercises.id}`
-    )
+    .innerJoin(completedExercises, sql`${completedExercises.sessionId} = ${completedQuest.id}`)
+    .innerJoin(exercises, sql`${exercises.id} = ${completedExercises.exerciseId}`)
+    .innerJoin(exerciseMuscles, sql`${exerciseMuscles.exerciseId} = ${exercises.id}`)
     .where(whereClause)
     .orderBy(desc(completedQuest.performedAt));
 
   // Aggregate volume by muscle
-  const muscleVolumes = new Map<
-    MuscleCode,
-    { volume: number; sessions: Set<number> }
-  >();
+  const muscleVolumes = new Map<MuscleCode, { volume: number; sessions: Set<number> }>();
 
   // Initialize all muscles with 0
   for (const muscle of muscleCodes) {
@@ -174,9 +155,7 @@ export async function getSuggestedFocusAreas(limit = 2): Promise<MuscleCode[]> {
   }
 
   // Return the weakest areas (muscles with lowest percentage)
-  const sorted = [...balance.muscles].sort(
-    (a, b) => a.percentage - b.percentage
-  );
+  const sorted = [...balance.muscles].sort((a, b) => a.percentage - b.percentage);
   return sorted.slice(0, limit).map((m) => m.muscle);
 }
 
@@ -236,9 +215,7 @@ export type SuggestedQuest = {
  * Get quests that focus on weak muscle areas.
  * Ranks quests by how many weak-area muscles they target.
  */
-export async function getSuggestedQuestsForWeakAreas(
-  limit = 3
-): Promise<SuggestedQuest[]> {
+export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<SuggestedQuest[]> {
   const focusAreas = await getSuggestedFocusAreas(3);
 
   if (focusAreas.length === 0) {

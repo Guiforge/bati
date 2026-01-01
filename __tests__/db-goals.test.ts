@@ -17,8 +17,7 @@ describe("db/goals", () => {
 
   describe("getWeekKey", () => {
     test("should return ISO week format", () => {
-      const { getWeekKey } =
-        require("../db/goals") as typeof import("../db/goals");
+      const { getWeekKey } = require("../db/goals") as typeof import("../db/goals");
 
       const weekKey = getWeekKey(new Date("2026-01-01"));
       // January 1, 2026 is in week 1 of 2026
@@ -26,8 +25,7 @@ describe("db/goals", () => {
     });
 
     test("should return current week when no date provided", () => {
-      const { getWeekKey } =
-        require("../db/goals") as typeof import("../db/goals");
+      const { getWeekKey } = require("../db/goals") as typeof import("../db/goals");
 
       const weekKey = getWeekKey();
       expect(weekKey).toMatch(/^\d{4}-\d{2}$/);
@@ -36,8 +34,7 @@ describe("db/goals", () => {
 
   describe("goalTypeInfo", () => {
     test("should have all four goal types", () => {
-      const { goalTypeInfo } =
-        require("../db/goals") as typeof import("../db/goals");
+      const { goalTypeInfo } = require("../db/goals") as typeof import("../db/goals");
 
       expect(goalTypeInfo.strength).toBeDefined();
       expect(goalTypeInfo.endurance).toBeDefined();
@@ -46,8 +43,7 @@ describe("db/goals", () => {
     });
 
     test("should have localized names and descriptions", () => {
-      const { goalTypeInfo } =
-        require("../db/goals") as typeof import("../db/goals");
+      const { goalTypeInfo } = require("../db/goals") as typeof import("../db/goals");
 
       expect(goalTypeInfo.strength.en).toBe("Strength");
       expect(goalTypeInfo.strength.fr).toBe("Force");
@@ -59,8 +55,7 @@ describe("db/goals", () => {
 
   describe("createGoal", () => {
     test("should create a new goal", async () => {
-      const { createGoal, getGoalById } =
-        require("../db/goals") as typeof import("../db/goals");
+      const { createGoal, getGoalById } = require("../db/goals") as typeof import("../db/goals");
 
       const goalId = await createGoal({
         goalType: "strength",
@@ -79,8 +74,7 @@ describe("db/goals", () => {
     });
 
     test("should deactivate previous active goal when creating new one", async () => {
-      const { createGoal, getGoalById } =
-        require("../db/goals") as typeof import("../db/goals");
+      const { createGoal, getGoalById } = require("../db/goals") as typeof import("../db/goals");
 
       // Create first goal
       const goal1Id = await createGoal({
@@ -111,8 +105,7 @@ describe("db/goals", () => {
 
   describe("getActiveGoal", () => {
     test("should return the active goal", async () => {
-      const { createGoal, getActiveGoal } =
-        require("../db/goals") as typeof import("../db/goals");
+      const { createGoal, getActiveGoal } = require("../db/goals") as typeof import("../db/goals");
 
       await createGoal({
         goalType: "balanced",

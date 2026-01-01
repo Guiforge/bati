@@ -18,6 +18,25 @@ export {
   setAdventureRunDifficultyOverride,
   startAdventureRun,
 } from "./adventures";
+export type {
+  BuildingLevelUp,
+  BuildingUnlock,
+  SessionBuildingResult,
+  VillageBuilding,
+  VillageBuildingWithMeta,
+  VillageStatsType,
+} from "./buildings";
+export {
+  addBuildingXp,
+  calculateLevelFromXp,
+  ensureVillageBuildingsExist,
+  getAllBuildings,
+  getBuildingByType,
+  getUnlockedBuildings,
+  getVillageStats,
+  processSessionBuildings,
+  unlockBuilding,
+} from "./buildings";
 export { db, schema } from "./client";
 export type { SessionSummary } from "./completed";
 export {

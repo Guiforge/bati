@@ -470,3 +470,254 @@ export const resourceTransactions = sqliteTable(
     createdAtIdx: index("resource_transactions_created_at_idx").on(table.createdAt),
   }),
 );
+
+// ------------------------------------------------------------
+// Village Buildings
+// ------------------------------------------------------------
+
+// Building type codes matching muscle-to-building mapping
+export const buildingCodes = [
+  // Tier 1 - Starter (unlocked by default)
+  "campfire",
+  "tent",
+  "training_dummy",
+  // Tier 2 - Basic (muscle-related)
+  "archery_range", // arms
+  "quarry", // back
+  "forge", // chest
+  "well", // abs
+  "windmill", // shoulders
+  "farm", // legs
+  // Tier 3 - Advanced (requires Tier 2 level 3)
+  "watchtower", // arms upgrade
+  "castle_wall", // back upgrade
+  "armory", // chest upgrade
+  "fountain", // abs upgrade
+  "observatory", // shoulders upgrade
+  "barn", // legs upgrade
+  // Tier 4 - Legendary (boss rewards)
+  "dragon_lair",
+  "heroes_hall",
+  "wizard_tower",
+  "champion_arena",
+] as const;
+export type BuildingCode = (typeof buildingCodes)[number];
+
+// Building tier for categorization
+export const buildingTiers = [1, 2, 3, 4] as const;
+export type BuildingTier = (typeof buildingTiers)[number];
+
+// Mapping muscles to their related buildings
+export const muscleToBuilding: Record<MuscleCode, BuildingCode> = {
+  arms: "archery_range",
+  back: "quarry",
+  chest: "forge",
+  abs: "well",
+  shoulder: "windmill",
+  calf: "farm",
+};
+
+// Building definitions (static metadata)
+export const buildingDefinitions: Record<
+  BuildingCode,
+  {
+    tier: BuildingTier;
+    emoji: string;
+    relatedMuscle: MuscleCode | null;
+    unlockCondition: string; // Human-readable condition
+    prerequisiteBuilding: BuildingCode | null;
+    prerequisiteLevel: number | null;
+  }
+> = {
+  // Tier 1 - Starter
+  campfire: {
+    tier: 1,
+    emoji: "🔥",
+    relatedMuscle: null,
+    unlockCondition: "default",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  tent: {
+    tier: 1,
+    emoji: "⛺",
+    relatedMuscle: null,
+    unlockCondition: "default",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  training_dummy: {
+    tier: 1,
+    emoji: "🎯",
+    relatedMuscle: null,
+    unlockCondition: "default",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  // Tier 2 - Basic muscle buildings
+  archery_range: {
+    tier: 2,
+    emoji: "🏹",
+    relatedMuscle: "arms",
+    unlockCondition: "50+ arm exercise reps",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  quarry: {
+    tier: 2,
+    emoji: "⛏️",
+    relatedMuscle: "back",
+    unlockCondition: "50+ back exercise reps",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  forge: {
+    tier: 2,
+    emoji: "🔨",
+    relatedMuscle: "chest",
+    unlockCondition: "50+ chest exercise reps",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  well: {
+    tier: 2,
+    emoji: "💧",
+    relatedMuscle: "abs",
+    unlockCondition: "50+ abs exercise reps",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  windmill: {
+    tier: 2,
+    emoji: "🌬️",
+    relatedMuscle: "shoulder",
+    unlockCondition: "50+ shoulder exercise reps",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  farm: {
+    tier: 2,
+    emoji: "🌾",
+    relatedMuscle: "calf",
+    unlockCondition: "50+ leg exercise reps",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  // Tier 3 - Advanced
+  watchtower: {
+    tier: 3,
+    emoji: "🗼",
+    relatedMuscle: "arms",
+    unlockCondition: "Archery Range Level 3",
+    prerequisiteBuilding: "archery_range",
+    prerequisiteLevel: 3,
+  },
+  castle_wall: {
+    tier: 3,
+    emoji: "🏰",
+    relatedMuscle: "back",
+    unlockCondition: "Quarry Level 3",
+    prerequisiteBuilding: "quarry",
+    prerequisiteLevel: 3,
+  },
+  armory: {
+    tier: 3,
+    emoji: "⚔️",
+    relatedMuscle: "chest",
+    unlockCondition: "Forge Level 3",
+    prerequisiteBuilding: "forge",
+    prerequisiteLevel: 3,
+  },
+  fountain: {
+    tier: 3,
+    emoji: "⛲",
+    relatedMuscle: "abs",
+    unlockCondition: "Well Level 3",
+    prerequisiteBuilding: "well",
+    prerequisiteLevel: 3,
+  },
+  observatory: {
+    tier: 3,
+    emoji: "🔭",
+    relatedMuscle: "shoulder",
+    unlockCondition: "Windmill Level 3",
+    prerequisiteBuilding: "windmill",
+    prerequisiteLevel: 3,
+  },
+  barn: {
+    tier: 3,
+    emoji: "🏚️",
+    relatedMuscle: "calf",
+    unlockCondition: "Farm Level 3",
+    prerequisiteBuilding: "farm",
+    prerequisiteLevel: 3,
+  },
+  // Tier 4 - Legendary
+  dragon_lair: {
+    tier: 4,
+    emoji: "🐉",
+    relatedMuscle: null,
+    unlockCondition: "Defeat Fire Dragon",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  heroes_hall: {
+    tier: 4,
+    emoji: "🏆",
+    relatedMuscle: null,
+    unlockCondition: "Complete 50 adventures",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  wizard_tower: {
+    tier: 4,
+    emoji: "🧙",
+    relatedMuscle: null,
+    unlockCondition: "Defeat Archmage Boss",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  champion_arena: {
+    tier: 4,
+    emoji: "🏟️",
+    relatedMuscle: null,
+    unlockCondition: "Defeat 10 bosses",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+};
+
+// XP thresholds for building levels
+export const buildingLevelThresholds: Record<number, number> = {
+  1: 0, // Level 1 at 0 XP
+  2: 100, // Level 2 at 100 XP
+  3: 300, // Level 3 at 300 XP
+  4: 600, // Level 4 at 600 XP
+  5: 1000, // Level 5 at 1000 XP
+};
+
+// Village buildings table (player's building state)
+export const villageBuildings = sqliteTable(
+  "village_buildings",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    buildingType: text().notNull().$type<BuildingCode>(),
+    level: int().notNull().default(1),
+    xp: int().notNull().default(0), // Progress toward next level
+    isUnlocked: int({ mode: "boolean" }).notNull().default(false),
+    unlockedAt: int({ mode: "timestamp" }),
+    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    buildingTypeUnique: uniqueIndex("village_buildings_type_unique").on(table.buildingType),
+  }),
+);
+
+// Village stats table (aggregate stats for the village)
+export const villageStats = sqliteTable("village_stats", {
+  id: int().primaryKey({ autoIncrement: true }),
+  prestigeScore: int().notNull().default(0),
+  totalBuildingsUnlocked: int().notNull().default(0),
+  highestBuildingLevel: int().notNull().default(1),
+  updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+});

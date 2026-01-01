@@ -120,6 +120,13 @@
       "when": 1767225600007,
       "tag": "0016_add_resources",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1767225600008,
+      "tag": "0017_add_village_buildings",
+      "breakpoints": true
     }
   ]
 }

@@ -18,6 +18,7 @@ import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
 import type { BuildingCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useNotifications } from "@/hooks/useNotifications";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
@@ -36,6 +37,7 @@ export function VictoryView() {
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
   const { success, selection } = useHaptics();
+  const { scheduleSmartNotifications } = useNotifications();
   const { playSound } = useSound();
   const { showError } = useToast();
   const {
@@ -150,6 +152,9 @@ export function VictoryView() {
       // Pass feedback as FeedbackCode or null
       const feedbackCode = feedback as "easy" | "good" | "hard" | null;
       const { campaign, newRecords: records, buildings, levelUp } = await saveSession(feedbackCode);
+
+      // Update notifications (cancel streak warning if any, schedule next)
+      scheduleSmartNotifications();
 
       if (levelUp) {
         setLevelUpInfo(levelUp);

@@ -1,7 +1,3 @@
-import { AppIconButton } from "@/components/common/AppButton";
-import { AVATARS } from "@/constants/avatars";
-import { useNotifications } from "@/hooks/useNotifications";
-import { useSettingsStore } from "@/stores/settings";
 import {
   Bell,
   ChevronLeft,
@@ -22,7 +18,11 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AnimatePresence, Button, type ColorTokens, Text, XStack, YStack, useTheme } from "tamagui";
+import { AnimatePresence, Button, type ColorTokens, Text, useTheme, XStack, YStack } from "tamagui";
+import { AppIconButton } from "@/components/common/AppButton";
+import { AVATARS } from "@/constants/avatars";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useSettingsStore } from "@/stores/settings";
 
 type MenuStep =
   | "main"
@@ -476,7 +476,12 @@ export function HomeSettingsMenu() {
                       <ChevronLeft size={20} color={tamaguiTheme.color.get()} />
                     </AppIconButton>
                   )}
-                  <Text fontWeight="900" fontSize={20} color={tamaguiTheme.color.get()} textTransform="uppercase">
+                  <Text
+                    fontWeight="900"
+                    fontSize={20}
+                    color={tamaguiTheme.color.get()}
+                    textTransform="uppercase"
+                  >
                     {getTitle()}
                   </Text>
                 </XStack>

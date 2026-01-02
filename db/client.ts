@@ -11,12 +11,14 @@ export const SCHEMA_VERSION = 2;
     const tempDb = openDatabaseSync("bati.db");
     try {
       const result = tempDb.getFirstSync<{ value: string }>(
-        "SELECT value FROM user_preferences WHERE key = 'schema_version'"
+        "SELECT value FROM user_preferences WHERE key = 'schema_version'",
       );
       const currentVersion = result ? parseInt(result.value, 10) : 0;
-      
+
       if (currentVersion < SCHEMA_VERSION) {
-        console.log(`Schema version mismatch: ${currentVersion} < ${SCHEMA_VERSION}, resetting database`);
+        console.log(
+          `Schema version mismatch: ${currentVersion} < ${SCHEMA_VERSION}, resetting database`,
+        );
         tempDb.closeSync();
         deleteDatabaseSync("bati.db");
       } else {
@@ -26,7 +28,7 @@ export const SCHEMA_VERSION = 2;
       // Table doesn't exist or query failed - check if old database exists
       try {
         const tables = tempDb.getAllSync<{ name: string }>(
-          "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '__drizzle_migrations'"
+          "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '__drizzle_migrations'",
         );
         if (tables.length > 0) {
           // Has tables but no schema_version - old database, reset it

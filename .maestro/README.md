@@ -5,6 +5,7 @@ This directory contains End-to-End tests using [Maestro](https://maestro.mobile.
 ## Prerequisites
 
 1. Install Maestro CLI:
+
    ```bash
    curl -Ls "https://get.maestro.mobile.dev" | bash
    ```
@@ -12,10 +13,11 @@ This directory contains End-to-End tests using [Maestro](https://maestro.mobile.
 2. Have an Android emulator or iOS simulator running
 
 3. Build and install the app:
+
    ```bash
    # For Android
    npx expo run:android
-   
+
    # For iOS
    npx expo run:ios
    ```
@@ -23,16 +25,19 @@ This directory contains End-to-End tests using [Maestro](https://maestro.mobile.
 ## Running Tests
 
 ### Run all tests
+
 ```bash
 maestro test .maestro/
 ```
 
 ### Run a single test
+
 ```bash
 maestro test .maestro/app-launch.yaml
 ```
 
 ### Run with Maestro Studio (interactive mode)
+
 ```bash
 maestro studio
 ```

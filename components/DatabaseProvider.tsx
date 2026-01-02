@@ -25,7 +25,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
       const rawDb = openDatabaseSync("bati.db");
       rawDb.runSync(
         `INSERT OR REPLACE INTO user_preferences (key, value, updatedAt) VALUES ('schema_version', ?, ?)`,
-        [String(SCHEMA_VERSION), Date.now()]
+        [String(SCHEMA_VERSION), Date.now()],
       );
     } catch (e) {
       console.warn("Failed to save schema version:", e);

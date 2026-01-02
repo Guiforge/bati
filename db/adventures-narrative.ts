@@ -8,13 +8,12 @@ const { adventureRunSteps, adventureRuns, adventureSteps } = schema;
  */
 export async function getAdventureStepNarrative(
   runStepId: number,
-  language: "en" | "fr" = "en",
+  language: "en" | "fr" = "en"
 ): Promise<string | null> {
   const result = await db
     .select({
       enNarrative: adventureSteps.enNarrative,
       frNarrative: adventureSteps.frNarrative,
-      legacyNarrative: adventureSteps.narrative,
     })
     .from(adventureRunSteps)
     .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
@@ -22,8 +21,8 @@ export async function getAdventureStepNarrative(
       adventureSteps,
       and(
         eq(adventureSteps.adventureId, adventureRuns.adventureId),
-        eq(adventureSteps.stepIndex, adventureRunSteps.stepIndex),
-      ),
+        eq(adventureSteps.stepIndex, adventureRunSteps.stepIndex)
+      )
     )
     .where(eq(adventureRunSteps.id, runStepId))
     .limit(1);
@@ -32,7 +31,7 @@ export async function getAdventureStepNarrative(
   if (!row) return null;
 
   const text = language === "fr" ? row.frNarrative : row.enNarrative;
-  return text || row.legacyNarrative || null;
+  return text || null;
 }
 
 /**
@@ -40,7 +39,7 @@ export async function getAdventureStepNarrative(
  */
 export async function getAdventureStepOutroNarrative(
   runStepId: number,
-  language: "en" | "fr" = "en",
+  language: "en" | "fr" = "en"
 ): Promise<string | null> {
   const result = await db
     .select({
@@ -53,8 +52,8 @@ export async function getAdventureStepOutroNarrative(
       adventureSteps,
       and(
         eq(adventureSteps.adventureId, adventureRuns.adventureId),
-        eq(adventureSteps.stepIndex, adventureRunSteps.stepIndex),
-      ),
+        eq(adventureSteps.stepIndex, adventureRunSteps.stepIndex)
+      )
     )
     .where(eq(adventureRunSteps.id, runStepId))
     .limit(1);

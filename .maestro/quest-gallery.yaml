@@ -1,0 +1,25 @@
+# Maestro E2E Test - Quest Gallery
+# Test navigating to quest gallery
+
+appId: com.anonymous.bati
+
+---
+
+# Launch the app
+- launchApp:
+    clearState: true
+
+# Wait for the app to load
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Look for quest gallery button or text and tap it
+- tapOn:
+    text: "Open gallery"
+    optional: true
+
+# Wait for navigation
+- waitForAnimationToEnd
+
+# Take a screenshot
+- takeScreenshot: quest-gallery

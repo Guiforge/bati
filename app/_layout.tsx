@@ -1,19 +1,21 @@
-import { Slot, useRouter, useSegments } from "expo-router";
-import Head from "expo-router/head";
-import * as SplashScreen from "expo-splash-screen";
-import { useCallback, useEffect, useState } from "react";
-import { useColorScheme } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { NotificationManager } from "@/components/NotificationManager";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
+import { Slot, useRouter, useSegments } from "expo-router";
+import Head from "expo-router/head";
+import * as SplashScreen from "expo-splash-screen";
+import { useCallback, useEffect, useState } from "react";
+import { LogBox, useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 import "../i18n";
 import config from "../tamagui.config";
+
+LogBox.ignoreLogs(["Expo AV has been deprecated"]);
 
 SplashScreen.preventAutoHideAsync();
 

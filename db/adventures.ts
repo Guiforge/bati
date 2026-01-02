@@ -3,13 +3,21 @@ import { db, schema } from "./client";
 import { getQuestTemplateById, type QuestTemplate } from "./quests";
 import type { DifficultyCode } from "./schema";
 
-const { adventureRuns, adventureRunSteps, adventures, adventureSteps, questExercises, quests } =
-  schema;
+const {
+  adventureRuns,
+  adventureRunSteps,
+  adventures,
+  adventureSteps,
+  questExercises,
+  quests,
+} = schema;
 
 function safeParseImages(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((x) => typeof x === "string")
+      : [];
   } catch {
     return [];
   }
@@ -22,9 +30,7 @@ export type AdventureStepTemplate = {
   adventureId: number;
   stepIndex: number;
   questId: number;
-  // Legacy narrative (kept for backwards compatibility).
-  narrative: string;
-  // Localized narratives (preferred).
+  // Localized narratives.
   enNarrative: string;
   frNarrative: string;
   quest: QuestTemplate;
@@ -143,7 +149,7 @@ export async function listAdventures(): Promise<Adventure[]> {
   for (const r of stepRows) {
     stepsCountByAdventureId.set(
       r.adventureId,
-      (stepsCountByAdventureId.get(r.adventureId) ?? 0) + 1,
+      (stepsCountByAdventureId.get(r.adventureId) ?? 0) + 1
     );
   }
 
@@ -208,7 +214,9 @@ export async function listAdventures(): Promise<Adventure[]> {
   return [...byAdventureId.values()].filter((a) => a.stepsCount >= 2);
 }
 
-export async function getAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {
+export async function getAdventureDetails(
+  adventureId: number
+): Promise<AdventureDetails | null> {
   const base = await db
     .select({
       id: adventures.id,
@@ -235,7 +243,6 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
       adventureId: adventureSteps.adventureId,
       stepIndex: adventureSteps.stepIndex,
       questId: adventureSteps.questId,
-      narrative: adventureSteps.narrative,
       enNarrative: adventureSteps.enNarrative,
       frNarrative: adventureSteps.frNarrative,
     })
@@ -252,7 +259,6 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
             adventureId,
             stepIndex: 0,
             questId: first.coverQuestId,
-            narrative: "",
             enNarrative: "",
             frNarrative: "",
           },
@@ -267,7 +273,6 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
       adventureId: s.adventureId,
       stepIndex: s.stepIndex,
       questId: s.questId,
-      narrative: s.narrative,
       enNarrative: s.enNarrative,
       frNarrative: s.frNarrative,
       quest: q,
@@ -292,7 +297,7 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
 }
 
 export async function getActiveAdventureRun(
-  adventureId: number,
+  adventureId: number
 ): Promise<ActiveAdventureRun | null> {
   const runRows = await db
     .select({
@@ -304,7 +309,12 @@ export async function getActiveAdventureRun(
       finishedAt: adventureRuns.finishedAt,
     })
     .from(adventureRuns)
-    .where(and(eq(adventureRuns.adventureId, adventureId), eq(adventureRuns.status, "active")))
+    .where(
+      and(
+        eq(adventureRuns.adventureId, adventureId),
+        eq(adventureRuns.status, "active")
+      )
+    )
     .orderBy(desc(adventureRuns.id))
     .limit(1);
 
@@ -428,7 +438,7 @@ export async function startAdventureRun(input: {
       completedSessionId: null,
       startedAt: s.stepIndex === 0 ? now : null,
       completedAt: null,
-    })),
+    }))
   );
 
   const active = await getActiveAdventureRun(input.adventureId);
@@ -486,8 +496,8 @@ export async function completeAdventureRunStep(input: {
     .where(
       and(
         eq(adventureRunSteps.runId, current.runId),
-        eq(adventureRunSteps.stepIndex, current.stepIndex + 1),
-      ),
+        eq(adventureRunSteps.stepIndex, current.stepIndex + 1)
+      )
     )
     .limit(1);
 

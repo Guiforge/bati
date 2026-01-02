@@ -30,27 +30,27 @@ import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | {
-      status: "loading";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
+    status: "loading";
+    details: AdventureDetails | null;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+  }
   | {
-      status: "ready";
-      details: AdventureDetails;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
+    status: "ready";
+    details: AdventureDetails;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+  }
   | {
-      status: "error";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-      message: string;
-    };
+    status: "error";
+    details: AdventureDetails | null;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+    message: string;
+  };
 
 function levelLabel(level: Difficulty, t: TFunction) {
   if (level === Difficulty.Easy) return t("quests.level_easy");
@@ -342,8 +342,8 @@ export default function AdventureDetailsScreen() {
 
                     const narrative =
                       langKey === "fr"
-                        ? s.frNarrative || s.enNarrative || s.narrative
-                        : s.enNarrative || s.frNarrative || s.narrative;
+                        ? s.frNarrative || s.enNarrative
+                        : s.enNarrative || s.frNarrative;
 
                     return (
                       <XStack key={s.stepIndex} items="center" justify="space-between" gap="$3">

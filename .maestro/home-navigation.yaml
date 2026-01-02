@@ -1,0 +1,27 @@
+# Maestro E2E Test - Home Navigation
+# Test basic navigation on home screen
+
+appId: com.anonymous.bati
+
+---
+
+# Launch the app
+- launchApp:
+    clearState: true
+
+# Wait for the app to load
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Take screenshot of home
+- takeScreenshot: home-screen
+
+# Scroll down to see more content
+- scroll
+
+# Take screenshot after scroll
+- takeScreenshot: home-scrolled
+
+# Swipe up to go back up
+- swipe:
+    direction: UP

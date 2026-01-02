@@ -1,0 +1,16 @@
+# Maestro E2E Test - App Launch
+# Simple test to verify the app launches correctly
+
+appId: com.anonymous.bati
+
+---
+
+# Launch the app
+- launchApp
+
+# Wait for app to be ready (wait up to 10 seconds)
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Take a screenshot of the initial screen
+- takeScreenshot: launch-screen

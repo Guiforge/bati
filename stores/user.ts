@@ -26,14 +26,20 @@ export const useUserStore = create<UserState>((set) => ({
   },
 
   loadFromDatabase: async () => {
-    const [hasFinished, villageName] = await Promise.all([
-      preferences.getHasFinishedOnboarding(),
-      preferences.getVillageName(),
-    ]);
-    set({
-      hasFinishedOnboarding: hasFinished,
-      villageName,
-      isLoaded: true,
-    });
+    try {
+      const [hasFinished, villageName] = await Promise.all([
+        preferences.getHasFinishedOnboarding(),
+        preferences.getVillageName(),
+      ]);
+      set({
+        hasFinishedOnboarding: hasFinished,
+        villageName,
+        isLoaded: true,
+      });
+    } catch (e) {
+      console.error("Failed to load user settings", e);
+      // Fallback to defaults but mark as loaded so app doesn't hang
+      set({ isLoaded: true });
+    }
   },
 }));

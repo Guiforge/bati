@@ -18,7 +18,6 @@ import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
 import type { BuildingCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 import { useHaptics } from "@/hooks/useHaptics";
-import { useNotifications } from "@/hooks/useNotifications";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
@@ -37,7 +36,6 @@ export function VictoryView() {
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
   const { success, selection } = useHaptics();
-  const { scheduleSmartNotifications, showAchievementNotification } = useNotifications();
   const { playSound } = useSound();
   const { showError } = useToast();
   const {
@@ -160,24 +158,10 @@ export function VictoryView() {
         newRecords: records,
         buildings,
         levelUp,
-        newAchievements,
+        // newAchievements - TODO: Achievement toast notifications could be added here in the future
       } = await saveSession(feedbackCode);
 
-      // Update notifications (cancel streak warning if any, schedule next)
-      scheduleSmartNotifications();
-
-      // Show achievement notifications
-      if (newAchievements && newAchievements.length > 0) {
-        for (const achievement of newAchievements) {
-          const title =
-            language === "fr" ? achievement.definition.frTitle : achievement.definition.enTitle;
-          const body =
-            language === "fr"
-              ? achievement.definition.frDescription
-              : achievement.definition.enDescription;
-          showAchievementNotification(title, body, achievement.definition.icon);
-        }
-      }
+      // TODO: Achievement toast notifications could be added here in the future
 
       if (levelUp) {
         setLevelUpInfo(levelUp);

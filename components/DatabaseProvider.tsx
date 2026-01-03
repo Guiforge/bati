@@ -1,4 +1,5 @@
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import * as SplashScreen from "expo-splash-screen";
 import { openDatabaseSync } from "expo-sqlite";
 import { type ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,6 +34,12 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
 
     onReady?.();
   }, [success, onReady]);
+
+  useEffect(() => {
+    if (error) {
+      SplashScreen.hideAsync();
+    }
+  }, [error]);
 
   if (error) {
     return (

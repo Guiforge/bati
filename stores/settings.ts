@@ -94,40 +94,46 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   },
 
   loadFromDatabase: async () => {
-    const [
-      language,
-      theme,
-      avatarId,
-      hapticsEnabled,
-      soundEnabled,
-      reducedMotion,
-      notificationsEnabled,
-      notificationTime,
-    ] = await Promise.all([
-      preferences.getLanguage(),
-      preferences.getTheme(),
-      preferences.getAvatarId(),
-      preferences.getHapticsEnabled(),
-      preferences.getSoundEnabled(),
-      preferences.getReducedMotion(),
-      preferences.getNotificationsEnabled(),
-      preferences.getNotificationTime(),
-    ]);
+    try {
+      const [
+        language,
+        theme,
+        avatarId,
+        hapticsEnabled,
+        soundEnabled,
+        reducedMotion,
+        notificationsEnabled,
+        notificationTime,
+      ] = await Promise.all([
+        preferences.getLanguage(),
+        preferences.getTheme(),
+        preferences.getAvatarId(),
+        preferences.getHapticsEnabled(),
+        preferences.getSoundEnabled(),
+        preferences.getReducedMotion(),
+        preferences.getNotificationsEnabled(),
+        preferences.getNotificationTime(),
+      ]);
 
-    const normalizedLanguage = normalizeLanguage(language);
+      const normalizedLanguage = normalizeLanguage(language);
 
-    set({
-      language: normalizedLanguage,
-      theme: normalizeTheme(theme),
-      avatarId: normalizeAvatarId(avatarId),
-      hapticsEnabled,
-      soundEnabled,
-      reducedMotion,
-      notificationsEnabled,
-      notificationTime,
-      isLoaded: true,
-    });
+      set({
+        language: normalizedLanguage,
+        theme: normalizeTheme(theme),
+        avatarId: normalizeAvatarId(avatarId),
+        hapticsEnabled,
+        soundEnabled,
+        reducedMotion,
+        notificationsEnabled,
+        notificationTime,
+        isLoaded: true,
+      });
 
-    void i18n.changeLanguage(normalizedLanguage);
+      void i18n.changeLanguage(normalizedLanguage);
+    } catch (e) {
+      console.error("Failed to load settings", e);
+      // Fallback to defaults but mark as loaded so app doesn't hang
+      set({ isLoaded: true });
+    }
   },
 }));

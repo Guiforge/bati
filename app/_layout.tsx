@@ -9,7 +9,6 @@ import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
-import { NotificationManager } from "@/components/NotificationManager";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
@@ -77,7 +76,6 @@ export default function RootLayout() {
             <Theme name={colorScheme}>
               <PortalProvider>
                 <DatabaseProvider onReady={handleDatabaseReady}>
-                  <NotificationManager />
                   <ToastProvider>
                     <ErrorBoundary>
                       <Slot />

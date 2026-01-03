@@ -35,7 +35,8 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-router"
+      "expo-router",
+      "expo-audio"
     ],
     "scheme": "bati",
     "slug": "bati",

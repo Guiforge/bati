@@ -1,35 +1,35 @@
-import { Audio, type AVPlaybackSource } from "expo-av";
-import { useEffect, useState } from "react";
 import { useSettingsStore } from "@/stores/settings";
+import { type AudioSource, createAudioPlayer } from "expo-audio";
+import { useEffect, useRef } from "react";
 
 export function useSound() {
   const { soundEnabled } = useSettingsStore();
-  const [sound, setSound] = useState<Audio.Sound>();
+  const playerRef = useRef<any>(null);
 
-  async function playSound(soundFile: AVPlaybackSource | null | undefined) {
+  function playSound(soundFile: AudioSource | null | undefined) {
     if (!soundEnabled || !soundFile) return;
 
     try {
-      // Unload previous sound if any
-      if (sound) {
-        await sound.unloadAsync();
+      // Release previous player if any
+      if (playerRef.current) {
+        playerRef.current.release();
       }
 
-      const { sound: newSound } = await Audio.Sound.createAsync(soundFile);
-      setSound(newSound);
-      await newSound.playAsync();
+      const player = createAudioPlayer(soundFile);
+      playerRef.current = player;
+      player.play();
     } catch (error) {
       console.log("Error playing sound", error);
     }
   }
 
   useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.release();
+      }
+    };
+  }, []);
 
   return { playSound };
 }

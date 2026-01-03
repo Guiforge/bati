@@ -1,10 +1,14 @@
-import { type AudioSource, createAudioPlayer } from "expo-audio";
-import { useEffect, useRef } from "react";
 import { useSettingsStore } from "@/stores/settings";
+import {
+  type AudioPlayer,
+  type AudioSource,
+  createAudioPlayer,
+} from "expo-audio";
+import { useEffect, useRef } from "react";
 
 export function useSound() {
   const { soundEnabled } = useSettingsStore();
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<AudioPlayer | null>(null);
 
   function playSound(soundFile: AudioSource | null | undefined) {
     if (!soundEnabled || !soundFile) return;

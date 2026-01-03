@@ -34,10 +34,7 @@
   },
   "overrides": [
     {
-      "includes": [
-        "components/HomeSettingsMenu.tsx",
-        "hooks/useSound.ts"
-      ],
+      "includes": ["components/HomeSettingsMenu.tsx", "hooks/useSound.ts"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -47,9 +44,7 @@
       }
     },
     {
-      "includes": [
-        "**/*.css"
-      ],
+      "includes": ["**/*.css"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -59,9 +54,7 @@
       }
     },
     {
-      "includes": [
-        "**/*.md"
-      ],
+      "includes": ["**/*.md"],
       "linter": {
         "enabled": false
       }

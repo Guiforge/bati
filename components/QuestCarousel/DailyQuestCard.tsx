@@ -1,12 +1,16 @@
+import { Coins, Star } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
+import { estimateQuestSeconds, formatDuration } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
 import type { QuestTemplate } from "@/db/quests";
+import { computeSessionXp } from "@/db/xp";
 import { useSettingsStore } from "@/stores/settings";
 
 interface DailyQuestCardProps {
@@ -33,6 +37,29 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
     exercisesById,
   });
 
+  // Calculate estimates
+  const estimatedSeconds = useMemo(() => {
+    const input = {
+      rounds: quest.rounds,
+      restSeconds: quest.restSeconds,
+      exercises: quest.exercises.map((e) => {
+        const ex = exercisesById[e.exerciseId];
+        const avgValue = Math.round((e.baseTarget.min + e.baseTarget.max) / 2);
+        return {
+          exercise: ex ?? { secondsPerRep: 3 },
+          target: { type: e.baseTarget.type as "reps" | "time", value: avgValue },
+        };
+      }),
+    };
+    return estimateQuestSeconds(input);
+  }, [quest, exercisesById]);
+
+  const estimatedXp = useMemo(() => {
+    return computeSessionXp({ durationSeconds: estimatedSeconds, userLevel: "medium" });
+  }, [estimatedSeconds]);
+
+  const estimatedGold = Math.floor(estimatedXp / 5);
+
   return (
     <Card
       bg={tokens.bg}
@@ -48,7 +75,7 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
             </Text>
           </XStack>
           <Text fontSize={12} fontWeight="bold" opacity={0.6}>
-            {t("common.daily_xp_bonus")}
+            {formatDuration(estimatedSeconds, language)}
           </Text>
         </XStack>
 
@@ -73,6 +100,36 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
             <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
               {desc}
             </Paragraph>
+
+            {/* Loot Preview */}
+            <XStack gap="$3" mt="$1">
+              <XStack
+                items="center"
+                gap="$1"
+                bg="rgba(255,255,255,0.5)"
+                px="$2"
+                py="$1"
+                rounded="$4"
+              >
+                <Star size={12} color="#FFD700" fill="#FFD700" />
+                <Text fontSize={11} fontWeight="bold" color="$color">
+                  +{estimatedXp} XP
+                </Text>
+              </XStack>
+              <XStack
+                items="center"
+                gap="$1"
+                bg="rgba(255,255,255,0.5)"
+                px="$2"
+                py="$1"
+                rounded="$4"
+              >
+                <Coins size={12} color="#FFD700" />
+                <Text fontSize={11} fontWeight="bold" color="$color">
+                  +{estimatedGold}
+                </Text>
+              </XStack>
+            </XStack>
 
             <XStack gap="$2" flexWrap="wrap" pt="$1">
               <Tag

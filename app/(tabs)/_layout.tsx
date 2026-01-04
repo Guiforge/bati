@@ -1,9 +1,11 @@
 import { Castle, Map as MapIcon, Scroll, Sparkles } from "@tamagui/lucide-icons";
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -15,9 +17,13 @@ export default function TabsLayout() {
           fontWeight: "800",
           fontSize: 12,
         },
-        // Bottom nav removed (keeps tab routing but hides the UI).
         tabBarStyle: {
-          display: "none",
+          backgroundColor: "#FDFBF7",
+          borderTopWidth: 2,
+          borderTopColor: "#2C3E50",
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom + 4,
+          paddingTop: 6,
         },
       }}
     >

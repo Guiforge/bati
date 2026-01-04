@@ -26,7 +26,8 @@ Show, don't tell:
 
 - Use exercise illustrations over descriptions
 - Quest cards: big image, short title
-- Icons over labels when possible
+- **Assets over Icons**: Use rich, custom assets (images) instead of generic icons whenever possible to match the comic book style.
+- Icons over labels when assets are not available.
 - Village is visual, not a list
 
 ### 3. Minimal Animations 🎬

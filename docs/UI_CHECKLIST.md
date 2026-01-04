@@ -28,7 +28,7 @@ This document serves as a reference for ensuring high-quality, consistent, and u
 - **Placeholder Text**: Use as an example of expected input.
   - *Note*: Text color must be notably lighter than user input so it's not mistaken for filled data.
 - **Data Format**: Restrict input to relevant values (e.g., numeric keyboard for phone numbers).
-- **Illustration/Icon**: Use visual cues to break up long lists of fields or clarify intent.
+- **Illustration/Icon**: Use visual cues to break up long lists of fields or clarify intent. Prefer custom assets (images) over generic icons to maintain the immersive RPG feel.
 - **Hint**: Provide elaboration or help text for complex fields where a label isn't enough.
 
 ### Card

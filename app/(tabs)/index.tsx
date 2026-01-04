@@ -1,10 +1,10 @@
-import { ContinueAdventureFab } from "@/components/home/ContinueAdventureFab";
-import { HeroStatusCard } from "@/components/home/HeroStatusCard";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, useTheme, YStack } from "tamagui";
+import { ContinueAdventureFab } from "@/components/home/ContinueAdventureFab";
+import { HeroStatusCard } from "@/components/home/HeroStatusCard";
 // Components
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { ResourcesOverview } from "@/components/home/ResourcesOverview";

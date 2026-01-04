@@ -100,8 +100,7 @@ export type GameIconName = keyof typeof ICONS;
  */
 export function useGameIcon(iconName: GameIconName) {
   const theme = useTheme();
-  const themeName =
-    typeof theme.name === "string" ? theme.name : String(theme.name?.val ?? "");
+  const themeName = typeof theme.name === "string" ? theme.name : String(theme.name?.val ?? "");
   const isDark = themeName.includes("dark");
 
   return ICONS[iconName][isDark ? "dark" : "light"];
@@ -114,14 +113,10 @@ export function useGameIcon(iconName: GameIconName) {
  */
 export function useGameIcons<T extends GameIconName>(iconNames: T[]) {
   const theme = useTheme();
-  const themeName =
-    typeof theme.name === "string" ? theme.name : String(theme.name?.val ?? "");
+  const themeName = typeof theme.name === "string" ? theme.name : String(theme.name?.val ?? "");
   const isDark = themeName.includes("dark");
 
-  const result = {} as Record<
-    T,
-    (typeof ICONS)[T][typeof isDark extends true ? "dark" : "light"]
-  >;
+  const result = {} as Record<T, (typeof ICONS)[T][typeof isDark extends true ? "dark" : "light"]>;
 
   for (const name of iconNames) {
     result[name] = ICONS[name][isDark ? "dark" : "light"];

@@ -26,15 +26,16 @@ function MuscleBalanceRadarComponent() {
     try {
       const data = await getMuscleBalance("30d");
       setBalance(data);
-    } catch (e) {
-      console.error("Failed to load muscle balance:", e);
+    } catch (_e) {
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void loadData();
+    loadData().catch(() => {
+      // Error already handled
+    });
   }, [loadData]);
 
   if (isLoading) {

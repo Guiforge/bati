@@ -31,11 +31,12 @@ export function BossHpBar({
 
   // Flash damage indicator
   useEffect(() => {
-    if (lastDamage) {
-      setShowDamage(true);
-      const timer = setTimeout(() => setShowDamage(false), 1500);
-      return () => clearTimeout(timer);
+    if (!lastDamage) {
+      return;
     }
+    setShowDamage(true);
+    const timer = setTimeout(() => setShowDamage(false), 1500);
+    return () => clearTimeout(timer);
   }, [lastDamage]);
 
   // HP bar color based on remaining HP

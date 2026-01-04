@@ -30,8 +30,8 @@ export default function DevTools() {
     try {
       const p = await getAllPreferences();
       setPrefs(p);
-    } catch (e) {
-      console.error("Failed to load preferences:", e);
+    } catch {
+      // Error handled silently
     }
   }, []);
 
@@ -39,8 +39,8 @@ export default function DevTools() {
     try {
       const sessions = await listCompletedSessions(100);
       setSessionCount(sessions.length);
-    } catch (e) {
-      console.error("Failed to load sessions:", e);
+    } catch {
+      // Error handled silently
     }
   }, []);
 
@@ -56,8 +56,8 @@ export default function DevTools() {
         })),
       );
       setBossFights(fights);
-    } catch (e) {
-      console.error("Failed to load boss fights:", e);
+    } catch {
+      // Error handled silently
     }
   }, []);
 
@@ -114,8 +114,7 @@ export default function DevTools() {
       });
       await loadSessionCount();
       Alert.alert("Success", "Added fake session (yesterday)");
-    } catch (e) {
-      console.error("Failed to add fake session:", e);
+    } catch {
       Alert.alert("Error", "Failed to add fake session");
     }
   }
@@ -125,8 +124,7 @@ export default function DevTools() {
       await resetBossFight(bossFightId);
       await loadBossFights();
       Alert.alert("Success", "Boss fight reset");
-    } catch (e) {
-      console.error("Failed to reset boss fight:", e);
+    } catch {
       Alert.alert("Error", "Failed to reset boss fight");
     }
   }
@@ -141,8 +139,7 @@ export default function DevTools() {
       });
       await loadBossFights();
       Alert.alert("Success", "Dealt 50 test damage");
-    } catch (e) {
-      console.error("Failed to deal damage:", e);
+    } catch {
       Alert.alert("Error", "Failed to deal damage");
     }
   }

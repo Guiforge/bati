@@ -67,12 +67,14 @@ export function useSessionTimer() {
       return;
     }
 
-    if (status === "running" || status === "resting" || status === "countdown") {
-      const tick = () => calculate(Date.now());
-      tick(); // Immediate update
-      const interval = setInterval(tick, 100);
-      return () => clearInterval(interval);
+    if (status !== "running" && status !== "resting" && status !== "countdown") {
+      return;
     }
+
+    const tick = () => calculate(Date.now());
+    tick(); // Immediate update
+    const interval = setInterval(tick, 100);
+    return () => clearInterval(interval);
   }, [timerStartTimestamp, timerDuration, status, lastPauseTimestamp]);
 
   return {

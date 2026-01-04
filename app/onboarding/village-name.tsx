@@ -1,11 +1,12 @@
-import { Check, Pencil } from "@tamagui/lucide-icons";
+import { ArrowRight, Check } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H1, H2, Input, Text, XStack, YStack } from "tamagui";
+import { H1, H2, Input, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ProgressDots } from "@/components/ProgressDots";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -16,6 +17,7 @@ const CURRENT_STEP = 3;
 const MIN_NAME_LENGTH = 3;
 const MAX_NAME_LENGTH = 20;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex screen component, refactor planned
 export default function VillageName() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -41,141 +43,163 @@ export default function VillageName() {
   };
 
   useEffect(() => {
-    if (status === "stamped") {
-      const id = setTimeout(() => {
-        success();
-        completeOnboarding();
-      }, 350);
-
-      return () => clearTimeout(id);
+    if (status !== "stamped") {
+      return;
     }
+    const id = setTimeout(() => {
+      success();
+      completeOnboarding();
+    }, 350);
+
+    return () => clearTimeout(id);
   }, [status, completeOnboarding, success]);
 
   return (
     <YStack flex={1} bg="$background">
+      {/* Full-screen background image */}
+      <Image
+        source={require("../../assets/onboardings/new_city.jpg")}
+        style={{ position: "absolute", width: "100%", height: "100%" }}
+        contentFit="cover"
+        contentPosition="center"
+      />
+
+      {/* Gradient overlays */}
+      <LinearGradient
+        colors={["rgba(16, 19, 35, 0.85)", "transparent"]}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
+      />
+      <LinearGradient
+        colors={["transparent", "rgba(16, 19, 35, 0.9)", "#101323"]}
+        style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "55%" }}
+      />
+
       {/* Stamp Animation Layer */}
       {status === "stamped" && (
-        <YStack fullscreen justify="center" items="center" z={100} pointerEvents="none" opacity={1}>
+        <YStack fullscreen justify="center" items="center" z={100} pointerEvents="none">
           <H1
-            color="$color"
-            fontSize={42}
+            color="white"
+            fontSize={48}
             fontWeight="900"
             text="center"
-            textShadowColor="rgba(0,0,0,0.1)"
-            textShadowOffset={{ width: 0, height: 4 }}
+            textShadowColor="rgba(0,0,0,0.5)"
+            textShadowOffset={{ width: 2, height: 2 }}
             textShadowRadius={10}
           >
             {name}
           </H1>
-          <Text text="center" fontSize={24} opacity={0.6}>
+          <Text text="center" fontSize={32} mt="$2">
             🏰
           </Text>
         </YStack>
       )}
 
-      <YStack
-        flex={1}
-        opacity={status === "editing" ? 1 : 0}
-        pointerEvents={status === "editing" ? "auto" : "none"}
+      {/* Content */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        <YStack
+          flex={1}
+          justify="space-between"
+          pt={insets.top + 20}
+          pb={insets.bottom + 20}
+          px="$5"
+          opacity={status === "editing" ? 1 : 0}
+          pointerEvents={status === "editing" ? "auto" : "none"}
         >
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 16 }}
-          >
-            <YStack flex={1} justify="space-between" style={{ flexGrow: 1 }}>
-              <YStack
-                width="100%"
-                aspectRatio={16 / 11}
-                bg="$bgLight"
-                borderBottomWidth={4}
-                borderColor="$color"
-                shadowColor="$color"
-                shadowRadius={0}
-                shadowOffset={{ width: 0, height: 6 }}
-                overflow="hidden"
+          {/* Header */}
+          <YStack gap="$3" items="center">
+            <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
+            <YStack gap="$2" items="center">
+              <H2
+                text="center"
+                color="white"
+                fontWeight="900"
+                fontSize={28}
+                textShadowColor="rgba(0,0,0,0.5)"
+                textShadowOffset={{ width: 1, height: 1 }}
+                textShadowRadius={4}
               >
-                <Image
-                  source={require("../../assets/onboardings/new_city.jpg")}
-                  style={{ width: "100%", height: "100%" }}
-                  contentFit="cover"
-                  transition={0}
-                />
-              </YStack>
-
-              <YStack flex={1} p="$5" justify="space-between" gap="$5" style={{ flexGrow: 1 }}>
-                <YStack gap="$3">
-                  <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
-
-                  <YStack gap="$2" items="center">
-                    <H2 text="center" color="$color" fontWeight="900" fontSize={24}>
-                      {t("onboarding.village_name_title")}
-                    </H2>
-                    <XStack items="center" gap="$2">
-                      <Pencil size={16} color="$color" opacity={0.5} />
-                      <Text fontSize={13} color="$color" opacity={0.5}>
-                        {t("onboarding.village_name_placeholder")}
-                      </Text>
-                    </XStack>
-                  </YStack>
-
-                  <YStack width="100%" gap="$3">
-                    <Input
-                      value={name}
-                      // biome-ignore lint/suspicious/noExplicitAny: Tamagui Input type definition mismatch
-                      onChangeText={(text: any) => {
-                        setName(text.slice(0, MAX_NAME_LENGTH));
-                      }}
-                      placeholder={t("onboarding.village_name_placeholder") ?? ""}
-                      width="100%"
-                      size="$6"
-                      borderWidth={3}
-                      borderColor={isValidName ? "$success" : "$color"}
-                      rounded={16}
-                      bg="$bgLight"
-                      focusStyle={{ borderColor: "$primary", borderWidth: 4 }}
-                      textAlign="center"
-                    />
-
-                    <XStack justify="space-between" px="$3">
-                      <XStack items="center" gap="$1">
-                        {isValidName ? <Check size={14} color="$success" /> : null}
-                        <Text
-                          fontSize={12}
-                          color={isValidName ? "$success" : "$color"}
-                          opacity={isValidName ? 1 : 0.5}
-                          fontWeight={isValidName ? "700" : "400"}
-                        >
-                          {name.length < MIN_NAME_LENGTH
-                            ? `${MIN_NAME_LENGTH - name.length} ${t("onboarding.chars_min") || "chars min"}`
-                            : t("onboarding.valid") || "Valid!"}
-                        </Text>
-                      </XStack>
-                      <Text fontSize={12} color="$color" opacity={0.5}>
-                        {name.length}/{MAX_NAME_LENGTH}
-                      </Text>
-                    </XStack>
-                  </YStack>
-                </YStack>
-
-                <AppButton
-                  variant="primary"
-                  onPress={handleFinish}
-                  disabled={!isValidName}
-                  opacity={isValidName ? 1 : 0.4}
-                  mb="$4"
-                >
-                  {t("onboarding.finish")} 🚀
-                </AppButton>
-              </YStack>
+                {t("onboarding.village_name_title")}
+              </H2>
+              <Paragraph
+                text="center"
+                color="$muted"
+                fontWeight="500"
+                textShadowColor="rgba(0,0,0,0.5)"
+                textShadowOffset={{ width: 1, height: 1 }}
+                textShadowRadius={4}
+              >
+                {t("onboarding.village_name_subtitle") || "Give your kingdom a name"}
+              </Paragraph>
             </YStack>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </YStack>
+          </YStack>
+
+          {/* Bottom section with input and CTA */}
+          <YStack gap="$5">
+            {/* Input field */}
+            <YStack gap="$3">
+              <Input
+                value={name}
+                // biome-ignore lint/suspicious/noExplicitAny: Tamagui Input type definition mismatch
+                onChangeText={(text: any) => {
+                  setName(text.slice(0, MAX_NAME_LENGTH));
+                }}
+                placeholder={t("onboarding.village_name_placeholder") ?? ""}
+                width="100%"
+                size="$4"
+                borderWidth={3}
+                borderColor={isValidName ? "$success" : "rgba(255,255,255,0.3)"}
+                rounded={16}
+                bg="rgba(16, 19, 35, 0.8)"
+                color="white"
+                placeholderTextColor="$muted"
+                focusStyle={{ borderColor: "$primary", borderWidth: 3 }}
+                textAlign="center"
+                height={56}
+              />
+
+              <XStack justify="space-between" px="$3">
+                <XStack items="center" gap="$1">
+                  {isValidName ? <Check size={14} color="$success" /> : null}
+                  <Text
+                    fontSize={12}
+                    color={isValidName ? "$success" : "$muted"}
+                    fontWeight={isValidName ? "700" : "400"}
+                  >
+                    {name.length < MIN_NAME_LENGTH
+                      ? `${MIN_NAME_LENGTH - name.length} ${t("onboarding.chars_min") || "chars min"}`
+                      : t("onboarding.valid") || "Valid!"}
+                  </Text>
+                </XStack>
+                <Text fontSize={12} color="$muted">
+                  {name.length}/{MAX_NAME_LENGTH}
+                </Text>
+              </XStack>
+            </YStack>
+
+            {/* CTA Button */}
+            <AppButton
+              variant="primary"
+              onPress={handleFinish}
+              disabled={!isValidName}
+              opacity={isValidName ? 1 : 0.4}
+              rounded="$10"
+              borderWidth={0}
+              bg={isValidName ? "$success" : "$primary"}
+            >
+              <XStack items="center" gap="$2">
+                <Text color="white" fontWeight="900" fontSize={18}>
+                  {t("onboarding.finish")}
+                </Text>
+                <ArrowRight size={20} color="white" strokeWidth={3} />
+              </XStack>
+            </AppButton>
+          </YStack>
+        </YStack>
+      </KeyboardAvoidingView>
     </YStack>
   );
 }

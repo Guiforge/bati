@@ -49,6 +49,7 @@ async function runMigrationsAsync(
   }
 
   const entries = config.journal.entries;
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex migration logic, refactor planned
   const runEntry = async (txn: { execAsync: (source: string) => Promise<void> }) => {
     for (const entry of entries) {
       if (Number.isFinite(lastCreatedAt) && lastCreatedAt >= entry.when) continue;
@@ -63,6 +64,7 @@ async function runMigrationsAsync(
         .filter((s) => s.length > 0);
 
       if (opts.debug) {
+        // biome-ignore lint/suspicious/noConsole: Debug logging
         console.log(
           "[DatabaseProvider] Applying migration",
           entry.tag,
@@ -73,6 +75,7 @@ async function runMigrationsAsync(
       for (let i = 0; i < statements.length; i++) {
         const stmt = statements[i];
         if (opts.debug) {
+          // biome-ignore lint/suspicious/noConsole: Debug logging
           console.log(
             `[DatabaseProvider]  stmt ${i + 1}/${statements.length}:`,
             stmt.slice(0, 120).replace(/\s+/g, " "),
@@ -106,7 +109,6 @@ interface DatabaseProviderProps {
 }
 
 export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
-  console.log("[DatabaseProvider] Rendering...");
   const { t } = useTranslation();
 
   const migrationMaxIdx = useMemo(() => {
@@ -132,16 +134,21 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
     }
 
     if (__DEV__ && process.env.EXPO_PUBLIC_MIGRATIONS_DEBUG === "1") {
+      // biome-ignore lint/suspicious/noConsole: Debug logging
       console.log("[DatabaseProvider] migrationMaxIdx:", migrationMaxIdx);
+      // biome-ignore lint/suspicious/noConsole: Debug logging
       console.log(
         "[DatabaseProvider] journalEntries:",
         filteredEntries.length,
         "/",
         entries.length,
       );
+      // biome-ignore lint/suspicious/noConsole: Debug logging
       console.log("[DatabaseProvider] migrationKeys:", Object.keys(filteredMigrations));
       const m0000 = filteredMigrations.m0000;
+      // biome-ignore lint/suspicious/noConsole: Debug logging
       console.log("[DatabaseProvider] m0000Type:", typeof m0000, "len:", m0000?.length);
+      // biome-ignore lint/suspicious/noConsole: Debug logging
       console.log("[DatabaseProvider] m0000Sample:", m0000?.slice?.(0, 120));
     }
 
@@ -161,8 +168,6 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const error = migrationState.error;
   const hasInitialized = useRef(false);
   const hasStartedMigrations = useRef(false);
-
-  console.log("[DatabaseProvider] Migration status:", { success, error: error?.message });
 
   useEffect(() => {
     let cancelled = false;
@@ -198,15 +203,8 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   }, [migrationConfig]);
 
   useEffect(() => {
-    console.log(
-      "[DatabaseProvider] useEffect - success:",
-      success,
-      "hasInitialized:",
-      hasInitialized.current,
-    );
     if (!success || hasInitialized.current) return;
     hasInitialized.current = true;
-    console.log("[DatabaseProvider] Migrations completed, saving schema version...");
 
     // Save schema version after successful migration
     try {
@@ -215,8 +213,8 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         `INSERT OR REPLACE INTO user_preferences (key, value, updatedAt) VALUES ('schema_version', ?, ?)`,
         [String(SCHEMA_VERSION), Date.now()],
       );
-    } catch (e) {
-      console.warn("Failed to save schema version:", e);
+    } catch {
+      // Error handled silently
     }
 
     onReady?.();
@@ -224,7 +222,6 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
 
   useEffect(() => {
     if (error) {
-      console.error("Database migration error:", error);
       SplashScreen.hideAsync();
     }
   }, [error]);

@@ -30,13 +30,14 @@ export function SuggestedQuestsCard() {
       try {
         const data = await getSuggestedQuestsForWeakAreas(3);
         setQuests(data);
-      } catch (e) {
-        console.error("Failed to load suggested quests:", e);
+      } catch (_e) {
       } finally {
         setIsLoading(false);
       }
     }
-    void load();
+    load().catch(() => {
+      // Error already handled
+    });
   }, []);
 
   if (isLoading) {

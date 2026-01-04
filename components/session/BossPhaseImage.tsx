@@ -53,15 +53,16 @@ export function BossPhaseImage({ currentHp, totalHp, size = 80 }: BossPhaseImage
 
   // Handle phase transitions with animation
   useEffect(() => {
-    if (currentPhase !== prevPhase) {
-      setIsTransitioning(true);
-      const timer = setTimeout(() => {
-        setDisplayPhase(currentPhase);
-        setIsTransitioning(false);
-        setPrevPhase(currentPhase);
-      }, 300);
-      return () => clearTimeout(timer);
+    if (currentPhase === prevPhase) {
+      return;
     }
+    setIsTransitioning(true);
+    const timer = setTimeout(() => {
+      setDisplayPhase(currentPhase);
+      setIsTransitioning(false);
+      setPrevPhase(currentPhase);
+    }, 300);
+    return () => clearTimeout(timer);
   }, [currentPhase, prevPhase]);
 
   const displayConfig = getPhaseConfig(displayPhase);

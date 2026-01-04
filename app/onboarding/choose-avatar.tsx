@@ -1,10 +1,12 @@
-import { Check } from "@tamagui/lucide-icons";
+import { ArrowRight, ChevronLeft, ChevronRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, XStack, YStack } from "tamagui";
+import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
 import { ProgressDots } from "@/components/ProgressDots";
@@ -14,6 +16,7 @@ import { useSettingsStore } from "@/stores/settings";
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;
+const SWIPE_THRESHOLD = 50;
 
 export default function ChooseAvatar() {
   const router = useRouter();
@@ -22,113 +25,161 @@ export default function ChooseAvatar() {
   const { selection } = useHaptics();
   const insets = useSafeAreaInsets();
 
+  const currentIndex = AVATARS.findIndex((a) => a.id === avatarId);
+  const currentAvatar = getAvatarById(avatarId);
+
+  const goToPrev = useCallback(() => {
+    const prevIndex = currentIndex <= 0 ? AVATARS.length - 1 : currentIndex - 1;
+    setAvatarId(AVATARS[prevIndex].id).catch(() => {
+      // Error handled silently
+    });
+    selection();
+  }, [currentIndex, setAvatarId, selection]);
+
+  const goToNext = useCallback(() => {
+    const nextIndex = currentIndex >= AVATARS.length - 1 ? 0 : currentIndex + 1;
+    setAvatarId(AVATARS[nextIndex].id).catch(() => {
+      // Error handled silently
+    });
+    selection();
+  }, [currentIndex, setAvatarId, selection]);
+
+  const swipeGesture = Gesture.Pan()
+    .activeOffsetX([-20, 20])
+    .runOnJS(true)
+    .onEnd((event) => {
+      if (event.translationX > SWIPE_THRESHOLD) {
+        goToPrev();
+      } else if (event.translationX < -SWIPE_THRESHOLD) {
+        goToNext();
+      }
+    });
+
   return (
-    <YStack flex={1} bg="$background">
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 16 }}
-        keyboardShouldPersistTaps="handled"
-      >
+    <GestureDetector gesture={swipeGesture}>
+      <YStack flex={1} bg="$background" collapsable={false}>
+        {/* Full-screen avatar as background */}
+        <Image
+          source={currentAvatar.source}
+          style={{ position: "absolute", width: "100%", height: "100%" }}
+          contentFit="cover"
+          contentPosition="top"
+          transition={200}
+        />
+
+        {/* Gradient overlays */}
+        <LinearGradient
+          colors={["rgba(16, 19, 35, 0.85)", "transparent"]}
+          style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
+        />
+        <LinearGradient
+          colors={["transparent", "rgba(16, 19, 35, 0.9)", "#101323"]}
+          style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%" }}
+        />
+
+        {/* Content */}
         <YStack
-          width="100%"
-          aspectRatio={16 / 11}
-          bg="$bgLight"
-          borderBottomWidth={4}
-          borderColor="$color"
-          shadowColor="$color"
-          shadowRadius={0}
-          shadowOffset={{ width: 0, height: 6 }}
-          overflow="hidden"
+          flex={1}
+          justify="space-between"
+          pt={insets.top + 20}
+          pb={insets.bottom + 20}
+          px="$5"
         >
-          <Image
-            source={getAvatarById(avatarId).source}
-            style={{ width: "100%", height: "100%" }}
-            contentFit="cover"
-            transition={0}
-          />
-        </YStack>
-
-        <YStack flex={1} p="$5" justify="space-between" gap="$5" style={{ flexGrow: 1 }}>
-          <YStack gap="$3">
+          {/* Header */}
+          <YStack gap="$3" items="center">
             <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
-
             <YStack gap="$2" items="center">
-              <H2 text="center" color="$color" fontWeight="900" fontSize={26}>
+              <H2
+                text="center"
+                color="white"
+                fontWeight="900"
+                fontSize={28}
+                textShadowColor="rgba(0,0,0,0.5)"
+                textShadowOffset={{ width: 1, height: 1 }}
+                textShadowRadius={4}
+              >
                 {t("onboarding.avatar_title")}
               </H2>
-              <Paragraph text="center" color="$color" opacity={0.65} fontWeight="500">
+              <Paragraph
+                text="center"
+                color="$muted"
+                fontWeight="500"
+                textShadowColor="rgba(0,0,0,0.5)"
+                textShadowOffset={{ width: 1, height: 1 }}
+                textShadowRadius={4}
+              >
                 {t("onboarding.avatar_subtitle")}
               </Paragraph>
             </YStack>
-
-            <XStack flexWrap="wrap" gap="$3" justify="space-between">
-              {AVATARS.map((avatar) => {
-                const selected = avatarId === avatar.id;
-
-                return (
-                  <AppButton
-                    key={avatar.id}
-                    unstyled
-                    onPress={() => {
-                      void setAvatarId(avatar.id);
-                      selection();
-                    }}
-                    fullWidth={false}
-                    width="48%"
-                    bg="$bgLight"
-                    borderWidth={3}
-                    borderColor={selected ? "$primary" : "$color"}
-                    rounded="$8"
-                    overflow="hidden"
-                    p={0}
-                    pressStyle={{ opacity: 0.92 }}
-                  >
-                    <YStack>
-                      <YStack height={120} bg="$bgLight">
-                        <Image
-                          source={avatar.source}
-                          style={{ width: "100%", height: "100%" }}
-                          contentFit="cover"
-                          transition={0}
-                        />
-
-                        {selected ? (
-                          <YStack
-                            position="absolute"
-                            t={10}
-                            r={10}
-                            width={28}
-                            height={28}
-                            rounded={14}
-                            bg="$primary"
-                            justify="center"
-                            items="center"
-                          >
-                            <Check size={16} color="$color" strokeWidth={3} />
-                          </YStack>
-                        ) : null}
-                      </YStack>
-
-                      <YStack p="$3" items="center">
-                        <Paragraph color="$color" fontWeight="900">
-                          {avatar.label}
-                        </Paragraph>
-                      </YStack>
-                    </YStack>
-                  </AppButton>
-                );
-              })}
-            </XStack>
           </YStack>
 
-          <AppButton
-            variant="secondary"
-            onPress={() => router.push("/onboarding/village-name")}
-            mb="$4"
-          >
-            {t("onboarding.next")} →
-          </AppButton>
+          {/* Bottom section */}
+          <YStack gap="$5">
+            {/* Avatar selector */}
+            <XStack items="center" justify="center" gap="$4">
+              <AppButton
+                unstyled
+                onPress={goToPrev}
+                width={48}
+                height={48}
+                rounded={24}
+                bg="rgba(255,255,255,0.15)"
+                justify="center"
+                items="center"
+                pressStyle={{ opacity: 0.7, scale: 0.95 }}
+              >
+                <ChevronLeft size={28} color="white" strokeWidth={2.5} />
+              </AppButton>
+
+              <YStack items="center" gap="$2" width={140}>
+                <Text
+                  color="white"
+                  fontSize={22}
+                  fontWeight="900"
+                  textShadowColor="rgba(0,0,0,0.5)"
+                  textShadowOffset={{ width: 1, height: 1 }}
+                  textShadowRadius={4}
+                >
+                  {t(currentAvatar.labelKey)}
+                </Text>
+                <Text color="$muted" fontSize={14}>
+                  {currentIndex + 1} / {AVATARS.length}
+                </Text>
+              </YStack>
+
+              <AppButton
+                unstyled
+                onPress={goToNext}
+                width={48}
+                height={48}
+                rounded={24}
+                bg="rgba(255,255,255,0.15)"
+                justify="center"
+                items="center"
+                pressStyle={{ opacity: 0.7, scale: 0.95 }}
+              >
+                <ChevronRight size={28} color="white" strokeWidth={2.5} />
+              </AppButton>
+            </XStack>
+
+            {/* CTA Button */}
+            <AppButton
+              variant="secondary"
+              onPress={() => router.push("/onboarding/village-name")}
+              rounded="$10"
+              borderWidth={0}
+              bg="$secondary"
+            >
+              <XStack items="center" gap="$2">
+                <Text color="$bgDark" fontWeight="900" fontSize={18}>
+                  {t("onboarding.next_avatar")}
+                </Text>
+                <ArrowRight size={20} color="$bgDark" strokeWidth={3} />
+              </XStack>
+            </AppButton>
+          </YStack>
         </YStack>
-      </ScrollView>
-    </YStack>
+      </YStack>
+    </GestureDetector>
   );
 }

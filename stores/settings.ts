@@ -16,7 +16,7 @@ function normalizeTheme(value: string | null | undefined): ThemePreference {
 }
 
 function normalizeAvatarId(value: string | null | undefined): AvatarId {
-  return isAvatarId(value) ? value : "gamin";
+  return isAvatarId(value) ? value : "kid";
 }
 
 interface SettingsState {
@@ -45,7 +45,7 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>((set) => ({
   language: getDevicePreferredAppLanguage(),
   theme: "system",
-  avatarId: "gamin",
+  avatarId: "kid",
   hapticsEnabled: true,
   soundEnabled: true,
   reducedMotion: false,
@@ -56,7 +56,9 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setLanguage: async (language) => {
     set({ language });
     await preferences.setLanguage(language);
-    void i18n.changeLanguage(language);
+    i18n.changeLanguage(language).catch(() => {
+      // Ignore i18n errors
+    });
   },
 
   setTheme: async (theme) => {
@@ -131,9 +133,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         isLoaded: true,
       });
 
-      void i18n.changeLanguage(normalizedLanguage);
-    } catch (e) {
-      console.error("Failed to load settings", e);
+      i18n.changeLanguage(normalizedLanguage).catch(() => {
+        // Ignore i18n errors
+      });
+    } catch {
       // Fallback to defaults but mark as loaded so app doesn't hang
       set({ isLoaded: true });
     }

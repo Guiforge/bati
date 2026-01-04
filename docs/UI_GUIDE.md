@@ -1,421 +1,110 @@
-# UI Design Guide
+# 🏰 BATI UI/UX Design Guide (v3)
 
-## Overview
-
-This document defines the visual design system for Bati, ensuring consistency across all screens and components.
-
----
-
-## � UX Principles
-
-> Sport-first, rewarding, guided, fun.
-
-### 1. Many Small Rewards 🎁
-
-Users need constant encouragement. Show progress everywhere:
-
-- ✅ XP pop-up after every exercise
-- ✅ Loot reveal on victory screen
-- ✅ Building upgrades after sessions
-- ✅ Streak flame grows daily
-- ✅ Progress bars fill visibly
-
-### 2. Image-First, Less Text 🖼️
-
-Show, don't tell:
-
-- Use exercise illustrations over descriptions
-- Quest cards: big image, short title
-- **Assets over Icons**: Use rich, custom assets (images) instead of generic icons whenever possible to match the comic book style.
-- Icons over labels when assets are not available.
-- Village is visual, not a list
-
-### 3. Minimal Animations 🎬
-
-Performance matters. Keep it subtle:
-
-- **DO:** Button feedback (100ms scale)
-- **DO:** Progress bar fill (smooth)
-- **DO:** Confetti on victory (once)
-- **DON'T:** Continuous loops
-- **DON'T:** Heavy particle effects
-- **DON'T:** Blocking animations
-
-### 4. Guided Flow, Not Choices ➡️
-
-This is a sport app, not a game:
-
-- **One primary action** per screen
-- Village builds **automatically** (no picking)
-- Quest carousel **pre-filtered** for user
-- Difficulty adjusts **based on history**
-
-### 5. Sport Focus 🏋️
-
-RPG enhances motivation, never distracts:
-
-- Timer/reps always **largest** on screen
-- Exercise name **front and center**
-- RPG elements in **secondary position**
-- No interrupting popups during workout
-
-### 6. Collecting & Building 🏰
-
-Village reflects the user's training:
-
-- Muscle → Resource → Building (automatic)
-- Visual progression without management
-- Loot screen shows what you earned
-- Flame/streak is a collectible too
+> **Visual Direction:** "Dark Fantasy Construction" meets "High-Tech RPG HUD".
+> **Core Philosophy:** *Fitness is your Fortress.* The UI is the cockpit of your character's evolution.
+> **Theme Policy:** **DARK MODE ONLY.** No light theme exists in this universe.
 
 ---
 
-## �🎨 Visual Identity
+## 🧭 1. UX Principles (The "Game Feel")
 
-### Style: Franco-Belgian Comic Book (BD)
+### 🌌 Immersion First (The Void)
 
-**Key Characteristics:**
+The app is a "portal" to the Bati universe.
 
-- Thick, bold black outlines
-- Saturated, vibrant colors
-- Expressive characters with big eyes
-- Dynamic poses and action lines
-- Whimsical fantasy atmosphere
+- **The Void:** Backgrounds are deep obsidian blue (`#0B0F19`), representing the night sky or dungeon depths.
+- **The Glow:** Interactive elements "emit light" (Glow effects). They are not just painted; they are powered.
+- **Glassmorphism:** UI panels are sheets of high-tech glass floating over the world.
 
-**Inspiration:**
+### 🎁 "Juicy" Feedback
 
-- Asterix & Obelix
-- Spirou & Fantasio
-- Wakfu (video game art)
-- Dragon Quest (character design)
+Every interaction must feel physical and rewarding.
 
----
+- **Press:** Buttons scale down (`0.95`) and dim slightly.
+- **Success:** Confetti, screen flashes, and haptic feedback.
+- **Progress:** Bars fill with a fluid animation; numbers "tick" up.
 
-## 🎨 Color Palette
+### ⚔️ Sport-First Ergonomics
 
-### Primary Colors
+Despite the RPG look, the workout experience is sacred.
 
-| Name | Hex | Usage |
-|------|-----|-------|
-| **Primary** | `#FF6B35` | CTAs, highlights, active states |
-| **Secondary** | `#4ECDC4` | Secondary actions, accents |
-| **Background** | `#1A1A2E` | Dark theme background |
-| **Surface** | `#16213E` | Cards, panels |
-| **Text** | `#FFFFFF` | Primary text |
-| **TextMuted** | `#A0A0A0` | Secondary text |
-
-### Pastel Colors (Exercise Categories)
-
-| Muscle | Color | Hex | Token |
-|--------|-------|-----|-------|
-| Arms | Pink | `#FFB3BA` | `$pastelPink` |
-| Back | Blue | `#BAE1FF` | `$pastelBlue` |
-| Chest | Yellow | `#FFFFBA` | `$pastelYellow` |
-| Abs | Green | `#BAFFC9` | `$pastelGreen` |
-| Shoulders | Purple | `#D4BAFF` | `$pastelPurple` |
-| Legs | Orange | `#FFD4BA` | `$pastelOrange` |
-
-### Semantic Colors
-
-| Name | Hex | Usage |
-|------|-----|-------|
-| **Success** | `#4CAF50` | Completed, positive |
-| **Warning** | `#FF9800` | Caution, attention |
-| **Error** | `#F44336` | Destructive, danger |
-| **Info** | `#2196F3` | Information |
+- **Green Zone:** Primary actions (Start, Pause, Next) are always at the bottom.
+- **Legibility:** Timer and Reps are the largest elements on screen.
+- **No Distractions:** During a workout, the "Game" fades back.
 
 ---
 
-## 📐 Typography
+## 🎨 2. Visual Identity & Tokens
 
-### Font Families
+### Color Palette (Dark Mode Only)
 
-| Usage | Font | Fallback |
-|-------|------|----------|
-| **Headlines** | Comic Font (TBD) | System Bold |
-| **Body** | System Sans | - |
-| **Numbers** | Tabular Figures | Monospace |
+| Token | Hex Value | Visual Meaning |
+| :--- | :--- | :--- |
+| **`$bgDark`** | `#0B0F19` | **The World.** Deepest background. Never pure black. |
+| **`$surface`** | `#101322` | **Solid Ground.** Standard cards/panels. |
+| **`$glassBg`** | `rgba(16, 19, 34, 0.65)` | **HUD Layers.** Floating panels with blur. |
+| **`$primary`** | `#0D33F2` | **Action/Mana.** Main buttons, active states (Electric Blue). |
+| **`$primaryGlow`** | `rgba(13, 51, 242, 0.5)` | **Energy.** Shadows behind primary actions. |
+| **`$secondary`** | `#DB2777` | **Magic.** Special accents (Magenta). |
+| **`$success`** | `#16A34A` | **Victory.** Completed sets/quests. |
+| **`$text`** | `#E8ECFF` | **Clarity.** Primary text (Off-white/Ice). |
+| **`$textSecondary`** | `#909ACB` | **Lore.** Subtitles, descriptions (Muted Blue-Grey). |
 
-### Type Scale
+### Typography
 
-| Token | Size | Weight | Usage |
-|-------|------|--------|-------|
-| `$heading1` | 32px | Bold | Page titles |
-| `$heading2` | 24px | Bold | Section titles |
-| `$heading3` | 20px | SemiBold | Card titles |
-| `$body` | 16px | Regular | Body text |
-| `$caption` | 14px | Regular | Helper text |
-| `$small` | 12px | Regular | Labels, timestamps |
-| `$giant` | 72px | Bold | Timer, rep counter |
-
----
-
-## 📏 Spacing
-
-### Base Unit: 4px
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `$space1` | 4px | Minimal spacing |
-| `$space2` | 8px | Tight spacing |
-| `$space3` | 12px | Component padding |
-| `$space4` | 16px | Standard spacing |
-| `$space5` | 20px | Section spacing |
-| `$space6` | 24px | Card padding |
-| `$space8` | 32px | Section gaps |
-| `$space10` | 40px | Large gaps |
+- **Headings:** `Space Grotesk` (Bold/700) - Used for Titles, Stats, Logos.
+- **Body:** `Noto Sans` (Regular/400) - Used for Instructions, buttons.
 
 ---
 
-## 🔲 Components
+## 🛡️ 3. Components (The Armory)
 
-### Buttons
+### Buttons (RPG Style)
 
-#### Primary Button
+**1. The "Embark" Button (Primary CTA)**
 
-```
-┌─────────────────────────────┐
-│     ⚔️ START QUEST          │  Height: 56px
-│                             │  Border-radius: 16px
-└─────────────────────────────┘  Shadow: Medium
-```
+- **Shape:** Pill shape (`radius: $full`).
+- **Height:** Large (`$14` / 56px).
+- **Style:** Solid `$primary` fill + `$primaryGlow` shadow (spread 20px).
+- **Interaction:** Scales to 0.95 on press.
 
-#### Secondary Button
+**2. The "Glass" Button (Secondary)**
 
-```
-┌─────────────────────────────┐
-│     View Details            │  Height: 44px
-│                             │  Border-radius: 12px
-└─────────────────────────────┘  Border: 2px
-```
+- **Shape:** Rounded Rectangle (`radius: $4`).
+- **Style:** `$glassBg` fill + `$borderStrong` stroke (1px).
+- **Text:** `$text` (White).
 
-#### Icon Button
+### Cards (The "Quest Plates")
 
-```
-    ┌───┐
-    │ ⏸️ │   Size: 44x44px
-    └───┘   Border-radius: 12px
-```
+**1. Glass Card (Standard Container)**
+Used for Quest Lists, Stat Blocks, and Inventory.
 
-### Cards
+- **Background:** `$glassBg` (Blur intensity: 10).
+- **Border:** `$glassBorder` (1px solid inset).
+- **Corner Radius:** `$4` (16px).
 
-#### Quest Card
+### Input Fields
 
-```
-┌─────────────────────────────────────────┐
-│  [🖼️ Image]                             │
-│                                         │
-│  ⚔️ Quest Title                         │
-│  Short description text...              │
-│                                         │
-│  ⏱️ 20 min   💪 Arms   ⚡ Medium        │
-└─────────────────────────────────────────┘
-```
+- **Background:** `$surface2` (Darker than card).
 
-- Border-radius: 16px
-- Shadow: Light
-- Padding: 16px
-
-#### Stats Card
-
-```
-┌─────────────────┐
-│       42        │
-│    Sessions     │
-│       📊        │
-└─────────────────┘
-```
-
-### Progress Bar
-
-```
-━━━━━━━━━━━━━━●━━━░░░░░░░░░░
-    Filled   Current  Empty
-```
-
-- Height: 8px
-- Border-radius: 4px
-- Filled: Primary color
-- Empty: Muted background
+- **Text:** `$text`.
+- **Focus:** Border glows `$primary`.
 
 ---
 
-## 📱 Screen Layouts
+## 🎭 4. Iconography
 
-### Safe Areas
+We use a custom hook for all RPG icons to ensure consistent styling and asset resolution.
 
-Always respect device safe areas:
+**Usage:**
 
-- **Top**: Status bar + notch
-- **Bottom**: Home indicator
-- **Sides**: Edge swipe zones (Android)
+```typescript
+import { useGameIcon } from "@/hooks/useGameIcon";
 
-### Thumb Zones
+function MyComponent() {
+  const { GameIcon } = useGameIcon();
 
-```
-┌─────────────────────────────┐
-│ ████ RED ZONE ████          │  Hard to reach
-├─────────────────────────────┤
-│                             │
-│      YELLOW ZONE            │  Requires stretch
-│                             │
-├─────────────────────────────┤
-│                             │
-│      GREEN ZONE             │  Easy reach
-│  [Primary Actions Here]     │
-└─────────────────────────────┘
-```
-
-**Rules:**
-
-- Primary CTAs → Bottom center (Green Zone)
-- Navigation → Bottom bar or gestures
-- Settings/Menu → Top (less frequent)
-
-### Standard Screen Structure
-
-```
-┌─────────────────────────────┐
-│ Header (optional)           │ 56px
-├─────────────────────────────┤
-│                             │
-│                             │
-│ Content Area                │ Flex
-│ (scrollable if needed)      │
-│                             │
-│                             │
-├─────────────────────────────┤
-│ Fixed Actions (optional)    │ 80px
-└─────────────────────────────┘
-│ Navigation Bar              │ 80px
-└─────────────────────────────┘
-```
-
----
-
-## ✨ Animations
-
-### Principles
-
-1. **Fast & Snappy**: 200-300ms for interactions
-2. **Natural Easing**: `ease-out` for entrances, `ease-in` for exits
-3. **Purposeful**: Every animation has meaning
-4. **Non-blocking**: Never delay user actions
-
-### Common Animations
-
-| Animation | Duration | Easing | Usage |
-|-----------|----------|--------|-------|
-| Button Press | 100ms | ease-out | Scale down 0.95 |
-| Card Appear | 300ms | ease-out | Fade + slide up |
-| Modal Open | 250ms | ease-out | Scale + fade |
-| Progress Fill | 500ms | ease-in-out | Width transition |
-| Counter Bump | 200ms | spring | Rep counter |
-
-### Celebration Animations
-
-- **Quest Complete**: Confetti burst (2s)
-- **Level Up**: XP bar fill + flash (1s)
-- **Achievement**: Banner slide + glow (1.5s)
-
----
-
-## 🎭 Iconography
-
-### Style
-
-- Line icons with 2px stroke
-- Rounded caps and joins
-- 24x24px base size
-
-### Custom Fantasy Icons
-
-- ⚔️ Quest/Battle
-- 🛡️ Defense/Protection
-- 🏰 Village/Home
-- 🔥 Flame/Streak
-- 🗡️ Attack/Strength
-- 🧙 Magic/Special
-- 👹 Boss/Enemy
-- 🏆 Achievement/Victory
-
----
-
-## 🌓 Dark Theme
-
-Bati uses a **dark theme by default** (better for workout focus).
-
-### Dark Mode Palette
-
-| Element | Color |
-|---------|-------|
-| Background | `#1A1A2E` |
-| Surface | `#16213E` |
-| Card | `#0F3460` |
-| Elevated | `#1F4287` |
-| Text Primary | `#FFFFFF` |
-| Text Secondary | `#A0A0A0` |
-
-### Light Mode (Optional Future)
-
-| Element | Color |
-|---------|-------|
-| Background | `#F5F5F5` |
-| Surface | `#FFFFFF` |
-| Card | `#FFFFFF` |
-| Text Primary | `#1A1A2E` |
-| Text Secondary | `#666666` |
-
----
-
-## 📱 Touch Targets
-
-**Minimum Sizes:**
-
-- Interactive elements: 44x44pt (iOS) / 48x48dp (Android)
-- Spacing between targets: 8px minimum
-- Text links: Full line height clickable
-
----
-
-## ♿ Accessibility
-
-### Color Contrast
-
-- Text on background: Minimum 4.5:1 (WCAG AA)
-- Large text: Minimum 3:1
-- Interactive elements: Minimum 3:1
-
-### Font Sizes
-
-- Support dynamic type
-- Minimum body text: 16px
-- Never disable zoom
-
-### Motion
-
-- Respect reduced motion preferences
-- Provide alternative for essential animations
-
----
-
-## 🖼️ Image Guidelines
-
-### Exercise Demonstrations
-
-- Format: WebP or GIF for animations
-- Aspect ratio: 1:1 (square)
-- Style: Illustrated (not photo)
-- Background: Transparent or solid color
-
-### Quest Art
-
-- Aspect ratio: 16:9 for headers
-- Style: Comic book illustration
-- Include action, energy, movement
-
-### Avatar/Characters
-
-- Aspect ratio: 1:1
-- Style: Expressive, friendly
-- Multiple poses for different contexts
+  return (
+    <GameIcon name="sword" size={24} color="$primary" />
+  );
+}

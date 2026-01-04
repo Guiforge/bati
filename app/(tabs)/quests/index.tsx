@@ -104,7 +104,9 @@ export default function QuestsGallery() {
   }, []);
 
   useEffect(() => {
-    void load();
+    load().catch(() => {
+      // Error already handled
+    });
   }, [load]);
 
   const quests = state.quests;
@@ -322,7 +324,15 @@ export default function QuestsGallery() {
               <Paragraph color="$color" opacity={0.6} size="$3">
                 {state.message}
               </Paragraph>
-              <AppButton fullWidth={false} variant="secondary" onPress={() => void load()}>
+              <AppButton
+                fullWidth={false}
+                variant="secondary"
+                onPress={() => {
+                  load().catch(() => {
+                    // Error already handled
+                  });
+                }}
+              >
                 {t("quests.retry", "Retry")} ↻
               </AppButton>
             </YStack>

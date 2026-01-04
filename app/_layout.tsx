@@ -20,16 +20,9 @@ import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);
 
-if (__DEV__) {
-  console.log("[RootLayout] Module loading...");
-}
-
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  if (__DEV__) {
-    console.log("[RootLayout] Rendering...");
-  }
   const {
     hasFinishedOnboarding,
     isLoaded: userLoaded,
@@ -49,17 +42,11 @@ export default function RootLayout() {
 
   // Called when database migrations are complete
   const handleDatabaseReady = useCallback(() => {
-    if (__DEV__) {
-      console.log("[RootLayout] handleDatabaseReady called");
-    }
     loadUserFromDatabase();
     loadSettingsFromDatabase();
   }, [loadUserFromDatabase, loadSettingsFromDatabase]);
 
   useEffect(() => {
-    if (__DEV__) {
-      console.log("[RootLayout] First useEffect - setting navigation ready");
-    }
     // Wait for first render to complete
     setIsNavigationReady(true);
   }, []);

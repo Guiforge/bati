@@ -12,7 +12,9 @@ export function useHaptics() {
   const impact = useCallback(
     (style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Medium) => {
       if (hapticsEnabled) {
-        void Haptics.impactAsync(style);
+        Haptics.impactAsync(style).catch(() => {
+          // Haptics errors are non-critical
+        });
       }
     },
     [hapticsEnabled],
@@ -21,7 +23,9 @@ export function useHaptics() {
   const notification = useCallback(
     (type: Haptics.NotificationFeedbackType) => {
       if (hapticsEnabled) {
-        void Haptics.notificationAsync(type);
+        Haptics.notificationAsync(type).catch(() => {
+          // Haptics errors are non-critical
+        });
       }
     },
     [hapticsEnabled],
@@ -29,7 +33,9 @@ export function useHaptics() {
 
   const selection = useCallback(() => {
     if (hapticsEnabled) {
-      void Haptics.selectionAsync();
+      Haptics.selectionAsync().catch(() => {
+        // Haptics errors are non-critical
+      });
     }
   }, [hapticsEnabled]);
 

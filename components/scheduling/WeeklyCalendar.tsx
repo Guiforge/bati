@@ -35,8 +35,7 @@ export function WeeklyCalendar() {
     try {
       const data = await getScheduledSessionsForWeek(weekStart);
       setSessions(data);
-    } catch (e) {
-      console.error(e);
+    } catch (_e) {
     } finally {
       setLoading(false);
     }
@@ -52,9 +51,7 @@ export function WeeklyCalendar() {
     try {
       await skipScheduledSession(sessionId);
       await loadSessions();
-    } catch (e) {
-      console.error("Failed to skip session:", e);
-    }
+    } catch (_e) {}
   };
 
   const handleReschedule = async (sessionId: number, currentDate: Date) => {
@@ -62,9 +59,7 @@ export function WeeklyCalendar() {
       const nextDay = addDays(new Date(currentDate), 1);
       await rescheduleSession(sessionId, nextDay);
       await loadSessions();
-    } catch (e) {
-      console.error("Failed to reschedule session:", e);
-    }
+    } catch (_e) {}
   };
 
   const sessionsForSelectedDate = sessions.filter((s) =>

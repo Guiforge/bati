@@ -132,9 +132,7 @@ export function VictoryView() {
       await Share.share({
         message,
       });
-    } catch (error) {
-      console.error(error);
-    }
+    } catch (_error) {}
   };
 
   const handleFinish = async () => {
@@ -218,8 +216,7 @@ export function VictoryView() {
       }
 
       router.replace("/");
-    } catch (e) {
-      console.error("Failed to save session", e);
+    } catch (_e) {
       showError(t("errors.save_session_failed"));
       setIsSaving(false);
     }

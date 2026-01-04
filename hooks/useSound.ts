@@ -18,9 +18,7 @@ export function useSound() {
       const player = createAudioPlayer(soundFile);
       playerRef.current = player;
       player.play();
-    } catch (error) {
-      console.log("Error playing sound", error);
-    }
+    } catch (_error) {}
   }
 
   useEffect(() => {

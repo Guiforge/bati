@@ -33,15 +33,16 @@ function TrendsCardComponent() {
       setMonthlyTrends(summary.monthlyTrends);
       setSessionsAnalysis(summary.sessionsAnalysis);
       setMinutesAnalysis(summary.minutesAnalysis);
-    } catch (e) {
-      console.error("Failed to load trends:", e);
+    } catch (_e) {
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void loadData();
+    loadData().catch(() => {
+      // Error already handled
+    });
   }, [loadData]);
 
   const currentData = viewMode === "weekly" ? weeklyTrends : monthlyTrends;

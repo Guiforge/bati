@@ -28,7 +28,9 @@ export function GoalCard({ onPress }: { onPress?: () => void }) {
   }, []);
 
   useEffect(() => {
-    void loadData();
+    loadData().catch(() => {
+      // Error already handled
+    });
   }, [loadData]);
 
   // No goal set - show prompt to set one

@@ -79,8 +79,7 @@ export function useSessionRecovery() {
         savedAt: new Date(saved.savedAt),
         elapsedTime: Math.floor((saved.savedAt - saved.startTime - saved.totalPausedTime) / 1000),
       });
-    } catch (error) {
-      console.error("Failed to check for recoverable session:", error);
+    } catch (_error) {
       setRecoverableSession(null);
     } finally {
       setIsChecking(false);
@@ -130,8 +129,7 @@ export function useSessionRecovery() {
       setRecoverableSession(null);
 
       return true;
-    } catch (error) {
-      console.error("Failed to recover session:", error);
+    } catch (_error) {
       return false;
     }
   }, []);
@@ -180,9 +178,7 @@ export async function saveSessionState(): Promise<void> {
 
   try {
     await preferences.setSavedSession(JSON.stringify(savedState));
-  } catch (error) {
-    console.error("Failed to save session state:", error);
-  }
+  } catch (_error) {}
 }
 
 /**
@@ -191,7 +187,5 @@ export async function saveSessionState(): Promise<void> {
 export async function clearSavedSession(): Promise<void> {
   try {
     await preferences.clearSavedSession();
-  } catch (error) {
-    console.error("Failed to clear saved session:", error);
-  }
+  } catch (_error) {}
 }

@@ -10,13 +10,18 @@ const resources = {
   fr: { translation: fr },
 };
 
-void i18n.use(initReactI18next).init({
-  resources,
-  lng: getDevicePreferredAppLanguage(),
-  fallbackLng: "en",
-  interpolation: {
-    escapeValue: false, // react already safes from xss
-  },
-});
+i18n
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: getDevicePreferredAppLanguage(),
+    fallbackLng: "en",
+    interpolation: {
+      escapeValue: false, // react already safes from xss
+    },
+  })
+  .catch(() => {
+    // Initialization errors are handled by i18next internally
+  });
 
 export default i18n;

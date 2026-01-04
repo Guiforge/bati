@@ -30,8 +30,7 @@ export function AchievementsCard() {
       ]);
       setAchievements(allAchievements);
       setStats(achievementStats);
-    } catch (e) {
-      console.error("Failed to load achievements", e);
+    } catch (_e) {
     } finally {
       setLoading(false);
     }

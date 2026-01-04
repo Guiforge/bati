@@ -134,7 +134,7 @@ export default function SettingsScreen() {
                 />
                 <YStack>
                   <Text fontSize="$4" fontWeight="bold" color="$color">
-                    {currentAvatar.label}
+                    {t(currentAvatar.labelKey)}
                   </Text>
                   <Text fontSize="$2" color="$color" opacity={0.6}>
                     {t("settings.tap_change", "Tap to change")}

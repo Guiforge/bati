@@ -31,15 +31,17 @@ export function CoachSuggestionCard() {
       ]);
       setBalance(balanceData);
       setSuggestedQuests(quests);
-    } catch (e) {
-      console.error("Failed to load coach suggestions:", e);
+    } catch {
+      // Error handled silently
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void loadData();
+    loadData().catch(() => {
+      // Error already handled
+    });
   }, [loadData]);
 
   // Don't show if loading, no data, or already balanced

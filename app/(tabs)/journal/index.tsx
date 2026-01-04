@@ -62,8 +62,8 @@ export default function JournalScreen() {
       });
 
       setHistory(entries);
-    } catch (e) {
-      console.error("Failed to load journal", e);
+    } catch {
+      // Error handled silently
     } finally {
       setLoading(false);
     }

@@ -2,8 +2,6 @@ import { drizzle } from "drizzle-orm/expo-sqlite";
 import { deleteDatabaseSync, openDatabaseSync } from "expo-sqlite";
 import * as schema from "./schema";
 
-console.log("[DB] client.ts module loading...");
-
 // Increment this when doing breaking schema changes that require a fresh start
 export const SCHEMA_VERSION = 2;
 const FORCE_DB_RESET = __DEV__ && process.env.EXPO_PUBLIC_FORCE_DB_RESET === "1";
@@ -19,7 +17,6 @@ const GLOBAL_KEY = "__batiDbSingleton" as const;
 function checkSchemaVersion() {
   try {
     if (FORCE_DB_RESET) {
-      console.log("Force resetting database for testing...");
       deleteDatabaseSync("bati.db");
     }
 
@@ -33,9 +30,6 @@ function checkSchemaVersion() {
       const currentVersion = result ? parseInt(result.value, 10) : 0;
 
       if (currentVersion < SCHEMA_VERSION) {
-        console.log(
-          `Schema version mismatch: ${currentVersion} < ${SCHEMA_VERSION}, resetting database`,
-        );
         tempDb.closeSync();
         deleteDatabaseSync("bati.db");
       } else {
@@ -48,8 +42,6 @@ function checkSchemaVersion() {
           "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '__drizzle_migrations'",
         );
         if (tables.length > 0) {
-          // Has tables but no schema_version - old database, reset it
-          console.log("Old database without schema_version detected, resetting...");
           tempDb.closeSync();
           deleteDatabaseSync("bati.db");
         } else {
@@ -67,12 +59,9 @@ function checkSchemaVersion() {
 function createSingleton(): DbSingleton {
   // Only do destructive operations during cold start (not on Fast Refresh).
   checkSchemaVersion();
-
-  console.log("[DB] Opening database...");
   const expoDb = openDatabaseSync("bati.db", {
     enableChangeListener: true,
   });
-  console.log("[DB] Database opened successfully");
 
   // Create drizzle instance with schema
   const db = drizzle(expoDb, { schema });
@@ -88,10 +77,6 @@ if (!globalAny[GLOBAL_KEY]) {
   // Recreating native handles while components still reference the previous instance
   // is a common cause of NativeDatabase null-pointer crashes.
   if (FORCE_DB_RESET) {
-    console.warn(
-      "[DB] EXPO_PUBLIC_FORCE_DB_RESET is set, but the DB singleton already exists (Fast Refresh). " +
-        "Restart the dev client for a clean reset.",
-    );
   }
 }
 
@@ -116,15 +101,11 @@ export async function resetDatabase() {
     } else if (typeof maybeDb.closeAsync === "function") {
       await maybeDb.closeAsync();
     }
-  } catch (e) {
-    console.warn("Error closing database before reset:", e);
-  }
+  } catch (_e) {}
 
   try {
     deleteDatabaseSync("bati.db");
-  } catch (e) {
-    console.error("Error resetting database:", e);
-  }
+  } catch (_e) {}
 }
 
 // Create drizzle instance with schema

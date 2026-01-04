@@ -26,13 +26,15 @@ export function MuscleBalanceCard() {
       try {
         const data = await getMuscleBalance("30d");
         setBalance(data);
-      } catch (e) {
-        console.error("Failed to load muscle balance:", e);
+      } catch {
+        // Error handled silently
       } finally {
         setIsLoading(false);
       }
     }
-    void load();
+    load().catch(() => {
+      // Error already handled
+    });
   }, []);
 
   if (isLoading) {

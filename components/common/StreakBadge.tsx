@@ -129,7 +129,9 @@ export function StreakBadge() {
   }, []);
 
   useEffect(() => {
-    void loadStreak();
+    loadStreak().catch(() => {
+      // Error already handled
+    });
   }, [loadStreak]);
 
   if (!streak || streak.current === 0) {

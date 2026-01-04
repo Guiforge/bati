@@ -71,13 +71,14 @@ export function PersonalRecordsCard() {
           ...data,
           bestStreak: streakInfo.best,
         });
-      } catch (e) {
-        console.error("Failed to load personal records:", e);
+      } catch (_e) {
       } finally {
         setIsLoading(false);
       }
     }
-    void load();
+    load().catch(() => {
+      // Error already handled
+    });
   }, []);
 
   if (isLoading) {

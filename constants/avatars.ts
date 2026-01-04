@@ -1,32 +1,82 @@
 import type { ImageSourcePropType } from "react-native";
 
-export const avatarIds = ["elf", "forgeron", "gamin", "mage", "rogue"] as const;
+export const avatarIds = [
+  "elf",
+  "kid",
+  "mage",
+  "rogue",
+  "gravity-mage",
+  "shadow",
+  "scout",
+  "guardian",
+  "archmage",
+  "elder",
+  "archer",
+] as const;
 
 export type AvatarId = (typeof avatarIds)[number];
 
 export type Avatar = {
   id: AvatarId;
-  label: string;
+  labelKey: string;
   source: ImageSourcePropType;
 };
 
 export const AVATARS: Avatar[] = [
-  { id: "elf", label: "Elf", source: require("../assets/avatar/elf.jpg") },
   {
-    id: "forgeron",
-    label: "Forgeron",
-    source: require("../assets/avatar/forgeron.jpg"),
+    id: "elf",
+    labelKey: "avatars.elf",
+    source: require("../assets/avatar/elf.jpg"),
   },
   {
-    id: "gamin",
-    label: "Gamin",
-    source: require("../assets/avatar/gamin.jpg"),
+    id: "kid",
+    labelKey: "avatars.kid",
+    source: require("../assets/avatar/kid.jpg"),
   },
-  { id: "mage", label: "Mage", source: require("../assets/avatar/mage.jpg") },
+  {
+    id: "mage",
+    labelKey: "avatars.mage",
+    source: require("../assets/avatar/mage.jpg"),
+  },
   {
     id: "rogue",
-    label: "Rogue",
+    labelKey: "avatars.rogue",
     source: require("../assets/avatar/rogue.jpg"),
+  },
+  {
+    id: "gravity-mage",
+    labelKey: "avatars.gravity_mage",
+    source: require("../assets/avatar/gravity-mage.jpg"),
+  },
+  {
+    id: "shadow",
+    labelKey: "avatars.shadow",
+    source: require("../assets/avatar/shadow.jpg"),
+  },
+  {
+    id: "scout",
+    labelKey: "avatars.scout",
+    source: require("../assets/avatar/scout.jpg"),
+  },
+  {
+    id: "guardian",
+    labelKey: "avatars.guardian",
+    source: require("../assets/avatar/guardian.jpg"),
+  },
+  {
+    id: "archmage",
+    labelKey: "avatars.archmage",
+    source: require("../assets/avatar/archmage.jpg"),
+  },
+  {
+    id: "elder",
+    labelKey: "avatars.elder",
+    source: require("../assets/avatar/elder.jpg"),
+  },
+  {
+    id: "archer",
+    labelKey: "avatars.archer",
+    source: require("../assets/avatar/archer.jpg"),
   },
 ];
 

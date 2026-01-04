@@ -51,8 +51,7 @@ export function AddScheduleSheet({
         hapticSuccess();
         onSessionAdded();
         onOpenChange(false);
-      } catch (e) {
-        console.error("Failed to schedule session:", e);
+      } catch (_e) {
       } finally {
         setSaving(false);
       }

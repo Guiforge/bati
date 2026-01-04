@@ -76,7 +76,9 @@ export default function AdventuresGallery() {
   }, []);
 
   useEffect(() => {
-    void load();
+    load().catch(() => {
+      // Error already handled
+    });
   }, [load]);
 
   const adventures = state.adventures;
@@ -85,6 +87,7 @@ export default function AdventuresGallery() {
   const title = t("adventures.gallery_title", "Adventures");
 
   const renderItem = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex rendering logic, refactor planned
     ({ item }: { item: Adventure }) => {
       const q = item.coverQuest;
       const qTitle = language === "fr" ? item.frTitle || q.frTitle : item.enTitle || q.enTitle;
@@ -229,7 +232,15 @@ export default function AdventuresGallery() {
               <Paragraph color="$color" opacity={0.6} size="$3">
                 {state.message}
               </Paragraph>
-              <AppButton fullWidth={false} variant="secondary" onPress={() => void load()}>
+              <AppButton
+                fullWidth={false}
+                variant="secondary"
+                onPress={() => {
+                  load().catch(() => {
+                    // Error already handled
+                  });
+                }}
+              >
                 {t("quests.retry", "Retry")} ↻
               </AppButton>
             </YStack>

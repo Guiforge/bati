@@ -200,15 +200,16 @@ export function VillageScreen() {
       const [buildingsData, statsData] = await Promise.all([getAllBuildings(), getVillageStats()]);
       setBuildings(buildingsData);
       setStats(statsData);
-    } catch (e) {
-      console.error("Failed to load village data:", e);
+    } catch (_e) {
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void loadData();
+    loadData().catch(() => {
+      // Error already handled
+    });
   }, [loadData]);
 
   const handleCloseModal = () => {

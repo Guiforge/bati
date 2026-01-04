@@ -43,7 +43,9 @@ export function ResourceHeader({ compact = false }: Props) {
       }
     }
 
-    void load();
+    load().catch(() => {
+      // Error already handled
+    });
     return () => {
       cancelled = true;
     };

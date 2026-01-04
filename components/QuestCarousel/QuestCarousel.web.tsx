@@ -54,6 +54,7 @@ export function QuestCarousel() {
 
   useEffect(() => {
     let mounted = true;
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex loading logic, refactor planned
     (async () => {
       try {
         const [quests, exercises] = await Promise.all([listQuestTemplates(), listExercises()]);

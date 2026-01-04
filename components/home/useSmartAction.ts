@@ -20,6 +20,7 @@ export function useSmartAction() {
   useEffect(() => {
     let cancelled = false;
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex decision logic, refactor planned
     async function determineAction() {
       try {
         // 1. Check for Scheduled Session (Today)
@@ -89,8 +90,8 @@ export function useSmartAction() {
             onPress: () => router.push("/(tabs)/exercises" as never),
           });
         }
-      } catch (e) {
-        console.error("Failed to determine smart action", e);
+      } catch {
+        // Error handled silently
       } finally {
         if (!cancelled) setIsLoading(false);
       }

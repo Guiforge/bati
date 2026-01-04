@@ -1,15 +1,15 @@
-import { ActionCard } from "@/components/common/ActionCard";
-import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
-import { HomeHeader } from "@/components/home/HomeHeader";
-import { ResourcesOverview } from "@/components/home/ResourcesOverview";
-import { StatsOverview } from "@/components/home/StatsOverview";
-import { useGameIcons } from "@/hooks/useGameIcon";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
+import { ActionCard } from "@/components/common/ActionCard";
+import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
+import { HomeHeader } from "@/components/home/HomeHeader";
+import { ResourcesOverview } from "@/components/home/ResourcesOverview";
+import { StatsOverview } from "@/components/home/StatsOverview";
+import { useGameIcons } from "@/hooks/useGameIcon";
 
 export default function HomeScreen() {
   const { t } = useTranslation();

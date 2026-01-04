@@ -1,9 +1,9 @@
-import { useGameIcons } from "@/hooks/useGameIcon";
 import { ChevronRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
+import { useGameIcons } from "@/hooks/useGameIcon";
 import { useSmartAction } from "./useSmartAction";
 
 export function CurrentAdventureWidget() {

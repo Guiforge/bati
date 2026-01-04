@@ -1,6 +1,3 @@
-import { Card } from "@/components/common/Card";
-import { AVATARS } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
 import {
   ChevronLeft,
   Languages,
@@ -17,6 +14,9 @@ import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import { AVATARS } from "@/constants/avatars";
+import { useSettingsStore } from "@/stores/settings";
 
 type SettingRowProps = {
   icon: React.ReactNode;

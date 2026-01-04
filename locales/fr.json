@@ -1,9 +1,16 @@
 {
   "dark": "Sombre",
   "explore": "Explorer",
-  "home": "Accueil",
   "home_continue_adventure_title": "Continuer ton aventure",
-  "home_continue_adventure_subtitle": "Reprends là où tu t’es arrêté.",
+  "home_continue_adventure_subtitle": "Reprends là où tu t'es arrêté.",
+  "home": {
+    "title": "Accueil",
+    "your_kingdom": "TON ROYAUME",
+    "quick_play": "JEU RAPIDE",
+    "stats": "STATISTIQUES",
+    "streak": "SÉRIE",
+    "quests_done": "QUÊTES"
+  },
   "language": "Langue",
   "light": "Clair",
   "onboarding": {
@@ -204,6 +211,21 @@
     "wind": "Essence de vent",
     "grain": "Grain",
     "boss_token": "Jeton de Boss"
+  },
+  "treasury": {
+    "title": "Salle des Coffres",
+    "subtitle": "Tes ressources collectées lors des batailles et quêtes",
+    "earned_from": "Gagné avec",
+    "tip_title": "Comment gagner des ressources",
+    "tip_body": "Accomplis des quêtes ciblant des groupes musculaires spécifiques pour gagner leurs ressources correspondantes. Utilise les ressources pour améliorer les bâtiments de ton village !"
+  },
+  "muscles": {
+    "arms": "Bras",
+    "back": "Dos",
+    "chest": "Pectoraux",
+    "abs": "Abdos",
+    "shoulders": "Épaules",
+    "legs": "Jambes"
   },
   "dev": {
     "title": "Outils dev",

@@ -1,9 +1,16 @@
 {
   "dark": "Dark",
   "explore": "Explore",
-  "home": "Home",
   "home_continue_adventure_title": "Continue your adventure",
   "home_continue_adventure_subtitle": "Pick up where you left off.",
+  "home": {
+    "title": "Home",
+    "your_kingdom": "YOUR KINGDOM",
+    "quick_play": "QUICK PLAY",
+    "stats": "STATISTICS",
+    "streak": "STREAK",
+    "quests_done": "QUESTS"
+  },
   "language": "Language",
   "light": "Light",
   "onboarding": {
@@ -204,6 +211,21 @@
     "wind": "Wind Essence",
     "grain": "Grain",
     "boss_token": "Boss Token"
+  },
+  "treasury": {
+    "title": "Treasury",
+    "subtitle": "Your collected resources from battles and quests",
+    "earned_from": "Earned from",
+    "tip_title": "How to earn resources",
+    "tip_body": "Complete quests targeting specific muscle groups to earn their corresponding resources. Use resources to upgrade buildings in your village!"
+  },
+  "muscles": {
+    "arms": "Arms",
+    "back": "Back",
+    "chest": "Chest",
+    "abs": "Abs",
+    "shoulders": "Shoulders",
+    "legs": "Legs"
   },
   "dev": {
     "title": "Dev Tools",

@@ -1,4 +1,4 @@
-import { Coins, Star } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +11,7 @@ import { estimateQuestSeconds, formatDuration } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
 import type { QuestTemplate } from "@/db/quests";
 import { computeSessionXp } from "@/db/xp";
+import { useGameIcons } from "@/hooks/useGameIcon";
 import { useSettingsStore } from "@/stores/settings";
 
 interface DailyQuestCardProps {
@@ -28,6 +29,7 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useSettingsStore();
+  const icons = useGameIcons(["star", "gold"]);
 
   const title = language === "fr" ? quest.frTitle : quest.enTitle;
   const desc = language === "fr" ? quest.frDescription : quest.enDescription;
@@ -111,7 +113,11 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
                 py="$1"
                 rounded="$4"
               >
-                <Star size={12} color="#FFD700" fill="#FFD700" />
+                <Image
+                  source={icons.star}
+                  style={{ width: 12, height: 12, tintColor: "#FFD700" }}
+                  contentFit="contain"
+                />
                 <Text fontSize={11} fontWeight="bold" color="$color">
                   +{estimatedXp} XP
                 </Text>
@@ -124,7 +130,11 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
                 py="$1"
                 rounded="$4"
               >
-                <Coins size={12} color="#FFD700" />
+                <Image
+                  source={icons.gold}
+                  style={{ width: 12, height: 12, tintColor: "#FFD700" }}
+                  contentFit="contain"
+                />
                 <Text fontSize={11} fontWeight="bold" color="$color">
                   +{estimatedGold}
                 </Text>

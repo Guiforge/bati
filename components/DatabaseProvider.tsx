@@ -1,11 +1,104 @@
-import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import * as SplashScreen from "expo-splash-screen";
 import { openDatabaseSync } from "expo-sqlite";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { db, SCHEMA_VERSION } from "@/db/client";
 import migrations from "../drizzle/migrations";
+
+function getMigrationKeyFromIdx(idx: number) {
+  return `m${String(idx).padStart(4, "0")}`;
+}
+
+type MigrationState = { success: false; error?: Error } | { success: true; error?: undefined };
+
+type SqliteMigrationClient = {
+  execAsync: (source: string) => Promise<void>;
+  getFirstAsync?: <T = unknown>(source: string, params?: readonly unknown[]) => Promise<T | null>;
+};
+
+async function runMigrationsAsync(
+  client: SqliteMigrationClient,
+  config: {
+    journal: { entries: { idx: number; when: number; tag: string; breakpoints: boolean }[] };
+    migrations: Record<string, string>;
+  },
+  opts: { debug: boolean },
+) {
+  // Create migrations table (same default name Drizzle uses).
+  await client.execAsync(`
+    CREATE TABLE IF NOT EXISTS __drizzle_migrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hash TEXT NOT NULL,
+      created_at NUMERIC
+    )
+  `);
+
+  let lastCreatedAt = -Infinity;
+  try {
+    if (client.getFirstAsync) {
+      const row = await client.getFirstAsync<{ created_at: number | string }>(
+        "SELECT created_at FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1",
+      );
+      if (row?.created_at !== undefined && row?.created_at !== null) {
+        lastCreatedAt = Number(row.created_at);
+      }
+    }
+  } catch {
+    // Ignore if querying fails; we'll just apply all migrations.
+  }
+
+  const entries = config.journal.entries;
+  const runEntry = async (txn: { execAsync: (source: string) => Promise<void> }) => {
+    for (const entry of entries) {
+      if (Number.isFinite(lastCreatedAt) && lastCreatedAt >= entry.when) continue;
+
+      const key = getMigrationKeyFromIdx(entry.idx);
+      const raw = config.migrations[key];
+      if (!raw) throw new Error(`Missing migration: ${entry.tag}`);
+
+      const statements = raw
+        .split("--> statement-breakpoint")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      if (opts.debug) {
+        console.log(
+          "[DatabaseProvider] Applying migration",
+          entry.tag,
+          `(idx=${entry.idx}, stmts=${statements.length})`,
+        );
+      }
+
+      for (let i = 0; i < statements.length; i++) {
+        const stmt = statements[i];
+        if (opts.debug) {
+          console.log(
+            `[DatabaseProvider]  stmt ${i + 1}/${statements.length}:`,
+            stmt.slice(0, 120).replace(/\s+/g, " "),
+          );
+        }
+        await txn.execAsync(stmt);
+      }
+
+      // Record applied migration.
+      await txn.execAsync(
+        `INSERT INTO __drizzle_migrations (hash, created_at) VALUES (${JSON.stringify(entry.tag)}, ${entry.when})`,
+      );
+    }
+  };
+
+  // Use a single connection transaction to avoid issues with `useNewConnection` transactions
+  // interacting poorly with Drizzle's sync `prepareSync` on Android.
+  await client.execAsync("BEGIN IMMEDIATE");
+  try {
+    await runEntry(client);
+    await client.execAsync("COMMIT");
+  } catch (e) {
+    await client.execAsync("ROLLBACK");
+    throw e;
+  }
+}
 
 interface DatabaseProviderProps {
   children: ReactNode;
@@ -13,13 +106,114 @@ interface DatabaseProviderProps {
 }
 
 export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
+  console.log("[DatabaseProvider] Rendering...");
   const { t } = useTranslation();
-  const { success, error } = useMigrations(db, migrations);
+
+  const migrationMaxIdx = useMemo(() => {
+    // Allows quickly isolating a hanging migration on-device.
+    // Examples:
+    // - EXPO_PUBLIC_MIGRATION_MAX_IDX=0  -> only schema
+    // - EXPO_PUBLIC_MIGRATION_MAX_IDX=1  -> schema + seed_exercises
+    // Default: run all migrations.
+    const raw = process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
+    const parsed = raw === undefined ? Number.POSITIVE_INFINITY : Number(raw);
+    return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
+  }, []);
+
+  const migrationConfig = useMemo(() => {
+    const entries = migrations.journal?.entries ?? [];
+    const filteredEntries = entries.filter((e) => e.idx <= migrationMaxIdx);
+
+    const filteredMigrations: Record<string, string> = {};
+    for (const entry of filteredEntries) {
+      const key = getMigrationKeyFromIdx(entry.idx);
+      const sql = (migrations.migrations as Record<string, unknown> | undefined)?.[key];
+      if (typeof sql === "string") filteredMigrations[key] = sql;
+    }
+
+    if (__DEV__ && process.env.EXPO_PUBLIC_MIGRATIONS_DEBUG === "1") {
+      console.log("[DatabaseProvider] migrationMaxIdx:", migrationMaxIdx);
+      console.log(
+        "[DatabaseProvider] journalEntries:",
+        filteredEntries.length,
+        "/",
+        entries.length,
+      );
+      console.log("[DatabaseProvider] migrationKeys:", Object.keys(filteredMigrations));
+      const m0000 = filteredMigrations.m0000;
+      console.log("[DatabaseProvider] m0000Type:", typeof m0000, "len:", m0000?.length);
+      console.log("[DatabaseProvider] m0000Sample:", m0000?.slice?.(0, 120));
+    }
+
+    return {
+      journal: {
+        ...migrations.journal,
+        entries: filteredEntries,
+      },
+      migrations: filteredMigrations,
+    };
+  }, [migrationMaxIdx]);
+
+  const [migrationState, setMigrationState] = useState<MigrationState>({
+    success: false,
+  });
+  const success = migrationState.success;
+  const error = migrationState.error;
   const hasInitialized = useRef(false);
+  const hasStartedMigrations = useRef(false);
+
+  console.log("[DatabaseProvider] Migration status:", { success, error: error?.message });
 
   useEffect(() => {
+    // Show our in-app loading/error state instead of sitting on the native splash.
+    SplashScreen.hideAsync().catch(() => {
+      // ignore
+    });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (hasStartedMigrations.current) return;
+    hasStartedMigrations.current = true;
+
+    const debug = __DEV__ && process.env.EXPO_PUBLIC_MIGRATIONS_DEBUG === "1";
+    const client = (db as unknown as { $client?: SqliteMigrationClient }).$client;
+    if (!client) {
+      setMigrationState({
+        success: false,
+        error: new Error("Database client not available for migrations"),
+      });
+      return;
+    }
+
+    (async () => {
+      try {
+        setMigrationState({ success: false });
+        await runMigrationsAsync(client, migrationConfig, { debug });
+        if (!cancelled) setMigrationState({ success: true });
+      } catch (e) {
+        if (cancelled) return;
+        const err = e instanceof Error ? e : new Error(String(e));
+        setMigrationState({ success: false, error: err });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [migrationConfig]);
+
+  useEffect(() => {
+    console.log(
+      "[DatabaseProvider] useEffect - success:",
+      success,
+      "hasInitialized:",
+      hasInitialized.current,
+    );
     if (!success || hasInitialized.current) return;
     hasInitialized.current = true;
+    console.log("[DatabaseProvider] Migrations completed, saving schema version...");
 
     // Save schema version after successful migration
     try {
@@ -37,6 +231,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
 
   useEffect(() => {
     if (error) {
+      console.error("Database migration error:", error);
       SplashScreen.hideAsync();
     }
   }, [error]);
@@ -49,10 +244,18 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
           justifyContent: "center",
           alignItems: "center",
           backgroundColor: "#FFF5E6",
+          padding: 20,
         }}
       >
-        <Text style={{ color: "#1A1A2E", fontSize: 16 }}>
-          {t("common.error")}: {error.message}
+        <Text style={{ color: "#1A1A2E", fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
+          {t("common.error")}:
+        </Text>
+        <Text style={{ color: "#FF6B35", fontSize: 14, marginBottom: 20 }}>
+          {error.message.substring(0, 200)}
+          {error.message.length > 200 ? "..." : ""}
+        </Text>
+        <Text style={{ color: "#1A1A2E", fontSize: 12, opacity: 0.7 }}>
+          Check console for full details.
         </Text>
       </View>
     );

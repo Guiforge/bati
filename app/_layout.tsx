@@ -16,9 +16,12 @@ import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);
 
+console.log("[RootLayout] Module loading...");
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  console.log("[RootLayout] Rendering...");
   const {
     hasFinishedOnboarding,
     isLoaded: userLoaded,
@@ -31,24 +34,35 @@ export default function RootLayout() {
   } = useSettingsStore();
 
   // Resolve theme: use user preference or system default
-  const systemScheme = useColorScheme() ?? "light";
-  const colorScheme = theme === "system" ? systemScheme : theme;
+  const systemScheme = useColorScheme();
+  const effectiveSystemScheme = systemScheme === "dark" ? "dark" : "light";
+  const colorScheme = theme === "system" ? effectiveSystemScheme : theme;
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
 
   // Called when database migrations are complete
   const handleDatabaseReady = useCallback(() => {
+    console.log("[RootLayout] handleDatabaseReady called");
     loadUserFromDatabase();
     loadSettingsFromDatabase();
   }, [loadUserFromDatabase, loadSettingsFromDatabase]);
 
   useEffect(() => {
+    console.log("[RootLayout] First useEffect - setting navigation ready");
     // Wait for first render to complete
     setIsNavigationReady(true);
   }, []);
 
   useEffect(() => {
+    console.log(
+      "[RootLayout] Navigation useEffect - isNavigationReady:",
+      isNavigationReady,
+      "userLoaded:",
+      userLoaded,
+      "settingsLoaded:",
+      settingsLoaded,
+    );
     if (!isNavigationReady || !userLoaded || !settingsLoaded) return;
 
     const inOnboardingGroup = segments[0] === "onboarding";

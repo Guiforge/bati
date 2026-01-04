@@ -9,7 +9,9 @@ CREATE TABLE `user_preferences` (
     `value` text NOT NULL,
     `updatedAt` integer
 );
+--> statement-breakpoint
 CREATE UNIQUE INDEX `user_preferences_key_unique` ON `user_preferences` (`key`);
+--> statement-breakpoint
 -- ============================================================
 -- Exercises Catalogue
 -- ============================================================
@@ -27,7 +29,9 @@ CREATE TABLE `exercises` (
     `createdAt` integer,
     `updatedAt` integer
 );
+--> statement-breakpoint
 CREATE UNIQUE INDEX `exercises_en_name_unique` ON `exercises` (`enName`);
+--> statement-breakpoint
 CREATE INDEX `exercises_creator_idx` ON `exercises` (`creator`);
 --> statement-breakpoint
 CREATE TABLE `exercise_muscles` (
@@ -45,7 +49,9 @@ CREATE TABLE `exercise_muscles` (
     PRIMARY KEY(`exerciseId`, `muscle`),
     FOREIGN KEY (`exerciseId`) REFERENCES `exercises`(`id`) ON DELETE CASCADE
 );
+--> statement-breakpoint
 CREATE INDEX `exercise_muscles_muscle_idx` ON `exercise_muscles` (`muscle`);
+--> statement-breakpoint
 -- ============================================================
 -- Quests (Workout Templates)
 -- ============================================================
@@ -79,8 +85,11 @@ CREATE TABLE `quest_exercises` (
         AND `targetMax` >= `targetMin`
     )
 );
+--> statement-breakpoint
 CREATE INDEX `quest_exercises_quest_idx` ON `quest_exercises` (`questId`);
+--> statement-breakpoint
 CREATE UNIQUE INDEX `quest_exercises_quest_sort_unique` ON `quest_exercises` (`questId`, `sortOrder`);
+--> statement-breakpoint
 -- ============================================================
 -- Adventures (Quest Wrappers / Campaigns / Bosses)
 -- ============================================================
@@ -102,7 +111,9 @@ CREATE TABLE `adventures` (
     `updatedAt` integer,
     FOREIGN KEY (`questId`) REFERENCES `quests`(`id`) ON DELETE CASCADE
 );
+--> statement-breakpoint
 CREATE UNIQUE INDEX `adventures_quest_unique` ON `adventures` (`questId`);
+--> statement-breakpoint
 CREATE INDEX `adventures_active_sort_idx` ON `adventures` (`isActive`, `sortOrder`);
 --> statement-breakpoint
 CREATE TABLE `adventure_steps` (
@@ -119,8 +130,11 @@ CREATE TABLE `adventure_steps` (
     FOREIGN KEY (`adventureId`) REFERENCES `adventures`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`questId`) REFERENCES `quests`(`id`) ON DELETE CASCADE
 );
+--> statement-breakpoint
 CREATE INDEX `adventure_steps_adventure_idx` ON `adventure_steps` (`adventureId`);
+--> statement-breakpoint
 CREATE INDEX `adventure_steps_quest_idx` ON `adventure_steps` (`questId`);
+--> statement-breakpoint
 CREATE UNIQUE INDEX `adventure_steps_adventure_step_unique` ON `adventure_steps` (`adventureId`, `stepIndex`);
 --> statement-breakpoint
 CREATE TABLE `adventure_runs` (
@@ -132,6 +146,7 @@ CREATE TABLE `adventure_runs` (
     `finishedAt` integer,
     FOREIGN KEY (`adventureId`) REFERENCES `adventures`(`id`) ON DELETE CASCADE
 );
+--> statement-breakpoint
 CREATE INDEX `adventure_runs_adventure_idx` ON `adventure_runs` (`adventureId`);
 --> statement-breakpoint
 CREATE TABLE `adventure_run_steps` (
@@ -148,10 +163,15 @@ CREATE TABLE `adventure_run_steps` (
     FOREIGN KEY (`completedSessionId`) REFERENCES `completed_sessions`(`id`) ON DELETE
     SET NULL
 );
+--> statement-breakpoint
 CREATE INDEX `adventure_run_steps_run_idx` ON `adventure_run_steps` (`runId`);
+--> statement-breakpoint
 CREATE INDEX `adventure_run_steps_quest_idx` ON `adventure_run_steps` (`questId`);
+--> statement-breakpoint
 CREATE UNIQUE INDEX `adventure_run_steps_run_step_unique` ON `adventure_run_steps` (`runId`, `stepIndex`);
+--> statement-breakpoint
 CREATE INDEX `adventure_run_steps_run_status_idx` ON `adventure_run_steps` (`runId`, `status`);
+--> statement-breakpoint
 -- ============================================================
 -- Completed Workouts (History)
 -- ============================================================
@@ -171,7 +191,9 @@ CREATE TABLE `completed_sessions` (
     FOREIGN KEY (`questId`) REFERENCES `quests`(`id`) ON DELETE
     SET NULL
 );
+--> statement-breakpoint
 CREATE INDEX `completed_sessions_performed_at_idx` ON `completed_sessions` (`performedAt`);
+--> statement-breakpoint
 CREATE INDEX `completed_sessions_quest_idx` ON `completed_sessions` (`questId`);
 --> statement-breakpoint
 CREATE TABLE `completed_exercises` (
@@ -205,9 +227,13 @@ CREATE TABLE `completed_exercises` (
         OR `targetValue` IS NOT NULL
     )
 );
+--> statement-breakpoint
 CREATE INDEX `completed_exercises_session_idx` ON `completed_exercises` (`sessionId`);
+--> statement-breakpoint
 CREATE INDEX `completed_exercises_exercise_idx` ON `completed_exercises` (`exerciseId`);
+--> statement-breakpoint
 CREATE UNIQUE INDEX `completed_exercises_session_round_sort_unique` ON `completed_exercises` (`sessionId`, `roundIndex`, `sortOrder`);
+--> statement-breakpoint
 -- ============================================================
 -- Boss Fights
 -- ============================================================
@@ -223,6 +249,7 @@ CREATE TABLE `boss_fights` (
     `updatedAt` integer DEFAULT (strftime('%s', 'now') * 1000),
     FOREIGN KEY (`adventureId`) REFERENCES `adventures`(`id`) ON DELETE CASCADE
 );
+--> statement-breakpoint
 CREATE UNIQUE INDEX `boss_fights_adventure_unique` ON `boss_fights` (`adventureId`);
 --> statement-breakpoint
 CREATE TABLE `boss_damage_log` (
@@ -240,8 +267,11 @@ CREATE TABLE `boss_damage_log` (
         FOREIGN KEY (`exerciseId`) REFERENCES `exercises`(`id`) ON DELETE
     SET NULL
 );
+--> statement-breakpoint
 CREATE INDEX `boss_damage_log_fight_idx` ON `boss_damage_log` (`bossFightId`);
+--> statement-breakpoint
 CREATE INDEX `boss_damage_log_session_idx` ON `boss_damage_log` (`completedSessionId`);
+--> statement-breakpoint
 -- ============================================================
 -- Resources (Simplified: gold, essence, boss_token)
 -- ============================================================
@@ -251,6 +281,7 @@ CREATE TABLE `resource_inventory` (
     `amount` integer DEFAULT 0 NOT NULL,
     `updatedAt` integer
 );
+--> statement-breakpoint
 CREATE UNIQUE INDEX `resource_inventory_resource_unique` ON `resource_inventory` (`resource`);
 --> statement-breakpoint
 CREATE TABLE `resource_transactions` (
@@ -264,9 +295,13 @@ CREATE TABLE `resource_transactions` (
     FOREIGN KEY (`completedSessionId`) REFERENCES `completed_sessions`(`id`) ON DELETE
     SET NULL
 );
+--> statement-breakpoint
 CREATE INDEX `resource_transactions_resource_idx` ON `resource_transactions` (`resource`);
+--> statement-breakpoint
 CREATE INDEX `resource_transactions_session_idx` ON `resource_transactions` (`completedSessionId`);
+--> statement-breakpoint
 CREATE INDEX `resource_transactions_created_at_idx` ON `resource_transactions` (`createdAt`);
+--> statement-breakpoint
 -- ============================================================
 -- Village Buildings
 -- ============================================================
@@ -279,6 +314,7 @@ CREATE TABLE `village_buildings` (
     `unlockedAt` integer,
     `updatedAt` integer
 );
+--> statement-breakpoint
 CREATE UNIQUE INDEX `village_buildings_type_unique` ON `village_buildings` (`buildingType`);
 --> statement-breakpoint
 CREATE TABLE `village_stats` (
@@ -288,6 +324,7 @@ CREATE TABLE `village_stats` (
     `highestBuildingLevel` integer DEFAULT 1 NOT NULL,
     `updatedAt` integer
 );
+--> statement-breakpoint
 -- ============================================================
 -- Goals & Progress
 -- ============================================================
@@ -314,8 +351,11 @@ CREATE TABLE `goal_progress` (
     `updatedAt` integer,
     FOREIGN KEY (`goalId`) REFERENCES `goals`(`id`) ON DELETE CASCADE
 );
+--> statement-breakpoint
 CREATE UNIQUE INDEX `goal_progress_goal_week_unique` ON `goal_progress` (`goalId`, `weekKey`);
+--> statement-breakpoint
 CREATE INDEX `goal_progress_goal_idx` ON `goal_progress` (`goalId`);
+--> statement-breakpoint
 -- ============================================================
 -- Scheduled Sessions
 -- ============================================================
@@ -336,6 +376,10 @@ CREATE TABLE `scheduled_sessions` (
         FOREIGN KEY (`completedSessionId`) REFERENCES `completed_sessions`(`id`) ON DELETE
     SET NULL
 );
+--> statement-breakpoint
 CREATE INDEX `scheduled_sessions_date_idx` ON `scheduled_sessions` (`scheduledDate`);
+--> statement-breakpoint
 CREATE INDEX `scheduled_sessions_status_idx` ON `scheduled_sessions` (`status`);
+--> statement-breakpoint
 CREATE INDEX `scheduled_sessions_goal_idx` ON `scheduled_sessions` (`goalId`);
+--> statement-breakpoint

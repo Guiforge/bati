@@ -13,7 +13,28 @@
       "idx": 1,
       "version": "6",
       "when": 1735689600001,
-      "tag": "0001_seed",
+      "tag": "0001_seed_exercises",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1735689600002,
+      "tag": "0002_seed_quests",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1735689600003,
+      "tag": "0003_seed_adventures",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1735689600004,
+      "tag": "0004_seed_village",
       "breakpoints": true
     }
   ]

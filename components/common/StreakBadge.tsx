@@ -10,6 +10,7 @@ type StreakInfo = {
   isActive: boolean;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Streak calculation requires multiple date comparisons
 function calculateStreak(sessions: { performedAt: Date }[]): StreakInfo {
   if (sessions.length === 0) {
     return { current: 0, best: 0, isActive: false };

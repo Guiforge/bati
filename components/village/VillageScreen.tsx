@@ -184,6 +184,7 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Village management screen with multiple building states
 export function VillageScreen() {
   const { t } = useTranslation();
   const router = useRouter();

@@ -35,6 +35,7 @@ export type Exercise = {
 
 export { EQUIPMENT_LABELS, isEquipmentCode, isMuscleCode, MUSCLE_LABELS };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Exercise list includes muscle groups and equipment filtering
 export async function listExercises(): Promise<Exercise[]> {
   const rows = await db
     .select({

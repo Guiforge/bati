@@ -11,6 +11,7 @@ import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossHpBar } from "./BossHpBar";
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
 export function ActiveExerciseView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();

@@ -249,6 +249,7 @@ export function MonthlyCalendarCard() {
         <YStack gap="$1">
           {[0, 1, 2, 3, 4, 5].map((week) => (
             <XStack key={`week-${week}`} justify="space-around">
+              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Calendar rendering requires conditional styling per day */}
               {monthData.days.slice(week * 7, week * 7 + 7).map((day) => (
                 <YStack
                   key={`day-${week}-${day.date ?? "empty"}`}

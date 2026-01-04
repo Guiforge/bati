@@ -29,6 +29,7 @@ import { ProgressionChart } from "./ProgressionChart";
 
 type Feedback = "easy" | "good" | "hard" | null;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Post-workout screen with achievements, records, and feedback
 export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -135,6 +136,7 @@ export function VictoryView() {
     } catch (_error) {}
   };
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Session completion with multiple validations and database operations
   const handleFinish = async () => {
     // If we've already saved and shown records, now navigate
     if (hasSaved) {

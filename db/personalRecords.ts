@@ -140,6 +140,7 @@ export async function getPersonalRecordsSummary(): Promise<{
  * Check if a completed session set any new records.
  * Call this after saving a session to detect PRs.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PR detection requires comparing current performance against historical bests
 export async function checkForNewRecords(sessionId: number): Promise<NewRecordResult[]> {
   const newRecords: NewRecordResult[] = [];
 

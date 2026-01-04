@@ -483,6 +483,7 @@ export interface NewAchievementResult {
  * Check for new achievements after completing a session.
  * Returns list of newly unlocked achievements.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Achievement checking requires evaluating multiple conditions per achievement type
 export async function checkForNewAchievements(sessionInfo: {
   durationSeconds: number;
   xpEarned: number;

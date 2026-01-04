@@ -29,6 +29,7 @@ export type MuscleBalance = {
  * Calculate muscle balance based on workout history.
  * Returns volume per muscle group and identifies weak/strong areas.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Muscle balance analysis requires aggregating and comparing multiple muscle groups
 export async function getMuscleBalance(
   period: "7d" | "30d" | "90d" | "all" = "30d",
 ): Promise<MuscleBalance> {

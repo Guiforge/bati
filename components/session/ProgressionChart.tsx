@@ -41,6 +41,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   useEffect(() => {
     let mounted = true;
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Data loading with error handling and transformations
     const loadData = async () => {
       setLoading(true);
       setError(null);

@@ -19,6 +19,7 @@ export type RestSuggestion = {
  * - More than 10 sessions in the last 7 days (very high volume)
  * - More than 6 sessions in the last 7 days (high volume warning)
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Rest suggestion requires analyzing multiple time-based metrics
 export async function getRestSuggestion(): Promise<RestSuggestion> {
   const now = new Date();
   const sevenDaysAgo = new Date(now);

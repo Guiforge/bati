@@ -324,6 +324,7 @@ export type SessionBuildingResult = {
 /**
  * Process building updates after a session completes
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Building updates require muscle-specific resource calculations
 export async function processSessionBuildings(params: {
   exercisesByMuscle: Map<MuscleCode, number>;
 }): Promise<SessionBuildingResult> {

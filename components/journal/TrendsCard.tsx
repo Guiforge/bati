@@ -61,6 +61,7 @@ function TrendsCardComponent() {
     return format(item.monthStart, "MMM", { locale: language === "fr" ? fr : undefined });
   };
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Trend badge requires multiple conditional renderings
   const renderTrendBadge = (analysis: TrendAnalysis | null) => {
     if (!analysis) return null;
 

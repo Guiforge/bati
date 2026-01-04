@@ -41,7 +41,7 @@ export function StatsOverview() {
             style={{ width: 24, height: 24, tintColor: "#FF6B35" }}
             contentFit="contain"
           />
-          <Text fontSize="$6" fontWeight="900" color="$primary">
+          <Text fontSize={20} fontWeight="900" color="$primary">
             {streak?.current ?? 0}
           </Text>
           <Text fontSize={10} fontWeight="bold" color="$color" opacity={0.7}>
@@ -63,7 +63,7 @@ export function StatsOverview() {
       >
         <YStack items="center" gap="$1">
           <Image source={icons.sword} style={{ width: 24, height: 24 }} contentFit="contain" />
-          <Text fontSize="$6" fontWeight="900" color="$color">
+          <Text fontSize={20} fontWeight="900" color="$color">
             {totalStats?.totalSessions ?? 0}
           </Text>
           <Text fontSize={10} fontWeight="bold" color="$color" opacity={0.7}>
@@ -89,7 +89,7 @@ export function StatsOverview() {
             style={{ width: 24, height: 24, tintColor: "#FFD700" }}
             contentFit="contain"
           />
-          <Text fontSize="$6" fontWeight="900" color="$color">
+          <Text fontSize={20} fontWeight="900" color="$color">
             {totalStats?.totalXp
               ? totalStats.totalXp >= 1000
                 ? `${(totalStats.totalXp / 1000).toFixed(1)}k`

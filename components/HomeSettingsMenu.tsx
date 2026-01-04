@@ -80,16 +80,16 @@ export function HomeSettingsMenu() {
     >
       <XStack items="center" gap="$3">
         {icon}
-        <Text fontWeight="900" fontSize={18} color={tamaguiTheme.color.get() as any}>
+        <Text fontWeight="900" fontSize={18} color={tamaguiTheme.color?.get() as any}>
           {label}
         </Text>
       </XStack>
       {value ? (
-        <Text fontWeight="700" opacity={0.6} color={tamaguiTheme.color.get() as any}>
+        <Text fontWeight="700" opacity={0.6} color={tamaguiTheme.color?.get() as any}>
           {value}
         </Text>
       ) : (
-        <ChevronRight size={20} color={tamaguiTheme.color.get() as any} opacity={0.5} />
+        <ChevronRight size={20} color={tamaguiTheme.color?.get() as any} opacity={0.5} />
       )}
     </Button>
   );
@@ -129,7 +129,7 @@ export function HomeSettingsMenu() {
   const renderMain = () => (
     <YStack animation="quick" enterStyle={{ opacity: 0, x: -20 }} opacity={1} x={0}>
       <MenuItem
-        icon={<Scroll size={24} color={tamaguiTheme.color.get() as any} />}
+        icon={<Scroll size={24} color={tamaguiTheme.color?.get() as any} />}
         label={t("journal.title", "Quest Journal")}
         color="$pastelYellow"
         onPress={() => {
@@ -139,36 +139,36 @@ export function HomeSettingsMenu() {
         value=" " // Hide chevron
       />
       <MenuItem
-        icon={<Languages size={24} color={tamaguiTheme.color.get() as any} />}
+        icon={<Languages size={24} color={tamaguiTheme.color?.get() as any} />}
         label={t("language")}
         onPress={() => setStep("language")}
         value={language.toUpperCase()}
       />
       <MenuItem
-        icon={<User size={24} color={tamaguiTheme.color.get() as any} />}
+        icon={<User size={24} color={tamaguiTheme.color?.get() as any} />}
         label={t("onboarding.avatar_title")}
         onPress={() => setStep("avatar")}
       />
       <MenuItem
-        icon={<Moon size={24} color={tamaguiTheme.color.get() as any} />}
+        icon={<Moon size={24} color={tamaguiTheme.color?.get() as any} />}
         label={t("theme")}
         onPress={() => setStep("theme")}
         value={t(theme)}
       />
       <MenuItem
-        icon={<Vibrate size={24} color={tamaguiTheme.color.get() as any} />}
+        icon={<Vibrate size={24} color={tamaguiTheme.color?.get() as any} />}
         label={t("settings.haptics_title")}
         onPress={() => setStep("haptics")}
         value={hapticsEnabled ? t("settings.haptics_on_short") : t("settings.haptics_off_short")}
       />
       <MenuItem
-        icon={<Volume2 size={24} color={tamaguiTheme.color.get() as any} />}
+        icon={<Volume2 size={24} color={tamaguiTheme.color?.get() as any} />}
         label={t("settings.sound_title")}
         onPress={() => setStep("sound")}
         value={soundEnabled ? t("settings.sound_on") : t("settings.sound_off")}
       />
       <MenuItem
-        icon={<Sparkles size={24} color={tamaguiTheme.color.get() as any} />}
+        icon={<Sparkles size={24} color={tamaguiTheme.color?.get() as any} />}
         label={t("settings.motion_title")}
         onPress={() => setStep("motion")}
         value={reducedMotion ? t("settings.motion_reduced") : t("settings.motion_full")}
@@ -176,7 +176,7 @@ export function HomeSettingsMenu() {
 
       {__DEV__ ? (
         <MenuItem
-          icon={<Menu size={24} color={tamaguiTheme.color.get() as any} />}
+          icon={<Menu size={24} color={tamaguiTheme.color?.get() as any} />}
           label={t("dev.title", "Dev Tools")}
           color="$pastelPurple"
           onPress={() => {
@@ -338,7 +338,7 @@ export function HomeSettingsMenu() {
     <>
       <XStack position="absolute" t={insets.top + 12} r={insets.right + 16} z={50}>
         <AppIconButton onPress={() => setOpen(true)}>
-          <Menu size={24} color={tamaguiTheme.color.get() as any} strokeWidth={3} />
+          <Menu size={24} color={tamaguiTheme.color?.get() as any} strokeWidth={3} />
         </AppIconButton>
       </XStack>
 
@@ -391,13 +391,13 @@ export function HomeSettingsMenu() {
                       rounded={18}
                       borderWidth={2}
                     >
-                      <ChevronLeft size={20} color={tamaguiTheme.color.get() as any} />
+                      <ChevronLeft size={20} color={tamaguiTheme.color?.get() as any} />
                     </AppIconButton>
                   )}
                   <Text
                     fontWeight="900"
                     fontSize={20}
-                    color={tamaguiTheme.color.get() as any}
+                    color={tamaguiTheme.color?.get() as any}
                     textTransform="uppercase"
                   >
                     {getTitle()}

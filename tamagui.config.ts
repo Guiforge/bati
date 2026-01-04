@@ -1,36 +1,69 @@
 import { createAnimations } from "@tamagui/animations-react-native";
 import { defaultConfig } from "@tamagui/config/v4";
-import { createTamagui, createTokens } from "tamagui";
+import { createFont, createTamagui, createTokens } from "tamagui";
 
-// RPG-fun palette (light-first): keep punchy accents but avoid neon overload.
-const tokens = createTokens({
-  ...defaultConfig.tokens,
-  color: {
-    // Core palette
-    primary: "#2563EB", // royal blue
-    secondary: "#DB2777", // magenta
-    success: "#16A34A", // green
-
-    // Keep for error states
-    error: "#FF1744",
-
-    // Backgrounds (slightly warm to feel more "fantasy parchment" than "app gray")
-    bgLight: "#F5F1E6", // Vieux Parchemin
-    bgDark: "#141416",
-
-    // Pastels (muted surfaces, not accents)
-    pastelBlue: "#EAF2FF",
-    pastelPink: "#FCEAF1",
-    pastelGreen: "#EAF7EF",
-    pastelYellow: "#FFF6D8",
-    pastelPurple: "#F1E9FF",
-    pastelOrange: "#FFF0E5",
-
-    white: "#FFFFFF",
-    black: "#000000",
+// -------------------------------------------------------------------------
+// 1. TYPOGRAPHY (The Voice of the RPG)
+// -------------------------------------------------------------------------
+// Note: You must load these fonts in your root _layout.tsx using expo-font
+const headingFont = createFont({
+  family: "SpaceGrotesk",
+  size: {
+    1: 14,
+    2: 18,
+    3: 24,
+    4: 32,
+    5: 40, // Hero/Logo size
+    6: 48,
+    true: 18,
+  },
+  lineHeight: {
+    1: 20,
+    2: 26,
+    3: 32,
+    4: 40,
+    5: 50,
+  },
+  weight: {
+    4: "300",
+    7: "700",
+  },
+  letterSpacing: {
+    4: 0,
+    5: 4, // "tracking-widest" style
+  },
+  face: {
+    300: { normal: "SpaceGrotesk_300Light" },
+    700: { normal: "SpaceGrotesk_700Bold" },
   },
 });
 
+const bodyFont = createFont({
+  family: "NotoSans",
+  size: {
+    1: 12,
+    2: 14,
+    3: 16,
+    4: 18,
+    true: 16,
+  },
+  lineHeight: {
+    3: 24,
+  },
+  weight: {
+    4: "400",
+    5: "500",
+    7: "700",
+  },
+  face: {
+    400: { normal: "NotoSans_400Regular" },
+    700: { normal: "NotoSans_700Bold" },
+  },
+});
+
+// -------------------------------------------------------------------------
+// 2. ANIMATIONS (Game Feel)
+// -------------------------------------------------------------------------
 const animations = createAnimations({
   bouncy: {
     type: "spring",
@@ -43,71 +76,137 @@ const animations = createAnimations({
     damping: 20,
     stiffness: 60,
   },
+  // The standard interaction animation (Buttons, Cards)
   quick: {
     type: "spring",
     damping: 20,
     mass: 1.2,
     stiffness: 250,
   },
+  // New: For subtle idle states
+  pulse: {
+    type: "spring",
+    damping: 10,
+    mass: 0.9,
+    stiffness: 100,
+  },
 });
 
+// -------------------------------------------------------------------------
+// 3. TOKENS (Palette)
+// -------------------------------------------------------------------------
+const tokens = createTokens({
+  ...defaultConfig.tokens,
+  color: {
+    // --- NEW_STYLE CORE ---
+    primary: "#0D33F2", // Electric Blue
+    primaryHover: "#2E5CFF",
+    primaryPress: "#0A25B0",
+
+    secondary: "#DB2777", // Magenta
+    success: "#16A34A",
+    error: "#FF1744",
+
+    // --- IMMERSIVE BACKGROUNDS ---
+    bgDark: "#0B0F19", // The Void
+    bgOverlay: "rgba(11, 15, 25, 0.92)",
+
+    // --- SURFACES (Glass & Tech) ---
+    surface: "#101322",
+    surface2: "#151A2E",
+
+    // --- GLASSMORPHISM SYSTEM ---
+    glassBg: "rgba(16, 19, 34, 0.65)",
+    glassBorder: "rgba(232, 236, 255, 0.14)",
+
+    // --- TEXT ---
+    text: "#E8ECFF", // Almost white
+    textSecondary: "#909ACB", // Muted Blue-Grey
+    muted: "#64748B",
+
+    // --- EFFECTS ---
+    borderStrong: "#2A3360",
+    shadowColor: "#060812",
+    primaryGlow: "rgba(13, 51, 242, 0.45)",
+
+    // --- LEGACY MAPPING (Safety Net) ---
+    bgLight: "#101322",
+    pastelBlue: "#1A2633", // Mapped to dark
+    pastelPink: "#331A22",
+    pastelGreen: "#1A3320",
+    pastelYellow: "#33301A",
+    pastelPurple: "#261A33",
+    pastelOrange: "#332618",
+
+    // --- RESOURCES ---
+    resourceGold: "#FFD700",
+    resourceWood: "#8B4513",
+    resourceStone: "#808080",
+    resourceFire: "#FF6B35",
+    resourceWater: "#4ECDC4",
+    resourceWind: "#C9B1FF",
+    resourceGrain: "#DAA520",
+
+    white: "#FFFFFF",
+    black: "#000000",
+  },
+});
+
+// -------------------------------------------------------------------------
+// 4. CONFIG EXPORT
+// -------------------------------------------------------------------------
 export const config = createTamagui({
   ...defaultConfig,
-  tokens,
   animations,
+  tokens,
+  fonts: {
+    heading: headingFont,
+    body: bodyFont,
+  },
   themes: {
+    // We force a unified DARK theme structure even for 'light' key
+    // to prevent white flash if system theme is light.
     light: {
-      background: tokens.color.bgLight,
-      backgroundHover: tokens.color.bgLight,
-      backgroundPress: tokens.color.bgLight,
-      backgroundFocus: tokens.color.bgLight,
-      cardBackground: tokens.color.white,
-      bgLight: tokens.color.bgLight,
-      color: tokens.color.bgDark,
-      colorHover: tokens.color.bgDark,
-      colorPress: tokens.color.bgDark,
-      colorFocus: tokens.color.bgDark,
-      borderColor: tokens.color.bgDark,
-      borderColorHover: tokens.color.bgDark,
-      borderColorPress: tokens.color.bgDark,
-      borderColorFocus: tokens.color.bgDark,
+      background: tokens.color.bgOverlay,
+      color: tokens.color.text,
+
+      // Semantic mappings
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
-      success: tokens.color.success,
-      error: tokens.color.error,
-      pastelBlue: tokens.color.pastelBlue,
-      pastelPink: tokens.color.pastelPink,
-      pastelGreen: tokens.color.pastelGreen,
-      pastelYellow: tokens.color.pastelYellow,
-      pastelPurple: tokens.color.pastelPurple,
-      pastelOrange: tokens.color.pastelOrange,
+
+      // Surface mappings
+      surface: tokens.color.surface,
+      surface2: tokens.color.surface2,
+      borderStrong: tokens.color.borderStrong,
+
+      // Glass
+      glassBg: tokens.color.glassBg,
+      glassBorder: tokens.color.glassBorder,
+      primaryGlow: tokens.color.primaryGlow,
+      shadowColor: tokens.color.shadowColor,
+
+      // Text
+      muted: tokens.color.textSecondary,
     },
     dark: {
-      background: "#121212",
-      backgroundHover: "#121212",
-      backgroundPress: "#121212",
-      backgroundFocus: "#121212",
-      cardBackground: "#1E1E1E",
-      bgLight: "#252525",
-      color: "#E0E0E0",
-      colorHover: "#E0E0E0",
-      colorPress: "#E0E0E0",
-      colorFocus: "#E0E0E0",
-      borderColor: "#E0E0E0",
-      borderColorHover: "#E0E0E0",
-      borderColorPress: "#E0E0E0",
-      borderColorFocus: "#E0E0E0",
+      background: tokens.color.bgOverlay,
+      color: tokens.color.text,
+
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
-      success: tokens.color.success,
-      error: tokens.color.error,
-      pastelBlue: "#1A2633",
-      pastelPink: "#331A22",
-      pastelGreen: "#1A3320",
-      pastelYellow: "#33301A",
-      pastelPurple: "#261A33",
-      pastelOrange: "#332618",
+
+      surface: tokens.color.surface,
+      surface2: tokens.color.surface2,
+      borderStrong: tokens.color.borderStrong,
+
+      glassBg: tokens.color.glassBg,
+      glassBorder: tokens.color.glassBorder,
+      primaryGlow: tokens.color.primaryGlow,
+      shadowColor: tokens.color.shadowColor,
+
+      muted: tokens.color.textSecondary,
     },
   },
 });
+
 export default config;

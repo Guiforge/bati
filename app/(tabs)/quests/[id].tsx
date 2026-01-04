@@ -190,7 +190,7 @@ export default function QuestDetails() {
         fontSize={14}
         pressStyle={{ opacity: 0.9 }}
       >
-        <Text color={active ? "white" : "$color"} fontWeight="900">
+        <Text color="$color" fontWeight="900">
           {levelLabel(value, t)}
         </Text>
       </AppButton>
@@ -469,7 +469,7 @@ export default function QuestDetails() {
             onPress={handleStart}
             rounded="$6"
           >
-            <Text color="white" fontSize={22} fontWeight="900" textTransform="uppercase">
+            <Text color="$color" fontSize={22} fontWeight="900" textTransform="uppercase">
               {t("quests.start_button", "Start Quest")}
             </Text>
           </AppButton>

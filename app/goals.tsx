@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H4, Progress, Text, XStack, YStack } from "tamagui";
+
 import { Card } from "@/components/common/Card";
 import { PlanPreviewSheet } from "@/components/goals/PlanPreviewSheet";
 import {
@@ -165,21 +166,18 @@ export default function GoalsScreen() {
         borderBottomWidth={2}
         borderBottomColor="$color"
       >
-        <Pressable
+        <Button
+          width={44}
+          height={44}
+          circular
+          bg="$surface2"
+          borderWidth={2}
+          borderColor="$borderStrong"
+          pressStyle={{ opacity: 0.9, scale: 0.98 }}
           onPress={() => router.back()}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 22,
-            backgroundColor: "white",
-            borderWidth: 2,
-            borderColor: "black",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
         >
-          <ChevronLeft size={24} color="black" />
-        </Pressable>
+          <ChevronLeft size={24} color="$color" />
+        </Button>
         <YStack flex={1}>
           <H1 fontSize={24} fontWeight="900" color="$color">
             {t("goals.title")}

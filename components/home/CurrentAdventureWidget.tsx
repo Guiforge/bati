@@ -95,7 +95,7 @@ export function CurrentAdventureWidget() {
           bg="$primary"
           color="white"
           fontWeight="900"
-          fontSize="$5"
+          fontSize={18}
           onPress={handlePress}
           pressStyle={{ opacity: 0.8, scale: 0.98 }}
           mt="$2"

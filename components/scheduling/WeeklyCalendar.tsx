@@ -112,7 +112,7 @@ export function WeeklyCalendar() {
 
       {/* Selected Day Content */}
       <YStack gap="$3">
-        <Text fontSize="$5" fontWeight="bold">
+        <Text fontSize={18} fontWeight="bold">
           {format(selectedDate, "EEEE, MMMM d")}
         </Text>
 

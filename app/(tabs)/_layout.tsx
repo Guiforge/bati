@@ -13,16 +13,16 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.primary.val,
-        tabBarInactiveTintColor: theme.color.val,
+        tabBarActiveTintColor: theme.primary?.val,
+        tabBarInactiveTintColor: theme.color?.val,
         tabBarLabelStyle: {
           fontWeight: "800",
           fontSize: 12,
         },
         tabBarStyle: {
-          backgroundColor: theme.bgLight.val,
+          backgroundColor: theme.bgLight?.val,
           borderTopWidth: 2,
-          borderTopColor: theme.color.val,
+          borderTopColor: theme.color?.val,
           height: 56 + insets.bottom,
           paddingBottom: insets.bottom + 4,
           paddingTop: 6,
@@ -36,7 +36,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <Home
               color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary.val : "none"}
+              fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -51,7 +51,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
               color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary.val : "none"}
+              fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -67,7 +67,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
               color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary.val : "none"}
+              fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -83,7 +83,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <Castle
               color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary.val : "none"}
+              fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -99,7 +99,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <Scroll
               color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary.val : "none"}
+              fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}

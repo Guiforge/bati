@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { type AvatarId, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
 import i18n from "@/i18n";
+import { getDevicePreferredAppLanguage } from "@/src/i18n/deviceLanguage";
 
 export type AppLanguage = "en" | "fr";
 export type ThemePreference = "light" | "dark" | "system";
@@ -42,7 +43,7 @@ interface SettingsState {
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
-  language: "en",
+  language: getDevicePreferredAppLanguage(),
   theme: "system",
   avatarId: "gamin",
   hapticsEnabled: true,
@@ -115,7 +116,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getNotificationTime(),
       ]);
 
-      const normalizedLanguage = normalizeLanguage(language);
+      const normalizedLanguage =
+        language === null ? getDevicePreferredAppLanguage() : normalizeLanguage(language);
 
       set({
         language: normalizedLanguage,

@@ -35,6 +35,15 @@
           "resizeMode": "contain"
         }
       ],
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": ["en", "fr"],
+            "android": ["en", "fr"]
+          }
+        }
+      ],
       "expo-router",
       "expo-audio"
     ],

@@ -35,7 +35,7 @@ export function RestSuggestionCard() {
       <YStack gap="$2">
         <XStack items="center" gap="$2">
           <Moon size={24} color="$color" />
-          <Text fontWeight="bold" fontSize="$5" color="$color">
+          <Text fontWeight="bold" fontSize={18} color="$color">
             {t("journal.rest_suggestion_title")}
           </Text>
         </XStack>

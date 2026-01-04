@@ -5,14 +5,15 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, XStack, YStack } from "tamagui";
+
 import { AppButton } from "@/components/common/AppButton";
 import { ProgressDots } from "@/components/ProgressDots";
 import { AVATARS, getAvatarById } from "@/constants/avatars";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSettingsStore } from "@/stores/settings";
 
-const TOTAL_STEPS = 4;
-const CURRENT_STEP = 3;
+const TOTAL_STEPS = 3;
+const CURRENT_STEP = 2;
 
 export default function ChooseAvatar() {
   const router = useRouter();
@@ -102,7 +103,7 @@ export default function ChooseAvatar() {
                             justify="center"
                             items="center"
                           >
-                            <Check size={16} color="white" strokeWidth={3} />
+                            <Check size={16} color="$color" strokeWidth={3} />
                           </YStack>
                         ) : null}
                       </YStack>

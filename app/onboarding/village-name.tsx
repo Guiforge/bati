@@ -11,8 +11,8 @@ import { ProgressDots } from "@/components/ProgressDots";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useUserStore } from "@/stores/user";
 
-const TOTAL_STEPS = 4;
-const CURRENT_STEP = 4;
+const TOTAL_STEPS = 3;
+const CURRENT_STEP = 3;
 const MIN_NAME_LENGTH = 3;
 const MAX_NAME_LENGTH = 20;
 

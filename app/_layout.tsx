@@ -3,14 +3,16 @@ import { Slot, useRouter, useSegments } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useState } from "react";
-import { LogBox, useColorScheme } from "react-native";
+import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
+
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { SplashScreen as CustomSplashScreen } from "@/components/SplashScreen";
+import { AppBackground } from "@/src/ui";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
@@ -18,34 +20,27 @@ import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);
 
-console.log("[RootLayout] Module loading...");
+if (__DEV__) {
+  console.log("[RootLayout] Module loading...");
+}
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  console.log("[RootLayout] Rendering...");
+  if (__DEV__) {
+    console.log("[RootLayout] Rendering...");
+  }
   const {
     hasFinishedOnboarding,
     isLoaded: userLoaded,
     loadFromDatabase: loadUserFromDatabase,
   } = useUserStore();
-  const {
-    theme,
-    isLoaded: settingsLoaded,
-    loadFromDatabase: loadSettingsFromDatabase,
-  } = useSettingsStore();
+  const { isLoaded: settingsLoaded, loadFromDatabase: loadSettingsFromDatabase } =
+    useSettingsStore();
 
-  // Resolve theme: use user preference or system default
-  const systemScheme = useColorScheme();
-  const effectiveSystemScheme = systemScheme === "dark" ? "dark" : "light";
-  // If settings are not loaded yet, we don't know the user preference.
-  // To avoid flash, we can default to light (since the app is "Light RPG") or wait.
-  // Given the requirement "Backgrounds are Off-White/Parchment", let's default to light if not loaded.
-  const colorScheme = !settingsLoaded
-    ? "light"
-    : theme === "system"
-      ? effectiveSystemScheme
-      : theme;
+  // NEW_STYLE: force dark-only theme across the whole app.
+  // We keep loading settings for other preferences, but the UI theme is always dark.
+  const colorScheme = "dark";
 
   const segments = useSegments();
   const router = useRouter();
@@ -54,13 +49,17 @@ export default function RootLayout() {
 
   // Called when database migrations are complete
   const handleDatabaseReady = useCallback(() => {
-    console.log("[RootLayout] handleDatabaseReady called");
+    if (__DEV__) {
+      console.log("[RootLayout] handleDatabaseReady called");
+    }
     loadUserFromDatabase();
     loadSettingsFromDatabase();
   }, [loadUserFromDatabase, loadSettingsFromDatabase]);
 
   useEffect(() => {
-    console.log("[RootLayout] First useEffect - setting navigation ready");
+    if (__DEV__) {
+      console.log("[RootLayout] First useEffect - setting navigation ready");
+    }
     // Wait for first render to complete
     setIsNavigationReady(true);
   }, []);
@@ -87,10 +86,10 @@ export default function RootLayout() {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
-      background: config.tokens.color.bgLight.val, // Use Tamagui token
-      card: config.tokens.color.bgLight.val, // Navbar background
-      text: config.tokens.color.bgDark.val,
-      border: "transparent",
+      background: config.tokens.color.bgOverlay.val,
+      card: config.tokens.color.surface.val,
+      text: config.tokens.color.text.val,
+      border: config.tokens.color.borderStrong.val,
     },
   };
 
@@ -115,6 +114,7 @@ export default function RootLayout() {
                   <DatabaseProvider onReady={handleDatabaseReady}>
                     <ToastProvider>
                       <ErrorBoundary>
+                        <AppBackground />
                         {showSplash ? (
                           <CustomSplashScreen
                             onFinish={onSplashFinish}

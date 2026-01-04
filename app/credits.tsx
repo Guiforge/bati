@@ -4,10 +4,9 @@ import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Paragraph, Separator, Text, XStack, YStack } from "tamagui";
 
-import { Card } from "@/components/common/Card";
+import { GlassCard, RPGButton, RPGTitle, ScreenContainer, SolidCard } from "@/src/ui";
 
 type CreditLinkProps = {
   title: string;
@@ -17,37 +16,27 @@ type CreditLinkProps = {
 
 function CreditLink({ title, subtitle, url }: CreditLinkProps) {
   return (
-    <Button
-      bg="$bgLight"
-      borderColor="$color"
-      borderWidth={2}
-      rounded="$4"
-      p="$3"
-      height="auto"
-      pressStyle={{ scale: 0.98, opacity: 0.9 }}
-      onPress={() => Linking.openURL(url)}
-    >
-      <XStack flex={1} items="center" gap="$3">
+    <GlassCard onPress={() => Linking.openURL(url)} p="$3">
+      <XStack items="center" gap="$3">
         <ExternalLink size={20} color="$color" />
         <YStack flex={1} gap="$1">
           <Text fontSize="$4" fontWeight="900" color="$color">
             {title}
           </Text>
           {subtitle ? (
-            <Text fontSize="$2" color="$color" opacity={0.7}>
+            <Text fontSize="$2" color="$muted">
               {subtitle}
             </Text>
           ) : null}
         </YStack>
       </XStack>
-    </Button>
+    </GlassCard>
   );
 }
 
 export default function CreditsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
 
   const openUrl = useCallback(async (url: string) => {
     try {
@@ -60,8 +49,7 @@ export default function CreditsScreen() {
   }, []);
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top}>
-      {/* Header */}
+    <ScreenContainer noGutter>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Button
           size="$3"
@@ -72,92 +60,61 @@ export default function CreditsScreen() {
         />
         <XStack flex={1} items="center" gap="$2">
           <ScrollText size={20} color="$color" />
-          <Text fontSize="$6" fontWeight="900" color="$color">
-            {t("credits.title", "Credits")}
-          </Text>
+          <RPGTitle>{t("credits.title")}</RPGTitle>
         </XStack>
       </XStack>
 
-      <RNScrollView
-        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: insets.bottom + 16 }}
-      >
-        <Card bg="$bgLight" p="$4" gap="$3">
+      <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
+        <SolidCard p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="900" color="$color">
-            {t("credits.third_party_title", "Third-party assets")}
+            {t("credits.third_party_title")}
           </Text>
-          <Paragraph color="$color" opacity={0.8}>
-            {t(
-              "credits.third_party_body",
-              "Bati uses third-party assets and open-source software. Huge thanks to the creators!",
-            )}
-          </Paragraph>
-        </Card>
+          <Paragraph color="$muted">{t("credits.third_party_body")}</Paragraph>
+        </SolidCard>
 
-        <Card bg="$bgLight" p="$4" gap="$3">
+        <SolidCard p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="900" color="$color">
-            {t("credits.icons_title", "Icons")}
+            {t("credits.icons_title")}
           </Text>
-          <Paragraph color="$color" opacity={0.8}>
-            {t(
-              "credits.game_icons_note",
-              "Some in-app icons are from game-icons.net (e.g. the RPG-style SVG icons in our assets folder). They are licensed under CC BY 3.0 by their respective authors (Lorc, Delapouite, and contributors).",
-            )}
-          </Paragraph>
+          <Paragraph color="$muted">{t("credits.game_icons_note")}</Paragraph>
 
           <Separator />
 
           <CreditLink
-            title={t("credits.game_icons_site", "Game-icons.net")}
-            subtitle={t("credits.game_icons_site_subtitle", "Icon library and authors list")}
+            title={t("credits.game_icons_site")}
+            subtitle={t("credits.game_icons_site_subtitle")}
             url="https://game-icons.net/"
           />
           <CreditLink
-            title={t("credits.game_icons_about", "Attribution guidance")}
-            subtitle={t(
-              "credits.game_icons_about_subtitle",
-              "Suggested credit text and project info",
-            )}
+            title={t("credits.game_icons_about")}
+            subtitle={t("credits.game_icons_about_subtitle")}
             url="https://game-icons.net/about.html"
           />
           <CreditLink
-            title={t("credits.cc_by_30", "Creative Commons BY 3.0")}
-            subtitle={t("credits.cc_by_30_subtitle", "License terms")}
+            title={t("credits.cc_by_30")}
+            subtitle={t("credits.cc_by_30_subtitle")}
             url="https://creativecommons.org/licenses/by/3.0/"
           />
 
           <Separator />
 
-          <Paragraph color="$color" opacity={0.8}>
-            {t(
-              "credits.attribution_example",
-              'Example attribution (from game-icons.net): "Icons made by {author}. Available on https://game-icons.net".',
-            )}
-          </Paragraph>
-          <Button
-            bg="$secondary"
-            borderColor="$color"
-            borderWidth={3}
-            rounded="$6"
-            pressStyle={{ opacity: 0.9, scale: 0.98 }}
-            onPress={() => openUrl("https://game-icons.net/about.html#authors")}
-            style={{ alignSelf: "flex-start" }}
-          >
-            <Button.Text color="white" fontWeight="900">
-              {t("credits.view_authors", "View authors")}
-            </Button.Text>
-          </Button>
-        </Card>
+          <Paragraph color="$muted">{t("credits.attribution_example")}</Paragraph>
 
-        <Card bg="$bgLight" p="$4" gap="$3">
+          <XStack>
+            <RPGButton
+              variant="secondary"
+              onPress={() => openUrl("https://game-icons.net/about.html#authors")}
+            >
+              {t("credits.view_authors")}
+            </RPGButton>
+          </XStack>
+        </SolidCard>
+
+        <SolidCard p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="900" color="$color">
-            {t("credits.open_source_title", "Open-source software")}
+            {t("credits.open_source_title")}
           </Text>
-          <Paragraph color="$color" opacity={0.8}>
-            {t(
-              "credits.open_source_body",
-              "Built with Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next, and more.",
-            )}
-          </Paragraph>
+          <Paragraph color="$muted">{t("credits.open_source_body")}</Paragraph>
 
           <Separator />
 
@@ -178,8 +135,8 @@ export default function CreditsScreen() {
             subtitle="https://orm.drizzle.team"
             url="https://orm.drizzle.team"
           />
-        </Card>
+        </SolidCard>
       </RNScrollView>
-    </YStack>
+    </ScreenContainer>
   );
 }

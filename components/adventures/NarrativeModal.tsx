@@ -45,7 +45,7 @@ export function NarrativeModal({
 
             {/* Content */}
             <ScrollView p="$5">
-              <Paragraph size="$5" lineHeight={28} style={{ textAlign: "left" }} color="$color">
+              <Paragraph size="$4" lineHeight={28} style={{ textAlign: "left" }} color="$color">
                 {text}
               </Paragraph>
             </ScrollView>
@@ -54,13 +54,13 @@ export function NarrativeModal({
             <YStack p="$4" pt="$2">
               <Button
                 bg="$primary"
-                size="$5"
+                fontSize={18}
                 onPress={onClose}
                 borderWidth={3}
                 borderColor="$color"
                 pressStyle={{ opacity: 0.9, scale: 0.98 }}
               >
-                <Button.Text color="white" fontWeight="bold" fontSize="$5">
+                <Button.Text color="white" fontWeight="bold" fontSize={18}>
                   {type === "intro"
                     ? t("common.begin_adventure", "Begin Adventure")
                     : t("common.continue", "Continue")}

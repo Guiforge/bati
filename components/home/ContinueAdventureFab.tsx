@@ -39,7 +39,7 @@ export function ContinueAdventureFab() {
           <Text color="white" fontSize="$2" fontWeight="bold" opacity={0.9}>
             {config.label}
           </Text>
-          <Text color="white" fontSize="$5" fontWeight="900" textTransform="uppercase">
+          <Text color="white" fontSize={18} fontWeight="900" textTransform="uppercase">
             {config.subtext}
           </Text>
         </YStack>

@@ -60,7 +60,7 @@ export function LevelUpModal({ visible, newLevel, onClose }: LevelUpModalProps) 
                 {newLevel}
               </H1>
 
-              <Paragraph size="$6" fontWeight="bold" color="$secondary" textTransform="uppercase">
+              <Paragraph size="$4" fontWeight="bold" color="$secondary" textTransform="uppercase">
                 {title}
               </Paragraph>
             </YStack>

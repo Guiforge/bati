@@ -66,7 +66,7 @@ export function HeroStatusCard() {
           </YStack>
 
           {/* Arrow hint */}
-          <Text fontSize="$5" opacity={0.3} color="$color">
+          <Text fontSize={18} opacity={0.3} color="$color">
             ›
           </Text>
         </XStack>

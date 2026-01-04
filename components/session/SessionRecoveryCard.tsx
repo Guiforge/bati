@@ -52,7 +52,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
       <YStack gap="$3">
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primary" />
-          <Text fontSize="$5" fontWeight="bold" color="$color">
+          <Text fontSize={18} fontWeight="bold" color="$color">
             {t("recovery.title")}
           </Text>
         </XStack>

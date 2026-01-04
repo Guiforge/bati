@@ -38,7 +38,10 @@ export function useSmartAction() {
             onPress: () =>
               router.push({
                 pathname: "/session",
-                params: { questId: pendingSession.questId, scheduledSessionId: pendingSession.id },
+                params: {
+                  questId: pendingSession.questId,
+                  scheduledSessionId: pendingSession.id,
+                },
               } as never),
           });
           setIsLoading(false);

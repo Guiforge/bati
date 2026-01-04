@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { db, schema } from "./client";
-import type { MuscleCode, ResourceCode, ResourceTransactionType } from "./schema";
+import type { ExerciseStyle, MuscleCode, ResourceCode, ResourceTransactionType } from "./schema";
 import { muscleToResource, resourceCodes } from "./schema";
 
 const { resourceInventory, resourceTransactions } = schema;
@@ -148,32 +148,58 @@ export async function spendResources(
 export function calculateSessionResources(params: {
   durationSeconds: number;
   exercisesByMuscle: Map<MuscleCode, number>; // muscle -> total reps/seconds
+  exercisesByStyle: Map<ExerciseStyle, number>; // style -> total reps/seconds
   difficultyMultiplier?: number; // 0.8 for easy, 1.0 for medium, 1.2 for hard
 }): ResourceLoot {
-  const { durationSeconds, exercisesByMuscle, difficultyMultiplier = 1.0 } = params;
+  const {
+    durationSeconds,
+    exercisesByMuscle,
+    exercisesByStyle,
+    difficultyMultiplier = 1.0,
+  } = params;
 
   // Gold: base 10 + 2 per minute
   const durationMinutes = Math.floor(durationSeconds / 60);
   const gold = Math.floor((10 + durationMinutes * 2) * difficultyMultiplier);
 
-  // Materials: based on exercises by muscle
+  // Materials: based on exercises by muscle and style
   const materials: ResourceAmount[] = [];
+
+  // Helper to add material
+  const addMaterial = (resource: ResourceCode, amount: number) => {
+    if (amount <= 0) return;
+    const existing = materials.find((m) => m.resource === resource);
+    if (existing) {
+      existing.amount += amount;
+    } else {
+      materials.push({ resource, amount });
+    }
+  };
+
+  // 1. Style-based resources (Mana, Leaf)
+  for (const [style, value] of exercisesByStyle) {
+    const amount = Math.floor(value * difficultyMultiplier);
+    if (style === "calisthenics") {
+      addMaterial("mana", amount);
+    } else if (style === "yoga") {
+      addMaterial("leaf", amount);
+    }
+  }
+
+  // 2. Muscle-based resources (Wood, Stone, etc.)
+  // Only for Strength and Cardio styles (handled by caller filtering or here?)
+  // The caller should only populate exercisesByMuscle for exercises that SHOULD generate muscle resources.
+  // OR we iterate exercisesByMuscle and add them.
+  // If an exercise is Calisthenics, it shouldn't contribute to Muscle resources in this model?
+  // "Strength Training (Muscle-Based) ... Special Styles (Skill-Based)"
+  // Let's assume they are mutually exclusive for simplicity and clarity.
+  // So the caller must separate them.
 
   for (const [muscle, value] of exercisesByMuscle) {
     const resource = muscleToResource[muscle];
     if (!resource) continue;
-
-    // Each rep/second = 1 resource unit (adjusted by difficulty)
     const amount = Math.floor(value * difficultyMultiplier);
-    if (amount > 0) {
-      // Check if we already have this resource in the array
-      const existing = materials.find((m) => m.resource === resource);
-      if (existing) {
-        existing.amount += amount;
-      } else {
-        materials.push({ resource, amount });
-      }
-    }
+    addMaterial(resource, amount);
   }
 
   return { gold, materials };
@@ -206,12 +232,23 @@ export function previewSessionLoot(params: {
 }): ResourceLoot {
   const { durationSeconds, userLevel, exerciseResults } = params;
 
-  // Build muscle → total value map
+  // Build maps
   const muscleMap = new Map<MuscleCode, number>();
+  const styleMap = new Map<ExerciseStyle, number>();
+
   for (const result of exerciseResults) {
-    for (const muscle of result.muscles) {
-      const current = muscleMap.get(muscle) ?? 0;
-      muscleMap.set(muscle, current + result.result.value);
+    const { style, muscles, result: res } = result;
+
+    if (style === "calisthenics" || style === "yoga") {
+      // Style-based resources
+      const current = styleMap.get(style) ?? 0;
+      styleMap.set(style, current + res.value);
+    } else {
+      // Muscle-based resources (Strength, Cardio)
+      for (const muscle of muscles) {
+        const current = muscleMap.get(muscle) ?? 0;
+        muscleMap.set(muscle, current + res.value);
+      }
     }
   }
 
@@ -220,6 +257,7 @@ export function previewSessionLoot(params: {
   return calculateSessionResources({
     durationSeconds,
     exercisesByMuscle: muscleMap,
+    exercisesByStyle: styleMap,
     difficultyMultiplier,
   });
 }
@@ -257,6 +295,7 @@ export async function ensureResourceInventoryExists(): Promise<void> {
 export type ExerciseResultForResources = {
   exerciseId: number;
   muscles: MuscleCode[];
+  style: ExerciseStyle;
   result: { type: "reps" | "time"; value: number };
 };
 
@@ -272,12 +311,23 @@ export async function awardSessionResources(params: {
 }): Promise<ResourceLoot> {
   const { durationSeconds, userLevel, completedSessionId, exerciseResults } = params;
 
-  // Build muscle → total value map
+  // Build maps
   const muscleMap = new Map<MuscleCode, number>();
+  const styleMap = new Map<ExerciseStyle, number>();
+
   for (const result of exerciseResults) {
-    for (const muscle of result.muscles) {
-      const current = muscleMap.get(muscle) ?? 0;
-      muscleMap.set(muscle, current + result.result.value);
+    const { style, muscles, result: res } = result;
+
+    if (style === "calisthenics" || style === "yoga") {
+      // Style-based resources
+      const current = styleMap.get(style) ?? 0;
+      styleMap.set(style, current + res.value);
+    } else {
+      // Muscle-based resources (Strength, Cardio)
+      for (const muscle of muscles) {
+        const current = muscleMap.get(muscle) ?? 0;
+        muscleMap.set(muscle, current + res.value);
+      }
     }
   }
 
@@ -286,6 +336,7 @@ export async function awardSessionResources(params: {
   const loot = calculateSessionResources({
     durationSeconds,
     exercisesByMuscle: muscleMap,
+    exercisesByStyle: styleMap,
     difficultyMultiplier,
   });
 

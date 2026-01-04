@@ -1,11 +1,13 @@
 import { eq, sql } from "drizzle-orm";
 import { db, schema } from "./client";
+import type { ResourceAmount } from "./resources";
 import type { BuildingCode, MuscleCode } from "./schema";
 import {
   buildingCodes,
   buildingDefinitions,
   buildingLevelThresholds,
   muscleToBuilding,
+  resourceToBuilding,
 } from "./schema";
 
 const { villageBuildings, villageStats } = schema;
@@ -372,6 +374,47 @@ export async function processSessionBuildings(params: {
   return { xpGained, levelUps, newUnlocks };
 }
 
+/**
+ * Process building updates after a session completes, based on awarded resources.
+ * This supports style-based buildings (e.g. Calisthenics -> Wizard Tower, Yoga -> Druid Grove).
+ */
+export async function processSessionBuildingsFromResources(params: {
+  resources: ResourceAmount[];
+}): Promise<SessionBuildingResult> {
+  const { resources } = params;
+  const xpGained: { buildingType: BuildingCode; xp: number }[] = [];
+  const levelUps: BuildingLevelUp[] = [];
+  const newUnlocks: BuildingUnlock[] = [];
+
+  for (const { resource, amount } of resources) {
+    const buildingType = resourceToBuilding[resource];
+    if (!buildingType) continue;
+
+    // Auto-unlock tier2 buildings at first resource gain.
+    // (Keeps the "zero management" philosophy.)
+    const building = await getBuildingByType(buildingType);
+    if (building && !building.isUnlocked && amount > 0) {
+      await unlockBuilding(buildingType);
+      newUnlocks.push({ buildingType, tier: 2 });
+    }
+
+    // Add XP if unlocked.
+    const afterUnlock = await getBuildingByType(buildingType);
+    if (afterUnlock?.isUnlocked) {
+      xpGained.push({ buildingType, xp: amount });
+      const levelUp = await addBuildingXp(buildingType, amount);
+      if (levelUp) {
+        levelUps.push(levelUp);
+      }
+    }
+  }
+
+  // Tier 3 unlock checks remain driven by level ups on their prerequisite buildings.
+  // In the current design, special buildings don't have tier3 dependencies.
+
+  return { xpGained, levelUps, newUnlocks };
+}
+
 // ------------------------------------------------------------
 // Initialization
 // ------------------------------------------------------------
@@ -412,4 +455,28 @@ export async function ensureVillageBuildingsExist(): Promise<void> {
       updatedAt: new Date(),
     });
   }
+}
+
+/**
+ * Apply resources to buildings as XP
+ * Returns list of level ups
+ */
+export async function applyResourcesToBuildings(
+  resources: ResourceAmount[],
+): Promise<BuildingLevelUp[]> {
+  const levelUps: BuildingLevelUp[] = [];
+
+  for (const { resource, amount } of resources) {
+    const buildingType = resourceToBuilding[resource];
+    if (!buildingType) continue;
+
+    // Add XP to building
+    // 1 Resource = 1 XP
+    const levelUp = await addBuildingXp(buildingType, amount);
+    if (levelUp) {
+      levelUps.push(levelUp);
+    }
+  }
+
+  return levelUps;
 }

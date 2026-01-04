@@ -21,10 +21,10 @@ describe("db/resources", () => {
         require("../db/resources") as typeof import("../db/resources");
 
       const inventory = await getResourceInventory();
-      expect(inventory.length).toBe(3); // gold, essence, boss_token (simplified)
+      expect(inventory.length).toBeGreaterThan(5); // gold, wood, stone, mana, leaf, etc.
       expect(inventory.find((r) => r.resource === "gold")).toBeDefined();
-      expect(inventory.find((r) => r.resource === "essence")).toBeDefined();
-      expect(inventory.find((r) => r.resource === "boss_token")).toBeDefined();
+      expect(inventory.find((r) => r.resource === "wood")).toBeDefined();
+      expect(inventory.find((r) => r.resource === "mana")).toBeDefined();
     });
   });
 
@@ -57,33 +57,33 @@ describe("db/resources", () => {
         require("../db/resources") as typeof import("../db/resources");
 
       const initialGold = await getResourceAmount("gold");
-      const initialEssence = await getResourceAmount("essence");
+      const initialWood = await getResourceAmount("wood");
 
       await addResources(
         [
           { resource: "gold", amount: 30 },
-          { resource: "essence", amount: 20 },
+          { resource: "wood", amount: 20 },
         ],
         { reason: "workout loot" },
       );
 
       const newGold = await getResourceAmount("gold");
-      const newEssence = await getResourceAmount("essence");
+      const newWood = await getResourceAmount("wood");
 
       expect(newGold).toBe(initialGold + 30);
-      expect(newEssence).toBe(initialEssence + 20);
+      expect(newWood).toBe(initialWood + 20);
     });
 
     test("should skip zero or negative amounts", async () => {
       const { addResources, getResourceAmount } =
         require("../db/resources") as typeof import("../db/resources");
 
-      const initialEssence = await getResourceAmount("essence");
+      const initialWood = await getResourceAmount("wood");
 
-      await addResources([{ resource: "essence", amount: 0 }]);
+      await addResources([{ resource: "wood", amount: 0 }]);
 
-      const newEssence = await getResourceAmount("essence");
-      expect(newEssence).toBe(initialEssence);
+      const newWood = await getResourceAmount("wood");
+      expect(newWood).toBe(initialWood);
     });
   });
 
@@ -95,6 +95,7 @@ describe("db/resources", () => {
       const result = calculateSessionResources({
         durationSeconds: 600, // 10 minutes
         exercisesByMuscle: new Map(),
+        exercisesByStyle: new Map(),
         difficultyMultiplier: 1.0,
       });
 
@@ -109,6 +110,7 @@ describe("db/resources", () => {
       const resultHard = calculateSessionResources({
         durationSeconds: 600, // 10 minutes
         exercisesByMuscle: new Map(),
+        exercisesByStyle: new Map(),
         difficultyMultiplier: 1.2,
       });
 
@@ -116,7 +118,7 @@ describe("db/resources", () => {
       expect(resultHard.gold).toBe(36);
     });
 
-    test("should calculate essence from muscle exercises (all muscles generate essence)", () => {
+    test("should calculate specific resources from muscle exercises", () => {
       const { calculateSessionResources } =
         require("../db/resources") as typeof import("../db/resources");
 
@@ -126,30 +128,28 @@ describe("db/resources", () => {
           ["arms", 50],
           ["back", 30],
         ]),
+        exercisesByStyle: new Map([["strength", 80]]),
         difficultyMultiplier: 1.0,
       });
 
-      // All muscles now generate essence, so 50 + 30 = 80 total essence
-      expect(result.materials).toHaveLength(1);
-      expect(result.materials.find((m) => m.resource === "essence")?.amount).toBe(80);
+      // Arms -> Wood, Back -> Stone
+      expect(result.materials).toHaveLength(2);
+      expect(result.materials.find((m) => m.resource === "wood")?.amount).toBe(50);
+      expect(result.materials.find((m) => m.resource === "stone")?.amount).toBe(30);
     });
 
-    test("should combine essence from all muscles", () => {
+    test("should calculate mana from calisthenics", () => {
       const { calculateSessionResources } =
         require("../db/resources") as typeof import("../db/resources");
 
       const result = calculateSessionResources({
         durationSeconds: 300,
-        exercisesByMuscle: new Map([
-          ["arms", 50],
-          ["back", 30],
-          ["calf", 20],
-        ]),
+        exercisesByMuscle: new Map(),
+        exercisesByStyle: new Map([["calisthenics", 50]]),
         difficultyMultiplier: 1.0,
       });
 
-      // All muscles → essence: 50 + 30 + 20 = 100
-      expect(result.materials.find((m) => m.resource === "essence")?.amount).toBe(100);
+      expect(result.materials.find((m) => m.resource === "mana")?.amount).toBe(50);
     });
   });
 
@@ -175,11 +175,13 @@ describe("db/resources", () => {
           {
             exerciseId: 1,
             muscles: ["arms"],
+            style: "strength",
             result: { type: "reps", value: 50 },
           },
           {
             exerciseId: 2,
             muscles: ["back"],
+            style: "strength",
             result: { type: "reps", value: 30 },
           },
         ],
@@ -187,29 +189,31 @@ describe("db/resources", () => {
 
       // Gold = 10 + (10 * 2) = 30
       expect(loot.gold).toBe(30);
-      // Arms + Back -> essence = 50 + 30 = 80
-      expect(loot.materials.find((m) => m.resource === "essence")?.amount).toBe(80);
+      // Arms -> Wood, Back -> Stone
+      expect(loot.materials.find((m) => m.resource === "wood")?.amount).toBe(50);
+      expect(loot.materials.find((m) => m.resource === "stone")?.amount).toBe(30);
     });
 
-    test("should apply difficulty multiplier", () => {
+    test("should calculate mana for calisthenics exercises", () => {
       const { previewSessionLoot } = require("../db/resources") as typeof import("../db/resources");
 
-      const lootHard = previewSessionLoot({
+      const loot = previewSessionLoot({
         durationSeconds: 600,
-        userLevel: "hard",
+        userLevel: "medium",
         exerciseResults: [
           {
             exerciseId: 1,
             muscles: ["arms"],
+            style: "calisthenics",
             result: { type: "reps", value: 50 },
           },
         ],
       });
 
-      // Gold = (10 + 20) * 1.2 = 36
-      expect(lootHard.gold).toBe(36);
-      // Arms -> essence = 50 * 1.2 = 60
-      expect(lootHard.materials.find((m) => m.resource === "essence")?.amount).toBe(60);
+      // Calisthenics -> Mana
+      expect(loot.materials.find((m) => m.resource === "mana")?.amount).toBe(50);
+      // Should NOT generate Wood because style is calisthenics
+      expect(loot.materials.find((m) => m.resource === "wood")).toBeUndefined();
     });
   });
 });

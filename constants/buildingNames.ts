@@ -19,5 +19,6 @@ export const buildingNames: Record<BuildingCode, { en: string; fr: string }> = {
   dragon_lair: { en: "Dragon Lair", fr: "Antre du dragon" },
   heroes_hall: { en: "Hero's Hall", fr: "Salle des héros" },
   wizard_tower: { en: "Wizard Tower", fr: "Tour du mage" },
+  druid_grove: { en: "Druid Grove", fr: "Bosquet druidique" },
   champion_arena: { en: "Champion Arena", fr: "Arène des champions" },
 };

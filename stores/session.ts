@@ -9,7 +9,7 @@ import {
   dealDamage,
   getOrCreateBossFight,
 } from "@/db/bossFights";
-import { processSessionBuildings, type SessionBuildingResult } from "@/db/buildings";
+import { processSessionBuildingsFromResources, type SessionBuildingResult } from "@/db/buildings";
 import {
   type CompletedExerciseInput,
   createCompletedSession,
@@ -415,6 +415,7 @@ export const useSessionStore = create<SessionState>()(
         return {
           exerciseId: r.exerciseId,
           muscles: questExercise?.exercise.muscles ?? [],
+          style: questExercise?.exercise.style ?? "strength",
           result: { type: r.result.type, value: r.result.value },
         };
       });
@@ -427,18 +428,10 @@ export const useSessionStore = create<SessionState>()(
         exerciseResults,
       });
 
-      // Collect muscles worked with counts for building XP
-      const exercisesByMuscle = new Map<MuscleCode, number>();
-      for (const r of exerciseResults) {
-        for (const m of r.muscles) {
-          const current = exercisesByMuscle.get(m) ?? 0;
-          // Add the result value (reps or seconds) as XP contribution
-          exercisesByMuscle.set(m, current + r.result.value);
-        }
-      }
-
-      // Process building XP and unlocks
-      const buildings = await processSessionBuildings({ exercisesByMuscle });
+      // Process building XP and unlocks from resources (supports style buildings)
+      const buildings = await processSessionBuildingsFromResources({
+        resources: loot.materials,
+      });
 
       const campaign =
         adventureRunStepId != null

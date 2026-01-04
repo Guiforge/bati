@@ -3,7 +3,7 @@ import { desc, eq, gte } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
-import type { DifficultyCode, FeedbackCode, QuestTargetType } from "./schema";
+import type { DifficultyCode, ExerciseStyle, FeedbackCode, QuestTargetType } from "./schema";
 
 const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
 
@@ -56,6 +56,12 @@ export type CompletedSession = {
 
 type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
 type TransactionTx = Parameters<TransactionCallback>[0];
+
+function parseExerciseStyle(value: unknown): ExerciseStyle {
+  return value === "strength" || value === "calisthenics" || value === "yoga" || value === "cardio"
+    ? value
+    : "strength";
+}
 
 async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
   try {
@@ -241,6 +247,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       exDifficulty: exercises.difficulty,
       exEquipment: exercises.equipment,
       exSecondsPerRep: exercises.secondsPerRep,
+      exStyle: exercises.style,
 
       muscle: exerciseMuscles.muscle,
     })
@@ -294,6 +301,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
           difficulty: r.exDifficulty,
           equipment: r.exEquipment,
           secondsPerRep: r.exSecondsPerRep,
+          style: parseExerciseStyle(r.exStyle),
           muscles: [],
         },
       } satisfies CompletedExercise);

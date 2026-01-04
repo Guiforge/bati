@@ -20,7 +20,7 @@ describe("db/buildings", () => {
       const { getAllBuildings } = require("../db/buildings") as typeof import("../db/buildings");
 
       const buildings = await getAllBuildings();
-      expect(buildings.length).toBe(19); // 3 tier1 + 6 tier2 + 6 tier3 + 4 tier4
+      expect(buildings.length).toBe(20); // 3 tier1 + 8 tier2 + 6 tier3 + 3 tier4
     });
   });
 
@@ -157,6 +157,37 @@ describe("db/buildings", () => {
 
       windmill = await getBuildingByType("windmill");
       expect(windmill?.level).toBe(2);
+    });
+  });
+
+  describe("applyResourcesToBuildings", () => {
+    test("should apply resources to correct buildings", async () => {
+      const { applyResourcesToBuildings, getBuildingByType, unlockBuilding } =
+        require("../db/buildings") as typeof import("../db/buildings");
+
+      // Unlock buildings first so they can gain XP
+      await unlockBuilding("archery_range");
+      await unlockBuilding("wizard_tower");
+
+      type ResourceAmount = import("../db/resources").ResourceAmount;
+
+      const resources: ResourceAmount[] = [
+        { resource: "wood", amount: 100 }, // Archery Range -> Level 2
+        { resource: "mana", amount: 100 }, // Wizard Tower -> Level 2
+        { resource: "gold", amount: 100 }, // Ignored
+      ];
+
+      const levelUps = await applyResourcesToBuildings(resources);
+
+      expect(levelUps).toHaveLength(2);
+
+      const archery = await getBuildingByType("archery_range");
+      expect(archery?.level).toBe(2);
+      expect(archery?.xp).toBe(100);
+
+      const wizard = await getBuildingByType("wizard_tower");
+      expect(wizard?.level).toBe(2);
+      expect(wizard?.xp).toBe(100);
     });
   });
 });

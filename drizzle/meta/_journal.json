@@ -36,6 +36,13 @@
       "when": 1735689600004,
       "tag": "0004_seed_village",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1735689600005,
+      "tag": "0005_village_resources",
+      "breakpoints": true
     }
   ]
 }

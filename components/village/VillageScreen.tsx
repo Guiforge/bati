@@ -41,18 +41,25 @@ const muscleNames: Record<MuscleCode, { en: string; fr: string }> = {
 // Resource localized names (simplified)
 const resourceNames: Record<ResourceCode, { en: string; fr: string }> = {
   gold: { en: "Gold", fr: "Or" },
-  essence: { en: "Essence", fr: "Essence" },
+  wood: { en: "Wood", fr: "Bois" },
+  stone: { en: "Stone", fr: "Pierre" },
+  fire: { en: "Fire", fr: "Feu" },
+  water: { en: "Water", fr: "Eau" },
+  wind: { en: "Wind", fr: "Vent" },
+  grain: { en: "Grain", fr: "Grain" },
+  mana: { en: "Mana", fr: "Mana" },
+  leaf: { en: "Leaf", fr: "Feuille" },
   boss_token: { en: "Boss Token", fr: "Jeton de Boss" },
 };
 
-// All muscles now generate essence
+// Muscles generate element resources
 const muscleToResource: Record<MuscleCode, ResourceCode> = {
-  arms: "essence",
-  back: "essence",
-  chest: "essence",
-  abs: "essence",
-  shoulder: "essence",
-  calf: "essence",
+  arms: "wood",
+  back: "stone",
+  chest: "fire",
+  abs: "water",
+  shoulder: "wind",
+  calf: "grain",
 };
 
 // Building localized names
@@ -75,6 +82,7 @@ const buildingNames: Record<BuildingCode, { en: string; fr: string }> = {
   dragon_lair: { en: "Dragon Lair", fr: "Antre du dragon" },
   heroes_hall: { en: "Hero's Hall", fr: "Salle des héros" },
   wizard_tower: { en: "Wizard Tower", fr: "Tour du mage" },
+  druid_grove: { en: "Druid Grove", fr: "Bosquet druidique" },
   champion_arena: { en: "Champion Arena", fr: "Arène des champions" },
 };
 

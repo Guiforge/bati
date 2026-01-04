@@ -103,6 +103,7 @@ export function VictoryView() {
       return {
         exerciseId: r.exerciseId,
         muscles: questExercise?.exercise.muscles ?? [],
+        style: questExercise?.exercise.style ?? "strength",
         result: { type: r.result.type as "reps" | "time", value: r.result.value },
       };
     });

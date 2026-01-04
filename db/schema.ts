@@ -27,6 +27,9 @@ export type QuestTargetType = (typeof questTargetTypes)[number];
 export const feedbackCodes = ["easy", "good", "hard"] as const;
 export type FeedbackCode = (typeof feedbackCodes)[number];
 
+export const exerciseStyles = ["strength", "calisthenics", "yoga", "cardio"] as const;
+export type ExerciseStyle = (typeof exerciseStyles)[number];
+
 // User preferences table - stores onboarding and settings
 export const userPreferences = sqliteTable("user_preferences", {
   id: int().primaryKey({ autoIncrement: true }),
@@ -56,6 +59,9 @@ export const exercises = sqliteTable(
 
     // Minimal equipment requirements (used for filtering + UI hints)
     equipment: text().notNull().default("none").$type<EquipmentCode>(),
+
+    // Training style for resource generation
+    style: text().notNull().default("strength").$type<ExerciseStyle>(),
 
     // For rep-based targets: rough average seconds per repetition.
     // Used to estimate quest duration. (Time-based exercises ignore it.)
@@ -403,25 +409,32 @@ export const bossDamageLog = sqliteTable(
 );
 
 // ------------------------------------------------------------
-// Resources (Phase 2 - Village Economy) - SIMPLIFIED
+// Resources (Phase 2 - Village Economy)
 // ------------------------------------------------------------
 
-// Simplified resource codes: Gold + Essence + Boss Token
+// Resource codes: Gold + Muscle Resources + Style Resources + Boss Token
 export const resourceCodes = [
   "gold", // Universal currency (from all workouts)
-  "essence", // Combined material resource (from all muscle groups)
+  "wood", // Arms
+  "stone", // Back
+  "fire", // Chest
+  "water", // Abs
+  "wind", // Shoulders
+  "grain", // Legs
+  "mana", // Calisthenics
+  "leaf", // Yoga
   "boss_token", // From defeating bosses
 ] as const;
 export type ResourceCode = (typeof resourceCodes)[number];
 
-// All muscles now generate essence
+// Muscle to resource mapping
 export const muscleToResource: Record<MuscleCode, ResourceCode> = {
-  arms: "essence",
-  back: "essence",
-  chest: "essence",
-  abs: "essence",
-  shoulder: "essence",
-  calf: "essence",
+  arms: "wood",
+  back: "stone",
+  chest: "fire",
+  abs: "water",
+  shoulder: "wind",
+  calf: "grain",
 } as const;
 
 // User's current resource inventory
@@ -481,12 +494,15 @@ export const buildingCodes = [
   "tent",
   "training_dummy",
   // Tier 2 - Basic (muscle-related)
-  "archery_range", // arms
-  "quarry", // back
-  "forge", // chest
-  "well", // abs
-  "windmill", // shoulders
-  "farm", // legs
+  "archery_range", // arms -> wood
+  "quarry", // back -> stone
+  "forge", // chest -> fire
+  "well", // abs -> water
+  "windmill", // shoulders -> wind
+  "farm", // legs -> grain
+  // Tier 2 - Special (style-related)
+  "wizard_tower", // calisthenics -> mana
+  "druid_grove", // yoga -> leaf
   // Tier 3 - Advanced (requires Tier 2 level 3)
   "watchtower", // arms upgrade
   "castle_wall", // back upgrade
@@ -497,7 +513,6 @@ export const buildingCodes = [
   // Tier 4 - Legendary (boss rewards)
   "dragon_lair",
   "heroes_hall",
-  "wizard_tower",
   "champion_arena",
 ] as const;
 export type BuildingCode = (typeof buildingCodes)[number];
@@ -516,6 +531,20 @@ export const muscleToBuilding: Record<MuscleCode, BuildingCode> = {
   calf: "farm",
 };
 
+// Mapping resources to their related buildings
+export const resourceToBuilding: Record<ResourceCode, BuildingCode | null> = {
+  wood: "archery_range",
+  stone: "quarry",
+  fire: "forge",
+  water: "well",
+  wind: "windmill",
+  grain: "farm",
+  mana: "wizard_tower",
+  leaf: "druid_grove",
+  gold: null,
+  boss_token: null,
+};
+
 // Building definitions (static metadata)
 export const buildingDefinitions: Record<
   BuildingCode,
@@ -523,6 +552,7 @@ export const buildingDefinitions: Record<
     tier: BuildingTier;
     emoji: string;
     relatedMuscle: MuscleCode | null;
+    relatedStyle?: ExerciseStyle | null;
     unlockCondition: string; // Human-readable condition
     prerequisiteBuilding: BuildingCode | null;
     prerequisiteLevel: number | null;
@@ -533,6 +563,7 @@ export const buildingDefinitions: Record<
     tier: 1,
     emoji: "🔥",
     relatedMuscle: null,
+    relatedStyle: null,
     unlockCondition: "default",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
@@ -541,6 +572,7 @@ export const buildingDefinitions: Record<
     tier: 1,
     emoji: "⛺",
     relatedMuscle: null,
+    relatedStyle: null,
     unlockCondition: "default",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
@@ -549,6 +581,7 @@ export const buildingDefinitions: Record<
     tier: 1,
     emoji: "🎯",
     relatedMuscle: null,
+    relatedStyle: null,
     unlockCondition: "default",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
@@ -599,6 +632,25 @@ export const buildingDefinitions: Record<
     emoji: "🌾",
     relatedMuscle: "calf",
     unlockCondition: "50+ leg exercise reps",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  // Tier 2 - Special style buildings
+  wizard_tower: {
+    tier: 2,
+    emoji: "🧙",
+    relatedMuscle: null,
+    relatedStyle: "calisthenics",
+    unlockCondition: "Unlock with Calisthenics",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  druid_grove: {
+    tier: 2,
+    emoji: "🌿",
+    relatedMuscle: null,
+    relatedStyle: "yoga",
+    unlockCondition: "Unlock with Yoga",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
   },
@@ -656,6 +708,7 @@ export const buildingDefinitions: Record<
     tier: 4,
     emoji: "🐉",
     relatedMuscle: null,
+    relatedStyle: null,
     unlockCondition: "Defeat Fire Dragon",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
@@ -664,15 +717,8 @@ export const buildingDefinitions: Record<
     tier: 4,
     emoji: "🏆",
     relatedMuscle: null,
+    relatedStyle: null,
     unlockCondition: "Complete 50 adventures",
-    prerequisiteBuilding: null,
-    prerequisiteLevel: null,
-  },
-  wizard_tower: {
-    tier: 4,
-    emoji: "🧙",
-    relatedMuscle: null,
-    unlockCondition: "Defeat Archmage Boss",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
   },
@@ -680,6 +726,7 @@ export const buildingDefinitions: Record<
     tier: 4,
     emoji: "🏟️",
     relatedMuscle: null,
+    relatedStyle: null,
     unlockCondition: "Defeat 10 bosses",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,

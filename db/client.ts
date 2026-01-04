@@ -23,7 +23,9 @@ function checkSchemaVersion() {
       deleteDatabaseSync("bati.db");
     }
 
-    const tempDb = openDatabaseSync("bati.db");
+    const tempDb = openDatabaseSync("bati.db", {
+      enableChangeListener: true,
+    });
     try {
       const result = tempDb.getFirstSync<{ value: string }>(
         "SELECT value FROM user_preferences WHERE key = 'schema_version'",
@@ -67,7 +69,9 @@ function createSingleton(): DbSingleton {
   checkSchemaVersion();
 
   console.log("[DB] Opening database...");
-  const expoDb = openDatabaseSync("bati.db");
+  const expoDb = openDatabaseSync("bati.db", {
+    enableChangeListener: true,
+  });
   console.log("[DB] Database opened successfully");
 
   // Create drizzle instance with schema
@@ -95,7 +99,9 @@ const singleton = globalAny[GLOBAL_KEY] as DbSingleton;
 let expoDb = singleton.expoDb;
 
 export function reopenDatabase() {
-  expoDb = openDatabaseSync("bati.db");
+  expoDb = openDatabaseSync("bati.db", {
+    enableChangeListener: true,
+  });
 }
 
 export async function resetDatabase() {

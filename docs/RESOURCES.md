@@ -1,159 +1,69 @@
-# Resource System
+# Resources
 
-## Overview
+Resources are Bati’s loot: tangible proof that you trained like a hero.
 
-Resources are the core economy of Bati's RPG layer. You earn resources by completing workouts, and they're used to build and upgrade your village.
+They feed the village automatically (no build decisions), and they make the end-of-session rewards screen feel like opening a treasure chest.
 
-**Simplified Design**: We use only 3 resources to keep the game simple and fun.
+## Resource list
 
----
+Bati uses a mixed economy: one universal currency, six “element” resources, two style resources, plus a boss currency.
 
-## 💎 Resource Types
+### Universal
 
-### Primary Resources
+- `gold`
 
-| Resource | Icon | Earned From | Use |
-|----------|------|-------------|-----|
-| **Gold** | 🪙 | All workouts (based on duration) | Universal currency for buildings |
-| **Essence** | ✨ | All exercises (based on reps/time) | Material for construction |
-| **Boss Token** | 👹 | Defeating bosses | Legendary buildings |
+### Elements (muscle-linked)
 
-### XP (Separate System)
+- `wood`
+- `stone`
+- `fire`
+- `water`
+- `wind`
+- `grain`
 
-| Resource | Icon | Earned From | Use |
-|----------|------|-------------|-----|
-| **XP** | ⭐ | All workouts | Level progression |
+### Training-style resources
 
----
+- `mana` (calisthenics / “magic”)
+- `leaf` (yoga & flexibility / “druid”)
 
-## 📊 Earning Formula
+### Boss currency
 
-### Gold Calculation
+- `boss_token`
 
-```typescript
-gold = baseGold + (duration_minutes * 2)
+## Where the loot shows up
 
-// Example: 20 min workout on Medium
-// gold = 10 + (20 * 2) = 50 gold
-```
+The **Loot Room / Chest Room** is the “receipt” of your session: it displays what you earned (and gives that satisfying open-the-chest moment).
 
-### Essence Calculation
+## What’s implemented today (important)
 
-```typescript
-// All muscles now generate essence
-for each exercise:
-  essence += exercise.targetReps * difficulty_multiplier
-```
+### 1) Resources become building XP (1:1)
 
-### Difficulty Multipliers
+Current logic is deliberately straightforward:
 
-| Difficulty | XP | Gold | Essence |
-|------------|-----|------|---------|
-| Easy | 0.8x | 0.8x | 0.8x |
-| Medium | 1.0x | 1.0x | 1.0x |
-| Hard | 1.2x | 1.2x | 1.2x |
+- Every resource point gained becomes **building XP** for the associated building.
+- Conversion rate is **1:1**.
 
----
+This means resources are not only “inventory” — they are also the primary driver of village progression.
 
-## 🏗️ Resource Usage
+### 2) Tier 2 auto-unlock
 
-### Building Costs (Examples)
+Tier 2 buildings are **auto-unlocked the first time the player gains any resource**.
 
-| Building | Essence | Gold | Special |
-|----------|---------|------|---------|
-| Campfire (Starter) | 15 | 50 | - |
-| Archery Range | 120 | 200 | - |
-| Forge | 150 | 300 | - |
-| Castle Wall | 200 | 400 | - |
-| Watchtower | 140 | 250 | - |
-| Dragon Lair | 500 | 1000 | 5 Boss Tokens |
+There is no prompt, no choice, no extra requirement: loot once, and the village starts taking shape.
 
-### Upgrade Costs
+## How resources map to the village
 
-Each upgrade level increases cost by ~50%:
+At a high level:
 
-- Level 1→2: 1.5x base cost
-- Level 2→3: 2.25x base cost
-- Level 3→4: 3.4x base cost
+- The six element resources power the muscle buildings (the classic village backbone).
+- `mana` powers the Magic path:
+  - **Calisthenics → Magic → Wizard Tower**
+- `leaf` powers the Druid path:
+  - **Yoga/Flexibility → Druid → Druid Grove**
+- `boss_token` supports boss-related progression and special unlocks.
 
----
+## Design intent
 
-## 💾 Database Schema
-
-```sql
--- Resource inventory (simplified: gold, essence, boss_token)
-CREATE TABLE resource_inventory (
-  id INTEGER PRIMARY KEY,
-  resource TEXT NOT NULL,  -- 'gold', 'essence', 'boss_token'
-  amount INTEGER NOT NULL DEFAULT 0,
-  updated_at INTEGER
-);
-
--- Resource transaction log (for analytics)
-CREATE TABLE resource_transactions (
-  id INTEGER PRIMARY KEY,
-  resource TEXT NOT NULL,
-  amount INTEGER NOT NULL,      -- positive = earned, negative = spent
-  transaction_type TEXT NOT NULL, -- 'earned', 'spent', 'bonus'
-  completed_session_id INTEGER,
-  reason TEXT,
-  created_at INTEGER
-);
-```
-
----
-
-## 🔗 Integration Points
-
-### After Quest Completion
-
-```typescript
-// In completed.ts
-async function completeQuest(questId, results) {
-  // 1. Calculate XP (existing)
-  const xp = computeSessionXp(results);
-
-  // 2. Calculate resources (simplified: gold + essence)
-  const loot = previewSessionLoot(results);
-
-  // 3. Save to completed_sessions
-  // 4. Update resource inventory
-  // 5. Check for building unlocks
-  // 6. Trigger victory animation with rewards
-}
-```
-
-### Victory Screen
-
-```
-┌─────────────────────────────────────┐
-│        ⚔️ QUEST COMPLETE! ⚔️        │
-├─────────────────────────────────────┤
-│                                     │
-│   +150 XP    ████████░░  Level 5    │
-│                                     │
-│   LOOT COLLECTED:                   │
-│   🪙 +45 Gold                       │
-│   ✨ +80 Essence                    │
-│                                     │
-│   [Continue to Village]             │
-└─────────────────────────────────────┘
-```
-
----
-
-## 🎮 Design Philosophy
-
-### Why Simplified Resources?
-
-1. **Easy to Understand** — 3 resources instead of 8
-2. **No Mental Overhead** — Just workout and earn
-3. **Visible Progress** — Resources accumulate visibly
-4. **No Grinding** — Resources are earned naturally through workouts
-
-### Balancing Principles
-
-1. **Session-Based** — All resources earned during workout, not passive
-2. **Proportional to Effort** — Longer/harder = more rewards
-3. **No Pay-to-Win** — All resources earned through exercise
-4. **Soft Caps** — Diminishing returns on very long sessions (prevent injury)
+- Readable at a glance: the resource names are intuitive and theme-consistent.
+- Offline-first friendly: everything can be computed locally.
+- No economy micromanagement: you earn loot by training; the village grows on its own.

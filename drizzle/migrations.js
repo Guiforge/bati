@@ -8,6 +8,7 @@ import m0001 from "./0001_seed_exercises.sql";
 import m0002 from "./0002_seed_quests.sql";
 import m0003 from "./0003_seed_adventures.sql";
 import m0004 from "./0004_seed_village.sql";
+import m0005 from "./0005_village_resources.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -18,5 +19,6 @@ export default {
     m0002,
     m0003,
     m0004,
+    m0005,
   },
 };

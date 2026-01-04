@@ -1,10 +1,10 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, Text, XStack, YStack } from "tamagui";
+
+import { GameIcon } from "@/components/common/GameIcon";
 import { getVillageStats, type VillageStatsType } from "@/db/buildings";
-import { useGameIcon } from "@/hooks/useGameIcon";
 
 function getVillageNarrative(prestige: number, t: (key: string, fallback: string) => string) {
   if (prestige < 100) return t("village.humble", "A humble beginning");
@@ -16,7 +16,6 @@ function getVillageNarrative(prestige: number, t: (key: string, fallback: string
 export function HeroStatusCard() {
   const router = useRouter();
   const { t } = useTranslation();
-  const castleIcon = useGameIcon("castle");
   const [stats, setStats] = useState<VillageStatsType | null>(null);
 
   useEffect(() => {
@@ -39,9 +38,14 @@ export function HeroStatusCard() {
       >
         <XStack items="center" gap="$4">
           {/* Castle Icon */}
-          <YStack bg="$background" rounded="$4" p="$3" borderWidth={2} borderColor="$color">
-            <Image source={castleIcon} style={{ width: 40, height: 40 }} contentFit="contain" />
-          </YStack>
+          <GameIcon
+            name="castle"
+            size={64}
+            bgColor="$background"
+            shape="rounded"
+            borderWidth={2}
+            borderColor="$color"
+          />
 
           {/* Village Info */}
           <YStack flex={1} gap="$1">

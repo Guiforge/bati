@@ -1,9 +1,9 @@
+import { useGameIcons } from "@/hooks/useGameIcon";
+import { ChevronRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import { useGameIcons } from "@/hooks/useGameIcon";
 import { useSmartAction } from "./useSmartAction";
 
 export function CurrentAdventureWidget() {
@@ -13,11 +13,9 @@ export function CurrentAdventureWidget() {
   const icons = useGameIcons(["scroll", "sword"]);
 
   if (isLoading) {
-    return null; // Or a skeleton
+    return null;
   }
 
-  // If no config, it means no active adventure/quest.
-  // We force the user to pick one by showing a "Start Adventure" CTA.
   const effectiveConfig = config || {
     variant: "adventure",
     label: t("home.start_adventure", "Start Adventure"),
@@ -26,47 +24,33 @@ export function CurrentAdventureWidget() {
   };
 
   const isAdventure = effectiveConfig.variant === "adventure";
-  const title = isAdventure
-    ? t("home.continue_adventure", "Continue Adventure")
-    : t("home.next_step", "Next Step");
-
-  // If we synthesized the config, use its values, otherwise fallbacks
+  const title = t("home.current_objective", "Current Objective");
   const subtitle = effectiveConfig.subtext || t("home.start_journey", "Start your journey");
-  const label = effectiveConfig.label || t("home.play", "Play");
+  const label = effectiveConfig.label || t("home.play", "PLAY");
   const handlePress = effectiveConfig.onPress || (() => router.push("/adventures"));
 
   return (
-    <Card
+    <YStack
       bg="$bgLight"
-      borderWidth={3}
-      borderColor="$color"
-      p={0}
-      overflow="hidden"
+      borderWidth={1}
+      borderColor="#dcdcdc"
+      rounded="$6"
+      shadowColor="$color"
+      shadowRadius={8}
+      shadowOffset={{ width: 0, height: 4 }}
+      shadowOpacity={0.15}
+      elevation={5}
       onPress={handlePress}
-      pressStyle={{ scale: 0.98 }}
-      animation="bouncy"
+      pressStyle={{ scale: 0.98, opacity: 0.9 }}
+      animation="quick"
+      overflow="hidden"
+      mb="$4"
     >
-      <XStack>
-        {/* Left: Image/Icon Area */}
-        <YStack
-          width={100}
-          bg="$primary"
-          justify="center"
-          items="center"
-          borderRightWidth={3}
-          borderColor="$color"
-        >
-          <Image
-            source={isAdventure ? icons.scroll : icons.sword}
-            style={{ width: 48, height: 48, tintColor: "white" }}
-            contentFit="contain"
-          />
-        </YStack>
-
-        {/* Right: Content */}
-        <YStack flex={1} p="$4" justify="center" gap="$1">
+      <YStack p="$4" gap="$3">
+        {/* Header */}
+        <XStack justify="space-between" items="center">
           <Text
-            fontSize={12}
+            fontSize="$3"
             fontWeight="bold"
             opacity={0.6}
             textTransform="uppercase"
@@ -74,24 +58,55 @@ export function CurrentAdventureWidget() {
           >
             {title}
           </Text>
-          <H3 fontSize={20} fontWeight="900" color="$color" numberOfLines={2}>
-            {subtitle}
-          </H3>
+          <ChevronRight size={20} color="$color" opacity={0.5} />
+        </XStack>
 
-          <XStack mt="$2">
-            <Button
-              size="$3"
-              bg="$color"
-              color="$bgLight"
-              fontWeight="bold"
-              onPress={handlePress}
-              pressStyle={{ opacity: 0.8 }}
-            >
-              {label}
-            </Button>
-          </XStack>
-        </YStack>
-      </XStack>
-    </Card>
+        {/* Main Content */}
+        <XStack gap="$4" items="center">
+          <YStack
+            width={60}
+            height={60}
+            bg="$primary"
+            rounded="$4"
+            justify="center"
+            items="center"
+            shadowColor="$color"
+            shadowRadius={4}
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.2}
+          >
+            <Image
+              source={isAdventure ? icons.scroll : icons.sword}
+              style={{ width: 32, height: 32, tintColor: "white" }}
+              contentFit="contain"
+            />
+          </YStack>
+
+          <YStack flex={1}>
+            <H3 fontSize={24} fontWeight="900" color="$color" numberOfLines={2} lineHeight={28}>
+              {subtitle}
+            </H3>
+          </YStack>
+        </XStack>
+
+        {/* CTA Button */}
+        <Button
+          size="$5"
+          bg="$primary"
+          color="white"
+          fontWeight="900"
+          fontSize="$5"
+          onPress={handlePress}
+          pressStyle={{ opacity: 0.8, scale: 0.98 }}
+          mt="$2"
+          shadowColor="$primary"
+          shadowRadius={8}
+          shadowOffset={{ width: 0, height: 4 }}
+          shadowOpacity={0.3}
+        >
+          {label.toUpperCase()}
+        </Button>
+      </YStack>
+    </YStack>
   );
 }

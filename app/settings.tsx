@@ -1,4 +1,15 @@
-import { ChevronLeft, Languages, Moon, Sun, Vibrate, Volume2 } from "@tamagui/lucide-icons";
+import { Card } from "@/components/common/Card";
+import { AVATARS } from "@/constants/avatars";
+import { useSettingsStore } from "@/stores/settings";
+import {
+  ChevronLeft,
+  Languages,
+  Moon,
+  ScrollText,
+  Sun,
+  Vibrate,
+  Volume2,
+} from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -6,14 +17,11 @@ import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import { AVATARS } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
 
 type SettingRowProps = {
   icon: React.ReactNode;
   label: string;
-  value: string;
+  value?: string;
   onPress: () => void;
 };
 
@@ -34,9 +42,11 @@ function SettingRow({ icon, label, value, onPress }: SettingRowProps) {
         <Text flex={1} fontSize="$4" fontWeight="bold" color="$color">
           {label}
         </Text>
-        <Text fontSize="$3" color="$color" opacity={0.7}>
-          {value}
-        </Text>
+        {value ? (
+          <Text fontSize="$3" color="$color" opacity={0.7}>
+            {value}
+          </Text>
+        ) : null}
       </XStack>
     </Button>
   );
@@ -192,6 +202,13 @@ export default function SettingsScreen() {
             label={t("settings.sound", "Sound")}
             value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => setSoundEnabled(!soundEnabled)}
+          />
+
+          <SettingRow
+            icon={<ScrollText size={22} color="$color" />}
+            label={t("credits.title", "Credits")}
+            value={t("credits.open", "Open")}
+            onPress={() => router.push("/credits")}
           />
         </YStack>
       </RNScrollView>

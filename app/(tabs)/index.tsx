@@ -1,18 +1,21 @@
-import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Text, YStack } from "tamagui";
+import { ActionCard } from "@/components/common/ActionCard";
 import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
-import { HeroStatusCard } from "@/components/home/HeroStatusCard";
-// Components
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { ResourcesOverview } from "@/components/home/ResourcesOverview";
 import { StatsOverview } from "@/components/home/StatsOverview";
-import { QuestCarousel } from "@/components/QuestCarousel";
+import { useGameIcons } from "@/hooks/useGameIcon";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text, XStack, YStack } from "tamagui";
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const icons = useGameIcons(["castle", "coins"]);
 
   return (
     <YStack flex={1} bg="$background" pt={insets.top}>
@@ -22,42 +25,53 @@ export default function HomeScreen() {
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 + insets.bottom }} // Space for tab bar + extra
+          contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
         >
           <YStack gap="$4" pt="$2">
             {/* 2. Resources Overview (compact bar) */}
             <ResourcesOverview />
 
-            {/* 3. Your Kingdom */}
-            <YStack>
-              <Text px="$4" mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
-                {t("home.your_kingdom", "YOUR KINGDOM")}
-              </Text>
-              <HeroStatusCard />
-            </YStack>
-
-            {/* 4. Current Adventure / Next Step */}
-            <YStack px="$4">
-              <Text mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
-                {t("home.adventure", "ADVENTURE")}
-              </Text>
+            <YStack px="$4" gap="$4">
+              {/* 3. Current Adventure (HERO) */}
               <CurrentAdventureWidget />
-            </YStack>
 
-            {/* 5. Statistics Overview */}
-            <YStack>
-              <Text px="$4" mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
-                {t("home.stats", "STATISTICS")}
-              </Text>
-              <StatsOverview />
-            </YStack>
+              {/* 4. Secondary Actions (Village & Treasury) */}
+              <XStack gap="$3">
+                <ActionCard
+                  flex={1}
+                  title={t("tabs.village", "Village")}
+                  subtitle={t("home.visit_village", "Visit Village")}
+                  onPress={() => router.push("/village")}
+                  icon={
+                    <Image
+                      source={icons.castle}
+                      style={{ width: 32, height: 32 }}
+                      contentFit="contain"
+                    />
+                  }
+                />
+                <ActionCard
+                  flex={1}
+                  title={t("tabs.treasury", "Treasury")}
+                  subtitle={t("home.open_inventory", "Open Inventory")}
+                  onPress={() => router.push("/treasury")}
+                  icon={
+                    <Image
+                      source={icons.coins}
+                      style={{ width: 32, height: 32 }}
+                      contentFit="contain"
+                    />
+                  }
+                />
+              </XStack>
 
-            {/* 6. Pick a Quest (Horizontal Scroll) */}
-            <YStack>
-              <Text px="$4" mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
-                {t("home.pick_quest", "PICK A QUEST")}
-              </Text>
-              <QuestCarousel />
+              {/* 5. Statistics Overview */}
+              <YStack mt="$2">
+                <Text mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
+                  {t("home.stats", "STATISTICS")}
+                </Text>
+                <StatsOverview />
+              </YStack>
             </YStack>
           </YStack>
         </ScrollView>

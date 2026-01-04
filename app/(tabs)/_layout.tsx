@@ -36,6 +36,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <Home
               color={focused ? "$primary" : "$color"}
+              fill={focused ? theme.primary.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -50,6 +51,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
               color={focused ? "$primary" : "$color"}
+              fill={focused ? theme.primary.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -65,6 +67,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
               color={focused ? "$primary" : "$color"}
+              fill={focused ? theme.primary.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -80,6 +83,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <Castle
               color={focused ? "$primary" : "$color"}
+              fill={focused ? theme.primary.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -95,6 +99,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused, size }) => (
             <Scroll
               color={focused ? "$primary" : "$color"}
+              fill={focused ? theme.primary.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}

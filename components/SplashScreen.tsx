@@ -31,7 +31,6 @@ export function SplashScreen({ onFinish, isReady }: SplashScreenProps) {
 
         if (prev >= 100) {
           clearInterval(interval);
-          onFinish();
           return 100;
         }
 
@@ -44,7 +43,13 @@ export function SplashScreen({ onFinish, isReady }: SplashScreenProps) {
     }, 50);
 
     return () => clearInterval(interval);
-  }, [onFinish, isReady]);
+  }, [isReady]);
+
+  useEffect(() => {
+    if (progress >= 100) {
+      onFinish();
+    }
+  }, [progress, onFinish]);
 
   return (
     <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$6">

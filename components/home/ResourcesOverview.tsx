@@ -1,11 +1,12 @@
+import { getResourceInventory, type ResourceAmount } from "@/db/resources";
+import type { ResourceCode } from "@/db/schema";
+import { useGameIcons } from "@/hooks/useGameIcon";
+import { ChevronRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { getResourceInventory, type ResourceAmount } from "@/db/resources";
-import type { ResourceCode } from "@/db/schema";
-import { useGameIcons } from "@/hooks/useGameIcon";
 
 const RESOURCE_ORDER: ResourceCode[] = ["gold", "wood", "stone", "fire", "water", "wind", "grain"];
 
@@ -53,11 +54,11 @@ export function ResourcesOverview() {
   };
 
   return (
-    <YStack>
+    <YStack position="relative">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 4 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 4, paddingRight: 40 }}
       >
         <XStack gap="$3">
           {/* Treasury Button (First Item) */}
@@ -111,6 +112,17 @@ export function ResourcesOverview() {
           })}
         </XStack>
       </ScrollView>
+
+      {/* Scroll Hint */}
+      <YStack
+        position="absolute"
+        justify="center"
+        pointerEvents="none"
+        pr="$2"
+        style={{ right: 0, top: 0, bottom: 0 }}
+      >
+        <ChevronRight size={20} color="$color" opacity={0.5} />
+      </YStack>
     </YStack>
   );
 }

@@ -1,13 +1,14 @@
+import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
+import { HeroStatusCard } from "@/components/home/HeroStatusCard";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, YStack } from "tamagui";
-import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
-import { HeroStatusCard } from "@/components/home/HeroStatusCard";
 // Components
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { ResourcesOverview } from "@/components/home/ResourcesOverview";
 import { StatsOverview } from "@/components/home/StatsOverview";
+import { QuestCarousel } from "@/components/QuestCarousel";
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -49,6 +50,14 @@ export default function HomeScreen() {
                 {t("home.stats", "STATISTICS")}
               </Text>
               <StatsOverview />
+            </YStack>
+
+            {/* 6. Pick a Quest (Horizontal Scroll) */}
+            <YStack>
+              <Text px="$4" mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
+                {t("home.pick_quest", "PICK A QUEST")}
+              </Text>
+              <QuestCarousel />
             </YStack>
           </YStack>
         </ScrollView>

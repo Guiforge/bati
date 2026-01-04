@@ -1,3 +1,4 @@
+import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Slot, useRouter, useSegments } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
@@ -13,7 +14,6 @@ import { SplashScreen as CustomSplashScreen } from "@/components/SplashScreen";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);

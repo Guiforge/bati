@@ -15,7 +15,7 @@ const tokens = createTokens({
     error: "#FF1744",
 
     // Backgrounds (slightly warm to feel more "fantasy parchment" than "app gray")
-    bgLight: "#F6F4EF",
+    bgLight: "#F5F1E6", // Vieux Parchemin
     bgDark: "#141416",
 
     // Pastels (muted surfaces, not accents)

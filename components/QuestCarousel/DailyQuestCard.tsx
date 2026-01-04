@@ -2,10 +2,9 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { H3, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
-import { Tag } from "@/components/common/Tag";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
 import { estimateQuestSeconds, formatDuration } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
@@ -29,10 +28,9 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useSettingsStore();
-  const icons = useGameIcons(["star", "gold"]);
+  const icons = useGameIcons(["star", "gold", "scroll"]);
 
   const title = language === "fr" ? quest.frTitle : quest.enTitle;
-  const desc = language === "fr" ? quest.frDescription : quest.enDescription;
   const emoji = questEmoji(quest.rounds, quest.exercises.length);
   const tokens = getQuestColorTokensFromTemplateWithExercises({
     quest,
@@ -60,105 +58,67 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
     return computeSessionXp({ durationSeconds: estimatedSeconds, userLevel: "medium" });
   }, [estimatedSeconds]);
 
-  const estimatedGold = Math.floor(estimatedXp / 5);
+  // Metadata string
+  const duration = formatDuration(estimatedSeconds, language);
+  const exerciseCount = quest.exercises.length;
+  const metadata = `${quest.rounds} ${t("quest.rounds", "rounds")} • ${duration} • ${exerciseCount} ${t("quest.exercises", "exercises")}`;
 
   return (
     <Card
       bg={tokens.bg}
       onPress={() => router.push(`/quests/${quest.id}` as never)}
-      borderWidth={4}
-      borderColor="$primary"
+      borderWidth={3}
+      borderColor="$color"
+      p={0}
+      overflow="hidden"
+      animation="bouncy"
+      pressStyle={{ scale: 0.98 }}
     >
-      <YStack gap="$3">
-        <XStack justify="space-between" items="center">
-          <XStack bg="$primary" px="$2" py="$1" rounded="$4" rotate="-2deg">
-            <Text color="white" fontWeight="900" fontSize={12} textTransform="uppercase">
-              {t("quests.daily_quest", "Daily Quest")}
-            </Text>
-          </XStack>
-          <Text fontSize={12} fontWeight="bold" opacity={0.6}>
-            {formatDuration(estimatedSeconds, language)}
+      {/* Header Section (Colored Background with Large Icon/Emoji) */}
+      <YStack
+        bg={tokens.bg}
+        height={100}
+        justify="center"
+        items="center"
+        position="relative"
+        borderBottomWidth={3}
+        borderColor="$color"
+      >
+        <Text fontSize={64}>{emoji}</Text>
+
+        {/* Rewards Badge */}
+        <XStack
+          position="absolute"
+          bg="$primary"
+          px="$2"
+          py="$1"
+          rounded="$4"
+          borderWidth={2}
+          borderColor="$color"
+          items="center"
+          gap="$1"
+          rotate="2deg"
+          shadowColor="$color"
+          shadowRadius={0}
+          shadowOffset={{ width: 2, height: 2 }}
+          style={{ top: 8, right: 8 }}
+        >
+          <Image source={icons.star} style={{ width: 12, height: 12, tintColor: "white" }} />
+          <Text color="white" fontWeight="900" fontSize={12}>
+            +{estimatedXp} XP
           </Text>
         </XStack>
+      </YStack>
 
-        <XStack gap="$3" items="flex-start">
-          <YStack
-            width={54}
-            height={54}
-            rounded={27}
-            bg="$bgLight"
-            borderWidth={3}
-            borderColor="$color"
-            justify="center"
-            items="center"
-          >
-            <Text fontSize={26}>{emoji}</Text>
-          </YStack>
+      {/* Content Section */}
+      <YStack p="$3" gap="$1">
+        <H3 color="$color" fontWeight="900" fontSize={20} numberOfLines={1}>
+          {title}
+        </H3>
 
-          <YStack flex={1} gap="$2">
-            <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={2}>
-              {title}
-            </Text>
-            <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={2}>
-              {desc}
-            </Paragraph>
-
-            {/* Loot Preview */}
-            <XStack gap="$3" mt="$1">
-              <XStack
-                items="center"
-                gap="$1"
-                bg="rgba(255,255,255,0.5)"
-                px="$2"
-                py="$1"
-                rounded="$4"
-              >
-                <Image
-                  source={icons.star}
-                  style={{ width: 12, height: 12, tintColor: "#FFD700" }}
-                  contentFit="contain"
-                />
-                <Text fontSize={11} fontWeight="bold" color="$color">
-                  +{estimatedXp} XP
-                </Text>
-              </XStack>
-              <XStack
-                items="center"
-                gap="$1"
-                bg="rgba(255,255,255,0.5)"
-                px="$2"
-                py="$1"
-                rounded="$4"
-              >
-                <Image
-                  source={icons.gold}
-                  style={{ width: 12, height: 12, tintColor: "#FFD700" }}
-                  contentFit="contain"
-                />
-                <Text fontSize={11} fontWeight="bold" color="$color">
-                  +{estimatedGold}
-                </Text>
-              </XStack>
-            </XStack>
-
-            <XStack gap="$2" flexWrap="wrap" pt="$1">
-              <Tag
-                label={t("quests.rounds", {
-                  count: quest.rounds,
-                  defaultValue: `${quest.rounds} rounds`,
-                })}
-                tone="secondary"
-              />
-              <Tag
-                label={t("quests.exercises", {
-                  count: quest.exercises.length,
-                  defaultValue: `${quest.exercises.length} exercises`,
-                })}
-                tone="primary"
-              />
-            </XStack>
-          </YStack>
-        </XStack>
+        <Text color="$color" opacity={0.7} fontSize={14} fontWeight="bold">
+          {metadata}
+        </Text>
       </YStack>
     </Card>
   );

@@ -70,8 +70,8 @@ export default function TreasuryScreen() {
             </Text>
           </YStack>
 
-          {/* Resource Cards */}
-          <YStack gap="$3">
+          {/* Resource Cards Grid */}
+          <XStack flexWrap="wrap" gap="$3" justify="space-between">
             {RESOURCES.map((res) => (
               <Card
                 key={res.code}
@@ -79,45 +79,44 @@ export default function TreasuryScreen() {
                 borderWidth={3}
                 borderColor="$color"
                 borderRadius="$5"
-                p="$4"
+                p="$3"
+                width="48%" // ~50% minus gap
+                pressStyle={{ scale: 0.98 }}
+                animation="bouncy"
               >
-                <XStack items="center" gap="$4">
+                <YStack items="center" gap="$2">
                   {/* Icon */}
-                  <YStack bg="$bgLight" rounded="$4" p="$3" borderWidth={2} borderColor="$color">
+                  <YStack bg="$bgLight" rounded="$4" p="$2" borderWidth={2} borderColor="$color">
                     <Image
                       source={icons[res.iconName]}
                       style={{
-                        width: 32,
-                        height: 32,
+                        width: 48,
+                        height: 48,
                         tintColor: res.color,
                       }}
                       contentFit="contain"
                     />
                   </YStack>
 
-                  {/* Info */}
-                  <YStack flex={1}>
-                    <Text fontSize="$4" fontWeight="bold" color="$color" textTransform="capitalize">
-                      {t(`resources.${res.code}`, res.code)}
-                    </Text>
-                    {res.muscle !== "—" && (
-                      <Text fontSize="$2" color="$color" opacity={0.5}>
-                        {t("treasury.earned_from", "Earned from")}{" "}
-                        {t(`muscles.${res.muscle}`, res.muscle)}
-                      </Text>
-                    )}
-                  </YStack>
+                  {/* Quantity */}
+                  <Text fontSize="$6" fontWeight="900" color="$color">
+                    {getAmount(res.code)}
+                  </Text>
 
-                  {/* Amount */}
-                  <YStack items="flex-end">
-                    <Text fontSize="$6" fontWeight="900" color="$primary">
-                      {getAmount(res.code).toLocaleString()}
-                    </Text>
-                  </YStack>
-                </XStack>
+                  {/* Name */}
+                  <Text
+                    fontSize="$3"
+                    fontWeight="bold"
+                    color="$color"
+                    opacity={0.6}
+                    textTransform="capitalize"
+                  >
+                    {t(`resources.${res.code}`, res.code)}
+                  </Text>
+                </YStack>
               </Card>
             ))}
-          </YStack>
+          </XStack>
 
           {/* Info Card */}
           <Card

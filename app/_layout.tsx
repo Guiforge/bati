@@ -9,9 +9,11 @@ import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { SplashScreen as CustomSplashScreen } from "@/components/SplashScreen";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
+import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);
@@ -36,10 +38,19 @@ export default function RootLayout() {
   // Resolve theme: use user preference or system default
   const systemScheme = useColorScheme();
   const effectiveSystemScheme = systemScheme === "dark" ? "dark" : "light";
-  const colorScheme = theme === "system" ? effectiveSystemScheme : theme;
+  // If settings are not loaded yet, we don't know the user preference.
+  // To avoid flash, we can default to light (since the app is "Light RPG") or wait.
+  // Given the requirement "Backgrounds are Off-White/Parchment", let's default to light if not loaded.
+  const colorScheme = !settingsLoaded
+    ? "light"
+    : theme === "system"
+      ? effectiveSystemScheme
+      : theme;
+
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   // Called when database migrations are complete
   const handleDatabaseReady = useCallback(() => {
@@ -55,26 +66,37 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    console.log(
-      "[RootLayout] Navigation useEffect - isNavigationReady:",
-      isNavigationReady,
-      "userLoaded:",
-      userLoaded,
-      "settingsLoaded:",
-      settingsLoaded,
-    );
-    if (!isNavigationReady || !userLoaded || !settingsLoaded) return;
+    if (isNavigationReady && userLoaded && settingsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [isNavigationReady, userLoaded, settingsLoaded]);
+
+  const onSplashFinish = useCallback(() => {
+    setShowSplash(false);
 
     const inOnboardingGroup = segments[0] === "onboarding";
-
     if (!hasFinishedOnboarding && !inOnboardingGroup) {
       router.replace("/onboarding");
     } else if (hasFinishedOnboarding && inOnboardingGroup) {
       router.replace("/");
     }
+  }, [hasFinishedOnboarding, segments, router]);
 
-    SplashScreen.hideAsync();
-  }, [hasFinishedOnboarding, segments, router, isNavigationReady, userLoaded, settingsLoaded]);
+  // Custom Navigation Theme to force Cream background
+  const MyTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: config.tokens.color.bgLight.val, // Use Tamagui token
+      card: config.tokens.color.bgLight.val, // Navbar background
+      text: config.tokens.color.bgDark.val,
+      border: "transparent",
+    },
+  };
+
+  if (!isNavigationReady) {
+    return null;
+  }
 
   return (
     <>
@@ -88,15 +110,24 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <TamaguiProvider config={config} defaultTheme={colorScheme}>
             <Theme name={colorScheme}>
-              <PortalProvider>
-                <DatabaseProvider onReady={handleDatabaseReady}>
-                  <ToastProvider>
-                    <ErrorBoundary>
-                      <Slot />
-                    </ErrorBoundary>
-                  </ToastProvider>
-                </DatabaseProvider>
-              </PortalProvider>
+              <ThemeProvider value={MyTheme}>
+                <PortalProvider>
+                  <DatabaseProvider onReady={handleDatabaseReady}>
+                    <ToastProvider>
+                      <ErrorBoundary>
+                        {showSplash ? (
+                          <CustomSplashScreen
+                            onFinish={onSplashFinish}
+                            isReady={userLoaded && settingsLoaded}
+                          />
+                        ) : (
+                          <Slot />
+                        )}
+                      </ErrorBoundary>
+                    </ToastProvider>
+                  </DatabaseProvider>
+                </PortalProvider>
+              </ThemeProvider>
             </Theme>
           </TamaguiProvider>
         </SafeAreaProvider>

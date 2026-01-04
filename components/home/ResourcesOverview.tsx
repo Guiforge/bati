@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { getResourceInventory, type ResourceAmount } from "@/db/resources";
 import type { ResourceCode } from "@/db/schema";
@@ -53,24 +53,47 @@ export function ResourcesOverview() {
   };
 
   return (
-    <Pressable onPress={() => router.push("/treasury" as "/dev")}>
-      <XStack
-        bg="$bgLight"
-        borderWidth={2}
-        borderColor="$color"
-        rounded="$4"
-        mx="$4"
-        px="$3"
-        py="$2"
-        items="center"
-        justify="space-between"
+    <YStack>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 4 }}
       >
-        {/* Resources */}
-        <XStack gap="$3" flex={1} justify="space-around">
+        <XStack gap="$3">
+          {/* Treasury Button (First Item) */}
+          <Pressable onPress={() => router.push("/treasury" as "/dev")}>
+            <YStack
+              bg="$bgLight"
+              borderWidth={2}
+              borderColor="$color"
+              rounded="$4"
+              p="$2"
+              width={50}
+              height={50}
+              justify="center"
+              items="center"
+            >
+              <Image source={icons.chest} style={{ width: 24, height: 24 }} contentFit="contain" />
+            </YStack>
+          </Pressable>
+
+          {/* Resource Items */}
           {RESOURCE_ORDER.map((code) => {
             const iconName = RESOURCE_ICONS[code as keyof typeof RESOURCE_ICONS];
             return (
-              <YStack key={code} items="center" gap={2}>
+              <YStack
+                key={code}
+                bg="$bgLight"
+                borderWidth={2}
+                borderColor="$color"
+                rounded="$4"
+                px="$3"
+                py="$1"
+                width={70}
+                justify="center"
+                items="center"
+                gap="$1"
+              >
                 <Image
                   source={icons[iconName]}
                   style={{
@@ -80,23 +103,14 @@ export function ResourcesOverview() {
                   }}
                   contentFit="contain"
                 />
-                <Text fontSize={11} fontWeight="bold" color="$color">
+                <Text fontSize={12} fontWeight="bold" color="$color">
                   {formatAmount(getAmount(code))}
                 </Text>
               </YStack>
             );
           })}
         </XStack>
-
-        {/* Chevron / Treasury hint */}
-        <YStack pl="$2" items="center">
-          <Image
-            source={icons.chest}
-            style={{ width: 20, height: 20, opacity: 0.5 }}
-            contentFit="contain"
-          />
-        </YStack>
-      </XStack>
-    </Pressable>
+      </ScrollView>
+    </YStack>
   );
 }

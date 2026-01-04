@@ -165,13 +165,6 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   console.log("[DatabaseProvider] Migration status:", { success, error: error?.message });
 
   useEffect(() => {
-    // Show our in-app loading/error state instead of sitting on the native splash.
-    SplashScreen.hideAsync().catch(() => {
-      // ignore
-    });
-  }, []);
-
-  useEffect(() => {
     let cancelled = false;
 
     if (hasStartedMigrations.current) return;

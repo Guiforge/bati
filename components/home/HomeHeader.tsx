@@ -13,7 +13,7 @@ export function HomeHeader() {
   const { villageName } = useUserStore();
   const { avatarId, language } = useSettingsStore();
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
-  const [gold, setGold] = useState(0);
+  const [_gold, setGold] = useState(0);
 
   const avatar = getAvatarById(avatarId);
 

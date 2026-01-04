@@ -1,30 +1,27 @@
-import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, useTheme, YStack } from "tamagui";
-import { ContinueAdventureFab } from "@/components/home/ContinueAdventureFab";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text, YStack } from "tamagui";
+import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
 import { HeroStatusCard } from "@/components/home/HeroStatusCard";
 // Components
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { ResourcesOverview } from "@/components/home/ResourcesOverview";
 import { StatsOverview } from "@/components/home/StatsOverview";
-import { QuestCarousel } from "@/components/QuestCarousel";
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const theme = useTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background?.val }}>
+    <YStack flex={1} bg="$background" pt={insets.top}>
       <YStack flex={1} position="relative">
         {/* 1. Header: Identity & Level */}
         <HomeHeader />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }} // Space for FAB + tab bar
+          contentContainerStyle={{ paddingBottom: 120 + insets.bottom }} // Space for tab bar + extra
         >
           <YStack gap="$4" pt="$2">
             {/* 2. Resources Overview (compact bar) */}
@@ -38,12 +35,12 @@ export default function HomeScreen() {
               <HeroStatusCard />
             </YStack>
 
-            {/* 4. Quick Play: Pick a Quest */}
-            <YStack>
-              <Text px="$4" mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
-                {t("home.quick_play", "QUICK PLAY")}
+            {/* 4. Current Adventure / Next Step */}
+            <YStack px="$4">
+              <Text mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
+                {t("home.adventure", "ADVENTURE")}
               </Text>
-              <QuestCarousel />
+              <CurrentAdventureWidget />
             </YStack>
 
             {/* 5. Statistics Overview */}
@@ -55,10 +52,7 @@ export default function HomeScreen() {
             </YStack>
           </YStack>
         </ScrollView>
-
-        {/* Floating Action: The Main "Next Step" */}
-        <ContinueAdventureFab />
       </YStack>
-    </SafeAreaView>
+    </YStack>
   );
 }

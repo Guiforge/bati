@@ -1,9 +1,9 @@
-import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
-import { HeroStatusCard } from "@/components/home/HeroStatusCard";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, YStack } from "tamagui";
+import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
+import { HeroStatusCard } from "@/components/home/HeroStatusCard";
 // Components
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { ResourcesOverview } from "@/components/home/ResourcesOverview";

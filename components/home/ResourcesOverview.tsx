@@ -1,12 +1,12 @@
-import { getResourceInventory, type ResourceAmount } from "@/db/resources";
-import type { ResourceCode } from "@/db/schema";
-import { useGameIcons } from "@/hooks/useGameIcon";
 import { ChevronRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
+import { getResourceInventory, type ResourceAmount } from "@/db/resources";
+import type { ResourceCode } from "@/db/schema";
+import { useGameIcons } from "@/hooks/useGameIcon";
 
 const RESOURCE_ORDER: ResourceCode[] = ["gold", "wood", "stone", "fire", "water", "wind", "grain"];
 

@@ -2,6 +2,7 @@ import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Slot, useRouter, useSegments } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
 import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -93,6 +94,7 @@ export default function RootLayout() {
         />
       </Head>
       <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar style="light" />
         <SafeAreaProvider>
           <TamaguiProvider config={config} defaultTheme={colorScheme}>
             <Theme name={colorScheme}>

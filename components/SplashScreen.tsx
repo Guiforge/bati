@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import { H1, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { LinearGradient } from "expo-linear-gradient"; // Standard Expo
+import { useEffect, useMemo, useState } from "react";
+import { Dimensions } from "react-native";
+import { getTokenValue, H1, Image, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -7,82 +9,140 @@ interface SplashScreenProps {
 }
 
 const LOADING_MESSAGES = [
-  "Sharpening axes...",
-  "Summoning the Coach...",
-  "Scaring goblins...",
-  "Polishing armor...",
-  "Brewing potions...",
-  "Consulting the elders...",
-  "Stretching hamstrings...",
-  "Loading heavy weights...",
+  "Forging your destiny...",
+  "Calibrating gravity...",
+  "Scouting the terrain...",
+  "Awakening the inner fire...",
 ];
+
+const { width, height } = Dimensions.get("window");
 
 export function SplashScreen({ onFinish, isReady }: SplashScreenProps) {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState(LOADING_MESSAGES[0]);
 
+  const bgImage = useMemo(() => {
+    const images = [
+      require("@/assets/splash-bg1.jpg"),
+      require("@/assets/splash-bg2.jpg"),
+      require("@/assets/splash-bg3.jpg"),
+    ];
+    return images[Math.floor(Math.random() * images.length)];
+  }, []);
+
+  // Simulation de chargement
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        // If we are not ready, stall at 90%
-        if (prev >= 90 && !isReady) {
-          return 90;
-        }
-
+        if (prev >= 90 && !isReady) return 90;
         if (prev >= 100) {
           clearInterval(interval);
           return 100;
         }
-
-        // Randomly change message
-        if (Math.random() > 0.7) {
+        // Change message occasionally
+        if (Math.random() > 0.85) {
           setMessage(LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)]);
         }
-        return prev + Math.floor(Math.random() * 5) + 1; // Random increment
+        return prev + Math.floor(Math.random() * 3) + 2; // Un peu plus rapide
       });
-    }, 50);
-
+    }, 30);
     return () => clearInterval(interval);
   }, [isReady]);
 
   useEffect(() => {
-    if (progress >= 100) {
-      onFinish();
-    }
+    if (progress >= 100) onFinish();
   }, [progress, onFinish]);
 
+  const bgDark = getTokenValue("$bgDark") || "#0B0F19";
+
   return (
-    <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$6">
-      <H1 color="$color" fontWeight="900" fontSize={48}>
-        🏰 Bati
-      </H1>
+    <YStack flex={1} bg="$bgDark">
+      {/* 1. BACKGROUND IMAGE (FULL SCREEN) */}
+      <Image
+        source={bgImage}
+        width={width}
+        height={height}
+        position="absolute"
+        resizeMode="cover"
+        opacity={0.8}
+      />
 
-      <YStack width="80%" gap="$4">
-        <Paragraph
-          color="$color"
-          opacity={0.8}
-          fontSize={16}
-          fontWeight="bold"
-          style={{ textAlign: "center" }}
-        >
-          {message}
-        </Paragraph>
+      {/* 2. GRADIENT OVERLAY (Pour la lisibilité en bas) */}
+      <LinearGradient
+        colors={["transparent", "rgba(11, 15, 25, 0.4)", bgDark]}
+        style={{ position: "absolute", width, height }}
+        locations={[0, 0.5, 0.9]}
+      />
 
-        <YStack>
-          <Progress
-            value={progress}
-            size="$4"
-            background="$bgLight"
-            borderWidth={2}
-            borderColor="$color"
+      {/* 3. CONTENU UI */}
+      <YStack flex={1} justify="space-between" p="$6" pt="$12" pb="$10">
+        {/* TOP: LOGO & TITRE */}
+        <XStack justify="center">
+          <YStack gap="$4">
+            <Image
+              source={require("@/assets/app-icon.png")}
+              width={80}
+              height={80}
+              borderRadius="$4"
+              shadowColor="$primaryGlow"
+              shadowRadius={20}
+            />
+            <H1
+              fontFamily="$heading"
+              color="$text"
+              fontSize={52}
+              lineHeight={52}
+              letterSpacing={8}
+              fontWeight="900"
+              textShadowColor="rgba(0,0,0,0.8)"
+              textShadowRadius={10}
+            >
+              BATI
+            </H1>
+          </YStack>
+        </XStack>
+
+        {/* BOTTOM: LOADING HUD */}
+        <YStack gap="$4">
+          {/* Message RPG flottant */}
+          <Paragraph
+            fontFamily="$heading"
+            color="$text"
+            fontSize={16}
+            opacity={0.9}
+            textShadowColor="$bgDark"
+            textShadowRadius={4}
           >
-            <Progress.Indicator background="$primary" animation="quick" />
-          </Progress>
-          <XStack justify="flex-end" mt="$1">
-            <Text color="$color" opacity={0.6} fontSize={12} fontWeight="bold">
-              {progress}%
-            </Text>
-          </XStack>
+            {message}
+          </Paragraph>
+
+          {/* Barre de Progression "High Tech" */}
+          <YStack>
+            <Progress
+              value={progress}
+              height={4}
+              bg="rgba(255,255,255,0.1)"
+              overflow="hidden"
+              borderCurve="continuous"
+            >
+              <Progress.Indicator
+                bg="$primary"
+                animation="bouncy"
+                shadowColor="$primary"
+                shadowRadius={10} // Effet laser
+                shadowOpacity={1}
+              />
+            </Progress>
+
+            <XStack justify="space-between" mt="$2">
+              <Text fontFamily="$body" fontSize={10} color="$textSecondary">
+                v3.0.0
+              </Text>
+              <Text fontFamily="$heading" fontSize={12} color="$primary">
+                {progress}%
+              </Text>
+            </XStack>
+          </YStack>
         </YStack>
       </YStack>
     </YStack>

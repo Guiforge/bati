@@ -42,7 +42,7 @@ export function AppButton({
       mt={marginTop}
       bg={getBackgroundColor()}
       color={getColor()}
-      size="$6"
+      size="$4"
       width={fullWidth ? "100%" : undefined}
       borderWidth={3}
       rounded="$8"

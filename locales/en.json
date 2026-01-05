@@ -30,14 +30,16 @@
     "chars_min": "chars min",
     "avatar_subtitle": "Swipe to browse heroes",
     "avatar_title": "Choose your avatar",
-    "finish": "Found my kingdom",
+    "finish": "Start my training journey",
+    "kingdom_founded": "KINGDOM FOUNDED",
     "language_selection": "Pick your language",
-    "next": "Begin the adventure",
+    "next": "Start my training adventure",
     "next_avatar": "Continue",
     "presentation_description": "Every workout builds your village. Start your adventure today.",
     "presentation_title": "Your fitness is\nyour fortress.",
     "valid": "Valid!",
     "village_name_placeholder": "Your village name",
+    "village_name_subtitle": "Every legend needs a name. What will yours be?",
     "village_name_title": "Name your village"
   },
   "scheduling": {

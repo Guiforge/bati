@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -8,7 +9,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
-import { GameIcon } from "@/components/common/GameIcon";
 import { ProgressDots } from "@/components/ProgressDots";
 import { AVATARS, getAvatarById } from "@/constants/avatars";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -128,8 +128,7 @@ export default function ChooseAvatar() {
                 items="center"
                 pressStyle={{ opacity: 0.7, scale: 0.95 }}
               >
-                {/* Equivalent to "chevron-left" */}
-                <GameIcon name="scroll" size={28} color="white" />
+                <ChevronLeft size={28} color="white" strokeWidth={2.5} />
               </AppButton>
 
               <YStack items="center" gap="$2" width={140}>
@@ -159,8 +158,7 @@ export default function ChooseAvatar() {
                 items="center"
                 pressStyle={{ opacity: 0.7, scale: 0.95 }}
               >
-                {/* Equivalent to "chevron-right" */}
-                <GameIcon name="scroll" size={28} color="white" />
+                <ChevronRight size={28} color="white" strokeWidth={2.5} />
               </AppButton>
             </XStack>
 
@@ -176,8 +174,6 @@ export default function ChooseAvatar() {
                 <Text color="$bgDark" fontWeight="900" fontSize={18}>
                   {t("onboarding.next_avatar")}
                 </Text>
-                {/* Equivalent to "arrow-right" */}
-                <GameIcon name="sword" size={20} color="$bgDark" />
               </XStack>
             </AppButton>
           </YStack>

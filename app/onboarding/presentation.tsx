@@ -1,3 +1,4 @@
+import { ArrowRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -6,7 +7,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
-import { GameIcon } from "@/components/common/GameIcon";
 
 export default function Presentation() {
   const router = useRouter();
@@ -87,8 +87,7 @@ export default function Presentation() {
                 {t("onboarding.next")}
               </Text>
 
-              {/* "Arrow" equivalent from available game icon set */}
-              <GameIcon name="sword" size={20} color="white" />
+              <ArrowRight size={20} color="white" strokeWidth={3} />
             </XStack>
           </AppButton>
         </YStack>

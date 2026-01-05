@@ -1,14 +1,6 @@
 import type { ImageSourcePropType } from "react-native";
 
-export const avatarIds = [
-  "gravity-mage",
-  "shadow",
-  "scout",
-  "guardian",
-  "archmage",
-  "elder",
-  "archer",
-] as const;
+export const avatarIds = ["shadow", "scout", "guardian", "archmage", "elder", "archer"] as const;
 
 export type AvatarId = (typeof avatarIds)[number];
 
@@ -19,11 +11,6 @@ export type Avatar = {
 };
 
 export const AVATARS: Avatar[] = [
-  {
-    id: "gravity-mage",
-    labelKey: "avatars.gravity_mage",
-    source: require("../assets/avatar/gravity-mage.jpg"),
-  },
   {
     id: "shadow",
     labelKey: "avatars.shadow",

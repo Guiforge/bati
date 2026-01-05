@@ -26,6 +26,10 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# Python
+__pycache__/
+*.pyc
+
 # macOS
 .DS_Store
 

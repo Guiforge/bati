@@ -20,7 +20,6 @@ from mistralai.models import ToolFileChunk
 def main():
     parser = argparse.ArgumentParser(description="Generate an image prompt using Mistral AI.")
     parser.add_argument("prompt", type=str, help="The basic idea for the image.")
-    parser.add_argument("--api-key", type=str, default=os.environ.get("MISTRAL_API_KEY"), help="Mistral API Key")
     parser.add_argument("--model", type=str, default="mistral-large-latest", help="Mistral model to use")
     parser.add_argument(
         "--image-model",
@@ -38,11 +37,7 @@ def main():
 
     args = parser.parse_args()
 
-    if not args.api_key:
-        print("Error: MISTRAL_API_KEY not found. Please set it in your environment or pass it as an argument.")
-        sys.exit(1)
-
-    client = Mistral(api_key=args.api_key)
+    client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
 
     print(f"🎨 Enhancing prompt for: '{args.prompt}' using {args.model}...")
 

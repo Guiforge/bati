@@ -2,27 +2,18 @@
 
 ## Purpose
 
-Home is your **dashboard**. It’s the fastest way to:
+Home is the quick launch pad: glance at your level + avatar, see the current adventure step, and act immediately.
 
-- jump back into training,
-- continue your current adventure,
-- check your progress at a glance.
+## Layout focus
 
-## Main features on this page
+- **Overview header**: compact strip with your avatar, level badge, and streak — always visible up top.
+- **Current adventure card**: the hero call-to-action with the next step, rewards, and start/continue button.
+- **Modern navbar**: floating, rounded bottom navbar for fast jumps (Village, Treasury, Journal) without eating screen space.
 
-- **Continue your journey**: if you have an active adventure, Home points you to the next step.
-- **Quick access**:
-  - **Village** (see your world grow)
-  - **Treasury** (see your loot totals)
-- **Progress snapshot**: a compact overview of your training stats.
+## Image prompt (hero)
 
-## Typical user actions
-
-- Continue the current adventure.
-- Open the village to see progress.
-- Open the treasury to see collected resources.
-- Check recent progress signals (level / streak / summaries).
+“Home screen at night: obsidian glass HUD, cel-shaded hero avatar with glowing level badge, current adventure card lit in electric blue, floating rounded bottom navbar hovering above a faint neon grid, deep midnight background with soft vignette.”
 
 ## What success looks like
 
-Home should make it obvious what to do next: **train**, and see **visible progress**.
+The next step is obvious: tap the current adventure, keep training, and feel progress from the header and navbar cues.

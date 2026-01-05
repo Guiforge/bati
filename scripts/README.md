@@ -4,16 +4,6 @@ This script uses Mistral AI to generate detailed, high-quality prompts for image
 
 **Note:** Mistral AI currently provides Text and Vision (image understanding) models, but does not have a public API for *generating* images directly. This script helps you leverage Mistral's language capabilities to create better images with other tools.
 
-## Setup
-
-1. Install [uv](https://docs.astral.sh/uv/).
-2. Get a Mistral API Key from [console.mistral.ai](https://console.mistral.ai/).
-3. Set your API key:
-
-   ```bash
-   export MISTRAL_API_KEY="your_api_key_here"
-   ```
-
 ## Usage
 
 Run the script directly with `uv`:

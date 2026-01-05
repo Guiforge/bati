@@ -109,6 +109,9 @@ export const quests = sqliteTable("quests", {
   // Rest between sets (a "set" = one exercise target). In seconds.
   restSeconds: int().notNull().default(30),
 
+  // Main cover image for the quest
+  imagePath: text(),
+
   createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
 });
@@ -173,6 +176,9 @@ export const adventures = sqliteTable(
     // Soft flag to hide adventures without deleting content.
     isActive: int().notNull().default(1),
 
+    // Main cover image for the adventure
+    imagePath: text(),
+
     // Boss-specific fields (only used when kind = "boss")
     bossTotalHp: int(),
     bossWeaknessMuscle: text().$type<MuscleCode>(),
@@ -210,6 +216,10 @@ export const adventureSteps = sqliteTable(
     frNarrative: text().notNull().default(""),
     enOutroNarrative: text().notNull().default(""),
     frOutroNarrative: text().notNull().default(""),
+
+    // Image for this specific step/chapter
+    imagePath: text(),
+
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },

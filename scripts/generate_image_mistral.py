@@ -3,6 +3,7 @@
 # dependencies = [
 #     "mistralai",
 #     "python-dotenv",
+#     "tenacity",
 # ]
 # ///
 
@@ -16,6 +17,56 @@ load_dotenv()
 
 from mistralai import Mistral
 from mistralai.models import ToolFileChunk
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
+
+class ContentFilterError(Exception):
+    """Raised when content is blocked by Mistral's content filters."""
+    pass
+
+
+def log_retry(retry_state):
+    """Log retry attempts."""
+    print(f"⚠️  Attempt {retry_state.attempt_number} failed. Retrying in {retry_state.next_action.sleep:.1f}s...")
+
+
+def check_content_filter(response):
+    """Check if response was blocked by content filter."""
+    for output in getattr(response, "outputs", []) or []:
+        content = getattr(output, "content", None)
+        if isinstance(content, str):
+            if "content filters" in content.lower() or "can't create this image" in content.lower():
+                raise ContentFilterError(content)
+    return response
+
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=4, max=60),
+    retry=retry_if_exception_type(Exception),
+    before_sleep=log_retry,
+    reraise=True,
+)
+def generate_image_with_retry(client, agent_id: str, prompt: str):
+    """Call Mistral conversations API with retry logic."""
+    response = client.beta.conversations.start(
+        agent_id=agent_id,
+        inputs=prompt,
+    )
+    return check_content_filter(response)
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    retry=retry_if_exception_type(Exception),
+    before_sleep=log_retry,
+    reraise=True,
+)
+def enhance_prompt_with_retry(client, model: str, messages: list):
+    """Call Mistral chat API with retry logic."""
+    return client.chat.complete(model=model, messages=messages)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Generate an image prompt using Mistral AI.")
@@ -61,9 +112,11 @@ def main():
         if style_hint:
             user_prompt += "\n\nStyle constraints to follow:\n" + style_hint
 
-        chat_response = client.chat.complete(
-            model=args.model,
-            messages=[
+        print("   Step 1/2: Enhancing prompt...")
+        chat_response = enhance_prompt_with_retry(
+            client,
+            args.model,
+            [
                 {
                     "role": "system",
                     "content": system_prompt,
@@ -87,7 +140,7 @@ def main():
                 should_generate_image = True
 
         if should_generate_image:
-            print("\n🖼️  Generating image with Mistral Agent...")
+            print("\n🖼️  Step 2/2: Generating image with Mistral Agent...")
 
             # Per Mistral docs: create an agent with the image_generation tool, then use conversations API.
             image_agent = client.beta.agents.create(
@@ -102,9 +155,10 @@ def main():
                 },
             )
 
-            response = client.beta.conversations.start(
-                agent_id=image_agent.id,
-                inputs=enhanced_prompt,
+            response = generate_image_with_retry(
+                client,
+                image_agent.id,
+                enhanced_prompt,
             )
 
             # Find and download generated image(s)
@@ -145,6 +199,13 @@ def main():
                     print(f"\n❌ Error saving to file: {e}")
             else:
                 print("\n(Use -o output.png to generate and save an actual image)")
+
+    except ContentFilterError as e:
+        # Content was blocked by Mistral's filters - skip gracefully
+        print(f"\n⚠️  SKIPPED: Content blocked by Mistral's content filters.")
+        print(f"   Reason: {str(e)[:100]}...")
+        print(f"   Skipping this image and continuing...")
+        sys.exit(0)  # Exit 0 so shell script continues
 
     except Exception as e:
         print(f"Error: {e}")

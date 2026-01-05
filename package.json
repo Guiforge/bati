@@ -59,12 +59,21 @@
     "jest-expo": "^54.0.16",
     "typescript": "~5.9.3"
   },
+  "jest": {
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    },
+    "preset": "jest-expo",
+    "testMatch": [
+      "**/__tests__/**/*.(spec|test).(js|jsx|ts|tsx)"
+    ]
+  },
   "main": "expo-router/entry",
   "name": "bati",
   "private": true,
   "scripts": {
     "android": "expo run:android",
-    "check": "biome check . && npx tsc -p tsconfig.json --noEmit",
+    "check": "biome check --write . && npx tsc -p tsconfig.json --noEmit",
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
     "format": "biome check --write .",
@@ -74,15 +83,6 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "web": "expo start --web"
-  },
-  "jest": {
-    "preset": "jest-expo",
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/$1"
-    },
-    "testMatch": [
-      "**/__tests__/**/*.(spec|test).(js|jsx|ts|tsx)"
-    ]
   },
   "version": "1.0.0"
 }

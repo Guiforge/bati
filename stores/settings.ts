@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { type AvatarId, isAvatarId } from "@/constants/avatars";
+import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
 import i18n from "@/i18n";
 import { getDevicePreferredAppLanguage } from "@/src/i18n/deviceLanguage";
@@ -16,7 +16,7 @@ function normalizeTheme(value: string | null | undefined): ThemePreference {
 }
 
 function normalizeAvatarId(value: string | null | undefined): AvatarId {
-  return isAvatarId(value) ? value : "kid";
+  return isAvatarId(value) ? value : avatarIds[0];
 }
 
 interface SettingsState {
@@ -45,7 +45,7 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>((set) => ({
   language: getDevicePreferredAppLanguage(),
   theme: "system",
-  avatarId: "kid",
+  avatarId: "guardian",
   hapticsEnabled: true,
   soundEnabled: true,
   reducedMotion: false,

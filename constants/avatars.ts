@@ -1,10 +1,6 @@
 import type { ImageSourcePropType } from "react-native";
 
 export const avatarIds = [
-  "elf",
-  "kid",
-  "mage",
-  "rogue",
   "gravity-mage",
   "shadow",
   "scout",
@@ -23,26 +19,6 @@ export type Avatar = {
 };
 
 export const AVATARS: Avatar[] = [
-  {
-    id: "elf",
-    labelKey: "avatars.elf",
-    source: require("../assets/avatar/elf.jpg"),
-  },
-  {
-    id: "kid",
-    labelKey: "avatars.kid",
-    source: require("../assets/avatar/kid.jpg"),
-  },
-  {
-    id: "mage",
-    labelKey: "avatars.mage",
-    source: require("../assets/avatar/mage.jpg"),
-  },
-  {
-    id: "rogue",
-    labelKey: "avatars.rogue",
-    source: require("../assets/avatar/rogue.jpg"),
-  },
   {
     id: "gravity-mage",
     labelKey: "avatars.gravity_mage",

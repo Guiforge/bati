@@ -31,15 +31,14 @@ export default function RootLayout() {
   const { isLoaded: settingsLoaded, loadFromDatabase: loadSettingsFromDatabase } =
     useSettingsStore();
 
-  const segments = useSegments();
-  const router = useRouter();
-
   // NEW_STYLE: force dark-only theme across the whole app.
   // We keep loading settings for other preferences, but the UI theme is always dark.
   const colorScheme = "dark";
 
+  const segments = useSegments();
+  const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
-
+  const [showSplash, setShowSplash] = useState(true);
   // Called when database migrations are complete
   const handleDatabaseReady = useCallback(() => {
     loadUserFromDatabase();
@@ -52,18 +51,21 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (!(isNavigationReady && userLoaded && settingsLoaded)) return;
+    if (isNavigationReady && userLoaded && settingsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [isNavigationReady, userLoaded, settingsLoaded]);
+
+  const onSplashFinish = useCallback(() => {
+    setShowSplash(false);
 
     const inOnboardingGroup = segments[0] === "onboarding";
-
     if (!hasFinishedOnboarding && !inOnboardingGroup) {
       router.replace("/onboarding");
     } else if (hasFinishedOnboarding && inOnboardingGroup) {
       router.replace("/");
     }
-
-    SplashScreen.hideAsync();
-  }, [hasFinishedOnboarding, isNavigationReady, router, segments, settingsLoaded, userLoaded]);
+  }, [hasFinishedOnboarding, segments, router]);
 
   // Custom Navigation Theme to force Cream background
   const MyTheme = {

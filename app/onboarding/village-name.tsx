@@ -1,4 +1,3 @@
-import { ArrowRight, Check } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -7,7 +6,9 @@ import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Input, Paragraph, Text, XStack, YStack } from "tamagui";
+
 import { AppButton } from "@/components/common/AppButton";
+import { GameIcon } from "@/components/common/GameIcon";
 import { ProgressDots } from "@/components/ProgressDots";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useUserStore } from "@/stores/user";
@@ -24,7 +25,7 @@ export default function VillageName() {
   const insets = useSafeAreaInsets();
   const { mediumImpact, success } = useHaptics();
   const [name, setName] = useState("");
-  const [status, setStatus] = useState<"editing" | "submitting" | "stamped">("editing");
+  const [status, setStatus] = useState<"editing" | "stamped">("editing");
   const { setVillageName, setHasFinishedOnboarding } = useUserStore();
 
   const isValidName = name.trim().length >= MIN_NAME_LENGTH;
@@ -33,26 +34,24 @@ export default function VillageName() {
     setVillageName(name.trim());
     setHasFinishedOnboarding(true);
     router.replace("/");
-  }, [name, setVillageName, setHasFinishedOnboarding, router]);
+  }, [name, router, setHasFinishedOnboarding, setVillageName]);
 
-  const handleFinish = () => {
-    if (isValidName) {
-      mediumImpact();
-      setStatus("stamped");
-    }
-  };
+  const handleFinish = useCallback(() => {
+    if (!isValidName) return;
+    mediumImpact();
+    setStatus("stamped");
+  }, [isValidName, mediumImpact]);
 
   useEffect(() => {
-    if (status !== "stamped") {
-      return;
-    }
+    if (status !== "stamped") return;
+
     const id = setTimeout(() => {
       success();
       completeOnboarding();
     }, 350);
 
     return () => clearTimeout(id);
-  }, [status, completeOnboarding, success]);
+  }, [status, success, completeOnboarding]);
 
   return (
     <YStack flex={1} bg="$background">
@@ -75,7 +74,7 @@ export default function VillageName() {
       />
 
       {/* Stamp Animation Layer */}
-      {status === "stamped" && (
+      {status === "stamped" ? (
         <YStack fullscreen justify="center" items="center" z={100} pointerEvents="none">
           <H1
             color="white"
@@ -92,7 +91,7 @@ export default function VillageName() {
             🏰
           </Text>
         </YStack>
-      )}
+      ) : null}
 
       {/* Content */}
       <KeyboardAvoidingView
@@ -145,7 +144,7 @@ export default function VillageName() {
                 value={name}
                 // biome-ignore lint/suspicious/noExplicitAny: Tamagui Input type definition mismatch
                 onChangeText={(text: any) => {
-                  setName(text.slice(0, MAX_NAME_LENGTH));
+                  setName(String(text).slice(0, MAX_NAME_LENGTH));
                 }}
                 placeholder={t("onboarding.village_name_placeholder") ?? ""}
                 width="100%"
@@ -163,14 +162,14 @@ export default function VillageName() {
 
               <XStack justify="space-between" px="$3">
                 <XStack items="center" gap="$1">
-                  {isValidName ? <Check size={14} color="$success" /> : null}
+                  {isValidName ? <GameIcon name="star" size={14} color="$success" /> : null}
                   <Text
                     fontSize={12}
                     color={isValidName ? "$success" : "$muted"}
                     fontWeight={isValidName ? "700" : "400"}
                   >
-                    {name.length < MIN_NAME_LENGTH
-                      ? `${MIN_NAME_LENGTH - name.length} ${t("onboarding.chars_min") || "chars min"}`
+                    {name.trim().length < MIN_NAME_LENGTH
+                      ? `${MIN_NAME_LENGTH - name.trim().length} ${t("onboarding.chars_min") || "chars min"}`
                       : t("onboarding.valid") || "Valid!"}
                   </Text>
                 </XStack>
@@ -194,7 +193,8 @@ export default function VillageName() {
                 <Text color="white" fontWeight="900" fontSize={18}>
                   {t("onboarding.finish")}
                 </Text>
-                <ArrowRight size={20} color="white" strokeWidth={3} />
+                {/* "Arrow" equivalent from available game icon set */}
+                <GameIcon name="sword" size={20} color="white" />
               </XStack>
             </AppButton>
           </YStack>

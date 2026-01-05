@@ -1,17 +1,18 @@
+import { ArrowRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Paragraph, Text, XStack, YStack } from "tamagui";
-
 import { AppButton } from "@/components/common/AppButton";
-import { GameIcon } from "@/components/common/GameIcon";
+import { useGameIcon } from "@/hooks/useGameIcon";
 
 export default function Presentation() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const castleIcon = useGameIcon("castle");
 
   return (
     <YStack flex={1} bg="$background">
@@ -32,9 +33,6 @@ export default function Presentation() {
       />
 
       <YStack flex={1} justify="space-between" pt={insets.top + 20} pb={insets.bottom + 20} px="$5">
-        {/* Logo + Title */}
-        <YStack items="center" gap="$3">
-          {/* Use Bati branding here (avoid game icons on presentation) */}
           <Image
             source={require("@/assets/app-icon.png")}
             style={{ width: 80, height: 80 }}
@@ -53,7 +51,6 @@ export default function Presentation() {
           </H1>
         </YStack>
 
-        {/* Copy + CTA */}
         <YStack gap="$5">
           <YStack gap="$2">
             <H2
@@ -86,9 +83,7 @@ export default function Presentation() {
               <Text color="white" fontWeight="900" fontSize={18}>
                 {t("onboarding.next")}
               </Text>
-
-              {/* "Arrow" equivalent from available game icon set */}
-              <GameIcon name="sword" size={20} color="white" />
+              <GameIcon name="arrow-right" size={20} color="white" />
             </XStack>
           </AppButton>
         </YStack>

@@ -4,7 +4,13 @@ import * as schema from "./schema";
 
 // Increment this when doing breaking schema changes that require a fresh start
 export const SCHEMA_VERSION = 2;
+
+// Only allow FORCE_DB_RESET during dev, and only when explicitly enabled.
+// Note: Expo inlines EXPO_PUBLIC_* env vars at build time.
 const FORCE_DB_RESET = __DEV__ && process.env.EXPO_PUBLIC_FORCE_DB_RESET === "1";
+
+// Ensure we only perform a force reset once per cold start (even if modules re-evaluate).
+const FORCE_DB_RESET_RAN_KEY = "__batiForceDbResetRan" as const;
 
 type DbSingleton = {
   expoDb: ReturnType<typeof openDatabaseSync>;
@@ -16,7 +22,12 @@ const GLOBAL_KEY = "__batiDbSingleton" as const;
 // Check and reset database if schema version is outdated BEFORE opening
 function checkSchemaVersion() {
   try {
-    if (FORCE_DB_RESET) {
+    const globalFlags = globalThis as unknown as Record<string, unknown>;
+
+    if (FORCE_DB_RESET && !globalFlags[FORCE_DB_RESET_RAN_KEY]) {
+      globalFlags[FORCE_DB_RESET_RAN_KEY] = true;
+      // biome-ignore lint/suspicious/noConsole: intentional dev-only signal
+      console.log("[db] FORCE_DB_RESET=1 -> deleting bati.db (cold start)");
       deleteDatabaseSync("bati.db");
     }
 
@@ -76,8 +87,6 @@ if (!globalAny[GLOBAL_KEY]) {
   // Important: during Fast Refresh, we avoid deleting/recreating the database here.
   // Recreating native handles while components still reference the previous instance
   // is a common cause of NativeDatabase null-pointer crashes.
-  if (FORCE_DB_RESET) {
-  }
 }
 
 const singleton = globalAny[GLOBAL_KEY] as DbSingleton;

@@ -188,7 +188,6 @@ export const adventures = sqliteTable(
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({
-    questUnique: uniqueIndex("adventures_quest_unique").on(table.questId),
     activeSortIdx: index("adventures_active_sort_idx").on(table.isActive, table.sortOrder),
   }),
 );

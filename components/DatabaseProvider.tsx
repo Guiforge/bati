@@ -15,6 +15,7 @@ type MigrationState = { success: false; error?: Error } | { success: true; error
 type SqliteMigrationClient = {
   execAsync: (source: string) => Promise<void>;
   getFirstAsync?: <T = unknown>(source: string, params?: readonly unknown[]) => Promise<T | null>;
+  getAllAsync?: <T = unknown>(source: string, params?: readonly unknown[]) => Promise<T[]>;
 };
 
 async function runMigrationsAsync(
@@ -63,25 +64,73 @@ async function runMigrationsAsync(
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
+      // Safety: some older bundled schema migrations created a UNIQUE index on adventures.questId
+      // (`adventures_quest_unique`). This breaks newer content where multiple adventures can
+      // start from the same quest. Since we don't need retro-compat here, we skip creating it.
+      // (Also helps if Metro/Expo has cached an older .sql asset.)
+      const effectiveStatements = statements.filter((stmt) => {
+        const shouldSkip = /CREATE\s+UNIQUE\s+INDEX\s+`adventures_quest_unique`/i.test(stmt);
+        if (shouldSkip && opts.debug) {
+          // biome-ignore lint/suspicious/noConsole: Debug logging
+          console.log("[DatabaseProvider] Skipping statement (adventures_quest_unique)");
+        }
+        return !shouldSkip;
+      });
+
       if (opts.debug) {
         // biome-ignore lint/suspicious/noConsole: Debug logging
         console.log(
           "[DatabaseProvider] Applying migration",
           entry.tag,
-          `(idx=${entry.idx}, stmts=${statements.length})`,
+          `(idx=${entry.idx}, stmts=${effectiveStatements.length})`,
         );
       }
 
-      for (let i = 0; i < statements.length; i++) {
-        const stmt = statements[i];
+      for (let i = 0; i < effectiveStatements.length; i++) {
+        const stmt = effectiveStatements[i];
         if (opts.debug) {
           // biome-ignore lint/suspicious/noConsole: Debug logging
           console.log(
-            `[DatabaseProvider]  stmt ${i + 1}/${statements.length}:`,
+            `[DatabaseProvider]  stmt ${i + 1}/${effectiveStatements.length}:`,
             stmt.slice(0, 120).replace(/\s+/g, " "),
           );
         }
-        await txn.execAsync(stmt);
+        try {
+          await txn.execAsync(stmt);
+        } catch (e) {
+          // biome-ignore lint/suspicious/noConsole: Error logging
+          console.error(
+            `[DatabaseProvider] Error executing statement ${i + 1}/${effectiveStatements.length} in migration ${entry.tag}:`,
+          );
+          // biome-ignore lint/suspicious/noConsole: Error logging
+          console.error(stmt);
+          // biome-ignore lint/suspicious/noConsole: Error logging
+          console.error(e);
+
+          // Extra diagnostics for common schema/index issues.
+          // Helps confirm whether a UNIQUE index exists even when the SQL migration file says otherwise.
+          try {
+            if (client.getAllAsync) {
+              const isAdventuresStmt = /\b(adventures)\b/i.test(stmt);
+              if (isAdventuresStmt) {
+                const indexes = await client.getAllAsync!<{ name: string; sql: string | null }>(
+                  "SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='adventures' ORDER BY name",
+                );
+                // biome-ignore lint/suspicious/noConsole: Error logging
+                console.error("[DatabaseProvider] adventures indexes:", indexes);
+
+                const tableSql = await client.getFirstAsync!<{ sql: string | null }>(
+                  "SELECT sql FROM sqlite_master WHERE type='table' AND name='adventures' LIMIT 1",
+                );
+                // biome-ignore lint/suspicious/noConsole: Error logging
+                console.error("[DatabaseProvider] adventures table SQL:", tableSql?.sql);
+              }
+            }
+          } catch (_diagErr) {
+            // Ignore diagnostics failures.
+          }
+          throw e;
+        }
       }
 
       // Record applied migration.
@@ -98,6 +147,8 @@ async function runMigrationsAsync(
     await runEntry(client);
     await client.execAsync("COMMIT");
   } catch (e) {
+    // biome-ignore lint/suspicious/noConsole: Error logging
+    console.error("[DatabaseProvider] Migration failed:", e);
     await client.execAsync("ROLLBACK");
     throw e;
   }

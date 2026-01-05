@@ -3,7 +3,15 @@ import { deleteDatabaseSync, openDatabaseSync } from "expo-sqlite";
 import * as schema from "./schema";
 
 // Increment this when doing breaking schema changes that require a fresh start
-export const SCHEMA_VERSION = 2;
+// (No retro-compat: bumping this forces a full DB rebuild on device.)
+export const SCHEMA_VERSION = 3;
+
+const DB_INIT_DEBUG = __DEV__ && process.env.EXPO_PUBLIC_MIGRATIONS_DEBUG === "1";
+
+// In Expo Go / dev, database deletion can be unreliable if native handles linger.
+// Since we don't need retro-compat here, we version the filename in dev to
+// guarantee a clean DB when SCHEMA_VERSION changes.
+const DB_NAME = __DEV__ ? `bati.dev.v${SCHEMA_VERSION}.db` : "bati.db";
 
 // Only allow FORCE_DB_RESET during dev, and only when explicitly enabled.
 // Note: Expo inlines EXPO_PUBLIC_* env vars at build time.
@@ -27,11 +35,11 @@ function checkSchemaVersion() {
     if (FORCE_DB_RESET && !globalFlags[FORCE_DB_RESET_RAN_KEY]) {
       globalFlags[FORCE_DB_RESET_RAN_KEY] = true;
       // biome-ignore lint/suspicious/noConsole: intentional dev-only signal
-      console.log("[db] FORCE_DB_RESET=1 -> deleting bati.db (cold start)");
-      deleteDatabaseSync("bati.db");
+      console.log(`[db] FORCE_DB_RESET=1 -> deleting ${DB_NAME} (cold start)`);
+      deleteDatabaseSync(DB_NAME);
     }
 
-    const tempDb = openDatabaseSync("bati.db", {
+    const tempDb = openDatabaseSync(DB_NAME, {
       enableChangeListener: true,
     });
     try {
@@ -42,19 +50,24 @@ function checkSchemaVersion() {
 
       if (currentVersion < SCHEMA_VERSION) {
         tempDb.closeSync();
-        deleteDatabaseSync("bati.db");
+        deleteDatabaseSync(DB_NAME);
       } else {
         tempDb.closeSync();
       }
-    } catch {
-      // Table doesn't exist or query failed - check if old database exists
+    } catch (e) {
+      // Table doesn't exist or query failed - check if old database exists.
+      // This is expected on fresh install (no tables yet).
+      if (DB_INIT_DEBUG) {
+        // biome-ignore lint/suspicious/noConsole: Debug logging
+        console.log("[db] Schema version check failed (expected on fresh install):", e);
+      }
       try {
         const tables = tempDb.getAllSync<{ name: string }>(
           "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '__drizzle_migrations'",
         );
         if (tables.length > 0) {
           tempDb.closeSync();
-          deleteDatabaseSync("bati.db");
+          deleteDatabaseSync(DB_NAME);
         } else {
           tempDb.closeSync();
         }
@@ -70,7 +83,7 @@ function checkSchemaVersion() {
 function createSingleton(): DbSingleton {
   // Only do destructive operations during cold start (not on Fast Refresh).
   checkSchemaVersion();
-  const expoDb = openDatabaseSync("bati.db", {
+  const expoDb = openDatabaseSync(DB_NAME, {
     enableChangeListener: true,
   });
 
@@ -93,7 +106,7 @@ const singleton = globalAny[GLOBAL_KEY] as DbSingleton;
 let expoDb = singleton.expoDb;
 
 export function reopenDatabase() {
-  expoDb = openDatabaseSync("bati.db", {
+  expoDb = openDatabaseSync(DB_NAME, {
     enableChangeListener: true,
   });
 }
@@ -113,7 +126,7 @@ export async function resetDatabase() {
   } catch (_e) {}
 
   try {
-    deleteDatabaseSync("bati.db");
+    deleteDatabaseSync(DB_NAME);
   } catch (_e) {}
 }
 

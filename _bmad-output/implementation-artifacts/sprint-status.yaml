@@ -86,13 +86,13 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Village Progression System
-  epic-6: ready-for-dev
-  6-1-display-village-with-tier-based-organization: ready-for-dev
-  6-2-auto-unlock-buildings-based-on-training-patterns: ready-for-dev
-  6-3-auto-level-buildings-with-xp-progression: ready-for-dev
-  6-4-building-details-modal-with-lore-and-stats: ready-for-dev
-  6-5-prestige-score-calculation-and-display: ready-for-dev
-  6-6-building-unlock-celebration-animations: ready-for-dev
+  epic-6: done
+  6-1-display-village-with-tier-based-organization: done
+  6-2-auto-unlock-buildings-based-on-training-patterns: done
+  6-3-auto-level-buildings-with-xp-progression: done
+  6-4-building-details-modal-with-lore-and-stats: done
+  6-5-prestige-score-calculation-and-display: done
+  6-6-building-unlock-celebration-animations: done
   epic-6-retrospective: optional
 
   # Epic 7: Character Progression & Profile

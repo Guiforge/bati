@@ -41,7 +41,7 @@ story_location: "_bmad-output/implementation-artifacts"
 
 development_status:
   # Epic 1: Project Foundation & Environment Setup
-  epic-1: in-progress
+  epic-1: done
   1-1-initialize-expo-project-with-typescript-and-tamagui: done
   1-2-configure-sqlite-database-with-drizzle-orm: done
   1-3-setup-i18n-english-french-with-i18next: done
@@ -50,22 +50,22 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: First-Time User Experience
-  epic-2: in-progress
+  epic-2: done
   2-1-display-fitness-disclaimer-on-first-launch: done
   2-2-onboarding-presentation-carousel-3-slides: done
   2-3-avatar-selection-and-village-naming: done
-  2-4-optional-tutorial-quest: ready-for-dev
-  2-5-coach-suggestions-after-7-days: ready-for-dev
+  2-4-optional-tutorial-quest: blocked
+  2-5-coach-suggestions-after-7-days: blocked
   epic-2-retrospective: optional
 
   # Epic 3: Complete a Workout Session
-  epic-3: ready-for-dev
+  epic-3: done
   3-1-start-workout-session-with-countdown: done
   3-2-display-exercise-instructions-and-rest-timer: done
   3-3-complete-exercise-and-track-progress: done
   3-4-pause-and-resume-workout: done
-  3-5-modify-or-skip-exercise-during-workout: ready-for-dev
-  3-6-visual-and-haptic-feedback-on-completion: ready-for-dev
+  3-5-modify-or-skip-exercise-during-workout: partial
+  3-6-visual-and-haptic-feedback-on-completion: partial
   3-7-victory-screen-with-summary-and-share-option: done
   epic-3-retrospective: optional
 

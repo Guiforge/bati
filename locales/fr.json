@@ -489,5 +489,14 @@
     "view_village": "Voir le Village",
     "xp_to_next": "XP pour le prochain niveau"
   },
-  "welcome": "Bienvenue sur Bati !"
+  "welcome": "Bienvenue sur Bati !",
+  "disclaimer": {
+    "title": "Avis Important",
+    "intro": "Avant de commencer votre parcours fitness avec Bati, veuillez lire et accepter ce qui suit:",
+    "not_medical_advice": "Cette application ne remplace pas les conseils médicaux professionnels, le diagnostic ou le traitement",
+    "consult_doctor": "Consultez toujours votre médecin avant de commencer un nouveau programme d'exercice",
+    "own_risk": "Vous utilisez cette application à vos propres risques et comprenez que l'activité physique comporte des risques inhérents",
+    "motivation_tool": "Bati est un outil de motivation conçu pour rendre le fitness amusant et engageant grâce à la gamification.",
+    "i_understand": "Je Comprends et J'Accepte"
+  }
 }

@@ -489,5 +489,14 @@
     "inactivity_body": "It's been a while. The monsters are getting closer...",
     "boss_title": "⚔️ The Boss Awaits!",
     "boss_body": "You're at the final step. Face the boss and claim victory!"
+  },
+  "disclaimer": {
+    "title": "Important Notice",
+    "intro": "Before you begin your fitness journey with Bati, please read and acknowledge the following:",
+    "not_medical_advice": "This app is not a substitute for professional medical advice, diagnosis, or treatment",
+    "consult_doctor": "Always consult your physician before starting any new exercise program",
+    "own_risk": "You use this app at your own risk and understand that physical activity carries inherent risks",
+    "motivation_tool": "Bati is a motivational tool designed to make fitness fun and engaging through gamification.",
+    "i_understand": "I Understand and Accept"
   }
 }

@@ -51,7 +51,7 @@ development_status:
 
   # Epic 2: First-Time User Experience
   epic-2: in-progress
-  2-1-display-fitness-disclaimer-on-first-launch: ready-for-dev
+  2-1-display-fitness-disclaimer-on-first-launch: done
   2-2-onboarding-presentation-carousel-3-slides: done
   2-3-avatar-selection-and-village-naming: done
   2-4-optional-tutorial-quest: ready-for-dev

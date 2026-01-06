@@ -64,8 +64,8 @@ development_status:
   3-2-display-exercise-instructions-and-rest-timer: done
   3-3-complete-exercise-and-track-progress: done
   3-4-pause-and-resume-workout: done
-  3-5-modify-or-skip-exercise-during-workout: partial
-  3-6-visual-and-haptic-feedback-on-completion: partial
+  3-5-modify-or-skip-exercise-during-workout: done
+  3-6-visual-and-haptic-feedback-on-completion: done
   3-7-victory-screen-with-summary-and-share-option: done
   epic-3-retrospective: optional
 

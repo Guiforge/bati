@@ -254,7 +254,20 @@
     "xp_earned": "XP Earned",
     "exercises": "Exercises",
     "time_taken": "Time Taken",
-    "view_village": "View Village"
+    "view_village": "View Village",
+    "modify": "Modify",
+    "skip": "Skip",
+    "skip_title": "Skip Exercise?",
+    "skip_warning": "You won't earn XP for this exercise.",
+    "skip_confirm": "Skip Exercise",
+    "modify_title": "Choose Alternative",
+    "modify_subtitle": "Select an alternative exercise",
+    "alternative_1": "Alternative Exercise 1",
+    "alternative_2": "Alternative Exercise 2",
+    "alternative_3": "Alternative Exercise 3",
+    "difficulty_easier": "Easier",
+    "difficulty_similar": "Similar",
+    "difficulty_harder": "Harder"
   },
   "resources": {
     "gold": "Gold",

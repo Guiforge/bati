@@ -104,11 +104,11 @@ development_status:
   epic-7-retrospective: optional
 
   # Epic 8: Intelligent Coach System
-  epic-8: ready-for-dev
-  8-1-detect-weak-muscle-areas-algorithm: ready-for-dev
-  8-2-coach-recommendations-ui-and-weekly-snapshot: ready-for-dev
-  8-3-set-fitness-goals-interface: ready-for-dev
-  8-4-auto-generate-4-week-training-plans: ready-for-dev
+  epic-8: done
+  8-1-detect-weak-muscle-areas-algorithm: done
+  8-2-coach-recommendations-ui-and-weekly-snapshot: done
+  8-3-set-fitness-goals-interface: done
+  8-4-auto-generate-4-week-training-plans: done
   epic-8-retrospective: optional
 
   # Epic 9: Notifications & Engagement

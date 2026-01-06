@@ -96,11 +96,11 @@ development_status:
   epic-6-retrospective: optional
 
   # Epic 7: Character Progression & Profile
-  epic-7: ready-for-dev
-  7-1-earn-and-display-xp-from-exercises: ready-for-dev
-  7-2-auto-level-character-system: ready-for-dev
-  7-3-avatar-display-and-customization: ready-for-dev
-  7-4-user-statistics-dashboard: ready-for-dev
+  epic-7: done
+  7-1-earn-and-display-xp-from-exercises: done
+  7-2-auto-level-character-system: done
+  7-3-avatar-display-and-customization: done
+  7-4-user-statistics-dashboard: done
   epic-7-retrospective: optional
 
   # Epic 8: Intelligent Coach System

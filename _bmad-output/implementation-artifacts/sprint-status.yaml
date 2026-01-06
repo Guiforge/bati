@@ -54,8 +54,8 @@ development_status:
   2-1-display-fitness-disclaimer-on-first-launch: done
   2-2-onboarding-presentation-carousel-3-slides: done
   2-3-avatar-selection-and-village-naming: done
-  2-4-optional-tutorial-quest: blocked
-  2-5-coach-suggestions-after-7-days: blocked
+  2-4-optional-tutorial-quest: done
+  2-5-coach-suggestions-after-7-days: done
   epic-2-retrospective: optional
 
   # Epic 3: Complete a Workout Session

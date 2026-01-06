@@ -50,7 +50,15 @@
     "valid": "Valid!",
     "village_name_placeholder": "Your village name",
     "village_name_subtitle": "Every legend needs a name. What will yours be?",
-    "village_name_title": "Name your village"
+    "village_name_title": "Name your village",
+    "tutorial_title": "Learn the Basics!",
+    "tutorial_description": "Complete a quick 5-minute quest to learn how workouts work",
+    "tutorial_feature_1": "3 simple exercises",
+    "tutorial_feature_2": "Learn rest timers and tracking",
+    "tutorial_feature_3": "Experience the victory screen",
+    "tutorial_reward": "+100 XP & Unlock your first building!",
+    "tutorial_start": "Start Tutorial",
+    "tutorial_skip": "Skip for Now"
   },
   "scheduling": {
     "title": "Weekly Schedule",
@@ -64,7 +72,16 @@
   "coach": {
     "rest_suggestion_title": "Coach says: Rest!",
     "suggestion_title": "Coach Suggestion",
-    "try_these_quests": "Try these quests:"
+    "try_these_quests": "Try these quests:",
+    "suggestions_title": "Getting Started Suggestions",
+    "suggestions_intro": "You've been training for {{days}} days! Here are some tips:",
+    "suggestion_1_title": "Try Different Muscle Groups",
+    "suggestion_1_desc": "Train different muscle groups for balanced progress",
+    "suggestion_2_title": "Set Your First Goal",
+    "suggestion_2_desc": "Create a fitness goal to stay motivated",
+    "suggestion_3_title": "Build Momentum",
+    "suggestion_3_desc": "Complete 3 sessions this week to build a habit",
+    "got_it": "Got it!"
   },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",

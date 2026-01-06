@@ -99,7 +99,16 @@
   "coach": {
     "rest_suggestion_title": "Le Coach dit : Repos !",
     "suggestion_title": "Suggestion du Coach",
-    "try_these_quests": "Essaie ces quêtes :"
+    "try_these_quests": "Essaie ces quêtes :",
+    "suggestions_title": "Suggestions pour débuter",
+    "suggestions_intro": "Tu t'entraînes depuis {{days}} jours! Voici quelques conseils:",
+    "suggestion_1_title": "Varie les groupes musculaires",
+    "suggestion_1_desc": "Entraîne différents groupes musculaires pour progresser de façon équilibrée",
+    "suggestion_2_title": "Définis ton premier objectif",
+    "suggestion_2_desc": "Crée un objectif fitness pour rester motivé",
+    "suggestion_3_title": "Construis ton élan",
+    "suggestion_3_desc": "Complète 3 séances cette semaine pour créer une habitude",
+    "got_it": "Compris!"
   },
   "common": {
     "of": "sur",
@@ -319,7 +328,15 @@
     "valid": "Parfait !",
     "village_name_placeholder": "Ton nom de village",
     "village_name_subtitle": "Chaque légende a un nom. Quel sera le tien ?",
-    "village_name_title": "Nomme ton village"
+    "village_name_title": "Nomme ton village",
+    "tutorial_title": "Apprends les bases!",
+    "tutorial_description": "Complète une quête rapide de 5 minutes pour apprendre comment fonctionnent les entraînements",
+    "tutorial_feature_1": "3 exercices simples",
+    "tutorial_feature_2": "Découvre les minuteurs et le suivi",
+    "tutorial_feature_3": "Expérimente l'écran de victoire",
+    "tutorial_reward": "+100 XP & Débloque ton premier bâtiment!",
+    "tutorial_start": "Commencer le tutoriel",
+    "tutorial_skip": "Passer pour l'instant"
   },
   "progression": {
     "decrease_message": "Ça semble dur ces derniers temps. Baisser la difficulté peut t'aider à rester régulier.",

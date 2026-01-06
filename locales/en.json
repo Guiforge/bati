@@ -203,7 +203,7 @@
   "boss": {
     "hp": "HP",
     "enraged": "ENRAGED!",
-    "defeated": "DEFEATED!",
+    "defeated": "BOSS DEFEATED!",
     "victory_title": "Boss Defeated!",
     "victory_subtitle": "The beast has fallen!",
     "damage_dealt": "Damage Dealt",
@@ -212,7 +212,18 @@
     "resistance_penalty": "Resisted...",
     "fight_intro": "A powerful foe blocks your path.",
     "weakness": "Weakness",
-    "resistance": "Resistance"
+    "resistance": "Resistance",
+    "title": "Boss",
+    "epic_battle": "EPIC BATTLE",
+    "hp_display": "HP: {{hp}}",
+    "no_description": "No description",
+    "begin_battle": "BEGIN BATTLE!",
+    "not_found": "Boss not found",
+    "phase": "Phase {{phase}}",
+    "epic_victory": "EPIC VICTORY",
+    "total_damage": "Total Damage",
+    "enhanced_rewards": "Enhanced Rewards",
+    "special_loot": "Special Loot"
   },
   "exercises": {
     "details_title": "Exercise",

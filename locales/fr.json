@@ -61,7 +61,7 @@
   "boss": {
     "critical_hit": "COUP CRITIQUE !",
     "damage_dealt": "Dégâts infligés",
-    "defeated": "VAINCU !",
+    "defeated": "BOSS VAINCU!",
     "enraged": "ENRAGÉ !",
     "fight_intro": "Un ennemi puissant bloque ton chemin.",
     "hp": "PV",
@@ -70,7 +70,18 @@
     "victory_subtitle": "La bête est tombée !",
     "victory_title": "Boss vaincu !",
     "weakness": "Faiblesse",
-    "weakness_bonus": "Faiblesse !"
+    "weakness_bonus": "Faiblesse !",
+    "title": "Boss",
+    "epic_battle": "BATAILLE ÉPIQUE",
+    "hp_display": "PV: {{hp}}",
+    "no_description": "Aucune description",
+    "begin_battle": "COMMENCER LE COMBAT!",
+    "not_found": "Boss introuvable",
+    "phase": "Phase {{phase}}",
+    "epic_victory": "VICTOIRE ÉPIQUE",
+    "total_damage": "Dégâts totaux",
+    "enhanced_rewards": "Récompenses améliorées",
+    "special_loot": "Butin spécial"
   },
   "chart": {
     "all_history": "Durées des entraînements récents",

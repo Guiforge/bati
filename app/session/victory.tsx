@@ -4,16 +4,24 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { useSessionStore } from "@/stores/session";
+import { useGameIcon } from "@/hooks/useGameIcon";
 
 export default function VictoryScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { GameIcon } = useGameIcon();
 
-  const { sessionSummary, clearSession } = useSessionStore();
+  const { sessionSummary, bossFight, clearSession } = useSessionStore();
+
+  const isBossVictory = !!bossFight && bossFight.currentHp <= 0;
 
   useEffect(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, []);
+    Haptics.notificationAsync(
+      isBossVictory
+        ? Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Success
+    );
+  }, [isBossVictory]);
 
   const handleContinue = () => {
     clearSession();
@@ -26,14 +34,63 @@ export default function VictoryScreen() {
   }
 
   return (
-    <YStack flex={1} bg="$bgDark" padding="$6" justifyContent="center" alignItems="center">
-      <Text fontSize={48} fontWeight="bold" color="$primary" marginBottom="$4" textAlign="center">
-        🎉 {t("session.victory_title")}
-      </Text>
+    <YStack
+      flex={1}
+      bg={isBossVictory ? "#0A0A0F" : "$bgDark"}
+      padding="$6"
+      justifyContent="center"
+      alignItems="center"
+    >
+      {isBossVictory ? (
+        <>
+          {/* Boss Defeat Animation */}
+          <YStack
+            bg="$error"
+            w={100}
+            h={100}
+            ai="center"
+            jc="center"
+            borderRadius="$full"
+            mb="$4"
+            shadowColor="$error"
+            shadowOffset={{ width: 0, height: 8 }}
+            shadowOpacity={0.8}
+            shadowRadius={24}
+          >
+            <GameIcon name="skull" size={60} color="$text" />
+          </YStack>
 
-      <Text fontSize={18} color="$textSecondary" marginBottom="$8" textAlign="center">
-        {t("session.victory_subtitle")}
-      </Text>
+          <Text
+            fontSize={40}
+            fontWeight="900"
+            color="$error"
+            marginBottom="$2"
+            textAlign="center"
+          >
+            {t("boss.defeated")}
+          </Text>
+
+          <Text fontSize={20} color="$warning" marginBottom="$6" textAlign="center">
+            {t("boss.epic_victory")}
+          </Text>
+        </>
+      ) : (
+        <>
+          <Text
+            fontSize={48}
+            fontWeight="bold"
+            color="$primary"
+            marginBottom="$4"
+            textAlign="center"
+          >
+            🎉 {t("session.victory_title")}
+          </Text>
+
+          <Text fontSize={18} color="$textSecondary" marginBottom="$8" textAlign="center">
+            {t("session.victory_subtitle")}
+          </Text>
+        </>
+      )}
 
       {/* Stats Cards */}
       <YStack width="100%" gap="$3" marginBottom="$8">
@@ -44,15 +101,21 @@ export default function VictoryScreen() {
             padding="$4"
             borderRadius="$4"
             borderWidth={1}
-            borderColor="$glassBorder"
+            borderColor={isBossVictory ? "$error" : "$glassBorder"}
             alignItems="center"
           >
             <Text fontSize={14} color="$textSecondary" marginBottom="$2">
               {t("session.xp_earned")}
             </Text>
-            <Text fontSize={32} fontWeight="bold" color="$primary">
+            <Text fontSize={32} fontWeight="bold" color={isBossVictory ? "$warning" : "$primary"}>
+              {isBossVictory && "2x "}
               {sessionSummary.xpEarned || 0}
             </Text>
+            {isBossVictory && (
+              <Text fontSize={12} color="$warning" fontWeight="600">
+                {t("boss.enhanced_rewards")}
+              </Text>
+            )}
           </YStack>
 
           <YStack
@@ -61,7 +124,7 @@ export default function VictoryScreen() {
             padding="$4"
             borderRadius="$4"
             borderWidth={1}
-            borderColor="$glassBorder"
+            borderColor={isBossVictory ? "$error" : "$glassBorder"}
             alignItems="center"
           >
             <Text fontSize={14} color="$textSecondary" marginBottom="$2">
@@ -73,12 +136,30 @@ export default function VictoryScreen() {
           </YStack>
         </XStack>
 
+        {isBossVictory && bossFight && (
+          <YStack
+            bg="$glassBg"
+            padding="$4"
+            borderRadius="$4"
+            borderWidth={1}
+            borderColor="$error"
+            alignItems="center"
+          >
+            <Text fontSize={14} color="$textSecondary" marginBottom="$2">
+              {t("boss.total_damage")}
+            </Text>
+            <Text fontSize={28} fontWeight="900" color="$error">
+              {bossFight.totalHp}
+            </Text>
+          </YStack>
+        )}
+
         <YStack
           bg="$glassBg"
           padding="$4"
           borderRadius="$4"
           borderWidth={1}
-          borderColor="$glassBorder"
+          borderColor={isBossVictory ? "$error" : "$glassBorder"}
           alignItems="center"
         >
           <Text fontSize={14} color="$textSecondary" marginBottom="$2">
@@ -96,7 +177,7 @@ export default function VictoryScreen() {
       <YStack width="100%" gap="$3">
         <Button
           size="$5"
-          bg="$primary"
+          bg={isBossVictory ? "$error" : "$primary"}
           color="$text"
           onPress={handleContinue}
           pressStyle={{ opacity: 0.8 }}

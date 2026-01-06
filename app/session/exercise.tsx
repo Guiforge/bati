@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, ScrollView, Text, XStack, YStack } from "tamagui";
 import { useSessionStore } from "@/stores/session";
+import { BossHpBar } from "@/components/session/BossHpBar";
 
 export default function ExerciseScreen() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function ExerciseScreen() {
     totalExercises,
     completeExercise,
     pauseSession,
+    bossFight,
+    lastDamageResult,
   } = useSessionStore();
 
   const [isPaused, setIsPaused] = useState(false);
@@ -48,8 +51,31 @@ export default function ExerciseScreen() {
     setIsPaused(false);
   };
 
+  const isBossFight = !!bossFight;
+
   return (
-    <YStack flex={1} bg="$bgDark">
+    <YStack flex={1} bg={isBossFight ? "#0A0A0F" : "$bgDark"}>
+      {/* Boss HP Bar */}
+      {bossFight && lastDamageResult && (
+        <YStack p="$4" pt="$6">
+          <BossHpBar
+            currentHp={bossFight.currentHp}
+            totalHp={bossFight.totalHp}
+            bossName={t("boss.title")}
+            lastDamage={
+              lastDamageResult
+                ? {
+                    damage: lastDamageResult.damage,
+                    isCritical: lastDamageResult.isCrit,
+                    weaknessBonus: lastDamageResult.isWeaknessBonus,
+                  }
+                : null
+            }
+            showPhaseImage={false}
+          />
+        </YStack>
+      )}
+
       {/* Progress Header */}
       <YStack bg="$surface" padding="$4" borderBottomWidth={1} borderBottomColor="$borderStrong">
         <Text fontSize={14} color="$textSecondary" textAlign="center">
@@ -58,7 +84,7 @@ export default function ExerciseScreen() {
         </Text>
         <YStack bg="$glassBg" height={4} borderRadius="$2" marginTop="$2" overflow="hidden">
           <YStack
-            bg="$primary"
+            bg={isBossFight ? "$error" : "$primary"}
             height="100%"
             width={`${(exerciseIndex / totalExercises) * 100}%`}
           />

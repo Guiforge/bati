@@ -60,13 +60,13 @@ development_status:
 
   # Epic 3: Complete a Workout Session
   epic-3: ready-for-dev
-  3-1-start-workout-session-with-countdown: ready-for-dev
-  3-2-display-exercise-instructions-and-rest-timer: ready-for-dev
-  3-3-complete-exercise-and-track-progress: ready-for-dev
-  3-4-pause-and-resume-workout: ready-for-dev
+  3-1-start-workout-session-with-countdown: done
+  3-2-display-exercise-instructions-and-rest-timer: done
+  3-3-complete-exercise-and-track-progress: done
+  3-4-pause-and-resume-workout: done
   3-5-modify-or-skip-exercise-during-workout: ready-for-dev
   3-6-visual-and-haptic-feedback-on-completion: ready-for-dev
-  3-7-victory-screen-with-summary-and-share-option: ready-for-dev
+  3-7-victory-screen-with-summary-and-share-option: done
   epic-3-retrospective: optional
 
   # Epic 4: Quest & Adventure Discovery

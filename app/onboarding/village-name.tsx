@@ -215,7 +215,7 @@ export default function VillageName() {
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(11, 15, 25, 0.95)", "#0B0F19"]}
+        colors={["transparent", "$bgOverlay", "$bgDark"]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
       />
 

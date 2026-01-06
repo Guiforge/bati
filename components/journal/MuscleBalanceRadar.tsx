@@ -9,10 +9,10 @@ import { getBalanceRecommendation, getMuscleBalance, type MuscleBalance } from "
 import { useSettingsStore } from "@/stores/settings";
 
 const RADAR_COLORS = {
-  polygon: "#6366F1",
-  polygonGradient: "#818CF8",
-  grid: "#E5E7EB",
-  labels: "#374151",
+  polygon: "$primary",
+  polygonGradient: "$primaryHover",
+  grid: "$borderLight",
+  labels: "$textSecondary",
 };
 
 function MuscleBalanceRadarComponent() {

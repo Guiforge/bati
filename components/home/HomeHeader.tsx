@@ -54,7 +54,7 @@ export function HomeHeader() {
           <ProgressBar
             progress={levelInfo?.xpProgress ?? 0}
             height={5}
-            color="#FFD700"
+            color="$gold"
             trackColor="rgba(0,0,0,0.1)"
           />
           <Text fontSize={10} fontWeight="bold" color="$color" opacity={0.5}>

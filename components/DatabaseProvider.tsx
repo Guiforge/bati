@@ -284,18 +284,18 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#FFF5E6",
+          backgroundColor: "$bgDark",
           padding: 20,
         }}
       >
-        <Text style={{ color: "#1A1A2E", fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
+        <Text style={{ color: "$text", fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
           {t("common.error")}:
         </Text>
-        <Text style={{ color: "#FF6B35", fontSize: 14, marginBottom: 20 }}>
+        <Text style={{ color: "$warning", fontSize: 14, marginBottom: 20 }}>
           {error.message.substring(0, 200)}
           {error.message.length > 200 ? "..." : ""}
         </Text>
-        <Text style={{ color: "#1A1A2E", fontSize: 12, opacity: 0.7 }}>
+        <Text style={{ color: "$text", fontSize: 12, opacity: 0.7 }}>
           Check console for full details.
         </Text>
       </View>
@@ -309,11 +309,11 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#FFF5E6",
+          backgroundColor: "$bgDark",
         }}
       >
-        <Text style={{ color: "#1A1A2E", fontSize: 18, fontWeight: "700" }}>🏰 Bati</Text>
-        <Text style={{ color: "#1A1A2E", opacity: 0.6, marginTop: 8 }}>
+        <Text style={{ color: "$text", fontSize: 18, fontWeight: "700" }}>🏰 Bati</Text>
+        <Text style={{ color: "$text", opacity: 0.6, marginTop: 8 }}>
           {t("splash.loading", "Building your village...")}
         </Text>
       </View>

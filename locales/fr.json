@@ -31,6 +31,7 @@
     "step_active": "Active",
     "step_completed": "Terminée",
     "step_label": "Étape {{count}}",
+    "step_progress": "Étape {{current}} sur {{total}}",
     "step_locked": "Verrouillée",
     "steps": "{{count}} étapes",
     "steps_title": "Étapes de la campagne"
@@ -196,7 +197,13 @@
     "stats": "STATISTIQUES",
     "streak": "SÉRIE",
     "title": "Accueil",
-    "your_kingdom": "TON ROYAUME"
+    "your_kingdom": "TON ROYAUME",
+    "no_active_adventure": "Aucune Aventure Active",
+    "start_journey": "Commencez votre épopée",
+    "choose_adventure": "CHOISIR UNE AVENTURE",
+    "continue_adventure": "CONTINUER",
+    "visit_village": "Visiter le Village",
+    "open_inventory": "Ouvrir l'Inventaire"
   },
   "home_continue_adventure_subtitle": "Reprends là où tu t'es arrêté.",
   "home_continue_adventure_title": "Continuer ton aventure",

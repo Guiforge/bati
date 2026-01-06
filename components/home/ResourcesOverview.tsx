@@ -11,16 +11,16 @@ import { useGameIcons } from "@/hooks/useGameIcon";
 const RESOURCE_ORDER: ResourceCode[] = ["gold", "wood", "stone", "fire", "water", "wind", "grain"];
 
 const RESOURCE_COLORS: Record<string, string> = {
-  gold: "#FFD700",
-  wood: "#8B4513",
-  stone: "#808080",
-  fire: "#FF6B35",
-  water: "#4ECDC4",
-  wind: "#C9B1FF",
-  grain: "#DAA520",
-  mana: "#9B59B6",
-  leaf: "#2ECC71",
-  boss_token: "#E74C3C",
+  gold: "$gold",
+  wood: "$resourceWood",
+  stone: "$resourceStone",
+  fire: "$resourceFire",
+  water: "$resourceWater",
+  wind: "$resourceWind",
+  grain: "$resourceGrain",
+  mana: "$resourceMana",
+  leaf: "$resourceLeaf",
+  boss_token: "$resourceBossToken",
 };
 
 // Map resource codes to icon names

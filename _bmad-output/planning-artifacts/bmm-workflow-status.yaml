@@ -1,0 +1,153 @@
+# Bati V3 - Workflow Status
+# Guided Setup - Full App Redesign + Feature Audit
+
+generated: "2026-01-06T09:35:00Z"
+project: "batiV3"
+project_type: "react-native-mobile-app"
+selected_track: "bmad-method"
+field_type: "brownfield"
+workflow_path: "bmad-method-brownfield"
+
+# Project Context
+context:
+  description: "React Native fitness RPG app - transforms workouts into fantasy adventure"
+  scope: "Full app redesign + full feature audit"
+  priorities:
+    - "Complete UX redesign with dark fantasy / electric blue immersive visuals"
+    - "Review all features to close gaps and improve quality"
+    - "Ensure stability and remove bugs"
+  tech_stack:
+    - "React Native + Expo"
+    - "Tamagui (UI)"
+    - "Zustand (State)"
+    - "SQLite + Drizzle (Database)"
+    - "Expo Router"
+  design_direction: "Dark fantasy, electric blues, dark-only theme, big immersive imagery"
+  onboarding_status: "Onboarding flows and Tamagui base already in place"
+  existing_state: "Active development with core features"
+  codebase_status: "documented"
+  planning_level: "Standard (PRD + UX designs + implementation plan)"
+
+# Current Phase
+current_phase: 0
+current_phase_name: "Discovery & Documentation"
+
+# Workflow Status Tracking
+workflow_status:
+  # Phase 0: Discovery & Documentation
+  - id: "document-project"
+    name: "Document Project"
+    status: "required"
+    phase: 0
+    agent: "analyst"
+    command: "/bmad:bmm:workflows:document-project"
+    purpose: "Understand existing codebase and document architecture"
+    output: "docs/project-overview/index.md"
+    priority: "high"
+    notes: "Baseline for redesign and audits"
+
+  - id: "gap-analysis"
+    name: "UX & Feature Gap Analysis"
+    status: "required"
+    phase: 0
+    agent: "analyst"
+    command: "manual"
+    purpose: "Audit current UX flows and feature completeness; identify gaps"
+    output: "docs/gap-analysis.md"
+    priority: "high"
+    notes: "Focus on onboarding, navigation, workouts, RPG loops, village, progression"
+  
+  # Phase 1: Analysis
+  - id: "feature-audit"
+    name: "Feature Audit & Prioritization"
+    status: "required"
+    phase: 1
+    agent: "analyst"
+    command: "manual"
+    purpose: "Catalog all features, rate quality, and prioritize fixes/improvements"
+    output: "docs/feature-audit.md"
+    priority: "high"
+    notes: "Covers all areas: RPG mechanics, workouts, village, goals, progression"
+  
+  - id: "research"
+    name: "Research & Investigation"
+    status: "optional"
+    phase: 1
+    agent: "analyst"
+    command: "/bmad:bmm:workflows:research"
+    purpose: "Investigate solutions, patterns, or technologies"
+    included_by: "user_choice"
+    notes: "Use for UI patterns, performance, or data/DB improvements"
+  
+  # Phase 2: Planning (Standard)
+  - id: "prd"
+    name: "Create PRD"
+    status: "required"
+    phase: 2
+    agent: "pm"
+    command: "/bmad:bmm:workflows:create-prd"
+    purpose: "Product Requirements Document with FRs and NFRs"
+    priority: "high"
+    notes: "Covers redesign scope and prioritized fixes"
+  
+  - id: "create-ux-design"
+    name: "Design UX"
+    status: "required"
+    phase: 2
+    agent: "designer"
+    command: "/bmad:bmm:workflows:create-ux-design"
+    purpose: "Create UX designs and screen flows"
+    included_by: "ui_changes"
+    notes: "Dark fantasy, electric blues, immersive imagery"
+  
+  - id: "architecture"
+    name: "Create Architecture Document"
+    status: "required"
+    phase: 2
+    agent: "architect"
+    command: "/bmad:bmm:workflows:create-architecture"
+    purpose: "System design and technical architecture"
+    priority: "high"
+    notes: "Ensure redesign aligns with performance, offline-first, and data model"
+
+  # Phase 3: Quality & Implementation Enablement
+  - id: "qa-strategy"
+    name: "QA Strategy & Test Plan"
+    status: "recommended"
+    phase: 3
+    agent: "qa"
+    command: "manual"
+    purpose: "Define regression scope, critical flows, and automation targets"
+    output: "docs/qa-strategy.md"
+    notes: "Cover onboarding, workouts, RPG loops, village, and payments if any"
+
+  - id: "bug-bash"
+    name: "Bug Bash & Fixes"
+    status: "recommended"
+    phase: 3
+    agent: "qa"
+    command: "manual"
+    purpose: "Sweep for blockers, UX paper cuts, and stability issues"
+    notes: "Prioritize high-severity and UX friction issues"
+
+# Quick Start Suggestions
+quick_start:
+  - "Load the **document-project** workflow first to catalog existing features and architecture"
+  - "Use **create-prd** workflow when starting a new feature or significant change"
+  - "Use **create-ux-design** workflow for any UI modifications"
+  - "Use **create-architecture** workflow to document technical decisions"
+
+# Next Steps
+next_steps:
+  - action: "Load document-project workflow"
+    command: "/bmad:bmm:workflows:document-project"
+    reason: "Creates comprehensive documentation of your Bati codebase"
+  - action: "Or start with specific feature"
+    command: "/bmad:bmm:workflows:create-prd"
+    reason: "Define requirements for a specific feature you want to work on"
+
+# Metadata
+track_version: "1.0"
+created_by: "workflow-init"
+last_updated: "2026-01-06T09:35:00Z"
+express_setup: false

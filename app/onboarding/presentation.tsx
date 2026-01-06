@@ -27,7 +27,7 @@ export default function Presentation() {
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "33%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(16, 19, 35, 0.8)", "#101323"]}
+        colors={["transparent", "$bgOverlay", "$surface"]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "66%" }}
       />
 

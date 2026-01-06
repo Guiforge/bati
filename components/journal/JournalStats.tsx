@@ -264,7 +264,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
   const weekdayChartData = weekdayData.map((d) => ({
     value: d.count,
     label: d.day,
-    frontColor: d.count > 0 ? "#6366F1" : "#E5E7EB",
+    frontColor: d.count > 0 ? "$primary" : "$borderLight",
   }));
 
   // Prepare last 7 days line chart data
@@ -411,8 +411,8 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               initialSpacing={20}
               endSpacing={20}
               thickness={3}
-              color="#6366F1"
-              dataPointsColor="#6366F1"
+              color="$primary"
+              dataPointsColor="$primary"
               dataPointsRadius={5}
               curved
               areaChart
@@ -424,9 +424,9 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               maxValue={Math.ceil(maxDailyMinutes / 10) * 10 + 10}
               yAxisThickness={0}
               xAxisThickness={1}
-              xAxisColor="#E5E7EB"
-              yAxisTextStyle={{ color: "#9CA3AF", fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: "#9CA3AF", fontSize: 9 }}
+              xAxisColor="$borderLight"
+              yAxisTextStyle={{ color: "$textSecondary", fontSize: 10 }}
+              xAxisLabelTextStyle={{ color: "$textSecondary", fontSize: 9 }}
               hideRules
               isAnimated
               animationDuration={500}
@@ -458,10 +458,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               maxValue={Math.ceil(maxWeekdayCount / 2) * 2 + 2}
               yAxisThickness={0}
               xAxisThickness={1}
-              xAxisColor="#E5E7EB"
-              yAxisTextStyle={{ color: "#9CA3AF", fontSize: 10 }}
+              xAxisColor="$borderLight"
+              yAxisTextStyle={{ color: "$textSecondary", fontSize: 10 }}
               xAxisLabelTextStyle={{
-                color: "#6B7280",
+                color: "$textSecondary",
                 fontSize: 10,
                 fontWeight: "600",
               }}
@@ -496,14 +496,12 @@ export function JournalStats({ sessions }: JournalStatsProps) {
           {/* Visual bar */}
           <XStack height={12} rounded={6} overflow="hidden" bg="$bgLight">
             {stats.levels.easy > 0 && (
-              <YStack flex={stats.levels.easy} bg="#22C55E" height="100%" />
+              <YStack flex={stats.levels.easy} bg="$success" height="100%" />
             )}
             {stats.levels.medium > 0 && (
-              <YStack flex={stats.levels.medium} bg="#6366F1" height="100%" />
+              <YStack flex={stats.levels.medium} bg="$primary" height="100%" />
             )}
-            {stats.levels.hard > 0 && (
-              <YStack flex={stats.levels.hard} bg="#EF4444" height="100%" />
-            )}
+            {stats.levels.hard > 0 && <YStack flex={stats.levels.hard} bg="$error" height="100%" />}
           </XStack>
         </YStack>
       </Card>

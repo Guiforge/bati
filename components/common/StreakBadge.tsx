@@ -98,11 +98,11 @@ type StreakMilestone = {
 };
 
 const streakMilestones: StreakMilestone[] = [
-  { minDays: 100, name: { en: "Eternal", fr: "Éternel" }, color: "#FFD700", emoji: "🌟" },
-  { minDays: 30, name: { en: "Inferno", fr: "Inferno" }, color: "#FF4500", emoji: "🔥" },
-  { minDays: 14, name: { en: "Blaze", fr: "Brasier" }, color: "#FF6347", emoji: "🔥" },
-  { minDays: 7, name: { en: "Ember", fr: "Braise" }, color: "#FF8C00", emoji: "✨" },
-  { minDays: 3, name: { en: "Spark", fr: "Étincelle" }, color: "#FFA500", emoji: "⚡" },
+  { minDays: 100, name: { en: "Eternal", fr: "Éternel" }, color: "$gold", emoji: "🌟" },
+  { minDays: 30, name: { en: "Inferno", fr: "Inferno" }, color: "$error", emoji: "🔥" },
+  { minDays: 14, name: { en: "Blaze", fr: "Brasier" }, color: "$warning", emoji: "🔥" },
+  { minDays: 7, name: { en: "Ember", fr: "Braise" }, color: "$warning", emoji: "✨" },
+  { minDays: 3, name: { en: "Spark", fr: "Étincelle" }, color: "$warning", emoji: "⚡" },
 ];
 
 function getStreakMilestone(days: number): StreakMilestone | null {
@@ -160,7 +160,7 @@ export function StreakBadge() {
       <Flame
         size={flameSize}
         color={flameColor}
-        fill={streak.isActive ? (milestone?.color ?? "#FF6B35") : "transparent"}
+        fill={streak.isActive ? (milestone?.color ?? "$warning") : "transparent"}
       />
       <YStack>
         <XStack items="center" gap="$1">

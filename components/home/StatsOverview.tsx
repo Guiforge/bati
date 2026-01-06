@@ -38,7 +38,7 @@ export function StatsOverview() {
         <YStack items="center" gap="$1">
           <Image
             source={icons.flame}
-            style={{ width: 24, height: 24, tintColor: "#FF6B35" }}
+            style={{ width: 24, height: 24, tintColor: "$warning" }}
             contentFit="contain"
           />
           <Text fontSize={20} fontWeight="900" color="$primary">
@@ -86,7 +86,7 @@ export function StatsOverview() {
         <YStack items="center" gap="$1">
           <Image
             source={icons.trophy}
-            style={{ width: 24, height: 24, tintColor: "#FFD700" }}
+            style={{ width: 24, height: 24, tintColor: "$gold" }}
             contentFit="contain"
           />
           <Text fontSize={20} fontWeight="900" color="$color">

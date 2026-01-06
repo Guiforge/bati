@@ -59,6 +59,7 @@ export type Adventure = {
   frTitle: string;
   enDescription: string;
   frDescription: string;
+  imagePath: string | null;
   coverQuest: QuestTemplate;
   stepsCount: number;
 };
@@ -103,6 +104,7 @@ export async function listAdventures(): Promise<Adventure[]> {
       isActive: adventures.isActive,
 
       advAuthor: adventures.author,
+      advImagePath: adventures.imagePath,
 
       advEnTitle: adventures.enTitle,
       advFrTitle: adventures.frTitle,
@@ -168,6 +170,7 @@ export async function listAdventures(): Promise<Adventure[]> {
         kind: (r.kind as AdventureKind) ?? "route",
         isActive: r.isActive,
         author: r.advAuthor,
+        imagePath: r.advImagePath,
         enTitle: r.advEnTitle,
         frTitle: r.advFrTitle,
         enDescription: r.advEnDescription,
@@ -204,6 +207,54 @@ export async function listAdventures(): Promise<Adventure[]> {
 
   // Adventures are campaigns: only return multi-step content.
   return [...byAdventureId.values()].filter((a) => a.stepsCount >= 2);
+}
+
+export async function getAdventureById(adventureId: number): Promise<Adventure | null> {
+  const rows = await db
+    .select({
+      adventureId: adventures.id,
+      coverQuestId: adventures.questId,
+      sortOrder: adventures.sortOrder,
+      kind: adventures.kind,
+      isActive: adventures.isActive,
+      advAuthor: adventures.author,
+      advImagePath: adventures.imagePath,
+      advEnTitle: adventures.enTitle,
+      advFrTitle: adventures.frTitle,
+      advEnDescription: adventures.enDescription,
+      advFrDescription: adventures.frDescription,
+    })
+    .from(adventures)
+    .where(eq(adventures.id, adventureId))
+    .limit(1);
+
+  const row = rows[0];
+  if (!row) return null;
+
+  const stepRows = await db
+    .select({ adventureId: adventureSteps.adventureId })
+    .from(adventureSteps)
+    .where(eq(adventureSteps.adventureId, adventureId));
+
+  // Get the cover quest
+  const questData = await getQuestTemplateById(row.coverQuestId);
+  if (!questData) return null;
+
+  return {
+    id: row.adventureId,
+    coverQuestId: row.coverQuestId,
+    sortOrder: row.sortOrder,
+    kind: (row.kind as AdventureKind) ?? "route",
+    isActive: row.isActive,
+    author: row.advAuthor,
+    imagePath: row.advImagePath,
+    enTitle: row.advEnTitle,
+    frTitle: row.advFrTitle,
+    enDescription: row.advEnDescription,
+    frDescription: row.advFrDescription,
+    coverQuest: questData,
+    stepsCount: stepRows.length,
+  };
 }
 
 export async function getAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {

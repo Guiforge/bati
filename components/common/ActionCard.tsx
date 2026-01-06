@@ -24,7 +24,7 @@ export function ActionCard({
     <YStack
       bg="$bgLight"
       borderWidth={1}
-      borderColor="#dcdcdc"
+      borderColor="$borderStrong"
       rounded="$4"
       shadowColor="$color"
       shadowRadius={4}

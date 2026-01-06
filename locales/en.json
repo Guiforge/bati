@@ -9,7 +9,13 @@
     "quick_play": "QUICK PLAY",
     "stats": "STATISTICS",
     "streak": "STREAK",
-    "quests_done": "QUESTS"
+    "quests_done": "QUESTS",
+    "no_active_adventure": "No Active Adventure",
+    "start_journey": "Begin your epic journey",
+    "choose_adventure": "CHOOSE ADVENTURE",
+    "continue_adventure": "CONTINUE",
+    "visit_village": "Visit Village",
+    "open_inventory": "Open Inventory"
   },
   "language": "Language",
   "light": "Light",
@@ -149,6 +155,7 @@
     "steps": "{{count}} steps",
     "steps_title": "Campaign steps",
     "step_label": "Step {{count}}",
+    "step_progress": "Step {{current}} of {{total}}",
     "step_completed": "Completed",
     "step_active": "Active",
     "step_locked": "Locked",

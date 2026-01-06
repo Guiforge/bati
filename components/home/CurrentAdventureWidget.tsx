@@ -33,7 +33,7 @@ export function CurrentAdventureWidget() {
     <YStack
       bg="$bgLight"
       borderWidth={1}
-      borderColor="#dcdcdc"
+      borderColor="$borderStrong"
       rounded="$6"
       shadowColor="$color"
       shadowRadius={8}

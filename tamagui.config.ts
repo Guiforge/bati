@@ -106,6 +106,19 @@ const tokens = createTokens({
     secondary: "#DB2777", // Magenta
     success: "#16A34A",
     error: "#FF1744",
+    warning: "#FF6B35", // Orange Fire
+    gold: "#FFD700", // Gold Trophy
+
+    // Resource colors (for game mechanics)
+    resourceWood: "#8B4513",
+    resourceStone: "#808080",
+    resourceFire: "#FF6B35",
+    resourceWater: "#4ECDC4",
+    resourceWind: "#C9B1FF",
+    resourceGrain: "#DAA520",
+    resourceMana: "#9B59B6",
+    resourceLeaf: "#2ECC71",
+    resourceBossToken: "#E74C3C",
 
     // --- IMMERSIVE BACKGROUNDS ---
     bgDark: "#0B0F19", // The Void

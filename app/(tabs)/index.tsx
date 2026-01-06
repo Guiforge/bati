@@ -5,7 +5,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { ActionCard } from "@/components/common/ActionCard";
-import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
+import { AdventureHeroCard } from "@/components/home/AdventureHeroCard";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { ResourcesOverview } from "@/components/home/ResourcesOverview";
 import { StatsOverview } from "@/components/home/StatsOverview";
@@ -18,7 +18,7 @@ export default function HomeScreen() {
   const icons = useGameIcons(["castle", "coins"]);
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top}>
+    <YStack flex={1} bg="$bgDark" pt={insets.top}>
       <YStack flex={1} position="relative">
         {/* 1. Header: Identity & Level */}
         <HomeHeader />
@@ -27,13 +27,13 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
         >
-          <YStack gap="$4" pt="$2">
-            {/* 2. Resources Overview (compact bar) */}
-            <ResourcesOverview />
+          <YStack gap="$4">
+            {/* 2. Hero Adventure Card (MAIN FOCUS) */}
+            <AdventureHeroCard />
 
             <YStack px="$4" gap="$4">
-              {/* 3. Current Adventure (HERO) */}
-              <CurrentAdventureWidget />
+              {/* 3. Resources Overview (compact bar) */}
+              <ResourcesOverview />
 
               {/* 4. Secondary Actions (Village & Treasury) */}
               <XStack gap="$3">

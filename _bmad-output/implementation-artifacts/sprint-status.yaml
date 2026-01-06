@@ -70,11 +70,11 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Quest & Adventure Discovery
-  epic-4: ready-for-dev
-  4-1-browse-and-filter-quest-library: ready-for-dev
-  4-2-view-quest-details-and-start-workout: ready-for-dev
-  4-3-browse-adventures-and-view-multi-quest-progression: ready-for-dev
-  4-4-continue-current-adventure-from-home-screen: ready-for-dev
+  epic-4: done
+  4-1-browse-and-filter-quest-library: done
+  4-2-view-quest-details-and-start-workout: done
+  4-3-browse-adventures-and-view-multi-quest-progression: done
+  4-4-continue-current-adventure-from-home-screen: done
   epic-4-retrospective: optional
 
   # Epic 5: Boss Fight Workouts

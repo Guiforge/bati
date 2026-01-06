@@ -112,6 +112,12 @@ export const quests = sqliteTable("quests", {
   // Main cover image for the quest
   imagePath: text(),
 
+  // Quest metadata for filtering and display
+  primaryMuscle: text(),
+  secondaryMuscles: text(),
+  estimatedMinutes: int(),
+  difficulty: text().$type<"Beginner" | "Intermediate" | "Advanced">().default("Intermediate"),
+
   createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
 });

@@ -1,22 +1,22 @@
-import { useRouter } from "expo-router";
-import { useState, useEffect } from "react";
-import { YStack, XStack, Text, Button, ScrollView } from "tamagui";
-import { useTranslation } from "react-i18next";
-import { useSessionStore } from "@/stores/session";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button, ScrollView, Text, XStack, YStack } from "tamagui";
+import { useSessionStore } from "@/stores/session";
 
 export default function ExerciseScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  
-  const { 
-    currentExercise, 
+
+  const {
+    currentExercise,
     currentSet,
     totalSets,
     exerciseIndex,
     totalExercises,
     completeExercise,
-    pauseSession 
+    pauseSession,
   } = useSessionStore();
 
   const [isPaused, setIsPaused] = useState(false);
@@ -29,9 +29,9 @@ export default function ExerciseScreen() {
 
   const handleComplete = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
+
     const hasMoreExercises = await completeExercise();
-    
+
     if (hasMoreExercises) {
       router.push("/session/rest");
     } else {
@@ -53,13 +53,14 @@ export default function ExerciseScreen() {
       {/* Progress Header */}
       <YStack bg="$surface" padding="$4" borderBottomWidth={1} borderBottomColor="$borderStrong">
         <Text fontSize={14} color="$textSecondary" textAlign="center">
-          {t("session.exercise")} {exerciseIndex + 1} {t("common.of")} {totalExercises} • {t("common.set")} {currentSet} {t("common.of")} {totalSets}
+          {t("session.exercise")} {exerciseIndex + 1} {t("common.of")} {totalExercises} •{" "}
+          {t("common.set")} {currentSet} {t("common.of")} {totalSets}
         </Text>
         <YStack bg="$glassBg" height={4} borderRadius="$2" marginTop="$2" overflow="hidden">
-          <YStack 
-            bg="$primary" 
-            height="100%" 
-            width={`${((exerciseIndex / totalExercises) * 100)}%`}
+          <YStack
+            bg="$primary"
+            height="100%"
+            width={`${(exerciseIndex / totalExercises) * 100}%`}
           />
         </YStack>
       </YStack>
@@ -71,7 +72,14 @@ export default function ExerciseScreen() {
         </Text>
 
         {/* Exercise Instructions */}
-        <YStack bg="$glassBg" padding="$4" borderRadius="$4" borderWidth={1} borderColor="$glassBorder" marginBottom="$4">
+        <YStack
+          bg="$glassBg"
+          padding="$4"
+          borderRadius="$4"
+          borderWidth={1}
+          borderColor="$glassBorder"
+          marginBottom="$4"
+        >
           <Text fontSize={16} color="$text" lineHeight={24}>
             {currentExercise.instructions}
           </Text>
@@ -126,12 +134,7 @@ export default function ExerciseScreen() {
             </Button>
           </>
         ) : (
-          <Button
-            size="$5"
-            bg="$primary"
-            color="$text"
-            onPress={handleResume}
-          >
+          <Button size="$5" bg="$primary" color="$text" onPress={handleResume}>
             {t("session.resume")}
           </Button>
         )}

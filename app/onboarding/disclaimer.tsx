@@ -1,14 +1,14 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { YStack, Text, Button, ScrollView } from "tamagui";
 import { useTranslation } from "react-i18next";
+import { Button, ScrollView, Text, YStack } from "tamagui";
 import { db } from "@/db/client";
 import { userSettings } from "@/db/schema";
 
 export default function DisclaimerScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const [acknowledged, setAcknowledged] = useState(false);
+  const [_acknowledged, setAcknowledged] = useState(false);
 
   const handleAcknowledge = async () => {
     try {
@@ -19,12 +19,10 @@ export default function DisclaimerScreen() {
       });
 
       setAcknowledged(true);
-      
+
       // Navigate to presentation
       router.replace("/onboarding/presentation");
-    } catch (error) {
-      console.error("Failed to save disclaimer acknowledgment:", error);
-    }
+    } catch (_error) {}
   };
 
   return (

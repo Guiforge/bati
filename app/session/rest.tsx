@@ -1,16 +1,24 @@
-import { useRouter } from "expo-router";
-import { useState, useEffect } from "react";
-import { YStack, Text, Button } from "tamagui";
-import { useTranslation } from "react-i18next";
-import { useSessionStore } from "@/stores/session";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button, Text, YStack } from "tamagui";
+import { useSessionStore } from "@/stores/session";
 
 export default function RestScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState(30); // Default 30s rest
-  
+
   const { nextExercise } = useSessionStore();
+
+  const handleContinue = () => {
+    router.replace("/session/exercise");
+  };
+
+  const handleSkipRest = () => {
+    router.replace("/session/exercise");
+  };
 
   useEffect(() => {
     if (timeLeft === 0) {
@@ -28,15 +36,7 @@ export default function RestScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  const handleSkipRest = () => {
-    router.replace("/session/exercise");
-  };
-
-  const handleContinue = () => {
-    router.replace("/session/exercise");
-  };
+  }, [timeLeft, handleContinue]);
 
   return (
     <YStack flex={1} bg="$bgDark" justifyContent="center" alignItems="center" padding="$6">

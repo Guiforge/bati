@@ -1,407 +1,369 @@
-import { ChevronLeft, Sparkles } from "@tamagui/lucide-icons";
+import { eq } from "drizzle-orm";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import type { TFunction } from "i18next";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Button, Text, XStack, YStack } from "tamagui";
+import { useDatabase } from "@/components/DatabaseProvider";
+import { adventures, exercises, questExercises, quests } from "@/db/schema";
+import { useGameIcon } from "@/hooks/useGameIcon";
+import { useSessionStore } from "@/stores/session";
 
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
-import { Tag } from "@/components/common/Tag";
-import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
-import type { ActiveAdventureRun, AdventureDetails } from "@/db";
-import {
-  Difficulty,
-  estimateQuestTemplateSeconds,
-  formatDuration,
-  getActiveAdventureRun,
-  getAdventureDetails,
-  getRecentSessionHistory,
-  listExercises,
-  startAdventureRun,
-  suggestDifficultyFromSessions,
-} from "@/db";
-import type { Exercise } from "@/db/exercises";
-import { computeSessionXp } from "@/db/xp";
-import { useSettingsStore } from "@/stores/settings";
+type Adventure = typeof adventures.$inferSelect & {
+  quest: typeof quests.$inferSelect | null;
+};
 
-type LoadState =
-  | {
-      status: "loading";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
-  | {
-      status: "ready";
-      details: AdventureDetails;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
-  | {
-      status: "error";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-      message: string;
-    };
+type QuestExercise = typeof questExercises.$inferSelect & {
+  exercise: typeof exercises.$inferSelect;
+};
 
-function levelLabel(level: Difficulty, t: TFunction) {
-  if (level === Difficulty.Easy) return t("quests.level_easy");
-  if (level === Difficulty.Hard) return t("quests.level_hard");
-  return t("quests.level_medium");
-}
-
-function toDifficultyEnum(code: "easy" | "medium" | "hard"): Difficulty {
-  if (code === "easy") return Difficulty.Easy;
-  if (code === "hard") return Difficulty.Hard;
-  return Difficulty.Medium;
-}
-
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex screen component, refactor planned
 export default function AdventureDetailsScreen() {
+  const { id } = useLocalSearchParams();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ id?: string | string[] }>();
-  const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const { db } = useDatabase();
+  const { GameIcon } = useGameIcon();
+  const startSession = useSessionStore((state) => state.startSession);
 
-  const adventureId = useMemo(() => {
-    const raw = params.id;
-    const v = Array.isArray(raw) ? raw[0] : raw;
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }, [params]);
-
-  const [state, setState] = useState<LoadState>({
-    status: "loading",
-    details: null,
-    activeRun: null,
-    exercisesById: {},
-    suggestedDifficulty: "medium",
-  });
-
-  const load = useCallback(
-    async (id: number) => {
-      setState((s) => ({ ...s, status: "loading" }));
-
-      try {
-        const [details, activeRun, exercises, history] = await Promise.all([
-          getAdventureDetails(id),
-          getActiveAdventureRun(id),
-          listExercises(),
-          getRecentSessionHistory(10),
-        ]);
-
-        if (!details) {
-          setState({
-            status: "error",
-            details: null,
-            activeRun: null,
-            exercisesById: {},
-            suggestedDifficulty: "medium",
-            message: t("adventures.not_found"),
-          });
-          return;
-        }
-
-        const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-        const suggestedDifficulty = suggestDifficultyFromSessions(history, {
-          maxSessions: 10,
-          defaultDifficulty: "medium",
-        });
-
-        setState({
-          status: "ready",
-          details,
-          activeRun,
-          exercisesById,
-          suggestedDifficulty,
-        });
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Unknown error";
-        setState((s) => ({ ...s, status: "error", message }));
-      }
-    },
-    [t],
-  );
+  const [adventure, setAdventure] = useState<Adventure | null>(null);
+  const [questExercisesList, setQuestExercisesList] = useState<QuestExercise[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!adventureId) return;
-    load(adventureId).catch(() => {
-      // Error already handled in load function
-    });
-  }, [adventureId, load]);
+    if (!db || !id) return;
 
-  const details = state.details;
-  const run = state.activeRun;
-  const suggestedDifficulty = state.suggestedDifficulty;
-
-  const langKey = language;
-
-  const title = details
-    ? langKey === "fr"
-      ? details.adventure.frTitle || t("adventures.details_title")
-      : details.adventure.enTitle || t("adventures.details_title")
-    : "";
-
-  const description = details
-    ? langKey === "fr"
-      ? details.adventure.frDescription
-      : details.adventure.enDescription
-    : "";
-
-  const effectiveSteps = details?.steps ?? [];
-  const activeStep = run?.activeStep ?? null;
-  const isBoss = details?.adventure.kind === "boss";
-
-  const activeTemplateStep = useMemo(() => {
-    if (!details) return null;
-    if (activeStep) return effectiveSteps.find((s) => s.stepIndex === activeStep.stepIndex) ?? null;
-    return effectiveSteps[0] ?? null;
-  }, [activeStep, details, effectiveSteps]);
-
-  const tokens = useMemo(() => {
-    if (!activeTemplateStep) return null;
-    return getQuestColorTokensFromTemplateWithExercises({
-      quest: activeTemplateStep.quest,
-      exercisesById: state.exercisesById,
-    });
-  }, [activeTemplateStep, state.exercisesById]);
-
-  const preview = useMemo(() => {
-    if (!activeTemplateStep) return null;
-
-    const durationSeconds = estimateQuestTemplateSeconds({
-      template: activeTemplateStep.quest,
-      exercisesById: state.exercisesById,
-      userLevel: suggestedDifficulty,
-    });
-
-    const xp = computeSessionXp({ durationSeconds, userLevel: suggestedDifficulty });
-
-    return {
-      durationSeconds,
-      xp,
-    };
-  }, [activeTemplateStep, state.exercisesById, suggestedDifficulty]);
-
-  const handleStartOrContinue = useCallback(async () => {
-    if (!details || adventureId == null) return;
-
-    try {
-      const nextRun =
-        run ?? (await startAdventureRun({ adventureId, difficultyOverride: suggestedDifficulty }));
-      const step =
-        nextRun.activeStep ??
-        nextRun.steps.find((s) => s.status === "active") ??
-        nextRun.steps[0] ??
-        null;
-
-      if (!step) return;
-
-      router.push(
-        `/quests/${step.questId}?level=${encodeURIComponent(suggestedDifficulty)}&runStepId=${step.id}` as never,
-      );
-    } catch {
-      // Error handled silently
+    const adventureId = Number.parseInt(id as string, 10);
+    if (Number.isNaN(adventureId)) {
+      setLoading(false);
+      return;
     }
-  }, [adventureId, details, router, run, suggestedDifficulty]);
 
-  const StepStatusTag = ({ status }: { status: "locked" | "active" | "completed" }) => {
-    const label =
-      status === "completed"
-        ? t("adventures.step_completed")
-        : status === "active"
-          ? t("adventures.step_active")
-          : t("adventures.step_locked");
+    db.select({
+      id: adventures.id,
+      questId: adventures.questId,
+      enTitle: adventures.enTitle,
+      frTitle: adventures.frTitle,
+      enDescription: adventures.enDescription,
+      frDescription: adventures.frDescription,
+      author: adventures.author,
+      sortOrder: adventures.sortOrder,
+      kind: adventures.kind,
+      isActive: adventures.isActive,
+      imagePath: adventures.imagePath,
+      bossTotalHp: adventures.bossTotalHp,
+      bossWeaknessMuscle: adventures.bossWeaknessMuscle,
+      bossResistanceMuscle: adventures.bossResistanceMuscle,
+      createdAt: adventures.createdAt,
+      updatedAt: adventures.updatedAt,
+      quest: quests,
+    })
+      .from(adventures)
+      .leftJoin(quests, eq(adventures.questId, quests.id))
+      .where(eq(adventures.id, adventureId))
+      .get()
+      .then((adventureData) => {
+        setAdventure(adventureData || null);
 
-    const tone = status === "completed" ? "primary" : status === "active" ? "secondary" : "default";
+        if (adventureData?.questId) {
+          return db
+            .select({
+              id: questExercises.id,
+              questId: questExercises.questId,
+              exerciseId: questExercises.exerciseId,
+              sortOrder: questExercises.sortOrder,
+              targetType: questExercises.targetType,
+              targetMin: questExercises.targetMin,
+              targetMax: questExercises.targetMax,
+              imagesJson: questExercises.imagesJson,
+              exercise: exercises,
+            })
+            .from(questExercises)
+            .innerJoin(exercises, eq(questExercises.exerciseId, exercises.id))
+            .where(eq(questExercises.questId, adventureData.questId))
+            .orderBy(questExercises.sortOrder)
+            .all();
+        }
+        return [];
+      })
+      .then((exercisesData) => {
+        setQuestExercisesList(exercisesData);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [db, id]);
 
-    return <Tag label={label} tone={tone} />;
+  const handleStartAdventure = () => {
+    if (!adventure?.quest) return;
+
+    startSession(adventure.quest.id, adventure.quest.rounds);
+    router.push("/session/countdown");
   };
 
-  if (!adventureId) {
+  if (loading) {
     return (
-      <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
-        <Text fontWeight="900" fontSize={18} color="$color">
-          {t("adventures.invalid_id")}
-        </Text>
-        <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
-          {t("quests.go_back")}
-        </AppButton>
+      <YStack f={1} bg="$bgDark" ai="center" jc="center">
+        <Text color="$textSecondary">{t("common.loading")}</Text>
       </YStack>
     );
   }
 
+  if (!adventure) {
+    return (
+      <YStack f={1} bg="$bgDark" ai="center" jc="center" p="$4">
+        <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
+          {t("adventures.not_found")}
+        </Text>
+        <Text color="$textSecondary" fontSize="$4" mb="$4">
+          {t("adventures.invalid_id")}
+        </Text>
+        <Button onPress={() => router.back()} bg="$primary">
+          {t("common.go_back")}
+        </Button>
+      </YStack>
+    );
+  }
+
+  const title = i18n.language === "fr" ? adventure.frTitle : adventure.enTitle;
+  const description = i18n.language === "fr" ? adventure.frDescription : adventure.enDescription;
+  const isBoss = adventure.kind === "boss";
+
   return (
-    <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}>
-        <YStack p="$5" pt={insets.top + 12} gap="$4">
-          <XStack items="center" justify="space-between">
-            <XStack items="center" gap="$3">
-              <AppIconButton onPress={() => router.back()}>
-                <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
-              </AppIconButton>
-
-              <XStack items="center" gap="$2">
-                <Sparkles size={18} color="$color" />
-                <Text fontWeight="900" fontSize={20} color="$color">
-                  {t("adventures.details_title")}
+    <YStack f={1} bg="$bgDark">
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack p="$4" gap="$4">
+          {isBoss && (
+            <XStack
+              ai="center"
+              gap="$3"
+              bg="$error"
+              p="$3"
+              borderRadius="$4"
+              shadowColor="$error"
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={0.4}
+              shadowRadius={12}
+            >
+              <GameIcon name="skull" size={32} color="$text" />
+              <YStack f={1}>
+                <Text color="$text" fontSize="$4" fontWeight="bold">
+                  {t("adventures.epic_battle")}
                 </Text>
-              </XStack>
+                {adventure.bossTotalHp && (
+                  <Text color="$text" fontSize="$3">
+                    {t("adventures.boss_hp", { hp: adventure.bossTotalHp })}
+                  </Text>
+                )}
+              </YStack>
             </XStack>
+          )}
 
-            <Tag label={levelLabel(toDifficultyEnum(suggestedDifficulty), t)} tone="secondary" />
-          </XStack>
+          <Text color="$text" fontSize="$9" fontWeight="bold">
+            {title || t("adventures.untitled")}
+          </Text>
 
-          {state.status === "error" ? (
-            <Card bg="$bgLight">
-              <YStack gap="$2">
-                <Text fontWeight="900" fontSize={16} color="$color">
-                  {t("adventures.load_error")}
-                </Text>
-                <Paragraph color="$color" opacity={0.7} size="$3">
-                  {"message" in state ? state.message : ""}
-                </Paragraph>
-                <AppButton
-                  fullWidth={false}
-                  variant="secondary"
-                  onPress={() => {
-                    load(adventureId).catch(() => {
-                      // Error already handled
-                    });
-                  }}
+          {adventure.quest && (
+            <XStack gap="$2" flexWrap="wrap">
+              {adventure.quest.difficulty && (
+                <YStack
+                  bg={
+                    adventure.quest.difficulty === "Beginner"
+                      ? "$success"
+                      : adventure.quest.difficulty === "Intermediate"
+                        ? "$warning"
+                        : "$error"
+                  }
+                  px="$3"
+                  py="$2"
+                  borderRadius="$3"
                 >
-                  {t("quests.retry")} ↻
-                </AppButton>
-              </YStack>
-            </Card>
-          ) : null}
+                  <Text color="$text" fontSize="$3" fontWeight="600">
+                    {t(`quests.difficulty_${adventure.quest.difficulty.toLowerCase()}`)}
+                  </Text>
+                </YStack>
+              )}
 
-          {details ? (
-            <Card bg={tokens?.bg ?? "$bgLight"}>
-              <YStack gap="$2">
-                <H2 color="$color" fontWeight="900" fontSize={26}>
-                  {title}
-                </H2>
+              {adventure.quest.estimatedMinutes && (
+                <YStack
+                  bg="$glassBg"
+                  borderColor="$borderStrong"
+                  borderWidth={1}
+                  px="$3"
+                  py="$2"
+                  borderRadius="$3"
+                >
+                  <Text color="$textSecondary" fontSize="$3">
+                    {adventure.quest.estimatedMinutes} min
+                  </Text>
+                </YStack>
+              )}
 
-                {isBoss ? (
-                  <XStack gap="$2" flexWrap="wrap">
-                    <Tag label={t("adventures.kind_boss")} tone="primary" />
-                  </XStack>
-                ) : null}
+              {adventure.quest.primaryMuscle && (
+                <YStack bg="$primary" px="$3" py="$2" borderRadius="$3">
+                  <Text color="$text" fontSize="$3" fontWeight="600">
+                    {adventure.quest.primaryMuscle}
+                  </Text>
+                </YStack>
+              )}
+            </XStack>
+          )}
 
-                {description ? (
-                  <Paragraph color="$color" opacity={0.7} size="$4" lineHeight={22}>
-                    {description}
-                  </Paragraph>
-                ) : null}
+          <Text color="$textSecondary" fontSize="$4" lineHeight="$5">
+            {description || t("adventures.no_description")}
+          </Text>
 
-                <XStack gap="$2" flexWrap="wrap" pt="$2">
-                  <Chip
-                    label={t("adventures.steps", {
-                      count: effectiveSteps.length,
-                    })}
-                  />
-
-                  {preview ? (
-                    <Chip
-                      label={t("quests.estimate", {
-                        duration: formatDuration(preview.durationSeconds, langKey),
-                      })}
-                    />
-                  ) : null}
-
-                  {preview ? (
-                    <Chip
-                      label={t("quests.reward_xp", {
-                        count: preview.xp,
-                      })}
-                      tone="secondary"
-                    />
-                  ) : null}
-                </XStack>
-              </YStack>
-            </Card>
-          ) : null}
-
-          {effectiveSteps.length > 0 ? (
-            <Card bg="$bgLight">
-              <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$color">
-                  {t("adventures.steps_title")}
+          {adventure.quest && (
+            <>
+              <YStack gap="$2" mt="$2">
+                <Text color="$text" fontSize="$6" fontWeight="bold">
+                  {t("adventures.quest_sequence")}
                 </Text>
 
-                <YStack gap="$2">
-                  {effectiveSteps.map((s) => {
-                    const rs = run?.steps.find((x) => x.stepIndex === s.stepIndex);
-                    const status: "locked" | "active" | "completed" =
-                      rs?.status ?? (s.stepIndex === 0 ? "active" : "locked");
+                <YStack
+                  bg="$glassBg"
+                  borderColor="$borderStrong"
+                  borderWidth={1}
+                  p="$3"
+                  borderRadius="$3"
+                >
+                  <XStack ai="center" gap="$3">
+                    <YStack
+                      bg="$primary"
+                      w={40}
+                      h={40}
+                      ai="center"
+                      jc="center"
+                      borderRadius="$full"
+                    >
+                      <Text color="$text" fontSize="$5" fontWeight="bold">
+                        1
+                      </Text>
+                    </YStack>
 
-                    const stepTitle = langKey === "fr" ? s.quest.frTitle : s.quest.enTitle;
+                    <YStack f={1}>
+                      <Text color="$text" fontSize="$5" fontWeight="600" mb="$1">
+                        {i18n.language === "fr" ? adventure.quest.frTitle : adventure.quest.enTitle}
+                      </Text>
+                      <Text color="$textSecondary" fontSize="$3">
+                        {questExercisesList.length} exercises
+                      </Text>
+                    </YStack>
 
-                    const narrative =
-                      langKey === "fr"
-                        ? s.frNarrative || s.enNarrative
-                        : s.enNarrative || s.frNarrative;
+                    <GameIcon name="unlock" size={24} color="$success" />
+                  </XStack>
+                </YStack>
 
-                    return (
-                      <XStack key={s.stepIndex} items="center" justify="space-between" gap="$3">
-                        <YStack flex={1}>
-                          <Text fontWeight="900" color="$color">
-                            {t("adventures.step_label", {
-                              count: s.stepIndex + 1,
-                            })}
-                            {": "}
-                            {stepTitle}
+                {isBoss && (
+                  <YStack
+                    bg="$glassBg"
+                    borderColor="$error"
+                    borderWidth={2}
+                    p="$3"
+                    borderRadius="$3"
+                  >
+                    <XStack ai="center" gap="$3">
+                      <YStack
+                        bg="$error"
+                        w={40}
+                        h={40}
+                        ai="center"
+                        jc="center"
+                        borderRadius="$full"
+                      >
+                        <GameIcon name="skull" size={24} color="$text" />
+                      </YStack>
+
+                      <YStack f={1}>
+                        <Text color="$text" fontSize="$5" fontWeight="600" mb="$1">
+                          {t("adventures.boss_fight")}
+                        </Text>
+                        <Text color="$textSecondary" fontSize="$3">
+                          {adventure.bossTotalHp} HP
+                        </Text>
+                      </YStack>
+                    </XStack>
+                  </YStack>
+                )}
+              </YStack>
+
+              <YStack gap="$2" mt="$4">
+                <Text color="$text" fontSize="$6" fontWeight="bold">
+                  {t("quests.exercises_list")}
+                </Text>
+
+                {questExercisesList.map((qe, index) => {
+                  const exerciseName =
+                    i18n.language === "fr" ? qe.exercise.frName : qe.exercise.enName;
+
+                  return (
+                    <YStack
+                      key={qe.id}
+                      bg="$glassBg"
+                      borderColor="$borderStrong"
+                      borderWidth={1}
+                      p="$3"
+                      borderRadius="$3"
+                    >
+                      <XStack ai="center" gap="$3">
+                        <YStack
+                          bg="$primary"
+                          w={32}
+                          h={32}
+                          ai="center"
+                          jc="center"
+                          borderRadius="$full"
+                        >
+                          <Text color="$text" fontSize="$4" fontWeight="bold">
+                            {index + 1}
                           </Text>
-                          {narrative ? (
-                            <Paragraph color="$color" opacity={0.65} size="$3" numberOfLines={2}>
-                              {narrative}
-                            </Paragraph>
-                          ) : null}
                         </YStack>
 
-                        <StepStatusTag status={status} />
+                        <YStack f={1}>
+                          <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
+                            {exerciseName}
+                          </Text>
+                          <Text color="$textSecondary" fontSize="$3">
+                            {qe.targetType === "reps"
+                              ? `${qe.targetMin}-${qe.targetMax} reps`
+                              : qe.targetType === "duration"
+                                ? `${qe.targetMin}-${qe.targetMax}s`
+                                : `${qe.targetMin}-${qe.targetMax}`}
+                          </Text>
+                        </YStack>
                       </XStack>
-                    );
-                  })}
-                </YStack>
+                    </YStack>
+                  );
+                })}
               </YStack>
-            </Card>
-          ) : null}
-
-          <AppButton
-            onPress={() => {
-              handleStartOrContinue().catch(() => {
-                // Error already handled
-              });
-            }}
-            variant="primary"
-            fullWidth
-            height={54}
-            bg="$color"
-            borderWidth={0}
-            rounded="$8"
-            pressStyle={{ opacity: 0.9 }}
-          >
-            <Text color="$background" fontWeight="900" fontSize={18}>
-              {run?.activeStep
-                ? t("adventures.continue")
-                : isBoss
-                  ? t("adventures.fight_boss")
-                  : t("adventures.start")}
-            </Text>
-          </AppButton>
+            </>
+          )}
         </YStack>
       </ScrollView>
+
+      <YStack
+        position="absolute"
+        bottom={0}
+        left={0}
+        right={0}
+        p="$4"
+        bg="$bgDark"
+        borderTopWidth={1}
+        borderTopColor="$borderStrong"
+      >
+        <Button
+          size="$5"
+          bg={isBoss ? "$error" : "$primary"}
+          color="$text"
+          fontWeight="bold"
+          onPress={handleStartAdventure}
+          pressStyle={{ opacity: 0.8, scale: 0.98 }}
+          shadowColor={isBoss ? "$error" : "$primaryGlow"}
+          shadowOffset={{ width: 0, height: 4 }}
+          shadowOpacity={0.6}
+          shadowRadius={12}
+        >
+          {t("adventures.start_button")}
+        </Button>
+      </YStack>
     </YStack>
   );
 }

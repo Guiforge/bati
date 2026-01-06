@@ -1,324 +1,183 @@
-import { LegendList } from "@legendapp/list";
-import { ChevronLeft, Sparkles } from "@tamagui/lucide-icons";
-import { Image } from "expo-image";
+import { eq } from "drizzle-orm";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type ImageSourcePropType, Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { FlatList } from "react-native";
+import { Button, Text, XStack, YStack } from "tamagui";
+import { useDatabase } from "@/components/DatabaseProvider";
+import { adventures, quests } from "@/db/schema";
+import { useGameIcon } from "@/hooks/useGameIcon";
 
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
-import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
-import {
-  type Adventure,
-  estimateQuestTemplateSeconds,
-  formatDuration,
-  listAdventures,
-  listExercises,
-} from "@/db";
-import type { Exercise } from "@/db/exercises";
-import { computeSessionXp } from "@/db/xp";
-import { useSettingsStore } from "@/stores/settings";
+type Adventure = typeof adventures.$inferSelect & {
+  quest: typeof quests.$inferSelect | null;
+};
 
-type LoadState =
-  | { status: "loading"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
-  | { status: "ready"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
-  | {
-      status: "error";
-      adventures: Adventure[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
-
-function resolveImage(path?: string | null): ImageSourcePropType | null {
-  if (!path) return null;
-  if (path === "assets/placeholder.jpg") return require("../../../assets/placeholder.jpg");
-  return null;
-}
-
-const ANDROID_MIN_BOTTOM_INSET = 24;
-
-export default function AdventuresGallery() {
+export default function AdventuresScreen() {
+  const { t, i18n } = useTranslation();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const { db } = useDatabase();
+  const { GameIcon } = useGameIcon();
 
-  const [state, setState] = useState<LoadState>({
-    status: "loading",
-    adventures: [],
-    exercisesById: {},
-  });
-
-  const load = useCallback(async () => {
-    setState((s) => ({
-      status: "loading",
-      adventures: s.adventures,
-      exercisesById: s.exercisesById,
-    }));
-
-    try {
-      const [adventures, exercises] = await Promise.all([listAdventures(), listExercises()]);
-      const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-      setState({ status: "ready", adventures, exercisesById });
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Unknown error";
-      setState((s) => ({
-        status: "error",
-        adventures: s.adventures,
-        exercisesById: s.exercisesById,
-        message,
-      }));
-    }
-  }, []);
+  const [adventuresList, setAdventuresList] = useState<Adventure[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    load().catch(() => {
-      // Error already handled
-    });
-  }, [load]);
+    if (!db) return;
 
-  const adventures = state.adventures;
-  const exercisesById = state.exercisesById;
+    db.select({
+      id: adventures.id,
+      questId: adventures.questId,
+      enTitle: adventures.enTitle,
+      frTitle: adventures.frTitle,
+      enDescription: adventures.enDescription,
+      frDescription: adventures.frDescription,
+      author: adventures.author,
+      sortOrder: adventures.sortOrder,
+      kind: adventures.kind,
+      isActive: adventures.isActive,
+      imagePath: adventures.imagePath,
+      bossTotalHp: adventures.bossTotalHp,
+      bossWeaknessMuscle: adventures.bossWeaknessMuscle,
+      bossResistanceMuscle: adventures.bossResistanceMuscle,
+      createdAt: adventures.createdAt,
+      updatedAt: adventures.updatedAt,
+      quest: quests,
+    })
+      .from(adventures)
+      .leftJoin(quests, eq(adventures.questId, quests.id))
+      .where(eq(adventures.isActive, 1))
+      .orderBy(adventures.sortOrder)
+      .all()
+      .then((data) => {
+        setAdventuresList(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [db]);
 
-  const title = t("adventures.gallery_title", "Adventures");
+  const renderAdventureCard = ({ item }: { item: Adventure }) => {
+    const title = i18n.language === "fr" ? item.frTitle : item.enTitle;
+    const description = i18n.language === "fr" ? item.frDescription : item.enDescription;
+    const isBoss = item.kind === "boss";
 
-  const renderItem = useCallback(
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex rendering logic, refactor planned
-    ({ item }: { item: Adventure }) => {
-      const q = item.coverQuest;
-      const qTitle = language === "fr" ? item.frTitle || q.frTitle : item.enTitle || q.enTitle;
-      const qDesc =
-        language === "fr"
-          ? item.frDescription || q.frDescription
-          : item.enDescription || q.enDescription;
-
-      const tokens = getQuestColorTokensFromTemplateWithExercises({
-        quest: q,
-        exercisesById,
-      });
-
-      const durationSeconds = estimateQuestTemplateSeconds({
-        template: q,
-        exercisesById,
-        userLevel: "medium",
-      });
-      const estimate = formatDuration(durationSeconds, language);
-      const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
-
-      const authorLabel = t("common.by", {
-        author: item.author,
-        defaultValue: `By ${item.author}`,
-      });
-      const kindLabel =
-        item.kind === "boss"
-          ? t("adventures.kind_boss", "BOSS")
-          : item.kind === "event"
-            ? t("adventures.kind_event", "EVENT")
-            : t("adventures.kind_route", "ROUTE");
-
-      const imagePaths = q.exercises.flatMap((qex) => qex.images ?? []).filter(Boolean);
-      const uniqueImagePaths = Array.from(new Set(imagePaths));
-      const thumbPaths =
-        uniqueImagePaths.length > 0 ? uniqueImagePaths.slice(0, 8) : ["assets/placeholder.jpg"];
-
-      return (
-        <YStack px="$5">
-          <Card bg={tokens.bg} onPress={() => router.push(`/adventures/${item.id}` as never)}>
-            <YStack gap="$3">
-              <XStack items="center" justify="space-between" gap="$3">
-                <XStack items="center" gap="$2" flex={1}>
-                  <Text fontSize={22}>🗺️</Text>
-                  <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={1} flex={1}>
-                    {qTitle}
-                  </Text>
-                </XStack>
-
-                <Chip
-                  label={t("quests.reward_xp", {
-                    count: xp,
-                    defaultValue: `+${xp} XP`,
-                  })}
-                  tone="secondary"
-                />
-              </XStack>
-
-              <Paragraph color="$color" opacity={0.75} size="$3" numberOfLines={3}>
-                {qDesc}
-              </Paragraph>
-
-              <XStack gap="$2" flexWrap="wrap">
-                <Chip label={kindLabel} tone={item.kind === "boss" ? "primary" : undefined} />
-                <Chip label={authorLabel} />
-                <Chip
-                  label={t("quests.rounds", {
-                    count: q.rounds,
-                    defaultValue: `${q.rounds} rounds`,
-                  })}
-                />
-                <Chip
-                  label={t("adventures.steps", {
-                    count: item.stepsCount,
-                    defaultValue: `${item.stepsCount} steps`,
-                  })}
-                />
-                <Chip
-                  label={t("quests.exercises", {
-                    count: q.exercises.length,
-                    defaultValue: `${q.exercises.length} exercises`,
-                  })}
-                  tone="primary"
-                />
-                <Chip
-                  label={t("quests.estimate", {
-                    duration: estimate,
-                    defaultValue: `≈ ${estimate}`,
-                  })}
-                />
-              </XStack>
-
-              <XStack gap="$2" flexWrap="wrap">
-                {thumbPaths.map((p, idx) => {
-                  const src = resolveImage(p);
-                  return (
-                    <YStack
-                      // biome-ignore lint/suspicious/noArrayIndexKey: stable enough for static image lists
-                      key={`${p}-${idx}`}
-                      width={50}
-                      height={50}
-                      rounded={14}
-                      overflow="hidden"
-                      bg="$bgLight"
-                      borderWidth={3}
-                      borderColor="$color"
-                      items="center"
-                      justify="center"
-                    >
-                      {src ? (
-                        <Image
-                          source={src}
-                          style={{ width: "100%", height: "100%" }}
-                          contentFit="cover"
-                          transition={0}
-                        />
-                      ) : (
-                        <Text fontSize={18}>⚔️</Text>
-                      )}
-                    </YStack>
-                  );
-                })}
-              </XStack>
-            </YStack>
-          </Card>
-        </YStack>
-      );
-    },
-    [exercisesById, language, router, t],
-  );
-
-  const StatusMessage = () => {
-    if (state.status === "error") {
-      return (
-        <YStack px="$5">
-          <Card>
-            <YStack gap="$3" items="center" py="$2">
-              <Text fontSize={32}>😵</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
-                {t("quests.load_error", "Oops!")}
-              </Text>
-              <Paragraph color="$color" opacity={0.6} size="$3">
-                {state.message}
-              </Paragraph>
-              <AppButton
-                fullWidth={false}
-                variant="secondary"
-                onPress={() => {
-                  load().catch(() => {
-                    // Error already handled
-                  });
-                }}
-              >
-                {t("quests.retry", "Retry")} ↻
-              </AppButton>
-            </YStack>
-          </Card>
-        </YStack>
-      );
-    }
-
-    if (state.status === "loading" && adventures.length === 0) {
-      return (
-        <YStack px="$5">
-          <Card>
-            <XStack items="center" justify="center" gap="$3" py="$4">
-              <Text fontSize={28}>🏗️</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
-                {t("quests.loading", "Loading...")}
+    return (
+      <Button unstyled onPress={() => router.push(`/adventures/${item.id}`)} mb="$3">
+        <YStack
+          bg="$glassBg"
+          borderColor={isBoss ? "$error" : "$borderStrong"}
+          borderWidth={isBoss ? 2 : 1}
+          borderRadius="$4"
+          p="$4"
+          pressStyle={{ opacity: 0.8, scale: 0.98 }}
+        >
+          {isBoss && (
+            <XStack
+              ai="center"
+              gap="$2"
+              mb="$2"
+              bg="$error"
+              px="$2"
+              py="$1"
+              borderRadius="$2"
+              alignSelf="flex-start"
+            >
+              <GameIcon name="skull" size={16} color="$text" />
+              <Text color="$text" fontSize="$2" fontWeight="bold">
+                {t("adventures.epic_battle")}
               </Text>
             </XStack>
-          </Card>
-        </YStack>
-      );
-    }
+          )}
 
-    if (state.status !== "loading" && adventures.length === 0) {
-      return (
-        <YStack px="$5">
-          <Card>
-            <YStack gap="$3" items="center" py="$2">
-              <Text fontSize={32}>🏚️</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
-                {t("adventures.empty_title", "No adventures yet")}
-              </Text>
-              <Paragraph color="$color" opacity={0.6} size="$3">
-                {t("adventures.empty_subtitle", "Come back soon!")}
-              </Paragraph>
-            </YStack>
-          </Card>
-        </YStack>
-      );
-    }
+          <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
+            {title || t("adventures.untitled")}
+          </Text>
 
-    return null;
+          {item.quest && (
+            <XStack gap="$2" mb="$2" flexWrap="wrap">
+              {item.quest.estimatedMinutes && (
+                <YStack
+                  bg="$glassBg"
+                  borderColor="$borderStrong"
+                  borderWidth={1}
+                  px="$2"
+                  py="$1"
+                  borderRadius="$2"
+                >
+                  <Text color="$textSecondary" fontSize="$2">
+                    {item.quest.estimatedMinutes} min
+                  </Text>
+                </YStack>
+              )}
+
+              {item.quest.difficulty && (
+                <YStack
+                  bg={
+                    item.quest.difficulty === "Beginner"
+                      ? "$success"
+                      : item.quest.difficulty === "Intermediate"
+                        ? "$warning"
+                        : "$error"
+                  }
+                  px="$2"
+                  py="$1"
+                  borderRadius="$2"
+                >
+                  <Text color="$text" fontSize="$2" fontWeight="600">
+                    {t(`quests.difficulty_${item.quest.difficulty.toLowerCase()}`)}
+                  </Text>
+                </YStack>
+              )}
+
+              {isBoss && item.bossTotalHp && (
+                <YStack bg="$error" px="$2" py="$1" borderRadius="$2">
+                  <Text color="$text" fontSize="$2" fontWeight="600">
+                    {item.bossTotalHp} HP
+                  </Text>
+                </YStack>
+              )}
+            </XStack>
+          )}
+
+          <Text color="$textSecondary" fontSize="$3" numberOfLines={3}>
+            {description || t("adventures.no_description")}
+          </Text>
+        </YStack>
+      </Button>
+    );
   };
 
   return (
-    <YStack flex={1} bg="$background">
-      <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$3">
-        <XStack items="center" justify="space-between">
-          <XStack items="center" gap="$3">
-            <AppIconButton onPress={() => router.back()}>
-              <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
-            </AppIconButton>
-            <XStack items="center" gap="$2">
-              <Sparkles size={18} color="$color" strokeWidth={2.5} />
-              <Text fontWeight="900" fontSize={20} color="$color">
-                {title}
-              </Text>
-            </XStack>
-          </XStack>
-        </XStack>
+    <YStack f={1} bg="$bgDark">
+      <YStack p="$4" gap="$3" borderBottomWidth={1} borderBottomColor="$borderStrong">
+        <Text color="$text" fontSize="$8" fontWeight="bold">
+          {t("adventures.title")}
+        </Text>
+        <Text color="$textSecondary" fontSize="$4">
+          {t("adventures.subtitle")}
+        </Text>
       </YStack>
 
-      <StatusMessage />
-
-      {adventures.length > 0 && (
-        <LegendList
-          data={adventures}
-          renderItem={renderItem}
-          keyExtractor={(a) => String(a.id)}
-          ItemSeparatorComponent={() => <YStack height={12} />}
-          recycleItems
-          estimatedItemSize={240}
-          contentContainerStyle={{
-            paddingTop: 8,
-            paddingBottom:
-              Math.max(insets.bottom, Platform.OS === "android" ? ANDROID_MIN_BOTTOM_INSET : 0) +
-              30,
-          }}
+      {loading ? (
+        <YStack f={1} ai="center" jc="center">
+          <Text color="$textSecondary">{t("common.loading")}</Text>
+        </YStack>
+      ) : (
+        <FlatList
+          data={adventuresList}
+          renderItem={renderAdventureCard}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
+          ListEmptyComponent={
+            <YStack ai="center" jc="center" py="$8">
+              <GameIcon name="map" size={64} color="$textSecondary" />
+              <Text color="$textSecondary" fontSize="$5" textAlign="center" mt="$4">
+                {t("adventures.empty_title")}
+              </Text>
+              <Text color="$textSecondary" fontSize="$3" textAlign="center" mt="$2">
+                {t("adventures.empty_subtitle")}
+              </Text>
+            </YStack>
+          }
         />
       )}
     </YStack>

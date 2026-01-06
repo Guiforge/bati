@@ -1,8 +1,8 @@
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { YStack, Text, Button } from "tamagui";
-import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button, Text, YStack } from "tamagui";
 import { useSessionStore } from "@/stores/session";
 
 export default function CountdownScreen() {
@@ -39,7 +39,7 @@ export default function CountdownScreen() {
 
   useEffect(() => {
     handleStart();
-  }, []);
+  }, [handleStart]);
 
   return (
     <YStack flex={1} bg="$bgDark" justifyContent="center" alignItems="center" padding="$6">

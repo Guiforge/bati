@@ -1,18 +1,15 @@
-import { useRouter } from "expo-router";
-import { YStack, XStack, Text, Button } from "tamagui";
-import { useTranslation } from "react-i18next";
-import { useSessionStore } from "@/stores/session";
-import { useEffect } from "react";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Button, Text, XStack, YStack } from "tamagui";
+import { useSessionStore } from "@/stores/session";
 
 export default function VictoryScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  
-  const {
-    sessionSummary,
-    clearSession
-  } = useSessionStore();
+
+  const { sessionSummary, clearSession } = useSessionStore();
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -41,7 +38,15 @@ export default function VictoryScreen() {
       {/* Stats Cards */}
       <YStack width="100%" gap="$3" marginBottom="$8">
         <XStack gap="$3">
-          <YStack flex={1} bg="$glassBg" padding="$4" borderRadius="$4" borderWidth={1} borderColor="$glassBorder" alignItems="center">
+          <YStack
+            flex={1}
+            bg="$glassBg"
+            padding="$4"
+            borderRadius="$4"
+            borderWidth={1}
+            borderColor="$glassBorder"
+            alignItems="center"
+          >
             <Text fontSize={14} color="$textSecondary" marginBottom="$2">
               {t("session.xp_earned")}
             </Text>
@@ -50,7 +55,15 @@ export default function VictoryScreen() {
             </Text>
           </YStack>
 
-          <YStack flex={1} bg="$glassBg" padding="$4" borderRadius="$4" borderWidth={1} borderColor="$glassBorder" alignItems="center">
+          <YStack
+            flex={1}
+            bg="$glassBg"
+            padding="$4"
+            borderRadius="$4"
+            borderWidth={1}
+            borderColor="$glassBorder"
+            alignItems="center"
+          >
             <Text fontSize={14} color="$textSecondary" marginBottom="$2">
               {t("session.exercises")}
             </Text>
@@ -60,12 +73,21 @@ export default function VictoryScreen() {
           </YStack>
         </XStack>
 
-        <YStack bg="$glassBg" padding="$4" borderRadius="$4" borderWidth={1} borderColor="$glassBorder" alignItems="center">
+        <YStack
+          bg="$glassBg"
+          padding="$4"
+          borderRadius="$4"
+          borderWidth={1}
+          borderColor="$glassBorder"
+          alignItems="center"
+        >
           <Text fontSize={14} color="$textSecondary" marginBottom="$2">
             {t("session.time_taken")}
           </Text>
           <Text fontSize={28} fontWeight="600" color="$text">
-            {sessionSummary.duration ? `${Math.floor(sessionSummary.duration / 60)}:${(sessionSummary.duration % 60).toString().padStart(2, '0')}` : "0:00"}
+            {sessionSummary.duration
+              ? `${Math.floor(sessionSummary.duration / 60)}:${(sessionSummary.duration % 60).toString().padStart(2, "0")}`
+              : "0:00"}
           </Text>
         </YStack>
       </YStack>

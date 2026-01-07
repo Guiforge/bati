@@ -72,7 +72,7 @@ export default function QuestDetailsScreen() {
 
   if (loading) {
     return (
-      <YStack f={1} bg="$bgDark" ai="center" jc="center">
+      <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center">
         <Text color="$textSecondary">{t("quests.loading")}</Text>
       </YStack>
     );
@@ -80,7 +80,7 @@ export default function QuestDetailsScreen() {
 
   if (!quest) {
     return (
-      <YStack f={1} bg="$bgDark" ai="center" jc="center" p="$4">
+      <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center" p="$4">
         <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
           {t("quests.not_found")}
         </Text>
@@ -98,7 +98,7 @@ export default function QuestDetailsScreen() {
   const description = i18n.language === "fr" ? quest.frDescription : quest.enDescription;
 
   return (
-    <YStack f={1} bg="$bgDark">
+    <YStack flex={1} bg="$bgDark">
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <YStack p="$4" gap="$4">
           <Text color="$text" fontSize="$9" fontWeight="bold">
@@ -191,13 +191,13 @@ export default function QuestDetailsScreen() {
                     p="$3"
                     borderRadius="$3"
                   >
-                    <XStack ai="center" gap="$3">
+                    <XStack alignItems="center" gap="$3">
                       <YStack
                         bg="$primary"
                         w={32}
                         h={32}
-                        ai="center"
-                        jc="center"
+                        alignItems="center"
+                        justifyContent="center"
                         borderRadius="$full"
                       >
                         <Text color="$text" fontSize="$4" fontWeight="bold">
@@ -205,7 +205,7 @@ export default function QuestDetailsScreen() {
                         </Text>
                       </YStack>
 
-                      <YStack f={1}>
+                      <YStack flex={1}>
                         <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                           {exerciseName}
                         </Text>
@@ -225,14 +225,14 @@ export default function QuestDetailsScreen() {
           </YStack>
 
           <YStack gap="$2" mt="$2">
-            <XStack ai="center" gap="$2">
+            <XStack alignItems="center" gap="$2">
               <GameIcon name="repeat" size={20} color="$textSecondary" />
               <Text color="$textSecondary" fontSize="$4">
                 {quest.rounds} {quest.rounds === 1 ? "round" : "rounds"}
               </Text>
             </XStack>
 
-            <XStack ai="center" gap="$2">
+            <XStack alignItems="center" gap="$2">
               <GameIcon name="timer" size={20} color="$textSecondary" />
               <Text color="$textSecondary" fontSize="$4">
                 {quest.restSeconds}s {t("quests.rest", { count: quest.restSeconds })}

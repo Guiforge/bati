@@ -48,8 +48,8 @@ export default function VictoryScreen() {
             bg="$error"
             w={100}
             h={100}
-            ai="center"
-            jc="center"
+            alignItems="center"
+            justifyContent="center"
             borderRadius="$full"
             mb="$4"
             shadowColor="$error"

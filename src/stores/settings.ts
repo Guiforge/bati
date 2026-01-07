@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import i18n from "@/i18n";
 import { type AvatarId, avatarIds, isAvatarId } from "@/src/constants/avatars";
 import { preferences } from "@/src/db";
+import i18n from "@/src/i18n";
 import { getDevicePreferredAppLanguage } from "@/src/i18n/deviceLanguage";
 
 export type AppLanguage = "en" | "fr";

@@ -77,7 +77,7 @@ export default function BossIntroScreen() {
 
   if (loading) {
     return (
-      <YStack f={1} bg="$bgDark" ai="center" jc="center">
+      <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center">
         <Text color="$textSecondary">{t("common.loading")}</Text>
       </YStack>
     );
@@ -85,7 +85,7 @@ export default function BossIntroScreen() {
 
   if (!adventure || adventure.kind !== "boss") {
     return (
-      <YStack f={1} bg="$bgDark" ai="center" jc="center" p="$4">
+      <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center" p="$4">
         <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
           {t("boss.not_found")}
         </Text>
@@ -100,14 +100,14 @@ export default function BossIntroScreen() {
   const description = i18n.language === "fr" ? adventure.frDescription : adventure.enDescription;
 
   return (
-    <YStack f={1} bg="#0A0A0F">
-      <YStack f={1} ai="center" jc="center" p="$6" gap="$6">
+    <YStack flex={1} bg="#0A0A0F">
+      <YStack flex={1} alignItems="center" justifyContent="center" p="$6" gap="$6">
         <YStack
           bg="$error"
           w={120}
           h={120}
-          ai="center"
-          jc="center"
+          alignItems="center"
+          justifyContent="center"
           borderRadius="$full"
           shadowColor="$error"
           shadowOffset={{ width: 0, height: 8 }}
@@ -117,7 +117,7 @@ export default function BossIntroScreen() {
           <GameIcon name="skull" size={72} color="$text" />
         </YStack>
 
-        <YStack ai="center" gap="$2">
+        <YStack alignItems="center" gap="$2">
           <Text
             color="$textSecondary"
             fontSize="$3"
@@ -162,7 +162,7 @@ export default function BossIntroScreen() {
         </YStack>
 
         {adventure.bossWeaknessMuscle && (
-          <XStack ai="center" gap="$2" bg="$warning" px="$4" py="$2" borderRadius="$3">
+          <XStack alignItems="center" gap="$2" bg="$warning" px="$4" py="$2" borderRadius="$3">
             <GameIcon name="zap" size={20} color="$text" />
             <Text color="$text" fontSize="$3" fontWeight="600">
               {t("boss.weakness")}: {adventure.bossWeaknessMuscle}

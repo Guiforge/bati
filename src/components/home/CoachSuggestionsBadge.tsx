@@ -113,13 +113,13 @@ export function CoachSuggestionsBadge() {
             p="$6"
             maxWidth={400}
           >
-            <YStack ai="center" gap="$3">
+            <YStack alignItems="center" gap="$3">
               <YStack
                 bg="$warning"
                 w={80}
                 h={80}
-                ai="center"
-                jc="center"
+                alignItems="center"
+                justifyContent="center"
                 borderRadius="$full"
                 shadowColor="$warning"
                 shadowOffset={{ width: 0, height: 4 }}
@@ -146,9 +146,9 @@ export function CoachSuggestionsBadge() {
                 borderWidth={1}
                 borderColor="$borderStrong"
               >
-                <XStack gap="$3" ai="flex-start">
+                <XStack gap="$3" alignItems="flex-start">
                   <GameIcon name="target" size={24} color="$primary" />
-                  <YStack f={1}>
+                  <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_1_title")}
                     </Text>
@@ -166,9 +166,9 @@ export function CoachSuggestionsBadge() {
                 borderWidth={1}
                 borderColor="$borderStrong"
               >
-                <XStack gap="$3" ai="flex-start">
+                <XStack gap="$3" alignItems="flex-start">
                   <GameIcon name="flag" size={24} color="$success" />
-                  <YStack f={1}>
+                  <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_2_title")}
                     </Text>
@@ -186,9 +186,9 @@ export function CoachSuggestionsBadge() {
                 borderWidth={1}
                 borderColor="$borderStrong"
               >
-                <XStack gap="$3" ai="flex-start">
+                <XStack gap="$3" alignItems="flex-start">
                   <GameIcon name="zap" size={24} color="$warning" />
-                  <YStack f={1}>
+                  <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_3_title")}
                     </Text>

@@ -285,7 +285,7 @@ export default function ExerciseScreen() {
               {t("session.skip_warning")}
             </Dialog.Description>
 
-            <XStack gap="$3" jc="flex-end">
+            <XStack gap="$3" justifyContent="flex-end">
               <Dialog.Close asChild>
                 <Button variant="outlined" borderColor="$borderStrong">
                   {t("common.cancel")}
@@ -341,12 +341,12 @@ export default function ExerciseScreen() {
                 bg="$glassBg"
                 borderColor="$borderStrong"
                 borderWidth={1}
-                jc="flex-start"
+                justifyContent="flex-start"
                 onPress={() => setShowModifyDialog(false)}
               >
-                <XStack gap="$3" ai="center">
+                <XStack gap="$3" alignItems="center">
                   <GameIcon name="dumbbell" size={20} color="$text" />
-                  <YStack f={1}>
+                  <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_1")}
                     </Text>
@@ -362,12 +362,12 @@ export default function ExerciseScreen() {
                 bg="$glassBg"
                 borderColor="$borderStrong"
                 borderWidth={1}
-                jc="flex-start"
+                justifyContent="flex-start"
                 onPress={() => setShowModifyDialog(false)}
               >
-                <XStack gap="$3" ai="center">
+                <XStack gap="$3" alignItems="center">
                   <GameIcon name="dumbbell" size={20} color="$text" />
-                  <YStack f={1}>
+                  <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_2")}
                     </Text>
@@ -383,12 +383,12 @@ export default function ExerciseScreen() {
                 bg="$glassBg"
                 borderColor="$borderStrong"
                 borderWidth={1}
-                jc="flex-start"
+                justifyContent="flex-start"
                 onPress={() => setShowModifyDialog(false)}
               >
-                <XStack gap="$3" ai="center">
+                <XStack gap="$3" alignItems="center">
                   <GameIcon name="dumbbell" size={20} color="$text" />
-                  <YStack f={1}>
+                  <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_3")}
                     </Text>

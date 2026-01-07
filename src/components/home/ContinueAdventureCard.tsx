@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { useDatabase } from "@/src/components/DatabaseProvider";
-import { adventures, quests, userSettings } from "@/src/db/schema";
+import { adventures, quests, userPreferences } from "@/src/db/schema";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 
 type Adventure = typeof adventures.$inferSelect & {
@@ -24,7 +24,7 @@ export function ContinueAdventureCard() {
     if (!db) return;
 
     db.select()
-      .from(userSettings)
+      .from(userPreferences)
       .get()
       .then((settings) => {
         if (!settings?.currentAdventureId) {
@@ -88,19 +88,19 @@ export function ContinueAdventureCard() {
       shadowOpacity={0.6}
       shadowRadius={12}
     >
-      <XStack ai="center" gap="$3" mb="$3">
+      <XStack alignItems="center" gap="$3" mb="$3">
         <YStack
           bg={isBoss ? "$error" : "$primary"}
           w={48}
           h={48}
-          ai="center"
-          jc="center"
+          alignItems="center"
+          justifyContent="center"
           borderRadius="$full"
         >
           <GameIcon name={isBoss ? "skull" : "map"} size={28} color="$text" />
         </YStack>
 
-        <YStack f={1}>
+        <YStack flex={1}>
           <Text color="$textSecondary" fontSize="$2" fontWeight="600" textTransform="uppercase">
             {t("home.continue_adventure")}
           </Text>
@@ -111,7 +111,7 @@ export function ContinueAdventureCard() {
       </XStack>
 
       {isBoss && (
-        <XStack ai="center" gap="$2" bg="$error" p="$2" borderRadius="$3" mb="$3">
+        <XStack alignItems="center" gap="$2" bg="$error" p="$2" borderRadius="$3" mb="$3">
           <GameIcon name="zap" size={20} color="$text" />
           <Text color="$text" fontSize="$3" fontWeight="bold">
             {t("home.boss_ready")}
@@ -129,7 +129,7 @@ export function ContinueAdventureCard() {
           </Text>
 
           {currentAdventure.quest.estimatedMinutes && (
-            <XStack ai="center" gap="$2">
+            <XStack alignItems="center" gap="$2">
               <GameIcon name="clock" size={16} color="$textSecondary" />
               <Text color="$textSecondary" fontSize="$3">
                 {currentAdventure.quest.estimatedMinutes} min

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, ScrollView, Text, YStack } from "tamagui";
 import { db } from "@/src/db/client";
-import { userSettings } from "@/src/db/schema";
+import { userPreferences } from "@/src/db/schema";
 
 export default function DisclaimerScreen() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export default function DisclaimerScreen() {
   const handleAcknowledge = async () => {
     try {
       // Store acknowledgment in database
-      await db.insert(userSettings).values({
+      await db.insert(userPreferences).values({
         key: "disclaimer_acknowledged",
         value: "true",
       });

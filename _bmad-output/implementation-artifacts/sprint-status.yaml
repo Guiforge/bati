@@ -48,10 +48,10 @@ development_status:
   1-5-setup-test-infrastructure-jest--test-helpers: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-display-fitness-disclaimer-on-first-launch: ready-for-dev
-  2-2-onboarding-presentation-carousel-3-slides: ready-for-dev
-  2-3-avatar-selection-and-village-naming: ready-for-dev
+  epic-2: done
+  2-1-display-fitness-disclaimer-on-first-launch: done
+  2-2-onboarding-presentation-carousel-3-slides: done
+  2-3-avatar-selection-and-village-naming: done
   2-4-optional-tutorial-quest: ready-for-dev
   2-5-coach-suggestions-after-7-days: ready-for-dev
   epic-2-retrospective: optional

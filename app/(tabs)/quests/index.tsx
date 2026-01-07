@@ -133,13 +133,13 @@ export default function QuestsScreen() {
   };
 
   return (
-    <YStack f={1} bg="$bgDark">
+    <YStack flex={1} bg="$bgDark">
       <YStack p="$4" gap="$3" borderBottomWidth={1} borderBottomColor="$borderStrong">
         <Text color="$text" fontSize="$8" fontWeight="bold">
           {t("quests.gallery_title")}
         </Text>
 
-        <XStack gap="$2" ai="center">
+        <XStack gap="$2" alignItems="center">
           <Button
             size="$3"
             bg={muscleFilter ? "$primary" : "$glassBg"}
@@ -267,7 +267,7 @@ export default function QuestsScreen() {
       </YStack>
 
       {loading ? (
-        <YStack f={1} ai="center" jc="center">
+        <YStack flex={1} alignItems="center" justifyContent="center">
           <Text color="$textSecondary">{t("quests.loading")}</Text>
         </YStack>
       ) : (
@@ -277,7 +277,7 @@ export default function QuestsScreen() {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
           ListEmptyComponent={
-            <YStack ai="center" jc="center" py="$8">
+            <YStack alignItems="center" justifyContent="center" py="$8">
               <Text color="$textSecondary" fontSize="$5" textAlign="center">
                 {hasActiveFilters ? t("quests.empty_filters_title") : t("quests.empty_title")}
               </Text>

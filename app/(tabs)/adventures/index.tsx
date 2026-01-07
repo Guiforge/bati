@@ -72,7 +72,7 @@ export default function AdventuresScreen() {
         >
           {isBoss && (
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
               mb="$2"
               bg="$error"
@@ -147,7 +147,7 @@ export default function AdventuresScreen() {
   };
 
   return (
-    <YStack f={1} bg="$bgDark">
+    <YStack flex={1} bg="$bgDark">
       <YStack p="$4" gap="$3" borderBottomWidth={1} borderBottomColor="$borderStrong">
         <Text color="$text" fontSize="$8" fontWeight="bold">
           {t("adventures.title")}
@@ -158,7 +158,7 @@ export default function AdventuresScreen() {
       </YStack>
 
       {loading ? (
-        <YStack f={1} ai="center" jc="center">
+        <YStack flex={1} alignItems="center" justifyContent="center">
           <Text color="$textSecondary">{t("common.loading")}</Text>
         </YStack>
       ) : (
@@ -168,7 +168,7 @@ export default function AdventuresScreen() {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
           ListEmptyComponent={
-            <YStack ai="center" jc="center" py="$8">
+            <YStack alignItems="center" justifyContent="center" py="$8">
               <GameIcon name="map" size={64} color="$textSecondary" />
               <Text color="$textSecondary" fontSize="$5" textAlign="center" mt="$4">
                 {t("adventures.empty_title")}

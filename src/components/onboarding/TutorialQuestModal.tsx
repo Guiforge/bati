@@ -67,13 +67,13 @@ export function TutorialQuestModal() {
           p="$6"
           maxWidth={400}
         >
-          <YStack ai="center" gap="$3">
+          <YStack alignItems="center" gap="$3">
             <YStack
               bg="$primary"
               w={80}
               h={80}
-              ai="center"
-              jc="center"
+              alignItems="center"
+              justifyContent="center"
               borderRadius="$full"
               shadowColor="$primaryGlow"
               shadowOffset={{ width: 0, height: 4 }}
@@ -104,19 +104,19 @@ export function TutorialQuestModal() {
               borderColor="$borderStrong"
               w="100%"
             >
-              <XStack gap="$2" ai="center" mb="$2">
+              <XStack gap="$2" alignItems="center" mb="$2">
                 <GameIcon name="check-circle" size={16} color="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_1")}
                 </Text>
               </XStack>
-              <XStack gap="$2" ai="center" mb="$2">
+              <XStack gap="$2" alignItems="center" mb="$2">
                 <GameIcon name="check-circle" size={16} color="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_2")}
                 </Text>
               </XStack>
-              <XStack gap="$2" ai="center">
+              <XStack gap="$2" alignItems="center">
                 <GameIcon name="check-circle" size={16} color="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_3")}

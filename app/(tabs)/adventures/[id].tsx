@@ -101,7 +101,7 @@ export default function AdventureDetailsScreen() {
 
   if (loading) {
     return (
-      <YStack f={1} bg="$bgDark" ai="center" jc="center">
+      <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center">
         <Text color="$textSecondary">{t("common.loading")}</Text>
       </YStack>
     );
@@ -109,7 +109,7 @@ export default function AdventureDetailsScreen() {
 
   if (!adventure) {
     return (
-      <YStack f={1} bg="$bgDark" ai="center" jc="center" p="$4">
+      <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center" p="$4">
         <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
           {t("adventures.not_found")}
         </Text>
@@ -128,12 +128,12 @@ export default function AdventureDetailsScreen() {
   const isBoss = adventure.kind === "boss";
 
   return (
-    <YStack f={1} bg="$bgDark">
+    <YStack flex={1} bg="$bgDark">
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <YStack p="$4" gap="$4">
           {isBoss && (
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$3"
               bg="$error"
               p="$3"
@@ -144,7 +144,7 @@ export default function AdventureDetailsScreen() {
               shadowRadius={12}
             >
               <GameIcon name="skull" size={32} color="$text" />
-              <YStack f={1}>
+              <YStack flex={1}>
                 <Text color="$text" fontSize="$4" fontWeight="bold">
                   {t("adventures.epic_battle")}
                 </Text>
@@ -225,13 +225,13 @@ export default function AdventureDetailsScreen() {
                   p="$3"
                   borderRadius="$3"
                 >
-                  <XStack ai="center" gap="$3">
+                  <XStack alignItems="center" gap="$3">
                     <YStack
                       bg="$primary"
                       w={40}
                       h={40}
-                      ai="center"
-                      jc="center"
+                      alignItems="center"
+                      justifyContent="center"
                       borderRadius="$full"
                     >
                       <Text color="$text" fontSize="$5" fontWeight="bold">
@@ -239,7 +239,7 @@ export default function AdventureDetailsScreen() {
                       </Text>
                     </YStack>
 
-                    <YStack f={1}>
+                    <YStack flex={1}>
                       <Text color="$text" fontSize="$5" fontWeight="600" mb="$1">
                         {i18n.language === "fr" ? adventure.quest.frTitle : adventure.quest.enTitle}
                       </Text>
@@ -260,19 +260,19 @@ export default function AdventureDetailsScreen() {
                     p="$3"
                     borderRadius="$3"
                   >
-                    <XStack ai="center" gap="$3">
+                    <XStack alignItems="center" gap="$3">
                       <YStack
                         bg="$error"
                         w={40}
                         h={40}
-                        ai="center"
-                        jc="center"
+                        alignItems="center"
+                        justifyContent="center"
                         borderRadius="$full"
                       >
                         <GameIcon name="skull" size={24} color="$text" />
                       </YStack>
 
-                      <YStack f={1}>
+                      <YStack flex={1}>
                         <Text color="$text" fontSize="$5" fontWeight="600" mb="$1">
                           {t("adventures.boss_fight")}
                         </Text>
@@ -303,13 +303,13 @@ export default function AdventureDetailsScreen() {
                       p="$3"
                       borderRadius="$3"
                     >
-                      <XStack ai="center" gap="$3">
+                      <XStack alignItems="center" gap="$3">
                         <YStack
                           bg="$primary"
                           w={32}
                           h={32}
-                          ai="center"
-                          jc="center"
+                          alignItems="center"
+                          justifyContent="center"
                           borderRadius="$full"
                         >
                           <Text color="$text" fontSize="$4" fontWeight="bold">
@@ -317,7 +317,7 @@ export default function AdventureDetailsScreen() {
                           </Text>
                         </YStack>
 
-                        <YStack f={1}>
+                        <YStack flex={1}>
                           <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                             {exerciseName}
                           </Text>

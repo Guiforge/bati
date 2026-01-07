@@ -5,9 +5,9 @@ describe("db/achievements", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -17,7 +17,8 @@ describe("db/achievements", () => {
 
   describe("achievementDefinitions", () => {
     test("has all achievement codes defined", () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
       expect(achievements.achievementDefinitions.length).toBeGreaterThan(20);
 
       // Check all codes are unique
@@ -26,7 +27,8 @@ describe("db/achievements", () => {
     });
 
     test("getAchievementDefinition returns correct definition", () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
 
       const def = achievements.getAchievementDefinition("first_workout");
       expect(def).toBeTruthy();
@@ -35,7 +37,8 @@ describe("db/achievements", () => {
     });
 
     test("getAchievementDefinition returns undefined for invalid code", () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
 
       const def = achievements.getAchievementDefinition("invalid_code" as never);
       expect(def).toBeUndefined();
@@ -44,7 +47,8 @@ describe("db/achievements", () => {
 
   describe("unlockAchievement", () => {
     test("unlocks a new achievement", async () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
 
       // Start with no achievements
       const beforeUnlock = await achievements.getUnlockedAchievements();
@@ -60,7 +64,8 @@ describe("db/achievements", () => {
     });
 
     test("does not double-unlock same achievement", async () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
 
       // Try to unlock again
       const result = await achievements.unlockAchievement("first_workout");
@@ -74,7 +79,8 @@ describe("db/achievements", () => {
 
   describe("getAchievementStats", () => {
     test("returns correct stats", async () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
 
       const stats = await achievements.getAchievementStats();
       expect(stats.total).toBe(achievements.achievementDefinitions.length);
@@ -86,7 +92,8 @@ describe("db/achievements", () => {
 
   describe("getAllAchievementsWithProgress", () => {
     test("returns progress for all achievements", async () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
 
       const progress = await achievements.getAllAchievementsWithProgress();
       expect(progress.length).toBe(achievements.achievementDefinitions.length);
@@ -108,9 +115,10 @@ describe("db/achievements", () => {
 
   describe("checkForNewAchievements", () => {
     test("returns newly unlocked achievements", async () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
-      const completed = require("../db/completed") as typeof import("../db/completed");
-      const exercises = require("../db/exercises") as typeof import("../db/exercises");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
+      const completed = require("../src/db/completed") as typeof import("../src/db/completed");
+      const exercises = require("../src/db/exercises") as typeof import("../src/db/exercises");
 
       // Create some sessions to trigger achievements
       const allExercises = await exercises.listExercises();
@@ -146,7 +154,8 @@ describe("db/achievements", () => {
     });
 
     test("detects early bird achievement", async () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
 
       // Create a session at 6am
       const earlyMorning = new Date();
@@ -164,7 +173,8 @@ describe("db/achievements", () => {
     });
 
     test("detects long session achievement", async () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const achievements =
+        require("../src/db/achievements") as typeof import("../src/db/achievements");
 
       const newAchievements = await achievements.checkForNewAchievements({
         durationSeconds: 1800, // 30 minutes

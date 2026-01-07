@@ -64,6 +64,13 @@
       "when": 1767632433406,
       "tag": "0008_seed_images",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1767774001009,
+      "tag": "0009_add_quest_columns",
+      "breakpoints": true
     }
   ]
 }

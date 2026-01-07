@@ -1,37 +1,37 @@
-import type { Quest } from "@/db/quests";
-import { useSessionStore } from "../stores/session";
+import type { Quest } from "@/src/db/quests";
+import { useSessionStore } from "../src/stores/session";
 
 // Mock DB client to prevent actual SQLite initialization
-jest.mock("@/db/client", () => ({
+jest.mock("@/src/db/client", () => ({
   db: {},
   schema: {},
   runMigrations: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Mock quests module
-jest.mock("@/db/quests", () => ({
+jest.mock("@/src/db/quests", () => ({
   isDailyQuest: jest.fn().mockReturnValue(false),
 }));
 
 // Mock DB calls
-jest.mock("@/db", () => ({
+jest.mock("@/src/db/index", () => ({
   completeAdventureRunStep: jest.fn(),
 }));
-jest.mock("@/db/completed", () => ({
+jest.mock("@/src/db/completed", () => ({
   createCompletedSession: jest.fn().mockResolvedValue(1),
   markSessionWithNewRecords: jest.fn().mockResolvedValue(undefined),
 }));
-jest.mock("@/db/xp", () => ({
+jest.mock("@/src/db/xp", () => ({
   computeSessionXp: jest.fn().mockReturnValue(100),
 }));
-jest.mock("@/db/preferences", () => ({
+jest.mock("@/src/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),
     setSavedSession: jest.fn().mockResolvedValue(undefined),
     clearSavedSession: jest.fn().mockResolvedValue(undefined),
   },
 }));
-jest.mock("@/db/bossFights", () => ({
+jest.mock("@/src/db/bossFights", () => ({
   getOrCreateBossFight: jest.fn().mockResolvedValue(null),
   dealDamage: jest.fn().mockResolvedValue({
     damage: 10,
@@ -42,7 +42,7 @@ jest.mock("@/db/bossFights", () => ({
     resistancePenalty: false,
   }),
 }));
-jest.mock("@/db/resources", () => ({
+jest.mock("@/src/db/resources", () => ({
   awardSessionResources: jest.fn().mockResolvedValue({
     gold: 10,
     wood: 5,
@@ -53,20 +53,20 @@ jest.mock("@/db/resources", () => ({
     grain: 0,
   }),
 }));
-jest.mock("@/db/buildings", () => ({
+jest.mock("@/src/db/buildings", () => ({
   processSessionBuildings: jest.fn().mockResolvedValue({
     xpGained: [],
     levelUps: [],
     newUnlocks: [],
   }),
 }));
-jest.mock("@/db/goals", () => ({
+jest.mock("@/src/db/goals", () => ({
   recordSessionForGoal: jest.fn().mockResolvedValue(undefined),
 }));
-jest.mock("@/db/personalRecords", () => ({
+jest.mock("@/src/db/personalRecords", () => ({
   checkForNewRecords: jest.fn().mockResolvedValue([]),
 }));
-jest.mock("@/db/streaks", () => ({
+jest.mock("@/src/db/streaks", () => ({
   updateStreakAfterSession: jest.fn().mockResolvedValue({
     current: 1,
     best: 1,
@@ -74,7 +74,7 @@ jest.mock("@/db/streaks", () => ({
     lastWorkoutDate: null,
   }),
 }));
-jest.mock("@/db/achievements", () => ({
+jest.mock("@/src/db/achievements", () => ({
   checkForNewAchievements: jest.fn().mockResolvedValue([]),
 }));
 

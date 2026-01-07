@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 import { Button, ScrollView, Text, XStack, YStack } from "tamagui";
-import { useDatabase } from "@/components/DatabaseProvider";
-import { quests } from "@/db/schema";
+import { useDatabase } from "@/src/components/DatabaseProvider";
+import { quests } from "@/src/db/schema";
 
 type Quest = typeof quests.$inferSelect;
 

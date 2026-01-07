@@ -1,5 +1,5 @@
-import type { EstimateQuestInput } from "@/db/estimate";
-import { estimateExerciseSeconds, estimateQuestSeconds } from "@/db/estimate";
+import type { EstimateQuestInput } from "@/src/db/estimate";
+import { estimateExerciseSeconds, estimateQuestSeconds } from "@/src/db/estimate";
 
 describe("db/estimate", () => {
   it("estimates rep-based exercises using secondsPerRep", () => {

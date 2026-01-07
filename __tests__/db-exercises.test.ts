@@ -5,9 +5,9 @@ describe("db/exercises", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -16,7 +16,8 @@ describe("db/exercises", () => {
   });
 
   test("listExercises aggregates muscles", async () => {
-    const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
+    const { listExercises } =
+      require("../src/db/exercises") as typeof import("../src/db/exercises");
 
     const all = await listExercises();
     expect(all.length).toBeGreaterThanOrEqual(6);
@@ -33,7 +34,7 @@ describe("db/exercises", () => {
 
   test("getExerciseById returns one exercise with muscles", async () => {
     const { listExercises, getExerciseById } =
-      require("../db/exercises") as typeof import("../db/exercises");
+      require("../src/db/exercises") as typeof import("../src/db/exercises");
 
     const all = await listExercises();
     const plank = all.find((e) => e.enName === "Plank");
@@ -46,7 +47,8 @@ describe("db/exercises", () => {
   });
 
   test("getExerciseById returns null for missing id", async () => {
-    const { getExerciseById } = require("../db/exercises") as typeof import("../db/exercises");
+    const { getExerciseById } =
+      require("../src/db/exercises") as typeof import("../src/db/exercises");
     const fetched = await getExerciseById(999999);
     expect(fetched).toBeNull();
   });

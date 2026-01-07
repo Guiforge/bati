@@ -5,9 +5,9 @@ describe("db/resources", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -18,7 +18,7 @@ describe("db/resources", () => {
   describe("getResourceInventory", () => {
     test("should return all resource types", async () => {
       const { getResourceInventory } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const inventory = await getResourceInventory();
       expect(inventory.length).toBeGreaterThan(5); // gold, wood, stone, mana, leaf, etc.
@@ -30,7 +30,8 @@ describe("db/resources", () => {
 
   describe("getResourceAmount", () => {
     test("should return 0 for new resources", async () => {
-      const { getResourceAmount } = require("../db/resources") as typeof import("../db/resources");
+      const { getResourceAmount } =
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const amount = await getResourceAmount("gold");
       expect(typeof amount).toBe("number");
@@ -40,7 +41,7 @@ describe("db/resources", () => {
   describe("addResources", () => {
     test("should add resources to inventory", async () => {
       const { addResources, getResourceAmount } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const initialGold = await getResourceAmount("gold");
 
@@ -54,7 +55,7 @@ describe("db/resources", () => {
 
     test("should handle multiple resource types", async () => {
       const { addResources, getResourceAmount } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const initialGold = await getResourceAmount("gold");
       const initialWood = await getResourceAmount("wood");
@@ -76,7 +77,7 @@ describe("db/resources", () => {
 
     test("should skip zero or negative amounts", async () => {
       const { addResources, getResourceAmount } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const initialWood = await getResourceAmount("wood");
 
@@ -90,7 +91,7 @@ describe("db/resources", () => {
   describe("calculateSessionResources", () => {
     test("should calculate gold based on duration", () => {
       const { calculateSessionResources } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const result = calculateSessionResources({
         durationSeconds: 600, // 10 minutes
@@ -105,7 +106,7 @@ describe("db/resources", () => {
 
     test("should apply difficulty multiplier to gold", () => {
       const { calculateSessionResources } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const resultHard = calculateSessionResources({
         durationSeconds: 600, // 10 minutes
@@ -120,7 +121,7 @@ describe("db/resources", () => {
 
     test("should calculate specific resources from muscle exercises", () => {
       const { calculateSessionResources } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const result = calculateSessionResources({
         durationSeconds: 300,
@@ -140,7 +141,7 @@ describe("db/resources", () => {
 
     test("should calculate mana from calisthenics", () => {
       const { calculateSessionResources } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const result = calculateSessionResources({
         durationSeconds: 300,
@@ -156,7 +157,7 @@ describe("db/resources", () => {
   describe("getDifficultyMultiplier", () => {
     test("should return correct multipliers", () => {
       const { getDifficultyMultiplier } =
-        require("../db/resources") as typeof import("../db/resources");
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       expect(getDifficultyMultiplier("easy")).toBe(0.8);
       expect(getDifficultyMultiplier("medium")).toBe(1.0);
@@ -166,7 +167,8 @@ describe("db/resources", () => {
 
   describe("previewSessionLoot", () => {
     test("should calculate loot preview from exercise results", () => {
-      const { previewSessionLoot } = require("../db/resources") as typeof import("../db/resources");
+      const { previewSessionLoot } =
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const loot = previewSessionLoot({
         durationSeconds: 600, // 10 minutes
@@ -195,7 +197,8 @@ describe("db/resources", () => {
     });
 
     test("should calculate mana for calisthenics exercises", () => {
-      const { previewSessionLoot } = require("../db/resources") as typeof import("../db/resources");
+      const { previewSessionLoot } =
+        require("../src/db/resources") as typeof import("../src/db/resources");
 
       const loot = previewSessionLoot({
         durationSeconds: 600,

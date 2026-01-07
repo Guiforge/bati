@@ -6,9 +6,9 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 
-import { getResourceInventory, type ResourceAmount } from "@/db/resources";
-import type { ResourceCode } from "@/db/schema";
-import { useGameIcons } from "@/hooks/useGameIcon";
+import { getResourceInventory, type ResourceAmount } from "@/src/db/resources";
+import type { ResourceCode } from "@/src/db/schema";
+import { useGameIcons } from "@/src/hooks/useGameIcon";
 import { GlassCard, RPGText, RPGTitle, ScreenContainer, SolidCard } from "@/src/ui";
 
 type ResourceInfo = {

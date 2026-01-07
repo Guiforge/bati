@@ -5,10 +5,10 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Text, YStack } from "tamagui";
 
-import { AppButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { WeeklyCalendar } from "@/components/scheduling/WeeklyCalendar";
-import { getRestSuggestion, type RestSuggestion } from "@/db/restSuggestions";
+import { AppButton } from "@/src/components/common/AppButton";
+import { Card } from "@/src/components/common/Card";
+import { WeeklyCalendar } from "@/src/components/scheduling/WeeklyCalendar";
+import { getRestSuggestion, type RestSuggestion } from "@/src/db/restSuggestions";
 
 export default function ScheduleScreen() {
   const { t } = useTranslation();

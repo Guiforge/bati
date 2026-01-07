@@ -1,4 +1,4 @@
-import * as schema from "../db/schema";
+import * as schema from "../src/db/schema";
 import { createTestDb } from "./helpers/testDb";
 
 const { completedQuest, userPreferences } = schema;
@@ -8,9 +8,9 @@ describe("db/streaks", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -40,7 +40,7 @@ describe("db/streaks", () => {
   }
 
   test("getStreakInfo returns 0 for empty database", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     const result = await streaks.getStreakInfo();
     expect(result.current).toBe(0);
     expect(result.best).toBe(0);
@@ -49,7 +49,7 @@ describe("db/streaks", () => {
   });
 
   test("calculates current streak of 1 for workout today", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     await addSessionOnDate(0); // Today
 
     const result = await streaks.calculateAndCacheStreak();
@@ -58,7 +58,7 @@ describe("db/streaks", () => {
   });
 
   test("calculates current streak of 1 for workout yesterday", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     await addSessionOnDate(1); // Yesterday
 
     const result = await streaks.calculateAndCacheStreak();
@@ -67,7 +67,7 @@ describe("db/streaks", () => {
   });
 
   test("streak is inactive if last workout was 2+ days ago", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     await addSessionOnDate(2); // 2 days ago
 
     const result = await streaks.calculateAndCacheStreak();
@@ -76,7 +76,7 @@ describe("db/streaks", () => {
   });
 
   test("calculates consecutive day streak", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     await addSessionOnDate(0); // Today
     await addSessionOnDate(1); // Yesterday
     await addSessionOnDate(2); // 2 days ago
@@ -87,7 +87,7 @@ describe("db/streaks", () => {
   });
 
   test("streak breaks on skipped day", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     await addSessionOnDate(0); // Today
     await addSessionOnDate(1); // Yesterday
     // Skip day 2
@@ -99,7 +99,7 @@ describe("db/streaks", () => {
   });
 
   test("calculates best streak correctly", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     // A streak of 5 days ending 10 days ago
     await addSessionOnDate(10);
     await addSessionOnDate(11);
@@ -117,7 +117,7 @@ describe("db/streaks", () => {
   });
 
   test("caches streak in preferences", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     await addSessionOnDate(0);
     await addSessionOnDate(1);
 
@@ -133,7 +133,7 @@ describe("db/streaks", () => {
   });
 
   test("getStreakInfo uses cache when valid", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     await addSessionOnDate(0);
     await addSessionOnDate(1);
 
@@ -148,7 +148,7 @@ describe("db/streaks", () => {
   });
 
   test("updateStreakAfterSession recalculates streak", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
+    const streaks = require("../src/db/streaks") as typeof import("../src/db/streaks");
     await addSessionOnDate(0);
     const initial = await streaks.getStreakInfo();
     expect(initial.current).toBe(1);

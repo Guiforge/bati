@@ -3,18 +3,18 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, ScrollView } from "react-native";
 import { H3, Paragraph, Separator, Text, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { createCompletedSession, getAllPreferences, listCompletedSessions } from "@/db";
-import { listAdventures } from "@/db/adventures";
+import { AppButton } from "@/src/components/common/AppButton";
+import { createCompletedSession, getAllPreferences, listCompletedSessions } from "@/src/db";
+import { listAdventures } from "@/src/db/adventures";
 import {
   type BossFight,
   dealDamage,
   getBossFightByAdventure,
   resetBossFight,
-} from "@/db/bossFights";
-import { resetDatabase } from "@/db/client";
-import { type ThemePreference, useSettingsStore } from "@/stores/settings";
-import { useUserStore } from "@/stores/user";
+} from "@/src/db/bossFights";
+import { resetDatabase } from "@/src/db/client";
+import { type ThemePreference, useSettingsStore } from "@/src/stores/settings";
+import { useUserStore } from "@/src/stores/user";
 
 export default function DevTools() {
   const { t } = useTranslation();

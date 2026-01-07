@@ -5,9 +5,9 @@ describe("db/buildings", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -17,7 +17,8 @@ describe("db/buildings", () => {
 
   describe("getAllBuildings", () => {
     test("should return all building types", async () => {
-      const { getAllBuildings } = require("../db/buildings") as typeof import("../db/buildings");
+      const { getAllBuildings } =
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       const buildings = await getAllBuildings();
       expect(buildings.length).toBe(20); // 3 tier1 + 8 tier2 + 6 tier3 + 3 tier4
@@ -27,7 +28,7 @@ describe("db/buildings", () => {
   describe("getUnlockedBuildings", () => {
     test("should return only starter buildings by default", async () => {
       const { getUnlockedBuildings } =
-        require("../db/buildings") as typeof import("../db/buildings");
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       const unlocked = await getUnlockedBuildings();
       expect(unlocked.length).toBe(3); // campfire, tent, training_dummy
@@ -39,7 +40,8 @@ describe("db/buildings", () => {
 
   describe("getBuildingByType", () => {
     test("should return a specific building", async () => {
-      const { getBuildingByType } = require("../db/buildings") as typeof import("../db/buildings");
+      const { getBuildingByType } =
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       const campfire = await getBuildingByType("campfire");
       expect(campfire).not.toBeNull();
@@ -50,7 +52,8 @@ describe("db/buildings", () => {
     });
 
     test("should return locked status for tier 2 buildings", async () => {
-      const { getBuildingByType } = require("../db/buildings") as typeof import("../db/buildings");
+      const { getBuildingByType } =
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       const archeryRange = await getBuildingByType("archery_range");
       expect(archeryRange).not.toBeNull();
@@ -61,7 +64,8 @@ describe("db/buildings", () => {
 
   describe("getVillageStats", () => {
     test("should return village stats", async () => {
-      const { getVillageStats } = require("../db/buildings") as typeof import("../db/buildings");
+      const { getVillageStats } =
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       const stats = await getVillageStats();
       expect(stats).not.toBeNull();
@@ -74,7 +78,7 @@ describe("db/buildings", () => {
   describe("calculateLevelFromXp", () => {
     test("should calculate correct levels", () => {
       const { calculateLevelFromXp } =
-        require("../db/buildings") as typeof import("../db/buildings");
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       expect(calculateLevelFromXp(0)).toBe(1);
       expect(calculateLevelFromXp(50)).toBe(1);
@@ -92,7 +96,7 @@ describe("db/buildings", () => {
   describe("unlockBuilding", () => {
     test("should unlock a building", async () => {
       const { unlockBuilding, getBuildingByType, getVillageStats } =
-        require("../db/buildings") as typeof import("../db/buildings");
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       // Initially locked
       let forge = await getBuildingByType("forge");
@@ -116,7 +120,7 @@ describe("db/buildings", () => {
   describe("addBuildingXp", () => {
     test("should add XP to an unlocked building", async () => {
       const { addBuildingXp, getBuildingByType, unlockBuilding } =
-        require("../db/buildings") as typeof import("../db/buildings");
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       // First unlock the building
       await unlockBuilding("quarry");
@@ -131,7 +135,7 @@ describe("db/buildings", () => {
 
     test("should not add XP to locked buildings", async () => {
       const { addBuildingXp, getBuildingByType } =
-        require("../db/buildings") as typeof import("../db/buildings");
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       // Well is still locked
       const result = await addBuildingXp("well", 100);
@@ -143,7 +147,7 @@ describe("db/buildings", () => {
 
     test("should trigger level up when XP threshold reached", async () => {
       const { addBuildingXp, getBuildingByType, unlockBuilding } =
-        require("../db/buildings") as typeof import("../db/buildings");
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       await unlockBuilding("windmill");
       let windmill = await getBuildingByType("windmill");
@@ -163,13 +167,13 @@ describe("db/buildings", () => {
   describe("applyResourcesToBuildings", () => {
     test("should apply resources to correct buildings", async () => {
       const { applyResourcesToBuildings, getBuildingByType, unlockBuilding } =
-        require("../db/buildings") as typeof import("../db/buildings");
+        require("../src/db/buildings") as typeof import("../src/db/buildings");
 
       // Unlock buildings first so they can gain XP
       await unlockBuilding("archery_range");
       await unlockBuilding("wizard_tower");
 
-      type ResourceAmount = import("../db/resources").ResourceAmount;
+      type ResourceAmount = import("../src/db/resources").ResourceAmount;
 
       const resources: ResourceAmount[] = [
         { resource: "wood", amount: 100 }, // Archery Range -> Level 2

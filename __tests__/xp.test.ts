@@ -1,4 +1,4 @@
-import { computeSessionXp } from "@/db/xp";
+import { computeSessionXp } from "@/src/db/xp";
 
 describe("db/xp", () => {
   test("gives a small floor even for very short sessions", () => {

@@ -5,9 +5,9 @@ describe("db/muscleBalance", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -23,7 +23,7 @@ describe("db/muscleBalance", () => {
 
   test("getMuscleBalance returns empty balance when no sessions exist", async () => {
     const { getMuscleBalance } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const balance = await getMuscleBalance("30d");
 
     expect(balance.totalVolume).toBe(0);
@@ -35,7 +35,7 @@ describe("db/muscleBalance", () => {
 
   test("getMuscleBalance calculates volume correctly from completed exercises", async () => {
     const { getMuscleBalance } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const now = Math.floor(Date.now() / 1000);
 
     // Get a seeded exercise ID (Push-ups has chest and arms)
@@ -66,7 +66,7 @@ describe("db/muscleBalance", () => {
 
   test("getMuscleBalance identifies weak and strong areas correctly", async () => {
     const { getMuscleBalance } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const now = Math.floor(Date.now() / 1000);
 
     // Get a seeded exercise ID (Push-ups has chest and arms)
@@ -96,14 +96,14 @@ describe("db/muscleBalance", () => {
 
   test("getSuggestedFocusAreas returns empty array when no data", async () => {
     const { getSuggestedFocusAreas } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const suggestions = await getSuggestedFocusAreas();
     expect(suggestions).toEqual([]);
   });
 
   test("getSuggestedFocusAreas returns weakest muscles as focus areas", async () => {
     const { getSuggestedFocusAreas } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const now = Math.floor(Date.now() / 1000);
 
     // Get a seeded exercise ID (Push-ups has chest and arms)
@@ -128,7 +128,7 @@ describe("db/muscleBalance", () => {
 
   test("getBalanceRecommendation returns no_data status when no training", () => {
     const { getBalanceRecommendation } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const balance = {
       period: "30d" as const,
       startDate: new Date(),
@@ -147,7 +147,7 @@ describe("db/muscleBalance", () => {
 
   test("getBalanceRecommendation returns balanced status when no weak areas", () => {
     const { getBalanceRecommendation } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const balance = {
       period: "30d" as const,
       startDate: new Date(),
@@ -166,7 +166,7 @@ describe("db/muscleBalance", () => {
 
   test("getBalanceRecommendation returns needs_attention status with weak areas", () => {
     const { getBalanceRecommendation } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const balance = {
       period: "30d" as const,
       startDate: new Date(),
@@ -187,7 +187,7 @@ describe("db/muscleBalance", () => {
 
   test("getSuggestedQuestsForWeakAreas returns empty when no training history", async () => {
     const { getSuggestedQuestsForWeakAreas } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
 
     const suggestions = await getSuggestedQuestsForWeakAreas(3);
     expect(suggestions).toEqual([]);
@@ -195,7 +195,7 @@ describe("db/muscleBalance", () => {
 
   test("getSuggestedQuestsForWeakAreas returns quests targeting weak muscles", async () => {
     const { getSuggestedQuestsForWeakAreas } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+      require("../src/db/muscleBalance") as typeof import("../src/db/muscleBalance");
     const now = Math.floor(Date.now() / 1000);
 
     // Create imbalance: train chest a lot, ignore other muscles

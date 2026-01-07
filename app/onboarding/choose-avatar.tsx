@@ -8,11 +8,11 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { AVATARS, getAvatarById } from "@/constants/avatars";
-import { useHaptics } from "@/hooks/useHaptics";
-import { useSettingsStore } from "@/stores/settings";
+import { AppButton } from "@/src/components/common/AppButton";
+import { ProgressDots } from "@/src/components/ProgressDots";
+import { AVATARS, getAvatarById } from "@/src/constants/avatars";
+import { useHaptics } from "@/src/hooks/useHaptics";
+import { useSettingsStore } from "@/src/stores/settings";
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;

@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
-import { ActionCard } from "@/components/common/ActionCard";
-import { AdventureHeroCard } from "@/components/home/AdventureHeroCard";
-import { HomeHeader } from "@/components/home/HomeHeader";
-import { ResourcesOverview } from "@/components/home/ResourcesOverview";
-import { StatsOverview } from "@/components/home/StatsOverview";
-import { useGameIcons } from "@/hooks/useGameIcon";
+import { ActionCard } from "@/src/components/common/ActionCard";
+import { AdventureHeroCard } from "@/src/components/home/AdventureHeroCard";
+import { HomeHeader } from "@/src/components/home/HomeHeader";
+import { ResourcesOverview } from "@/src/components/home/ResourcesOverview";
+import { StatsOverview } from "@/src/components/home/StatsOverview";
+import { useGameIcons } from "@/src/hooks/useGameIcon";
 
 export default function HomeScreen() {
   const { t } = useTranslation();

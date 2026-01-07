@@ -264,9 +264,11 @@
     <action>Run all existing tests to ensure no regressions</action>
     <action>Run the new tests to verify implementation correctness</action>
     <action>Run linting and code quality checks if configured in project</action>
+    <action>Execute `npm run test && npm run check` and fix any issues before proceeding</action>
     <action>Validate implementation meets ALL story acceptance criteria; enforce quantitative thresholds explicitly</action>
     <action if="regression tests fail">STOP and fix before continuing - identify breaking changes immediately</action>
     <action if="new tests fail">STOP and fix before continuing - ensure implementation correctness</action>
+    <action if="npm run test or npm run check fails">STOP and fix before continuing - ensure code quality standards</action>
   </step>
 
   <step n="8" goal="Validate and mark task complete ONLY when fully done">
@@ -323,6 +325,7 @@
   <step n="9" goal="Story completion and mark for review" tag="sprint-status">
     <action>Verify ALL tasks and subtasks are marked [x] (re-scan the story document now)</action>
     <action>Run the full regression suite (do not skip)</action>
+    <action>Execute final validation: `npm run test && npm run check` - fix any issues before marking complete</action>
     <action>Confirm File List includes every changed file</action>
     <action>Execute enhanced definition-of-done validation</action>
     <action>Update the story Status to: "review"</action>
@@ -335,6 +338,7 @@
       - Integration tests for component interactions added when required
       - End-to-end tests for critical flows added when story demands them
       - All tests pass (no regressions, new tests successful)
+      - `npm run test && npm run check` passes without errors
       - Code quality checks pass (linting, static analysis if configured)
       - File List includes every new/modified/deleted file (relative paths)
       - Dev Agent Record contains implementation notes

@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, YStack } from "tamagui";
-import { useSessionStore } from "@/stores/session";
+import { useSessionStore } from "@/src/stores/session";
 
 export default function RestScreen() {
   const router = useRouter();

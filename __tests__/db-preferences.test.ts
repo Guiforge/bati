@@ -5,9 +5,9 @@ describe("db/preferences", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -16,7 +16,7 @@ describe("db/preferences", () => {
   });
 
   test("get/set/delete preference", async () => {
-    const prefs = require("../db/preferences") as typeof import("../db/preferences");
+    const prefs = require("../src/db/preferences") as typeof import("../src/db/preferences");
 
     expect(await prefs.getPreference("foo")).toBeNull();
 
@@ -34,7 +34,8 @@ describe("db/preferences", () => {
   });
 
   test("typed preference helpers", async () => {
-    const { preferences } = require("../db/preferences") as typeof import("../db/preferences");
+    const { preferences } =
+      require("../src/db/preferences") as typeof import("../src/db/preferences");
 
     await preferences.setVillageName("Konoha");
     expect(await preferences.getVillageName()).toBe("Konoha");

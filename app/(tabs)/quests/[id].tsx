@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { useDatabase } from "@/components/DatabaseProvider";
-import { exercises, questExercises, quests } from "@/db/schema";
-import { useGameIcon } from "@/hooks/useGameIcon";
-import { useSessionStore } from "@/stores/session";
+import { useDatabase } from "@/src/components/DatabaseProvider";
+import { exercises, questExercises, quests } from "@/src/db/schema";
+import { useGameIcon } from "@/src/hooks/useGameIcon";
+import { useSessionStore } from "@/src/stores/session";
 
 type Quest = typeof quests.$inferSelect;
 type QuestExercise = typeof questExercises.$inferSelect & {

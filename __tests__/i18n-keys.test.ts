@@ -1,5 +1,5 @@
-import en from "@/locales/en.json";
-import fr from "@/locales/fr.json";
+import en from "@/src/locales/en.json";
+import fr from "@/src/locales/fr.json";
 
 type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
 interface JsonObject {

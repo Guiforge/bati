@@ -1,4 +1,4 @@
-import * as schema from "../db/schema";
+import * as schema from "../src/db/schema";
 import { createTestDb } from "./helpers/testDb";
 
 const { completedQuest } = schema;
@@ -8,9 +8,9 @@ describe("db/restSuggestions", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -39,7 +39,7 @@ describe("db/restSuggestions", () => {
 
   test("returns shouldRest: false for empty database", async () => {
     const { getRestSuggestion } =
-      require("../db/restSuggestions") as typeof import("../db/restSuggestions");
+      require("../src/db/restSuggestions") as typeof import("../src/db/restSuggestions");
     const result = await getRestSuggestion();
     expect(result.shouldRest).toBe(false);
     expect(result.reason).toBe("none");
@@ -47,7 +47,7 @@ describe("db/restSuggestions", () => {
 
   test("returns shouldRest: false for low activity", async () => {
     const { getRestSuggestion } =
-      require("../db/restSuggestions") as typeof import("../db/restSuggestions");
+      require("../src/db/restSuggestions") as typeof import("../src/db/restSuggestions");
     await addSessionOnDate(0); // Today
     await addSessionOnDate(2); // 2 days ago
 
@@ -57,7 +57,7 @@ describe("db/restSuggestions", () => {
 
   test("suggests rest after 5 consecutive training days", async () => {
     const { getRestSuggestion } =
-      require("../db/restSuggestions") as typeof import("../db/restSuggestions");
+      require("../src/db/restSuggestions") as typeof import("../src/db/restSuggestions");
     // 5 consecutive days ending today
     await addSessionOnDate(0);
     await addSessionOnDate(1);
@@ -73,7 +73,7 @@ describe("db/restSuggestions", () => {
 
   test("suggests rest for high volume (6+ sessions)", async () => {
     const { getRestSuggestion } =
-      require("../db/restSuggestions") as typeof import("../db/restSuggestions");
+      require("../src/db/restSuggestions") as typeof import("../src/db/restSuggestions");
     // 6 sessions scattered in last 7 days
     await addSessionOnDate(0);
     await addSessionOnDate(0); // Multiple same day
@@ -89,7 +89,7 @@ describe("db/restSuggestions", () => {
 
   test("suggests rest for very high volume (10+ sessions)", async () => {
     const { getRestSuggestion } =
-      require("../db/restSuggestions") as typeof import("../db/restSuggestions");
+      require("../src/db/restSuggestions") as typeof import("../src/db/restSuggestions");
     // 10 sessions in last 7 days
     for (let i = 0; i < 10; i++) {
       await addSessionOnDate(i % 7);
@@ -102,7 +102,7 @@ describe("db/restSuggestions", () => {
 
   test("getQuickRestCheck returns correct values", async () => {
     const { getQuickRestCheck } =
-      require("../db/restSuggestions") as typeof import("../db/restSuggestions");
+      require("../src/db/restSuggestions") as typeof import("../src/db/restSuggestions");
 
     await addSessionOnDate(0); // Today
     await addSessionOnDate(2); // 2 days ago
@@ -115,7 +115,7 @@ describe("db/restSuggestions", () => {
 
   test("does not suggest rest for old consecutive days", async () => {
     const { getRestSuggestion } =
-      require("../db/restSuggestions") as typeof import("../db/restSuggestions");
+      require("../src/db/restSuggestions") as typeof import("../src/db/restSuggestions");
     // 5 consecutive days but ending 3 days ago (not connected to today/yesterday)
     await addSessionOnDate(3);
     await addSessionOnDate(4);

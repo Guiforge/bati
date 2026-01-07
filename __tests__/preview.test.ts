@@ -1,4 +1,4 @@
-import { estimateQuestTemplateSeconds } from "@/db/preview";
+import { estimateQuestTemplateSeconds } from "@/src/db/preview";
 
 describe("db/preview", () => {
   test("estimateQuestTemplateSeconds accounts for rounds + rest + generated targets", () => {

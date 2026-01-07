@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
-import { AppButton } from "@/components/common/AppButton";
+import { AppButton } from "@/src/components/common/AppButton";
 
 export default function Presentation() {
   const router = useRouter();

@@ -917,6 +917,14 @@ This is not a "problem-solving MVP" that strips features to bare essentials. Ins
 - **FR37:** System displays coach notifications as badges on home screen coach icon
 - **FR38:** Users can dismiss coach recommendations or accept suggested actions
 
+### Adaptive Coach Intelligence (Epic 13)
+
+- **FR59:** Users can provide post-workout feedback including RPE, sensations (tired/sore/pain), and motivation level
+- **FR60:** System detects recurring pain patterns and flags potential injuries with safe exercise alternatives
+- **FR61:** System dynamically re-plans training schedules when users miss sessions or progress faster than expected
+- **FR62:** Users can specify available equipment and receive exercise recommendations matching their setup
+- **FR63:** System automatically suggests exercise substitutions when required equipment is unavailable
+
 ### Character Progression
 
 - **FR39:** Users earn XP from completed exercises based on difficulty and reps/time

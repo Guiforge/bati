@@ -7,9 +7,9 @@ import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 
-import { Card } from "@/components/common/Card";
-import { AVATARS } from "@/constants/avatars";
-import { useSettingsStore } from "@/stores/settings";
+import { Card } from "@/src/components/common/Card";
+import { AVATARS } from "@/src/constants/avatars";
+import { useSettingsStore } from "@/src/stores/settings";
 
 type SettingRowProps = {
   icon: React.ReactNode;

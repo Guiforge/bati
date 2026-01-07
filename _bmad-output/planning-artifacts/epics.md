@@ -508,6 +508,19 @@ This document provides the complete epic and story breakdown for batiV3, decompo
 - Add "More" page for secondary features
 - Improves discoverability, reduces cognitive load
 
+### Epic 13: Adaptive Coach Intelligence
+**User Outcome:** Coach adapts dynamically to user feedback, injuries, and context for personalized training
+
+**FRs Covered:** FR59, FR60, FR61, FR62, FR63
+
+**Implementation Notes:**
+- Based on docs/knowledge/coaching.md (scientific coaching principles)
+- Post-workout feedback collection (RPE, sensations, motivation)
+- Injury detection with exercise substitutions
+- Dynamic plan re-planning (rétro-planification)
+- Equipment management and alternatives
+- Integrates with Epic 8 (Coach System)
+
 <!-- Epics and stories will be appended sequentially through collaborative workflow steps -->
 
 ## Epic 1: Project Foundation & Environment Setup
@@ -1308,6 +1321,8 @@ So that **I can make informed decisions about my training**.
 **And** user can dismiss recommendations (stored as "viewed" in database)
 **And** recommendations refresh weekly based on updated training data
 **And** "Set a Goal" button navigates to goal creation (Epic 8 Story 8.3)
+**And** recommendations consider recent post-workout feedback (links to Epic 13.1)
+**And** if user reported pain/injury in feedback, recommendation adapts accordingly
 
 ### Story 8.3: Set Fitness Goals Interface
 
@@ -1354,6 +1369,9 @@ So that **I have a structured path to achieve my fitness target**.
 **And** user can accept or dismiss generated plan
 **And** if user dismisses, they can regenerate with different parameters
 **And** plan completion triggers goal progress update
+**And** plan generation considers available equipment (links to Epic 13.4)
+**And** if user has limited equipment, alternative exercises are suggested
+**And** plan dynamically adapts if user reports injury or falls behind (links to Epic 13.3)
 
 ## Epic 9: Notifications & Engagement
 
@@ -1577,6 +1595,110 @@ So that **I can customize the app to my specific requirements**.
 **And** accessibility settings are persisted in database
 **And** settings take effect immediately without app restart
 **And** accessibility settings screen itself meets all accessibility requirements
+
+## Epic 13: Adaptive Coach Intelligence
+
+**Goal:** Coach adapts dynamically to user feedback, injuries, and context for personalized training
+
+**FRs Covered:** FR59, FR60, FR61, FR62, FR63
+
+**Knowledge Base:** Based on docs/knowledge/coaching.md (adaptation dynamique, gestion des blessures, rétro-planification)
+
+### Story 13.1: Post-Workout Feedback Collection (RPE, Sensations, Motivation)
+
+As a **user**,
+I want **to provide feedback after each workout session**,
+So that **the coach can adapt my training based on how I actually feel**.
+
+**Acceptance Criteria:**
+
+**Given** the user completes a workout session
+**When** the session completion screen appears
+**Then** "How did it go?" feedback prompt is displayed
+**And** RPE (Rate of Perceived Exertion) slider is shown (1-10 scale)
+**And** RPE labels: 1="Very easy", 5="Moderate", 10="Max effort"
+**And** "How do you feel?" options are displayed as chips: "Great 😊", "Tired 😴", "Sore 😣", "Pain ⚠️"
+**And** "Motivation level" slider is shown (1-5 scale): 1="Low", 5="High"
+**And** optional text field: "Any pain or discomfort? (optional)"
+**And** user can skip feedback by tapping "Skip" button
+**And** feedback is stored in database (workout_feedback table) with session_id
+**And** feedback data includes: session_id, rpe, feeling, motivation, pain_notes, timestamp
+**And** coach algorithm accesses this feedback for recommendations (Epic 8.2)
+**And** feedback screen is dismissable (not blocking)
+**And** feedback prompt appears max once per day (if multiple workouts, only last one)
+
+### Story 13.2: Injury Detection & Exercise Substitution
+
+As a **user experiencing pain or injury**,
+I want **the coach to detect potential injuries and suggest safe alternatives**,
+So that **I can continue training safely without aggravating my condition**.
+
+**Acceptance Criteria:**
+
+**Given** the user reports pain in post-workout feedback (Story 13.1)
+**When** pain is reported 2+ times in same body area within 7 days
+**Then** injury detection algorithm flags potential injury concern
+**And** coach modal displays injury alert: "⚠️ Recurring [body part] pain detected"
+**And** recommendation suggests: "Consider rest or see a professional"
+**And** system generates list of safe alternative exercises (avoids affected muscle group)
+**And** alternative exercises are stored in exercise_alternatives database table
+**And** mapping includes: exercise_id → alternative_id, reason (e.g., "Avoids knee stress")
+**And** if user starts a quest with flagged exercise, warning is shown before session
+**And** warning message: "This quest includes [exercise] which may affect your [body part]. Switch to alternative?"
+**And** user can choose: "Continue anyway" or "Use alternative"
+**And** if "Use alternative" selected, exercise is swapped in quest session dynamically
+**And** injury tracking dashboard shows: affected area, frequency, last occurrence
+**And** user can manually mark injury as "recovered" to remove restrictions
+**And** coach respects injury protocols from knowledge base (e.g., ankle → proprioception exercises)
+
+### Story 13.3: Dynamic Plan Re-Planning (Rétro-Planification)
+
+As a **user with an active training plan**,
+I want **my plan to adapt if I miss sessions or progress faster than expected**,
+So that **my training stays realistic and achievable**.
+
+**Acceptance Criteria:**
+
+**Given** the user has an active 4-week training plan (Epic 8.4)
+**When** user misses 2+ planned sessions in a week
+**Then** coach analyzes plan adherence and remaining time to goal
+**And** if goal deadline is fixed, system recalculates feasibility
+**And** if goal is no longer achievable, coach suggests: "Adjust deadline by 1 week?" or "Reduce intensity?"
+**And** if user accepts adjustment, plan is regenerated with new parameters
+**And** if user progresses faster than expected (completing sessions ahead of schedule)
+**Then** coach suggests: "You're ahead! Want to increase difficulty or add a bonus challenge?"
+**And** re-planning algorithm uses rétro-planification logic (knowledge base)
+**And** recalculation considers: sessions remaining, weeks left, current performance trend
+**And** plan adjustments are logged in database (plan_adjustments table)
+**And** adjustment history shows: date, reason, old_schedule, new_schedule
+**And** user can manually trigger "Recalculate Plan" from coach modal
+**And** recalculation respects user constraints (available days per week, session duration)
+**And** if plan is recalculated, user receives notification: "Your plan has been updated based on your progress"
+
+### Story 13.4: Equipment Management & Exercise Alternatives
+
+As a **user with limited or varying equipment access**,
+I want **to specify my available equipment**,
+So that **the coach only suggests workouts I can actually perform**.
+
+**Acceptance Criteria:**
+
+**Given** the user accesses Settings > Equipment
+**When** the equipment management screen loads
+**Then** list of common equipment is displayed with checkboxes
+**And** equipment options include: "Dumbbells", "Barbell", "Resistance Bands", "Pull-up Bar", "Bench", "Kettlebell", "Bodyweight Only"
+**And** user can toggle each equipment item on/off
+**And** "None (Bodyweight Only)" option is available
+**And** user can add custom equipment via text input (optional)
+**And** selected equipment is stored in database (user_equipment table)
+**And** when coach generates plan (Epic 8.4), only exercises matching available equipment are selected
+**And** if quest contains exercise requiring unavailable equipment, alternative is auto-suggested
+**And** alternative exercise targets same muscle group and similar difficulty
+**And** exercise_alternatives table maps: original_exercise_id → alternative_exercise_id → required_equipment
+**And** user can manually swap exercise during workout session: "Don't have dumbbells? Try this instead"
+**And** equipment filter applies to quest library (quests with unavailable equipment are marked)
+**And** quest details screen shows required equipment as tags
+**And** if user travels or changes location, they can quickly toggle equipment presets: "Home Gym", "Commercial Gym", "Travel (Bodyweight)"
 
 ## Epic 12: Simplified Navigation & Information Architecture
 

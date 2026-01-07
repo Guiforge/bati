@@ -1,4 +1,4 @@
-import { isMuscleCode } from "@/db/muscles";
+import { isMuscleCode } from "@/src/db/muscles";
 
 describe("isMuscleCode", () => {
   it("returns true for known codes", () => {

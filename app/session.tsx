@@ -3,13 +3,13 @@ import { Redirect } from "expo-router";
 import { useEffect } from "react";
 import { BackHandler } from "react-native";
 import { YStack } from "tamagui";
-import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
-import { BossTauntOverlay } from "@/components/session/BossTauntOverlay";
-import { CountdownView } from "@/components/session/CountdownView";
-import { PausedOverlay } from "@/components/session/PausedOverlay";
-import { RestView } from "@/components/session/RestView";
-import { VictoryView } from "@/components/session/VictoryView";
-import { useSessionStore } from "@/stores/session";
+import { ActiveExerciseView } from "@/src/components/session/ActiveExerciseView";
+import { BossTauntOverlay } from "@/src/components/session/BossTauntOverlay";
+import { CountdownView } from "@/src/components/session/CountdownView";
+import { PausedOverlay } from "@/src/components/session/PausedOverlay";
+import { RestView } from "@/src/components/session/RestView";
+import { VictoryView } from "@/src/components/session/VictoryView";
+import { useSessionStore } from "@/src/stores/session";
 
 export default function SessionScreen() {
   // Prevent screen from dimming during workout

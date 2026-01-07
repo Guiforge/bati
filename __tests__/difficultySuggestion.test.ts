@@ -1,5 +1,5 @@
-import type { SessionSummary } from "../db/completed";
-import { suggestDifficultyFromSessions } from "../db/difficultySuggestion";
+import type { SessionSummary } from "../src/db/completed";
+import { suggestDifficultyFromSessions } from "../src/db/difficultySuggestion";
 
 function session(level: "easy" | "medium" | "hard", id: number): SessionSummary {
   return {

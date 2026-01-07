@@ -112,8 +112,6 @@ CREATE TABLE `adventures` (
     FOREIGN KEY (`questId`) REFERENCES `quests`(`id`) ON DELETE CASCADE
 );
 --> statement-breakpoint
-DROP INDEX IF EXISTS `adventures_quest_unique`;
---> statement-breakpoint
 CREATE INDEX `adventures_active_sort_idx` ON `adventures` (`isActive`, `sortOrder`);
 --> statement-breakpoint
 CREATE TABLE `adventure_steps` (

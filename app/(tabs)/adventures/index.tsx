@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { useDatabase } from "@/components/DatabaseProvider";
-import { adventures, quests } from "@/db/schema";
-import { useGameIcon } from "@/hooks/useGameIcon";
+import { useDatabase } from "@/src/components/DatabaseProvider";
+import { adventures, quests } from "@/src/db/schema";
+import { useGameIcon } from "@/src/hooks/useGameIcon";
 
 type Adventure = typeof adventures.$inferSelect & {
   quest: typeof quests.$inferSelect | null;

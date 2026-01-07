@@ -54,4 +54,8 @@ So that {{value_benefit}}.
 **Then** {{expected_outcome}}
 **And** {{additional_criteria}}
 
+**Validation:**
+
+- Run `npm run test && npm run check` and fix any issues before marking story complete
+
 <!-- End story repeat -->

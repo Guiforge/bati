@@ -937,8 +937,6 @@ WHERE q.`enTitle` = 'Morning of the Champion';
 -- ============================================================
 -- PART 3: ADVENTURES (5 Campaigns)
 -- ============================================================
-DROP INDEX IF EXISTS `adventures_quest_unique`;
---> statement-breakpoint
 -- Adventure 1: The Scout's Trial
 INSERT INTO `adventures` (
         `questId`,

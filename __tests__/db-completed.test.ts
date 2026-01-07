@@ -5,9 +5,9 @@ describe("db/completed", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -16,7 +16,7 @@ describe("db/completed", () => {
   });
 
   test("createCompletedSession requires exercises", async () => {
-    const completed = require("../db/completed") as typeof import("../db/completed");
+    const completed = require("../src/db/completed") as typeof import("../src/db/completed");
 
     await expect(
       completed.createCompletedSession({
@@ -26,8 +26,8 @@ describe("db/completed", () => {
   });
 
   test("create/list/get completed session", async () => {
-    const completed = require("../db/completed") as typeof import("../db/completed");
-    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const completed = require("../src/db/completed") as typeof import("../src/db/completed");
+    const exercises = require("../src/db/exercises") as typeof import("../src/db/exercises");
 
     const all = await exercises.listExercises();
     const squat = all.find((e) => e.enName === "Squat");
@@ -74,7 +74,7 @@ describe("db/completed", () => {
   });
 
   test("getCompletedSessionById returns null for missing", async () => {
-    const completed = require("../db/completed") as typeof import("../db/completed");
+    const completed = require("../src/db/completed") as typeof import("../src/db/completed");
     expect(await completed.getCompletedSessionById(999999)).toBeNull();
   });
 });

@@ -5,9 +5,9 @@ describe("db/adventures", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -16,7 +16,7 @@ describe("db/adventures", () => {
   });
 
   test("listAdventures returns seeded campaign adventures", async () => {
-    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+    const adventures = require("../src/db/adventures") as typeof import("../src/db/adventures");
 
     const all = await adventures.listAdventures();
     expect(all.length).toBeGreaterThan(0);
@@ -35,7 +35,7 @@ describe("db/adventures", () => {
   });
 
   test("listAdventures includes a seeded boss adventure", async () => {
-    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+    const adventures = require("../src/db/adventures") as typeof import("../src/db/adventures");
 
     const all = await adventures.listAdventures();
     expect(all.length).toBeGreaterThan(0);

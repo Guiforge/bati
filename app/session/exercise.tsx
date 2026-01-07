@@ -2,10 +2,10 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, ScrollView, Text, XStack, YStack, Dialog } from "tamagui";
-import { useSessionStore } from "@/stores/session";
-import { BossHpBar } from "@/components/session/BossHpBar";
-import { useGameIcon } from "@/hooks/useGameIcon";
+import { Button, Dialog, ScrollView, Text, XStack, YStack } from "tamagui";
+import { BossHpBar } from "@/src/components/session/BossHpBar";
+import { useGameIcon } from "@/src/hooks/useGameIcon";
+import { useSessionStore } from "@/src/stores/session";
 
 export default function ExerciseScreen() {
   const router = useRouter();
@@ -59,10 +59,10 @@ export default function ExerciseScreen() {
   const confirmSkip = async () => {
     setShowSkipDialog(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    
+
     // Skip exercise - move to rest/next
     const hasMoreExercises = await completeExercise(0); // 0 reps = skipped
-    
+
     if (hasMoreExercises) {
       router.push("/session/rest");
     } else {
@@ -181,7 +181,7 @@ export default function ExerciseScreen() {
             >
               {t("session.complete")}
             </Button>
-            
+
             <XStack gap="$2">
               <Button
                 flex={1}
@@ -193,7 +193,7 @@ export default function ExerciseScreen() {
               >
                 {t("session.modify")}
               </Button>
-              
+
               <Button
                 flex={1}
                 size="$4"
@@ -234,7 +234,15 @@ export default function ExerciseScreen() {
           enterStyle={{ opacity: 0, y: 50, scale: 0.5 }}
           exitStyle={{ opacity: 0, y: -50 }}
         >
-          <YStack bg="$primary" px="$6" py="$4" borderRadius="$6" shadowColor="$primaryGlow" shadowRadius={20} shadowOpacity={0.8}>
+          <YStack
+            bg="$primary"
+            px="$6"
+            py="$4"
+            borderRadius="$6"
+            shadowColor="$primaryGlow"
+            shadowRadius={20}
+            shadowOpacity={0.8}
+          >
             <Text fontSize={32} fontWeight="900" color="$text" textAlign="center">
               +50 XP
             </Text>

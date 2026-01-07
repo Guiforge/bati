@@ -3,10 +3,10 @@ import {
   getExerciseColorTokens,
   getQuestColorKeyFromQuest,
   getQuestColorKeyFromTemplateWithExercises,
-} from "@/constants/exerciseColors";
-import { estimateExerciseSeconds } from "@/db/estimate";
-import type { Exercise } from "@/db/exercises";
-import type { Quest } from "@/db/quests";
+} from "@/src/constants/exerciseColors";
+import { estimateExerciseSeconds } from "@/src/db/estimate";
+import type { Exercise } from "@/src/db/exercises";
+import type { Quest } from "@/src/db/quests";
 
 describe("exerciseColors", () => {
   test("getExerciseColorKey prefers muscle over target type", () => {

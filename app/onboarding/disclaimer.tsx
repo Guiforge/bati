@@ -2,8 +2,8 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, ScrollView, Text, YStack } from "tamagui";
-import { db } from "@/db/client";
-import { userSettings } from "@/db/schema";
+import { db } from "@/src/db/client";
+import { userSettings } from "@/src/db/schema";
 
 export default function DisclaimerScreen() {
   const router = useRouter();

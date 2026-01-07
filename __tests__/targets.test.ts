@@ -1,4 +1,4 @@
-import { Difficulty, generateTarget } from "@/db/targets";
+import { Difficulty, generateTarget } from "@/src/db/targets";
 
 describe("generateTarget", () => {
   it("scales reps by user level (easy < medium < hard)", () => {

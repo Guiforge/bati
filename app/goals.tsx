@@ -6,8 +6,8 @@ import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H4, Progress, Text, XStack, YStack } from "tamagui";
 
-import { Card } from "@/components/common/Card";
-import { PlanPreviewSheet } from "@/components/goals/PlanPreviewSheet";
+import { Card } from "@/src/components/common/Card";
+import { PlanPreviewSheet } from "@/src/components/goals/PlanPreviewSheet";
 import {
   createGoal,
   type Goal,
@@ -17,11 +17,11 @@ import {
   getOrCreateWeekProgress,
   goalTypeInfo,
   updateGoalStatus,
-} from "@/db/goals";
-import { generatePlanForGoal, type PlannedSession, previewPlanForGoal } from "@/db/plans";
-import type { GoalStatusCode, GoalTypeCode } from "@/db/schema";
-import { useHaptics } from "@/hooks/useHaptics";
-import { useSettingsStore } from "@/stores/settings";
+} from "@/src/db/goals";
+import { generatePlanForGoal, type PlannedSession, previewPlanForGoal } from "@/src/db/plans";
+import type { GoalStatusCode, GoalTypeCode } from "@/src/db/schema";
+import { useHaptics } from "@/src/hooks/useHaptics";
+import { useSettingsStore } from "@/src/stores/settings";
 
 const GOAL_TYPES: GoalTypeCode[] = ["strength", "endurance", "flexibility", "balanced"];
 const DAYS_OPTIONS = [2, 3, 4, 5, 6, 7];

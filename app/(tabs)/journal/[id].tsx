@@ -5,15 +5,15 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
-import { Card } from "@/components/common/Card";
-import { Tag } from "@/components/common/Tag";
-import { formatDuration, getCompletedSessionById } from "@/db";
-import type { CompletedSession } from "@/db/completed";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { MUSCLE_LABELS } from "@/db/muscles";
-import { listQuestTemplates } from "@/db/quests";
-import { useSettingsStore } from "@/stores/settings";
+import { AppButton, AppIconButton } from "@/src/components/common/AppButton";
+import { Card } from "@/src/components/common/Card";
+import { Tag } from "@/src/components/common/Tag";
+import { formatDuration, getCompletedSessionById } from "@/src/db";
+import type { CompletedSession } from "@/src/db/completed";
+import { EQUIPMENT_LABELS } from "@/src/db/equipment";
+import { MUSCLE_LABELS } from "@/src/db/muscles";
+import { listQuestTemplates } from "@/src/db/quests";
+import { useSettingsStore } from "@/src/stores/settings";
 
 type Status = "loading" | "ready" | "error";
 

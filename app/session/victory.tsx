@@ -3,8 +3,8 @@ import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { useSessionStore } from "@/stores/session";
-import { useGameIcon } from "@/hooks/useGameIcon";
+import { useGameIcon } from "@/src/hooks/useGameIcon";
+import { useSessionStore } from "@/src/stores/session";
 
 export default function VictoryScreen() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function VictoryScreen() {
     Haptics.notificationAsync(
       isBossVictory
         ? Haptics.NotificationFeedbackType.Success
-        : Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Success,
     );
   }, [isBossVictory]);
 
@@ -60,13 +60,7 @@ export default function VictoryScreen() {
             <GameIcon name="skull" size={60} color="$text" />
           </YStack>
 
-          <Text
-            fontSize={40}
-            fontWeight="900"
-            color="$error"
-            marginBottom="$2"
-            textAlign="center"
-          >
+          <Text fontSize={40} fontWeight="900" color="$error" marginBottom="$2" textAlign="center">
             {t("boss.defeated")}
           </Text>
 

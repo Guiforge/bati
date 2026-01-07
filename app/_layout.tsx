@@ -9,13 +9,13 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { ToastProvider } from "@/components/common/Toast";
-import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { ErrorBoundary } from "@/src/components/common/ErrorBoundary";
+import { ToastProvider } from "@/src/components/common/Toast";
+import { DatabaseProvider } from "@/src/components/DatabaseProvider";
+import { useSettingsStore } from "@/src/stores/settings";
+import { useUserStore } from "@/src/stores/user";
 import { AppBackground } from "@/src/ui";
-import { useSettingsStore } from "@/stores/settings";
-import { useUserStore } from "@/stores/user";
-import "../i18n";
+import "@/src/i18n";
 import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);

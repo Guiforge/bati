@@ -5,9 +5,9 @@ describe("db/personalRecords", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -22,14 +22,14 @@ describe("db/personalRecords", () => {
 
   test("getLongestSession returns null when no sessions exist", async () => {
     const { getLongestSession } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const result = await getLongestSession();
     expect(result).toBeNull();
   });
 
   test("getLongestSession returns the session with longest duration", async () => {
     const { getLongestSession } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
     // Add sessions with different durations
@@ -49,7 +49,7 @@ describe("db/personalRecords", () => {
 
   test("getMostXpSession returns the session with most XP", async () => {
     const { getMostXpSession } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
     t.sqlite.exec(`
@@ -68,14 +68,14 @@ describe("db/personalRecords", () => {
 
   test("getExerciseMaxReps returns null for unseen exercise", async () => {
     const { getExerciseMaxReps } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const result = await getExerciseMaxReps(999);
     expect(result).toBeNull();
   });
 
   test("getExerciseMaxReps returns the max reps for an exercise", async () => {
     const { getExerciseMaxReps } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
     // Get a real exercise ID
@@ -99,7 +99,7 @@ describe("db/personalRecords", () => {
 
   test("getPersonalRecordsSummary returns all records and session count", async () => {
     const { getPersonalRecordsSummary } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
     t.sqlite.exec(`
@@ -116,7 +116,7 @@ describe("db/personalRecords", () => {
 
   test("checkForNewRecords detects longest session PR", async () => {
     const { checkForNewRecords } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
     // Add an existing session
@@ -142,7 +142,7 @@ describe("db/personalRecords", () => {
 
   test("checkForNewRecords detects exercise PR", async () => {
     const { checkForNewRecords } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
     const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
@@ -175,7 +175,7 @@ describe("db/personalRecords", () => {
 
   test("checkForNewRecords returns empty for non-PR session", async () => {
     const { checkForNewRecords } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
     // Add a long session first
@@ -201,7 +201,7 @@ describe("db/personalRecords", () => {
 
   test("formatDuration formats correctly", () => {
     const { formatDuration } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+      require("../src/db/personalRecords") as typeof import("../src/db/personalRecords");
 
     expect(formatDuration(30)).toBe("30s");
     expect(formatDuration(60)).toBe("1m");

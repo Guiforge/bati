@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { YStack, XStack, Text, Button } from "tamagui";
-import { useTranslation } from "react-i18next";
-import { useDatabase } from "@/components/DatabaseProvider";
-import { useGameIcon } from "@/hooks/useGameIcon";
-import { adventures, quests } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { useSessionStore } from "@/stores/session";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button, Text, XStack, YStack } from "tamagui";
+import { useDatabase } from "@/src/components/DatabaseProvider";
+import { adventures, quests } from "@/src/db/schema";
+import { useGameIcon } from "@/src/hooks/useGameIcon";
+import { useSessionStore } from "@/src/stores/session";
 
 type Adventure = typeof adventures.$inferSelect & {
   quest: typeof quests.$inferSelect | null;
@@ -128,13 +128,7 @@ export default function BossIntroScreen() {
             {t("boss.epic_battle")}
           </Text>
 
-          <Text
-            color="$text"
-            fontSize="$10"
-            fontWeight="900"
-            textAlign="center"
-            numberOfLines={2}
-          >
+          <Text color="$text" fontSize="$10" fontWeight="900" textAlign="center" numberOfLines={2}>
             {title}
           </Text>
         </YStack>

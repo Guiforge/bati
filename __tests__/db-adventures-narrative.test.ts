@@ -5,9 +5,9 @@ describe("db/adventures-narrative", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -19,8 +19,8 @@ describe("db/adventures-narrative", () => {
     const {
       getAdventureStepNarrative,
       getAdventureStepOutroNarrative,
-    } = require("../db/adventures-narrative");
-    const { db, schema } = require("../db/client");
+    } = require("../src/db/adventures-narrative");
+    const { db, schema } = require("../src/db/client");
 
     // 0. Create a quest
     const [quest] = await db

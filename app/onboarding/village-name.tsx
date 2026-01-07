@@ -6,10 +6,10 @@ import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Paragraph, Text, useTheme, XStack, YStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
-import { ProgressDots } from "@/components/ProgressDots";
-import { useHaptics } from "@/hooks/useHaptics";
-import { useUserStore } from "@/stores/user";
+import { AppButton } from "@/src/components/common/AppButton";
+import { ProgressDots } from "@/src/components/ProgressDots";
+import { useHaptics } from "@/src/hooks/useHaptics";
+import { useUserStore } from "@/src/stores/user";
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 3;

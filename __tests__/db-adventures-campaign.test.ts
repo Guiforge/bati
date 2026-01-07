@@ -5,9 +5,9 @@ describe("db/adventures campaign", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
+    jest.doMock("../src/db/client", () => ({
       db: t.db,
-      schema: require("../db/schema"),
+      schema: require("../src/db/schema"),
     }));
   });
 
@@ -16,9 +16,9 @@ describe("db/adventures campaign", () => {
   });
 
   test("startAdventureRun creates run steps and complete advances to next step", async () => {
-    const adventures = require("../db/adventures") as typeof import("../db/adventures");
-    const exercises = require("../db/exercises") as typeof import("../db/exercises");
-    const completed = require("../db/completed") as typeof import("../db/completed");
+    const adventures = require("../src/db/adventures") as typeof import("../src/db/adventures");
+    const exercises = require("../src/db/exercises") as typeof import("../src/db/exercises");
+    const completed = require("../src/db/completed") as typeof import("../src/db/completed");
 
     const all = await adventures.listAdventures();
     expect(all.length).toBeGreaterThan(0);

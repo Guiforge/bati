@@ -7,7 +7,7 @@ import { Dimensions } from "react-native";
 import { Button, H2, H3, Text, XStack, YStack } from "tamagui";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import { getAdventureById, getAnyActiveAdventureRun } from "@/src/db/adventures";
-import { useGameIcons } from "@/src/hooks/useGameIcon";
+import { GameIcon } from "@/src/hooks/useGameIcon";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const HERO_HEIGHT = 480;
@@ -15,7 +15,6 @@ const HERO_HEIGHT = 480;
 export function AdventureHeroCard() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const icons = useGameIcons(["scroll", "sword"]);
 
   const [adventure, setAdventure] = useState<{
     id: number;
@@ -111,7 +110,7 @@ export function AdventureHeroCard() {
             justify="center"
             items="center"
           >
-            <Image source={icons.scroll} style={{ width: 40, height: 40 }} contentFit="contain" />
+            <GameIcon name="scroll" size={40} />
           </YStack>
 
           <YStack gap="$2" items="center" maxW={320}>
@@ -211,7 +210,7 @@ export function AdventureHeroCard() {
           gap="$2"
           items="center"
         >
-          <Image source={icons.sword} style={{ width: 16, height: 16 }} contentFit="contain" />
+          <GameIcon name="sword" size={16} />
           <Text fontSize={14} fontWeight="700" color="$text">
             {t("adventures.step_progress", {
               current: adventure.currentStep,

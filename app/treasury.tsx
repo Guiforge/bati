@@ -1,5 +1,4 @@
 import { ChevronLeft, Lightbulb } from "@tamagui/lucide-icons";
-import { Image } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,12 +7,12 @@ import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 
 import { getResourceInventory, type ResourceAmount } from "@/src/db/resources";
 import type { ResourceCode } from "@/src/db/schema";
-import { useGameIcons } from "@/src/hooks/useGameIcon";
+import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 import { GlassCard, RPGText, RPGTitle, ScreenContainer, SolidCard } from "@/src/ui";
 
 type ResourceInfo = {
   code: ResourceCode;
-  iconName: "gold" | "wood" | "stone" | "fire" | "water" | "wind" | "grain";
+  iconName: GameIconName;
   colorKey:
     | "resourceGold"
     | "resourceWood"
@@ -40,7 +39,6 @@ export default function TreasuryScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
   const [resources, setResources] = useState<ResourceAmount[]>([]);
-  const icons = useGameIcons(["gold", "wood", "stone", "fire", "water", "wind", "grain", "chest"]);
 
   useEffect(() => {
     getResourceInventory().then(setResources);
@@ -73,7 +71,7 @@ export default function TreasuryScreen() {
       <ScreenContainer edges={["bottom"]} noGutter>
         <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
           <YStack items="center" gap="$3" py="$4">
-            <Image source={icons.chest} style={{ width: 64, height: 64 }} contentFit="contain" />
+            <GameIcon name="chest" size={64} />
             <RPGTitle>{t("treasury.title")}</RPGTitle>
             <RPGText muted>{t("treasury.subtitle")}</RPGText>
           </YStack>
@@ -89,10 +87,10 @@ export default function TreasuryScreen() {
                     borderWidth={1}
                     borderColor="$borderStrong"
                   >
-                    <Image
-                      source={icons[res.iconName]}
-                      style={{ width: 48, height: 48, tintColor: getThemeColor(res.colorKey) }}
-                      contentFit="contain"
+                    <GameIcon
+                      name={res.iconName}
+                      size={48}
+                      tintColor={getThemeColor(res.colorKey)}
                     />
                   </YStack>
 

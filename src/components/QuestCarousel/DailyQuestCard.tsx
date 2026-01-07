@@ -1,4 +1,3 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,7 +9,7 @@ import { estimateQuestSeconds, formatDuration } from "@/src/db/estimate";
 import type { Exercise } from "@/src/db/exercises";
 import type { QuestTemplate } from "@/src/db/quests";
 import { computeSessionXp } from "@/src/db/xp";
-import { useGameIcons } from "@/src/hooks/useGameIcon";
+import { GameIcon } from "@/src/hooks/useGameIcon";
 import { useSettingsStore } from "@/src/stores/settings";
 
 interface DailyQuestCardProps {
@@ -28,7 +27,6 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useSettingsStore();
-  const icons = useGameIcons(["star", "gold", "scroll"]);
 
   const title = language === "fr" ? quest.frTitle : quest.enTitle;
   const emoji = questEmoji(quest.rounds, quest.exercises.length);
@@ -103,7 +101,7 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
           shadowOffset={{ width: 2, height: 2 }}
           style={{ top: 8, right: 8 }}
         >
-          <Image source={icons.star} style={{ width: 12, height: 12, tintColor: "white" }} />
+          <GameIcon name="star" size={12} tintColor="white" />
           <Text color="white" fontWeight="900" fontSize={12}>
             +{estimatedXp} XP
           </Text>

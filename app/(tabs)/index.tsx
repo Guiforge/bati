@@ -1,4 +1,3 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
@@ -9,13 +8,12 @@ import { AdventureHeroCard } from "@/src/components/home/AdventureHeroCard";
 import { HomeHeader } from "@/src/components/home/HomeHeader";
 import { ResourcesOverview } from "@/src/components/home/ResourcesOverview";
 import { StatsOverview } from "@/src/components/home/StatsOverview";
-import { useGameIcons } from "@/src/hooks/useGameIcon";
+import { GameIcon } from "@/src/hooks/useGameIcon";
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const icons = useGameIcons(["castle", "coins"]);
 
   return (
     <YStack flex={1} bg="$bgDark" pt={insets.top}>
@@ -42,26 +40,14 @@ export default function HomeScreen() {
                   title={t("tabs.village", "Village")}
                   subtitle={t("home.visit_village", "Visit Village")}
                   onPress={() => router.push("/village")}
-                  icon={
-                    <Image
-                      source={icons.castle}
-                      style={{ width: 32, height: 32 }}
-                      contentFit="contain"
-                    />
-                  }
+                  icon={<GameIcon name="castle" size={32} />}
                 />
                 <ActionCard
                   flex={1}
                   title={t("tabs.treasury", "Treasury")}
                   subtitle={t("home.open_inventory", "Open Inventory")}
                   onPress={() => router.push("/treasury")}
-                  icon={
-                    <Image
-                      source={icons.coins}
-                      style={{ width: 32, height: 32 }}
-                      contentFit="contain"
-                    />
-                  }
+                  icon={<GameIcon name="coins" size={32} />}
                 />
               </XStack>
 

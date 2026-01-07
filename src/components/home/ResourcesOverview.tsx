@@ -1,12 +1,11 @@
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { getResourceInventory, type ResourceAmount } from "@/src/db/resources";
 import type { ResourceCode } from "@/src/db/schema";
-import { useGameIcons } from "@/src/hooks/useGameIcon";
+import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 
 const RESOURCE_ORDER: ResourceCode[] = ["gold", "wood", "stone", "fire", "water", "wind", "grain"];
 
@@ -24,7 +23,7 @@ const RESOURCE_COLORS: Record<string, string> = {
 };
 
 // Map resource codes to icon names
-const RESOURCE_ICONS = {
+const RESOURCE_ICONS: Record<string, GameIconName> = {
   gold: "gold",
   wood: "wood",
   stone: "stone",
@@ -32,13 +31,12 @@ const RESOURCE_ICONS = {
   water: "water",
   wind: "wind",
   grain: "grain",
-} as const;
+};
 
 export function ResourcesOverview() {
   const router = useRouter();
 
   const [resources, setResources] = useState<ResourceAmount[]>([]);
-  const icons = useGameIcons(["gold", "wood", "stone", "fire", "water", "wind", "grain", "chest"]);
 
   useEffect(() => {
     getResourceInventory().then(setResources);
@@ -74,13 +72,13 @@ export function ResourcesOverview() {
               justify="center"
               items="center"
             >
-              <Image source={icons.chest} style={{ width: 24, height: 24 }} contentFit="contain" />
+              <GameIcon name="chest" size={24} />
             </YStack>
           </Pressable>
 
           {/* Resource Items */}
           {RESOURCE_ORDER.map((code) => {
-            const iconName = RESOURCE_ICONS[code as keyof typeof RESOURCE_ICONS];
+            const iconName = RESOURCE_ICONS[code];
             return (
               <YStack
                 key={code}
@@ -95,15 +93,7 @@ export function ResourcesOverview() {
                 items="center"
                 gap="$1"
               >
-                <Image
-                  source={icons[iconName]}
-                  style={{
-                    width: 18,
-                    height: 18,
-                    tintColor: RESOURCE_COLORS[code],
-                  }}
-                  contentFit="contain"
-                />
+                <GameIcon name={iconName} size={18} tintColor={RESOURCE_COLORS[code]} />
                 <Text fontSize={12} fontWeight="bold" color="$color">
                   {formatAmount(getAmount(code))}
                 </Text>

@@ -65,6 +65,12 @@ const bodyFont = createFont({
     2: 14,
     3: 16,
     4: 18,
+    5: 20,
+    6: 24,
+    7: 28,
+    8: 32,
+    9: 40,
+    10: 48,
     true: 16, // Default size
   },
   lineHeight: {
@@ -72,6 +78,12 @@ const bodyFont = createFont({
     2: 20,
     3: 24,
     4: 28,
+    5: 30,
+    6: 34,
+    7: 38,
+    8: 42,
+    9: 52,
+    10: 60,
   },
   weight: {
     4: "400",

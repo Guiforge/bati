@@ -1,16 +1,14 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, Text, XStack, YStack } from "tamagui";
 import { getStreakInfo, type StreakInfo } from "@/src/db/streaks";
 import { getTotalStats } from "@/src/db/userLevel";
-import { useGameIcons } from "@/src/hooks/useGameIcon";
+import { GameIcon } from "@/src/hooks/useGameIcon";
 
 export function StatsOverview() {
   const router = useRouter();
   const { t } = useTranslation();
-  const icons = useGameIcons(["flame", "sword", "trophy"]);
   const [streak, setStreak] = useState<StreakInfo | null>(null);
   const [totalStats, setTotalStats] = useState<{
     totalSessions: number;
@@ -36,11 +34,7 @@ export function StatsOverview() {
         onPress={() => router.push("/(tabs)/journal")}
       >
         <YStack items="center" gap="$1">
-          <Image
-            source={icons.flame}
-            style={{ width: 24, height: 24, tintColor: "$warning" }}
-            contentFit="contain"
-          />
+          <GameIcon name="flame" size={24} tintColor="$warning" />
           <Text fontSize={20} fontWeight="900" color="$primary">
             {streak?.current ?? 0}
           </Text>
@@ -62,7 +56,7 @@ export function StatsOverview() {
         onPress={() => router.push("/(tabs)/journal")}
       >
         <YStack items="center" gap="$1">
-          <Image source={icons.sword} style={{ width: 24, height: 24 }} contentFit="contain" />
+          <GameIcon name="sword" size={24} />
           <Text fontSize={20} fontWeight="900" color="$color">
             {totalStats?.totalSessions ?? 0}
           </Text>
@@ -84,11 +78,7 @@ export function StatsOverview() {
         onPress={() => router.push("/(tabs)/journal")}
       >
         <YStack items="center" gap="$1">
-          <Image
-            source={icons.trophy}
-            style={{ width: 24, height: 24, tintColor: "$gold" }}
-            contentFit="contain"
-          />
+          <GameIcon name="trophy" size={24} tintColor="$gold" />
           <Text fontSize={20} fontWeight="900" color="$color">
             {totalStats?.totalXp
               ? totalStats.totalXp >= 1000

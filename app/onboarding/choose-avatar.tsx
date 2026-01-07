@@ -73,7 +73,7 @@ export default function ChooseAvatar() {
           style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
         />
         <LinearGradient
-          colors={["transparent", "$bgOverlay", "$bgDark"]}
+          colors={["transparent", "rgba(11, 15, 25, 0.92)", "#0B0F19"]}
           style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%" }}
         />
 

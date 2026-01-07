@@ -1,16 +1,14 @@
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
-import { useGameIcons } from "@/src/hooks/useGameIcon";
+import { GameIcon } from "@/src/hooks/useGameIcon";
 import { useSmartAction } from "./useSmartAction";
 
 export function CurrentAdventureWidget() {
   const router = useRouter();
   const { t } = useTranslation();
   const { config, isLoading } = useSmartAction();
-  const icons = useGameIcons(["scroll", "sword"]);
 
   if (isLoading) {
     return null;
@@ -75,11 +73,7 @@ export function CurrentAdventureWidget() {
             shadowOffset={{ width: 0, height: 2 }}
             shadowOpacity={0.2}
           >
-            <Image
-              source={isAdventure ? icons.scroll : icons.sword}
-              style={{ width: 32, height: 32, tintColor: "white" }}
-              contentFit="contain"
-            />
+            <GameIcon name={isAdventure ? "scroll" : "sword"} size={32} tintColor="white" />
           </YStack>
 
           <YStack flex={1}>

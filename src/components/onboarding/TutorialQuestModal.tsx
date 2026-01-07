@@ -74,7 +74,7 @@ export function TutorialQuestModal() {
               h={80}
               alignItems="center"
               justifyContent="center"
-              borderRadius="$full"
+              rounded="$full"
               shadowColor="$primaryGlow"
               shadowOffset={{ width: 0, height: 4 }}
               shadowOpacity={0.6}
@@ -87,19 +87,14 @@ export function TutorialQuestModal() {
               {t("onboarding.tutorial_title")}
             </Dialog.Title>
 
-            <Dialog.Description
-              fontSize="$4"
-              color="$textSecondary"
-              textAlign="center"
-              lineHeight="$5"
-            >
+            <Dialog.Description fontSize="$4" color="$textSecondary" textAlign="center" lineHeight="$5">
               {t("onboarding.tutorial_description")}
             </Dialog.Description>
 
             <YStack
               bg="$glassBg"
               p="$3"
-              borderRadius="$3"
+              rounded="$3"
               borderWidth={1}
               borderColor="$borderStrong"
               w="100%"

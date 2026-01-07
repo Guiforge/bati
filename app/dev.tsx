@@ -53,7 +53,7 @@ export default function DevTools() {
           adventureId: a.id,
           name: a.enTitle,
           fight: await getBossFightByAdventure(a.id),
-        })),
+        }))
       );
       setBossFights(fights);
     } catch {
@@ -84,14 +84,14 @@ export default function DevTools() {
               setVillageName("");
               Alert.alert(
                 t("dev.reset_done_title", "Database Reset"),
-                t("dev.reset_done_message", "Please restart the app."),
+                t("dev.reset_done_message", "Please restart the app.")
               );
             } catch (_e) {
               Alert.alert(t("common.error", "Oops!"), t("dev.failed", "Failed"));
             }
           },
         },
-      ],
+      ]
     );
   }
 

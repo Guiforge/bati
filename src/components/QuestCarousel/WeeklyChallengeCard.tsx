@@ -21,7 +21,7 @@ export function WeeklyChallengeCard() {
       const sessions = await db.query.completedQuest.findMany({
         where: and(
           gte(schema.completedQuest.performedAt, start),
-          lte(schema.completedQuest.performedAt, end),
+          lte(schema.completedQuest.performedAt, end)
         ),
       });
 

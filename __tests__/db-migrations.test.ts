@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import migrations from "@/drizzle/migrations.js";
+import migrations from "@/src/drizzle/migrations.js";
 
 /**
  * Execute a SQL migration file string against the given DB.
@@ -55,9 +55,11 @@ describe("SQLite migrations (drizzle/migrations.js)", () => {
 
     // Columns added by later migrations should be present
     const columns = (table: string) =>
-      (db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>).map(
-        (c) => c.name,
-      );
+      (
+        db.prepare(`PRAGMA table_info(${table})`).all() as Array<{
+          name: string;
+        }>
+      ).map((c) => c.name);
 
     const questCols = columns("quests");
     expect(questCols).toContain("imagePath"); // from 0007
@@ -106,7 +108,7 @@ describe("SQLite migrations (drizzle/migrations.js)", () => {
     };
 
     expect(questImage("Guard the Fortress Gate")).toBe(
-      "assets/images/quests/guard_fortress_gate.jpg",
+      "assets/images/quests/guard_fortress_gate.jpg"
     );
 
     // Adventure step images should mirror quest images
@@ -114,7 +116,7 @@ describe("SQLite migrations (drizzle/migrations.js)", () => {
       .prepare(
         `SELECT s.imagePath as stepImage, q.imagePath as questImage
          FROM adventure_steps s JOIN quests q ON q.id = s.questId
-         WHERE s.imagePath IS NOT NULL LIMIT 5`,
+         WHERE s.imagePath IS NOT NULL LIMIT 5`
       )
       .all() as Array<{ stepImage: string; questImage: string }>;
 

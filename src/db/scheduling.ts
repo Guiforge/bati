@@ -45,7 +45,7 @@ export interface CreateScheduledSessionInput {
  * Create a new scheduled session
  */
 export async function createScheduledSession(
-  input: CreateScheduledSessionInput,
+  input: CreateScheduledSessionInput
 ): Promise<ScheduledSession> {
   const [result] = await db
     .insert(scheduledSessions)
@@ -66,7 +66,7 @@ export async function createScheduledSession(
  */
 export async function getScheduledSessionsInRange(
   startDate: Date,
-  endDate: Date,
+  endDate: Date
 ): Promise<ScheduledSessionWithQuest[]> {
   const rows = await db
     .select()
@@ -74,8 +74,8 @@ export async function getScheduledSessionsInRange(
     .where(
       and(
         gte(scheduledSessions.scheduledDate, startDate),
-        lte(scheduledSessions.scheduledDate, endDate),
-      ),
+        lte(scheduledSessions.scheduledDate, endDate)
+      )
     )
     .orderBy(asc(scheduledSessions.scheduledDate), asc(scheduledSessions.preferredHour));
 
@@ -98,7 +98,7 @@ export async function getScheduledSessionsInRange(
  * Get scheduled sessions for a specific week (Monday to Sunday)
  */
 export async function getScheduledSessionsForWeek(
-  weekStartDate: Date,
+  weekStartDate: Date
 ): Promise<ScheduledSessionWithQuest[]> {
   // Calculate end of week (Sunday)
   const weekEndDate = new Date(weekStartDate);
@@ -119,7 +119,7 @@ export async function getPendingScheduledSessions(): Promise<ScheduledSessionWit
     .select()
     .from(scheduledSessions)
     .where(
-      and(eq(scheduledSessions.status, "pending"), gte(scheduledSessions.scheduledDate, today)),
+      and(eq(scheduledSessions.status, "pending"), gte(scheduledSessions.scheduledDate, today))
     )
     .orderBy(asc(scheduledSessions.scheduledDate));
 
@@ -157,7 +157,7 @@ export async function getTodaysScheduledSessions(): Promise<ScheduledSessionWith
 export async function updateScheduledSessionStatus(
   id: number,
   status: ScheduledSessionStatus,
-  completedSessionId?: number,
+  completedSessionId?: number
 ): Promise<void> {
   await db
     .update(scheduledSessions)
@@ -174,7 +174,7 @@ export async function updateScheduledSessionStatus(
  */
 export async function markScheduledSessionCompleted(
   id: number,
-  completedSessionId: number,
+  completedSessionId: number
 ): Promise<void> {
   await updateScheduledSessionStatus(id, "completed", completedSessionId);
 }
@@ -192,7 +192,7 @@ export async function skipScheduledSession(id: number): Promise<void> {
 export async function rescheduleSession(
   id: number,
   newDate: Date,
-  newPreferredHour?: number,
+  newPreferredHour?: number
 ): Promise<void> {
   await db
     .update(scheduledSessions)
@@ -227,7 +227,7 @@ export async function markMissedSessions(): Promise<number> {
       updatedAt: new Date(),
     })
     .where(
-      and(eq(scheduledSessions.status, "pending"), lte(scheduledSessions.scheduledDate, yesterday)),
+      and(eq(scheduledSessions.status, "pending"), lte(scheduledSessions.scheduledDate, yesterday))
     );
 
   // Return count of updated rows (SQLite doesn't provide this directly)
@@ -254,7 +254,7 @@ export async function scheduleWeekFromGoal(
   goalId: number,
   weekStartDate: Date,
   questIds: number[],
-  daysOfWeek: number[], // 0 = Sunday, 1 = Monday, etc.
+  daysOfWeek: number[] // 0 = Sunday, 1 = Monday, etc.
 ): Promise<ScheduledSession[]> {
   const sessions: ScheduledSession[] = [];
 

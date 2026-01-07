@@ -72,7 +72,7 @@ export default function JournalScreen() {
   useFocusEffect(
     useCallback(() => {
       loadHistory();
-    }, [loadHistory]),
+    }, [loadHistory])
   );
 
   const TabButton = ({

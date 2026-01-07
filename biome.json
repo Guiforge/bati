@@ -1,77 +1,76 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
   "files": {
-    "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!**/.expo",
-      "!**/.tamagui",
-      "!**/dist",
-      "!**/node_modules",
-      "!**/babel.config.js",
-      "!**/metro.config.js"
-    ]
+    "ignoreUnknown": true,
+    "includes": ["**"],
+    "maxSize": 2097152
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
+    "lineEnding": "lf",
     "lineWidth": 100
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "double"
-    }
+      "arrowParentheses": "always",
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "es5"
+    },
+    "globals": ["JSX", "React"]
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "a11y": {
+        "noSvgWithoutTitle": "off"
+      },
       "complexity": {
         "noExcessiveCognitiveComplexity": "warn",
+        "noForEach": "warn",
         "noVoid": "error"
       },
       "correctness": {
         "noUnusedImports": "error",
         "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn"
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "error"
       },
+      "recommended": true,
       "style": {
-        "useImportType": "off",
         "noNonNullAssertion": "warn",
-        "useConst": "error"
+        "useConst": "error",
+        "useImportType": "error",
+        "useSelfClosingElements": "warn"
       },
       "suspicious": {
+        "noArrayIndexKey": "error",
         "noConsole": "warn",
-        "noDebugger": "error"
+        "noDebugger": "error",
+        "noExplicitAny": "warn"
       }
     }
   },
   "overrides": [
     {
-      "includes": ["components/HomeSettingsMenu.tsx", "hooks/useSound.ts"],
+      "includes": ["*.d.ts"],
       "linter": {
         "rules": {
-          "suspicious": {
-            "noExplicitAny": "off"
+          "correctness": {
+            "noUnusedVariables": "off"
+          },
+          "style": {
+            "useImportType": "off"
           }
         }
       }
     },
     {
-      "includes": ["**/*.css"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "noUnknownAtRules": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": ["**/*.md"],
-      "linter": {
-        "enabled": false
+      "includes": ["app/**/*.tsx", "components/**/*.tsx"],
+      "javascript": {
+        "jsxRuntime": "reactClassic"
       }
     }
   ],

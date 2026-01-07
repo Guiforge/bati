@@ -147,7 +147,7 @@ export function QuestCarousel() {
           </SwiperSlide>
         );
       }),
-    [quests, language, router, slideWidth, t, exercisesById],
+    [quests, language, router, slideWidth, t, exercisesById]
   );
 
   if (state.status === "loading") {

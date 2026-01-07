@@ -1,24 +1,33 @@
 {
   "expo": {
-    "jsEngine": "hermes",
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0B0F19",
         "foregroundImage": "./assets/app-icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.bati"
+      "package": "com.anonymous.bati",
+      "predictiveBackGestureEnabled": true,
+      "softwareKeyboardLayoutMode": "pan",
+      "userInterfaceStyle": "dark"
     },
+    "backgroundColor": "#0B0F19",
     "experiments": {
       "reactCompiler": true,
       "typedRoutes": true
     },
     "icon": "./assets/app-icon.png",
     "ios": {
+      "bundleIdentifier": "com.anonymous.bati",
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "en",
+        "CFBundleLocalizations": ["en", "fr"],
+        "UIBackgroundModes": ["audio"]
+      },
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.bati"
+      "userInterfaceStyle": "dark"
     },
+    "jsEngine": "hermes",
     "name": "bati",
     "newArchEnabled": true,
     "orientation": "portrait",
@@ -26,32 +35,22 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          },
+          "backgroundColor": "#0B0F19",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain"
         }
       ],
-      [
-        "expo-localization",
-        {
-          "supportedLocales": {
-            "ios": ["en", "fr"],
-            "android": ["en", "fr"]
-          }
-        }
-      ],
-      "expo-router",
-      "expo-audio"
+      "expo-audio",
+      "expo-localization",
+      "expo-router"
     ],
     "scheme": "bati",
     "slug": "bati",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "version": "1.0.0",
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/app-icon.png",
       "output": "static"
     }

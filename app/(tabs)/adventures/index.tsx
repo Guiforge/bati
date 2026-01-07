@@ -95,14 +95,14 @@ export default function AdventuresScreen() {
                 borderRadius="$2"
                 alignSelf="flex-start"
               >
-                <GameIcon name="skull" size={16} color="$text" />
+                <GameIcon name="skull" size={16} tintColor="$text" />
                 <Text color="$text" fontSize="$2" fontWeight="bold">
                   {t("adventures.epic_battle")}
                 </Text>
               </XStack>
             )}
 
-            <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
+            <Text color="$text" fontSize={24} fontWeight="bold" mb="$2">
               {title || t("adventures.untitled")}
             </Text>
 
@@ -164,7 +164,7 @@ export default function AdventuresScreen() {
   return (
     <YStack flex={1} bg="$bgDark">
       <YStack p="$4" gap="$3" borderBottomWidth={1} borderBottomColor="$borderStrong">
-        <Text color="$text" fontSize="$8" fontWeight="bold">
+        <Text color="$text" fontSize={32} fontWeight="bold">
           {t("adventures.title")}
         </Text>
         <Text color="$textSecondary" fontSize="$4">
@@ -184,8 +184,8 @@ export default function AdventuresScreen() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
           ListEmptyComponent={
             <YStack alignItems="center" justifyContent="center" py="$8">
-              <GameIcon name="map" size={64} color="$textSecondary" />
-              <Text color="$textSecondary" fontSize="$5" textAlign="center" mt="$4">
+              <GameIcon name="map" size={64} tintColor="$textSecondary" />
+              <Text color="$textSecondary" fontSize={20} textAlign="center" mt="$4">
                 {t("adventures.empty_title")}
               </Text>
               <Text color="$textSecondary" fontSize="$3" textAlign="center" mt="$2">

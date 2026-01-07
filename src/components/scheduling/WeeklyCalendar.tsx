@@ -27,7 +27,7 @@ export function WeeklyCalendar() {
   const weekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
   const weekDays = useMemo(
     () => Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i)),
-    [weekStart],
+    [weekStart]
   );
 
   const loadSessions = useCallback(async () => {
@@ -63,7 +63,7 @@ export function WeeklyCalendar() {
   };
 
   const sessionsForSelectedDate = sessions.filter((s) =>
-    isSameDay(new Date(s.scheduledDate), selectedDate),
+    isSameDay(new Date(s.scheduledDate), selectedDate)
   );
 
   return (

@@ -115,7 +115,7 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
         targetMin: qex.baseTarget.min,
         targetMax: qex.baseTarget.max,
         imagesJson: JSON.stringify(qex.images ?? []),
-      })),
+      }))
     );
   }
 
@@ -361,7 +361,7 @@ export async function updateQuestMeta(
       QuestTemplate,
       "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds" | "restSeconds"
     >
-  >,
+  >
 ): Promise<void> {
   await db
     .update(quests)
@@ -374,7 +374,7 @@ export async function updateQuestMeta(
 
 export async function setQuestExercises(
   questId: number,
-  next: QuestTemplateExercise[],
+  next: QuestTemplateExercise[]
 ): Promise<void> {
   type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
   type TransactionTx = Parameters<TransactionCallback>[0];
@@ -393,7 +393,7 @@ export async function setQuestExercises(
         targetMin: qex.baseTarget.min,
         targetMax: qex.baseTarget.max,
         imagesJson: JSON.stringify(qex.images ?? []),
-      })),
+      }))
     );
   };
 
@@ -415,7 +415,7 @@ export async function setQuestExercises(
 export async function ensureQuestHasExercise(
   questId: number,
   exerciseId: number,
-  baseTarget: { type: QuestTargetType; min: number; max: number },
+  baseTarget: { type: QuestTargetType; min: number; max: number }
 ): Promise<void> {
   const existing = await db
     .select({ id: questExercises.id })

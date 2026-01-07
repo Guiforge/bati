@@ -18,15 +18,15 @@ function calculateStreak(sessions: { performedAt: Date }[]): StreakInfo {
 
   // Sort by date descending (most recent first)
   const sorted = [...sessions].sort(
-    (a, b) => new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime(),
+    (a, b) => new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime()
   );
 
   // Get unique days
   const uniqueDays = new Set<string>();
-  sorted.forEach((s) => {
+  for (const s of sorted) {
     const date = new Date(s.performedAt);
     uniqueDays.add(date.toISOString().split("T")[0]);
-  });
+  }
 
   const sortedDays = Array.from(uniqueDays).sort().reverse();
 

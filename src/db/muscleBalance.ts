@@ -31,7 +31,7 @@ export type MuscleBalance = {
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Muscle balance analysis requires aggregating and comparing multiple muscle groups
 export async function getMuscleBalance(
-  period: "7d" | "30d" | "90d" | "all" = "30d",
+  period: "7d" | "30d" | "90d" | "all" = "30d"
 ): Promise<MuscleBalance> {
   const now = new Date();
   const endDate = now;

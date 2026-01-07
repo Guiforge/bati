@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, YStack } from "tamagui";
 import { useSessionStore } from "@/src/stores/session";
@@ -8,13 +8,20 @@ import { useSessionStore } from "@/src/stores/session";
 export default function CountdownScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ questId?: string }>();
   const [countdown, setCountdown] = useState(5);
-  const startSession = useSessionStore((state) => state.startSession);
+  const finishCountdown = useSessionStore((state) => state.finishCountdown);
+  const status = useSessionStore((state) => state.status);
 
   useEffect(() => {
+    // If session wasn't started or already finished, redirect home
+    if (status === "idle") {
+      router.replace("/(tabs)");
+      return;
+    }
+
     if (countdown === 0) {
-      // Navigate to exercise screen
+      // Finish countdown and navigate to exercise screen
+      finishCountdown();
       router.replace("/session/exercise");
       return;
     }
@@ -25,21 +32,12 @@ export default function CountdownScreen() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [countdown, router]);
+  }, [countdown, router, status, finishCountdown]);
 
   const handleSkip = () => {
+    finishCountdown();
     router.replace("/session/exercise");
   };
-
-  const handleStart = useCallback(async () => {
-    if (params.questId) {
-      await startSession(params.questId);
-    }
-  }, [params.questId, startSession]);
-
-  useEffect(() => {
-    handleStart();
-  }, [handleStart]);
 
   return (
     <YStack flex={1} bg="$bgDark" justifyContent="center" alignItems="center" padding="$6">

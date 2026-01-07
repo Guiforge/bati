@@ -3,10 +3,10 @@ import { computeSessionXp } from "@/src/db/xp";
 describe("db/xp", () => {
   test("gives a small floor even for very short sessions", () => {
     expect(computeSessionXp({ durationSeconds: 0, userLevel: "medium" })).toBeGreaterThanOrEqual(
-      10,
+      10
     );
     expect(computeSessionXp({ durationSeconds: 3, userLevel: "medium" })).toBeGreaterThanOrEqual(
-      10,
+      10
     );
   });
 

@@ -86,7 +86,7 @@ export default function QuestsScreen() {
           />
 
           <YStack p="$4">
-            <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
+            <Text color="$text" fontSize={24} fontWeight="bold" mb="$2">
               {title}
             </Text>
 
@@ -146,7 +146,7 @@ export default function QuestsScreen() {
   return (
     <YStack flex={1} bg="$bgDark">
       <YStack p="$4" gap="$3" borderBottomWidth={1} borderBottomColor="$borderStrong">
-        <Text color="$text" fontSize="$8" fontWeight="bold">
+        <Text color="$text" fontSize={32} fontWeight="bold">
           {t("quests.gallery_title")}
         </Text>
 
@@ -220,7 +220,7 @@ export default function QuestsScreen() {
                       >
                         {t(`quests.muscle_${muscle.toLowerCase().replace(" ", "_")}`)}
                       </Button>
-                    ),
+                    )
                   )}
                 </XStack>
               </ScrollView>
@@ -244,7 +244,7 @@ export default function QuestsScreen() {
                       }
                     >
                       {t(
-                        `quests.duration_${duration === "<15min" ? "short" : duration === "15-30min" ? "medium" : duration === "30-45min" ? "long" : "xl"}`,
+                        `quests.duration_${duration === "<15min" ? "short" : duration === "15-30min" ? "medium" : duration === "30-45min" ? "long" : "xl"}`
                       )}
                     </Button>
                   ))}
@@ -289,7 +289,7 @@ export default function QuestsScreen() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
           ListEmptyComponent={
             <YStack alignItems="center" justifyContent="center" py="$8">
-              <Text color="$textSecondary" fontSize="$5" textAlign="center">
+              <Text color="$textSecondary" fontSize={20} textAlign="center">
                 {hasActiveFilters ? t("quests.empty_filters_title") : t("quests.empty_title")}
               </Text>
               <Text color="$textSecondary" fontSize="$3" textAlign="center" mt="$2">

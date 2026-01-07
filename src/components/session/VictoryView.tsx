@@ -57,7 +57,7 @@ export function VictoryView() {
   const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
   const [levelUpInfo, setLevelUpInfo] = useState<{ oldLevel: number; newLevel: number } | null>(
-    null,
+    null
   );
 
   useEffect(() => {
@@ -207,7 +207,7 @@ export function VictoryView() {
 
       if (campaign?.nextQuestId && campaign.nextRunStepId) {
         router.replace(
-          `/quests/${campaign.nextQuestId}?level=${encodeURIComponent(userLevel)}&runStepId=${campaign.nextRunStepId}` as never,
+          `/quests/${campaign.nextQuestId}?level=${encodeURIComponent(userLevel)}&runStepId=${campaign.nextRunStepId}` as never
         );
         return;
       }

@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Dialog, Text, XStack, YStack } from "tamagui";
-import { preferences } from "@/src/db/preferences";
+import { getPreference, setPreference } from "@/src/db/preferences";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 
 export function TutorialQuestModal() {
@@ -14,8 +14,8 @@ export function TutorialQuestModal() {
 
   useEffect(() => {
     // Check if tutorial was completed or skipped
-    preferences.get("tutorial_completed").then((completed) => {
-      preferences.get("tutorial_skipped").then((skipped) => {
+    getPreference("tutorial_completed").then((completed) => {
+      getPreference("tutorial_skipped").then((skipped) => {
         if (!completed && !skipped) {
           // Show modal on first home load
           setTimeout(() => setShowModal(true), 1000);
@@ -33,7 +33,7 @@ export function TutorialQuestModal() {
   const handleSkip = async () => {
     setShowModal(false);
     // Mark as skipped so it doesn't show again
-    await preferences.set("tutorial_skipped", true);
+    await setPreference("tutorial_skipped", "true");
   };
 
   if (!showModal) return null;
@@ -70,49 +70,54 @@ export function TutorialQuestModal() {
           <YStack alignItems="center" gap="$3">
             <YStack
               bg="$primary"
-              w={80}
-              h={80}
+              width={80}
+              height={80}
               alignItems="center"
               justifyContent="center"
-              rounded="$full"
+              borderRadius={999}
               shadowColor="$primaryGlow"
               shadowOffset={{ width: 0, height: 4 }}
               shadowOpacity={0.6}
               shadowRadius={12}
             >
-              <GameIcon name="book-open" size={40} color="$text" />
+              <GameIcon name="book-open" size={40} tintColor="$text" />
             </YStack>
 
-            <Dialog.Title fontSize="$8" fontWeight="900" color="$text" textAlign="center">
+            <Dialog.Title fontSize={32} fontWeight="900" color="$text" textAlign="center">
               {t("onboarding.tutorial_title")}
             </Dialog.Title>
 
-            <Dialog.Description fontSize="$4" color="$textSecondary" textAlign="center" lineHeight="$5">
+            <Dialog.Description
+              fontSize="$4"
+              color="$textSecondary"
+              textAlign="center"
+              lineHeight={24}
+            >
               {t("onboarding.tutorial_description")}
             </Dialog.Description>
 
             <YStack
               bg="$glassBg"
               p="$3"
-              rounded="$3"
+              borderRadius="$3"
               borderWidth={1}
               borderColor="$borderStrong"
-              w="100%"
+              width="100%"
             >
               <XStack gap="$2" alignItems="center" mb="$2">
-                <GameIcon name="check-circle" size={16} color="$success" />
+                <GameIcon name="check-circle" size={16} tintColor="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_1")}
                 </Text>
               </XStack>
               <XStack gap="$2" alignItems="center" mb="$2">
-                <GameIcon name="check-circle" size={16} color="$success" />
+                <GameIcon name="check-circle" size={16} tintColor="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_2")}
                 </Text>
               </XStack>
               <XStack gap="$2" alignItems="center">
-                <GameIcon name="check-circle" size={16} color="$success" />
+                <GameIcon name="check-circle" size={16} tintColor="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_3")}
                 </Text>

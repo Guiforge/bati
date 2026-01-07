@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { db, SCHEMA_VERSION } from "@/src/db/client";
-import migrations from "@/src/drizzle/migrations";
+import migrations from "../src/drizzle/migrations";
 
 function getMigrationKeyFromIdx(idx: number) {
   return `m${String(idx).padStart(4, "0")}`;
@@ -321,11 +321,4 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   }
 
   return <>{children}</>;
-}
-
-// Hook to get db instance (for backward compatibility)
-import { db as dbClient } from "@/src/db/client";
-
-export function useDatabase() {
-  return { db: dbClient };
 }

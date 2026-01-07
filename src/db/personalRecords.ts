@@ -221,7 +221,7 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
       })
       .from(completedExercises)
       .where(
-        sql`${completedExercises.exerciseId} = ${result.exerciseId} AND ${completedExercises.sessionId} != ${sessionId}`,
+        sql`${completedExercises.exerciseId} = ${result.exerciseId} AND ${completedExercises.sessionId} != ${sessionId}`
       );
 
     const prevMax = previousMax[0]?.maxValue ?? 0;

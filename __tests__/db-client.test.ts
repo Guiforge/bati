@@ -14,7 +14,7 @@ describe("db/client", () => {
     jest.doMock("drizzle-orm/expo-sqlite", () => ({ drizzle }));
 
     // Mock __DEV__ to false for consistent test behavior
-    (global as { __DEV__: boolean }).__DEV__ = false;
+    (global as unknown as { __DEV__: boolean }).__DEV__ = false;
 
     const client = require("../src/db/client") as typeof import("../src/db/client");
 

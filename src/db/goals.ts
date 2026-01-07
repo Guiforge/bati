@@ -232,7 +232,7 @@ export async function updateGoalStatus(id: number, status: GoalStatusCode): Prom
  */
 export async function updateGoal(
   id: number,
-  updates: Partial<Pick<CreateGoalInput, "daysPerWeek" | "sessionMinutes">>,
+  updates: Partial<Pick<CreateGoalInput, "daysPerWeek" | "sessionMinutes">>
 ): Promise<void> {
   await db
     .update(goals)

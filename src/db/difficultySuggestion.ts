@@ -6,7 +6,7 @@ export function suggestDifficultyFromSessions(
   options?: {
     maxSessions?: number;
     defaultDifficulty?: DifficultyCode;
-  },
+  }
 ): DifficultyCode {
   const maxSessions = options?.maxSessions ?? 10;
   const fallback: DifficultyCode = options?.defaultDifficulty ?? "medium";
@@ -38,7 +38,7 @@ export type ProgressionRecommendation = {
 };
 
 export function analyzeDifficultyProgression(
-  sessions: SessionSummary[],
+  sessions: SessionSummary[]
 ): ProgressionRecommendation {
   // Take last 5 sessions
   const recent = sessions.slice(-5);

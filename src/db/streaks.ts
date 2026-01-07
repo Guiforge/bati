@@ -90,7 +90,7 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
     .select()
     .from(userPreferences)
     .where(
-      sql`${userPreferences.key} IN (${STREAK_CURRENT_KEY}, ${STREAK_BEST_KEY}, ${STREAK_LAST_DATE_KEY})`,
+      sql`${userPreferences.key} IN (${STREAK_CURRENT_KEY}, ${STREAK_BEST_KEY}, ${STREAK_LAST_DATE_KEY})`
     );
 
   if (rows.length < 3) return null;

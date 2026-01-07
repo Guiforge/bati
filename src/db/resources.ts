@@ -65,7 +65,7 @@ export async function addResources(
     completedSessionId?: number;
     reason?: string;
     transactionType?: ResourceTransactionType;
-  } = {},
+  } = {}
 ): Promise<void> {
   const { completedSessionId, reason = "", transactionType = "earned" } = options;
 
@@ -101,7 +101,7 @@ export async function spendResources(
   resources: ResourceAmount[],
   options: {
     reason?: string;
-  } = {},
+  } = {}
 ): Promise<boolean> {
   const { reason = "spent" } = options;
 

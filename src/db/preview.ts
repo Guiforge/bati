@@ -27,7 +27,7 @@ export function estimateQuestTemplateSeconds(input: {
           min: qex.baseTarget.min,
           max: qex.baseTarget.max,
         },
-        userLevelEnum,
+        userLevelEnum
       );
 
       return {

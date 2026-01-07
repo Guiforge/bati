@@ -21,7 +21,7 @@ describe("db/completed", () => {
     await expect(
       completed.createCompletedSession({
         exercises: [],
-      }),
+      })
     ).rejects.toThrow("must have exercises");
   });
 

@@ -1,33 +1,25 @@
-import { eq } from "drizzle-orm";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { useDatabase } from "@/src/components/DatabaseProvider";
-import { exercises, questExercises, quests } from "@/src/db/schema";
+import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { useSessionStore } from "@/src/stores/session";
-
-type Quest = typeof quests.$inferSelect;
-type QuestExercise = typeof questExercises.$inferSelect & {
-  exercise: typeof exercises.$inferSelect;
-};
 
 export default function QuestDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const { db } = useDatabase();
   const { GameIcon } = useGameIcon();
   const startSession = useSessionStore((state) => state.startSession);
 
   const [quest, setQuest] = useState<Quest | null>(null);
-  const [questExercisesList, setQuestExercisesList] = useState<QuestExercise[]>([]);
+  const [userLevel] = useState<Difficulty>(Difficulty.Medium);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db || !id) return;
+    if (!id) return;
 
     const questId = Number.parseInt(id as string, 10);
     if (Number.isNaN(questId)) {
@@ -35,38 +27,19 @@ export default function QuestDetailsScreen() {
       return;
     }
 
-    Promise.all([
-      db.select().from(quests).where(eq(quests.id, questId)).get(),
-      db
-        .select({
-          id: questExercises.id,
-          questId: questExercises.questId,
-          exerciseId: questExercises.exerciseId,
-          sortOrder: questExercises.sortOrder,
-          targetType: questExercises.targetType,
-          targetMin: questExercises.targetMin,
-          targetMax: questExercises.targetMax,
-          imagesJson: questExercises.imagesJson,
-          exercise: exercises,
-        })
-        .from(questExercises)
-        .innerJoin(exercises, eq(questExercises.exerciseId, exercises.id))
-        .where(eq(questExercises.questId, questId))
-        .orderBy(questExercises.sortOrder)
-        .all(),
-    ])
-      .then(([questData, exercisesData]) => {
-        setQuest(questData || null);
-        setQuestExercisesList(exercisesData);
+    // Load quest with exercises using proper API
+    getQuestById(questId, Difficulty.Medium)
+      .then((questData) => {
+        setQuest(questData);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [db, id]);
+  }, [id]);
 
-  const handleStartQuest = () => {
+  const handleStartQuest = async () => {
     if (!quest) return;
 
-    startSession(quest.id, quest.rounds);
+    await startSession(quest, userLevel);
     router.push("/session/countdown");
   };
 
@@ -81,7 +54,7 @@ export default function QuestDetailsScreen() {
   if (!quest) {
     return (
       <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center" p="$4">
-        <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
+        <Text color="$text" fontSize={24} fontWeight="bold" mb="$2">
           {t("quests.not_found")}
         </Text>
         <Text color="$textSecondary" fontSize="$4" mb="$4">
@@ -101,90 +74,31 @@ export default function QuestDetailsScreen() {
     <YStack flex={1} bg="$bgDark">
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <YStack p="$4" gap="$4">
-          <Text color="$text" fontSize="$9" fontWeight="bold">
+          <Text color="$text" fontSize={36} fontWeight="bold">
             {title}
           </Text>
 
-          <XStack gap="$2" flexWrap="wrap">
-            {quest.difficulty && (
-              <YStack
-                bg={
-                  quest.difficulty === "Beginner"
-                    ? "$success"
-                    : quest.difficulty === "Intermediate"
-                      ? "$warning"
-                      : "$error"
-                }
-                px="$3"
-                py="$2"
-                borderRadius="$3"
-              >
-                <Text color="$text" fontSize="$3" fontWeight="600">
-                  {t(`quests.difficulty_${quest.difficulty.toLowerCase()}`)}
-                </Text>
-              </YStack>
-            )}
-
-            {quest.estimatedMinutes && (
-              <YStack
-                bg="$glassBg"
-                borderColor="$borderStrong"
-                borderWidth={1}
-                px="$3"
-                py="$2"
-                borderRadius="$3"
-              >
-                <Text color="$textSecondary" fontSize="$3">
-                  {quest.estimatedMinutes} min
-                </Text>
-              </YStack>
-            )}
-
-            {quest.primaryMuscle && (
-              <YStack bg="$primary" px="$3" py="$2" borderRadius="$3">
-                <Text color="$text" fontSize="$3" fontWeight="600">
-                  {quest.primaryMuscle}
-                </Text>
-              </YStack>
-            )}
-
-            {quest.secondaryMuscles && (
-              <YStack
-                bg="$glassBg"
-                borderColor="$borderStrong"
-                borderWidth={1}
-                px="$3"
-                py="$2"
-                borderRadius="$3"
-              >
-                <Text color="$textSecondary" fontSize="$3">
-                  {quest.secondaryMuscles}
-                </Text>
-              </YStack>
-            )}
-          </XStack>
-
-          <Text color="$textSecondary" fontSize="$4" lineHeight="$5">
+          <Text color="$textSecondary" fontSize={16} lineHeight={24}>
             {description}
           </Text>
 
           <YStack gap="$2" mt="$2">
-            <Text color="$text" fontSize="$6" fontWeight="bold">
+            <Text color="$text" fontSize={24} fontWeight="bold">
               {t("quests.exercises_list")}
             </Text>
 
-            {questExercisesList.length === 0 ? (
-              <Text color="$textSecondary" fontSize="$4">
+            {quest.exercises.length === 0 ? (
+              <Text color="$textSecondary" fontSize={16}>
                 {t("quests.empty_title")}
               </Text>
             ) : (
-              questExercisesList.map((qe, index) => {
+              quest.exercises.map((qe, index) => {
                 const exerciseName =
                   i18n.language === "fr" ? qe.exercise.frName : qe.exercise.enName;
 
                 return (
                   <YStack
-                    key={qe.id}
+                    key={qe.exercise.id}
                     bg="$glassBg"
                     borderColor="$borderStrong"
                     borderWidth={1}
@@ -194,27 +108,25 @@ export default function QuestDetailsScreen() {
                     <XStack alignItems="center" gap="$3">
                       <YStack
                         bg="$primary"
-                        w={32}
-                        h={32}
+                        width={32}
+                        height={32}
                         alignItems="center"
                         justifyContent="center"
-                        borderRadius="$full"
+                        borderRadius={999}
                       >
-                        <Text color="$text" fontSize="$4" fontWeight="bold">
+                        <Text color="$text" fontSize={16} fontWeight="bold">
                           {index + 1}
                         </Text>
                       </YStack>
 
                       <YStack flex={1}>
-                        <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
+                        <Text color="$text" fontSize={16} fontWeight="600" mb="$1">
                           {exerciseName}
                         </Text>
-                        <Text color="$textSecondary" fontSize="$3">
-                          {qe.targetType === "reps"
-                            ? `${qe.targetMin}-${qe.targetMax} reps`
-                            : qe.targetType === "duration"
-                              ? `${qe.targetMin}-${qe.targetMax}s`
-                              : `${qe.targetMin}-${qe.targetMax}`}
+                        <Text color="$textSecondary" fontSize={14}>
+                          {qe.target.type === "reps"
+                            ? `${qe.target.value} reps`
+                            : `${qe.target.value}s`}
                         </Text>
                       </YStack>
                     </XStack>
@@ -226,15 +138,15 @@ export default function QuestDetailsScreen() {
 
           <YStack gap="$2" mt="$2">
             <XStack alignItems="center" gap="$2">
-              <GameIcon name="repeat" size={20} color="$textSecondary" />
-              <Text color="$textSecondary" fontSize="$4">
+              <GameIcon name="repeat" size={20} tintColor="$textSecondary" />
+              <Text color="$textSecondary" fontSize={16}>
                 {quest.rounds} {quest.rounds === 1 ? "round" : "rounds"}
               </Text>
             </XStack>
 
             <XStack alignItems="center" gap="$2">
-              <GameIcon name="timer" size={20} color="$textSecondary" />
-              <Text color="$textSecondary" fontSize="$4">
+              <GameIcon name="timer" size={20} tintColor="$textSecondary" />
+              <Text color="$textSecondary" fontSize={16}>
                 {quest.restSeconds}s {t("quests.rest", { count: quest.restSeconds })}
               </Text>
             </XStack>

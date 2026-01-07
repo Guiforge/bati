@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { useDatabase } from "@/src/components/DatabaseProvider";
-import { adventures, quests } from "@/src/db/schema";
+import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
+import { adventures } from "@/src/db/schema";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { useSessionStore } from "@/src/stores/session";
 
-type Adventure = typeof adventures.$inferSelect & {
-  quest: typeof quests.$inferSelect | null;
-};
+type Adventure = typeof adventures.$inferSelect;
 
 export default function BossIntroScreen() {
   const { adventureId } = useLocalSearchParams();
@@ -21,55 +20,49 @@ export default function BossIntroScreen() {
   const startSession = useSessionStore((state) => state.startSession);
 
   const [adventure, setAdventure] = useState<Adventure | null>(null);
+  const [quest, setQuest] = useState<Quest | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!db || !adventureId) return;
 
-    const id = Number.parseInt(adventureId as string, 10);
-    if (Number.isNaN(id)) {
-      setLoading(false);
-      return;
-    }
-
-    db.select({
-      id: adventures.id,
-      questId: adventures.questId,
-      enTitle: adventures.enTitle,
-      frTitle: adventures.frTitle,
-      enDescription: adventures.enDescription,
-      frDescription: adventures.frDescription,
-      author: adventures.author,
-      sortOrder: adventures.sortOrder,
-      kind: adventures.kind,
-      isActive: adventures.isActive,
-      imagePath: adventures.imagePath,
-      bossTotalHp: adventures.bossTotalHp,
-      bossWeaknessMuscle: adventures.bossWeaknessMuscle,
-      bossResistanceMuscle: adventures.bossResistanceMuscle,
-      createdAt: adventures.createdAt,
-      updatedAt: adventures.updatedAt,
-      quest: quests,
-    })
-      .from(adventures)
-      .leftJoin(quests, eq(adventures.questId, quests.id))
-      .where(eq(adventures.id, id))
-      .get()
-      .then((data) => {
-        setAdventure(data || null);
+    const loadAdventure = async () => {
+      const id = Number.parseInt(adventureId as string, 10);
+      if (Number.isNaN(id)) {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+        return;
+      }
+
+      try {
+        const adventureData = db.select().from(adventures).where(eq(adventures.id, id)).get();
+
+        if (!adventureData) {
+          setLoading(false);
+          return;
+        }
+
+        setAdventure(adventureData);
+
+        // Load the full quest with exercises using getQuestById
+        if (adventureData.questId) {
+          const questData = await getQuestById(adventureData.questId, Difficulty.Medium);
+          setQuest(questData);
+        }
+
+        setLoading(false);
+      } catch {
+        setLoading(false);
+      }
+    };
+
+    loadAdventure();
   }, [db, adventureId]);
 
-  const handleBeginBattle = () => {
-    if (!adventure?.quest) return;
+  const handleBeginBattle = async () => {
+    if (!adventure || !quest) return;
 
-    startSession(adventure.quest.id, adventure.quest.rounds, {
-      isBossFight: true,
-      bossId: adventure.id,
-      bossMaxHp: adventure.bossTotalHp || 1000,
-      bossCurrentHp: adventure.bossTotalHp || 1000,
+    await startSession(quest, Difficulty.Medium, {
+      adventureId: adventure.id,
     });
 
     router.push("/session/countdown");
@@ -83,10 +76,10 @@ export default function BossIntroScreen() {
     );
   }
 
-  if (!adventure || adventure.kind !== "boss") {
+  if (!adventure || adventure.kind !== "boss" || !quest) {
     return (
       <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center" p="$4">
-        <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
+        <Text color="$text" fontSize={24} fontWeight="bold" mb="$2">
           {t("boss.not_found")}
         </Text>
         <Button onPress={() => router.back()} bg="$primary">
@@ -104,17 +97,17 @@ export default function BossIntroScreen() {
       <YStack flex={1} alignItems="center" justifyContent="center" p="$6" gap="$6">
         <YStack
           bg="$error"
-          w={120}
-          h={120}
+          width={120}
+          height={120}
           alignItems="center"
           justifyContent="center"
-          borderRadius="$full"
+          borderRadius={999}
           shadowColor="$error"
           shadowOffset={{ width: 0, height: 8 }}
           shadowOpacity={0.8}
           shadowRadius={24}
         >
-          <GameIcon name="skull" size={72} color="$text" />
+          <GameIcon name="skull" size={72} tintColor="$text" />
         </YStack>
 
         <YStack alignItems="center" gap="$2">
@@ -128,7 +121,7 @@ export default function BossIntroScreen() {
             {t("boss.epic_battle")}
           </Text>
 
-          <Text color="$text" fontSize="$10" fontWeight="900" textAlign="center" numberOfLines={2}>
+          <Text color="$text" fontSize={40} fontWeight="900" textAlign="center" numberOfLines={2}>
             {title}
           </Text>
         </YStack>
@@ -142,7 +135,7 @@ export default function BossIntroScreen() {
             py="$3"
             borderRadius="$4"
           >
-            <Text color="$error" fontSize="$7" fontWeight="bold" textAlign="center">
+            <Text color="$error" fontSize={28} fontWeight="bold" textAlign="center">
               {t("boss.hp_display", { hp: adventure.bossTotalHp })}
             </Text>
           </YStack>
@@ -156,14 +149,14 @@ export default function BossIntroScreen() {
           borderRadius="$4"
           maxWidth={400}
         >
-          <Text color="$textSecondary" fontSize="$4" textAlign="center" lineHeight="$5">
+          <Text color="$textSecondary" fontSize="$4" textAlign="center" lineHeight={24}>
             {description || t("boss.no_description")}
           </Text>
         </YStack>
 
         {adventure.bossWeaknessMuscle && (
           <XStack alignItems="center" gap="$2" bg="$warning" px="$4" py="$2" borderRadius="$3">
-            <GameIcon name="zap" size={20} color="$text" />
+            <GameIcon name="zap" size={20} tintColor="$text" />
             <Text color="$text" fontSize="$3" fontWeight="600">
               {t("boss.weakness")}: {adventure.bossWeaknessMuscle}
             </Text>
@@ -176,7 +169,7 @@ export default function BossIntroScreen() {
           size="$6"
           bg="$error"
           color="$text"
-          fontSize="$6"
+          fontSize={24}
           fontWeight="900"
           onPress={handleBeginBattle}
           pressStyle={{ opacity: 0.9, scale: 0.98 }}

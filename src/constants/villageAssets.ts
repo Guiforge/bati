@@ -2,7 +2,10 @@ import type { BuildingCode } from "@/src/db/schema";
 
 export type VillageBuildingVariant = "locked" | "lvl_1" | "lvl_2" | "lvl_3" | "lvl_4" | "lvl_5";
 
-export const VILLAGE_BUILDING_ASSETS: Record<BuildingCode, Record<VillageBuildingVariant, any>> = {
+export const VILLAGE_BUILDING_ASSETS: Record<
+  BuildingCode,
+  Record<VillageBuildingVariant, number>
+> = {
   campfire: {
     locked: require("@/assets/images/village/buildings/campfire/locked.png"),
     lvl_1: require("@/assets/images/village/buildings/campfire/lvl_1.png"),
@@ -170,7 +173,7 @@ export function getVillageBuildingAsset(building: BuildingCode, variant: Village
 }
 
 export type VillageBackgroundTier = 1 | 2 | 3 | 4;
-export const VILLAGE_BACKGROUND_ASSETS: Record<VillageBackgroundTier, any> = {
+export const VILLAGE_BACKGROUND_ASSETS: Record<VillageBackgroundTier, number> = {
   1: require("@/assets/images/village/backgrounds/tier_1.jpg"),
   2: require("@/assets/images/village/backgrounds/tier_2.jpg"),
   3: require("@/assets/images/village/backgrounds/tier_3.jpg"),

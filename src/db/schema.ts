@@ -72,7 +72,7 @@ export const exercises = sqliteTable(
   },
   (table) => ({
     enNameUnique: uniqueIndex("exercises_en_name_unique").on(table.enName),
-  }),
+  })
 );
 
 export const exerciseMuscles = sqliteTable(
@@ -86,7 +86,7 @@ export const exerciseMuscles = sqliteTable(
   (table) => ({
     pk: primaryKey({ columns: [table.exerciseId, table.muscle] }),
     muscleIdx: index("exercise_muscles_muscle_idx").on(table.muscle),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -147,7 +147,7 @@ export const questExercises = sqliteTable(
   (table) => ({
     questIdx: index("quest_exercises_quest_idx").on(table.questId),
     sortUnique: uniqueIndex("quest_exercises_quest_sort_unique").on(table.questId, table.sortOrder),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -195,7 +195,7 @@ export const adventures = sqliteTable(
   },
   (table) => ({
     activeSortIdx: index("adventures_active_sort_idx").on(table.isActive, table.sortOrder),
-  }),
+  })
 );
 
 export const adventureStepStatuses = ["locked", "active", "completed"] as const;
@@ -233,9 +233,9 @@ export const adventureSteps = sqliteTable(
     questIdx: index("adventure_steps_quest_idx").on(table.questId),
     orderUnique: uniqueIndex("adventure_steps_adventure_step_unique").on(
       table.adventureId,
-      table.stepIndex,
+      table.stepIndex
     ),
-  }),
+  })
 );
 
 export const adventureRuns = sqliteTable(
@@ -253,7 +253,7 @@ export const adventureRuns = sqliteTable(
   },
   (table) => ({
     adventureIdx: index("adventure_runs_adventure_idx").on(table.adventureId),
-  }),
+  })
 );
 
 export const adventureRunSteps = sqliteTable(
@@ -279,10 +279,10 @@ export const adventureRunSteps = sqliteTable(
     questIdx: index("adventure_run_steps_quest_idx").on(table.questId),
     orderUnique: uniqueIndex("adventure_run_steps_run_step_unique").on(
       table.runId,
-      table.stepIndex,
+      table.stepIndex
     ),
     runStatusIdx: index("adventure_run_steps_run_status_idx").on(table.runId, table.status),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -323,7 +323,7 @@ export const completedQuest = sqliteTable(
   (table) => ({
     performedAtIdx: index("completed_sessions_performed_at_idx").on(table.performedAt),
     questIdx: index("completed_sessions_quest_idx").on(table.questId),
-  }),
+  })
 );
 
 export const completedExercises = sqliteTable(
@@ -364,9 +364,9 @@ export const completedExercises = sqliteTable(
     orderUnique: uniqueIndex("completed_exercises_session_round_sort_unique").on(
       table.sessionId,
       table.roundIndex,
-      table.sortOrder,
+      table.sortOrder
     ),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -395,7 +395,7 @@ export const bossFights = sqliteTable(
   },
   (table) => ({
     adventureUnique: uniqueIndex("boss_fights_adventure_unique").on(table.adventureId),
-  }),
+  })
 );
 
 export const bossDamageLog = sqliteTable(
@@ -420,7 +420,7 @@ export const bossDamageLog = sqliteTable(
   (table) => ({
     fightIdx: index("boss_damage_log_fight_idx").on(table.bossFightId),
     sessionIdx: index("boss_damage_log_session_idx").on(table.completedSessionId),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -465,7 +465,7 @@ export const resourceInventory = sqliteTable(
   },
   (table) => ({
     resourceUnique: uniqueIndex("resource_inventory_resource_unique").on(table.resource),
-  }),
+  })
 );
 
 // Transaction types for analytics
@@ -495,7 +495,7 @@ export const resourceTransactions = sqliteTable(
     resourceIdx: index("resource_transactions_resource_idx").on(table.resource),
     sessionIdx: index("resource_transactions_session_idx").on(table.completedSessionId),
     createdAtIdx: index("resource_transactions_created_at_idx").on(table.createdAt),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -786,7 +786,7 @@ export const villageBuildings = sqliteTable(
   },
   (table) => ({
     buildingTypeUnique: uniqueIndex("village_buildings_type_unique").on(table.buildingType),
-  }),
+  })
 );
 
 // Village stats table (aggregate stats for the village)
@@ -855,7 +855,7 @@ export const goalProgress = sqliteTable(
   (table) => ({
     goalWeekUnique: uniqueIndex("goal_progress_goal_week_unique").on(table.goalId, table.weekKey),
     goalIdx: index("goal_progress_goal_idx").on(table.goalId),
-  }),
+  })
 );
 
 // ------------------------------------------------------------
@@ -905,5 +905,5 @@ export const scheduledSessions = sqliteTable(
     dateIdx: index("scheduled_sessions_date_idx").on(table.scheduledDate),
     statusIdx: index("scheduled_sessions_status_idx").on(table.status),
     goalIdx: index("scheduled_sessions_goal_idx").on(table.goalId),
-  }),
+  })
 );

@@ -193,7 +193,7 @@ export async function dealDamage(
     resultValue: number;
     targetValue: number;
     muscle?: MuscleCode;
-  },
+  }
 ): Promise<DamageResult> {
   // Get current boss fight state
   const fightRows = await db

@@ -97,7 +97,7 @@ export async function getUnlockedBuildings(): Promise<VillageBuildingWithMeta[]>
  * Get a single building by type
  */
 export async function getBuildingByType(
-  buildingType: BuildingCode,
+  buildingType: BuildingCode
 ): Promise<VillageBuildingWithMeta | null> {
   const rows = await db
     .select()
@@ -169,7 +169,7 @@ export function calculateLevelFromXp(xp: number): number {
  */
 export async function addBuildingXp(
   buildingType: BuildingCode,
-  xpAmount: number,
+  xpAmount: number
 ): Promise<BuildingLevelUp | null> {
   if (xpAmount <= 0) return null;
 
@@ -239,7 +239,7 @@ async function updateVillageStatsAfterLevelUp(newLevel: number): Promise<void> {
  */
 export async function checkTier2Unlock(
   muscle: MuscleCode,
-  totalReps: number,
+  totalReps: number
 ): Promise<BuildingUnlock | null> {
   const buildingType = muscleToBuilding[muscle];
   if (!buildingType) return null;
@@ -463,7 +463,7 @@ export async function ensureVillageBuildingsExist(): Promise<void> {
  * Returns list of level ups
  */
 export async function applyResourcesToBuildings(
-  resources: ResourceAmount[],
+  resources: ResourceAmount[]
 ): Promise<BuildingLevelUp[]> {
   const levelUps: BuildingLevelUp[] = [];
 

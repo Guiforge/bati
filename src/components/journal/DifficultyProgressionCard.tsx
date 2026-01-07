@@ -47,11 +47,11 @@ export function DifficultyProgressionCard() {
             {isIncrease
               ? t(
                   "progression.increase_message",
-                  "You've been crushing it lately. Try increasing the difficulty for better rewards!",
+                  "You've been crushing it lately. Try increasing the difficulty for better rewards!"
                 )
               : t(
                   "progression.decrease_message",
-                  "It seems tough lately. Lowering difficulty can help you maintain consistency.",
+                  "It seems tough lately. Lowering difficulty can help you maintain consistency."
                 )}
           </Paragraph>
         </YStack>

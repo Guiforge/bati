@@ -143,7 +143,7 @@ export async function listAdventures(): Promise<Adventure[]> {
   for (const r of stepRows) {
     stepsCountByAdventureId.set(
       r.adventureId,
-      (stepsCountByAdventureId.get(r.adventureId) ?? 0) + 1,
+      (stepsCountByAdventureId.get(r.adventureId) ?? 0) + 1
     );
   }
 
@@ -338,7 +338,7 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
 }
 
 export async function getActiveAdventureRun(
-  adventureId: number,
+  adventureId: number
 ): Promise<ActiveAdventureRun | null> {
   const runRows = await db
     .select({
@@ -474,7 +474,7 @@ export async function startAdventureRun(input: {
       completedSessionId: null,
       startedAt: s.stepIndex === 0 ? now : null,
       completedAt: null,
-    })),
+    }))
   );
 
   const active = await getActiveAdventureRun(input.adventureId);
@@ -532,8 +532,8 @@ export async function completeAdventureRunStep(input: {
     .where(
       and(
         eq(adventureRunSteps.runId, current.runId),
-        eq(adventureRunSteps.stepIndex, current.stepIndex + 1),
-      ),
+        eq(adventureRunSteps.stepIndex, current.stepIndex + 1)
+      )
     )
     .limit(1);
 

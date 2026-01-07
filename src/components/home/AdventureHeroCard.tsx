@@ -47,7 +47,7 @@ export function AdventureHeroCard() {
         }
 
         const completedSteps = result.activeRun.steps.filter(
-          (s) => s.status === "completed",
+          (s) => s.status === "completed"
         ).length;
 
         setAdventure({

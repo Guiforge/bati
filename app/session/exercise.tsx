@@ -43,12 +43,16 @@ export default function ExerciseScreen() {
     // Simulate XP animation duration
     setTimeout(() => setShowXpAnimation(false), 1500);
 
-    const hasMoreExercises = await completeExercise();
+    // Get current exercise target value for completion
+    const targetValue = currentExercise?.target.value ?? 0;
+    await completeExercise(targetValue);
 
-    if (hasMoreExercises) {
-      router.push("/session/rest");
-    } else {
+    // Check status after completion
+    const { status: newStatus } = useSessionStore.getState();
+    if (newStatus === "finished") {
       router.replace("/session/victory");
+    } else {
+      router.push("/session/rest");
     }
   };
 
@@ -60,13 +64,15 @@ export default function ExerciseScreen() {
     setShowSkipDialog(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
-    // Skip exercise - move to rest/next
-    const hasMoreExercises = await completeExercise(0); // 0 reps = skipped
+    // Skip exercise - move to rest/next with 0 reps
+    await completeExercise(0);
 
-    if (hasMoreExercises) {
-      router.push("/session/rest");
-    } else {
+    // Check status after completion
+    const { status: newStatus } = useSessionStore.getState();
+    if (newStatus === "finished") {
       router.replace("/session/victory");
+    } else {
+      router.push("/session/rest");
     }
   };
 
@@ -98,8 +104,8 @@ export default function ExerciseScreen() {
               lastDamageResult
                 ? {
                     damage: lastDamageResult.damage,
-                    isCritical: lastDamageResult.isCrit,
-                    weaknessBonus: lastDamageResult.isWeaknessBonus,
+                    isCritical: lastDamageResult.isCritical,
+                    weaknessBonus: lastDamageResult.weaknessBonus,
                   }
                 : null
             }
@@ -126,7 +132,7 @@ export default function ExerciseScreen() {
       <ScrollView flex={1} padding="$6">
         {/* Exercise Name */}
         <Text fontSize={32} fontWeight="bold" color="$text" marginBottom="$4">
-          {currentExercise.enName}
+          {currentExercise.exercise.enName}
         </Text>
 
         {/* Exercise Instructions */}
@@ -139,7 +145,7 @@ export default function ExerciseScreen() {
           marginBottom="$4"
         >
           <Text fontSize={16} color="$text" lineHeight={24}>
-            {currentExercise.instructions}
+            {currentExercise.exercise.enDescription}
           </Text>
         </YStack>
 
@@ -150,10 +156,10 @@ export default function ExerciseScreen() {
               {t("session.target")}
             </Text>
             <Text fontSize={24} fontWeight="bold" color="$primary">
-              {currentExercise.baseReps || currentExercise.baseTime}
+              {currentExercise.target.value}
             </Text>
             <Text fontSize={12} color="$textSecondary">
-              {currentExercise.baseReps ? t("session.reps") : t("session.seconds")}
+              {currentExercise.target.type === "reps" ? t("session.reps") : t("session.seconds")}
             </Text>
           </YStack>
 
@@ -162,7 +168,7 @@ export default function ExerciseScreen() {
               {t("session.difficulty")}
             </Text>
             <Text fontSize={18} fontWeight="600" color="$text">
-              {currentExercise.difficulty}
+              {currentExercise.exercise.difficulty}
             </Text>
           </YStack>
         </XStack>
@@ -278,7 +284,7 @@ export default function ExerciseScreen() {
             bg="$bgDark"
             p="$6"
           >
-            <Dialog.Title fontSize="$7" fontWeight="bold" color="$text">
+            <Dialog.Title fontSize={28} fontWeight="bold" color="$text">
               {t("session.skip_title")}
             </Dialog.Title>
             <Dialog.Description fontSize="$4" color="$textSecondary">
@@ -327,7 +333,7 @@ export default function ExerciseScreen() {
             bg="$bgDark"
             p="$6"
           >
-            <Dialog.Title fontSize="$7" fontWeight="bold" color="$text">
+            <Dialog.Title fontSize={28} fontWeight="bold" color="$text">
               {t("session.modify_title")}
             </Dialog.Title>
             <Dialog.Description fontSize="$4" color="$textSecondary" mb="$3">
@@ -345,7 +351,7 @@ export default function ExerciseScreen() {
                 onPress={() => setShowModifyDialog(false)}
               >
                 <XStack gap="$3" alignItems="center">
-                  <GameIcon name="dumbbell" size={20} color="$text" />
+                  <GameIcon name="dumbbell" size={20} tintColor="$text" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_1")}
@@ -366,7 +372,7 @@ export default function ExerciseScreen() {
                 onPress={() => setShowModifyDialog(false)}
               >
                 <XStack gap="$3" alignItems="center">
-                  <GameIcon name="dumbbell" size={20} color="$text" />
+                  <GameIcon name="dumbbell" size={20} tintColor="$text" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_2")}
@@ -387,7 +393,7 @@ export default function ExerciseScreen() {
                 onPress={() => setShowModifyDialog(false)}
               >
                 <XStack gap="$3" alignItems="center">
-                  <GameIcon name="dumbbell" size={20} color="$text" />
+                  <GameIcon name="dumbbell" size={20} tintColor="$text" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_3")}

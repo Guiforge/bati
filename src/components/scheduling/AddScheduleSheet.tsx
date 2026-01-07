@@ -56,7 +56,7 @@ export function AddScheduleSheet({
         setSaving(false);
       }
     },
-    [selectedDate, onSessionAdded, onOpenChange, hapticSuccess],
+    [selectedDate, onSessionAdded, onOpenChange, hapticSuccess]
   );
 
   const renderQuest = useCallback(
@@ -87,7 +87,7 @@ export function AddScheduleSheet({
         </Card>
       );
     },
-    [language, handleSelectQuest, saving, t],
+    [language, handleSelectQuest, saving, t]
   );
 
   return (

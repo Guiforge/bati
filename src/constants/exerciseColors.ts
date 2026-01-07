@@ -82,7 +82,7 @@ export function getQuestColorKeyFromQuest(quest: Pick<Quest, "exercises">): Exer
 
     const w = estimateExerciseSeconds(
       { secondsPerRep: qex.exercise.secondsPerRep },
-      { type: qex.target.type, value: qex.target.value },
+      { type: qex.target.type, value: qex.target.value }
     );
 
     weights.set(key, (weights.get(key) ?? 0) + w);
@@ -106,7 +106,7 @@ export function getQuestColorKeyFromQuest(quest: Pick<Quest, "exercises">): Exer
 }
 
 export function getQuestColorKeyFromTemplate(
-  quest: Pick<QuestTemplate, "exercises">,
+  quest: Pick<QuestTemplate, "exercises">
 ): ExerciseColorKey {
   if (quest.exercises.length === 0) return "default";
 
@@ -127,7 +127,7 @@ export function getQuestColorTokensFromQuest(quest: Pick<Quest, "exercises">): E
 }
 
 export function getQuestColorTokensFromTemplate(
-  quest: Pick<QuestTemplate, "exercises">,
+  quest: Pick<QuestTemplate, "exercises">
 ): ExerciseColorTokens {
   return getExerciseColorTokens(getQuestColorKeyFromTemplate(quest));
 }
@@ -155,13 +155,13 @@ export function getQuestColorKeyFromTemplateWithExercises(input: {
       Math.round(
         (Math.min(qex.baseTarget.min, qex.baseTarget.max) +
           Math.max(qex.baseTarget.min, qex.baseTarget.max)) /
-          2,
-      ),
+          2
+      )
     );
 
     const w = estimateExerciseSeconds(
       { secondsPerRep: ex.secondsPerRep },
-      { type: qex.baseTarget.type, value: avgTarget },
+      { type: qex.baseTarget.type, value: avgTarget }
     );
 
     weights.set(key, (weights.get(key) ?? 0) + w);
@@ -198,6 +198,6 @@ export function getExerciseBgForSessionStep(input: {
     getExerciseColorKey({
       muscles: input.exercise.muscles,
       targetType: input.targetType,
-    }),
+    })
   ).bg;
 }

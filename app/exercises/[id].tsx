@@ -214,7 +214,7 @@ export default function ExerciseDetails() {
         setStatus("error");
       }
     },
-    [t],
+    [t]
   );
 
   useEffect(() => {

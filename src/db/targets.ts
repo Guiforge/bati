@@ -21,7 +21,7 @@ const USER_LEVEL_MULTIPLIER: Record<DifficultyCode, number> = {
 
 export function generateTarget(
   base: { type: QuestTargetType; min: number; max: number },
-  userLevel: UserLevel,
+  userLevel: UserLevel
 ): Target {
   const min = Math.min(base.min, base.max);
   const max = Math.max(base.min, base.max);

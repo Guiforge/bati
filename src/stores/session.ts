@@ -64,6 +64,19 @@ interface SessionState {
   // Results Accumulator
   results: CompletedExerciseInput[];
 
+  // Computed getters for UI convenience
+  readonly currentExercise: Quest["exercises"][number] | null;
+  readonly currentSet: number; // 1-based round number
+  readonly totalSets: number;
+  readonly exerciseIndex: number; // 0-based
+  readonly totalExercises: number;
+  readonly nextExercise: Quest["exercises"][number] | null;
+  readonly sessionSummary: {
+    totalXp: number;
+    durationSeconds: number;
+    exercisesCompleted: number;
+  } | null;
+
   // Actions
   startSession: (
     quest: Quest,
@@ -71,13 +84,14 @@ interface SessionState {
     options?: {
       adventureRunStepId?: number | null;
       adventureId?: number | null;
-    },
+    }
   ) => Promise<void>;
   finishCountdown: () => void;
   pauseSession: () => void;
   resumeSession: () => void;
   restartRound: () => void;
   quitSession: () => void;
+  clearSession: () => void;
 
   // Progression
   completeExercise: (resultValue: number) => Promise<void>;
@@ -120,6 +134,71 @@ export const useSessionStore = create<SessionState>()(
     timerStartTimestamp: null,
     timerDuration: 0,
     results: [],
+
+    // Computed getters for UI convenience
+    get currentExercise() {
+      const state = get();
+      return state.quest?.exercises[state.currentExerciseIndex] ?? null;
+    },
+    get currentSet() {
+      return get().currentRoundIndex + 1; // 1-based
+    },
+    get totalSets() {
+      return get().quest?.rounds ?? 0;
+    },
+    get exerciseIndex() {
+      return get().currentExerciseIndex;
+    },
+    get totalExercises() {
+      return get().quest?.exercises.length ?? 0;
+    },
+    get nextExercise() {
+      const state = get();
+      if (!state.quest) return null;
+      const nextIdx = state.currentExerciseIndex + 1;
+      if (nextIdx < state.quest.exercises.length) {
+        return state.quest.exercises[nextIdx];
+      }
+      // If we're at the last exercise, return the first exercise of next round
+      if (state.currentRoundIndex < state.quest.rounds - 1) {
+        return state.quest.exercises[0];
+      }
+      return null;
+    },
+    get sessionSummary() {
+      const state = get();
+      if (!state.startTime || !state.quest) return null;
+      const durationSeconds = Math.floor(
+        (Date.now() - state.startTime - state.totalPausedTime) / 1000
+      );
+      return {
+        totalXp: computeSessionXp({
+          durationSeconds,
+          userLevel: state.userLevel,
+        }),
+        durationSeconds,
+        exercisesCompleted: state.results.length,
+      };
+    },
+
+    clearSession: () => {
+      set({
+        quest: null,
+        status: "idle",
+        adventureRunStepId: null,
+        bossFight: null,
+        lastDamageResult: null,
+        prePauseStatus: null,
+        currentRoundIndex: 0,
+        currentExerciseIndex: 0,
+        startTime: null,
+        totalPausedTime: 0,
+        lastPauseTimestamp: null,
+        timerStartTimestamp: null,
+        timerDuration: 0,
+        results: [],
+      });
+    },
 
     startSession: async (quest, userLevel, options) => {
       // Load boss fight if this is a boss adventure
@@ -197,7 +276,7 @@ export const useSessionStore = create<SessionState>()(
 
       // Remove results from the current round (keep only prior rounds)
       const resultsForPriorRounds = results.filter(
-        (r) => r.roundIndex !== undefined && r.roundIndex < currentRoundIndex,
+        (r) => r.roundIndex !== undefined && r.roundIndex < currentRoundIndex
       );
 
       // Get target duration for first exercise in round (if time-based)
@@ -480,7 +559,7 @@ export const useSessionStore = create<SessionState>()(
         levelUp,
       };
     },
-  })),
+  }))
 );
 
 // Subscribe to session state changes and auto-save for crash recovery
@@ -546,5 +625,5 @@ useSessionStore.subscribe(
       }
     }
   },
-  { equalityFn: (a, b) => JSON.stringify(a) === JSON.stringify(b) },
+  { equalityFn: (a, b) => JSON.stringify(a) === JSON.stringify(b) }
 );

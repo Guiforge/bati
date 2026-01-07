@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Dialog, Text, XStack, YStack } from "tamagui";
 import { listCompletedSessions } from "@/src/db/completed";
-import { preferences } from "@/src/db/preferences";
+import { getPreference, setPreference } from "@/src/db/preferences";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 
 export function CoachSuggestionsBadge() {
@@ -15,7 +15,7 @@ export function CoachSuggestionsBadge() {
 
   const checkCoachSuggestions = useCallback(async () => {
     // Check if user has viewed suggestions
-    const viewed = await preferences.get("coach_suggestions_viewed");
+    const viewed = await getPreference("coach_suggestions_viewed");
     if (viewed) {
       setShowBadge(false);
       return;
@@ -32,7 +32,7 @@ export function CoachSuggestionsBadge() {
     // Calculate days since first session
     const firstSession = sessions[sessions.length - 1];
     const daysSinceFirst = Math.floor(
-      (Date.now() - new Date(firstSession.performedAt).getTime()) / (1000 * 60 * 60 * 24),
+      (Date.now() - new Date(firstSession.performedAt).getTime()) / (1000 * 60 * 60 * 24)
     );
 
     setDaysActive(daysSinceFirst);
@@ -54,7 +54,7 @@ export function CoachSuggestionsBadge() {
   const handleClose = async () => {
     setShowModal(false);
     // Mark as viewed
-    await preferences.set("coach_suggestions_viewed", true);
+    await setPreference("coach_suggestions_viewed", "true");
   };
 
   if (!showBadge && !showModal) return null;
@@ -70,8 +70,8 @@ export function CoachSuggestionsBadge() {
           position="absolute"
           top={-4}
           right={-4}
-          w={24}
-          h={24}
+          width={24}
+          height={24}
           p={0}
           shadowColor="$primaryGlow"
           shadowRadius={8}
@@ -116,20 +116,20 @@ export function CoachSuggestionsBadge() {
             <YStack alignItems="center" gap="$3">
               <YStack
                 bg="$warning"
-                w={80}
-                h={80}
+                width={80}
+                height={80}
                 alignItems="center"
                 justifyContent="center"
-                borderRadius="$full"
+                borderRadius={999}
                 shadowColor="$warning"
                 shadowOffset={{ width: 0, height: 4 }}
                 shadowOpacity={0.6}
                 shadowRadius={12}
               >
-                <GameIcon name="trophy" size={40} color="$text" />
+                <GameIcon name="trophy" size={40} tintColor="$text" />
               </YStack>
 
-              <Dialog.Title fontSize="$8" fontWeight="900" color="$text" textAlign="center">
+              <Dialog.Title fontSize={32} fontWeight="900" color="$text" textAlign="center">
                 {t("coach.suggestions_title")}
               </Dialog.Title>
 
@@ -147,7 +147,7 @@ export function CoachSuggestionsBadge() {
                 borderColor="$borderStrong"
               >
                 <XStack gap="$3" alignItems="flex-start">
-                  <GameIcon name="target" size={24} color="$primary" />
+                  <GameIcon name="target" size={24} tintColor="$primary" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_1_title")}
@@ -167,7 +167,7 @@ export function CoachSuggestionsBadge() {
                 borderColor="$borderStrong"
               >
                 <XStack gap="$3" alignItems="flex-start">
-                  <GameIcon name="flag" size={24} color="$success" />
+                  <GameIcon name="flag" size={24} tintColor="$success" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_2_title")}
@@ -187,7 +187,7 @@ export function CoachSuggestionsBadge() {
                 borderColor="$borderStrong"
               >
                 <XStack gap="$3" alignItems="flex-start">
-                  <GameIcon name="zap" size={24} color="$warning" />
+                  <GameIcon name="zap" size={24} tintColor="$warning" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_3_title")}

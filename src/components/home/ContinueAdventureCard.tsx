@@ -23,16 +23,30 @@ export function ContinueAdventureCard() {
   useEffect(() => {
     if (!db) return;
 
-    db.select()
-      .from(userPreferences)
-      .get()
-      .then((settings) => {
-        if (!settings?.currentAdventureId) {
+    const loadAdventure = async () => {
+      try {
+        const settings = db.select().from(userPreferences).get();
+
+        if (!settings?.value) {
           setLoading(false);
           return;
         }
 
-        return db
+        // Parse currentAdventureId from settings value if stored as JSON
+        let currentAdventureId: number | undefined;
+        try {
+          const parsed = JSON.parse(settings.value);
+          currentAdventureId = parsed.currentAdventureId;
+        } catch {
+          // Value is not JSON, skip
+        }
+
+        if (!currentAdventureId) {
+          setLoading(false);
+          return;
+        }
+
+        const adventureData = db
           .select({
             id: adventures.id,
             questId: adventures.questId,
@@ -54,14 +68,17 @@ export function ContinueAdventureCard() {
           })
           .from(adventures)
           .leftJoin(quests, eq(adventures.questId, quests.id))
-          .where(eq(adventures.id, settings.currentAdventureId))
+          .where(eq(adventures.id, currentAdventureId))
           .get();
-      })
-      .then((adventureData) => {
+
         setCurrentAdventure(adventureData || null);
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      } catch {
+        setLoading(false);
+      }
+    };
+
+    loadAdventure();
   }, [db]);
 
   if (loading || !currentAdventure) {
@@ -91,20 +108,20 @@ export function ContinueAdventureCard() {
       <XStack alignItems="center" gap="$3" mb="$3">
         <YStack
           bg={isBoss ? "$error" : "$primary"}
-          w={48}
-          h={48}
+          width={48}
+          height={48}
           alignItems="center"
           justifyContent="center"
-          borderRadius="$full"
+          borderRadius={999}
         >
-          <GameIcon name={isBoss ? "skull" : "map"} size={28} color="$text" />
+          <GameIcon name={isBoss ? "skull" : "map"} size={28} tintColor="$text" />
         </YStack>
 
         <YStack flex={1}>
           <Text color="$textSecondary" fontSize="$2" fontWeight="600" textTransform="uppercase">
             {t("home.continue_adventure")}
           </Text>
-          <Text color="$text" fontSize="$5" fontWeight="bold" numberOfLines={1}>
+          <Text color="$text" fontSize={20} fontWeight="bold" numberOfLines={1}>
             {title || t("adventures.untitled")}
           </Text>
         </YStack>
@@ -112,7 +129,7 @@ export function ContinueAdventureCard() {
 
       {isBoss && (
         <XStack alignItems="center" gap="$2" bg="$error" p="$2" borderRadius="$3" mb="$3">
-          <GameIcon name="zap" size={20} color="$text" />
+          <GameIcon name="zap" size={20} tintColor="$text" />
           <Text color="$text" fontSize="$3" fontWeight="bold">
             {t("home.boss_ready")}
           </Text>
@@ -130,7 +147,7 @@ export function ContinueAdventureCard() {
 
           {currentAdventure.quest.estimatedMinutes && (
             <XStack alignItems="center" gap="$2">
-              <GameIcon name="clock" size={16} color="$textSecondary" />
+              <GameIcon name="clock" size={16} tintColor="$textSecondary" />
               <Text color="$textSecondary" fontSize="$3">
                 {currentAdventure.quest.estimatedMinutes} min
               </Text>

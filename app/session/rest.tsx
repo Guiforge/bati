@@ -58,7 +58,7 @@ export default function RestScreen() {
             {t("session.next_up")}
           </Text>
           <Text fontSize={20} fontWeight="600" color="$text">
-            {nextExercise.enName}
+            {nextExercise.exercise.enName}
           </Text>
         </YStack>
       )}

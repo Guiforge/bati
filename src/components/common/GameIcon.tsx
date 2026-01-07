@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { type ColorTokens, type GetProps, useTheme, YStack } from "tamagui";
-import { type GameIconName, useGameIcon } from "@/src/hooks/useGameIcon";
+import { type GameIconName, getGameIconSource } from "@/src/hooks/useGameIcon";
 
 export type GameIconProps = {
   name: GameIconName;
@@ -28,9 +28,9 @@ export function GameIcon({
   badgeBg,
   ...props
 }: GameIconProps) {
-  const iconSource = useGameIcon(name);
-  // Always call hook, use fallback if badge is undefined
-  const badgeSource = useGameIcon(badge ?? "sword");
+  const iconSource = getGameIconSource(name);
+  // Get badge source, use fallback if badge is undefined
+  const badgeSource = getGameIconSource(badge ?? "sword");
   const theme = useTheme();
 
   // Helper to resolve color tokens if needed, though Tamagui usually handles it.

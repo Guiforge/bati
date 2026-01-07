@@ -44,7 +44,7 @@ function checkSchemaVersion() {
     });
     try {
       const result = tempDb.getFirstSync<{ value: string }>(
-        "SELECT value FROM user_preferences WHERE key = 'schema_version'",
+        "SELECT value FROM user_preferences WHERE key = 'schema_version'"
       );
       const currentVersion = result ? parseInt(result.value, 10) : 0;
 
@@ -63,7 +63,7 @@ function checkSchemaVersion() {
       }
       try {
         const tables = tempDb.getAllSync<{ name: string }>(
-          "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '__drizzle_migrations'",
+          "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '__drizzle_migrations'"
         );
         if (tables.length > 0) {
           tempDb.closeSync();

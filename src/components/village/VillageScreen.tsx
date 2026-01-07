@@ -10,7 +10,10 @@ import { Button, H1, H4, Paragraph, Progress, Text, XStack, YStack } from "tamag
 import { Card } from "@/src/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/src/components/common/Skeleton";
 import { FlameFlicker } from "@/src/components/village/VillageAnimations";
-import { getVillageBuildingAsset, type VillageBuildingVariant } from "@/src/constants/villageAssets";
+import {
+  getVillageBuildingAsset,
+  type VillageBuildingVariant,
+} from "@/src/constants/villageAssets";
 import {
   getAllBuildings,
   getVillageStats,
@@ -142,7 +145,7 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
             <Image
               source={getVillageBuildingAsset(
                 building.buildingType,
-                isLocked ? "locked" : (`lvl_${building.level}` as VillageBuildingVariant),
+                isLocked ? "locked" : (`lvl_${building.level}` as VillageBuildingVariant)
               )}
               style={{ width: "100%", height: "100%", borderRadius: 12 }}
               contentFit="cover"
@@ -230,7 +233,7 @@ export function VillageScreen() {
       acc[tier].push(b);
       return acc;
     },
-    {} as Record<number, VillageBuildingWithMeta[]>,
+    {} as Record<number, VillageBuildingWithMeta[]>
   );
 
   const tierLabels: Record<number, { en: string; fr: string }> = {

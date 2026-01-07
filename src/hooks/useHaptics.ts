@@ -17,7 +17,7 @@ export function useHaptics() {
         });
       }
     },
-    [hapticsEnabled],
+    [hapticsEnabled]
   );
 
   const notification = useCallback(
@@ -28,7 +28,7 @@ export function useHaptics() {
         });
       }
     },
-    [hapticsEnabled],
+    [hapticsEnabled]
   );
 
   const selection = useCallback(() => {
@@ -49,11 +49,11 @@ export function useHaptics() {
     heavyImpact: useCallback(() => impact(Haptics.ImpactFeedbackStyle.Heavy), [impact]),
     success: useCallback(
       () => notification(Haptics.NotificationFeedbackType.Success),
-      [notification],
+      [notification]
     ),
     warning: useCallback(
       () => notification(Haptics.NotificationFeedbackType.Warning),
-      [notification],
+      [notification]
     ),
     error: useCallback(() => notification(Haptics.NotificationFeedbackType.Error), [notification]),
   };

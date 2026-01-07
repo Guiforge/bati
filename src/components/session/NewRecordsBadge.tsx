@@ -59,7 +59,7 @@ export function NewRecordsBadge({ records }: Props) {
     scale.value = withRepeat(
       withSequence(withTiming(1.03, { duration: 500 }), withTiming(1, { duration: 500 })),
       3,
-      false,
+      false
     );
   }, [scale]);
 

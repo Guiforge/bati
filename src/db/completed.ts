@@ -315,7 +315,7 @@ export type SessionSummary = {
  */
 export async function getQuestSessionHistory(
   questId: number,
-  limit = 30,
+  limit = 30
 ): Promise<SessionSummary[]> {
   const rows = await db
     .select({

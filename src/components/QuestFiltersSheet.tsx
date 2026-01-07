@@ -48,14 +48,14 @@ export function QuestFiltersSheet({
   const minBottomInset = Platform.OS === "android" ? 24 : 0;
   const bottomPad = useMemo(
     () => Math.max(bottomInset, minBottomInset) + 10,
-    [bottomInset, minBottomInset],
+    [bottomInset, minBottomInset]
   );
   const containerHeight = useMemo(() => sheetHeight + bottomPad, [sheetHeight, bottomPad]);
   // Important: when closed, we want the handle to sit ABOVE the bottom safe area.
   // If we used (containerHeight - handleHeight), the handle would be flush with the screen bottom.
   const closedOffset = useMemo(
     () => Math.max(0, sheetHeight - handleHeight),
-    [sheetHeight, handleHeight],
+    [sheetHeight, handleHeight]
   );
 
   const translateY = useRef(new Animated.Value(closedOffset)).current;
@@ -76,12 +76,12 @@ export function QuestFiltersSheet({
       lastY.current = toValue;
       setIsOpen(toValue <= 1);
     },
-    [translateY],
+    [translateY]
   );
 
   const toggle = useCallback(
     () => animateTo(isOpen ? closedOffset : 0),
-    [animateTo, closedOffset, isOpen],
+    [animateTo, closedOffset, isOpen]
   );
 
   const panResponder = useMemo(() => {

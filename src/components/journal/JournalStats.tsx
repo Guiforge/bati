@@ -37,15 +37,15 @@ function calculateStreak(sessions: JournalStatsProps["sessions"]): StreakInfo {
 
   // Sort by date descending (most recent first)
   const sorted = [...sessions].sort(
-    (a, b) => new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime(),
+    (a, b) => new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime()
   );
 
   // Get unique days
   const uniqueDays = new Set<string>();
-  sorted.forEach((s) => {
+  for (const s of sorted) {
     const date = new Date(s.performedAt);
     uniqueDays.add(date.toISOString().split("T")[0]);
-  });
+  }
 
   const sortedDays = Array.from(uniqueDays).sort().reverse();
 
@@ -113,10 +113,10 @@ function getWeekdayStats(sessions: JournalStatsProps["sessions"], language: stri
   const weekdaysFr = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
   const counts = [0, 0, 0, 0, 0, 0, 0];
 
-  sessions.forEach((s) => {
+  for (const s of sessions) {
     const day = new Date(s.performedAt).getDay();
     counts[day]++;
-  });
+  }
 
   const labels = language === "fr" ? weekdaysFr : weekdays;
   return labels.map((day, i) => ({ day, count: counts[i] }));
@@ -138,13 +138,13 @@ function getLast7DaysData(sessions: JournalStatsProps["sessions"], language: str
     days.push({ date: dateStr, label, minutes: 0 });
   }
 
-  sessions.forEach((s) => {
+  for (const s of sessions) {
     const dateStr = new Date(s.performedAt).toISOString().split("T")[0];
     const dayData = days.find((d) => d.date === dateStr);
     if (dayData && s.durationSeconds) {
       dayData.minutes += Math.round(s.durationSeconds / 60);
     }
-  });
+  }
 
   return days;
 }
@@ -211,17 +211,17 @@ export function JournalStats({ sessions }: JournalStatsProps) {
     const totalWorkouts = sessions.length;
     const totalMinutes = sessions.reduce(
       (acc, s) => acc + (s.durationSeconds ? Math.round(s.durationSeconds / 60) : 0),
-      0,
+      0
     );
     const avgMinutes = totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
 
     // Level distribution
     const levels = { easy: 0, medium: 0, hard: 0 };
-    sessions.forEach((s) => {
+    for (const s of sessions) {
       if (s.userLevel === "easy") levels.easy++;
       else if (s.userLevel === "hard") levels.hard++;
       else levels.medium++;
-    });
+    }
 
     // This week stats
     const today = new Date();
@@ -232,7 +232,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
     const thisWeekSessions = sessions.filter((s) => new Date(s.performedAt) >= startOfWeek);
     const thisWeekMinutes = thisWeekSessions.reduce(
       (acc, s) => acc + (s.durationSeconds ? Math.round(s.durationSeconds / 60) : 0),
-      0,
+      0
     );
 
     // This month stats

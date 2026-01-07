@@ -66,7 +66,7 @@ export default function SessionDetailScreen() {
         setStatus("error");
       }
     },
-    [t, language],
+    [t, language]
   );
 
   useEffect(() => {
@@ -113,7 +113,7 @@ export default function SessionDetailScreen() {
           acc[round].push(ex);
           return acc;
         },
-        {} as Record<number, typeof session.exercises>,
+        {} as Record<number, typeof session.exercises>
       )
     : {};
 

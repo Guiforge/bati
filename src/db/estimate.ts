@@ -23,7 +23,7 @@ export function estimateQuestSeconds(quest: EstimateQuestInput) {
 
   const workPerRound = quest.exercises.reduce(
     (sum, qex) => sum + estimateExerciseSeconds(qex.exercise, qex.target),
-    0,
+    0
   );
 
   const setCount = rounds * quest.exercises.length;

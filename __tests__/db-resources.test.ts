@@ -65,7 +65,7 @@ describe("db/resources", () => {
           { resource: "gold", amount: 30 },
           { resource: "wood", amount: 20 },
         ],
-        { reason: "workout loot" },
+        { reason: "workout loot" }
       );
 
       const newGold = await getResourceAmount("gold");

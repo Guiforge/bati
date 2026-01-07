@@ -39,11 +39,11 @@ describe("exerciseColors", () => {
     // Sanity: the time-based set dominates by weight.
     const repsWeight = estimateExerciseSeconds(
       { secondsPerRep: exFastReps.secondsPerRep },
-      { type: "reps", value: 20 },
+      { type: "reps", value: 20 }
     );
     const timeWeight = estimateExerciseSeconds(
       { secondsPerRep: exLongTime.secondsPerRep },
-      { type: "time", value: 60 },
+      { type: "time", value: 60 }
     );
     expect(timeWeight).toBeGreaterThan(repsWeight);
 

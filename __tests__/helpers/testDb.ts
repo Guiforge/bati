@@ -21,11 +21,11 @@ function splitMigrationSql(sql: string): string[] {
 
 function applyMigrations(sqlite: Database.Database): void {
   const root = process.cwd();
-  const journalPath = path.join(root, "drizzle", "meta", "_journal.json");
+  const journalPath = path.join(root, "src", "drizzle", "meta", "_journal.json");
   const journal: Journal = JSON.parse(fs.readFileSync(journalPath, "utf8"));
 
   for (const entry of [...journal.entries].sort((a, b) => a.idx - b.idx)) {
-    const filePath = path.join(root, "drizzle", `${entry.tag}.sql`);
+    const filePath = path.join(root, "src", "drizzle", `${entry.tag}.sql`);
     const content = fs.readFileSync(filePath, "utf8");
 
     for (const stmt of splitMigrationSql(content)) {

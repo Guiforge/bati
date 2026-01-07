@@ -58,7 +58,7 @@ function getMonthData(
   year: number,
   month: number,
   workoutDates: Set<string>,
-  streakDates: Set<string>,
+  streakDates: Set<string>
 ): MonthData {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

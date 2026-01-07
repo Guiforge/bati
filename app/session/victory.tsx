@@ -19,7 +19,7 @@ export default function VictoryScreen() {
     Haptics.notificationAsync(
       isBossVictory
         ? Haptics.NotificationFeedbackType.Success
-        : Haptics.NotificationFeedbackType.Success,
+        : Haptics.NotificationFeedbackType.Success
     );
   }, [isBossVictory]);
 
@@ -46,18 +46,18 @@ export default function VictoryScreen() {
           {/* Boss Defeat Animation */}
           <YStack
             bg="$error"
-            w={100}
-            h={100}
+            width={100}
+            height={100}
             alignItems="center"
             justifyContent="center"
-            borderRadius="$full"
+            borderRadius={999}
             mb="$4"
             shadowColor="$error"
             shadowOffset={{ width: 0, height: 8 }}
             shadowOpacity={0.8}
             shadowRadius={24}
           >
-            <GameIcon name="skull" size={60} color="$text" />
+            <GameIcon name="skull" size={60} tintColor="$text" />
           </YStack>
 
           <Text fontSize={40} fontWeight="900" color="$error" marginBottom="$2" textAlign="center">
@@ -103,7 +103,7 @@ export default function VictoryScreen() {
             </Text>
             <Text fontSize={32} fontWeight="bold" color={isBossVictory ? "$warning" : "$primary"}>
               {isBossVictory && "2x "}
-              {sessionSummary.xpEarned || 0}
+              {sessionSummary.totalXp || 0}
             </Text>
             {isBossVictory && (
               <Text fontSize={12} color="$warning" fontWeight="600">
@@ -160,8 +160,8 @@ export default function VictoryScreen() {
             {t("session.time_taken")}
           </Text>
           <Text fontSize={28} fontWeight="600" color="$text">
-            {sessionSummary.duration
-              ? `${Math.floor(sessionSummary.duration / 60)}:${(sessionSummary.duration % 60).toString().padStart(2, "0")}`
+            {sessionSummary.durationSeconds
+              ? `${Math.floor(sessionSummary.durationSeconds / 60)}:${(sessionSummary.durationSeconds % 60).toString().padStart(2, "0")}`
               : "0:00"}
           </Text>
         </YStack>

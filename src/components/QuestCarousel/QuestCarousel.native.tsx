@@ -100,14 +100,14 @@ export function QuestCarousel() {
       const clamped = Math.min(Math.max(idx, 1), quests.length);
       setActive((prev) => (prev === clamped ? prev : clamped));
     },
-    [quests.length, snapInterval],
+    [quests.length, snapInterval]
   );
 
   const onMomentumScrollEnd = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       updateActiveFromOffset(e.nativeEvent.contentOffset.x);
     },
-    [updateActiveFromOffset],
+    [updateActiveFromOffset]
   );
 
   const onScrollEndDrag = useCallback(
@@ -115,7 +115,7 @@ export function QuestCarousel() {
       // In some cases momentum doesn't fire (very short drags). This keeps dots in sync.
       updateActiveFromOffset(e.nativeEvent.contentOffset.x);
     },
-    [updateActiveFromOffset],
+    [updateActiveFromOffset]
   );
 
   const dailyQuestIndex = useMemo(() => {
@@ -200,7 +200,7 @@ export function QuestCarousel() {
         </YStack>
       );
     },
-    [language, slideWidth, router, t, exercisesById, dailyQuestIndex],
+    [language, slideWidth, router, t, exercisesById, dailyQuestIndex]
   );
 
   if (state.status === "loading") {

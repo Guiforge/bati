@@ -73,11 +73,11 @@ development_status:
   4-4-continue-current-adventure-from-home-screen: done
   epic-4-retrospective: optional
 
-  epic-5: backlog
-  5-1-initiate-boss-fight-workout-mode: ready-for-dev
-  5-2-display-boss-hp-bar-and-phase-system: ready-for-dev
-  5-3-calculate-and-display-damage-from-exercises: ready-for-dev
-  5-4-boss-defeat-and-enhanced-rewards: ready-for-dev
+  epic-5: done
+  5-1-initiate-boss-fight-workout-mode: done
+  5-2-display-boss-hp-bar-and-phase-system: done
+  5-3-calculate-and-display-damage-from-exercises: done
+  5-4-boss-defeat-and-enhanced-rewards: done
   epic-5-retrospective: optional
 
   epic-6: backlog

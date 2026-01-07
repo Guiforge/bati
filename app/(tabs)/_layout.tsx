@@ -21,11 +21,24 @@ export default function TabsLayout() {
         },
         tabBarStyle: {
           backgroundColor: theme.bgLight?.val,
-          borderTopWidth: 2,
-          borderTopColor: theme.color?.val,
-          height: 56 + insets.bottom,
-          paddingBottom: insets.bottom + 4,
-          paddingTop: 6,
+          borderTopWidth: 0,
+          borderWidth: 1,
+          borderColor: theme.borderColor?.val || "#333",
+          height: 60,
+          borderRadius: 30,
+          marginHorizontal: 16,
+          marginBottom: insets.bottom + 10,
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingBottom: 0,
+          paddingTop: 0,
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        tabBarItemStyle: {
+          paddingVertical: 8,
         },
       }}
     >
@@ -63,7 +76,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="quests"
         options={{
-          title: t("tabs.quests", "Quests"),
+          title: t("tabs.training", "Training"),
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
               color={focused ? "$primary" : "$color"}

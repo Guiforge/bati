@@ -1,8 +1,10 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
+import { Directions, Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Text, XStack, YStack } from "tamagui";
+import { Text, YStack } from "tamagui";
 import { ActionCard } from "@/src/components/common/ActionCard";
 import { AdventureHeroCard } from "@/src/components/home/AdventureHeroCard";
 import { HomeHeader } from "@/src/components/home/HomeHeader";
@@ -15,53 +17,77 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const onSwipeLeft = () => {
+    router.navigate("/adventures");
+  };
+
+  const swipeGesture = Gesture.Fling()
+    .direction(Directions.LEFT)
+    .onEnd(() => {
+      runOnJS(onSwipeLeft)();
+    });
+
   return (
-    <YStack flex={1} bg="$bgDark" pt={insets.top}>
-      <YStack flex={1} position="relative">
-        {/* 1. Header: Identity & Level */}
-        <HomeHeader />
+    <GestureDetector gesture={swipeGesture}>
+      <YStack flex={1} bg="$bgDark" pt={insets.top}>
+        <YStack flex={1} position="relative">
+          {/* 1. Header: Identity & Level */}
+          <HomeHeader />
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
-        >
-          <YStack gap="$4">
-            {/* 2. Hero Adventure Card (MAIN FOCUS) */}
-            <AdventureHeroCard />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
+          >
+            <YStack gap="$5">
+              {/* 2. Hero Adventure Card (Main Focus) */}
+              <AdventureHeroCard />
 
-            <YStack px="$4" gap="$4">
-              {/* 3. Resources Overview (compact bar) */}
-              <ResourcesOverview />
+              <YStack px="$4" gap="$5">
+                {/* 3. Resources Overview (HUD Bar) */}
+                <YStack>
+                  <SectionLabel title={t("home.resources", "RESOURCES")} />
+                  <ResourcesOverview />
+                </YStack>
 
-              {/* 4. Secondary Actions (Village & Treasury) */}
-              <XStack gap="$3">
-                <ActionCard
-                  flex={1}
-                  title={t("tabs.village", "Village")}
-                  subtitle={t("home.visit_village", "Visit Village")}
-                  onPress={() => router.push("/village")}
-                  icon={<GameIcon name="lorc/castle" size={32} />}
-                />
-                <ActionCard
-                  flex={1}
-                  title={t("tabs.treasury", "Treasury")}
-                  subtitle={t("home.open_inventory", "Open Inventory")}
-                  onPress={() => router.push("/treasury")}
-                  icon={<GameIcon name="lorc/cash" size={32} />}
-                />
-              </XStack>
+                {/* 4. World Actions */}
+                <YStack gap="$3">
+                  <SectionLabel title={t("home.world", "WORLD")} />
+                  <ActionCard
+                    title={t("tabs.village", "Village")}
+                    subtitle={t("home.visit_village", "Manage your settlement")}
+                    onPress={() => router.push("/village")}
+                    icon={<GameIcon name="lorc/castle" size={28} tintColor="$primary" />}
+                    variant="featured"
+                    ctaText={t("common.enter", "ENTER")}
+                  />
+                </YStack>
 
-              {/* 5. Statistics Overview */}
-              <YStack mt="$2">
-                <Text mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
-                  {t("home.stats", "STATISTICS")}
-                </Text>
-                <StatsOverview />
+                {/* 5. Statistics Overview */}
+                <YStack>
+                  <SectionLabel title={t("home.stats", "STATISTICS")} />
+                  <StatsOverview />
+                </YStack>
               </YStack>
             </YStack>
-          </YStack>
-        </ScrollView>
+          </ScrollView>
+        </YStack>
       </YStack>
-    </YStack>
+    </GestureDetector>
+  );
+}
+
+function SectionLabel({ title }: { title: string }) {
+  return (
+    <Text
+      fontSize={11}
+      fontWeight="900"
+      color="$textSecondary"
+      opacity={0.5}
+      mb="$2"
+      letterSpacing={1}
+      textTransform="uppercase"
+    >
+      {title}
+    </Text>
   );
 }

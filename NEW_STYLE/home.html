@@ -1,0 +1,357 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Neo Dark Fantasy RPG Sport App</title>
+        <!-- Material Symbols -->
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com" rel="preconnect" />
+        <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+        <!-- Tailwind CSS with Config -->
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: "#256af4",
+                            "background-light": "#f5f6f8",
+                            "background-dark": "#101622",
+                            "surface-dark": "#161e2e",
+                            "surface-light": "#ffffff",
+                        },
+                        fontFamily: {
+                            display: ["Space Grotesk", "sans-serif"],
+                            body: ["Noto Sans", "sans-serif"],
+                        },
+                        borderRadius: { DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px" },
+                        boxShadow: {
+                            glow: "0 0 15px rgba(37, 106, 244, 0.4)",
+                            "glow-sm": "0 0 8px rgba(37, 106, 244, 0.3)",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            /* Custom scrollbar hiding for clean UI */
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .glass-panel {
+                background: rgba(22, 30, 46, 0.7);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .nav-glass {
+                background: rgba(16, 22, 34, 0.85);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+            }
+        </style>
+        <style>
+            body {
+                min-height: max(884px, 100dvh);
+            }
+        </style>
+    </head>
+    <body
+        class="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-white selection:bg-primary selection:text-white overflow-x-hidden pb-24"
+    >
+        <!-- Header Section: Player Status -->
+        <header class="sticky top-0 z-40 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-white/5 px-4 pt-4 pb-2">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="relative group cursor-pointer">
+                        <div
+                            class="absolute -inset-0.5 bg-gradient-to-r from-primary to-purple-600 rounded-full opacity-75 blur group-hover:opacity-100 transition duration-200"
+                        ></div>
+                        <div
+                            class="relative bg-surface-dark bg-center bg-no-repeat bg-cover rounded-full size-12 border-2 border-[#1e2738]"
+                            data-alt="Stylized digital portrait of a ranger character with a hood"
+                            style="
+                                background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCW5K10HTMVHjkinJRSh_4ZCEiPtaIMviyZvVkKwkldexT94uuliw7NFi8LutFPEiY6eWR7qzHHxLIVHxNwYyjOyX48kI3N5LC1v5fQj5mVsHALYd3tGVlLoDjzUyOxMq87miclzJEBDA4qOiBs1nAcq8uuTbJKCIZECMqAEPmObH1LKuiDZ8IzwDWkLYlKHvpuffIE-RLrK5tniatlWNZKEd9COTt53SPokPIs9dsb06v_0aoJ_j26XEyWInBn6-CxVe44Renu6KuR&quot;);
+                            "
+                        ></div>
+                        <div class="absolute -bottom-1 -right-1 bg-[#1e2738] rounded-full p-0.5 border border-white/10">
+                            <span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Lvl 14 Ranger</h2>
+                        <span class="text-xs text-slate-400 font-body">Shadow Walker Class</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 bg-[#1a2333] px-3 py-1.5 rounded-full border border-white/5">
+                    <span class="text-[#90a4cb] text-sm font-bold leading-normal tracking-[0.015em]">💎 450</span>
+                    <span class="w-px h-3 bg-white/10 mx-1"></span>
+                    <span class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">⚡ 100</span>
+                </div>
+            </div>
+            <!-- Compact Progress Bar -->
+            <div class="flex flex-col gap-1.5 w-full">
+                <div class="flex justify-between items-end px-1">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">XP Progress</p>
+                    <p class="text-white text-xs font-medium">1,240 <span class="text-slate-500">/ 2,000</span></p>
+                </div>
+                <div class="h-1.5 w-full bg-[#1e2738] rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-primary to-blue-400 shadow-glow rounded-full" style="width: 62%"></div>
+                </div>
+            </div>
+        </header>
+        <!-- Main Content Area -->
+        <main class="flex flex-col gap-6 pt-6">
+            <!-- Realm/Adventure Selector -->
+            <section>
+                <div class="flex items-center justify-between px-4 mb-4">
+                    <h2 class="text-white tracking-tight text-xl font-bold">Select Realm</h2>
+                    <button class="text-xs text-primary font-bold tracking-wide uppercase flex items-center gap-1 hover:text-white transition-colors">
+                        View Map <span class="material-symbols-outlined text-sm">map</span>
+                    </button>
+                </div>
+                <!-- Carousel -->
+                <div class="flex overflow-x-auto no-scrollbar gap-4 px-4 pb-2 snap-x snap-mandatory">
+                    <!-- Card 1 (Active) -->
+                    <div class="relative flex-none w-[70vw] snap-center group cursor-pointer">
+                        <div class="absolute inset-0 bg-primary/20 blur-xl rounded-2xl opacity-50"></div>
+                        <div class="relative h-64 rounded-2xl overflow-hidden border-2 border-primary shadow-glow bg-surface-dark">
+                            <div
+                                class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                                data-alt="Dark fantasy forest landscape with neon blue glowing mushrooms"
+                                style="
+                                    background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuDwJZDKyWZArasOG9195Dxd9hh4MVXEwrBY0kZn8tqAIws8yU_Dbkf7Zu5to5Qf-WfB2XcDUc9iiu8U0hKQ25UcQtsUr3rCy3bfYxb07twcwn549CQR1mCIEIQgFxzia_7ieDrdxwSqW0gsMD-Y85uoDDtybgHHj74mGE-5OucrO2AM9bl-I4-Rq8plIRebBEwNyxHIufZv39qMSCxhDou8myH1S6gXakPcjZ4Ax_g6v1iOYyUCXC-2qA1mPknzwTi7Nfh7A1kic_Em&quot;);
+                                "
+                            ></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#101622] via-[#101622]/40 to-transparent"></div>
+                            <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded border border-white/10">
+                                <span class="text-[10px] font-bold text-primary uppercase tracking-wider">Cardio Zone</span>
+                            </div>
+                            <div class="absolute bottom-0 left-0 w-full p-4 flex flex-col gap-1">
+                                <h3 class="text-white text-xl font-bold font-display">Neon Forest</h3>
+                                <div class="flex items-center gap-3">
+                                    <p class="text-slate-300 text-xs font-body flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px] text-green-400">bolt</span> Stamina +5
+                                    </p>
+                                    <p class="text-slate-300 text-xs font-body flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px] text-yellow-400">timer</span> 25m
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="relative flex-none w-[70vw] snap-center group cursor-pointer opacity-70 hover:opacity-100 transition-all">
+                        <div class="relative h-64 rounded-2xl overflow-hidden border border-white/10 bg-surface-dark">
+                            <div
+                                class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                                data-alt="Rocky dungeon interior with torches and iron chains"
+                                style="
+                                    background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuBL0bzq27Kq4Tzz7nxPfE6KNcPv_wc7CXXV6sAgtEyoox0IysPeX8VlKWHlhta1vPTkK_PIeCuzgJnuWI-lTq508yS7V9p2DYeYOpLdN2JOCUFWiVMEUIwe8mKHzTKJhzIqzrsmeUEX5fKWz8eyWllIMVZYe0vNPm_RTD-PMzE6-G06LN7-ljT3WWH3cMaBe4K0-tHFaC52hc216jFefJVInp2fqDoPVm9R3bJ-PE7RNCSj2squY97plj51Rft7ScTwefueXVcc_9jv&quot;);
+                                "
+                            ></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#101622] via-[#101622]/40 to-transparent"></div>
+                            <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded border border-white/10">
+                                <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider">Strength Zone</span>
+                            </div>
+                            <div class="absolute bottom-0 left-0 w-full p-4 flex flex-col gap-1">
+                                <h3 class="text-white text-xl font-bold font-display">Iron Keep</h3>
+                                <div class="flex items-center gap-3">
+                                    <p class="text-slate-300 text-xs font-body flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px] text-red-400">fitness_center</span> Str +10
+                                    </p>
+                                    <p class="text-slate-300 text-xs font-body flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px] text-yellow-400">timer</span> 45m
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="relative flex-none w-[70vw] snap-center group cursor-pointer opacity-70 hover:opacity-100 transition-all">
+                        <div class="relative h-64 rounded-2xl overflow-hidden border border-white/10 bg-surface-dark">
+                            <div
+                                class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                                data-alt="Abstract futuristic arena with grid lines and purple lighting"
+                                style="
+                                    background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCV7qXamBTMZkZtydDwZjZsUu6UzTH8MppFpYYPXaLkHvMaTkEtaBjsJYk7oFBVAYRpqPZhtLXgq23vdrfFubpWZJJkmE-aQ2QcZloqah_SSiJvR_N3k3DD0BEgBKuwqBdyHE6s9S-7JTrhFWYeLmqAsj340KOKhBfKcVEnwd7eB1JbErEX5ZW9cI0r0zLW6j8XwPiIy2Mym3GC7gDuAj0K-iCRkziwSwiqhwGvPRipSsFqJe6ZDTWHweATN_tUIievkLhspqAVHy-B&quot;);
+                                "
+                            ></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#101622] via-[#101622]/40 to-transparent"></div>
+                            <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded border border-white/10">
+                                <span class="text-[10px] font-bold text-purple-400 uppercase tracking-wider">HIIT Arena</span>
+                            </div>
+                            <div class="absolute bottom-0 left-0 w-full p-4 flex flex-col gap-1">
+                                <h3 class="text-white text-xl font-bold font-display">Void Grid</h3>
+                                <div class="flex items-center gap-3">
+                                    <p class="text-slate-300 text-xs font-body flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px] text-purple-400">local_fire_department</span> Agl +8
+                                    </p>
+                                    <p class="text-slate-300 text-xs font-body flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px] text-yellow-400">timer</span> 15m
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Session Modifiers (Loadout) -->
+            <section class="px-4">
+                <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3 ml-1">Loadout Modifiers</h2>
+                <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                    <!-- Modifier 1: Active -->
+                    <button class="shrink-0 relative group">
+                        <div class="absolute -inset-0.5 bg-primary rounded-xl opacity-30 blur-sm group-hover:opacity-60 transition duration-200"></div>
+                        <div class="relative h-16 w-16 bg-[#1a2333] border border-primary/50 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary text-2xl group-hover:scale-110 transition-transform">science</span>
+                            <div
+                                class="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm border border-[#101622]"
+                            >
+                                2x
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-center text-primary mt-1 font-bold">XP Boost</p>
+                    </button>
+                    <!-- Modifier 2: Inactive -->
+                    <button class="shrink-0 relative group">
+                        <div
+                            class="relative h-16 w-16 bg-[#161e2e] border border-white/5 rounded-xl flex items-center justify-center hover:border-white/20 hover:bg-[#1e2738] transition-colors"
+                        >
+                            <span class="material-symbols-outlined text-slate-500 text-2xl group-hover:text-white transition-colors">shield</span>
+                        </div>
+                        <p class="text-[10px] text-center text-slate-500 mt-1 font-medium group-hover:text-white">Defense</p>
+                    </button>
+                    <!-- Modifier 3: Inactive -->
+                    <button class="shrink-0 relative group">
+                        <div
+                            class="relative h-16 w-16 bg-[#161e2e] border border-white/5 rounded-xl flex items-center justify-center hover:border-white/20 hover:bg-[#1e2738] transition-colors"
+                        >
+                            <span class="material-symbols-outlined text-slate-500 text-2xl group-hover:text-white transition-colors">sprint</span>
+                        </div>
+                        <p class="text-[10px] text-center text-slate-500 mt-1 font-medium group-hover:text-white">Speed</p>
+                    </button>
+                    <!-- Modifier 4: Locked -->
+                    <button class="shrink-0 relative opacity-50 cursor-not-allowed">
+                        <div class="relative h-16 w-16 bg-[#0d111a] border border-white/5 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-slate-700 text-2xl">lock</span>
+                        </div>
+                        <p class="text-[10px] text-center text-slate-600 mt-1 font-medium">Lvl 15</p>
+                    </button>
+                </div>
+            </section>
+            <!-- Main CTA Button -->
+            <section class="px-4 my-2">
+                <button class="relative w-full group overflow-hidden rounded-xl">
+                    <div class="absolute inset-0 w-full h-full bg-primary/20 group-hover:bg-primary/30 transition-all duration-300"></div>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+                    ></div>
+                    <div
+                        class="relative flex items-center justify-between h-16 px-6 bg-primary border-t border-white/20 shadow-glow rounded-xl hover:translate-y-[1px] active:translate-y-[2px] transition-transform"
+                    >
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                <span class="material-symbols-outlined text-white" style="font-size: 24px">swords</span>
+                            </div>
+                            <div class="flex flex-col items-start">
+                                <span class="text-white text-lg font-bold tracking-wide uppercase leading-none">Begin Adventure</span>
+                                <span class="text-blue-100 text-[10px] font-medium leading-tight">Cost: 10 Energy</span>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined text-white animate-pulse">chevron_right</span>
+                    </div>
+                </button>
+            </section>
+            <!-- Quest Log / Active Bounties -->
+            <section class="px-4 pb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-white text-lg font-bold">Active Bounties</h2>
+                    <span class="text-xs text-slate-400 bg-[#1a2333] px-2 py-1 rounded border border-white/5">2 New</span>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <!-- Quest Card 1 -->
+                    <div class="bg-[#161e2e] rounded-xl p-4 border border-white/5 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="material-symbols-outlined text-6xl">target</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-white font-bold text-base">Slay the Distance</h3>
+                                    <p class="text-slate-400 text-xs font-body">Daily Quest • Run 5km total</p>
+                                </div>
+                                <span class="text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20">+200 XP</span>
+                            </div>
+                            <div class="flex items-center gap-3 mt-3">
+                                <div class="flex-1 h-2 bg-[#0d111a] rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full" style="width: 64%"></div>
+                                </div>
+                                <span class="text-xs font-mono text-emerald-400">3.2/5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Quest Card 2 -->
+                    <div class="bg-[#161e2e] rounded-xl p-4 border border-white/5 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="material-symbols-outlined text-6xl">fitness_center</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-white font-bold text-base">Iron Will</h3>
+                                    <p class="text-slate-400 text-xs font-body">Weekly Quest • 30min Strength</p>
+                                </div>
+                                <span class="text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20">+500 XP</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-3">
+                                <button
+                                    class="text-xs font-bold text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition-colors w-full border border-white/5"
+                                >
+                                    Accept Quest
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-0 w-full nav-glass z-50 pb-safe">
+            <div class="flex justify-around items-center h-16 px-2">
+                <button class="flex flex-col items-center justify-center w-16 gap-1 group">
+                    <span class="material-symbols-outlined text-primary text-[28px] shadow-glow-sm rounded-full">home</span>
+                    <span class="text-[10px] font-bold text-primary">Base</span>
+                </button>
+                <button class="flex flex-col items-center justify-center w-16 gap-1 group text-slate-500 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[24px]">person</span>
+                    <span class="text-[10px] font-medium">Hero</span>
+                </button>
+                <button class="flex flex-col items-center justify-center w-16 gap-1 group text-slate-500 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[24px]">storefront</span>
+                    <span class="text-[10px] font-medium">Shop</span>
+                </button>
+                <button class="flex flex-col items-center justify-center w-16 gap-1 group text-slate-500 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[24px]">groups</span>
+                    <span class="text-[10px] font-medium">Guild</span>
+                </button>
+            </div>
+            <!-- Safe area padding for newer iPhones -->
+            <div class="h-1 bg-transparent"></div>
+        </nav>
+    </body>
+</html>

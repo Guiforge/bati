@@ -1,4 +1,3 @@
-import { ChevronRight } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
@@ -35,7 +34,6 @@ const RESOURCE_ICONS: Record<string, GameIconName> = {
 
 export function ResourcesOverview() {
   const router = useRouter();
-
   const [resources, setResources] = useState<ResourceAmount[]>([]);
 
   useEffect(() => {
@@ -52,67 +50,60 @@ export function ResourcesOverview() {
   };
 
   return (
-    <YStack position="relative">
+    <YStack position="relative" mb="$2">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 4, paddingRight: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 0, paddingRight: 20 }}
       >
-        <XStack gap="$3">
-          {/* Treasury Button (First Item) */}
+        <XStack gap="$3" items="center">
+          {/* Treasury Action - Distinct minimalist square */}
           <Pressable onPress={() => router.push("/treasury" as "/dev")}>
             <YStack
-              bg="$bgLight"
-              borderWidth={2}
-              borderColor="$color"
-              rounded="$4"
-              p="$2"
-              width={50}
-              height={50}
+              bg="$glassBg"
+              borderWidth={1}
+              borderColor="$borderStrong"
+              rounded="$3"
+              width={44}
+              height={44}
               justify="center"
               items="center"
+              pressStyle={{ scale: 0.95, opacity: 0.8 }}
             >
-              <GameIcon name="lorc/locked-chest" size={24} />
+              <GameIcon name="lorc/locked-chest" size={22} tintColor="$primary" />
             </YStack>
           </Pressable>
 
-          {/* Resource Items */}
+          {/* Vertical Divider */}
+          <YStack width={1} height={24} bg="$borderStrong" opacity={0.3} />
+
+          {/* Resource Pills */}
           {RESOURCE_ORDER.map((code) => {
             const iconName = RESOURCE_ICONS[code];
+            const amount = getAmount(code);
+
             return (
-              <YStack
+              <XStack
                 key={code}
-                bg="$bgLight"
-                borderWidth={2}
-                borderColor="$color"
-                rounded="$4"
-                px="$3"
-                py="$1"
-                width={70}
-                justify="center"
+                bg="$glassBg"
+                borderColor="$borderStrong"
+                borderWidth={1}
+                borderRadius={1000}
+                pl="$2.5"
+                pr="$3.5"
+                py="$1.5"
                 items="center"
-                gap="$1"
+                gap="$2"
               >
-                <GameIcon name={iconName} size={18} tintColor={RESOURCE_COLORS[code]} />
-                <Text fontSize={12} fontWeight="bold" color="$color">
-                  {formatAmount(getAmount(code))}
+                <GameIcon name={iconName} size={14} tintColor={RESOURCE_COLORS[code]} />
+                <Text fontSize={12} fontWeight="700" color="$text" opacity={amount > 0 ? 1 : 0.6}>
+                  {formatAmount(amount)}
                 </Text>
-              </YStack>
+              </XStack>
             );
           })}
         </XStack>
       </ScrollView>
-
-      {/* Scroll Hint */}
-      <YStack
-        position="absolute"
-        justify="center"
-        pointerEvents="none"
-        pr="$2"
-        style={{ right: 0, top: 0, bottom: 0 }}
-      >
-        <ChevronRight size={20} color="$color" opacity={0.5} />
-      </YStack>
     </YStack>
   );
 }

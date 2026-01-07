@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Avatar, Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/src/components/common/ProgressBar";
 import { getAvatarById } from "@/src/constants/avatars";
-import { getResourceInventory } from "@/src/db/resources";
 import { getUserLevelInfo, type UserLevelInfo } from "@/src/db/userLevel";
 import { useSettingsStore } from "@/src/stores/settings";
 import { useUserStore } from "@/src/stores/user";
@@ -13,53 +12,61 @@ export function HomeHeader() {
   const { villageName } = useUserStore();
   const { avatarId, language } = useSettingsStore();
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
-  const [_gold, setGold] = useState(0);
 
   const avatar = getAvatarById(avatarId);
 
   useEffect(() => {
     getUserLevelInfo().then(setLevelInfo);
-    getResourceInventory().then((inv) => {
-      const goldItem = inv.find((r) => r.resource === "gold");
-      setGold(goldItem?.amount ?? 0);
-    });
   }, []);
 
   const levelTitle = levelInfo ? (language === "fr" ? levelInfo.title.fr : levelInfo.title.en) : "";
 
   return (
-    <XStack px="$4" pt="$2" pb="$3" items="center" gap="$3">
-      {/* Avatar - Tap to edit profile */}
-      <Avatar
-        circular
-        size="$6"
-        borderWidth={2}
-        borderColor="$color"
-        pressStyle={{ scale: 0.95 }}
+    <XStack px="$4" pt="$2" pb="$2" items="center" gap="$3">
+      {/* Avatar - Minimalist glow instead of thick border */}
+      <YStack
+        shadowColor="$primary"
+        shadowRadius={12}
+        shadowOpacity={0.4}
         onPress={() => router.push("/settings")}
+        pressStyle={{ scale: 0.95 }}
       >
-        <Avatar.Image source={avatar.source} />
-        <Avatar.Fallback backgroundColor="$primary" />
-      </Avatar>
+        <Avatar circular size="$5">
+          <Avatar.Image source={avatar.source} />
+          <Avatar.Fallback backgroundColor="$glassBg" />
+        </Avatar>
+      </YStack>
 
       {/* Identity & XP */}
-      <YStack flex={1} gap="$1">
-        <Text fontWeight="900" fontSize="$4" color="$color" numberOfLines={1}>
-          {villageName || "Hero"}
+      <YStack flex={1} justify="center" gap="$0.5">
+        <XStack items="baseline" gap="$2">
+          <Text fontWeight="900" fontSize="$5" color="$text" numberOfLines={1}>
+            {villageName || "Hero"}
+          </Text>
+          <Text fontSize="$2" color="$primary" fontWeight="bold">
+            LVL {levelInfo?.level ?? 1}
+          </Text>
+        </XStack>
+
+        <Text
+          fontSize={11}
+          color="$textSecondary"
+          numberOfLines={1}
+          opacity={0.8}
+          mb="$1.5"
+          textTransform="uppercase"
+          letterSpacing={1}
+        >
+          {levelTitle || "Novice"}
         </Text>
-        <Text fontSize="$2" color="$color" opacity={0.7}>
-          {levelInfo ? `Lvl ${levelInfo.level} • ${levelTitle}` : "..."}
-        </Text>
-        <XStack items="center" gap="$2" mt="$1" mr="$4">
+
+        <XStack items="center" gap="$2" maxWidth={160}>
           <ProgressBar
             progress={levelInfo?.xpProgress ?? 0}
-            height={5}
-            color="$gold"
-            trackColor="rgba(0,0,0,0.1)"
+            height={3}
+            color="$primary"
+            trackColor="$glassBg"
           />
-          <Text fontSize={10} fontWeight="bold" color="$color" opacity={0.5}>
-            {levelInfo?.xpProgress.toFixed(0) ?? 0}%
-          </Text>
         </XStack>
       </YStack>
     </XStack>

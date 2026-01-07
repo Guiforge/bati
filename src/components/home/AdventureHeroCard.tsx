@@ -10,7 +10,7 @@ import { getAdventureById, getAnyActiveAdventureRun } from "@/src/db/adventures"
 import { GameIcon } from "@/src/hooks/useGameIcon";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const HERO_HEIGHT = 480;
+const HERO_HEIGHT = 400; // Reduced from 480 for better fold visibility
 
 export function AdventureHeroCard() {
   const router = useRouter();
@@ -73,10 +73,10 @@ export function AdventureHeroCard() {
   }, [i18n.language]);
 
   if (isLoading) {
-    return null;
+    return <YStack height={HERO_HEIGHT} />;
   }
 
-  // No active adventure - show prompt to start one
+  // No active adventure - Minimalist Empty State
   if (!adventure) {
     return (
       <YStack
@@ -85,67 +85,67 @@ export function AdventureHeroCard() {
         position="relative"
         overflow="hidden"
         bg="$bgDark"
+        justify="center"
+        items="center"
       >
         <LinearGradient
-          colors={["rgba(13, 51, 242, 0.15)", "rgba(11, 15, 25, 0.95)"]}
+          colors={["rgba(13, 51, 242, 0.05)", "rgba(11, 15, 25, 1)"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-          }}
+          style={{ position: "absolute", width: "100%", height: "100%" }}
         />
 
-        <YStack flex={1} justify="center" items="center" gap="$4" px="$6">
+        <YStack items="center" gap="$4" px="$6" maxWidth={320}>
           <YStack
             width={80}
             height={80}
             bg="$glassBg"
-            borderColor="$borderStrong"
-            borderWidth={1}
-            rounded="$6"
+            borderRadius={1000}
             justify="center"
             items="center"
+            borderWidth={1}
+            borderColor="$borderStrong"
           >
-            <GameIcon name="lorc/scroll-unfurled" size={40} />
+            <GameIcon name="lorc/scroll-unfurled" size={32} tintColor="$textSecondary" />
           </YStack>
 
-          <YStack gap="$2" items="center" maxW={320}>
-            <H2 fontSize={28} fontWeight="900" color="$text">
+          <YStack items="center" gap="$2">
+            <H2 fontSize={24} fontWeight="900" color="$text" textAlign="center">
               {t("home.no_active_adventure", "No Active Adventure")}
             </H2>
-            <Text fontSize={16} color="$textSecondary" opacity={0.8}>
-              {t("home.start_journey", "Begin your epic journey")}
+            <Text
+              fontSize={14}
+              color="$textSecondary"
+              textAlign="center"
+              opacity={0.7}
+              lineHeight={20}
+            >
+              {t("home.start_journey", "The world awaits your strength. Choose your path.")}
             </Text>
           </YStack>
 
           <Button
-            size="$5"
+            size="$4"
             bg="$primary"
             color="white"
             fontWeight="900"
-            fontSize={18}
-            rounded="$6"
-            px="$8"
+            fontSize={14}
+            borderRadius={1000}
+            px="$6"
             onPress={() => router.push("/adventures")}
-            pressStyle={{ opacity: 0.8, scale: 0.95 }}
+            pressStyle={{ scale: 0.95, opacity: 0.9 }}
             shadowColor="$primaryGlow"
-            shadowRadius={20}
-            shadowOffset={{ width: 0, height: 8 }}
-            shadowOpacity={0.6}
-            mt="$3"
+            shadowRadius={10}
+            shadowOpacity={0.5}
           >
-            {t("home.choose_adventure", "CHOOSE ADVENTURE")}
+            {t("home.choose_adventure", "START JOURNEY")}
           </Button>
         </YStack>
       </YStack>
     );
   }
 
-  // Active adventure - show hero card with background
+  // Active adventure - Cinematic Card
   const adventureImageSource = resolveImageAsset(adventure.imagePath);
 
   return (
@@ -154,9 +154,8 @@ export function AdventureHeroCard() {
       width={SCREEN_WIDTH}
       position="relative"
       overflow="hidden"
-      pressStyle={{ opacity: 0.95 }}
-      animation="quick"
       onPress={() => router.push(`/adventures/${adventure.id}`)}
+      pressStyle={{ opacity: 0.98 }}
     >
       <Image
         source={adventureImageSource}
@@ -172,21 +171,18 @@ export function AdventureHeroCard() {
         contentFit="cover"
       />
 
+      {/* Top Gradient for status bar readability if needed, kept very subtle */}
       <LinearGradient
-        colors={["rgba(11, 15, 25, 0.85)", "transparent"]}
+        colors={["rgba(11, 15, 25, 0.6)", "transparent"]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.3 }}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: 0,
-          height: 200,
-        }}
+        end={{ x: 0, y: 0.2 }}
+        style={{ position: "absolute", width: "100%", height: 100 }}
       />
 
+      {/* Bottom Gradient for text readability - smooth transition */}
       <LinearGradient
-        colors={["transparent", "rgba(11, 15, 25, 0.95)"]}
+        colors={["transparent", "rgba(11, 15, 25, 0.8)", "rgba(11, 15, 25, 1)"]}
+        locations={[0, 0.6, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{
@@ -194,60 +190,66 @@ export function AdventureHeroCard() {
           left: 0,
           right: 0,
           bottom: 0,
-          height: 280,
+          height: "70%",
         }}
       />
 
-      <YStack flex={1} justify="flex-end" pb="$6" px="$5">
+      <YStack flex={1} justify="flex-end" pb="$6" px="$5" gap="$3">
+        {/* HUD Element: Progress */}
         <XStack
+          alignSelf="flex-start"
           bg="$glassBg"
-          borderColor="$borderStrong"
-          borderWidth={1}
-          rounded="$4"
-          px="$4"
-          py="$2"
-          mb="$3"
+          px="$3"
+          py="$1.5"
+          borderRadius={1000}
           gap="$2"
           items="center"
+          borderWidth={1}
+          borderColor="rgba(255,255,255,0.1)"
         >
-          <GameIcon name="lorc/crossed-swords" size={16} />
-          <Text fontSize={14} fontWeight="700" color="$text">
-            {t("adventures.step_progress", {
-              current: adventure.currentStep,
-              total: adventure.totalSteps,
-              defaultValue: `Step {{current}} of {{total}}`,
-            })}
+          <GameIcon name="lorc/crossed-swords" size={14} tintColor="$primary" />
+          <Text fontSize={12} fontWeight="700" color="$text" letterSpacing={0.5}>
+            STEP {adventure.currentStep} / {adventure.totalSteps}
           </Text>
         </XStack>
 
-        <H3 fontSize={32} fontWeight="900" color="$text" mb="$2" lineHeight={38}>
-          {adventure.title}
-        </H3>
+        <YStack gap="$1">
+          <H3
+            fontSize={32}
+            fontWeight="900"
+            color="$text"
+            lineHeight={36}
+            textShadowColor="rgba(0,0,0,0.5)"
+            textShadowRadius={4}
+          >
+            {adventure.title}
+          </H3>
 
-        <Text
-          fontSize={16}
-          color="$textSecondary"
-          opacity={0.9}
-          mb="$5"
-          lineHeight={22}
-          numberOfLines={2}
-        >
-          {adventure.description}
-        </Text>
+          <Text
+            fontSize={15}
+            color="$textSecondary"
+            opacity={0.9}
+            lineHeight={22}
+            numberOfLines={2}
+          >
+            {adventure.description}
+          </Text>
+        </YStack>
 
         <Button
-          size="$5"
+          size="$4"
           bg="$primary"
           color="white"
           fontWeight="900"
-          fontSize={18}
-          rounded="$6"
+          fontSize={14}
+          borderRadius={1000}
           onPress={() => router.push(`/adventures/${adventure.id}`)}
-          pressStyle={{ opacity: 0.8, scale: 0.98 }}
+          pressStyle={{ opacity: 0.9, scale: 0.98 }}
           shadowColor="$primaryGlow"
-          shadowRadius={20}
-          shadowOffset={{ width: 0, height: 8 }}
+          shadowRadius={15}
+          shadowOffset={{ width: 0, height: 4 }}
           shadowOpacity={0.6}
+          iconAfter={<GameIcon name="lorc/crossed-swords" size={16} tintColor="white" />}
         >
           {t("home.continue_adventure", "CONTINUE")}
         </Button>

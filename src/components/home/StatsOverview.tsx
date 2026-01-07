@@ -1,10 +1,10 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { getStreakInfo, type StreakInfo } from "@/src/db/streaks";
 import { getTotalStats } from "@/src/db/userLevel";
-import { GameIcon } from "@/src/hooks/useGameIcon";
+import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 
 export function StatsOverview() {
   const router = useRouter();
@@ -20,77 +20,78 @@ export function StatsOverview() {
     getTotalStats().then(setTotalStats);
   }, []);
 
+  const StatItem = ({
+    icon,
+    value,
+    label,
+    color,
+  }: {
+    icon: GameIconName;
+    value: string | number;
+    label: string;
+    color: string;
+  }) => (
+    <YStack
+      flex={1}
+      bg="$glassBg"
+      borderColor="$borderStrong"
+      borderWidth={1}
+      borderRadius="$4"
+      py="$3"
+      px="$2"
+      items="center"
+      justify="center"
+      gap="$2"
+      pressStyle={{ opacity: 0.8, scale: 0.98 }}
+      onPress={() => router.push("/(tabs)/journal")}
+      animation="quick"
+    >
+      <GameIcon name={icon} size={20} tintColor={color} />
+      <YStack items="center">
+        <Text fontSize="$5" fontWeight="900" color="$text" lineHeight="$5">
+          {value}
+        </Text>
+        <Text
+          fontSize={10}
+          fontWeight="bold"
+          color="$textSecondary"
+          textTransform="uppercase"
+          opacity={0.7}
+        >
+          {label}
+        </Text>
+      </YStack>
+    </YStack>
+  );
+
   return (
-    <XStack gap="$3" px="$4">
-      {/* Streak Card */}
-      <Card
-        flex={1}
-        bg="$pastelOrange"
-        borderColor="$color"
-        borderWidth={3}
-        borderRadius="$5"
-        p="$3"
-        pressStyle={{ scale: 0.98 }}
-        onPress={() => router.push("/(tabs)/journal")}
-      >
-        <YStack items="center" gap="$1">
-          <GameIcon name="lorc/fire-silhouette" size={24} tintColor="$warning" />
-          <Text fontSize={20} fontWeight="900" color="$primary">
-            {streak?.current ?? 0}
-          </Text>
-          <Text fontSize={10} fontWeight="bold" color="$color" opacity={0.7}>
-            {t("home.streak", "STREAK")}
-          </Text>
-        </YStack>
-      </Card>
+    <XStack gap="$3">
+      <StatItem
+        icon="lorc/fire-silhouette"
+        value={streak?.current ?? 0}
+        label={t("home.streak", "Streak")}
+        color="$primary" // Electric Blue accent
+      />
 
-      {/* Quests Done Card */}
-      <Card
-        flex={1}
-        bg="$pastelBlue"
-        borderColor="$color"
-        borderWidth={3}
-        borderRadius="$5"
-        p="$3"
-        pressStyle={{ scale: 0.98 }}
-        onPress={() => router.push("/(tabs)/journal")}
-      >
-        <YStack items="center" gap="$1">
-          <GameIcon name="lorc/crossed-swords" size={24} />
-          <Text fontSize={20} fontWeight="900" color="$color">
-            {totalStats?.totalSessions ?? 0}
-          </Text>
-          <Text fontSize={10} fontWeight="bold" color="$color" opacity={0.7}>
-            {t("home.quests_done", "QUESTS")}
-          </Text>
-        </YStack>
-      </Card>
+      <StatItem
+        icon="lorc/crossed-swords"
+        value={totalStats?.totalSessions ?? 0}
+        label={t("home.quests_done", "Quests")}
+        color="$text" // White/Neutral
+      />
 
-      {/* Total XP Card */}
-      <Card
-        flex={1}
-        bg="$pastelYellow"
-        borderColor="$color"
-        borderWidth={3}
-        borderRadius="$5"
-        p="$3"
-        pressStyle={{ scale: 0.98 }}
-        onPress={() => router.push("/(tabs)/journal")}
-      >
-        <YStack items="center" gap="$1">
-          <GameIcon name="lorc/trophy" size={24} tintColor="$gold" />
-          <Text fontSize={20} fontWeight="900" color="$color">
-            {totalStats?.totalXp
-              ? totalStats.totalXp >= 1000
-                ? `${(totalStats.totalXp / 1000).toFixed(1)}k`
-                : totalStats.totalXp
-              : 0}
-          </Text>
-          <Text fontSize={10} fontWeight="bold" color="$color" opacity={0.7}>
-            {t("common.xp", "XP")}
-          </Text>
-        </YStack>
-      </Card>
+      <StatItem
+        icon="lorc/trophy"
+        value={
+          totalStats?.totalXp
+            ? totalStats.totalXp >= 1000
+              ? `${(totalStats.totalXp / 1000).toFixed(1)}k`
+              : totalStats.totalXp
+            : 0
+        }
+        label={t("common.xp", "XP")}
+        color="$gold" // Gold accent
+      />
     </XStack>
   );
 }

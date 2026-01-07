@@ -9,6 +9,7 @@ export type ActionCardProps = Omit<YStackProps, "children"> & {
   ctaText?: string;
   icon?: ReactNode;
   onPress?: () => void;
+  variant?: "default" | "featured";
 };
 
 export function ActionCard({
@@ -18,38 +19,45 @@ export function ActionCard({
   ctaText,
   icon,
   onPress,
+  variant = "default",
   ...props
 }: ActionCardProps) {
+  const isFeatured = variant === "featured";
+
   return (
     <YStack
-      bg="$bgLight"
+      bg={isFeatured ? "rgba(13, 51, 242, 0.1)" : "$glassBg"}
       borderWidth={1}
-      borderColor="$borderStrong"
+      borderColor={isFeatured ? "$primary" : "$borderStrong"}
       rounded="$4"
-      shadowColor="$color"
-      shadowRadius={4}
-      shadowOffset={{ width: 0, height: 2 }}
-      shadowOpacity={0.1}
-      elevation={3} // Android shadow
       onPress={onPress}
-      pressStyle={{ opacity: 0.7, scale: 0.99 }}
+      pressStyle={{ opacity: 0.8, scale: 0.98 }}
       animation="quick"
       overflow="hidden"
       {...props}
     >
       <XStack p="$4" items="center" gap="$3">
         {/* Optional Left Icon */}
-        {icon && <YStack>{icon}</YStack>}
+        {icon && (
+          <YStack opacity={isFeatured ? 1 : 0.8} scale={isFeatured ? 1.1 : 1}>
+            {icon}
+          </YStack>
+        )}
 
         {/* Content */}
         <YStack flex={1} gap="$1">
           {title && (
-            <Text fontSize="$4" fontWeight="bold" color="$color">
+            <Text
+              fontSize="$4"
+              fontWeight="900"
+              color={isFeatured ? "$primary" : "$text"}
+              letterSpacing={0.5}
+            >
               {title}
             </Text>
           )}
           {subtitle && (
-            <Text fontSize="$3" color="$color" opacity={0.7}>
+            <Text fontSize="$3" color="$textSecondary" opacity={0.8}>
               {subtitle}
             </Text>
           )}
@@ -59,11 +67,16 @@ export function ActionCard({
         {/* Right Side: CTA or Chevron */}
         <XStack items="center" gap="$2">
           {ctaText && (
-            <Text fontSize="$3" color="$primary" fontWeight="bold">
+            <Text
+              fontSize="$2"
+              color={isFeatured ? "$primary" : "$textSecondary"}
+              fontWeight="bold"
+              textTransform="uppercase"
+            >
               {ctaText}
             </Text>
           )}
-          <ChevronRight size={20} color="$color" opacity={0.5} />
+          <ChevronRight size={18} color="$textSecondary" opacity={0.5} />
         </XStack>
       </XStack>
     </YStack>

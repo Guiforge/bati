@@ -1,4 +1,5 @@
-import { ChevronLeft, Lock, Star, X } from "@tamagui/lucide-icons";
+import { ChevronLeft, Star, X } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +10,7 @@ import { Button, H1, H4, Paragraph, Progress, Text, XStack, YStack } from "tamag
 import { Card } from "@/src/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/src/components/common/Skeleton";
 import { FlameFlicker } from "@/src/components/village/VillageAnimations";
+import { getVillageBuildingAsset, type VillageBuildingVariant } from "@/src/constants/villageAssets";
 import {
   getAllBuildings,
   getVillageStats,
@@ -137,11 +139,14 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
             borderColor="$color"
             opacity={isLocked ? 0.3 : 1}
           >
-            {isLocked ? (
-              <Lock size={24} color="$background" />
-            ) : (
-              <Text fontSize={28}>{building.emoji}</Text>
-            )}
+            <Image
+              source={getVillageBuildingAsset(
+                building.buildingType,
+                isLocked ? "locked" : (`lvl_${building.level}` as VillageBuildingVariant),
+              )}
+              style={{ width: "100%", height: "100%", borderRadius: 12 }}
+              contentFit="cover"
+            />
           </YStack>
 
           <YStack flex={1} gap="$1">

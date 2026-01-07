@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, YStack } from "tamagui";
 import { useSessionStore } from "@/src/stores/session";
@@ -31,11 +31,11 @@ export default function CountdownScreen() {
     router.replace("/session/exercise");
   };
 
-  const handleStart = async () => {
+  const handleStart = useCallback(async () => {
     if (params.questId) {
       await startSession(params.questId);
     }
-  };
+  }, [params.questId, startSession]);
 
   useEffect(() => {
     handleStart();

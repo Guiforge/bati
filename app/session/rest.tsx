@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, YStack } from "tamagui";
 import { useSessionStore } from "@/src/stores/session";
@@ -12,9 +12,9 @@ export default function RestScreen() {
 
   const { nextExercise } = useSessionStore();
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     router.replace("/session/exercise");
-  };
+  }, [router]);
 
   const handleSkipRest = () => {
     router.replace("/session/exercise");

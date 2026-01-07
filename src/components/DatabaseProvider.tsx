@@ -324,7 +324,6 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
 }
 
 // Hook to get db instance (for backward compatibility)
-import { useCallback } from "react";
 import { db as dbClient } from "@/src/db/client";
 
 export function useDatabase() {

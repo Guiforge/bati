@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Dialog, Text, XStack, YStack } from "tamagui";
 import { listCompletedSessions } from "@/src/db/completed";
@@ -13,11 +13,7 @@ export function CoachSuggestionsBadge() {
   const [showModal, setShowModal] = useState(false);
   const [daysActive, setDaysActive] = useState(0);
 
-  useEffect(() => {
-    checkCoachSuggestions();
-  }, []);
-
-  const checkCoachSuggestions = async () => {
+  const checkCoachSuggestions = useCallback(async () => {
     // Check if user has viewed suggestions
     const viewed = await preferences.get("coach_suggestions_viewed");
     if (viewed) {
@@ -44,7 +40,11 @@ export function CoachSuggestionsBadge() {
     if (daysSinceFirst >= 7) {
       setShowBadge(true);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkCoachSuggestions();
+  }, [checkCoachSuggestions]);
 
   const handleOpenSuggestions = () => {
     setShowModal(true);

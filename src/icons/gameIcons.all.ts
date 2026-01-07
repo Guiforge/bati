@@ -4171,7 +4171,7 @@ export const ALL_GAME_ICON_NAMES = [
   "zajkonur/skull-with-syringe",
   "zajkonur/violin",
   "zeromancer/heart-minus",
-  "zeromancer/heart-plus"
+  "zeromancer/heart-plus",
 ] as const;
 
 export type AllGameIconName = (typeof ALL_GAME_ICON_NAMES)[number];

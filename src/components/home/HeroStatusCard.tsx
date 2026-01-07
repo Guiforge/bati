@@ -39,7 +39,7 @@ export function HeroStatusCard() {
         <XStack items="center" gap="$4">
           {/* Castle Icon */}
           <GameIcon
-            name="castle"
+            name="lorc/castle"
             size={64}
             bgColor="$background"
             shape="rounded"

@@ -138,14 +138,14 @@ export default function QuestDetailsScreen() {
 
           <YStack gap="$2" mt="$2">
             <XStack alignItems="center" gap="$2">
-              <GameIcon name="repeat" size={20} tintColor="$textSecondary" />
+              <GameIcon name="lorc/cycle" size={20} tintColor="$textSecondary" />
               <Text color="$textSecondary" fontSize={16}>
                 {quest.rounds} {quest.rounds === 1 ? "round" : "rounds"}
               </Text>
             </XStack>
 
             <XStack alignItems="center" gap="$2">
-              <GameIcon name="timer" size={20} tintColor="$textSecondary" />
+              <GameIcon name="lorc/stopwatch" size={20} tintColor="$textSecondary" />
               <Text color="$textSecondary" fontSize={16}>
                 {quest.restSeconds}s {t("quests.rest", { count: quest.restSeconds })}
               </Text>

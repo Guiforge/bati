@@ -6,25 +6,6 @@ const { withTamagui } = require("@tamagui/metro-plugin");
 const config = getDefaultConfig(__dirname);
 
 // -------------------------------------------------------------------------
-// 1. CONFIGURATION SVG (react-native-svg-transformer)
-// -------------------------------------------------------------------------
-// Permet d'importer des .svg comme des composants React
-const { transformer, resolver } = config;
-
-config.transformer = {
-  ...transformer,
-  babelTransformerPath: require.resolve("react-native-svg-transformer"),
-};
-
-config.resolver = {
-  ...resolver,
-  // Exclure .svg des assets statiques (images gérées par le bundler natif)
-  assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
-  // Ajouter .svg aux fichiers source (gérés par Babel)
-  sourceExts: [...resolver.sourceExts, "svg"],
-};
-
-// -------------------------------------------------------------------------
 // 2. EXTENSIONS SUPPLÉMENTAIRES
 // -------------------------------------------------------------------------
 

@@ -80,7 +80,7 @@ export function TutorialQuestModal() {
               shadowOpacity={0.6}
               shadowRadius={12}
             >
-              <GameIcon name="book-open" size={40} tintColor="$text" />
+              <GameIcon name="lorc/open-book" size={40} tintColor="$text" />
             </YStack>
 
             <Dialog.Title fontSize={32} fontWeight="900" color="$text" textAlign="center">
@@ -105,19 +105,19 @@ export function TutorialQuestModal() {
               width="100%"
             >
               <XStack gap="$2" alignItems="center" mb="$2">
-                <GameIcon name="check-circle" size={16} tintColor="$success" />
+                <GameIcon name="lorc/checked-shield" size={16} tintColor="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_1")}
                 </Text>
               </XStack>
               <XStack gap="$2" alignItems="center" mb="$2">
-                <GameIcon name="check-circle" size={16} tintColor="$success" />
+                <GameIcon name="lorc/checked-shield" size={16} tintColor="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_2")}
                 </Text>
               </XStack>
               <XStack gap="$2" alignItems="center">
-                <GameIcon name="check-circle" size={16} tintColor="$success" />
+                <GameIcon name="lorc/checked-shield" size={16} tintColor="$success" />
                 <Text color="$text" fontSize="$3">
                   {t("onboarding.tutorial_feature_3")}
                 </Text>

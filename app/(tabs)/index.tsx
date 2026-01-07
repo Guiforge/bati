@@ -40,14 +40,14 @@ export default function HomeScreen() {
                   title={t("tabs.village", "Village")}
                   subtitle={t("home.visit_village", "Visit Village")}
                   onPress={() => router.push("/village")}
-                  icon={<GameIcon name="castle" size={32} />}
+                  icon={<GameIcon name="lorc/castle" size={32} />}
                 />
                 <ActionCard
                   flex={1}
                   title={t("tabs.treasury", "Treasury")}
                   subtitle={t("home.open_inventory", "Open Inventory")}
                   onPress={() => router.push("/treasury")}
-                  icon={<GameIcon name="coins" size={32} />}
+                  icon={<GameIcon name="lorc/cash" size={32} />}
                 />
               </XStack>
 

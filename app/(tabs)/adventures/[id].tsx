@@ -130,7 +130,7 @@ export default function AdventureDetailsScreen() {
               shadowOpacity={0.4}
               shadowRadius={12}
             >
-              <GameIcon name="skull" size={32} tintColor="$text" />
+              <GameIcon name="lorc/crowned-skull" size={32} tintColor="$text" />
               <YStack flex={1}>
                 <Text color="$text" fontSize="$4" fontWeight="bold">
                   {t("adventures.epic_battle")}
@@ -235,7 +235,7 @@ export default function AdventureDetailsScreen() {
                       </Text>
                     </YStack>
 
-                    <GameIcon name="unlock" size={24} tintColor="$success" />
+                    <GameIcon name="lorc/unlocking" size={24} tintColor="$success" />
                   </XStack>
                 </YStack>
 
@@ -256,7 +256,7 @@ export default function AdventureDetailsScreen() {
                         justifyContent="center"
                         borderRadius={999}
                       >
-                        <GameIcon name="skull" size={24} tintColor="$text" />
+                        <GameIcon name="lorc/crowned-skull" size={24} tintColor="$text" />
                       </YStack>
 
                       <YStack flex={1}>

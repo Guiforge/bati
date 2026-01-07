@@ -24,13 +24,13 @@ const RESOURCE_COLORS: Record<string, string> = {
 
 // Map resource codes to icon names
 const RESOURCE_ICONS: Record<string, GameIconName> = {
-  gold: "gold",
-  wood: "wood",
-  stone: "stone",
-  fire: "fire",
-  water: "water",
-  wind: "wind",
-  grain: "grain",
+  gold: "lorc/crown-coin",
+  wood: "lorc/wood-axe",
+  stone: "lorc/stone-block",
+  fire: "lorc/campfire",
+  water: "lorc/drop",
+  wind: "lorc/feather",
+  grain: "lorc/wheat",
 };
 
 export function ResourcesOverview() {
@@ -72,7 +72,7 @@ export function ResourcesOverview() {
               justify="center"
               items="center"
             >
-              <GameIcon name="chest" size={24} />
+              <GameIcon name="lorc/locked-chest" size={24} />
             </YStack>
           </Pressable>
 

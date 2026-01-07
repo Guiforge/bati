@@ -101,7 +101,7 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
           shadowOffset={{ width: 2, height: 2 }}
           style={{ top: 8, right: 8 }}
         >
-          <GameIcon name="star" size={12} tintColor="white" />
+          <GameIcon name="lorc/star-prominences" size={12} tintColor="white" />
           <Text color="white" fontWeight="900" fontSize={12}>
             +{estimatedXp} XP
           </Text>

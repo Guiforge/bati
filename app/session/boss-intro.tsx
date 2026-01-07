@@ -107,7 +107,7 @@ export default function BossIntroScreen() {
           shadowOpacity={0.8}
           shadowRadius={24}
         >
-          <GameIcon name="skull" size={72} tintColor="$text" />
+          <GameIcon name="lorc/crowned-skull" size={72} tintColor="$text" />
         </YStack>
 
         <YStack alignItems="center" gap="$2">
@@ -156,7 +156,7 @@ export default function BossIntroScreen() {
 
         {adventure.bossWeaknessMuscle && (
           <XStack alignItems="center" gap="$2" bg="$warning" px="$4" py="$2" borderRadius="$3">
-            <GameIcon name="zap" size={20} tintColor="$text" />
+            <GameIcon name="lorc/lightning-branches" size={20} tintColor="$text" />
             <Text color="$text" fontSize="$3" fontWeight="600">
               {t("boss.weakness")}: {adventure.bossWeaknessMuscle}
             </Text>

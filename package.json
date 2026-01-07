@@ -80,6 +80,7 @@
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
     "format": "biome check --write .",
+    "icons:generate": "node scripts/generate-game-icons.js",
     "ios": "expo run:ios",
     "prepare": "husky install",
     "start": "expo start",

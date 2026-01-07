@@ -73,7 +73,11 @@ export function CurrentAdventureWidget() {
             shadowOffset={{ width: 0, height: 2 }}
             shadowOpacity={0.2}
           >
-            <GameIcon name={isAdventure ? "scroll" : "sword"} size={32} tintColor="white" />
+            <GameIcon
+              name={isAdventure ? "lorc/scroll-unfurled" : "lorc/crossed-swords"}
+              size={32}
+              tintColor="white"
+            />
           </YStack>
 
           <YStack flex={1}>

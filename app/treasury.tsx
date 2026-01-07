@@ -25,13 +25,13 @@ type ResourceInfo = {
 };
 
 const RESOURCES: ResourceInfo[] = [
-  { code: "gold", iconName: "gold", colorKey: "resourceGold", muscle: "—" },
-  { code: "wood", iconName: "wood", colorKey: "resourceWood", muscle: "arms" },
-  { code: "stone", iconName: "stone", colorKey: "resourceStone", muscle: "back" },
-  { code: "fire", iconName: "fire", colorKey: "resourceFire", muscle: "chest" },
-  { code: "water", iconName: "water", colorKey: "resourceWater", muscle: "abs" },
-  { code: "wind", iconName: "wind", colorKey: "resourceWind", muscle: "shoulders" },
-  { code: "grain", iconName: "grain", colorKey: "resourceGrain", muscle: "legs" },
+  { code: "gold", iconName: "lorc/crown-coin", colorKey: "resourceGold", muscle: "—" },
+  { code: "wood", iconName: "lorc/wood-axe", colorKey: "resourceWood", muscle: "arms" },
+  { code: "stone", iconName: "lorc/stone-block", colorKey: "resourceStone", muscle: "back" },
+  { code: "fire", iconName: "lorc/campfire", colorKey: "resourceFire", muscle: "chest" },
+  { code: "water", iconName: "lorc/drop", colorKey: "resourceWater", muscle: "abs" },
+  { code: "wind", iconName: "lorc/feather", colorKey: "resourceWind", muscle: "shoulders" },
+  { code: "grain", iconName: "lorc/wheat", colorKey: "resourceGrain", muscle: "legs" },
 ];
 
 export default function TreasuryScreen() {
@@ -71,7 +71,7 @@ export default function TreasuryScreen() {
       <ScreenContainer edges={["bottom"]} noGutter>
         <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
           <YStack items="center" gap="$3" py="$4">
-            <GameIcon name="chest" size={64} />
+            <GameIcon name="lorc/locked-chest" size={64} />
             <RPGTitle>{t("treasury.title")}</RPGTitle>
             <RPGText muted>{t("treasury.subtitle")}</RPGText>
           </YStack>

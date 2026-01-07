@@ -114,7 +114,11 @@ export function ContinueAdventureCard() {
           justifyContent="center"
           borderRadius={999}
         >
-          <GameIcon name={isBoss ? "skull" : "map"} size={28} tintColor="$text" />
+          <GameIcon
+            name={isBoss ? "lorc/crowned-skull" : "lorc/treasure-map"}
+            size={28}
+            tintColor="$text"
+          />
         </YStack>
 
         <YStack flex={1}>
@@ -129,7 +133,7 @@ export function ContinueAdventureCard() {
 
       {isBoss && (
         <XStack alignItems="center" gap="$2" bg="$error" p="$2" borderRadius="$3" mb="$3">
-          <GameIcon name="zap" size={20} tintColor="$text" />
+          <GameIcon name="lorc/lightning-branches" size={20} tintColor="$text" />
           <Text color="$text" fontSize="$3" fontWeight="bold">
             {t("home.boss_ready")}
           </Text>
@@ -147,7 +151,7 @@ export function ContinueAdventureCard() {
 
           {currentAdventure.quest.estimatedMinutes && (
             <XStack alignItems="center" gap="$2">
-              <GameIcon name="clock" size={16} tintColor="$textSecondary" />
+              <GameIcon name="lorc/sundial" size={16} tintColor="$textSecondary" />
               <Text color="$textSecondary" fontSize="$3">
                 {currentAdventure.quest.estimatedMinutes} min
               </Text>

@@ -34,7 +34,7 @@ export function StatsOverview() {
         onPress={() => router.push("/(tabs)/journal")}
       >
         <YStack items="center" gap="$1">
-          <GameIcon name="flame" size={24} tintColor="$warning" />
+          <GameIcon name="lorc/fire-silhouette" size={24} tintColor="$warning" />
           <Text fontSize={20} fontWeight="900" color="$primary">
             {streak?.current ?? 0}
           </Text>
@@ -56,7 +56,7 @@ export function StatsOverview() {
         onPress={() => router.push("/(tabs)/journal")}
       >
         <YStack items="center" gap="$1">
-          <GameIcon name="sword" size={24} />
+          <GameIcon name="lorc/crossed-swords" size={24} />
           <Text fontSize={20} fontWeight="900" color="$color">
             {totalStats?.totalSessions ?? 0}
           </Text>
@@ -78,7 +78,7 @@ export function StatsOverview() {
         onPress={() => router.push("/(tabs)/journal")}
       >
         <YStack items="center" gap="$1">
-          <GameIcon name="trophy" size={24} tintColor="$gold" />
+          <GameIcon name="lorc/trophy" size={24} tintColor="$gold" />
           <Text fontSize={20} fontWeight="900" color="$color">
             {totalStats?.totalXp
               ? totalStats.totalXp >= 1000

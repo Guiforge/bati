@@ -351,7 +351,7 @@ export default function ExerciseScreen() {
                 onPress={() => setShowModifyDialog(false)}
               >
                 <XStack gap="$3" alignItems="center">
-                  <GameIcon name="dumbbell" size={20} tintColor="$text" />
+                  <GameIcon name="lorc/anvil" size={20} tintColor="$text" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_1")}
@@ -372,7 +372,7 @@ export default function ExerciseScreen() {
                 onPress={() => setShowModifyDialog(false)}
               >
                 <XStack gap="$3" alignItems="center">
-                  <GameIcon name="dumbbell" size={20} tintColor="$text" />
+                  <GameIcon name="lorc/anvil" size={20} tintColor="$text" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_2")}
@@ -393,7 +393,7 @@ export default function ExerciseScreen() {
                 onPress={() => setShowModifyDialog(false)}
               >
                 <XStack gap="$3" alignItems="center">
-                  <GameIcon name="dumbbell" size={20} tintColor="$text" />
+                  <GameIcon name="lorc/anvil" size={20} tintColor="$text" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600">
                       {t("session.alternative_3")}

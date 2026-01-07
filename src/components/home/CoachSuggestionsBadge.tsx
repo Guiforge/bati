@@ -126,7 +126,7 @@ export function CoachSuggestionsBadge() {
                 shadowOpacity={0.6}
                 shadowRadius={12}
               >
-                <GameIcon name="trophy" size={40} tintColor="$text" />
+                <GameIcon name="lorc/trophy" size={40} tintColor="$text" />
               </YStack>
 
               <Dialog.Title fontSize={32} fontWeight="900" color="$text" textAlign="center">
@@ -147,7 +147,7 @@ export function CoachSuggestionsBadge() {
                 borderColor="$borderStrong"
               >
                 <XStack gap="$3" alignItems="flex-start">
-                  <GameIcon name="target" size={24} tintColor="$primary" />
+                  <GameIcon name="lorc/archery-target" size={24} tintColor="$primary" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_1_title")}
@@ -167,7 +167,7 @@ export function CoachSuggestionsBadge() {
                 borderColor="$borderStrong"
               >
                 <XStack gap="$3" alignItems="flex-start">
-                  <GameIcon name="flag" size={24} tintColor="$success" />
+                  <GameIcon name="lorc/flying-flag" size={24} tintColor="$success" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_2_title")}
@@ -187,7 +187,7 @@ export function CoachSuggestionsBadge() {
                 borderColor="$borderStrong"
               >
                 <XStack gap="$3" alignItems="flex-start">
-                  <GameIcon name="zap" size={24} tintColor="$warning" />
+                  <GameIcon name="lorc/lightning-branches" size={24} tintColor="$warning" />
                   <YStack flex={1}>
                     <Text color="$text" fontSize="$4" fontWeight="600" mb="$1">
                       {t("coach.suggestion_3_title")}

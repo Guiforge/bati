@@ -57,7 +57,7 @@ export default function VictoryScreen() {
             shadowOpacity={0.8}
             shadowRadius={24}
           >
-            <GameIcon name="skull" size={60} tintColor="$text" />
+            <GameIcon name="lorc/crowned-skull" size={60} tintColor="$text" />
           </YStack>
 
           <Text fontSize={40} fontWeight="900" color="$error" marginBottom="$2" textAlign="center">

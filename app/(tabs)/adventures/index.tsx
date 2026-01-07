@@ -95,7 +95,7 @@ export default function AdventuresScreen() {
                 borderRadius="$2"
                 alignSelf="flex-start"
               >
-                <GameIcon name="skull" size={16} tintColor="$text" />
+                <GameIcon name="lorc/crowned-skull" size={16} tintColor="$text" />
                 <Text color="$text" fontSize="$2" fontWeight="bold">
                   {t("adventures.epic_battle")}
                 </Text>
@@ -184,7 +184,7 @@ export default function AdventuresScreen() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
           ListEmptyComponent={
             <YStack alignItems="center" justifyContent="center" py="$8">
-              <GameIcon name="map" size={64} tintColor="$textSecondary" />
+              <GameIcon name="lorc/treasure-map" size={64} tintColor="$textSecondary" />
               <Text color="$textSecondary" fontSize={20} textAlign="center" mt="$4">
                 {t("adventures.empty_title")}
               </Text>

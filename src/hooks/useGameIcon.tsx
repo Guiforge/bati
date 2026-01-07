@@ -1,62 +1,27 @@
 /**
  * Game icons from game-icons.net
  *
- * Usage (like lucide-react):
- *   import { GameIcon } from "@/src/hooks/useGameIcon";
- *   <GameIcon name="sword" size={24} tintColor="$primary" />
+ * Goals:
+ * - Fast runtime (only a small allowlisted registry is bundled)
+ * - Strong autocomplete (names are a string-literal union)
+ * - Easy discovery (optional list of ALL available icons is generated too)
  *
- * Or use the hook for dynamic icon rendering:
- *   const { GameIcon } = useGameIcon();
- *   <GameIcon name="chest" size={32} />
+ * Usage:
+ *   import { GameIcon } from "@/src/hooks/useGameIcon";
+ *   <GameIcon name="lorc/locked-chest" size={32} tintColor="$primary" />
  */
 
 import { Image } from "expo-image";
 import { memo, useMemo } from "react";
-import { type ImageSourcePropType, Image as RNImage } from "react-native";
+import { Image as RNImage } from "react-native";
+import { useTheme } from "tamagui";
 
-// Icon source registry
-const ICON_SOURCES: Record<string, ImageSourcePropType> = {
-  // Lorc icons - Core
-  castle: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/castle.svg"),
-  flame: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/fire-silhouette.svg"),
-  sword: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/crossed-swords.svg"),
-  scroll: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/scroll-unfurled.svg"),
-  shield: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/bordered-shield.svg"),
-  trophy: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/trophy.svg"),
-  coins: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/cash.svg"),
-  crown: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/crown.svg"),
-  muscle: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/muscle-up.svg"),
-  lightning: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/lightning-branches.svg"),
-  heart: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/heart-inside.svg"),
-  star: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/star-prominences.svg"),
-  skull: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/crowned-skull.svg"),
+import { type GameIconName, getGameIconSource } from "@/src/icons/gameIcons.registry";
 
-  // Resource icons
-  wood: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/wood-axe.svg"),
-  stone: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/stone-block.svg"),
-  fire: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/campfire.svg"),
-  water: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/drop.svg"),
-  wind: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/feather.svg"),
-  grain: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/wheat.svg"),
-  chest: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/locked-chest.svg"),
-  gold: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/crown-coin.svg"),
-
-  // UI/Meta icons
-  clock: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/sundial.svg"),
-  "book-open": require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/open-book.svg"),
-  "check-circle": require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/checked-shield.svg"),
-  map: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/treasure-map.svg"),
-  zap: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/lightning-branches.svg"),
-  target: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/archery-target.svg"),
-  flag: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/flying-flag.svg"),
-  repeat: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/cycle.svg"),
-  timer: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/stopwatch.svg"),
-  unlock: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/unlocking.svg"),
-  dumbbell: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/anvil.svg"),
-};
-
-// Type-safe icon names
-export type GameIconName = keyof typeof ICON_SOURCES;
+export type { AllGameIconName } from "@/src/icons/gameIcons.all";
+export { ALL_GAME_ICON_NAMES } from "@/src/icons/gameIcons.all";
+export type { GameIconName } from "@/src/icons/gameIcons.registry";
+export { GAME_ICON_NAMES, isGameIconName } from "@/src/icons/gameIcons.registry";
 
 export interface GameIconProps {
   name: GameIconName;
@@ -65,29 +30,33 @@ export interface GameIconProps {
 }
 
 /**
- * GameIcon component - use like any icon library
- * Uses Image.resolveAssetSource to create a fresh source object,
- * avoiding the "property is not configurable" error from frozen require() results.
+ * GameIcon component.
+ *
+ * We treat SVGs as assets (Metro default) and render them via `expo-image`.
+ * That keeps runtime fast and allows `tintColor` to work consistently.
  */
 export const GameIcon = memo(function GameIcon({ name, size = 24, tintColor }: GameIconProps) {
-  const source = ICON_SOURCES[name];
+  const theme = useTheme();
+  const source = getGameIconSource(name);
 
-  // Resolve the asset to get a fresh URI object that expo-image can modify
+  const resolvedTintColor = useMemo(() => {
+    if (!tintColor) return undefined;
+    if (!tintColor.startsWith("$")) return tintColor;
+
+    const record = theme as unknown as Record<string, { val?: string }>;
+    return record[tintColor]?.val ?? tintColor;
+  }, [theme, tintColor]);
+
   const resolvedSource = useMemo(() => {
-    if (!source) return null;
     const resolved = RNImage.resolveAssetSource(source);
     return { uri: resolved.uri };
   }, [source]);
-
-  if (!resolvedSource) {
-    return null;
-  }
 
   return (
     <Image
       source={resolvedSource}
       style={{ width: size, height: size }}
-      tintColor={tintColor}
+      tintColor={resolvedTintColor}
       contentFit="contain"
     />
   );
@@ -101,37 +70,7 @@ export function useGameIcon() {
 }
 
 /**
- * Hook to get multiple icon sources at once (for list rendering with Image component)
+ * Convenience exports for existing code.
+ * Prefer importing from `@/src/icons/gameIcons.registry` if you only need sources/types.
  */
-export function useGameIcons<T extends GameIconName>(
-  names: readonly T[]
-): Record<T, ImageSourcePropType> {
-  const result = {} as Record<T, ImageSourcePropType>;
-  for (const name of names) {
-    result[name] = ICON_SOURCES[name];
-  }
-  return result;
-}
-
-/**
- * Get icon source for direct Image usage
- */
-export function getGameIconSource(name: GameIconName): ImageSourcePropType {
-  return ICON_SOURCES[name];
-}
-
-/**
- * Get multiple icon sources at once (non-hook version)
- */
-export function getGameIconSources<T extends GameIconName>(
-  names: readonly T[]
-): Record<T, ImageSourcePropType> {
-  const result = {} as Record<T, ImageSourcePropType>;
-  for (const name of names) {
-    result[name] = ICON_SOURCES[name];
-  }
-  return result;
-}
-
-// Legacy export for backwards compatibility
-export const GAME_ICONS = ICON_SOURCES;
+export { GAME_ICON_SOURCES as GAME_ICONS, getGameIconSource } from "@/src/icons/gameIcons.registry";

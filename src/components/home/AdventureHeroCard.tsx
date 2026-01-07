@@ -110,7 +110,7 @@ export function AdventureHeroCard() {
             justify="center"
             items="center"
           >
-            <GameIcon name="scroll" size={40} />
+            <GameIcon name="lorc/scroll-unfurled" size={40} />
           </YStack>
 
           <YStack gap="$2" items="center" maxW={320}>
@@ -210,7 +210,7 @@ export function AdventureHeroCard() {
           gap="$2"
           items="center"
         >
-          <GameIcon name="sword" size={16} />
+          <GameIcon name="lorc/crossed-swords" size={16} />
           <Text fontSize={14} fontWeight="700" color="$text">
             {t("adventures.step_progress", {
               current: adventure.currentStep,

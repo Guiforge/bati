@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
 import { type ColorTokens, type GetProps, useTheme, YStack } from "tamagui";
+
 import { type GameIconName, getGameIconSource } from "@/src/hooks/useGameIcon";
 
 export type GameIconProps = {
@@ -29,12 +30,10 @@ export function GameIcon({
   ...props
 }: GameIconProps) {
   const iconSource = getGameIconSource(name);
-  // Get badge source, use fallback if badge is undefined
-  const badgeSource = getGameIconSource(badge ?? "sword");
+  const badgeSource = badge ? getGameIconSource(badge) : null;
   const theme = useTheme();
 
   // Helper to resolve color tokens if needed, though Tamagui usually handles it.
-  // For expo-image tintColor, we might need the raw value.
   // We try to get it from theme if it matches a key, otherwise use as is.
   const resolveColor = (c?: string | ColorTokens) => {
     if (!c) return undefined;
@@ -72,7 +71,7 @@ export function GameIcon({
         contentFit="contain"
         tintColor={finalColor}
       />
-      {badge && (
+      {badge && badgeSource && (
         <YStack
           position="absolute"
           b={0}

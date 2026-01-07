@@ -1,9 +1,11 @@
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 import { Button, ScrollView, Text, XStack, YStack } from "tamagui";
 import { useDatabase } from "@/src/components/DatabaseProvider";
+import { resolveImageAsset } from "@/src/constants/assetMap";
 import { quests } from "@/src/db/schema";
 
 type Quest = typeof quests.$inferSelect;
@@ -26,19 +28,20 @@ export default function QuestsScreen() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    if (db) {
-      db.select()
-        .from(quests)
-        .all()
-        .then((data) => {
-          setQuestsList(data);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
+    if (!db) return;
+
+    try {
+      const data = db.select().from(quests).all();
+      setQuestsList(data);
+    } catch {
+      // noop
+    } finally {
+      setLoading(false);
     }
   }, [db]);
 
   const filteredQuests = useMemo(() => {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Multiple filter conditions required
     return questsList.filter((quest) => {
       if (muscleFilter && quest.primaryMuscle !== muscleFilter) return false;
 
@@ -73,60 +76,68 @@ export default function QuestsScreen() {
           borderColor="$borderStrong"
           borderWidth={1}
           borderRadius="$4"
-          p="$4"
+          overflow="hidden"
           pressStyle={{ opacity: 0.8, scale: 0.98 }}
         >
-          <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
-            {title}
-          </Text>
+          <Image
+            source={resolveImageAsset(item.imagePath)}
+            style={{ width: "100%", height: 180 }}
+            contentFit="cover"
+          />
 
-          <XStack gap="$2" mb="$2" flexWrap="wrap">
-            {item.primaryMuscle && (
-              <YStack bg="$primary" px="$2" py="$1" borderRadius="$2">
-                <Text color="$text" fontSize="$2" fontWeight="600">
-                  {item.primaryMuscle}
-                </Text>
-              </YStack>
-            )}
+          <YStack p="$4">
+            <Text color="$text" fontSize="$6" fontWeight="bold" mb="$2">
+              {title}
+            </Text>
 
-            {item.estimatedMinutes && (
-              <YStack
-                bg="$glassBg"
-                borderColor="$borderStrong"
-                borderWidth={1}
-                px="$2"
-                py="$1"
-                borderRadius="$2"
-              >
-                <Text color="$textSecondary" fontSize="$2">
-                  {item.estimatedMinutes} min
-                </Text>
-              </YStack>
-            )}
+            <XStack gap="$2" mb="$2" flexWrap="wrap">
+              {item.primaryMuscle && (
+                <YStack bg="$primary" px="$2" py="$1" borderRadius="$2">
+                  <Text color="$text" fontSize="$2" fontWeight="600">
+                    {item.primaryMuscle}
+                  </Text>
+                </YStack>
+              )}
 
-            {item.difficulty && (
-              <YStack
-                bg={
-                  item.difficulty === "Beginner"
-                    ? "$success"
-                    : item.difficulty === "Intermediate"
-                      ? "$warning"
-                      : "$error"
-                }
-                px="$2"
-                py="$1"
-                borderRadius="$2"
-              >
-                <Text color="$text" fontSize="$2" fontWeight="600">
-                  {t(`quests.difficulty_${item.difficulty.toLowerCase()}`)}
-                </Text>
-              </YStack>
-            )}
-          </XStack>
+              {item.estimatedMinutes && (
+                <YStack
+                  bg="$glassBg"
+                  borderColor="$borderStrong"
+                  borderWidth={1}
+                  px="$2"
+                  py="$1"
+                  borderRadius="$2"
+                >
+                  <Text color="$textSecondary" fontSize="$2">
+                    {item.estimatedMinutes} min
+                  </Text>
+                </YStack>
+              )}
 
-          <Text color="$textSecondary" fontSize="$3" numberOfLines={2}>
-            {description}
-          </Text>
+              {item.difficulty && (
+                <YStack
+                  bg={
+                    item.difficulty === "Beginner"
+                      ? "$success"
+                      : item.difficulty === "Intermediate"
+                        ? "$warning"
+                        : "$error"
+                  }
+                  px="$2"
+                  py="$1"
+                  borderRadius="$2"
+                >
+                  <Text color="$text" fontSize="$2" fontWeight="600">
+                    {t(`quests.difficulty_${item.difficulty.toLowerCase()}`)}
+                  </Text>
+                </YStack>
+              )}
+            </XStack>
+
+            <Text color="$textSecondary" fontSize="$3" numberOfLines={2}>
+              {description}
+            </Text>
+          </YStack>
         </YStack>
       </Button>
     );

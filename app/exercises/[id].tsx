@@ -10,6 +10,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/src/components/common/AppButton";
 import { Card } from "@/src/components/common/Card";
 import { Tag } from "@/src/components/common/Tag";
+import { resolveImageAsset } from "@/src/constants/assetMap";
 import { getExerciseById } from "@/src/db";
 import { EQUIPMENT_LABELS } from "@/src/db/equipment";
 import { MUSCLE_LABELS } from "@/src/db/muscles";
@@ -17,11 +18,6 @@ import { useSettingsStore } from "@/src/stores/settings";
 
 type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
 type Status = "loading" | "ready" | "error";
-
-const PLACEHOLDER = require("../../assets/placeholder.jpg");
-
-const resolveAsset = (path?: string | null): ImageSourcePropType =>
-  path === "assets/placeholder.jpg" ? PLACEHOLDER : PLACEHOLDER;
 
 const parseId = (raw?: string | string[]): number | null => {
   const val = Array.isArray(raw) ? raw[0] : raw;
@@ -114,7 +110,7 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
   const title = language === "fr" ? exercise.frName : exercise.enName;
   const desc = language === "fr" ? exercise.frDescription : exercise.enDescription;
   const equipmentLabel = EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment;
-  const img = resolveAsset(exercise.imagePath);
+  const img = resolveImageAsset(exercise.imagePath);
 
   return (
     <YStack gap="$4">

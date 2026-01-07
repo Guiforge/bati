@@ -5,20 +5,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions } from "react-native";
 import { Button, H2, H3, Text, XStack, YStack } from "tamagui";
+import { resolveImageAsset } from "@/src/constants/assetMap";
 import { getAdventureById, getAnyActiveAdventureRun } from "@/src/db/adventures";
 import { useGameIcons } from "@/src/hooks/useGameIcon";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const HERO_HEIGHT = 480;
-
-// Static adventure image map (required for Metro bundler)
-const ADVENTURE_IMAGES = {
-  "scout_trial.jpg": require("@/assets/images/adventures/scout_trial.jpg"),
-  "guardian_oath.jpg": require("@/assets/images/adventures/guardian_oath.jpg"),
-  "monk_enlightenment.jpg": require("@/assets/images/adventures/monk_enlightenment.jpg"),
-  "ranger_journey.jpg": require("@/assets/images/adventures/ranger_journey.jpg"),
-  "iron_lord_conquest.jpg": require("@/assets/images/adventures/iron_lord_conquest.jpg"),
-} as const;
 
 export function AdventureHeroCard() {
   const router = useRouter();
@@ -39,6 +31,7 @@ export function AdventureHeroCard() {
   useEffect(() => {
     let cancelled = false;
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Async adventure loading requires multiple checks
     async function loadActiveAdventure() {
       try {
         const result = await getAnyActiveAdventureRun();
@@ -154,10 +147,7 @@ export function AdventureHeroCard() {
   }
 
   // Active adventure - show hero card with background
-  const adventureImageSource =
-    adventure.imagePath && adventure.imagePath in ADVENTURE_IMAGES
-      ? ADVENTURE_IMAGES[adventure.imagePath as keyof typeof ADVENTURE_IMAGES]
-      : null;
+  const adventureImageSource = resolveImageAsset(adventure.imagePath);
 
   return (
     <YStack
@@ -169,23 +159,19 @@ export function AdventureHeroCard() {
       animation="quick"
       onPress={() => router.push(`/adventures/${adventure.id}`)}
     >
-      {adventureImageSource ? (
-        <Image
-          source={adventureImageSource}
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: "100%",
-            height: "100%",
-          }}
-          contentFit="cover"
-        />
-      ) : (
-        <YStack flex={1} bg="$bgDark" />
-      )}
+      <Image
+        source={adventureImageSource}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: "100%",
+          height: "100%",
+        }}
+        contentFit="cover"
+      />
 
       <LinearGradient
         colors={["rgba(11, 15, 25, 0.85)", "transparent"]}

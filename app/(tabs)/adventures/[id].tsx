@@ -17,6 +17,7 @@ type QuestExercise = typeof questExercises.$inferSelect & {
   exercise: typeof exercises.$inferSelect;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex component requires multiple checks
 export default function AdventureDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { t, i18n } = useTranslation();

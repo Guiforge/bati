@@ -117,3 +117,32 @@ export function getBossAsset(id: string) {
 export function getAdventureAsset(id: string) {
   return ADVENTURE_ASSETS[id as AdventureAssetKey] ?? require("@/assets/placeholder.jpg");
 }
+
+const PLACEHOLDER_ASSET = require("@/assets/placeholder.jpg");
+
+const keyFromPath = (path: string) =>
+  path
+    .split("/")
+    .pop()
+    ?.replace(/\.[^.]+$/, "") ?? "";
+
+/**
+ * Resolve DB-stored asset path (e.g. "assets/images/exercises/goblin_squat.png") to a static `require()`.
+ */
+export function resolveImageAsset(path?: string | null) {
+  if (!path || path === "assets/placeholder.jpg") return PLACEHOLDER_ASSET;
+
+  const key = keyFromPath(path);
+  if (path.startsWith("assets/images/exercises/")) return getExerciseAsset(key);
+  if (path.startsWith("assets/images/quests/")) return getQuestAsset(key);
+  if (path.startsWith("assets/images/bosses/")) return getBossAsset(key);
+  if (path.startsWith("assets/images/adventures/")) return getAdventureAsset(key);
+
+  return (
+    EXERCISE_ASSETS[key as ExerciseAssetKey] ??
+    QUEST_ASSETS[key as QuestAssetKey] ??
+    BOSS_ASSETS[key as BossAssetKey] ??
+    ADVENTURE_ASSETS[key as AdventureAssetKey] ??
+    PLACEHOLDER_ASSET
+  );
+}

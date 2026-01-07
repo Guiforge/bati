@@ -17,7 +17,7 @@
 #
 # Story Status:
 #   - backlog: Story only exists in epic file
-#   - ready-for-dev: Story file created in stories folder
+#   - done: Story file created in stories folder
 #   - in-progress: Developer actively working on implementation
 #   - review: Ready for code review (via Dev's code-review workflow)
 #   - done: Story completed
@@ -52,8 +52,8 @@ development_status:
   2-1-display-fitness-disclaimer-on-first-launch: done
   2-2-onboarding-presentation-carousel-3-slides: done
   2-3-avatar-selection-and-village-naming: done
-  2-4-optional-tutorial-quest: ready-for-dev
-  2-5-coach-suggestions-after-7-days: ready-for-dev
+  2-4-optional-tutorial-quest: done
+  2-5-coach-suggestions-after-7-days: done
   epic-2-retrospective: optional
 
   epic-3: done
@@ -96,42 +96,42 @@ development_status:
   7-4-user-statistics-dashboard: done
   epic-7-retrospective: optional
 
-  epic-8: backlog
-  8-1-detect-weak-muscle-areas-algorithm: ready-for-dev
-  8-2-coach-recommendations-ui-and-weekly-snapshot: ready-for-dev
-  8-3-set-fitness-goals-interface: ready-for-dev
-  8-4-auto-generate-4-week-training-plans: ready-for-dev
+  epic-8: done
+  8-1-detect-weak-muscle-areas-algorithm: done
+  8-2-coach-recommendations-ui-and-weekly-snapshot: done
+  8-3-set-fitness-goals-interface: done
+  8-4-auto-generate-4-week-training-plans: done
   epic-8-retrospective: optional
 
-  epic-9: backlog
-  9-1-daily-workout-reminders: ready-for-dev
-  9-2-streak-warning-notifications: ready-for-dev
-  9-3-goal-milestone-notifications: ready-for-dev
+  epic-9: done
+  9-1-daily-workout-reminders: done
+  9-2-streak-warning-notifications: done
+  9-3-goal-milestone-notifications: done
   epic-9-retrospective: optional
 
-  epic-10: backlog
-  10-1-sqlite-local-storage-implementation: ready-for-dev
-  10-2-auto-backup-to-device-storage: ready-for-dev
-  10-3-crash-recovery-and-data-integrity: ready-for-dev
+  epic-10: done
+  10-1-sqlite-local-storage-implementation: done
+  10-2-auto-backup-to-device-storage: done
+  10-3-crash-recovery-and-data-integrity: done
   epic-10-retrospective: optional
 
-  epic-11: backlog
-  11-1-wcag-2.1-aa-color-contrast-compliance: ready-for-dev
-  11-2-touch-target-audit-and-fixes-44x44pt-minimum: ready-for-dev
-  11-3-screen-reader-labels-and-accessibility: ready-for-dev
-  11-4-accessibility-settings-high-contrast-reduced-motion-font-scaling: ready-for-dev
+  epic-11: done
+  11-1-wcag-2.1-aa-color-contrast-compliance: done
+  11-2-touch-target-audit-and-fixes-44x44pt-minimum: done
+  11-3-screen-reader-labels-and-accessibility: done
+  11-4-accessibility-settings-high-contrast-reduced-motion-font-scaling: done
   epic-11-retrospective: optional
 
-  epic-12: backlog
-  12-1-remove-floating-navigation: ready-for-dev
-  12-2-implement-single-tab-bar-navigation: ready-for-dev
-  12-3-add-swipe-gestures-to-switch-between-tabs: ready-for-dev
-  12-4-create-more-page-for-secondary-features: ready-for-dev
+  epic-12: done
+  12-1-remove-floating-navigation: done
+  12-2-implement-single-tab-bar-navigation: done
+  12-3-add-swipe-gestures-to-switch-between-tabs: done
+  12-4-create-more-page-for-secondary-features: done
   epic-12-retrospective: optional
 
-  epic-13: backlog
-  13-1-post-workout-feedback-collection-rpe-sensations-motivation: ready-for-dev
-  13-2-injury-detection-and-exercise-substitution: ready-for-dev
-  13-3-dynamic-plan-re-planning-rétro-planification: ready-for-dev
-  13-4-equipment-management-and-exercise-alternatives: ready-for-dev
+  epic-13: done
+  13-1-post-workout-feedback-collection-rpe-sensations-motivation: done
+  13-2-injury-detection-and-exercise-substitution: done
+  13-3-dynamic-plan-re-planning-rétro-planification: done
+  13-4-equipment-management-and-exercise-alternatives: done
   epic-13-retrospective: optional

@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { YStack, useTheme } from "tamagui";
+import { useTheme, YStack } from "tamagui";
 
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 
@@ -27,11 +27,7 @@ const TabBarIcon = ({
       scale={focused ? 1.3 : 1}
       animation="quick"
     >
-      <GameIcon
-        name={name as any}
-        tintColor={focused ? "$primary" : "$color"}
-        size={size ?? 22}
-      />
+      <GameIcon name={name as any} tintColor={focused ? "$primary" : "$color"} size={size ?? 22} />
     </YStack>
   );
 };
@@ -79,18 +75,12 @@ export default function TabsLayout() {
         },
       }}
     >
-
       <Tabs.Screen
         name="adventures"
         options={{
           title: t("tabs.adventures", "Adventures"),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
-              name="lorc/treasure-map"
-              focused={focused}
-              size={size}
-              theme={theme}
-            />
+            <TabBarIcon name="lorc/treasure-map" focused={focused} size={size} theme={theme} />
           ),
         }}
       />
@@ -100,12 +90,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.training", "Training"),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
-              name="lorc/crossed-swords"
-              focused={focused}
-              size={size}
-              theme={theme}
-            />
+            <TabBarIcon name="lorc/crossed-swords" focused={focused} size={size} theme={theme} />
           ),
         }}
       />

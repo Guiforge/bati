@@ -1,20 +1,19 @@
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text, YStack } from "tamagui";
 import { ActionCard } from "@/src/components/common/ActionCard";
 import { AdventureHeroCard } from "@/src/components/home/AdventureHeroCard";
 import { HomeHeader } from "@/src/components/home/HomeHeader";
 import { ResourcesOverview } from "@/src/components/home/ResourcesOverview";
 import { StatsOverview } from "@/src/components/home/StatsOverview";
 import { GameIcon } from "@/src/hooks/useGameIcon";
-import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Text, YStack } from "tamagui";
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
 
   return (
     <YStack flex={1} bg="$bgDark" pt={insets.top}>

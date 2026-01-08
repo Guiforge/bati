@@ -3,21 +3,13 @@ import { db, schema } from "./client";
 import { getQuestTemplateById, type QuestTemplate } from "./quests";
 import type { DifficultyCode } from "./schema";
 
-const {
-  adventureRuns,
-  adventureRunSteps,
-  adventures,
-  adventureSteps,
-  questExercises,
-  quests,
-} = schema;
+const { adventureRuns, adventureRunSteps, adventures, adventureSteps, questExercises, quests } =
+  schema;
 
 function safeParseImages(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed)
-      ? parsed.filter((x) => typeof x === "string")
-      : [];
+    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
   } catch {
     return [];
   }
@@ -160,9 +152,7 @@ export async function listAdventures(): Promise<Adventure[]> {
     return map;
   }
 
-  function buildAdventureMap(
-    stepsCountByAdventureId: Map<number, number>
-  ): Map<number, Adventure> {
+  function buildAdventureMap(stepsCountByAdventureId: Map<number, number>): Map<number, Adventure> {
     type Row = (typeof rows)[number];
 
     const byAdventureId = new Map<number, Adventure>();
@@ -245,9 +235,7 @@ export async function listAdventures(): Promise<Adventure[]> {
   return [...byAdventureId.values()].filter((a) => a.stepsCount >= 2);
 }
 
-export async function getAdventureById(
-  adventureId: number
-): Promise<Adventure | null> {
+export async function getAdventureById(adventureId: number): Promise<Adventure | null> {
   const rows = await db
     .select({
       adventureId: adventures.id,
@@ -295,9 +283,7 @@ export async function getAdventureById(
   };
 }
 
-export async function getAdventureDetails(
-  adventureId: number
-): Promise<AdventureDetails | null> {
+export async function getAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {
   const base = await db
     .select({
       id: adventures.id,
@@ -390,12 +376,7 @@ export async function getActiveAdventureRun(
       finishedAt: adventureRuns.finishedAt,
     })
     .from(adventureRuns)
-    .where(
-      and(
-        eq(adventureRuns.adventureId, adventureId),
-        eq(adventureRuns.status, "active")
-      )
-    )
+    .where(and(eq(adventureRuns.adventureId, adventureId), eq(adventureRuns.status, "active")))
     .orderBy(desc(adventureRuns.id))
     .limit(1);
 

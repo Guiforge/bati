@@ -16,8 +16,7 @@ describe("db/quests", () => {
   });
 
   test("listQuestTemplates includes seeded quest", async () => {
-    const quests =
-      require("../src/db/quests") as typeof import("../src/db/quests");
+    const quests = require("../src/db/quests") as typeof import("../src/db/quests");
 
     const all = await quests.listQuestTemplates();
     expect(all.length).toBeGreaterThanOrEqual(5);
@@ -34,8 +33,7 @@ describe("db/quests", () => {
   });
 
   test("getQuestById computes targets from user level", async () => {
-    const quests =
-      require("../src/db/quests") as typeof import("../src/db/quests");
+    const quests = require("../src/db/quests") as typeof import("../src/db/quests");
 
     const templates = await quests.listQuestTemplates();
     const seeded = templates.find((q) => q.frTitle === "Couper du bois");
@@ -66,10 +64,8 @@ describe("db/quests", () => {
   });
 
   test("create/update/set/delete quest template", async () => {
-    const quests =
-      require("../src/db/quests") as typeof import("../src/db/quests");
-    const exercises =
-      require("../src/db/exercises") as typeof import("../src/db/exercises");
+    const quests = require("../src/db/quests") as typeof import("../src/db/quests");
+    const exercises = require("../src/db/exercises") as typeof import("../src/db/exercises");
 
     const allEx = await exercises.listExercises();
     const squat = allEx.find((e) => e.enName === "Squat");

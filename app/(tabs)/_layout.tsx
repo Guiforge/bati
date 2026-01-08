@@ -1,8 +1,40 @@
-import { Castle, Home, Map as MapIcon, Scroll, Sparkles } from "@tamagui/lucide-icons";
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useTheme } from "tamagui";
+import { YStack, useTheme } from "tamagui";
+
+import { useGameIcon } from "@/src/hooks/useGameIcon";
+
+const TabBarIcon = ({
+  name,
+  focused,
+  size,
+  theme,
+}: {
+  name: string;
+  focused: boolean;
+  size: number;
+  theme: any;
+}) => {
+  const { GameIcon } = useGameIcon();
+  return (
+    <YStack
+      alignItems="center"
+      justifyContent="center"
+      shadowColor={focused ? "$primary" : undefined}
+      shadowRadius={focused ? 12 : 0}
+      shadowOpacity={focused ? 0.6 : 0}
+      scale={focused ? 1.3 : 1}
+      animation="quick"
+    >
+      <GameIcon
+        name={name as any}
+        tintColor={focused ? "$primary" : "$color"}
+        size={size ?? 22}
+      />
+    </YStack>
+  );
+};
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -16,58 +48,48 @@ export default function TabsLayout() {
         tabBarActiveTintColor: theme.primary?.val,
         tabBarInactiveTintColor: theme.color?.val,
         tabBarLabelStyle: {
-          fontWeight: "800",
-          fontSize: 12,
+          fontWeight: "700",
+          fontSize: 11,
+          marginBottom: 4,
+          paddingBottom: 0,
         },
         tabBarStyle: {
-          backgroundColor: theme.bgLight?.val,
-          borderTopWidth: 0,
-          borderWidth: 1,
-          borderColor: theme.borderColor?.val || "#333",
-          height: 60,
-          borderRadius: 30,
+          backgroundColor: "#121421",
+          borderTopWidth: 2,
+          borderWidth: 2,
+          borderColor: theme.borderStrong?.val || "#333",
+          height: 74,
+          borderRadius: 37,
           marginHorizontal: 16,
           marginBottom: insets.bottom + 10,
           position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,
+          paddingTop: 8,
           paddingBottom: 0,
-          paddingTop: 0,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.3,
+          shadowRadius: 20,
+        },
+        tabBarItemStyle: {
           justifyContent: "center",
           alignItems: "center",
         },
-        tabBarItemStyle: {
-          paddingVertical: 8,
-        },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: t("tabs.home", "Home"),
-          tabBarIcon: ({ focused, size }) => (
-            <Home
-              color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary?.val : "none"}
-              opacity={focused ? 1 : 0.55}
-              size={size ?? 22}
-              strokeWidth={2.5}
-            />
-          ),
-        }}
-      />
+
       <Tabs.Screen
         name="adventures"
         options={{
           title: t("tabs.adventures", "Adventures"),
           tabBarIcon: ({ focused, size }) => (
-            <Sparkles
-              color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary?.val : "none"}
-              opacity={focused ? 1 : 0.55}
-              size={size ?? 22}
-              strokeWidth={2.5}
+            <TabBarIcon
+              name="lorc/treasure-map"
+              focused={focused}
+              size={size}
+              theme={theme}
             />
           ),
         }}
@@ -78,13 +100,22 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.training", "Training"),
           tabBarIcon: ({ focused, size }) => (
-            <MapIcon
-              color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary?.val : "none"}
-              opacity={focused ? 1 : 0.55}
-              size={size ?? 22}
-              strokeWidth={2.5}
+            <TabBarIcon
+              name="lorc/crossed-swords"
+              focused={focused}
+              size={size}
+              theme={theme}
             />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: t("tabs.home", "Home"),
+          tabBarIcon: ({ focused, size }) => (
+            <TabBarIcon name="lorc/campfire" focused={focused} size={size} theme={theme} />
           ),
         }}
       />
@@ -94,13 +125,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.village", "Village"),
           tabBarIcon: ({ focused, size }) => (
-            <Castle
-              color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary?.val : "none"}
-              opacity={focused ? 1 : 0.55}
-              size={size ?? 22}
-              strokeWidth={2.5}
-            />
+            <TabBarIcon name="lorc/castle" focused={focused} size={size} theme={theme} />
           ),
         }}
       />
@@ -110,13 +135,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.journal", "Journal"),
           tabBarIcon: ({ focused, size }) => (
-            <Scroll
-              color={focused ? "$primary" : "$color"}
-              fill={focused ? theme.primary?.val : "none"}
-              opacity={focused ? 1 : 0.55}
-              size={size ?? 22}
-              strokeWidth={2.5}
-            />
+            <TabBarIcon name="lorc/open-book" focused={focused} size={size} theme={theme} />
           ),
         }}
       />

@@ -184,6 +184,16 @@ const tokens = createTokens({
     shadowColor: "#060812",
     primaryGlow: "rgba(13, 51, 242, 0.45)",
 
+    // --- NEO DARK FANTASY ACCENTS ---
+    purple: "#8B5CF6",
+    purpleGlow: "rgba(139, 92, 246, 0.45)",
+    metallicBlue: "#3B82F6",
+    metallicBlueGlow: "rgba(59, 130, 246, 0.35)",
+    gold: "#FFD700",
+    goldGlow: "rgba(255, 215, 0, 0.35)",
+    crimson: "#DC2626",
+    crimsonGlow: "rgba(220, 38, 38, 0.35)",
+
     // --- RPG RESOURCES ---
     resourceMana: "#9B59B6",
     resourceLeaf: "#2ECC71",

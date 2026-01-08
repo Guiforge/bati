@@ -313,8 +313,8 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       muscle: exerciseMuscles.muscle,
     })
     .from(quests)
-    .innerJoin(questExercises, eq(questExercises.questId, quests.id))
-    .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId))
+    .leftJoin(questExercises, eq(questExercises.questId, quests.id))
+    .leftJoin(exercises, eq(exercises.id, questExercises.exerciseId))
     .leftJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
     .where(eq(quests.id, id))
     .orderBy(questExercises.sortOrder);
@@ -337,6 +337,23 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   const byQuestExercise = new Map<number, QuestExercise>();
 
   for (const r of rows) {
+    if (
+      r.qexId == null ||
+      r.targetType == null ||
+      r.targetMin == null ||
+      r.targetMax == null ||
+      r.imagesJson == null ||
+      r.exId == null ||
+      r.exEnName == null ||
+      r.exFrName == null ||
+      r.exEnDescription == null ||
+      r.exFrDescription == null
+    ) {
+      // Quest exists but either has no exercises, or the join is incomplete.
+      // In that case, still return the quest shell instead of treating it as invalid.
+      continue;
+    }
+
     const base = {
       type: r.targetType,
       min: r.targetMin,

@@ -40,6 +40,7 @@ export default function QuestDetailsScreen() {
 
   const handleStartQuest = async () => {
     if (!quest) return;
+    if (quest.exercises.length === 0) return;
 
     await startSession(quest, userLevel);
     router.push("/session/countdown");
@@ -200,6 +201,7 @@ export default function QuestDetailsScreen() {
           color="$text"
           fontWeight="bold"
           onPress={handleStartQuest}
+          disabled={quest.exercises.length === 0}
           pressStyle={{ opacity: 0.8, scale: 0.98 }}
           shadowColor="$primaryGlow"
           shadowOffset={{ width: 0, height: 4 }}

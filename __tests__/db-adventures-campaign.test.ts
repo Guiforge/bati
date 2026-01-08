@@ -19,6 +19,7 @@ describe("db/adventures campaign", () => {
     const adventures = require("../src/db/adventures") as typeof import("../src/db/adventures");
     const exercises = require("../src/db/exercises") as typeof import("../src/db/exercises");
     const completed = require("../src/db/completed") as typeof import("../src/db/completed");
+    const quests = require("../src/db/quests") as typeof import("../src/db/quests");
 
     const all = await adventures.listAdventures();
     expect(all.length).toBeGreaterThan(0);
@@ -31,6 +32,13 @@ describe("db/adventures campaign", () => {
     expect(details).toBeTruthy();
     if (!details) throw new Error("Expected adventure details");
     expect(details.steps.length).toBeGreaterThanOrEqual(2);
+
+    // Regression: tapping an adventure step navigates to Quest Details, which uses getQuestById.
+    // If getQuestById returns null, the UI shows an "invalid quest" error.
+    for (const step of details.steps) {
+      const stepQuest = await quests.getQuestById(step.questId, quests.Difficulty.Medium);
+      expect(stepQuest).toBeTruthy();
+    }
 
     const step0QuestId = details.steps[0]?.questId;
     const step1QuestId = details.steps[1]?.questId;

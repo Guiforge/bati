@@ -29,7 +29,7 @@ describe("db/exercises", () => {
     expect(squat?.difficulty).toBeTruthy();
     expect(squat?.equipment).toBeTruthy();
     expect(typeof squat?.secondsPerRep).toBe("number");
-    expect(squat?.muscles.sort()).toEqual(["calf", "chest"].sort());
+    expect(squat?.muscles.sort()).toEqual(["abs", "calf"].sort());
   });
 
   test("getExerciseById returns one exercise with muscles", async () => {

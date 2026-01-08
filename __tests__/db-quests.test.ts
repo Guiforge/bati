@@ -63,6 +63,21 @@ describe("db/quests", () => {
     expect(third.target.value).toBe(29);
   });
 
+  test("seeded 0006 quest has exercises (Guardian's Oath step)", async () => {
+    const quests = require("../src/db/quests") as typeof import("../src/db/quests");
+
+    const templates = await quests.listQuestTemplates();
+    const gate = templates.find((q) => q.enTitle === "Guard the Fortress Gate");
+    expect(gate).toBeTruthy();
+    if (!gate) throw new Error("Expected seeded quest 'Guard the Fortress Gate'");
+    expect(gate.exercises.length).toBeGreaterThan(0);
+
+    const quest = await quests.getQuestById(gate.id, quests.Difficulty.Medium);
+    expect(quest).toBeTruthy();
+    if (!quest) throw new Error("Expected getQuestById to return the quest");
+    expect(quest.exercises.length).toBeGreaterThan(0);
+  });
+
   test("create/update/set/delete quest template", async () => {
     const quests = require("../src/db/quests") as typeof import("../src/db/quests");
     const exercises = require("../src/db/exercises") as typeof import("../src/db/exercises");

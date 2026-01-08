@@ -71,6 +71,20 @@
       "when": 1767774001009,
       "tag": "0009_add_quest_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1767830400000,
+      "tag": "0010_audit_and_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1767830400001,
+      "tag": "0011_backfill_quest_exercises",
+      "breakpoints": true
     }
   ]
 }

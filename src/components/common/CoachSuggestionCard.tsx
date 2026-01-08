@@ -84,7 +84,7 @@ export function CoachSuggestionCard() {
                   key={quest.id}
                   variant="secondary"
                   size="$3"
-                  onPress={() => router.push(`/quests/${quest.id}` as never)}
+                  onPress={() => router.push(`/(modals)/quests/${quest.id}` as never)}
                 >
                   {title}
                 </AppButton>

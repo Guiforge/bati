@@ -89,7 +89,7 @@ export function ContinueAdventureCard() {
   const isBoss = currentAdventure.kind === "boss";
 
   const handleContinue = () => {
-    router.push(`/adventures/${currentAdventure.id}`);
+    router.push(`/(modals)/adventures/${currentAdventure.id}`);
   };
 
   return (

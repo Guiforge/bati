@@ -70,7 +70,7 @@ export default function QuestsScreen() {
     const description = i18n.language === "fr" ? item.frDescription : item.enDescription;
 
     return (
-      <Button unstyled onPress={() => router.push(`/quests/${item.id}`)} mb="$3">
+      <Button unstyled onPress={() => router.push(`/(modals)/quests/${item.id}`)} mb="$3">
         <YStack
           bg="$glassBg"
           borderColor="$borderStrong"

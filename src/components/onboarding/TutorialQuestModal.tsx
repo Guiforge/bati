@@ -27,7 +27,7 @@ export function TutorialQuestModal() {
   const handleStartTutorial = () => {
     setShowModal(false);
     // Navigate to tutorial quest (ID 1 = tutorial quest)
-    router.push("/quests/1");
+    router.push("/(modals)/quests/1");
   };
 
   const handleSkip = async () => {

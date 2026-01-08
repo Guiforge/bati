@@ -74,7 +74,7 @@ export function SuggestedQuestsCard() {
                 height="auto"
                 py="$2"
                 px="$3"
-                onPress={() => router.push(`/quests/${quest.id}` as never)}
+                onPress={() => router.push(`/(modals)/quests/${quest.id}` as never)}
               >
                 <YStack flex={1} gap="$1">
                   <Text fontWeight="800" fontSize={14} color="$color" numberOfLines={1}>

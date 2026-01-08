@@ -100,7 +100,7 @@ export function AdventuresGallery() {
             key={adventure.id}
             adventure={adventure}
             language={i18n.language}
-            onPress={() => router.push(`/adventures/${adventure.id}`)}
+            onPress={() => router.push(`/(modals)/adventures/${adventure.id}`)}
           />
         ))}
       </ScrollView>

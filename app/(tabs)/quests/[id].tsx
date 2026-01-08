@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
@@ -12,6 +13,7 @@ export default function QuestDetailsScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { GameIcon } = useGameIcon();
+  const insets = useSafeAreaInsets();
   const startSession = useSessionStore((state) => state.startSession);
 
   const [quest, setQuest] = useState<Quest | null>(null);
@@ -71,7 +73,35 @@ export default function QuestDetailsScreen() {
   const description = i18n.language === "fr" ? quest.frDescription : quest.enDescription;
 
   return (
-    <YStack flex={1} bg="$bgDark">
+    <YStack flex={1} bg="$bgDark" pt={insets.top}>
+      <XStack
+        px="$4"
+        py="$3"
+        alignItems="center"
+        justifyContent="space-between"
+        borderBottomWidth={1}
+        borderBottomColor="$borderStrong"
+        bg="$bgDark"
+      >
+        <Button
+          chromeless
+          onPress={() => router.back()}
+          pressStyle={{ opacity: 0.7, scale: 0.98 }}
+          hitSlop={12}
+        >
+          <Text color="$text" fontSize={26} fontWeight="900" lineHeight={26}>
+            ×
+          </Text>
+        </Button>
+
+        <Text color="$textSecondary" fontSize={12} fontWeight="900" letterSpacing={2}>
+          {t("quests.details_title")}
+        </Text>
+
+        {/* Spacer to keep title centered */}
+        <YStack width={44} />
+      </XStack>
+
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <YStack p="$4" gap="$4">
           <Text color="$text" fontSize={36} fontWeight="bold">
@@ -125,8 +155,8 @@ export default function QuestDetailsScreen() {
                         </Text>
                         <Text color="$textSecondary" fontSize={14}>
                           {qe.target.type === "reps"
-                            ? `${qe.target.value} reps`
-                            : `${qe.target.value}s`}
+                            ? `${qe.target.value} ${t("session.reps")}`
+                            : `${qe.target.value} ${t("session.seconds")}`}
                         </Text>
                       </YStack>
                     </XStack>
@@ -140,14 +170,14 @@ export default function QuestDetailsScreen() {
             <XStack alignItems="center" gap="$2">
               <GameIcon name="lorc/cycle" size={20} tintColor="$textSecondary" />
               <Text color="$textSecondary" fontSize={16}>
-                {quest.rounds} {quest.rounds === 1 ? "round" : "rounds"}
+                {t("quests.rounds", { count: quest.rounds })}
               </Text>
             </XStack>
 
             <XStack alignItems="center" gap="$2">
               <GameIcon name="lorc/stopwatch" size={20} tintColor="$textSecondary" />
               <Text color="$textSecondary" fontSize={16}>
-                {quest.restSeconds}s {t("quests.rest", { count: quest.restSeconds })}
+                {t("quests.rest", { count: quest.restSeconds })}
               </Text>
             </XStack>
           </YStack>

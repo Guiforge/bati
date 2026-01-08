@@ -1,5 +1,5 @@
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -12,10 +12,10 @@ import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 import { ErrorBoundary } from "@/src/components/common/ErrorBoundary";
 import { ToastProvider } from "@/src/components/common/Toast";
 import { DatabaseProvider } from "@/src/components/DatabaseProvider";
+import "@/src/i18n";
 import { useSettingsStore } from "@/src/stores/settings";
 import { useUserStore } from "@/src/stores/user";
 import { AppBackground } from "@/src/ui";
-import "@/src/i18n";
 import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);
@@ -100,7 +100,17 @@ export default function RootLayout() {
                     <ToastProvider>
                       <ErrorBoundary>
                         <AppBackground />
-                        <Slot />
+                        <Stack screenOptions={{ headerShown: false }}>
+                          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                          <Stack.Screen
+                            name="(modals)"
+                            options={{
+                              headerShown: false,
+                              presentation: "modal",
+                              animation: "slide_from_bottom",
+                            }}
+                          />
+                        </Stack>
                       </ErrorBoundary>
                     </ToastProvider>
                   </DatabaseProvider>

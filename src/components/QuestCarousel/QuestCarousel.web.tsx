@@ -95,7 +95,7 @@ export function QuestCarousel() {
         return (
           <SwiperSlide key={q.id} style={{ display: "flex", justifyContent: "center" }}>
             <YStack width={slideWidth}>
-              <Card bg={tokens.bg} onPress={() => router.push(`/quests/${q.id}` as never)}>
+              <Card bg={tokens.bg} onPress={() => router.push(`/(modals)/quests/${q.id}` as never)}>
                 <XStack gap="$3" items="flex-start">
                   <YStack
                     width={54}

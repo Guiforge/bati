@@ -3,13 +3,21 @@ import { db, schema } from "./client";
 import { getQuestTemplateById, type QuestTemplate } from "./quests";
 import type { DifficultyCode } from "./schema";
 
-const { adventureRuns, adventureRunSteps, adventures, adventureSteps, questExercises, quests } =
-  schema;
+const {
+  adventureRuns,
+  adventureRunSteps,
+  adventures,
+  adventureSteps,
+  questExercises,
+  quests,
+} = schema;
 
 function safeParseImages(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((x) => typeof x === "string")
+      : [];
   } catch {
     return [];
   }
@@ -119,6 +127,11 @@ export async function listAdventures(): Promise<Adventure[]> {
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
 
+      questImagePath: quests.imagePath,
+      questPrimaryMuscle: quests.primaryMuscle,
+      questEstimatedMinutes: quests.estimatedMinutes,
+      questDifficulty: quests.difficulty,
+
       questExerciseId: questExercises.id,
       qexSortOrder: questExercises.sortOrder,
       exerciseId: questExercises.exerciseId,
@@ -139,77 +152,102 @@ export async function listAdventures(): Promise<Adventure[]> {
     .innerJoin(adventures, eq(adventures.id, adventureSteps.adventureId))
     .where(eq(adventures.isActive, 1));
 
-  const stepsCountByAdventureId = new Map<number, number>();
-  for (const r of stepRows) {
-    stepsCountByAdventureId.set(
-      r.adventureId,
-      (stepsCountByAdventureId.get(r.adventureId) ?? 0) + 1
-    );
+  function buildStepsCountByAdventureId(): Map<number, number> {
+    const map = new Map<number, number>();
+    for (const r of stepRows) {
+      map.set(r.adventureId, (map.get(r.adventureId) ?? 0) + 1);
+    }
+    return map;
   }
 
-  const byAdventureId = new Map<number, Adventure>();
+  function buildAdventureMap(
+    stepsCountByAdventureId: Map<number, number>
+  ): Map<number, Adventure> {
+    type Row = (typeof rows)[number];
 
-  for (const r of rows) {
-    if (!byAdventureId.has(r.adventureId)) {
+    const byAdventureId = new Map<number, Adventure>();
+
+    function ensureAdventure(row: Row): Adventure {
+      const existing = byAdventureId.get(row.adventureId);
+      if (existing) return existing;
+
       const quest: QuestTemplate = {
-        id: r.coverQuestId,
-        enTitle: r.enTitle,
-        frTitle: r.frTitle,
-        enDescription: r.enDescription,
-        frDescription: r.frDescription,
-        author: r.questAuthor,
-        rounds: r.rounds,
-        restSeconds: r.restSeconds,
+        id: row.coverQuestId,
+        enTitle: row.enTitle,
+        frTitle: row.frTitle,
+        enDescription: row.enDescription,
+        frDescription: row.frDescription,
+        author: row.questAuthor,
+        rounds: row.rounds,
+        restSeconds: row.restSeconds,
+        imagePath: row.questImagePath ?? null,
+        primaryMuscle: row.questPrimaryMuscle ?? null,
+        estimatedMinutes: row.questEstimatedMinutes ?? null,
+        difficulty: row.questDifficulty ?? null,
         exercises: [],
       };
 
-      byAdventureId.set(r.adventureId, {
-        id: r.adventureId,
-        coverQuestId: r.coverQuestId,
-        sortOrder: r.sortOrder,
-        kind: (r.kind as AdventureKind) ?? "route",
-        isActive: r.isActive,
-        author: r.advAuthor,
-        imagePath: r.advImagePath,
-        enTitle: r.advEnTitle,
-        frTitle: r.advFrTitle,
-        enDescription: r.advEnDescription,
-        frDescription: r.advFrDescription,
+      const created: Adventure = {
+        id: row.adventureId,
+        coverQuestId: row.coverQuestId,
+        sortOrder: row.sortOrder,
+        kind: (row.kind as AdventureKind) ?? "route",
+        isActive: row.isActive,
+        author: row.advAuthor,
+        imagePath: row.advImagePath,
+        enTitle: row.advEnTitle,
+        frTitle: row.advFrTitle,
+        enDescription: row.advEnDescription,
+        frDescription: row.advFrDescription,
         coverQuest: quest,
-        stepsCount: stepsCountByAdventureId.get(r.adventureId) ?? 0,
+        stepsCount: stepsCountByAdventureId.get(row.adventureId) ?? 0,
+      };
+
+      byAdventureId.set(row.adventureId, created);
+      return created;
+    }
+
+    function appendCoverQuestExerciseIfPresent(row: Row, adv: Adventure) {
+      if (
+        row.questExerciseId == null ||
+        row.exerciseId == null ||
+        row.targetType == null ||
+        row.targetMin == null ||
+        row.targetMax == null ||
+        row.imagesJson == null
+      ) {
+        return;
+      }
+
+      adv.coverQuest.exercises.push({
+        exerciseId: row.exerciseId,
+        images: safeParseImages(row.imagesJson),
+        baseTarget: {
+          type: row.targetType,
+          min: row.targetMin,
+          max: row.targetMax,
+        },
       });
     }
 
-    const adv = byAdventureId.get(r.adventureId);
-    if (!adv) continue;
-
-    if (
-      r.questExerciseId == null ||
-      r.exerciseId == null ||
-      r.targetType == null ||
-      r.targetMin == null ||
-      r.targetMax == null ||
-      r.imagesJson == null
-    ) {
-      continue;
+    for (const r of rows) {
+      const adv = ensureAdventure(r);
+      appendCoverQuestExerciseIfPresent(r, adv);
     }
 
-    adv.coverQuest.exercises.push({
-      exerciseId: r.exerciseId,
-      images: safeParseImages(r.imagesJson),
-      baseTarget: {
-        type: r.targetType,
-        min: r.targetMin,
-        max: r.targetMax,
-      },
-    });
+    return byAdventureId;
   }
+
+  const stepsCountByAdventureId = buildStepsCountByAdventureId();
+  const byAdventureId = buildAdventureMap(stepsCountByAdventureId);
 
   // Adventures are campaigns: only return multi-step content.
   return [...byAdventureId.values()].filter((a) => a.stepsCount >= 2);
 }
 
-export async function getAdventureById(adventureId: number): Promise<Adventure | null> {
+export async function getAdventureById(
+  adventureId: number
+): Promise<Adventure | null> {
   const rows = await db
     .select({
       adventureId: adventures.id,
@@ -257,7 +295,9 @@ export async function getAdventureById(adventureId: number): Promise<Adventure |
   };
 }
 
-export async function getAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {
+export async function getAdventureDetails(
+  adventureId: number
+): Promise<AdventureDetails | null> {
   const base = await db
     .select({
       id: adventures.id,
@@ -350,7 +390,12 @@ export async function getActiveAdventureRun(
       finishedAt: adventureRuns.finishedAt,
     })
     .from(adventureRuns)
-    .where(and(eq(adventureRuns.adventureId, adventureId), eq(adventureRuns.status, "active")))
+    .where(
+      and(
+        eq(adventureRuns.adventureId, adventureId),
+        eq(adventureRuns.status, "active")
+      )
+    )
     .orderBy(desc(adventureRuns.id))
     .limit(1);
 

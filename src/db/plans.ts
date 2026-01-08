@@ -124,7 +124,8 @@ export async function generatePlanForGoal(goalId: number): Promise<void> {
         questId: selectedQuest.id,
         scheduledDate,
         goalId: goal.id,
-        note: `Week ${week + 1} - Day ${dayOffset + 1}`,
+        // Store a language-neutral note; UI can localize if needed.
+        note: `W${week + 1}-D${dayOffset + 1}`,
       });
 
       sessionIndex++;

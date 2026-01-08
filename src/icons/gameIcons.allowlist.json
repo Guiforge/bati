@@ -5,6 +5,7 @@
   "lorc/treasure-map",
   "lorc/unlocking",
   "lorc/cycle",
+  "lorc/return-arrow",
   "lorc/stopwatch",
   "lorc/anvil",
   "lorc/scroll-unfurled",
@@ -25,5 +26,7 @@
   "lorc/feather",
   "lorc/wheat",
   "lorc/locked-chest",
-  "lorc/crown-coin"
+  "lorc/crown-coin",
+  "lorc/arrow-dunk",
+  "lorc/walking-boot"
 ]

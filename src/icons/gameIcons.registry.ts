@@ -6,6 +6,7 @@ import type { ImageSourcePropType } from "react-native";
 export const GAME_ICON_SOURCES = {
   "lorc/anvil": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/anvil.svg"),
   "lorc/archery-target": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/archery-target.svg"),
+  "lorc/arrow-dunk": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/arrow-dunk.svg"),
   "lorc/campfire": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/campfire.svg"),
   "lorc/cash": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/cash.svg"),
   "lorc/castle": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/castle.svg"),
@@ -21,6 +22,7 @@ export const GAME_ICON_SOURCES = {
   "lorc/lightning-branches": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/lightning-branches.svg"),
   "lorc/locked-chest": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/locked-chest.svg"),
   "lorc/open-book": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/open-book.svg"),
+  "lorc/return-arrow": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/return-arrow.svg"),
   "lorc/scroll-unfurled": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/scroll-unfurled.svg"),
   "lorc/star-prominences": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/star-prominences.svg"),
   "lorc/stone-block": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/stone-block.svg"),
@@ -29,6 +31,7 @@ export const GAME_ICON_SOURCES = {
   "lorc/treasure-map": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/treasure-map.svg"),
   "lorc/trophy": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/trophy.svg"),
   "lorc/unlocking": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/unlocking.svg"),
+  "lorc/walking-boot": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/walking-boot.svg"),
   "lorc/wheat": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/wheat.svg"),
   "lorc/wood-axe": require("./../../assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/wood-axe.svg"),
 } as const satisfies Record<string, ImageSourcePropType>;

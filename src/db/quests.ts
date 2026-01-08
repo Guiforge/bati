@@ -3,7 +3,12 @@ import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import type { QuestTargetType } from "./schema";
-import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
+import {
+  Difficulty,
+  generateTarget,
+  type Target,
+  type UserLevel,
+} from "./targets";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
 
@@ -44,6 +49,10 @@ export type QuestTemplate = {
   author: string;
   rounds: number;
   restSeconds: number;
+  imagePath: string | null;
+  primaryMuscle: string | null;
+  estimatedMinutes: number | null;
+  difficulty: "Beginner" | "Intermediate" | "Advanced" | null;
   exercises: QuestTemplateExercise[];
 };
 
@@ -68,7 +77,9 @@ export type Quest = {
 function safeParseImages(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((x) => typeof x === "string")
+      : [];
   } catch {
     return [];
   }
@@ -82,7 +93,9 @@ export type CreateQuestTemplateInput = Omit<QuestTemplate, "id" | "author"> & {
   author?: string;
 };
 
-export async function createQuestTemplate(input: CreateQuestTemplateInput): Promise<number> {
+export async function createQuestTemplate(
+  input: CreateQuestTemplateInput
+): Promise<number> {
   await db.insert(quests).values({
     enTitle: input.enTitle,
     frTitle: input.frTitle,
@@ -91,6 +104,10 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
     author: input.author ?? "Admin",
     rounds: input.rounds,
     restSeconds: input.restSeconds,
+    imagePath: input.imagePath ?? null,
+    primaryMuscle: input.primaryMuscle ?? null,
+    estimatedMinutes: input.estimatedMinutes ?? null,
+    difficulty: input.difficulty ?? null,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -133,6 +150,10 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      imagePath: quests.imagePath,
+      primaryMuscle: quests.primaryMuscle,
+      estimatedMinutes: quests.estimatedMinutes,
+      difficulty: quests.difficulty,
 
       questExerciseId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -159,6 +180,10 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
         author: r.author,
         rounds: r.rounds,
         restSeconds: r.restSeconds,
+        imagePath: r.imagePath,
+        primaryMuscle: r.primaryMuscle,
+        estimatedMinutes: r.estimatedMinutes,
+        difficulty: r.difficulty as QuestTemplate["difficulty"],
         exercises: [],
       });
     }
@@ -188,7 +213,9 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
   return [...byId.values()];
 }
 
-export async function getQuestTemplateById(id: number): Promise<QuestTemplate | null> {
+export async function getQuestTemplateById(
+  id: number
+): Promise<QuestTemplate | null> {
   const rows = await db
     .select({
       questId: quests.id,
@@ -199,6 +226,10 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      imagePath: quests.imagePath,
+      primaryMuscle: quests.primaryMuscle,
+      estimatedMinutes: quests.estimatedMinutes,
+      difficulty: quests.difficulty,
 
       questExerciseId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -225,6 +256,10 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
     author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
+    imagePath: first.imagePath,
+    primaryMuscle: first.primaryMuscle,
+    estimatedMinutes: first.estimatedMinutes,
+    difficulty: first.difficulty as QuestTemplate["difficulty"],
     exercises: [],
   };
 
@@ -254,7 +289,10 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
   return quest;
 }
 
-export async function getQuestById(id: number, userLevel: UserLevel): Promise<Quest | null> {
+export async function getQuestById(
+  id: number,
+  userLevel: UserLevel
+): Promise<Quest | null> {
   // Join quests -> quest_exercises -> exercises -> exercise_muscles and aggregate.
   const rows = await db
     .select({
@@ -359,7 +397,12 @@ export async function updateQuestMeta(
   patch: Partial<
     Pick<
       QuestTemplate,
-      "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds" | "restSeconds"
+      | "enTitle"
+      | "frTitle"
+      | "enDescription"
+      | "frDescription"
+      | "rounds"
+      | "restSeconds"
     >
   >
 ): Promise<void> {
@@ -420,7 +463,12 @@ export async function ensureQuestHasExercise(
   const existing = await db
     .select({ id: questExercises.id })
     .from(questExercises)
-    .where(and(eq(questExercises.questId, questId), eq(questExercises.exerciseId, exerciseId)))
+    .where(
+      and(
+        eq(questExercises.questId, questId),
+        eq(questExercises.exerciseId, exerciseId)
+      )
+    )
     .limit(1);
 
   if (existing.length > 0) return;
@@ -449,7 +497,9 @@ export async function ensureQuestHasExercise(
  * Get the daily quest based on the current date.
  * Deterministically picks a quest from all available quests.
  */
-export async function getDailyQuest(userLevel: UserLevel): Promise<Quest | null> {
+export async function getDailyQuest(
+  userLevel: UserLevel
+): Promise<Quest | null> {
   const templates = await listQuestTemplates();
   if (templates.length === 0) return null;
 

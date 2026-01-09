@@ -1,4 +1,3 @@
-import { Award, Clock, Star, TrendingUp } from "@tamagui/lucide-icons";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Animated, {
@@ -11,22 +10,29 @@ import Animated, {
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/src/components/common/Card";
 import type { NewRecordResult } from "@/src/db/personalRecords";
+import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { useSettingsStore } from "@/src/stores/settings";
 
 type Props = {
   records: NewRecordResult[];
 };
 
-function RecordIcon({ type }: { type: NewRecordResult["recordType"] }) {
+function RecordIcon({
+  type,
+  GameIcon,
+}: {
+  type: NewRecordResult["recordType"];
+  GameIcon: ReturnType<typeof useGameIcon>["GameIcon"];
+}) {
   switch (type) {
     case "longest_session":
-      return <Clock size={20} color="$primary" />;
+      return <GameIcon name="lorc/stopwatch" size={20} tintColor="$primary" />;
     case "most_xp":
-      return <Star size={20} color="$pastelYellow" />;
+      return <GameIcon name="lorc/star-prominences" size={20} tintColor="$gold" />;
     case "exercise_max_reps":
-      return <TrendingUp size={20} color="$secondary" />;
+      return <GameIcon name="lorc/lightning-branches" size={20} tintColor="$secondary" />;
     default:
-      return <Award size={20} color="$primary" />;
+      return <GameIcon name="lorc/trophy" size={20} tintColor="$primary" />;
   }
 }
 
@@ -52,6 +58,7 @@ const AnimatedView = Animated.View;
 export function NewRecordsBadge({ records }: Props) {
   const { t } = useTranslation();
   const { language } = useSettingsStore();
+  const { GameIcon } = useGameIcon();
   const scale = useSharedValue(1);
 
   useEffect(() => {
@@ -73,34 +80,40 @@ export function NewRecordsBadge({ records }: Props) {
 
   return (
     <AnimatedView style={[animatedStyle, { width: "100%", maxWidth: 520 }]}>
-      <Card bg="$pastelYellow" borderColor="$primary">
+      <Card
+        bg="$glassBg"
+        borderColor="$gold"
+        shadowColor="$goldGlow"
+        shadowOpacity={0.5}
+        shadowRadius={16}
+      >
         <YStack gap="$3">
           <XStack items="center" gap="$2" justify="center">
-            <Award size={22} color="$primary" />
-            <Text fontWeight="900" fontSize={18} color="$primary">
+            <GameIcon name="lorc/trophy" size={22} tintColor="$gold" />
+            <Text fontWeight="900" fontSize={18} color="$gold">
               {t("session.new_records", { count: records.length })}
             </Text>
-            <Award size={22} color="$primary" />
+            <GameIcon name="lorc/trophy" size={22} tintColor="$gold" />
           </XStack>
 
           <YStack gap="$2">
             {records.slice(0, 3).map((record, idx) => (
               <XStack
                 key={`${record.recordType}-${record.exerciseId ?? idx}`}
-                bg="$background"
+                bg="$bgOverlay"
                 p="$2"
                 px="$3"
                 rounded="$3"
-                borderWidth={2}
-                borderColor="$color"
+                borderWidth={1}
+                borderColor="$borderStrong"
                 items="center"
                 gap="$2"
               >
-                <RecordIcon type={record.recordType} />
-                <Text flex={1} fontWeight="700" fontSize={13} color="$color">
+                <RecordIcon type={record.recordType} GameIcon={GameIcon} />
+                <Text flex={1} fontWeight="700" fontSize={13} color="$text">
                   <RecordLabel record={record} language={language} />
                 </Text>
-                <Text fontWeight="900" fontSize={14} color="$primary">
+                <Text fontWeight="900" fontSize={14} color="$gold">
                   {record.newValue}
                 </Text>
               </XStack>
@@ -108,7 +121,12 @@ export function NewRecordsBadge({ records }: Props) {
           </YStack>
 
           {records.length > 3 && (
-            <Text fontSize={12} color="$color" opacity={0.7} style={{ textAlign: "center" }}>
+            <Text
+              fontSize={12}
+              color="$textSecondary"
+              opacity={0.7}
+              style={{ textAlign: "center" }}
+            >
               {t("session.pr_more", { count: records.length - 3 })}
             </Text>
           )}

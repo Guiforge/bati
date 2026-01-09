@@ -112,7 +112,7 @@ export default function ExerciseScreen() {
     } else if (newStatus === "resting") {
       // Dark-mode morphing: fade to deep black before transitioning to rest.
       setIsAdvancing(true);
-      router.push("/session/rest");
+      router.replace("/session/rest");
     }
   };
 
@@ -130,7 +130,7 @@ export default function ExerciseScreen() {
             router.replace("/session/victory");
           } else if (newStatus === "resting") {
             setIsAdvancing(true);
-            router.push("/session/rest");
+            router.replace("/session/rest");
           }
         },
       },

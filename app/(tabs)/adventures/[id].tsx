@@ -713,7 +713,7 @@ export default function AdventureDetailsScreen() {
 
     setShowConfirmModal(false);
     await startSession(quest, userLevel, { adventureId: adventure.id });
-    router.push("/session/countdown");
+    router.push("/session");
   }, [adventure, quest, userLevel, startSession, router]);
 
   const handleShowConfirmation = useCallback(() => {

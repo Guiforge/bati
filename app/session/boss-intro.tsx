@@ -77,7 +77,7 @@ export default function BossIntroScreen() {
       adventureId: adventure.id,
     });
 
-    router.push("/session/countdown");
+    router.push("/session");
   };
 
   if (loading) {

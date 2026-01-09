@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AnimatePresence, Button, Paragraph, YStack } from "tamagui";
+import { AnimatePresence, Button, YStack } from "tamagui";
 import { SOUNDS } from "@/src/constants/sounds";
 import type { ResourceLoot } from "@/src/db/resources";
+import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { useHaptics } from "@/src/hooks/useHaptics";
 import { useSound } from "@/src/hooks/useSound";
 import { LootDisplay } from "./LootDisplay";
@@ -12,6 +13,7 @@ export function LootChest({ loot }: { loot: ResourceLoot }) {
   const [isOpen, setIsOpen] = useState(false);
   const { playSound } = useSound();
   const { success } = useHaptics();
+  const { GameIcon } = useGameIcon();
 
   const handleOpen = () => {
     success();
@@ -38,7 +40,21 @@ export function LootChest({ loot }: { loot: ResourceLoot }) {
             items="center"
             gap="$2"
           >
-            <Paragraph fontSize={80}>🎁</Paragraph>
+            <YStack
+              width={100}
+              height={100}
+              items="center"
+              justify="center"
+              bg="$glassBg"
+              borderWidth={1}
+              borderColor="$gold"
+              borderRadius="$4"
+              shadowColor="$goldGlow"
+              shadowOpacity={0.6}
+              shadowRadius={20}
+            >
+              <GameIcon name="lorc/locked-chest" size={64} tintColor="$gold" />
+            </YStack>
             <Button
               size="$3"
               bg="$primary"

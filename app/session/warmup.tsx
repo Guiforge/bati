@@ -19,12 +19,12 @@ export default function WarmupScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     // Start warm-up countdown (could add a separate warm-up timer here if needed)
     // For now, skip directly to main countdown
-    router.push("/session/countdown");
+    router.replace("/session");
   };
 
   const handleSkipWarmup = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    router.push("/session/countdown");
+    router.replace("/session");
   };
 
   return (

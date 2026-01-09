@@ -1,4 +1,3 @@
-import { Minus, Plus } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
@@ -194,9 +193,12 @@ export function RestView() {
               <Button
                 size="$3"
                 circular
-                icon={<Minus size={16} />}
                 onPress={() => handleUpdateResult(Math.max(1, lastResult.result.value - 1))}
-              />
+              >
+                <Text fontSize={20} fontWeight="900" color="$color">
+                  −
+                </Text>
+              </Button>
               <Text
                 fontWeight="900"
                 fontSize={24}
@@ -208,9 +210,12 @@ export function RestView() {
               <Button
                 size="$3"
                 circular
-                icon={<Plus size={16} />}
                 onPress={() => handleUpdateResult(lastResult.result.value + 1)}
-              />
+              >
+                <Text fontSize={20} fontWeight="900" color="$color">
+                  +
+                </Text>
+              </Button>
             </XStack>
           </XStack>
         </YStack>

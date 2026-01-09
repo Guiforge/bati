@@ -8,6 +8,7 @@ import { useHaptics } from "@/src/hooks/useHaptics";
 import { useReducedMotion } from "@/src/hooks/useReducedMotion";
 import { useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
+import { useSettingsStore } from "@/src/stores/settings";
 
 /**
  * Countdown View
@@ -24,6 +25,7 @@ export function CountdownView() {
   const { height: windowHeight } = useWindowDimensions();
   const { remainingSeconds } = useSessionTimer();
   const { status, finishCountdown, quest, currentExerciseIndex } = useSessionStore();
+  const { language } = useSettingsStore();
   const { lightImpact, success } = useHaptics();
   const reducedMotion = useReducedMotion();
   const prevSecondsRef = useRef(remainingSeconds);
@@ -54,7 +56,11 @@ export function CountdownView() {
   const showLetsGo = remainingSeconds === 0;
 
   const nextExercise = quest?.exercises?.[currentExerciseIndex] ?? null;
-  const nextLabel = nextExercise?.exercise?.enName ?? "";
+  const nextLabel = nextExercise?.exercise
+    ? language === "fr"
+      ? nextExercise.exercise.frName
+      : nextExercise.exercise.enName
+    : "";
 
   // Spec: number should occupy ~40% of screen height.
   // We clamp to keep it readable on very small/very tall screens.

@@ -10,7 +10,7 @@ type Props = {
 };
 
 // Stagger delay per item in ms
-const STAGGER_DELAY = 120;
+const STAGGER_DELAY = 80;
 
 export function LootDisplay({ loot }: Props) {
   const { t } = useTranslation();

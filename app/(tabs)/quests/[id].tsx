@@ -44,7 +44,7 @@ export default function QuestDetailsScreen() {
     if (!isValidatedQuest(quest)) return;
 
     await startSession(quest, userLevel);
-    router.push("/session/countdown");
+    router.push("/session");
   };
 
   if (loading) {

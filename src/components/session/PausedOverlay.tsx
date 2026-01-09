@@ -66,7 +66,8 @@ export function PausedOverlay() {
             <AppButton
               onPress={handleRestartRound}
               variant="outline"
-              backgroundColor="$pastelBlue"
+              backgroundColor="$glassBg"
+              borderColor="$warning"
               pressStyle={{ opacity: 0.9 }}
               accessibilityLabel={t("session.restart_round_button")}
               accessibilityRole="button"
@@ -77,7 +78,8 @@ export function PausedOverlay() {
             <AppButton
               onPress={handleQuit}
               variant="outline"
-              backgroundColor="$pastelPink"
+              backgroundColor="$glassBg"
+              borderColor="$error"
               pressStyle={{ opacity: 0.9 }}
               accessibilityLabel={t("session.quit_button")}
               accessibilityRole="button"

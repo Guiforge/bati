@@ -60,6 +60,7 @@ export type Quest = {
   author: string;
   rounds: number;
   restSeconds: number;
+  imagePath: string | null;
   exercises: QuestExercise[];
 };
 
@@ -315,6 +316,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      imagePath: quests.imagePath,
 
       qexId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -356,6 +358,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
+    imagePath: first.imagePath,
     exercises: [],
   };
 

@@ -1,3 +1,6 @@
+import { CHEST_ASSETS } from "@/src/constants/assetMap";
+import type { ResourceLoot } from "@/src/db/resources";
+import { useHaptics } from "@/src/hooks/useHaptics";
 import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,9 +15,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Text, YStack } from "tamagui";
-import { CHEST_ASSETS } from "@/src/constants/assetMap";
-import type { ResourceLoot } from "@/src/db/resources";
-import { useHaptics } from "@/src/hooks/useHaptics";
 
 type Props = {
   loot: ResourceLoot;
@@ -137,14 +137,20 @@ export function LootReveal({ loot, onDismiss }: Props) {
       ringScale.value = withTiming(2.2, { duration: 260, easing: Easing.out(Easing.quad) });
       ringOpacity.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.quad) });
 
+      // Keep chest open visible for 1 second before fading out
       overlayOpacity.value = withTiming(
         0,
-        { duration: 260, easing: Easing.out(Easing.quad) },
+        { duration: 400, easing: Easing.out(Easing.quad) },
         (finished) => {
           if (!finished) return;
           runOnJS(onDismiss)();
         }
       );
+
+      // Delay the fade out by 1 second to show open chest
+      setTimeout(() => {
+        overlayOpacity.value = withTiming(0, { duration: 400, easing: Easing.out(Easing.quad) });
+      }, 500);
 
       runOnJS(success)();
       runOnJS(heavyImpact)();

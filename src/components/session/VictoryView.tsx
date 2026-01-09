@@ -112,11 +112,12 @@ export function VictoryView() {
 
   if (!quest || !startTime) return null;
 
-  // Use first exercise image as background fallback
-  const firstExercise = quest.exercises[0];
-  const questImageSource = firstExercise
-    ? resolveImageAsset(firstExercise.exercise.imagePath)
-    : null;
+  // Use quest image if available, fallback to first exercise image
+  const questImageSource = quest.imagePath
+    ? resolveImageAsset(quest.imagePath)
+    : quest.exercises[0]
+      ? resolveImageAsset(quest.exercises[0].exercise.imagePath)
+      : null;
 
   const handleContinue = () => {
     if (!saveResult) return;

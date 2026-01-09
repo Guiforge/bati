@@ -1,4 +1,3 @@
-import { BlurView } from "expo-blur";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
@@ -68,15 +67,8 @@ export function CountdownView() {
 
   return (
     <YStack flex={1} bg="$bgDarker">
-      {/* Heavy blur + deep black overlay to eliminate distractions */}
-      <BlurView
-        intensity={85}
-        tint="dark"
-        style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
-      />
       <YStack
         flex={1}
-        bg="$bgOverlay"
         pt={insets.top + 20}
         pb={insets.bottom + 20}
         px="$5"

@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H1, Text, YStack } from "tamagui";
 import { useHaptics } from "@/src/hooks/useHaptics";
 import { useReducedMotion } from "@/src/hooks/useReducedMotion";
 import { useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
 import { useSettingsStore } from "@/src/stores/settings";
+import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { Platform, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { H1, Text, YStack } from "tamagui";
 
 /**
  * Countdown View
@@ -28,10 +28,20 @@ export function CountdownView() {
   const { lightImpact, success } = useHaptics();
   const reducedMotion = useReducedMotion();
   const prevSecondsRef = useRef(remainingSeconds);
+  const hasCountdownStartedRef = useRef(false);
 
   // Light haptic tick on each countdown second
   useEffect(() => {
-    if (status !== "countdown") return;
+    if (status !== "countdown") {
+      hasCountdownStartedRef.current = false;
+      prevSecondsRef.current = remainingSeconds;
+      return;
+    }
+
+    if (remainingSeconds > 0) {
+      hasCountdownStartedRef.current = true;
+    }
+
     if (remainingSeconds !== prevSecondsRef.current && remainingSeconds > 0) {
       lightImpact();
     }
@@ -46,8 +56,7 @@ export function CountdownView() {
     // Guard: avoid instantly finishing the countdown if the timer hasn't
     // actually started ticking yet (e.g. initial render/race where
     // remainingSeconds is still 0).
-    // We only auto-finish when we've observed a previous value > 0.
-    if (prevSecondsRef.current <= 0) return;
+    if (!hasCountdownStartedRef.current) return;
 
     success();
 
@@ -70,6 +79,7 @@ export function CountdownView() {
   // Spec: number should occupy ~40% of screen height.
   // We clamp to keep it readable on very small/very tall screens.
   const countdownFontSize = Math.max(120, Math.min(220, Math.floor(windowHeight * 0.4)));
+  const enableAnimatedTicks = !reducedMotion && Platform.OS !== "ios";
 
   return (
     <YStack flex={1} bg="$bgDarker">
@@ -124,20 +134,33 @@ export function CountdownView() {
           </YStack>
         ) : (
           <YStack items="center" gap="$4">
-            <H1
-              fontWeight="700"
-              fontSize={countdownFontSize}
-              lineHeight={countdownFontSize}
-              color="$text"
-              fontFamily="$heading"
-              animation={reducedMotion ? undefined : "quick"}
-              // Trigger per-second zoom-out effect.
-              key={reducedMotion ? undefined : String(remainingSeconds)}
-              enterStyle={reducedMotion ? undefined : { scale: 1.18, opacity: 0.9 }}
-              style={{ textAlign: "center" }}
-            >
-              {remainingSeconds}
-            </H1>
+            {Platform.OS === "ios" ? (
+              <Text
+                fontWeight="900"
+                fontSize={countdownFontSize}
+                lineHeight={countdownFontSize}
+                color="$text"
+                fontFamily="$body"
+                textAlign="center"
+              >
+                {remainingSeconds}
+              </Text>
+            ) : (
+              <H1
+                fontWeight="700"
+                fontSize={countdownFontSize}
+                lineHeight={countdownFontSize}
+                color="$text"
+                fontFamily="$heading"
+                animation={enableAnimatedTicks ? "quick" : undefined}
+                // Trigger per-second zoom-out effect.
+                key={enableAnimatedTicks ? String(remainingSeconds) : undefined}
+                enterStyle={enableAnimatedTicks ? { scale: 1.18, opacity: 0.9 } : undefined}
+                style={{ textAlign: "center" }}
+              >
+                {remainingSeconds}
+              </H1>
+            )}
 
             {nextLabel ? (
               <YStack

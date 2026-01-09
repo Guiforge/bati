@@ -1,13 +1,13 @@
-import { Image } from "expo-image";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import { useHaptics } from "@/src/hooks/useHaptics";
 import { useReducedMotion } from "@/src/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
 import { useSettingsStore } from "@/src/stores/settings";
+import { Image } from "expo-image";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "./BossHpBar";
 import { SessionTimer } from "./SessionProgressBar";
 
@@ -46,6 +46,7 @@ export function RestView() {
 
   const lastResult = results[results.length - 1];
   const isLastRepBased = lastResult?.result.type === "reps";
+  const isLastTimeBased = lastResult?.result.type === "time";
 
   // Get next exercise image
   const nextExImage = resolveImageAsset(nextEx.exercise.imagePath);
@@ -63,6 +64,11 @@ export function RestView() {
   const handleUpdateResult = (value: number) => {
     selection();
     updateLastResult(value);
+  };
+
+  const handleUpdateResultDelta = (delta: number) => {
+    if (!lastResult) return;
+    handleUpdateResult(Math.max(1, lastResult.result.value + delta));
   };
 
   return (
@@ -109,10 +115,10 @@ export function RestView() {
             lastDamage={
               lastDamageResult
                 ? {
-                    damage: lastDamageResult.damage,
-                    isCritical: lastDamageResult.isCritical,
-                    weaknessBonus: lastDamageResult.weaknessBonus,
-                  }
+                  damage: lastDamageResult.damage,
+                  isCritical: lastDamageResult.isCritical,
+                  weaknessBonus: lastDamageResult.weaknessBonus,
+                }
                 : null
             }
           />
@@ -162,8 +168,8 @@ export function RestView() {
         </XStack>
       </YStack>
 
-      {/* Last Set Adjustment (if reps) */}
-      {isLastRepBased && (
+      {/* Last Set Adjustment (reps or time) */}
+      {(isLastRepBased || isLastTimeBased) && lastResult && (
         <YStack
           bg="$glassBg"
           p="$4"
@@ -182,7 +188,7 @@ export function RestView() {
               fontWeight="800"
               textTransform="uppercase"
             >
-              {t("session.adjust_reps_label")}
+              {isLastTimeBased ? t("session.adjust_time_label") : t("session.adjust_reps_label")}
             </Text>
             <Text fontSize={12} color="$textSecondary">
               {t("session.adjust_reps_hint")}
@@ -192,44 +198,103 @@ export function RestView() {
           <XStack items="center" gap="$3" justify="space-between">
             <YStack flex={1}>
               <Text fontSize={12} color="$textSecondary">
-                {t("session.reps_completed")}
+                {isLastTimeBased ? t("session.time_completed") : t("session.reps_completed")}
               </Text>
             </YStack>
 
-            <XStack items="center" gap="$3">
-              <Button
-                size="$3"
-                circular
-                bg="$glassBg"
-                borderWidth={1}
-                borderColor="$borderStrong"
-                onPress={() => handleUpdateResult(Math.max(1, lastResult.result.value - 1))}
-              >
-                <Text fontSize={20} fontWeight="900" color="$text">
-                  −
+            {isLastTimeBased ? (
+              <XStack items="center" gap="$2">
+                <Button
+                  size="$3"
+                  bg="$glassBg"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleUpdateResultDelta(-10)}
+                >
+                  <Text fontSize={14} fontWeight="900" color="$text">
+                    −10
+                  </Text>
+                </Button>
+                <Button
+                  size="$3"
+                  bg="$glassBg"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleUpdateResultDelta(-1)}
+                >
+                  <Text fontSize={14} fontWeight="900" color="$text">
+                    −1
+                  </Text>
+                </Button>
+
+                <Text
+                  fontWeight="900"
+                  fontSize={20}
+                  color="$text"
+                  style={{ minWidth: 72, textAlign: "center" }}
+                >
+                  {formatTime(lastResult.result.value)}
                 </Text>
-              </Button>
-              <Text
-                fontWeight="900"
-                fontSize={24}
-                color="$text"
-                style={{ minWidth: 40, textAlign: "center" }}
-              >
-                {lastResult.result.value}
-              </Text>
-              <Button
-                size="$3"
-                circular
-                bg="$glassBg"
-                borderWidth={1}
-                borderColor="$borderStrong"
-                onPress={() => handleUpdateResult(lastResult.result.value + 1)}
-              >
-                <Text fontSize={20} fontWeight="900" color="$text">
-                  +
+
+                <Button
+                  size="$3"
+                  bg="$glassBg"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleUpdateResultDelta(1)}
+                >
+                  <Text fontSize={14} fontWeight="900" color="$text">
+                    +1
+                  </Text>
+                </Button>
+                <Button
+                  size="$3"
+                  bg="$glassBg"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleUpdateResultDelta(10)}
+                >
+                  <Text fontSize={14} fontWeight="900" color="$text">
+                    +10
+                  </Text>
+                </Button>
+              </XStack>
+            ) : (
+              <XStack items="center" gap="$3">
+                <Button
+                  size="$3"
+                  circular
+                  bg="$glassBg"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleUpdateResultDelta(-1)}
+                >
+                  <Text fontSize={20} fontWeight="900" color="$text">
+                    −
+                  </Text>
+                </Button>
+                <Text
+                  fontWeight="900"
+                  fontSize={24}
+                  color="$text"
+                  style={{ minWidth: 40, textAlign: "center" }}
+                >
+                  {lastResult.result.value}
                 </Text>
-              </Button>
-            </XStack>
+                <Button
+                  size="$3"
+                  circular
+                  bg="$glassBg"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleUpdateResultDelta(1)}
+                >
+                  <Text fontSize={20} fontWeight="900" color="$text">
+                    +
+                  </Text>
+                </Button>
+              </XStack>
+            )}
           </XStack>
         </YStack>
       )}

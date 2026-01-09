@@ -106,7 +106,11 @@ export default function AdventuresScreen() {
     const isBoss = item.kind === "boss";
 
     return (
-      <Button unstyled onPress={() => router.push(`/(modals)/adventures/${item.id}`)} mb="$3">
+      <Button
+        unstyled
+        onPress={() => router.push(`/(modals)/adventure-details/${item.id}`)}
+        mb="$3"
+      >
         <YStack
           bg="$glassBg"
           borderColor={isBoss ? "$error" : "$borderStrong"}

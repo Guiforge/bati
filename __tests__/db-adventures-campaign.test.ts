@@ -1,5 +1,99 @@
 import { createTestDb } from "./helpers/testDb";
 
+const getDbModules = () => {
+  const adventures = require("../src/db/adventures") as typeof import("../src/db/adventures");
+  const exercises = require("../src/db/exercises") as typeof import("../src/db/exercises");
+  const completed = require("../src/db/completed") as typeof import("../src/db/completed");
+  const quests = require("../src/db/quests") as typeof import("../src/db/quests");
+
+  return { adventures, exercises, completed, quests };
+};
+
+const expectSeededCampaign = async (adventures: typeof import("../src/db/adventures")) => {
+  const all = await adventures.listAdventures();
+  expect(all.length).toBeGreaterThan(0);
+
+  const adv = all.find((a) => a.frTitle === "La route du bûcheron");
+  expect(adv).toBeTruthy();
+  if (!adv) throw new Error("Expected seeded campaign 'La route du bûcheron'");
+
+  return adv;
+};
+
+const createQuickCompletedSession = async (
+  completed: typeof import("../src/db/completed"),
+  {
+    questId,
+    exerciseId,
+  }: {
+    questId: number;
+    exerciseId: number;
+  }
+) => {
+  return completed.createCompletedSession({
+    questId,
+    userLevel: "medium",
+    durationSeconds: 60,
+    xpEarned: 10,
+    exercises: [
+      {
+        exerciseId,
+        sortOrder: 0,
+        result: { type: "reps", value: 10 },
+        target: { type: "reps", value: 10 },
+        performedAt: new Date(),
+      },
+    ],
+    performedAt: new Date(),
+  });
+};
+
+const finishRunIfMoreSteps = async (
+  adventures: typeof import("../src/db/adventures"),
+  completed: typeof import("../src/db/completed"),
+  {
+    adventureId,
+    nextRunStepId,
+    remainingQuestIds,
+    exerciseId,
+  }: {
+    adventureId: number;
+    nextRunStepId: number | null;
+    remainingQuestIds: number[];
+    exerciseId: number;
+  }
+) => {
+  if (remainingQuestIds.length === 0) {
+    expect(await adventures.getActiveAdventureRun(adventureId)).toBeNull();
+    return;
+  }
+
+  // Complete remaining steps until finished.
+  let currentRunStepId = nextRunStepId;
+  for (const questId of remainingQuestIds) {
+    expect(currentRunStepId).toBeTruthy();
+    if (!currentRunStepId) throw new Error("Expected next run step id");
+
+    const sessionId = await createQuickCompletedSession(completed, {
+      questId,
+      exerciseId,
+    });
+
+    const progressed = await adventures.completeAdventureRunStep({
+      runStepId: currentRunStepId,
+      completedSessionId: sessionId,
+    });
+
+    if (questId === remainingQuestIds[remainingQuestIds.length - 1]) {
+      expect(progressed.isFinished).toBe(true);
+    }
+
+    currentRunStepId = (progressed.nextRunStepId as number | null) ?? null;
+  }
+
+  expect(await adventures.getActiveAdventureRun(adventureId)).toBeNull();
+};
+
 describe("db/adventures campaign", () => {
   const t = createTestDb();
 
@@ -15,18 +109,9 @@ describe("db/adventures campaign", () => {
     t.close();
   });
 
-  test("startAdventureRun creates run steps and complete advances to next step", async () => {
-    const adventures = require("../src/db/adventures") as typeof import("../src/db/adventures");
-    const exercises = require("../src/db/exercises") as typeof import("../src/db/exercises");
-    const completed = require("../src/db/completed") as typeof import("../src/db/completed");
-    const quests = require("../src/db/quests") as typeof import("../src/db/quests");
-
-    const all = await adventures.listAdventures();
-    expect(all.length).toBeGreaterThan(0);
-
-    const adv = all.find((a) => a.frTitle === "La route du bûcheron");
-    expect(adv).toBeTruthy();
-    if (!adv) throw new Error("Expected seeded campaign 'La route du bûcheron'");
+  test("campaign steps resolve quests via getQuestById", async () => {
+    const { adventures, quests } = getDbModules();
+    const adv = await expectSeededCampaign(adventures);
 
     const details = await adventures.getAdventureDetails(adv.id);
     expect(details).toBeTruthy();
@@ -39,11 +124,20 @@ describe("db/adventures campaign", () => {
       const stepQuest = await quests.getQuestById(step.questId, quests.Difficulty.Medium);
       expect(stepQuest).toBeTruthy();
     }
+  });
 
-    const step0QuestId = details.steps[0]?.questId;
-    const step1QuestId = details.steps[1]?.questId;
-    expect(step0QuestId).toBeTruthy();
-    expect(step1QuestId).toBeTruthy();
+  test("startAdventureRun progresses when steps are completed", async () => {
+    const { adventures, exercises, completed } = getDbModules();
+    const adv = await expectSeededCampaign(adventures);
+
+    const details = await adventures.getAdventureDetails(adv.id);
+    expect(details).toBeTruthy();
+    if (!details) throw new Error("Expected adventure details");
+    expect(details.steps.length).toBeGreaterThanOrEqual(2);
+
+    const questIds = details.steps.map((s) => s.questId);
+    const step0QuestId = questIds[0];
+    const step1QuestId = questIds[1];
     if (!step0QuestId || !step1QuestId) throw new Error("Expected at least 2 campaign steps");
 
     const allEx = await exercises.listExercises();
@@ -60,25 +154,13 @@ describe("db/adventures campaign", () => {
     expect(run.steps.length).toBeGreaterThanOrEqual(2);
     expect(run.activeStep?.stepIndex).toBe(0);
 
-    const session1 = await completed.createCompletedSession({
-      questId: step0QuestId,
-      userLevel: "medium",
-      durationSeconds: 60,
-      xpEarned: 10,
-      exercises: [
-        {
-          exerciseId: squat.id,
-          sortOrder: 0,
-          result: { type: "reps", value: 10 },
-          target: { type: "reps", value: 10 },
-          performedAt: new Date(),
-        },
-      ],
-      performedAt: new Date(),
-    });
-
     const step0 = run.activeStep;
     if (!step0) throw new Error("Expected an active run step");
+
+    const session1 = await createQuickCompletedSession(completed, {
+      questId: step0QuestId,
+      exerciseId: squat.id,
+    });
 
     const progressed = await adventures.completeAdventureRunStep({
       runStepId: step0.id,
@@ -92,21 +174,9 @@ describe("db/adventures campaign", () => {
     const reloaded = await adventures.getActiveAdventureRun(adv.id);
     expect(reloaded?.activeStep?.stepIndex).toBe(1);
 
-    const session2 = await completed.createCompletedSession({
+    const session2 = await createQuickCompletedSession(completed, {
       questId: step1QuestId,
-      userLevel: "medium",
-      durationSeconds: 60,
-      xpEarned: 10,
-      exercises: [
-        {
-          exerciseId: squat.id,
-          sortOrder: 0,
-          result: { type: "reps", value: 10 },
-          target: { type: "reps", value: 10 },
-          performedAt: new Date(),
-        },
-      ],
-      performedAt: new Date(),
+      exerciseId: squat.id,
     });
 
     const finished = await adventures.completeAdventureRunStep({
@@ -114,42 +184,20 @@ describe("db/adventures campaign", () => {
       completedSessionId: session2,
     });
 
-    const step2QuestId = details.steps[2]?.questId ?? null;
-
-    // Seeded campaign has 3 steps; completing step 1 should not finish yet.
-    if (step2QuestId != null) {
-      expect(finished.isFinished).toBe(false);
-      expect(finished.nextQuestId).toBe(step2QuestId);
-      expect(finished.nextRunStepId).toBeTruthy();
-
-      const session3 = await completed.createCompletedSession({
-        questId: step2QuestId,
-        userLevel: "medium",
-        durationSeconds: 60,
-        xpEarned: 10,
-        exercises: [
-          {
-            exerciseId: squat.id,
-            sortOrder: 0,
-            result: { type: "reps", value: 10 },
-            target: { type: "reps", value: 10 },
-            performedAt: new Date(),
-          },
-        ],
-        performedAt: new Date(),
-      });
-
-      const final = await adventures.completeAdventureRunStep({
-        runStepId: finished.nextRunStepId as number,
-        completedSessionId: session3,
-      });
-
-      expect(final.isFinished).toBe(true);
-      expect(await adventures.getActiveAdventureRun(adv.id)).toBeNull();
-    } else {
-      // If the campaign only has 2 steps, we should be finished now.
+    const remainingQuestIds = questIds.slice(2);
+    if (remainingQuestIds.length === 0) {
       expect(finished.isFinished).toBe(true);
-      expect(await adventures.getActiveAdventureRun(adv.id)).toBeNull();
+    } else {
+      expect(finished.isFinished).toBe(false);
+      expect(finished.nextQuestId).toBe(remainingQuestIds[0]);
+      expect(finished.nextRunStepId).toBeTruthy();
     }
+
+    await finishRunIfMoreSteps(adventures, completed, {
+      adventureId: adv.id,
+      nextRunStepId: (finished.nextRunStepId as number | null) ?? null,
+      remainingQuestIds,
+      exerciseId: squat.id,
+    });
   });
 });

@@ -12,6 +12,7 @@ import m0008 from "./0008_seed_images.sql";
 import m0009 from "./0009_add_quest_columns.sql";
 import m0010 from "./0010_audit_and_content.sql";
 import m0011 from "./0011_backfill_quest_exercises.sql";
+import m0012 from "./0012_seed_base_image_paths.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -29,5 +30,6 @@ export default {
     m0009,
     m0010,
     m0011,
+    m0012,
   },
 };

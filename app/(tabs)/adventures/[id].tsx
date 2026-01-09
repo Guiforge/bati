@@ -1,3 +1,12 @@
+import { eq } from "drizzle-orm";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Animated, Dimensions, Easing, Pressable, StyleSheet, Vibration } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, Spinner, Text, XStack, YStack } from "tamagui";
 import { useDatabase } from "@/src/components/DatabaseProvider";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import {
@@ -9,15 +18,6 @@ import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
 import { adventures, quests } from "@/src/db/schema";
 import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 import { useSessionStore } from "@/src/stores/session";
-import { eq } from "drizzle-orm";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Animated, Dimensions, Easing, Pressable, StyleSheet, Vibration } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Spinner, Text, XStack, YStack } from "tamagui";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS & TYPES
@@ -1134,7 +1134,7 @@ export default function AdventureDetailsScreen() {
                   language={i18n.language}
                   onPress={() => {
                     Vibration.vibrate(5);
-                    router.push(`/(modals)/quests/${step.quest.id}`);
+                    router.push(`/(modals)/quest-details/${step.quest.id}`);
                   }}
                 />
               ))}

@@ -64,7 +64,7 @@ export function DailyQuestCard({ quest, exercisesById }: DailyQuestCardProps) {
   return (
     <Card
       bg={tokens.bg}
-      onPress={() => router.push(`/(modals)/quests/${quest.id}` as never)}
+      onPress={() => router.push(`/(modals)/quest-details/${quest.id}` as never)}
       borderWidth={3}
       borderColor="$color"
       p={0}

@@ -48,4 +48,15 @@ describe("db/adventures", () => {
     expect(boss.author).toBe("Admin");
     expect(boss.stepsCount).toBeGreaterThanOrEqual(2);
   });
+
+  test("all seeded adventures have cover images (not placeholder or null)", async () => {
+    const adventures = require("../src/db/adventures") as typeof import("../src/db/adventures");
+
+    const all = await adventures.listAdventures();
+    const missingImages = all.filter(
+      (a) => !a.imagePath || a.imagePath === "assets/placeholder.jpg"
+    );
+
+    expect(missingImages.map((a) => a.enTitle)).toEqual([]);
+  });
 });

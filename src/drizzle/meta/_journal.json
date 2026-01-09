@@ -85,6 +85,13 @@
       "when": 1767830400001,
       "tag": "0011_backfill_quest_exercises",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1767830400002,
+      "tag": "0012_seed_base_image_paths",
+      "breakpoints": true
     }
   ]
 }

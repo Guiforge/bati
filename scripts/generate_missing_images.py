@@ -10,6 +10,7 @@
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -99,13 +100,18 @@ def prompt_for(path: str) -> str:
 
 def find_referenced_assets(repo_root: Path) -> list[str]:
     paths: set[str] = set()
-    for sql in sorted((repo_root / "drizzle").glob("*.sql")):
-        try:
-            txt = sql.read_text(encoding="utf-8", errors="ignore")
-        except Exception:
+
+    sql_roots = [repo_root / "drizzle", repo_root / "src" / "drizzle"]
+    for root in sql_roots:
+        if not root.exists():
             continue
-        for m in ASSET_RE.finditer(txt):
-            paths.add(m.group(0))
+        for sql in sorted(root.glob("*.sql")):
+            try:
+                txt = sql.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                continue
+            for m in ASSET_RE.finditer(txt):
+                paths.add(m.group(0))
     return sorted(paths)
 
 
@@ -141,13 +147,32 @@ def should_skip(path: Path) -> bool:
     reraise=True,
 )
 def run_generator(generator: Path, prompt: str, out_path: Path) -> None:
-    subprocess.check_call([
-        "python3",
-        str(generator),
-        prompt,
-        "--output",
-        str(out_path),
-    ])
+    repo_root = Path(__file__).resolve().parents[1]
+    style_file = repo_root / "docs" / "prompt.image.md"
+
+    cmd: list[str]
+    if shutil.which("uv"):
+        cmd = [
+            "uv",
+            "run",
+            str(generator),
+            prompt,
+            "--output",
+            str(out_path),
+        ]
+    else:
+        cmd = [
+            "python3",
+            str(generator),
+            prompt,
+            "--output",
+            str(out_path),
+        ]
+
+    if style_file.exists():
+        cmd.extend(["--style-file", str(style_file)])
+
+    subprocess.check_call(cmd)
 
 
 def main() -> None:

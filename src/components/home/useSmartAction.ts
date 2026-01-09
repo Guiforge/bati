@@ -56,7 +56,8 @@ export function useSmartAction() {
             label: "CONTINUE ADVENTURE",
             subtext: "Resume your journey", // Could be better
             variant: "adventure",
-            onPress: () => router.push(`/(modals)/adventures/${activeRun.adventureId}` as never),
+            onPress: () =>
+              router.push(`/(modals)/adventure-details/${activeRun.adventureId}` as never),
           });
           setIsLoading(false);
           return;

@@ -149,7 +149,10 @@ export function QuestCarousel() {
 
       return (
         <YStack width={slideWidth} mr={cardSpacing}>
-          <Card bg={tokens.bg} onPress={() => router.push(`/(modals)/quests/${q.id}` as never)}>
+          <Card
+            bg={tokens.bg}
+            onPress={() => router.push(`/(modals)/quest-details/${q.id}` as never)}
+          >
             <XStack gap="$3" items="flex-start">
               <YStack
                 width={54}

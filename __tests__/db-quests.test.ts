@@ -15,6 +15,32 @@ describe("db/quests", () => {
     t.close();
   });
 
+  test("seeded base quests have cover images (not placeholder)", async () => {
+    const quests = require("../src/db/quests") as typeof import("../src/db/quests");
+
+    const all = await quests.listQuestTemplates();
+
+    // These 9 are inserted by src/drizzle/0002_seed_quests.sql
+    const seededTitles = [
+      "Chop Wood",
+      "Tower Climb",
+      "Knight Push",
+      "Shield Wall",
+      "Gather Stones",
+      "Raise the Shelter",
+      "Core Forge",
+      "Golem Strike",
+      "Golem Core",
+    ] as const;
+
+    for (const title of seededTitles) {
+      const q = all.find((x) => x.enTitle === title);
+      expect(q).toBeTruthy();
+      expect(q?.imagePath).toBeTruthy();
+      expect(q?.imagePath).not.toBe("assets/placeholder.jpg");
+    }
+  });
+
   test("listQuestTemplates includes seeded quest", async () => {
     const quests = require("../src/db/quests") as typeof import("../src/db/quests");
 
@@ -137,5 +163,16 @@ describe("db/quests", () => {
 
     await quests.deleteQuest(id);
     expect(await quests.getQuestTemplateById(id)).toBeNull();
+  });
+
+  test("all seeded quests have cover images (not placeholder or null)", async () => {
+    const quests = require("../src/db/quests") as typeof import("../src/db/quests");
+
+    const all = await quests.listQuestTemplates();
+    const missingImages = all.filter(
+      (q) => !q.imagePath || q.imagePath === "assets/placeholder.jpg"
+    );
+
+    expect(missingImages.map((q) => q.enTitle)).toEqual([]);
   });
 });

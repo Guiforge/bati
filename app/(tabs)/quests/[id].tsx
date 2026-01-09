@@ -1,3 +1,4 @@
+import { ChevronRight } from "@tamagui/lucide-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -91,7 +92,7 @@ export default function QuestDetailsScreen() {
           hitSlop={12}
         >
           <Text color="$text" fontSize={26} fontWeight="900" lineHeight={26}>
-            ×
+            {"×"}
           </Text>
         </Button>
 
@@ -128,40 +129,50 @@ export default function QuestDetailsScreen() {
                   i18n.language === "fr" ? qe.exercise.frName : qe.exercise.enName;
 
                 return (
-                  <YStack
+                  <Button
                     key={qe.exercise.id}
-                    bg="$glassBg"
-                    borderColor="$borderStrong"
-                    borderWidth={1}
-                    p="$3"
-                    borderRadius="$3"
+                    unstyled
+                    onPress={() => {
+                      router.push(`/exercises/${qe.exercise.id}`);
+                    }}
+                    pressStyle={{ opacity: 0.8, scale: 0.98 }}
                   >
-                    <XStack alignItems="center" gap="$3">
-                      <YStack
-                        bg="$primary"
-                        width={32}
-                        height={32}
-                        alignItems="center"
-                        justifyContent="center"
-                        borderRadius={999}
-                      >
-                        <Text color="$text" fontSize={16} fontWeight="bold">
-                          {index + 1}
-                        </Text>
-                      </YStack>
+                    <YStack
+                      bg="$glassBg"
+                      borderColor="$borderStrong"
+                      borderWidth={1}
+                      p="$3"
+                      borderRadius="$3"
+                    >
+                      <XStack alignItems="center" gap="$3">
+                        <YStack
+                          bg="$primary"
+                          width={32}
+                          height={32}
+                          alignItems="center"
+                          justifyContent="center"
+                          borderRadius={999}
+                        >
+                          <Text color="$text" fontSize={16} fontWeight="bold">
+                            {index + 1}
+                          </Text>
+                        </YStack>
 
-                      <YStack flex={1}>
-                        <Text color="$text" fontSize={16} fontWeight="600" mb="$1">
-                          {exerciseName}
-                        </Text>
-                        <Text color="$textSecondary" fontSize={14}>
-                          {qe.target.type === "reps"
-                            ? `${qe.target.value} ${t("session.reps")}`
-                            : `${qe.target.value} ${t("session.seconds")}`}
-                        </Text>
-                      </YStack>
-                    </XStack>
-                  </YStack>
+                        <YStack flex={1}>
+                          <Text color="$text" fontSize={16} fontWeight="600" mb="$1">
+                            {exerciseName}
+                          </Text>
+                          <Text color="$textSecondary" fontSize={14}>
+                            {qe.target.type === "reps"
+                              ? `${qe.target.value} ${t("session.reps")}`
+                              : `${qe.target.value} ${t("session.seconds")}`}
+                          </Text>
+                        </YStack>
+
+                        <ChevronRight size={16} color="$textSecondary" />
+                      </XStack>
+                    </YStack>
+                  </Button>
                 );
               })
             )}

@@ -24,7 +24,7 @@ describe("db/exercises", () => {
 
     const squat = all.find((e) => e.enName === "Squat");
     expect(squat).toBeTruthy();
-    expect(squat?.imagePath).toBe("assets/placeholder.jpg");
+    expect(squat?.imagePath).toBe("assets/images/exercises/goblin_squat.png");
     expect(squat?.creator).toBeTruthy();
     expect(squat?.difficulty).toBeTruthy();
     expect(squat?.equipment).toBeTruthy();
@@ -51,5 +51,17 @@ describe("db/exercises", () => {
       require("../src/db/exercises") as typeof import("../src/db/exercises");
     const fetched = await getExerciseById(999999);
     expect(fetched).toBeNull();
+  });
+
+  test("all seeded exercises have real images (not placeholder)", async () => {
+    const { listExercises } =
+      require("../src/db/exercises") as typeof import("../src/db/exercises");
+
+    const all = await listExercises();
+    const missingImages = all.filter(
+      (e) => !e.imagePath || e.imagePath === "assets/placeholder.jpg"
+    );
+
+    expect(missingImages).toEqual([]);
   });
 });

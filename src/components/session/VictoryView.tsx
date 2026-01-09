@@ -207,13 +207,13 @@ export function VictoryView() {
 
       if (campaign?.nextQuestId && campaign.nextRunStepId) {
         router.replace(
-          `/(modals)/quests/${campaign.nextQuestId}?level=${encodeURIComponent(userLevel)}&runStepId=${campaign.nextRunStepId}` as never
+          `/(modals)/quest-details/${campaign.nextQuestId}?level=${encodeURIComponent(userLevel)}&runStepId=${campaign.nextRunStepId}` as never
         );
         return;
       }
 
       if (campaign?.isFinished) {
-        router.replace(`/(modals)/adventures/${campaign.adventureId}` as never);
+        router.replace(`/(modals)/adventure-details/${campaign.adventureId}` as never);
         return;
       }
 

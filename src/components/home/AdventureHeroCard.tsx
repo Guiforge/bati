@@ -154,7 +154,7 @@ export function AdventureHeroCard() {
       width={SCREEN_WIDTH}
       position="relative"
       overflow="hidden"
-      onPress={() => router.push(`/(modals)/adventures/${adventure.id}`)}
+      onPress={() => router.push(`/(modals)/adventure-details/${adventure.id}`)}
       pressStyle={{ opacity: 0.98 }}
     >
       <Image
@@ -243,7 +243,7 @@ export function AdventureHeroCard() {
           fontWeight="900"
           fontSize={14}
           borderRadius={1000}
-          onPress={() => router.push(`/(modals)/adventures/${adventure.id}`)}
+          onPress={() => router.push(`/(modals)/adventure-details/${adventure.id}`)}
           pressStyle={{ opacity: 0.9, scale: 0.98 }}
           shadowColor="$primaryGlow"
           shadowRadius={15}

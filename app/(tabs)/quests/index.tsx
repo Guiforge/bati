@@ -70,14 +70,20 @@ export default function QuestsScreen() {
     const description = i18n.language === "fr" ? item.frDescription : item.enDescription;
 
     return (
-      <Button unstyled onPress={() => router.push(`/(modals)/quests/${item.id}`)} mb="$3">
+      <Button
+        unstyled
+        mb="$3"
+        onPress={() => {
+          router.push(`/(modals)/quest-details/${item.id}`);
+        }}
+        pressStyle={{ opacity: 0.8, scale: 0.98 }}
+      >
         <YStack
           bg="$glassBg"
           borderColor="$borderStrong"
           borderWidth={1}
           borderRadius="$4"
           overflow="hidden"
-          pressStyle={{ opacity: 0.8, scale: 0.98 }}
         >
           <Image
             source={resolveImageAsset(item.imagePath)}

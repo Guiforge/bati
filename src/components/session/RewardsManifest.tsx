@@ -453,7 +453,10 @@ export function RewardsManifest({
               onPress={onShare}
               disabled={!onShare}
               accessibilityRole="button"
-              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.8 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+              })}
             >
               <YStack
                 bg="$glassBg"
@@ -476,7 +479,10 @@ export function RewardsManifest({
               onPress={canContinue ? onContinue : undefined}
               disabled={!canContinue}
               accessibilityRole="button"
-              style={({ pressed }) => ({ opacity: pressed && canContinue ? 0.9 : 1, transform: [{ scale: pressed && canContinue ? 0.97 : 1 }] })}
+              style={({ pressed }) => ({
+                opacity: pressed && canContinue ? 0.9 : 1,
+                transform: [{ scale: pressed && canContinue ? 0.97 : 1 }],
+              })}
             >
               <YStack
                 bg={canContinue ? "$primary" : "$bgOverlay"}

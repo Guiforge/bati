@@ -67,7 +67,7 @@ export function PausedOverlay() {
               onPress={handleRestartRound}
               variant="outline"
               backgroundColor="$glassBg"
-              borderColor="$warning"
+              borderColor="$borderStrong"
               pressStyle={{ opacity: 0.9 }}
               accessibilityLabel={t("session.restart_round_button")}
               accessibilityRole="button"
@@ -79,7 +79,7 @@ export function PausedOverlay() {
               onPress={handleQuit}
               variant="outline"
               backgroundColor="$glassBg"
-              borderColor="$error"
+              borderColor="$borderStrong"
               pressStyle={{ opacity: 0.9 }}
               accessibilityLabel={t("session.quit_button")}
               accessibilityRole="button"

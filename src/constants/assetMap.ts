@@ -87,6 +87,15 @@ export type BossAssetKey = keyof typeof BOSS_ASSETS;
 export type AdventureAssetKey = keyof typeof ADVENTURE_ASSETS;
 
 // ============================================================
+// CHEST ASSETS
+// ============================================================
+
+export const CHEST_ASSETS = {
+  chest_close: require("@/assets/chest/chest_close.png"),
+  chest_open: require("@/assets/chest/chest_open.png"),
+} as const;
+
+// ============================================================
 // HELPER FUNCTIONS
 // ============================================================
 

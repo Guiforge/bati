@@ -32,7 +32,7 @@ type RewardsManifestProps = {
   onShare?: () => void;
 };
 
-const MIN_CONTINUE_MS = 5000;
+const MIN_CONTINUE_MS = 1500;
 
 const RESOURCE_ICON: Record<string, GameIconName> = {
   gold: "lorc/crown-coin",
@@ -246,30 +246,10 @@ export function RewardsManifest({
   });
 
   return (
-    <YStack fullscreen bg="$bgDarker">
-      {/* Soft center glow (token-only pseudo-radial) */}
-      <YStack fullscreen pointerEvents="none" items="center" justifyContent="center">
-        <YStack
-          width={560}
-          height={560}
-          borderRadius={999}
-          bg="$ethereal"
-          opacity={0.08}
-          position="absolute"
-        />
-        <YStack
-          width={420}
-          height={420}
-          borderRadius={999}
-          bg="$gold"
-          opacity={0.06}
-          position="absolute"
-        />
-      </YStack>
-
-      <YStack flex={1} pt={insets.top + 24} pb={insets.bottom + 18}>
+    <YStack fullscreen>
+      <YStack flex={1} pt={insets.top + 8} pb={insets.bottom + 8}>
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, gap: 20 }}
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, gap: 14 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
@@ -466,7 +446,7 @@ export function RewardsManifest({
           </YStack>
 
           {/* Footer Actions */}
-          <XStack gap="$3" mt="auto">
+          <XStack gap="$3" mt="auto" pt="$2">
             <YStack flex={1}>
               <Pressable
                 onPress={onShare}

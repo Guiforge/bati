@@ -57,21 +57,24 @@ export function ComboMeter({ combo, isVisible }: ComboMeterProps) {
   return (
     <YStack
       position="absolute"
-      top="15%"
-      left="50%"
-      transform={[{ translateX: -50 }]}
-      animation="pulse"
-      enterStyle={{ scale: 0.5, opacity: 0 }}
-      exitStyle={{ scale: 0.5, opacity: 0 }}
+      top={80}
+      right={16}
+      zIndex={50}
+      animation="bouncy"
+      enterStyle={{ scale: 0.5, opacity: 0, x: 20 }}
+      exitStyle={{ scale: 0.5, opacity: 0, x: 20 }}
     >
       <YStack
-        px="$4"
+        px="$3"
         py="$2"
-        borderRadius="$4"
-        bg="rgba(13, 51, 242, 0.1)"
+        borderRadius="$3"
+        bg="$glassBg"
         borderWidth={2}
         borderColor={borderColor}
         alignItems="center"
+        shadowColor={borderColor}
+        shadowOpacity={0.6}
+        shadowRadius={12}
       >
         <Text
           fontSize={fontSize}
@@ -80,12 +83,12 @@ export function ComboMeter({ combo, isVisible }: ComboMeterProps) {
           textAlign="center"
           lineHeight={fontSize + 4}
         >
-          COMBO {combo.current}x {flameEmoji}
+          {combo.current}x {flameEmoji}
         </Text>
 
         {combo.multiplier > 1 && (
-          <Text fontSize={12} color={textColor} opacity={0.8} fontWeight="700" marginTop="$1">
-            {combo.multiplier}x MULTIPLIER
+          <Text fontSize={10} color={textColor} opacity={0.8} fontWeight="700" marginTop="$1">
+            {combo.multiplier}x
           </Text>
         )}
       </YStack>

@@ -1,3 +1,4 @@
+import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, type ViewStyle } from "react-native";
@@ -11,8 +12,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Text, YStack } from "tamagui";
+import { CHEST_ASSETS } from "@/src/constants/assetMap";
 import type { ResourceLoot } from "@/src/db/resources";
-import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { useHaptics } from "@/src/hooks/useHaptics";
 
 type Props = {
@@ -26,7 +27,6 @@ function hasLoot(loot: ResourceLoot) {
 
 export function LootReveal({ loot, onDismiss }: Props) {
   const { t } = useTranslation();
-  const { GameIcon } = useGameIcon();
   const { heavyImpact, selection, success } = useHaptics();
 
   const [phase, setPhase] = useState<"falling" | "closed" | "opening">("falling");
@@ -174,25 +174,24 @@ export function LootReveal({ loot, onDismiss }: Props) {
                 />
               </Animated.View>
 
-              {/* Chest */}
+              {/* Chest Image */}
               <Animated.View style={chestStyle}>
                 <YStack
                   items="center"
                   justifyContent="center"
-                  width={220}
-                  height={220}
-                  bg="$glassBg"
-                  borderWidth={1}
-                  borderColor={phase === "opening" ? "$gold" : "$ethereal"}
-                  borderRadius="$6"
+                  width={240}
+                  height={240}
                   shadowColor={phase === "opening" ? "$goldGlow" : "$etherealGlow"}
-                  shadowOpacity={0.7}
-                  shadowRadius={24}
+                  shadowOpacity={0.8}
+                  shadowRadius={32}
                 >
-                  <GameIcon
-                    name={phase === "opening" ? "lorc/crown-coin" : "lorc/locked-chest"}
-                    size={120}
-                    tintColor={phase === "opening" ? "$gold" : "$text"}
+                  <Image
+                    source={
+                      phase === "opening" ? CHEST_ASSETS.chest_open : CHEST_ASSETS.chest_close
+                    }
+                    style={{ width: 220, height: 220 }}
+                    contentFit="contain"
+                    transition={100}
                   />
                 </YStack>
               </Animated.View>

@@ -1,7 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { Redirect } from "expo-router";
 import { useEffect, useRef } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { VictoryView } from "@/src/components/session/VictoryView";
 import { useSessionStore } from "@/src/stores/session";
@@ -18,10 +17,9 @@ import { useSessionStore } from "@/src/stores/session";
  * - Clear connection: physical pain → digital gain
  */
 export default function VictoryScreen() {
-  const insets = useSafeAreaInsets();
   const quest = useSessionStore((s) => s.quest);
   const status = useSessionStore((s) => s.status);
-  
+
   // Track if we ever had a quest (to avoid redirect after quitSession)
   const hadQuestRef = useRef(false);
   if (quest) {
@@ -44,7 +42,7 @@ export default function VictoryScreen() {
   }
 
   return (
-    <YStack flex={1} bg="$bgDarker" paddingTop={insets.top + 12} paddingBottom={insets.bottom + 12}>
+    <YStack flex={1} bg="$bgDarker">
       <VictoryView />
     </YStack>
   );

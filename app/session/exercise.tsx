@@ -9,7 +9,7 @@ import { BossHpBar } from "@/src/components/session/BossHpBar";
 import { ComboMeter } from "@/src/components/session/ComboMeter";
 import { CriticalHitNumber } from "@/src/components/session/CriticalHitNumber";
 import { PausedOverlay } from "@/src/components/session/PausedOverlay";
-import { SessionProgressBar } from "@/src/components/session/SessionProgressBar";
+import { SessionTimer } from "@/src/components/session/SessionProgressBar";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import { useComboTracker } from "@/src/hooks/useComboTracker";
 import { useCriticalHitDetector } from "@/src/hooks/useCriticalHitDetector";
@@ -46,7 +46,7 @@ export default function ExerciseScreen() {
   const completeExercise = useSessionStore((s) => s.completeExercise);
   const pauseSession = useSessionStore((s) => s.pauseSession);
 
-  const { remainingSeconds, elapsedSeconds } = useSessionTimer();
+  const { remainingSeconds } = useSessionTimer();
 
   // Compute values locally
   const currentExercise = quest?.exercises[currentExerciseIndex] ?? null;
@@ -146,14 +146,28 @@ export default function ExerciseScreen() {
   const isTimeBased = currentExercise.target.type === "time";
   const heroTime = isTimeBased
     ? formatTime(Math.max(0, remainingSeconds))
-    : formatTime(elapsedSeconds);
+    : String(currentExercise.target.value);
 
   return (
     <YStack flex={1} bg="$bgDarker" pt={insets.top + 12} pb={insets.bottom + 20} px="$5">
-      {/* Global Session Progress Bar */}
-      <YStack mb="$3">
-        <SessionProgressBar />
-      </YStack>
+      {/* Header row: timer + pause */}
+      <XStack items="center" justifyContent="space-between" mb="$3">
+        <SessionTimer />
+
+        <Button
+          size="$3"
+          circular
+          chromeless
+          onPress={handlePause}
+          pressStyle={{ opacity: 0.7, scale: 0.96 }}
+          accessibilityLabel={t("session.pause_accessibility", { defaultValue: "Pause" })}
+          accessibilityRole="button"
+        >
+          <Text color="$text" fontSize={18} fontWeight="900">
+            ||
+          </Text>
+        </Button>
+      </XStack>
 
       {/* Boss HP Bar - Only for boss fights */}
       {bossFight && lastDamageResult && (
@@ -172,35 +186,19 @@ export default function ExerciseScreen() {
         </YStack>
       )}
 
-      {/* Header row: progress + pause */}
-      <XStack items="center" justifyContent="space-between" mb="$4">
-        <YStack>
-          <Text
-            fontSize={12}
-            color="$textSecondary"
-            fontWeight="700"
-            textTransform="uppercase"
-            letterSpacing={2}
-            fontFamily="$heading"
-          >
-            {t("session.exercise")} {currentExerciseIndex + 1}/{totalExercises} • {t("common.set")}{" "}
-            {currentSet}/{totalSets}
-          </Text>
-        </YStack>
-
-        <Button
-          size="$3"
-          circular
-          chromeless
-          onPress={handlePause}
-          pressStyle={{ opacity: 0.7, scale: 0.96 }}
-          accessibilityLabel={t("session.pause_accessibility", { defaultValue: "Pause" })}
-          accessibilityRole="button"
+      {/* Progress info */}
+      <XStack items="center" justifyContent="center" mb="$4">
+        <Text
+          fontSize={12}
+          color="$textSecondary"
+          fontWeight="700"
+          textTransform="uppercase"
+          letterSpacing={2}
+          fontFamily="$heading"
         >
-          <Text color="$text" fontSize={18} fontWeight="900">
-            ||
-          </Text>
-        </Button>
+          {t("session.exercise")} {currentExerciseIndex + 1}/{totalExercises} • {t("common.set")}{" "}
+          {currentSet}/{totalSets}
+        </Text>
       </XStack>
 
       {/* Main content */}
@@ -244,8 +242,8 @@ export default function ExerciseScreen() {
         {/* Timer Hero */}
         <YStack items="center" gap="$2">
           <H1
-            fontSize={72}
-            lineHeight={78}
+            fontSize={isTimeBased ? 72 : 96}
+            lineHeight={isTimeBased ? 78 : 100}
             fontWeight="900"
             fontFamily="$body"
             color={isBossFight ? "$error" : "$text"}
@@ -257,20 +255,17 @@ export default function ExerciseScreen() {
           </Text>
         </YStack>
 
-        {/* Target line */}
-        <YStack items="center">
-          <Text color="$textSecondary" fontSize={16} fontWeight="600">
-            {t("session.target")}: {currentExercise.target.value}{" "}
-            {isTimeBased ? t("session.seconds") : t("session.reps")}
-          </Text>
-        </YStack>
-
-        {/* Combo Meter - keep subtle, but only if active */}
-        {combo.isActive && combo.current > 0 ? (
+        {/* Target line - only for time-based */}
+        {isTimeBased && (
           <YStack items="center">
-            <ComboMeter combo={combo} isVisible={combo.isActive && combo.current > 0} />
+            <Text color="$textSecondary" fontSize={16} fontWeight="600">
+              {t("session.target")}: {currentExercise.target.value} {t("session.seconds")}
+            </Text>
           </YStack>
-        ) : null}
+        )}
+
+        {/* Combo Meter - floating top right */}
+        <ComboMeter combo={combo} isVisible={combo.isActive && combo.current > 0} />
       </YStack>
 
       {/* Bottom actions */}

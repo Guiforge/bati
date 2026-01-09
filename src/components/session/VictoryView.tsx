@@ -1,10 +1,13 @@
+import { BlurView } from "expo-blur";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Share, useWindowDimensions } from "react-native";
+import { Share, StyleSheet, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { Text, YStack } from "tamagui";
 
+import { resolveImageAsset } from "@/src/constants/assetMap";
 import { SOUNDS } from "@/src/constants/sounds";
 import { previewSessionLoot, type ResourceLoot } from "@/src/db/resources";
 import { computeSessionXp } from "@/src/db/xp";
@@ -109,6 +112,12 @@ export function VictoryView() {
 
   if (!quest || !startTime) return null;
 
+  // Use first exercise image as background fallback
+  const firstExercise = quest.exercises[0];
+  const questImageSource = firstExercise
+    ? resolveImageAsset(firstExercise.exercise.imagePath)
+    : null;
+
   const handleContinue = () => {
     if (!saveResult) return;
 
@@ -148,6 +157,27 @@ export function VictoryView() {
 
   return (
     <YStack flex={1} bg="$bgDarker">
+      {/* Quest image background with blur */}
+      {questImageSource && (
+        <YStack fullscreen pointerEvents="none">
+          <Image source={questImageSource} style={StyleSheet.absoluteFill} contentFit="cover" />
+          <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFill} />
+          <YStack fullscreen bg="$bgDarker" opacity={0.75} />
+        </YStack>
+      )}
+
+      {/* Confetti: high z-index to appear on top */}
+      <YStack fullscreen pointerEvents="none" zIndex={200}>
+        <ConfettiCannon
+          count={isBossDefeat ? 400 : 200}
+          origin={{ x: width / 2, y: -20 }}
+          autoStart={true}
+          fadeOut={true}
+          explosionSpeed={isBossDefeat ? 500 : 350}
+          fallSpeed={isBossDefeat ? 2500 : 3000}
+        />
+      </YStack>
+
       {saveResult ? (
         <RewardsManifest
           active={isManifestActive}
@@ -178,16 +208,6 @@ export function VictoryView() {
       {shouldShowLootReveal ? (
         <LootReveal loot={lootToReveal} onDismiss={() => setHasRevealedLoot(true)} />
       ) : null}
-
-      {/* Confetti: big moment, but stays behind the cinematic overlays. */}
-      <ConfettiCannon
-        count={isBossDefeat ? 400 : 200}
-        origin={{ x: width / 2, y: -20 }}
-        autoStart={true}
-        fadeOut={true}
-        explosionSpeed={isBossDefeat ? 500 : 350}
-        fallSpeed={isBossDefeat ? 2500 : 3000}
-      />
     </YStack>
   );
 }

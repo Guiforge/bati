@@ -8,12 +8,13 @@ import { useSessionStore } from "@/src/stores/session";
 
 export default function RestScreen() {
   const status = useSessionStore((s) => s.status);
+  const quest = useSessionStore((s) => s.quest);
   const skipRest = useSessionStore((s) => s.skipRest);
   const timerDuration = useSessionStore((s) => s.timerDuration);
   const { remainingSeconds } = useSessionTimer();
   const hasAutoSkippedRef = useRef(false);
 
-  // Auto-advance when rest reaches 0 (store transition to "running" will redirect below).
+  // Auto-advance when rest reaches 0
   useEffect(() => {
     if (status !== "resting") {
       hasAutoSkippedRef.current = false;
@@ -29,11 +30,21 @@ export default function RestScreen() {
     }
   }, [remainingSeconds, skipRest, status, timerDuration]);
 
-  if (status === "idle") return <Redirect href="/(tabs)" />;
-  if (status === "countdown") return <Redirect href="/session/countdown" />;
-  if (status === "running") return <Redirect href="/session/exercise" />;
-  if (status === "finished") return <Redirect href="/session/victory" />;
+  // Redirect based on status - each screen handles its own redirects
+  if (status === "idle" || !quest) {
+    return <Redirect href="/(tabs)" />;
+  }
+  if (status === "running") {
+    return <Redirect href="/session/exercise" />;
+  }
+  if (status === "countdown") {
+    return <Redirect href="/session/countdown" />;
+  }
+  if (status === "finished") {
+    return <Redirect href="/session/victory" />;
+  }
 
+  // resting or paused (with prePauseStatus === resting)
   return (
     <YStack flex={1} bg="$bgDarker">
       <RestView />

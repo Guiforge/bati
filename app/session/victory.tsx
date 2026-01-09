@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { Redirect } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { VictoryView } from "@/src/components/session/VictoryView";
@@ -19,16 +19,28 @@ import { useSessionStore } from "@/src/stores/session";
  */
 export default function VictoryScreen() {
   const insets = useSafeAreaInsets();
-
   const quest = useSessionStore((s) => s.quest);
+  const status = useSessionStore((s) => s.status);
+  
+  // Track if we ever had a quest (to avoid redirect after quitSession)
+  const hadQuestRef = useRef(false);
+  if (quest) {
+    hadQuestRef.current = true;
+  }
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, []);
 
-  if (!quest) {
-    // No session: render-safe redirect (avoid navigation updates during render)
+  // Only redirect if we never had a quest (user navigated here directly)
+  // Don't redirect after quitSession - VictoryView handles its own navigation
+  if (!quest && !hadQuestRef.current) {
     return <Redirect href="/(tabs)" />;
+  }
+
+  // Redirect to other screens if status changed unexpectedly
+  if (status !== "finished" && status !== "idle") {
+    return <Redirect href="/session" />;
   }
 
   return (

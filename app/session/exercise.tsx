@@ -1,6 +1,5 @@
-import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
@@ -15,6 +14,7 @@ import { resolveImageAsset } from "@/src/constants/assetMap";
 import { useComboTracker } from "@/src/hooks/useComboTracker";
 import { useCriticalHitDetector } from "@/src/hooks/useCriticalHitDetector";
 import { useFeedbackEffects } from "@/src/hooks/useFeedbackEffects";
+import { useHaptics } from "@/src/hooks/useHaptics";
 import { formatTime, useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
 import { useSettingsStore } from "@/src/stores/settings";
@@ -31,10 +31,10 @@ import type { CriticalHitEvent } from "@/src/types/boss-battle";
  * biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex workout screen with multiple state handlers
  */
 export default function ExerciseScreen() {
-  const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
+  const { warning } = useHaptics();
 
   // Get individual values from store
   const status = useSessionStore((s) => s.status);
@@ -55,10 +55,9 @@ export default function ExerciseScreen() {
   const totalExercises = quest?.exercises.length ?? 0;
 
   const [criticalHits, setCriticalHits] = useState<CriticalHitEvent[]>([]);
-  const [isAdvancing, setIsAdvancing] = useState(false);
 
   // Dopamine hooks
-  const { recordRep, resetCombo, getDamageMultiplier, combo } = useComboTracker({
+  const { recordRep, resetCombo, combo } = useComboTracker({
     breakThresholdMs: 5000,
     onComboMilestone: (count) => {
       triggerComboMilestone(count);
@@ -81,10 +80,21 @@ export default function ExerciseScreen() {
 
   const { triggerCriticalHit, triggerComboMilestone, triggerRepCompleted } = useFeedbackEffects();
 
-  // Redirect if no active session
-  if (!quest || status === "idle" || !currentExercise) {
+  // Redirect based on status - each screen handles its own redirects
+  if (status === "idle" || !quest || !currentExercise) {
     return <Redirect href="/(tabs)" />;
   }
+  if (status === "countdown") {
+    return <Redirect href="/session/countdown" />;
+  }
+  if (status === "resting") {
+    return <Redirect href="/session/rest" />;
+  }
+  if (status === "finished") {
+    return <Redirect href="/session/victory" />;
+  }
+
+  // running or paused (with prePauseStatus === running)
 
   const handleComplete = async () => {
     // Record rep for combo tracking
@@ -93,28 +103,19 @@ export default function ExerciseScreen() {
     // Check for critical hit
     const isCritical = checkCritical(0, 0);
 
-    // Trigger haptic feedback
+    // Trigger haptic feedback (single feedback, not double)
     const intensity = isCritical ? "heavy" : "medium";
     triggerRepCompleted(intensity);
-
-    // Apply combo damage multiplier (for boss fights)
-    // TODO: Pass comboMultiplier to completeExercise when implementing boss damage
-    const _comboMultiplier = getDamageMultiplier();
-
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     const targetValue = currentExercise.target.value;
     await completeExercise(targetValue);
 
+    // Reset combo if session finished
     const { status: newStatus } = useSessionStore.getState();
     if (newStatus === "finished") {
       resetCombo();
-      router.replace("/session/victory");
-    } else if (newStatus === "resting") {
-      // Dark-mode morphing: fade to deep black before transitioning to rest.
-      setIsAdvancing(true);
-      router.push("/session/rest");
     }
+    // Navigation is handled reactively by session/index.tsx based on status
   };
 
   const handleSkip = () => {
@@ -124,15 +125,9 @@ export default function ExerciseScreen() {
         text: t("session.skip_confirm"),
         style: "destructive",
         onPress: async () => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          warning();
           await completeExercise(0);
-          const { status: newStatus } = useSessionStore.getState();
-          if (newStatus === "finished") {
-            router.replace("/session/victory");
-          } else if (newStatus === "resting") {
-            setIsAdvancing(true);
-            router.replace("/session/rest");
-          }
+          // Navigation is handled reactively by session/index.tsx based on status
         },
       },
     ]);
@@ -319,11 +314,6 @@ export default function ExerciseScreen() {
           duration={1500}
         />
       ))}
-
-      {/* Dark transition overlay to prevent flashes */}
-      {isAdvancing ? (
-        <YStack fullscreen bg="$bgDarker" animation="quick" enterStyle={{ opacity: 0 }} />
-      ) : null}
 
       <PausedOverlay />
     </YStack>

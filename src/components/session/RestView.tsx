@@ -8,6 +8,7 @@ import { formatTime, useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
 import { useSettingsStore } from "@/src/stores/settings";
 import { BossHpBar } from "./BossHpBar";
+import { SessionProgressBar } from "./SessionProgressBar";
 
 /**
  * Rest & Recovery View
@@ -66,14 +67,16 @@ export function RestView() {
     <YStack
       flex={1}
       bg={screenBg}
-      pt={insets.top + 16}
+      pt={insets.top + 12}
       pb={insets.bottom + 16}
       px="$4"
       gap="$4"
-      justify="center"
       animation={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
+      {/* Global Session Progress Bar */}
+      <SessionProgressBar />
+
       {/* Header - Rest Cue */}
       <YStack
         items="center"

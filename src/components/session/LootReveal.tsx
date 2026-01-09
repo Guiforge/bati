@@ -10,7 +10,6 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, YStack } from "tamagui";
 import type { ResourceLoot } from "@/src/db/resources";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
@@ -27,7 +26,6 @@ function hasLoot(loot: ResourceLoot) {
 
 export function LootReveal({ loot, onDismiss }: Props) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const { GameIcon } = useGameIcon();
   const { heavyImpact, selection, success } = useHaptics();
 
@@ -154,8 +152,13 @@ export function LootReveal({ loot, onDismiss }: Props) {
   };
 
   return (
-    <Animated.View style={[{ flex: 1 }, overlayStyle]}>
-      <YStack fullscreen bg="$bgDarker" px="$5" pt={insets.top + 20} pb={insets.bottom + 20}>
+    <Animated.View
+      style={[
+        { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100 },
+        overlayStyle,
+      ]}
+    >
+      <YStack fullscreen bg="$bgDarker">
         <YStack asChild flex={1} onPress={handlePress}>
           <Pressable>
             <YStack flex={1} items="center" justifyContent="center" gap="$5">

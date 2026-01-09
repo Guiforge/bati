@@ -10,6 +10,7 @@ import { BossHpBar } from "@/src/components/session/BossHpBar";
 import { ComboMeter } from "@/src/components/session/ComboMeter";
 import { CriticalHitNumber } from "@/src/components/session/CriticalHitNumber";
 import { PausedOverlay } from "@/src/components/session/PausedOverlay";
+import { SessionProgressBar } from "@/src/components/session/SessionProgressBar";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import { useComboTracker } from "@/src/hooks/useComboTracker";
 import { useCriticalHitDetector } from "@/src/hooks/useCriticalHitDetector";
@@ -112,7 +113,7 @@ export default function ExerciseScreen() {
     } else if (newStatus === "resting") {
       // Dark-mode morphing: fade to deep black before transitioning to rest.
       setIsAdvancing(true);
-      router.replace("/session/rest");
+      router.push("/session/rest");
     }
   };
 
@@ -153,7 +154,12 @@ export default function ExerciseScreen() {
     : formatTime(elapsedSeconds);
 
   return (
-    <YStack flex={1} bg="$bgDarker" pt={insets.top + 20} pb={insets.bottom + 20} px="$5">
+    <YStack flex={1} bg="$bgDarker" pt={insets.top + 12} pb={insets.bottom + 20} px="$5">
+      {/* Global Session Progress Bar */}
+      <YStack mb="$3">
+        <SessionProgressBar />
+      </YStack>
+
       {/* Boss HP Bar - Only for boss fights */}
       {bossFight && lastDamageResult && (
         <YStack mb="$3">

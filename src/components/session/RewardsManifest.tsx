@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type LayoutChangeEvent, Pressable } from "react-native";
+import { type LayoutChangeEvent, Pressable, ScrollView } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -267,246 +267,266 @@ export function RewardsManifest({
         />
       </YStack>
 
-      <YStack flex={1} pt={insets.top + 24} pb={insets.bottom + 18} px="$5" gap="$5">
-        {/* Header */}
-        <YStack items="center" gap="$1">
-          <Text
-            fontFamily="$heading"
-            fontWeight="900"
-            fontSize={24}
-            letterSpacing={2}
-            textTransform="uppercase"
-            color="$text"
-            textAlign="center"
-          >
-            {t("session.quest_complete")}
-          </Text>
-          <Text color="$textSecondary" fontSize={13} fontWeight="700" numberOfLines={1}>
-            {questTitle}
-          </Text>
-        </YStack>
-
-        {/* XP & Level */}
-        <YStack
-          bg="$glassBg"
-          borderColor="$borderStrong"
-          borderWidth={1}
-          borderRadius="$4"
-          p="$4"
-          gap="$3"
+      <YStack flex={1} pt={insets.top + 24} pb={insets.bottom + 18}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, gap: 20 }}
+          showsVerticalScrollIndicator={false}
         >
-          <XStack justify="space-between" items="baseline">
-            <Text fontFamily="$heading" fontWeight="900" fontSize={20} color="$text">
-              {t("session.level_label", { level: newProg.level })}
-            </Text>
-            <Text fontFamily="$heading" fontWeight="900" fontSize={16} color="$gold">
-              +{xpEarned} {t("common.xp")}
-            </Text>
-          </XStack>
-          <Text color="$textSecondary" fontSize={12} fontWeight="700">
-            {language === "fr" ? levelTitle.fr : levelTitle.en}
-          </Text>
-
-          <YStack gap="$2">
-            <YStack
-              onLayout={onTrackLayout}
-              height={16}
-              bg="$bgOverlay"
-              borderRadius={999}
-              overflow="hidden"
-              borderWidth={1}
-              borderColor="$borderStrong"
+          {/* Header */}
+          <YStack items="center" gap="$1">
+            <Text
+              fontFamily="$heading"
+              fontWeight="900"
+              fontSize={24}
+              letterSpacing={2}
+              textTransform="uppercase"
+              color="$text"
+              textAlign="center"
             >
-              <Animated.View style={[{ height: 16 }, fillStyle]}>
-                <YStack height={16} width="100%" bg="$primary" />
-              </Animated.View>
-              <Animated.View style={[{ position: "absolute", inset: 0 }, flashStyle]}>
-                <YStack fullscreen bg="$gold" opacity={0.22} />
-              </Animated.View>
-            </YStack>
-            <XStack justify="space-between" items="center">
-              <Text color="$textSecondary" fontSize={12} fontWeight="700">
-                {t("common.xp")} {newProg.within} / {Math.max(0, newProg.next - newProg.start)}
+              {t("session.quest_complete")}
+            </Text>
+            <Text color="$textSecondary" fontSize={13} fontWeight="700" numberOfLines={1}>
+              {questTitle}
+            </Text>
+          </YStack>
+
+          {/* XP & Level */}
+          <YStack
+            bg="$glassBg"
+            borderColor="$borderStrong"
+            borderWidth={1}
+            borderRadius="$4"
+            p="$4"
+            gap="$3"
+          >
+            <XStack justify="space-between" items="baseline">
+              <Text fontFamily="$heading" fontWeight="900" fontSize={20} color="$text">
+                {t("session.level_label", { level: newProg.level })}
               </Text>
-              <Text color="$textSecondary" fontSize={12} fontWeight="700">
-                {Math.round(newProg.percent)}%
+              <Text fontFamily="$heading" fontWeight="900" fontSize={16} color="$gold">
+                +{xpEarned} {t("common.xp")}
               </Text>
             </XStack>
+            <Text color="$textSecondary" fontSize={12} fontWeight="700">
+              {language === "fr" ? levelTitle.fr : levelTitle.en}
+            </Text>
+
+            <YStack gap="$2">
+              <YStack
+                onLayout={onTrackLayout}
+                height={16}
+                bg="$bgOverlay"
+                borderRadius={999}
+                overflow="hidden"
+                borderWidth={1}
+                borderColor="$borderStrong"
+              >
+                <Animated.View style={[{ height: 16 }, fillStyle]}>
+                  <YStack height={16} width="100%" bg="$primary" />
+                </Animated.View>
+                <Animated.View style={[{ position: "absolute", inset: 0 }, flashStyle]}>
+                  <YStack fullscreen bg="$gold" opacity={0.22} />
+                </Animated.View>
+              </YStack>
+              <XStack justify="space-between" items="center">
+                <Text color="$textSecondary" fontSize={12} fontWeight="700">
+                  {t("common.xp")} {newProg.within} / {Math.max(0, newProg.next - newProg.start)}
+                </Text>
+                <Text color="$textSecondary" fontSize={12} fontWeight="700">
+                  {Math.round(newProg.percent)}%
+                </Text>
+              </XStack>
+            </YStack>
           </YStack>
-        </YStack>
 
-        {/* Loot */}
-        <YStack gap="$2">
-          <Text
-            fontFamily="$heading"
-            fontWeight="900"
-            fontSize={14}
-            letterSpacing={3}
-            textTransform="uppercase"
-            color="$textSecondary"
-            textAlign="center"
+          {/* Loot */}
+          <YStack gap="$2">
+            <Text
+              fontFamily="$heading"
+              fontWeight="900"
+              fontSize={14}
+              letterSpacing={3}
+              textTransform="uppercase"
+              color="$textSecondary"
+              textAlign="center"
+            >
+              {t("session.loot_obtained")}
+            </Text>
+
+            <XStack flexWrap="wrap" gap="$3" justify="center">
+              {lootItems.map((item) => {
+                const icon = RESOURCE_ICON[item.resource] ?? "lorc/locked-chest";
+                const color = RESOURCE_COLOR[item.resource] ?? "$text";
+                return (
+                  <YStack
+                    key={`${item.resource}-${item.amount}`}
+                    width="46%"
+                    minW={150}
+                    bg="$glassBg"
+                    borderColor="$borderStrong"
+                    borderWidth={1}
+                    borderRadius="$4"
+                    p="$4"
+                    gap="$2"
+                  >
+                    <XStack items="center" gap="$3">
+                      <YStack
+                        width={40}
+                        height={40}
+                        borderRadius={999}
+                        bg="$bgOverlay"
+                        borderWidth={1}
+                        borderColor="$borderStrong"
+                        items="center"
+                        justify="center"
+                        shadowColor={color}
+                        shadowOpacity={0.45}
+                        shadowRadius={12}
+                      >
+                        <GameIcon name={icon} size={18} tintColor={color} />
+                      </YStack>
+                      <YStack flex={1}>
+                        <Text fontFamily="$heading" fontWeight="900" fontSize={18} color={color}>
+                          +{item.amount}
+                        </Text>
+                        <Text fontSize={12} fontWeight="700" color="$textSecondary">
+                          {t(`resources.${item.resource}`)}
+                        </Text>
+                      </YStack>
+                    </XStack>
+                  </YStack>
+                );
+              })}
+            </XStack>
+          </YStack>
+
+          {/* Stats Strip */}
+          <YStack
+            bg="$glassBg"
+            borderColor="$borderStrong"
+            borderWidth={1}
+            borderRadius="$4"
+            p="$4"
+            gap="$3"
           >
-            {t("session.loot_obtained")}
-          </Text>
+            <Text
+              fontFamily="$heading"
+              fontWeight="900"
+              fontSize={14}
+              letterSpacing={3}
+              textTransform="uppercase"
+              color="$textSecondary"
+              textAlign="center"
+            >
+              {t("session.session_stats")}
+            </Text>
+            <XStack justify="space-between" items="center">
+              <YStack items="center" flex={1}>
+                <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
+                  {formatTime(durationSeconds)}
+                </Text>
+                <Text
+                  fontSize={11}
+                  fontWeight="800"
+                  color="$textSecondary"
+                  textTransform="uppercase"
+                >
+                  {t("session.total_time")}
+                </Text>
+              </YStack>
+              <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
+              <YStack items="center" flex={1}>
+                <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
+                  {totalReps}
+                </Text>
+                <Text
+                  fontSize={11}
+                  fontWeight="800"
+                  color="$textSecondary"
+                  textTransform="uppercase"
+                >
+                  {t("session.reps")}
+                </Text>
+              </YStack>
+              <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
+              <YStack items="center" flex={1}>
+                <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
+                  {xpEarned}
+                </Text>
+                <Text
+                  fontSize={11}
+                  fontWeight="800"
+                  color="$textSecondary"
+                  textTransform="uppercase"
+                >
+                  {t("common.xp")}
+                </Text>
+              </YStack>
+            </XStack>
+          </YStack>
 
-          <XStack flexWrap="wrap" gap="$3" justify="center">
-            {lootItems.map((item) => {
-              const icon = RESOURCE_ICON[item.resource] ?? "lorc/locked-chest";
-              const color = RESOURCE_COLOR[item.resource] ?? "$text";
-              return (
+          {/* Footer Actions */}
+          <XStack gap="$3" mt="auto">
+            <YStack flex={1}>
+              <Pressable
+                onPress={onShare}
+                disabled={!onShare}
+                accessibilityRole="button"
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.8 : 1,
+                  transform: [{ scale: pressed ? 0.97 : 1 }],
+                })}
+              >
                 <YStack
-                  key={`${item.resource}-${item.amount}`}
-                  width="46%"
-                  minW={150}
                   bg="$glassBg"
                   borderColor="$borderStrong"
                   borderWidth={1}
-                  borderRadius="$4"
-                  p="$4"
-                  gap="$2"
+                  borderRadius={999}
+                  py="$3"
+                  items="center"
+                  opacity={onShare ? 1 : 0.6}
                 >
-                  <XStack items="center" gap="$3">
-                    <YStack
-                      width={40}
-                      height={40}
-                      borderRadius={999}
-                      bg="$bgOverlay"
-                      borderWidth={1}
-                      borderColor="$borderStrong"
-                      items="center"
-                      justify="center"
-                      shadowColor={color}
-                      shadowOpacity={0.45}
-                      shadowRadius={12}
-                    >
-                      <GameIcon name={icon} size={18} tintColor={color} />
-                    </YStack>
-                    <YStack flex={1}>
-                      <Text fontFamily="$heading" fontWeight="900" fontSize={18} color={color}>
-                        +{item.amount}
-                      </Text>
-                      <Text fontSize={12} fontWeight="700" color="$textSecondary">
-                        {t(`resources.${item.resource}`)}
-                      </Text>
-                    </YStack>
-                  </XStack>
+                  <Text fontFamily="$heading" fontWeight="900" color="$textSecondary">
+                    {t("session.share")}
+                  </Text>
                 </YStack>
-              );
-            })}
-          </XStack>
-        </YStack>
+              </Pressable>
+            </YStack>
 
-        {/* Stats Strip */}
-        <YStack
-          bg="$glassBg"
-          borderColor="$borderStrong"
-          borderWidth={1}
-          borderRadius="$4"
-          p="$4"
-          gap="$3"
-        >
-          <Text
-            fontFamily="$heading"
-            fontWeight="900"
-            fontSize={14}
-            letterSpacing={3}
-            textTransform="uppercase"
-            color="$textSecondary"
-            textAlign="center"
-          >
-            {t("session.session_stats")}
-          </Text>
-          <XStack justify="space-between" items="center">
-            <YStack items="center" flex={1}>
-              <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
-                {formatTime(durationSeconds)}
-              </Text>
-              <Text fontSize={11} fontWeight="800" color="$textSecondary" textTransform="uppercase">
-                {t("session.total_time")}
-              </Text>
-            </YStack>
-            <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
-            <YStack items="center" flex={1}>
-              <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
-                {totalReps}
-              </Text>
-              <Text fontSize={11} fontWeight="800" color="$textSecondary" textTransform="uppercase">
-                {t("session.reps")}
-              </Text>
-            </YStack>
-            <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
-            <YStack items="center" flex={1}>
-              <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
-                {xpEarned}
-              </Text>
-              <Text fontSize={11} fontWeight="800" color="$textSecondary" textTransform="uppercase">
-                {t("common.xp")}
-              </Text>
-            </YStack>
-          </XStack>
-        </YStack>
-
-        {/* Footer Actions */}
-        <XStack gap="$3" mt="auto">
-          <YStack flex={1}>
-            <Pressable
-              onPress={onShare}
-              disabled={!onShare}
-              accessibilityRole="button"
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.8 : 1,
-                transform: [{ scale: pressed ? 0.97 : 1 }],
-              })}
-            >
-              <YStack
-                bg="$glassBg"
-                borderColor="$borderStrong"
-                borderWidth={1}
-                borderRadius={999}
-                py="$3"
-                items="center"
-                opacity={onShare ? 1 : 0.6}
+            <YStack flex={1}>
+              <Pressable
+                onPress={canContinue ? onContinue : undefined}
+                disabled={!canContinue}
+                accessibilityRole="button"
+                style={({ pressed }) => ({
+                  opacity: pressed && canContinue ? 0.9 : 1,
+                  transform: [{ scale: pressed && canContinue ? 0.97 : 1 }],
+                })}
               >
-                <Text fontFamily="$heading" fontWeight="900" color="$textSecondary">
-                  {t("session.share")}
-                </Text>
-              </YStack>
-            </Pressable>
-          </YStack>
-
-          <YStack flex={1}>
-            <Pressable
-              onPress={canContinue ? onContinue : undefined}
-              disabled={!canContinue}
-              accessibilityRole="button"
-              style={({ pressed }) => ({
-                opacity: pressed && canContinue ? 0.9 : 1,
-                transform: [{ scale: pressed && canContinue ? 0.97 : 1 }],
-              })}
-            >
-              <YStack
-                bg={canContinue ? "$primary" : "$bgOverlay"}
-                borderColor={canContinue ? "$primary" : "$borderStrong"}
-                borderWidth={1}
-                borderRadius={999}
-                py="$3"
-                items="center"
-                shadowColor={canContinue ? "$primaryGlow" : undefined}
-                shadowOpacity={canContinue ? 0.55 : 0}
-                shadowRadius={18}
-                opacity={canContinue ? 1 : 0.7}
-              >
-                <Text
-                  fontFamily="$heading"
-                  fontWeight="900"
-                  color={canContinue ? "$text" : "$textSecondary"}
+                <YStack
+                  bg={canContinue ? "$primary" : "$bgOverlay"}
+                  borderColor={canContinue ? "$primary" : "$borderStrong"}
+                  borderWidth={1}
+                  borderRadius={999}
+                  py="$3"
+                  items="center"
+                  shadowColor={canContinue ? "$primaryGlow" : undefined}
+                  shadowOpacity={canContinue ? 0.55 : 0}
+                  shadowRadius={18}
+                  opacity={canContinue ? 1 : 0.7}
                 >
-                  {t("common.continue")}
-                </Text>
-              </YStack>
-            </Pressable>
-          </YStack>
-        </XStack>
+                  <Text
+                    fontFamily="$heading"
+                    fontWeight="900"
+                    color={canContinue ? "$text" : "$textSecondary"}
+                  >
+                    {t("common.continue")}
+                  </Text>
+                </YStack>
+              </Pressable>
+            </YStack>
+          </XStack>
+        </ScrollView>
       </YStack>
     </YStack>
   );

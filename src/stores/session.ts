@@ -348,35 +348,22 @@ export const useSessionStore = create<SessionState>()(
       }
 
       // Handle Rest
-      // UX guard: ensure the rest screen is perceivable (avoid 1-2s rests that feel instantaneous).
-      const restSeconds = quest.restSeconds > 0 ? Math.max(5, quest.restSeconds) : 0;
+      // UX guard: ensure the rest screen is perceivable (avoid instantaneous rests).
+      // Minimum 10 seconds for a proper recovery break, even if quest specifies less or zero.
+      const MIN_REST_SECONDS = 10;
+      const restSeconds = Math.max(MIN_REST_SECONDS, quest.restSeconds);
 
-      // If we have rest, we go to resting state.
+      // Always go to resting state between exercises for recovery.
       // The indices (round/exercise) will point to the NEXT exercise,
       // so the UI can show "Up Next: [Next Exercise]".
-      if (restSeconds > 0) {
-        set({
-          status: "resting",
-          results: nextResults,
-          currentRoundIndex: nextRound,
-          currentExerciseIndex: nextExercise,
-          timerStartTimestamp: Date.now(),
-          timerDuration: restSeconds,
-        });
-      } else {
-        // No rest, jump straight to next
-        const nextExDef = quest.exercises[nextExercise];
-        const isNextTimeBased = nextExDef.target.type === "time";
-
-        set({
-          status: "running",
-          results: nextResults,
-          currentRoundIndex: nextRound,
-          currentExerciseIndex: nextExercise,
-          timerStartTimestamp: isNextTimeBased ? Date.now() : null,
-          timerDuration: isNextTimeBased ? nextExDef.target.value : 0,
-        });
-      }
+      set({
+        status: "resting",
+        results: nextResults,
+        currentRoundIndex: nextRound,
+        currentExerciseIndex: nextExercise,
+        timerStartTimestamp: Date.now(),
+        timerDuration: restSeconds,
+      });
     },
 
     skipRest: () => {

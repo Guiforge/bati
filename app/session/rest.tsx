@@ -13,16 +13,26 @@ export default function RestScreen() {
   const timerDuration = useSessionStore((s) => s.timerDuration);
   const { remainingSeconds } = useSessionTimer();
   const hasAutoSkippedRef = useRef(false);
+  const hasSeenPositiveRemainingRef = useRef(false);
 
   // Auto-advance when rest reaches 0
   useEffect(() => {
     if (status !== "resting") {
       hasAutoSkippedRef.current = false;
+      hasSeenPositiveRemainingRef.current = false;
       return;
+    }
+
+    // Ensure the timer has actually started ticking before we allow auto-skip.
+    // This prevents a mount-time 0 (timer not yet computed) from immediately skipping.
+    if (remainingSeconds > 0) {
+      hasSeenPositiveRemainingRef.current = true;
     }
 
     // Guard to avoid accidental immediate skip when no timer is configured.
     if (timerDuration <= 0) return;
+
+    if (!hasSeenPositiveRemainingRef.current) return;
 
     if (remainingSeconds === 0 && !hasAutoSkippedRef.current) {
       hasAutoSkippedRef.current = true;

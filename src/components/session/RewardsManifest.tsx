@@ -11,6 +11,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 
+import { getQuestHistoryStats, type QuestHistoryStats } from "@/src/db/completed";
 import type { ResourceLoot } from "@/src/db/resources";
 import type { ResourceCode } from "@/src/db/schema";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/src/db/userLevel";
@@ -22,12 +23,14 @@ import { useSettingsStore } from "@/src/stores/settings";
 type RewardsManifestProps = {
   active?: boolean;
   questTitle: string;
+  questId: number;
   durationSeconds: number;
   xpEarned: number;
   oldTotalXp: number;
   newTotalXp: number;
   loot: ResourceLoot;
   totalReps: number;
+  totalSets: number;
   onContinue: () => void;
   onShare?: () => void;
 };
@@ -83,12 +86,14 @@ function getProgressPercent(totalXp: number) {
 export function RewardsManifest({
   active = true,
   questTitle,
+  questId,
   durationSeconds,
   xpEarned,
   oldTotalXp,
   newTotalXp,
   loot,
   totalReps,
+  totalSets,
   onContinue,
   onShare,
 }: RewardsManifestProps) {
@@ -99,6 +104,16 @@ export function RewardsManifest({
   const language = useSettingsStore((s) => s.language);
 
   const [canContinue, setCanContinue] = useState(false);
+  const [history, setHistory] = useState<QuestHistoryStats | null>(null);
+
+  // Load quest history for comparison
+  useEffect(() => {
+    if (questId > 0) {
+      getQuestHistoryStats(questId)
+        .then(setHistory)
+        .catch(() => setHistory(null));
+    }
+  }, [questId]);
 
   const oldProg = useMemo(() => getProgressPercent(oldTotalXp), [oldTotalXp]);
   const newProg = useMemo(() => getProgressPercent(newTotalXp), [newTotalXp]);
@@ -400,6 +415,8 @@ export function RewardsManifest({
             >
               {t("session.session_stats")}
             </Text>
+
+            {/* Row 1: Time, Sets, Reps */}
             <XStack justify="space-between" items="center">
               <YStack items="center" flex={1}>
                 <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
@@ -417,6 +434,20 @@ export function RewardsManifest({
               <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
               <YStack items="center" flex={1}>
                 <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
+                  {totalSets}
+                </Text>
+                <Text
+                  fontSize={11}
+                  fontWeight="800"
+                  color="$textSecondary"
+                  textTransform="uppercase"
+                >
+                  {t("session.sets")}
+                </Text>
+              </YStack>
+              <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
+              <YStack items="center" flex={1}>
+                <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
                   {totalReps}
                 </Text>
                 <Text
@@ -428,10 +459,13 @@ export function RewardsManifest({
                   {t("session.reps")}
                 </Text>
               </YStack>
-              <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
+            </XStack>
+
+            {/* Row 2: XP, Avg/Set */}
+            <XStack justify="space-between" items="center">
               <YStack items="center" flex={1}>
-                <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
-                  {xpEarned}
+                <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$gold">
+                  +{xpEarned}
                 </Text>
                 <Text
                   fontSize={11}
@@ -442,8 +476,124 @@ export function RewardsManifest({
                   {t("common.xp")}
                 </Text>
               </YStack>
+              <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
+              <YStack items="center" flex={1}>
+                <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
+                  {totalSets > 0 ? formatTime(Math.round(durationSeconds / totalSets)) : "—"}
+                </Text>
+                <Text
+                  fontSize={11}
+                  fontWeight="800"
+                  color="$textSecondary"
+                  textTransform="uppercase"
+                >
+                  {t("session.avg_per_set")}
+                </Text>
+              </YStack>
+              <YStack width={1} height={34} bg="$borderStrong" opacity={0.35} />
+              <YStack items="center" flex={1}>
+                <Text fontFamily="$heading" fontWeight="900" fontSize={18} color="$text">
+                  {history ? history.timesCompleted + 1 : 1}
+                </Text>
+                <Text
+                  fontSize={11}
+                  fontWeight="800"
+                  color="$textSecondary"
+                  textTransform="uppercase"
+                >
+                  {t("session.times_done")}
+                </Text>
+              </YStack>
             </XStack>
           </YStack>
+
+          {/* History Comparison */}
+          {history && history.bestDurationSeconds && (
+            <YStack
+              bg="$glassBg"
+              borderColor="$borderStrong"
+              borderWidth={1}
+              borderRadius="$4"
+              p="$4"
+              gap="$2"
+            >
+              <Text
+                fontFamily="$heading"
+                fontWeight="900"
+                fontSize={12}
+                letterSpacing={2}
+                textTransform="uppercase"
+                color="$textSecondary"
+                textAlign="center"
+              >
+                {t("session.vs_previous")}
+              </Text>
+              <XStack justify="space-between" items="center" gap="$2">
+                {/* Time comparison */}
+                <YStack items="center" flex={1}>
+                  <XStack items="center" gap="$1">
+                    {durationSeconds < history.bestDurationSeconds ? (
+                      <Text color="$success" fontSize={14} fontWeight="900">
+                        🏆
+                      </Text>
+                    ) : durationSeconds <=
+                      (history.avgDurationSeconds ?? history.bestDurationSeconds) ? (
+                      <Text color="$primary" fontSize={14}>
+                        ✓
+                      </Text>
+                    ) : (
+                      <Text color="$textSecondary" fontSize={14}>
+                        —
+                      </Text>
+                    )}
+                    <Text
+                      fontFamily="$body"
+                      fontWeight="700"
+                      fontSize={13}
+                      color={durationSeconds < history.bestDurationSeconds ? "$success" : "$text"}
+                    >
+                      {formatTime(history.bestDurationSeconds)}
+                    </Text>
+                  </XStack>
+                  <Text fontSize={10} color="$textSecondary">
+                    {t("session.best_time")}
+                  </Text>
+                </YStack>
+
+                <YStack width={1} height={28} bg="$borderStrong" opacity={0.25} />
+
+                {/* XP comparison */}
+                <YStack items="center" flex={1}>
+                  <XStack items="center" gap="$1">
+                    {xpEarned > history.bestXp ? (
+                      <Text color="$gold" fontSize={14} fontWeight="900">
+                        🏆
+                      </Text>
+                    ) : xpEarned >= history.avgXp ? (
+                      <Text color="$primary" fontSize={14}>
+                        ✓
+                      </Text>
+                    ) : (
+                      <Text color="$textSecondary" fontSize={14}>
+                        —
+                      </Text>
+                    )}
+                    <Text
+                      fontFamily="$body"
+                      fontWeight="700"
+                      fontSize={13}
+                      color={xpEarned > history.bestXp ? "$gold" : "$text"}
+                    >
+                      {history.bestXp}
+                    </Text>
+                  </XStack>
+                  <Text fontSize={10} color="$textSecondary">
+                    {t("session.best_xp")}
+                  </Text>
+                </YStack>
+              </XStack>
+            </YStack>
+          )}
 
           {/* Footer Actions */}
           <XStack gap="$3" mt="auto" pt="$2">

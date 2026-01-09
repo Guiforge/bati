@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H1, Text, YStack } from "tamagui";
 import { useHaptics } from "@/src/hooks/useHaptics";
 import { useReducedMotion } from "@/src/hooks/useReducedMotion";
 import { useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
 import { useSettingsStore } from "@/src/stores/settings";
+import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { H1, Text, YStack } from "tamagui";
 
 /**
  * Countdown View
@@ -42,6 +42,12 @@ export function CountdownView() {
   useEffect(() => {
     if (status !== "countdown") return;
     if (remainingSeconds !== 0) return;
+
+    // Guard: avoid instantly finishing the countdown if the timer hasn't
+    // actually started ticking yet (e.g. initial render/race where
+    // remainingSeconds is still 0).
+    // We only auto-finish when we've observed a previous value > 0.
+    if (prevSecondsRef.current <= 0) return;
 
     success();
 

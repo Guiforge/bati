@@ -183,12 +183,14 @@ export function VictoryView() {
         <RewardsManifest
           active={isManifestActive}
           questTitle={questTitle}
+          questId={quest.id}
           durationSeconds={saveResult.durationSeconds}
           xpEarned={saveResult.xpEarned}
           oldTotalXp={saveResult.oldTotalXp}
           newTotalXp={saveResult.newTotalXp}
           loot={saveResult.loot}
           totalReps={totalReps}
+          totalSets={results.length}
           onContinue={handleContinue}
           onShare={handleShare}
         />

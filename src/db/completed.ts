@@ -548,3 +548,55 @@ export async function getTrendSummary(): Promise<{
     xpAnalysis,
   };
 }
+
+// ============================================================
+// Quest History & Comparison
+// ============================================================
+
+export type QuestHistoryStats = {
+  timesCompleted: number;
+  bestDurationSeconds: number | null;
+  avgDurationSeconds: number | null;
+  bestXp: number;
+  avgXp: number;
+  lastCompletedAt: Date | null;
+};
+
+/**
+ * Get historical stats for a specific quest to compare with current session.
+ * Returns null if no previous sessions exist.
+ */
+export async function getQuestHistoryStats(questId: number): Promise<QuestHistoryStats | null> {
+  const rows = db
+    .select({
+      id: completedQuest.id,
+      durationSeconds: completedQuest.durationSeconds,
+      xpEarned: completedQuest.xpEarned,
+      performedAt: completedQuest.performedAt,
+    })
+    .from(completedQuest)
+    .where(eq(completedQuest.questId, questId))
+    .orderBy(desc(completedQuest.performedAt))
+    .all();
+
+  if (rows.length === 0) return null;
+
+  const durations = rows
+    .map((r) => r.durationSeconds)
+    .filter((d): d is number => d !== null && d > 0);
+
+  const xpValues = rows.map((r) => r.xpEarned).filter((x) => x > 0);
+
+  return {
+    timesCompleted: rows.length,
+    bestDurationSeconds: durations.length > 0 ? Math.min(...durations) : null,
+    avgDurationSeconds:
+      durations.length > 0
+        ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+        : null,
+    bestXp: xpValues.length > 0 ? Math.max(...xpValues) : 0,
+    avgXp:
+      xpValues.length > 0 ? Math.round(xpValues.reduce((a, b) => a + b, 0) / xpValues.length) : 0,
+    lastCompletedAt: rows[0]?.performedAt ?? null,
+  };
+}

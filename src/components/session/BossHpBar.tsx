@@ -44,16 +44,16 @@ export function BossHpBar({
 
   return (
     <YStack
-      bg="$bgLight"
-      borderWidth={3}
-      borderColor="$color"
-      rounded="$6"
+      bg="$glassBg"
+      borderWidth={1}
+      borderColor="$borderStrong"
+      rounded="$4"
       px="$3"
       py="$2"
       gap="$2"
-      shadowColor="$color"
-      shadowRadius={0}
-      shadowOffset={{ width: 0, height: 3 }}
+      shadowColor="$error"
+      shadowOpacity={0.3}
+      shadowRadius={12}
     >
       {/* Boss Phase Image */}
       {showPhaseImage && (
@@ -66,7 +66,7 @@ export function BossHpBar({
       <XStack justify="space-between" items="center">
         <XStack items="center" gap="$2">
           {!showPhaseImage && <Text fontSize={18}>👹</Text>}
-          <Text fontWeight="900" fontSize={14} color="$color" textTransform="uppercase">
+          <Text fontWeight="900" fontSize={14} color="$text" textTransform="uppercase">
             {bossName || t("adventures.kind_boss")}
           </Text>
         </XStack>
@@ -74,7 +74,7 @@ export function BossHpBar({
           <Text fontWeight="900" fontSize={16} color={hpColor} fontFamily="$body" animation="quick">
             {currentHp}
           </Text>
-          <Text fontWeight="700" fontSize={12} color="$color" opacity={0.5}>
+          <Text fontWeight="700" fontSize={12} color="$textSecondary">
             /{totalHp}
           </Text>
         </XStack>
@@ -84,11 +84,11 @@ export function BossHpBar({
       <YStack position="relative">
         <Progress
           value={hpPercent}
-          size="$4"
-          bg="$pastelPink"
-          borderWidth={2}
-          borderColor="$color"
-          rounded="$4"
+          size="$3"
+          bg="$bgOverlay"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          rounded="$3"
         >
           <Progress.Indicator animation={isEnraged ? "bouncy" : "quick"} bg={hpColor} />
         </Progress>
@@ -106,7 +106,7 @@ export function BossHpBar({
             <Text
               fontWeight="900"
               fontSize={lastDamage.isCritical ? 20 : 16}
-              color={lastDamage.isCritical ? "$error" : "$secondary"}
+              color={lastDamage.isCritical ? "$error" : "$warning"}
             >
               {lastDamage.isCritical ? `💥 ${t("common.crit")} ` : "⚔️ "}-{lastDamage.damage}
               {lastDamage.weaknessBonus ? " 🎯" : ""}

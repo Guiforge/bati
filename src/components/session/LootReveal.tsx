@@ -138,19 +138,16 @@ export function LootReveal({ loot, onDismiss }: Props) {
       ringOpacity.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.quad) });
 
       // Keep chest open visible for 1 second before fading out
-      overlayOpacity.value = withTiming(
-        0,
-        { duration: 400, easing: Easing.out(Easing.quad) },
-        (finished) => {
-          if (!finished) return;
-          runOnJS(onDismiss)();
-        }
-      );
-
-      // Delay the fade out by 1 second to show open chest
       setTimeout(() => {
-        overlayOpacity.value = withTiming(0, { duration: 400, easing: Easing.out(Easing.quad) });
-      }, 500);
+        overlayOpacity.value = withTiming(
+          0,
+          { duration: 400, easing: Easing.out(Easing.quad) },
+          (finished) => {
+            if (!finished) return;
+            runOnJS(onDismiss)();
+          }
+        );
+      }, 1000);
 
       runOnJS(success)();
       runOnJS(heavyImpact)();

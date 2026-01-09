@@ -1,6 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, YStack } from "tamagui";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 
@@ -14,11 +15,10 @@ export default function WarmupScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { GameIcon } = useGameIcon();
+  const insets = useSafeAreaInsets();
 
   const handleStartWarmup = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    // Start warm-up countdown (could add a separate warm-up timer here if needed)
-    // For now, skip directly to main countdown
     router.replace("/session");
   };
 
@@ -30,15 +30,12 @@ export default function WarmupScreen() {
   return (
     <YStack
       flex={1}
-      bg="$bgDark"
+      bg="$bgDarker"
       justifyContent="space-between"
-      paddingTop="$6"
-      paddingBottom="$8"
-      paddingHorizontal="$6"
+      pt={insets.top + 20}
+      pb={insets.bottom + 20}
+      px="$6"
     >
-      {/* Top Safe Area - Status Bar Space */}
-      <YStack height={16} />
-
       {/* Hero Preparing Imagery / Inspirational Visual */}
       <YStack alignItems="center" justifyContent="center" gap="$4" flex={1}>
         {/* Hero Icon - Preparing/Stretching */}
@@ -90,8 +87,8 @@ export default function WarmupScreen() {
         </YStack>
       </YStack>
 
-      {/* Action Buttons - Bottom Safe Area */}
-      <YStack gap="$3" paddingBottom="$4">
+      {/* Action Buttons */}
+      <YStack gap="$3">
         <Button
           size="$6"
           bg="$primary"
@@ -118,9 +115,6 @@ export default function WarmupScreen() {
           {t("session.skip_warmup")}
         </Button>
       </YStack>
-
-      {/* Bottom Safe Area - Home Indicator Space */}
-      <YStack height={12} />
     </YStack>
   );
 }

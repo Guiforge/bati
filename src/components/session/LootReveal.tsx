@@ -1,6 +1,3 @@
-import { CHEST_ASSETS } from "@/src/constants/assetMap";
-import type { ResourceLoot } from "@/src/db/resources";
-import { useHaptics } from "@/src/hooks/useHaptics";
 import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,6 +12,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Text, YStack } from "tamagui";
+import { CHEST_ASSETS } from "@/src/constants/assetMap";
+import type { ResourceLoot } from "@/src/db/resources";
+import { useHaptics } from "@/src/hooks/useHaptics";
 
 type Props = {
   loot: ResourceLoot;

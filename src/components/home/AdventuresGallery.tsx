@@ -1,6 +1,3 @@
-import { resolveImageAsset } from "@/src/constants/assetMap";
-import { type Adventure, listAdventures } from "@/src/db/adventures";
-import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -8,6 +5,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, ScrollView } from "react-native";
 import { Button, Spinner, Text, XStack, YStack } from "tamagui";
+import { resolveImageAsset } from "@/src/constants/assetMap";
+import { type Adventure, listAdventures } from "@/src/db/adventures";
+import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.75;

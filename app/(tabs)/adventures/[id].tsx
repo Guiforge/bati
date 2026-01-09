@@ -1,12 +1,3 @@
-import { eq } from "drizzle-orm";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Animated, Dimensions, Easing, Pressable, StyleSheet, Vibration } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Spinner, Text, XStack, YStack } from "tamagui";
 import { useDatabase } from "@/src/components/DatabaseProvider";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import {
@@ -18,6 +9,15 @@ import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
 import { adventures, quests } from "@/src/db/schema";
 import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 import { useSessionStore } from "@/src/stores/session";
+import { eq } from "drizzle-orm";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Animated, Dimensions, Easing, Pressable, StyleSheet, Vibration } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, Spinner, Text, XStack, YStack } from "tamagui";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS & TYPES
@@ -359,7 +359,15 @@ function RewardBadge({
 }
 
 /** Difficulty Badge */
-function DifficultyBadge({ difficulty }: { difficulty: "Beginner" | "Intermediate" | "Advanced" }) {
+function DifficultyBadge({
+  difficulty,
+  top = 16,
+  right = 16,
+}: {
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  top?: number;
+  right?: number;
+}) {
   const { t } = useTranslation();
 
   const config = {
@@ -385,8 +393,8 @@ function DifficultyBadge({ difficulty }: { difficulty: "Beginner" | "Intermediat
   return (
     <XStack
       position="absolute"
-      top={16}
-      right={16}
+      top={top}
+      right={right}
       borderWidth={1}
       borderRadius={12}
       px="$3"
@@ -835,36 +843,34 @@ export default function AdventureDetailsScreen() {
           {/* ─────────────────────────────────────────────────────────────────
               BACK BUTTON - Enhanced Visibility
           ───────────────────────────────────────────────────────────────── */}
-          <Pressable
+          <Button
+            unstyled
             onPress={handleGoBack}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.go_back")}
+            position="absolute"
+            top={insets.top + 12}
+            left={16}
+            zIndex={50}
+            width={44}
+            height={44}
+            borderRadius={1000}
+            bg="rgba(0, 0, 0, 0.55)"
+            borderWidth={1}
+            borderColor="rgba(255, 255, 255, 0.15)"
+            justify="center"
+            items="center"
+            pressStyle={{ opacity: 0.7, scale: 0.95 }}
             style={{
-              position: "absolute",
-              top: insets.top + 12,
-              left: 16,
-              zIndex: 10,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.4,
+              shadowRadius: 8,
+              elevation: 6,
             }}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <YStack
-              bg="rgba(0, 0, 0, 0.55)"
-              borderWidth={1}
-              borderColor="rgba(255, 255, 255, 0.15)"
-              borderRadius={1000}
-              width={44}
-              height={44}
-              justify="center"
-              items="center"
-              pressStyle={{ opacity: 0.7, scale: 0.95 }}
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.4,
-                shadowRadius: 8,
-              }}
-            >
-              <GameIcon name="lorc/return-arrow" size={20} tintColor="white" />
-            </YStack>
-          </Pressable>
+            <GameIcon name="lorc/return-arrow" size={20} tintColor="white" />
+          </Button>
 
           {/* ─────────────────────────────────────────────────────────────────
               DIFFICULTY BADGE (Top Right)
@@ -872,6 +878,7 @@ export default function AdventureDetailsScreen() {
           {adventure.quest?.difficulty && (
             <DifficultyBadge
               difficulty={adventure.quest.difficulty as "Beginner" | "Intermediate" | "Advanced"}
+              top={insets.top + 12}
             />
           )}
 

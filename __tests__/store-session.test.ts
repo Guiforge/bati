@@ -125,7 +125,7 @@ describe("useSessionStore", () => {
     expect(state.quest).toEqual(mockQuest);
     expect(state.currentRoundIndex).toBe(0);
     expect(state.currentExerciseIndex).toBe(0);
-    expect(state.timerDuration).toBe(3); // Pre-start countdown
+    expect(state.timerDuration).toBe(5); // Pre-start countdown
   });
 
   test("finishCountdown transitions to running", () => {

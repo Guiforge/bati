@@ -63,6 +63,31 @@ export type Quest = {
   exercises: QuestExercise[];
 };
 
+/**
+ * ValidatedQuest is a Quest that has been validated to have at least one exercise.
+ * This type ensures at compile-time that the quest is ready for a workout session.
+ */
+export type ValidatedQuest = Quest & {
+  exercises: [QuestExercise, ...QuestExercise[]]; // Non-empty array
+};
+
+/**
+ * Type guard to check if a Quest has exercises and is valid for a session.
+ */
+export function isValidatedQuest(quest: Quest | null): quest is ValidatedQuest {
+  return quest !== null && quest.exercises.length > 0;
+}
+
+/**
+ * Validates a Quest and throws if invalid.
+ * Use this when you expect the quest to be valid and want to fail fast.
+ */
+export function assertValidQuest(quest: Quest | null): asserts quest is ValidatedQuest {
+  if (!isValidatedQuest(quest)) {
+    throw new Error("Invalid quest: missing exercises");
+  }
+}
+
 // ------------------------------------------------------------
 // Target generation
 // ------------------------------------------------------------
@@ -388,6 +413,12 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       qex.exercise.muscles.push(r.muscle);
     }
   }
+
+  // Don't return quest if it has no exercises - it's incomplete/invalid
+  if (quest.exercises.length === 0) {
+    return null;
+  }
+
   return quest;
 }
 

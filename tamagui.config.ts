@@ -143,11 +143,13 @@ const palette = {
   electricBluePress: "#0A25B0",
   magenta: "#DB2777",
   void: "#0B0F19",
+  voidDeeper: "#050505",
   voidOverlay: "rgba(11, 15, 25, 0.92)",
   surface1: "#101322",
   surface2: "#151A2E",
   textMain: "#E8ECFF",
   textMuted: "#909ACB",
+  etherealBlue: "#6E45E2",
 };
 
 const tokens = createTokens({
@@ -166,6 +168,7 @@ const tokens = createTokens({
 
     // --- BACKGROUNDS ---
     bgDark: palette.void,
+    bgDarker: palette.voidDeeper,
     bgOverlay: palette.voidOverlay,
     surface: palette.surface1,
     surface2: palette.surface2,
@@ -187,6 +190,8 @@ const tokens = createTokens({
     // --- NEO DARK FANTASY ACCENTS ---
     purple: "#8B5CF6",
     purpleGlow: "rgba(139, 92, 246, 0.45)",
+    ethereal: palette.etherealBlue,
+    etherealGlow: "rgba(110, 69, 226, 0.45)",
     metallicBlue: "#3B82F6",
     metallicBlueGlow: "rgba(59, 130, 246, 0.35)",
     gold: "#FFD700",

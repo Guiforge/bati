@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
+import { Difficulty, getQuestById, isValidatedQuest, type Quest } from "@/src/db/quests";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { useSessionStore } from "@/src/stores/session";
 
@@ -40,8 +40,8 @@ export default function QuestDetailsScreen() {
   }, [id]);
 
   const handleStartQuest = async () => {
-    if (!quest) return;
-    if (quest.exercises.length === 0) return;
+    // Use type guard instead of manual validation
+    if (!isValidatedQuest(quest)) return;
 
     await startSession(quest, userLevel);
     router.push("/session/countdown");

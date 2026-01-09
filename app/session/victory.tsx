@@ -1,194 +1,39 @@
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { Redirect } from "expo-router";
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Button, Text, XStack, YStack } from "tamagui";
-import { useGameIcon } from "@/src/hooks/useGameIcon";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { YStack } from "tamagui";
+import { VictoryView } from "@/src/components/session/VictoryView";
 import { useSessionStore } from "@/src/stores/session";
 
+/**
+ * Victory Screen - Reward & Satisfaction
+ *
+ * Goal: Dopamine rush. Celebrate the effort.
+ * Design Features:
+ * - Confetti & Particles (via VictoryView)
+ * - Animated Loot Box opening
+ * - Haptic feedback when rewards appear
+ * - Audio: Victory fanfare
+ * - Clear connection: physical pain → digital gain
+ */
 export default function VictoryScreen() {
-  const router = useRouter();
-  const { t } = useTranslation();
-  const { GameIcon } = useGameIcon();
+  const insets = useSafeAreaInsets();
 
-  const { sessionSummary, bossFight, clearSession } = useSessionStore();
-
-  const isBossVictory = !!bossFight && bossFight.currentHp <= 0;
+  const quest = useSessionStore((s) => s.quest);
 
   useEffect(() => {
-    Haptics.notificationAsync(
-      isBossVictory
-        ? Haptics.NotificationFeedbackType.Success
-        : Haptics.NotificationFeedbackType.Success
-    );
-  }, [isBossVictory]);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, []);
 
-  const handleContinue = () => {
-    clearSession();
-    router.replace("/(tabs)");
-  };
-
-  if (!sessionSummary) {
-    router.replace("/(tabs)");
-    return null;
+  if (!quest) {
+    // No session: render-safe redirect (avoid navigation updates during render)
+    return <Redirect href="/(tabs)" />;
   }
 
   return (
-    <YStack
-      flex={1}
-      bg={isBossVictory ? "#0A0A0F" : "$bgDark"}
-      padding="$6"
-      justifyContent="center"
-      alignItems="center"
-    >
-      {isBossVictory ? (
-        <>
-          {/* Boss Defeat Animation */}
-          <YStack
-            bg="$error"
-            width={100}
-            height={100}
-            alignItems="center"
-            justifyContent="center"
-            borderRadius={999}
-            mb="$4"
-            shadowColor="$error"
-            shadowOffset={{ width: 0, height: 8 }}
-            shadowOpacity={0.8}
-            shadowRadius={24}
-          >
-            <GameIcon name="lorc/crowned-skull" size={60} tintColor="$text" />
-          </YStack>
-
-          <Text fontSize={40} fontWeight="900" color="$error" marginBottom="$2" textAlign="center">
-            {t("boss.defeated")}
-          </Text>
-
-          <Text fontSize={20} color="$warning" marginBottom="$6" textAlign="center">
-            {t("boss.epic_victory")}
-          </Text>
-        </>
-      ) : (
-        <>
-          <Text
-            fontSize={48}
-            fontWeight="bold"
-            color="$primary"
-            marginBottom="$4"
-            textAlign="center"
-          >
-            🎉 {t("session.victory_title")}
-          </Text>
-
-          <Text fontSize={18} color="$textSecondary" marginBottom="$8" textAlign="center">
-            {t("session.victory_subtitle")}
-          </Text>
-        </>
-      )}
-
-      {/* Stats Cards */}
-      <YStack width="100%" gap="$3" marginBottom="$8">
-        <XStack gap="$3">
-          <YStack
-            flex={1}
-            bg="$glassBg"
-            padding="$4"
-            borderRadius="$4"
-            borderWidth={1}
-            borderColor={isBossVictory ? "$error" : "$glassBorder"}
-            alignItems="center"
-          >
-            <Text fontSize={14} color="$textSecondary" marginBottom="$2">
-              {t("session.xp_earned")}
-            </Text>
-            <Text fontSize={32} fontWeight="bold" color={isBossVictory ? "$warning" : "$primary"}>
-              {isBossVictory && "2x "}
-              {sessionSummary.totalXp || 0}
-            </Text>
-            {isBossVictory && (
-              <Text fontSize={12} color="$warning" fontWeight="600">
-                {t("boss.enhanced_rewards")}
-              </Text>
-            )}
-          </YStack>
-
-          <YStack
-            flex={1}
-            bg="$glassBg"
-            padding="$4"
-            borderRadius="$4"
-            borderWidth={1}
-            borderColor={isBossVictory ? "$error" : "$glassBorder"}
-            alignItems="center"
-          >
-            <Text fontSize={14} color="$textSecondary" marginBottom="$2">
-              {t("session.exercises")}
-            </Text>
-            <Text fontSize={32} fontWeight="bold" color="$text">
-              {sessionSummary.exercisesCompleted || 0}
-            </Text>
-          </YStack>
-        </XStack>
-
-        {isBossVictory && bossFight && (
-          <YStack
-            bg="$glassBg"
-            padding="$4"
-            borderRadius="$4"
-            borderWidth={1}
-            borderColor="$error"
-            alignItems="center"
-          >
-            <Text fontSize={14} color="$textSecondary" marginBottom="$2">
-              {t("boss.total_damage")}
-            </Text>
-            <Text fontSize={28} fontWeight="900" color="$error">
-              {bossFight.totalHp}
-            </Text>
-          </YStack>
-        )}
-
-        <YStack
-          bg="$glassBg"
-          padding="$4"
-          borderRadius="$4"
-          borderWidth={1}
-          borderColor={isBossVictory ? "$error" : "$glassBorder"}
-          alignItems="center"
-        >
-          <Text fontSize={14} color="$textSecondary" marginBottom="$2">
-            {t("session.time_taken")}
-          </Text>
-          <Text fontSize={28} fontWeight="600" color="$text">
-            {sessionSummary.durationSeconds
-              ? `${Math.floor(sessionSummary.durationSeconds / 60)}:${(sessionSummary.durationSeconds % 60).toString().padStart(2, "0")}`
-              : "0:00"}
-          </Text>
-        </YStack>
-      </YStack>
-
-      {/* Actions */}
-      <YStack width="100%" gap="$3">
-        <Button
-          size="$5"
-          bg={isBossVictory ? "$error" : "$primary"}
-          color="$text"
-          onPress={handleContinue}
-          pressStyle={{ opacity: 0.8 }}
-        >
-          {t("session.view_village")}
-        </Button>
-
-        <Button
-          size="$4"
-          variant="outlined"
-          borderColor="$borderStrong"
-          color="$textSecondary"
-          onPress={handleContinue}
-        >
-          {t("common.done")}
-        </Button>
-      </YStack>
+    <YStack flex={1} bg="$bgDarker" paddingTop={insets.top + 12} paddingBottom={insets.bottom + 12}>
+      <VictoryView />
     </YStack>
   );
 }

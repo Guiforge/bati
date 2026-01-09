@@ -37,7 +37,7 @@ export function PausedOverlay() {
   return (
     <YStack
       fullscreen
-      bg="rgba(0,0,0,0.6)"
+      bg="$bgOverlay"
       style={{ zIndex: 1000 }}
       items="center"
       justify="center"

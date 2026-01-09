@@ -2,19 +2,30 @@ import { eq } from "drizzle-orm";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { useDatabase } from "@/src/components/DatabaseProvider";
-import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
+import { Difficulty, getQuestById, isValidatedQuest, type Quest } from "@/src/db/quests";
 import { adventures } from "@/src/db/schema";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { useSessionStore } from "@/src/stores/session";
 
 type Adventure = typeof adventures.$inferSelect;
 
+/**
+ * Boss Intro Screen
+ *
+ * Displays boss information before starting an epic boss fight:
+ * - Boss artwork/icon
+ * - Boss name and lore
+ * - Boss HP and weakness info
+ * - Clear call-to-action button
+ */
 export default function BossIntroScreen() {
   const { adventureId } = useLocalSearchParams();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { db } = useDatabase();
   const { GameIcon } = useGameIcon();
   const startSession = useSessionStore((state) => state.startSession);
@@ -59,7 +70,8 @@ export default function BossIntroScreen() {
   }, [db, adventureId]);
 
   const handleBeginBattle = async () => {
-    if (!adventure || !quest) return;
+    // Use type guard instead of manual validation
+    if (!adventure || !isValidatedQuest(quest)) return;
 
     await startSession(quest, Difficulty.Medium, {
       adventureId: adventure.id,
@@ -70,7 +82,14 @@ export default function BossIntroScreen() {
 
   if (loading) {
     return (
-      <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center">
+      <YStack
+        flex={1}
+        bg="$bgDark"
+        alignItems="center"
+        justifyContent="center"
+        paddingTop={insets.top + 12}
+        paddingBottom={insets.bottom + 12}
+      >
         <Text color="$textSecondary">{t("common.loading")}</Text>
       </YStack>
     );
@@ -78,7 +97,15 @@ export default function BossIntroScreen() {
 
   if (!adventure || adventure.kind !== "boss" || !quest) {
     return (
-      <YStack flex={1} bg="$bgDark" alignItems="center" justifyContent="center" p="$4">
+      <YStack
+        flex={1}
+        bg="$bgDark"
+        alignItems="center"
+        justifyContent="center"
+        p="$4"
+        paddingTop={insets.top + 12}
+        paddingBottom={insets.bottom + 12}
+      >
         <Text color="$text" fontSize={24} fontWeight="bold" mb="$2">
           {t("boss.not_found")}
         </Text>
@@ -93,8 +120,9 @@ export default function BossIntroScreen() {
   const description = i18n.language === "fr" ? adventure.frDescription : adventure.enDescription;
 
   return (
-    <YStack flex={1} bg="#0A0A0F">
+    <YStack flex={1} bg="$bgDarker" paddingTop={insets.top + 12} paddingBottom={insets.bottom + 12}>
       <YStack flex={1} alignItems="center" justifyContent="center" p="$6" gap="$6">
+        {/* Boss Icon */}
         <YStack
           bg="$error"
           width={120}
@@ -110,6 +138,7 @@ export default function BossIntroScreen() {
           <GameIcon name="lorc/crowned-skull" size={72} tintColor="$text" />
         </YStack>
 
+        {/* Boss Title */}
         <YStack alignItems="center" gap="$2">
           <Text
             color="$textSecondary"
@@ -126,6 +155,7 @@ export default function BossIntroScreen() {
           </Text>
         </YStack>
 
+        {/* Boss HP Display */}
         {adventure.bossTotalHp && (
           <YStack
             bg="$glassBg"
@@ -141,6 +171,7 @@ export default function BossIntroScreen() {
           </YStack>
         )}
 
+        {/* Boss Description */}
         <YStack
           bg="$glassBg"
           borderColor="$borderStrong"
@@ -154,6 +185,7 @@ export default function BossIntroScreen() {
           </Text>
         </YStack>
 
+        {/* Boss Weakness Indicator */}
         {adventure.bossWeaknessMuscle && (
           <XStack alignItems="center" gap="$2" bg="$warning" px="$4" py="$2" borderRadius="$3">
             <GameIcon name="lorc/lightning-branches" size={20} tintColor="$text" />
@@ -164,6 +196,7 @@ export default function BossIntroScreen() {
         )}
       </YStack>
 
+      {/* Action Buttons - Bottom Safe Area */}
       <YStack p="$6" gap="$3">
         <Button
           size="$6"

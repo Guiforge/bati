@@ -1,419 +1,325 @@
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+import { Redirect, useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Dialog, ScrollView, Text, XStack, YStack } from "tamagui";
+import { Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "@/src/components/session/BossHpBar";
-import { useGameIcon } from "@/src/hooks/useGameIcon";
+import { ComboMeter } from "@/src/components/session/ComboMeter";
+import { CriticalHitNumber } from "@/src/components/session/CriticalHitNumber";
+import { PausedOverlay } from "@/src/components/session/PausedOverlay";
+import { resolveImageAsset } from "@/src/constants/assetMap";
+import { useComboTracker } from "@/src/hooks/useComboTracker";
+import { useCriticalHitDetector } from "@/src/hooks/useCriticalHitDetector";
+import { useFeedbackEffects } from "@/src/hooks/useFeedbackEffects";
+import { formatTime, useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
+import { useSettingsStore } from "@/src/stores/settings";
+import type { CriticalHitEvent } from "@/src/types/boss-battle";
 
+/**
+ * Exercise Screen - EXTREME MINIMALISM
+ *
+ * Design Philosophy: "Focus during effort"
+ * - Remove all non-essential UI during exercise
+ * - Maximize timer/counter visibility
+ * - High contrast for clarity under physical stress
+ * - Large tap targets for fatigued users
+ * biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex workout screen with multiple state handlers
+ */
 export default function ExerciseScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { GameIcon } = useGameIcon();
+  const insets = useSafeAreaInsets();
+  const language = useSettingsStore((s) => s.language);
 
-  const {
-    currentExercise,
-    currentSet,
-    totalSets,
-    exerciseIndex,
-    totalExercises,
-    completeExercise,
-    pauseSession,
-    bossFight,
-    lastDamageResult,
-  } = useSessionStore();
+  // Get individual values from store
+  const status = useSessionStore((s) => s.status);
+  const quest = useSessionStore((s) => s.quest);
+  const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
+  const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
+  const bossFight = useSessionStore((s) => s.bossFight);
+  const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
+  const completeExercise = useSessionStore((s) => s.completeExercise);
+  const pauseSession = useSessionStore((s) => s.pauseSession);
 
-  const [isPaused, setIsPaused] = useState(false);
-  const [showSkipDialog, setShowSkipDialog] = useState(false);
-  const [showModifyDialog, setShowModifyDialog] = useState(false);
-  const [showXpAnimation, setShowXpAnimation] = useState(false);
+  const { remainingSeconds, elapsedSeconds } = useSessionTimer();
 
-  if (!currentExercise) {
-    // No active session, redirect
-    router.replace("/(tabs)");
-    return null;
+  // Compute values locally
+  const currentExercise = quest?.exercises[currentExerciseIndex] ?? null;
+  const currentSet = currentRoundIndex + 1;
+  const totalSets = quest?.rounds ?? 0;
+  const totalExercises = quest?.exercises.length ?? 0;
+
+  const [criticalHits, setCriticalHits] = useState<CriticalHitEvent[]>([]);
+  const [isAdvancing, setIsAdvancing] = useState(false);
+
+  // Dopamine hooks
+  const { recordRep, resetCombo, getDamageMultiplier, combo } = useComboTracker({
+    breakThresholdMs: 5000,
+    onComboMilestone: (count) => {
+      triggerComboMilestone(count);
+    },
+  });
+
+  const { checkAndTrigger: checkCritical } = useCriticalHitDetector({
+    criticalHitChance: 0.15,
+    criticalHitMultiplier: 2,
+    weaknessBonus: false,
+    onCriticalHit: (event) => {
+      setCriticalHits((prev) => [...prev, event]);
+      triggerCriticalHit();
+      // Clean up after animation
+      setTimeout(() => {
+        setCriticalHits((prev) => prev.filter((h) => h.id !== event.id));
+      }, 1500);
+    },
+  });
+
+  const { triggerCriticalHit, triggerComboMilestone, triggerRepCompleted } = useFeedbackEffects();
+
+  // Redirect if no active session
+  if (!quest || status === "idle" || !currentExercise) {
+    return <Redirect href="/(tabs)" />;
   }
 
   const handleComplete = async () => {
-    // Story 3.6: Visual + Haptic feedback
+    // Record rep for combo tracking
+    recordRep();
+
+    // Check for critical hit
+    const isCritical = checkCritical(0, 0);
+
+    // Trigger haptic feedback
+    const intensity = isCritical ? "heavy" : "medium";
+    triggerRepCompleted(intensity);
+
+    // Apply combo damage multiplier (for boss fights)
+    // TODO: Pass comboMultiplier to completeExercise when implementing boss damage
+    const _comboMultiplier = getDamageMultiplier();
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setShowXpAnimation(true);
 
-    // Simulate XP animation duration
-    setTimeout(() => setShowXpAnimation(false), 1500);
-
-    // Get current exercise target value for completion
-    const targetValue = currentExercise?.target.value ?? 0;
+    const targetValue = currentExercise.target.value;
     await completeExercise(targetValue);
 
-    // Check status after completion
     const { status: newStatus } = useSessionStore.getState();
     if (newStatus === "finished") {
+      resetCombo();
       router.replace("/session/victory");
-    } else {
+    } else if (newStatus === "resting") {
+      // Dark-mode morphing: fade to deep black before transitioning to rest.
+      setIsAdvancing(true);
       router.push("/session/rest");
     }
   };
 
   const handleSkip = () => {
-    setShowSkipDialog(true);
-  };
-
-  const confirmSkip = async () => {
-    setShowSkipDialog(false);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-
-    // Skip exercise - move to rest/next with 0 reps
-    await completeExercise(0);
-
-    // Check status after completion
-    const { status: newStatus } = useSessionStore.getState();
-    if (newStatus === "finished") {
-      router.replace("/session/victory");
-    } else {
-      router.push("/session/rest");
-    }
-  };
-
-  const handleModify = () => {
-    setShowModifyDialog(true);
+    Alert.alert(t("session.skip_title"), t("session.skip_warning"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("session.skip_confirm"),
+        style: "destructive",
+        onPress: async () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          await completeExercise(0);
+          const { status: newStatus } = useSessionStore.getState();
+          if (newStatus === "finished") {
+            router.replace("/session/victory");
+          } else if (newStatus === "resting") {
+            setIsAdvancing(true);
+            router.push("/session/rest");
+          }
+        },
+      },
+    ]);
   };
 
   const handlePause = () => {
-    setIsPaused(true);
     pauseSession();
-  };
-
-  const handleResume = () => {
-    setIsPaused(false);
   };
 
   const isBossFight = !!bossFight;
 
+  const title =
+    language === "fr" ? currentExercise.exercise.frName : currentExercise.exercise.enName;
+  const imageSource = resolveImageAsset(currentExercise.exercise.imagePath);
+
+  const isTimeBased = currentExercise.target.type === "time";
+  const heroTime = isTimeBased
+    ? formatTime(Math.max(0, remainingSeconds))
+    : formatTime(elapsedSeconds);
+
   return (
-    <YStack flex={1} bg={isBossFight ? "#0A0A0F" : "$bgDark"}>
-      {/* Boss HP Bar */}
+    <YStack flex={1} bg="$bgDarker" pt={insets.top + 20} pb={insets.bottom + 20} px="$5">
+      {/* Boss HP Bar - Only for boss fights */}
       {bossFight && lastDamageResult && (
-        <YStack p="$4" pt="$6">
+        <YStack mb="$3">
           <BossHpBar
             currentHp={bossFight.currentHp}
             totalHp={bossFight.totalHp}
             bossName={t("boss.title")}
-            lastDamage={
-              lastDamageResult
-                ? {
-                    damage: lastDamageResult.damage,
-                    isCritical: lastDamageResult.isCritical,
-                    weaknessBonus: lastDamageResult.weaknessBonus,
-                  }
-                : null
-            }
+            lastDamage={{
+              damage: lastDamageResult.damage,
+              isCritical: lastDamageResult.isCritical,
+              weaknessBonus: lastDamageResult.weaknessBonus,
+            }}
             showPhaseImage={false}
           />
         </YStack>
       )}
 
-      {/* Progress Header */}
-      <YStack bg="$surface" padding="$4" borderBottomWidth={1} borderBottomColor="$borderStrong">
-        <Text fontSize={14} color="$textSecondary" textAlign="center">
-          {t("session.exercise")} {exerciseIndex + 1} {t("common.of")} {totalExercises} •{" "}
-          {t("common.set")} {currentSet} {t("common.of")} {totalSets}
-        </Text>
-        <YStack bg="$glassBg" height={4} borderRadius="$2" marginTop="$2" overflow="hidden">
-          <YStack
-            bg={isBossFight ? "$error" : "$primary"}
-            height="100%"
-            width={`${(exerciseIndex / totalExercises) * 100}%`}
-          />
-        </YStack>
-      </YStack>
-
-      <ScrollView flex={1} padding="$6">
-        {/* Exercise Name */}
-        <Text fontSize={32} fontWeight="bold" color="$text" marginBottom="$4">
-          {currentExercise.exercise.enName}
-        </Text>
-
-        {/* Exercise Instructions */}
-        <YStack
-          bg="$glassBg"
-          padding="$4"
-          borderRadius="$4"
-          borderWidth={1}
-          borderColor="$glassBorder"
-          marginBottom="$4"
-        >
-          <Text fontSize={16} color="$text" lineHeight={24}>
-            {currentExercise.exercise.enDescription}
+      {/* Header row: progress + pause */}
+      <XStack items="center" justifyContent="space-between" mb="$4">
+        <YStack>
+          <Text
+            fontSize={12}
+            color="$textSecondary"
+            fontWeight="700"
+            textTransform="uppercase"
+            letterSpacing={2}
+            fontFamily="$heading"
+          >
+            {t("session.exercise")} {currentExerciseIndex + 1}/{totalExercises} • {t("common.set")}{" "}
+            {currentSet}/{totalSets}
           </Text>
         </YStack>
 
-        {/* Target */}
-        <XStack gap="$3" marginBottom="$6">
-          <YStack flex={1} bg="$surface" padding="$4" borderRadius="$4" alignItems="center">
-            <Text fontSize={14} color="$textSecondary" marginBottom="$2">
-              {t("session.target")}
-            </Text>
-            <Text fontSize={24} fontWeight="bold" color="$primary">
-              {currentExercise.target.value}
-            </Text>
-            <Text fontSize={12} color="$textSecondary">
-              {currentExercise.target.type === "reps" ? t("session.reps") : t("session.seconds")}
-            </Text>
-          </YStack>
-
-          <YStack flex={1} bg="$surface" padding="$4" borderRadius="$4" alignItems="center">
-            <Text fontSize={14} color="$textSecondary" marginBottom="$2">
-              {t("session.difficulty")}
-            </Text>
-            <Text fontSize={18} fontWeight="600" color="$text">
-              {currentExercise.exercise.difficulty}
-            </Text>
-          </YStack>
-        </XStack>
-      </ScrollView>
-
-      {/* Action Buttons */}
-      <YStack padding="$4" gap="$3" bg="$surface" borderTopWidth={1} borderTopColor="$borderStrong">
-        {!isPaused ? (
-          <>
-            <Button
-              size="$5"
-              bg="$primary"
-              color="$text"
-              onPress={handleComplete}
-              pressStyle={{ opacity: 0.8 }}
-            >
-              {t("session.complete")}
-            </Button>
-
-            <XStack gap="$2">
-              <Button
-                flex={1}
-                size="$4"
-                variant="outlined"
-                borderColor="$borderStrong"
-                color="$textSecondary"
-                onPress={handleModify}
-              >
-                {t("session.modify")}
-              </Button>
-
-              <Button
-                flex={1}
-                size="$4"
-                variant="outlined"
-                borderColor="$error"
-                color="$error"
-                onPress={handleSkip}
-              >
-                {t("session.skip")}
-              </Button>
-            </XStack>
-
-            <Button
-              size="$4"
-              variant="outlined"
-              borderColor="$borderStrong"
-              color="$textSecondary"
-              onPress={handlePause}
-            >
-              {t("session.pause")}
-            </Button>
-          </>
-        ) : (
-          <Button size="$5" bg="$primary" color="$text" onPress={handleResume}>
-            {t("session.resume")}
-          </Button>
-        )}
-      </YStack>
-
-      {/* XP Animation (Story 3.6) */}
-      {showXpAnimation && (
-        <YStack
-          position="absolute"
-          top="50%"
-          left="50%"
-          transform={[{ translateX: -50 }, { translateY: -100 }]}
-          animation="bouncy"
-          enterStyle={{ opacity: 0, y: 50, scale: 0.5 }}
-          exitStyle={{ opacity: 0, y: -50 }}
+        <Button
+          size="$3"
+          circular
+          chromeless
+          onPress={handlePause}
+          pressStyle={{ opacity: 0.7, scale: 0.96 }}
+          accessibilityLabel={t("session.pause_accessibility", { defaultValue: "Pause" })}
+          accessibilityRole="button"
         >
-          <YStack
-            bg="$primary"
-            px="$6"
-            py="$4"
-            borderRadius="$6"
-            shadowColor="$primaryGlow"
-            shadowRadius={20}
-            shadowOpacity={0.8}
-          >
-            <Text fontSize={32} fontWeight="900" color="$text" textAlign="center">
-              +50 XP
-            </Text>
+          <Text color="$text" fontSize={18} fontWeight="900">
+            ||
+          </Text>
+        </Button>
+      </XStack>
+
+      {/* Main content */}
+      <YStack flex={1} justifyContent="center" gap="$4">
+        {/* Exercise Image */}
+        <YStack
+          bg="$glassBg"
+          borderWidth={1}
+          borderColor="$glassBorder"
+          borderRadius="$4"
+          p="$3"
+          shadowColor="$primaryGlow"
+          shadowOpacity={0.35}
+          shadowRadius={18}
+          overflow="hidden"
+        >
+          <YStack borderRadius="$4" overflow="hidden" borderWidth={1} borderColor="$primary">
+            <Image
+              source={imageSource}
+              style={{ width: "100%", height: 240 }}
+              contentFit="contain"
+              transition={150}
+            />
           </YStack>
         </YStack>
-      )}
 
-      {/* Skip Confirmation Dialog (Story 3.5) */}
-      <Dialog open={showSkipDialog} onOpenChange={setShowSkipDialog}>
-        <Dialog.Portal>
-          <Dialog.Overlay
-            key="overlay"
-            animation="quick"
-            opacity={0.5}
-            enterStyle={{ opacity: 0 }}
-            exitStyle={{ opacity: 0 }}
-          />
-          <Dialog.Content
-            bordered
-            elevate
-            key="content"
-            animation={[
-              "quick",
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
-            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-            gap="$4"
-            bg="$bgDark"
-            p="$6"
+        {/* Exercise Name */}
+        <Text
+          fontSize={28}
+          fontWeight="700"
+          fontFamily="$heading"
+          color="$text"
+          textAlign="center"
+          textTransform="uppercase"
+          letterSpacing={2}
+          numberOfLines={2}
+        >
+          {title}
+        </Text>
+
+        {/* Timer Hero */}
+        <YStack items="center" gap="$2">
+          <H1
+            fontSize={72}
+            lineHeight={78}
+            fontWeight="900"
+            fontFamily="$body"
+            color={isBossFight ? "$error" : "$text"}
           >
-            <Dialog.Title fontSize={28} fontWeight="bold" color="$text">
-              {t("session.skip_title")}
-            </Dialog.Title>
-            <Dialog.Description fontSize="$4" color="$textSecondary">
-              {t("session.skip_warning")}
-            </Dialog.Description>
+            {heroTime}
+          </H1>
+          <Text color="$textSecondary" fontSize={16} fontWeight="600">
+            {isTimeBased ? t("session.seconds") : t("session.reps")}
+          </Text>
+        </YStack>
 
-            <XStack gap="$3" justifyContent="flex-end">
-              <Dialog.Close asChild>
-                <Button variant="outlined" borderColor="$borderStrong">
-                  {t("common.cancel")}
-                </Button>
-              </Dialog.Close>
-              <Button bg="$error" onPress={confirmSkip}>
-                {t("session.skip_confirm")}
-              </Button>
-            </XStack>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+        {/* Target line */}
+        <YStack items="center">
+          <Text color="$textSecondary" fontSize={16} fontWeight="600">
+            {t("session.target")}: {currentExercise.target.value}{" "}
+            {isTimeBased ? t("session.seconds") : t("session.reps")}
+          </Text>
+        </YStack>
 
-      {/* Modify Exercise Dialog (Story 3.5) */}
-      <Dialog open={showModifyDialog} onOpenChange={setShowModifyDialog}>
-        <Dialog.Portal>
-          <Dialog.Overlay
-            key="overlay"
-            animation="quick"
-            opacity={0.5}
-            enterStyle={{ opacity: 0 }}
-            exitStyle={{ opacity: 0 }}
-          />
-          <Dialog.Content
-            bordered
-            elevate
-            key="content"
-            animation={[
-              "quick",
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
-            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-            gap="$4"
-            bg="$bgDark"
-            p="$6"
-          >
-            <Dialog.Title fontSize={28} fontWeight="bold" color="$text">
-              {t("session.modify_title")}
-            </Dialog.Title>
-            <Dialog.Description fontSize="$4" color="$textSecondary" mb="$3">
-              {t("session.modify_subtitle")}
-            </Dialog.Description>
+        {/* Combo Meter - keep subtle, but only if active */}
+        {combo.isActive && combo.current > 0 ? (
+          <YStack items="center">
+            <ComboMeter combo={combo} isVisible={combo.isActive && combo.current > 0} />
+          </YStack>
+        ) : null}
+      </YStack>
 
-            {/* Alternative exercises - simplified for MVP */}
-            <YStack gap="$2">
-              <Button
-                size="$4"
-                bg="$glassBg"
-                borderColor="$borderStrong"
-                borderWidth={1}
-                justifyContent="flex-start"
-                onPress={() => setShowModifyDialog(false)}
-              >
-                <XStack gap="$3" alignItems="center">
-                  <GameIcon name="lorc/anvil" size={20} tintColor="$text" />
-                  <YStack flex={1}>
-                    <Text color="$text" fontSize="$4" fontWeight="600">
-                      {t("session.alternative_1")}
-                    </Text>
-                    <Text color="$textSecondary" fontSize="$2">
-                      {t("session.difficulty_easier")}
-                    </Text>
-                  </YStack>
-                </XStack>
-              </Button>
+      {/* Bottom actions */}
+      <YStack gap="$3">
+        <Button
+          size="$6"
+          bg={isBossFight ? "$error" : "$primary"}
+          color="$text"
+          fontSize={20}
+          fontWeight="900"
+          onPress={handleComplete}
+          pressStyle={{ opacity: 0.9, scale: 0.98 }}
+          shadowColor={isBossFight ? "$error" : "$primaryGlow"}
+          shadowOffset={{ width: 0, height: 10 }}
+          shadowOpacity={0.7}
+          shadowRadius={20}
+        >
+          {t("session.complete_set", { defaultValue: "Complete Set" })} →
+        </Button>
 
-              <Button
-                size="$4"
-                bg="$glassBg"
-                borderColor="$borderStrong"
-                borderWidth={1}
-                justifyContent="flex-start"
-                onPress={() => setShowModifyDialog(false)}
-              >
-                <XStack gap="$3" alignItems="center">
-                  <GameIcon name="lorc/anvil" size={20} tintColor="$text" />
-                  <YStack flex={1}>
-                    <Text color="$text" fontSize="$4" fontWeight="600">
-                      {t("session.alternative_2")}
-                    </Text>
-                    <Text color="$textSecondary" fontSize="$2">
-                      {t("session.difficulty_similar")}
-                    </Text>
-                  </YStack>
-                </XStack>
-              </Button>
+        <Button
+          size="$4"
+          variant="outlined"
+          borderColor="$borderStrong"
+          color="$textSecondary"
+          onPress={handleSkip}
+          pressStyle={{ opacity: 0.7 }}
+        >
+          {t("session.skip")}
+        </Button>
+      </YStack>
 
-              <Button
-                size="$4"
-                bg="$glassBg"
-                borderColor="$borderStrong"
-                borderWidth={1}
-                justifyContent="flex-start"
-                onPress={() => setShowModifyDialog(false)}
-              >
-                <XStack gap="$3" alignItems="center">
-                  <GameIcon name="lorc/anvil" size={20} tintColor="$text" />
-                  <YStack flex={1}>
-                    <Text color="$text" fontSize="$4" fontWeight="600">
-                      {t("session.alternative_3")}
-                    </Text>
-                    <Text color="$textSecondary" fontSize="$2">
-                      {t("session.difficulty_harder")}
-                    </Text>
-                  </YStack>
-                </XStack>
-              </Button>
-            </YStack>
+      {/* Critical Hit Numbers */}
+      {criticalHits.map((hit) => (
+        <CriticalHitNumber
+          key={hit.id}
+          damage={hit.damage}
+          isCritical={hit.type === "critical" || hit.type === "weakness_bonus"}
+          x={hit.position.x}
+          y={hit.position.y}
+          duration={1500}
+        />
+      ))}
 
-            <Dialog.Close asChild>
-              <Button variant="outlined" borderColor="$borderStrong" mt="$2">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      {/* Dark transition overlay to prevent flashes */}
+      {isAdvancing ? (
+        <YStack fullscreen bg="$bgDarker" animation="quick" enterStyle={{ opacity: 0 }} />
+      ) : null}
+
+      <PausedOverlay />
     </YStack>
   );
 }

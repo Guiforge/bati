@@ -21,7 +21,7 @@ import {
 import { recordSessionForGoal } from "@/src/db/goals";
 import { checkForNewRecords, type NewRecordResult } from "@/src/db/personalRecords";
 import { preferences } from "@/src/db/preferences";
-import { isDailyQuest, type Quest } from "@/src/db/quests";
+import { isDailyQuest, type Quest, type ValidatedQuest } from "@/src/db/quests";
 import {
   awardSessionResources,
   type ExerciseResultForResources,
@@ -34,11 +34,11 @@ import { computeSessionXp } from "@/src/db/xp";
 
 export type SessionStatus = "idle" | "countdown" | "running" | "resting" | "paused" | "finished";
 
-const PRE_START_COUNTDOWN_SECONDS = 3;
+const PRE_START_COUNTDOWN_SECONDS = 5;
 
 interface SessionState {
-  // Static Data
-  quest: Quest | null;
+  // Static Data - ValidatedQuest when status !== "idle"
+  quest: ValidatedQuest | null;
   userLevel: DifficultyCode;
   adventureRunStepId: number | null;
 
@@ -63,19 +63,6 @@ interface SessionState {
 
   // Results Accumulator
   results: CompletedExerciseInput[];
-
-  // Computed getters for UI convenience
-  readonly currentExercise: Quest["exercises"][number] | null;
-  readonly currentSet: number; // 1-based round number
-  readonly totalSets: number;
-  readonly exerciseIndex: number; // 0-based
-  readonly totalExercises: number;
-  readonly nextExercise: Quest["exercises"][number] | null;
-  readonly sessionSummary: {
-    totalXp: number;
-    durationSeconds: number;
-    exercisesCompleted: number;
-  } | null;
 
   // Actions
   startSession: (
@@ -102,6 +89,8 @@ interface SessionState {
   // DB
   saveSession: (feedback?: FeedbackCode | null) => Promise<{
     sessionId: number;
+    durationSeconds: number;
+    xpEarned: number;
     loot: ResourceLoot;
     buildings: SessionBuildingResult;
     newRecords: NewRecordResult[];
@@ -113,6 +102,10 @@ interface SessionState {
       nextRunStepId: number | null;
       nextQuestId: number | null;
     } | null;
+    oldTotalXp: number;
+    newTotalXp: number;
+    oldLevel: number;
+    newLevel: number;
     levelUp: { oldLevel: number; newLevel: number } | null;
   }>;
 }
@@ -135,52 +128,6 @@ export const useSessionStore = create<SessionState>()(
     timerDuration: 0,
     results: [],
 
-    // Computed getters for UI convenience
-    get currentExercise() {
-      const state = get();
-      return state.quest?.exercises[state.currentExerciseIndex] ?? null;
-    },
-    get currentSet() {
-      return get().currentRoundIndex + 1; // 1-based
-    },
-    get totalSets() {
-      return get().quest?.rounds ?? 0;
-    },
-    get exerciseIndex() {
-      return get().currentExerciseIndex;
-    },
-    get totalExercises() {
-      return get().quest?.exercises.length ?? 0;
-    },
-    get nextExercise() {
-      const state = get();
-      if (!state.quest) return null;
-      const nextIdx = state.currentExerciseIndex + 1;
-      if (nextIdx < state.quest.exercises.length) {
-        return state.quest.exercises[nextIdx];
-      }
-      // If we're at the last exercise, return the first exercise of next round
-      if (state.currentRoundIndex < state.quest.rounds - 1) {
-        return state.quest.exercises[0];
-      }
-      return null;
-    },
-    get sessionSummary() {
-      const state = get();
-      if (!state.startTime || !state.quest) return null;
-      const durationSeconds = Math.floor(
-        (Date.now() - state.startTime - state.totalPausedTime) / 1000
-      );
-      return {
-        totalXp: computeSessionXp({
-          durationSeconds,
-          userLevel: state.userLevel,
-        }),
-        durationSeconds,
-        exercisesCompleted: state.results.length,
-      };
-    },
-
     clearSession: () => {
       set({
         quest: null,
@@ -201,6 +148,13 @@ export const useSessionStore = create<SessionState>()(
     },
 
     startSession: async (quest, userLevel, options) => {
+      // Validate quest
+      if (!quest?.exercises?.length) {
+        return;
+      }
+      // At this point quest is validated (has exercises)
+      const validatedQuest = quest as ValidatedQuest;
+
       // Load boss fight if this is a boss adventure
       let bossFight: BossFight | null = null;
       if (options?.adventureId) {
@@ -208,7 +162,7 @@ export const useSessionStore = create<SessionState>()(
       }
 
       set({
-        quest,
+        quest: validatedQuest,
         userLevel,
         adventureRunStepId: options?.adventureRunStepId ?? null,
         bossFight,
@@ -220,7 +174,6 @@ export const useSessionStore = create<SessionState>()(
         startTime: Date.now(),
         totalPausedTime: 0,
         lastPauseTimestamp: null,
-        // Countdown timer (full-screen 3..2..1). Exercise timers start AFTER the countdown.
         timerStartTimestamp: Date.now(),
         timerDuration: PRE_START_COUNTDOWN_SECONDS,
         results: [],
@@ -229,15 +182,18 @@ export const useSessionStore = create<SessionState>()(
 
     finishCountdown: () => {
       const { quest, currentExerciseIndex } = get();
-      if (!quest) return;
 
-      const firstEx = quest.exercises[currentExerciseIndex];
-      const isTimeBased = firstEx?.target.type === "time";
+      if (!quest?.exercises?.length) return;
+
+      const exercise = quest.exercises[currentExerciseIndex];
+      if (!exercise) return;
+
+      const isTimeBased = exercise.target.type === "time";
 
       set({
         status: "running",
         timerStartTimestamp: isTimeBased ? Date.now() : null,
-        timerDuration: isTimeBased ? firstEx.target.value : 0,
+        timerDuration: isTimeBased ? exercise.target.value : 0,
       });
     },
 
@@ -392,7 +348,8 @@ export const useSessionStore = create<SessionState>()(
       }
 
       // Handle Rest
-      const restSeconds = quest.restSeconds;
+      // UX guard: ensure the rest screen is perceivable (avoid 1-2s rests that feel instantaneous).
+      const restSeconds = quest.restSeconds > 0 ? Math.max(5, quest.restSeconds) : 0;
 
       // If we have rest, we go to resting state.
       // The indices (round/exercise) will point to the NEXT exercise,
@@ -551,11 +508,17 @@ export const useSessionStore = create<SessionState>()(
 
       return {
         sessionId,
+        durationSeconds,
+        xpEarned,
         loot,
         buildings,
         newRecords,
         newAchievements,
         campaign,
+        oldTotalXp,
+        newTotalXp,
+        oldLevel,
+        newLevel,
         levelUp,
       };
     },

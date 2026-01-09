@@ -1,49 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type ColorTokens, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/src/components/common/Card";
 import type { ResourceLoot } from "@/src/db/resources";
 import type { ResourceCode } from "@/src/db/schema";
-
-const RESOURCE_EMOJI: Record<ResourceCode, string> = {
-  gold: "💰",
-  wood: "🪵",
-  stone: "🪨",
-  fire: "🔥",
-  water: "💧",
-  wind: "🌬️",
-  grain: "🌾",
-  mana: "🔮",
-  leaf: "🍃",
-  boss_token: "🏆",
-};
-
-function getResourceBgColor(resource: ResourceCode): ColorTokens {
-  switch (resource) {
-    case "gold":
-      return "$pastelYellow";
-    case "wood":
-      return "$pastelPink";
-    case "stone":
-      return "$pastelBlue";
-    case "fire":
-      return "$pastelYellow";
-    case "water":
-      return "$pastelGreen";
-    case "wind":
-      return "$pastelPurple";
-    case "grain":
-      return "$pastelOrange";
-    case "mana":
-      return "$pastelPurple";
-    case "leaf":
-      return "$pastelGreen";
-    case "boss_token":
-      return "$pastelOrange"; // Special - orange
-    default:
-      return "$bgLight";
-  }
-}
 
 type Props = {
   loot: ResourceLoot;
@@ -90,14 +50,15 @@ export function LootDisplay({ loot }: Props) {
   if (!hasLoot) return null;
 
   return (
-    <Card width="100%" maxW={520} bg="$bgLight" gap="$3">
+    <Card width="100%" maxW={520} bg="$glassBg" gap="$3" borderColor="$glassBorder" borderWidth={1}>
       <Text
         fontWeight="800"
         fontSize={14}
-        color="$color"
-        opacity={0.7}
+        color="$textSecondary"
         textTransform="uppercase"
-        style={{ textAlign: "center" }}
+        letterSpacing={3}
+        fontFamily="$heading"
+        textAlign="center"
       >
         {t("session.loot_title")}
       </Text>
@@ -105,27 +66,38 @@ export function LootDisplay({ loot }: Props) {
       <XStack gap="$3" justify="center" flexWrap="wrap">
         {allItems.map((item, index) => {
           const isVisible = index < visibleCount;
+          const isGold = item.resource === "gold";
+          const accent = isGold ? "$gold" : "$ethereal";
+          const glow = isGold ? "$goldGlow" : "$etherealGlow";
           return (
             <YStack
               key={item.key}
               items="center"
               gap="$1"
-              bg={getResourceBgColor(item.resource)}
-              p="$3"
+              bg="$bgOverlay"
+              p="$4"
               rounded="$4"
-              borderWidth={2}
-              borderColor="$color"
+              borderWidth={1}
+              borderColor={accent}
               minW={80}
+              shadowColor={glow}
+              shadowOpacity={0.65}
+              shadowRadius={18}
               animation="bouncy"
               opacity={isVisible ? 1 : 0}
               scale={isVisible ? 1 : 0.3}
               y={isVisible ? 0 : 20}
             >
-              <Text fontSize={28}>{RESOURCE_EMOJI[item.resource]}</Text>
-              <Text fontWeight="900" fontSize={18} color="$color">
+              <Text
+                fontWeight="900"
+                fontSize={22}
+                color={accent}
+                fontFamily="$heading"
+                textAlign="center"
+              >
                 +{item.amount}
               </Text>
-              <Text fontSize={10} fontWeight="700" color="$color" opacity={0.7}>
+              <Text fontSize={12} fontWeight="700" color="$text" opacity={0.85}>
                 {t(`resources.${item.resource}`)}
               </Text>
             </YStack>

@@ -14,7 +14,7 @@ import {
   type AdventureStepTemplate,
   getAdventureDetails,
 } from "@/src/db/adventures";
-import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
+import { Difficulty, getQuestById, isValidatedQuest, type Quest } from "@/src/db/quests";
 import { adventures, quests } from "@/src/db/schema";
 import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 import { useSessionStore } from "@/src/stores/session";
@@ -708,7 +708,9 @@ export default function AdventureDetailsScreen() {
   }, [router]);
 
   const handleStartAdventure = useCallback(async () => {
-    if (!adventure || !quest) return;
+    // Use type guard instead of manual validation
+    if (!adventure || !isValidatedQuest(quest)) return;
+
     setShowConfirmModal(false);
     await startSession(quest, userLevel, { adventureId: adventure.id });
     router.push("/session/countdown");

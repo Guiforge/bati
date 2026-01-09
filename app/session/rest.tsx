@@ -1,77 +1,43 @@
-import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Button, Text, YStack } from "tamagui";
+import { Redirect } from "expo-router";
+import { useEffect, useRef } from "react";
+import { YStack } from "tamagui";
+import { PausedOverlay } from "@/src/components/session/PausedOverlay";
+import { RestView } from "@/src/components/session/RestView";
+import { useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
 
 export default function RestScreen() {
-  const router = useRouter();
-  const { t } = useTranslation();
-  const [timeLeft, setTimeLeft] = useState(30); // Default 30s rest
+  const status = useSessionStore((s) => s.status);
+  const skipRest = useSessionStore((s) => s.skipRest);
+  const timerDuration = useSessionStore((s) => s.timerDuration);
+  const { remainingSeconds } = useSessionTimer();
+  const hasAutoSkippedRef = useRef(false);
 
-  const { nextExercise } = useSessionStore();
-
-  const handleContinue = useCallback(() => {
-    router.replace("/session/exercise");
-  }, [router]);
-
-  const handleSkipRest = () => {
-    router.replace("/session/exercise");
-  };
-
+  // Auto-advance when rest reaches 0 (store transition to "running" will redirect below).
   useEffect(() => {
-    if (timeLeft === 0) {
-      handleContinue();
+    if (status !== "resting") {
+      hasAutoSkippedRef.current = false;
       return;
     }
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    // Guard to avoid accidental immediate skip when no timer is configured.
+    if (timerDuration <= 0) return;
 
-    return () => clearInterval(timer);
-  }, [timeLeft, handleContinue]);
+    if (remainingSeconds === 0 && !hasAutoSkippedRef.current) {
+      hasAutoSkippedRef.current = true;
+      skipRest();
+    }
+  }, [remainingSeconds, skipRest, status, timerDuration]);
+
+  if (status === "idle") return <Redirect href="/(tabs)" />;
+  if (status === "countdown") return <Redirect href="/session/countdown" />;
+  if (status === "running") return <Redirect href="/session/exercise" />;
+  if (status === "finished") return <Redirect href="/session/victory" />;
 
   return (
-    <YStack flex={1} bg="$bgDark" justifyContent="center" alignItems="center" padding="$6">
-      <Text fontSize={24} color="$textSecondary" marginBottom="$4">
-        {t("session.rest")}
-      </Text>
-
-      <Text fontSize={100} fontWeight="bold" color="$primary" marginBottom="$2">
-        {timeLeft}
-      </Text>
-
-      <Text fontSize={16} color="$textSecondary" marginBottom="$8">
-        {t("session.seconds")}
-      </Text>
-
-      {nextExercise && (
-        <YStack bg="$glassBg" padding="$4" borderRadius="$4" marginBottom="$6" width="100%">
-          <Text fontSize={14} color="$textSecondary" marginBottom="$2">
-            {t("session.next_up")}
-          </Text>
-          <Text fontSize={20} fontWeight="600" color="$text">
-            {nextExercise.exercise.enName}
-          </Text>
-        </YStack>
-      )}
-
-      <Button
-        size="$4"
-        variant="outlined"
-        borderColor="$borderStrong"
-        color="$textSecondary"
-        onPress={handleSkipRest}
-      >
-        {t("session.skip_rest")}
-      </Button>
+    <YStack flex={1} bg="$bgDarker">
+      <RestView />
+      <PausedOverlay />
     </YStack>
   );
 }

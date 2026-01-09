@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { BossFight, DamageResult } from "@/src/db/bossFights";
 import type { CompletedExerciseInput } from "@/src/db/completed";
 import { preferences } from "@/src/db/preferences";
-import type { Quest } from "@/src/db/quests";
+import type { ValidatedQuest } from "@/src/db/quests";
 import type { DifficultyCode } from "@/src/db/schema";
 import { type SessionStatus, useSessionStore } from "@/src/stores/session";
 
@@ -10,7 +10,7 @@ import { type SessionStatus, useSessionStore } from "@/src/stores/session";
  * Serializable session state for recovery
  */
 interface SavedSessionState {
-  quest: Quest;
+  quest: ValidatedQuest;
   userLevel: DifficultyCode;
   adventureRunStepId: number | null;
   bossFight: BossFight | null;

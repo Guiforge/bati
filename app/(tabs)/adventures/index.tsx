@@ -1,3 +1,7 @@
+import { useDatabase } from "@/src/components/DatabaseProvider";
+import { resolveImageAsset } from "@/src/constants/assetMap";
+import { adventures, quests } from "@/src/db/schema";
+import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { eq } from "drizzle-orm";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -5,10 +9,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 import { Button, ScrollView, Text, XStack, YStack } from "tamagui";
-import { useDatabase } from "@/src/components/DatabaseProvider";
-import { resolveImageAsset } from "@/src/constants/assetMap";
-import { adventures, quests } from "@/src/db/schema";
-import { useGameIcon } from "@/src/hooks/useGameIcon";
 
 type Adventure = typeof adventures.$inferSelect & {
   quest: typeof quests.$inferSelect | null;
@@ -108,8 +108,14 @@ export default function AdventuresScreen() {
     return (
       <Button
         unstyled
-        onPress={() => router.push(`/(modals)/adventure-details/${item.id}`)}
+        onPress={() =>
+          router.push({
+            pathname: "/adventures/[id]",
+            params: { id: String(item.id) },
+          })
+        }
         mb="$3"
+        pressStyle={{ opacity: 0.8, scale: 0.98 }}
       >
         <YStack
           bg="$glassBg"
@@ -117,12 +123,12 @@ export default function AdventuresScreen() {
           borderWidth={isBoss ? 2 : 1}
           borderRadius="$4"
           overflow="hidden"
-          pressStyle={{ opacity: 0.8, scale: 0.98 }}
         >
           <Image
             source={resolveImageAsset(item.imagePath)}
             style={{ width: "100%", height: 200 }}
             contentFit="cover"
+            pointerEvents="none"
           />
 
           <YStack p="$4">

@@ -4,13 +4,13 @@ import { useTranslation } from "react-i18next";
 import { Pressable, type ViewStyle } from "react-native";
 import Animated, {
   Easing,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import { Text, YStack } from "tamagui";
 import { CHEST_ASSETS } from "@/src/constants/assetMap";
 import type { ResourceLoot } from "@/src/db/resources";
@@ -59,8 +59,8 @@ export function LootReveal({ loot, onDismiss }: Props) {
       },
       (finished) => {
         if (!finished) return;
-        runOnJS(impact)();
-        runOnJS(setPhase)("closed");
+        scheduleOnRN(impact);
+        scheduleOnRN(setPhase, "closed");
 
         // Anticipation: single white-ish pulse ring.
         ringOpacity.value = 1;
@@ -135,13 +135,13 @@ export function LootReveal({ loot, onDismiss }: Props) {
           { duration: 400, easing: Easing.out(Easing.quad) },
           (finished) => {
             if (!finished) return;
-            runOnJS(onDismiss)();
+            scheduleOnRN(onDismiss);
           }
         );
       }, 1000);
 
-      runOnJS(success)();
-      runOnJS(impact)();
+      scheduleOnRN(success);
+      scheduleOnRN(impact);
     }
   };
 

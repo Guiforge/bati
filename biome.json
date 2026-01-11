@@ -38,6 +38,9 @@
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "error"
       },
+      "nursery": {
+        "noDeprecatedImports": "error"
+      },
       "recommended": true,
       "style": {
         "noNonNullAssertion": "warn",

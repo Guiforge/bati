@@ -1,3 +1,4 @@
+// biome-ignore lint/nursery/noDeprecatedImports: primaryKey is using new API format primaryKey({ columns: [] })
 import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // ------------------------------------------------------------

@@ -1,11 +1,11 @@
 import { createAnimations } from "@tamagui/animations-react-native";
 import { defaultConfig } from "@tamagui/config/v4";
-import { createFont, createMedia, createTamagui, createTokens } from "tamagui";
+import { createFont, createTamagui, createTokens } from "tamagui";
 
 // -------------------------------------------------------------------------
 // 1. MEDIA QUERIES (Responsive)
 // -------------------------------------------------------------------------
-const media = createMedia({
+const media = {
   xs: { maxWidth: 660 },
   sm: { maxWidth: 800 },
   md: { maxWidth: 1020 },
@@ -18,9 +18,9 @@ const media = createMedia({
   gtLg: { minWidth: 1280 + 1 },
   short: { maxHeight: 820 },
   tall: { minHeight: 820 },
-  hover: { hover: "none" },
+  hoverNone: { hover: "none" },
   pointerCoarse: { pointer: "coarse" },
-});
+};
 
 // -------------------------------------------------------------------------
 // 2. TYPOGRAPHY

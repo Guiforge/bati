@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Animated, Dimensions, Easing, Pressable, StyleSheet, Vibration } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Spinner, Text, XStack, YStack } from "tamagui";
+import { MuscleIcon } from "@/src/components/common/MuscleIcon";
 import { useDatabase } from "@/src/components/DatabaseProvider";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import {
@@ -15,8 +16,9 @@ import {
   getAdventureDetails,
   startAdventureRun,
 } from "@/src/db/adventures";
+import { MUSCLE_LABELS } from "@/src/db/muscles";
 import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
-import { adventures, quests } from "@/src/db/schema";
+import { adventures, type MuscleCode, quests } from "@/src/db/schema";
 import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -953,8 +955,15 @@ export default function AdventureDetailsScreen() {
                     <Text color="$textSecondary" fontSize={13}>
                       •
                     </Text>
+                    <MuscleIcon
+                      muscle={adventure.quest.primaryMuscle as MuscleCode}
+                      size={14}
+                      tintColor="$textSecondary"
+                    />
                     <Text color="$textSecondary" fontSize={13} fontStyle="italic">
-                      {adventure.quest.primaryMuscle}
+                      {MUSCLE_LABELS[adventure.quest.primaryMuscle as MuscleCode]?.[
+                        i18n.language as "en" | "fr"
+                      ] || adventure.quest.primaryMuscle}
                     </Text>
                   </>
                 )}

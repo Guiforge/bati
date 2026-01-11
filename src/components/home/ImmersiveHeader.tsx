@@ -6,6 +6,7 @@ import { Pressable } from "react-native";
 import { Avatar, Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/src/components/common/ProgressBar";
 import { getAvatarById } from "@/src/constants/avatars";
+import { getStreakInfo, type StreakInfo } from "@/src/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/src/db/userLevel";
 import { GameIcon } from "@/src/hooks/useGameIcon";
 import { useSettingsStore } from "@/src/stores/settings";
@@ -17,11 +18,15 @@ export function ImmersiveHeader() {
   const { villageName } = useUserStore();
   const { avatarId, language } = useSettingsStore();
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
+  const [streakInfo, setStreakInfo] = useState<StreakInfo | null>(null);
 
   const avatar = getAvatarById(avatarId);
 
   useEffect(() => {
-    getUserLevelInfo().then(setLevelInfo);
+    Promise.all([getUserLevelInfo(), getStreakInfo()]).then(([level, streak]) => {
+      setLevelInfo(level);
+      setStreakInfo(streak);
+    });
   }, []);
 
   const levelTitle = levelInfo ? (language === "fr" ? levelInfo.title.fr : levelInfo.title.en) : "";
@@ -106,6 +111,34 @@ export function ImmersiveHeader() {
                 {levelInfo?.level ?? 1}
               </Text>
             </YStack>
+
+            {/* Streak Badge - Top Right */}
+            {streakInfo && streakInfo.current > 0 && (
+              <YStack
+                position="absolute"
+                top={-8}
+                right={-8}
+                bg="$error"
+                borderRadius="$6"
+                px="$2"
+                py="$1"
+                gap="$0.5"
+                alignItems="center"
+                borderWidth={2}
+                borderColor="$bgDark"
+                shadowColor="$error"
+                shadowRadius={12}
+                shadowOpacity={0.8}
+                animation="pulse"
+              >
+                <Text fontSize={16} lineHeight={16}>
+                  🔥
+                </Text>
+                <Text fontSize={10} fontWeight="900" color="white" lineHeight={10}>
+                  {streakInfo.current}
+                </Text>
+              </YStack>
+            )}
           </YStack>
         </Pressable>
 

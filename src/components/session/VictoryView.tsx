@@ -10,6 +10,7 @@ import { Text, YStack } from "tamagui";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import { SOUNDS } from "@/src/constants/sounds";
 import { previewSessionLoot, type ResourceLoot } from "@/src/db/resources";
+import { updateStreakAfterSession } from "@/src/db/streaks";
 import { computeSessionXp } from "@/src/db/xp";
 import { useSound } from "@/src/hooks/useSound";
 import { useSessionStore } from "@/src/stores/session";
@@ -103,13 +104,19 @@ export function VictoryView() {
     didSaveRef.current = true;
     setIsSaving(true);
     saveSession(null)
-      .then((res) => setSaveResult(res))
+      .then(async (res) => {
+        setSaveResult(res);
+        // Update streak after successful session save
+        await updateStreakAfterSession();
+      })
       .catch(() => {
         // Allow retry on next render.
         didSaveRef.current = false;
       })
-      .finally(() => setIsSaving(false));
-  }, [quest, saveSession, startTime]);
+      .finally(() => {
+        setIsSaving(false);
+      });
+  }, [quest, startTime, saveSession]);
 
   if (!quest || !startTime) return null;
 

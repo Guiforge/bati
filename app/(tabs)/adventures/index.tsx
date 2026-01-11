@@ -5,16 +5,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 import { Button, ScrollView, Text, XStack, YStack } from "tamagui";
+import { MuscleIcon } from "@/src/components/common/MuscleIcon";
 import { useDatabase } from "@/src/components/DatabaseProvider";
 import { resolveImageAsset } from "@/src/constants/assetMap";
-import { adventures, quests } from "@/src/db/schema";
+import { MUSCLE_LABELS } from "@/src/db/muscles";
+import { adventures, type MuscleCode, quests } from "@/src/db/schema";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 
 type Adventure = typeof adventures.$inferSelect & {
   quest: typeof quests.$inferSelect | null;
 };
 
-type MuscleFilter = "Chest" | "Back" | "Legs" | "Arms" | "Core" | "Full Body" | null;
+type MuscleFilter = MuscleCode | null;
 type DurationFilter = "<15min" | "15-30min" | "30-45min" | "45min+" | null;
 type DifficultyFilter = "Beginner" | "Intermediate" | "Advanced" | null;
 
@@ -277,8 +279,10 @@ export default function AdventuresScreen() {
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <XStack gap="$2">
-                  {(["Chest", "Back", "Legs", "Arms", "Core", "Full Body"] as const).map(
-                    (muscle) => (
+                  {(["arms", "back", "shoulder", "chest", "abs", "calf"] as const).map((muscle) => {
+                    const lang = i18n.language as "en" | "fr";
+                    const label = MUSCLE_LABELS[muscle][lang];
+                    return (
                       <Button
                         key={muscle}
                         size="$2"
@@ -286,11 +290,18 @@ export default function AdventuresScreen() {
                         borderColor="$borderStrong"
                         borderWidth={1}
                         onPress={() => setMuscleFilter(muscleFilter === muscle ? null : muscle)}
+                        iconAfter={
+                          <MuscleIcon
+                            muscle={muscle}
+                            size={16}
+                            tintColor={muscleFilter === muscle ? "$text" : "$textSecondary"}
+                          />
+                        }
                       >
-                        {t(`quests.muscle_${muscle.toLowerCase().replace(" ", "_")}`)}
+                        {label}
                       </Button>
-                    )
-                  )}
+                    );
+                  })}
                 </XStack>
               </ScrollView>
             </YStack>

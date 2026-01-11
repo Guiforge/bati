@@ -4,17 +4,20 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 import { Button, ScrollView, Text, XStack, YStack } from "tamagui";
+import { FilterChip } from "@/src/components/common/FilterChip";
+import { MuscleIcon } from "@/src/components/common/MuscleIcon";
 import { SkeletonList } from "@/src/components/common/SkeletonLoader";
 import { useToast } from "@/src/components/common/Toast";
 import { useDatabase } from "@/src/components/DatabaseProvider";
 import { resolveImageAsset } from "@/src/constants/assetMap";
-import { quests } from "@/src/db/schema";
+import { MUSCLE_LABELS } from "@/src/db/muscles";
+import { type MuscleCode, quests } from "@/src/db/schema";
 import { useHaptics } from "@/src/hooks/useHaptics";
 import { useTabBarPadding } from "@/src/hooks/useTabBarPadding";
 
 type Quest = typeof quests.$inferSelect;
 
-type MuscleFilter = "Chest" | "Back" | "Legs" | "Arms" | "Core" | "Full Body" | null;
+type MuscleFilter = MuscleCode | null;
 type DurationFilter = "<15min" | "15-30min" | "30-45min" | "45min+" | null;
 type DifficultyFilter = "Beginner" | "Intermediate" | "Advanced" | null;
 
@@ -73,6 +76,35 @@ export default function QuestsScreen() {
   };
 
   const hasActiveFilters = muscleFilter || durationFilter || difficultyFilter;
+  const activeFilterCount = [muscleFilter, durationFilter, difficultyFilter].filter(Boolean).length;
+
+  const getFilterLabel = (filter: MuscleFilter | DurationFilter | DifficultyFilter) => {
+    if (!filter) return "";
+
+    if (muscleFilter === filter) {
+      const lang = i18n.language as "en" | "fr";
+      return MUSCLE_LABELS[filter as MuscleCode][lang];
+    }
+    // For muscle filters
+    if (["Chest", "Back", "Legs", "Arms", "Core", "Full Body"].includes(filter as string)) {
+      return t(`quests.muscle_${(filter as string).toLowerCase().replace(" ", "_")}`);
+    }
+    // For duration filters
+    if (["<15min", "15-30min", "30-45min", "45min+"].includes(filter as string)) {
+      const durationMap: Record<string, string> = {
+        "<15min": "short",
+        "15-30min": "medium",
+        "30-45min": "long",
+        "45min+": "xl",
+      };
+      return t(`quests.duration_${durationMap[filter as string]}`);
+    }
+    // For difficulty filters
+    if (["Beginner", "Intermediate", "Advanced"].includes(filter as string)) {
+      return t(`quests.difficulty_${(filter as string).toLowerCase()}`);
+    }
+    return filter as string;
+  };
 
   const renderQuestCard = ({ item }: { item: Quest }) => {
     const title = i18n.language === "fr" ? item.frTitle : item.enTitle;
@@ -106,13 +138,27 @@ export default function QuestsScreen() {
               {title}
             </Text>
 
-            <XStack gap="$2" mb="$2" flexWrap="wrap">
+            <XStack gap="$2" mb="$2" flexWrap="wrap" alignItems="center">
               {item.primaryMuscle && (
-                <YStack bg="$primary" px="$2" py="$1" borderRadius="$2">
+                <XStack
+                  bg="$primary"
+                  px="$2"
+                  py="$1"
+                  borderRadius="$2"
+                  gap="$1.5"
+                  alignItems="center"
+                >
+                  <MuscleIcon
+                    muscle={item.primaryMuscle as MuscleCode}
+                    size={14}
+                    tintColor="$text"
+                  />
                   <Text color="$text" fontSize="$2" fontWeight="600">
-                    {item.primaryMuscle}
+                    {MUSCLE_LABELS[item.primaryMuscle as MuscleCode]?.[
+                      i18n.language as "en" | "fr"
+                    ] || item.primaryMuscle}
                   </Text>
-                </YStack>
+                </XStack>
               )}
 
               {item.estimatedMinutes && (
@@ -166,57 +212,56 @@ export default function QuestsScreen() {
           {t("quests.gallery_title")}
         </Text>
 
-        <XStack gap="$2" alignItems="center">
-          <Button
-            size="$3"
-            bg={muscleFilter ? "$primary" : "$glassBg"}
-            borderColor="$borderStrong"
-            borderWidth={1}
-            color={muscleFilter ? "$text" : "$textSecondary"}
-            onPress={() => {
-              impact();
-              setShowFilters(!showFilters);
-            }}
-            pressStyle={{ opacity: 0.8 }}
-          >
-            {t("quests.filter_muscle")}
-          </Button>
+        {/* Active Filter Chips */}
+        {hasActiveFilters && (
+          <XStack gap="$2" flexWrap="wrap">
+            {muscleFilter && (
+              <FilterChip
+                label={getFilterLabel(muscleFilter)}
+                onRemove={() => setMuscleFilter(null)}
+              />
+            )}
+            {durationFilter && (
+              <FilterChip
+                label={getFilterLabel(durationFilter)}
+                onRemove={() => setDurationFilter(null)}
+              />
+            )}
+            {difficultyFilter && (
+              <FilterChip
+                label={getFilterLabel(difficultyFilter)}
+                onRemove={() => setDifficultyFilter(null)}
+              />
+            )}
+          </XStack>
+        )}
 
+        {/* Filter Toggle Buttons */}
+        <XStack gap="$2" alignItems="center" flexWrap="wrap">
           <Button
             size="$3"
-            bg={durationFilter ? "$primary" : "$glassBg"}
+            bg="$glassBg"
             borderColor="$borderStrong"
             borderWidth={1}
-            color={durationFilter ? "$text" : "$textSecondary"}
+            color="$textSecondary"
             onPress={() => {
               impact();
               setShowFilters(!showFilters);
             }}
             pressStyle={{ opacity: 0.8 }}
           >
-            {t("quests.filter_duration")}
-          </Button>
-
-          <Button
-            size="$3"
-            bg={difficultyFilter ? "$primary" : "$glassBg"}
-            borderColor="$borderStrong"
-            borderWidth={1}
-            color={difficultyFilter ? "$text" : "$textSecondary"}
-            onPress={() => {
-              impact();
-              setShowFilters(!showFilters);
-            }}
-            pressStyle={{ opacity: 0.8 }}
-          >
-            {t("quests.filter_difficulty")}
+            {t("quests.filters", "Filters")}
+            {activeFilterCount > 0 && ` (${activeFilterCount})`}
           </Button>
 
           {hasActiveFilters && (
             <Button
               size="$3"
               chromeless
-              onPress={clearFilters}
+              onPress={() => {
+                impact();
+                clearFilters();
+              }}
               color="$primary"
               pressStyle={{ opacity: 0.7 }}
             >
@@ -233,20 +278,32 @@ export default function QuestsScreen() {
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <XStack gap="$2">
-                  {(["Chest", "Back", "Legs", "Arms", "Core", "Full Body"] as const).map(
-                    (muscle) => (
+                  {(["arms", "back", "shoulder", "chest", "abs", "calf"] as const).map((muscle) => {
+                    const lang = i18n.language as "en" | "fr";
+                    const label = MUSCLE_LABELS[muscle][lang];
+                    return (
                       <Button
                         key={muscle}
                         size="$2"
                         bg={muscleFilter === muscle ? "$primary" : "$glassBg"}
                         borderColor="$borderStrong"
                         borderWidth={1}
-                        onPress={() => setMuscleFilter(muscleFilter === muscle ? null : muscle)}
+                        onPress={() => {
+                          impact();
+                          setMuscleFilter(muscleFilter === muscle ? null : muscle);
+                        }}
+                        iconAfter={
+                          <MuscleIcon
+                            muscle={muscle}
+                            size={16}
+                            tintColor={muscleFilter === muscle ? "$text" : "$textSecondary"}
+                          />
+                        }
                       >
-                        {t(`quests.muscle_${muscle.toLowerCase().replace(" ", "_")}`)}
+                        {label}
                       </Button>
-                    )
-                  )}
+                    );
+                  })}
                 </XStack>
               </ScrollView>
             </YStack>
@@ -264,9 +321,10 @@ export default function QuestsScreen() {
                       bg={durationFilter === duration ? "$primary" : "$glassBg"}
                       borderColor="$borderStrong"
                       borderWidth={1}
-                      onPress={() =>
-                        setDurationFilter(durationFilter === duration ? null : duration)
-                      }
+                      onPress={() => {
+                        impact();
+                        setDurationFilter(durationFilter === duration ? null : duration);
+                      }}
                     >
                       {t(
                         `quests.duration_${duration === "<15min" ? "short" : duration === "15-30min" ? "medium" : duration === "30-45min" ? "long" : "xl"}`
@@ -289,9 +347,10 @@ export default function QuestsScreen() {
                     bg={difficultyFilter === difficulty ? "$primary" : "$glassBg"}
                     borderColor="$borderStrong"
                     borderWidth={1}
-                    onPress={() =>
-                      setDifficultyFilter(difficultyFilter === difficulty ? null : difficulty)
-                    }
+                    onPress={() => {
+                      impact();
+                      setDifficultyFilter(difficultyFilter === difficulty ? null : difficulty);
+                    }}
                   >
                     {t(`quests.difficulty_${difficulty.toLowerCase()}`)}
                   </Button>

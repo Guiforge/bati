@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
+import { ActionButton } from "@/src/components/common/ActionButton";
 import { BossHpBar } from "@/src/components/session/BossHpBar";
 import { ComboMeter } from "@/src/components/session/ComboMeter";
 import { CriticalHitNumber } from "@/src/components/session/CriticalHitNumber";
@@ -340,14 +341,15 @@ export default function ExerciseScreen() {
 
       {/* Bottom actions - Optimized spacing */}
       <YStack gap="$2.5">
-        <Button
+        <ActionButton
           size="$6"
           bg={isBossFight ? "$error" : "$primary"}
           color="$text"
           fontSize={18}
           fontWeight="900"
           onPress={handleComplete}
-          pressStyle={{ opacity: 0.85, scale: 0.97 }}
+          pressStyle={{ opacity: 0.85, scale: 0.95 }}
+          animation="quick"
           shadowColor={isBossFight ? "$error" : "$primaryGlow"}
           shadowOffset={{ width: 0, height: 8 }}
           shadowOpacity={0.6}
@@ -358,9 +360,10 @@ export default function ExerciseScreen() {
             defaultValue: "Mark this set as complete and move to next exercise",
           })}
           accessibilityRole="button"
+          successMessage="✓"
         >
           {t("session.complete_set", { defaultValue: "Complete Set" })} ✓
-        </Button>
+        </ActionButton>
 
         <Button
           size="$3"
@@ -368,7 +371,8 @@ export default function ExerciseScreen() {
           borderColor="$borderStrong"
           color="$textSecondary"
           onPress={handleSkip}
-          pressStyle={{ opacity: 0.6 }}
+          pressStyle={{ opacity: 0.6, scale: 0.95 }}
+          animation="quick"
           accessibilityLabel={t("session.skip_label", { defaultValue: "Skip exercise" })}
           accessibilityHint={t("session.skip_hint", {
             defaultValue: "Skip this exercise without recording reps",

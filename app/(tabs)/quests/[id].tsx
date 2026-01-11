@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
+import { ActionButton } from "@/src/components/common/ActionButton";
 import { Difficulty, getQuestById, isValidatedQuest, type Quest } from "@/src/db/quests";
 import { useGameIcon } from "@/src/hooks/useGameIcon";
 import { useSessionStore } from "@/src/stores/session";
@@ -207,7 +208,7 @@ export default function QuestDetailsScreen() {
         borderTopWidth={1}
         borderTopColor="$borderStrong"
       >
-        <Button
+        <ActionButton
           size="$5"
           bg="$primary"
           color="$text"
@@ -215,13 +216,15 @@ export default function QuestDetailsScreen() {
           onPress={handleStartQuest}
           disabled={quest.exercises.length === 0}
           pressStyle={{ opacity: 0.8, scale: 0.98 }}
+          animation="quick"
           shadowColor="$primaryGlow"
           shadowOffset={{ width: 0, height: 4 }}
           shadowOpacity={0.6}
           shadowRadius={12}
+          successMessage={t("quests.starting", { defaultValue: "Starting..." })}
         >
           {t("quests.start_button")}
-        </Button>
+        </ActionButton>
       </YStack>
     </YStack>
   );

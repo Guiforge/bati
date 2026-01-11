@@ -119,6 +119,7 @@ export default function QuestsScreen() {
           router.push(`/(modals)/quest-details/${item.id}`);
         }}
         pressStyle={{ opacity: 0.8, scale: 0.98 }}
+        animation="quick"
       >
         <YStack
           bg="$glassBg"
@@ -248,26 +249,28 @@ export default function QuestsScreen() {
               impact();
               setShowFilters(!showFilters);
             }}
-            pressStyle={{ opacity: 0.8 }}
+            pressStyle={{ scale: 0.95 }}
+            animation="quick"
           >
             {t("quests.filters", "Filters")}
             {activeFilterCount > 0 && ` (${activeFilterCount})`}
           </Button>
 
-          {hasActiveFilters && (
-            <Button
-              size="$3"
-              chromeless
-              onPress={() => {
-                impact();
-                clearFilters();
-              }}
-              color="$primary"
-              pressStyle={{ opacity: 0.7 }}
-            >
-              {t("quests.filters_clear")}
-            </Button>
-          )}
+          <Button
+            size="$3"
+            chromeless
+            onPress={() => {
+              impact();
+              clearFilters();
+            }}
+            color="$primary"
+            pressStyle={{ opacity: 0.7 }}
+            opacity={hasActiveFilters ? 1 : 0}
+            animation="quick"
+            disabled={!hasActiveFilters}
+          >
+            {t("quests.filters_clear")}
+          </Button>
         </XStack>
 
         {showFilters && (
@@ -292,6 +295,7 @@ export default function QuestsScreen() {
                           impact();
                           setMuscleFilter(muscleFilter === muscle ? null : muscle);
                         }}
+                        pressStyle={{ scale: 0.95 }}
                         iconAfter={
                           <MuscleIcon
                             muscle={muscle}
@@ -325,6 +329,7 @@ export default function QuestsScreen() {
                         impact();
                         setDurationFilter(durationFilter === duration ? null : duration);
                       }}
+                      pressStyle={{ scale: 0.95 }}
                     >
                       {t(
                         `quests.duration_${duration === "<15min" ? "short" : duration === "15-30min" ? "medium" : duration === "30-45min" ? "long" : "xl"}`
@@ -351,6 +356,7 @@ export default function QuestsScreen() {
                       impact();
                       setDifficultyFilter(difficultyFilter === difficulty ? null : difficulty);
                     }}
+                    pressStyle={{ scale: 0.95 }}
                   >
                     {t(`quests.difficulty_${difficulty.toLowerCase()}`)}
                   </Button>

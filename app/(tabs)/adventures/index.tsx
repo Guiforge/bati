@@ -100,6 +100,7 @@ export default function AdventuresScreen() {
   };
 
   const hasActiveFilters = muscleFilter || durationFilter || difficultyFilter;
+  const activeFilterCount = [muscleFilter, durationFilter, difficultyFilter].filter(Boolean).length;
 
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Card rendering requires multiple conditions
   const renderAdventureCard = ({ item }: { item: Adventure }) => {
@@ -118,6 +119,7 @@ export default function AdventuresScreen() {
         }
         mb="$3"
         pressStyle={{ opacity: 0.8, scale: 0.98 }}
+        animation="quick"
       >
         <YStack
           bg="$glassBg"
@@ -221,54 +223,33 @@ export default function AdventuresScreen() {
           {t("adventures.subtitle")}
         </Text>
 
-        <XStack gap="$2" alignItems="center">
+        <XStack gap="$2" alignItems="center" flexWrap="wrap">
           <Button
             size="$3"
-            bg={muscleFilter ? "$primary" : "$glassBg"}
+            bg="$glassBg"
             borderColor="$borderStrong"
             borderWidth={1}
-            color={muscleFilter ? "$text" : "$textSecondary"}
+            color="$textSecondary"
             onPress={() => setShowFilters(!showFilters)}
-            pressStyle={{ opacity: 0.8 }}
+            pressStyle={{ scale: 0.95 }}
+            animation="quick"
           >
-            {t("adventures.filter_muscle")}
+            {t("adventures.filters", "Filters")}
+            {activeFilterCount > 0 && ` (${activeFilterCount})`}
           </Button>
 
           <Button
             size="$3"
-            bg={durationFilter ? "$primary" : "$glassBg"}
-            borderColor="$borderStrong"
-            borderWidth={1}
-            color={durationFilter ? "$text" : "$textSecondary"}
-            onPress={() => setShowFilters(!showFilters)}
-            pressStyle={{ opacity: 0.8 }}
+            chromeless
+            onPress={clearFilters}
+            color="$primary"
+            pressStyle={{ opacity: 0.7 }}
+            opacity={hasActiveFilters ? 1 : 0}
+            animation="quick"
+            disabled={!hasActiveFilters}
           >
-            {t("adventures.filter_duration")}
+            {t("adventures.filters_clear")}
           </Button>
-
-          <Button
-            size="$3"
-            bg={difficultyFilter ? "$primary" : "$glassBg"}
-            borderColor="$borderStrong"
-            borderWidth={1}
-            color={difficultyFilter ? "$text" : "$textSecondary"}
-            onPress={() => setShowFilters(!showFilters)}
-            pressStyle={{ opacity: 0.8 }}
-          >
-            {t("adventures.filter_difficulty")}
-          </Button>
-
-          {hasActiveFilters && (
-            <Button
-              size="$3"
-              chromeless
-              onPress={clearFilters}
-              color="$primary"
-              pressStyle={{ opacity: 0.7 }}
-            >
-              {t("adventures.filters_clear")}
-            </Button>
-          )}
         </XStack>
 
         {showFilters && (
@@ -290,6 +271,7 @@ export default function AdventuresScreen() {
                         borderColor="$borderStrong"
                         borderWidth={1}
                         onPress={() => setMuscleFilter(muscleFilter === muscle ? null : muscle)}
+                        pressStyle={{ scale: 0.95 }}
                         iconAfter={
                           <MuscleIcon
                             muscle={muscle}
@@ -322,6 +304,7 @@ export default function AdventuresScreen() {
                       onPress={() =>
                         setDurationFilter(durationFilter === duration ? null : duration)
                       }
+                      pressStyle={{ scale: 0.95 }}
                     >
                       {t(
                         `quests.duration_${duration === "<15min" ? "short" : duration === "15-30min" ? "medium" : duration === "30-45min" ? "long" : "xl"}`

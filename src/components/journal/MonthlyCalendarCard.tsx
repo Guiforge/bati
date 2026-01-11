@@ -230,9 +230,10 @@ export function MonthlyCalendarCard() {
 
         {/* Day labels */}
         <XStack justify="space-around">
-          {dayLabels.map((day) => (
+          {dayLabels.map((day, index) => (
             <Text
-              key={day}
+              // biome-ignore lint/suspicious/noArrayIndexKey: Day labels are static and never reorder
+              key={`day-label-${index}`}
               width={32}
               style={{ textAlign: "center" }}
               fontSize={12}

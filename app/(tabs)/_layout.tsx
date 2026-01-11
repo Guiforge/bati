@@ -153,26 +153,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-
-      <Tabs.Screen
-        name="village"
-        options={{
-          title: t("tabs.village", "Village"),
-          tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon name="lorc/castle" focused={focused} size={size} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="journal"
-        options={{
-          title: t("tabs.journal", "Journal"),
-          tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon name="lorc/open-book" focused={focused} size={size} />
-          ),
-        }}
-      />
     </Tabs>
   );
 }

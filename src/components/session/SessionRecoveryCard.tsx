@@ -29,13 +29,12 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
   const haptics = useHaptics();
 
   const handleResume = async () => {
-    haptics.mediumImpact();
+    haptics.impact();
     await onRecover();
     router.push("/session");
   };
 
   const handleDiscard = async () => {
-    haptics.lightImpact();
     await onDiscard();
   };
 

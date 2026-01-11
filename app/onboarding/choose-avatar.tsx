@@ -22,7 +22,7 @@ export default function ChooseAvatar() {
   const router = useRouter();
   const { t } = useTranslation();
   const { avatarId, setAvatarId } = useSettingsStore();
-  const { selection } = useHaptics();
+  const { impact } = useHaptics();
   const insets = useSafeAreaInsets();
 
   const currentIndex = AVATARS.findIndex((a) => a.id === avatarId);
@@ -33,16 +33,16 @@ export default function ChooseAvatar() {
     setAvatarId(AVATARS[prevIndex].id).catch(() => {
       // Error handled silently
     });
-    selection();
-  }, [currentIndex, setAvatarId, selection]);
+    impact();
+  }, [currentIndex, setAvatarId, impact]);
 
   const goToNext = useCallback(() => {
     const nextIndex = currentIndex >= AVATARS.length - 1 ? 0 : currentIndex + 1;
     setAvatarId(AVATARS[nextIndex].id).catch(() => {
       // Error handled silently
     });
-    selection();
-  }, [currentIndex, setAvatarId, selection]);
+    impact();
+  }, [currentIndex, setAvatarId, impact]);
 
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-20, 20])

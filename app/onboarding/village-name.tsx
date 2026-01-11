@@ -165,7 +165,7 @@ export default function VillageName() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { mediumImpact, success } = useHaptics();
+  const { impact, success } = useHaptics();
   const { setVillageName, setHasFinishedOnboarding } = useUserStore();
 
   const [name, setName] = useState("");
@@ -183,9 +183,9 @@ export default function VillageName() {
 
   const handleFinish = useCallback(() => {
     if (!isValidName) return;
-    mediumImpact();
+    impact();
     setStatus("stamped");
-  }, [isValidName, mediumImpact]);
+  }, [isValidName, impact]);
 
   useEffect(() => {
     if (status !== "stamped") return;

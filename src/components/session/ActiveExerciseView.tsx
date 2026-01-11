@@ -16,7 +16,7 @@ export function ActiveExerciseView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
-  const { selection, heavyImpact } = useHaptics();
+  const { impact } = useHaptics();
   const reducedMotion = useReducedMotion();
 
   const quest = useSessionStore((s) => s.quest);
@@ -50,18 +50,13 @@ export function ActiveExerciseView() {
   const progressPercent = (currentStep / totalSteps) * 100;
 
   const handleToggleHowTo = () => {
-    selection();
     setShowHowTo((prev) => !prev);
   };
 
   const handleComplete = () => {
-    // Heavy haptic feedback on exercise completion
-    heavyImpact();
+    impact();
 
-    // For time-based exercises, record actual elapsed time
-    // For rep-based, record the adjusted value
     if (isTimeBased) {
-      // DB constraints require resultValue > 0.
       completeExercise(Math.max(1, elapsedSeconds));
     } else {
       completeExercise(Math.max(1, adjustedReps));
@@ -69,7 +64,7 @@ export function ActiveExerciseView() {
   };
 
   const handleAdjustReps = (delta: number) => {
-    selection();
+    impact();
     setAdjustedReps((prev) => Math.max(1, prev + delta));
   };
 

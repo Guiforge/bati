@@ -19,7 +19,7 @@ export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
-  const { selection, mediumImpact } = useHaptics();
+  const { impact } = useHaptics();
   const reducedMotion = useReducedMotion();
   const {
     quest,
@@ -52,17 +52,15 @@ export function RestView() {
   const nextExImage = resolveImageAsset(nextEx.exercise.imagePath);
 
   const handleSkipRest = () => {
-    mediumImpact();
     skipRest();
   };
 
   const handleAddRestTime = (seconds: number) => {
-    selection();
     addRestTime(seconds);
   };
 
   const handleUpdateResult = (value: number) => {
-    selection();
+    impact();
     updateLastResult(value);
   };
 

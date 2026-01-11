@@ -1,10 +1,10 @@
 import { Image } from "expo-image";
 import { Redirect } from "expo-router";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Text, XStack, YStack } from "tamagui";
+import { Button, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "@/src/components/session/BossHpBar";
 import { ComboMeter } from "@/src/components/session/ComboMeter";
 import { CriticalHitNumber } from "@/src/components/session/CriticalHitNumber";
@@ -34,7 +34,7 @@ export default function ExerciseScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
-  const { warning } = useHaptics();
+  const { impact } = useHaptics();
 
   // Get individual values from store
   const status = useSessionStore((s) => s.status);
@@ -46,7 +46,10 @@ export default function ExerciseScreen() {
   const completeExercise = useSessionStore((s) => s.completeExercise);
   const pauseSession = useSessionStore((s) => s.pauseSession);
 
-  const { remainingSeconds } = useSessionTimer();
+  const { elapsedSeconds } = useSessionTimer();
+
+  const [criticalHits, setCriticalHits] = useState<CriticalHitEvent[]>([]);
+  const targetReachedRef = useRef(false);
 
   // Compute values locally
   const currentExercise = quest?.exercises[currentExerciseIndex] ?? null;
@@ -54,7 +57,39 @@ export default function ExerciseScreen() {
   const totalSets = quest?.rounds ?? 0;
   const totalExercises = quest?.exercises.length ?? 0;
 
-  const [criticalHits, setCriticalHits] = useState<CriticalHitEvent[]>([]);
+  // Memoized computed values
+  const isBossFight = useMemo(() => !!bossFight, [bossFight]);
+
+  const title = useMemo(
+    () =>
+      currentExercise
+        ? language === "fr"
+          ? currentExercise.exercise.frName
+          : currentExercise.exercise.enName
+        : "",
+    [language, currentExercise]
+  );
+
+  const imageSource = useMemo(
+    () => (currentExercise ? resolveImageAsset(currentExercise.exercise.imagePath) : null),
+    [currentExercise]
+  );
+
+  const isTimeBased = useMemo(
+    () => currentExercise?.target.type === "time",
+    [currentExercise?.target.type]
+  );
+
+  const heroTime = useMemo(() => {
+    if (!isTimeBased) {
+      return String(currentExercise?.target.value ?? 0);
+    }
+
+    // For time-based: show elapsed time (chrono counting up)
+    return formatTime(elapsedSeconds);
+  }, [isTimeBased, elapsedSeconds, currentExercise?.target.value]);
+
+  const targetValue = currentExercise?.target.value ?? 0;
 
   // Dopamine hooks
   const { recordRep, resetCombo, combo } = useComboTracker({
@@ -71,7 +106,6 @@ export default function ExerciseScreen() {
     onCriticalHit: (event) => {
       setCriticalHits((prev) => [...prev, event]);
       triggerCriticalHit();
-      // Clean up after animation
       setTimeout(() => {
         setCriticalHits((prev) => prev.filter((h) => h.id !== event.id));
       }, 1500);
@@ -79,6 +113,70 @@ export default function ExerciseScreen() {
   });
 
   const { triggerCriticalHit, triggerComboMilestone, triggerRepCompleted } = useFeedbackEffects();
+  const { success } = useHaptics();
+
+  // Haptic feedback when target reached on time-based exercises
+  useEffect(() => {
+    if (!isTimeBased || !currentExercise) {
+      targetReachedRef.current = false;
+      return;
+    }
+
+    const target = currentExercise.target.value;
+
+    if (elapsedSeconds >= target && !targetReachedRef.current && status === "running") {
+      targetReachedRef.current = true;
+      success();
+    }
+
+    if (elapsedSeconds < target) {
+      targetReachedRef.current = false;
+    }
+  }, [elapsedSeconds, isTimeBased, status, success, currentExercise]);
+
+  const handleComplete = useCallback(async () => {
+    if (!currentExercise) return;
+
+    recordRep();
+    checkCritical(0, 0);
+    triggerRepCompleted();
+
+    // For time-based, record elapsed time; for reps, record target
+    const resultValue = isTimeBased ? Math.max(1, elapsedSeconds) : currentExercise.target.value;
+    await completeExercise(resultValue);
+
+    const { status: newStatus } = useSessionStore.getState();
+    if (newStatus === "finished") {
+      resetCombo();
+    }
+  }, [
+    currentExercise,
+    recordRep,
+    checkCritical,
+    triggerRepCompleted,
+    completeExercise,
+    resetCombo,
+    isTimeBased,
+    elapsedSeconds,
+  ]);
+
+  const handleSkip = useCallback(() => {
+    Alert.alert(t("session.skip_title"), t("session.skip_warning"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("session.skip_confirm"),
+        style: "destructive",
+        onPress: async () => {
+          impact();
+          await completeExercise(0);
+        },
+      },
+    ]);
+  }, [t, impact, completeExercise]);
+
+  const handlePause = useCallback(() => {
+    pauseSession();
+  }, [pauseSession]);
 
   // Redirect based on status - each screen handles its own redirects
   if (status === "idle" || !quest || !currentExercise) {
@@ -96,62 +194,10 @@ export default function ExerciseScreen() {
 
   // running or paused (with prePauseStatus === running)
 
-  const handleComplete = async () => {
-    // Record rep for combo tracking
-    recordRep();
-
-    // Check for critical hit
-    const isCritical = checkCritical(0, 0);
-
-    // Trigger haptic feedback (single feedback, not double)
-    const intensity = isCritical ? "heavy" : "medium";
-    triggerRepCompleted(intensity);
-
-    const targetValue = currentExercise.target.value;
-    await completeExercise(targetValue);
-
-    // Reset combo if session finished
-    const { status: newStatus } = useSessionStore.getState();
-    if (newStatus === "finished") {
-      resetCombo();
-    }
-    // Navigation is handled reactively by session/index.tsx based on status
-  };
-
-  const handleSkip = () => {
-    Alert.alert(t("session.skip_title"), t("session.skip_warning"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("session.skip_confirm"),
-        style: "destructive",
-        onPress: async () => {
-          warning();
-          await completeExercise(0);
-          // Navigation is handled reactively by session/index.tsx based on status
-        },
-      },
-    ]);
-  };
-
-  const handlePause = () => {
-    pauseSession();
-  };
-
-  const isBossFight = !!bossFight;
-
-  const title =
-    language === "fr" ? currentExercise.exercise.frName : currentExercise.exercise.enName;
-  const imageSource = resolveImageAsset(currentExercise.exercise.imagePath);
-
-  const isTimeBased = currentExercise.target.type === "time";
-  const heroTime = isTimeBased
-    ? formatTime(Math.max(0, remainingSeconds))
-    : String(currentExercise.target.value);
-
   return (
-    <YStack flex={1} bg="$bgDarker" pt={insets.top + 12} pb={insets.bottom + 20} px="$5">
-      {/* Header row: timer + pause */}
-      <XStack items="center" justifyContent="space-between" mb="$3">
+    <YStack flex={1} bg="$bgDarker" pt={insets.top + 12} pb={insets.bottom + 16} px="$4">
+      {/* Header: Compact Timer + Pause */}
+      <XStack alignItems="center" justifyContent="space-between" mb="$3">
         <SessionTimer />
 
         <Button
@@ -159,140 +205,165 @@ export default function ExerciseScreen() {
           circular
           chromeless
           onPress={handlePause}
-          pressStyle={{ opacity: 0.7, scale: 0.96 }}
+          pressStyle={{ opacity: 0.6, scale: 0.94 }}
           accessibilityLabel={t("session.pause_accessibility", { defaultValue: "Pause" })}
           accessibilityRole="button"
         >
-          <Text color="$text" fontSize={18} fontWeight="900">
-            ||
+          <Text color="$text" fontSize={20} fontWeight="900">
+            ⏸
           </Text>
         </Button>
       </XStack>
 
-      {/* Boss HP Bar - Only for boss fights */}
-      {bossFight && lastDamageResult && (
+      {/* Boss HP Bar - Always show for boss fights */}
+      {bossFight && (
         <YStack mb="$3">
           <BossHpBar
             currentHp={bossFight.currentHp}
             totalHp={bossFight.totalHp}
             bossName={t("boss.title")}
-            lastDamage={{
-              damage: lastDamageResult.damage,
-              isCritical: lastDamageResult.isCritical,
-              weaknessBonus: lastDamageResult.weaknessBonus,
-            }}
+            lastDamage={
+              lastDamageResult
+                ? {
+                    damage: lastDamageResult.damage,
+                    isCritical: lastDamageResult.isCritical,
+                    weaknessBonus: lastDamageResult.weaknessBonus,
+                  }
+                : null
+            }
             showPhaseImage={false}
           />
         </YStack>
       )}
 
-      {/* Progress info */}
-      <XStack items="center" justifyContent="center" mb="$4">
-        <Text
-          fontSize={12}
-          color="$textSecondary"
-          fontWeight="700"
-          textTransform="uppercase"
-          letterSpacing={2}
-          fontFamily="$heading"
+      {/* Progress - Compact badge style */}
+      <XStack alignItems="center" justifyContent="center" mb="$3">
+        <XStack
+          bg="$glassBg"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          px="$3"
+          py="$2"
+          borderRadius="$3"
+          gap="$2"
         >
-          {t("session.exercise")} {currentExerciseIndex + 1}/{totalExercises} • {t("common.set")}{" "}
-          {currentSet}/{totalSets}
-        </Text>
+          <Text
+            fontSize={11}
+            color="$textSecondary"
+            fontWeight="800"
+            textTransform="uppercase"
+            letterSpacing={1.5}
+            fontFamily="$heading"
+          >
+            {t("session.exercise")} {currentExerciseIndex + 1}/{totalExercises}
+          </Text>
+          <Text color="$primary" fontWeight="900">
+            •
+          </Text>
+          <Text
+            fontSize={11}
+            color="$textSecondary"
+            fontWeight="800"
+            textTransform="uppercase"
+            letterSpacing={1.5}
+            fontFamily="$heading"
+          >
+            {t("common.set")} {currentSet}/{totalSets}
+          </Text>
+        </XStack>
       </XStack>
 
-      {/* Main content */}
-      <YStack flex={1} justifyContent="center" gap="$4">
-        {/* Exercise Image */}
+      {/* Main content - Optimized layout */}
+      <YStack flex={1} justifyContent="center" gap="$3">
+        {/* Exercise Image - Smaller, cleaner */}
         <YStack
           bg="$glassBg"
           borderWidth={1}
-          borderColor="$glassBorder"
-          borderRadius="$4"
-          p="$3"
-          shadowColor="$primaryGlow"
-          shadowOpacity={0.35}
-          shadowRadius={18}
+          borderColor="$primary"
+          borderRadius="$5"
           overflow="hidden"
+          shadowColor="$primaryGlow"
+          shadowOpacity={0.3}
+          shadowRadius={16}
         >
-          <YStack borderRadius="$4" overflow="hidden" borderWidth={1} borderColor="$primary">
-            <Image
-              source={imageSource}
-              style={{ width: "100%", height: 240 }}
-              contentFit="contain"
-              transition={150}
-            />
-          </YStack>
+          <Image
+            source={imageSource}
+            style={{ width: "100%", height: 200 }}
+            contentFit="contain"
+            transition={120}
+          />
         </YStack>
 
-        {/* Exercise Name */}
+        {/* Exercise Name - Compact */}
         <Text
-          fontSize={28}
-          fontWeight="700"
+          fontSize={24}
+          fontWeight="800"
           fontFamily="$heading"
           color="$text"
           textAlign="center"
           textTransform="uppercase"
-          letterSpacing={2}
+          letterSpacing={1.5}
           numberOfLines={2}
         >
           {title}
         </Text>
 
-        {/* Timer Hero */}
-        <YStack items="center" gap="$2">
-          <H1
-            fontSize={isTimeBased ? 72 : 96}
-            lineHeight={isTimeBased ? 78 : 100}
+        {/* Timer/Counter Hero - Prominent */}
+        <YStack alignItems="center" gap="$1">
+          <Text
+            fontSize={isTimeBased ? 68 : 88}
+            lineHeight={isTimeBased ? 72 : 92}
             fontWeight="900"
             fontFamily="$body"
-            color={isBossFight ? "$error" : "$text"}
+            color={
+              isTimeBased && elapsedSeconds >= targetValue
+                ? "$success"
+                : isBossFight
+                  ? "$error"
+                  : "$primary"
+            }
           >
             {heroTime}
-          </H1>
-          <Text color="$textSecondary" fontSize={16} fontWeight="600">
-            {isTimeBased ? t("session.seconds") : t("session.reps")}
+          </Text>
+          <Text color="$textSecondary" fontSize={14} fontWeight="700">
+            {isTimeBased
+              ? elapsedSeconds >= targetValue
+                ? `${t("session.target")} ✓`
+                : `${t("session.target")}: ${targetValue}s`
+              : t("session.reps")}
           </Text>
         </YStack>
 
-        {/* Target line - only for time-based */}
-        {isTimeBased && (
-          <YStack items="center">
-            <Text color="$textSecondary" fontSize={16} fontWeight="600">
-              {t("session.target")}: {currentExercise.target.value} {t("session.seconds")}
-            </Text>
-          </YStack>
-        )}
-
-        {/* Combo Meter - floating top right */}
-        <ComboMeter combo={combo} isVisible={combo.isActive && combo.current > 0} />
+        {/* Combo Meter - Positioned */}
+        {combo.isActive && combo.current > 0 && <ComboMeter combo={combo} isVisible />}
       </YStack>
 
-      {/* Bottom actions */}
-      <YStack gap="$3">
+      {/* Bottom actions - Optimized spacing */}
+      <YStack gap="$2.5">
         <Button
           size="$6"
           bg={isBossFight ? "$error" : "$primary"}
           color="$text"
-          fontSize={20}
+          fontSize={18}
           fontWeight="900"
           onPress={handleComplete}
-          pressStyle={{ opacity: 0.9, scale: 0.98 }}
+          pressStyle={{ opacity: 0.85, scale: 0.97 }}
           shadowColor={isBossFight ? "$error" : "$primaryGlow"}
-          shadowOffset={{ width: 0, height: 10 }}
-          shadowOpacity={0.7}
+          shadowOffset={{ width: 0, height: 8 }}
+          shadowOpacity={0.6}
           shadowRadius={20}
+          fontFamily="$heading"
         >
-          {t("session.complete_set", { defaultValue: "Complete Set" })} →
+          {t("session.complete_set", { defaultValue: "Complete Set" })} ✓
         </Button>
 
         <Button
-          size="$4"
+          size="$3"
           variant="outlined"
           borderColor="$borderStrong"
           color="$textSecondary"
           onPress={handleSkip}
-          pressStyle={{ opacity: 0.7 }}
+          pressStyle={{ opacity: 0.6 }}
         >
           {t("session.skip")}
         </Button>

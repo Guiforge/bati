@@ -100,7 +100,7 @@ export function RewardsManifest({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { GameIcon } = useGameIcon();
-  const { lightImpact, heavyImpact, selection } = useHaptics();
+  const { impact } = useHaptics();
   const language = useSettingsStore((s) => s.language);
 
   const [canContinue, setCanContinue] = useState(false);
@@ -167,21 +167,12 @@ export function RewardsManifest({
 
     fillPx.value = oldPx;
 
-    // Haptics: light “ticking” during the XP fill.
-    const hapticsId = setInterval(() => {
-      lightImpact();
-    }, 120);
-
-    const stopHaptics = () => {
-      clearInterval(hapticsId);
-    };
 
     if (!hasLevelUp) {
       fillPx.value = withTiming(newPx, {
         duration: 1500,
         easing: Easing.out(Easing.cubic),
       });
-      setTimeout(stopHaptics, 1550);
       return;
     }
 
@@ -198,7 +189,7 @@ export function RewardsManifest({
 
     // Strong thud when leveling.
     setTimeout(() => {
-      heavyImpact();
+      impact();
     }, 900);
 
     setTimeout(() => {
@@ -207,15 +198,14 @@ export function RewardsManifest({
         duration: 600,
         easing: Easing.out(Easing.cubic),
       });
-      stopHaptics();
     }, 980);
   }, [
     active,
     fillPx,
     hasLevelUp,
-    heavyImpact,
+    
     levelFlash,
-    lightImpact,
+    
     oldProg.percent,
     newProg.percent,
     trackWidth,
@@ -230,7 +220,7 @@ export function RewardsManifest({
       ids.push(
         setTimeout(
           () => {
-            selection();
+            impact();
           },
           420 + idx * 140
         ) as unknown as number
@@ -242,7 +232,7 @@ export function RewardsManifest({
         clearTimeout(id);
       }
     };
-  }, [lootItems, selection]);
+  }, [lootItems, impact]);
 
   const onTrackLayout = (e: LayoutChangeEvent) => {
     setTrackWidth(Math.max(0, Math.round(e.nativeEvent.layout.width)));

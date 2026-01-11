@@ -9,23 +9,21 @@ import { useSessionStore } from "@/src/stores/session";
 export function PausedOverlay() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { mediumImpact, warning } = useHaptics();
+  const { impact } = useHaptics();
   const { status, resumeSession, restartRound, quitSession } = useSessionStore();
 
   if (status !== "paused") return null;
 
   const handleResume = () => {
-    mediumImpact();
     resumeSession();
   };
 
   const handleRestartRound = () => {
-    mediumImpact();
     restartRound();
   };
 
   const handleQuit = () => {
-    warning();
+    impact();
     quitSession();
     if (router.canGoBack()) {
       router.back();

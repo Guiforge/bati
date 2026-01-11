@@ -33,7 +33,7 @@ export default function GoalsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
-  const { mediumImpact, selection } = useHaptics();
+  const { impact } = useHaptics();
 
   const [activeGoal, setActiveGoal] = useState<Goal | null>(null);
   const [weekProgress, setWeekProgress] = useState<GoalProgress | null>(null);
@@ -84,7 +84,7 @@ export default function GoalsScreen() {
   }, [loadData]);
 
   const handleSaveGoal = async () => {
-    mediumImpact();
+    impact();
 
     try {
       // Show preview first before creating goal
@@ -102,7 +102,7 @@ export default function GoalsScreen() {
   };
 
   const handleConfirmPlan = async () => {
-    mediumImpact();
+    impact();
 
     try {
       // Now create the goal and generate the actual plan
@@ -123,7 +123,7 @@ export default function GoalsScreen() {
   };
 
   const handleRegeneratePlan = async () => {
-    selection();
+    impact();
     setIsGeneratingPreview(true);
 
     try {
@@ -138,7 +138,7 @@ export default function GoalsScreen() {
 
   const handleStatusUpdate = async (status: GoalStatusCode) => {
     if (!activeGoal) return;
-    mediumImpact();
+    impact();
 
     try {
       await updateGoalStatus(activeGoal.id, status);
@@ -226,7 +226,7 @@ export default function GoalsScreen() {
                       <Pressable
                         key={type}
                         onPress={() => {
-                          selection();
+                          impact();
                           setSelectedType(type);
                         }}
                       >
@@ -275,7 +275,7 @@ export default function GoalsScreen() {
                         borderWidth={2}
                         borderColor={isSelected ? "$primary" : "$color"}
                         onPress={() => {
-                          selection();
+                          impact();
                           setSelectedDays(days);
                         }}
                         rounded="$4"
@@ -311,7 +311,7 @@ export default function GoalsScreen() {
                         borderWidth={2}
                         borderColor={isSelected ? "$primary" : "$color"}
                         onPress={() => {
-                          selection();
+                          impact();
                           setSelectedDuration(duration);
                         }}
                         rounded="$4"

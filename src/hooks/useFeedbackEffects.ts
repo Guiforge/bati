@@ -25,62 +25,38 @@ export function useFeedbackEffects(options: UseFeedbackEffectsOptions = {}) {
   const { enableHaptics = true } = options;
 
   /**
-   * Critical hit feedback (heavy haptic + sound)
+   * Critical hit feedback
    */
   const triggerCriticalHit = useCallback(() => {
     if (enableHaptics) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      // Double tap for extra impact
-      setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 100);
     }
-
-    // Could add sound effect here
-    // if (enableSound) playSound(SOUNDS.criticalHit);
   }, [enableHaptics]);
 
   /**
-   * Combo milestone reached (e.g., x10, x20)
+   * Combo milestone reached
    */
   const triggerComboMilestone = useCallback(
     (comboCount: number) => {
       if (enableHaptics) {
-        // Scale haptic to combo intensity
-        if (comboCount >= 20) {
+        if (comboCount >= 10) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } else if (comboCount >= 10) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         } else {
-          Haptics.selectionAsync();
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         }
       }
-
-      // Could add sound effect here
-      // if (enableSound) playSound(SOUNDS.comboMilestone);
     },
     [enableHaptics]
   );
 
   /**
-   * Rep completed feedback
+   * Rep completed feedback - simple impact
    */
-  const triggerRepCompleted = useCallback(
-    (intensity: FeedbackIntensity = "light") => {
-      if (enableHaptics) {
-        switch (intensity) {
-          case "light":
-            Haptics.selectionAsync();
-            break;
-          case "medium":
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            break;
-          case "heavy":
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            break;
-        }
-      }
-    },
-    [enableHaptics]
-  );
+  const triggerRepCompleted = useCallback(() => {
+    if (enableHaptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  }, [enableHaptics]);
 
   /**
    * Boss attack warning

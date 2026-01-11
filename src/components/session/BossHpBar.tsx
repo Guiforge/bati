@@ -35,43 +35,50 @@ export function BossHpBar({
       return;
     }
     setShowDamage(true);
-    const timer = setTimeout(() => setShowDamage(false), 1500);
+    const timer = setTimeout(() => setShowDamage(false), 1200);
     return () => clearTimeout(timer);
   }, [lastDamage]);
 
   // HP bar color based on remaining HP
-  const hpColor = isEnraged ? "$error" : isLow ? "$secondary" : "$success";
+  const hpColor = isEnraged ? "$error" : isLow ? "$warning" : "$success";
 
   return (
     <YStack
       bg="$glassBg"
       borderWidth={1}
       borderColor="$borderStrong"
-      rounded="$4"
+      borderRadius="$5"
       px="$3"
-      py="$2"
+      py="$2.5"
       gap="$2"
-      shadowColor="$error"
-      shadowOpacity={0.3}
-      shadowRadius={12}
+      shadowColor={isEnraged ? "$error" : "$primary"}
+      shadowOpacity={isEnraged ? 0.4 : 0.2}
+      shadowRadius={16}
+      animation="quick"
     >
       {/* Boss Phase Image */}
       {showPhaseImage && (
-        <YStack items="center" py="$2">
-          <BossPhaseImage currentHp={currentHp} totalHp={totalHp} size={64} />
+        <YStack alignItems="center" py="$1.5">
+          <BossPhaseImage currentHp={currentHp} totalHp={totalHp} size={56} />
         </YStack>
       )}
 
       {/* Boss Name & HP Text */}
-      <XStack justify="space-between" items="center">
-        <XStack items="center" gap="$2">
-          {!showPhaseImage && <Text fontSize={18}>👹</Text>}
-          <Text fontWeight="900" fontSize={14} color="$text" textTransform="uppercase">
+      <XStack justifyContent="space-between" alignItems="center">
+        <XStack alignItems="center" gap="$2">
+          {!showPhaseImage && <Text fontSize={16}>👹</Text>}
+          <Text
+            fontWeight="900"
+            fontSize={13}
+            color="$text"
+            textTransform="uppercase"
+            letterSpacing={1}
+          >
             {bossName || t("adventures.kind_boss")}
           </Text>
         </XStack>
-        <XStack items="center" gap="$1">
-          <Text fontWeight="900" fontSize={16} color={hpColor} fontFamily="$body" animation="quick">
+        <XStack alignItems="center" gap="$1">
+          <Text fontWeight="900" fontSize={18} color={hpColor} fontFamily="$body" animation="quick">
             {currentHp}
           </Text>
           <Text fontWeight="700" fontSize={12} color="$textSecondary">
@@ -80,7 +87,7 @@ export function BossHpBar({
         </XStack>
       </XStack>
 
-      {/* HP Bar */}
+      {/* HP Bar - Enhanced animations */}
       <YStack position="relative">
         <Progress
           value={hpPercent}
@@ -88,30 +95,36 @@ export function BossHpBar({
           bg="$bgOverlay"
           borderWidth={1}
           borderColor="$borderStrong"
-          rounded="$3"
+          borderRadius="$3"
         >
           <Progress.Indicator animation={isEnraged ? "bouncy" : "quick"} bg={hpColor} />
         </Progress>
 
-        {/* Damage Popup */}
+        {/* Damage Popup - Improved animation */}
         {showDamage && lastDamage && (
-          <XStack
+          <YStack
             position="absolute"
-            t={-24}
-            r={0}
+            top={-28}
+            right={0}
             animation="bouncy"
-            enterStyle={{ opacity: 0, y: 10, scale: 0.8 }}
-            exitStyle={{ opacity: 0, y: -10 }}
+            enterStyle={{ opacity: 0, y: 12, scale: 0.7 }}
+            exitStyle={{ opacity: 0, y: -12, scale: 0.7 }}
+            bg="$bgOverlay"
+            px="$2.5"
+            py="$1.5"
+            borderRadius="$3"
+            borderWidth={1}
+            borderColor={lastDamage.isCritical ? "$error" : "$warning"}
           >
             <Text
               fontWeight="900"
-              fontSize={lastDamage.isCritical ? 20 : 16}
+              fontSize={lastDamage.isCritical ? 18 : 15}
               color={lastDamage.isCritical ? "$error" : "$warning"}
             >
-              {lastDamage.isCritical ? `💥 ${t("common.crit")} ` : "⚔️ "}-{lastDamage.damage}
+              {lastDamage.isCritical ? "💥 CRIT " : "⚔️ "}-{lastDamage.damage}
               {lastDamage.weaknessBonus ? " 🎯" : ""}
             </Text>
-          </XStack>
+          </YStack>
         )}
       </YStack>
 
@@ -119,10 +132,11 @@ export function BossHpBar({
       {isEnraged && (
         <Text
           fontSize={11}
-          fontWeight="800"
+          fontWeight="900"
           color="$error"
           textTransform="uppercase"
-          style={{ textAlign: "center" }}
+          letterSpacing={1}
+          textAlign="center"
           animation="bouncy"
         >
           🔥 {t("boss.enraged", "ENRAGED!")} 🔥

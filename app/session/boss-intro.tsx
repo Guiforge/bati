@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
@@ -69,7 +69,7 @@ export default function BossIntroScreen() {
     loadAdventure();
   }, [db, adventureId]);
 
-  const handleBeginBattle = async () => {
+  const handleBeginBattle = useCallback(async () => {
     // Use type guard instead of manual validation
     if (!adventure || !isValidatedQuest(quest)) return;
 
@@ -78,7 +78,17 @@ export default function BossIntroScreen() {
     });
 
     router.push("/session");
-  };
+  }, [adventure, quest, startSession, router]);
+
+  const title = useMemo(
+    () => (i18n.language === "fr" ? adventure?.frTitle : adventure?.enTitle),
+    [i18n.language, adventure?.frTitle, adventure?.enTitle]
+  );
+
+  const description = useMemo(
+    () => (i18n.language === "fr" ? adventure?.frDescription : adventure?.enDescription),
+    [i18n.language, adventure?.frDescription, adventure?.enDescription]
+  );
 
   if (loading) {
     return (
@@ -103,8 +113,8 @@ export default function BossIntroScreen() {
         alignItems="center"
         justifyContent="center"
         p="$4"
-        paddingTop={insets.top + 12}
-        paddingBottom={insets.bottom + 12}
+        pt={insets.top + 12}
+        pb={insets.bottom + 12}
       >
         <Text color="$text" fontSize={24} fontWeight="bold" mb="$2">
           {t("boss.not_found")}
@@ -116,102 +126,127 @@ export default function BossIntroScreen() {
     );
   }
 
-  const title = i18n.language === "fr" ? adventure.frTitle : adventure.enTitle;
-  const description = i18n.language === "fr" ? adventure.frDescription : adventure.enDescription;
-
   return (
-    <YStack flex={1} bg="$bgDarker" paddingTop={insets.top + 12} paddingBottom={insets.bottom + 12}>
-      <YStack flex={1} alignItems="center" justifyContent="center" p="$6" gap="$6">
-        {/* Boss Icon */}
+    <YStack flex={1} bg="$bgDarker" pt={insets.top + 12} pb={insets.bottom + 12}>
+      {/* Scrollable content for smaller screens */}
+      <YStack flex={1} alignItems="center" justifyContent="center" px="$5" gap="$5">
+        {/* Boss Icon - Modernized */}
         <YStack
-          bg="$error"
-          width={120}
-          height={120}
+          bg="$glassBg"
+          width={140}
+          height={140}
           alignItems="center"
           justifyContent="center"
-          borderRadius={999}
+          borderRadius="$6"
+          borderWidth={2}
+          borderColor="$error"
           shadowColor="$error"
-          shadowOffset={{ width: 0, height: 8 }}
-          shadowOpacity={0.8}
-          shadowRadius={24}
+          shadowOffset={{ width: 0, height: 12 }}
+          shadowOpacity={0.6}
+          shadowRadius={32}
         >
-          <GameIcon name="lorc/crowned-skull" size={72} tintColor="$text" />
+          <GameIcon name="lorc/crowned-skull" size={80} tintColor="$error" />
         </YStack>
 
         {/* Boss Title */}
         <YStack alignItems="center" gap="$2">
           <Text
-            color="$textSecondary"
-            fontSize="$3"
-            fontWeight="600"
+            color="$error"
+            fontSize={12}
+            fontWeight="800"
             textTransform="uppercase"
-            letterSpacing={2}
+            letterSpacing={3}
+            fontFamily="$heading"
           >
             {t("boss.epic_battle")}
           </Text>
 
-          <Text color="$text" fontSize={40} fontWeight="900" textAlign="center" numberOfLines={2}>
+          <Text
+            color="$text"
+            fontSize={36}
+            fontWeight="900"
+            textAlign="center"
+            numberOfLines={2}
+            fontFamily="$heading"
+          >
             {title}
           </Text>
         </YStack>
 
-        {/* Boss HP Display */}
+        {/* Boss HP Display - Compact */}
         {adventure.bossTotalHp && (
-          <YStack
+          <XStack
             bg="$glassBg"
             borderColor="$error"
-            borderWidth={2}
-            px="$5"
+            borderWidth={1}
+            px="$6"
             py="$3"
-            borderRadius="$4"
+            borderRadius="$5"
+            alignItems="center"
+            gap="$2"
           >
-            <Text color="$error" fontSize={28} fontWeight="bold" textAlign="center">
-              {t("boss.hp_display", { hp: adventure.bossTotalHp })}
+            <Text color="$textSecondary" fontSize={14} fontWeight="700">
+              HP:
+            </Text>
+            <Text color="$error" fontSize={32} fontWeight="900" fontFamily="$body">
+              {adventure.bossTotalHp}
+            </Text>
+          </XStack>
+        )}
+
+        {/* Boss Description - Cleaner */}
+        {description && (
+          <YStack
+            bg="$glassBg"
+            borderColor="$borderStrong"
+            borderWidth={1}
+            p="$4"
+            borderRadius="$4"
+            maxWidth={420}
+          >
+            <Text color="$textSecondary" fontSize={15} textAlign="center" lineHeight={22}>
+              {description}
             </Text>
           </YStack>
         )}
 
-        {/* Boss Description */}
-        <YStack
-          bg="$glassBg"
-          borderColor="$borderStrong"
-          borderWidth={1}
-          p="$4"
-          borderRadius="$4"
-          maxWidth={400}
-        >
-          <Text color="$textSecondary" fontSize="$4" textAlign="center" lineHeight={24}>
-            {description || t("boss.no_description")}
-          </Text>
-        </YStack>
-
-        {/* Boss Weakness Indicator */}
+        {/* Boss Weakness Indicator - Modern Badge */}
         {adventure.bossWeaknessMuscle && (
-          <XStack alignItems="center" gap="$2" bg="$warning" px="$4" py="$2" borderRadius="$3">
-            <GameIcon name="lorc/lightning-branches" size={20} tintColor="$text" />
-            <Text color="$text" fontSize="$3" fontWeight="600">
+          <XStack
+            alignItems="center"
+            gap="$2"
+            bg="$glassBg"
+            borderWidth={1}
+            borderColor="$warning"
+            px="$4"
+            py="$2"
+            borderRadius="$4"
+          >
+            <GameIcon name="lorc/lightning-branches" size={18} tintColor="$warning" />
+            <Text color="$warning" fontSize={13} fontWeight="700" textTransform="uppercase">
               {t("boss.weakness")}: {adventure.bossWeaknessMuscle}
             </Text>
           </XStack>
         )}
       </YStack>
 
-      {/* Action Buttons - Bottom Safe Area */}
-      <YStack p="$6" gap="$3">
+      {/* Action Buttons - Bottom */}
+      <YStack px="$5" pb="$4" gap="$3">
         <Button
           size="$6"
           bg="$error"
           color="$text"
-          fontSize={24}
+          fontSize={20}
           fontWeight="900"
           onPress={handleBeginBattle}
-          pressStyle={{ opacity: 0.9, scale: 0.98 }}
+          pressStyle={{ opacity: 0.85, scale: 0.97 }}
           shadowColor="$error"
           shadowOffset={{ width: 0, height: 8 }}
-          shadowOpacity={0.8}
-          shadowRadius={20}
+          shadowOpacity={0.7}
+          shadowRadius={24}
+          fontFamily="$heading"
         >
-          {t("boss.begin_battle")}
+          ⚔️ {t("boss.begin_battle")}
         </Button>
 
         <Button
@@ -219,7 +254,7 @@ export default function BossIntroScreen() {
           chromeless
           color="$textSecondary"
           onPress={() => router.back()}
-          pressStyle={{ opacity: 0.7 }}
+          pressStyle={{ opacity: 0.6 }}
         >
           {t("common.cancel")}
         </Button>

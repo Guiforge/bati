@@ -99,7 +99,7 @@ interface BuildingCardProps {
 function BuildingCard({ building, onPress }: BuildingCardProps) {
   const { language } = useSettingsStore();
   const { t } = useTranslation();
-  const { lightImpact } = useHaptics();
+  const { impact } = useHaptics();
 
   const name =
     buildingNames[building.buildingType]?.[language === "fr" ? "fr" : "en"] ||
@@ -117,7 +117,7 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
 
   const handlePress = () => {
     if (!isLocked) {
-      lightImpact();
+      impact();
       onPress();
     }
   };

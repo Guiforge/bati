@@ -27,7 +27,7 @@ function hasLoot(loot: ResourceLoot) {
 
 export function LootReveal({ loot, onDismiss }: Props) {
   const { t } = useTranslation();
-  const { heavyImpact, selection, success } = useHaptics();
+  const { impact, success } = useHaptics();
 
   const [phase, setPhase] = useState<"falling" | "closed" | "opening">("falling");
 
@@ -59,7 +59,7 @@ export function LootReveal({ loot, onDismiss }: Props) {
       },
       (finished) => {
         if (!finished) return;
-        runOnJS(heavyImpact)();
+        runOnJS(impact)();
         runOnJS(setPhase)("closed");
 
         // Anticipation: single white-ish pulse ring.
@@ -83,7 +83,7 @@ export function LootReveal({ loot, onDismiss }: Props) {
     chestRotate,
     chestScale,
     fallY,
-    heavyImpact,
+    impact,
     ringOpacity,
     ringScale,
     overlayOpacity,
@@ -116,7 +116,7 @@ export function LootReveal({ loot, onDismiss }: Props) {
 
   const handlePress = () => {
     if (phase === "closed") {
-      selection();
+      impact();
 
       setPhase("opening");
 
@@ -150,7 +150,7 @@ export function LootReveal({ loot, onDismiss }: Props) {
       }, 1000);
 
       runOnJS(success)();
-      runOnJS(heavyImpact)();
+      runOnJS(impact)();
     }
   };
 

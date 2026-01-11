@@ -78,16 +78,7 @@ export function LootReveal({ loot, onDismiss }: Props) {
         );
       }
     );
-  }, [
-    canShow,
-    chestRotate,
-    chestScale,
-    fallY,
-    impact,
-    ringOpacity,
-    ringScale,
-    overlayOpacity,
-  ]);
+  }, [canShow, chestRotate, chestScale, fallY, impact, ringOpacity, ringScale, overlayOpacity]);
 
   const chestStyle = useAnimatedStyle<ViewStyle>(() => {
     return {

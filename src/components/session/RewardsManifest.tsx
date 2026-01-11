@@ -167,7 +167,6 @@ export function RewardsManifest({
 
     fillPx.value = oldPx;
 
-
     if (!hasLevelUp) {
       fillPx.value = withTiming(newPx, {
         duration: 1500,
@@ -203,9 +202,9 @@ export function RewardsManifest({
     active,
     fillPx,
     hasLevelUp,
-    
+
     levelFlash,
-    
+
     oldProg.percent,
     newProg.percent,
     trackWidth,

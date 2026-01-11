@@ -474,6 +474,8 @@
     "complete_exercise_accessibility": "Complete exercise",
     "complete_overtime": "Complete (Overtime)",
     "complete_set": "Complete Set",
+    "complete_set_hint": "Mark this set as complete and move to next exercise",
+    "complete_set_label": "Complete set",
     "countdown_letsgo": "Let's Go!",
     "countdown_warmup_done": "Warmup Complete",
     "decrease_reps_accessibility": "Decrease reps",
@@ -532,6 +534,8 @@
     "skip": "Skip",
     "skip_confirm": "Skip Exercise",
     "skip_countdown": "Skip Countdown",
+    "skip_hint": "Skip this exercise without recording reps",
+    "skip_label": "Skip exercise",
     "skip_rest": "Skip Rest",
     "skip_rest_accessibility": "Skip rest period and continue to next exercise",
     "skip_warmup": "Skip Warmup",
@@ -578,10 +582,16 @@
   "system": "System",
   "tabs": {
     "adventures": "Adventures",
+    "adventures_label": "Adventures tab",
     "home": "Home",
+    "home_label": "Home tab",
     "journal": "Journal",
+    "journal_label": "Journal tab",
     "quests": "Quests",
-    "training": "Training"
+    "quests_label": "Training quests tab",
+    "training": "Training",
+    "village": "Village",
+    "village_label": "Village tab"
   },
   "theme": "Theme",
   "treasury": {

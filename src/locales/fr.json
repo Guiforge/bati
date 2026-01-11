@@ -474,6 +474,8 @@
     "complete_exercise_accessibility": "Terminer l'exercice",
     "complete_overtime": "Terminer (Prolongation)",
     "complete_set": "Terminer la série",
+    "complete_set_hint": "Marquer cette série comme terminée et passer au prochain exercice",
+    "complete_set_label": "Terminer la série",
     "countdown_letsgo": "C'est Parti !",
     "countdown_warmup_done": "Échauffement Terminé",
     "decrease_reps_accessibility": "Diminuer les reps",
@@ -532,6 +534,8 @@
     "skip": "Passer",
     "skip_confirm": "Passer l'exercice",
     "skip_countdown": "Passer le Compte à Rebours",
+    "skip_hint": "Passer cet exercice sans enregistrer de répétitions",
+    "skip_label": "Passer l'exercice",
     "skip_rest": "Passer le Repos",
     "skip_rest_accessibility": "Passer le repos et continuer au prochain exercice",
     "skip_warmup": "Passer l'échauffement",
@@ -578,10 +582,16 @@
   "system": "Système",
   "tabs": {
     "adventures": "Aventures",
+    "adventures_label": "Onglet Aventures",
     "home": "Accueil",
+    "home_label": "Onglet Accueil",
     "journal": "Journal",
+    "journal_label": "Onglet Journal",
     "quests": "Quêtes",
-    "training": "Entraînement"
+    "quests_label": "Onglet Quêtes d'entraînement",
+    "training": "Entraînement",
+    "village": "Village",
+    "village_label": "Onglet Village"
   },
   "theme": "Thème",
   "treasury": {

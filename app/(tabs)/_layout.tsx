@@ -9,10 +9,12 @@ const TabBarIcon = ({
   name,
   focused,
   size,
+  accessibilityLabel,
 }: {
   name: GameIconName;
   focused: boolean;
   size: number;
+  accessibilityLabel?: string;
 }) => {
   const { GameIcon } = useGameIcon();
   return (
@@ -24,6 +26,9 @@ const TabBarIcon = ({
       shadowOpacity={focused ? 0.6 : 0}
       scale={focused ? 1.3 : 1}
       animation="quick"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: focused }}
     >
       <GameIcon name={name} tintColor={focused ? "$primary" : "$color"} size={size ?? 22} />
     </YStack>
@@ -79,7 +84,12 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.adventures", "Adventures"),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon name="lorc/treasure-map" focused={focused} size={size} />
+            <TabBarIcon
+              name="lorc/treasure-map"
+              focused={focused}
+              size={size}
+              accessibilityLabel={t("tabs.adventures_label", { defaultValue: "Adventures tab" })}
+            />
           ),
         }}
       />
@@ -89,7 +99,12 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.training", "Training"),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon name="lorc/crossed-swords" focused={focused} size={size} />
+            <TabBarIcon
+              name="lorc/crossed-swords"
+              focused={focused}
+              size={size}
+              accessibilityLabel={t("tabs.quests_label", { defaultValue: "Training quests tab" })}
+            />
           ),
         }}
       />
@@ -99,7 +114,42 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.home", "Home"),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon name="lorc/campfire" focused={focused} size={size} />
+            <TabBarIcon
+              name="lorc/campfire"
+              focused={focused}
+              size={size}
+              accessibilityLabel={t("tabs.home_label", { defaultValue: "Home tab" })}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="village"
+        options={{
+          title: t("tabs.village", "Village"),
+          tabBarIcon: ({ focused, size }) => (
+            <TabBarIcon
+              name="lorc/castle"
+              focused={focused}
+              size={size}
+              accessibilityLabel={t("tabs.village_label", { defaultValue: "Village tab" })}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="journal"
+        options={{
+          title: t("tabs.journal", "Journal"),
+          tabBarIcon: ({ focused, size }) => (
+            <TabBarIcon
+              name="lorc/scroll-unfurled"
+              focused={focused}
+              size={size}
+              accessibilityLabel={t("tabs.journal_label", { defaultValue: "Journal tab" })}
+            />
           ),
         }}
       />

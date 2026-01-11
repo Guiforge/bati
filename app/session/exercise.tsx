@@ -353,6 +353,11 @@ export default function ExerciseScreen() {
           shadowOpacity={0.6}
           shadowRadius={20}
           fontFamily="$heading"
+          accessibilityLabel={t("session.complete_set_label", { defaultValue: "Complete set" })}
+          accessibilityHint={t("session.complete_set_hint", {
+            defaultValue: "Mark this set as complete and move to next exercise",
+          })}
+          accessibilityRole="button"
         >
           {t("session.complete_set", { defaultValue: "Complete Set" })} ✓
         </Button>
@@ -364,6 +369,11 @@ export default function ExerciseScreen() {
           color="$textSecondary"
           onPress={handleSkip}
           pressStyle={{ opacity: 0.6 }}
+          accessibilityLabel={t("session.skip_label", { defaultValue: "Skip exercise" })}
+          accessibilityHint={t("session.skip_hint", {
+            defaultValue: "Skip this exercise without recording reps",
+          })}
+          accessibilityRole="button"
         >
           {t("session.skip")}
         </Button>

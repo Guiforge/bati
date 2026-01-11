@@ -292,7 +292,7 @@ export default function QuestsScreen() {
           data={filteredQuests}
           renderItem={renderQuestCard}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120 }}
           ListEmptyComponent={
             <YStack alignItems="center" justifyContent="center" py="$8">
               <Text color="$textSecondary" fontSize={20} textAlign="center">

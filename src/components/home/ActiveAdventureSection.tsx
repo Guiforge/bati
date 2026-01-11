@@ -94,14 +94,7 @@ export function ActiveAdventureSection() {
   return (
     <YStack gap="$4">
       {/* Hero Card with Adventure Image */}
-      <YStack
-        height={HERO_HEIGHT}
-        width={SCREEN_WIDTH}
-        position="relative"
-        overflow="hidden"
-        onPress={() => router.push(`/(modals)/adventure-details/${adventure.id}`)}
-        pressStyle={{ opacity: 0.98 }}
-      >
+      <YStack height={HERO_HEIGHT} width={SCREEN_WIDTH} position="relative" overflow="hidden">
         {/* Background Image */}
         <Image
           source={imageSource}
@@ -217,7 +210,7 @@ export function ActiveAdventureSection() {
             fontWeight="900"
             fontSize={14}
             borderRadius={1000}
-            onPress={() => router.push(`/(modals)/adventure-details/${adventure.id}`)}
+            onPress={() => router.push("/(modals)/continue-adventure")}
             pressStyle={{ opacity: 0.9, scale: 0.98 }}
             shadowColor="$primaryGlow"
             shadowRadius={15}
@@ -254,7 +247,7 @@ export function ActiveAdventureSection() {
               status={step.status}
               onPress={() => {
                 if (step.status !== "locked") {
-                  router.push(`/(modals)/adventure-details/${adventure.id}`);
+                  router.push("/(modals)/continue-adventure");
                 }
               }}
             />

@@ -22,6 +22,7 @@ function hasLoot(loot: ResourceLoot) {
   return loot.gold > 0 || loot.materials.length > 0;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Victory screen with rewards, loot, and adventure progression
 export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();

@@ -218,13 +218,13 @@ export function MonthlyCalendarCard() {
         {/* Header with month navigation */}
         <XStack items="center" justify="space-between" px="$1">
           <Pressable onPress={goToPrevMonth}>
-            <ChevronLeft size={24} color="$color" />
+            <ChevronLeft size={24} color="$text" />
           </Pressable>
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="900" fontSize={16} color="$text">
             {monthName} {monthData.year}
           </Text>
           <Pressable onPress={goToNextMonth}>
-            <ChevronRight size={24} color="$color" />
+            <ChevronRight size={24} color="$text" />
           </Pressable>
         </XStack>
 
@@ -237,7 +237,7 @@ export function MonthlyCalendarCard() {
               style={{ textAlign: "center" }}
               fontSize={12}
               fontWeight="600"
-              color="$color"
+              color="$text"
               opacity={0.6}
             >
               {day}
@@ -264,16 +264,16 @@ export function MonthlyCalendarCard() {
                       : day.hasWorkout && day.isCurrentMonth
                         ? day.isStreakDay
                           ? "$success"
-                          : "$pastelGreen"
+                          : "$glassBg"
                         : undefined
                   }
                   borderWidth={day.isToday ? 2 : 0}
-                  borderColor="$color"
+                  borderColor="$borderStrong"
                 >
                   <Text
                     fontSize={13}
                     fontWeight={day.hasWorkout || day.isToday ? "700" : "400"}
-                    color={day.isToday ? "white" : "$color"}
+                    color={day.isToday ? "white" : "$textSecondary"}
                     opacity={day.isCurrentMonth ? 1 : 0.3}
                   >
                     {day.date}
@@ -289,14 +289,14 @@ export function MonthlyCalendarCard() {
           justify="space-around"
           pt="$2"
           borderTopWidth={1}
-          borderColor="$color"
+          borderColor="$borderStrong"
           opacity={0.2}
         >
           <YStack items="center">
-            <Text fontWeight="900" fontSize={18} color="$color">
+            <Text fontWeight="900" fontSize={18} color="$text">
               {monthData.workoutCount}
             </Text>
-            <Text fontSize={11} color="$color" opacity={0.6}>
+            <Text fontSize={11} color="$text" opacity={0.6}>
               {t("journal.workout_days")}
             </Text>
           </YStack>
@@ -304,7 +304,7 @@ export function MonthlyCalendarCard() {
             <Text fontWeight="900" fontSize={18} color="$success">
               {monthData.streakDays}
             </Text>
-            <Text fontSize={11} color="$color" opacity={0.6}>
+            <Text fontSize={11} color="$text" opacity={0.6}>
               {t("journal.streak_active", "Streak days").replace(" 🔥", "")}
             </Text>
           </YStack>

@@ -355,7 +355,7 @@ export default function AdventuresScreen() {
           data={filteredAdventures}
           renderItem={renderAdventureCard}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120 }}
           ListEmptyComponent={
             <YStack alignItems="center" justifyContent="center" py="$8">
               <GameIcon name="lorc/treasure-map" size={64} tintColor="$textSecondary" />

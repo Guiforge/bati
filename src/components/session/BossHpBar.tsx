@@ -15,6 +15,7 @@ type BossHpBarProps = {
   showPhaseImage?: boolean;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Boss HP display with phase transitions and damage animations
 export function BossHpBar({
   currentHp,
   totalHp,

@@ -189,7 +189,102 @@ export default function SettingsScreen() {
             onPress={() => router.push("/credits")}
           />
         </YStack>
+
+        {/* Developer Section */}
+        <DevSection />
       </RNScrollView>
+    </YStack>
+  );
+}
+
+function DevSection() {
+  const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+
+  const handleClearAdventures = async () => {
+    try {
+      // Import dynamically to avoid issues
+      const { db, schema } = await import("@/src/db/client");
+      await db.delete(schema.adventureRuns);
+      alert("Adventures cleared!");
+    } catch (error) {
+      alert(`Error: ${error}`);
+    }
+  };
+
+  const handleResetBosses = async () => {
+    try {
+      const { db, schema } = await import("@/src/db/client");
+      await db.delete(schema.bossFights);
+      alert("Boss fights reset!");
+    } catch (error) {
+      alert(`Error: ${error}`);
+    }
+  };
+
+  const handleClearSessions = async () => {
+    try {
+      const { db, schema } = await import("@/src/db/client");
+      await db.delete(schema.completedQuest);
+      await db.delete(schema.completedExercises);
+      alert("Sessions cleared!");
+    } catch (error) {
+      alert(`Error: ${error}`);
+    }
+  };
+
+  if (!expanded) {
+    return (
+      <YStack gap="$3">
+        <Button
+          size="$3"
+          bg="transparent"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          onPress={() => setExpanded(true)}
+        >
+          <Text fontSize={12} color="$textSecondary">
+            🔧 {t("settings.dev_menu", "Developer Menu")}
+          </Text>
+        </Button>
+      </YStack>
+    );
+  }
+
+  return (
+    <YStack gap="$3">
+      <XStack items="center" justify="space-between">
+        <Text fontSize="$3" fontWeight="bold" color="$error" opacity={0.8} px="$1">
+          ⚠️ {t("settings.dev_menu", "DEVELOPER")}
+        </Text>
+        <Button size="$2" chromeless onPress={() => setExpanded(false)}>
+          <Text color="$textSecondary">✕</Text>
+        </Button>
+      </XStack>
+
+      <Card bg="rgba(244, 67, 54, 0.1)" borderColor="$error" borderWidth={1} p="$3" gap="$2">
+        <Text fontSize={12} color="$textSecondary" mb="$2">
+          {t("settings.dev_warning", "Danger zone - these actions cannot be undone")}
+        </Text>
+
+        <Button size="$3" bg="$error" onPress={handleClearAdventures} pressStyle={{ opacity: 0.8 }}>
+          <Text fontSize={13} fontWeight="700" color="white">
+            Clear Active Adventures
+          </Text>
+        </Button>
+
+        <Button size="$3" bg="$error" onPress={handleResetBosses} pressStyle={{ opacity: 0.8 }}>
+          <Text fontSize={13} fontWeight="700" color="white">
+            Reset Boss Fights
+          </Text>
+        </Button>
+
+        <Button size="$3" bg="$error" onPress={handleClearSessions} pressStyle={{ opacity: 0.8 }}>
+          <Text fontSize={13} fontWeight="700" color="white">
+            Clear All Sessions
+          </Text>
+        </Button>
+      </Card>
     </YStack>
   );
 }

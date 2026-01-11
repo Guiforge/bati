@@ -45,7 +45,7 @@ function MuscleBalanceRadarComponent() {
   if (isLoading) {
     return (
       <Card bg="$bgLight">
-        <Text color="$color" opacity={0.6}>
+        <Text color="$text" opacity={0.6}>
           {t("common.loading")}
         </Text>
       </Card>
@@ -57,12 +57,12 @@ function MuscleBalanceRadarComponent() {
       <Card bg="$bgLight">
         <YStack gap="$2">
           <XStack items="center" gap="$2">
-            <Target size={18} color="$color" />
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Target size={18} color="$text" />
+            <Text fontWeight="900" fontSize={16} color="$text">
               {t("journal.muscle_balance")}
             </Text>
           </XStack>
-          <Text color="$color" opacity={0.6} fontSize={13}>
+          <Text color="$text" opacity={0.6} fontSize={13}>
             {t("chart.complete_more")}
           </Text>
         </YStack>
@@ -85,8 +85,8 @@ function MuscleBalanceRadarComponent() {
       <YStack gap="$3">
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$2">
-            <Target size={18} color="$color" />
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Target size={18} color="$text" />
+            <Text fontWeight="900" fontSize={16} color="$text">
               {t("journal.muscle_balance")}
             </Text>
           </XStack>
@@ -137,7 +137,7 @@ function MuscleBalanceRadarComponent() {
         {/* Weak areas callout */}
         {balance.weakAreas.length > 0 && (
           <XStack flexWrap="wrap" gap="$2">
-            <Text fontSize={12} color="$color" opacity={0.7}>
+            <Text fontSize={12} color="$text" opacity={0.7}>
               {t("journal.focus_on")}
             </Text>
             {balance.weakAreas.map((muscle) => {
@@ -157,7 +157,7 @@ function MuscleBalanceRadarComponent() {
         )}
 
         {recommendation.status === "needs_attention" && (
-          <Text fontSize={12} color="$color" opacity={0.7}>
+          <Text fontSize={12} color="$text" opacity={0.7}>
             {language === "fr" ? recommendation.message.fr : recommendation.message.en}
           </Text>
         )}

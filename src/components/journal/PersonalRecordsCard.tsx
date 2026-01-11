@@ -34,20 +34,20 @@ function RecordItem({
       p="$3"
       rounded="$4"
       borderWidth={2}
-      borderColor="$color"
+      borderColor="$borderStrong"
       flex={1}
       items="center"
       gap="$1"
     >
       {icon}
-      <Text fontSize={11} color="$color" opacity={0.6} style={{ textAlign: "center" }}>
+      <Text fontSize={11} color="$text" opacity={0.6} style={{ textAlign: "center" }}>
         {label}
       </Text>
-      <Text fontWeight="900" fontSize={18} color="$color" style={{ textAlign: "center" }}>
+      <Text fontWeight="900" fontSize={18} color="$text" style={{ textAlign: "center" }}>
         {value}
       </Text>
       {subLabel && (
-        <Text fontSize={10} color="$color" opacity={0.5} style={{ textAlign: "center" }}>
+        <Text fontSize={10} color="$text" opacity={0.5} style={{ textAlign: "center" }}>
           {subLabel}
         </Text>
       )}
@@ -99,7 +99,7 @@ export function PersonalRecordsCard() {
       <YStack gap="$3">
         <XStack items="center" gap="$2">
           <Trophy size={18} color="$primary" />
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="900" fontSize={16} color="$text">
             {t("journal.personal_records")}
           </Text>
         </XStack>
@@ -119,7 +119,7 @@ export function PersonalRecordsCard() {
 
         <XStack gap="$2">
           <RecordItem
-            icon={<Star size={20} color="$pastelYellow" />}
+            icon={<Star size={20} color="$primary" />}
             label={t("journal.pr_most_xp")}
             value={mostXp}
             subLabel={t("common.xp")}

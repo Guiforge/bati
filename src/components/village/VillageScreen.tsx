@@ -7,7 +7,6 @@ import { Modal, Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H4, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 
-import { Card } from "@/src/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/src/components/common/Skeleton";
 import { FlameFlicker } from "@/src/components/village/VillageAnimations";
 import {
@@ -25,12 +24,19 @@ import { type BuildingCode, buildingLevelBonuses, buildingLevelThresholds } from
 import { useHaptics } from "@/src/hooks/useHaptics";
 import { useSettingsStore } from "@/src/stores/settings";
 
-// Tier background colors
+// Tier background colors - Dark fantasy with glow
 const tierColors: Record<number, string> = {
-  1: "$pastelGreen",
-  2: "$pastelBlue",
-  3: "$pastelPurple",
-  4: "$pastelOrange",
+  1: "rgba(34, 197, 94, 0.15)", // Green glow
+  2: "rgba(13, 51, 242, 0.15)", // Blue glow
+  3: "rgba(139, 92, 246, 0.15)", // Purple glow
+  4: "rgba(255, 215, 0, 0.15)", // Gold glow
+};
+
+const tierBorderColors: Record<number, string> = {
+  1: "rgba(34, 197, 94, 0.4)",
+  2: "rgba(13, 51, 242, 0.4)",
+  3: "rgba(139, 92, 246, 0.4)",
+  4: "rgba(255, 215, 0, 0.4)",
 };
 
 // Muscle localized names
@@ -96,6 +102,7 @@ interface BuildingCardProps {
   onPress: () => void;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Building card with various states and progress display
 function BuildingCard({ building, onPress }: BuildingCardProps) {
   const { language } = useSettingsStore();
   const { t } = useTranslation();
@@ -106,7 +113,6 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
     building.buildingType;
 
   const isLocked = !building.isUnlocked;
-  const tierColor = tierColors[building.tier] || "$bgLight";
 
   // Calculate progress to next level
   const currentThreshold = buildingLevelThresholds[building.level - 1] || 0;
@@ -124,70 +130,101 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
 
   return (
     <Pressable onPress={handlePress} disabled={isLocked}>
-      <Card
-        bg={isLocked ? "$bgLight" : (tierColor as "$pastelGreen")}
-        opacity={isLocked ? 0.5 : 1}
-        width="100%"
-        mb="$3"
+      <YStack
+        bg="$glassBg"
+        borderWidth={1}
+        borderRadius="$4"
+        overflow="hidden"
+        opacity={isLocked ? 0.6 : 1}
+        pressStyle={!isLocked ? { opacity: 0.8, scale: 0.98 } : {}}
+        style={{
+          backgroundColor: isLocked ? "rgba(255,255,255,0.05)" : tierColors[building.tier],
+          borderColor: isLocked ? "rgba(255,255,255,0.1)" : tierBorderColors[building.tier],
+        }}
       >
-        <XStack items="center" gap="$3">
-          <YStack
-            width={56}
-            height={56}
-            rounded={12}
-            bg={isLocked ? "$color" : "$background"}
-            items="center"
-            justify="center"
-            borderWidth={2}
-            borderColor="$color"
-            opacity={isLocked ? 0.3 : 1}
-          >
-            <Image
-              source={getVillageBuildingAsset(
-                building.buildingType,
-                isLocked ? "locked" : (`lvl_${building.level}` as VillageBuildingVariant)
-              )}
-              style={{ width: "100%", height: "100%", borderRadius: 12 }}
-              contentFit="cover"
-            />
-          </YStack>
+        {/* Large Image on Top */}
+        <YStack
+          width="100%"
+          height={140}
+          bg={isLocked ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.2)"}
+          items="center"
+          justify="center"
+          position="relative"
+        >
+          <Image
+            source={getVillageBuildingAsset(
+              building.buildingType,
+              isLocked ? "locked" : (`lvl_${building.level}` as VillageBuildingVariant)
+            )}
+            style={{ width: "100%", height: "100%", opacity: isLocked ? 0.4 : 1 }}
+            contentFit="cover"
+          />
 
-          <YStack flex={1} gap="$1">
-            <XStack items="center" justify="space-between">
-              <Text fontWeight="900" fontSize={16} color="$color">
-                {name}
+          {/* Level Badge - Top Right */}
+          {!isLocked && (
+            <XStack
+              position="absolute"
+              top={8}
+              right={8}
+              bg="$primary"
+              px="$2"
+              py="$1"
+              borderRadius="$3"
+              items="center"
+              gap="$1"
+            >
+              <Star size={12} color="white" fill="white" />
+              <Text fontWeight="800" fontSize={11} color="white">
+                {building.level}
               </Text>
-              {!isLocked && (
-                <XStack items="center" gap="$1">
-                  <Star size={14} color="$primary" fill="$primary" />
-                  <Text fontWeight="700" fontSize={14} color="$color">
-                    {t("village.level", "Lv.")} {building.level}
-                  </Text>
-                </XStack>
-              )}
             </XStack>
+          )}
 
-            {!isLocked && (
-              <YStack gap="$1">
-                <Progress size="$1" value={progress} bg="$background">
-                  <Progress.Indicator bg="$primary" animation="bouncy" />
-                </Progress>
-                <Text fontSize={12} color="$color" opacity={0.6}>
-                  {building.level >= 5
-                    ? t("village.max_level", "Max Level")
-                    : t("common.xp_value", { value: `${building.xp} / ${nextThreshold}` })}
-                </Text>
-              </YStack>
-            )}
+          {/* Locked Overlay */}
+          {isLocked && (
+            <YStack
+              position="absolute"
+              items="center"
+              justify="center"
+              bg="rgba(0,0,0,0.7)"
+              width="100%"
+              height="100%"
+            >
+              <Text fontSize={32}>🔒</Text>
+            </YStack>
+          )}
+        </YStack>
 
-            {isLocked && (
-              <Text fontSize={12} color="$color" opacity={0.6}>
-                {t("village.locked", "Locked")}
+        {/* Bottom Info Section */}
+        <YStack p="$3" gap="$2">
+          <Text fontWeight="900" fontSize={15} color="$text" numberOfLines={1}>
+            {name}
+          </Text>
+
+          {!isLocked && building.level < 5 && (
+            <YStack gap="$1.5">
+              <Progress size="$1" value={progress} bg="rgba(255,255,255,0.1)">
+                <Progress.Indicator bg="$primary" animation="bouncy" />
+              </Progress>
+              <Text fontSize={11} color="$textSecondary" opacity={0.8}>
+                {xpInLevel} / {xpNeeded} XP
               </Text>
-            )}
-          </YStack>
-        </XStack>
-      </Card>
+            </YStack>
+          )}
+
+          {!isLocked && building.level >= 5 && (
+            <Text fontSize={11} fontWeight="700" color="$primary">
+              ⭐ {t("village.max_level", "MAX")}
+            </Text>
+          )}
+
+          {isLocked && (
+            <Text fontSize={11} color="$textSecondary" opacity={0.6}>
+              🔒 {t("village.locked", "Verrouillé")}
+            </Text>
+          )}
+        </YStack>
+      </YStack>
     </Pressable>
   );
 }
@@ -261,216 +298,274 @@ export function VillageScreen() {
     : 0;
 
   return (
-    <YStack flex={1} bg="$background">
-      {/* Building Detail Modal */}
+    <YStack flex={1} bg="$bgDark" pt={insets.top}>
+      {/* Building Detail Modal - Modern Full Screen */}
       <Modal
         visible={selectedBuilding !== null}
-        animationType="fade"
+        animationType="slide"
         transparent
         onRequestClose={handleCloseModal}
       >
-        <YStack flex={1} bg="rgba(0,0,0,0.6)" items="center" justify="center" p="$4">
-          <Card bg="$background" width="100%" maxW={360}>
-            <YStack gap="$4">
-              {/* Header */}
-              <XStack items="center" justify="space-between">
-                <Text fontWeight="900" fontSize={20} color="$color">
-                  {t("village.building_details")}
-                </Text>
-                <Pressable onPress={handleCloseModal}>
-                  <X size={24} color="$color" />
-                </Pressable>
-              </XStack>
+        <YStack flex={1} bg="rgba(0,0,0,0.95)">
+          {selectedBuilding && (
+            <>
+              {/* Hero Image at Top */}
+              <YStack
+                height={280}
+                position="relative"
+                style={{
+                  backgroundColor: tierColors[selectedBuilding.tier] || tierColors[1],
+                }}
+              >
+                <Image
+                  source={getVillageBuildingAsset(
+                    selectedBuilding.buildingType,
+                    `lvl_${selectedBuilding.level}` as VillageBuildingVariant
+                  )}
+                  style={{ width: "100%", height: "100%" }}
+                  contentFit="cover"
+                />
 
-              {/* Building Info */}
-              {selectedBuilding && (
-                <YStack gap="$3" items="center">
-                  {/* Emoji */}
-                  <YStack
-                    width={80}
-                    height={80}
-                    rounded={16}
-                    bg={(tierColors[selectedBuilding.tier] || "$bgLight") as "$pastelGreen"}
-                    items="center"
-                    justify="center"
-                    borderWidth={3}
-                    borderColor="$color"
-                  >
-                    <Text fontSize={40}>{selectedBuilding.emoji}</Text>
+                {/* Close Button */}
+                <Pressable
+                  onPress={handleCloseModal}
+                  style={{
+                    position: "absolute",
+                    top: insets.top + 12,
+                    right: 16,
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: "rgba(0,0,0,0.6)",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <X size={24} color="white" />
+                </Pressable>
+
+                {/* Level Badge - Bottom Right */}
+                <XStack
+                  position="absolute"
+                  bottom={16}
+                  right={16}
+                  bg="$primary"
+                  px="$3"
+                  py="$2"
+                  borderRadius="$4"
+                  items="center"
+                  gap="$2"
+                  shadowColor="$primary"
+                  shadowOpacity={0.5}
+                  shadowRadius={12}
+                >
+                  <Star size={18} color="white" fill="white" />
+                  <Text fontWeight="900" fontSize={18} color="white">
+                    {t("village.level")} {selectedBuilding.level}
+                  </Text>
+                </XStack>
+              </YStack>
+
+              {/* Scrollable Content */}
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingHorizontal: 20,
+                  paddingTop: 24,
+                  paddingBottom: insets.bottom + 80,
+                }}
+              >
+                <YStack gap="$4">
+                  {/* Building Name & Tier */}
+                  <YStack gap="$2">
+                    <Text
+                      fontWeight="900"
+                      fontSize={28}
+                      color="$text"
+                      style={{ textAlign: "center" }}
+                    >
+                      {selectedBuildingName}
+                    </Text>
+                    <Text
+                      fontSize={13}
+                      color="$textSecondary"
+                      opacity={0.7}
+                      style={{ textAlign: "center" }}
+                    >
+                      {t("village.tier", { tier: selectedBuilding.tier })}
+                    </Text>
                   </YStack>
 
-                  {/* Name */}
-                  <Text
-                    fontWeight="900"
-                    fontSize={24}
-                    color="$color"
-                    style={{ textAlign: "center" }}
-                  >
-                    {selectedBuildingName}
-                  </Text>
-
-                  {/* Level Badge */}
-                  <XStack items="center" gap="$2" bg="$primary" px="$3" py="$1" rounded="$4">
-                    <Star size={16} color="white" fill="white" />
-                    <Text fontWeight="800" color="white" fontSize={16}>
-                      {t("village.level")} {selectedBuilding.level}
-                    </Text>
-                  </XStack>
-
-                  {/* Tier */}
-                  <Text fontSize={14} color="$color" opacity={0.7}>
-                    {t("village.tier", { tier: selectedBuilding.tier })}
-                  </Text>
-
-                  {/* Progress */}
+                  {/* Progress Section */}
                   {selectedBuilding.level < 5 ? (
-                    <YStack width="100%" gap="$2">
+                    <YStack
+                      bg="$glassBg"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
+                      p="$4"
+                      borderRadius="$4"
+                      gap="$3"
+                    >
+                      <Text fontWeight="800" fontSize={15} color="$text">
+                        {t("village.xp_to_next", "Progression")}
+                      </Text>
                       <Progress
-                        size="$2"
+                        size="$3"
                         value={(selectedBuilding.xp / selectedNextThreshold) * 100}
-                        bg="$bgLight"
+                        bg="rgba(255,255,255,0.1)"
                       >
                         <Progress.Indicator bg="$primary" animation="bouncy" />
                       </Progress>
                       <XStack justify="space-between">
-                        <Text fontSize={12} color="$color" opacity={0.7}>
-                          {t("village.xp_to_next")}
+                        <Text fontSize={13} color="$textSecondary">
+                          {selectedBuilding.xp} XP
                         </Text>
-                        <Text fontSize={12} fontWeight="700" color="$color">
-                          {t("common.xp_value", { value: selectedXpToNext })}
+                        <Text fontSize={13} fontWeight="700" color="$text">
+                          {selectedXpToNext} {t("village.xp_to_next", "restant")}
                         </Text>
                       </XStack>
                     </YStack>
                   ) : (
-                    <Text fontSize={14} fontWeight="700" color="$primary">
-                      ⭐ {t("village.max_level")} ⭐
-                    </Text>
+                    <YStack
+                      bg="rgba(255, 215, 0, 0.15)"
+                      borderWidth={1}
+                      borderColor="rgba(255, 215, 0, 0.4)"
+                      p="$4"
+                      borderRadius="$4"
+                      items="center"
+                    >
+                      <Text fontSize={16} fontWeight="900" color="$primary">
+                        ⭐ {t("village.max_level", "NIVEAU MAXIMUM")} ⭐
+                      </Text>
+                    </YStack>
                   )}
 
                   {/* Upgrade Preview */}
                   {selectedBuilding.level < 5 && selectedBuilding.relatedMuscle && (
                     <YStack
-                      width="100%"
-                      bg="$pastelYellow"
-                      p="$3"
-                      rounded="$4"
-                      borderWidth={2}
-                      borderColor="$color"
-                      gap="$2"
+                      bg="rgba(13, 51, 242, 0.15)"
+                      borderWidth={1}
+                      borderColor="rgba(13, 51, 242, 0.4)"
+                      p="$4"
+                      borderRadius="$4"
+                      gap="$3"
                     >
-                      <Text fontWeight="800" fontSize={14} color="$color">
-                        {t("village.next_level")} →
+                      <Text fontWeight="900" fontSize={15} color="$text">
+                        🎯 {t("village.next_level", "Prochain niveau")}
                       </Text>
-                      <Text fontSize={13} color="$color">
-                        {t("village.bonus_xp", {
-                          percent: buildingLevelBonuses[selectedBuilding.level + 1]?.xpPercent || 0,
-                          muscle:
+                      <YStack gap="$2">
+                        <Text fontSize={14} color="$text">
+                          💪 +{buildingLevelBonuses[selectedBuilding.level + 1]?.xpPercent || 0}% XP
+                          (
+                          {
                             muscleNames[selectedBuilding.relatedMuscle]?.[
                               language === "fr" ? "fr" : "en"
-                            ],
-                        })}
-                      </Text>
-                      <Text fontSize={13} color="$color">
-                        {t("village.bonus_resources", {
-                          percent:
-                            buildingLevelBonuses[selectedBuilding.level + 1]?.resourcePercent || 0,
-                          resource:
+                            ]
+                          }
+                          )
+                        </Text>
+                        <Text fontSize={14} color="$text">
+                          📦 +
+                          {buildingLevelBonuses[selectedBuilding.level + 1]?.resourcePercent || 0}%{" "}
+                          {
                             resourceNames[muscleToResource[selectedBuilding.relatedMuscle]]?.[
                               language === "fr" ? "fr" : "en"
-                            ],
-                        })}
-                      </Text>
-                      <Text fontSize={13} color="$color">
-                        {t("village.bonus_prestige", {
-                          points:
-                            buildingLevelBonuses[selectedBuilding.level + 1]?.prestigePoints || 0,
-                        })}
-                      </Text>
+                            ]
+                          }
+                        </Text>
+                        <Text fontSize={14} color="$text">
+                          ⭐ +
+                          {buildingLevelBonuses[selectedBuilding.level + 1]?.prestigePoints || 0}{" "}
+                          {t("village.prestige", "Prestige")}
+                        </Text>
+                      </YStack>
                     </YStack>
                   )}
 
                   {/* Current Bonus (for max level buildings) */}
                   {selectedBuilding.level === 5 && selectedBuilding.relatedMuscle && (
                     <YStack
-                      width="100%"
-                      bg="$pastelGreen"
-                      p="$3"
-                      rounded="$4"
-                      borderWidth={2}
-                      borderColor="$color"
-                      gap="$2"
+                      bg="rgba(34, 197, 94, 0.15)"
+                      borderWidth={1}
+                      borderColor="rgba(34, 197, 94, 0.4)"
+                      p="$4"
+                      borderRadius="$4"
+                      gap="$3"
                     >
-                      <Text fontWeight="800" fontSize={14} color="$color">
-                        {t("village.current_bonus")}
+                      <Text fontWeight="900" fontSize={15} color="$text">
+                        🏆 {t("village.current_bonus", "Bonus actuels")}
                       </Text>
-                      <Text fontSize={13} color="$color">
-                        {t("village.bonus_xp", {
-                          percent: buildingLevelBonuses[5]?.xpPercent || 0,
-                          muscle:
+                      <YStack gap="$2">
+                        <Text fontSize={14} color="$text">
+                          💪 +{buildingLevelBonuses[5]?.xpPercent || 0}% XP (
+                          {
                             muscleNames[selectedBuilding.relatedMuscle]?.[
                               language === "fr" ? "fr" : "en"
-                            ],
-                        })}
-                      </Text>
-                      <Text fontSize={13} color="$color">
-                        {t("village.bonus_resources", {
-                          percent: buildingLevelBonuses[5]?.resourcePercent || 0,
-                          resource:
+                            ]
+                          }
+                          )
+                        </Text>
+                        <Text fontSize={14} color="$text">
+                          📦 +{buildingLevelBonuses[5]?.resourcePercent || 0}%{" "}
+                          {
                             resourceNames[muscleToResource[selectedBuilding.relatedMuscle]]?.[
                               language === "fr" ? "fr" : "en"
-                            ],
-                        })}
-                      </Text>
+                            ]
+                          }
+                        </Text>
+                      </YStack>
                     </YStack>
                   )}
                 </YStack>
-              )}
+              </ScrollView>
 
-              {/* Close Button */}
-              <Button
-                bg="$primary"
-                borderWidth={3}
-                borderColor="$color"
-                rounded="$4"
-                onPress={handleCloseModal}
+              {/* Bottom Close Button */}
+              <YStack
+                position="absolute"
+                bottom={0}
+                left={0}
+                right={0}
+                p="$4"
+                pb={insets.bottom + 16}
+                bg="rgba(11, 15, 25, 0.95)"
+                borderTopWidth={1}
+                borderTopColor="$borderStrong"
               >
-                <Text fontWeight="800" color="white">
-                  {t("village.close")}
-                </Text>
-              </Button>
-            </YStack>
-          </Card>
+                <Button
+                  bg="$primary"
+                  borderRadius="$4"
+                  onPress={handleCloseModal}
+                  pressStyle={{ opacity: 0.8 }}
+                  size="$5"
+                >
+                  <Text fontWeight="900" color="white" fontSize={16}>
+                    {t("village.close", "Fermer")}
+                  </Text>
+                </Button>
+              </YStack>
+            </>
+          )}
         </YStack>
       </Modal>
 
       {/* Header */}
-      <XStack
-        pt={insets.top + 8}
-        px="$4"
-        pb="$3"
-        bg="$background"
-        items="center"
-        gap="$3"
-        borderBottomWidth={2}
-        borderBottomColor="$color"
-      >
-        <Pressable
-          onPress={() => router.back()}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 22,
-            backgroundColor: "white",
-            borderWidth: 2,
-            borderColor: "black",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <ChevronLeft size={24} color="black" />
+      <XStack px="$4" pb="$3" items="center" gap="$3">
+        <Pressable onPress={() => router.back()}>
+          <YStack
+            width={44}
+            height={44}
+            borderRadius={22}
+            bg="$glassBg"
+            borderWidth={1}
+            borderColor="$borderStrong"
+            items="center"
+            justify="center"
+          >
+            <ChevronLeft size={24} color="$text" />
+          </YStack>
         </Pressable>
         <YStack flex={1}>
-          <H1 fontSize={24} fontWeight="900" color="$color">
+          <H1 fontSize={24} fontWeight="900" color="$text">
             {t("village.title", "My Village")}
           </H1>
         </YStack>
@@ -481,42 +576,49 @@ export function VillageScreen() {
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 16,
-          paddingBottom: insets.bottom + 24,
+          paddingBottom: insets.bottom + 100,
         }}
       >
         {/* Stats Summary */}
-        <Card bg="$pastelYellow" width="100%" mb="$4">
+        <YStack
+          bg="$glassBg"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          borderRadius="$4"
+          p="$4"
+          mb="$4"
+        >
           <XStack items="flex-start" gap="$3">
             {/* Flame decoration */}
             <FlameFlicker size={40} />
 
             <YStack flex={1} gap="$2">
-              <Text fontWeight="900" fontSize={18} color="$color">
+              <Text fontWeight="900" fontSize={18} color="$text">
                 {t("village.stats_title", "Village Progress")}
               </Text>
               <XStack items="center" justify="space-between">
-                <Paragraph color="$color" opacity={0.8}>
+                <Paragraph color="$textSecondary" opacity={0.8}>
                   {t("village.buildings_unlocked", "Buildings Unlocked")}
                 </Paragraph>
-                <Text fontWeight="700" color="$color">
+                <Text fontWeight="700" color="$text">
                   {unlockedCount} / {totalCount}
                 </Text>
               </XStack>
               {stats && (
                 <>
                   <XStack items="center" justify="space-between">
-                    <Paragraph color="$color" opacity={0.8}>
+                    <Paragraph color="$textSecondary" opacity={0.8}>
                       {t("village.highest_level", "Highest Building Level")}
                     </Paragraph>
-                    <Text fontWeight="700" color="$color">
+                    <Text fontWeight="700" color="$text">
                       {stats.highestBuildingLevel}
                     </Text>
                   </XStack>
                   <XStack items="center" justify="space-between">
-                    <Paragraph color="$color" opacity={0.8}>
+                    <Paragraph color="$textSecondary" opacity={0.8}>
                       {t("village.prestige", "Prestige Score")}
                     </Paragraph>
-                    <Text fontWeight="700" color="$color">
+                    <Text fontWeight="700" color="$text">
                       {stats.prestigeScore}
                     </Text>
                   </XStack>
@@ -524,9 +626,9 @@ export function VillageScreen() {
               )}
             </YStack>
           </XStack>
-        </Card>
+        </YStack>
 
-        {/* Buildings by Tier */}
+        {/* Buildings by Tier - Grid Layout */}
         {[1, 2, 3, 4].map((tier) => {
           const tierBuildings = buildingsByTier[tier] || [];
           if (tierBuildings.length === 0) return null;
@@ -534,17 +636,18 @@ export function VillageScreen() {
           const label = tierLabels[tier]?.[language === "fr" ? "fr" : "en"] || `Tier ${tier}`;
 
           return (
-            <YStack key={tier} mb="$4">
-              <H4 fontWeight="900" color="$color" mb="$2">
+            <YStack key={tier} mb="$5">
+              <H4 fontWeight="900" color="$text" mb="$3">
                 {label}
               </H4>
-              {tierBuildings.map((b) => (
-                <BuildingCard
-                  key={b.buildingType}
-                  building={b}
-                  onPress={() => setSelectedBuilding(b)}
-                />
-              ))}
+              {/* Grid: 2 columns */}
+              <XStack flexWrap="wrap" gap="$3" justifyContent="space-between">
+                {tierBuildings.map((b) => (
+                  <YStack key={b.buildingType} width="48%">
+                    <BuildingCard building={b} onPress={() => setSelectedBuilding(b)} />
+                  </YStack>
+                ))}
+              </XStack>
             </YStack>
           );
         })}

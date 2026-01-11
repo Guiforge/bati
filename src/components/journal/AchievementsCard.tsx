@@ -88,20 +88,20 @@ export function AchievementsCard() {
         <YStack
           width={44}
           height={44}
-          bg="$pastelYellow"
+          bg="$glassBg"
           rounded="$4"
           borderWidth={2}
-          borderColor="$color"
+          borderColor="$borderStrong"
           items="center"
           justify="center"
         >
-          <Award size={24} color="$color" />
+          <Award size={24} color="$text" />
         </YStack>
         <YStack flex={1}>
-          <Text fontWeight="900" fontSize={18} color="$color">
+          <Text fontWeight="900" fontSize={18} color="$text">
             {t("achievements.title")}
           </Text>
-          <Text fontSize={12} color="$color" opacity={0.6}>
+          <Text fontSize={12} color="$text" opacity={0.6}>
             {t("achievements.progress", {
               unlocked: stats.unlocked,
               total: stats.total,
@@ -121,7 +121,7 @@ export function AchievementsCard() {
         size="$2"
         bg="$bgLight"
         borderWidth={1}
-        borderColor="$color"
+        borderColor="$borderStrong"
         rounded="$4"
       >
         <Progress.Indicator animation="bouncy" bg="$primary" />
@@ -136,12 +136,16 @@ export function AchievementsCard() {
             py="$1"
             bg={filter === key ? "$primary" : "$bgLight"}
             borderWidth={2}
-            borderColor={filter === key ? "$primary" : "$color"}
+            borderColor={filter === key ? "$primary" : "$textSecondary"}
             rounded="$3"
             pressStyle={{ opacity: 0.8 }}
             onPress={() => setFilter(key)}
           >
-            <Text fontSize={12} fontWeight="700" color={filter === key ? "white" : "$color"}>
+            <Text
+              fontSize={12}
+              fontWeight="700"
+              color={filter === key ? "white" : "$textSecondary"}
+            >
               {label}
             </Text>
           </YStack>
@@ -156,7 +160,7 @@ export function AchievementsCard() {
       </YStack>
 
       {sortedAchievements.length > 8 && (
-        <Text fontSize={12} color="$color" opacity={0.6} style={{ textAlign: "center" }}>
+        <Text fontSize={12} color="$text" opacity={0.6} style={{ textAlign: "center" }}>
           {t("achievements.more_count", { count: sortedAchievements.length - 8 })}
         </Text>
       )}
@@ -180,11 +184,11 @@ function AchievementRow({
     <XStack
       gap="$3"
       items="center"
-      bg={isUnlocked ? "$pastelGreen" : "$bgLight"}
+      bg={isUnlocked ? "$glassBg" : "$bgLight"}
       p="$3"
       rounded="$4"
       borderWidth={2}
-      borderColor={isUnlocked ? "$success" : "$color"}
+      borderColor={isUnlocked ? "$success" : "$textSecondary"}
       opacity={isUnlocked ? 1 : 0.7}
       animation="quick"
       enterStyle={{ opacity: 0, x: 20 }}
@@ -196,31 +200,31 @@ function AchievementRow({
         bg={isUnlocked ? "$background" : "$bgLight"}
         rounded="$3"
         borderWidth={2}
-        borderColor="$color"
+        borderColor="$borderStrong"
         items="center"
         justify="center"
       >
         {isUnlocked ? (
           <Text fontSize={24}>{definition.icon}</Text>
         ) : (
-          <Lock size={20} color="$color" opacity={0.5} />
+          <Lock size={20} color="$text" opacity={0.5} />
         )}
       </YStack>
 
       {/* Content */}
       <YStack flex={1} gap="$1">
         <XStack items="center" gap="$2">
-          <Text fontWeight="900" fontSize={14} color="$color" numberOfLines={1} flex={1}>
+          <Text fontWeight="900" fontSize={14} color="$text" numberOfLines={1} flex={1}>
             {title}
           </Text>
           {!isUnlocked && (
-            <Text fontSize={10} color="$color" opacity={0.6}>
+            <Text fontSize={10} color="$text" opacity={0.6}>
               {currentValue}/{targetValue}
             </Text>
           )}
         </XStack>
 
-        <Text fontSize={11} color="$color" opacity={0.6} numberOfLines={1}>
+        <Text fontSize={11} color="$text" opacity={0.6} numberOfLines={1}>
           {description}
         </Text>
 
@@ -230,7 +234,7 @@ function AchievementRow({
             size="$1"
             bg="$background"
             borderWidth={1}
-            borderColor="$color"
+            borderColor="$borderStrong"
             rounded="$2"
             mt="$1"
           >

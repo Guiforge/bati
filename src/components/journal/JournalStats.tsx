@@ -169,7 +169,7 @@ function StatCard({
       p="$3"
       rounded="$6"
       borderWidth={3}
-      borderColor="$color"
+      borderColor="$borderStrong"
       items="center"
       gap="$1"
     >
@@ -184,12 +184,12 @@ function StatCard({
       >
         {icon}
       </YStack>
-      <Text fontWeight="900" fontSize={20} color="$color">
+      <Text fontWeight="900" fontSize={20} color="$text">
         {value}
       </Text>
       <Text
         fontSize={11}
-        color="$color"
+        color="$text"
         opacity={0.6}
         fontWeight="600"
         style={{ textAlign: "center" }}
@@ -280,7 +280,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
   return (
     <YStack gap="$4">
       {/* Streak Card */}
-      <Card bg={streak.isActive ? "$success" : "$pastelYellow"}>
+      <Card bg={streak.isActive ? "$success" : "$glassBg"}>
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$3">
             <YStack
@@ -294,12 +294,16 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               <Flame size={28} color={streak.isActive ? "white" : "$secondary"} />
             </YStack>
             <YStack>
-              <Text fontWeight="900" fontSize={28} color={streak.isActive ? "white" : "$color"}>
+              <Text
+                fontWeight="900"
+                fontSize={28}
+                color={streak.isActive ? "white" : "$textSecondary"}
+              >
                 {streak.current} {t("journal.days", "days")}
               </Text>
               <Text
                 fontSize={14}
-                color={streak.isActive ? "white" : "$color"}
+                color={streak.isActive ? "white" : "$textSecondary"}
                 opacity={streak.isActive ? 0.9 : 0.6}
                 fontWeight="600"
               >
@@ -310,7 +314,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
             </YStack>
           </XStack>
           <YStack items="center">
-            <Text fontSize={12} color={streak.isActive ? "white" : "$color"} opacity={0.7}>
+            <Text fontSize={12} color={streak.isActive ? "white" : "$textSecondary"} opacity={0.7}>
               {t("journal.best_streak", "Best")}
             </Text>
             <Text fontWeight="900" fontSize={20} color={streak.isActive ? "white" : "$secondary"}>
@@ -327,28 +331,28 @@ export function JournalStats({ sessions }: JournalStatsProps) {
           value={stats.totalWorkouts}
           label={t("journal.total_workouts", "Total Workouts")}
           color="$primary"
-          bgColor="$pastelBlue"
+          bgColor="$glassBg"
         />
         <StatCard
           icon={<Timer size={18} color="white" />}
           value={stats.totalMinutes}
           label={t("journal.total_minutes", "Total Minutes")}
           color="$success"
-          bgColor="$pastelGreen"
+          bgColor="$glassBg"
         />
         <StatCard
           icon={<Zap size={18} color="white" />}
           value={stats.avgMinutes}
           label={t("journal.avg_duration", "Avg Duration")}
           color="$secondary"
-          bgColor="$pastelPurple"
+          bgColor="$glassBg"
         />
       </XStack>
 
       {/* This Week/Month Stats */}
       <Card>
         <YStack gap="$3">
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="900" fontSize={16} color="$text">
             {t("journal.recent_activity", "Recent Activity")}
           </Text>
           <XStack gap="$4" justify="space-around">
@@ -359,11 +363,11 @@ export function JournalStats({ sessions }: JournalStatsProps) {
                   {stats.thisWeekCount}
                 </Text>
               </XStack>
-              <Text fontSize={12} color="$color" opacity={0.6}>
+              <Text fontSize={12} color="$text" opacity={0.6}>
                 {t("journal.this_week", "This Week")}
               </Text>
             </YStack>
-            <YStack width={1} height={40} bg="$color" opacity={0.1} />
+            <YStack width={1} height={40} bg="$borderStrong" opacity={0.1} />
             <YStack items="center" gap="$1">
               <XStack items="center" gap="$2">
                 <Timer size={16} color="$success" />
@@ -371,11 +375,11 @@ export function JournalStats({ sessions }: JournalStatsProps) {
                   {stats.thisWeekMinutes}
                 </Text>
               </XStack>
-              <Text fontSize={12} color="$color" opacity={0.6}>
+              <Text fontSize={12} color="$text" opacity={0.6}>
                 {t("journal.minutes_this_week", "Mins This Week")}
               </Text>
             </YStack>
-            <YStack width={1} height={40} bg="$color" opacity={0.1} />
+            <YStack width={1} height={40} bg="$borderStrong" opacity={0.1} />
             <YStack items="center" gap="$1">
               <XStack items="center" gap="$2">
                 <TrendingUp size={16} color="$secondary" />
@@ -383,7 +387,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
                   {stats.thisMonthCount}
                 </Text>
               </XStack>
-              <Text fontSize={12} color="$color" opacity={0.6}>
+              <Text fontSize={12} color="$text" opacity={0.6}>
                 {t("journal.this_month", "This Month")}
               </Text>
             </YStack>
@@ -395,10 +399,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       <Card>
         <YStack gap="$3">
           <YStack gap="$1">
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="900" fontSize={16} color="$text">
               {t("journal.last_7_days", "Last 7 Days")}
             </Text>
-            <Paragraph color="$color" opacity={0.6} size="$2">
+            <Paragraph color="$text" opacity={0.6} size="$2">
               {t("journal.minutes_per_day", "Minutes trained each day")}
             </Paragraph>
           </YStack>
@@ -439,10 +443,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       <Card>
         <YStack gap="$3">
           <YStack gap="$1">
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="900" fontSize={16} color="$text">
               {t("journal.workout_days", "Workout Days")}
             </Text>
-            <Paragraph color="$color" opacity={0.6} size="$2">
+            <Paragraph color="$text" opacity={0.6} size="$2">
               {t("journal.when_you_train", "When you usually train")}
             </Paragraph>
           </YStack>
@@ -476,7 +480,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       {/* Difficulty Distribution */}
       <Card>
         <YStack gap="$3">
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="900" fontSize={16} color="$text">
             {t("journal.difficulty_split", "Difficulty Split")}
           </Text>
           <XStack gap="$2" flexWrap="wrap">

@@ -104,7 +104,7 @@ export default function QuestDetailsScreen() {
         <YStack width={44} />
       </XStack>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
         <YStack p="$4" gap="$4">
           <Text color="$text" fontSize={36} fontWeight="bold">
             {title}
@@ -202,6 +202,7 @@ export default function QuestDetailsScreen() {
         left={0}
         right={0}
         p="$4"
+        pb={insets.bottom + 16}
         bg="$bgDark"
         borderTopWidth={1}
         borderTopColor="$borderStrong"

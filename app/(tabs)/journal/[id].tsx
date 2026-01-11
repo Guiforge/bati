@@ -77,9 +77,9 @@ export default function SessionDetailScreen() {
 
   if (!sessionId) {
     return (
-      <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$4">
+      <YStack flex={1} bg="$bgDark" justify="center" items="center" p="$6" gap="$4">
         <Text fontSize={48}>🤷</Text>
-        <Text fontWeight="900" fontSize={18} color="$color">
+        <Text fontWeight="900" fontSize={18} color="$text">
           {t("journal.invalid_session", "Session not found")}
         </Text>
         <AppButton fullWidth={false} variant="secondary" onPress={goBack}>
@@ -122,10 +122,10 @@ export default function SessionDetailScreen() {
     .sort((a, b) => a - b);
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="$bgDark">
       <ScrollView
         contentContainerStyle={{
-          paddingBottom: insets.bottom + 24,
+          paddingBottom: insets.bottom + 100,
           minHeight: "100%",
         }}
         showsVerticalScrollIndicator={false}
@@ -134,11 +134,11 @@ export default function SessionDetailScreen() {
           {/* Header */}
           <XStack items="center" gap="$3">
             <AppIconButton onPress={goBack}>
-              <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
+              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
             <XStack items="center" gap="$2">
-              <Dumbbell size={18} color="$color" strokeWidth={2.5} />
-              <Text fontWeight="900" fontSize={20} color="$color">
+              <Dumbbell size={18} color="$primary" strokeWidth={2.5} />
+              <Text fontWeight="900" fontSize={20} color="$text">
                 {t("journal.session_details", "Session Details")}
               </Text>
             </XStack>
@@ -146,56 +146,77 @@ export default function SessionDetailScreen() {
 
           {/* Loading State */}
           {status === "loading" && (
-            <Card>
+            <YStack
+              bg="$glassBg"
+              borderWidth={1}
+              borderColor="$borderStrong"
+              borderRadius="$4"
+              p="$4"
+            >
               <XStack items="center" justify="center" gap="$3" py="$4">
                 <Text fontSize={28}>📜</Text>
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("common.loading", "Loading...")}
                 </Text>
               </XStack>
-            </Card>
+            </YStack>
           )}
 
           {/* Error State */}
           {status === "error" && (
-            <Card>
+            <YStack
+              bg="$glassBg"
+              borderWidth={1}
+              borderColor="$borderStrong"
+              borderRadius="$4"
+              p="$4"
+            >
               <YStack gap="$3" items="center" py="$2">
                 <Text fontSize={32}>😵</Text>
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("common.error", "Oops!")}
                 </Text>
-                <Paragraph color="$color" opacity={0.6} size="$3">
+                <Paragraph color="$textSecondary" opacity={0.7} size="$3">
                   {error}
                 </Paragraph>
                 <AppButton fullWidth={false} variant="secondary" onPress={() => load(sessionId)}>
                   {t("common.retry", "Retry")} ↻
                 </AppButton>
               </YStack>
-            </Card>
+            </YStack>
           )}
 
           {/* Session Content */}
           {status === "ready" && session && (
             <>
               {/* Quest Title Card */}
-              <Card bg="$pastelYellow">
+              <YStack
+                bg="$glassBg"
+                borderWidth={1}
+                borderColor="$primary"
+                borderRadius="$4"
+                p="$4"
+                style={{
+                  backgroundColor: "rgba(13, 51, 242, 0.15)",
+                }}
+              >
                 <YStack gap="$3">
                   <YStack gap="$1">
-                    <Text fontSize={14} color="$color" opacity={0.6}>
+                    <Text fontSize={14} color="$textSecondary" opacity={0.8}>
                       {t("journal.quest_completed", "Quest Completed")}
                     </Text>
-                    <H2 color="$color" fontWeight="900" fontSize={24}>
+                    <H2 color="$text" fontWeight="900" fontSize={24}>
                       {questTitle || t("quests.not_found", "Unknown Quest")}
                     </H2>
                   </YStack>
 
-                  <Text fontSize={14} color="$color" opacity={0.7}>
+                  <Text fontSize={14} color="$textSecondary" opacity={0.8}>
                     {dateLabel}
                   </Text>
 
                   <XStack gap="$2" flexWrap="wrap">
                     <Tag
-                      icon={<Clock size={12} color="$color" />}
+                      icon={<Clock size={12} color="$text" />}
                       label={durationLabel}
                       tone="secondary"
                     />
@@ -204,7 +225,7 @@ export default function SessionDetailScreen() {
                       tone="primary"
                     />
                     <Tag
-                      icon={<Repeat size={12} color="$color" />}
+                      icon={<Repeat size={12} color="$textSecondary" />}
                       label={t("journal.rounds_completed", {
                         count: roundNumbers.length,
                         defaultValue: `${roundNumbers.length} rounds`,
@@ -212,7 +233,7 @@ export default function SessionDetailScreen() {
                     />
                   </XStack>
                 </YStack>
-              </Card>
+              </YStack>
 
               {/* Exercises by Round */}
               {roundNumbers.map((roundIndex) => (

@@ -13,11 +13,11 @@ import {
   type AdventureDetails,
   type AdventureStepTemplate,
   getAdventureDetails,
+  startAdventureRun,
 } from "@/src/db/adventures";
-import { Difficulty, getQuestById, isValidatedQuest, type Quest } from "@/src/db/quests";
+import { Difficulty, getQuestById, type Quest } from "@/src/db/quests";
 import { adventures, quests } from "@/src/db/schema";
 import { GameIcon, type GameIconName } from "@/src/hooks/useGameIcon";
-import { useSessionStore } from "@/src/stores/session";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS & TYPES
@@ -549,7 +549,7 @@ function ConfirmationModal({
               shadowRadius={16}
               shadowOpacity={0.5}
             >
-              {t("adventures.start_now", "START NOW")}
+              {t("adventures.select_adventure", "SELECT ADVENTURE")}
             </Button>
 
             <Button
@@ -585,7 +585,6 @@ export default function AdventureDetailsScreen() {
   const router = useRouter();
   const { db } = useDatabase();
   const insets = useSafeAreaInsets();
-  const startSession = useSessionStore((state) => state.startSession);
 
   // State
   const [adventure, setAdventure] = useState<Adventure | null>(null);
@@ -708,13 +707,16 @@ export default function AdventureDetailsScreen() {
   }, [router]);
 
   const handleStartAdventure = useCallback(async () => {
-    // Use type guard instead of manual validation
-    if (!adventure || !isValidatedQuest(quest)) return;
+    if (!adventure) return;
 
     setShowConfirmModal(false);
-    await startSession(quest, userLevel, { adventureId: adventure.id });
-    router.push("/session");
-  }, [adventure, quest, userLevel, startSession, router]);
+
+    // Just start the adventure run (don't start session immediately)
+    try {
+      await startAdventureRun({ adventureId: adventure.id, difficultyOverride: null });
+      router.replace("/(tabs)"); // Go back to home
+    } catch (_error) {}
+  }, [adventure, router]);
 
   const handleShowConfirmation = useCallback(() => {
     Vibration.vibrate(10);
@@ -775,7 +777,7 @@ export default function AdventureDetailsScreen() {
       ═══════════════════════════════════════════════════════════════════ */}
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 180 }}
         scrollEventThrottle={16}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
           useNativeDriver: true,
@@ -1254,9 +1256,9 @@ export default function AdventureDetailsScreen() {
             shadowColor={isBoss ? "$crimson" : "#6E45E2"}
             shadowRadius={20}
             shadowOpacity={0.4}
-            icon={<GameIcon name="lorc/crossed-swords" size={18} tintColor="white" />}
+            icon={<GameIcon name="lorc/checked-shield" size={18} tintColor="white" />}
           >
-            {t("adventures.start_button", "START")}
+            {t("adventures.select_button", "SELECT")}
           </Button>
         </YStack>
       </YStack>

@@ -72,6 +72,7 @@ function walkFiles(dir: string, out: string[] = []): string[] {
 }
 
 describe("i18n key usage", () => {
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Test validates all i18n keys across codebase
   test('all literal t("...") keys exist in locales', () => {
     const enKeys = collectLeafKeys(en as unknown as JsonObject);
     // Parity between en/fr is tested elsewhere.

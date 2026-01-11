@@ -66,13 +66,9 @@ function TrendsCardComponent() {
     if (!analysis) return null;
 
     const color =
-      analysis.trend === "up"
-        ? "$pastelGreen"
-        : analysis.trend === "down"
-          ? "$pastelPink"
-          : "$bgLight";
+      analysis.trend === "up" ? "$glassBg" : analysis.trend === "down" ? "$glassBg" : "$bgLight";
     const textColor =
-      analysis.trend === "up" ? "green" : analysis.trend === "down" ? "red" : "$color";
+      analysis.trend === "up" ? "green" : analysis.trend === "down" ? "red" : "$text";
     const Icon = analysis.trend === "up" ? TrendingUp : TrendingDown;
 
     return (
@@ -84,7 +80,7 @@ function TrendsCardComponent() {
         items="center"
         gap="$1"
         borderWidth={1}
-        borderColor="$color"
+        borderColor="$borderStrong"
       >
         {analysis.trend !== "stable" && <Icon size={12} color={textColor} />}
         <Text fontSize={11} fontWeight="700" color={textColor}>
@@ -102,7 +98,7 @@ function TrendsCardComponent() {
     return (
       <Card bg="$bgLight" width="100%">
         <YStack items="center" py="$4">
-          <Text color="$color" opacity={0.6}>
+          <Text color="$text" opacity={0.6}>
             {t("common.loading")}
           </Text>
         </YStack>
@@ -115,7 +111,7 @@ function TrendsCardComponent() {
       <YStack gap="$3">
         {/* Header */}
         <XStack items="center" justify="space-between">
-          <H3 fontWeight="900" color="$color" fontSize={18}>
+          <H3 fontWeight="900" color="$text" fontSize={18}>
             {t("journal.trends_title")}
           </H3>
           <XStack gap="$2">
@@ -123,7 +119,7 @@ function TrendsCardComponent() {
               size="$2"
               bg={viewMode === "weekly" ? "$primary" : "$background"}
               borderWidth={2}
-              borderColor="$color"
+              borderColor="$borderStrong"
               onPress={() => setViewMode("weekly")}
               rounded="$3"
               px="$2"
@@ -131,7 +127,7 @@ function TrendsCardComponent() {
               <Text
                 fontWeight="700"
                 fontSize={12}
-                color={viewMode === "weekly" ? "white" : "$color"}
+                color={viewMode === "weekly" ? "white" : "$textSecondary"}
               >
                 {t("journal.trends_weekly")}
               </Text>
@@ -140,7 +136,7 @@ function TrendsCardComponent() {
               size="$2"
               bg={viewMode === "monthly" ? "$primary" : "$background"}
               borderWidth={2}
-              borderColor="$color"
+              borderColor="$borderStrong"
               onPress={() => setViewMode("monthly")}
               rounded="$3"
               px="$2"
@@ -148,7 +144,7 @@ function TrendsCardComponent() {
               <Text
                 fontWeight="700"
                 fontSize={12}
-                color={viewMode === "monthly" ? "white" : "$color"}
+                color={viewMode === "monthly" ? "white" : "$textSecondary"}
               >
                 {t("journal.trends_monthly")}
               </Text>
@@ -158,7 +154,7 @@ function TrendsCardComponent() {
 
         {!hasData ? (
           <YStack items="center" py="$4">
-            <Text color="$color" opacity={0.6}>
+            <Text color="$text" opacity={0.6}>
               {t("journal.trends_no_data")}
             </Text>
           </YStack>
@@ -169,7 +165,7 @@ function TrendsCardComponent() {
               <XStack gap="$2" flexWrap="wrap">
                 {sessionsAnalysis && (
                   <XStack items="center" gap="$1">
-                    <Text fontSize={12} color="$color" opacity={0.6}>
+                    <Text fontSize={12} color="$text" opacity={0.6}>
                       {t("journal.trends_sessions")}:
                     </Text>
                     {renderTrendBadge(sessionsAnalysis)}
@@ -177,7 +173,7 @@ function TrendsCardComponent() {
                 )}
                 {minutesAnalysis && (
                   <XStack items="center" gap="$1">
-                    <Text fontSize={12} color="$color" opacity={0.6}>
+                    <Text fontSize={12} color="$text" opacity={0.6}>
                       {t("journal.trends_minutes")}:
                     </Text>
                     {renderTrendBadge(minutesAnalysis)}
@@ -188,7 +184,7 @@ function TrendsCardComponent() {
 
             {/* Sessions Bar Chart */}
             <YStack gap="$2">
-              <Text fontSize={12} fontWeight="700" color="$color" opacity={0.7}>
+              <Text fontSize={12} fontWeight="700" color="$text" opacity={0.7}>
                 {t("journal.trends_sessions")}
               </Text>
               <XStack gap="$1" items="flex-end" height={60}>
@@ -207,9 +203,9 @@ function TrendsCardComponent() {
                         bg="$primary"
                         rounded="$2"
                         borderWidth={1}
-                        borderColor="$color"
+                        borderColor="$borderStrong"
                       />
-                      <Text fontSize={9} color="$color" opacity={0.5}>
+                      <Text fontSize={9} color="$text" opacity={0.5}>
                         {formatPeriodLabel(item)}
                       </Text>
                     </YStack>
@@ -220,7 +216,7 @@ function TrendsCardComponent() {
 
             {/* Minutes Bar Chart */}
             <YStack gap="$2">
-              <Text fontSize={12} fontWeight="700" color="$color" opacity={0.7}>
+              <Text fontSize={12} fontWeight="700" color="$text" opacity={0.7}>
                 {t("journal.trends_minutes")}
               </Text>
               <XStack gap="$1" items="flex-end" height={60}>
@@ -239,9 +235,9 @@ function TrendsCardComponent() {
                         bg="$secondary"
                         rounded="$2"
                         borderWidth={1}
-                        borderColor="$color"
+                        borderColor="$borderStrong"
                       />
-                      <Text fontSize={9} color="$color" opacity={0.5}>
+                      <Text fontSize={9} color="$text" opacity={0.5}>
                         {formatPeriodLabel(item)}
                       </Text>
                     </YStack>

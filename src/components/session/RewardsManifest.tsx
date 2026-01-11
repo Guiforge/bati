@@ -83,6 +83,7 @@ function getProgressPercent(totalXp: number) {
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex reward animation orchestration with level-up effects
 export function RewardsManifest({
   active = true,
   questTitle,
@@ -208,6 +209,7 @@ export function RewardsManifest({
     oldProg.percent,
     newProg.percent,
     trackWidth,
+    impact,
   ]);
 
   useEffect(() => {
@@ -497,7 +499,7 @@ export function RewardsManifest({
           </YStack>
 
           {/* History Comparison */}
-          {history && history.bestDurationSeconds && (
+          {history?.bestDurationSeconds && (
             <YStack
               bg="$glassBg"
               borderColor="$borderStrong"

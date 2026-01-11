@@ -31,15 +31,15 @@ export function RestSuggestionCard() {
   };
 
   return (
-    <Card bg="$pastelBlue" p="$4">
+    <Card bg="$glassBg" p="$4">
       <YStack gap="$2">
         <XStack items="center" gap="$2">
-          <Moon size={24} color="$color" />
-          <Text fontWeight="bold" fontSize={18} color="$color">
+          <Moon size={24} color="$text" />
+          <Text fontWeight="bold" fontSize={18} color="$text">
             {t("journal.rest_suggestion_title")}
           </Text>
         </XStack>
-        <Paragraph color="$color" fontSize="$3" opacity={0.85}>
+        <Paragraph color="$text" fontSize="$3" opacity={0.85}>
           {getMessage()}
         </Paragraph>
       </YStack>

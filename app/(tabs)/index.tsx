@@ -36,7 +36,7 @@ export default function HomeScreen() {
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
+          contentContainerStyle={{ paddingBottom: 90 + insets.bottom }}
         >
           <YStack gap="$5" pt="$3">
             {/* 2. Adventures Section */}

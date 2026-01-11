@@ -284,7 +284,7 @@ export default function QuestsScreen() {
                     return (
                       <Button
                         key={muscle}
-                        size="$2"
+                        size="$3"
                         bg={muscleFilter === muscle ? "$primary" : "$glassBg"}
                         borderColor="$borderStrong"
                         borderWidth={1}
@@ -317,7 +317,7 @@ export default function QuestsScreen() {
                   {(["<15min", "15-30min", "30-45min", "45min+"] as const).map((duration) => (
                     <Button
                       key={duration}
-                      size="$2"
+                      size="$3"
                       bg={durationFilter === duration ? "$primary" : "$glassBg"}
                       borderColor="$borderStrong"
                       borderWidth={1}
@@ -343,7 +343,7 @@ export default function QuestsScreen() {
                 {(["Beginner", "Intermediate", "Advanced"] as const).map((difficulty) => (
                   <Button
                     key={difficulty}
-                    size="$2"
+                    size="$3"
                     bg={difficultyFilter === difficulty ? "$primary" : "$glassBg"}
                     borderColor="$borderStrong"
                     borderWidth={1}

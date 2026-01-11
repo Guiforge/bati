@@ -180,6 +180,7 @@ const tokens = createTokens({
     // --- TEXT ---
     text: palette.textMain,
     textSecondary: palette.textMuted,
+    textMuted: "#6B7AA1",
     muted: "#64748B",
 
     // --- EFFECTS ---

@@ -205,7 +205,7 @@ export default function ContinueAdventureModal() {
                 </XStack>
               ))}
               {exerciseList.length > 4 && (
-                <Text color="$textSecondary" fontSize={12} opacity={0.7}>
+                <Text color="$textMuted" fontSize={12}>
                   +{exerciseList.length - 4} {t("adventures.more_exercises", "more")}
                 </Text>
               )}

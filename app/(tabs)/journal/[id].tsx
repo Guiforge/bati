@@ -176,7 +176,7 @@ export default function SessionDetailScreen() {
                 <Text fontWeight="900" fontSize={16} color="$text">
                   {t("common.error", "Oops!")}
                 </Text>
-                <Paragraph color="$textSecondary" opacity={0.7} size="$3">
+                <Paragraph color="$textMuted" size="$3">
                   {error}
                 </Paragraph>
                 <AppButton fullWidth={false} variant="secondary" onPress={() => load(sessionId)}>

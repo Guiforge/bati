@@ -81,8 +81,7 @@ function SectionLabel({ title }: { title: string }) {
     <Text
       fontSize={11}
       fontWeight="900"
-      color="$textSecondary"
-      opacity={0.5}
+      color="$textMuted"
       mb="$2"
       letterSpacing={1}
       textTransform="uppercase"

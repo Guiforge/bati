@@ -527,7 +527,7 @@ function ConfirmationModal({
               </XStack>
             ))}
             {exercises.length > 3 && (
-              <Text color="$textSecondary" fontSize={12} opacity={0.7}>
+              <Text color="$textMuted" fontSize={12}>
                 +{exercises.length - 3} {t("adventures.more_exercises", "more exercises")}
               </Text>
             )}

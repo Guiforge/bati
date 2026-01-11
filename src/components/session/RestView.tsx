@@ -1,13 +1,13 @@
+import { Image } from "expo-image";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import { useHaptics } from "@/src/hooks/useHaptics";
 import { useReducedMotion } from "@/src/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/src/hooks/useSessionTimer";
 import { useSessionStore } from "@/src/stores/session";
 import { useSettingsStore } from "@/src/stores/settings";
-import { Image } from "expo-image";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "./BossHpBar";
 import { SessionTimer } from "./SessionProgressBar";
 
@@ -115,10 +115,10 @@ export function RestView() {
             lastDamage={
               lastDamageResult
                 ? {
-                  damage: lastDamageResult.damage,
-                  isCritical: lastDamageResult.isCritical,
-                  weaknessBonus: lastDamageResult.weaknessBonus,
-                }
+                    damage: lastDamageResult.damage,
+                    isCritical: lastDamageResult.isCritical,
+                    weaknessBonus: lastDamageResult.weaknessBonus,
+                  }
                 : null
             }
           />

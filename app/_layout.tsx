@@ -114,7 +114,7 @@ export default function RootLayout() {
                             name="session"
                             options={{
                               headerShown: false,
-                              animation: "slide_from_right",
+                              animation: "none",
                             }}
                           />
                         </Stack>

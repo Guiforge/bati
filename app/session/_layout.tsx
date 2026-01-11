@@ -6,7 +6,7 @@ export default function SessionLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: "fade",
+        animation: "none",
         contentStyle: {
           // Prevent default white flashes between screens.
           backgroundColor: config.tokens.color.bgDarker.val,
@@ -17,7 +17,7 @@ export default function SessionLayout() {
       <Stack.Screen name="warmup" />
       <Stack.Screen name="countdown" />
       <Stack.Screen name="exercise" />
-      <Stack.Screen name="rest" options={{ animation: "slide_from_bottom" }} />
+      <Stack.Screen name="rest" options={{ animation: "none" }} />
       <Stack.Screen name="victory" />
     </Stack>
   );

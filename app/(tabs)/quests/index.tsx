@@ -4,9 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 import { Button, ScrollView, Text, XStack, YStack } from "tamagui";
+import { SkeletonList } from "@/src/components/common/SkeletonLoader";
+import { useToast } from "@/src/components/common/Toast";
 import { useDatabase } from "@/src/components/DatabaseProvider";
 import { resolveImageAsset } from "@/src/constants/assetMap";
 import { quests } from "@/src/db/schema";
+import { useHaptics } from "@/src/hooks/useHaptics";
+import { useTabBarPadding } from "@/src/hooks/useTabBarPadding";
 
 type Quest = typeof quests.$inferSelect;
 
@@ -18,6 +22,9 @@ export default function QuestsScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { db } = useDatabase();
+  const { paddingBottom } = useTabBarPadding();
+  const { showError } = useToast();
+  const { impact } = useHaptics();
 
   const [questsList, setQuestsList] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,11 +41,13 @@ export default function QuestsScreen() {
       const data = db.select().from(quests).all();
       setQuestsList(data);
     } catch {
-      // noop
+      // Error logged for debugging
+      showError(t("errors.load_quests_failed", "Failed to load quests"));
+      setQuestsList([]);
     } finally {
       setLoading(false);
     }
-  }, [db]);
+  }, [db, showError, t]);
 
   const filteredQuests = useMemo(() => {
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Multiple filter conditions required
@@ -74,6 +83,7 @@ export default function QuestsScreen() {
         unstyled
         mb="$3"
         onPress={() => {
+          impact();
           router.push(`/(modals)/quest-details/${item.id}`);
         }}
         pressStyle={{ opacity: 0.8, scale: 0.98 }}
@@ -163,7 +173,10 @@ export default function QuestsScreen() {
             borderColor="$borderStrong"
             borderWidth={1}
             color={muscleFilter ? "$text" : "$textSecondary"}
-            onPress={() => setShowFilters(!showFilters)}
+            onPress={() => {
+              impact();
+              setShowFilters(!showFilters);
+            }}
             pressStyle={{ opacity: 0.8 }}
           >
             {t("quests.filter_muscle")}
@@ -175,7 +188,10 @@ export default function QuestsScreen() {
             borderColor="$borderStrong"
             borderWidth={1}
             color={durationFilter ? "$text" : "$textSecondary"}
-            onPress={() => setShowFilters(!showFilters)}
+            onPress={() => {
+              impact();
+              setShowFilters(!showFilters);
+            }}
             pressStyle={{ opacity: 0.8 }}
           >
             {t("quests.filter_duration")}
@@ -187,7 +203,10 @@ export default function QuestsScreen() {
             borderColor="$borderStrong"
             borderWidth={1}
             color={difficultyFilter ? "$text" : "$textSecondary"}
-            onPress={() => setShowFilters(!showFilters)}
+            onPress={() => {
+              impact();
+              setShowFilters(!showFilters);
+            }}
             pressStyle={{ opacity: 0.8 }}
           >
             {t("quests.filter_difficulty")}
@@ -284,15 +303,13 @@ export default function QuestsScreen() {
       </YStack>
 
       {loading ? (
-        <YStack flex={1} alignItems="center" justifyContent="center">
-          <Text color="$textSecondary">{t("quests.loading")}</Text>
-        </YStack>
+        <SkeletonList count={3} />
       ) : (
         <FlatList
           data={filteredQuests}
           renderItem={renderQuestCard}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom }}
           ListEmptyComponent={
             <YStack alignItems="center" justifyContent="center" py="$8">
               <Text color="$textSecondary" fontSize={20} textAlign="center">

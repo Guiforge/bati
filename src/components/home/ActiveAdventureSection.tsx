@@ -84,7 +84,7 @@ export function ActiveAdventureSection() {
 
   const { adventure, run } = state;
   const title = i18n.language === "fr" ? adventure.frTitle : adventure.enTitle;
-  const description = i18n.language === "fr" ? adventure.enDescription : adventure.enDescription;
+  const description = i18n.language === "fr" ? adventure.frDescription : adventure.enDescription;
   const imageSource = resolveImageAsset(adventure.imagePath);
 
   const completedSteps = run.steps.filter((s) => s.status === "completed").length;

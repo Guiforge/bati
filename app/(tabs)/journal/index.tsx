@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { SkeletonHeader, SkeletonList } from "@/src/components/common/SkeletonLoader";
+import { useToast } from "@/src/components/common/Toast";
 import { AchievementsCard } from "@/src/components/journal/AchievementsCard";
 import { DifficultyProgressionCard } from "@/src/components/journal/DifficultyProgressionCard";
 import { JournalStats } from "@/src/components/journal/JournalStats";
@@ -17,6 +19,8 @@ import { SuggestedQuestsCard } from "@/src/components/journal/SuggestedQuestsCar
 import { UserLevelCard } from "@/src/components/journal/UserLevelCard";
 import { listCompletedSessions } from "@/src/db/completed";
 import { listQuestTemplates } from "@/src/db/quests";
+import { useHaptics } from "@/src/hooks/useHaptics";
+import { useTabBarPadding } from "@/src/hooks/useTabBarPadding";
 import { useSettingsStore } from "@/src/stores/settings";
 
 type TabType = "history" | "stats";
@@ -26,6 +30,9 @@ export default function JournalScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
+  const { paddingBottom } = useTabBarPadding();
+  const { showError } = useToast();
+  const { impact } = useHaptics();
 
   const [history, setHistory] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,11 +69,13 @@ export default function JournalScreen() {
 
       setHistory(entries);
     } catch {
-      // Error handled silently
+      // Error logged for debugging
+      showError(t("errors.load_journal_failed", "Failed to load journal"));
+      setHistory([]);
     } finally {
       setLoading(false);
     }
-  }, [language, t]);
+  }, [language, t, showError]);
 
   useFocusEffect(
     useCallback(() => {
@@ -91,13 +100,21 @@ export default function JournalScreen() {
         borderWidth={1}
         borderColor={isActive ? "$primary" : "$borderStrong"}
         borderRadius="$4"
-        onPress={() => setActiveTab(tab)}
+        onPress={() => {
+          impact();
+          setActiveTab(tab);
+        }}
         pressStyle={{ opacity: 0.8 }}
         style={{
           backgroundColor: isActive ? "rgba(13, 51, 242, 0.15)" : undefined,
         }}
       >
-        <Pressable onPress={() => setActiveTab(tab)}>
+        <Pressable
+          onPress={() => {
+            impact();
+            setActiveTab(tab);
+          }}
+        >
           <XStack items="center" justify="center" gap="$2" py="$2.5">
             {icon}
             <Text
@@ -152,15 +169,16 @@ export default function JournalScreen() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: insets.bottom + 100,
+          paddingBottom,
           gap: 12,
         }}
         showsVerticalScrollIndicator={false}
       >
         {loading && history.length === 0 ? (
-          <Text style={{ textAlign: "center" }} mt="$10" opacity={0.5} color="$textSecondary">
-            {t("common.loading", "Loading...")}
-          </Text>
+          <>
+            <SkeletonHeader />
+            <SkeletonList count={2} />
+          </>
         ) : history.length === 0 ? (
           <YStack items="center" justify="center" mt="$10" gap="$4">
             <Text fontSize={40}>📜</Text>

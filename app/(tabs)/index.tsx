@@ -10,10 +10,12 @@ import { StatsOverview } from "@/src/components/home/StatsOverview";
 import { StylizedResourcesBar } from "@/src/components/home/StylizedResourcesBar";
 import { VillageHeroCard } from "@/src/components/home/VillageHeroCard";
 import { getAnyActiveAdventureRun } from "@/src/db/adventures";
+import { useTabBarPadding } from "@/src/hooks/useTabBarPadding";
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { paddingBottom } = useTabBarPadding();
   const [hasActiveAdventure, setHasActiveAdventure] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -34,10 +36,7 @@ export default function HomeScreen() {
         {/* 1. Immersive Header: Avatar, Level & XP */}
         <ImmersiveHeader />
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 90 + insets.bottom }}
-        >
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }}>
           <YStack gap="$5" pt="$3">
             {/* 2. Adventures Section */}
             <YStack>

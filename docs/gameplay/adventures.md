@@ -1,3 +1,12 @@
+---
+title: Adventures
+type: system
+status: active
+updated: 2026-07-18
+related: [boss-fights.md, quests.md, session-flow.md, ../economy/rewards-and-progression.md]
+sources: [db/adventures.ts, db/adventures-narrative.ts, "app/(tabs)/adventures/index.tsx", "app/(tabs)/adventures/[id].tsx"]
+---
+
 # Adventures (Campaigns)
 
 ## Overview
@@ -16,7 +25,7 @@ Think of adventures as storylines in an RPG:
 - Narrative text between steps
 - Progressive difficulty
 - Often ends with a Boss fight
-- Unique rewards upon completion
+- XP, progress, story payoff, and optional passive resource flavor upon completion
 
 ---
 
@@ -342,9 +351,10 @@ Same as quest completion:
 Extra rewards for finishing entire adventure:
 
 - Bonus XP (20% of total)
-- Bonus Gold
-- Special resource drops
-- Building unlocks (for some adventures)
+- Optional passive resource flavor
+- Boss token or village visual milestone for special adventures
+
+Do not make Gold, shops, or manual building upgrades part of MVP adventure rewards.
 
 ### Boss Completion
 

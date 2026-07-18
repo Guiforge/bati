@@ -3,8 +3,8 @@ title: Treasury
 type: screen
 route: /treasury
 status: active
-updated: 2026-07-14
-related: [village.md, ../REWARDS.md, ../RESOURCES.md]
+updated: 2026-07-18
+related: [village.md, ../economy/rewards-and-progression.md]
 sources: [app/treasury.tsx]
 ---
 
@@ -12,13 +12,15 @@ sources: [app/treasury.tsx]
 
 ## Purpose
 
-Treasury is your **inventory**. It shows everything you’ve collected from training.
+Treasury is your passive reward receipt. It shows resource totals earned from training focus.
 
 ## Main features on this page
 
-- **Totals for loot**: see gold and resource counts.
+- **Totals for loot**: see muscle-linked resource counts.
 - **Training-to-loot clarity**: helps connect your workout focus to what you earned.
 - **Motivation**: turns workouts into a “treasure chest” moment over time.
+
+Treasury is **read-only in MVP**. It is not a shop, spend loop, or village management screen.
 
 ## Visual rules
 
@@ -33,7 +35,7 @@ Treasury is your **inventory**. It shows everything you’ve collected from trai
 
 ## What happens next
 
-Treasury doesn’t start workouts—think of it as the “bank/receipt” page.
+Treasury doesn’t start workouts—think of it as the “receipt” page.
 
 ## Implementation note
 

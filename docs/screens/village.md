@@ -4,7 +4,7 @@ type: screen
 route: /village
 status: active
 updated: 2026-07-14
-related: [treasury.md, ../VILLAGE.md, ../REWARDS.md]
+related: [treasury.md, ../economy/rewards-and-progression.md]
 sources: [app/(tabs)/village.tsx]
 ---
 

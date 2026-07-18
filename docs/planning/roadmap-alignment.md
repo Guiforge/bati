@@ -26,9 +26,16 @@ Bati is a **sport app first** with RPG motivation layered on top. The permanent 
 
 ### Out of scope now (deferred)
 
-- Economy-heavy spend loops and treasury-centric surfaces
+- Economy-heavy spend loops, shops, manual building upgrades, and treasury-centric surfaces
 - Complex planning/coaching flows in top navigation
 - Social, competitive, and live multiplayer mechanics
+
+### Clarified MVP reward scope
+
+The app may show a lightweight **Treasury/resources view** as a passive receipt of training effort.
+That does **not** make economy a core loop: there is no required spending, shop, manual building
+management, or Gold-first progression in MVP. If a reward surface competes with starting or continuing
+workouts, demote it.
 
 ## Product clarity fixes from user feedback
 

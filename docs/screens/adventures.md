@@ -4,7 +4,7 @@ type: screen
 route: /adventures
 status: active
 updated: 2026-07-14
-related: [adventure-details.md, ../ADVENTURES.md]
+related: [adventure-details.md, ../gameplay/adventures.md]
 sources: [app/(tabs)/adventures/index.tsx]
 ---
 

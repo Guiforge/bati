@@ -4,8 +4,8 @@ type: screen
 route: /journal/[id]
 status: active
 updated: 2026-07-14
-related: [journal.md, session.md, ../STATISTICS.md]
-sources: [app/(tabs)/journal/[id].tsx]
+related: [journal.md, session.md, ../gameplay/statistics-progress.md]
+sources: ["app/(tabs)/journal/[id].tsx"]
 ---
 
 # Session Details (`/journal/[id]`)

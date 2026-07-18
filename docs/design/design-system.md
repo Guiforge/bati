@@ -163,7 +163,8 @@ Bati must feel immersive but remain operationally clear in the middle of a worko
 
 ### Icons
 
-- Always use `useGameIcon` / `GameIcon`.
+- Use `useGameIcon` / `GameIcon` for fantasy, resource, and game-world icons.
+- Utility/navigation icons may use `@tamagui/lucide-icons`.
 - No direct `lucide-react-native` imports in product UI.
 
 ## 4) Accessibility and legibility
@@ -180,6 +181,8 @@ Bati must feel immersive but remain operationally clear in the middle of a worko
 - Dark-only implementation.
 - Tokens for color/spacing/radius/effects.
 - i18n via `t()` for user-facing strings.
+- Inline `style` only when React Native/Image/chart APIs require it; semantic colors and repeated
+  visual recipes should use tokens/shared primitives.
 
 ### Forbidden
 

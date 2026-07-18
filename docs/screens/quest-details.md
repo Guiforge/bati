@@ -4,8 +4,8 @@ type: screen
 route: /quests/[id]
 status: active
 updated: 2026-07-14
-related: [quests.md, session.md, adventure-details.md, ../QUESTS.md]
-sources: [app/(tabs)/quests/[id].tsx]
+related: [quests.md, session.md, adventure-details.md, ../gameplay/quests.md]
+sources: ["app/(tabs)/quests/[id].tsx"]
 ---
 
 # Quest Details (`/quests/[id]`)

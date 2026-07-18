@@ -23,19 +23,16 @@ manage: there is no build menu, no spending, no upgrades to choose.
 ## Status & scope (read this first)
 
 > ⚠️ **MVP vs full/legacy scope.** This page previously described a full spendable
-> economy (Gold currency, 7 managed resources, per-building XP/upgrades). That contradicted
-> the north-star decision in **[roadmap-alignment.md](../planning/roadmap-alignment.md)**,
-> sourced from the external product wiki (`bati-boucle-et-parcours.md`, section "Décisions
-> actées"): **Gold is cut for MVP** (including passive/idle Gold), and the village is
-> **derived, not managed**. This page has been corrected to match. The full-scope design is
-> kept below under **Phase 2+ (deferred)** for future reference — it is not implemented
-> behavior at MVP.
+> economy (Gold currency, managed resources, per-building XP/upgrades). The current source of
+> truth is narrower: **resources may be visible as passive workout receipts**, while Gold-first
+> spending, shops, manual construction choices, and treasury-centric loops are deferred. The
+> village remains **derived, not managed**.
 
 | Concept | MVP (now) | Phase 2+ (deferred, not built) |
 | --- | --- | --- |
-| Loot on session complete | **XP only** + village visual reaction | + Gold (single spend: village customization) |
+| Loot on session complete | **XP** + passive resource visibility + village visual reaction | + Gold (single spend: village customization) |
 | Village | **Derived**: `tier = f(level)` + conditional overlays (flame, dominant-sport NPC, boss banner) | Per-building XP/upgrade economy, manual construction choices |
-| Resources (wood/stone/fire/water/wind/grain/mana/leaf) | **Flavor only** — computed totals per sport that pick which overlay/NPC to show; never an inventory to spend | Full 8-resource inventory feeding individual building progression |
+| Resources (wood/stone/fire/water/wind/grain) | **Passive/read-only** — earned from training focus and visible in Treasury; never required spending | Full managed inventory feeding individual building progression |
 | Boss tokens | Gate/unlock boss-related content | Same, unchanged |
 | Achievements | Merged into village milestones (thresholds like `totalForceReps >= 500 → Forge appears`) | Separate badge system |
 
@@ -55,12 +52,13 @@ DO WORKOUT → session journal entry (append-only)
 | Reward | From | What it does |
 | --- | --- | --- |
 | ⭐ **XP** | Every workout | Levels up, drives the village tier |
+| 🪵 **Resources** | Muscle focus in a workout | Passive/read-only receipt in Treasury; supports flavor and training feedback |
 | 🔥 **Flame** | Daily streak | Retention signal — see [session-flow.md](../gameplay/session-flow.md) |
 | 🏆 **Boss tokens** | Defeating bosses | Unlocks legendary village overlays |
 
-Gold is **not** granted at MVP. Do not surface it in the victory screen, header, or a
-Treasury-style screen (see cleanup item `C1` in
-[roadmap-alignment.md](../planning/roadmap-alignment.md)).
+Gold is **not a spendable MVP economy**. If a `gold` row exists in implementation, treat it as
+placeholder/flavor until a Phase 2 economy is explicitly approved. Do not make Gold the headline
+reward in the victory screen, header, or core workout path.
 
 ### Village: how it works (MVP)
 
@@ -72,10 +70,10 @@ Treasury-style screen (see cleanup item `C1` in
 4. **Milestones** (formerly "achievements") are derived thresholds that reveal a detail —
    e.g. `totalForceReps >= 500` reveals the Forge — not a separate badge system.
 
-### Resources as flavor (MVP)
+### Resources as passive feedback (MVP)
 
-Six element resources map to muscle groups, plus two training-style resources. At MVP
-these are **computed totals**, not a spendable inventory:
+Six element resources map to muscle groups. At MVP these are **passive/read-only totals**, not a
+spendable economy:
 
 | Your training | Resource (flavor) | Picks the... |
 | --- | --- | --- |
@@ -85,11 +83,8 @@ these are **computed totals**, not a spendable inventory:
 | 🎯 Abs | Water | dominant-sport NPC / overlay |
 | 🦅 Shoulders | Wind | dominant-sport NPC / overlay |
 | 🦵 Legs | Grain | dominant-sport NPC / overlay |
-| Calisthenics | Mana (magic path) | Wizard Tower overlay |
-| Yoga / flexibility | Leaf (druid path) | Druid Grove overlay |
-
-Totals are recomputed at read time from the session journal — there is no mutated
-inventory table driving gameplay decisions.
+Totals may be stored for offline performance, but they must not drive a manual management loop.
+The product promise is: train, then see what your effort produced.
 
 ### Flame (streak)
 
@@ -112,6 +107,7 @@ quest) recovery flow.
 │    ⚔️ QUEST COMPLETE! ⚔️    │
 ├─────────────────────────────┤
 │  +150 XP   Level 5 ████░░   │
+│  +3 Wood   +2 Fire          │
 │                             │
 │  🏰 The village grows!      │
 │  (Forge overlay revealed)   │
@@ -129,7 +125,7 @@ Kept for reference only — do not implement without re-confirming scope in
   customization/decoration (not building unlocks).
 - **Per-building XP and manual upgrades** (tiers 1→5 per building), building unlock
   thresholds by session count/level.
-- **Full 8-resource managed inventory** with an economy header/overview UI.
+- **Full managed inventory** with an economy header/overview UI.
 - **Legendary building tiers** unlocked by boss rewards, beyond the milestone overlays.
 
 ## Related

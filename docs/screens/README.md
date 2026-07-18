@@ -2,7 +2,7 @@
 title: Screen Specs — Index
 type: screen
 status: active
-updated: 2026-07-14
+updated: 2026-07-18
 related: [../README.md, ../product/user-guide.md, ../meta/wiki-protocol.md]
 ---
 
@@ -21,6 +21,7 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 **Quests (quick workout)**
 - [quests.md](quests.md) — browse workouts → Quest Details
 - [quest-details.md](quest-details.md) — review + choose difficulty → Session
+- [exercise-details.md](exercise-details.md) — read exercise instructions/details
 - [session.md](session.md) — do the workout → rewards
 - [journal.md](journal.md) — training history + stats
 - [session-details.md](session-details.md) — post-workout report
@@ -31,7 +32,7 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 
 **Progression & rewards**
 - [village.md](village.md) — visual reward layer (village growth)
-- [treasury.md](treasury.md) — inventory (gold + resources)
+- [treasury.md](treasury.md) — passive resource receipt
 
 **Planning**
 - [goals.md](goals.md) — set training direction → Schedule
@@ -47,4 +48,4 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 Each page carries frontmatter (`type: screen`, `route`, `related`, `sources`). `sources`
 points at the Expo Router file(s) in `app/` that implement the screen.
 
-> ⚠️ Gap (lint): `app/exercises/[id].tsx` exists but has no spec here. Add `exercise-details.md` when documented.
+The route-level screen specs now cover every user-facing Expo Router screen in `app/`.

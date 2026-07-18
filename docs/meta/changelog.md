@@ -217,3 +217,19 @@ guidance into directly actionable checklists for delivery.
 - Confirmed the current first implementation pass remains focused on Home while
   all remaining scopes are now documented for iterative refonte waves.
 
+## 2026-07-18 — Source-of-truth docs/code alignment pass
+
+- Resolved the MVP reward-scope decision across product, planning, economy, gameplay, and Treasury
+  docs: resources/Treasury are passive read-only feedback in MVP; Gold-first spending, shops, and
+  manual building/economy loops remain Phase 2+.
+- Added the missing [exercise-details.md](../screens/exercise-details.md) screen spec for
+  `app/exercises/[id].tsx` and updated the screen index.
+- Fixed invalid YAML `sources` entries for `[id]` screen routes by quoting route paths.
+- Rewrote [technical-architecture.md](../architecture/technical-architecture.md) to match current
+  Expo SDK, Jest, Zustand, route layout, stores, and DB modules.
+- Updated [database-api.md](../architecture/database-api.md) for current preferences, resource codes,
+  product-scope notes, and actual schema table names.
+- Clarified design rules: `useGameIcon` is required for fantasy/resource/game icons, Tamagui lucide
+  is acceptable for utility/navigation icons, and inline styles are allowed only for React Native/API
+  requirements rather than semantic visual recipes.
+

@@ -1,402 +1,157 @@
+---
+title: Technical Architecture
+type: technical
+status: active
+updated: 2026-07-18
+related: [README.md, database-api.md, ../meta/wiki-protocol.md]
+sources: [package.json, app, components, db, stores, hooks, src, __tests__]
+---
+
 # Technical Architecture
 
-## Overview
+## Summary
 
-Bati is built with a focus on simplicity, performance, and offline-first functionality. This document outlines the technical stack and architectural decisions.
+Bati is an Expo + React Native app with file-based routing, Tamagui UI, Zustand state, and
+SQLite/Drizzle persistence. The app is offline-first and dark-only; workout history is the durable
+source from which progression systems are derived.
 
----
+## Tech stack
 
-## 🛠️ Tech Stack
+| Layer | Current package/config | Purpose |
+| --- | --- | --- |
+| Framework | `expo` `~54.0.30`, React `19.1.0`, React Native `0.81.5` | Mobile app runtime |
+| Navigation | `expo-router` `~6.0.21` | File-based routes in `app/` |
+| UI | `tamagui` / `@tamagui/*` `^1.142.0` | Tokenized dark UI primitives |
+| State | `zustand` `^5.0.9` | Session, settings, and user state |
+| Database | `expo-sqlite` `~16.0.10`, `drizzle-orm` `^0.45.1` | Offline-first local persistence |
+| Localization | `i18next`, `react-i18next`, `expo-localization` | English/French UI and content |
+| Testing | `jest` + `jest-expo` | Unit/integration tests in `__tests__/` |
+| Formatting/checks | Biome + TypeScript | `npm run check` |
 
-| Layer | Technology | Purpose |
-| ----- | ---------- | ------- |
-| **Framework** | React Native + Expo | Cross-platform mobile |
-| **UI Library** | Tamagui | Performant styled components |
-| **Navigation** | Expo Router | File-based routing |
-| **State** | Zustand | Lightweight state management |
-| **Database** | SQLite + Drizzle ORM | Offline-first local storage |
-| **Localization** | i18next | Multi-language support |
-| **Testing** | Vitest | Unit & integration tests |
-
----
-
-## 📁 Project Structure
-
-```text
-batiV3/
-├── app/                    # Expo Router screens
-│   ├── _layout.tsx         # Root layout
-│   ├── (tabs)/             # Tab navigation
-│   │   ├── index.tsx       # Home tab
-│   │   ├── quests.tsx      # Quests tab
-│   │   └── adventures.tsx  # Adventures tab
-│   ├── exercises/          # Exercise routes
-│   ├── onboarding/         # Onboarding flow
-│   └── session.tsx         # Active workout screen
-│
-├── components/             # Reusable UI components
-│   ├── common/             # Shared components
-│   ├── session/            # Session-specific components
-│   ├── journal/            # History/stats components
-│   └── QuestCarousel/      # Quest browsing
-│
-├── db/                     # Database layer
-│   ├── schema.ts           # Drizzle schema definitions
-│   ├── client.ts           # Database client setup
-│   ├── quests.ts           # Quest queries
-│   ├── adventures.ts       # Adventure queries
-│   ├── completed.ts        # Completed session queries
-│   ├── exercises.ts        # Exercise queries
-│   └── xp.ts               # XP calculations
-│
-├── stores/                 # Zustand stores
-│   ├── session.ts          # Active session state
-│   ├── settings.ts         # User preferences
-│   ├── theme.ts            # Theme state
-│   └── user.ts             # User data
-│
-├── constants/              # Static values
-│   ├── exerciseColors.ts   # Color mappings
-│   └── avatars.ts          # Avatar options
-│
-├── hooks/                  # Custom React hooks
-│   └── useSessionTimer.ts  # Timer logic
-│
-├── locales/                # Translation files
-│   ├── en.json             # English
-│   └── fr.json             # French
-│
-├── drizzle/                # Database migrations
-│   ├── 0000_*.sql          # Migration files
-│   └── migrations.js       # Migration runner
-│
-├── docs/                   # Documentation
-│   ├── VISION.md           # Product vision
-│   ├── QUESTS.md           # Quest system
-│   └── ...                 # Other docs
-│
-└── __tests__/              # Test files
-    ├── db-*.test.ts        # Database tests
-    └── helpers/            # Test utilities
-```
-
----
-
-## 💾 Database Architecture
-
-### SQLite + Drizzle ORM
-
-**Why SQLite?**
-
-- Offline-first (no network required)
-- Fast local queries
-- Reliable and battle-tested
-- Easy to backup/restore
-
-**Why Drizzle?**
-
-- Type-safe queries
-- Lightweight (no runtime overhead)
-- SQL-like syntax
-- Easy migrations
-
-### Core Tables
-
-```sql
--- Exercises (workout building blocks)
-exercises
-├── id, enName, frName, description
-├── difficulty, equipment, imagePath
-└── creator, timestamps
-
--- Quests (workout templates)
-quests
-├── id, enTitle, frTitle, description
-├── rounds, restSeconds, author
-└── timestamps
-
--- Quest exercises (junction)
-quest_exercises
-├── questId, exerciseId, sortOrder
-├── targetType, targetMin, targetMax
-└── imagesJson
-
--- Adventures (multi-quest campaigns)
-adventures
-├── id, questId (cover), title, description
-├── kind, author, sortOrder, isActive
-└── timestamps
-
--- Adventure steps
-adventure_steps
-├── adventureId, stepIndex, questId
-├── narrative (localized)
-└── timestamps
-
--- Completed sessions (history)
-completed_sessions
-├── questId, performedAt, durationSeconds
-├── userLevel, xp
-└── timestamps
-
--- Completed exercises (detail)
-completed_exercises
-├── sessionId, exerciseId, roundIndex
-├── resultValue
-└── timestamps
-```
-
-### Relationships
+## Project structure
 
 ```text
-exercises ─┬──< exercise_muscles
-           └──< quest_exercises >──┬── quests
-                                   │
-adventures ──< adventure_steps >───┘
-           │
-           └──< adventure_runs ──< adventure_run_steps
-
-completed_sessions ──< completed_exercises
+bati/
+├── app/                         # Expo Router screens/navigation
+│   ├── _layout.tsx              # Root providers, dark-only theme, onboarding redirect
+│   ├── (tabs)/                  # Main tabs
+│   │   ├── index.tsx            # Home
+│   │   ├── quests/index.tsx     # Quest gallery
+│   │   ├── quests/[id].tsx      # Quest details
+│   │   ├── adventures/index.tsx # Adventure gallery
+│   │   ├── adventures/[id].tsx  # Adventure details
+│   │   ├── village.tsx          # Village tab
+│   │   └── journal/             # History + session details
+│   ├── exercises/[id].tsx       # Exercise details
+│   ├── onboarding/              # First-run flow
+│   ├── session.tsx              # Active workout
+│   ├── goals.tsx                # Goal setup
+│   ├── schedule.tsx             # Weekly schedule/rest guidance
+│   ├── treasury.tsx             # Passive resource receipt
+│   ├── settings.tsx             # Preferences
+│   └── credits.tsx              # Attributions
+│
+├── components/                  # Reusable and screen-specific UI
+│   ├── common/
+│   ├── home/
+│   ├── session/
+│   ├── journal/
+│   ├── goals/
+│   ├── scheduling/
+│   └── village/
+│
+├── db/                          # Drizzle schema + domain APIs
+│   ├── schema.ts
+│   ├── client.ts
+│   ├── quests.ts
+│   ├── adventures.ts
+│   ├── bossFights.ts
+│   ├── completed.ts
+│   ├── exercises.ts
+│   ├── resources.ts
+│   ├── buildings.ts
+│   ├── preferences.ts
+│   └── index.ts                 # Public DB barrel exports
+│
+├── stores/                      # Zustand stores
+│   ├── session.ts               # Active workout/session persistence flow
+│   ├── settings.ts              # Language, avatar, haptics, sound, motion, notifications
+│   └── user.ts                  # Onboarding + village name
+│
+├── hooks/                       # Shared hooks
+├── src/                         # Shared UI/i18n helpers
+├── constants/                   # Static game/design data
+├── locales/                     # en/fr translations
+├── drizzle/                     # SQL migrations/seeds
+├── docs/                        # LLM wiki / source-of-truth docs
+└── __tests__/                   # Jest tests
 ```
 
----
-
-## 🔄 State Management
-
-### Zustand Stores
-
-**Session Store** (session.ts)
-
-```typescript
-interface SessionState {
-  quest: Quest | null;
-  status: 'idle' | 'running' | 'resting' | 'paused' | 'finished';
-  currentRoundIndex: number;
-  currentExerciseIndex: number;
-  startTime: number | null;
-  totalPausedTime: number;
-  exerciseResults: ExerciseResult[];
-
-  // Actions
-  startSession: (quest: Quest) => void;
-  pauseSession: () => void;
-  resumeSession: () => void;
-  completeExercise: (result: number) => void;
-  finishSession: () => Promise<void>;
-}
-```
-
-**Settings Store** (settings.ts)
-
-```typescript
-interface SettingsState {
-  difficulty: DifficultyCode;
-  language: 'en' | 'fr';
-  soundEnabled: boolean;
-  hapticEnabled: boolean;
-
-  setDifficulty: (d: DifficultyCode) => void;
-  setLanguage: (l: 'en' | 'fr') => void;
-}
-```
-
-### Data Flow
-
-```text
-User Action
-    │
-    ▼
-Component ──▶ Zustand Store ──▶ SQLite (persist)
-    │              │
-    │              ▼
-    └────────── Re-render
-```
-
----
-
-## 🌍 Localization
+## Architecture decisions
 
-### i18next Setup
-
-```typescript
-// i18n.ts
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+### Dark-only UI
 
-i18n.use(initReactI18next).init({
-  resources: { en, fr },
-  lng: 'en',
-  fallbackLng: 'en',
-  interpolation: { escapeValue: false },
-});
-```
+`app/_layout.tsx` forces the product UI into the dark theme. `stores/settings.ts` still persists a
+`theme` preference for compatibility/dev tooling, but the runtime product behavior is dark-only.
 
-### Usage
+### Offline-first persistence
 
-```tsx
-// In components
-const { t } = useTranslation();
-return <Text>{t('quest.start')}</Text>;
+SQLite is the local source of truth. Drizzle defines schema and typed queries; domain modules in
+`db/` expose focused APIs and are re-exported through `db/index.ts`.
 
-// In locales/en.json
-{
-  "quest": {
-    "start": "Start Quest",
-    "complete": "Quest Complete!"
-  }
-}
-```
+### State ownership
 
-### Database Content
+| Store | Owns | Persists through |
+| --- | --- | --- |
+| `stores/session.ts` | Active quest, timers, exercise results, boss damage, save-session flow | `db/completed.ts`, resources/buildings/streaks/records APIs, session recovery preference |
+| `stores/settings.ts` | Language, avatar, sound, haptics, reduced motion, notifications | `db/preferences.ts` |
+| `stores/user.ts` | Onboarding completion and village name | `db/preferences.ts` |
 
-Content is stored with both languages:
+### Reward scope
 
-```typescript
-// Quest with localized fields
-{
-  enTitle: "Iron Arms Challenge",
-  frTitle: "Défi Bras de Fer",
-  enDescription: "Build legendary arm strength",
-  frDescription: "Développez une force légendaire dans vos bras"
-}
-```
+The code has resources and Treasury visibility, but the product source of truth treats them as
+passive/read-only MVP feedback. Gold-first spending, shops, and manual building management are Phase
+2+ concepts unless re-approved in [roadmap-alignment.md](../planning/roadmap-alignment.md).
 
----
+## Core data model
 
-## 🧪 Testing Strategy
+| Table | Purpose |
+| --- | --- |
+| `user_preferences` | Onboarding and settings key/value store |
+| `exercises`, `exercise_muscles` | Exercise catalog and muscle mapping |
+| `quests`, `quest_exercises` | Workout templates and ordered exercise targets |
+| `adventures`, `adventure_steps`, `adventure_runs`, `adventure_run_steps` | Campaign content and run progress |
+| `completed_sessions`, `completed_exercises` | Workout history and per-exercise results |
+| `boss_fights`, `boss_damage_log` | Boss HP and damage history |
+| `resource_inventory`, `resource_transactions` | Passive reward totals/logs |
+| `village_buildings`, `village_stats` | Village reward state/cache |
+| `goals`, `goal_progress`, `scheduled_sessions` | Planning and scheduling |
 
-### Test Types
+## Development commands
 
-| Type | Location | Purpose |
-| ---- | -------- | ------- |
-| **Unit** | `__tests__/*.test.ts` | Individual functions |
-| **Integration** | `__tests__/db-*.test.ts` | Database operations |
-| **Component** | (Future) | UI components |
-| **E2E** | (Future) | Full user flows |
+| Command | Purpose |
+| --- | --- |
+| `npm start` | Expo dev server |
+| `npm run android` / `npm run ios` / `npm run web` | Platform runs |
+| `npm run check` | Biome write/check + TypeScript no-emit |
+| `npm test` | Jest suite |
+| `npm run db:generate` | Generate Drizzle migrations |
+| `npm run db:push` | Push schema to local SQLite target |
 
-### Running Tests
+## Testing
 
-```bash
-# Run all tests
-npm test
+Tests live in `__tests__/` and use `jest-expo`. Most current coverage is domain/database logic:
+quests, adventures, completed sessions, resources, scheduling, goals, achievements, XP, and related
+helpers.
 
-# Run specific test file
-npm test -- db-quests.test.ts
+## Privacy and data boundaries
 
-# Watch mode
-npm test -- --watch
-```
+- No account is required.
+- Workout history and settings are local-first.
+- Cloud sync, social features, and analytics are not part of the current architecture.
 
-### Test Database
+## Related
 
-```typescript
-// __tests__/helpers/testDb.ts
-export function createTestDatabase() {
-  // Creates in-memory SQLite for testing
-}
-```
-
----
-
-## ⚡ Performance Considerations
-
-### Image Optimization
-
-- Use WebP format when possible
-- Lazy load images outside viewport
-- Cache exercise GIFs/images locally
-
-### Database Queries
-
-- Use indexes for frequent queries
-- Batch inserts for migrations
-- Limit result sets for lists
-
-### React Rendering
-
-- Memoize expensive computations
-- Use `useMemo`/`useCallback` appropriately
-- Virtualize long lists (FlatList)
-
-### Bundle Size
-
-- Tree-shake unused code
-- Lazy load heavy screens
-- Monitor with `expo export --dump-sourcemap`
-
----
-
-## 🔐 Security & Privacy
-
-### Data Storage
-
-- All data stored locally on device
-- No cloud sync by default
-- No analytics/tracking (by default)
-
-### User Data
-
-- Minimal data collection
-- No account required
-- Export/delete data easily
-
-### Future Cloud Sync
-
-If implemented:
-
-- End-to-end encryption
-- User-controlled sync
-- Clear privacy policy
-
----
-
-## 🚀 Build & Deploy
-
-### Development
-
-```bash
-# Start dev server
-npx expo start
-
-# Run on Android
-npx expo run:android
-
-# Run on iOS
-npx expo run:ios
-```
-
-### Production Build
-
-```bash
-# Build for Android
-eas build --platform android
-
-# Build for iOS
-eas build --platform ios
-```
-
-### Environment Variables
-
-```bash
-# .env (development)
-EXPO_PUBLIC_ENV=development
-EXPO_PUBLIC_DEBUG=true
-
-# .env.production
-EXPO_PUBLIC_ENV=production
-EXPO_PUBLIC_DEBUG=false
-```
-
----
-
-## 📚 Key Dependencies
-
-| Package | Version | Purpose |
-| ------- | ------- | ------- |
-| `expo` | ~52.x | Core framework |
-| `react-native` | 0.76.x | Mobile runtime |
-| `tamagui` | ^1.x | UI components |
-| `drizzle-orm` | ^0.30.x | Database ORM |
-| `i18next` | ^23.x | Localization |
-| `zustand` | ^4.x | State management |
-| `expo-sqlite` | ~14.x | SQLite access |
+- [database-api.md](database-api.md) — DB module reference
+- [roadmap-alignment.md](../planning/roadmap-alignment.md) — product scope decisions
+- [design-system.md](../design/design-system.md) — dark-only UI and token rules

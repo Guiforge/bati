@@ -419,6 +419,6 @@ This creates visual variety and helps users quickly identify exercise types.
 
 ## Related
 
-- [rewards-and-progression.md](../economy/rewards-and-progression.md) — what the loot screen grants (XP only at MVP)
+- [rewards-and-progression.md](../economy/rewards-and-progression.md) — what the loot screen grants (XP + passive resource visibility at MVP)
 - [adventures.md](adventures.md) — "no session is wasted" rule when a day's quest is skipped
 - [roadmap-alignment.md](../planning/roadmap-alignment.md) — anti-cheat doctrine (real-friction input, plausibility caps)

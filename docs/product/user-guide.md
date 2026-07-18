@@ -1,3 +1,12 @@
+---
+title: Product Guide
+type: product
+status: active
+updated: 2026-07-18
+related: [vision.md, feature-overview.md, ../screens/README.md, ../economy/rewards-and-progression.md]
+sources: [app/_layout.tsx, app/(tabs)/index.tsx, app/treasury.tsx, app/(tabs)/village.tsx]
+---
+
 # Bati — Product Guide (Non‑Technical)
 
 > Train like a hero, build like a king.
@@ -19,7 +28,7 @@ This document explains **what Bati does** and **what each page is for**, using p
 
 ## Core loop (the experience in one line)
 
-Pick a Quest → Train → Earn loot + XP → Your village grows → Repeat
+Pick a Quest → Train → Earn XP + passive loot → Your village reacts → Repeat
 
 ---
 
@@ -30,7 +39,7 @@ Pick a Quest → Train → Earn loot + XP → Your village grows → Repeat
 - **Adventure**: A story campaign made of several quests chained together.
 - **Boss**: A special kind of adventure that feels like a finale.
 - **XP & Level**: Progress earned by training. XP increases your level.
-- **Resources / Loot**: What you earn (for example: gold and muscle‑linked resources).
+- **Resources / Loot**: Passive rewards connected to what you trained.
 - **Village**: Your “fitness fingerprint” shown as a growing fantasy village.
 - **Journal**: Your training history, stats, and progress.
 
@@ -41,8 +50,7 @@ Pick a Quest → Train → Earn loot + XP → Your village grows → Repeat
 After workouts, Bati rewards you with:
 
 - **XP**: makes your hero level up.
-- **Gold**: universal currency.
-- **Resources**: themed loot connected to what you trained.
+- **Resources**: themed loot connected to what you trained. In MVP these are read-only feedback, not a shop currency.
 
 ### Muscle → Resource → Village growth
 
@@ -81,9 +89,9 @@ Your training focus changes what you earn and which parts of the village grow.
 - Review detailed results of a past session.
 - See progress summaries like levels and training balance.
 
-### 4) Collect and view loot (Treasury)
+### 4) View passive loot (Treasury)
 
-- See your current totals for gold and resources.
+- See your current totals for muscle-linked resources.
 
 ### 5) See your village (Village)
 
@@ -138,7 +146,7 @@ Preferences:
 - **[Journal](../screens/journal.md)** → stats + history, open past sessions.
 - **[Session Details](../screens/session-details.md)** → per-session report (your “receipt”).
 - **[Village](../screens/village.md)** → visual progress from training.
-- **[Treasury](../screens/treasury.md)** → loot totals (gold + resources).
+- **[Treasury](../screens/treasury.md)** → passive loot totals (resources).
 - **[Goals](../screens/goals.md)** → set direction (focus/frequency/duration).
 - **[Schedule](../screens/schedule.md)** → weekly view + rest suggestion.
 - **[Settings](../screens/settings.md)** → language and preferences.
@@ -221,10 +229,10 @@ Preferences:
 
 ### Treasury
 
-**Purpose:** see everything you’ve earned.
+**Purpose:** see passive rewards from training.
 
 - **Treasury** (`/treasury`)
-  - Displays your collected resources (gold + muscle resources).
+  - Displays your collected muscle resources.
   - Helps users connect training focus with rewards.
 
 ### Goals

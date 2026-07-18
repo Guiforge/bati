@@ -4,8 +4,8 @@ type: screen
 route: /adventures/[id]
 status: active
 updated: 2026-07-14
-related: [adventures.md, quest-details.md, ../ADVENTURES.md, ../BOSS.md]
-sources: [app/(tabs)/adventures/[id].tsx]
+related: [adventures.md, quest-details.md, ../gameplay/adventures.md, ../gameplay/boss-fights.md]
+sources: ["app/(tabs)/adventures/[id].tsx"]
 ---
 
 # Adventure Details (`/adventures/[id]`)

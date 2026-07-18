@@ -1,3 +1,12 @@
+---
+title: Boss Fights
+type: system
+status: active
+updated: 2026-07-18
+related: [adventures.md, session-flow.md, ../economy/rewards-and-progression.md]
+sources: [db/bossFights.ts, components/session/BossHpBar.tsx, components/session/BossTauntOverlay.tsx]
+---
+
 # Boss Adventures
 
 ## Overview
@@ -122,9 +131,10 @@ function calculateDamage(exercise: CompletedExercise): number {
 │    You have proven your strength          │
 │                                             │
 ├─────────────────────────────────────────────┤
-│   BOSS LOOT:                                │
-│   🪙 +200 Gold   ⭐ +500 XP                 │
+│   BOSS REWARD:                              │
+│   ⭐ +500 XP                                │
 │   👹 +1 Boss Token                          │
+│   🏰 Village banner revealed                │
 │   🏰 Unlocked: ARMORY building!             │
 │                                             │
 ├─────────────────────────────────────────────┤
@@ -277,7 +287,7 @@ async function dealDamage(bossFightId: number, exercise: CompletedExercise) {
 
 1. **Climactic Goals**: Something to work toward
 2. **Visible Progress**: HP bar shows effort accumulating
-3. **Epic Rewards**: Special loot only from bosses
+3. **Epic Rewards**: XP, boss tokens, and village milestones
 4. **Replayability**: Can refight bosses for better times
 
 ### Difficulty Balance

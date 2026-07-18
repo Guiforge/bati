@@ -29,6 +29,8 @@ These are not style suggestions; they are product rules.
 - No competing CTA styling on the same screen.
 - No hardcoded color values when a token exists.
 - No one-off visual systems unless they are promoted into the shared design system.
+- Inline `style` props are allowed for React Native/Image/chart APIs when tokens or Tamagui props
+	cannot express the requirement; avoid hardcoded semantic colors and repeated visual recipes.
 
 ## Visual language
 
@@ -110,4 +112,6 @@ These are not style suggestions; they are product rules.
 
 ## Implementation note
 
-Always use Tamagui tokens and shared UI primitives. For iconography, route through `@/hooks/useGameIcon`.
+Always use Tamagui tokens and shared UI primitives. For iconography, use `@/hooks/useGameIcon`
+for fantasy/resource/game icons; utility/navigation icons may use `@tamagui/lucide-icons`. Do not
+import `lucide-react-native` directly in product UI.

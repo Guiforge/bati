@@ -1,3 +1,12 @@
+---
+title: Features Overview
+type: product
+status: active
+updated: 2026-07-18
+related: [vision.md, user-guide.md, ../planning/roadmap-alignment.md, ../economy/rewards-and-progression.md]
+sources: [app, db, components]
+---
+
 # Features Overview
 
 This document provides a high-level overview of all features in Bati. For detailed documentation, see the linked files.
@@ -49,18 +58,18 @@ The workout execution experience.
 Visual representation of your fitness journey.
 
 - **What**: Auto-built village based on workout history
-- **Contains**: Buildings, upgrades, visual progression
-- **Status**: Planned (Phase 2)
+- **Contains**: Automatic visual progression from workouts
+- **Status**: Implemented as a derived/read-only reward layer
 - **Doc**: [VILLAGE.md](../economy/rewards-and-progression.md)
 
 ### Resources
 
-Currency and materials for the RPG layer.
+Passive materials for the RPG layer.
 
-- **What**: Gold, Wood, Stone, etc.
+- **What**: Muscle-linked resources like Wood, Stone, Fire, Water, Wind, Grain
 - **Earned**: Through workout completion
-- **Used**: Building village (automatic)
-- **Status**: Planned (Phase 2)
+- **Used**: Read-only feedback / Treasury visibility in MVP
+- **Status**: Implemented as passive visibility; spend economy deferred
 - **Doc**: [RESOURCES.md](../economy/rewards-and-progression.md)
 
 ### XP & Levels
@@ -149,7 +158,7 @@ Color-coding by muscle group.
 Visual design guidelines.
 
 - **What**: Colors, typography, components
-- **Style**: Franco-Belgian comic book
+- **Style**: Dark-fantasy / high-tech HUD
 - **Doc**: [UI_GUIDE.md](../design/ui-guide.md)
 
 ### Mobile Ergonomics
@@ -210,12 +219,12 @@ Technical stack details.
 - XP system, Exercise colors
 - Localization (EN/FR)
 
-### Phase 2: Village & Economy 🏗️
+### Phase 2: Economy expansion 🏗️
 
-- Resource system
-- Village view
-- Auto-building
-- Streak/Flame system
+- Gold/spend loops if re-approved
+- Cosmetic village customization
+- Manual upgrades only if they do not compete with workouts
+- Expanded streak/flame presentation
 
 ### Phase 3: Coach & Planning
 
@@ -249,8 +258,8 @@ Technical stack details.
 | [ADVENTURES.md](../gameplay/adventures.md) | Multi-quest campaigns |
 | [BOSS.md](../gameplay/boss-fights.md) | Boss fight mechanics |
 | [SESSION.md](../gameplay/session-flow.md) | Active workout UI |
-| [VILLAGE.md](../economy/rewards-and-progression.md) | Village & building system |
-| [RESOURCES.md](../economy/rewards-and-progression.md) | Resource economy |
+| [VILLAGE.md](../economy/rewards-and-progression.md) | Village & reward layer |
+| [RESOURCES.md](../economy/rewards-and-progression.md) | Passive resources and deferred economy |
 | [COACH.md](../gameplay/coach-planning.md) | Goal setting & planning |
 | [STATISTICS.md](../gameplay/statistics-progress.md) | Stats & progress tracking |
 | [EXERCISE_COLORS.md](../design/exercise-colors.md) | Color system |

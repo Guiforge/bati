@@ -1,3 +1,12 @@
+---
+title: Database API Reference
+type: technical
+status: active
+updated: 2026-07-18
+related: [technical-architecture.md, ../economy/rewards-and-progression.md]
+sources: [db/index.ts, db/schema.ts, db/preferences.ts, db/resources.ts]
+---
+
 # Database API Reference
 
 > Complete reference for the Bati database layer (`db/` module).
@@ -31,7 +40,7 @@
 All database functions are exported from `db/index.ts`. Import like this:
 
 ```typescript
-import { getQuestById, listExercises, saveSession } from "@/db";
+import { createCompletedSession, getQuestById, listExercises } from "@/db";
 ```
 
 The database uses **Drizzle ORM** with **SQLite** (via expo-sqlite).
@@ -82,7 +91,7 @@ Multi-quest campaigns with narrative and boss fights.
 ### Types
 
 ```typescript
-type AdventureKind = "campaign" | "boss";
+type AdventureKind = "route" | "boss" | "event";
 
 interface Adventure {
   id: number;
@@ -352,12 +361,17 @@ User settings persistence.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `theme` | `"light" \| "dark" \| "system"` | `"system"` | App theme |
-| `language` | `"en" \| "fr"` | `"en"` | UI language |
-| `notificationsEnabled` | `boolean` | `false` | Push notifications |
-| `notificationTime` | `string` | `"20:00"` | Daily reminder time |
+| `villageName` | `string` | `""` | Onboarding village/profile name |
+| `hasFinishedOnboarding` | `boolean` | `false` | Onboarding completion flag |
+| `language` | `"en" \| "fr"` | device language, fallback `"en"` | UI language |
+| `theme` | `"light" \| "dark" \| "system"` | `"system"` | Persisted compatibility/dev preference; product UI is forced dark |
+| `avatarId` | `string` | first configured avatar (`guardian`) | Selected avatar |
+| `notificationsEnabled` | `boolean` | `true` in current code | Reminder preference; notification implementation remains product-scoped separately |
+| `notificationTime` | JSON `{ hour, minute }` | `{ "hour": 18, "minute": 0 }` | Daily reminder time preference |
 | `hapticsEnabled` | `boolean` | `true` | Haptic feedback |
+| `soundEnabled` | `boolean` | `true` | Sound effects |
 | `reducedMotion` | `boolean` | `false` | Reduce animations |
+| `savedSession` | serialized JSON | `null` | Crash/session recovery payload |
 
 ### Functions
 
@@ -366,6 +380,9 @@ User settings persistence.
 | `getPreference(key)` | Get preference value |
 | `setPreference(key, value)` | Set preference value |
 | `getAllPreferences()` | Get all preferences as object |
+
+The `preferences` helper object in `db/preferences.ts` provides wrappers around these string values.
+Defaults above follow current code, not old roadmap intent.
 
 ---
 
@@ -410,12 +427,16 @@ interface Quest {
 
 Fantasy resources earned through workouts.
 
+Product scope note: in MVP these resources are passive/read-only reward visibility. The DB exposes
+inventory and transaction helpers, including spending primitives, but Gold-first shops and manual
+village management are deferred product scope.
+
 ### Types
 
 ```typescript
 type ResourceCode =
-  | "wood" | "stone" | "fire" | "water" | "wind" | "grain"
-  | "coins" | "boss_token";
+  | "gold" | "wood" | "stone" | "fire" | "water" | "wind" | "grain"
+  | "mana" | "leaf" | "boss_token";
 
 interface ResourceLoot {
   resource: ResourceCode;
@@ -433,7 +454,9 @@ interface ResourceLoot {
 | Chest | Fire 🔥 |
 | Abs | Water 💧 |
 | Shoulders | Wind 🌬️ |
-| Legs | Grain 🌾 |
+| Legs (`calf` in schema) | Grain 🌾 |
+| Calisthenics style | Mana ✨ |
+| Yoga style | Leaf 🌿 |
 
 ### Functions
 
@@ -637,7 +660,7 @@ The database uses these main tables:
 |-------|---------|
 | `exercises` | Exercise catalog |
 | `exercise_muscles` | Exercise → muscle mapping |
-| `quest_templates` | Quest definitions |
+| `quests` | Quest definitions |
 | `quest_exercises` | Quest → exercise mapping |
 | `adventures` | Adventure campaigns |
 | `adventure_steps` | Adventure quest sequence |

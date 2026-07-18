@@ -4,7 +4,7 @@ type: screen
 route: /journal
 status: active
 updated: 2026-07-14
-related: [session-details.md, session.md, ../STATISTICS.md]
+related: [session-details.md, session.md, ../gameplay/statistics-progress.md]
 sources: [app/(tabs)/journal/index.tsx]
 ---
 

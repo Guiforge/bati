@@ -4,7 +4,7 @@ type: screen
 route: /quests
 status: active
 updated: 2026-07-14
-related: [quest-details.md, ../QUESTS.md]
+related: [quest-details.md, ../gameplay/quests.md]
 sources: [app/(tabs)/quests/index.tsx]
 ---
 

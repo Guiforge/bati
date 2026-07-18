@@ -3,7 +3,7 @@ title: Vision
 type: product
 status: active
 updated: 2026-07-14
-related: [ROADMAP_ALIGNMENT.md, PRODUCT.md, REWARDS.md, DESIGN.md]
+related: [../planning/roadmap-alignment.md, feature-overview.md, ../economy/rewards-and-progression.md, ../design/design-system.md]
 ---
 
 # Bati - Vision
@@ -13,9 +13,10 @@ related: [ROADMAP_ALIGNMENT.md, PRODUCT.md, REWARDS.md, DESIGN.md]
 **Bati** transforms workouts into a fantasy RPG adventure. Complete quests, build your village, defeat bosses.
 
 > ⚠️ **Alignment (2026-07).** The **canonical MVP is simplified** — see
-> **[ROADMAP_ALIGNMENT.md](../planning/roadmap-alignment.md)** (north star). At MVP: loot = **XP only** (no
-> Gold/Or economy), the **village is DERIVED / read-only** (*calculated* from your workouts, never
-> managed), and gold / managed resources / building upgrades / treasury are **deferred (Phase 2+)**.
+> **[roadmap-alignment.md](../planning/roadmap-alignment.md)** (north star). At MVP: loot is
+> **XP + passive resource visibility**. The **village is DERIVED / read-only** (*calculated* from your workouts,
+> never managed). Gold as a spendable economy, manual building upgrades, shops, and treasury-centric loops are
+> **deferred (Phase 2+)**.
 
 ---
 
@@ -36,7 +37,7 @@ Train → Earn Rewards → Village Grows → Repeat
 
 1. **Pick a Quest** — Choose your workout
 2. **Complete It** — Do the exercises
-3. **Earn Loot** — XP + village reaction *(Gold/Resources: deferred, Phase 2+)*
+3. **Earn Loot** — XP + passive resource visibility + village reaction *(spendable Gold economy: deferred, Phase 2+)*
 4. **Watch Village Grow** — Buildings appear automatically
 5. **Unlock Adventures** — New challenges await
 
@@ -89,8 +90,8 @@ Daily workouts fuel your Sacred Flame:
 
 ## 📚 Learn More
 
-- [REWARDS.md](../economy/rewards-and-progression.md) — Resources & Village
-- [QUESTS.md](../gameplay/quests.md) — Workout templates
-- [ADVENTURES.md](../gameplay/adventures.md) — Multi-quest campaigns
-- [SESSION.md](../gameplay/session-flow.md) — Active workout flow
-- [ROADMAP.md](../planning/roadmap-archive.md) — What's next
+- [rewards-and-progression.md](../economy/rewards-and-progression.md) — Resources & Village
+- [quests.md](../gameplay/quests.md) — Workout templates
+- [adventures.md](../gameplay/adventures.md) — Multi-quest campaigns
+- [session-flow.md](../gameplay/session-flow.md) — Active workout flow
+- [roadmap-archive.md](../planning/roadmap-archive.md) — What's next

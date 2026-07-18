@@ -6,6 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { ProgressDots } from "@/components/ProgressDots";
@@ -14,6 +15,7 @@ import { listExercises, listQuestTemplates } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import type { QuestTemplate } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
+import { DailyQuestCard } from "./DailyQuestCard";
 
 type LoadState =
   | {
@@ -81,9 +83,30 @@ export function QuestCarousel() {
   const exercisesById = state.exercisesById;
   const slideWidth = useMemo(() => Math.floor(Math.min(420, width * 0.85)), [width]);
 
+  const dailyQuestIndex = useMemo(() => {
+    if (quests.length === 0) return -1;
+    const today = new Date().toISOString().split("T")[0];
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) {
+      hash = (hash << 5) - hash + today.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash) % quests.length;
+  }, [quests]);
+
   const slides = useMemo(
     () =>
-      quests.map((q) => {
+      quests.map((q, index) => {
+        if (index === dailyQuestIndex) {
+          return (
+            <SwiperSlide key={q.id} style={{ display: "flex", justifyContent: "center" }}>
+              <YStack width={slideWidth}>
+                <DailyQuestCard quest={q} exercisesById={exercisesById} />
+              </YStack>
+            </SwiperSlide>
+          );
+        }
+
         const title = language === "fr" ? q.frTitle : q.enTitle;
         const desc = language === "fr" ? q.frDescription : q.enDescription;
         const emoji = questEmoji(q.rounds, q.exercises.length);
@@ -147,7 +170,7 @@ export function QuestCarousel() {
           </SwiperSlide>
         );
       }),
-    [quests, language, router, slideWidth, t, exercisesById],
+    [quests, dailyQuestIndex, language, router, slideWidth, t, exercisesById],
   );
 
   if (state.status === "loading") {
@@ -186,17 +209,11 @@ export function QuestCarousel() {
 
   if (quests.length === 0) {
     return (
-      <Card>
-        <YStack gap="$3" items="center" py="$2">
-          <Text fontSize={32}>🏚️</Text>
-          <Text fontWeight="900" fontSize={16} color="$color">
-            {t("quests.empty_title", "No quests yet")}
-          </Text>
-          <Paragraph color="$color" opacity={0.6} size="$3">
-            {t("quests.empty_subtitle", "Come back soon!")}
-          </Paragraph>
-        </YStack>
-      </Card>
+      <EmptyState
+        emoji="🏚️"
+        title={t("quests.empty_title", "No quests yet")}
+        subtitle={t("quests.empty_subtitle", "Come back soon!")}
+      />
     );
   }
 

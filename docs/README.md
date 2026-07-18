@@ -1,92 +1,114 @@
-# Bati Documentation
+---
+title: Bati — Documentation
+type: category
+status: active
+updated: 2026-07-18
+related: [meta/wiki-protocol.md, CONTRIBUTING.md]
+---
+
+# Bati — Documentation
 
 > Train like a hero, build like a king.
 
-Essential docs for building Bati — the fitness RPG app.
+Single, up-to-date entry point for all Bati (fitness RPG) documentation.
+
+> 🧠 **This folder is maintained as an [LLM wiki](meta/wiki-protocol.md)** (Karpathy pattern): an agent
+> keeps pages cross-linked, consistent, and current. This README is the **catalog** —
+> read it first. Protocol → [wiki-protocol.md](meta/wiki-protocol.md) · change log → [changelog.md](meta/changelog.md) ·
+> conventions → [CONTRIBUTING.md](CONTRIBUTING.md) · source inbox → [raw/](raw/README.md).
 
 ---
 
 ## 🚀 Start Here
 
-| Doc | What It Covers |
-| --- | -------------- |
-| [VISION.md](VISION.md) | Product philosophy, core loop |
-| [ROADMAP.md](ROADMAP.md) | What's done, what's next ⭐ |
-| [CONTRIBUTING.md](../.github/CONTRIBUTING.md) | How to contribute |
+| Doc | What it covers |
+| --- | --- |
+| [vision.md](product/vision.md) | Product philosophy, core loop |
+| [positioning.md](product/positioning.md) | Register, platform, positioning, principles |
+| [roadmap-alignment.md](planning/roadmap-alignment.md) | ⭐ Current prioritization (north star, MVP scope) |
+| [roadmap-archive.md](planning/roadmap-archive.md) | History of what is built |
+| [../.github/CONTRIBUTING.md](../.github/CONTRIBUTING.md) | How to contribute to the codebase |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute to **this docs wiki** |
 
 ---
 
-## 📖 Core Docs
+## 🧭 Product & Vision — [product/](product/README.md)
 
-### Features
+| Doc | What it covers |
+| --- | --- |
+| [vision.md](product/vision.md) | Vision, core loop |
+| [positioning.md](product/positioning.md) | Product doc (register / platform / principles) |
+| [user-guide.md](product/user-guide.md) | Non-technical product guide + navigation map |
+| [feature-overview.md](product/feature-overview.md) | Features overview |
 
-| Doc | What It Covers |
-| --- | -------------- |
-| [QUESTS.md](QUESTS.md) | Workout templates |
-| [ADVENTURES.md](ADVENTURES.md) | Multi-quest campaigns |
-| [BOSS.md](BOSS.md) | Boss fight mechanics |
-| [SESSION.md](SESSION.md) | Active workout flow |
-| [REWARDS.md](REWARDS.md) | Village, resources, loot ⭐ |
+## 🗺️ Planning & Roadmap — [planning/](planning/README.md)
 
-### Design
+| Doc | What it covers |
+| --- | --- |
+| [roadmap-alignment.md](planning/roadmap-alignment.md) | ⭐ Source of truth for prioritization (aligns code to vision) |
+| [roadmap-archive.md](planning/roadmap-archive.md) | Complete roadmap & TODO (archived — what's done) |
+| [roadmap-refactor-ui.md](planning/roadmap-refactor-ui.md) | NEW_STYLE UI refactor (design system, screen by screen) |
+| [future-roadmap.md](planning/future-roadmap.md) | Later phases (speculative, pre-alignment) |
 
-| Doc | What It Covers |
-| --- | -------------- |
-| [UI_GUIDE.md](UI_GUIDE.md) | Visual system + UX principles ⭐ |
-| [EXERCISE_COLORS.md](EXERCISE_COLORS.md) | Muscle → color mapping |
+## 🎮 Gameplay Systems — [gameplay/](gameplay/README.md)
 
-### Technical
+| Doc | What it covers |
+| --- | --- |
+| [quests.md](gameplay/quests.md) | Workout templates |
+| [adventures.md](gameplay/adventures.md) | Multi-quest campaigns |
+| [boss-fights.md](gameplay/boss-fights.md) | Boss fight mechanics |
+| [session-flow.md](gameplay/session-flow.md) | Active workout flow + implementation spec |
+| [statistics-progress.md](gameplay/statistics-progress.md) | Statistics & progress |
+| [coach-planning.md](gameplay/coach-planning.md) | ⚠️ Deferred: coach & planning |
 
-| Doc | What It Covers |
-| --- | -------------- |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Tech stack, project structure |
-| [QUEST_SESSION_SPEC.md](QUEST_SESSION_SPEC.md) | Session implementation |
+## 💰 Economy & Progression — [economy/](economy/README.md)
 
----
+| Doc | What it covers |
+| --- | --- |
+| [rewards-and-progression.md](economy/rewards-and-progression.md) | Loot, derived village, resources (single canonical page) |
 
-## 📁 Archive (Reference Only)
+## 🎨 Design & UI — [design/](design/README.md)
 
-These docs contain ideas for future phases. Content is tracked in ROADMAP.md:
+| Doc | What it covers |
+| --- | --- |
+| [design-system.md](design/design-system.md) | ⭐ Design system (NEW_STYLE tokens) |
+| [ui-guide.md](design/ui-guide.md) | UX principles + visual guide |
+| [ui-checklist.md](design/ui-checklist.md) | UI/UX checklist |
+| [exercise-colors.md](design/exercise-colors.md) | Muscle → color mapping |
+| [mobile-ux-handbook.md](design/mobile-ux-handbook.md) | Mobile interface standards (reference) |
 
-- `VILLAGE.md` — Merged into REWARDS.md
-- `RESOURCES.md` — Merged into REWARDS.md
-- `COACH.md` — Phase 3 planning (see ROADMAP)
-- `STATISTICS.md` — Phase 4 stats (see ROADMAP)
-- `FUTURE.md` — Phase 6 ideas (see ROADMAP)
-- `FEATURES.md` — Overview (see ROADMAP)
+## 🛠️ Technical — [architecture/](architecture/README.md)
 
----
+| Doc | What it covers |
+| --- | --- |
+| [technical-architecture.md](architecture/technical-architecture.md) | Tech stack, project structure |
+| [database-api.md](architecture/database-api.md) | Database API reference (Drizzle) |
+| [wiki-protocol.md](meta/wiki-protocol.md) | How this docs folder is maintained as an LLM wiki |
 
-## 🎯 Quick Reference
+## 🖼️ Content & Assets — [content/](content/README.md)
 
-### For New Contributors
+| Doc | What it covers |
+| --- | --- |
+| [content-generation.md](content/content-generation.md) | Full content spec (exercises, quests, adventures) |
+| [content-quick-reference.md](content/content-quick-reference.md) | Developer integration guide (asset map) |
+| [workout-best-practices.md](content/workout-best-practices.md) | Workout design & balancing |
+| [image-prompts.md](content/image-prompts.md) | Image generation prompts (Midjourney) |
+| [image-style-prompt.md](content/image-style-prompt.md) | Base style prompt (used by scripts) |
 
-1. Read [VISION.md](VISION.md) — 2 min
-2. Skim [ROADMAP.md](ROADMAP.md) — see current phase
-3. Follow [CONTRIBUTING.md](../.github/CONTRIBUTING.md) — workflow
+## 📱 Screen Specs — [screens/](screens/README.md)
 
-### For UI Work
-
-1. [UI_GUIDE.md](UI_GUIDE.md) — UX principles + design tokens
-2. [EXERCISE_COLORS.md](EXERCISE_COLORS.md) — colors
-3. [REWARDS.md](REWARDS.md) — reward feedback patterns
-
-### For Code
-
-1. [ARCHITECTURE.md](ARCHITECTURE.md) — project structure
-2. [CONTRIBUTING.md](../.github/CONTRIBUTING.md) — quality checklist
-3. Check `__tests__/` for patterns
+See [`screens/`](screens/README.md) — one spec per screen (home, quests, session, village, treasury, …).
 
 ---
 
 ## 📝 Terminology
 
 | Term | Definition |
-| ---- | ---------- |
+| --- | --- |
 | **Quest** | Single workout template |
 | **Adventure** | Multi-quest campaign |
 | **Session** | Active workout |
 | **Boss** | Epic challenge with HP |
-| **Village** | Your fitness fingerprint |
+| **Village** | Your fitness fingerprint (derived, read-only at MVP — see [rewards-and-progression.md](economy/rewards-and-progression.md)) |
 | **Flame** | Daily streak |
 | **XP** | Experience points |

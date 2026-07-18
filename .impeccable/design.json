@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-12T00:00:00Z",
+  "title": "Design System: Bati",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Electric Blue", "canonical": "#0D33F2", "tonalRamp": ["#040a2e", "#071451", "#0a1f7d", "#0d33f2", "#2e5cff", "#5c82ff", "#9aaeff", "#d6dfff"] },
+      "secondary": { "role": "secondary", "displayName": "Magenta", "canonical": "#DB2777", "tonalRamp": ["#2e0819", "#4d0f2a", "#7d1a45", "#b31f61", "#db2777", "#e85a9b", "#f299c1", "#fcd8e8"] },
+      "bg-void": { "role": "neutral", "displayName": "The Void", "canonical": "#0B0F19", "tonalRamp": ["#05070d", "#0b0f19", "#101322", "#151a2e", "#232a45", "#3a446b", "#6b76a3", "#c3c9e0"] },
+      "surface": { "role": "neutral", "displayName": "Surface", "canonical": "#101322", "tonalRamp": ["#0b0f19", "#101322", "#151a2e", "#1c2338", "#2a3360", "#404b82", "#7681b0", "#c9cfe6"] },
+      "text": { "role": "neutral", "displayName": "Off-White", "canonical": "#E8ECFF", "tonalRamp": ["#1a1e33", "#2a3360", "#4a5488", "#7681b0", "#909acb", "#b6bde0", "#d3d9f2", "#e8ecff"] },
+      "resource-gold": { "role": "accent", "displayName": "Resource Gold", "canonical": "#FFD700", "tonalRamp": ["#332b00", "#665600", "#998200", "#ccae00", "#ffd700", "#ffe24d", "#ffed99", "#fff7cc"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero and logo moments only, e.g. boss name or level-up." },
+      "headline": { "displayName": "Headline", "purpose": "Screen titles." },
+      "title": { "displayName": "Title", "purpose": "Section and card headings." },
+      "body": { "displayName": "Body", "purpose": "Reading text and descriptions; ~65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Widely tracked HUD labels and stat chips, often uppercase." }
+    },
+    "shadows": [
+      { "name": "sticker", "value": "0px 6px 0px #060812", "purpose": "Hard zero-blur stamp under interactive cards and buttons." },
+      { "name": "primary-glow", "value": "0 0 24px rgba(13, 51, 242, 0.45)", "purpose": "Powered-on halo under the single hero action." }
+    ],
+    "motion": [
+      { "name": "quick", "value": "spring(damping 20, mass 1.2, stiffness 250)", "purpose": "Default button/card press interaction." },
+      { "name": "bouncy", "value": "spring(damping 14, mass 0.8, stiffness 150)", "purpose": "Playful game-feel entrances." },
+      { "name": "lazy", "value": "spring(damping 20, stiffness 60)", "purpose": "Slow ambient transitions." },
+      { "name": "pulse", "value": "spring(damping 10, mass 0.9, stiffness 100)", "purpose": "Subtle idle/attention states." }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single hero action per screen: electric-blue, heavy off-white border, hard stamp.",
+      "html": "<button class=\"ds-btn-primary\">START QUEST</button>",
+      "css": ".ds-btn-primary { background: #0D33F2; color: #0B0F19; border: 3px solid #E8ECFF; border-radius: 22px; padding: 0 16px; height: 48px; font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 900; font-size: 20px; box-shadow: 0 6px 0 #060812; transition: transform 0.15s, opacity 0.15s; } .ds-btn-primary:active { transform: scale(0.98); opacity: 0.9; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Magenta alternate action; never competes with the primary blue.",
+      "html": "<button class=\"ds-btn-secondary\">VIEW STATS</button>",
+      "css": ".ds-btn-secondary { background: #DB2777; color: #FFFFFF; border: 3px solid #E8ECFF; border-radius: 22px; padding: 0 16px; height: 48px; font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 900; font-size: 20px; box-shadow: 0 6px 0 #060812; transition: transform 0.15s, opacity 0.15s; } .ds-btn-secondary:active { transform: scale(0.98); opacity: 0.9; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Low-emphasis action on the overlay background.",
+      "html": "<button class=\"ds-btn-outline\">CANCEL</button>",
+      "css": ".ds-btn-outline { background: rgba(11, 15, 25, 0.92); color: #E8ECFF; border: 3px solid #E8ECFF; border-radius: 22px; padding: 0 16px; height: 48px; font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 900; font-size: 20px; transition: transform 0.15s, opacity 0.15s; } .ds-btn-outline:active { transform: scale(0.98); opacity: 0.9; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Stamped surface for content blocks: heavy border, hard sticker shadow.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Iron Temple</h3><p class=\"ds-card-body\">3 rounds \u00b7 12 exercises</p></div>",
+      "css": ".ds-card { background: #101322; border: 3px solid #E8ECFF; border-radius: 22px; padding: 16px; box-shadow: 0 6px 0 #060812; } .ds-card-title { font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 700; font-size: 24px; line-height: 32px; color: #E8ECFF; margin: 0; } .ds-card-body { font-family: NotoSans, system-ui, sans-serif; font-size: 16px; line-height: 24px; color: #909ACB; margin: 4px 0 0; }"
+    },
+    {
+      "name": "Pressable Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pill-shaped filter/action chip with 44px min tap height.",
+      "html": "<button class=\"ds-chip\">Chest</button>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; background: #101322; color: #E8ECFF; border: 2px solid #E8ECFF; border-radius: 34px; padding: 8px 12px; font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 900; font-size: 13px; transition: transform 0.15s, opacity 0.15s; } .ds-chip:active { transform: scale(0.99); opacity: 0.92; }"
+    },
+    {
+      "name": "Static Tag",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Passive label tag; smaller radius, thin border, dimmed.",
+      "html": "<span class=\"ds-tag\">+120 XP</span>",
+      "css": ".ds-tag { display: inline-flex; align-items: center; background: #101322; color: #E8ECFF; border: 1px solid #E8ECFF; border-radius: 9px; padding: 4px 8px; opacity: 0.92; font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 800; font-size: 13px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Hero's HUD",
+    "overview": "Bati looks like the heads-up display of a fantasy warrior gearing up for a fight, rendered on high-tech glass. The world is deep obsidian blue, lit by a single electric-blue signal that behaves like a power source: it glows, it presses, it marks the one action that matters. A user opens Bati mid-workout, phone in one hand, and the interface has to read instantly and get out of the way. Surfaces are high-contrast and physical: cards and buttons wear a heavy 3px off-white edge with a hard, offset sticker shadow, so elements feel stamped onto the void rather than floating in soft blur. A parallel glass-and-glow vocabulary exists for atmospheric surfaces. The two are deliberate registers: hard-edged for the things you act on, glass for the things you look through.",
+    "keyCharacteristics": [
+      "Always dark: one obsidian-blue world across iOS and Android, no light mode, no per-OS reskin.",
+      "One electric-blue signal reserved for the primary action.",
+      "Heavy off-white borders and hard offset shadows on interactive surfaces.",
+      "Two type voices: Space Grotesk (heroic) over Noto Sans (legible).",
+      "Meaning never rides on color alone; icons and labels back every state."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Electric Blue marks a single primary action per screen. If two things are blue, the user can't tell which to press. Everything else is neutral, secondary, or a resource hue.", "section": "colors" },
+      { "name": "The Reserved Resource Rule", "body": "The resource palette (gold, wood, stone, fire, water, wind, grain) is never borrowed for decoration. A resource color always means that resource.", "section": "colors" },
+      { "name": "The Tracked-Caps-Are-Labels Rule", "body": "The wide 4px tracking is a label device, not a heading device. Use it for small HUD labels and stat chips; never stretch it across a paragraph or a long title.", "section": "typography" },
+      { "name": "The Hard-or-Glow Rule", "body": "Depth is a hard offset stamp on things you touch, or a colored glow on the one thing you should touch. Never a soft grey blur; that reads as generic Material and breaks the HUD world.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do reserve Electric Blue (#0D33F2) for a single primary action per screen; back it with Primary Glow when it's the hero action.",
+      "Do keep everything dark: The Void (#0B0F19) is the only body background. Assume dark mode always.",
+      "Do use Tamagui tokens (p=\"$4\", bg=\"$bgDark\", color=\"$text\") instead of hex codes or inline styles.",
+      "Do route every icon through @/hooks/useGameIcon / GameIcon.",
+      "Do pair every state (success, error, resource, active tab) with an icon or label so meaning never depends on color alone.",
+      "Do use the hard sticker shadow (zero blur, offset) on interactive surfaces and glass only on atmospheric panels.",
+      "Do keep tap targets at 44pt minimum and honor reduced-motion with a calmer or instant alternative to the spring animations.",
+      "Do wrap all user-facing text in t() (i18next, EN/FR)."
+    ],
+    "donts": [
+      "Don't build a light theme or write colorScheme === 'light' ? … : …. There is no light mode.",
+      "Don't turn Bati into a cluttered, stat-heavy gym app: charts and numbers must never bury the next action.",
+      "Don't make it cartoonish: no bright mascots, no candy palette, no bouncy-everything.",
+      "Don't go corporate or clinical: no flat white dashboards, no health-app sterility.",
+      "Don't use soft grey Material drop-shadows; depth is a hard stamp or a colored glow.",
+      "Don't borrow a resource hue (gold, wood, stone, fire, water, wind, grain) for decoration.",
+      "Don't import icons from lucide-react-native directly or hardcode hex colors and inline styles.",
+      "Don't stretch the 4px tracked-caps label treatment across body copy or long titles."
+    ]
+  }
+}

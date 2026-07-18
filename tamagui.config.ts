@@ -105,6 +105,7 @@ const tokens = createTokens({
 
     secondary: "#DB2777", // Magenta
     success: "#16A34A",
+    warning: "#F59E0B", // Amber (difficulty MEDIUM, cautions)
     error: "#FF1744",
 
     // --- IMMERSIVE BACKGROUNDS ---
@@ -173,6 +174,9 @@ export const config = createTamagui({
       // Semantic mappings
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
+      success: tokens.color.success,
+      warning: tokens.color.warning,
+      danger: tokens.color.error,
 
       // Surface mappings
       surface: tokens.color.surface,
@@ -194,6 +198,9 @@ export const config = createTamagui({
 
       primary: tokens.color.primary,
       secondary: tokens.color.secondary,
+      success: tokens.color.success,
+      warning: tokens.color.warning,
+      danger: tokens.color.error,
 
       surface: tokens.color.surface,
       surface2: tokens.color.surface2,

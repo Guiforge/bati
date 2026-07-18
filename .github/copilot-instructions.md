@@ -103,3 +103,19 @@ const { GameIcon } = useGameIcon();
 - **Formatting**: Biome (double quotes).
 - **Naming**: `PascalCase` for Components.
 - **Imports**: External imports first, then internal alias (`@/`) imports.
+
+---
+
+## 📚 Documentation (LLM Wiki)
+
+The `docs/` folder is maintained as a **Karpathy-style LLM wiki**. When you add or change
+durable knowledge (decisions, patterns, features, gotchas), follow the protocol in
+[`docs/WIKI.md`](../docs/WIKI.md):
+
+1. Update the right page (or create one in the correct category).
+2. Fix cross-links; keep the catalog [`docs/README.md`](../docs/README.md) accurate.
+3. Append an entry to [`docs/log.md`](../docs/log.md).
+
+Read `docs/README.md` first to locate relevant pages; cite them with `[Text](FILE.md)`.
+Ground every claim in the codebase or `docs/raw/` — never invent.
+

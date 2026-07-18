@@ -23,6 +23,7 @@ export function useSmartAction() {
   useEffect(() => {
     let cancelled = false;
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Priority waterfall, refactor planned
     async function determineAction() {
       try {
         // 1. Check for Active Adventure

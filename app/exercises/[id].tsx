@@ -10,6 +10,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { getExerciseAsset } from "@/constants/assetMap";
 import { getExerciseById } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
@@ -18,10 +19,8 @@ import { useSettingsStore } from "@/stores/settings";
 type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
 type Status = "loading" | "ready" | "error";
 
-const PLACEHOLDER = require("../../assets/placeholder.jpg");
-
 const resolveAsset = (path?: string | null): ImageSourcePropType =>
-  path === "assets/placeholder.jpg" ? PLACEHOLDER : PLACEHOLDER;
+  path?.startsWith("http") ? { uri: path } : getExerciseAsset(path ?? "");
 
 const parseId = (raw?: string | string[]): number | null => {
   const val = Array.isArray(raw) ? raw[0] : raw;

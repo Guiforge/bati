@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Animated, PanResponder, Platform, Pressable } from "react-native";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
@@ -29,6 +29,7 @@ function clamp(n: number, min: number, max: number) {
   return Math.min(Math.max(n, min), max);
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Bottom sheet gesture and filter UI state are tightly coupled.
 export function QuestFiltersSheet({
   language,
   availableMuscles,
@@ -68,6 +69,33 @@ export function QuestFiltersSheet({
     translateY.setValue(closedOffset);
     lastY.current = closedOffset;
   }, [closedOffset, isOpen, translateY]);
+
+  const [activeGroup, setActiveGroup] = useState<"muscles" | "equipment">("muscles");
+
+  const selectedFilters = useMemo(
+    () =>
+      [
+        selectedMuscle
+          ? {
+              key: `muscle-${selectedMuscle}`,
+              label: MUSCLE_LABELS[selectedMuscle]?.[language] ?? selectedMuscle,
+              clear: () => onSelectMuscle(null),
+            }
+          : null,
+        selectedEquipment
+          ? {
+              key: `equipment-${selectedEquipment}`,
+              label: EQUIPMENT_LABELS[selectedEquipment]?.[language] ?? selectedEquipment,
+              clear: () => onSelectEquipment(null),
+            }
+          : null,
+      ].filter(Boolean) as Array<{
+        key: string;
+        label: string;
+        clear: () => void;
+      }>,
+    [language, onSelectEquipment, onSelectMuscle, selectedEquipment, selectedMuscle],
+  );
 
   const animateTo = useCallback(
     (toValue: number) => {
@@ -113,6 +141,7 @@ export function QuestFiltersSheet({
   }, [animateTo, closedOffset, translateY]);
 
   const hasActiveFilters = Boolean(selectedMuscle || selectedEquipment);
+  const activeCount = selectedFilters.length;
 
   return (
     <>
@@ -154,14 +183,35 @@ export function QuestFiltersSheet({
                       <Text fontWeight="900" fontSize={16} color="$color">
                         {t("quests.filters_title", "Filters")}
                       </Text>
-                      {hasActiveFilters ? (
-                        <Chip label={t("quests.filters_active", "Active")} tone="secondary" />
-                      ) : null}
                     </XStack>
 
                     <Text fontWeight="900" fontSize={14} color="$primary">
                       {isOpen ? t("quests.filters_hide", "Hide") : t("quests.filters_show", "Show")}
                     </Text>
+                  </XStack>
+
+                  <XStack mt="$2" items="center" justify="space-between" gap="$2">
+                    <Text fontSize={13} color="$color" opacity={0.7}>
+                      {activeCount
+                        ? t("quests.filters_active_summary", {
+                            count: activeCount,
+                            defaultValue: `${activeCount} active filters`,
+                          })
+                        : t("quests.filters_browse_all", "Browse all quests")}
+                    </Text>
+
+                    {hasActiveFilters ? (
+                      <Pressable
+                        onPress={() => {
+                          onSelectMuscle(null);
+                          onSelectEquipment(null);
+                        }}
+                      >
+                        <Text fontWeight="900" fontSize={13} color="$primary">
+                          {t("quests.filters_clear", "Clear all")}
+                        </Text>
+                      </Pressable>
+                    ) : null}
                   </XStack>
 
                   <YStack mt="$2" items="center">
@@ -180,56 +230,63 @@ export function QuestFiltersSheet({
 
               {isOpen ? (
                 <YStack gap="$3">
-                  <Text fontWeight="900" fontSize={13} color="$color" opacity={0.5}>
-                    {t("quests.filter_muscles", "Muscles").toUpperCase()}
-                  </Text>
                   <XStack gap="$2" flexWrap="wrap">
                     <Chip
-                      label={t("quests.all", "All")}
-                      tone={!selectedMuscle ? "primary" : "default"}
-                      onPress={() => onSelectMuscle(null)}
+                      label={t("quests.filter_muscles", "Muscles")}
+                      tone={activeGroup === "muscles" ? "primary" : "default"}
+                      onPress={() => setActiveGroup("muscles")}
                     />
-                    {availableMuscles.map((m) => (
-                      <Chip
-                        key={m}
-                        label={MUSCLE_LABELS[m]?.[language] ?? m}
-                        tone={selectedMuscle === m ? "primary" : "default"}
-                        onPress={() => onSelectMuscle(m)}
-                      />
-                    ))}
-                  </XStack>
-
-                  <Text fontWeight="900" fontSize={13} color="$color" opacity={0.5}>
-                    {t("quests.filter_equipment", "Equipment").toUpperCase()}
-                  </Text>
-                  <XStack gap="$2" flexWrap="wrap">
                     <Chip
-                      label={t("quests.all", "All")}
-                      tone={!selectedEquipment ? "secondary" : "default"}
-                      onPress={() => onSelectEquipment(null)}
+                      label={t("quests.filter_equipment", "Equipment")}
+                      tone={activeGroup === "equipment" ? "secondary" : "default"}
+                      onPress={() => setActiveGroup("equipment")}
                     />
-                    {availableEquipment.map((e) => (
-                      <Chip
-                        key={e}
-                        label={EQUIPMENT_LABELS[e]?.[language] ?? e}
-                        tone={selectedEquipment === e ? "secondary" : "default"}
-                        onPress={() => onSelectEquipment(e)}
-                      />
-                    ))}
                   </XStack>
 
-                  {hasActiveFilters ? (
-                    <Pressable
-                      onPress={() => {
-                        onSelectMuscle(null);
-                        onSelectEquipment(null);
-                      }}
-                    >
-                      <Paragraph color="$primary" fontWeight="900">
-                        {t("quests.filters_clear", "Clear filters")} ✨
-                      </Paragraph>
-                    </Pressable>
+                  {selectedFilters.length > 0 ? (
+                    <YStack gap="$2">
+                      <Text fontWeight="900" fontSize={13} color="$color" opacity={0.55}>
+                        {t("quests.filters_selected", "Selected")}
+                      </Text>
+                      <XStack gap="$2" flexWrap="wrap">
+                        {selectedFilters.map((filter) => (
+                          <Chip
+                            key={filter.key}
+                            label={filter.label}
+                            tone="primary"
+                            onPress={filter.clear}
+                          />
+                        ))}
+                      </XStack>
+                    </YStack>
                   ) : null}
+
+                  <YStack gap="$2">
+                    <Text fontWeight="900" fontSize={13} color="$color" opacity={0.55}>
+                      {activeGroup === "muscles"
+                        ? t("quests.filter_muscles", "Muscles")
+                        : t("quests.filter_equipment", "Equipment")}
+                    </Text>
+                    <XStack gap="$2" flexWrap="wrap">
+                      {activeGroup === "muscles"
+                        ? availableMuscles.map((value) => (
+                            <Chip
+                              key={value}
+                              label={MUSCLE_LABELS[value]?.[language] ?? value}
+                              tone={selectedMuscle === value ? "primary" : "default"}
+                              onPress={() => onSelectMuscle(value)}
+                            />
+                          ))
+                        : availableEquipment.map((value) => (
+                            <Chip
+                              key={value}
+                              label={EQUIPMENT_LABELS[value]?.[language] ?? value}
+                              tone={selectedEquipment === value ? "secondary" : "default"}
+                              onPress={() => onSelectEquipment(value)}
+                            />
+                          ))}
+                    </XStack>
+                  </YStack>
                 </YStack>
               ) : null}
             </YStack>

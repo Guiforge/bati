@@ -1,3 +1,4 @@
+import { LegendList } from "@legendapp/list";
 import { BarChart2, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -74,6 +75,13 @@ export default function JournalScreen() {
     }, [loadHistory]),
   );
 
+  const renderHistoryItem = useCallback(
+    ({ item }: { item: JournalEntry }) => (
+      <SessionCard entry={item} onPress={() => router.push(`/journal/${item.id}` as never)} />
+    ),
+    [router],
+  );
+
   const TabButton = ({
     tab,
     icon,
@@ -137,49 +145,57 @@ export default function JournalScreen() {
         )}
       </YStack>
 
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: insets.bottom + 20,
-          gap: 12,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {loading && history.length === 0 ? (
-          <Text style={{ textAlign: "center" }} mt="$10" color="$textSecondary">
-            {t("common.loading", "Loading...")}
-          </Text>
-        ) : history.length === 0 ? (
-          <YStack items="center" justify="center" mt="$10" gap="$4">
-            <Text fontSize={40}>📜</Text>
-            <H2 fontSize={20} style={{ textAlign: "center" }} color="$text">
-              {t("journal.empty_title", "No tales yet")}
-            </H2>
-            <Paragraph style={{ textAlign: "center" }} color="$textSecondary">
-              {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
-            </Paragraph>
-          </YStack>
-        ) : activeTab === "stats" ? (
-          <>
-            <UserLevelCard />
-            <DifficultyProgressionCard />
-            <PersonalRecordsCard />
-            <AchievementsCard />
-            <JournalStats sessions={history} />
-            <MonthlyCalendarCard />
-            <MuscleBalanceCard />
-            <SuggestedQuestsCard />
-          </>
-        ) : (
-          history.map((entry) => (
-            <SessionCard
-              key={entry.id}
-              entry={entry}
-              onPress={() => router.push(`/journal/${entry.id}` as never)}
-            />
-          ))
-        )}
-      </ScrollView>
+      {activeTab === "history" && history.length > 0 ? (
+        <LegendList
+          data={history}
+          renderItem={renderHistoryItem}
+          keyExtractor={(entry) => String(entry.id)}
+          ItemSeparatorComponent={() => <YStack height={12} />}
+          estimatedItemSize={100}
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: insets.bottom + 20,
+          }}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: insets.bottom + 20,
+            gap: 12,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {loading && history.length === 0 ? (
+            <Text style={{ textAlign: "center" }} mt="$10" color="$textSecondary">
+              {t("common.loading", "Loading...")}
+            </Text>
+          ) : history.length === 0 ? (
+            <YStack items="center" justify="center" mt="$10" gap="$4">
+              <Text fontSize={40}>📜</Text>
+              <H2 fontSize={20} style={{ textAlign: "center" }} color="$text">
+                {t("journal.empty_title", "No tales yet")}
+              </H2>
+              <Paragraph style={{ textAlign: "center" }} color="$textSecondary">
+                {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
+              </Paragraph>
+            </YStack>
+          ) : (
+            <>
+              <UserLevelCard />
+              <DifficultyProgressionCard />
+              <PersonalRecordsCard />
+              <AchievementsCard />
+              <JournalStats sessions={history} />
+              <MonthlyCalendarCard />
+              <MuscleBalanceCard />
+              <SuggestedQuestsCard />
+            </>
+          )}
+        </ScrollView>
+      )}
     </YStack>
   );
 }

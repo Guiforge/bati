@@ -16,7 +16,10 @@ export function formatOvertime(seconds: number) {
 }
 
 export function useSessionTimer() {
-  const { timerStartTimestamp, timerDuration, status, lastPauseTimestamp } = useSessionStore();
+  const timerStartTimestamp = useSessionStore((s) => s.timerStartTimestamp);
+  const timerDuration = useSessionStore((s) => s.timerDuration);
+  const status = useSessionStore((s) => s.status);
+  const lastPauseTimestamp = useSessionStore((s) => s.lastPauseTimestamp);
 
   // remainingSeconds: positive = time left, negative = overtime
   const [remainingSeconds, setRemainingSeconds] = useState(0);

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db, schema } from "./client";
 import { addResources } from "./resources";
 import type { MuscleCode } from "./schema";
@@ -161,17 +161,22 @@ async function calculateBossHp(adventureId: number): Promise<number> {
 
   if (steps.length === 0) return 100; // Default HP
 
-  let totalHp = 0;
+  // A quest can appear in more than one step (e.g. repeated within a campaign); its
+  // exercises must be counted once per occurrence, matching the original per-step loop.
+  const stepCountByQuestId = new Map<number, number>();
   for (const step of steps) {
-    const exercises = await db
-      .select({ targetMax: questExercises.targetMax })
-      .from(questExercises)
-      .where(eq(questExercises.questId, step.questId));
-
-    for (const ex of exercises) {
-      totalHp += ex.targetMax;
-    }
+    stepCountByQuestId.set(step.questId, (stepCountByQuestId.get(step.questId) ?? 0) + 1);
   }
+
+  const exercises = await db
+    .select({ questId: questExercises.questId, targetMax: questExercises.targetMax })
+    .from(questExercises)
+    .where(inArray(questExercises.questId, [...stepCountByQuestId.keys()]));
+
+  const totalHp = exercises.reduce(
+    (sum, ex) => sum + ex.targetMax * (stepCountByQuestId.get(ex.questId) ?? 0),
+    0,
+  );
 
   // Minimum HP of 50, multiply by difficulty factor
   return Math.max(50, totalHp);

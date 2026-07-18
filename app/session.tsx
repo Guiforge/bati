@@ -15,7 +15,10 @@ export default function SessionScreen() {
   // Prevent screen from dimming during workout
   useKeepAwake();
 
-  const { status, prePauseStatus, quest, pauseSession } = useSessionStore();
+  const status = useSessionStore((s) => s.status);
+  const prePauseStatus = useSessionStore((s) => s.prePauseStatus);
+  const quest = useSessionStore((s) => s.quest);
+  const pauseSession = useSessionStore((s) => s.pauseSession);
 
   // Handle Android Hardware Back Button
   useEffect(() => {

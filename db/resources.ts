@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { ExerciseStyle, MuscleCode, ResourceCode, ResourceTransactionType } from "./schema";
 import { muscleToResource, resourceCodes } from "./schema";
@@ -69,28 +69,31 @@ export async function addResources(
 ): Promise<void> {
   const { completedSessionId, reason = "", transactionType = "earned" } = options;
 
-  for (const { resource, amount } of resources) {
-    if (amount <= 0) continue;
+  const toApply = resources.filter(({ amount }) => amount > 0);
+  if (toApply.length === 0) return;
 
-    // Update inventory
-    await db
-      .update(resourceInventory)
-      .set({
-        amount: sql`${resourceInventory.amount} + ${amount}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(resourceInventory.resource, resource));
+  await Promise.all(
+    toApply.map(({ resource, amount }) =>
+      db
+        .update(resourceInventory)
+        .set({
+          amount: sql`${resourceInventory.amount} + ${amount}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(resourceInventory.resource, resource)),
+    ),
+  );
 
-    // Log transaction
-    await db.insert(resourceTransactions).values({
+  await db.insert(resourceTransactions).values(
+    toApply.map(({ resource, amount }) => ({
       resource,
       amount,
       transactionType,
       completedSessionId: completedSessionId ?? null,
       reason,
       createdAt: new Date(),
-    });
-  }
+    })),
+  );
 }
 
 /**
@@ -105,34 +108,48 @@ export async function spendResources(
 ): Promise<boolean> {
   const { reason = "spent" } = options;
 
-  // First check if we have enough of each resource
+  // Check if we have enough of each resource in one query
+  const currentRows = await db
+    .select({ resource: resourceInventory.resource, amount: resourceInventory.amount })
+    .from(resourceInventory)
+    .where(
+      inArray(
+        resourceInventory.resource,
+        resources.map(({ resource }) => resource),
+      ),
+    );
+  const currentByResource = new Map(currentRows.map((row) => [row.resource, row.amount]));
   for (const { resource, amount } of resources) {
-    const current = await getResourceAmount(resource);
-    if (current < amount) {
+    if ((currentByResource.get(resource) ?? 0) < amount) {
       return false; // Insufficient resources
     }
   }
 
   // Deduct resources
-  for (const { resource, amount } of resources) {
-    if (amount <= 0) continue;
+  const toApply = resources.filter(({ amount }) => amount > 0);
+  await Promise.all(
+    toApply.map(({ resource, amount }) =>
+      db
+        .update(resourceInventory)
+        .set({
+          amount: sql`${resourceInventory.amount} - ${amount}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(resourceInventory.resource, resource)),
+    ),
+  );
 
-    await db
-      .update(resourceInventory)
-      .set({
-        amount: sql`${resourceInventory.amount} - ${amount}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(resourceInventory.resource, resource));
-
-    // Log transaction (negative amount for spending)
-    await db.insert(resourceTransactions).values({
-      resource,
-      amount: -amount,
-      transactionType: "spent",
-      reason,
-      createdAt: new Date(),
-    });
+  // Log transactions (negative amount for spending)
+  if (toApply.length > 0) {
+    await db.insert(resourceTransactions).values(
+      toApply.map(({ resource, amount }) => ({
+        resource,
+        amount: -amount,
+        transactionType: "spent" as const,
+        reason,
+        createdAt: new Date(),
+      })),
+    );
   }
 
   return true;

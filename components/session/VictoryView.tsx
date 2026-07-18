@@ -36,22 +36,20 @@ export function VictoryView() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
   const { success, selection } = useHaptics();
   const { playSound } = useSound();
   const { showError } = useToast();
-  const {
-    quest,
-    userLevel,
-    startTime,
-    totalPausedTime,
-    results,
-    saveSession,
-    quitSession,
-    adventureRunStepId,
-    bossFight,
-  } = useSessionStore();
+  const quest = useSessionStore((s) => s.quest);
+  const userLevel = useSessionStore((s) => s.userLevel);
+  const startTime = useSessionStore((s) => s.startTime);
+  const totalPausedTime = useSessionStore((s) => s.totalPausedTime);
+  const results = useSessionStore((s) => s.results);
+  const saveSession = useSessionStore((s) => s.saveSession);
+  const quitSession = useSessionStore((s) => s.quitSession);
+  const adventureRunStepId = useSessionStore((s) => s.adventureRunStepId);
+  const bossFight = useSessionStore((s) => s.bossFight);
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [newRecords, setNewRecords] = useState<NewRecordResult[]>([]);

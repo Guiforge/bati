@@ -5,8 +5,9 @@ import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
 export function BossTauntOverlay() {
-  const { bossFight, status } = useSessionStore();
-  const { language } = useSettingsStore();
+  const bossFight = useSessionStore((s) => s.bossFight);
+  const status = useSessionStore((s) => s.status);
+  const language = useSettingsStore((s) => s.language);
   const [taunt, setTaunt] = useState<string | null>(null);
 
   // Only show taunts during active parts of the session

@@ -10,7 +10,10 @@ export function PausedOverlay() {
   const { t } = useTranslation();
   const router = useRouter();
   const { mediumImpact, warning } = useHaptics();
-  const { status, resumeSession, restartRound, quitSession } = useSessionStore();
+  const status = useSessionStore((s) => s.status);
+  const resumeSession = useSessionStore((s) => s.resumeSession);
+  const restartRound = useSessionStore((s) => s.restartRound);
+  const quitSession = useSessionStore((s) => s.quitSession);
 
   if (status !== "paused") return null;
 

@@ -13,19 +13,17 @@ import { BossHpBar } from "./BossHpBar";
 export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const { selection, mediumImpact } = useHaptics();
   const reducedMotion = useReducedMotion();
-  const {
-    quest,
-    currentExerciseIndex,
-    skipRest,
-    addRestTime,
-    results,
-    updateLastResult,
-    bossFight,
-    lastDamageResult,
-  } = useSessionStore();
+  const quest = useSessionStore((s) => s.quest);
+  const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
+  const skipRest = useSessionStore((s) => s.skipRest);
+  const addRestTime = useSessionStore((s) => s.addRestTime);
+  const results = useSessionStore((s) => s.results);
+  const updateLastResult = useSessionStore((s) => s.updateLastResult);
+  const bossFight = useSessionStore((s) => s.bossFight);
+  const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
   const { remainingSeconds, progress } = useSessionTimer();
 
   if (!quest) return null;

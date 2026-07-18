@@ -11,7 +11,8 @@ export function CountdownView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { remainingSeconds } = useSessionTimer();
-  const { status, finishCountdown } = useSessionStore();
+  const status = useSessionStore((s) => s.status);
+  const finishCountdown = useSessionStore((s) => s.finishCountdown);
   const { lightImpact, success } = useHaptics();
   const reducedMotion = useReducedMotion();
   const prevSecondsRef = useRef(remainingSeconds);

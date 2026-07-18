@@ -33,7 +33,7 @@ export const EXERCISE_ASSETS = {
   samurai_warrior_pose: require("@/assets/images/exercises/samurai_warrior_pose.png"),
   rogue_skater_hop: require("@/assets/images/exercises/rogue_skater_hop.png"),
   barbarian_overhead_press: require("@/assets/images/exercises/barbarian_overhead_press.png"),
-  alchemist_hollow_body_hold: require("@/assets/images/exercises/alchemist_hollow_body_hold.png"),
+  alchemist_hollow_body_hold: require("@/assets/images/exercises/alchemist_hollow_body.png"),
 } as const;
 
 // ============================================================
@@ -94,7 +94,12 @@ export type AdventureAssetKey = keyof typeof ADVENTURE_ASSETS;
  * Get exercise asset by ID (with fallback to placeholder)
  */
 export function getExerciseAsset(id: string) {
-  return EXERCISE_ASSETS[id as ExerciseAssetKey] ?? require("@/assets/placeholder.jpg");
+  const key =
+    id
+      .split("/")
+      .pop()
+      ?.replace(/\.[^.]+$/, "") ?? id;
+  return EXERCISE_ASSETS[key as ExerciseAssetKey] ?? require("@/assets/placeholder.jpg");
 }
 
 /**

@@ -40,7 +40,7 @@ export default function HomeScreen() {
                 <ActionCard
                   flex={1}
                   title={t("tabs.village", "Village")}
-                  subtitle={t("home.visit_village", "Visit Village")}
+                  subtitle={t("home.visit_village", "See your progress")}
                   onPress={() => router.push("/village")}
                   icon={
                     <Image

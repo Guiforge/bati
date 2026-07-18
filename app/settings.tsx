@@ -84,8 +84,10 @@ export default function SettingsScreen() {
           chromeless
           onPress={() => router.back()}
           icon={<ChevronLeft size={24} color="$text" />}
+          accessibilityRole="button"
+          accessibilityLabel={t("quests.go_back", "Go back")}
         />
-        <Text fontSize={20} fontWeight="900" color="$text">
+        <Text fontSize={20} fontWeight="700" color="$text">
           {t("settings.title", "Settings")}
         </Text>
       </XStack>

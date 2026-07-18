@@ -76,7 +76,7 @@ export function BossPhaseImage({ currentHp, totalHp, size = 80 }: BossPhaseImage
         height={size}
         rounded={size / 2}
         bg={isEnraged ? "$pastelPink" : "$pastelPurple"}
-        borderWidth={3}
+        borderWidth={1}
         borderColor={isEnraged ? "$error" : "$color"}
         items="center"
         justify="center"
@@ -110,7 +110,7 @@ export function BossPhaseImage({ currentHp, totalHp, size = 80 }: BossPhaseImage
             rounded={3}
             bg={phase <= currentPhase ? "$color" : "$bgLight"}
             borderWidth={1}
-            borderColor="$color"
+            borderColor="$borderStrong"
             opacity={phase === currentPhase ? 1 : 0.4}
           />
         ))}

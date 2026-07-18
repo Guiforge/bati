@@ -69,8 +69,8 @@ export function HomeSettingsMenu() {
     <Button
       onPress={onPress}
       bg={color}
-      borderWidth={3}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       rounded="$6"
       height={60}
       pressStyle={{ opacity: 0.9, scale: 0.98 }}
@@ -80,7 +80,7 @@ export function HomeSettingsMenu() {
     >
       <XStack items="center" gap="$3">
         {icon}
-        <Text fontWeight="900" fontSize={18} color={tamaguiTheme.color?.get() as any}>
+        <Text fontWeight="700" fontSize={18} color={tamaguiTheme.color?.get() as any}>
           {label}
         </Text>
       </XStack>
@@ -108,7 +108,7 @@ export function HomeSettingsMenu() {
     <Button
       onPress={onPress}
       bg={active ? "$primary" : "$background"}
-      borderWidth={3}
+      borderWidth={1}
       borderColor={active ? "$primary" : "$color"}
       rounded="$6"
       height={54}
@@ -119,7 +119,7 @@ export function HomeSettingsMenu() {
     >
       <XStack items="center" gap="$3">
         {icon}
-        <Text fontWeight="900" fontSize={16} color={active ? "white" : "$color"}>
+        <Text fontWeight="700" fontSize={16} color={active ? "white" : "$color"}>
           {label}
         </Text>
       </XStack>
@@ -222,7 +222,7 @@ export function HomeSettingsMenu() {
             onPress={() => setAvatarId(a.id)}
             p={0}
             bg={selected ? "$primary" : "$bgLight"}
-            borderWidth={3}
+            borderWidth={1}
             borderColor={selected ? "$primary" : "$color"}
             width={70}
             height={70}
@@ -234,7 +234,7 @@ export function HomeSettingsMenu() {
               height={60}
               rounded={30}
               overflow="hidden"
-              borderWidth={2}
+              borderWidth={1}
               borderColor={selected ? "white" : "transparent"}
             >
               <Image
@@ -337,7 +337,11 @@ export function HomeSettingsMenu() {
   return (
     <>
       <XStack position="absolute" t={insets.top + 12} r={insets.right + 16} z={50}>
-        <AppIconButton onPress={() => setOpen(true)}>
+        <AppIconButton
+          onPress={() => setOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t("settings.title", "Settings")}
+        >
           <Menu size={24} color={tamaguiTheme.color?.get() as any} strokeWidth={3} />
         </AppIconButton>
       </XStack>
@@ -348,7 +352,7 @@ export function HomeSettingsMenu() {
             fullscreen
             z={1000}
             bg="rgba(0,0,0,0.6)"
-            animation="lazy"
+            animation="quick"
             enterStyle={{ opacity: 0 }}
             exitStyle={{ opacity: 0 }}
             justify="center"
@@ -361,7 +365,7 @@ export function HomeSettingsMenu() {
               style={{ maxWidth: 360 }}
               bg="$background"
               borderWidth={4}
-              borderColor="$color"
+              borderColor="$borderStrong"
               rounded="$8"
               shadowColor="black"
               shadowOffset={{ width: 8, height: 8 }}
@@ -377,8 +381,8 @@ export function HomeSettingsMenu() {
               <XStack
                 bg="$bgLight"
                 p="$4"
-                borderBottomWidth={3}
-                borderColor="$color"
+                borderBottomWidth={1}
+                borderColor="$borderStrong"
                 items="center"
                 justify="space-between"
               >
@@ -389,13 +393,15 @@ export function HomeSettingsMenu() {
                       width={36}
                       height={36}
                       rounded={18}
-                      borderWidth={2}
+                      borderWidth={1}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("quests.go_back", "Go back")}
                     >
                       <ChevronLeft size={20} color={tamaguiTheme.color?.get() as any} />
                     </AppIconButton>
                   )}
                   <Text
-                    fontWeight="900"
+                    fontWeight="700"
                     fontSize={20}
                     color={tamaguiTheme.color?.get() as any}
                     textTransform="uppercase"
@@ -410,7 +416,9 @@ export function HomeSettingsMenu() {
                   height={36}
                   rounded={18}
                   bg="$error"
-                  borderWidth={2}
+                  borderWidth={1}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("village.close", "Close")}
                 >
                   <X size={20} color="white" />
                 </AppIconButton>

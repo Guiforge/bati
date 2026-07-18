@@ -38,7 +38,7 @@ export function RecentAchievements() {
               bg="$bgLight"
               justify="center"
               items="center"
-              borderWidth={2}
+              borderWidth={1}
               borderColor="$primary"
             >
               <Text fontSize={20}>{a.definition.icon}</Text>

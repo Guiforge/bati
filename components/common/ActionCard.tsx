@@ -44,12 +44,12 @@ export function ActionCard({
         {/* Content */}
         <YStack flex={1} gap="$1">
           {title && (
-            <Text fontSize="$4" fontWeight="700" color="$text">
+            <Text fontSize="$4" fontWeight="700" color="$text" numberOfLines={1}>
               {title}
             </Text>
           )}
           {subtitle && (
-            <Text fontSize="$3" color="$textSecondary">
+            <Text fontSize="$3" color="$textSecondary" numberOfLines={1}>
               {subtitle}
             </Text>
           )}

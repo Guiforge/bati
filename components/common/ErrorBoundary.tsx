@@ -75,7 +75,7 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
       >
         <Text fontSize={64}>😵</Text>
         <YStack items="center" gap="$2">
-          <H1 color="$color" fontWeight="900" fontSize={24} style={{ textAlign: "center" }}>
+          <H1 color="$color" fontWeight="700" fontSize={24} style={{ textAlign: "center" }}>
             {t("errors.something_went_wrong", "Something went wrong")}
           </H1>
           <Paragraph color="$color" opacity={0.6} style={{ textAlign: "center" }}>
@@ -88,8 +88,8 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
             bg="$pastelPink"
             p="$3"
             rounded="$6"
-            borderWidth={3}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
             maxW="100%"
           >
             <Text fontSize={12} color="$color" numberOfLines={5}>
@@ -101,13 +101,13 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
         {onRetry && (
           <Button
             bg="$primary"
-            borderWidth={3}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
             rounded="$6"
             onPress={onRetry}
             pressStyle={{ opacity: 0.9, scale: 0.98 }}
           >
-            <Text fontWeight="800" color="white">
+            <Text fontWeight="700" color="white">
               {t("errors.try_again", "Try Again")}
             </Text>
           </Button>
@@ -130,8 +130,8 @@ export function InlineError({ message, onRetry }: { message?: string; onRetry?: 
       bg="$pastelPink"
       p="$4"
       rounded="$6"
-      borderWidth={3}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       gap="$3"
       items="center"
     >
@@ -143,13 +143,13 @@ export function InlineError({ message, onRetry }: { message?: string; onRetry?: 
         <Button
           size="$3"
           bg="$bgLight"
-          borderWidth={3}
-          borderColor="$color"
+          borderWidth={1}
+          borderColor="$borderStrong"
           rounded="$6"
           onPress={onRetry}
           pressStyle={{ opacity: 0.9, scale: 0.98 }}
         >
-          <Button.Text fontWeight="800" color="$color">
+          <Button.Text fontWeight="700" color="$color">
             {t("errors.try_again", "Try Again")}
           </Button.Text>
         </Button>

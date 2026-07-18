@@ -77,7 +77,7 @@ export function NewRecordsBadge({ records }: Props) {
         <YStack gap="$3">
           <XStack items="center" gap="$2" justify="center">
             <Award size={22} color="$primary" />
-            <Text fontWeight="900" fontSize={18} color="$primary">
+            <Text fontWeight="700" fontSize={18} color="$primary">
               {t("session.new_records", { count: records.length })}
             </Text>
             <Award size={22} color="$primary" />
@@ -91,8 +91,8 @@ export function NewRecordsBadge({ records }: Props) {
                 p="$2"
                 px="$3"
                 rounded="$3"
-                borderWidth={2}
-                borderColor="$color"
+                borderWidth={1}
+                borderColor="$borderStrong"
                 items="center"
                 gap="$2"
               >
@@ -100,7 +100,7 @@ export function NewRecordsBadge({ records }: Props) {
                 <Text flex={1} fontWeight="700" fontSize={13} color="$color">
                   <RecordLabel record={record} language={language} />
                 </Text>
-                <Text fontWeight="900" fontSize={14} color="$primary">
+                <Text fontWeight="700" fontSize={14} color="$primary">
                   {record.newValue}
                 </Text>
               </XStack>

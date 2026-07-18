@@ -92,7 +92,7 @@ export default function ChooseAvatar() {
               <H2
                 text="center"
                 color="$text"
-                fontWeight="900"
+                fontWeight="700"
                 fontSize={28}
                 textShadowColor="rgba(0,0,0,0.5)"
                 textShadowOffset={{ width: 1, height: 1 }}
@@ -103,7 +103,7 @@ export default function ChooseAvatar() {
               <Paragraph
                 text="center"
                 color="$textSecondary"
-                fontWeight="500"
+                fontWeight="700"
                 textShadowColor="rgba(0,0,0,0.5)"
                 textShadowOffset={{ width: 1, height: 1 }}
                 textShadowRadius={4}
@@ -137,7 +137,7 @@ export default function ChooseAvatar() {
                 <Text
                   color="$text"
                   fontSize={22}
-                  fontWeight="900"
+                  fontWeight="700"
                   textShadowColor="rgba(0,0,0,0.5)"
                   textShadowOffset={{ width: 1, height: 1 }}
                   textShadowRadius={4}
@@ -175,7 +175,7 @@ export default function ChooseAvatar() {
               bg="$secondary"
             >
               <XStack items="center" gap="$2">
-                <Text color="$bgDark" fontWeight="900" fontSize={18}>
+                <Text color="$bgDark" fontWeight="700" fontSize={18}>
                   {t("onboarding.next_avatar")}
                 </Text>
               </XStack>

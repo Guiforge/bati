@@ -35,8 +35,13 @@ export type Exercise = {
 
 export { EQUIPMENT_LABELS, isEquipmentCode, isMuscleCode, MUSCLE_LABELS };
 
+// Exercise definitions are static seed content (no in-app editing), so every screen that
+// mounts (quest/adventure galleries, adventure details) can share one fetch instead of each
+// re-querying on every navigation - the biggest source of the post-navigation loading flash.
+let exercisesCache: Promise<Exercise[]> | null = null;
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Exercise list includes muscle groups and equipment filtering
-export async function listExercises(): Promise<Exercise[]> {
+async function fetchExercises(): Promise<Exercise[]> {
   const rows = await db
     .select({
       id: exercises.id,
@@ -83,6 +88,16 @@ export async function listExercises(): Promise<Exercise[]> {
   }
 
   return [...byId.values()];
+}
+
+export function listExercises(): Promise<Exercise[]> {
+  if (!exercisesCache) {
+    exercisesCache = fetchExercises().catch((e) => {
+      exercisesCache = null; // don't cache a failure - let the next caller retry
+      throw e;
+    });
+  }
+  return exercisesCache;
 }
 
 export async function getExerciseById(id: number): Promise<Exercise | null> {

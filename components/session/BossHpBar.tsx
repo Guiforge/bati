@@ -45,8 +45,8 @@ export function BossHpBar({
   return (
     <YStack
       bg="$bgLight"
-      borderWidth={3}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       rounded="$6"
       px="$3"
       py="$2"
@@ -66,12 +66,12 @@ export function BossHpBar({
       <XStack justify="space-between" items="center">
         <XStack items="center" gap="$2">
           {!showPhaseImage && <Text fontSize={18}>👹</Text>}
-          <Text fontWeight="900" fontSize={14} color="$color" textTransform="uppercase">
+          <Text fontWeight="700" fontSize={14} color="$color" textTransform="uppercase">
             {bossName || t("adventures.kind_boss")}
           </Text>
         </XStack>
         <XStack items="center" gap="$1">
-          <Text fontWeight="900" fontSize={16} color={hpColor} fontFamily="$body" animation="quick">
+          <Text fontWeight="700" fontSize={16} color={hpColor} fontFamily="$body" animation="quick">
             {currentHp}
           </Text>
           <Text fontWeight="700" fontSize={12} color="$color" opacity={0.5}>
@@ -86,8 +86,8 @@ export function BossHpBar({
           value={hpPercent}
           size="$4"
           bg="$pastelPink"
-          borderWidth={2}
-          borderColor="$color"
+          borderWidth={1}
+          borderColor="$borderStrong"
           rounded="$4"
         >
           <Progress.Indicator animation={isEnraged ? "bouncy" : "quick"} bg={hpColor} />
@@ -104,7 +104,7 @@ export function BossHpBar({
             exitStyle={{ opacity: 0, y: -10 }}
           >
             <Text
-              fontWeight="900"
+              fontWeight="700"
               fontSize={lastDamage.isCritical ? 20 : 16}
               color={lastDamage.isCritical ? "$error" : "$secondary"}
             >
@@ -119,7 +119,7 @@ export function BossHpBar({
       {isEnraged && (
         <Text
           fontSize={11}
-          fontWeight="800"
+          fontWeight="700"
           color="$error"
           textTransform="uppercase"
           style={{ textAlign: "center" }}

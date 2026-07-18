@@ -71,24 +71,13 @@ const animations = createAnimations({
     mass: 0.8,
     stiffness: 150,
   },
-  lazy: {
-    type: "spring",
-    damping: 20,
-    stiffness: 60,
-  },
-  // The standard interaction animation (Buttons, Cards)
+  // The standard interaction animation (Buttons, Cards). Tuned for ~150-200ms
+  // settle, no overshoot: press feedback must never lag behind the tap.
   quick: {
     type: "spring",
-    damping: 20,
-    mass: 1.2,
-    stiffness: 250,
-  },
-  // New: For subtle idle states
-  pulse: {
-    type: "spring",
-    damping: 10,
-    mass: 0.9,
-    stiffness: 100,
+    damping: 30,
+    mass: 1,
+    stiffness: 400,
   },
 });
 

@@ -46,7 +46,7 @@ export function HeaderNav({ title, onBack, backLabel = "Back", right }: HeaderNa
       <Text
         flex={1}
         fontSize={16}
-        fontWeight="800"
+        fontWeight="700"
         color="$color"
         numberOfLines={1}
         style={{ textAlign: "center", textTransform: "uppercase", letterSpacing: 1 }}

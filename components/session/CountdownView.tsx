@@ -64,7 +64,7 @@ export function CountdownView() {
           enterStyle={reducedMotion ? undefined : { scale: 0.9 }}
         >
           <H1
-            fontWeight="900"
+            fontWeight="700"
             fontSize={64}
             lineHeight={66}
             color="$primary"
@@ -73,13 +73,13 @@ export function CountdownView() {
           >
             {t("session.countdown_letsgo")}
           </H1>
-          <Text fontWeight="800" opacity={0.6} color="$color" style={{ textAlign: "center" }}>
+          <Text fontWeight="700" opacity={0.6} color="$color" style={{ textAlign: "center" }}>
             {t("session.countdown_warmup_done")}
           </Text>
         </YStack>
       ) : (
         <H1
-          fontWeight="900"
+          fontWeight="700"
           fontSize={140}
           lineHeight={140}
           color="$color"

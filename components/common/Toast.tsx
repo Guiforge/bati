@@ -82,8 +82,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               bg={getToastColor(toast.type)}
               p="$3"
               rounded="$4"
-              borderWidth={2}
-              borderColor="$color"
+              borderWidth={1}
+              borderColor="$borderStrong"
               items="center"
               gap="$2"
               animation="quick"

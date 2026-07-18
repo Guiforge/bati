@@ -63,7 +63,7 @@ export function CoachSuggestionCard() {
       <YStack gap="$3">
         <XStack items="center" gap="$2">
           <Target size={20} color="$color" />
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$color">
             {t("coach.suggestion_title", "Coach Suggestion")}
           </Text>
         </XStack>

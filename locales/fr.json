@@ -17,6 +17,7 @@
     "empty_subtitle": "Reviens bientôt — le village prépare des aventures.",
     "empty_title": "Aucune aventure pour l'instant",
     "fight_boss": "Combattre le boss",
+    "gallery_subtitle": "Programmes multi-séances avec histoire et combat de boss",
     "gallery_title": "Galerie des aventures",
     "home_cta_button": "Ouvrir",
     "home_cta_subtitle": "Nouvelles routes. Gros XP. Zéro excuse.",
@@ -216,12 +217,27 @@
     "weekly_progress": "Cette semaine"
   },
   "home": {
-    "quests_done": "QUÊTES",
+    "quests_done": "Quêtes",
     "quick_play": "JEU RAPIDE",
-    "stats": "STATISTIQUES",
-    "streak": "SÉRIE",
+    "stats": "Statistiques",
+    "streak": "Série",
     "title": "Accueil",
-    "your_kingdom": "TON ROYAUME"
+    "your_kingdom": "TON ROYAUME",
+    "start_planned_session": "Démarrer la séance prévue",
+    "continue_adventure_label": "Continuer l'aventure",
+    "resume_journey": "Reprends ton chemin",
+    "start_quest_label": "Démarrer une quête",
+    "focus_on": "Focus : {{muscles}}",
+    "quick_workout": "Séance rapide",
+    "visit_village": "Voir ta progression",
+    "open_inventory": "Ouvrir l'inventaire",
+    "current_objective": "Objectif actuel",
+    "start_adventure": "Démarrer une aventure",
+    "no_active_adventure": "Choisis ta voie",
+    "start_journey": "Commence ton aventure",
+    "play": "Jouer",
+    "default_hero_name": "Héros",
+    "level_line": "Niveau {{level}} • {{title}}"
   },
   "home_continue_adventure_subtitle": "Reprends là où tu t'es arrêté.",
   "home_continue_adventure_title": "Continuer ton aventure",
@@ -337,7 +353,7 @@
   },
   "quests": {
     "all": "Tous",
-    "count": "{{count}}",
+    "count": "{{count}} quêtes",
     "details_title": "Quête",
     "empty_filters_subtitle": "Essaie d'enlever des filtres.",
     "empty_filters_title": "Aucune quête ne correspond",
@@ -353,7 +369,7 @@
     "filters_hide": "Masquer",
     "filters_show": "Afficher",
     "filters_title": "Filtres",
-    "gallery_subtitle": "Choisis une quête et découvre tous les détails.",
+    "gallery_subtitle": "Séances uniques — choisis-en une et pars",
     "gallery_title": "Galerie des quêtes",
     "go_back": "Retour",
     "home_cta_button": "Ouvrir la galerie",
@@ -472,7 +488,8 @@
     "adventures": "Aventures",
     "home": "Accueil",
     "journal": "Journal",
-    "quests": "Quêtes"
+    "quests": "Quêtes",
+    "village": "Village"
   },
   "theme": "Thème",
   "treasury": {

@@ -146,8 +146,8 @@ export function StreakBadge() {
   return (
     <XStack
       bg={streak.isActive ? "$pastelPink" : "$bgLight"}
-      borderWidth={2}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       rounded="$6"
       px="$3"
       py="$2"
@@ -164,7 +164,7 @@ export function StreakBadge() {
       />
       <YStack>
         <XStack items="center" gap="$1">
-          <Text fontWeight="900" fontSize={18} color="$color">
+          <Text fontWeight="700" fontSize={18} color="$color">
             {streak.current} {t("journal.days")}
           </Text>
           {milestone && <Text fontSize={14}>{milestone.emoji}</Text>}

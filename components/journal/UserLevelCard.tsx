@@ -38,10 +38,10 @@ export function UserLevelCard() {
               <Star size={28} color="$color" fill="$color" />
             </YStack>
             <YStack>
-              <Text fontWeight="900" fontSize={24} color="$color">
+              <Text fontWeight="700" fontSize={24} color="$color">
                 {t("journal.user_level", { level: levelInfo.level })}
               </Text>
-              <Text fontSize={14} color="$color" opacity={0.8} fontWeight="600">
+              <Text fontSize={14} color="$color" opacity={0.8} fontWeight="700">
                 {title}
               </Text>
             </YStack>
@@ -51,7 +51,7 @@ export function UserLevelCard() {
             <Text fontSize={12} color="$color" opacity={0.7}>
               {t("journal.total_xp")}
             </Text>
-            <Text fontWeight="900" fontSize={18} color="$color">
+            <Text fontWeight="700" fontSize={18} color="$color">
               {levelInfo.totalXp.toLocaleString()}
             </Text>
           </YStack>

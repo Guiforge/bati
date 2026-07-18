@@ -58,7 +58,7 @@ export function BossTauntOverlay() {
           bg="white"
           p="$3"
           rounded="$4"
-          borderWidth={3}
+          borderWidth={1}
           borderColor="black"
           maxWidth={200}
           elevation={5}
@@ -75,7 +75,7 @@ export function BossTauntOverlay() {
           height={60}
           bg="$primary"
           rounded="$10"
-          borderWidth={3}
+          borderWidth={1}
           borderColor="black"
           overflow="hidden"
           items="center"

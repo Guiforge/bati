@@ -36,7 +36,7 @@ export function Skeleton({
  */
 export function SkeletonCard({ children }: { children?: React.ReactNode }) {
   return (
-    <YStack bg="$bgLight" p="$4" rounded="$6" borderWidth={3} borderColor="$color" gap="$3">
+    <YStack bg="$bgLight" p="$4" rounded="$6" borderWidth={1} borderColor="$borderStrong" gap="$3">
       {children || (
         <>
           <Skeleton height={24} width="60%" />

@@ -74,7 +74,7 @@ export function AddScheduleSheet({
         >
           <XStack justify="space-between" items="center">
             <YStack flex={1} gap="$1">
-              <Text fontWeight="800" fontSize={16} color="$color">
+              <Text fontWeight="700" fontSize={16} color="$color">
                 {title}
               </Text>
               <Text fontSize={12} opacity={0.6} color="$color">
@@ -104,7 +104,7 @@ export function AddScheduleSheet({
         <Sheet.Handle />
         <YStack gap="$4" flex={1}>
           <YStack gap="$1">
-            <Text fontSize={20} fontWeight="900" color="$color">
+            <Text fontSize={20} fontWeight="700" color="$color">
               {t("scheduling.add_session", "Schedule Workout")}
             </Text>
             <Text fontSize={14} opacity={0.7} color="$color">

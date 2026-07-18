@@ -99,10 +99,15 @@ export function QuestFiltersSheet({
 
   const animateTo = useCallback(
     (toValue: number) => {
-      // Snap instantly (no animation).
-      translateY.setValue(toValue);
       lastY.current = toValue;
       setIsOpen(toValue <= 1);
+      Animated.spring(translateY, {
+        toValue,
+        useNativeDriver: true,
+        stiffness: 400,
+        damping: 32,
+        mass: 1,
+      }).start();
     },
     [translateY],
   );
@@ -175,17 +180,27 @@ export function QuestFiltersSheet({
         <YStack px="$5" pb={bottomPad} pointerEvents="box-none">
           <Card>
             <YStack gap="$3">
-              <Pressable onPress={toggle} {...panResponder.panHandlers}>
+              <Pressable
+                onPress={toggle}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  isOpen
+                    ? t("quests.filters_hide", "Hide filters")
+                    : t("quests.filters_show", "Show filters")
+                }
+                accessibilityState={{ expanded: isOpen }}
+                {...panResponder.panHandlers}
+              >
                 <YStack>
                   <XStack items="center" justify="space-between">
                     <XStack items="center" gap="$2">
                       <Text fontSize={18}>{isOpen ? "🔽" : "🔼"}</Text>
-                      <Text fontWeight="900" fontSize={16} color="$color">
+                      <Text fontWeight="700" fontSize={16} color="$color">
                         {t("quests.filters_title", "Filters")}
                       </Text>
                     </XStack>
 
-                    <Text fontWeight="900" fontSize={14} color="$primary">
+                    <Text fontWeight="700" fontSize={14} color="$text">
                       {isOpen ? t("quests.filters_hide", "Hide") : t("quests.filters_show", "Show")}
                     </Text>
                   </XStack>
@@ -202,12 +217,15 @@ export function QuestFiltersSheet({
 
                     {hasActiveFilters ? (
                       <Pressable
+                        hitSlop={12}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("quests.filters_clear", "Clear all")}
                         onPress={() => {
                           onSelectMuscle(null);
                           onSelectEquipment(null);
                         }}
                       >
-                        <Text fontWeight="900" fontSize={13} color="$primary">
+                        <Text fontWeight="700" fontSize={13} color="$text">
                           {t("quests.filters_clear", "Clear all")}
                         </Text>
                       </Pressable>
@@ -220,8 +238,8 @@ export function QuestFiltersSheet({
                       height={6}
                       rounded={999}
                       bg="$bgLight"
-                      borderWidth={2}
-                      borderColor="$color"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
                       opacity={0.7}
                     />
                   </YStack>
@@ -245,7 +263,7 @@ export function QuestFiltersSheet({
 
                   {selectedFilters.length > 0 ? (
                     <YStack gap="$2">
-                      <Text fontWeight="900" fontSize={13} color="$color" opacity={0.55}>
+                      <Text fontWeight="700" fontSize={13} color="$color" opacity={0.55}>
                         {t("quests.filters_selected", "Selected")}
                       </Text>
                       <XStack gap="$2" flexWrap="wrap">
@@ -262,7 +280,7 @@ export function QuestFiltersSheet({
                   ) : null}
 
                   <YStack gap="$2">
-                    <Text fontWeight="900" fontSize={13} color="$color" opacity={0.55}>
+                    <Text fontWeight="700" fontSize={13} color="$color" opacity={0.55}>
                       {activeGroup === "muscles"
                         ? t("quests.filter_muscles", "Muscles")
                         : t("quests.filter_equipment", "Equipment")}

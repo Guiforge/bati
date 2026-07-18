@@ -101,7 +101,7 @@ export function ActiveExerciseView() {
               total: quest.rounds,
             })}
           </Text>
-          <Text color="$text" fontSize={16} fontWeight="900">
+          <Text color="$text" fontSize={16} fontWeight="700">
             {t("session.exercise_label", {
               count: currentExerciseIndex + 1,
               total: exercisesPerRound,
@@ -144,7 +144,7 @@ export function ActiveExerciseView() {
           size="$2"
           bg="$bgLight"
           borderWidth={1}
-          borderColor="$color"
+          borderColor="$borderStrong"
           rounded="$4"
         >
           <Progress.Indicator animation="bouncy" bg="$color" opacity={0.35} />
@@ -177,7 +177,7 @@ export function ActiveExerciseView() {
             value={Math.min(1, Math.max(0, progress)) * 100}
             size="$4"
             bg="$surface2"
-            borderWidth={2}
+            borderWidth={1}
             borderColor="$borderStrong"
             rounded="$6"
           >
@@ -211,7 +211,7 @@ export function ActiveExerciseView() {
         {/* Exercise Name + How to do it */}
         <YStack items="center" gap="$2" width="100%">
           <H2
-            fontWeight="900"
+            fontWeight="700"
             fontSize={28}
             lineHeight={32}
             style={{ textAlign: "center" }}
@@ -278,23 +278,23 @@ export function ActiveExerciseView() {
               {isOvertime ? (
                 <>
                   {/* Overtime display - counting UP */}
-                  <Text fontSize={14} fontWeight="800" color="$textSecondary">
+                  <Text fontSize={14} fontWeight="700" color="$textSecondary">
                     🔥 {t("session.overtime")} 🔥
                   </Text>
-                  <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="$success">
+                  <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$success">
                     {formatOvertime(overtimeSeconds)}
                   </H1>
-                  <Paragraph fontWeight="800" color="$textSecondary">
+                  <Paragraph fontWeight="700" color="$textSecondary">
                     {t("session.target_reached")}
                   </Paragraph>
                 </>
               ) : (
                 <>
                   {/* Normal countdown */}
-                  <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="$text">
+                  <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$text">
                     {formatTime(remainingSeconds)}
                   </H1>
-                  <Paragraph fontWeight="800" color="$textSecondary">
+                  <Paragraph fontWeight="700" color="$textSecondary">
                     {t("session.seconds")}
                   </Paragraph>
                 </>
@@ -316,7 +316,7 @@ export function ActiveExerciseView() {
                   accessibilityLabel={t("session.decrease_reps_accessibility")}
                   accessibilityRole="button"
                 >
-                  <Text fontSize={24} fontWeight="900" color="$text">
+                  <Text fontSize={24} fontWeight="700" color="$text">
                     −
                   </Text>
                 </Button>
@@ -327,10 +327,10 @@ export function ActiveExerciseView() {
                   enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
                   scale={1}
                 >
-                  <H1 fontSize={80} fontWeight="900" fontFamily="$body" color="$text">
+                  <H1 fontSize={80} fontWeight="700" fontFamily="$body" color="$text">
                     {adjustedReps}
                   </H1>
-                  <Paragraph fontWeight="800" color="$textSecondary">
+                  <Paragraph fontWeight="700" color="$textSecondary">
                     {t("session.reps")}
                   </Paragraph>
                 </YStack>
@@ -345,7 +345,7 @@ export function ActiveExerciseView() {
                   accessibilityLabel={t("session.increase_reps_accessibility")}
                   accessibilityRole="button"
                 >
-                  <Text fontSize={24} fontWeight="900" color="$text">
+                  <Text fontSize={24} fontWeight="700" color="$text">
                     +
                   </Text>
                 </Button>
@@ -382,7 +382,7 @@ export function ActiveExerciseView() {
         }
         accessibilityRole="button"
       >
-        <Text color="$bgDark" fontSize={24} fontWeight="900">
+        <Text color="$text" fontSize={24} fontWeight="700">
           {isOvertime ? t("session.complete_overtime") : t("session.complete_button")}
         </Text>
       </Button>

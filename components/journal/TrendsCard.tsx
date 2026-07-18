@@ -84,7 +84,7 @@ function TrendsCardComponent() {
         items="center"
         gap="$1"
         borderWidth={1}
-        borderColor="$color"
+        borderColor="$borderStrong"
       >
         {analysis.trend !== "stable" && <Icon size={12} color={textColor} />}
         <Text fontSize={11} fontWeight="700" color={textColor}>
@@ -115,15 +115,15 @@ function TrendsCardComponent() {
       <YStack gap="$3">
         {/* Header */}
         <XStack items="center" justify="space-between">
-          <H3 fontWeight="900" color="$color" fontSize={18}>
+          <H3 fontWeight="700" color="$color" fontSize={18}>
             {t("journal.trends_title")}
           </H3>
           <XStack gap="$2">
             <Button
               size="$2"
               bg={viewMode === "weekly" ? "$primary" : "$background"}
-              borderWidth={2}
-              borderColor="$color"
+              borderWidth={1}
+              borderColor="$borderStrong"
               onPress={() => setViewMode("weekly")}
               rounded="$3"
               px="$2"
@@ -139,8 +139,8 @@ function TrendsCardComponent() {
             <Button
               size="$2"
               bg={viewMode === "monthly" ? "$primary" : "$background"}
-              borderWidth={2}
-              borderColor="$color"
+              borderWidth={1}
+              borderColor="$borderStrong"
               onPress={() => setViewMode("monthly")}
               rounded="$3"
               px="$2"
@@ -207,7 +207,7 @@ function TrendsCardComponent() {
                         bg="$primary"
                         rounded="$2"
                         borderWidth={1}
-                        borderColor="$color"
+                        borderColor="$borderStrong"
                       />
                       <Text fontSize={9} color="$color" opacity={0.5}>
                         {formatPeriodLabel(item)}
@@ -239,7 +239,7 @@ function TrendsCardComponent() {
                         bg="$secondary"
                         rounded="$2"
                         borderWidth={1}
-                        borderColor="$color"
+                        borderColor="$borderStrong"
                       />
                       <Text fontSize={9} color="$color" opacity={0.5}>
                         {formatPeriodLabel(item)}

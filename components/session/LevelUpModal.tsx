@@ -52,11 +52,11 @@ export function LevelUpModal({ visible, newLevel, onClose }: LevelUpModalProps) 
             <Text fontSize={60}>🆙</Text>
 
             <YStack items="center" gap="$2">
-              <H3 color="$primary" textTransform="uppercase" fontWeight="900">
+              <H3 color="$primary" textTransform="uppercase" fontWeight="700">
                 {t("session.level_up", "Level Up!")}
               </H3>
 
-              <H1 fontSize={80} color="$color" fontWeight="900" lineHeight={80}>
+              <H1 fontSize={80} color="$color" fontWeight="700" lineHeight={80}>
                 {newLevel}
               </H1>
 
@@ -70,8 +70,8 @@ export function LevelUpModal({ visible, newLevel, onClose }: LevelUpModalProps) 
               bg="$primary"
               width="100%"
               onPress={onClose}
-              borderWidth={3}
-              borderColor="$color"
+              borderWidth={1}
+              borderColor="$borderStrong"
               mt="$4"
             >
               <Button.Text color="white" fontWeight="bold" fontSize={18}>

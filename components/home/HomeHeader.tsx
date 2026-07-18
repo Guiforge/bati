@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Avatar, Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { getAvatarById } from "@/constants/avatars";
@@ -9,6 +10,7 @@ import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
 export function HomeHeader() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { villageName } = useUserStore();
   const { avatarId, language } = useSettingsStore();
@@ -44,11 +46,17 @@ export function HomeHeader() {
 
       {/* Identity & XP */}
       <YStack flex={1} gap="$1">
-        <Text fontWeight="900" fontSize="$4" color="$text" numberOfLines={1}>
-          {villageName || "Hero"}
+        <Text fontWeight="700" fontSize="$4" color="$text" numberOfLines={1}>
+          {villageName || t("home.default_hero_name", "Hero")}
         </Text>
         <Text fontSize="$2" color="$textSecondary" numberOfLines={1}>
-          {levelInfo ? `Level ${levelInfo.level} • ${levelTitle}` : "..."}
+          {levelInfo
+            ? t("home.level_line", {
+                level: levelInfo.level,
+                title: levelTitle,
+                defaultValue: `Level ${levelInfo.level} • ${levelTitle}`,
+              })
+            : "..."}
         </Text>
         <XStack items="center" gap="$2" mt="$1" mr="$4">
           <ProgressBar

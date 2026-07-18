@@ -33,14 +33,19 @@ const parseId = (raw?: string | string[]): number | null => {
 // ─────────────────────────────────────────────────────────────
 
 function Header({ onBack, title }: { onBack: () => void; title: string }) {
+  const { t } = useTranslation();
   return (
     <XStack items="center" gap="$3">
-      <AppIconButton onPress={onBack}>
+      <AppIconButton
+        onPress={onBack}
+        accessibilityRole="button"
+        accessibilityLabel={t("quests.go_back", "Go back")}
+      >
         <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
       </AppIconButton>
       <XStack items="center" gap="$2">
         <Dumbbell size={18} color="$color" strokeWidth={2.5} />
-        <Text fontWeight="900" fontSize={20} color="$color">
+        <Text fontWeight="700" fontSize={20} color="$color">
           {title}
         </Text>
       </XStack>
@@ -54,7 +59,7 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
     <Card>
       <YStack gap="$3" items="center" py="$2">
         <Text fontSize={32}>😵</Text>
-        <Text fontWeight="900" fontSize={16} color="$color">
+        <Text fontWeight="700" fontSize={16} color="$color">
           {t("exercises.load_error", "Oops!")}
         </Text>
         <Paragraph color="$color" opacity={0.6} size="$3">
@@ -74,7 +79,7 @@ function LoadingCard() {
     <Card>
       <XStack items="center" justify="center" gap="$3" py="$4">
         <Text fontSize={28}>💪</Text>
-        <Text fontWeight="900" fontSize={16} color="$color">
+        <Text fontWeight="700" fontSize={16} color="$color">
           {t("exercises.loading", "Loading...")}
         </Text>
       </XStack>
@@ -88,8 +93,8 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
       width="100%"
       aspectRatio={16 / 9}
       bg="$bgLight"
-      borderWidth={3}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       rounded="$8"
       shadowColor="$color"
       shadowRadius={0}
@@ -122,7 +127,7 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
       <Card>
         <YStack gap="$3">
           {/* Title */}
-          <Text color="$color" fontWeight="900" fontSize={24} lineHeight={28}>
+          <Text color="$color" fontWeight="700" fontSize={24} lineHeight={28}>
             {title}
           </Text>
 
@@ -152,7 +157,7 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
           {/* Muscles */}
           {exercise.muscles.length > 0 && (
             <YStack gap="$2">
-              <Text fontWeight="800" fontSize={13} color="$color" opacity={0.5}>
+              <Text fontWeight="700" fontSize={13} color="$color" opacity={0.5}>
                 {t("exercises.muscles", "Muscles").toUpperCase()}
               </Text>
               <XStack gap="$2" flexWrap="wrap">
@@ -173,7 +178,7 @@ function InvalidIdView({ onBack }: { onBack: () => void }) {
   return (
     <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$4">
       <Text fontSize={48}>🤷</Text>
-      <Text fontWeight="900" fontSize={18} color="$color">
+      <Text fontWeight="700" fontSize={18} color="$color">
         {t("exercises.invalid_id", "Exercise not found")}
       </Text>
       <AppButton fullWidth={false} variant="secondary" onPress={onBack}>

@@ -10,4 +10,8 @@ config.resolver.sourceExts.push("sql");
 // https://github.com/expo/expo/issues/23180
 config.resolver.sourceExts.push("mjs");
 
+// expo-sqlite's web backend (wa-sqlite) imports its WASM binary directly; Metro doesn't
+// treat .wasm as an asset by default, so web bundling fails to resolve it without this.
+config.resolver.assetExts.push("wasm");
+
 module.exports = config;

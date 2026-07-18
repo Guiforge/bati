@@ -11,6 +11,7 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { Tag } from "@/components/common/Tag";
+import { useToast } from "@/components/common/Toast";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
 import type { ActiveAdventureRun, AdventureDetails } from "@/db";
 import {
@@ -71,6 +72,8 @@ export default function AdventureDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const { t } = useTranslation();
   const { language } = useSettingsStore();
+  const { showError } = useToast();
+  const [isStarting, setIsStarting] = useState(false);
 
   const adventureId = useMemo(() => {
     const raw = params.id;
@@ -193,8 +196,9 @@ export default function AdventureDetailsScreen() {
   }, [activeTemplateStep, state.exercisesById, suggestedDifficulty]);
 
   const handleStartOrContinue = useCallback(async () => {
-    if (!details || adventureId == null) return;
+    if (!details || adventureId == null || isStarting) return;
 
+    setIsStarting(true);
     try {
       const nextRun =
         run ?? (await startAdventureRun({ adventureId, difficultyOverride: suggestedDifficulty }));
@@ -204,15 +208,20 @@ export default function AdventureDetailsScreen() {
         nextRun.steps[0] ??
         null;
 
-      if (!step) return;
+      if (!step) {
+        setIsStarting(false);
+        return;
+      }
 
       router.push(
         `/quests/${step.questId}?level=${encodeURIComponent(suggestedDifficulty)}&runStepId=${step.id}` as never,
       );
-    } catch {
-      // Error handled silently
+    } catch (e) {
+      setIsStarting(false);
+      const message = e instanceof Error ? e.message : t("adventures.start_error");
+      showError(message);
     }
-  }, [adventureId, details, router, run, suggestedDifficulty]);
+  }, [adventureId, details, isStarting, router, run, showError, suggestedDifficulty, t]);
 
   const StepStatusTag = ({ status }: { status: "locked" | "active" | "completed" }) => {
     const label =
@@ -230,7 +239,7 @@ export default function AdventureDetailsScreen() {
   if (!adventureId) {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
-        <Text fontWeight="900" fontSize={18} color="$text">
+        <Text fontWeight="700" fontSize={18} color="$text">
           {t("adventures.invalid_id")}
         </Text>
         <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
@@ -242,17 +251,21 @@ export default function AdventureDetailsScreen() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
-              <AppIconButton onPress={() => router.back()}>
+              <AppIconButton
+                onPress={() => router.back()}
+                accessibilityRole="button"
+                accessibilityLabel={t("quests.go_back")}
+              >
                 <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
               </AppIconButton>
 
               <XStack items="center" gap="$2">
                 <Sparkles size={18} color="$primary" />
-                <Text fontWeight="900" fontSize={20} color="$text">
+                <Text fontWeight="700" fontSize={20} color="$text">
                   {t("adventures.details_title")}
                 </Text>
               </XStack>
@@ -264,7 +277,7 @@ export default function AdventureDetailsScreen() {
           {state.status === "error" ? (
             <Card bg="$surface">
               <YStack gap="$2">
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("adventures.load_error")}
                 </Text>
                 <Paragraph color="$textSecondary" size="$3">
@@ -288,7 +301,7 @@ export default function AdventureDetailsScreen() {
           {details ? (
             <Card bg={tokens?.bg ?? "$surface"}>
               <YStack gap="$2">
-                <H2 color="$text" fontWeight="900" fontSize={26}>
+                <H2 color="$text" fontWeight="700" fontSize={26}>
                   {title}
                 </H2>
 
@@ -335,7 +348,7 @@ export default function AdventureDetailsScreen() {
           {effectiveSteps.length > 0 ? (
             <Card bg="$surface">
               <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("adventures.steps_title")}
                 </Text>
 
@@ -363,7 +376,7 @@ export default function AdventureDetailsScreen() {
                         pb="$3"
                       >
                         <YStack flex={1}>
-                          <Text fontWeight="900" color="$text">
+                          <Text fontWeight="700" color="$text">
                             {t("adventures.step_label", {
                               count: s.stepIndex + 1,
                             })}
@@ -385,31 +398,46 @@ export default function AdventureDetailsScreen() {
               </YStack>
             </Card>
           ) : null}
+        </YStack>
+      </ScrollView>
 
+      {details ? (
+        <YStack
+          p="$4"
+          pb={insets.bottom + 16}
+          bg="$background"
+          borderTopWidth={1}
+          borderColor="$borderStrong"
+          style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+        >
           <AppButton
             onPress={() => {
               handleStartOrContinue().catch(() => {
-                // Error already handled
+                // Error already handled via showError above
               });
             }}
+            disabled={isStarting}
+            opacity={isStarting ? 0.6 : 1}
             variant="primary"
             fullWidth
-            height={54}
+            height={60}
             bg="$primary"
             borderWidth={0}
-            rounded="$8"
+            rounded="$6"
             pressStyle={{ opacity: 0.9 }}
           >
-            <Text color="$text" fontWeight="900" fontSize={18}>
-              {run?.activeStep
-                ? t("adventures.continue")
-                : isBoss
-                  ? t("adventures.fight_boss")
-                  : t("adventures.start")}
+            <Text color="$text" fontWeight="700" fontSize={22}>
+              {isStarting
+                ? t("quests.starting", "Starting…")
+                : run?.activeStep
+                  ? t("adventures.continue")
+                  : isBoss
+                    ? t("adventures.fight_boss")
+                    : t("adventures.start")}
             </Text>
           </AppButton>
         </YStack>
-      </ScrollView>
+      ) : null}
     </YStack>
   );
 }

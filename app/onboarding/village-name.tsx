@@ -54,7 +54,7 @@ function StampOverlay({ villageName }: { villageName: string }) {
           color="$text"
           fontFamily="$heading"
           fontSize={56}
-          fontWeight="900"
+          fontWeight="700"
           text="center"
           textShadowColor="rgba(0,0,0,0.5)"
           textShadowRadius={20}
@@ -146,7 +146,7 @@ function InputSection({
       />
 
       <XStack justify="space-between" px="$2">
-        <Text fontSize={12} color={isValidName ? "$success" : "$textSecondary"} fontWeight="600">
+        <Text fontSize={12} color={isValidName ? "$success" : "$textSecondary"} fontWeight="700">
           {isValidName ? t("onboarding.valid") : `${MIN_NAME_LENGTH} ${t("onboarding.chars_min")}`}
         </Text>
         <Text fontSize={12} color="$textSecondary">

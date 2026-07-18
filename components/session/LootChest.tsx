@@ -44,11 +44,11 @@ export function LootChest({ loot }: { loot: ResourceLoot }) {
               bg="$primary"
               onPress={handleOpen}
               pressStyle={{ opacity: 0.9, scale: 0.98 }}
-              borderWidth={3}
-              borderColor="$color"
+              borderWidth={1}
+              borderColor="$borderStrong"
               rounded="$6"
             >
-              <Button.Text color="white" fontWeight="900">
+              <Button.Text color="white" fontWeight="700">
                 {t("session.open_loot", "Open Loot")}
               </Button.Text>
             </Button>

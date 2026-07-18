@@ -228,7 +228,7 @@ export default function DevTools() {
                 p="$3"
                 rounded="$4"
                 borderWidth={1}
-                borderColor="$color"
+                borderColor="$borderStrong"
                 gap="$2"
               >
                 <Text fontWeight="bold">{bf.name}</Text>
@@ -291,13 +291,13 @@ export default function DevTools() {
             p="$4"
             rounded="$4"
             borderWidth={1}
-            borderColor="$color"
+            borderColor="$borderStrong"
           >
             {Object.entries(prefs).length === 0 ? (
               <Paragraph>{t("dev.no_preferences", "No preferences found.")}</Paragraph>
             ) : (
               Object.entries(prefs).map(([key, value]) => (
-                <YStack key={key} borderBottomWidth={1} borderColor="$color" py="$2">
+                <YStack key={key} borderBottomWidth={1} borderColor="$borderStrong" py="$2">
                   <Paragraph fontWeight="bold">{key}</Paragraph>
                   <Paragraph>{value}</Paragraph>
                 </YStack>

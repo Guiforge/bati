@@ -11,7 +11,7 @@ export type TypographyProps = {
  */
 export function RPGTitle({ children, muted }: TypographyProps) {
   return (
-    <Text fontSize={22} fontWeight="900" color={muted ? "$muted" : "$color"}>
+    <Text fontSize={22} fontWeight="700" color={muted ? "$muted" : "$color"}>
       {children}
     </Text>
   );

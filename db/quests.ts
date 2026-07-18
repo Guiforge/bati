@@ -11,10 +11,13 @@ const { exercises, exerciseMuscles, questExercises, quests } = schema;
 // Types
 // ------------------------------------------------------------
 
-export { Difficulty, generateTarget };
 export type { Target, UserLevel };
+export { Difficulty, generateTarget };
 
 export interface QuestExercise {
+  /** quest_exercises row id, unique even if the same exercise repeats in a quest */
+  id: number;
+
   /** Reference to the base exercise definition */
   exercise: Exercise;
 
@@ -122,7 +125,12 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
   return questId;
 }
 
-export async function listQuestTemplates(): Promise<QuestTemplate[]> {
+// Quest templates are seed content with no live in-app authoring flow today (createQuestTemplate/
+// deleteQuest/updateQuestMeta exist for content tooling but have no runtime caller), so every
+// screen that mounts the gallery can share one fetch instead of refetching on every navigation.
+let questTemplatesCache: Promise<QuestTemplate[]> | null = null;
+
+async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
   const rows = await db
     .select({
       questId: quests.id,
@@ -186,6 +194,16 @@ export async function listQuestTemplates(): Promise<QuestTemplate[]> {
   }
 
   return [...byId.values()];
+}
+
+export function listQuestTemplates(): Promise<QuestTemplate[]> {
+  if (!questTemplatesCache) {
+    questTemplatesCache = fetchQuestTemplates().catch((e) => {
+      questTemplatesCache = null;
+      throw e;
+    });
+  }
+  return questTemplatesCache;
 }
 
 export async function getQuestTemplateById(id: number): Promise<QuestTemplate | null> {
@@ -322,6 +340,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     let qex = byQuestExercise.get(r.qexId);
     if (!qex) {
       qex = {
+        id: r.qexId,
         exercise: {
           id: r.exId,
           enName: r.exEnName,

@@ -53,7 +53,7 @@ export function MuscleBalanceCard() {
         <YStack gap="$2">
           <XStack items="center" gap="$2">
             <Target size={18} color="$color" />
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="700" fontSize={16} color="$color">
               {t("journal.muscle_balance")}
             </Text>
           </XStack>
@@ -74,7 +74,7 @@ export function MuscleBalanceCard() {
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$2">
             <Target size={18} color="$color" />
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="700" fontSize={16} color="$color">
               {t("journal.muscle_balance")}
             </Text>
           </XStack>
@@ -100,7 +100,7 @@ export function MuscleBalanceCard() {
                 <Text
                   fontSize={12}
                   color={isWeak ? "$primary" : "$color"}
-                  fontWeight={isWeak ? "800" : "500"}
+                  fontWeight={isWeak ? "700" : "400"}
                   width={70}
                   numberOfLines={1}
                 >

@@ -42,7 +42,7 @@ export function StatusBadge({ children, tone = "primary", filled = false }: Stat
     >
       <Text
         fontSize={10}
-        fontWeight="800"
+        fontWeight="700"
         color={filled ? filledText : toneColor}
         style={{ textTransform: "uppercase", letterSpacing: 0.6 }}
       >

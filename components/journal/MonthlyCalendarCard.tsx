@@ -220,7 +220,7 @@ export function MonthlyCalendarCard() {
           <Pressable onPress={goToPrevMonth}>
             <ChevronLeft size={24} color="$color" />
           </Pressable>
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$color">
             {monthName} {monthData.year}
           </Text>
           <Pressable onPress={goToNextMonth}>
@@ -236,7 +236,7 @@ export function MonthlyCalendarCard() {
               width={32}
               style={{ textAlign: "center" }}
               fontSize={12}
-              fontWeight="600"
+              fontWeight="700"
               color="$color"
               opacity={0.6}
             >
@@ -268,7 +268,7 @@ export function MonthlyCalendarCard() {
                         : undefined
                   }
                   borderWidth={day.isToday ? 2 : 0}
-                  borderColor="$color"
+                  borderColor="$borderStrong"
                 >
                   <Text
                     fontSize={13}
@@ -289,11 +289,11 @@ export function MonthlyCalendarCard() {
           justify="space-around"
           pt="$2"
           borderTopWidth={1}
-          borderColor="$color"
+          borderColor="$borderStrong"
           opacity={0.2}
         >
           <YStack items="center">
-            <Text fontWeight="900" fontSize={18} color="$color">
+            <Text fontWeight="700" fontSize={18} color="$color">
               {monthData.workoutCount}
             </Text>
             <Text fontSize={11} color="$color" opacity={0.6}>
@@ -301,7 +301,7 @@ export function MonthlyCalendarCard() {
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="900" fontSize={18} color="$success">
+            <Text fontWeight="700" fontSize={18} color="$success">
               {monthData.streakDays}
             </Text>
             <Text fontSize={11} color="$color" opacity={0.6}>

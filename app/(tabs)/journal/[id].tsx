@@ -79,7 +79,7 @@ export default function SessionDetailScreen() {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$4">
         <Text fontSize={48}>🤷</Text>
-        <Text fontWeight="900" fontSize={18} color="$text">
+        <Text fontWeight="700" fontSize={18} color="$text">
           {t("journal.invalid_session", "Session not found")}
         </Text>
         <AppButton fullWidth={false} variant="secondary" onPress={goBack}>
@@ -133,12 +133,16 @@ export default function SessionDetailScreen() {
         <YStack p="$5" pt={insets.top + 12} gap="$5">
           {/* Header */}
           <XStack items="center" gap="$3">
-            <AppIconButton onPress={goBack}>
+            <AppIconButton
+              onPress={goBack}
+              accessibilityRole="button"
+              accessibilityLabel={t("quests.go_back", "Go back")}
+            >
               <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
             <XStack items="center" gap="$2">
               <Dumbbell size={18} color="$primary" strokeWidth={2.5} />
-              <Text fontWeight="900" fontSize={20} color="$text">
+              <Text fontWeight="700" fontSize={20} color="$text">
                 {t("journal.session_details", "Session Details")}
               </Text>
             </XStack>
@@ -149,7 +153,7 @@ export default function SessionDetailScreen() {
             <Card bg="$surface">
               <XStack items="center" justify="center" gap="$3" py="$4">
                 <Text fontSize={28}>📜</Text>
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("common.loading", "Loading...")}
                 </Text>
               </XStack>
@@ -161,7 +165,7 @@ export default function SessionDetailScreen() {
             <Card bg="$surface">
               <YStack gap="$3" items="center" py="$2">
                 <Text fontSize={32}>😵</Text>
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("common.error", "Oops!")}
                 </Text>
                 <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
@@ -184,7 +188,7 @@ export default function SessionDetailScreen() {
                     <Text fontSize={14} color="$textSecondary">
                       {t("journal.quest_completed", "Quest Completed")}
                     </Text>
-                    <H2 color="$text" fontWeight="900" fontSize={24}>
+                    <H2 color="$text" fontWeight="700" fontSize={24}>
                       {questTitle || t("quests.not_found", "Unknown Quest")}
                     </H2>
                   </YStack>
@@ -228,17 +232,17 @@ export default function SessionDetailScreen() {
                       items="center"
                       justify="center"
                     >
-                      <Text color="$text" fontWeight="900" fontSize={14}>
+                      <Text color="$text" fontWeight="700" fontSize={14}>
                         {roundIndex + 1}
                       </Text>
                     </YStack>
-                    <Text fontWeight="900" fontSize={16} color="$text">
+                    <Text fontWeight="700" fontSize={16} color="$text">
                       {t("journal.round", "Round")} {roundIndex + 1}
                     </Text>
                   </XStack>
 
                   {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex rendering logic, refactor planned */}
-                  {exercisesByRound[roundIndex].map((cex, idx) => {
+                  {exercisesByRound[roundIndex].map((cex) => {
                     const exName = language === "fr" ? cex.exercise.frName : cex.exercise.enName;
                     const equipmentLabel =
                       EQUIPMENT_LABELS[cex.exercise.equipment]?.[language] ??
@@ -258,15 +262,15 @@ export default function SessionDetailScreen() {
                     const hitTarget = cex.target && cex.result.value >= cex.target.value;
 
                     return (
-                      <Card key={`${cex.id}-${idx}`}>
+                      <Card key={cex.id}>
                         <XStack gap="$3" items="flex-start">
                           <YStack
                             width={44}
                             height={44}
                             rounded={22}
                             bg={hitTarget ? "$pastelGreen" : "$bgLight"}
-                            borderWidth={2}
-                            borderColor="$color"
+                            borderWidth={1}
+                            borderColor="$borderStrong"
                             justify="center"
                             items="center"
                           >
@@ -278,7 +282,7 @@ export default function SessionDetailScreen() {
                           </YStack>
 
                           <YStack flex={1} gap="$2">
-                            <Text fontWeight="900" fontSize={16} color="$color">
+                            <Text fontWeight="700" fontSize={16} color="$color">
                               {exName}
                             </Text>
 
@@ -288,7 +292,7 @@ export default function SessionDetailScreen() {
                                   {t("journal.result", "Result")}
                                 </Text>
                                 <Text
-                                  fontWeight="900"
+                                  fontWeight="700"
                                   fontSize={18}
                                   color={hitTarget ? "$success" : "$color"}
                                 >
@@ -338,7 +342,7 @@ export default function SessionDetailScreen() {
               {session.notes && (
                 <Card>
                   <YStack gap="$2">
-                    <Text fontWeight="900" fontSize={14} color="$color">
+                    <Text fontWeight="700" fontSize={14} color="$color">
                       {t("journal.notes", "Notes")}
                     </Text>
                     <Paragraph color="$color" opacity={0.7}>

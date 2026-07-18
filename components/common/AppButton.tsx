@@ -33,7 +33,7 @@ export function AppButton({
   const getColor = () => {
     if (variant === "outline") return "$color";
     if (variant === "secondary") return "white";
-    return "$bgDark";
+    return "$text";
   };
 
   return (
@@ -44,10 +44,10 @@ export function AppButton({
       color={getColor()}
       size="$4"
       width={fullWidth ? "100%" : undefined}
-      borderWidth={3}
+      borderWidth={1}
       rounded="$8"
-      borderColor="$color"
-      fontWeight="900"
+      borderColor="$borderStrong"
+      fontWeight="700"
       fontSize={20}
       animation="quick"
       pressStyle={{ opacity: 0.9, scale: 0.98 }}
@@ -70,8 +70,8 @@ export function AppIconButton({ children, ...buttonProps }: AppIconButtonProps) 
       p={0}
       rounded={22}
       bg="$bgLight"
-      borderWidth={3}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       pressStyle={{ opacity: 0.9 }}
       {...buttonProps}
     >

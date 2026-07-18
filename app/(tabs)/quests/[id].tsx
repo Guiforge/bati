@@ -125,7 +125,7 @@ export default function QuestDetails() {
   if (!questId) {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
-        <Text fontWeight="900" fontSize={18} color="$text">
+        <Text fontWeight="700" fontSize={18} color="$text">
           {t("quests.invalid_id", "Invalid quest")}
         </Text>
         <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
@@ -135,7 +135,7 @@ export default function QuestDetails() {
     );
   }
 
-  const quest = state.status === "ready" ? state.quest : state.quest;
+  const quest = state.quest;
   const questTitle = quest ? (language === "fr" ? quest.frTitle : quest.enTitle) : "";
   const questDesc = quest ? (language === "fr" ? quest.frDescription : quest.enDescription) : "";
   const questTokens = quest ? getQuestColorTokensFromQuest(quest) : null;
@@ -193,7 +193,7 @@ export default function QuestDetails() {
         fontSize={14}
         pressStyle={{ opacity: 0.9 }}
       >
-        <Text color={active ? "$bgDark" : "$text"} fontWeight="900">
+        <Text color="$text" fontWeight="700">
           {levelLabel(value, t)}
         </Text>
       </AppButton>
@@ -206,13 +206,17 @@ export default function QuestDetails() {
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
-              <AppIconButton onPress={() => router.back()}>
+              <AppIconButton
+                onPress={() => router.back()}
+                accessibilityRole="button"
+                accessibilityLabel={t("quests.go_back", "Go back")}
+              >
                 <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
               </AppIconButton>
 
               <XStack items="center" gap="$2">
                 <Sparkles size={18} color="$text" />
-                <Text fontWeight="900" fontSize={20} color="$text">
+                <Text fontWeight="700" fontSize={20} color="$text">
                   {t("quests.details_title", "Quest")}
                 </Text>
               </XStack>
@@ -246,7 +250,7 @@ export default function QuestDetails() {
           {state.status === "error" ? (
             <Card bg="$surface">
               <YStack gap="$2">
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("quests.load_error", "Failed to load quest")}
                 </Text>
                 <Paragraph color="$textSecondary" size="$3">
@@ -270,7 +274,7 @@ export default function QuestDetails() {
           {state.status === "loading" && !quest ? (
             <Card bg="$surface">
               <XStack items="center" justify="space-between">
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("quests.loading", "Loading quest...")}
                 </Text>
                 <Text fontSize={24}>🧠</Text>
@@ -281,7 +285,7 @@ export default function QuestDetails() {
           {quest ? (
             <Card bg={questTokens?.bg ?? "$surface"}>
               <YStack gap="$2">
-                <H2 color="$text" fontWeight="900" fontSize={26}>
+                <H2 color="$text" fontWeight="700" fontSize={26}>
                   {questTitle}
                 </H2>
 
@@ -330,7 +334,7 @@ export default function QuestDetails() {
                 </XStack>
 
                 <XStack gap="$2" flexWrap="wrap" pt="$2">
-                  <Text fontWeight="900" color="$textSecondary">
+                  <Text fontWeight="700" color="$textSecondary">
                     {t("quests.level", "Level")}
                   </Text>
                   <LevelChip value={Difficulty.Easy} />
@@ -343,7 +347,7 @@ export default function QuestDetails() {
 
           {quest ? (
             <YStack gap="$3">
-              <Text fontWeight="900" fontSize={18} color="$text">
+              <Text fontWeight="700" fontSize={18} color="$text">
                 {t("quests.exercises_list", "Exercises")}
               </Text>
 
@@ -355,14 +359,15 @@ export default function QuestDetails() {
 
                 const thumbPaths = [qex.exercise.imagePath, ...qex.images].filter(Boolean);
                 const uniqueThumbPaths = Array.from(new Set(thumbPaths));
-                const thumbs =
-                  uniqueThumbPaths.length > 0
-                    ? uniqueThumbPaths.slice(0, 10)
-                    : ["assets/placeholder.jpg"];
+                // Only keep thumbs that actually resolve to a real image; a row of
+                // fallback-emoji tiles is noise, not content.
+                const thumbs = uniqueThumbPaths
+                  .slice(0, 10)
+                  .filter((p) => resolveExerciseImage(p) != null);
 
                 return (
                   <Card
-                    key={`${qex.exercise.id}-${i}`}
+                    key={qex.id}
                     onPress={() => router.push(`/exercises/${qex.exercise.id}` as never)}
                   >
                     <XStack gap="$3" items="flex-start">
@@ -381,7 +386,7 @@ export default function QuestDetails() {
 
                       <YStack flex={1} gap="$1">
                         <XStack items="center" justify="space-between" gap="$2">
-                          <Text fontWeight="900" fontSize={17} color="$text" flex={1}>
+                          <Text fontWeight="700" fontSize={17} color="$text" flex={1}>
                             {i + 1}. {exName}
                           </Text>
                           <Tag
@@ -390,11 +395,10 @@ export default function QuestDetails() {
                           />
                         </XStack>
 
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                          <XStack gap="$2" pt="$2" pb="$1">
-                            {thumbs.map((p, idx) => {
-                              const src = resolveExerciseImage(p);
-                              return (
+                        {thumbs.length > 0 ? (
+                          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                            <XStack gap="$2" pt="$2" pb="$1">
+                              {thumbs.map((p, idx) => (
                                 <YStack
                                   // biome-ignore lint/suspicious/noArrayIndexKey: stable enough for static lists
                                   key={`${p}-${idx}`}
@@ -405,24 +409,18 @@ export default function QuestDetails() {
                                   bg="$surface"
                                   borderWidth={1}
                                   borderColor="$borderStrong"
-                                  items="center"
-                                  justify="center"
                                 >
-                                  {src ? (
-                                    <Image
-                                      source={src}
-                                      style={{ width: "100%", height: "100%" }}
-                                      contentFit="cover"
-                                      transition={0}
-                                    />
-                                  ) : (
-                                    <Text fontSize={16}>🎯</Text>
-                                  )}
+                                  <Image
+                                    source={resolveExerciseImage(p)}
+                                    style={{ width: "100%", height: "100%" }}
+                                    contentFit="cover"
+                                    transition={0}
+                                  />
                                 </YStack>
-                              );
-                            })}
-                          </XStack>
-                        </ScrollView>
+                              ))}
+                            </XStack>
+                          </ScrollView>
+                        ) : null}
 
                         <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>
                           {exDesc}
@@ -477,7 +475,7 @@ export default function QuestDetails() {
             onPress={handleStart}
             rounded="$6"
           >
-            <Text color="$bgDark" fontSize={22} fontWeight="900">
+            <Text color="$text" fontSize={22} fontWeight="700">
               {t("quests.start_button", "Start Quest")}
             </Text>
           </AppButton>
@@ -492,6 +490,7 @@ export default function QuestDetails() {
           setShowNarrative(false);
           proceedToSession();
         }}
+        onDismiss={() => setShowNarrative(false)}
         type="intro"
       />
     </YStack>

@@ -92,7 +92,7 @@ export function LootDisplay({ loot }: Props) {
   return (
     <Card width="100%" maxW={520} bg="$bgLight" gap="$3">
       <Text
-        fontWeight="800"
+        fontWeight="700"
         fontSize={14}
         color="$color"
         opacity={0.7}
@@ -113,8 +113,8 @@ export function LootDisplay({ loot }: Props) {
               bg={getResourceBgColor(item.resource)}
               p="$3"
               rounded="$4"
-              borderWidth={2}
-              borderColor="$color"
+              borderWidth={1}
+              borderColor="$borderStrong"
               minW={80}
               animation="bouncy"
               opacity={isVisible ? 1 : 0}
@@ -122,7 +122,7 @@ export function LootDisplay({ loot }: Props) {
               y={isVisible ? 0 : 20}
             >
               <Text fontSize={28}>{RESOURCE_EMOJI[item.resource]}</Text>
-              <Text fontWeight="900" fontSize={18} color="$color">
+              <Text fontWeight="700" fontSize={18} color="$color">
                 +{item.amount}
               </Text>
               <Text fontSize={10} fontWeight="700" color="$color" opacity={0.7}>

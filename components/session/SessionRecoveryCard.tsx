@@ -43,8 +43,8 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
     <Card
       bg="$pastelOrange"
       p="$4"
-      borderWidth={3}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       rounded="$6"
       animation="quick"
       enterStyle={{ opacity: 0, y: -10 }}
@@ -62,7 +62,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
         </Text>
 
         <YStack gap="$1" bg="$background" p="$2" rounded="$3">
-          <Text fontSize="$4" fontWeight="600" color="$color">
+          <Text fontSize="$4" fontWeight="700" color="$color">
             {session.questTitle}
           </Text>
           <Text fontSize="$3" color="$color" opacity={0.7}>
@@ -77,26 +77,26 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
           <Button
             size="$3"
             bg="$bgLight"
-            borderWidth={3}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
             rounded="$6"
             icon={<X size={16} />}
             onPress={handleDiscard}
             pressStyle={{ opacity: 0.8, scale: 0.98 }}
           >
-            <Button.Text fontWeight="800">{t("recovery.discard")}</Button.Text>
+            <Button.Text fontWeight="700">{t("recovery.discard")}</Button.Text>
           </Button>
           <Button
             size="$3"
             bg="$primary"
-            borderWidth={3}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
             rounded="$6"
             icon={<Play size={16} />}
             onPress={handleResume}
             pressStyle={{ opacity: 0.9, scale: 0.98 }}
           >
-            <Button.Text color="white" fontWeight="800">
+            <Button.Text color="white" fontWeight="700">
               {t("recovery.resume")}
             </Button.Text>
           </Button>

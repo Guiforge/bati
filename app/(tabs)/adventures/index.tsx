@@ -1,14 +1,13 @@
 import { LegendList } from "@legendapp/list";
-import { ChevronLeft, Sparkles } from "@tamagui/lucide-icons";
-import { Image } from "expo-image";
+import { Sparkles } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type ImageSourcePropType, Platform } from "react-native";
+import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
@@ -32,12 +31,6 @@ type LoadState =
       exercisesById: Record<number, Exercise>;
       message: string;
     };
-
-function resolveImage(path?: string | null): ImageSourcePropType | null {
-  if (!path) return null;
-  if (path === "assets/placeholder.jpg") return require("../../../assets/placeholder.jpg");
-  return null;
-}
 
 const ANDROID_MIN_BOTTOM_INSET = 24;
 
@@ -87,7 +80,6 @@ export default function AdventuresGallery() {
   const title = t("adventures.gallery_title", "Adventures");
 
   const renderItem = useCallback(
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex rendering logic, refactor planned
     ({ item }: { item: Adventure }) => {
       const q = item.coverQuest;
       const qTitle = language === "fr" ? item.frTitle || q.frTitle : item.enTitle || q.enTitle;
@@ -109,21 +101,12 @@ export default function AdventuresGallery() {
       const estimate = formatDuration(durationSeconds, language);
       const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
 
-      const authorLabel = t("common.by", {
-        author: item.author,
-        defaultValue: `By ${item.author}`,
-      });
       const kindLabel =
         item.kind === "boss"
           ? t("adventures.kind_boss", "BOSS")
           : item.kind === "event"
             ? t("adventures.kind_event", "EVENT")
             : t("adventures.kind_route", "ROUTE");
-
-      const imagePaths = q.exercises.flatMap((qex) => qex.images ?? []).filter(Boolean);
-      const uniqueImagePaths = Array.from(new Set(imagePaths));
-      const thumbPaths =
-        uniqueImagePaths.length > 0 ? uniqueImagePaths.slice(0, 8) : ["assets/placeholder.jpg"];
 
       return (
         <YStack px="$5">
@@ -132,31 +115,23 @@ export default function AdventuresGallery() {
               <XStack items="center" justify="space-between" gap="$3">
                 <XStack items="center" gap="$2" flex={1}>
                   <Text fontSize={22}>🗺️</Text>
-                  <Text fontWeight="900" fontSize={18} color="$text" numberOfLines={1} flex={1}>
+                  <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1} flex={1}>
                     {qTitle}
                   </Text>
                 </XStack>
 
-                <Chip
-                  label={t("quests.reward_xp", {
-                    count: xp,
-                    defaultValue: `+${xp} XP`,
-                  })}
-                  tone="secondary"
-                />
+                <Chip label={kindLabel} tone={item.kind === "boss" ? "primary" : undefined} />
               </XStack>
 
-              <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>
+              <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
                 {qDesc}
               </Paragraph>
 
               <XStack gap="$2" flexWrap="wrap">
-                <Chip label={kindLabel} tone={item.kind === "boss" ? "primary" : undefined} />
-                <Chip label={authorLabel} />
                 <Chip
-                  label={t("quests.rounds", {
-                    count: q.rounds,
-                    defaultValue: `${q.rounds} rounds`,
+                  label={t("quests.estimate", {
+                    duration: estimate,
+                    defaultValue: `≈ ${estimate}`,
                   })}
                 />
                 <Chip
@@ -164,52 +139,15 @@ export default function AdventuresGallery() {
                     count: item.stepsCount,
                     defaultValue: `${item.stepsCount} steps`,
                   })}
-                />
-                <Chip
-                  label={t("quests.exercises", {
-                    count: q.exercises.length,
-                    defaultValue: `${q.exercises.length} exercises`,
-                  })}
                   tone="primary"
                 />
                 <Chip
-                  label={t("quests.estimate", {
-                    duration: estimate,
-                    defaultValue: `≈ ${estimate}`,
+                  label={t("quests.reward_xp", {
+                    count: xp,
+                    defaultValue: `+${xp} XP`,
                   })}
+                  tone="secondary"
                 />
-              </XStack>
-
-              <XStack gap="$2" flexWrap="wrap">
-                {thumbPaths.map((p, idx) => {
-                  const src = resolveImage(p);
-                  return (
-                    <YStack
-                      // biome-ignore lint/suspicious/noArrayIndexKey: stable enough for static image lists
-                      key={`${p}-${idx}`}
-                      width={50}
-                      height={50}
-                      rounded={14}
-                      overflow="hidden"
-                      bg="$surface"
-                      borderWidth={1}
-                      borderColor="$borderStrong"
-                      items="center"
-                      justify="center"
-                    >
-                      {src ? (
-                        <Image
-                          source={src}
-                          style={{ width: "100%", height: "100%" }}
-                          contentFit="cover"
-                          transition={0}
-                        />
-                      ) : (
-                        <Text fontSize={18}>⚔️</Text>
-                      )}
-                    </YStack>
-                  );
-                })}
               </XStack>
             </YStack>
           </Card>
@@ -226,7 +164,7 @@ export default function AdventuresGallery() {
           <Card bg="$surface">
             <YStack gap="$3" items="center" py="$2">
               <Text fontSize={32}>😵</Text>
-              <Text fontWeight="900" fontSize={16} color="$text">
+              <Text fontWeight="700" fontSize={16} color="$text">
                 {t("quests.load_error", "Oops!")}
               </Text>
               <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
@@ -255,7 +193,7 @@ export default function AdventuresGallery() {
           <Card bg="$surface">
             <XStack items="center" justify="center" gap="$3" py="$4">
               <Text fontSize={28}>🏗️</Text>
-              <Text fontWeight="900" fontSize={16} color="$text">
+              <Text fontWeight="700" fontSize={16} color="$text">
                 {t("quests.loading", "Loading...")}
               </Text>
             </XStack>
@@ -270,7 +208,7 @@ export default function AdventuresGallery() {
           <Card bg="$surface">
             <YStack gap="$3" items="center" py="$2">
               <Text fontSize={32}>🏚️</Text>
-              <Text fontWeight="900" fontSize={16} color="$text">
+              <Text fontWeight="700" fontSize={16} color="$text">
                 {t("adventures.empty_title", "No adventures yet")}
               </Text>
               <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
@@ -287,20 +225,16 @@ export default function AdventuresGallery() {
 
   return (
     <YStack flex={1} bg="$background">
-      <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$3">
-        <XStack items="center" justify="space-between">
-          <XStack items="center" gap="$3">
-            <AppIconButton onPress={() => router.back()}>
-              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
-            </AppIconButton>
-            <XStack items="center" gap="$2">
-              <Sparkles size={18} color="$primary" strokeWidth={2.5} />
-              <Text fontWeight="900" fontSize={20} color="$text">
-                {title}
-              </Text>
-            </XStack>
-          </XStack>
+      <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
+        <XStack items="center" gap="$2">
+          <Sparkles size={18} color="$primary" strokeWidth={2.5} />
+          <Text fontWeight="700" fontSize={20} color="$text">
+            {title}
+          </Text>
         </XStack>
+        <Text color="$textSecondary" fontSize={13}>
+          {t("adventures.gallery_subtitle", "Multi-workout programs with a story and a boss fight")}
+        </Text>
       </YStack>
 
       <StatusMessage />

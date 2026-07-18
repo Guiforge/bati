@@ -16,13 +16,13 @@ export default function TabsLayout() {
         tabBarActiveTintColor: theme.primary?.val,
         tabBarInactiveTintColor: theme.color?.val,
         tabBarLabelStyle: {
-          fontWeight: "800",
+          fontWeight: "700",
           fontSize: 12,
         },
         tabBarStyle: {
           backgroundColor: theme.bgLight?.val,
-          borderTopWidth: 2,
-          borderTopColor: theme.color?.val,
+          borderTopWidth: 1,
+          borderTopColor: theme.borderStrong?.val,
           height: 56 + insets.bottom,
           paddingBottom: insets.bottom + 4,
           paddingTop: 6,

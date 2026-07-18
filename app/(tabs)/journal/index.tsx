@@ -1,11 +1,11 @@
-import { BarChart2, ChevronLeft, List } from "@tamagui/lucide-icons";
+import { BarChart2, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { AppButton } from "@/components/common/AppButton";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
 import { DifficultyProgressionCard } from "@/components/journal/DifficultyProgressionCard";
 import { JournalStats } from "@/components/journal/JournalStats";
@@ -99,7 +99,7 @@ export default function JournalScreen() {
       >
         <XStack items="center" gap="$2">
           {icon}
-          <Text color="$text" fontWeight={isActive ? "900" : "800"} fontSize={14}>
+          <Text color="$text" fontWeight="700" fontSize={14}>
             {label}
           </Text>
         </XStack>
@@ -110,18 +110,13 @@ export default function JournalScreen() {
   return (
     <YStack flex={1} bg="$background">
       <YStack pt={insets.top + 12} px="$4" pb="$3" gap="$4">
-        <YStack gap="$4" items="flex-start">
-          <AppIconButton onPress={() => router.back()}>
-            <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
-          </AppIconButton>
-          <YStack>
-            <H2 fontWeight="900" fontSize={32} color="$text">
-              {t("journal.title", "Quest Journal")}
-            </H2>
-            <Paragraph color="$textSecondary" fontWeight="600">
-              {t("journal.subtitle", "Your heroic history")}
-            </Paragraph>
-          </YStack>
+        <YStack>
+          <H2 fontWeight="700" fontSize={32} color="$text">
+            {t("journal.title", "Quest Journal")}
+          </H2>
+          <Paragraph color="$textSecondary" fontWeight="700">
+            {t("journal.subtitle", "Your heroic history")}
+          </Paragraph>
         </YStack>
 
         {/* Tab Navigation */}

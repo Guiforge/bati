@@ -7,9 +7,24 @@
     "title": "Home",
     "your_kingdom": "YOUR KINGDOM",
     "quick_play": "QUICK PLAY",
-    "stats": "STATISTICS",
-    "streak": "STREAK",
-    "quests_done": "QUESTS"
+    "stats": "Stats",
+    "streak": "Streak",
+    "quests_done": "Quests",
+    "start_planned_session": "Start Planned Session",
+    "continue_adventure_label": "Continue Adventure",
+    "resume_journey": "Resume your journey",
+    "start_quest_label": "Start Quest",
+    "focus_on": "Focus: {{muscles}}",
+    "quick_workout": "Quick Workout",
+    "visit_village": "See your progress",
+    "open_inventory": "Open Inventory",
+    "current_objective": "Current Objective",
+    "start_adventure": "Start Adventure",
+    "no_active_adventure": "Choose your path",
+    "start_journey": "Start your journey",
+    "play": "Play",
+    "default_hero_name": "Hero",
+    "level_line": "Level {{level}} • {{title}}"
   },
   "language": "Language",
   "light": "Light",
@@ -101,9 +116,9 @@
   },
   "quests": {
     "gallery_title": "Quest gallery",
-    "gallery_subtitle": "Pick a quest and see the full details.",
+    "gallery_subtitle": "Single workouts — pick one and go",
     "details_title": "Quest",
-    "count": "{{count}}",
+    "count": "{{count}} quests",
     "loading": "Loading...",
     "load_error": "Failed to load",
     "retry": "Retry",
@@ -142,6 +157,7 @@
   },
   "adventures": {
     "gallery_title": "Adventures",
+    "gallery_subtitle": "Multi-workout programs with a story and a boss fight",
     "details_title": "Adventure",
     "not_found": "Adventure not found",
     "invalid_id": "Invalid adventure",
@@ -306,7 +322,8 @@
     "home": "Home",
     "adventures": "Adventures",
     "quests": "Quests",
-    "journal": "Journal"
+    "journal": "Journal",
+    "village": "Village"
   },
   "journal": {
     "title": "Quest Journal",

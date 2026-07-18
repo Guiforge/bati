@@ -6,6 +6,7 @@ import { Modal, Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H4, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 
+import { AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { FlameFlicker } from "@/components/village/VillageAnimations";
@@ -143,7 +144,7 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
 
           <YStack flex={1} gap="$1">
             <XStack items="center" justify="space-between" gap="$2">
-              <Text fontWeight="800" fontSize={16} color="$text">
+              <Text fontWeight="700" fontSize={16} color="$text">
                 {name}
               </Text>
               {!isLocked ? (
@@ -254,10 +255,15 @@ export function VillageScreen() {
             <YStack gap="$4">
               {/* Header */}
               <XStack items="center" justify="space-between">
-                <Text fontWeight="900" fontSize={20} color="$text">
+                <Text fontWeight="700" fontSize={20} color="$text">
                   {t("village.building_details")}
                 </Text>
-                <Pressable onPress={handleCloseModal} accessibilityRole="button" hitSlop={8}>
+                <Pressable
+                  onPress={handleCloseModal}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("village.close", "Close")}
+                  hitSlop={8}
+                >
                   <X size={24} color="$textSecondary" />
                 </Pressable>
               </XStack>
@@ -281,7 +287,7 @@ export function VillageScreen() {
 
                   {/* Name */}
                   <Text
-                    fontWeight="900"
+                    fontWeight="700"
                     fontSize={24}
                     color="$text"
                     style={{ textAlign: "center" }}
@@ -291,8 +297,8 @@ export function VillageScreen() {
 
                   {/* Level Badge */}
                   <XStack items="center" gap="$2" bg="$primary" px="$3" py="$1" rounded="$4">
-                    <Star size={16} color="$bgDark" fill="$bgDark" />
-                    <Text fontWeight="800" color="$bgDark" fontSize={16}>
+                    <Star size={16} color="$text" fill="$text" />
+                    <Text fontWeight="700" color="$text" fontSize={16}>
                       {t("village.level")} {selectedBuilding.level}
                     </Text>
                   </XStack>
@@ -338,7 +344,7 @@ export function VillageScreen() {
                       borderColor="$borderStrong"
                       gap="$2"
                     >
-                      <Text fontWeight="800" fontSize={14} color="$text">
+                      <Text fontWeight="700" fontSize={14} color="$text">
                         {t("village.next_level")} →
                       </Text>
                       <Text fontSize={13} color="$textSecondary">
@@ -380,7 +386,7 @@ export function VillageScreen() {
                       borderColor="$borderStrong"
                       gap="$2"
                     >
-                      <Text fontWeight="800" fontSize={14} color="$text">
+                      <Text fontWeight="700" fontSize={14} color="$text">
                         {t("village.current_bonus")}
                       </Text>
                       <Text fontSize={13} color="$textSecondary">
@@ -408,7 +414,7 @@ export function VillageScreen() {
 
               {/* Close Button */}
               <Button bg="$primary" borderWidth={0} rounded="$4" onPress={handleCloseModal}>
-                <Text fontWeight="800" color="$bgDark">
+                <Text fontWeight="700" color="$text">
                   {t("village.close")}
                 </Text>
               </Button>
@@ -428,23 +434,15 @@ export function VillageScreen() {
         borderBottomWidth={1}
         borderBottomColor="$borderStrong"
       >
-        <Pressable
+        <AppIconButton
           onPress={() => router.back()}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 22,
-            backgroundColor: "rgba(255,255,255,0.04)",
-            borderWidth: 1,
-            borderColor: "rgba(232,236,255,0.14)",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          accessibilityRole="button"
+          accessibilityLabel={t("quests.go_back", "Go back")}
         >
-          <ArrowLeft size={24} color="#E8ECFF" />
-        </Pressable>
+          <ArrowLeft size={24} color="$text" strokeWidth={2.5} />
+        </AppIconButton>
         <YStack flex={1}>
-          <H1 fontSize={24} fontWeight="900" color="$text">
+          <H1 fontSize={24} fontWeight="700" color="$text">
             {t("village.title", "My Village")}
           </H1>
         </YStack>
@@ -475,7 +473,7 @@ export function VillageScreen() {
             </YStack>
 
             <YStack flex={1} gap="$2">
-              <Text fontWeight="900" fontSize={18} color="$text">
+              <Text fontWeight="700" fontSize={18} color="$text">
                 {t("village.stats_title", "Village Progress")}
               </Text>
               <XStack items="center" justify="space-between">
@@ -519,7 +517,7 @@ export function VillageScreen() {
 
           return (
             <YStack key={tier} mb="$4">
-              <H4 fontWeight="900" color="$text" mb="$2">
+              <H4 fontWeight="700" color="$text" mb="$2">
                 {label}
               </H4>
               {tierBuildings.map((b) => (

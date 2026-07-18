@@ -1,13 +1,15 @@
 import { BlurView } from "expo-blur";
 import { useTranslation } from "react-i18next";
-import { Modal } from "react-native";
-import { Button, Card, H3, Paragraph, ScrollView, YStack } from "tamagui";
+import { Modal, Pressable } from "react-native";
+import { Button, Card, H3, Paragraph, ScrollView, Text, YStack } from "tamagui";
 
 interface NarrativeModalProps {
   visible: boolean;
   title: string;
   text: string;
   onClose: () => void;
+  /** Real "back out" path, distinct from the confirm action. Falls back to onClose when omitted. */
+  onDismiss?: () => void;
   type?: "intro" | "outro";
 }
 
@@ -16,12 +18,14 @@ export function NarrativeModal({
   title,
   text,
   onClose,
+  onDismiss,
   type = "intro",
 }: NarrativeModalProps) {
   const { t } = useTranslation();
+  const dismiss = onDismiss ?? onClose;
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss}>
       <BlurView intensity={80} tint="dark" style={{ flex: 1 }}>
         <YStack flex={1} justify="center" items="center" p="$4">
           <Card
@@ -32,7 +36,7 @@ export function NarrativeModal({
             maxHeight="80%"
             bg="$bgLight"
             borderColor="$primary"
-            borderWidth={3}
+            borderWidth={1}
             p="$0"
             overflow="hidden"
           >
@@ -51,13 +55,13 @@ export function NarrativeModal({
             </ScrollView>
 
             {/* Footer */}
-            <YStack p="$4" pt="$2">
+            <YStack p="$4" pt="$2" gap="$3">
               <Button
                 bg="$primary"
                 fontSize={18}
                 onPress={onClose}
-                borderWidth={3}
-                borderColor="$color"
+                borderWidth={1}
+                borderColor="$borderStrong"
                 pressStyle={{ opacity: 0.9, scale: 0.98 }}
               >
                 <Button.Text color="white" fontWeight="bold" fontSize={18}>
@@ -66,6 +70,24 @@ export function NarrativeModal({
                     : t("common.continue", "Continue")}
                 </Button.Text>
               </Button>
+
+              {type === "intro" && onDismiss ? (
+                <Pressable
+                  hitSlop={12}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("common.not_now", "Not now")}
+                  onPress={onDismiss}
+                >
+                  <Text
+                    color="$textSecondary"
+                    fontSize={14}
+                    fontWeight="700"
+                    style={{ textAlign: "center" }}
+                  >
+                    {t("common.not_now", "Not now")}
+                  </Text>
+                </Pressable>
+              ) : null}
             </YStack>
           </Card>
         </YStack>

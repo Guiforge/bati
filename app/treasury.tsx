@@ -64,7 +64,13 @@ export default function TreasuryScreen() {
           headerStyle: { backgroundColor: theme.background?.val },
           headerTintColor: theme.color?.val,
           headerLeft: () => (
-            <Button chromeless circular onPress={() => router.back()}>
+            <Button
+              chromeless
+              circular
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel={t("quests.go_back", "Go back")}
+            >
               <ChevronLeft size={24} color="$color" />
             </Button>
           ),
@@ -96,7 +102,7 @@ export default function TreasuryScreen() {
                     />
                   </YStack>
 
-                  <Text fontSize={24} fontWeight="900" color="$color">
+                  <Text fontSize={24} fontWeight="700" color="$color">
                     {getAmount(res.code)}
                   </Text>
 
@@ -112,7 +118,7 @@ export default function TreasuryScreen() {
             <YStack gap="$3">
               <XStack gap="$2" items="center">
                 <Lightbulb size={18} color="$primary" />
-                <Text fontSize="$4" fontWeight="800" color="$text">
+                <Text fontSize="$4" fontWeight="700" color="$text">
                   {t("treasury.tip_title")}
                 </Text>
               </XStack>

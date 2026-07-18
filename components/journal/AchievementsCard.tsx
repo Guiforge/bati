@@ -90,15 +90,15 @@ export function AchievementsCard() {
           height={44}
           bg="$pastelYellow"
           rounded="$4"
-          borderWidth={2}
-          borderColor="$color"
+          borderWidth={1}
+          borderColor="$borderStrong"
           items="center"
           justify="center"
         >
           <Award size={24} color="$color" />
         </YStack>
         <YStack flex={1}>
-          <Text fontWeight="900" fontSize={18} color="$color">
+          <Text fontWeight="700" fontSize={18} color="$color">
             {t("achievements.title")}
           </Text>
           <Text fontSize={12} color="$color" opacity={0.6}>
@@ -109,7 +109,7 @@ export function AchievementsCard() {
           </Text>
         </YStack>
         <YStack items="center">
-          <Text fontWeight="900" fontSize={24} color="$primary">
+          <Text fontWeight="700" fontSize={24} color="$primary">
             {stats.percentage}%
           </Text>
         </YStack>
@@ -121,7 +121,7 @@ export function AchievementsCard() {
         size="$2"
         bg="$bgLight"
         borderWidth={1}
-        borderColor="$color"
+        borderColor="$borderStrong"
         rounded="$4"
       >
         <Progress.Indicator animation="bouncy" bg="$primary" />
@@ -135,7 +135,7 @@ export function AchievementsCard() {
             px="$2"
             py="$1"
             bg={filter === key ? "$primary" : "$bgLight"}
-            borderWidth={2}
+            borderWidth={1}
             borderColor={filter === key ? "$primary" : "$color"}
             rounded="$3"
             pressStyle={{ opacity: 0.8 }}
@@ -183,7 +183,7 @@ function AchievementRow({
       bg={isUnlocked ? "$pastelGreen" : "$bgLight"}
       p="$3"
       rounded="$4"
-      borderWidth={2}
+      borderWidth={1}
       borderColor={isUnlocked ? "$success" : "$color"}
       opacity={isUnlocked ? 1 : 0.7}
       animation="quick"
@@ -195,8 +195,8 @@ function AchievementRow({
         height={44}
         bg={isUnlocked ? "$background" : "$bgLight"}
         rounded="$3"
-        borderWidth={2}
-        borderColor="$color"
+        borderWidth={1}
+        borderColor="$borderStrong"
         items="center"
         justify="center"
       >
@@ -210,7 +210,7 @@ function AchievementRow({
       {/* Content */}
       <YStack flex={1} gap="$1">
         <XStack items="center" gap="$2">
-          <Text fontWeight="900" fontSize={14} color="$color" numberOfLines={1} flex={1}>
+          <Text fontWeight="700" fontSize={14} color="$color" numberOfLines={1} flex={1}>
             {title}
           </Text>
           {!isUnlocked && (
@@ -230,7 +230,7 @@ function AchievementRow({
             size="$1"
             bg="$background"
             borderWidth={1}
-            borderColor="$color"
+            borderColor="$borderStrong"
             rounded="$2"
             mt="$1"
           >

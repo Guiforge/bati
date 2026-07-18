@@ -8,11 +8,15 @@ import { Card } from "@/components/common/Card";
 import { getBalanceRecommendation, getMuscleBalance, type MuscleBalance } from "@/db/muscleBalance";
 import { useSettingsStore } from "@/stores/settings";
 
+// Chart-library colors must be literal hex (RadarChart can't consume Tamagui tokens);
+// these match the app's actual dark-theme tokens ($primary/$primaryHover/$borderStrong/
+// $textSecondary from tamagui.config.ts) instead of the generic light-mode palette this
+// previously carried, which put ~1.8:1 contrast labels on the dark surface.
 const RADAR_COLORS = {
-  polygon: "#6366F1",
-  polygonGradient: "#818CF8",
-  grid: "#E5E7EB",
-  labels: "#374151",
+  polygon: "#0D33F2",
+  polygonGradient: "#2E5CFF",
+  grid: "#2A3360",
+  labels: "#909ACB",
 };
 
 function MuscleBalanceRadarComponent() {
@@ -54,7 +58,7 @@ function MuscleBalanceRadarComponent() {
         <YStack gap="$2">
           <XStack items="center" gap="$2">
             <Target size={18} color="$color" />
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="700" fontSize={16} color="$color">
               {t("journal.muscle_balance")}
             </Text>
           </XStack>
@@ -82,7 +86,7 @@ function MuscleBalanceRadarComponent() {
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$2">
             <Target size={18} color="$color" />
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="700" fontSize={16} color="$color">
               {t("journal.muscle_balance")}
             </Text>
           </XStack>

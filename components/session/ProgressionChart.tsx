@@ -91,7 +91,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <Card>
         <YStack gap="$2" items="center" py="$2">
           <Text fontSize={24}>😵</Text>
-          <Text fontWeight="900" fontSize={14} color="$color">
+          <Text fontWeight="700" fontSize={14} color="$color">
             {t("chart.error")}
           </Text>
           <Paragraph color="$color" opacity={0.6} size="$2">
@@ -107,7 +107,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <Card>
         <YStack gap="$2" items="center" py="$4">
           <Text fontSize={32}>📈</Text>
-          <Text fontWeight="900" fontSize={14} color="$color">
+          <Text fontWeight="700" fontSize={14} color="$color">
             {t("chart.no_data")}
           </Text>
           <Paragraph color="$color" opacity={0.6} size="$2" style={{ textAlign: "center" }}>
@@ -162,7 +162,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <YStack gap="$4">
         {/* Title */}
         <YStack gap="$1">
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$color">
             {title || t("chart.progression_title")}
           </Text>
           <Paragraph color="$color" opacity={0.6} size="$2">
@@ -173,7 +173,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         {/* Stats Row */}
         <XStack gap="$4" justify="space-around">
           <YStack items="center">
-            <Text fontWeight="900" fontSize={24} color="$primary">
+            <Text fontWeight="700" fontSize={24} color="$primary">
               {sessions.length}
             </Text>
             <Text fontSize={12} color="$color" opacity={0.6}>
@@ -181,7 +181,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="900" fontSize={24} color="$success">
+            <Text fontWeight="700" fontSize={24} color="$success">
               {totalMinutes}
             </Text>
             <Text fontSize={12} color="$color" opacity={0.6}>
@@ -189,7 +189,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="900" fontSize={24} color="$secondary">
+            <Text fontWeight="700" fontSize={24} color="$secondary">
               {avgMinutes}
             </Text>
             <Text fontSize={12} color="$color" opacity={0.6}>

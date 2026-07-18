@@ -33,8 +33,8 @@ function RecordItem({
       bg="$background"
       p="$3"
       rounded="$4"
-      borderWidth={2}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       flex={1}
       items="center"
       gap="$1"
@@ -43,7 +43,7 @@ function RecordItem({
       <Text fontSize={11} color="$color" opacity={0.6} style={{ textAlign: "center" }}>
         {label}
       </Text>
-      <Text fontWeight="900" fontSize={18} color="$color" style={{ textAlign: "center" }}>
+      <Text fontWeight="700" fontSize={18} color="$color" style={{ textAlign: "center" }}>
         {value}
       </Text>
       {subLabel && (
@@ -99,7 +99,7 @@ export function PersonalRecordsCard() {
       <YStack gap="$3">
         <XStack items="center" gap="$2">
           <Trophy size={18} color="$primary" />
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$color">
             {t("journal.personal_records")}
           </Text>
         </XStack>

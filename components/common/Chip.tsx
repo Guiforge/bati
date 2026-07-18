@@ -28,7 +28,7 @@ export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
     <YStack
       bg={toneToBg(tone)}
       borderWidth={isPressable ? 2 : 1}
-      borderColor="$color"
+      borderColor="$borderStrong"
       rounded={isPressable ? "$10" : "$4"}
       px={isPressable ? "$3" : "$2"}
       py={isPressable ? "$2" : "$1"}
@@ -47,7 +47,7 @@ export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
     >
       <XStack items="center" gap="$2">
         {icon}
-        <Text fontWeight={isPressable ? "900" : "800"} fontSize={13} color={toneToText(tone)}>
+        <Text fontWeight="700" fontSize={13} color={toneToText(tone)}>
           {label}
         </Text>
       </XStack>

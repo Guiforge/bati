@@ -93,7 +93,11 @@ function normalizeDate(value: unknown): Date | null {
   return null;
 }
 
-export async function listAdventures(): Promise<Adventure[]> {
+// Same static-seed-content reasoning as listQuestTemplates(): no live authoring flow, so the
+// gallery fetch can be shared across mounts instead of refetched on every navigation.
+let adventuresCache: Promise<Adventure[]> | null = null;
+
+async function fetchAdventures(): Promise<Adventure[]> {
   const rows = await db
     .select({
       adventureId: adventures.id,
@@ -204,6 +208,16 @@ export async function listAdventures(): Promise<Adventure[]> {
 
   // Adventures are campaigns: only return multi-step content.
   return [...byAdventureId.values()].filter((a) => a.stepsCount >= 2);
+}
+
+export function listAdventures(): Promise<Adventure[]> {
+  if (!adventuresCache) {
+    adventuresCache = fetchAdventures().catch((e) => {
+      adventuresCache = null;
+      throw e;
+    });
+  }
+  return adventuresCache;
 }
 
 export async function getAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {

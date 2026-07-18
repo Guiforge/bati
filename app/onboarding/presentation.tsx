@@ -43,7 +43,7 @@ export default function Presentation() {
           <H1
             color="$text"
             fontSize={40}
-            fontWeight="900"
+            fontWeight="700"
             letterSpacing={4}
             textShadowColor="rgba(0,0,0,0.5)"
             textShadowOffset={{ width: 2, height: 2 }}
@@ -59,7 +59,7 @@ export default function Presentation() {
             <H2
               color="$text"
               fontSize={32}
-              fontWeight="800"
+              fontWeight="700"
               style={{ textAlign: "center" }}
               lineHeight={38}
             >
@@ -83,7 +83,7 @@ export default function Presentation() {
             borderWidth={0}
           >
             <XStack items="center" gap="$2">
-              <Text color="$text" fontWeight="900" fontSize={18}>
+              <Text color="$text" fontWeight="700" fontSize={18}>
                 {t("onboarding.next")}
               </Text>
 

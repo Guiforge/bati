@@ -50,11 +50,13 @@ describe("exerciseColors", () => {
     const quest: Pick<Quest, "exercises"> = {
       exercises: [
         {
+          id: 1,
           exercise: exFastReps as Exercise,
           images: [],
           target: { type: "reps", value: 20 },
         },
         {
+          id: 2,
           exercise: exLongTime as Exercise,
           images: [],
           target: { type: "time", value: 60 },

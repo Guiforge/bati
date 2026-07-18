@@ -45,20 +45,20 @@ export function GoalCard({ onPress }: { onPress?: () => void }) {
             bg="$pastelYellow"
             items="center"
             justify="center"
-            borderWidth={2}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
           >
             <Text fontSize={24}>🎯</Text>
           </YStack>
           <YStack flex={1} gap="$1">
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="700" fontSize={16} color="$color">
               {t("goals.no_goal")}
             </Text>
             <Paragraph color="$color" opacity={0.6} fontSize={12}>
               {t("goals.no_goal_subtitle")}
             </Paragraph>
           </YStack>
-          <Text fontWeight="900" color="$primary" fontSize={14}>
+          <Text fontWeight="700" color="$primary" fontSize={14}>
             {t("goals.set_goal")} →
           </Text>
         </XStack>
@@ -92,7 +92,7 @@ export function GoalCard({ onPress }: { onPress?: () => void }) {
           <XStack items="center" gap="$2">
             <Text fontSize={24}>{typeInfo.emoji}</Text>
             <YStack>
-              <Text fontWeight="900" fontSize={16} color="$color">
+              <Text fontWeight="700" fontSize={16} color="$color">
                 {typeName}
               </Text>
               <Text fontSize={12} color="$color" opacity={0.6}>
@@ -101,7 +101,7 @@ export function GoalCard({ onPress }: { onPress?: () => void }) {
               </Text>
             </YStack>
           </XStack>
-          <Text fontWeight="900" color={statusColor} fontSize={12}>
+          <Text fontWeight="700" color={statusColor} fontSize={12}>
             {statusMessage}
           </Text>
         </XStack>

@@ -12,15 +12,16 @@ type CreditLinkProps = {
   title: string;
   subtitle?: string;
   url: string;
+  onPress: (url: string) => void;
 };
 
-function CreditLink({ title, subtitle, url }: CreditLinkProps) {
+function CreditLink({ title, subtitle, url, onPress }: CreditLinkProps) {
   return (
-    <GlassCard onPress={() => Linking.openURL(url)} p="$3">
+    <GlassCard onPress={() => onPress(url)} p="$3">
       <XStack items="center" gap="$3">
         <ExternalLink size={20} color="$color" />
         <YStack flex={1} gap="$1">
-          <Text fontSize="$4" fontWeight="900" color="$text">
+          <Text fontSize="$4" fontWeight="700" color="$text">
             {title}
           </Text>
           {subtitle ? (
@@ -57,6 +58,8 @@ export default function CreditsScreen() {
           chromeless
           onPress={() => router.back()}
           icon={<ChevronLeft size={24} color="$text" />}
+          accessibilityRole="button"
+          accessibilityLabel={t("quests.go_back", "Go back")}
         />
         <XStack flex={1} items="center" gap="$2">
           <ScrollText size={20} color="$primary" />
@@ -66,14 +69,14 @@ export default function CreditsScreen() {
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
         <SolidCard p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="900" color="$text">
+          <Text fontSize="$4" fontWeight="700" color="$text">
             {t("credits.third_party_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("credits.third_party_body")}</Paragraph>
         </SolidCard>
 
         <SolidCard p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="900" color="$text">
+          <Text fontSize="$4" fontWeight="700" color="$text">
             {t("credits.icons_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("credits.game_icons_note")}</Paragraph>
@@ -84,16 +87,19 @@ export default function CreditsScreen() {
             title={t("credits.game_icons_site")}
             subtitle={t("credits.game_icons_site_subtitle")}
             url="https://game-icons.net/"
+            onPress={openUrl}
           />
           <CreditLink
             title={t("credits.game_icons_about")}
             subtitle={t("credits.game_icons_about_subtitle")}
             url="https://game-icons.net/about.html"
+            onPress={openUrl}
           />
           <CreditLink
             title={t("credits.cc_by_30")}
             subtitle={t("credits.cc_by_30_subtitle")}
             url="https://creativecommons.org/licenses/by/3.0/"
+            onPress={openUrl}
           />
 
           <Separator />
@@ -111,29 +117,42 @@ export default function CreditsScreen() {
         </SolidCard>
 
         <SolidCard p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="900" color="$text">
+          <Text fontSize="$4" fontWeight="700" color="$text">
             {t("credits.open_source_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("credits.open_source_body")}</Paragraph>
 
           <Separator />
 
-          <CreditLink title="Expo" subtitle="https://expo.dev" url="https://expo.dev" />
+          <CreditLink
+            title="Expo"
+            subtitle="https://expo.dev"
+            url="https://expo.dev"
+            onPress={openUrl}
+          />
           <CreditLink
             title="React Native"
             subtitle="https://reactnative.dev"
             url="https://reactnative.dev"
+            onPress={openUrl}
           />
-          <CreditLink title="Tamagui" subtitle="https://tamagui.dev" url="https://tamagui.dev" />
+          <CreditLink
+            title="Tamagui"
+            subtitle="https://tamagui.dev"
+            url="https://tamagui.dev"
+            onPress={openUrl}
+          />
           <CreditLink
             title="Zustand"
             subtitle="https://zustand-demo.pmnd.rs"
             url="https://zustand-demo.pmnd.rs"
+            onPress={openUrl}
           />
           <CreditLink
             title="Drizzle ORM"
             subtitle="https://orm.drizzle.team"
             url="https://orm.drizzle.team"
+            onPress={openUrl}
           />
         </SolidCard>
       </RNScrollView>

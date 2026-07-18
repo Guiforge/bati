@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H4, Progress, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { useToast } from "@/components/common/Toast";
 import { PlanPreviewSheet } from "@/components/goals/PlanPreviewSheet";
 import {
   createGoal,
@@ -34,6 +35,7 @@ export default function GoalsScreen() {
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
   const { mediumImpact, selection } = useHaptics();
+  const { showError } = useToast();
 
   const [activeGoal, setActiveGoal] = useState<Goal | null>(null);
   const [weekProgress, setWeekProgress] = useState<GoalProgress | null>(null);
@@ -70,12 +72,12 @@ export default function GoalsScreen() {
       } else {
         setIsEditing(true); // Show form if no goal
       }
-    } catch {
-      // Error handled silently
+    } catch (e) {
+      showError(e instanceof Error ? e.message : t("common.error", "Oops!"));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [showError, t]);
 
   useEffect(() => {
     loadData().catch(() => {
@@ -94,8 +96,9 @@ export default function GoalsScreen() {
       // Generate preview with selected params
       const sessions = await previewPlanForGoal({ daysPerWeek: selectedDays });
       setPreviewSessions(sessions);
-    } catch {
+    } catch (e) {
       setShowPreview(false);
+      showError(e instanceof Error ? e.message : t("common.error", "Oops!"));
     } finally {
       setIsGeneratingPreview(false);
     }
@@ -117,8 +120,8 @@ export default function GoalsScreen() {
       setIsEditing(false);
       setPreviewSessions([]);
       await loadData();
-    } catch {
-      // Error handled silently
+    } catch (e) {
+      showError(e instanceof Error ? e.message : t("common.error", "Oops!"));
     }
   };
 
@@ -129,8 +132,8 @@ export default function GoalsScreen() {
     try {
       const sessions = await previewPlanForGoal({ daysPerWeek: selectedDays });
       setPreviewSessions(sessions);
-    } catch {
-      // Error handled silently
+    } catch (e) {
+      showError(e instanceof Error ? e.message : t("common.error", "Oops!"));
     } finally {
       setIsGeneratingPreview(false);
     }
@@ -143,8 +146,8 @@ export default function GoalsScreen() {
     try {
       await updateGoalStatus(activeGoal.id, status);
       await loadData();
-    } catch {
-      // Error handled silently
+    } catch (e) {
+      showError(e instanceof Error ? e.message : t("common.error", "Oops!"));
     }
   };
 
@@ -177,17 +180,19 @@ export default function GoalsScreen() {
           borderColor="$borderStrong"
           pressStyle={{ opacity: 0.9, scale: 0.98 }}
           onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t("quests.go_back", "Go back")}
         >
           <ChevronLeft size={24} color="$color" />
         </Button>
         <YStack flex={1}>
-          <H1 fontSize={24} fontWeight="900" color="$text">
+          <H1 fontSize={24} fontWeight="700" color="$text">
             {t("goals.title")}
           </H1>
         </YStack>
         {activeGoal && !isEditing && (
           <Pressable onPress={() => setIsEditing(true)}>
-            <Text fontWeight="900" color="$primary" fontSize={14}>
+            <Text fontWeight="700" color="$primary" fontSize={14}>
               {t("goals.edit_goal")}
             </Text>
           </Pressable>
@@ -212,7 +217,7 @@ export default function GoalsScreen() {
             {/* Goal Type Selection */}
             <Card bg="$surface" width="100%">
               <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("goals.goal_type")}
                 </Text>
                 <YStack gap="$2">
@@ -240,7 +245,7 @@ export default function GoalsScreen() {
                         >
                           <Text fontSize={28}>{info.emoji}</Text>
                           <YStack flex={1}>
-                            <Text fontWeight="900" fontSize={16} color="$text">
+                            <Text fontWeight="700" fontSize={16} color="$text">
                               {language === "fr" ? info.fr : info.en}
                             </Text>
                             <Text fontSize={12} color="$textSecondary">
@@ -259,7 +264,7 @@ export default function GoalsScreen() {
             {/* Days per Week */}
             <Card bg="$surface" width="100%">
               <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("goals.days_per_week")}
                 </Text>
                 <XStack gap="$2" flexWrap="wrap">
@@ -278,11 +283,7 @@ export default function GoalsScreen() {
                         }}
                         rounded="$4"
                       >
-                        <Text
-                          fontWeight="800"
-                          color={isSelected ? "$background" : "$text"}
-                          fontSize={14}
-                        >
+                        <Text fontWeight="700" color="$text" fontSize={14}>
                           {days}
                         </Text>
                       </Button>
@@ -295,7 +296,7 @@ export default function GoalsScreen() {
             {/* Session Duration */}
             <Card bg="$surface" width="100%">
               <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$text">
+                <Text fontWeight="700" fontSize={16} color="$text">
                   {t("goals.session_duration")}
                 </Text>
                 <XStack gap="$2" flexWrap="wrap">
@@ -314,11 +315,7 @@ export default function GoalsScreen() {
                         }}
                         rounded="$4"
                       >
-                        <Text
-                          fontWeight="800"
-                          color={isSelected ? "$background" : "$text"}
-                          fontSize={14}
-                        >
+                        <Text fontWeight="700" color="$text" fontSize={14}>
                           {duration}m
                         </Text>
                       </Button>
@@ -335,12 +332,12 @@ export default function GoalsScreen() {
                   flex={1}
                   size="$5"
                   bg="$bgLight"
-                  borderWidth={2}
-                  borderColor="$color"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
                   onPress={() => setIsEditing(false)}
                   rounded="$6"
                 >
-                  <Text fontWeight="900" color="$color" fontSize={16}>
+                  <Text fontWeight="700" color="$color" fontSize={16}>
                     {t("goals.cancel")}
                   </Text>
                 </Button>
@@ -353,7 +350,7 @@ export default function GoalsScreen() {
                 onPress={handleSaveGoal}
                 rounded="$6"
               >
-                <Text fontWeight="900" color="$background" fontSize={16}>
+                <Text fontWeight="700" color="$text" fontSize={16}>
                   {t("goals.save")}
                 </Text>
               </Button>
@@ -368,7 +365,7 @@ export default function GoalsScreen() {
                 <XStack items="center" gap="$3">
                   <Text fontSize={48}>{goalTypeInfo[activeGoal.goalType].emoji}</Text>
                   <YStack flex={1}>
-                    <Text fontWeight="900" fontSize={20} color="$color">
+                    <Text fontWeight="700" fontSize={20} color="$color">
                       {language === "fr"
                         ? goalTypeInfo[activeGoal.goalType].fr
                         : goalTypeInfo[activeGoal.goalType].en}
@@ -385,7 +382,7 @@ export default function GoalsScreen() {
             {/* Weekly Progress */}
             <Card bg="$bgLight" width="100%">
               <YStack gap="$3">
-                <H4 fontWeight="900" color="$color">
+                <H4 fontWeight="700" color="$color">
                   {t("goals.weekly_progress")}
                 </H4>
                 <YStack gap="$2">
@@ -402,7 +399,7 @@ export default function GoalsScreen() {
                         target: weekProgress.targetSessions,
                       })}
                     </Text>
-                    <Text fontWeight="900" fontSize={14} color={isComplete ? "$success" : "$color"}>
+                    <Text fontWeight="700" fontSize={14} color={isComplete ? "$success" : "$color"}>
                       {isComplete ? t("goals.goal_complete") : `${Math.round(percentage)}%`}
                     </Text>
                   </XStack>
@@ -414,7 +411,7 @@ export default function GoalsScreen() {
             {progressHistory.length > 1 && (
               <Card bg="$bgLight" width="100%">
                 <YStack gap="$3">
-                  <H4 fontWeight="900" color="$color">
+                  <H4 fontWeight="700" color="$color">
                     {t("journal.history")}
                   </H4>
                   <YStack gap="$2">
@@ -449,12 +446,12 @@ export default function GoalsScreen() {
                   flex={1}
                   size="$4"
                   bg="$pastelGreen"
-                  borderWidth={2}
-                  borderColor="$color"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
                   onPress={() => handleStatusUpdate("completed")}
                   rounded="$4"
                 >
-                  <Text fontWeight="800" color="$color" fontSize={12}>
+                  <Text fontWeight="700" color="$color" fontSize={12}>
                     {t("goals.complete_goal")}
                   </Text>
                 </Button>
@@ -462,12 +459,12 @@ export default function GoalsScreen() {
                   flex={1}
                   size="$4"
                   bg="$pastelPink"
-                  borderWidth={2}
-                  borderColor="$color"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
                   onPress={() => handleStatusUpdate("paused")}
                   rounded="$4"
                 >
-                  <Text fontWeight="800" color="$color" fontSize={12}>
+                  <Text fontWeight="700" color="$color" fontSize={12}>
                     {t("goals.pause_goal")}
                   </Text>
                 </Button>

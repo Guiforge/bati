@@ -69,12 +69,12 @@ function PlanPreviewSheetComponent({
     >
       <Sheet.Overlay animation="quick" enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
       <Sheet.Handle bg="$color" opacity={0.3} />
-      <Sheet.Frame bg="$background" rounded="$6" borderWidth={3} borderColor="$color" p="$4">
+      <Sheet.Frame bg="$background" rounded="$6" borderWidth={1} borderColor="$borderStrong" p="$4">
         {/* Header */}
         <YStack gap="$2" mb="$4">
           <XStack items="center" gap="$2">
             <Sparkles size={24} color="$primary" />
-            <H3 fontWeight="900" color="$color">
+            <H3 fontWeight="700" color="$color">
               {t("goals.preview_title")}
             </H3>
           </XStack>
@@ -105,7 +105,7 @@ function PlanPreviewSheetComponent({
             <YStack gap="$4">
               {Array.from(sessionsByWeek.entries()).map(([weekNum, weekSessions]) => (
                 <YStack key={weekNum} gap="$2">
-                  <Text fontWeight="800" fontSize={14} color="$color" opacity={0.6} ml="$1">
+                  <Text fontWeight="700" fontSize={14} color="$color" opacity={0.6} ml="$1">
                     {t("goals.preview_week", { week: weekNum })}
                   </Text>
                   {weekSessions.map((session) => (
@@ -119,7 +119,7 @@ function PlanPreviewSheetComponent({
                       <XStack items="center" gap="$3">
                         <Calendar size={20} color="$color" />
                         <YStack flex={1}>
-                          <Text fontWeight="900" fontSize={16} color="$color">
+                          <Text fontWeight="700" fontSize={16} color="$color">
                             {language === "fr" ? session.quest.frTitle : session.quest.enTitle}
                           </Text>
                           <Text fontSize={12} color="$color" opacity={0.7}>
@@ -144,15 +144,15 @@ function PlanPreviewSheetComponent({
             flex={1}
             size="$5"
             bg="$bgLight"
-            borderWidth={3}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
             onPress={onRegenerate}
             rounded="$6"
             disabled={isLoading}
             opacity={isLoading ? 0.5 : 1}
             icon={<RefreshCw size={18} color="$color" />}
           >
-            <Text fontWeight="900" color="$color" fontSize={14}>
+            <Text fontWeight="700" color="$color" fontSize={14}>
               {t("goals.preview_regenerate")}
             </Text>
           </Button>
@@ -160,14 +160,14 @@ function PlanPreviewSheetComponent({
             flex={1}
             size="$5"
             bg="$primary"
-            borderWidth={3}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
             onPress={onConfirm}
             rounded="$6"
             disabled={isLoading || sessions.length === 0}
             opacity={isLoading || sessions.length === 0 ? 0.5 : 1}
           >
-            <Text fontWeight="900" color="$background" fontSize={14}>
+            <Text fontWeight="700" color="$text" fontSize={14}>
               {t("goals.preview_confirm")}
             </Text>
           </Button>

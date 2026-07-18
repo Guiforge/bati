@@ -47,7 +47,7 @@ export function EmptyState({ title, description, icon, actionLabel, onAction }: 
   return (
     <YStack {...stateFrame}>
       {icon}
-      <Text fontSize={18} fontWeight="800" color="$color" style={{ textAlign: "center" }}>
+      <Text fontSize={18} fontWeight="700" color="$color" style={{ textAlign: "center" }}>
         {title}
       </Text>
       {description ? (
@@ -82,7 +82,7 @@ export type ErrorStateProps = {
 export function ErrorState({ title, description, retryLabel, onRetry }: ErrorStateProps) {
   return (
     <YStack {...stateFrame}>
-      <Text fontSize={18} fontWeight="800" color="$danger" style={{ textAlign: "center" }}>
+      <Text fontSize={18} fontWeight="700" color="$danger" style={{ textAlign: "center" }}>
         {title}
       </Text>
       {description ? (

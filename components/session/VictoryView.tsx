@@ -243,7 +243,7 @@ export function VictoryView() {
   };
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16}>
+    <YStack flex={1} bg="$background" pt={insets.top + 16}>
       {levelUpInfo && (
         <LevelUpModal
           visible={!!levelUpInfo}
@@ -263,7 +263,7 @@ export function VictoryView() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: 24,
+          paddingBottom: insets.bottom + 96,
           alignItems: "center",
           gap: 24,
         }}
@@ -274,7 +274,7 @@ export function VictoryView() {
             <Text fontSize={72}>{isBossDefeat ? "⚔️" : "🏆"}</Text>
             <YStack items="center" gap="$1">
               <Text
-                fontWeight="900"
+                fontWeight="700"
                 color="$textSecondary"
                 fontSize={14}
                 style={{ textAlign: "center" }}
@@ -282,7 +282,7 @@ export function VictoryView() {
                 {isBossDefeat ? t("boss.victory_title") : t("session.victory_title")}
               </Text>
               <H1
-                fontWeight="900"
+                fontWeight="700"
                 color="$text"
                 fontSize={34}
                 lineHeight={38}
@@ -312,19 +312,19 @@ export function VictoryView() {
             borderColor="$borderStrong"
             pb="$3"
           >
-            <Text fontWeight="800" fontSize={16} color="$textSecondary">
+            <Text fontWeight="700" fontSize={16} color="$textSecondary">
               {t("session.total_time")}
             </Text>
-            <Text fontWeight="900" fontSize={24} color="$text" fontFamily="$body">
+            <Text fontWeight="700" fontSize={24} color="$text" fontFamily="$body">
               {formatTime(durationSeconds)}
             </Text>
           </XStack>
 
           <XStack justify="space-between" items="center">
-            <Text fontWeight="800" fontSize={16} color="$textSecondary">
+            <Text fontWeight="700" fontSize={16} color="$textSecondary">
               {t("session.xp_earned")}
             </Text>
-            <Text fontWeight="900" fontSize={24} color="$primary" fontFamily="$body">
+            <Text fontWeight="700" fontSize={24} color="$primary" fontFamily="$body">
               {t("quests.reward_xp", { count: xpEarned })}
             </Text>
           </XStack>
@@ -344,7 +344,7 @@ export function VictoryView() {
         {/* Post-workout Feedback */}
         <Card width="100%" maxW={520} bg="$surface" gap="$3">
           <Text
-            fontWeight="800"
+            fontWeight="700"
             fontSize={14}
             color="$textSecondary"
             style={{ textAlign: "center" }}
@@ -367,7 +367,7 @@ export function VictoryView() {
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>😊</Text>
-                <Text color="$text" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                <Text color="$text" fontSize={12} fontWeight="700" style={{ textAlign: "center" }}>
                   {t("session.feedback_easy")}
                 </Text>
               </YStack>
@@ -387,7 +387,7 @@ export function VictoryView() {
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>💪</Text>
-                <Text color="$text" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                <Text color="$text" fontSize={12} fontWeight="700" style={{ textAlign: "center" }}>
                   {t("session.feedback_good")}
                 </Text>
               </YStack>
@@ -407,7 +407,7 @@ export function VictoryView() {
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>😤</Text>
-                <Text color="$text" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                <Text color="$text" fontSize={12} fontWeight="700" style={{ textAlign: "center" }}>
                   {t("session.feedback_hard")}
                 </Text>
               </YStack>
@@ -415,20 +415,29 @@ export function VictoryView() {
           </XStack>
         </Card>
 
-        {/* Share Button */}
-        <AppButton backgroundColor="$surface2" onPress={handleShare} marginBottom="$2">
-          <Text color="$text" fontSize={16} fontWeight="800">
+        {/* Share Button (secondary - the primary Finish action is always reachable below) */}
+        <AppButton backgroundColor="$surface2" onPress={handleShare}>
+          <Text color="$text" fontSize={16} fontWeight="700">
             {t("session.share", "Share Result")} 📤
           </Text>
         </AppButton>
+      </ScrollView>
 
-        {/* Finish Button */}
-        <AppButton onPress={handleFinish} disabled={isSaving}>
-          <Text color="$bgDark" fontSize={20} fontWeight="900">
+      {/* Finish Button: sticky so it's reachable without scrolling past every reward module */}
+      <YStack
+        p="$4"
+        pb={insets.bottom + 16}
+        bg="$background"
+        borderTopWidth={1}
+        borderColor="$borderStrong"
+        style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+      >
+        <AppButton onPress={handleFinish} disabled={isSaving} height={60} rounded="$6">
+          <Text color="$text" fontSize={20} fontWeight="700">
             {isSaving ? t("common.saving") : t("session.finish_button")}
           </Text>
         </AppButton>
-      </ScrollView>
+      </YStack>
 
       {/* Confetti - extra dramatic for boss defeats */}
       {!reducedMotion && (

@@ -168,8 +168,8 @@ function StatCard({
       bg={bgColor}
       p="$3"
       rounded="$6"
-      borderWidth={3}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       items="center"
       gap="$1"
     >
@@ -184,14 +184,14 @@ function StatCard({
       >
         {icon}
       </YStack>
-      <Text fontWeight="900" fontSize={20} color="$color">
+      <Text fontWeight="700" fontSize={20} color="$color">
         {value}
       </Text>
       <Text
         fontSize={11}
         color="$color"
         opacity={0.6}
-        fontWeight="600"
+        fontWeight="700"
         style={{ textAlign: "center" }}
       >
         {label}
@@ -264,7 +264,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
   const weekdayChartData = weekdayData.map((d) => ({
     value: d.count,
     label: d.day,
-    frontColor: d.count > 0 ? "#6366F1" : "#E5E7EB",
+    frontColor: d.count > 0 ? "#0D33F2" : "#2A3360",
   }));
 
   // Prepare last 7 days line chart data
@@ -294,14 +294,14 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               <Flame size={28} color={streak.isActive ? "white" : "$secondary"} />
             </YStack>
             <YStack>
-              <Text fontWeight="900" fontSize={28} color={streak.isActive ? "white" : "$color"}>
+              <Text fontWeight="700" fontSize={28} color={streak.isActive ? "white" : "$color"}>
                 {streak.current} {t("journal.days", "days")}
               </Text>
               <Text
                 fontSize={14}
                 color={streak.isActive ? "white" : "$color"}
                 opacity={streak.isActive ? 0.9 : 0.6}
-                fontWeight="600"
+                fontWeight="700"
               >
                 {streak.isActive
                   ? t("journal.streak_active", "Current streak 🔥")
@@ -313,7 +313,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
             <Text fontSize={12} color={streak.isActive ? "white" : "$color"} opacity={0.7}>
               {t("journal.best_streak", "Best")}
             </Text>
-            <Text fontWeight="900" fontSize={20} color={streak.isActive ? "white" : "$secondary"}>
+            <Text fontWeight="700" fontSize={20} color={streak.isActive ? "white" : "$secondary"}>
               {streak.best}
             </Text>
           </YStack>
@@ -348,14 +348,14 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       {/* This Week/Month Stats */}
       <Card>
         <YStack gap="$3">
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$color">
             {t("journal.recent_activity", "Recent Activity")}
           </Text>
           <XStack gap="$4" justify="space-around">
             <YStack items="center" gap="$1">
               <XStack items="center" gap="$2">
                 <Target size={16} color="$primary" />
-                <Text fontWeight="900" fontSize={24} color="$primary">
+                <Text fontWeight="700" fontSize={24} color="$primary">
                   {stats.thisWeekCount}
                 </Text>
               </XStack>
@@ -367,7 +367,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
             <YStack items="center" gap="$1">
               <XStack items="center" gap="$2">
                 <Timer size={16} color="$success" />
-                <Text fontWeight="900" fontSize={24} color="$success">
+                <Text fontWeight="700" fontSize={24} color="$success">
                   {stats.thisWeekMinutes}
                 </Text>
               </XStack>
@@ -379,7 +379,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
             <YStack items="center" gap="$1">
               <XStack items="center" gap="$2">
                 <TrendingUp size={16} color="$secondary" />
-                <Text fontWeight="900" fontSize={24} color="$secondary">
+                <Text fontWeight="700" fontSize={24} color="$secondary">
                   {stats.thisMonthCount}
                 </Text>
               </XStack>
@@ -395,7 +395,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       <Card>
         <YStack gap="$3">
           <YStack gap="$1">
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="700" fontSize={16} color="$color">
               {t("journal.last_7_days", "Last 7 Days")}
             </Text>
             <Paragraph color="$color" opacity={0.6} size="$2">
@@ -411,22 +411,22 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               initialSpacing={20}
               endSpacing={20}
               thickness={3}
-              color="#6366F1"
-              dataPointsColor="#6366F1"
+              color="#0D33F2"
+              dataPointsColor="#0D33F2"
               dataPointsRadius={5}
               curved
               areaChart
-              startFillColor="rgba(99, 102, 241, 0.3)"
-              endFillColor="rgba(99, 102, 241, 0.01)"
+              startFillColor="rgba(13, 51, 242, 0.35)"
+              endFillColor="rgba(13, 51, 242, 0.02)"
               startOpacity={0.8}
               endOpacity={0.1}
               noOfSections={3}
               maxValue={Math.ceil(maxDailyMinutes / 10) * 10 + 10}
               yAxisThickness={0}
               xAxisThickness={1}
-              xAxisColor="#E5E7EB"
-              yAxisTextStyle={{ color: "#9CA3AF", fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: "#9CA3AF", fontSize: 9 }}
+              xAxisColor="#2A3360"
+              yAxisTextStyle={{ color: "#909ACB", fontSize: 10 }}
+              xAxisLabelTextStyle={{ color: "#909ACB", fontSize: 9 }}
               hideRules
               isAnimated
               animationDuration={500}
@@ -439,7 +439,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       <Card>
         <YStack gap="$3">
           <YStack gap="$1">
-            <Text fontWeight="900" fontSize={16} color="$color">
+            <Text fontWeight="700" fontSize={16} color="$color">
               {t("journal.workout_days", "Workout Days")}
             </Text>
             <Paragraph color="$color" opacity={0.6} size="$2">
@@ -458,10 +458,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               maxValue={Math.ceil(maxWeekdayCount / 2) * 2 + 2}
               yAxisThickness={0}
               xAxisThickness={1}
-              xAxisColor="#E5E7EB"
-              yAxisTextStyle={{ color: "#9CA3AF", fontSize: 10 }}
+              xAxisColor="#2A3360"
+              yAxisTextStyle={{ color: "#909ACB", fontSize: 10 }}
               xAxisLabelTextStyle={{
-                color: "#6B7280",
+                color: "#909ACB",
                 fontSize: 10,
                 fontWeight: "600",
               }}
@@ -476,7 +476,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       {/* Difficulty Distribution */}
       <Card>
         <YStack gap="$3">
-          <Text fontWeight="900" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$color">
             {t("journal.difficulty_split", "Difficulty Split")}
           </Text>
           <XStack gap="$2" flexWrap="wrap">
@@ -499,7 +499,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               <YStack flex={stats.levels.easy} bg="#22C55E" height="100%" />
             )}
             {stats.levels.medium > 0 && (
-              <YStack flex={stats.levels.medium} bg="#6366F1" height="100%" />
+              <YStack flex={stats.levels.medium} bg="#0D33F2" height="100%" />
             )}
             {stats.levels.hard > 0 && (
               <YStack flex={stats.levels.hard} bg="#EF4444" height="100%" />

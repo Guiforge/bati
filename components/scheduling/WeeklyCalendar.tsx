@@ -88,7 +88,7 @@ export function WeeklyCalendar() {
               <Text fontSize="$2" fontWeight="bold" color={isSelected ? "white" : "$color"}>
                 {format(day, "EEE")}
               </Text>
-              <Text fontSize="$4" fontWeight="800" color={isSelected ? "white" : "$color"}>
+              <Text fontSize="$4" fontWeight="700" color={isSelected ? "white" : "$color"}>
                 {format(day, "d")}
               </Text>
               {hasSession && (

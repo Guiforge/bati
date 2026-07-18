@@ -28,7 +28,7 @@ export function DifficultyProgressionCard() {
   const borderColor = isIncrease ? "$success" : "$primary";
 
   return (
-    <Card bg={bgColor} borderColor={borderColor} borderWidth={2} p="$4">
+    <Card bg={bgColor} borderColor={borderColor} borderWidth={1} p="$4">
       <YStack gap="$2">
         <XStack items="center" gap="$2">
           <Icon size={20} color={color} />
@@ -38,7 +38,7 @@ export function DifficultyProgressionCard() {
         </XStack>
 
         <YStack>
-          <Paragraph fontWeight="800" fontSize={16} color="$color">
+          <Paragraph fontWeight="700" fontSize={16} color="$color">
             {isIncrease
               ? t("progression.increase_title", "Level Up Available!")
               : t("progression.decrease_title", "Recovery Recommended")}

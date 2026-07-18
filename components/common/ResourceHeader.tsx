@@ -68,15 +68,15 @@ export function ResourceHeader({ compact = false }: Props) {
       py="$2"
       rounded="$4"
       gap="$4"
-      borderWidth={2}
-      borderColor="$color"
+      borderWidth={1}
+      borderColor="$borderStrong"
       justify="center"
       flexWrap="wrap"
     >
       {resourcesToShow.map((resource) => (
         <XStack key={resource} gap="$1" items="center">
           <Text fontSize={16}>{RESOURCE_EMOJI[resource]}</Text>
-          <Text fontWeight="800" fontSize={14} color="$color">
+          <Text fontWeight="700" fontSize={14} color="$color">
             {formatAmount(getAmount(resource))}
           </Text>
         </XStack>

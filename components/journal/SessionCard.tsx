@@ -53,8 +53,8 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
           height={50}
           bg="$pastelYellow"
           rounded="$4"
-          borderWidth={2}
-          borderColor="$color"
+          borderWidth={1}
+          borderColor="$borderStrong"
           items="center"
           justify="center"
         >
@@ -63,7 +63,7 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
 
         <YStack flex={1} gap="$1">
           <XStack gap="$2" items="center">
-            <Text fontWeight="900" fontSize={16} numberOfLines={1} color="$color" flex={1}>
+            <Text fontWeight="700" fontSize={16} numberOfLines={1} color="$color" flex={1}>
               {entry.questTitle}
             </Text>
             {entry.hasNewRecords && (
@@ -72,8 +72,8 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
                 px="$2"
                 py="$1"
                 rounded="$3"
-                borderWidth={2}
-                borderColor="$color"
+                borderWidth={1}
+                borderColor="$borderStrong"
                 gap="$1"
                 items="center"
               >

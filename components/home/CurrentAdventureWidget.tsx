@@ -77,7 +77,7 @@ export function CurrentAdventureWidget() {
           </YStack>
 
           <YStack flex={1}>
-            <H3 fontSize={22} fontWeight="900" color="$text" numberOfLines={2} lineHeight={28}>
+            <H3 fontSize={22} fontWeight="700" color="$text" numberOfLines={2} lineHeight={28}>
               {subtitle}
             </H3>
           </YStack>
@@ -88,7 +88,7 @@ export function CurrentAdventureWidget() {
           size="$5"
           bg="$primary"
           color="$text"
-          fontWeight="900"
+          fontWeight="700"
           fontSize={18}
           width="100%"
           onPress={handlePress}

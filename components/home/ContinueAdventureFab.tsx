@@ -25,8 +25,8 @@ export function ContinueAdventureFab() {
       r="$4"
       size="$6"
       bg="$primary"
-      borderColor="$color"
-      borderWidth={3}
+      borderColor="$borderStrong"
+      borderWidth={1}
       rounded="$8"
       elevation="$4"
       pressStyle={{ scale: 0.95, rotate: "-2deg" }}
@@ -39,7 +39,7 @@ export function ContinueAdventureFab() {
           <Text color="white" fontSize="$2" fontWeight="bold" opacity={0.9}>
             {config.label}
           </Text>
-          <Text color="white" fontSize={18} fontWeight="900" textTransform="uppercase">
+          <Text color="white" fontSize={18} fontWeight="700" textTransform="uppercase">
             {config.subtext}
           </Text>
         </YStack>

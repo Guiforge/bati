@@ -74,7 +74,7 @@ export function RestView() {
         enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
       >
         <Text fontSize={40}>🔥</Text>
-        <H3 color="$text" fontWeight="900">
+        <H3 color="$text" fontWeight="700">
           {t("session.rest_title")}
         </H3>
       </YStack>
@@ -98,7 +98,7 @@ export function RestView() {
 
       {/* Timer */}
       <YStack items="center" gap="$2">
-        <H1 fontSize={112} fontWeight="900" fontFamily="$body" color="$text">
+        <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
           {formatTime(remainingSeconds)}
         </H1>
         <Progress
@@ -121,7 +121,7 @@ export function RestView() {
             borderColor="$borderStrong"
             onPress={() => handleAddRestTime(10)}
           >
-            <Text fontWeight="800" color="$text">
+            <Text fontWeight="700" color="$text">
               +10s
             </Text>
           </Button>
@@ -132,7 +132,7 @@ export function RestView() {
             borderColor="$borderStrong"
             onPress={() => handleAddRestTime(30)}
           >
-            <Text fontWeight="800" color="$text">
+            <Text fontWeight="700" color="$text">
               +30s
             </Text>
           </Button>
@@ -167,7 +167,7 @@ export function RestView() {
                 onPress={() => handleUpdateResult(Math.max(0, lastResult.result.value - 1))}
               />
               <Text
-                fontWeight="900"
+                fontWeight="700"
                 fontSize={20}
                 color="$text"
                 style={{ minWidth: 30, textAlign: "center" }}
@@ -213,7 +213,7 @@ export function RestView() {
             <Text fontSize={24}>🏋️</Text>
           </YStack>
           <YStack flex={1}>
-            <Text fontWeight="900" fontSize={18} numberOfLines={1} color="$text">
+            <Text fontWeight="700" fontSize={18} numberOfLines={1} color="$text">
               {nextExName}
             </Text>
             <Text color="$textSecondary">
@@ -237,7 +237,7 @@ export function RestView() {
         accessibilityLabel={t("session.skip_rest_accessibility")}
         accessibilityRole="button"
       >
-        <Text color="$bgDark" fontSize={20} fontWeight="900">
+        <Text color="$text" fontSize={20} fontWeight="700">
           {t("session.skip_rest")}
         </Text>
       </Button>

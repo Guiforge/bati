@@ -29,8 +29,8 @@ export function HeroStatusCard() {
       <Card
         flex={1}
         bg="$pastelGreen"
-        borderColor="$color"
-        borderWidth={3}
+        borderColor="$borderStrong"
+        borderWidth={1}
         borderRadius="$6"
         p="$4"
         pressStyle={{ scale: 0.98 }}
@@ -43,13 +43,13 @@ export function HeroStatusCard() {
             size={64}
             bgColor="$background"
             shape="rounded"
-            borderWidth={2}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
           />
 
           {/* Village Info */}
           <YStack flex={1} gap="$1">
-            <Text fontSize="$4" fontWeight="900" color="$color">
+            <Text fontSize="$4" fontWeight="700" color="$color">
               {t("village.home_card_title", "Your Village")}
             </Text>
             <Text fontSize="$2" color="$color" opacity={0.7}>

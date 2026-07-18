@@ -36,7 +36,7 @@ export function ConstructionAnimation({
           rounded="$6"
           items="center"
           gap="$4"
-          borderWidth={3}
+          borderWidth={1}
           borderColor="$primary"
           width="100%"
           style={{ maxWidth: 350 }}
@@ -66,12 +66,12 @@ export function ConstructionAnimation({
             onPress={onClose}
             width="100%"
             size="$5"
-            borderWidth={3}
-            borderColor="$color"
+            borderWidth={1}
+            borderColor="$borderStrong"
             rounded="$6"
             pressStyle={{ opacity: 0.9, scale: 0.98 }}
           >
-            <Button.Text color="white" fontWeight="900">
+            <Button.Text color="white" fontWeight="700">
               {t("common.awesome", "Awesome!")}
             </Button.Text>
           </Button>

@@ -69,7 +69,9 @@
   "coach": {
     "rest_suggestion_title": "Coach says: Rest!",
     "suggestion_title": "Coach Suggestion",
-    "try_these_quests": "Try these quests:"
+    "try_these_quests": "Try these quests:",
+    "weekly_goal_title": "This week",
+    "weekly_goal_progress": "{{completed}}/{{goal}} sessions"
   },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",
@@ -84,6 +86,8 @@
   "settings.motion_title": "Animations",
   "settings.motion_full": "Full",
   "settings.motion_reduced": "Reduced",
+  "settings.weekly_goal_title": "Weekly Goal",
+  "settings.weekly_goal_value": "{{count}} sessions/week",
   "credits": {
     "title": "Credits",
     "open": "Open",

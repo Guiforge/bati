@@ -5,6 +5,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { ActionCard } from "@/components/common/ActionCard";
+import { CoachCard } from "@/components/home/CoachCard";
 import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { ResourcesOverview } from "@/components/home/ResourcesOverview";
@@ -34,6 +35,9 @@ export default function HomeScreen() {
             <YStack px="$4" gap="$4">
               {/* 3. Current Adventure (HERO) */}
               <CurrentAdventureWidget />
+
+              {/* 3b. Coach nudge (weekly goal / weak area / rest) */}
+              <CoachCard />
 
               {/* 4. Secondary Actions (Village & Treasury) */}
               <XStack gap="$3">

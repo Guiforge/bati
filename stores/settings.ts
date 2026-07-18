@@ -28,6 +28,7 @@ interface SettingsState {
   reducedMotion: boolean;
   notificationsEnabled: boolean;
   notificationTime: { hour: number; minute: number };
+  weeklyGoal: number;
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
@@ -38,6 +39,7 @@ interface SettingsState {
   setReducedMotion: (enabled: boolean) => Promise<void>;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
   setNotificationTime: (time: { hour: number; minute: number }) => Promise<void>;
+  setWeeklyGoal: (sessionsPerWeek: number) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
 }
@@ -51,6 +53,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   reducedMotion: false,
   notificationsEnabled: true,
   notificationTime: { hour: 18, minute: 0 },
+  weeklyGoal: 3,
   isLoaded: false,
 
   setLanguage: async (language) => {
@@ -96,6 +99,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setNotificationTime(time);
   },
 
+  setWeeklyGoal: async (sessionsPerWeek) => {
+    set({ weeklyGoal: sessionsPerWeek });
+    await preferences.setWeeklyGoal(sessionsPerWeek);
+  },
+
   loadFromDatabase: async () => {
     try {
       const [
@@ -107,6 +115,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         reducedMotion,
         notificationsEnabled,
         notificationTime,
+        weeklyGoal,
       ] = await Promise.all([
         preferences.getLanguage(),
         preferences.getTheme(),
@@ -116,6 +125,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getReducedMotion(),
         preferences.getNotificationsEnabled(),
         preferences.getNotificationTime(),
+        preferences.getWeeklyGoal(),
       ]);
 
       const normalizedLanguage =
@@ -130,6 +140,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         reducedMotion,
         notificationsEnabled,
         notificationTime,
+        weeklyGoal,
         isLoaded: true,
       });
 

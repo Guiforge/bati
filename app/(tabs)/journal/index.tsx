@@ -12,7 +12,6 @@ import { JournalStats } from "@/components/journal/JournalStats";
 import { MonthlyCalendarCard } from "@/components/journal/MonthlyCalendarCard";
 import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
 import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
-import { RestSuggestionCard } from "@/components/journal/RestSuggestionCard";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
@@ -163,7 +162,6 @@ export default function JournalScreen() {
         ) : activeTab === "stats" ? (
           <>
             <UserLevelCard />
-            <RestSuggestionCard />
             <DifficultyProgressionCard />
             <PersonalRecordsCard />
             <AchievementsCard />

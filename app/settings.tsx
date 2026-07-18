@@ -1,4 +1,12 @@
-import { ChevronLeft, Languages, Moon, ScrollText, Vibrate, Volume2 } from "@tamagui/lucide-icons";
+import {
+  ChevronLeft,
+  Languages,
+  Moon,
+  ScrollText,
+  Target,
+  Vibrate,
+  Volume2,
+} from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -58,11 +66,20 @@ export default function SettingsScreen() {
     avatarId,
     hapticsEnabled,
     soundEnabled,
+    weeklyGoal,
     setLanguage,
     setAvatarId,
     setHapticsEnabled,
     setSoundEnabled,
+    setWeeklyGoal,
   } = useSettingsStore();
+
+  const WEEKLY_GOAL_STEPS = [2, 3, 4, 5, 6];
+  const cycleWeeklyGoal = () => {
+    const currentIndex = WEEKLY_GOAL_STEPS.indexOf(weeklyGoal);
+    const next = WEEKLY_GOAL_STEPS[(currentIndex + 1) % WEEKLY_GOAL_STEPS.length];
+    setWeeklyGoal(next);
+  };
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
@@ -182,6 +199,13 @@ export default function SettingsScreen() {
             label={t("settings.sound", "Sound")}
             value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => setSoundEnabled(!soundEnabled)}
+          />
+
+          <SettingRow
+            icon={<Target size={22} color="$color" />}
+            label={t("settings.weekly_goal_title", "Weekly Goal")}
+            value={t("settings.weekly_goal_value", { count: weeklyGoal })}
+            onPress={cycleWeeklyGoal}
           />
 
           <SettingRow

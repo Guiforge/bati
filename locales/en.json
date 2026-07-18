@@ -254,7 +254,12 @@
     "pr_most_xp": "Most XP Earned",
     "pr_exercise": "{{exercise}} PR",
     "pr_new_record": "New Record",
-    "pr_more": "+{{count}} more records"
+    "pr_more": "+{{count}} more records",
+    "summary_saving": "Saving your workout…",
+    "continue": "Continue",
+    "village_upgrades": "Village Upgrades",
+    "building_unlocked": "Unlocked",
+    "building_level": "Level {{level}}"
   },
   "resources": {
     "gold": "Gold",

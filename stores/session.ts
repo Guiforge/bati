@@ -85,6 +85,8 @@ interface SessionState {
   // DB
   saveSession: (feedback?: FeedbackCode | null) => Promise<{
     sessionId: number;
+    xpEarned: number;
+    dailyBonusApplied: boolean;
     loot: ResourceLoot;
     buildings: SessionBuildingResult;
     newRecords: NewRecordResult[];
@@ -387,7 +389,8 @@ export const useSessionStore = create<SessionState>()(
       const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
       let xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
-      if (await isDailyQuest(quest.id)) {
+      const dailyBonusApplied = await isDailyQuest(quest.id);
+      if (dailyBonusApplied) {
         xpEarned = Math.round(xpEarned * 1.5);
       }
 
@@ -469,6 +472,8 @@ export const useSessionStore = create<SessionState>()(
 
       return {
         sessionId,
+        xpEarned,
+        dailyBonusApplied,
         loot,
         buildings,
         newRecords,

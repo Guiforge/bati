@@ -1,5 +1,5 @@
 import { Flame, Target, Timer, TrendingUp, Trophy, Zap } from "@tamagui/lucide-icons";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { BarChart, LineChart } from "react-native-gifted-charts";
@@ -7,6 +7,7 @@ import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { TrendsCard } from "@/components/journal/TrendsCard";
+import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { useSettingsStore } from "@/stores/settings";
 
 interface JournalStatsProps {
@@ -22,91 +23,6 @@ type WeekdayData = {
   day: string;
   count: number;
 };
-
-type StreakInfo = {
-  current: number;
-  best: number;
-  isActive: boolean;
-};
-
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Streak calculation requires multiple date comparisons
-function calculateStreak(sessions: JournalStatsProps["sessions"]): StreakInfo {
-  if (sessions.length === 0) {
-    return { current: 0, best: 0, isActive: false };
-  }
-
-  // Sort by date descending (most recent first)
-  const sorted = [...sessions].sort(
-    (a, b) => new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime(),
-  );
-
-  // Get unique days
-  const uniqueDays = new Set<string>();
-  sorted.forEach((s) => {
-    const date = new Date(s.performedAt);
-    uniqueDays.add(date.toISOString().split("T")[0]);
-  });
-
-  const sortedDays = Array.from(uniqueDays).sort().reverse();
-
-  if (sortedDays.length === 0) {
-    return { current: 0, best: 0, isActive: false };
-  }
-
-  // Check if streak is active (worked out today or yesterday)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const lastWorkoutDate = new Date(sortedDays[0]);
-  lastWorkoutDate.setHours(0, 0, 0, 0);
-
-  const isActive =
-    lastWorkoutDate.getTime() === today.getTime() ||
-    lastWorkoutDate.getTime() === yesterday.getTime();
-
-  // Calculate current streak
-  let currentStreak = 0;
-  if (isActive) {
-    const checkDate = new Date(lastWorkoutDate);
-    for (const dayStr of sortedDays) {
-      const day = new Date(dayStr);
-      day.setHours(0, 0, 0, 0);
-
-      if (day.getTime() === checkDate.getTime()) {
-        currentStreak++;
-        checkDate.setDate(checkDate.getDate() - 1);
-      } else if (day.getTime() < checkDate.getTime()) {
-        break;
-      }
-    }
-  }
-
-  // Calculate best streak
-  let bestStreak = 0;
-  const allDays = Array.from(uniqueDays).sort();
-  let tempStreak = 1;
-  for (let i = 1; i < allDays.length; i++) {
-    const prev = new Date(allDays[i - 1]);
-    const curr = new Date(allDays[i]);
-    const diffDays = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
-
-    if (diffDays === 1) {
-      tempStreak++;
-    } else {
-      bestStreak = Math.max(bestStreak, tempStreak);
-      tempStreak = 1;
-    }
-  }
-  bestStreak = Math.max(bestStreak, tempStreak);
-
-  return {
-    current: currentStreak,
-    best: bestStreak,
-    isActive,
-  };
-}
 
 function getWeekdayStats(sessions: JournalStatsProps["sessions"], language: string): WeekdayData[] {
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -250,7 +166,20 @@ export function JournalStats({ sessions }: JournalStatsProps) {
     };
   }, [sessions]);
 
-  const streak = useMemo(() => calculateStreak(sessions), [sessions]);
+  const [streak, setStreak] = useState<StreakInfo>({
+    current: 0,
+    best: 0,
+    isActive: false,
+    lastWorkoutDate: null,
+  });
+  useEffect(() => {
+    getStreakInfo()
+      .then(setStreak)
+      .catch(() => {
+        // Keep default zero-streak state
+      });
+  }, []);
+
   const weekdayData = useMemo(() => getWeekdayStats(sessions, language), [sessions, language]);
   const last7Days = useMemo(() => getLast7DaysData(sessions, language), [sessions, language]);
 

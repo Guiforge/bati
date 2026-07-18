@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Share, useWindowDimensions } from "react-native";
+import { ActivityIndicator, ScrollView, Share, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
@@ -9,60 +9,82 @@ import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { useToast } from "@/components/common/Toast";
-import { ConstructionAnimation } from "@/components/village/ConstructionAnimation";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { SOUNDS } from "@/constants/sounds";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
-import type { NewRecordResult } from "@/db/personalRecords";
-import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
-import type { BuildingCode } from "@/db/schema";
-import { computeSessionXp } from "@/db/xp";
+import { updateSessionFeedback } from "@/db/completed";
+import type { FeedbackCode } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { LevelUpModal } from "./LevelUpModal";
-import { LootChest } from "./LootChest";
-import { NewRecordsBadge } from "./NewRecordsBadge";
 import { ProgressionChart } from "./ProgressionChart";
+import { SessionRewards } from "./SessionRewards";
 
-type Feedback = "easy" | "good" | "hard" | null;
+type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Post-workout screen with achievements, records, and feedback
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Post-workout summary screen (save, reveal, feedback, actions)
 export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const language = useSettingsStore((s) => s.language);
+  const { language } = useSettingsStore();
   const reducedMotion = useReducedMotion();
   const { success, selection } = useHaptics();
   const { playSound } = useSound();
   const { showError } = useToast();
-  const quest = useSessionStore((s) => s.quest);
-  const userLevel = useSessionStore((s) => s.userLevel);
-  const startTime = useSessionStore((s) => s.startTime);
-  const totalPausedTime = useSessionStore((s) => s.totalPausedTime);
-  const results = useSessionStore((s) => s.results);
-  const saveSession = useSessionStore((s) => s.saveSession);
-  const quitSession = useSessionStore((s) => s.quitSession);
-  const adventureRunStepId = useSessionStore((s) => s.adventureRunStepId);
-  const bossFight = useSessionStore((s) => s.bossFight);
-  const [isSaving, setIsSaving] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback>(null);
-  const [newRecords, setNewRecords] = useState<NewRecordResult[]>([]);
-  const [hasSaved, setHasSaved] = useState(false);
+  const {
+    quest,
+    startTime,
+    totalPausedTime,
+    saveSession,
+    quitSession,
+    adventureRunStepId,
+    bossFight,
+  } = useSessionStore();
+
+  const [result, setResult] = useState<SaveResult | null>(null);
+  const [saveError, setSaveError] = useState(false);
+  const [feedback, setFeedback] = useState<FeedbackCode | null>(null);
   const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
-  const [levelUpInfo, setLevelUpInfo] = useState<{ oldLevel: number; newLevel: number } | null>(
-    null,
-  );
+  const savedRef = useRef(false);
+
+  const isBossDefeat = Boolean(bossFight && bossFight.currentHp <= 0);
+
+  const durationSeconds = useMemo(() => {
+    if (!startTime) return 0;
+    return Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+  }, [startTime, totalPausedTime]);
+
+  // Save once on mount, then reveal the real results. No preview, no two-tap flow.
+  // ponytail: saveSession isn't idempotent — a retry after a partial failure can duplicate
+  //           the session row. Parity with the previous screen; make save idempotent if it bites.
+  const runSave = useCallback(async () => {
+    setSaveError(false);
+    try {
+      const r = await saveSession(null);
+      setResult(r);
+      success();
+      if (r.levelUp) playSound(SOUNDS.levelUp);
+    } catch {
+      setSaveError(true);
+      showError(t("errors.save_session_failed"));
+    }
+  }, [saveSession, success, playSound, showError, t]);
 
   useEffect(() => {
     playSound(SOUNDS.victory);
   }, [playSound]);
+
+  useEffect(() => {
+    if (savedRef.current) return;
+    savedRef.current = true;
+    runSave();
+  }, [runSave]);
 
   useEffect(() => {
     if (adventureRunStepId) {
@@ -75,271 +97,143 @@ export function VictoryView() {
     }
   }, [adventureRunStepId, language]);
 
-  const [constructionQueue, setConstructionQueue] = useState<
-    { type: "unlock" | "levelup"; buildingType: BuildingCode; level?: number }[]
-  >([]);
-  const [currentConstruction, setCurrentConstruction] = useState<{
-    type: "unlock" | "levelup";
-    buildingType: BuildingCode;
-    level?: number;
-  } | null>(null);
-
-  // Detect boss defeat (HP reduced to 0 or below)
-  const isBossDefeat = Boolean(bossFight && bossFight.currentHp <= 0);
-
-  // Calculate duration for display
-  // Note: saveSession recalculates this accurately based on DB timestamp logic,
-  // but this is good enough for the UI summary.
-  const durationSeconds = useMemo(() => {
-    if (!startTime) return 0;
-    return Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
-  }, [startTime, totalPausedTime]);
-
-  // Calculate loot preview
-  const lootPreview: ResourceLoot = useMemo(() => {
-    if (!quest) return { gold: 0, materials: [] };
-
-    const exerciseResults = results.map((r) => {
-      const questExercise = quest.exercises.find((qe) => qe.exercise.id === r.exerciseId);
-      return {
-        exerciseId: r.exerciseId,
-        muscles: questExercise?.exercise.muscles ?? [],
-        style: questExercise?.exercise.style ?? "strength",
-        result: { type: r.result.type as "reps" | "time", value: r.result.value },
-      };
-    });
-
-    return previewSessionLoot({
-      durationSeconds,
-      userLevel,
-      exerciseResults,
-    });
-  }, [quest, results, durationSeconds, userLevel]);
-
   if (!quest || !startTime) return null;
 
   const questTitle = language === "fr" ? quest.frTitle : quest.enTitle;
   const { bg: questBg } = getQuestColorTokensFromQuest(quest);
-  const xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
   const handleShare = async () => {
     try {
       const message = t("session.share_message", {
         quest: questTitle,
-        xp: xpEarned,
-        defaultValue: `I just completed the '${questTitle}' quest and earned ${xpEarned} XP in Bati! ⚔️ #BatiApp`,
+        xp: result?.xpEarned ?? 0,
+        defaultValue: `I just completed the '${questTitle}' quest and earned ${result?.xpEarned ?? 0} XP in Bati! ⚔️ #BatiApp`,
       });
-
-      await Share.share({
-        message,
-      });
-    } catch (_error) {}
+      await Share.share({ message });
+    } catch {}
   };
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Session completion with multiple validations and database operations
-  const handleFinish = async () => {
-    // If we've already saved and shown records, now navigate
-    if (hasSaved) {
-      quitSession();
+  const handleFeedbackSelect = (value: FeedbackCode) => {
+    selection();
+    const next = feedback === value ? null : value;
+    setFeedback(next);
+    if (result) updateSessionFeedback(result.sessionId, next);
+  };
 
-      // Navigate based on campaign state (captured in first save)
-      router.replace("/");
+  const handleContinue = () => {
+    if (!result) return;
+    quitSession();
+
+    const campaign = result.campaign;
+    if (campaign?.nextQuestId && campaign.nextRunStepId) {
+      router.replace(
+        `/quests/${campaign.nextQuestId}?runStepId=${campaign.nextRunStepId}` as never,
+      );
       return;
     }
-
-    // Success haptic on finishing
-    success();
-
-    try {
-      setIsSaving(true);
-      // Pass feedback as FeedbackCode or null
-      const feedbackCode = feedback as "easy" | "good" | "hard" | null;
-      const {
-        campaign,
-        newRecords: records,
-        buildings,
-        levelUp,
-        // newAchievements - TODO: Achievement toast notifications could be added here in the future
-      } = await saveSession(feedbackCode);
-
-      // TODO: Achievement toast notifications could be added here in the future
-
-      if (levelUp) {
-        setLevelUpInfo(levelUp);
-      }
-
-      // Queue up building animations
-      const queue: typeof constructionQueue = [];
-
-      if (buildings?.newUnlocks) {
-        for (const unlock of buildings.newUnlocks) {
-          queue.push({ type: "unlock", buildingType: unlock.buildingType, level: 1 });
-        }
-      }
-
-      if (buildings?.levelUps) {
-        for (const levelUp of buildings.levelUps) {
-          queue.push({
-            type: "levelup",
-            buildingType: levelUp.buildingType,
-            level: levelUp.newLevel,
-          });
-        }
-      }
-
-      // If we got new records or building updates, show them before navigating
-      if (records.length > 0 || queue.length > 0) {
-        setNewRecords(records);
-
-        if (queue.length > 0) {
-          setConstructionQueue(queue);
-          setCurrentConstruction(queue[0]);
-        }
-
-        setHasSaved(true);
-        setIsSaving(false);
-        // Extra celebration haptic
-        success();
-        return;
-      }
-
-      quitSession();
-
-      if (campaign?.nextQuestId && campaign.nextRunStepId) {
-        router.replace(
-          `/quests/${campaign.nextQuestId}?level=${encodeURIComponent(userLevel)}&runStepId=${campaign.nextRunStepId}` as never,
-        );
-        return;
-      }
-
-      if (campaign?.isFinished) {
-        router.replace(`/adventures/${campaign.adventureId}` as never);
-        return;
-      }
-
-      router.replace("/");
-    } catch (_e) {
-      showError(t("errors.save_session_failed"));
-      setIsSaving(false);
+    if (campaign?.isFinished) {
+      router.replace(`/adventures/${campaign.adventureId}` as never);
+      return;
     }
-  };
-
-  const handleFeedbackSelect = (value: Feedback) => {
-    selection();
-    setFeedback(value);
-  };
-
-  const handleNextConstruction = () => {
-    const nextQueue = constructionQueue.slice(1);
-    setConstructionQueue(nextQueue);
-
-    if (nextQueue.length > 0) {
-      setCurrentConstruction(nextQueue[0]);
-    } else {
-      setCurrentConstruction(null);
-    }
+    router.replace("/");
   };
 
   return (
     <YStack flex={1} bg="$background" pt={insets.top + 16}>
-      {levelUpInfo && (
-        <LevelUpModal
-          visible={!!levelUpInfo}
-          newLevel={levelUpInfo.newLevel}
-          onClose={() => setLevelUpInfo(null)}
-        />
-      )}
-      {currentConstruction && (
-        <ConstructionAnimation
-          visible={!!currentConstruction}
-          buildingType={currentConstruction.buildingType}
-          type={currentConstruction.type}
-          level={currentConstruction.level}
-          onClose={handleNextConstruction}
-        />
-      )}
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingBottom: insets.bottom + 96,
           alignItems: "center",
-          gap: 24,
+          gap: 20,
         }}
         showsVerticalScrollIndicator={false}
       >
-        <Card bg={questBg} width="100%" maxW={520} mt="$6">
-          <YStack items="center" gap="$3">
-            <Text fontSize={72}>{isBossDefeat ? "⚔️" : "🏆"}</Text>
-            <YStack items="center" gap="$1">
+        {/* Hero */}
+        <Card bg={questBg} width="100%" maxW={520} mt="$4">
+          <YStack items="center" gap="$2">
+            <Text fontSize={64}>{isBossDefeat ? "⚔️" : "🏆"}</Text>
+            <Text
+              fontWeight="700"
+              color="$textSecondary"
+              fontSize={14}
+              style={{ textAlign: "center" }}
+            >
+              {isBossDefeat ? t("boss.victory_title") : t("session.victory_title")}
+            </Text>
+            <H1
+              fontWeight="700"
+              color="$text"
+              fontSize={30}
+              lineHeight={34}
+              style={{ textAlign: "center" }}
+            >
+              {questTitle}
+            </H1>
+            {isBossDefeat && (
               <Text
-                fontWeight="700"
+                fontSize={15}
                 color="$textSecondary"
-                fontSize={14}
+                fontStyle="italic"
                 style={{ textAlign: "center" }}
               >
-                {isBossDefeat ? t("boss.victory_title") : t("session.victory_title")}
+                {t("boss.victory_subtitle")}
               </Text>
-              <H1
-                fontWeight="700"
-                color="$text"
-                fontSize={34}
-                lineHeight={38}
-                style={{ textAlign: "center" }}
-              >
-                {questTitle}
-              </H1>
-              {isBossDefeat && (
-                <Text
-                  fontSize={16}
-                  color="$textSecondary"
-                  fontStyle="italic"
-                  style={{ textAlign: "center" }}
-                >
-                  {t("boss.victory_subtitle")}
-                </Text>
-              )}
-            </YStack>
+            )}
           </YStack>
         </Card>
 
-        <Card width="100%" maxW={520} bg="$surface" gap="$4">
-          <XStack
-            justify="space-between"
-            items="center"
-            borderBottomWidth={1}
-            borderColor="$borderStrong"
-            pb="$3"
-          >
-            <Text fontWeight="700" fontSize={16} color="$textSecondary">
+        {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
+        <XStack width="100%" maxW={520} gap="$3">
+          <Card flex={1} bg="$surface" items="center" gap="$1" py="$3">
+            <Text fontWeight="700" fontSize={12} color="$textSecondary">
               {t("session.total_time")}
             </Text>
             <Text fontWeight="700" fontSize={24} color="$text" fontFamily="$body">
               {formatTime(durationSeconds)}
             </Text>
-          </XStack>
-
-          <XStack justify="space-between" items="center">
-            <Text fontWeight="700" fontSize={16} color="$textSecondary">
+          </Card>
+          <Card flex={1} bg="$surface" items="center" gap="$1" py="$3">
+            <Text fontWeight="700" fontSize={12} color="$textSecondary">
               {t("session.xp_earned")}
             </Text>
             <Text fontWeight="700" fontSize={24} color="$primary" fontFamily="$body">
-              {t("quests.reward_xp", { count: xpEarned })}
+              {result ? t("quests.reward_xp", { count: result.xpEarned }) : "…"}
             </Text>
-          </XStack>
-        </Card>
+            {result?.dailyBonusApplied && (
+              <Text fontWeight="700" fontSize={11} color="$success">
+                {t("common.daily_xp_bonus")}
+              </Text>
+            )}
+          </Card>
+        </XStack>
 
-        {/* New Personal Records */}
-        {newRecords.length > 0 && <NewRecordsBadge records={newRecords} />}
+        {/* Saving / error / rewards */}
+        {!result && !saveError && (
+          <YStack items="center" gap="$3" py="$6">
+            <ActivityIndicator />
+            <Text color="$textSecondary" fontSize={14}>
+              {t("session.summary_saving")}
+            </Text>
+          </YStack>
+        )}
 
-        {/* Loot Display */}
-        <LootChest loot={lootPreview} />
+        {saveError && (
+          <YStack width="100%" maxW={520} items="center" gap="$3">
+            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+              {t("errors.save_session_failed")}
+            </Text>
+            <AppButton backgroundColor="$surface2" onPress={runSave}>
+              <Text color="$text" fontSize={16} fontWeight="700">
+                {t("common.retry")}
+              </Text>
+            </AppButton>
+          </YStack>
+        )}
 
-        {/* Progression Chart */}
-        <YStack width="100%" maxW={520}>
-          <ProgressionChart questId={quest.id} limit={10} title={t("chart.your_progress")} />
-        </YStack>
+        {result && <SessionRewards result={result} language={language} />}
 
-        {/* Post-workout Feedback */}
+        {/* Feedback */}
         <Card width="100%" maxW={520} bg="$surface" gap="$3">
           <Text
             fontWeight="700"
@@ -350,123 +244,95 @@ export function VictoryView() {
             {t("session.feedback_title")}
           </Text>
           <XStack gap="$3" justify="center">
-            <Button
-              flex={1}
-              size="$4"
-              bg={feedback === "easy" ? "$surface2" : "$surface"}
-              borderWidth={1}
-              borderColor={feedback === "easy" ? "$success" : "$borderStrong"}
-              opacity={feedback === "easy" ? 1 : 0.85}
-              pressStyle={{ opacity: 0.8, scale: 0.98 }}
-              onPress={() => handleFeedbackSelect("easy")}
-              rounded="$4"
-              accessibilityLabel={t("session.feedback_easy")}
-              accessibilityRole="button"
-            >
-              <YStack items="center" gap="$1">
-                <Text fontSize={20}>😊</Text>
-                <Text color="$text" fontSize={12} fontWeight="700" style={{ textAlign: "center" }}>
-                  {t("session.feedback_easy")}
-                </Text>
-              </YStack>
-            </Button>
-            <Button
-              flex={1}
-              size="$4"
-              bg={feedback === "good" ? "$surface2" : "$surface"}
-              borderWidth={1}
-              borderColor={feedback === "good" ? "$primary" : "$borderStrong"}
-              opacity={feedback === "good" ? 1 : 0.85}
-              pressStyle={{ opacity: 0.8, scale: 0.98 }}
-              onPress={() => handleFeedbackSelect("good")}
-              rounded="$4"
-              accessibilityLabel={t("session.feedback_good")}
-              accessibilityRole="button"
-            >
-              <YStack items="center" gap="$1">
-                <Text fontSize={20}>💪</Text>
-                <Text color="$text" fontSize={12} fontWeight="700" style={{ textAlign: "center" }}>
-                  {t("session.feedback_good")}
-                </Text>
-              </YStack>
-            </Button>
-            <Button
-              flex={1}
-              size="$4"
-              bg={feedback === "hard" ? "$surface2" : "$surface"}
-              borderWidth={1}
-              borderColor={feedback === "hard" ? "$secondary" : "$borderStrong"}
-              opacity={feedback === "hard" ? 1 : 0.85}
-              pressStyle={{ opacity: 0.8, scale: 0.98 }}
-              onPress={() => handleFeedbackSelect("hard")}
-              rounded="$4"
-              accessibilityLabel={t("session.feedback_hard")}
-              accessibilityRole="button"
-            >
-              <YStack items="center" gap="$1">
-                <Text fontSize={20}>😤</Text>
-                <Text color="$text" fontSize={12} fontWeight="700" style={{ textAlign: "center" }}>
-                  {t("session.feedback_hard")}
-                </Text>
-              </YStack>
-            </Button>
+            {(
+              [
+                { value: "easy", emoji: "😊", accent: "$success" },
+                { value: "good", emoji: "💪", accent: "$primary" },
+                { value: "hard", emoji: "😤", accent: "$secondary" },
+              ] as const
+            ).map(({ value, emoji, accent }) => (
+              <Button
+                key={value}
+                flex={1}
+                size="$4"
+                bg={feedback === value ? "$surface2" : "$surface"}
+                borderWidth={1}
+                borderColor={feedback === value ? accent : "$borderStrong"}
+                opacity={feedback === value ? 1 : 0.85}
+                pressStyle={{ opacity: 0.8, scale: 0.98 }}
+                onPress={() => handleFeedbackSelect(value)}
+                rounded="$4"
+                accessibilityLabel={t(`session.feedback_${value}`)}
+                accessibilityRole="button"
+              >
+                <YStack items="center" gap="$1">
+                  <Text fontSize={20}>{emoji}</Text>
+                  <Text
+                    color="$text"
+                    fontSize={12}
+                    fontWeight="700"
+                    style={{ textAlign: "center" }}
+                  >
+                    {t(`session.feedback_${value}`)}
+                  </Text>
+                </YStack>
+              </Button>
+            ))}
           </XStack>
         </Card>
 
-        {/* Share Button (secondary - the primary Finish action is always reachable below) */}
-        <AppButton backgroundColor="$surface2" onPress={handleShare}>
-          <Text color="$text" fontSize={16} fontWeight="700">
-            {t("session.share", "Share Result")} 📤
-          </Text>
-        </AppButton>
+        {/* Progression chart (lower priority; also available in the journal) */}
+        <YStack width="100%" maxW={520}>
+          <ProgressionChart questId={quest.id} limit={10} title={t("chart.your_progress")} />
+        </YStack>
       </ScrollView>
 
-      {/* Finish Button: sticky so it's reachable without scrolling past every reward module */}
-      <YStack
+      {/* Sticky actions: single Continue + Share */}
+      <XStack
         p="$4"
         pb={insets.bottom + 16}
+        gap="$3"
         bg="$background"
         borderTopWidth={1}
         borderColor="$borderStrong"
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
       >
-        <AppButton onPress={handleFinish} disabled={isSaving} height={60} rounded="$6">
+        <Button
+          bg="$surface2"
+          height={60}
+          rounded="$6"
+          px="$4"
+          onPress={handleShare}
+          disabled={!result}
+          pressStyle={{ opacity: 0.8, scale: 0.98 }}
+          accessibilityLabel={t("session.share", "Share Result")}
+        >
+          <Text fontSize={22}>📤</Text>
+        </Button>
+        <AppButton
+          onPress={handleContinue}
+          disabled={!result}
+          height={60}
+          rounded="$6"
+          fullWidth={false}
+          flex={1}
+        >
           <Text color="$text" fontSize={20} fontWeight="700">
-            {isSaving ? t("common.saving") : t("session.finish_button")}
+            {result ? t("session.continue") : t("common.saving")}
           </Text>
         </AppButton>
-      </YStack>
+      </XStack>
 
-      {/* Confetti - extra dramatic for boss defeats */}
+      {/* Confetti (single lighter burst) */}
       {!reducedMotion && (
         <ConfettiCannon
-          count={isBossDefeat ? 400 : 200}
+          count={isBossDefeat ? 300 : 180}
           origin={{ x: width / 2, y: -20 }}
           autoStart={true}
           fadeOut={true}
-          explosionSpeed={isBossDefeat ? 500 : 350}
-          fallSpeed={isBossDefeat ? 2500 : 3000}
+          explosionSpeed={isBossDefeat ? 450 : 350}
+          fallSpeed={3000}
         />
-      )}
-
-      {/* Second burst from sides for boss defeat */}
-      {!reducedMotion && isBossDefeat && (
-        <>
-          <ConfettiCannon
-            count={150}
-            origin={{ x: 0, y: 200 }}
-            autoStart={true}
-            fadeOut={true}
-            explosionSpeed={400}
-          />
-          <ConfettiCannon
-            count={150}
-            origin={{ x: width, y: 200 }}
-            autoStart={true}
-            fadeOut={true}
-            explosionSpeed={400}
-          />
-        </>
       )}
 
       <NarrativeModal

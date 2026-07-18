@@ -162,6 +162,13 @@ export async function markSessionWithNewRecords(sessionId: number): Promise<void
   await db.update(completedQuest).set({ hasNewRecords: 1 }).where(eq(completedQuest.id, sessionId));
 }
 
+export async function updateSessionFeedback(
+  sessionId: number,
+  feedback: FeedbackCode | null,
+): Promise<void> {
+  await db.update(completedQuest).set({ feedback }).where(eq(completedQuest.id, sessionId));
+}
+
 export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
   hasNewRecords: boolean;
 };

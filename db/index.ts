@@ -82,26 +82,6 @@ export {
   formatDuration,
 } from "./estimate";
 export { getExerciseById, listExercises } from "./exercises";
-export type { CreateGoalInput, Goal, GoalProgress } from "./goals";
-export {
-  createGoal,
-  getActiveGoal,
-  getAllGoals,
-  getCurrentWeekCompletion,
-  getGoalById,
-  getGoalProgressHistory,
-  getOrCreateWeekProgress,
-  getWeekKey,
-  goalTypeInfo,
-  recordSessionForGoal,
-  updateGoal,
-  updateGoalStatus,
-} from "./goals";
-export {
-  generatePlanForGoal,
-  type PlannedSession,
-  previewPlanForGoal,
-} from "./plans";
 export {
   getAllPreferences,
   getPreference,
@@ -139,27 +119,6 @@ export {
 } from "./resources";
 export type { RestSuggestion } from "./restSuggestions";
 export { getQuickRestCheck, getRestSuggestion } from "./restSuggestions";
-export type {
-  CreateScheduledSessionInput,
-  ScheduledSession,
-  ScheduledSessionStatus,
-  ScheduledSessionWithQuest,
-} from "./scheduling";
-export {
-  createScheduledSession,
-  deleteScheduledSession,
-  getPendingScheduledSessions,
-  getScheduledSessionsForWeek,
-  getScheduledSessionsInRange,
-  getTodaysScheduledSessions,
-  getWeekStartDate,
-  markMissedSessions,
-  markScheduledSessionCompleted,
-  rescheduleSession,
-  scheduleWeekFromGoal,
-  skipScheduledSession,
-  updateScheduledSessionStatus,
-} from "./scheduling";
 export type { StreakInfo } from "./streaks";
 export {
   calculateAndCacheStreak,

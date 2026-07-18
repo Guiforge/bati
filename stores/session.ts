@@ -14,7 +14,6 @@ import {
   createCompletedSession,
   markSessionWithNewRecords,
 } from "@/db/completed";
-import { recordSessionForGoal } from "@/db/goals";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { isDailyQuest, type Quest } from "@/db/quests";
@@ -412,12 +411,6 @@ export const useSessionStore = create<SessionState>()(
               completedSessionId: sessionId,
             })
           : null;
-
-      // Record session for active goal (if any)
-      await recordSessionForGoal({
-        durationMinutes: Math.ceil(durationSeconds / 60),
-        xpEarned,
-      });
 
       // Check for personal records
       const newRecords = await checkForNewRecords(sessionId);

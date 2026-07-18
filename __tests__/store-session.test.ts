@@ -44,9 +44,6 @@ jest.mock("@/db/bossFights", () => ({
     resistancePenalty: false,
   }),
 }));
-jest.mock("@/db/goals", () => ({
-  recordSessionForGoal: jest.fn().mockResolvedValue(undefined),
-}));
 jest.mock("@/db/personalRecords", () => ({
   checkForNewRecords: jest.fn().mockResolvedValue([]),
 }));

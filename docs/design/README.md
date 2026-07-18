@@ -18,11 +18,15 @@ related: [../README.md]
 - [exercise-colors.md](exercise-colors.md) — Muscle group → color mapping
 - [mobile-ux-handbook.md](mobile-ux-handbook.md) — Mobile interface standards (reference)
 
-> ⚠️ **Naming note:** some pages in this folder describe the visual identity differently
-> ("dark fantasy / high-tech HUD" in [ui-guide.md](ui-guide.md) vs "Franco-Belgian comic
-> book" language inherited from older session specs). [design-system.md](design-system.md)
-> and the repo's `.github/copilot-instructions.md` ("Dark Fantasy / High-Tech HUD") are the
-> current ground truth — flagged here for a follow-up terminology pass, not yet resolved.
+## Current design decisions (resolved)
+
+- **Visual register:** Dark Fantasy / High-Tech HUD (single source of truth).
+- **Theme:** Dark-only. No light-mode branch in product UI.
+- **Borders:** No thick white/off-white accent borders on cards and buttons.
+	Prefer subtle tokenized borders (`$borderStrong`, `$glassBorder`) and hierarchy via spacing,
+	contrast, and glow.
+- **Primary action clarity:** one dominant CTA per screen (usually `$primary` + controlled glow).
+- **Readability in gym lighting:** text contrast targets WCAG AA minimum (4.5:1 body, 3:1 large).
 
 ## Related
 

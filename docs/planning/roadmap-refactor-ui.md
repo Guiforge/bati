@@ -1,362 +1,119 @@
-# Roadmap Refactor UI (NEW_STYLE) — BatiV3
-
-> Objectif : refactoriser progressivement **l’UI** pour converger vers **un thème unique** inspiré de `NEW_STYLE/`, avec un Design System Tamagui réutilisable, et une migration écran-par-écran sans casser les features.
->
-> Principes clés :
-
-> - **Design System unique** (tokens + composants UI)
-> - **Zéro hex dans les écrans** (tout via tokens Tamagui)
-> - **i18n strict** (pas de strings hardcodées en écrans)
-> - Refactor **par incréments** (1 PR = 1 écran / 1 composant majeur)
-> - Expo Router / offline-first restent en place (l’objectif n’est pas de refaire l’architecture data)
-
+---
+title: UI Refactor Roadmap
+type: planning
+status: active
+updated: 2026-07-18
+related: [roadmap-alignment.md, ../design/design-system.md, ../design/ui-checklist.md]
 ---
 
-## 🤖 System Prompt (référence d’exécution)
+# UI Refactor Roadmap (Execution Playbook)
 
-Cette roadmap suit le cadre suivant (résumé) :
+> This document explains *how* to migrate UI safely and consistently.
+> For *what to prioritize now*, always follow [roadmap-alignment.md](roadmap-alignment.md).
 
-- Rôle : **Lead Mobile Architect & UI Designer** (Expo/React Native, TypeScript, Tamagui)
-- Vision : refactor UI complet vers **NEW_STYLE** (RPG dark, immersif, “juicy”)
-- Qualité : TypeScript strict, composants UI isolés, i18n partout
+## Objective
 
-Les sources de vérité UI sont les maquettes `NEW_STYLE/*.html`.
+Deliver a clearer, faster, and visually consistent Bati UI using Tamagui tokens/components, while preserving app stability.
 
----
+## Non-negotiable guardrails
 
-## Références
+- Dark-only product UI.
+- One primary CTA per screen.
+- No thick white/off-white borders as default styling.
+- Tokens only in product screens (no hardcoded hex values in screen styling).
+- i18n for user-facing copy.
 
-- Source UI : `NEW_STYLE/onboard.html`, `NEW_STYLE/quest.html`, `NEW_STYLE/details_adventure.html`, `NEW_STYLE/boss-battle.html`
-- Stack actuelle : Expo / React Native, Tamagui, Zustand, SQLite + Drizzle, i18next, Jest, Biome
+## Migration strategy
 
----
+## Phase A — Foundation
 
-## Résultats attendus (Definition of Done UI)
+- Stabilize token usage and shared primitives.
+- Ensure reusable UI building blocks exist (screen container, card, button, states).
+- Define canonical variants to avoid one-off styles.
 
-À la fin de la roadmap :
+**Exit criteria:** new UI work can be implemented without bespoke styling.
 
-- Tous les écrans “produit” ont un rendu **cohérent NEW_STYLE** (couleurs, typographies, surfaces, CTA).
-- Aucun écran n’utilise de couleurs hardcodées (pas de `#...`) : uniquement des **tokens Tamagui**.
-- Les composants `src/ui/*` sont la base (surfaces, boutons, headers, badges, états loading/error/empty).
-- Les patterns UI sont unifiés : spacing, border, shadows/glow, icon buttons, listes.
-- Les textes UI passent systématiquement par **i18n** (sauf Dev tools).
-- Les tests passent : `npm test` et `npm run check`.
+## Phase B — High-impact flow migration
 
----
+Priority order:
 
-## Décisions UI à figer tôt
+1. Start/continue workout entry points
+2. In-session experience
+3. Post-session reward/progression states
+4. Adventure and stats summaries
 
-### A. Tokens NEW_STYLE (palette + typographies + effets)
+**Exit criteria:** core workout loop is visually and interaction-wise consistent.
 
-Décision : l’UI suit les “intent” NEW_STYLE (dark immersive + primary bleu électrique + glow).
+## Phase C — Consistency hardening
 
-Contraintes de style (référence design, pas à hardcoder dans les vues) :
+- Remove legacy style forks and duplicated component variants.
+- Normalize loading/empty/error patterns.
+- Ensure hierarchy consistency across screen families.
 
-- Dark theme unique (pas de mode clair)
-- Fonds profonds (ex: `#0B0F19` comme référence), jamais de blanc pur
-- Formes : “Comic/Tech” (bordures nettes, coins arrondis mais marqués)
-- Effets : glow sur éléments actifs + glassmorphism léger sur cartes
-- Feedback : UI “juicy” (animations, haptics, feedback visuel immédiat)
+**Exit criteria:** cross-screen visual vocabulary is coherent.
 
-Checklist tokens (à créer/ajuster dans `tamagui.config.ts`) :
+## Phase D — Accessibility and polish
 
-- Surfaces : `$background`, `$surface`, `$surface2`
-- Texte : `$color`, `$muted`
-- Accents : `$primary`, `$primaryHover`, `$primaryPress`, `$primaryGlow`
-- Contours : `$borderStrong` (outline “comic”) + `$shadowColor`
+- Validate contrast and target size requirements.
+- Validate reduced-motion behavior.
+- Resolve remaining readability issues in bright ambient conditions.
 
-> Règle : les écrans/features n’utilisent pas de hex (`#101322`, `#0d33f2`, etc.). Seuls les tokens ont le droit d’avoir des valeurs brutes.
+**Exit criteria:** checklist passes on all core screens.
 
-### B. i18n : politique “fallback”
+## PR delivery rules (efficiency)
 
-- En écrans “produit” : pas de `t("key", "fallback")` (ou très limité). On privilégie des clés existantes (tests i18n).
-- Exceptions tolérées : Dev tools (`app/dev.tsx`) et erreurs globales/splash.
+Each UI PR should target one scope unit:
 
----
+- one screen, or
+- one shared component family.
 
-## Stratégie de migration UI (sans “big bang”)
+Required in each PR:
 
-### 1) Construire un Design System minimal (Atomic Design)
+- short rationale,
+- impacted files,
+- before/after screenshots,
+- checklist pass confirmation,
+- technical checks status (`npm run check`, `npm test`).
 
-Créer une base `src/ui/` et migrer l’UI via des composants de plus haut niveau.
+## Quality gate
 
-Composants “obligatoires” (les plus rentables) :
+Before merge, pass [../design/ui-checklist.md](../design/ui-checklist.md), including:
 
-- `ScreenContainer` (StatusBar, SafeArea, background, option background image)
-- `GlassCard` / `SolidCard` (conteneurs principaux)
-- `RPGButton` (Primary glow, Secondary, Ghost)
-- `StatusBadge` et `ProgressBar` (XP/HP)
-- `Typography` (titres RPG vs texte lisible)
+- clarity and CTA hierarchy,
+- tokenized styling,
+- accessibility criteria,
+- no white-border anti-pattern.
 
-Puis, composants de structure qui unifient les écrans :
+## Impeccable command runbook (audit + refonte)
 
-- `HeaderNav` (titre + back + actions)
-- `LoadingState` / `ErrorState` / `EmptyState`
+Use Impeccable as the default design QA/refonte workflow for each migrated scope.
 
-### 2) Migrer écran par écran
+### One-time project setup
 
-Chaque écran suit la même recette :
+- Initialize context: `$impeccable init`
+- Re-capture design system when drift appears: `$impeccable document`
 
-1. Remplacer layout de base (SafeArea, paddings) par `ScreenContainer`
-2. Remplacer boutons et cartes par DS (`RPGButton`, `GlassCard`/`SolidCard`)
-3. Remplacer textes/labels par i18n (si non conforme)
-4. Remplacer couleurs hardcodées par tokens
-5. Valider : screenshot rapide + `npm test` (au minimum)
-6. Vérifier souvent : `npm run check` (idéalement à chaque écran migré, et avant toute PR)
+### Per-scope sequence (screen or component family)
 
----
+1. **Design quality pass:** `$impeccable critique <target>`
+2. **Technical quality pass:** `$impeccable audit <target>`
+3. **Apply fixes by category:**
+	- hierarchy/spacing issues → `$impeccable layout <target>`
+	- typography/readability issues → `$impeccable typeset <target>`
+	- color/contrast/theme drift → `$impeccable colorize <target>`
+	- unclear copy or labels → `$impeccable clarify <target>`
+	- resilience/i18n/edge cases → `$impeccable harden <target>`
+	- performance concerns → `$impeccable optimize <target>`
+	- adaptive/native behavior concerns → `$impeccable adapt <target>`
+4. **Final refinement before merge:** `$impeccable polish <target>`
+5. **Regression check:** re-run `$impeccable audit <target>`
 
-## Guardrails UI (règles anti-régression)
+### Prioritization rule
 
-### 1) Zéro hex dans les écrans
+- Treat audit findings by severity order: **P0 → P1 → P2 → P3**.
+- Do not polish before P0/P1 issues are addressed.
 
-- Les couleurs doivent venir de Tamagui tokens (`$primary`, `$background`, etc.).
-- Les rares exceptions (assets SVG, libs externes) doivent être isolées.
+### CI/automation companion
 
-### 2) Styles uniquement via tokens
-
-- Les couleurs, rayons, ombres, spacing doivent être des tokens Tamagui.
-- Éviter `style={{ ... }}` pour les propriétés de design (toléré pour layout ponctuel).
-
-### 3) États UI standardisés
-
-- Tous les écrans liste/detail réutilisent : `LoadingState`, `ErrorState`, `EmptyState`.
-
-### 4) DRY helpers UI
-
-- Les helpers (ex: résolution d’images, formatage de durée) doivent être partagés.
-
-### 5) Composants “dumb” (UI)
-
-- Les composants dans `src/ui/*` ne font **jamais** d’appels DB/Store.
-- Ils reçoivent des `props` et émettent des événements.
-
-### 6) TypeScript strict
-
-- Pas de `any`.
-- On corrige les types, on ne les ignore pas.
-
-### 7) i18n partout
-
-- Pas de texte en dur (sauf Dev tools).
-- Utiliser `t("scope.key")`.
-
-### 8) Fichiers petits et lisibles
-
-- 1 fichier = 1 composant exporté.
-- Éviter les fichiers géants (objectif : < 300 lignes, alerte au-delà de 500).
-
----
-
-## Roadmap d’exécution (Phase 0 → 4)
-
-Chaque phase a : scope, livrables, critères de validation, risques.
-
-### 🔴 Phase 0 — Assainissement (priorité immédiate)
-
-**But** : nettoyer le terrain avant de “peindre” l’UI.
-
-Livrables :
-
-- Analyser les erreurs de `npm run check`.
-- Corriger les erreurs TypeScript (types manquants/cassés) et Biome.
-- Valider que `tamagui.config.ts` peut porter les nouveaux tokens (couleurs, fonts, ombres/glow).
-
-Validation :
-
-- `npm run check` OK.
-- `npm test` OK.
-
-Risques :
-
-- scope trop large → traiter en priorité ce qui bloque l’UI (types sur composants/UI).
-
----
-
-### 🟠 Phase 1 — La Forge (Atomic Design)
-
-**But** : créer les briques UI de base dans `src/ui/` (isolées, “dumb”).
-
-Livrables :
-
-- Tokens Tamagui alignés NEW_STYLE (background/surface/text/border/primary/glow)
-- Composants atoms dans `src/ui/` : `ScreenContainer`, `Typography`, `RPGButton`, `GlassCard`, `SolidCard`, `IconButton`, `StatusBadge`, `ProgressBar`
-- Composants de structure : `HeaderNav`, `LoadingState`, `ErrorState`, `EmptyState`
-
-Validation :
-
-- un écran “pilote” migré visuellement (ex: `treasury` ou `quests`) sans régression fonctionnelle
-- `npm test` OK
-
-Risques :
-
-- sur-design trop tôt → rester minimal et incrémental
-
----
-
-### 🟡 Phase 2 — Migration des molécules
-
-**But** : assembler des composants métier (molécules) en n’utilisant **que** la Forge.
-
-Cibles prioritaires :
-
-- `QuestCard`
-- `ResourceBar`
-- `HeaderNav` (standardiser les entêtes)
-
-Livrables :
-
-- Molécules prêtes et réutilisables : `QuestCard`, `ResourceBar`, `HeaderNav` (versions NEW_STYLE)
-- Réduction des styles inline (remplacés par tokens)
-
-Validation :
-
-- Audit rapide : 2–3 écrans majeurs ont exactement le même style de surface/boutons
-- `npm test` OK
-
-Risques :
-
-- dettes “temp” (wrappers) → prévoir un cleanup en fin de roadmap
-
----
-
-### 🟢 Phase 3 — Migration des écrans (pages)
-
-**But** : remplacer écran par écran avec le DS (sans casser les flows).
-
-Cibles :
-
-- Onboarding (`NEW_STYLE/onboard.html`)
-- Home
-- Quests (list + details) (`NEW_STYLE/quest.html`)
-- Boss battle (`NEW_STYLE/boss-battle.html`)
-
-Travail :
-
-- Adapter layout/spacing/typographies
-- Uniformiser cards, chips, CTA
-- Harmoniser les images (helpers partagés) et placeholders
-
-Livrables :
-
-- Un rendu cohérent NEW_STYLE sur les écrans cibles
-- Un set de composants DS suffisant pour couvrir 80% des besoins
-
-Validation :
-
-- QA visuelle : comparaison avec `NEW_STYLE/*` (checklist)
-- `npm test` OK
-
-Risques :
-
-- trop gros scope → migrer un écran à la fois
-
----
-
-### 🔵 Phase 4 — Game Feel (polish)
-
-**But** : donner le “feel” NEW_STYLE (sans ré-écrire la logique métier).
-
-Livrables :
-
-- Haptics cohérents (press / success / warning)
-- Animations Tamagui (enter/press) et transitions list/detail
-- États “reward” (XP, loot) lisibles et fun
-
-Validation :
-
-- aucune régression perf notable sur les listes
-- retours UX internes (2–3 test sessions)
-
-Risques :
-
-- complexité état → utiliser machines d’état “light” (sans lib si pas nécessaire)
-
-## Checklist PR (obligatoire)
-
-Chaque PR UI doit confirmer :
-
-- Pas de hex hardcodé dans les vues (tokens uniquement)
-- Pas de `any` (TypeScript strict)
-- i18n OK (pas de texte en dur)
-- 1 fichier = 1 composant exporté
-- `npm test` OK
-- `npm run check` OK
-
----
-
-## Format de livraison (pour chaque tâche / PR)
-
-Quand vous implémentez un composant ou migrez un écran, la description (ou note de dev) doit suivre ce format :
-
-1. **Analyse** : ce qui est changé et pourquoi (objectif UX + objectif tech).
-2. **Code** : fichiers impactés (nouveau composant / migration écran) + points importants.
-3. **Usage** : comment intégrer le composant dans un écran parent.
-4. **Checklist Qualité** :
-
-   - Pas de Hex
-   - i18n OK
-   - Types OK (pas de `any`)
-   - Composants UI “dumb”
-   - `npm test` OK
-   - `npm run check` OK
-
----
-
-## Quick Wins (à faire “à la volée” pendant les phases)
-
-- Centraliser les helpers dupliqués (ex: `resolveQuestImage` / `resolveImage`).
-- Remplacer les hex UI par tokens.
-- Uniformiser les load-states.
-
----
-
-## Suivi & livraison (cadence)
-
-- Refactor en branches courtes : 1 PR = 1 écran/feature max.
-- Chaque PR doit inclure : validation tests, captures avant/après (si UI change), note de migration (ce qui a bougé).
-
-### Commandes à lancer souvent
-
-- `npm run check` : le plus souvent possible (à chaque écran migré + avant PR) pour éviter d’accumuler les erreurs TypeScript/Biome.
-- `npm test` : au minimum avant PR ; idéalement pendant la migration si vous touchez des composants transverses.
-
----
-
-## Flows utilisateur à vérifier (liens entre pages)
-
-Ces flows servent de **checklist QA** pendant la migration UI (éviter les régressions de navigation et de cohérence visuelle).
-
-> Voir aussi la carte de navigation complète : [`docs/product/user-guide.md`](../product/user-guide.md).
-
-### Onboarding
-
-- [Onboarding](../screens/onboarding.md) → [Home](../screens/home.md)
-
-### Quêtes (workout rapide)
-
-- [Home](../screens/home.md) → [Quests Gallery](../screens/quests.md) → [Quest Details](../screens/quest-details.md) → [Session](../screens/session.md) → [Journal](../screens/journal.md) → [Session Details](../screens/session-details.md)
-
-### Adventures (campagne)
-
-- [Home](../screens/home.md) → [Adventures Gallery](../screens/adventures.md) → [Adventure Details](../screens/adventure-details.md) → [Quest Details](../screens/quest-details.md) → [Session](../screens/session.md)
-
-### Progression & récompenses
-
-- [Home](../screens/home.md) → [Village](../screens/village.md)
-- [Home](../screens/home.md) → [Treasury](../screens/treasury.md)
-
-### Planification
-
-- [Home](../screens/home.md) → [Goals](../screens/goals.md) → [Schedule](../screens/schedule.md)
-
-### Préférences
-
-- [Home](../screens/home.md) → [Settings](../screens/settings.md) → [Credits](../screens/credits.md)
-
----
-
-## Notes (état actuel)
-
-- `npm test -- i18n-keys.test.ts` est OK.
-- `npm run check` a échoué récemment (à investiguer en Phase 0). L’objectif est qu’il redevienne vert en continu avant d’accélérer la migration UI.
+- Add deterministic detector checks in CI with `npx impeccable detect` on relevant UI paths.
+- Use narrow ignore rules only when intentional and documented.

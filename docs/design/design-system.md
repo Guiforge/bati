@@ -101,123 +101,82 @@ components:
 
 # Design System: Bati
 
-## 1. Overview
+## 1) System intent
 
-**Creative North Star: "The Hero's HUD"**
+**Creative north star:** *The Hero's HUD*.
 
-Bati looks like the heads-up display of a fantasy warrior gearing up for a fight, rendered on high-tech glass. The world is deep obsidian blue, lit by a single electric-blue signal that behaves like a power source: it glows, it presses, it marks the one action that matters. Nothing is decorative for its own sake. A user opens Bati mid-workout, phone in one hand, and the interface has to read instantly and get out of the way, so the epic is loud where it motivates and silent everywhere else.
+Bati must feel immersive but remain operationally clear in the middle of a workout.
 
-The system rejects the two failure modes named in the product brief. It is not a cluttered, stat-heavy gym app: charts and numbers never bury the next action. It is not a cartoonish kids' game: no bright mascots, no bouncy-everything, no candy palette. And it is not corporate or clinical: there is no light theme, no flat white dashboard, no health-app sterility. The immersion is real dark fantasy carried by deep backgrounds, confident weight, and a disciplined accent, not a spreadsheet with a game skin bolted on.
+- Sport-first ergonomics over decorative complexity.
+- One-screen-one-priority hierarchy.
+- Dark-only visual world.
 
-Surfaces are high-contrast and physical. Cards and buttons wear a heavy 3px off-white edge with a hard, offset "sticker" shadow, so elements feel stamped onto the void rather than floating in soft blur. A parallel glass-and-glow vocabulary exists for atmospheric surfaces (overlays, ambient panels). The two are deliberate registers, not a contradiction: hard-edged for the things you act on, glass for the things you look through.
+## 2) Visual foundations
 
-**Key Characteristics:**
-- Always dark: one obsidian-blue world across iOS and Android, no light mode, no per-OS reskin.
-- One electric-blue signal reserved for the primary action.
-- Heavy off-white borders and hard offset shadows on interactive surfaces.
-- Two type voices: Space Grotesk (heroic) over Noto Sans (legible).
-- Meaning never rides on color alone; icons and labels back every state.
+### Color roles
 
-## 2. Colors
+- `$primary`: one main action per screen.
+- `$secondary`: occasional secondary emphasis.
+- `$success` / `$error`: state feedback, always paired with label/icon.
+- `$bgDark`, `$surface`, `$surface2`: layered depth.
+- `$text`, `$textSecondary`, `$muted`: reading hierarchy.
 
-A deep-blue night lit by a single electric signal, with a small cast of resource hues reserved strictly for the RPG economy.
+### Border/elevation rule (updated)
 
-### Primary
-- **Electric Blue** (#0D33F2): The one signal. Primary buttons, active states, the single most important action on any screen. Its rarity is the point; it should read as power, not paint. `primary-hover` (#2E5CFF) and `primary-press` (#0A25B0) are its only siblings, plus **Primary Glow** (rgba(13,51,242,0.45)) for the shadow/halo under a hero action.
+- Default borders are subtle (`$borderStrong`, `$glassBorder`, usually 1px).
+- Avoid thick white/off-white border accents on cards and buttons.
+- Elevation comes from contrast, spacing, and controlled glow (not noisy outlines).
 
-### Secondary
-- **Magenta** (#DB2777): A secondary accent for alternate actions and contrast moments. Used sparingly; never competes with Electric Blue for "the" action on a screen.
+### Typography
 
-### Tertiary
-- **Quest Success** (#16A34A) and **Alert Red** (#FF1744): State colors for confirmation and danger. Always paired with an icon or label, never color-only.
-- **Resource Palette**: Gold (#FFD700), Wood (#8B4513), Stone (#808080), Fire (#FF6B35), Water (#4ECDC4), Wind (#C9B1FF), Grain (#DAA520). Reserved exclusively for the resource/village economy so a hue reliably maps to a resource.
+- Hero/display moments: `SpaceGrotesk`.
+- Body and utility reading: `NotoSans`.
+- Wide tracking belongs to short labels only, never body text.
 
-### Neutral
-- **The Void** (#0B0F19): Main app background. Deep obsidian blue.
-- **Surface** (#101322) / **Surface Raised** (#151A2E): Card and layered panel backgrounds.
-- **Glass** (bg rgba(16,19,34,0.65), border rgba(232,236,255,0.14)): Atmospheric, translucent panels only.
-- **Text** (#E8ECFF): Primary off-white text. **Text Secondary** (#909ACB): Subtitles and muted labels. **Muted** (#64748B): The quietest tier; only on large or non-essential text where it still clears contrast.
-- **Border Strong** (#2A3360): Structural dividers on dark surfaces.
-
-### Named Rules
-**The One Signal Rule.** Electric Blue marks a single primary action per screen. If two things are blue, the user can't tell which to press. Everything else is neutral, secondary, or a resource hue.
-
-**The Reserved Resource Rule.** The resource palette (gold, wood, stone, fire, water, wind, grain) is never borrowed for decoration. A resource color always means that resource.
-
-## 3. Typography
-
-**Display Font:** Space Grotesk (with system-ui, sans-serif fallback)
-**Body Font:** Noto Sans (with system-ui, sans-serif fallback)
-
-**Character:** A geometric-grotesk display against a neutral humanist body. Space Grotesk carries the heroic, HUD-like voice for headings and stat callouts; Noto Sans stays quiet and highly legible for reading, with broad multilingual coverage for EN/FR. The pairing contrasts on the humanist/geometric axis, so the two never blur together.
-
-### Hierarchy
-- **Display** (Bold 700, 48px, 50px line-height): Hero and logo moments only, e.g. a boss name or level-up screen.
-- **Headline** (Bold 700, 32px, 40px line-height): Screen titles.
-- **Title** (Bold 700, 24px, 32px line-height): Section and card headings.
-- **Body** (Regular 400, 16px, 24px line-height): Reading text and descriptions. Cap long prose around 65–75 characters per line.
-- **Label** (Bold 700, 14px, letter-spacing 4px, often uppercase): Widely tracked HUD-style labels, stat tags, eyebrow-style meta. This is where the tracked-caps treatment belongs; keep it out of body copy.
-
-### Named Rules
-**The Tracked-Caps-Are-Labels Rule.** The wide 4px tracking is a label device, not a heading device. Use it for small HUD labels and stat chips; never stretch it across a paragraph or a long title.
-
-## 4. Elevation
-
-Bati uses two distinct depth strategies, chosen by whether a surface is acted on or looked through. Interactive surfaces (buttons, cards, chips) use a **hard sticker shadow**: a zero-blur, offset shadow in near-black, which stamps the element crisply onto the void. Atmospheric surfaces use **glass and glow**: translucent glass backgrounds with a thin light border, plus a colored halo under the primary action. There is no soft, diffuse Material drop-shadow anywhere; depth is either a hard stamp or a light glow.
-
-### Shadow Vocabulary
-- **Sticker shadow** (`shadowColor: #060812; shadowRadius: 0; shadowOffset: {0, 6}`): Cards and raised interactive surfaces. Hard-edged, no blur.
-- **Primary glow** (`shadowColor: rgba(13,51,242,0.45)`): The halo under the single primary action, signaling it's "powered on".
-
-### Named Rules
-**The Hard-or-Glow Rule.** Depth is a hard offset stamp on things you touch, or a colored glow on the one thing you should touch. Never a soft grey blur; that reads as generic Material and breaks the HUD world.
-
-## 5. Components
+## 3) Component standards
 
 ### Buttons
-- **Shape:** Rounded rectangle at token `$8` (`rounded.md`); pressable icon buttons are full circles (44×44).
-- **Primary:** Electric Blue background, deep-void text (#0B0F19), a heavy 3px off-white border (`$color`), weight 900 at 20px. Full-width by default.
-- **Secondary:** Magenta background, white text, same border and weight.
-- **Outline:** Overlay/transparent background, off-white text and border.
-- **Press:** `opacity 0.9, scale 0.98` via the `quick` spring; no hover state on native.
-- **Icon button:** 44×44 circle, raised surface background, same 3px border, honoring the 44pt minimum tap target.
 
-### Chips / Tags
-- **Style:** Tone-driven background (default surface, or primary/secondary/success), off-white or void text depending on tone, 3px-family border in `$color`.
-- **State:** Pressable chips use pill radius (`$10`), a 2px border, and enforce a 44px min height; static tags use `$4` radius, 1px border, and sit at 0.92 opacity to read as passive.
+- Primary: `$primary` fill, high-contrast text, optional restrained glow.
+- Secondary/ghost: neutral or glass treatment.
+- Interaction: consistent `pressed`, `disabled`, and loading states.
+- Minimum hit area: 44×44.
 
-### Cards / Containers
-- **Corner Style:** `$8` (`rounded.md`).
-- **Background:** Surface (#101322).
-- **Shadow Strategy:** Hard sticker shadow (see Elevation), offset {0, 6}, zero blur, in near-black.
-- **Border:** Heavy 3px in off-white `$color`.
-- **Internal Padding:** `$4`.
-- **Glass variant:** For atmospheric panels, swap to `glass-bg` with the thin `glass-border` and drop the hard shadow.
+### Cards/containers
 
-### Navigation
-- **Style:** Bottom tab bar (Expo Router `(tabs)`), dark surface over the void, Space Grotesk labels. Active tab carries the Electric Blue signal plus an icon; inactive tabs use Text Secondary. State is never color-only, the active icon shape reinforces it.
+- Use `$surface` or `$glassBg` depending on semantic layer.
+- Use one card style family across screens.
+- Prefer a single border treatment and avoid decorative nesting.
 
-### Icons (Signature)
-- **GameIcon**: All iconography flows through the `useGameIcon` hook / `GameIcon` component sourcing game-icons.net white SVGs, sized in px and tinted with tokens (e.g. `$primary`). Never import from `lucide-react-native` directly; the custom set is what makes the world feel like a game HUD.
+### Inputs
 
-## 6. Do's and Don'ts
+- Legible text size and clear labels.
+- Focus state must be obvious without over-bright effects.
+- Validation copy must be actionable.
 
-### Do:
-- **Do** reserve Electric Blue (#0D33F2) for a single primary action per screen; back it with Primary Glow when it's the hero action.
-- **Do** keep everything dark: The Void (#0B0F19) is the only body background. Assume dark mode always.
-- **Do** use Tamagui tokens (`p="$4"`, `bg="$bgDark"`, `color="$text"`) instead of hex codes or inline styles.
-- **Do** route every icon through `@/hooks/useGameIcon` / `GameIcon`.
-- **Do** pair every state (success, error, resource, active tab) with an icon or label so meaning never depends on color alone.
-- **Do** use the hard sticker shadow (zero blur, offset) on interactive surfaces and glass only on atmospheric panels.
-- **Do** keep tap targets at 44pt minimum and honor reduced-motion with a calmer or instant alternative to the spring animations.
-- **Do** wrap all user-facing text in `t()` (i18next, EN/FR).
+### Icons
 
-### Don't:
-- **Don't** build a light theme or write `colorScheme === 'light' ? … : …`. There is no light mode.
-- **Don't** turn Bati into a cluttered, stat-heavy gym app: charts and numbers must never bury the next action.
-- **Don't** make it cartoonish: no bright mascots, no candy palette, no bouncy-everything.
-- **Don't** go corporate or clinical: no flat white dashboards, no health-app sterility.
-- **Don't** use soft grey Material drop-shadows; depth is a hard stamp or a colored glow.
-- **Don't** borrow a resource hue (gold, wood, stone, fire, water, wind, grain) for decoration.
-- **Don't** import icons from `lucide-react-native` directly or hardcode hex colors and inline styles.
-- **Don't** stretch the 4px tracked-caps label treatment across body copy or long titles.
+- Always use `useGameIcon` / `GameIcon`.
+- No direct `lucide-react-native` imports in product UI.
+
+## 4) Accessibility and legibility
+
+- WCAG AA target: body 4.5:1, large text 3:1.
+- Ensure readability in bright gym conditions (not only dark-room previews).
+- Never rely on color alone to convey status.
+- Support reduced motion.
+
+## 5) Design constraints
+
+### Required
+
+- Dark-only implementation.
+- Tokens for color/spacing/radius/effects.
+- i18n via `t()` for user-facing strings.
+
+### Forbidden
+
+- Light-theme branching.
+- Thick white accent borders as default visual style.
+- Competing primary CTAs on the same screen.
+- Decorative motion that slows task completion.

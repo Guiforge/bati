@@ -91,3 +91,40 @@ related: [wiki-protocol.md, ../README.md]
 **State:** ~48 pages across 9 topic folders + `raw/`, one root `docs/README.md` catalog,
 one `docs/CONTRIBUTING.md`.
 
+## 2026-07-18 — Design clarity + roadmap efficiency pass
+
+**Context:** User feedback flagged three pain points: "not clear", "not efficient", and
+"white border ugly". This pass audited `docs/design` and `docs/planning`, then rewrote
+source docs to remove contradictions and improve execution quality.
+
+**Design docs updates:**
+- Updated [design/README.md](../design/README.md) with resolved decisions:
+  dark-only policy, one-primary-action rule, and explicit rejection of thick white/off-white borders.
+- Rewrote [design/ui-guide.md](../design/ui-guide.md) into a concise product-UI guide
+  with actionable principles (clarity, efficiency, accessibility, token discipline).
+- Replaced [design/ui-checklist.md](../design/ui-checklist.md) with a Bati-specific quality gate
+  (WCAG AA targets, touch-target minima, reduced-motion, and anti-white-border rule).
+- Simplified [design/design-system.md](../design/design-system.md) narrative guidance to align
+  with current visual direction and remove heavy-border ambiguity.
+
+**Planning docs updates:**
+- Updated [planning/README.md](../planning/README.md) to clarify document roles and usage flow.
+- Rewrote [planning/roadmap-alignment.md](../planning/roadmap-alignment.md) as a clean
+  source-of-truth roadmap with explicit MVP boundaries, execution phases, and acceptance template.
+- Rewrote [planning/roadmap-refactor-ui.md](../planning/roadmap-refactor-ui.md) as an execution
+  playbook focused on migration method (not competing prioritization).
+- Rewrote [planning/future-roadmap.md](../planning/future-roadmap.md) into a compact
+  parking-lot format for speculative items only.
+
+**Outcome:** Reduced documentation drift, removed planning duplication, and converted roadmap/design
+guidance into directly actionable checklists for delivery.
+
+## 2026-07-18 — Impeccable command runbook added to UI refactor roadmap
+
+- Updated [planning/roadmap-refactor-ui.md](../planning/roadmap-refactor-ui.md) with an explicit
+  Impeccable workflow for UI refonte: `init/document` (context), `critique + audit` (diagnostics),
+  command routing by issue type (`layout`, `typeset`, `colorize`, `clarify`, `harden`, `optimize`,
+  `adapt`), then `polish` and re-audit.
+- Added severity-first handling guidance (P0 → P3) and CI detector recommendation
+  (`npx impeccable detect`) to keep visual quality gates consistent.
+

@@ -14,9 +14,14 @@ type MigrationState = { success: false; error?: Error } | { success: true; error
 
 type SqliteMigrationClient = {
   execAsync: (source: string) => Promise<void>;
+  runAsync?: (source: string, params?: readonly unknown[]) => Promise<unknown>;
   getFirstAsync?: <T = unknown>(source: string, params?: readonly unknown[]) => Promise<T | null>;
   getAllAsync?: <T = unknown>(source: string, params?: readonly unknown[]) => Promise<T[]>;
 };
+
+function sqlString(value: string) {
+  return `'${value.replaceAll("'", "''")}'`;
+}
 
 async function runMigrationsAsync(
   client: SqliteMigrationClient,
@@ -51,7 +56,10 @@ async function runMigrationsAsync(
 
   const entries = config.journal.entries;
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex migration logic, refactor planned
-  const runEntry = async (txn: { execAsync: (source: string) => Promise<void> }) => {
+  async function runEntry(txn: {
+    execAsync: (source: string) => Promise<void>;
+    runAsync?: SqliteMigrationClient["runAsync"];
+  }) {
     for (const entry of entries) {
       if (Number.isFinite(lastCreatedAt) && lastCreatedAt >= entry.when) continue;
 
@@ -139,11 +147,18 @@ async function runMigrationsAsync(
       }
 
       // Record applied migration.
-      await txn.execAsync(
-        `INSERT INTO __drizzle_migrations (hash, created_at) VALUES (${JSON.stringify(entry.tag)}, ${entry.when})`,
-      );
+      if (txn.runAsync) {
+        await txn.runAsync("INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)", [
+          entry.tag,
+          entry.when,
+        ]);
+      } else {
+        await txn.execAsync(
+          `INSERT INTO __drizzle_migrations (hash, created_at) VALUES (${sqlString(entry.tag)}, ${entry.when})`,
+        );
+      }
     }
-  };
+  }
 
   // Use a single connection transaction to avoid issues with `useNewConnection` transactions
   // interacting poorly with Drizzle's sync `prepareSync` on Android.

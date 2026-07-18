@@ -14,16 +14,16 @@ related: [roadmap-refactor-ui.md, roadmap-alignment.md, ../design/ui-checklist.m
 
 | Order | Scope | Status | Notes |
 | :--- | :--- | :--- | :--- |
-| 1 | Home | in-progress | Audit + first refonte pass done; re-audit pending |
-| 2 | Quests + Quest Details | in-progress | Initial critique/audit completed below |
-| 3 | Session | in-progress | Initial critique/audit completed below |
-| 4 | Adventures | in-progress | Initial critique/audit completed below |
-| 5 | Journal + Session Details | in-progress | Initial critique/audit completed below |
-| 6 | Village | in-progress | Initial critique/audit completed; first refonte pass applied |
-| 7 | Treasury | in-progress | Initial critique/audit completed below |
-| 8 | Goals + Schedule | in-progress | Initial critique/audit completed below |
-| 9 | Onboarding | in-progress | Initial critique/audit completed below |
-| 10 | Settings + Credits | in-progress | Initial critique/audit completed below |
+| 1 | Home | implementation done | Re-audit on device/simulator pending |
+| 2 | Quests + Quest Details | implementation done | Re-audit on device/simulator pending |
+| 3 | Session | implementation done | Re-audit on device/simulator pending |
+| 4 | Adventures | implementation done | Re-audit on device/simulator pending |
+| 5 | Journal + Session Details | implementation done | Re-audit on device/simulator pending |
+| 6 | Village | implementation done | Re-audit on device/simulator pending |
+| 7 | Treasury | implementation done | Re-audit on device/simulator pending |
+| 8 | Goals + Schedule | implementation done | Re-audit on device/simulator pending |
+| 9 | Onboarding | implementation done | Re-audit on device/simulator pending |
+| 10 | Settings + Credits | implementation done | Re-audit on device/simulator pending |
 
 ---
 
@@ -90,16 +90,6 @@ related: [roadmap-refactor-ui.md, roadmap-alignment.md, ../design/ui-checklist.m
 - **P1 — White border overload is still visible:** several Home cards and tiles use bright outlined frames that dominate the dark UI.
 - **P2 — Resource strip competes with the main action:** the horizontal inventory row adds visual clutter before the user reaches the primary CTA.
 - **P2 — Stats tiles are too evenly weighted:** the three small summary cards feel flat and equally loud, so the eye doesn’t know where to land after the main action.
-
-### Exit criteria for Home
-
-- [ ] One obvious primary CTA path from Home.
-- [ ] No heavy white/off-white border accents.
-- [ ] Unified card style family across all Home sections.
-- [ ] No hardcoded hex colors in Home screen-level styling.
-- [ ] Readability checks pass for small labels/stats.
-
----
 
 ## Execution rule
 

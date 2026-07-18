@@ -27,11 +27,11 @@ type LoadState =
   | { status: "loading"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
   | { status: "ready"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
   | {
-    status: "error";
-    adventures: Adventure[];
-    exercisesById: Record<number, Exercise>;
-    message: string;
-  };
+      status: "error";
+      adventures: Adventure[];
+      exercisesById: Record<number, Exercise>;
+      message: string;
+    };
 
 function resolveImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;

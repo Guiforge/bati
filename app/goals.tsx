@@ -10,11 +10,11 @@ import { Card } from "@/components/common/Card";
 import { PlanPreviewSheet } from "@/components/goals/PlanPreviewSheet";
 import {
   createGoal,
+  type Goal,
+  type GoalProgress,
   getActiveGoal,
   getGoalProgressHistory,
   getOrCreateWeekProgress,
-  type Goal,
-  type GoalProgress,
   goalTypeInfo,
   updateGoalStatus,
 } from "@/db/goals";

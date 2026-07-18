@@ -15,13 +15,13 @@ type ResourceInfo = {
   code: ResourceCode;
   iconName: "gold" | "wood" | "stone" | "fire" | "water" | "wind" | "grain";
   colorKey:
-  | "resourceGold"
-  | "resourceWood"
-  | "resourceStone"
-  | "resourceFire"
-  | "resourceWater"
-  | "resourceWind"
-  | "resourceGrain";
+    | "resourceGold"
+    | "resourceWood"
+    | "resourceStone"
+    | "resourceFire"
+    | "resourceWater"
+    | "resourceWind"
+    | "resourceGrain";
   muscle: string;
 };
 

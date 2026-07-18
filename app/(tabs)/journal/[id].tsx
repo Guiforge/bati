@@ -1,3 +1,10 @@
+import { ChevronLeft, Clock, Dumbbell, Repeat, Target } from "@tamagui/lucide-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
@@ -7,13 +14,6 @@ import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { listQuestTemplates } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
-import { ChevronLeft, Clock, Dumbbell, Repeat, Target } from "@tamagui/lucide-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 type Status = "loading" | "ready" | "error";
 
@@ -91,13 +91,13 @@ export default function SessionDetailScreen() {
 
   const dateLabel = session
     ? new Intl.DateTimeFormat(language, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(session.performedAt))
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(session.performedAt))
     : "";
 
   const durationLabel = session?.durationSeconds
@@ -107,14 +107,14 @@ export default function SessionDetailScreen() {
   // Group exercises by round
   const exercisesByRound = session
     ? session.exercises.reduce(
-      (acc, ex) => {
-        const round = ex.roundIndex;
-        if (!acc[round]) acc[round] = [];
-        acc[round].push(ex);
-        return acc;
-      },
-      {} as Record<number, typeof session.exercises>,
-    )
+        (acc, ex) => {
+          const round = ex.roundIndex;
+          if (!acc[round]) acc[round] = [];
+          acc[round].push(ex);
+          return acc;
+        },
+        {} as Record<number, typeof session.exercises>,
+      )
     : {};
 
   const roundNumbers = Object.keys(exercisesByRound)

@@ -113,9 +113,15 @@ export default function DevTools() {
         performedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // yesterday
       });
       await loadSessionCount();
-      Alert.alert("Success", "Added fake session (yesterday)");
+      Alert.alert(
+        t("dev.success", "Success"),
+        t("dev.fake_session_added", "Added fake session (yesterday)"),
+      );
     } catch {
-      Alert.alert("Error", "Failed to add fake session");
+      Alert.alert(
+        t("common.error", "Oops!"),
+        t("dev.fake_session_failed", "Failed to add fake session"),
+      );
     }
   }
 
@@ -123,9 +129,12 @@ export default function DevTools() {
     try {
       await resetBossFight(bossFightId);
       await loadBossFights();
-      Alert.alert("Success", "Boss fight reset");
+      Alert.alert(t("dev.success", "Success"), t("dev.boss_fight_reset", "Boss fight reset"));
     } catch {
-      Alert.alert("Error", "Failed to reset boss fight");
+      Alert.alert(
+        t("common.error", "Oops!"),
+        t("dev.boss_fight_reset_failed", "Failed to reset boss fight"),
+      );
     }
   }
 
@@ -138,9 +147,9 @@ export default function DevTools() {
         muscle: "arms",
       });
       await loadBossFights();
-      Alert.alert("Success", "Dealt 50 test damage");
+      Alert.alert(t("dev.success", "Success"), t("dev.test_damage_dealt", "Dealt 50 test damage"));
     } catch {
-      Alert.alert("Error", "Failed to deal damage");
+      Alert.alert(t("common.error", "Oops!"), t("dev.test_damage_failed", "Failed to deal damage"));
     }
   }
 
@@ -161,7 +170,7 @@ export default function DevTools() {
           <Separator />
 
           {/* Theme Quick Toggle */}
-          <H3>🎨 Theme</H3>
+          <H3>🎨 {t("dev.theme", "Theme")}</H3>
           <XStack gap="$2" flexWrap="wrap">
             {(["light", "dark", "system"] as const).map((th) => (
               <AppButton
@@ -170,35 +179,47 @@ export default function DevTools() {
                 size="$3"
                 onPress={() => handleThemeChange(th)}
               >
-                {th === "light" ? "☀️ Light" : th === "dark" ? "🌙 Dark" : "📱 System"}
+                {th === "light"
+                  ? `☀️ ${t("light", "Light")}`
+                  : th === "dark"
+                    ? `🌙 ${t("dark", "Dark")}`
+                    : `📱 ${t("system", "System")}`}
               </AppButton>
             ))}
           </XStack>
-          <Paragraph opacity={0.6}>Current: {theme}</Paragraph>
+          <Paragraph opacity={0.6}>
+            {t("dev.current_theme", "Current: {{theme}}", { theme })}
+          </Paragraph>
 
           <Separator />
 
           {/* Streak / Sessions Tools */}
-          <H3>🔥 Streak Tools</H3>
-          <Paragraph>Completed Sessions: {sessionCount}</Paragraph>
+          <H3>🔥 {t("dev.streak_tools", "Streak Tools")}</H3>
+          <Paragraph>
+            {t("dev.completed_sessions", "Completed Sessions: {{count}}", {
+              count: sessionCount,
+            })}
+          </Paragraph>
           <XStack gap="$2" flexWrap="wrap">
             <AppButton variant="outline" size="$3" onPress={handleAddFakeSession}>
-              Add Fake Session (Yesterday)
+              {t("dev.add_fake_session", "Add Fake Session (Yesterday)")}
             </AppButton>
             <AppButton variant="outline" size="$3" onPress={loadSessionCount}>
-              Refresh Count
+              {t("dev.refresh_count", "Refresh Count")}
             </AppButton>
           </XStack>
 
           <Separator />
 
           {/* Boss Fight Tools */}
-          <H3>👹 Boss Fights</H3>
+          <H3>👹 {t("dev.boss_fights", "Boss Fights")}</H3>
           <AppButton variant="outline" size="$3" onPress={loadBossFights} fullWidth={false}>
-            Refresh Boss Fights
+            {t("dev.refresh_boss_fights", "Refresh Boss Fights")}
           </AppButton>
           {bossFights.length === 0 ? (
-            <Paragraph opacity={0.6}>No boss adventures found</Paragraph>
+            <Paragraph opacity={0.6}>
+              {t("dev.no_boss_adventures", "No boss adventures found")}
+            </Paragraph>
           ) : (
             bossFights.map((bf) => (
               <YStack
@@ -214,32 +235,44 @@ export default function DevTools() {
                 {bf.fight ? (
                   <>
                     <Paragraph>
-                      HP: {bf.fight.currentHp} / {bf.fight.totalHp}
+                      {t("dev.boss_hp", "HP: {{current}} / {{total}}", {
+                        current: bf.fight.currentHp,
+                        total: bf.fight.totalHp,
+                      })}
                     </Paragraph>
                     <Paragraph>
-                      Weakness: {bf.fight.weaknessMuscle ?? "None"} | Resistance:{" "}
-                      {bf.fight.resistanceMuscle ?? "None"}
+                      {t("dev.boss_traits", "Weakness: {{weakness}} | Resistance: {{resistance}}", {
+                        weakness: bf.fight.weaknessMuscle ?? t("dev.none", "None"),
+                        resistance: bf.fight.resistanceMuscle ?? t("dev.none", "None"),
+                      })}
                     </Paragraph>
-                    <Paragraph>Defeated: {bf.fight.defeatedAt ? "Yes ✅" : "No ❌"}</Paragraph>
+                    <Paragraph>
+                      {t("dev.boss_defeated", "Defeated: {{value}}", {
+                        value: bf.fight.defeatedAt ? t("dev.yes", "Yes") : t("dev.no", "No"),
+                      })}{" "}
+                      {bf.fight.defeatedAt ? "✅" : "❌"}
+                    </Paragraph>
                     <XStack gap="$2" flexWrap="wrap">
                       <AppButton
                         variant="outline"
                         size="$2"
                         onPress={() => bf.fight && handleDealTestDamage(bf.fight.id)}
                       >
-                        Deal 50 Damage
+                        {t("dev.deal_test_damage", "Deal 50 Damage")}
                       </AppButton>
                       <AppButton
                         variant="secondary"
                         size="$2"
                         onPress={() => bf.fight && handleResetBossFight(bf.fight.id)}
                       >
-                        Reset HP
+                        {t("dev.reset_hp", "Reset HP")}
                       </AppButton>
                     </XStack>
                   </>
                 ) : (
-                  <Paragraph opacity={0.6}>No fight started yet</Paragraph>
+                  <Paragraph opacity={0.6}>
+                    {t("dev.no_fight_started", "No fight started yet")}
+                  </Paragraph>
                 )}
               </YStack>
             ))

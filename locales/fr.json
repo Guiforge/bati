@@ -526,7 +526,15 @@
     "title": "Mon Village",
     "unlocked": "Bâtiment Débloqué !",
     "view_village": "Voir le Village",
-    "xp_to_next": "XP pour le prochain niveau"
+    "xp_to_next": "XP pour le prochain niveau",
+    "level_line": "Niveau {{level}}",
+    "dominant_sport": "Focus d'entraînement : {{muscle}}",
+    "banners_title": "Bannières",
+    "flame_1": "Étincelle",
+    "flame_2": "Braise",
+    "flame_3": "Brasier",
+    "flame_4": "Enfer",
+    "flame_5": "Éternelle"
   },
   "welcome": "Bienvenue sur Bati !"
 }

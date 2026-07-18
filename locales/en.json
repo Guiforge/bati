@@ -461,7 +461,15 @@
     "bonus_xp": "+{{percent}}% XP for {{muscle}}",
     "bonus_resources": "+{{percent}}% {{resource}}",
     "bonus_prestige": "+{{points}} Prestige",
-    "current_bonus": "Current Bonus"
+    "current_bonus": "Current Bonus",
+    "level_line": "Level {{level}}",
+    "dominant_sport": "Training focus: {{muscle}}",
+    "banners_title": "Banners",
+    "flame_1": "Spark",
+    "flame_2": "Ember",
+    "flame_3": "Blaze",
+    "flame_4": "Inferno",
+    "flame_5": "Eternal"
   },
   "goals": {
     "title": "My Goal",

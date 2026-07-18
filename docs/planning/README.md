@@ -15,6 +15,7 @@ related: [../README.md]
 
 - [roadmap-alignment.md](roadmap-alignment.md) — ⭐ **Current execution plan** (priority, phases, acceptance criteria)
 - [roadmap-refactor-ui.md](roadmap-refactor-ui.md) — UI migration playbook (design system + rollout method)
+- [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) — Screen-by-screen critique/audit tracker and refonte backlog
 - [future-roadmap.md](future-roadmap.md) — Parking lot (speculative ideas, explicitly non-MVP)
 - [roadmap-archive.md](roadmap-archive.md) — Historical record (archived)
 

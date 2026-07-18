@@ -95,19 +95,13 @@ export function ActiveExerciseView() {
       {/* Header: Progress & Pause */}
       <XStack items="center" justify="space-between">
         <YStack>
-          <Text
-            color="$color"
-            opacity={0.7}
-            fontSize={12}
-            fontWeight="800"
-            textTransform="uppercase"
-          >
+          <Text color="$textSecondary" fontSize={12} fontWeight="700">
             {t("session.round_label", {
               count: currentRoundIndex + 1,
               total: quest.rounds,
             })}
           </Text>
-          <Text color="$color" fontSize={16} fontWeight="900" textTransform="uppercase">
+          <Text color="$text" fontSize={16} fontWeight="900">
             {t("session.exercise_label", {
               count: currentExerciseIndex + 1,
               total: exercisesPerRound,
@@ -156,13 +150,13 @@ export function ActiveExerciseView() {
           <Progress.Indicator animation="bouncy" bg="$color" opacity={0.35} />
         </Progress>
         <XStack justify="space-between">
-          <Text fontSize={10} fontWeight="900" opacity={0.5} color="$color">
+          <Text fontSize={10} fontWeight="700" color="$textSecondary">
             {t("session.round_label", {
               count: currentRoundIndex + 1,
               total: quest.rounds,
             })}
           </Text>
-          <Text fontSize={10} fontWeight="900" opacity={0.5} color="$color">
+          <Text fontSize={10} fontWeight="700" color="$textSecondary">
             {Math.round(progressPercent)}%
           </Text>
         </XStack>
@@ -172,19 +166,19 @@ export function ActiveExerciseView() {
       {isTimeBased && (
         <YStack gap="$2">
           <XStack justify="space-between" items="baseline">
-            <Text fontSize={12} fontWeight="900" color="$color" opacity={0.75}>
+            <Text fontSize={12} fontWeight="700" color="$textSecondary">
               {isOvertime ? t("session.bonus_time") : t("session.time_progress")}
             </Text>
-            <Text fontSize={12} fontWeight="900" color="$color" opacity={0.6}>
+            <Text fontSize={12} fontWeight="700" color="$textSecondary">
               {isOvertime ? formatOvertime(overtimeSeconds) : formatTime(remainingSeconds)}
             </Text>
           </XStack>
           <Progress
             value={Math.min(1, Math.max(0, progress)) * 100}
             size="$4"
-            bg="$bgLight"
+            bg="$surface2"
             borderWidth={2}
-            borderColor="$color"
+            borderColor="$borderStrong"
             rounded="$6"
           >
             <Progress.Indicator
@@ -202,11 +196,11 @@ export function ActiveExerciseView() {
         <YStack
           width="100%"
           aspectRatio={16 / 10}
-          bg="$bgLight"
+          bg="$surface"
           rounded="$4"
           overflow="hidden"
-          borderWidth={3}
-          borderColor="$color"
+          borderWidth={1}
+          borderColor="$borderStrong"
           items="center"
           justify="center"
         >
@@ -218,11 +212,10 @@ export function ActiveExerciseView() {
         <YStack items="center" gap="$2" width="100%">
           <H2
             fontWeight="900"
-            textTransform="uppercase"
             fontSize={28}
             lineHeight={32}
             style={{ textAlign: "center" }}
-            color="$color"
+            color="$text"
           >
             {exerciseName}
           </H2>
@@ -239,26 +232,26 @@ export function ActiveExerciseView() {
                   opacity={0.7}
                   hoverStyle={{ opacity: 1 }}
                 >
-                  <Text fontSize={12} fontWeight="700" color="$color">
+                  <Text fontSize={12} fontWeight="700" color="$textSecondary">
                     {t("session.how_to_do_it")}
                   </Text>
-                  <Text fontSize={12} color="$color">
+                  <Text fontSize={12} color="$textSecondary">
                     {showHowTo ? "▲" : "▼"}
                   </Text>
                 </XStack>
               </Pressable>
               {showHowTo && (
                 <YStack
-                  bg="$bgLight"
+                  bg="$surface2"
                   p="$3"
                   rounded="$4"
-                  borderWidth={2}
-                  borderColor="$color"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
                   mt="$2"
                   animation="quick"
                   enterStyle={{ opacity: 0, scale: 0.95 }}
                 >
-                  <Text fontSize={14} color="$color" opacity={0.9} lineHeight={20}>
+                  <Text fontSize={14} color="$textSecondary" lineHeight={20}>
                     {exerciseDescription}
                   </Text>
                 </YStack>
@@ -269,12 +262,12 @@ export function ActiveExerciseView() {
 
         {/* Big Counter */}
         <YStack
-          bg={isTimeBased ? (isOvertime ? "$pastelGreen" : "$background") : "$background"}
+          bg={isTimeBased ? (isOvertime ? "$surface2" : "$surface") : "$surface"}
           py="$6"
           px="$8"
           rounded="$8"
-          borderWidth={3}
-          borderColor={isOvertime ? "$success" : "$color"}
+          borderWidth={1}
+          borderColor={isOvertime ? "$success" : "$borderStrong"}
           width="100%"
           items="center"
           justify="center"
@@ -285,39 +278,23 @@ export function ActiveExerciseView() {
               {isOvertime ? (
                 <>
                   {/* Overtime display - counting UP */}
-                  <Text
-                    fontSize={14}
-                    fontWeight="800"
-                    color="$color"
-                    opacity={0.7}
-                    textTransform="uppercase"
-                  >
+                  <Text fontSize={14} fontWeight="800" color="$textSecondary">
                     🔥 {t("session.overtime")} 🔥
                   </Text>
                   <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="$success">
                     {formatOvertime(overtimeSeconds)}
                   </H1>
-                  <Paragraph
-                    fontWeight="800"
-                    opacity={0.8}
-                    textTransform="uppercase"
-                    color="$color"
-                  >
+                  <Paragraph fontWeight="800" color="$textSecondary">
                     {t("session.target_reached")}
                   </Paragraph>
                 </>
               ) : (
                 <>
                   {/* Normal countdown */}
-                  <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="$color">
+                  <H1 fontSize={72} fontWeight="900" fontFamily="$body" color="$text">
                     {formatTime(remainingSeconds)}
                   </H1>
-                  <Paragraph
-                    fontWeight="800"
-                    opacity={0.7}
-                    textTransform="uppercase"
-                    color="$color"
-                  >
+                  <Paragraph fontWeight="800" color="$textSecondary">
                     {t("session.seconds")}
                   </Paragraph>
                 </>
@@ -329,9 +306,9 @@ export function ActiveExerciseView() {
                 <Button
                   size="$4"
                   circular
-                  bg="$bgLight"
-                  borderWidth={2}
-                  borderColor="$color"
+                  bg="$surface2"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
                   onPress={() => handleAdjustReps(-1)}
                   pressStyle={{ opacity: 0.8, scale: 0.95 }}
                   disabled={adjustedReps <= 1}
@@ -339,7 +316,7 @@ export function ActiveExerciseView() {
                   accessibilityLabel={t("session.decrease_reps_accessibility")}
                   accessibilityRole="button"
                 >
-                  <Text fontSize={24} fontWeight="900" color="$color">
+                  <Text fontSize={24} fontWeight="900" color="$text">
                     −
                   </Text>
                 </Button>
@@ -350,36 +327,31 @@ export function ActiveExerciseView() {
                   enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
                   scale={1}
                 >
-                  <H1 fontSize={80} fontWeight="900" fontFamily="$body" color="$color">
+                  <H1 fontSize={80} fontWeight="900" fontFamily="$body" color="$text">
                     {adjustedReps}
                   </H1>
-                  <Paragraph
-                    fontWeight="800"
-                    opacity={0.8}
-                    textTransform="uppercase"
-                    color="$color"
-                  >
+                  <Paragraph fontWeight="800" color="$textSecondary">
                     {t("session.reps")}
                   </Paragraph>
                 </YStack>
                 <Button
                   size="$4"
                   circular
-                  bg="$bgLight"
-                  borderWidth={2}
-                  borderColor="$color"
+                  bg="$surface2"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
                   onPress={() => handleAdjustReps(1)}
                   pressStyle={{ opacity: 0.8, scale: 0.95 }}
                   accessibilityLabel={t("session.increase_reps_accessibility")}
                   accessibilityRole="button"
                 >
-                  <Text fontSize={24} fontWeight="900" color="$color">
+                  <Text fontSize={24} fontWeight="900" color="$text">
                     +
                   </Text>
                 </Button>
               </XStack>
               {adjustedReps !== targetValue && (
-                <Text fontSize={12} color="$color" opacity={0.6}>
+                <Text fontSize={12} color="$textSecondary">
                   {t("session.adjust_reps_hint")}
                 </Text>
               )}
@@ -389,7 +361,7 @@ export function ActiveExerciseView() {
 
         {/* Hint for time-based exercises */}
         {isTimeBased && !isOvertime && (
-          <Text fontSize={12} color="$color" opacity={0.5} style={{ textAlign: "center" }}>
+          <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
             {t("session.keep_going_hint")}
           </Text>
         )}
@@ -401,8 +373,7 @@ export function ActiveExerciseView() {
         bg={isOvertime ? "$success" : "$primary"}
         pressStyle={{ opacity: 0.8 }}
         onPress={handleComplete}
-        borderWidth={3}
-        borderColor="$color"
+        borderWidth={0}
         rounded="$6"
         accessibilityLabel={
           isOvertime
@@ -411,7 +382,7 @@ export function ActiveExerciseView() {
         }
         accessibilityRole="button"
       >
-        <Text color="white" fontSize={24} fontWeight="900" textTransform="uppercase">
+        <Text color="$bgDark" fontSize={24} fontWeight="900">
           {isOvertime ? t("session.complete_overtime") : t("session.complete_button")}
         </Text>
       </Button>

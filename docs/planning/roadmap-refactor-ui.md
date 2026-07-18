@@ -25,6 +25,23 @@ Deliver a clearer, faster, and visually consistent Bati UI using Tamagui tokens/
 
 ## Migration strategy
 
+## Screen-by-screen execution order
+
+Follow this strict order to keep the refonte focused on user-critical flows first:
+
+1. `Home` (`app/(tabs)/index.tsx`)
+2. `Quest list + quest details` (`app/(tabs)/quests/*`)
+3. `Session` (`app/session.tsx`)
+4. `Adventures` (`app/(tabs)/adventures/*`)
+5. `Journal + session details` (`app/(tabs)/journal/*`)
+6. `Village` (`app/(tabs)/village.tsx`)
+7. `Treasury` (`app/treasury.tsx`)
+8. `Goals + schedule` (`app/goals.tsx`, `app/schedule.tsx`)
+9. `Onboarding` (`app/onboarding/*`)
+10. `Settings + credits` (`app/settings.tsx`, `app/credits.tsx`)
+
+Status is tracked in [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md).
+
 ## Phase A — Foundation
 
 - Stabilize token usage and shared primitives.

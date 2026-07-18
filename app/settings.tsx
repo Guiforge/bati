@@ -22,9 +22,9 @@ type SettingRowProps = {
 function SettingRow({ icon, label, value, onPress, disabled }: SettingRowProps) {
   return (
     <Button
-      bg="$bgLight"
-      borderColor="$color"
-      borderWidth={2}
+      bg="$surface"
+      borderColor="$borderStrong"
+      borderWidth={1}
       rounded="$4"
       p="$3"
       height="auto"
@@ -34,11 +34,11 @@ function SettingRow({ icon, label, value, onPress, disabled }: SettingRowProps) 
     >
       <XStack flex={1} items="center" gap="$3">
         {icon}
-        <Text flex={1} fontSize="$4" fontWeight="bold" color="$color">
+        <Text flex={1} fontSize="$4" fontWeight="bold" color="$text">
           {label}
         </Text>
         {value ? (
-          <Text fontSize="$3" color="$color" opacity={0.7}>
+          <Text fontSize="$3" color="$textSecondary">
             {value}
           </Text>
         ) : null}
@@ -83,17 +83,17 @@ export default function SettingsScreen() {
           circular
           chromeless
           onPress={() => router.back()}
-          icon={<ChevronLeft size={24} color="$color" />}
+          icon={<ChevronLeft size={24} color="$text" />}
         />
-        <Text fontSize={20} fontWeight="900" color="$color">
+        <Text fontSize={20} fontWeight="900" color="$text">
           {t("settings.title", "Settings")}
         </Text>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         {/* Avatar Section */}
-        <Card bg="$bgLight" p="$4" gap="$3">
-          <Text fontSize="$3" fontWeight="bold" color="$color" opacity={0.6}>
+        <Card bg="$surface" p="$4" gap="$3">
+          <Text fontSize="$3" fontWeight="bold" color="$textSecondary">
             {t("settings.avatar", "AVATAR")}
           </Text>
 
@@ -105,8 +105,8 @@ export default function SettingsScreen() {
                   size="$5"
                   circular
                   p={0}
-                  borderWidth={avatarId === avatar.id ? 3 : 1}
-                  borderColor={avatarId === avatar.id ? "$primary" : "$color"}
+                  borderWidth={avatarId === avatar.id ? 2 : 1}
+                  borderColor={avatarId === avatar.id ? "$primary" : "$borderStrong"}
                   onPress={() => {
                     setAvatarId(avatar.id);
                     setShowAvatarPicker(false);
@@ -133,10 +133,10 @@ export default function SettingsScreen() {
                   }}
                 />
                 <YStack>
-                  <Text fontSize="$4" fontWeight="bold" color="$color">
+                  <Text fontSize="$4" fontWeight="bold" color="$text">
                     {t(currentAvatar.labelKey)}
                   </Text>
-                  <Text fontSize="$2" color="$color" opacity={0.6}>
+                  <Text fontSize="$2" color="$textSecondary">
                     {t("settings.tap_change", "Tap to change")}
                   </Text>
                 </YStack>
@@ -147,7 +147,7 @@ export default function SettingsScreen() {
 
         {/* Preferences */}
         <YStack gap="$3">
-          <Text fontSize="$3" fontWeight="bold" color="$color" opacity={0.6} px="$1">
+          <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1">
             {t("settings.preferences", "PREFERENCES")}
           </Text>
 

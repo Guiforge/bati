@@ -1,4 +1,4 @@
-import { ChevronLeft, Lock, Star, X } from "@tamagui/lucide-icons";
+import { ArrowLeft, Lock, Star, X } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,12 +20,11 @@ import { type BuildingCode, buildingLevelBonuses, buildingLevelThresholds } from
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSettingsStore } from "@/stores/settings";
 
-// Tier background colors
-const tierColors: Record<number, string> = {
-  1: "$pastelGreen",
-  2: "$pastelBlue",
-  3: "$pastelPurple",
-  4: "$pastelOrange",
+const tierLabels: Record<number, { en: string; fr: string }> = {
+  1: { en: "Starter Buildings", fr: "Bâtiments de départ" },
+  2: { en: "Basic Buildings", fr: "Bâtiments de base" },
+  3: { en: "Advanced Buildings", fr: "Bâtiments avancés" },
+  4: { en: "Legendary Buildings", fr: "Bâtiments légendaires" },
 };
 
 // Muscle localized names
@@ -101,8 +100,6 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
     building.buildingType;
 
   const isLocked = !building.isUnlocked;
-  const tierColor = tierColors[building.tier] || "$bgLight";
-
   // Calculate progress to next level
   const currentThreshold = buildingLevelThresholds[building.level - 1] || 0;
   const nextThreshold = buildingLevelThresholds[building.level] || buildingLevelThresholds[4];
@@ -120,62 +117,60 @@ function BuildingCard({ building, onPress }: BuildingCardProps) {
   return (
     <Pressable onPress={handlePress} disabled={isLocked}>
       <Card
-        bg={isLocked ? "$bgLight" : (tierColor as "$pastelGreen")}
-        opacity={isLocked ? 0.5 : 1}
+        bg={isLocked ? "$surface" : "$surface2"}
         width="100%"
         mb="$3"
+        borderColor="$borderStrong"
       >
         <XStack items="center" gap="$3">
           <YStack
             width={56}
             height={56}
-            rounded={12}
-            bg={isLocked ? "$color" : "$background"}
+            rounded="$4"
+            bg={isLocked ? "$surface2" : "$surface"}
             items="center"
             justify="center"
-            borderWidth={2}
-            borderColor="$color"
-            opacity={isLocked ? 0.3 : 1}
+            borderWidth={1}
+            borderColor="$borderStrong"
+            opacity={isLocked ? 0.8 : 1}
           >
             {isLocked ? (
-              <Lock size={24} color="$background" />
+              <Lock size={22} color="$textSecondary" />
             ) : (
               <Text fontSize={28}>{building.emoji}</Text>
             )}
           </YStack>
 
           <YStack flex={1} gap="$1">
-            <XStack items="center" justify="space-between">
-              <Text fontWeight="900" fontSize={16} color="$color">
+            <XStack items="center" justify="space-between" gap="$2">
+              <Text fontWeight="800" fontSize={16} color="$text">
                 {name}
               </Text>
-              {!isLocked && (
+              {!isLocked ? (
                 <XStack items="center" gap="$1">
                   <Star size={14} color="$primary" fill="$primary" />
-                  <Text fontWeight="700" fontSize={14} color="$color">
+                  <Text fontWeight="700" fontSize={13} color="$textSecondary">
                     {t("village.level", "Lv.")} {building.level}
                   </Text>
                 </XStack>
+              ) : (
+                <Text fontWeight="700" fontSize={13} color="$textSecondary">
+                  {t("village.locked", "Locked")}
+                </Text>
               )}
             </XStack>
 
             {!isLocked && (
               <YStack gap="$1">
-                <Progress size="$1" value={progress} bg="$background">
+                <Progress size="$1" value={progress} bg="$surface">
                   <Progress.Indicator bg="$primary" animation="bouncy" />
                 </Progress>
-                <Text fontSize={12} color="$color" opacity={0.6}>
+                <Text fontSize={12} color="$textSecondary">
                   {building.level >= 5
                     ? t("village.max_level", "Max Level")
                     : t("common.xp_value", { value: `${building.xp} / ${nextThreshold}` })}
                 </Text>
               </YStack>
-            )}
-
-            {isLocked && (
-              <Text fontSize={12} color="$color" opacity={0.6}>
-                {t("village.locked", "Locked")}
-              </Text>
             )}
           </YStack>
         </XStack>
@@ -228,13 +223,6 @@ export function VillageScreen() {
     {} as Record<number, VillageBuildingWithMeta[]>,
   );
 
-  const tierLabels: Record<number, { en: string; fr: string }> = {
-    1: { en: "Starter Buildings", fr: "Bâtiments de départ" },
-    2: { en: "Basic Buildings", fr: "Bâtiments de base" },
-    3: { en: "Advanced Buildings", fr: "Bâtiments avancés" },
-    4: { en: "Legendary Buildings", fr: "Bâtiments légendaires" },
-  };
-
   const unlockedCount = buildings.filter((b) => b.isUnlocked).length;
   const totalCount = buildings.length;
 
@@ -261,16 +249,16 @@ export function VillageScreen() {
         transparent
         onRequestClose={handleCloseModal}
       >
-        <YStack flex={1} bg="rgba(0,0,0,0.6)" items="center" justify="center" p="$4">
-          <Card bg="$background" width="100%" maxW={360}>
+        <YStack flex={1} bg="$bgOverlay" items="center" justify="center" p="$4">
+          <Card bg="$surface" width="100%" maxW={360}>
             <YStack gap="$4">
               {/* Header */}
               <XStack items="center" justify="space-between">
-                <Text fontWeight="900" fontSize={20} color="$color">
+                <Text fontWeight="900" fontSize={20} color="$text">
                   {t("village.building_details")}
                 </Text>
-                <Pressable onPress={handleCloseModal}>
-                  <X size={24} color="$color" />
+                <Pressable onPress={handleCloseModal} accessibilityRole="button" hitSlop={8}>
+                  <X size={24} color="$textSecondary" />
                 </Pressable>
               </XStack>
 
@@ -282,11 +270,11 @@ export function VillageScreen() {
                     width={80}
                     height={80}
                     rounded={16}
-                    bg={(tierColors[selectedBuilding.tier] || "$bgLight") as "$pastelGreen"}
+                    bg="$surface2"
                     items="center"
                     justify="center"
-                    borderWidth={3}
-                    borderColor="$color"
+                    borderWidth={1}
+                    borderColor="$borderStrong"
                   >
                     <Text fontSize={40}>{selectedBuilding.emoji}</Text>
                   </YStack>
@@ -295,7 +283,7 @@ export function VillageScreen() {
                   <Text
                     fontWeight="900"
                     fontSize={24}
-                    color="$color"
+                    color="$text"
                     style={{ textAlign: "center" }}
                   >
                     {selectedBuildingName}
@@ -303,14 +291,14 @@ export function VillageScreen() {
 
                   {/* Level Badge */}
                   <XStack items="center" gap="$2" bg="$primary" px="$3" py="$1" rounded="$4">
-                    <Star size={16} color="white" fill="white" />
-                    <Text fontWeight="800" color="white" fontSize={16}>
+                    <Star size={16} color="$bgDark" fill="$bgDark" />
+                    <Text fontWeight="800" color="$bgDark" fontSize={16}>
                       {t("village.level")} {selectedBuilding.level}
                     </Text>
                   </XStack>
 
                   {/* Tier */}
-                  <Text fontSize={14} color="$color" opacity={0.7}>
+                  <Text fontSize={14} color="$textSecondary">
                     {t("village.tier", { tier: selectedBuilding.tier })}
                   </Text>
 
@@ -320,15 +308,15 @@ export function VillageScreen() {
                       <Progress
                         size="$2"
                         value={(selectedBuilding.xp / selectedNextThreshold) * 100}
-                        bg="$bgLight"
+                        bg="$surface2"
                       >
                         <Progress.Indicator bg="$primary" animation="bouncy" />
                       </Progress>
                       <XStack justify="space-between">
-                        <Text fontSize={12} color="$color" opacity={0.7}>
+                        <Text fontSize={12} color="$textSecondary">
                           {t("village.xp_to_next")}
                         </Text>
-                        <Text fontSize={12} fontWeight="700" color="$color">
+                        <Text fontSize={12} fontWeight="700" color="$text">
                           {t("common.xp_value", { value: selectedXpToNext })}
                         </Text>
                       </XStack>
@@ -343,17 +331,17 @@ export function VillageScreen() {
                   {selectedBuilding.level < 5 && selectedBuilding.relatedMuscle && (
                     <YStack
                       width="100%"
-                      bg="$pastelYellow"
+                      bg="$surface2"
                       p="$3"
                       rounded="$4"
-                      borderWidth={2}
-                      borderColor="$color"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
                       gap="$2"
                     >
-                      <Text fontWeight="800" fontSize={14} color="$color">
+                      <Text fontWeight="800" fontSize={14} color="$text">
                         {t("village.next_level")} →
                       </Text>
-                      <Text fontSize={13} color="$color">
+                      <Text fontSize={13} color="$textSecondary">
                         {t("village.bonus_xp", {
                           percent: buildingLevelBonuses[selectedBuilding.level + 1]?.xpPercent || 0,
                           muscle:
@@ -362,7 +350,7 @@ export function VillageScreen() {
                             ],
                         })}
                       </Text>
-                      <Text fontSize={13} color="$color">
+                      <Text fontSize={13} color="$textSecondary">
                         {t("village.bonus_resources", {
                           percent:
                             buildingLevelBonuses[selectedBuilding.level + 1]?.resourcePercent || 0,
@@ -372,7 +360,7 @@ export function VillageScreen() {
                             ],
                         })}
                       </Text>
-                      <Text fontSize={13} color="$color">
+                      <Text fontSize={13} color="$textSecondary">
                         {t("village.bonus_prestige", {
                           points:
                             buildingLevelBonuses[selectedBuilding.level + 1]?.prestigePoints || 0,
@@ -385,17 +373,17 @@ export function VillageScreen() {
                   {selectedBuilding.level === 5 && selectedBuilding.relatedMuscle && (
                     <YStack
                       width="100%"
-                      bg="$pastelGreen"
+                      bg="$surface2"
                       p="$3"
                       rounded="$4"
-                      borderWidth={2}
-                      borderColor="$color"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
                       gap="$2"
                     >
-                      <Text fontWeight="800" fontSize={14} color="$color">
+                      <Text fontWeight="800" fontSize={14} color="$text">
                         {t("village.current_bonus")}
                       </Text>
-                      <Text fontSize={13} color="$color">
+                      <Text fontSize={13} color="$textSecondary">
                         {t("village.bonus_xp", {
                           percent: buildingLevelBonuses[5]?.xpPercent || 0,
                           muscle:
@@ -404,7 +392,7 @@ export function VillageScreen() {
                             ],
                         })}
                       </Text>
-                      <Text fontSize={13} color="$color">
+                      <Text fontSize={13} color="$textSecondary">
                         {t("village.bonus_resources", {
                           percent: buildingLevelBonuses[5]?.resourcePercent || 0,
                           resource:
@@ -419,14 +407,8 @@ export function VillageScreen() {
               )}
 
               {/* Close Button */}
-              <Button
-                bg="$primary"
-                borderWidth={3}
-                borderColor="$color"
-                rounded="$4"
-                onPress={handleCloseModal}
-              >
-                <Text fontWeight="800" color="white">
+              <Button bg="$primary" borderWidth={0} rounded="$4" onPress={handleCloseModal}>
+                <Text fontWeight="800" color="$bgDark">
                   {t("village.close")}
                 </Text>
               </Button>
@@ -443,8 +425,8 @@ export function VillageScreen() {
         bg="$background"
         items="center"
         gap="$3"
-        borderBottomWidth={2}
-        borderBottomColor="$color"
+        borderBottomWidth={1}
+        borderBottomColor="$borderStrong"
       >
         <Pressable
           onPress={() => router.back()}
@@ -452,17 +434,17 @@ export function VillageScreen() {
             width: 44,
             height: 44,
             borderRadius: 22,
-            backgroundColor: "white",
-            borderWidth: 2,
-            borderColor: "black",
+            backgroundColor: "rgba(255,255,255,0.04)",
+            borderWidth: 1,
+            borderColor: "rgba(232,236,255,0.14)",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <ChevronLeft size={24} color="black" />
+          <ArrowLeft size={24} color="#E8ECFF" />
         </Pressable>
         <YStack flex={1}>
-          <H1 fontSize={24} fontWeight="900" color="$color">
+          <H1 fontSize={24} fontWeight="900" color="$text">
             {t("village.title", "My Village")}
           </H1>
         </YStack>
@@ -477,38 +459,48 @@ export function VillageScreen() {
         }}
       >
         {/* Stats Summary */}
-        <Card bg="$pastelYellow" width="100%" mb="$4">
+        <Card bg="$surface2" width="100%" mb="$4">
           <XStack items="flex-start" gap="$3">
-            {/* Flame decoration */}
-            <FlameFlicker size={40} />
+            <YStack
+              width={40}
+              height={40}
+              rounded="$4"
+              bg="$surface"
+              borderWidth={1}
+              borderColor="$borderStrong"
+              items="center"
+              justify="center"
+            >
+              <FlameFlicker size={22} />
+            </YStack>
 
             <YStack flex={1} gap="$2">
-              <Text fontWeight="900" fontSize={18} color="$color">
+              <Text fontWeight="900" fontSize={18} color="$text">
                 {t("village.stats_title", "Village Progress")}
               </Text>
               <XStack items="center" justify="space-between">
-                <Paragraph color="$color" opacity={0.8}>
+                <Paragraph color="$textSecondary">
                   {t("village.buildings_unlocked", "Buildings Unlocked")}
                 </Paragraph>
-                <Text fontWeight="700" color="$color">
+                <Text fontWeight="700" color="$text">
                   {unlockedCount} / {totalCount}
                 </Text>
               </XStack>
               {stats && (
                 <>
                   <XStack items="center" justify="space-between">
-                    <Paragraph color="$color" opacity={0.8}>
+                    <Paragraph color="$textSecondary">
                       {t("village.highest_level", "Highest Building Level")}
                     </Paragraph>
-                    <Text fontWeight="700" color="$color">
+                    <Text fontWeight="700" color="$text">
                       {stats.highestBuildingLevel}
                     </Text>
                   </XStack>
                   <XStack items="center" justify="space-between">
-                    <Paragraph color="$color" opacity={0.8}>
+                    <Paragraph color="$textSecondary">
                       {t("village.prestige", "Prestige Score")}
                     </Paragraph>
-                    <Text fontWeight="700" color="$color">
+                    <Text fontWeight="700" color="$text">
                       {stats.prestigeScore}
                     </Text>
                   </XStack>
@@ -527,7 +519,7 @@ export function VillageScreen() {
 
           return (
             <YStack key={tier} mb="$4">
-              <H4 fontWeight="900" color="$color" mb="$2">
+              <H4 fontWeight="900" color="$text" mb="$2">
                 {label}
               </H4>
               {tierBuildings.map((b) => (

@@ -26,15 +26,15 @@ export default function ScheduleScreen() {
         <AppButton icon={Calendar} onPress={() => router.back()} variant="secondary">
           {t("common.back", "Back")}
         </AppButton>
-        <H2>{t("scheduling.title", "Weekly Schedule")}</H2>
+        <H2 color="$text">{t("scheduling.title", "Weekly Schedule")}</H2>
 
         {suggestion?.shouldRest && (
-          <Card bg="$pastelPink" p="$4">
+          <Card bg="$surface" p="$4">
             <YStack gap="$2">
-              <Text fontWeight="900" fontSize={18} color="$color">
+              <Text fontWeight="900" fontSize={18} color="$text">
                 🛌 {t("coach.rest_suggestion_title", "Coach says: Rest!")}
               </Text>
-              <Text color="$color" fontSize={14}>
+              <Text color="$textSecondary" fontSize={14}>
                 {suggestion.message}
               </Text>
             </YStack>

@@ -16,6 +16,13 @@ The Village is the **visual reward layer**. It shows your progress as a growing 
 
 The village is meant to feel automatic and satisfying: you train, and the world grows.
 
+## Visual rules
+
+- Use calm dark surfaces and subtle tokenized borders.
+- Keep the village summary informative, not promotional.
+- Building cards should feel like part of one shared component family.
+- Locked and completed states should stay secondary to the overall progression story.
+
 ## Main features on this page
 
 - **Visual progression**: see your village evolve as you keep training.
@@ -30,3 +37,7 @@ The village is meant to feel automatic and satisfying: you train, and the world 
 ## Relationship to resources
 
 Resources earned from workouts are one of the main drivers of village growth.
+
+## Implementation note
+
+The current implementation uses the shared `Card` primitive and tokenized dark surfaces to keep the village hierarchy readable while avoiding the old white-border look.

@@ -24,6 +24,13 @@ It guides you exercise-by-exercise, tracks your results, and ends with a clear c
 - **Pause**: take a break without losing the session.
 - **Finish + rewards**: after completion, you earn XP and loot and the session is saved.
 
+## Visual rules
+
+- The timer / reps counter should be the loudest element on the screen.
+- Progress bars and support cards should use subtle tokenized borders.
+- Pause and victory states must feel like the same session system, not separate mini-apps.
+- Celebration must respect reduced-motion preferences.
+
 ## Typical user actions
 
 - Complete each exercise.
@@ -39,3 +46,7 @@ Completing the session leads to the post-workout result moment (victory/rewards)
 - **[Treasury](treasury.md)** (resource totals)
 - **[Village](village.md)** (growth)
 - **[Adventures](adventures.md)** (step completion if you were in a campaign)
+
+## Implementation note
+
+The current session implementation uses tokenized dark surfaces and reduced-motion gating for confetti so the workout flow stays readable and predictable.

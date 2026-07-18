@@ -90,16 +90,16 @@ export default function JournalScreen() {
         fullWidth={false}
         flex={1}
         height={44}
-        bg={isActive ? "$pastelBlue" : "$bgLight"}
-        borderColor={isActive ? "$primary" : "$color"}
-        borderWidth={3}
+        bg={isActive ? "$surface2" : "$surface"}
+        borderColor={isActive ? "$primary" : "$borderStrong"}
+        borderWidth={1}
         rounded="$5"
         onPress={() => setActiveTab(tab)}
         pressStyle={{ opacity: 0.9 }}
       >
         <XStack items="center" gap="$2">
           {icon}
-          <Text color="$color" fontWeight={isActive ? "900" : "800"} fontSize={14}>
+          <Text color="$text" fontWeight={isActive ? "900" : "800"} fontSize={14}>
             {label}
           </Text>
         </XStack>
@@ -112,13 +112,13 @@ export default function JournalScreen() {
       <YStack pt={insets.top + 12} px="$4" pb="$3" gap="$4">
         <YStack gap="$4" items="flex-start">
           <AppIconButton onPress={() => router.back()}>
-            <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
+            <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
           </AppIconButton>
           <YStack>
-            <H2 fontWeight="900" fontSize={32} color="$color">
+            <H2 fontWeight="900" fontSize={32} color="$text">
               {t("journal.title", "Quest Journal")}
             </H2>
-            <Paragraph opacity={0.6} fontWeight="600" color="$color">
+            <Paragraph color="$textSecondary" fontWeight="600">
               {t("journal.subtitle", "Your heroic history")}
             </Paragraph>
           </YStack>
@@ -136,7 +136,7 @@ export default function JournalScreen() {
             />
             <TabButton
               tab="history"
-              icon={<List size={16} color="$color" opacity={activeTab === "history" ? 1 : 0.7} />}
+              icon={<List size={16} color="$text" opacity={activeTab === "history" ? 1 : 0.7} />}
               label={t("journal.tab_history", "History")}
             />
           </XStack>
@@ -152,16 +152,16 @@ export default function JournalScreen() {
         showsVerticalScrollIndicator={false}
       >
         {loading && history.length === 0 ? (
-          <Text style={{ textAlign: "center" }} mt="$10" opacity={0.5} color="$color">
+          <Text style={{ textAlign: "center" }} mt="$10" color="$textSecondary">
             {t("common.loading", "Loading...")}
           </Text>
         ) : history.length === 0 ? (
           <YStack items="center" justify="center" mt="$10" gap="$4">
             <Text fontSize={40}>📜</Text>
-            <H2 fontSize={20} style={{ textAlign: "center" }} color="$color">
+            <H2 fontSize={20} style={{ textAlign: "center" }} color="$text">
               {t("journal.empty_title", "No tales yet")}
             </H2>
-            <Paragraph style={{ textAlign: "center" }} opacity={0.6} color="$color">
+            <Paragraph style={{ textAlign: "center" }} color="$textSecondary">
               {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
             </Paragraph>
           </YStack>

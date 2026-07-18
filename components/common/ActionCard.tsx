@@ -22,11 +22,11 @@ export function ActionCard({
 }: ActionCardProps) {
   return (
     <YStack
-      bg="$bgLight"
+      bg="$surface"
       borderWidth={1}
-      borderColor="#dcdcdc"
+      borderColor="$borderStrong"
       rounded="$4"
-      shadowColor="$color"
+      shadowColor="$shadowColor"
       shadowRadius={4}
       shadowOffset={{ width: 0, height: 2 }}
       shadowOpacity={0.1}
@@ -44,12 +44,12 @@ export function ActionCard({
         {/* Content */}
         <YStack flex={1} gap="$1">
           {title && (
-            <Text fontSize="$4" fontWeight="bold" color="$color">
+            <Text fontSize="$4" fontWeight="700" color="$text">
               {title}
             </Text>
           )}
           {subtitle && (
-            <Text fontSize="$3" color="$color" opacity={0.7}>
+            <Text fontSize="$3" color="$textSecondary">
               {subtitle}
             </Text>
           )}
@@ -59,11 +59,11 @@ export function ActionCard({
         {/* Right Side: CTA or Chevron */}
         <XStack items="center" gap="$2">
           {ctaText && (
-            <Text fontSize="$3" color="$primary" fontWeight="bold">
+            <Text fontSize="$3" color="$primary" fontWeight="700">
               {ctaText}
             </Text>
           )}
-          <ChevronRight size={20} color="$color" opacity={0.5} />
+          <ChevronRight size={20} color="$textSecondary" opacity={0.5} />
         </XStack>
       </XStack>
     </YStack>

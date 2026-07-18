@@ -119,6 +119,71 @@ source docs to remove contradictions and improve execution quality.
 **Outcome:** Reduced documentation drift, removed planning duplication, and converted roadmap/design
 guidance into directly actionable checklists for delivery.
 
+## 2026-07-18 — Design best-practices entry point added
+
+- Added [design/design.md](../design/design.md) as the first-stop page for design decisions.
+- Wired the new page into the design catalog and the root docs catalog.
+- Consolidated the decision order for UI work: primary action → hierarchy → shared primitive → visual weight → accessibility.
+
+## 2026-07-18 — Village refonte pass
+
+- Refined the shared `Card` primitive to use tokenized dark surfaces and subtle borders.
+- Updated the Village screen to remove the hardcoded white/black border treatment.
+- Synchronized the Village screen spec and UI audit tracker with the new calmer hierarchy.
+
+## 2026-07-18 — Home refonte pass
+
+- Tightened the Home hierarchy so the current objective reads as the clear primary action.
+- Simplified header, resource strip, secondary actions, and stats typography to reduce noise.
+- Updated the Home screen spec and UI audit tracker to reflect the new implementation.
+
+## 2026-07-18 — Quests refonte pass
+
+- Reduced thick outline styling in the Quests gallery and quest details screens.
+- Aligned quest thumbnails, difficulty chips, exercise cards, and the sticky start bar to the shared dark-card language.
+- Updated the Quests screen docs and UI audit tracker to match the calmer hierarchy.
+
+## 2026-07-18 — Session refonte pass
+
+- Tightened the active, rest, pause, and victory states to use tokenized dark surfaces instead of loud pastel-heavy frames.
+- Added reduced-motion gating for the confetti celebration in Victory.
+- Updated the Session screen spec and UI audit tracker to reflect the calmer workout flow.
+
+## 2026-07-18 — Adventures refonte pass
+
+- Reduced gallery thumbnail borders and tokenized the gallery text hierarchy.
+- Softened the Adventure Details card, narrative, and step list surfaces.
+- Updated the Adventures screen specs and audit tracker to match the new hierarchy.
+
+## 2026-07-18 — Journal refonte pass
+
+- Calmed the Journal header and stats/history tabs to use the shared dark surface language.
+- Shifted Session Details toward tokenized summary cards and lighter round markers.
+- Updated the Journal and Session Details screen specs plus the audit tracker.
+
+## 2026-07-18 — Treasury cleanup
+
+- Tightened the Treasury header and value hierarchy so resource counts stay primary.
+- Added treasury visual rules and an implementation note to the screen docs.
+
+## 2026-07-18 — Goals and Schedule cleanup
+
+- Calmed the Goals selector cards and day/duration controls with lighter borders.
+- Shifted the Schedule rest suggestion into the shared surface language.
+- Updated the Goals and Schedule screen docs plus the tracker.
+
+## 2026-07-18 — Onboarding cleanup
+
+- Aligned the onboarding presentation and avatar flow with the shared text/button hierarchy.
+- Kept the immersive artwork while making the controls less custom and more consistent.
+- Updated the onboarding screen docs and audit tracker.
+
+## 2026-07-18 — Settings and Credits cleanup
+
+- Tightened settings rows, avatar picker borders, and the preference header hierarchy.
+- Calmed the credits page text and card surfaces.
+- Updated the Settings and Credits screen docs plus the tracker.
+
 ## 2026-07-18 — Impeccable command runbook added to UI refactor roadmap
 
 - Updated [planning/roadmap-refactor-ui.md](../planning/roadmap-refactor-ui.md) with an explicit
@@ -127,4 +192,28 @@ guidance into directly actionable checklists for delivery.
   `adapt`), then `polish` and re-audit.
 - Added severity-first handling guidance (P0 → P3) and CI detector recommendation
   (`npx impeccable detect`) to keep visual quality gates consistent.
+
+## 2026-07-18 — Screen-by-screen UI audit execution started
+
+- Added explicit execution order to [planning/roadmap-refactor-ui.md](../planning/roadmap-refactor-ui.md)
+  and created [planning/ui-screen-audit-tracker.md](../planning/ui-screen-audit-tracker.md).
+- Linked the tracker from [planning/README.md](../planning/README.md) and [docs/README.md](../README.md).
+- Completed initial critique/audit entries for:
+  - Home
+  - Quests + Quest Details
+  - Session
+- Applied first Home refonte implementation pass in UI components:
+  - unified dark surface/border recipe,
+  - reduced heavy border styling,
+  - improved label legibility and token consistency.
+
+## 2026-07-18 — First full screen-by-screen audit cycle completed
+
+- Completed initial critique/audit entries across all planned screen scopes in
+  [planning/ui-screen-audit-tracker.md](../planning/ui-screen-audit-tracker.md):
+  Home, Quests, Session, Adventures, Journal, Village, Treasury, Goals/Schedule,
+  Onboarding, Settings/Credits.
+- Added a consolidated prioritized backlog (P0/P1/P2) to drive implementation order.
+- Confirmed the current first implementation pass remains focused on Home while
+  all remaining scopes are now documented for iterative refonte waves.
 

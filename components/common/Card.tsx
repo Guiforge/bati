@@ -8,13 +8,14 @@ export type CardProps = Omit<YStackProps, "children"> & {
 export function Card({ children, ...props }: CardProps) {
   return (
     <YStack
-      bg="$bgLight"
-      borderWidth={3}
-      borderColor="$color"
+      bg="$surface"
+      borderWidth={1}
+      borderColor="$borderStrong"
       rounded="$8"
       p="$4"
-      shadowColor="$color"
-      shadowRadius={0}
+      shadowColor="$shadowColor"
+      shadowRadius={12}
+      shadowOpacity={0.14}
       shadowOffset={{ width: 0, height: 6 }}
       pressStyle={props.onPress ? { opacity: 0.92, scale: 0.99 } : undefined}
       accessibilityRole={props.onPress ? "button" : undefined}

@@ -37,19 +37,19 @@ export function PausedOverlay() {
   return (
     <YStack
       fullscreen
-      bg="rgba(0,0,0,0.6)"
+      bg="rgba(0,0,0,0.72)"
       style={{ zIndex: 1000 }}
       items="center"
       justify="center"
       gap="$6"
       p="$6"
     >
-      <Card width="100%" maxW={360} bg="$background">
+      <Card width="100%" maxW={360} bg="$surface">
         <YStack gap="$3" items="center">
-          <Text fontWeight="900" fontSize={28} color="$color" style={{ textAlign: "center" }}>
+          <Text fontWeight="900" fontSize={28} color="$text" style={{ textAlign: "center" }}>
             {t("session.paused_title")}
           </Text>
-          <Paragraph color="$color" opacity={0.65} size="$3" style={{ textAlign: "center" }}>
+          <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
             {t("session.paused_subtitle")}
           </Paragraph>
 
@@ -66,7 +66,7 @@ export function PausedOverlay() {
             <AppButton
               onPress={handleRestartRound}
               variant="outline"
-              backgroundColor="$pastelBlue"
+              backgroundColor="$surface2"
               pressStyle={{ opacity: 0.9 }}
               accessibilityLabel={t("session.restart_round_button")}
               accessibilityRole="button"
@@ -77,7 +77,7 @@ export function PausedOverlay() {
             <AppButton
               onPress={handleQuit}
               variant="outline"
-              backgroundColor="$pastelPink"
+              backgroundColor="$surface2"
               pressStyle={{ opacity: 0.9 }}
               accessibilityLabel={t("session.quit_button")}
               accessibilityRole="button"

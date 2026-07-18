@@ -23,6 +23,12 @@ Instead of browsing randomly, you can say “this is what I’m aiming for” an
 - **Choose session length**: how long workouts should be.
 - **Plan preview**: see what the week could look like before confirming.
 
+## Visual rules
+
+- The goal type, days, and duration controls should feel grouped and readable.
+- Selected states should be clear without thick borders.
+- The page should guide one decision at a time.
+
 ## Typical user actions
 
 - Create a new goal.
@@ -32,3 +38,7 @@ Instead of browsing randomly, you can say “this is what I’m aiming for” an
 ## What happens next
 
 After confirming, the plan influences what you do in the week (and connects naturally with the **[Schedule](schedule.md)** page).
+
+## Implementation note
+
+The goals screen now leans more on the shared dark surface system so the form feels calmer and more consistent with the rest of the app.

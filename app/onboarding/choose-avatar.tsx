@@ -91,7 +91,7 @@ export default function ChooseAvatar() {
             <YStack gap="$2" items="center">
               <H2
                 text="center"
-                color="white"
+                color="$text"
                 fontWeight="900"
                 fontSize={28}
                 textShadowColor="rgba(0,0,0,0.5)"
@@ -102,7 +102,7 @@ export default function ChooseAvatar() {
               </H2>
               <Paragraph
                 text="center"
-                color="$muted"
+                color="$textSecondary"
                 fontWeight="500"
                 textShadowColor="rgba(0,0,0,0.5)"
                 textShadowOffset={{ width: 1, height: 1 }}
@@ -123,17 +123,19 @@ export default function ChooseAvatar() {
                 width={48}
                 height={48}
                 rounded={24}
-                bg="rgba(255,255,255,0.15)"
+                bg="$surface"
+                borderWidth={1}
+                borderColor="$borderStrong"
                 justify="center"
                 items="center"
                 pressStyle={{ opacity: 0.7, scale: 0.95 }}
               >
-                <ChevronLeft size={28} color="white" strokeWidth={2.5} />
+                <ChevronLeft size={28} color="$text" strokeWidth={2.5} />
               </AppButton>
 
               <YStack items="center" gap="$2" width={140}>
                 <Text
-                  color="white"
+                  color="$text"
                   fontSize={22}
                   fontWeight="900"
                   textShadowColor="rgba(0,0,0,0.5)"
@@ -142,7 +144,7 @@ export default function ChooseAvatar() {
                 >
                   {t(currentAvatar.labelKey)}
                 </Text>
-                <Text color="$muted" fontSize={14}>
+                <Text color="$textSecondary" fontSize={14}>
                   {currentIndex + 1} / {AVATARS.length}
                 </Text>
               </YStack>
@@ -153,12 +155,14 @@ export default function ChooseAvatar() {
                 width={48}
                 height={48}
                 rounded={24}
-                bg="rgba(255,255,255,0.15)"
+                bg="$surface"
+                borderWidth={1}
+                borderColor="$borderStrong"
                 justify="center"
                 items="center"
                 pressStyle={{ opacity: 0.7, scale: 0.95 }}
               >
-                <ChevronRight size={28} color="white" strokeWidth={2.5} />
+                <ChevronRight size={28} color="$text" strokeWidth={2.5} />
               </AppButton>
             </XStack>
 

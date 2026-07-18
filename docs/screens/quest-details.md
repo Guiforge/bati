@@ -21,6 +21,13 @@ Quest Details helps you **understand the workout before you start**.
 - **Difficulty choice**: pick how challenging you want the targets to be today.
 - **Start the quest**: begin the active workout session.
 
+## Visual rules
+
+- Keep the quest title and start action dominant.
+- Use subtle borders on the header image, exercise cards, and difficulty chips.
+- Exercise thumbnails should support scanning, not compete with the quest summary.
+- The sticky start bar should feel like a clear action band, not a heavy divider.
+
 ## Typical user actions
 
 - Read the description to confirm it matches the day’s intent.
@@ -34,3 +41,7 @@ Starting the quest launches the **[Session](session.md)** where the workout is e
 ## Special case (Adventures)
 
 If you arrived here from an **Adventure step**, the page may show a short story beat before starting.
+
+## Implementation note
+
+The current implementation uses the shared card language and tokenized dark surfaces so the quest details screen reads as one coherent step before the session starts.

@@ -113,17 +113,22 @@ async function runMigrationsAsync(
             if (client.getAllAsync) {
               const isAdventuresStmt = /\b(adventures)\b/i.test(stmt);
               if (isAdventuresStmt) {
-                const indexes = await client.getAllAsync!<{ name: string; sql: string | null }>(
+                const getAllAsync = client.getAllAsync;
+                const getFirstAsync = client.getFirstAsync;
+
+                const indexes = await getAllAsync<{ name: string; sql: string | null }>(
                   "SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='adventures' ORDER BY name",
                 );
                 // biome-ignore lint/suspicious/noConsole: Error logging
                 console.error("[DatabaseProvider] adventures indexes:", indexes);
 
-                const tableSql = await client.getFirstAsync!<{ sql: string | null }>(
-                  "SELECT sql FROM sqlite_master WHERE type='table' AND name='adventures' LIMIT 1",
-                );
-                // biome-ignore lint/suspicious/noConsole: Error logging
-                console.error("[DatabaseProvider] adventures table SQL:", tableSql?.sql);
+                if (getFirstAsync) {
+                  const tableSql = await getFirstAsync<{ sql: string | null }>(
+                    "SELECT sql FROM sqlite_master WHERE type='table' AND name='adventures' LIMIT 1",
+                  );
+                  // biome-ignore lint/suspicious/noConsole: Error logging
+                  console.error("[DatabaseProvider] adventures table SQL:", tableSql?.sql);
+                }
               }
             }
           } catch (_diagErr) {

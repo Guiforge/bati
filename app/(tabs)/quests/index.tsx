@@ -207,14 +207,14 @@ export default function QuestsGallery() {
                       key={`${p}-${idx}`}
                       width={56}
                       height={56}
-                      rounded={14}
+                      rounded="$4"
                       overflow="hidden"
-                      bg="$bgLight"
-                      borderWidth={3}
-                      borderColor="$color"
-                      shadowColor="$color"
-                      shadowRadius={0}
-                      shadowOffset={{ width: 0, height: 4 }}
+                      bg="$surface"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
+                      shadowColor="$shadowColor"
+                      shadowRadius={6}
+                      shadowOffset={{ width: 0, height: 3 }}
                       items="center"
                       justify="center"
                     >
@@ -238,10 +238,10 @@ export default function QuestsGallery() {
               <YStack
                 width={54}
                 height={54}
-                rounded={27}
-                bg="$bgLight"
-                borderWidth={3}
-                borderColor="$color"
+                rounded="$4"
+                bg="$surface"
+                borderWidth={1}
+                borderColor="$borderStrong"
                 justify="center"
                 items="center"
               >
@@ -249,11 +249,11 @@ export default function QuestsGallery() {
               </YStack>
 
               <YStack flex={1} gap="$2">
-                <Text fontWeight="900" fontSize={18} color="$color">
+                <Text fontWeight="900" fontSize={18} color="$text">
                   {qTitle}
                 </Text>
 
-                <Paragraph color="$color" opacity={0.7} size="$3" numberOfLines={3}>
+                <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>
                   {qDesc}
                 </Paragraph>
 
@@ -318,10 +318,10 @@ export default function QuestsGallery() {
           <Card>
             <YStack gap="$3" items="center" py="$2">
               <Text fontSize={32}>😵</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
+              <Text fontWeight="900" fontSize={16} color="$text">
                 {t("quests.load_error", "Oops!")}
               </Text>
-              <Paragraph color="$color" opacity={0.6} size="$3">
+              <Paragraph color="$textSecondary" size="$3">
                 {state.message}
               </Paragraph>
               <AppButton
@@ -347,7 +347,7 @@ export default function QuestsGallery() {
           <Card>
             <XStack items="center" justify="center" gap="$3" py="$4">
               <Text fontSize={28}>🏗️</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
+              <Text fontWeight="900" fontSize={16} color="$text">
                 {t("quests.loading", "Loading...")}
               </Text>
             </XStack>
@@ -362,10 +362,10 @@ export default function QuestsGallery() {
           <Card>
             <YStack gap="$3" items="center" py="$2">
               <Text fontSize={32}>🏚️</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
+              <Text fontWeight="900" fontSize={16} color="$text">
                 {t("quests.empty_title", "No quests yet")}
               </Text>
-              <Paragraph color="$color" opacity={0.6} size="$3">
+              <Paragraph color="$textSecondary" size="$3">
                 {t("quests.empty_subtitle", "Come back soon!")}
               </Paragraph>
             </YStack>
@@ -380,10 +380,10 @@ export default function QuestsGallery() {
           <Card>
             <YStack gap="$3" items="center" py="$2">
               <Text fontSize={32}>🔍</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
+              <Text fontWeight="900" fontSize={16} color="$text">
                 {t("quests.empty_filters_title", "No matches")}
               </Text>
-              <Paragraph color="$color" opacity={0.6} size="$3">
+              <Paragraph color="$textSecondary" size="$3">
                 {t("quests.empty_filters_subtitle", "Try removing filters.")}
               </Paragraph>
             </YStack>
@@ -403,11 +403,11 @@ export default function QuestsGallery() {
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$3">
             <AppIconButton onPress={() => router.back()}>
-              <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
+              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
             <XStack items="center" gap="$2">
-              <MapIcon size={18} color="$color" strokeWidth={2.5} />
-              <Text fontWeight="900" fontSize={20} color="$color">
+              <MapIcon size={18} color="$text" strokeWidth={2.5} />
+              <Text fontWeight="900" fontSize={20} color="$text">
                 {title}
               </Text>
             </XStack>

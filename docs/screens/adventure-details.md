@@ -26,6 +26,12 @@ Adventure Details is the campaign hub. It shows:
 - **Start / Continue**: resume exactly where you left off.
 - **Suggested difficulty** (conceptually): help choose an appropriate challenge based on recent training.
 
+## Visual rules
+
+- The campaign title should sit above the utility chips.
+- The step list should read like progression, not a second dashboard.
+- The primary continue/start action should remain visually dominant.
+
 ## Typical user actions
 
 - Start a new adventure.
@@ -39,3 +45,7 @@ Continuing an adventure sends you to the next **[Quest Details](quest-details.md
 ## Boss adventures
 
 Boss adventures are still made of steps like any other adventure, but the last steps are framed as a bigger climax.
+
+## Implementation note
+
+The details hub now uses tokenized dark surfaces and calmer row separators so the narrative, progress, and start action stay easy to parse.

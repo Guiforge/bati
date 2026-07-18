@@ -10,11 +10,11 @@ import { Card } from "@/components/common/Card";
 import { PlanPreviewSheet } from "@/components/goals/PlanPreviewSheet";
 import {
   createGoal,
-  type Goal,
-  type GoalProgress,
   getActiveGoal,
   getGoalProgressHistory,
   getOrCreateWeekProgress,
+  type Goal,
+  type GoalProgress,
   goalTypeInfo,
   updateGoalStatus,
 } from "@/db/goals";
@@ -165,15 +165,15 @@ export default function GoalsScreen() {
         bg="$background"
         items="center"
         gap="$3"
-        borderBottomWidth={2}
-        borderBottomColor="$color"
+        borderBottomWidth={1}
+        borderBottomColor="$borderStrong"
       >
         <Button
           width={44}
           height={44}
           circular
           bg="$surface2"
-          borderWidth={2}
+          borderWidth={1}
           borderColor="$borderStrong"
           pressStyle={{ opacity: 0.9, scale: 0.98 }}
           onPress={() => router.back()}
@@ -181,7 +181,7 @@ export default function GoalsScreen() {
           <ChevronLeft size={24} color="$color" />
         </Button>
         <YStack flex={1}>
-          <H1 fontSize={24} fontWeight="900" color="$color">
+          <H1 fontSize={24} fontWeight="900" color="$text">
             {t("goals.title")}
           </H1>
         </YStack>
@@ -204,17 +204,15 @@ export default function GoalsScreen() {
       >
         {isLoading ? (
           <YStack items="center" py="$6">
-            <Text color="$color" opacity={0.6}>
-              {t("common.loading")}
-            </Text>
+            <Text color="$textSecondary">{t("common.loading")}</Text>
           </YStack>
         ) : isEditing ? (
           // Goal creation/editing form
           <YStack gap="$4">
             {/* Goal Type Selection */}
-            <Card bg="$bgLight" width="100%">
+            <Card bg="$surface" width="100%">
               <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("goals.goal_type")}
                 </Text>
                 <YStack gap="$2">
@@ -231,9 +229,9 @@ export default function GoalsScreen() {
                         }}
                       >
                         <XStack
-                          bg={isSelected ? "$pastelYellow" : "$background"}
-                          borderWidth={2}
-                          borderColor={isSelected ? "$primary" : "$color"}
+                          bg={isSelected ? "$surface2" : "$surface"}
+                          borderWidth={1}
+                          borderColor={isSelected ? "$primary" : "$borderStrong"}
                           rounded="$4"
                           px="$3"
                           py="$3"
@@ -242,10 +240,10 @@ export default function GoalsScreen() {
                         >
                           <Text fontSize={28}>{info.emoji}</Text>
                           <YStack flex={1}>
-                            <Text fontWeight="900" fontSize={16} color="$color">
+                            <Text fontWeight="900" fontSize={16} color="$text">
                               {language === "fr" ? info.fr : info.en}
                             </Text>
-                            <Text fontSize={12} color="$color" opacity={0.6}>
+                            <Text fontSize={12} color="$textSecondary">
                               {language === "fr" ? info.description.fr : info.description.en}
                             </Text>
                           </YStack>
@@ -259,9 +257,9 @@ export default function GoalsScreen() {
             </Card>
 
             {/* Days per Week */}
-            <Card bg="$bgLight" width="100%">
+            <Card bg="$surface" width="100%">
               <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("goals.days_per_week")}
                 </Text>
                 <XStack gap="$2" flexWrap="wrap">
@@ -272,8 +270,8 @@ export default function GoalsScreen() {
                         key={days}
                         size="$3"
                         bg={isSelected ? "$primary" : "$background"}
-                        borderWidth={2}
-                        borderColor={isSelected ? "$primary" : "$color"}
+                        borderWidth={1}
+                        borderColor={isSelected ? "$primary" : "$borderStrong"}
                         onPress={() => {
                           selection();
                           setSelectedDays(days);
@@ -282,7 +280,7 @@ export default function GoalsScreen() {
                       >
                         <Text
                           fontWeight="800"
-                          color={isSelected ? "$background" : "$color"}
+                          color={isSelected ? "$background" : "$text"}
                           fontSize={14}
                         >
                           {days}
@@ -295,9 +293,9 @@ export default function GoalsScreen() {
             </Card>
 
             {/* Session Duration */}
-            <Card bg="$bgLight" width="100%">
+            <Card bg="$surface" width="100%">
               <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("goals.session_duration")}
                 </Text>
                 <XStack gap="$2" flexWrap="wrap">
@@ -308,8 +306,8 @@ export default function GoalsScreen() {
                         key={duration}
                         size="$3"
                         bg={isSelected ? "$primary" : "$background"}
-                        borderWidth={2}
-                        borderColor={isSelected ? "$primary" : "$color"}
+                        borderWidth={1}
+                        borderColor={isSelected ? "$primary" : "$borderStrong"}
                         onPress={() => {
                           selection();
                           setSelectedDuration(duration);
@@ -318,7 +316,7 @@ export default function GoalsScreen() {
                       >
                         <Text
                           fontWeight="800"
-                          color={isSelected ? "$background" : "$color"}
+                          color={isSelected ? "$background" : "$text"}
                           fontSize={14}
                         >
                           {duration}m

@@ -27,11 +27,11 @@ type LoadState =
   | { status: "loading"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
   | { status: "ready"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
   | {
-      status: "error";
-      adventures: Adventure[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
+    status: "error";
+    adventures: Adventure[];
+    exercisesById: Record<number, Exercise>;
+    message: string;
+  };
 
 function resolveImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
@@ -132,7 +132,7 @@ export default function AdventuresGallery() {
               <XStack items="center" justify="space-between" gap="$3">
                 <XStack items="center" gap="$2" flex={1}>
                   <Text fontSize={22}>🗺️</Text>
-                  <Text fontWeight="900" fontSize={18} color="$color" numberOfLines={1} flex={1}>
+                  <Text fontWeight="900" fontSize={18} color="$text" numberOfLines={1} flex={1}>
                     {qTitle}
                   </Text>
                 </XStack>
@@ -146,7 +146,7 @@ export default function AdventuresGallery() {
                 />
               </XStack>
 
-              <Paragraph color="$color" opacity={0.75} size="$3" numberOfLines={3}>
+              <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>
                 {qDesc}
               </Paragraph>
 
@@ -191,9 +191,9 @@ export default function AdventuresGallery() {
                       height={50}
                       rounded={14}
                       overflow="hidden"
-                      bg="$bgLight"
-                      borderWidth={3}
-                      borderColor="$color"
+                      bg="$surface"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
                       items="center"
                       justify="center"
                     >
@@ -223,13 +223,13 @@ export default function AdventuresGallery() {
     if (state.status === "error") {
       return (
         <YStack px="$5">
-          <Card>
+          <Card bg="$surface">
             <YStack gap="$3" items="center" py="$2">
               <Text fontSize={32}>😵</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
+              <Text fontWeight="900" fontSize={16} color="$text">
                 {t("quests.load_error", "Oops!")}
               </Text>
-              <Paragraph color="$color" opacity={0.6} size="$3">
+              <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
                 {state.message}
               </Paragraph>
               <AppButton
@@ -252,10 +252,10 @@ export default function AdventuresGallery() {
     if (state.status === "loading" && adventures.length === 0) {
       return (
         <YStack px="$5">
-          <Card>
+          <Card bg="$surface">
             <XStack items="center" justify="center" gap="$3" py="$4">
               <Text fontSize={28}>🏗️</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
+              <Text fontWeight="900" fontSize={16} color="$text">
                 {t("quests.loading", "Loading...")}
               </Text>
             </XStack>
@@ -267,13 +267,13 @@ export default function AdventuresGallery() {
     if (state.status !== "loading" && adventures.length === 0) {
       return (
         <YStack px="$5">
-          <Card>
+          <Card bg="$surface">
             <YStack gap="$3" items="center" py="$2">
               <Text fontSize={32}>🏚️</Text>
-              <Text fontWeight="900" fontSize={16} color="$color">
+              <Text fontWeight="900" fontSize={16} color="$text">
                 {t("adventures.empty_title", "No adventures yet")}
               </Text>
-              <Paragraph color="$color" opacity={0.6} size="$3">
+              <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
                 {t("adventures.empty_subtitle", "Come back soon!")}
               </Paragraph>
             </YStack>
@@ -291,11 +291,11 @@ export default function AdventuresGallery() {
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$3">
             <AppIconButton onPress={() => router.back()}>
-              <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
+              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
             <XStack items="center" gap="$2">
-              <Sparkles size={18} color="$color" strokeWidth={2.5} />
-              <Text fontWeight="900" fontSize={20} color="$color">
+              <Sparkles size={18} color="$primary" strokeWidth={2.5} />
+              <Text fontWeight="900" fontSize={20} color="$text">
                 {title}
               </Text>
             </XStack>

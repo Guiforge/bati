@@ -20,6 +20,17 @@ Home is the quick launch pad: glance at your level + avatar, see the current adv
 - **Current adventure card**: the hero call-to-action with the next step, rewards, and start/continue button.
 - **Modern navbar**: floating, rounded bottom navbar for fast jumps ([Village](village.md), [Treasury](treasury.md), [Journal](journal.md)) without eating screen space.
 
+## Visual rules
+
+- Keep the current adventure card as the visual center of the screen.
+- Use subtle tokenized borders; no bright outline frames on cards or action tiles.
+- Secondary actions should read lighter than the main CTA.
+- The resource strip should feel like a quick status read, not a separate dashboard.
+
 ## What success looks like
 
 The next step is obvious: tap the current adventure, keep training, and feel progress from the header and navbar cues.
+
+## Implementation note
+
+The current Home implementation uses shared card primitives and quieter dark surfaces to reduce the old white-border look and keep the primary action dominant.

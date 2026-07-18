@@ -20,11 +20,11 @@ function CreditLink({ title, subtitle, url }: CreditLinkProps) {
       <XStack items="center" gap="$3">
         <ExternalLink size={20} color="$color" />
         <YStack flex={1} gap="$1">
-          <Text fontSize="$4" fontWeight="900" color="$color">
+          <Text fontSize="$4" fontWeight="900" color="$text">
             {title}
           </Text>
           {subtitle ? (
-            <Text fontSize="$2" color="$muted">
+            <Text fontSize="$2" color="$textSecondary">
               {subtitle}
             </Text>
           ) : null}
@@ -56,27 +56,27 @@ export default function CreditsScreen() {
           circular
           chromeless
           onPress={() => router.back()}
-          icon={<ChevronLeft size={24} color="$color" />}
+          icon={<ChevronLeft size={24} color="$text" />}
         />
         <XStack flex={1} items="center" gap="$2">
-          <ScrollText size={20} color="$color" />
+          <ScrollText size={20} color="$primary" />
           <RPGTitle>{t("credits.title")}</RPGTitle>
         </XStack>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
         <SolidCard p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="900" color="$color">
+          <Text fontSize="$4" fontWeight="900" color="$text">
             {t("credits.third_party_title")}
           </Text>
-          <Paragraph color="$muted">{t("credits.third_party_body")}</Paragraph>
+          <Paragraph color="$textSecondary">{t("credits.third_party_body")}</Paragraph>
         </SolidCard>
 
         <SolidCard p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="900" color="$color">
+          <Text fontSize="$4" fontWeight="900" color="$text">
             {t("credits.icons_title")}
           </Text>
-          <Paragraph color="$muted">{t("credits.game_icons_note")}</Paragraph>
+          <Paragraph color="$textSecondary">{t("credits.game_icons_note")}</Paragraph>
 
           <Separator />
 
@@ -98,7 +98,7 @@ export default function CreditsScreen() {
 
           <Separator />
 
-          <Paragraph color="$muted">{t("credits.attribution_example")}</Paragraph>
+          <Paragraph color="$textSecondary">{t("credits.attribution_example")}</Paragraph>
 
           <XStack>
             <RPGButton
@@ -111,10 +111,10 @@ export default function CreditsScreen() {
         </SolidCard>
 
         <SolidCard p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="900" color="$color">
+          <Text fontSize="$4" fontWeight="900" color="$text">
             {t("credits.open_source_title")}
           </Text>
-          <Paragraph color="$muted">{t("credits.open_source_body")}</Paragraph>
+          <Paragraph color="$textSecondary">{t("credits.open_source_body")}</Paragraph>
 
           <Separator />
 

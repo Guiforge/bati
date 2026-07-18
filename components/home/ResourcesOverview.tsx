@@ -62,11 +62,11 @@ export function ResourcesOverview() {
       >
         <XStack gap="$3">
           {/* Treasury Button (First Item) */}
-          <Pressable onPress={() => router.push("/treasury" as "/dev")}>
+          <Pressable onPress={() => router.push("/treasury")}>
             <YStack
-              bg="$bgLight"
-              borderWidth={2}
-              borderColor="$color"
+              bg="$surface"
+              borderWidth={1}
+              borderColor="$borderStrong"
               rounded="$4"
               p="$2"
               width={50}
@@ -84,13 +84,13 @@ export function ResourcesOverview() {
             return (
               <YStack
                 key={code}
-                bg="$bgLight"
-                borderWidth={2}
-                borderColor="$color"
+                bg="$surface"
+                borderWidth={1}
+                borderColor="$borderStrong"
                 rounded="$4"
                 px="$3"
                 py="$1"
-                width={70}
+                width={72}
                 justify="center"
                 items="center"
                 gap="$1"
@@ -104,7 +104,7 @@ export function ResourcesOverview() {
                   }}
                   contentFit="contain"
                 />
-                <Text fontSize={12} fontWeight="bold" color="$color">
+                <Text fontSize={13} fontWeight="bold" color="$color">
                   {formatAmount(getAmount(code))}
                 </Text>
               </YStack>
@@ -121,7 +121,7 @@ export function ResourcesOverview() {
         pr="$2"
         style={{ right: 0, top: 0, bottom: 0 }}
       >
-        <ChevronRight size={20} color="$color" opacity={0.5} />
+        <ChevronRight size={20} color="$textSecondary" opacity={0.5} />
       </YStack>
     </YStack>
   );

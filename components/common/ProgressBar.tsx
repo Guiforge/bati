@@ -12,7 +12,7 @@ export function ProgressBar({
   progress,
   height = 8,
   color = "$primary",
-  trackColor = "rgba(0,0,0,0.1)",
+  trackColor = "$surface2",
 }: Props) {
   const clamped = Math.min(100, Math.max(0, progress));
 

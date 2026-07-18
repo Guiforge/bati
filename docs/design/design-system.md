@@ -135,6 +135,13 @@ Bati must feel immersive but remain operationally clear in the middle of a worko
 
 ## 3) Component standards
 
+### Consistency rules
+
+- Use the same component family for the same job across screens.
+- Do not invent a new card border or button glow unless it is a documented variant.
+- Keep the default hierarchy stable: primary action, content, supporting action.
+- Prefer tokens and shared primitives over screen-local styles.
+
 ### Buttons
 
 - Primary: `$primary` fill, high-contrast text, optional restrained glow.

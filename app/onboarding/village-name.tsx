@@ -51,7 +51,7 @@ function StampOverlay({ villageName }: { villageName: string }) {
 
         {/* Village name */}
         <H1
-          color="white"
+          color="$text"
           fontFamily="$heading"
           fontSize={56}
           fontWeight="900"

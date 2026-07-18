@@ -1,13 +1,13 @@
-import { Minus, Plus } from "@tamagui/lucide-icons";
-import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { Minus, Plus } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { BossHpBar } from "./BossHpBar";
 
 export function RestView() {
@@ -74,7 +74,7 @@ export function RestView() {
         enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
       >
         <Text fontSize={40}>🔥</Text>
-        <H3 color="$color" fontWeight="900" textTransform="uppercase">
+        <H3 color="$text" fontWeight="900">
           {t("session.rest_title")}
         </H3>
       </YStack>
@@ -87,10 +87,10 @@ export function RestView() {
           lastDamage={
             lastDamageResult
               ? {
-                  damage: lastDamageResult.damage,
-                  isCritical: lastDamageResult.isCritical,
-                  weaknessBonus: lastDamageResult.weaknessBonus,
-                }
+                damage: lastDamageResult.damage,
+                isCritical: lastDamageResult.isCritical,
+                weaknessBonus: lastDamageResult.weaknessBonus,
+              }
               : null
           }
         />
@@ -98,15 +98,15 @@ export function RestView() {
 
       {/* Timer */}
       <YStack items="center" gap="$2">
-        <H1 fontSize={112} fontWeight="900" fontFamily="$body" color="$color">
+        <H1 fontSize={112} fontWeight="900" fontFamily="$body" color="$text">
           {formatTime(remainingSeconds)}
         </H1>
         <Progress
           value={Math.min(1, Math.max(0, progress)) * 100}
           size="$4"
-          bg="$bgLight"
-          borderWidth={2}
-          borderColor="$color"
+          bg="$surface2"
+          borderWidth={1}
+          borderColor="$borderStrong"
           rounded="$6"
           width="100%"
           style={{ maxWidth: 360 }}
@@ -116,23 +116,23 @@ export function RestView() {
         <XStack gap="$3">
           <Button
             size="$3"
-            bg="transparent"
-            borderWidth={2}
-            borderColor="$color"
+            bg="$surface"
+            borderWidth={1}
+            borderColor="$borderStrong"
             onPress={() => handleAddRestTime(10)}
           >
-            <Text fontWeight="800" color="$color">
+            <Text fontWeight="800" color="$text">
               +10s
             </Text>
           </Button>
           <Button
             size="$3"
-            bg="transparent"
-            borderWidth={2}
-            borderColor="$color"
+            bg="$surface"
+            borderWidth={1}
+            borderColor="$borderStrong"
             onPress={() => handleAddRestTime(30)}
           >
-            <Text fontWeight="800" color="$color">
+            <Text fontWeight="800" color="$text">
               +30s
             </Text>
           </Button>
@@ -141,19 +141,20 @@ export function RestView() {
 
       {/* Last Set Review (if reps) */}
       {isLastRepBased && (
-        <YStack bg="$background" p="$4" rounded="$6" borderWidth={3} borderColor="$color" gap="$2">
+        <YStack
+          bg="$surface"
+          p="$4"
+          rounded="$6"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          gap="$2"
+        >
           <XStack justify="space-between" items="center">
             <YStack>
-              <Text
-                color="$color"
-                opacity={0.6}
-                fontSize={12}
-                fontWeight="800"
-                textTransform="uppercase"
-              >
+              <Text color="$textSecondary" fontSize={12} fontWeight="700">
                 {t("session.adjust_reps_label")}
               </Text>
-              <Text fontSize={12} opacity={0.5}>
+              <Text fontSize={12} color="$textSecondary">
                 {t("session.adjust_reps_hint")}
               </Text>
             </YStack>
@@ -168,7 +169,7 @@ export function RestView() {
               <Text
                 fontWeight="900"
                 fontSize={20}
-                color="$color"
+                color="$text"
                 style={{ minWidth: 30, textAlign: "center" }}
               >
                 {lastResult.result.value}
@@ -186,27 +187,36 @@ export function RestView() {
 
       {/* Up Next Card */}
       <YStack
-        bg="$background"
+        bg="$surface"
         p="$4"
         rounded="$6"
-        borderWidth={3}
-        borderColor="$color"
+        borderWidth={1}
+        borderColor="$borderStrong"
         gap="$2"
         animation={reducedMotion ? undefined : "bouncy"}
         enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
       >
-        <Text color="$color" opacity={0.6} fontSize={12} fontWeight="800" textTransform="uppercase">
+        <Text color="$textSecondary" fontSize={12} fontWeight="700">
           {t("session.up_next")}
         </Text>
         <XStack gap="$3" items="center">
-          <YStack width={50} height={50} bg="$bgLight" rounded="$3" items="center" justify="center">
+          <YStack
+            width={50}
+            height={50}
+            bg="$surface2"
+            rounded="$3"
+            items="center"
+            justify="center"
+            borderWidth={1}
+            borderColor="$borderStrong"
+          >
             <Text fontSize={24}>🏋️</Text>
           </YStack>
           <YStack flex={1}>
-            <Text fontWeight="900" fontSize={18} numberOfLines={1} color="$color">
+            <Text fontWeight="900" fontSize={18} numberOfLines={1} color="$text">
               {nextExName}
             </Text>
-            <Text opacity={0.7} color="$color">
+            <Text color="$textSecondary">
               {nextEx.target.type === "time"
                 ? `${nextEx.target.value}s`
                 : `${nextEx.target.value} reps`}
@@ -218,17 +228,16 @@ export function RestView() {
       {/* Skip Button */}
       <Button
         size="$6"
-        bg="$pastelGreen"
+        bg="$primary"
         pressStyle={{ opacity: 0.9 }}
         onPress={handleSkipRest}
-        borderWidth={3}
-        borderColor="$color"
+        borderWidth={0}
         rounded="$6"
         mt="auto"
         accessibilityLabel={t("session.skip_rest_accessibility")}
         accessibilityRole="button"
       >
-        <Text color="$color" fontSize={20} fontWeight="900" textTransform="uppercase">
+        <Text color="$bgDark" fontSize={20} fontWeight="900">
           {t("session.skip_rest")}
         </Text>
       </Button>

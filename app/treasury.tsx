@@ -15,13 +15,13 @@ type ResourceInfo = {
   code: ResourceCode;
   iconName: "gold" | "wood" | "stone" | "fire" | "water" | "wind" | "grain";
   colorKey:
-    | "resourceGold"
-    | "resourceWood"
-    | "resourceStone"
-    | "resourceFire"
-    | "resourceWater"
-    | "resourceWind"
-    | "resourceGrain";
+  | "resourceGold"
+  | "resourceWood"
+  | "resourceStone"
+  | "resourceFire"
+  | "resourceWater"
+  | "resourceWind"
+  | "resourceGrain";
   muscle: string;
 };
 
@@ -112,7 +112,7 @@ export default function TreasuryScreen() {
             <YStack gap="$3">
               <XStack gap="$2" items="center">
                 <Lightbulb size={18} color="$primary" />
-                <Text fontSize="$4" fontWeight="800" color="$color">
+                <Text fontSize="$4" fontWeight="800" color="$text">
                   {t("treasury.tip_title")}
                 </Text>
               </XStack>

@@ -22,6 +22,12 @@ A **Quest** is a workout template (one quest = one session when you run it).
 - **Find what fits today**: quickly locate a quest that matches your focus.
 - **Filters** (conceptually): narrow down quests based on what you want to train or what equipment you have.
 
+## Visual rules
+
+- Quest cards should feel dense but calm: subtle borders, readable metadata, no thick outline frames.
+- Thumbnail strips are support content, not the main story.
+- The header count/filter area should stay lightweight so the quest cards remain the focus.
+
 ## Typical user actions
 
 - Scroll through quests.
@@ -31,3 +37,7 @@ A **Quest** is a workout template (one quest = one session when you run it).
 ## What happens next
 
 Selecting a quest takes you to **[Quest Details](quest-details.md)** to review and start.
+
+## Implementation note
+
+The current gallery implementation uses tokenized dark cards and lighter thumbnail borders to reduce the old high-contrast gallery look.

@@ -31,11 +31,11 @@ export function CurrentAdventureWidget() {
 
   return (
     <YStack
-      bg="$bgLight"
+      bg="$surface"
       borderWidth={1}
-      borderColor="#dcdcdc"
-      rounded="$6"
-      shadowColor="$color"
+      borderColor="$borderStrong"
+      rounded="$4"
+      shadowColor="$shadowColor"
       shadowRadius={8}
       shadowOffset={{ width: 0, height: 4 }}
       shadowOpacity={0.15}
@@ -44,21 +44,15 @@ export function CurrentAdventureWidget() {
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
       animation="quick"
       overflow="hidden"
-      mb="$4"
+      mb="$2"
     >
       <YStack p="$4" gap="$3">
         {/* Header */}
         <XStack justify="space-between" items="center">
-          <Text
-            fontSize="$3"
-            fontWeight="bold"
-            opacity={0.6}
-            textTransform="uppercase"
-            color="$color"
-          >
+          <Text fontSize="$2" fontWeight="700" color="$textSecondary">
             {title}
           </Text>
-          <ChevronRight size={20} color="$color" opacity={0.5} />
+          <ChevronRight size={20} color="$textSecondary" opacity={0.5} />
         </XStack>
 
         {/* Main Content */}
@@ -83,7 +77,7 @@ export function CurrentAdventureWidget() {
           </YStack>
 
           <YStack flex={1}>
-            <H3 fontSize={24} fontWeight="900" color="$color" numberOfLines={2} lineHeight={28}>
+            <H3 fontSize={22} fontWeight="900" color="$text" numberOfLines={2} lineHeight={28}>
               {subtitle}
             </H3>
           </YStack>
@@ -93,9 +87,10 @@ export function CurrentAdventureWidget() {
         <Button
           size="$5"
           bg="$primary"
-          color="white"
+          color="$text"
           fontWeight="900"
           fontSize={18}
+          width="100%"
           onPress={handlePress}
           pressStyle={{ opacity: 0.8, scale: 0.98 }}
           mt="$2"
@@ -104,7 +99,7 @@ export function CurrentAdventureWidget() {
           shadowOffset={{ width: 0, height: 4 }}
           shadowOpacity={0.3}
         >
-          {label.toUpperCase()}
+          {label}
         </Button>
       </YStack>
     </YStack>

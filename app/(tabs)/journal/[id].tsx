@@ -1,10 +1,3 @@
-import { ChevronLeft, Clock, Dumbbell, Repeat, Target } from "@tamagui/lucide-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
@@ -14,6 +7,13 @@ import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { listQuestTemplates } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
+import { ChevronLeft, Clock, Dumbbell, Repeat, Target } from "@tamagui/lucide-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 type Status = "loading" | "ready" | "error";
 
@@ -79,7 +79,7 @@ export default function SessionDetailScreen() {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$4">
         <Text fontSize={48}>🤷</Text>
-        <Text fontWeight="900" fontSize={18} color="$color">
+        <Text fontWeight="900" fontSize={18} color="$text">
           {t("journal.invalid_session", "Session not found")}
         </Text>
         <AppButton fullWidth={false} variant="secondary" onPress={goBack}>
@@ -91,13 +91,13 @@ export default function SessionDetailScreen() {
 
   const dateLabel = session
     ? new Intl.DateTimeFormat(language, {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(session.performedAt))
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(session.performedAt))
     : "";
 
   const durationLabel = session?.durationSeconds
@@ -107,14 +107,14 @@ export default function SessionDetailScreen() {
   // Group exercises by round
   const exercisesByRound = session
     ? session.exercises.reduce(
-        (acc, ex) => {
-          const round = ex.roundIndex;
-          if (!acc[round]) acc[round] = [];
-          acc[round].push(ex);
-          return acc;
-        },
-        {} as Record<number, typeof session.exercises>,
-      )
+      (acc, ex) => {
+        const round = ex.roundIndex;
+        if (!acc[round]) acc[round] = [];
+        acc[round].push(ex);
+        return acc;
+      },
+      {} as Record<number, typeof session.exercises>,
+    )
     : {};
 
   const roundNumbers = Object.keys(exercisesByRound)
@@ -134,11 +134,11 @@ export default function SessionDetailScreen() {
           {/* Header */}
           <XStack items="center" gap="$3">
             <AppIconButton onPress={goBack}>
-              <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
+              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
             <XStack items="center" gap="$2">
-              <Dumbbell size={18} color="$color" strokeWidth={2.5} />
-              <Text fontWeight="900" fontSize={20} color="$color">
+              <Dumbbell size={18} color="$primary" strokeWidth={2.5} />
+              <Text fontWeight="900" fontSize={20} color="$text">
                 {t("journal.session_details", "Session Details")}
               </Text>
             </XStack>
@@ -146,10 +146,10 @@ export default function SessionDetailScreen() {
 
           {/* Loading State */}
           {status === "loading" && (
-            <Card>
+            <Card bg="$surface">
               <XStack items="center" justify="center" gap="$3" py="$4">
                 <Text fontSize={28}>📜</Text>
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("common.loading", "Loading...")}
                 </Text>
               </XStack>
@@ -158,13 +158,13 @@ export default function SessionDetailScreen() {
 
           {/* Error State */}
           {status === "error" && (
-            <Card>
+            <Card bg="$surface">
               <YStack gap="$3" items="center" py="$2">
                 <Text fontSize={32}>😵</Text>
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("common.error", "Oops!")}
                 </Text>
-                <Paragraph color="$color" opacity={0.6} size="$3">
+                <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
                   {error}
                 </Paragraph>
                 <AppButton fullWidth={false} variant="secondary" onPress={() => load(sessionId)}>
@@ -178,24 +178,24 @@ export default function SessionDetailScreen() {
           {status === "ready" && session && (
             <>
               {/* Quest Title Card */}
-              <Card bg="$pastelYellow">
+              <Card bg="$surface">
                 <YStack gap="$3">
                   <YStack gap="$1">
-                    <Text fontSize={14} color="$color" opacity={0.6}>
+                    <Text fontSize={14} color="$textSecondary">
                       {t("journal.quest_completed", "Quest Completed")}
                     </Text>
-                    <H2 color="$color" fontWeight="900" fontSize={24}>
+                    <H2 color="$text" fontWeight="900" fontSize={24}>
                       {questTitle || t("quests.not_found", "Unknown Quest")}
                     </H2>
                   </YStack>
 
-                  <Text fontSize={14} color="$color" opacity={0.7}>
+                  <Text fontSize={14} color="$textSecondary">
                     {dateLabel}
                   </Text>
 
                   <XStack gap="$2" flexWrap="wrap">
                     <Tag
-                      icon={<Clock size={12} color="$color" />}
+                      icon={<Clock size={12} color="$text" />}
                       label={durationLabel}
                       tone="secondary"
                     />
@@ -204,7 +204,7 @@ export default function SessionDetailScreen() {
                       tone="primary"
                     />
                     <Tag
-                      icon={<Repeat size={12} color="$color" />}
+                      icon={<Repeat size={12} color="$text" />}
                       label={t("journal.rounds_completed", {
                         count: roundNumbers.length,
                         defaultValue: `${roundNumbers.length} rounds`,
@@ -222,17 +222,17 @@ export default function SessionDetailScreen() {
                       width={32}
                       height={32}
                       rounded={16}
-                      bg="$pastelBlue"
-                      borderWidth={2}
-                      borderColor="$color"
+                      bg="$surface2"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
                       items="center"
                       justify="center"
                     >
-                      <Text color="$color" fontWeight="900" fontSize={14}>
+                      <Text color="$text" fontWeight="900" fontSize={14}>
                         {roundIndex + 1}
                       </Text>
                     </YStack>
-                    <Text fontWeight="900" fontSize={16} color="$color">
+                    <Text fontWeight="900" fontSize={16} color="$text">
                       {t("journal.round", "Round")} {roundIndex + 1}
                     </Text>
                   </XStack>

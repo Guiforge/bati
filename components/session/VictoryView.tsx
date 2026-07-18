@@ -1,10 +1,3 @@
-import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ScrollView, Share, useWindowDimensions } from "react-native";
-import ConfettiCannon from "react-native-confetti-cannon";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
@@ -18,10 +11,18 @@ import { previewSessionLoot, type ResourceLoot } from "@/db/resources";
 import type { BuildingCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView, Share, useWindowDimensions } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { LevelUpModal } from "./LevelUpModal";
 import { LootChest } from "./LootChest";
 import { NewRecordsBadge } from "./NewRecordsBadge";
@@ -36,6 +37,7 @@ export function VictoryView() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
+  const reducedMotion = useReducedMotion();
   const { success, selection } = useHaptics();
   const { playSound } = useSound();
   const { showError } = useToast();
@@ -133,7 +135,7 @@ export function VictoryView() {
       await Share.share({
         message,
       });
-    } catch (_error) {}
+    } catch (_error) { }
   };
 
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Session completion with multiple validations and database operations
@@ -273,17 +275,15 @@ export function VictoryView() {
             <YStack items="center" gap="$1">
               <Text
                 fontWeight="900"
-                textTransform="uppercase"
-                color="$color"
+                color="$textSecondary"
                 fontSize={14}
-                opacity={0.65}
                 style={{ textAlign: "center" }}
               >
                 {isBossDefeat ? t("boss.victory_title") : t("session.victory_title")}
               </Text>
               <H1
                 fontWeight="900"
-                color="$color"
+                color="$text"
                 fontSize={34}
                 lineHeight={38}
                 style={{ textAlign: "center" }}
@@ -293,8 +293,7 @@ export function VictoryView() {
               {isBossDefeat && (
                 <Text
                   fontSize={16}
-                  color="$color"
-                  opacity={0.7}
+                  color="$textSecondary"
                   fontStyle="italic"
                   style={{ textAlign: "center" }}
                 >
@@ -305,36 +304,24 @@ export function VictoryView() {
           </YStack>
         </Card>
 
-        <Card width="100%" maxW={520} bg="$bgLight" gap="$4">
+        <Card width="100%" maxW={520} bg="$surface" gap="$4">
           <XStack
             justify="space-between"
             items="center"
             borderBottomWidth={1}
-            borderColor="$bgLight"
+            borderColor="$borderStrong"
             pb="$3"
           >
-            <Text
-              fontWeight="800"
-              fontSize={16}
-              color="$color"
-              opacity={0.6}
-              textTransform="uppercase"
-            >
+            <Text fontWeight="800" fontSize={16} color="$textSecondary">
               {t("session.total_time")}
             </Text>
-            <Text fontWeight="900" fontSize={24} color="$color" fontFamily="$body">
+            <Text fontWeight="900" fontSize={24} color="$text" fontFamily="$body">
               {formatTime(durationSeconds)}
             </Text>
           </XStack>
 
           <XStack justify="space-between" items="center">
-            <Text
-              fontWeight="800"
-              fontSize={16}
-              color="$color"
-              opacity={0.6}
-              textTransform="uppercase"
-            >
+            <Text fontWeight="800" fontSize={16} color="$textSecondary">
               {t("session.xp_earned")}
             </Text>
             <Text fontWeight="900" fontSize={24} color="$primary" fontFamily="$body">
@@ -355,13 +342,11 @@ export function VictoryView() {
         </YStack>
 
         {/* Post-workout Feedback */}
-        <Card width="100%" maxW={520} bg="$bgLight" gap="$3">
+        <Card width="100%" maxW={520} bg="$surface" gap="$3">
           <Text
             fontWeight="800"
             fontSize={14}
-            color="$color"
-            opacity={0.7}
-            textTransform="uppercase"
+            color="$textSecondary"
             style={{ textAlign: "center" }}
           >
             {t("session.feedback_title")}
@@ -370,10 +355,10 @@ export function VictoryView() {
             <Button
               flex={1}
               size="$4"
-              bg={feedback === "easy" ? "$pastelGreen" : "$bgLight"}
-              borderWidth={2}
-              borderColor={feedback === "easy" ? "$success" : "$color"}
-              opacity={feedback === "easy" ? 1 : 0.7}
+              bg={feedback === "easy" ? "$surface2" : "$surface"}
+              borderWidth={1}
+              borderColor={feedback === "easy" ? "$success" : "$borderStrong"}
+              opacity={feedback === "easy" ? 1 : 0.85}
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
               onPress={() => handleFeedbackSelect("easy")}
               rounded="$4"
@@ -382,7 +367,7 @@ export function VictoryView() {
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>😊</Text>
-                <Text color="$color" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                <Text color="$text" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
                   {t("session.feedback_easy")}
                 </Text>
               </YStack>
@@ -390,10 +375,10 @@ export function VictoryView() {
             <Button
               flex={1}
               size="$4"
-              bg={feedback === "good" ? "$pastelBlue" : "$bgLight"}
-              borderWidth={2}
-              borderColor={feedback === "good" ? "$primary" : "$color"}
-              opacity={feedback === "good" ? 1 : 0.7}
+              bg={feedback === "good" ? "$surface2" : "$surface"}
+              borderWidth={1}
+              borderColor={feedback === "good" ? "$primary" : "$borderStrong"}
+              opacity={feedback === "good" ? 1 : 0.85}
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
               onPress={() => handleFeedbackSelect("good")}
               rounded="$4"
@@ -402,7 +387,7 @@ export function VictoryView() {
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>💪</Text>
-                <Text color="$color" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                <Text color="$text" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
                   {t("session.feedback_good")}
                 </Text>
               </YStack>
@@ -410,10 +395,10 @@ export function VictoryView() {
             <Button
               flex={1}
               size="$4"
-              bg={feedback === "hard" ? "$pastelPink" : "$bgLight"}
-              borderWidth={2}
-              borderColor={feedback === "hard" ? "$secondary" : "$color"}
-              opacity={feedback === "hard" ? 1 : 0.7}
+              bg={feedback === "hard" ? "$surface2" : "$surface"}
+              borderWidth={1}
+              borderColor={feedback === "hard" ? "$secondary" : "$borderStrong"}
+              opacity={feedback === "hard" ? 1 : 0.85}
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
               onPress={() => handleFeedbackSelect("hard")}
               rounded="$4"
@@ -422,7 +407,7 @@ export function VictoryView() {
             >
               <YStack items="center" gap="$1">
                 <Text fontSize={20}>😤</Text>
-                <Text color="$color" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
+                <Text color="$text" fontSize={12} fontWeight="800" style={{ textAlign: "center" }}>
                   {t("session.feedback_hard")}
                 </Text>
               </YStack>
@@ -431,32 +416,34 @@ export function VictoryView() {
         </Card>
 
         {/* Share Button */}
-        <AppButton backgroundColor="$bgLight" onPress={handleShare} marginBottom="$2">
-          <Text color="$color" fontSize={16} fontWeight="800">
+        <AppButton backgroundColor="$surface2" onPress={handleShare} marginBottom="$2">
+          <Text color="$text" fontSize={16} fontWeight="800">
             {t("session.share", "Share Result")} 📤
           </Text>
         </AppButton>
 
         {/* Finish Button */}
         <AppButton onPress={handleFinish} disabled={isSaving}>
-          <Text color="$background" fontSize={20} fontWeight="900" textTransform="uppercase">
+          <Text color="$bgDark" fontSize={20} fontWeight="900">
             {isSaving ? t("common.saving") : t("session.finish_button")}
           </Text>
         </AppButton>
       </ScrollView>
 
       {/* Confetti - extra dramatic for boss defeats */}
-      <ConfettiCannon
-        count={isBossDefeat ? 400 : 200}
-        origin={{ x: width / 2, y: -20 }}
-        autoStart={true}
-        fadeOut={true}
-        explosionSpeed={isBossDefeat ? 500 : 350}
-        fallSpeed={isBossDefeat ? 2500 : 3000}
-      />
+      {!reducedMotion && (
+        <ConfettiCannon
+          count={isBossDefeat ? 400 : 200}
+          origin={{ x: width / 2, y: -20 }}
+          autoStart={true}
+          fadeOut={true}
+          explosionSpeed={isBossDefeat ? 500 : 350}
+          fallSpeed={isBossDefeat ? 2500 : 3000}
+        />
+      )}
 
       {/* Second burst from sides for boss defeat */}
-      {isBossDefeat && (
+      {!reducedMotion && isBossDefeat && (
         <>
           <ConfettiCannon
             count={150}

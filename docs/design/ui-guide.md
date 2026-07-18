@@ -19,6 +19,17 @@ Bati is a **sport-first** interface with RPG motivation. During a workout, clari
 - **Fast cognition** under variable gym lighting.
 - **Minimal friction** for one-handed operation.
 
+## Hard rules
+
+These are not style suggestions; they are product rules.
+
+- One screen = one primary action.
+- Dark-only UI in product screens.
+- No thick white/off-white borders on cards or buttons.
+- No competing CTA styling on the same screen.
+- No hardcoded color values when a token exists.
+- No one-off visual systems unless they are promoted into the shared design system.
+
 ## Visual language
 
 ### Color behavior
@@ -76,6 +87,13 @@ Bati is a **sport-first** interface with RPG motivation. During a workout, clari
 
 - Use cards to group content, not as decoration.
 - Do not nest cards unless information architecture truly requires it.
+- Keep card radius, border, and shadow recipes consistent across the app.
+
+### Shared primitives
+
+- Prefer the established screen/header/card/button primitives before creating new variants.
+- If a new pattern appears on a second screen, move it into the shared system.
+- Avoid “just this once” styling; that is how border drift and random glows spread.
 
 ### Inputs
 

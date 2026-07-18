@@ -12,6 +12,7 @@ related: [../README.md]
 
 ## Pages
 
+- [design.md](design.md) — ⭐ Best-practice entry point for design decisions
 - [design-system.md](design-system.md) — ⭐ Design tokens (Tamagui, NEW_STYLE)
 - [ui-guide.md](ui-guide.md) — UX principles + visual guide
 - [ui-checklist.md](ui-checklist.md) — UI/UX design checklist
@@ -27,6 +28,15 @@ related: [../README.md]
 	contrast, and glow.
 - **Primary action clarity:** one dominant CTA per screen (usually `$primary` + controlled glow).
 - **Readability in gym lighting:** text contrast targets WCAG AA minimum (4.5:1 body, 3:1 large).
+
+## Consistency contract
+
+These rules keep the UI looking like one product instead of a pile of good ideas:
+
+- Reuse shared primitives first (`card`, `button`, `header`, `state`, `screen`).
+- If a screen needs a new visual pattern, add it to `design-system.md` before copying it elsewhere.
+- If a screen breaks one of the rules below, it must be flagged in `ui-checklist.md` and tracked in `docs/planning/ui-screen-audit-tracker.md`.
+- Prefer hierarchy through spacing, contrast, and typography before borders or decoration.
 
 ## Related
 

@@ -48,6 +48,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [roadmap-alignment.md](planning/roadmap-alignment.md) | ⭐ Source of truth for prioritization (aligns code to vision) |
 | [roadmap-archive.md](planning/roadmap-archive.md) | Complete roadmap & TODO (archived — what's done) |
 | [roadmap-refactor-ui.md](planning/roadmap-refactor-ui.md) | NEW_STYLE UI refactor (design system, screen by screen) |
+| [ui-screen-audit-tracker.md](planning/ui-screen-audit-tracker.md) | Screen-by-screen critique/audit tracker + refonte actions |
 | [future-roadmap.md](planning/future-roadmap.md) | Later phases (speculative, pre-alignment) |
 
 ## 🎮 Gameplay Systems — [gameplay/](gameplay/README.md)
@@ -71,6 +72,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 
 | Doc | What it covers |
 | --- | --- |
+| [design.md](design/design.md) | ⭐ Best-practice entry point for design decisions |
 | [design-system.md](design/design-system.md) | ⭐ Design system (NEW_STYLE tokens) |
 | [ui-guide.md](design/ui-guide.md) | UX principles + visual guide |
 | [ui-checklist.md](design/ui-checklist.md) | UI/UX checklist |

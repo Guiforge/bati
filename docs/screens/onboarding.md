@@ -27,6 +27,12 @@ Onboarding is the first-time setup flow. It helps a new player start quickly and
 - **Identity setup**: choose an avatar and a village name to personalize the journey.
 - **Language choice**: set the language early (English/French).
 
+## Visual rules
+
+- Background art can be immersive, but the copy and CTAs must stay readable.
+- The onboarding steps should feel like one flow, not three separate mini-apps.
+- Button treatment should stay consistent from presentation through village naming.
+
 ## What the user does here
 
 - Reads the intro.
@@ -37,3 +43,7 @@ Onboarding is the first-time setup flow. It helps a new player start quickly and
 
 - The app remembers you completed onboarding.
 - Your profile flavor (avatar + village name) becomes the “wrapper” around workouts.
+
+## Implementation note
+
+The onboarding presentation and avatar steps now use calmer shared text and button surfaces while keeping the fantasy artwork intact.

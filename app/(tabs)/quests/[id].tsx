@@ -125,7 +125,7 @@ export default function QuestDetails() {
   if (!questId) {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
-        <Text fontWeight="900" fontSize={18} color="$color">
+        <Text fontWeight="900" fontSize={18} color="$text">
           {t("quests.invalid_id", "Invalid quest")}
         </Text>
         <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
@@ -186,14 +186,14 @@ export default function QuestDetails() {
         fullWidth={false}
         height={40}
         px="$3"
-        bg={active ? "$primary" : "$bgLight"}
-        borderColor={active ? "$primary" : "$color"}
-        borderWidth={3}
+        bg={active ? "$primary" : "$surface"}
+        borderColor={active ? "$primary" : "$borderStrong"}
+        borderWidth={1}
         rounded="$10"
         fontSize={14}
         pressStyle={{ opacity: 0.9 }}
       >
-        <Text color="$color" fontWeight="900">
+        <Text color={active ? "$bgDark" : "$text"} fontWeight="900">
           {levelLabel(value, t)}
         </Text>
       </AppButton>
@@ -207,12 +207,12 @@ export default function QuestDetails() {
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
               <AppIconButton onPress={() => router.back()}>
-                <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
+                <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
               </AppIconButton>
 
               <XStack items="center" gap="$2">
-                <Sparkles size={18} color="$color" />
-                <Text fontWeight="900" fontSize={20} color="$color">
+                <Sparkles size={18} color="$text" />
+                <Text fontWeight="900" fontSize={20} color="$text">
                   {t("quests.details_title", "Quest")}
                 </Text>
               </XStack>
@@ -225,13 +225,13 @@ export default function QuestDetails() {
             <YStack
               width="100%"
               aspectRatio={16 / 9}
-              bg={questTokens?.bg ?? "$bgLight"}
-              borderWidth={3}
-              borderColor="$color"
+              bg={questTokens?.bg ?? "$surface"}
+              borderWidth={1}
+              borderColor="$borderStrong"
               rounded="$8"
-              shadowColor="$color"
-              shadowRadius={0}
-              shadowOffset={{ width: 0, height: 6 }}
+              shadowColor="$shadowColor"
+              shadowRadius={6}
+              shadowOffset={{ width: 0, height: 3 }}
               overflow="hidden"
             >
               <Image
@@ -244,12 +244,12 @@ export default function QuestDetails() {
           ) : null}
 
           {state.status === "error" ? (
-            <Card bg="$bgLight">
+            <Card bg="$surface">
               <YStack gap="$2">
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("quests.load_error", "Failed to load quest")}
                 </Text>
-                <Paragraph color="$color" opacity={0.7} size="$3">
+                <Paragraph color="$textSecondary" size="$3">
                   {state.message}
                 </Paragraph>
                 <AppButton
@@ -268,9 +268,9 @@ export default function QuestDetails() {
           ) : null}
 
           {state.status === "loading" && !quest ? (
-            <Card bg="$bgLight">
+            <Card bg="$surface">
               <XStack items="center" justify="space-between">
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("quests.loading", "Loading quest...")}
                 </Text>
                 <Text fontSize={24}>🧠</Text>
@@ -279,13 +279,13 @@ export default function QuestDetails() {
           ) : null}
 
           {quest ? (
-            <Card bg={questTokens?.bg}>
+            <Card bg={questTokens?.bg ?? "$surface"}>
               <YStack gap="$2">
-                <H2 color="$color" fontWeight="900" fontSize={26}>
+                <H2 color="$text" fontWeight="900" fontSize={26}>
                   {questTitle}
                 </H2>
 
-                <Paragraph color="$color" opacity={0.7} size="$4" lineHeight={22}>
+                <Paragraph color="$textSecondary" size="$4" lineHeight={22}>
                   {questDesc}
                 </Paragraph>
 
@@ -330,7 +330,7 @@ export default function QuestDetails() {
                 </XStack>
 
                 <XStack gap="$2" flexWrap="wrap" pt="$2">
-                  <Text fontWeight="900" color="$color" opacity={0.8}>
+                  <Text fontWeight="900" color="$textSecondary">
                     {t("quests.level", "Level")}
                   </Text>
                   <LevelChip value={Difficulty.Easy} />
@@ -343,7 +343,7 @@ export default function QuestDetails() {
 
           {quest ? (
             <YStack gap="$3">
-              <Text fontWeight="900" fontSize={18} color="$color">
+              <Text fontWeight="900" fontSize={18} color="$text">
                 {t("quests.exercises_list", "Exercises")}
               </Text>
 
@@ -370,18 +370,18 @@ export default function QuestDetails() {
                         width={52}
                         height={52}
                         rounded={26}
-                        bg="$bgLight"
-                        borderWidth={3}
-                        borderColor="$color"
+                        bg="$surface"
+                        borderWidth={1}
+                        borderColor="$borderStrong"
                         justify="center"
                         items="center"
                       >
-                        <Dumbbell size={24} color="$color" strokeWidth={2.5} />
+                        <Dumbbell size={24} color="$text" strokeWidth={2.5} />
                       </YStack>
 
                       <YStack flex={1} gap="$1">
                         <XStack items="center" justify="space-between" gap="$2">
-                          <Text fontWeight="900" fontSize={17} color="$color" flex={1}>
+                          <Text fontWeight="900" fontSize={17} color="$text" flex={1}>
                             {i + 1}. {exName}
                           </Text>
                           <Tag
@@ -402,9 +402,9 @@ export default function QuestDetails() {
                                   height={42}
                                   rounded={12}
                                   overflow="hidden"
-                                  bg="$bgLight"
-                                  borderWidth={3}
-                                  borderColor="$color"
+                                  bg="$surface"
+                                  borderWidth={1}
+                                  borderColor="$borderStrong"
                                   items="center"
                                   justify="center"
                                 >
@@ -424,7 +424,7 @@ export default function QuestDetails() {
                           </XStack>
                         </ScrollView>
 
-                        <Paragraph color="$color" opacity={0.65} size="$3" numberOfLines={3}>
+                        <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>
                           {exDesc}
                         </Paragraph>
 
@@ -466,8 +466,8 @@ export default function QuestDetails() {
           p="$4"
           pb={insets.bottom + 16}
           bg="$background"
-          borderTopWidth={2}
-          borderColor="$color"
+          borderTopWidth={1}
+          borderColor="$borderStrong"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         >
           <AppButton
@@ -477,7 +477,7 @@ export default function QuestDetails() {
             onPress={handleStart}
             rounded="$6"
           >
-            <Text color="$color" fontSize={22} fontWeight="900" textTransform="uppercase">
+            <Text color="$bgDark" fontSize={22} fontWeight="900">
               {t("quests.start_button", "Start Quest")}
             </Text>
           </AppButton>

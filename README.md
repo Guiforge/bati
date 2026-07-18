@@ -1,8 +1,19 @@
-# Welcome to your Expo app 👋
+# Bati
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Train like a hero, build like a king.
 
-## Get started
+Bati is a dark-fantasy fitness RPG built with **Expo + React Native + Tamagui**.
+Workouts drive progression; the app turns your training into quests, adventures, stats,
+and a village that reflects your effort.
+
+## What this repo is
+
+- **Mobile app** with file-based routing (`app/`)
+- **Offline-first** data layer with SQLite + Drizzle
+- **Dark-only UI** using Tamagui tokens and a custom game-icon hook
+- **Docs wiki** under `docs/` for durable product, design, and implementation knowledge
+
+## Quick start
 
 1. Install dependencies
 
@@ -13,38 +24,48 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 2. Start the app
 
    ```bash
-   npx expo start
+   npm start
    ```
 
-In the output, you'll find options to open the app in a
+3. Run the main checks
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   npm run check
+   npm test
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Useful scripts
 
-## Get a fresh project
+- `npm start` — Expo dev server
+- `npm run android` — run on Android
+- `npm run ios` — run on iOS
+- `npm run web` — web preview
+- `npm run check` — Biome + TypeScript
+- `npm run format` — format with Biome
+- `npm test` — Jest test suite
+- `npm run db:generate` — generate Drizzle migrations/types
+- `npm run db:push` — push schema to local SQLite target
 
-When you're ready, run:
+## Project layout
 
-```bash
-npm run reset-project
-```
+- `app/` — Expo Router screens and navigation
+- `components/` — reusable UI components
+- `db/` — SQLite / Drizzle domain logic
+- `hooks/` — shared hooks
+- `stores/` — Zustand state
+- `constants/` — game design constants
+- `docs/` — living documentation and wiki
+- `scripts/` — helper scripts
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Documentation
 
-## Learn more
+- Start at [`docs/README.md`](docs/README.md)
+- Wiki protocol: [`docs/meta/wiki-protocol.md`](docs/meta/wiki-protocol.md)
+- Repo docs conventions: [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)
 
-To learn more about developing your project with Expo, look at the following resources:
+## Notes for contributors
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Keep the app dark-mode only.
+- Prefer Tamagui tokens over hex values.
+- Use the project’s icon hook instead of direct icon imports.
+- Keep docs in sync when product or architecture decisions change.

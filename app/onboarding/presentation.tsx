@@ -41,7 +41,7 @@ export default function Presentation() {
             contentFit="contain"
           />
           <H1
-            color="white"
+            color="$text"
             fontSize={40}
             fontWeight="900"
             letterSpacing={4}
@@ -57,7 +57,7 @@ export default function Presentation() {
         <YStack gap="$5">
           <YStack gap="$2">
             <H2
-              color="white"
+              color="$text"
               fontSize={32}
               fontWeight="800"
               style={{ textAlign: "center" }}
@@ -66,7 +66,7 @@ export default function Presentation() {
               {t("onboarding.presentation_title")}
             </H2>
             <Paragraph
-              color="$muted"
+              color="$textSecondary"
               style={{ textAlign: "center" }}
               fontSize={16}
               lineHeight={24}
@@ -83,11 +83,11 @@ export default function Presentation() {
             borderWidth={0}
           >
             <XStack items="center" gap="$2">
-              <Text color="white" fontWeight="900" fontSize={18}>
+              <Text color="$text" fontWeight="900" fontSize={18}>
                 {t("onboarding.next")}
               </Text>
 
-              <ArrowRight size={20} color="white" strokeWidth={3} />
+              <ArrowRight size={20} color="$text" strokeWidth={3} />
             </XStack>
           </AppButton>
         </YStack>

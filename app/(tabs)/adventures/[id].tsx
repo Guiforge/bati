@@ -30,27 +30,27 @@ import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | {
-      status: "loading";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
+    status: "loading";
+    details: AdventureDetails | null;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+  }
   | {
-      status: "ready";
-      details: AdventureDetails;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
+    status: "ready";
+    details: AdventureDetails;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+  }
   | {
-      status: "error";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-      message: string;
-    };
+    status: "error";
+    details: AdventureDetails | null;
+    activeRun: ActiveAdventureRun | null;
+    exercisesById: Record<number, Exercise>;
+    suggestedDifficulty: "easy" | "medium" | "hard";
+    message: string;
+  };
 
 function levelLabel(level: Difficulty, t: TFunction) {
   if (level === Difficulty.Easy) return t("quests.level_easy");
@@ -230,7 +230,7 @@ export default function AdventureDetailsScreen() {
   if (!adventureId) {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
-        <Text fontWeight="900" fontSize={18} color="$color">
+        <Text fontWeight="900" fontSize={18} color="$text">
           {t("adventures.invalid_id")}
         </Text>
         <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
@@ -247,12 +247,12 @@ export default function AdventureDetailsScreen() {
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
               <AppIconButton onPress={() => router.back()}>
-                <ChevronLeft size={22} color="$color" strokeWidth={2.5} />
+                <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
               </AppIconButton>
 
               <XStack items="center" gap="$2">
-                <Sparkles size={18} color="$color" />
-                <Text fontWeight="900" fontSize={20} color="$color">
+                <Sparkles size={18} color="$primary" />
+                <Text fontWeight="900" fontSize={20} color="$text">
                   {t("adventures.details_title")}
                 </Text>
               </XStack>
@@ -262,12 +262,12 @@ export default function AdventureDetailsScreen() {
           </XStack>
 
           {state.status === "error" ? (
-            <Card bg="$bgLight">
+            <Card bg="$surface">
               <YStack gap="$2">
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("adventures.load_error")}
                 </Text>
-                <Paragraph color="$color" opacity={0.7} size="$3">
+                <Paragraph color="$textSecondary" size="$3">
                   {"message" in state ? state.message : ""}
                 </Paragraph>
                 <AppButton
@@ -286,9 +286,9 @@ export default function AdventureDetailsScreen() {
           ) : null}
 
           {details ? (
-            <Card bg={tokens?.bg ?? "$bgLight"}>
+            <Card bg={tokens?.bg ?? "$surface"}>
               <YStack gap="$2">
-                <H2 color="$color" fontWeight="900" fontSize={26}>
+                <H2 color="$text" fontWeight="900" fontSize={26}>
                   {title}
                 </H2>
 
@@ -299,7 +299,7 @@ export default function AdventureDetailsScreen() {
                 ) : null}
 
                 {description ? (
-                  <Paragraph color="$color" opacity={0.7} size="$4" lineHeight={22}>
+                  <Paragraph color="$textSecondary" size="$4" lineHeight={22}>
                     {description}
                   </Paragraph>
                 ) : null}
@@ -333,9 +333,9 @@ export default function AdventureDetailsScreen() {
           ) : null}
 
           {effectiveSteps.length > 0 ? (
-            <Card bg="$bgLight">
+            <Card bg="$surface">
               <YStack gap="$3">
-                <Text fontWeight="900" fontSize={16} color="$color">
+                <Text fontWeight="900" fontSize={16} color="$text">
                   {t("adventures.steps_title")}
                 </Text>
 
@@ -353,9 +353,17 @@ export default function AdventureDetailsScreen() {
                         : s.enNarrative || s.frNarrative;
 
                     return (
-                      <XStack key={s.stepIndex} items="center" justify="space-between" gap="$3">
+                      <XStack
+                        key={s.stepIndex}
+                        items="center"
+                        justify="space-between"
+                        gap="$3"
+                        borderBottomWidth={1}
+                        borderColor="$borderStrong"
+                        pb="$3"
+                      >
                         <YStack flex={1}>
-                          <Text fontWeight="900" color="$color">
+                          <Text fontWeight="900" color="$text">
                             {t("adventures.step_label", {
                               count: s.stepIndex + 1,
                             })}
@@ -363,7 +371,7 @@ export default function AdventureDetailsScreen() {
                             {stepTitle}
                           </Text>
                           {narrative ? (
-                            <Paragraph color="$color" opacity={0.65} size="$3" numberOfLines={2}>
+                            <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
                               {narrative}
                             </Paragraph>
                           ) : null}
@@ -387,12 +395,12 @@ export default function AdventureDetailsScreen() {
             variant="primary"
             fullWidth
             height={54}
-            bg="$color"
+            bg="$primary"
             borderWidth={0}
             rounded="$8"
             pressStyle={{ opacity: 0.9 }}
           >
-            <Text color="$background" fontWeight="900" fontSize={18}>
+            <Text color="$text" fontWeight="900" fontSize={18}>
               {run?.activeStep
                 ? t("adventures.continue")
                 : isBoss

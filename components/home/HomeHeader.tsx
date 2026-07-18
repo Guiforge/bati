@@ -33,8 +33,8 @@ export function HomeHeader() {
       <Avatar
         circular
         size="$6"
-        borderWidth={2}
-        borderColor="$color"
+        borderWidth={1}
+        borderColor="$borderStrong"
         pressStyle={{ scale: 0.95 }}
         onPress={() => router.push("/settings")}
       >
@@ -44,20 +44,20 @@ export function HomeHeader() {
 
       {/* Identity & XP */}
       <YStack flex={1} gap="$1">
-        <Text fontWeight="900" fontSize="$4" color="$color" numberOfLines={1}>
+        <Text fontWeight="900" fontSize="$4" color="$text" numberOfLines={1}>
           {villageName || "Hero"}
         </Text>
-        <Text fontSize="$2" color="$color" opacity={0.7}>
-          {levelInfo ? `Lvl ${levelInfo.level} • ${levelTitle}` : "..."}
+        <Text fontSize="$2" color="$textSecondary" numberOfLines={1}>
+          {levelInfo ? `Level ${levelInfo.level} • ${levelTitle}` : "..."}
         </Text>
         <XStack items="center" gap="$2" mt="$1" mr="$4">
           <ProgressBar
             progress={levelInfo?.xpProgress ?? 0}
             height={5}
-            color="#FFD700"
-            trackColor="rgba(0,0,0,0.1)"
+            color="$resourceGold"
+            trackColor="$surface2"
           />
-          <Text fontSize={10} fontWeight="bold" color="$color" opacity={0.5}>
+          <Text fontSize={11} fontWeight="700" color="$textSecondary">
             {levelInfo?.xpProgress.toFixed(0) ?? 0}%
           </Text>
         </XStack>

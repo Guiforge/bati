@@ -67,8 +67,8 @@ export default function HomeScreen() {
 
               {/* 5. Statistics Overview */}
               <YStack mt="$2">
-                <Text mb="$2" fontSize="$2" fontWeight="bold" opacity={0.5} color="$color">
-                  {t("home.stats", "STATISTICS")}
+                <Text mb="$2" fontSize="$2" fontWeight="700" color="$textSecondary">
+                  {t("home.stats", "Stats")}
                 </Text>
                 <StatsOverview />
               </YStack>

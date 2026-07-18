@@ -24,6 +24,12 @@ The Journal is your **training record**. It answers:
 - **History view**: a list of completed sessions.
 - **Motivation through proof**: you can literally see your streak and activity over time.
 
+## Visual rules
+
+- The stats/history switch should be obvious but quiet.
+- Summary cards should group information into a few readable blocks.
+- Empty and loading states should feel like part of the same journal system.
+
 ## Typical user actions
 
 - Check progress stats.
@@ -33,3 +39,7 @@ The Journal is your **training record**. It answers:
 ## What happens next
 
 Tapping a past session opens **[Session Details](session-details.md)**.
+
+## Implementation note
+
+The Journal route now leans on calmer tokenized surfaces so the stats stack and history list don’t fight each other for attention.

@@ -32,11 +32,10 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 
 **Progression & rewards**
 - [village.md](village.md) — visual reward layer (village growth)
-- [treasury.md](treasury.md) — passive resource receipt
 
-**Planning**
-- [goals.md](goals.md) — set training direction → Schedule
-- [schedule.md](schedule.md) — weekly view + rest guidance
+**Planning (deferred)**
+- [goals.md](goals.md) — ⚠️ deferred, replaced by the Coach card on Home
+- [schedule.md](schedule.md) — ⚠️ deferred, replaced by the Coach card on Home
 
 **Preferences**
 - [settings.md](settings.md) — app preferences → Credits

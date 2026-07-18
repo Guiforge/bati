@@ -3,8 +3,8 @@ title: Product Guide
 type: product
 status: active
 updated: 2026-07-18
-related: [vision.md, feature-overview.md, ../screens/README.md, ../economy/rewards-and-progression.md]
-sources: [app/_layout.tsx, app/(tabs)/index.tsx, app/treasury.tsx, app/(tabs)/village.tsx]
+related: [vision.md, feature-overview.md, ../screens/README.md, ../gameplay/progression.md]
+sources: [app/_layout.tsx, app/(tabs)/index.tsx, app/(tabs)/village.tsx]
 ---
 
 # Bati — Product Guide (Non‑Technical)
@@ -28,7 +28,7 @@ This document explains **what Bati does** and **what each page is for**, using p
 
 ## Core loop (the experience in one line)
 
-Pick a Quest → Train → Earn XP + passive loot → Your village reacts → Repeat
+Pick a Quest → Train → Earn XP → Your village reacts → Repeat
 
 ---
 
@@ -38,10 +38,10 @@ Pick a Quest → Train → Earn XP + passive loot → Your village reacts → Re
 - **Session**: The moment you’re actively doing a quest (the “workout run”).
 - **Adventure**: A story campaign made of several quests chained together.
 - **Boss**: A special kind of adventure that feels like a finale.
-- **XP & Level**: Progress earned by training. XP increases your level.
-- **Resources / Loot**: Passive rewards connected to what you trained.
-- **Village**: Your “fitness fingerprint” shown as a growing fantasy village.
+- **XP & Level**: Progress earned by training. XP increases your level, which grows the village.
+- **Village**: Your “fitness fingerprint” shown as one growing fantasy scene — no resources, no buildings to manage.
 - **Journal**: Your training history, stats, and progress.
+- **Coach**: A small card that nudges you toward your weekly goal, a lagging muscle, or a rest day.
 
 ---
 
@@ -49,19 +49,8 @@ Pick a Quest → Train → Earn XP + passive loot → Your village reacts → Re
 
 After workouts, Bati rewards you with:
 
-- **XP**: makes your hero level up.
-- **Resources**: themed loot connected to what you trained. In MVP these are read-only feedback, not a shop currency.
-
-### Muscle → Resource → Village growth
-
-Your training focus changes what you earn and which parts of the village grow.
-
-- Arms → **Wood**
-- Back → **Stone**
-- Chest → **Fire**
-- Abs → **Water**
-- Shoulders → **Wind**
-- Legs → **Grain**
+- **XP**: makes your hero level up, which grows the village.
+- **A village reaction**: your training also shows up as overlays on the village (streak flame, dominant sport, boss banners) — see [progression.md](../gameplay/progression.md).
 
 **Important design rule:** village growth is automatic. You don’t “manage” a town—your training decides.
 
@@ -89,19 +78,14 @@ Your training focus changes what you earn and which parts of the village grow.
 - Review detailed results of a past session.
 - See progress summaries like levels and training balance.
 
-### 4) View passive loot (Treasury)
-
-- See your current totals for muscle-linked resources.
-
-### 5) See your village (Village)
+### 4) See your village (Village)
 
 - A visual representation of your progress and rewards.
 
-### 6) Plan and stay consistent (Goals + Schedule)
+### 5) Get nudged (Coach)
 
-- Set a training goal (focus + days per week + session length).
-- Get a suggested weekly schedule.
-- Receive rest suggestions when needed.
+- Set a weekly session goal.
+- See a nudge toward a lagging muscle or a rest day, right on Home.
 
 ---
 
@@ -123,12 +107,7 @@ Daily training paths:
 Progress & rewards:
 
 - [Home](../screens/home.md) → [Village](../screens/village.md)
-- [Home](../screens/home.md) → [Treasury](../screens/treasury.md)
 - [Journal](../screens/journal.md) → [Session Details](../screens/session-details.md)
-
-Planning:
-
-- [Home](../screens/home.md) → [Goals](../screens/goals.md) → [Schedule](../screens/schedule.md)
 
 Preferences:
 
@@ -146,9 +125,6 @@ Preferences:
 - **[Journal](../screens/journal.md)** → stats + history, open past sessions.
 - **[Session Details](../screens/session-details.md)** → per-session report (your “receipt”).
 - **[Village](../screens/village.md)** → visual progress from training.
-- **[Treasury](../screens/treasury.md)** → passive loot totals (resources).
-- **[Goals](../screens/goals.md)** → set direction (focus/frequency/duration).
-- **[Schedule](../screens/schedule.md)** → weekly view + rest suggestion.
 - **[Settings](../screens/settings.md)** → language and preferences.
 - **[Credits](../screens/credits.md)** → acknowledgements.
 
@@ -174,7 +150,7 @@ Preferences:
   - Quick access to:
     - continuing your current adventure,
     - visiting the village,
-    - opening the treasury,
+    - your Coach nudge for the week,
     - seeing a compact overview of stats.
 
 ### Quests (workouts)
@@ -227,30 +203,12 @@ Preferences:
   - Visualizes your progress as a growing village.
   - Reinforces the “train → earn → build” loop.
 
-### Treasury
+### Coach
 
-**Purpose:** see passive rewards from training.
+**Purpose:** a light nudge toward what to do next, on Home.
 
-- **Treasury** (`/treasury`)
-  - Displays your collected muscle resources.
-  - Helps users connect training focus with rewards.
-
-### Goals
-
-**Purpose:** set a simple training direction.
-
-- **Goals** (`/goals`)
-  - Choose what you want to improve (examples: strength, endurance, flexibility, balanced).
-  - Choose frequency (days per week) and session duration.
-  - Generates a plan preview and confirms a plan.
-
-### Schedule
-
-**Purpose:** keep your week organized.
-
-- **Schedule** (`/schedule`)
-  - Shows a weekly calendar.
-  - Includes rest suggestions when appropriate.
+- Set a weekly session goal once.
+- See "X/Y sessions this week", a lagging-muscle suggestion, or a rest nudge — whichever applies.
 
 ### Settings
 

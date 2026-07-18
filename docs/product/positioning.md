@@ -14,7 +14,7 @@ Bati is built for solo lifters at the gym who want their workouts to feel like a
 
 ## Product Purpose
 
-Bati turns strength training into an RPG so people stay consistent. Quests are workouts, boss fights turn reps into damage, and muscle work earns resources that build out a village. Success is a logged workout streak: the user keeps showing up because each session advances an adventure, not just a spreadsheet.
+Bati turns strength training into an RPG so people stay consistent. Quests are workouts, boss fights turn reps into damage, and training grows a village that reflects your effort. Success is a logged workout streak: the user keeps showing up because each session advances an adventure, not just a spreadsheet.
 
 ## Positioning
 
@@ -33,9 +33,9 @@ Not a cluttered, stat-heavy gym app that buries the next action under charts and
 - **Sport first, RPG second.** Workout logic leads; game elements amplify motivation and never obstruct logging or reading the next set.
 - **Immersive, always dark.** One committed dark-fantasy world across iOS and Android. No light theme, no per-OS reskinning, no white flash.
 - **Minimal under the epic.** The fantasy is loud where it motivates and silent where it interrupts. Strip anything that doesn't move the user toward their next set.
-- **Effort becomes progress.** Every logged action visibly advances something the user cares about: a streak, a boss's HP, a village, a resource.
+- **Effort becomes progress.** Every logged action visibly advances something the user cares about: a streak, a boss's HP, the village.
 - **Readable in the moment.** Designed for a distracted user mid-workout: large tap targets, high-contrast text, meaning that never depends on color alone.
 
 ## Accessibility & Inclusion
 
-Respect reduced-motion preferences with calmer or instant alternatives to game-feel animations. Don't rely on color alone to convey state (resources, success/error, boss status); pair color with icon, label, or shape. Keep tap targets large and text readable for one-handed use mid-session in variable gym lighting.
+Respect reduced-motion preferences with calmer or instant alternatives to game-feel animations. Don't rely on color alone to convey state (success/error, boss status, streak level); pair color with icon, label, or shape. Keep tap targets large and text readable for one-handed use mid-session in variable gym lighting.

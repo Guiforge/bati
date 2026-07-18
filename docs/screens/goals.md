@@ -2,15 +2,21 @@
 title: Goals
 type: screen
 route: /goals
-status: active
-updated: 2026-07-14
-related: [schedule.md, ../COACH.md]
+status: deferred
+updated: 2026-07-18
+related: [schedule.md, ../gameplay/coach-planning.md]
 sources: [app/goals.tsx]
 ---
 
 # Goals (`/goals`)
 
-## Purpose
+> ⚠️ **Status: deferred.** The Coach redesign
+> ([coach-planning.md](../gameplay/coach-planning.md)) replaces a dedicated goal-setting
+> flow (type + days/week + session length + generated plan preview) with a single weekly
+> session-count setting, shown as a card on Home. This full screen is not part of that
+> design — see [system-redesign-options.md](../planning/system-redesign-options.md) (§7).
+
+## Purpose (legacy design, not built)
 
 Goals helps you set a simple direction for your training.
 

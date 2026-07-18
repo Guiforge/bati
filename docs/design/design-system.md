@@ -20,13 +20,6 @@ colors:
   text-secondary: "#909ACB"
   muted: "#64748B"
   shadow: "#060812"
-  resource-gold: "#FFD700"
-  resource-wood: "#8B4513"
-  resource-stone: "#808080"
-  resource-fire: "#FF6B35"
-  resource-water: "#4ECDC4"
-  resource-wind: "#C9B1FF"
-  resource-grain: "#DAA520"
 typography:
   display:
     fontFamily: "SpaceGrotesk, system-ui, sans-serif"
@@ -101,31 +94,45 @@ components:
 
 # Design System: Bati
 
+> Single canonical page for design decisions, tokens, and component standards — merged
+> from the former `design.md` and `ui-guide.md` to remove duplicate rule statements.
+> Read this first when designing or reviewing a screen; run [ui-checklist.md](ui-checklist.md)
+> before merging.
+
 ## 1) System intent
 
-**Creative north star:** *The Hero's HUD*.
+**Creative north star:** *The Hero's HUD* — immersive but operationally clear mid-workout.
+Ties directly to [roadmap-alignment.md](../planning/roadmap-alignment.md) (north star) and
+[positioning.md](../product/positioning.md) (brand): sport-first ergonomics over decorative
+complexity, dark-only visual world, one-screen-one-priority hierarchy.
 
-Bati must feel immersive but remain operationally clear in the middle of a workout.
+### Decision order (use this when designing or reviewing a screen)
 
-- Sport-first ergonomics over decorative complexity.
-- One-screen-one-priority hierarchy.
-- Dark-only visual world.
+1. **Primary action?** If there's no clear answer, the screen isn't ready.
+2. **Content hierarchy?** Title → primary action → supporting content → secondary actions.
+3. **Shared primitive?** Reuse a card/button/header/state component before inventing one.
+4. **Visual weight?** Prefer spacing, contrast, and typography before borders or decoration.
+5. **Gym-lighting failure mode?** Check readability, contrast, and tap targets early.
 
-## 2) Visual foundations
+## 2) The rules (stated once)
 
-### Color roles
+- **Dark-only.** No light theme, no per-OS reskinning, no white flash.
+- **One primary CTA per screen.** No competing equal-weight actions.
+- **Borders are subtle.** `$borderStrong` / `$glassBorder`, 1px. No thick white/off-white
+  accent borders — that's a bug, not a style choice. Elevation comes from contrast, spacing,
+  and controlled glow, not outlines.
+- **Tokens only.** No hardcoded hex/spacing in screens or components; reuse shared
+  primitives (`card`, `button`, `header`, `state`) instead of one-off visuals. If a pattern
+  appears on a second screen, promote it into this file before copying it again.
+- **Accessible by default.** WCAG AA: body 4.5:1, large text 3:1. Touch targets ≥44×44.
+  State is never color-only — pair with icon, label, or shape. Respect reduced-motion.
+- **Efficiency.** The next workout action should be reachable in ≤2 taps; avoid modal-heavy
+  paths when inline progression works.
+- **Icons.** `useGameIcon`/`GameIcon` for fantasy/resource/game-world icons;
+  `@tamagui/lucide-icons` for utility/navigation icons. No direct `lucide-react-native`
+  imports in product UI.
 
-- `$primary`: one main action per screen.
-- `$secondary`: occasional secondary emphasis.
-- `$success` / `$error`: state feedback, always paired with label/icon.
-- `$bgDark`, `$surface`, `$surface2`: layered depth.
-- `$text`, `$textSecondary`, `$muted`: reading hierarchy.
-
-### Border/elevation rule (updated)
-
-- Default borders are subtle (`$borderStrong`, `$glassBorder`, usually 1px).
-- Avoid thick white/off-white border accents on cards and buttons.
-- Elevation comes from contrast, spacing, and controlled glow (not noisy outlines).
+## 3) Visual foundations
 
 ### Typography
 
@@ -133,60 +140,40 @@ Bati must feel immersive but remain operationally clear in the middle of a worko
 - Body and utility reading: `NotoSans`.
 - Wide tracking belongs to short labels only, never body text.
 
-## 3) Component standards
-
-### Consistency rules
-
-- Use the same component family for the same job across screens.
-- Do not invent a new card border or button glow unless it is a documented variant.
-- Keep the default hierarchy stable: primary action, content, supporting action.
-- Prefer tokens and shared primitives over screen-local styles.
-
 ### Buttons
 
 - Primary: `$primary` fill, high-contrast text, optional restrained glow.
 - Secondary/ghost: neutral or glass treatment.
-- Interaction: consistent `pressed`, `disabled`, and loading states.
-- Minimum hit area: 44×44.
+- Consistent `pressed`, `disabled`, and loading states. Minimum hit area 44×44.
 
 ### Cards/containers
 
-- Use `$surface` or `$glassBg` depending on semantic layer.
-- Use one card style family across screens.
-- Prefer a single border treatment and avoid decorative nesting.
+- `$surface` or `$glassBg` depending on semantic layer; one card style family app-wide.
+- Group content, don't decorate with cards; avoid nesting unless IA truly requires it.
 
 ### Inputs
 
-- Legible text size and clear labels.
+- Legible text size (16px body-equivalent), clear labels, actionable validation copy.
 - Focus state must be obvious without over-bright effects.
-- Validation copy must be actionable.
 
-### Icons
+## 4) What good looks like
 
-- Use `useGameIcon` / `GameIcon` for fantasy, resource, and game-world icons.
-- Utility/navigation icons may use `@tamagui/lucide-icons`.
-- No direct `lucide-react-native` imports in product UI.
+- The user can tell what to do in a single glance.
+- The most important action is visually dominant without shouting.
+- A new screen looks like it belongs to the same app as the previous one.
 
-## 4) Accessibility and legibility
+## 5) Anti-patterns to reject
 
-- WCAG AA target: body 4.5:1, large text 3:1.
-- Ensure readability in bright gym conditions (not only dark-room previews).
-- Never rely on color alone to convey status.
-- Support reduced motion.
+- Thick white/off-white accent borders as default style.
+- Multiple glowing elements competing for attention.
+- Color-only status communication.
+- Long copy blocks inside action-critical (mid-workout) screens.
+- Any light-theme branch or dual-theme logic in product UI.
+- A one-off visual pattern that isn't promoted here once it's reused.
 
-## 5) Design constraints
+## Related
 
-### Required
-
-- Dark-only implementation.
-- Tokens for color/spacing/radius/effects.
-- i18n via `t()` for user-facing strings.
-- Inline `style` only when React Native/Image/chart APIs require it; semantic colors and repeated
-  visual recipes should use tokens/shared primitives.
-
-### Forbidden
-
-- Light-theme branching.
-- Thick white accent borders as default visual style.
-- Competing primary CTAs on the same screen.
-- Decorative motion that slows task completion.
+- [ui-checklist.md](ui-checklist.md) — merge gate that checks these rules
+- [exercise-colors.md](exercise-colors.md) — muscle → color mapping
+- [../product/positioning.md](../product/positioning.md) — brand personality behind these rules
+- [../planning/ui-screen-audit-tracker.md](../planning/ui-screen-audit-tracker.md) — where drift gets logged

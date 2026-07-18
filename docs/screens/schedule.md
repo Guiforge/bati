@@ -2,15 +2,21 @@
 title: Schedule
 type: screen
 route: /schedule
-status: active
-updated: 2026-07-14
-related: [goals.md, ../COACH.md]
+status: deferred
+updated: 2026-07-18
+related: [goals.md, ../gameplay/coach-planning.md]
 sources: [app/schedule.tsx]
 ---
 
 # Schedule (`/schedule`)
 
-## Purpose
+> ⚠️ **Status: deferred.** The Coach redesign
+> ([coach-planning.md](../gameplay/coach-planning.md)) has no scheduling concept — no
+> planned days, no reminder times. The weekly-goal rule ("2/3 sessions this week") lives on
+> the Home coach card instead of a dedicated weekly-view screen. See
+> [system-redesign-options.md](../planning/system-redesign-options.md) (§7).
+
+## Purpose (legacy design, not built)
 
 Schedule helps you stay consistent by showing your week at a glance.
 

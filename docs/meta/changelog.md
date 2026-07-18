@@ -233,3 +233,58 @@ guidance into directly actionable checklists for delivery.
   is acceptable for utility/navigation icons, and inline styles are allowed only for React Native/API
   requirements rather than semantic visual recipes.
 
+## 2026-07-18 — Minimalist progression redesign (docs-only)
+
+- Wrote [planning/system-redesign-options.md](../planning/system-redesign-options.md): options
+  with pros/cons for resources, village, flame, boss tokens, stats, and coach, aimed at cutting
+  the system down to "one journal, everything else derived."
+- Replaced `economy/rewards-and-progression.md` (and the `economy/` folder) with
+  [gameplay/progression.md](../gameplay/progression.md): removed all resources
+  (wood/stone/fire/water/wind/grain/mana/leaf), Gold, and boss tokens as an inventory concept.
+  The village is now documented as one derived scene (5 tiers + overlays), not a list of
+  managed buildings.
+- Rewrote [gameplay/statistics-progress.md](../gameplay/statistics-progress.md) down to 4
+  derived views (muscle balance, PRs, sessions/week, calendar), removing the 3 dedicated
+  aggregate tables from the design.
+- Rewrote [gameplay/coach-planning.md](../gameplay/coach-planning.md) from a deferred
+  goals/plans/scheduling/notifications system to 3 active rules (weekly goal, weak-area,
+  rest) evaluated against the journal, with one persisted setting.
+- Deleted `screens/treasury.md`; rewrote [screens/village.md](../screens/village.md) for the
+  single-scene design; deferred `screens/goals.md` and `screens/schedule.md` in favor of a
+  Coach card on Home.
+- Updated cross-links and folder tables in `product/`, `gameplay/`, `screens/`, `README.md`,
+  `CONTRIBUTING.md`, and `meta/wiki-protocol.md` to match. No code was changed — `db/resources.ts`,
+  `db/buildings.ts`, and the related UI still implement the old (now superseded) design.
+
+## 2026-07-18 — Design docs consolidation (docs-only)
+
+- `docs/design/` had the same ~9 rules (dark-only, one CTA, no thick borders, WCAG AA,
+  44×44 touch targets, tokens-only, reduced motion) restated across 5 files
+  (`README.md`, `design.md`, `design-system.md`, `ui-guide.md`, `ui-checklist.md`), plus a
+  531-line generic `mobile-ux-handbook.md` (iOS HIG/Material/WCAG textbook content, not
+  Bati-specific, and its `#121212` dark-mode recommendation contradicted the project's own
+  `bg-void: #0B0F19` token).
+- Merged `design.md` and `ui-guide.md` into [design-system.md](../design/design-system.md)
+  as the single canonical page (tokens + rules stated once + decision order); deleted both
+  source files and `mobile-ux-handbook.md`.
+- Trimmed [exercise-colors.md](../design/exercise-colors.md): removed the dead "Village
+  Buildings" color table (buildings were removed in the progression redesign above) and
+  speculative/filler sections (future colorblind modes, "why colors" rationale).
+- Rewrote [design/README.md](../design/README.md) as a pure index (dropped the duplicated
+  "current design decisions" section, now redundant with design-system.md).
+- `docs/design/` went from 7 files (~1200 lines) to 4 files (~430 lines).
+
+## 2026-07-18 — React Native performance page (research + docs)
+
+- Added [architecture/performance.md](../architecture/performance.md): RN performance best
+  practices and antipatterns filtered to Bati's actual stack (New Architecture, Hermes,
+  React Compiler, Tamagui, Zustand, `@legendapp/list`, `expo-image`, SQLite/Drizzle),
+  compiled from current (2026) React Native / Reanimated / Tamagui / Zustand documentation
+  and practitioner guides.
+- Flagged a real instance of the "whole-store Zustand subscription" antipattern already in
+  the codebase (`PausedOverlay.tsx`, `CountdownView.tsx`, `BossTauntOverlay.tsx` call
+  `useSessionStore()` with no selector) as a non-blocking cleanup target.
+- Linked from [architecture/README.md](../architecture/README.md) and the root
+  [catalog](../README.md). Added a pointer in [`AGENTS.md`](../../AGENTS.md). No code was
+  changed.
+

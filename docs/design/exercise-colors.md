@@ -1,8 +1,16 @@
+---
+title: Exercise Colors
+type: design
+status: active
+updated: 2026-07-18
+related: [design-system.md, ../gameplay/quests.md]
+sources: [constants/exerciseColors.ts]
+---
+
 # Exercise Types & Colors
 
-## Overview
-
-Each exercise type is associated with a color based on its primary muscle group. This creates visual consistency across the app and helps users quickly identify workout focus areas.
+Each exercise type is associated with a color based on its primary muscle group — visual
+consistency across the app, and a quick way to identify workout focus.
 
 ---
 
@@ -105,19 +113,6 @@ function getQuestColor(quest: Quest): ExerciseColorKey {
 - Progress bar uses accent color
 - Subtle color transition between exercises
 
-### Village Buildings
-
-Building colors match their associated muscle:
-
-| Building | Muscle | Color Theme |
-| -------- | ------ | ----------- |
-| Archery Range | Arms | Pink wood tones |
-| Castle Wall | Back | Blue stone |
-| Forge | Chest | Yellow/Orange flames |
-| Well | Abs | Green water accents |
-| Windmill | Shoulders | Purple sails |
-| Farm | Legs | Orange harvest |
-
 ---
 
 ## 🔧 Implementation
@@ -167,38 +162,7 @@ export function getQuestPrimaryColor(quest: Quest): ColorTokens {
 
 ## 🎨 Accessibility
 
-### Color Contrast
-
-All pastel colors are designed to:
-
-- Work on both light and dark backgrounds
-- Have sufficient contrast with black text
-- Be distinguishable for colorblind users
-
-### Colorblind Modes (Future)
-
-For users with color vision deficiency:
-
-- **Deuteranopia**: Adjust green/red
-- **Protanopia**: Adjust red perception
-- **Tritanopia**: Adjust blue/yellow
-
-Alternative: Use patterns/icons in addition to colors.
-
----
-
-## 💡 Design Rationale
-
-### Why Colors?
-
-1. **Quick Recognition**: Instantly know workout focus
-2. **Visual Variety**: Each quest looks distinct
-3. **Memory Association**: Color helps recall workouts
-4. **Motivation**: Vibrant colors feel energetic
-
-### Why Pastels?
-
-1. **Friendly Aesthetic**: Matches comic book style
-2. **Eye Comfort**: Less strain during workouts
-3. **Versatility**: Works on light and dark themes
-4. **Accessibility**: Easier for colorblind users
+Color is never the only signal — pair with the exercise name/icon (per
+[design-system.md](design-system.md) §2). Pastels are chosen for contrast against the
+dark-only background and to stay distinguishable for colorblind users; no per-condition
+color-blind mode is planned (YAGNI — revisit if user feedback asks for it).

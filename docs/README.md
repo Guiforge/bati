@@ -49,6 +49,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [roadmap-archive.md](planning/roadmap-archive.md) | Complete roadmap & TODO (archived — what's done) |
 | [roadmap-refactor-ui.md](planning/roadmap-refactor-ui.md) | NEW_STYLE UI refactor (design system, screen by screen) |
 | [ui-screen-audit-tracker.md](planning/ui-screen-audit-tracker.md) | Screen-by-screen critique/audit tracker + refonte actions |
+| [system-redesign-options.md](planning/system-redesign-options.md) | Minimalist progression/coach redesign — options considered |
 | [future-roadmap.md](planning/future-roadmap.md) | Later phases (speculative, pre-alignment) |
 
 ## 🎮 Gameplay Systems — [gameplay/](gameplay/README.md)
@@ -59,25 +60,17 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [adventures.md](gameplay/adventures.md) | Multi-quest campaigns |
 | [boss-fights.md](gameplay/boss-fights.md) | Boss fight mechanics |
 | [session-flow.md](gameplay/session-flow.md) | Active workout flow + implementation spec |
-| [statistics-progress.md](gameplay/statistics-progress.md) | Statistics & progress |
-| [coach-planning.md](gameplay/coach-planning.md) | ⚠️ Deferred: coach & planning |
-
-## 💰 Economy & Progression — [economy/](economy/README.md)
-
-| Doc | What it covers |
-| --- | --- |
-| [rewards-and-progression.md](economy/rewards-and-progression.md) | Loot, derived village, resources (single canonical page) |
+| [progression.md](gameplay/progression.md) | XP, derived village, flame — the loot loop |
+| [statistics-progress.md](gameplay/statistics-progress.md) | Statistics & progress (4 derived views) |
+| [coach-planning.md](gameplay/coach-planning.md) | Coach: weekly goal, weak-area & rest nudges |
 
 ## 🎨 Design & UI — [design/](design/README.md)
 
 | Doc | What it covers |
 | --- | --- |
-| [design.md](design/design.md) | ⭐ Best-practice entry point for design decisions |
-| [design-system.md](design/design-system.md) | ⭐ Design system (NEW_STYLE tokens) |
-| [ui-guide.md](design/ui-guide.md) | UX principles + visual guide |
-| [ui-checklist.md](design/ui-checklist.md) | UI/UX checklist |
+| [design-system.md](design/design-system.md) | ⭐ Single source of truth: tokens, rules, decision order |
+| [ui-checklist.md](design/ui-checklist.md) | UI/UX merge-gate checklist |
 | [exercise-colors.md](design/exercise-colors.md) | Muscle → color mapping |
-| [mobile-ux-handbook.md](design/mobile-ux-handbook.md) | Mobile interface standards (reference) |
 
 ## 🛠️ Technical — [architecture/](architecture/README.md)
 
@@ -85,6 +78,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | --- | --- |
 | [technical-architecture.md](architecture/technical-architecture.md) | Tech stack, project structure |
 | [database-api.md](architecture/database-api.md) | Database API reference (Drizzle) |
+| [performance.md](architecture/performance.md) | RN performance best practices & antipatterns |
 | [wiki-protocol.md](meta/wiki-protocol.md) | How this docs folder is maintained as an LLM wiki |
 
 ## 🖼️ Content & Assets — [content/](content/README.md)
@@ -111,6 +105,6 @@ See [`screens/`](screens/README.md) — one spec per screen (home, quests, sessi
 | **Adventure** | Multi-quest campaign |
 | **Session** | Active workout |
 | **Boss** | Epic challenge with HP |
-| **Village** | Your fitness fingerprint (derived, read-only at MVP — see [rewards-and-progression.md](economy/rewards-and-progression.md)) |
+| **Village** | Your fitness fingerprint (derived, read-only — see [progression.md](gameplay/progression.md)) |
 | **Flame** | Daily streak |
 | **XP** | Experience points |

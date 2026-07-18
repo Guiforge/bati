@@ -3,7 +3,7 @@ title: Database API Reference
 type: technical
 status: active
 updated: 2026-07-18
-related: [technical-architecture.md, ../economy/rewards-and-progression.md]
+related: [technical-architecture.md, ../gameplay/progression.md]
 sources: [db/index.ts, db/schema.ts, db/preferences.ts, db/resources.ts]
 ---
 

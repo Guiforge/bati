@@ -18,10 +18,10 @@ related: [../README.md, ../planning/roadmap-alignment.md]
 - [adventures.md](adventures.md) — Multi-quest narrative campaigns
 - [boss-fights.md](boss-fights.md) — Boss fight mechanics
 - [session-flow.md](session-flow.md) — Active workout screens + technical spec
-- [statistics-progress.md](statistics-progress.md) — Statistics & progress feedback
-- [coach-planning.md](coach-planning.md) — ⚠️ Deferred: goals, auto-planning, notifications
+- [progression.md](progression.md) — XP, derived village, flame — the loot loop
+- [statistics-progress.md](statistics-progress.md) — Statistics & progress (4 derived views)
+- [coach-planning.md](coach-planning.md) — Coach: weekly goal, weak-area & rest nudges
 
 ## Related
 
-- [../economy/rewards-and-progression.md](../economy/rewards-and-progression.md) — loot, village, flame
 - [../screens/README.md](../screens/README.md) — screen-by-screen UI specs

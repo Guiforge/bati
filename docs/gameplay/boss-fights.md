@@ -3,7 +3,7 @@ title: Boss Fights
 type: system
 status: active
 updated: 2026-07-18
-related: [adventures.md, session-flow.md, ../economy/rewards-and-progression.md]
+related: [adventures.md, session-flow.md, progression.md]
 sources: [db/bossFights.ts, components/session/BossHpBar.tsx, components/session/BossTauntOverlay.tsx]
 ---
 
@@ -133,14 +133,16 @@ function calculateDamage(exercise: CompletedExercise): number {
 ├─────────────────────────────────────────────┤
 │   BOSS REWARD:                              │
 │   ⭐ +500 XP                                │
-│   👹 +1 Boss Token                          │
 │   🏰 Village banner revealed                │
-│   🏰 Unlocked: ARMORY building!             │
 │                                             │
 ├─────────────────────────────────────────────┤
 │          [🏠 CLAIM REWARDS]                 │
 └─────────────────────────────────────────────┘
 ```
+
+A boss victory is a fact of the session journal — it's not stored as a spendable token.
+It adds a permanent banner to the village scene. See
+[progression.md](progression.md#village).
 
 ---
 
@@ -150,10 +152,10 @@ function calculateDamage(exercise: CompletedExercise): number {
 
 | Boss | Theme | Weakness | Reward |
 | ---- | ----- | -------- | ------ |
-| **Iron Golem** | Strength | Arms | Armory blueprint |
-| **Storm Giant** | Endurance | Shoulders | Tower blueprint |
-| **Shadow Dragon** | Balance | All muscles | Dragon Lair |
-| **Frost Titan** | Core | Abs | Ice Throne |
+| **Iron Golem** | Strength | Arms | Village banner |
+| **Storm Giant** | Endurance | Shoulders | Village banner |
+| **Shadow Dragon** | Balance | All muscles | Village banner |
+| **Frost Titan** | Core | Abs | Village banner |
 
 ### Special Event Bosses
 
@@ -165,12 +167,12 @@ function calculateDamage(exercise: CompletedExercise): number {
 
 ### Legendary Bosses (Endgame)
 
-Require multiple boss tokens to unlock:
+Unlocked by level, not by collecting tokens:
 
 | Boss | Requirement | Difficulty |
 | ---- | ----------- | ---------- |
-| **The Titan** | 5 boss tokens | Extreme |
-| **Dragon God** | 10 boss tokens | Legendary |
+| **The Titan** | High village tier | Extreme |
+| **Dragon God** | Highest village tier | Legendary |
 | **The Champion** | All adventures complete | Ultimate |
 
 ---
@@ -287,7 +289,7 @@ async function dealDamage(bossFightId: number, exercise: CompletedExercise) {
 
 1. **Climactic Goals**: Something to work toward
 2. **Visible Progress**: HP bar shows effort accumulating
-3. **Epic Rewards**: XP, boss tokens, and village milestones
+3. **Epic Rewards**: XP and a permanent village banner
 4. **Replayability**: Can refight bosses for better times
 
 ### Difficulty Balance

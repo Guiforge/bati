@@ -3,20 +3,20 @@ title: Vision
 type: product
 status: active
 updated: 2026-07-14
-related: [../planning/roadmap-alignment.md, feature-overview.md, ../economy/rewards-and-progression.md, ../design/design-system.md]
+related: [../planning/roadmap-alignment.md, feature-overview.md, ../gameplay/progression.md, ../design/design-system.md]
 ---
 
 # Bati - Vision
 
 > "Train like a hero, build like a king."
 
-**Bati** transforms workouts into a fantasy RPG adventure. Complete quests, build your village, defeat bosses.
+**Bati** transforms workouts into a fantasy RPG adventure. Complete quests, watch your village grow, defeat bosses.
 
 > ⚠️ **Alignment (2026-07).** The **canonical MVP is simplified** — see
-> **[roadmap-alignment.md](../planning/roadmap-alignment.md)** (north star). At MVP: loot is
-> **XP + passive resource visibility**. The **village is DERIVED / read-only** (*calculated* from your workouts,
-> never managed). Gold as a spendable economy, manual building upgrades, shops, and treasury-centric loops are
-> **deferred (Phase 2+)**.
+> **[roadmap-alignment.md](../planning/roadmap-alignment.md)** (north star). Loot is
+> **XP only**. The **village is DERIVED / read-only** (*calculated* from your workouts,
+> never managed) — no resources, no Gold, no buildings to unlock or upgrade. Full design:
+> [progression.md](../gameplay/progression.md).
 
 ---
 
@@ -37,26 +37,26 @@ Train → Earn Rewards → Village Grows → Repeat
 
 1. **Pick a Quest** — Choose your workout
 2. **Complete It** — Do the exercises
-3. **Earn Loot** — XP + passive resource visibility + village reaction *(spendable Gold economy: deferred, Phase 2+)*
-4. **Watch Village Grow** — Buildings appear automatically
+3. **Earn Loot** — XP + village reaction
+4. **Watch Village Grow** — the scene's tier and overlays react automatically
 5. **Unlock Adventures** — New challenges await
 
 ---
 
 ## 🏰 Village = Your Fitness
 
-Your village reflects YOUR training:
+Your village reflects YOUR training — no separate resources or buildings, just one scene that
+grows with your level and reacts to what you train most:
 
-| Muscle | Resource | Building |
-| ------ | -------- | -------- |
-| Arms | 🪵 Wood | Archery Range |
-| Back | 🪨 Stone | Castle Walls |
-| Chest | 🔥 Fire | Forge |
-| Abs | 💧 Water | Well |
-| Shoulders | 🌬️ Wind | Windmill |
-| Legs | 🌾 Grain | Farm |
+| Signal | What it drives |
+| ------ | -------------- |
+| Level | Village tier (5 stages, hameau → cité florissante) |
+| Streak | Flame intensity overlay |
+| Dominant muscle (last 7 days) | Dominant-sport visual overlay |
+| Boss defeated | Permanent banner |
 
-**No choices needed** — Buildings grow based on your workouts. Train arms a lot? Impressive Archery Range. Focus on back? Legendary Castle Walls.
+**No choices needed** — the village grows based on your workouts. Full rules:
+[progression.md](../gameplay/progression.md).
 
 ---
 
@@ -64,7 +64,7 @@ Your village reflects YOUR training:
 
 - **Adventures** — Multi-quest storylines with narrative
 - **Bosses** — Epic workout challenges with HP bars
-- **Rewards** — Legendary buildings, special loot
+- **Rewards** — XP, a village banner
 
 ---
 
@@ -90,7 +90,7 @@ Daily workouts fuel your Sacred Flame:
 
 ## 📚 Learn More
 
-- [rewards-and-progression.md](../economy/rewards-and-progression.md) — Resources & Village
+- [progression.md](../gameplay/progression.md) — XP, village, flame
 - [quests.md](../gameplay/quests.md) — Workout templates
 - [adventures.md](../gameplay/adventures.md) — Multi-quest campaigns
 - [session-flow.md](../gameplay/session-flow.md) — Active workout flow

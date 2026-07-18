@@ -19,8 +19,7 @@ Pick the topic folder that matches the subject, not the file's origin or date:
 | --- | --- |
 | `product/` | Vision, positioning, feature overview, user-facing guide |
 | `planning/` | Roadmap, prioritization, scope decisions |
-| `gameplay/` | Mechanics: quests, adventures, boss fights, session flow, stats, coach |
-| `economy/` | Loot, village, resources, progression |
+| `gameplay/` | Mechanics: quests, adventures, boss fights, session flow, progression, stats, coach |
 | `design/` | Design tokens, UX principles, visual guidelines |
 | `architecture/` | Tech stack, database, technical reference |
 | `content/` | Content generation specs, asset/image prompts |

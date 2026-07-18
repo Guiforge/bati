@@ -3,7 +3,7 @@ title: Features Overview
 type: product
 status: active
 updated: 2026-07-18
-related: [vision.md, user-guide.md, ../planning/roadmap-alignment.md, ../economy/rewards-and-progression.md]
+related: [vision.md, user-guide.md, ../planning/roadmap-alignment.md, ../gameplay/progression.md]
 sources: [app, db, components]
 ---
 
@@ -57,20 +57,10 @@ The workout execution experience.
 
 Visual representation of your fitness journey.
 
-- **What**: Auto-built village based on workout history
-- **Contains**: Automatic visual progression from workouts
-- **Status**: Implemented as a derived/read-only reward layer
-- **Doc**: [VILLAGE.md](../economy/rewards-and-progression.md)
-
-### Resources
-
-Passive materials for the RPG layer.
-
-- **What**: Muscle-linked resources like Wood, Stone, Fire, Water, Wind, Grain
-- **Earned**: Through workout completion
-- **Used**: Read-only feedback / Treasury visibility in MVP
-- **Status**: Implemented as passive visibility; spend economy deferred
-- **Doc**: [RESOURCES.md](../economy/rewards-and-progression.md)
+- **What**: One illustrated scene whose tier and overlays are a pure function of your training
+- **Contains**: Automatic visual progression from workouts — no buildings, no resources
+- **Status**: Derived/read-only reward layer (rebuild pending — see doc)
+- **Doc**: [progression.md](../gameplay/progression.md)
 
 ### XP & Levels
 
@@ -157,16 +147,9 @@ Color-coding by muscle group.
 
 Visual design guidelines.
 
-- **What**: Colors, typography, components
+- **What**: Colors, typography, components, rules
 - **Style**: Dark-fantasy / high-tech HUD
-- **Doc**: [UI_GUIDE.md](../design/ui-guide.md)
-
-### Mobile Ergonomics
-
-Touch-friendly design.
-
-- **What**: Thumb zone optimization, safe areas
-- **Doc**: [MOBILE.md](../design/mobile-ux-handbook.md)
+- **Doc**: [design-system.md](../design/design-system.md)
 
 ---
 
@@ -219,24 +202,14 @@ Technical stack details.
 - XP system, Exercise colors
 - Localization (EN/FR)
 
-### Phase 2: Economy expansion 🏗️
+### Phase 2: Coach
 
-- Gold/spend loops if re-approved
-- Cosmetic village customization
-- Manual upgrades only if they do not compete with workouts
-- Expanded streak/flame presentation
+- Weekly goal + weak-area + rest rules (see [coach-planning.md](../gameplay/coach-planning.md))
+- Weekly suggested-quest list, if user feedback asks for more direction
 
-### Phase 3: Coach & Planning
+### Phase 3: Statistics polish
 
-- Goal setting
-- Auto-generated plans
-- Notifications
-
-### Phase 4: Statistics
-
-- Charts and analytics
-- Personal records
-- Achievements
+- Muscle balance, personal records, sessions/week, calendar (all derived — see [statistics-progress.md](../gameplay/statistics-progress.md))
 
 ### Phase 5: Future
 
@@ -258,14 +231,12 @@ Technical stack details.
 | [ADVENTURES.md](../gameplay/adventures.md) | Multi-quest campaigns |
 | [BOSS.md](../gameplay/boss-fights.md) | Boss fight mechanics |
 | [SESSION.md](../gameplay/session-flow.md) | Active workout UI |
-| [VILLAGE.md](../economy/rewards-and-progression.md) | Village & reward layer |
-| [RESOURCES.md](../economy/rewards-and-progression.md) | Passive resources and deferred economy |
-| [COACH.md](../gameplay/coach-planning.md) | Goal setting & planning |
+| [progression.md](../gameplay/progression.md) | XP, village, flame |
+| [COACH.md](../gameplay/coach-planning.md) | Weekly goal, weak-area & rest nudges |
 | [STATISTICS.md](../gameplay/statistics-progress.md) | Stats & progress tracking |
 | [EXERCISE_COLORS.md](../design/exercise-colors.md) | Color system |
-| [UI_GUIDE.md](../design/ui-guide.md) | Visual design system |
+| [design-system.md](../design/design-system.md) | Visual design system |
 | [ARCHITECTURE.md](../architecture/technical-architecture.md) | Technical architecture |
 | [FUTURE.md](../planning/future-roadmap.md) | Future roadmap |
 | [QUEST_SESSION_SPEC.md](../gameplay/session-flow.md) | Technical session spec |
-| [MOBILE.md](../design/mobile-ux-handbook.md) | Mobile UX best practices |
 | [IMAGE_PROMPTS.md](../content/image-prompts.md) | AI image generation prompts |

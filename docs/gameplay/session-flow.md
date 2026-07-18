@@ -3,7 +3,7 @@ title: Session Flow (Active Workout)
 type: system
 status: active
 updated: 2026-07-18
-related: [../economy/rewards-and-progression.md, ../gameplay/adventures.md, ../design/ui-guide.md]
+related: [progression.md, adventures.md, ../design/design-system.md]
 sources: [app/session.tsx, stores/session.ts]
 ---
 
@@ -419,6 +419,6 @@ This creates visual variety and helps users quickly identify exercise types.
 
 ## Related
 
-- [rewards-and-progression.md](../economy/rewards-and-progression.md) — what the loot screen grants (XP + passive resource visibility at MVP)
+- [progression.md](progression.md) — what the victory screen grants (XP + derived village reaction)
 - [adventures.md](adventures.md) — "no session is wasted" rule when a day's quest is skipped
 - [roadmap-alignment.md](../planning/roadmap-alignment.md) — anti-cheat doctrine (real-friction input, plausibility caps)

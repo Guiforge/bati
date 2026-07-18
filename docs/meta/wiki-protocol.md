@@ -36,8 +36,7 @@ related: [../README.md, changelog.md, ../CONTRIBUTING.md]
 | :--- | :--- |
 | `product/` | Vision, positioning, user guide, feature overview |
 | `planning/` | Roadmap alignment (⭐ north star), roadmap archive, UI refactor, future ideas |
-| `gameplay/` | Quests, adventures, boss fights, session flow, stats, coach (deferred) |
-| `economy/` | Rewards, village, resources (single merged page) |
+| `gameplay/` | Quests, adventures, boss fights, session flow, progression, stats, coach |
 | `design/` | Design system tokens, UI guide, checklist, exercise colors, mobile reference |
 | `architecture/` | Tech stack, project structure, database API |
 | `content/` | Content generation specs, workout design philosophy, image prompts |
@@ -56,7 +55,7 @@ root [`README.md`](../README.md) catalog.
 - **Naming**: all pages use `kebab-case.md` (no spaces, no accents, no abbreviations
   unless the abbreviation is the established term, e.g. `ui-guide.md`, not `user-interface-guide.md`).
 - **One canonical file per topic/entity.** Prefer editing/merging over creating duplicates
-  (see `economy/rewards-and-progression.md`, merged from three former pages).
+  (see `gameplay/progression.md`, merged from the former `economy/` folder).
 - **Frontmatter** (every page): a YAML block at the very top:
   ```yaml
   ---

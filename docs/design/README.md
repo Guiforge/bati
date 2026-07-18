@@ -12,31 +12,16 @@ related: [../README.md]
 
 ## Pages
 
-- [design.md](design.md) — ⭐ Best-practice entry point for design decisions
-- [design-system.md](design-system.md) — ⭐ Design tokens (Tamagui, NEW_STYLE)
-- [ui-guide.md](ui-guide.md) — UX principles + visual guide
-- [ui-checklist.md](ui-checklist.md) — UI/UX design checklist
+- [design-system.md](design-system.md) — ⭐ Single source of truth: tokens, rules, decision order
+- [ui-checklist.md](ui-checklist.md) — PR merge gate (checks the rules in design-system.md)
 - [exercise-colors.md](exercise-colors.md) — Muscle group → color mapping
-- [mobile-ux-handbook.md](mobile-ux-handbook.md) — Mobile interface standards (reference)
-
-## Current design decisions (resolved)
-
-- **Visual register:** Dark Fantasy / High-Tech HUD (single source of truth).
-- **Theme:** Dark-only. No light-mode branch in product UI.
-- **Borders:** No thick white/off-white accent borders on cards and buttons.
-	Prefer subtle tokenized borders (`$borderStrong`, `$glassBorder`) and hierarchy via spacing,
-	contrast, and glow.
-- **Primary action clarity:** one dominant CTA per screen (usually `$primary` + controlled glow).
-- **Readability in gym lighting:** text contrast targets WCAG AA minimum (4.5:1 body, 3:1 large).
 
 ## Consistency contract
 
-These rules keep the UI looking like one product instead of a pile of good ideas:
-
 - Reuse shared primitives first (`card`, `button`, `header`, `state`, `screen`).
 - If a screen needs a new visual pattern, add it to `design-system.md` before copying it elsewhere.
-- If a screen breaks one of the rules below, it must be flagged in `ui-checklist.md` and tracked in `docs/planning/ui-screen-audit-tracker.md`.
-- Prefer hierarchy through spacing, contrast, and typography before borders or decoration.
+- If a screen breaks a rule, flag it in `ui-checklist.md` and track it in
+  [../planning/ui-screen-audit-tracker.md](../planning/ui-screen-audit-tracker.md).
 
 ## Related
 

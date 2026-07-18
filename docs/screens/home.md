@@ -4,7 +4,7 @@ type: screen
 route: /
 status: active
 updated: 2026-07-14
-related: [onboarding.md, adventure-details.md, village.md, treasury.md, journal.md]
+related: [onboarding.md, adventure-details.md, village.md, journal.md]
 sources: [app/(tabs)/index.tsx]
 ---
 
@@ -18,14 +18,14 @@ Home is the quick launch pad: glance at your level + avatar, see the current adv
 
 - **Overview header**: compact strip with your avatar, level badge, and streak — always visible up top.
 - **Current adventure card**: the hero call-to-action with the next step, rewards, and start/continue button.
-- **Modern navbar**: floating, rounded bottom navbar for fast jumps ([Village](village.md), [Treasury](treasury.md), [Journal](journal.md)) without eating screen space.
+- **Modern navbar**: floating, rounded bottom navbar for fast jumps ([Village](village.md), [Journal](journal.md)) without eating screen space.
 
 ## Visual rules
 
 - Keep the current adventure card as the visual center of the screen.
 - Use subtle tokenized borders; no bright outline frames on cards or action tiles.
 - Secondary actions should read lighter than the main CTA.
-- The resource strip should feel like a quick status read, not a separate dashboard.
+- The Coach card should feel like a quick status read, not a separate dashboard.
 
 ## What success looks like
 

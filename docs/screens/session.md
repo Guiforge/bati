@@ -43,7 +43,6 @@ It guides you exercise-by-exercise, tracks your results, and ends with a clear c
 Completing the session leads to the post-workout result moment (victory/rewards), and your progress becomes visible in:
 
 - **[Journal](journal.md)** (history + stats)
-- **[Treasury](treasury.md)** (resource totals)
 - **[Village](village.md)** (growth)
 - **[Adventures](adventures.md)** (step completion if you were in a campaign)
 

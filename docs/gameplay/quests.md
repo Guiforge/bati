@@ -308,5 +308,5 @@ interface CreateQuestInput {
 ### RPG Integration
 
 - Quests are "missions" in the fantasy world
-- Completing quests earns resources
+- Completing quests earns XP and grows the village
 - Quests can be part of Adventures (storylines)

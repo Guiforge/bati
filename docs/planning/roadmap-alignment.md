@@ -32,10 +32,10 @@ Bati is a **sport app first** with RPG motivation layered on top. The permanent 
 
 ### Clarified MVP reward scope
 
-The app may show a lightweight **Treasury/resources view** as a passive receipt of training effort.
-That does **not** make economy a core loop: there is no required spending, shop, manual building
-management, or Gold-first progression in MVP. If a reward surface competes with starting or continuing
-workouts, demote it.
+Rewards are **XP + a derived village reaction** — no resources, no Gold, no Treasury, no manual
+building management. Full design: [progression.md](../gameplay/progression.md) and the option
+comparison in [system-redesign-options.md](system-redesign-options.md). If a reward surface
+competes with starting or continuing workouts, demote it.
 
 ## Product clarity fixes from user feedback
 

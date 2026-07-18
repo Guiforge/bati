@@ -3,7 +3,7 @@ title: Adventures
 type: system
 status: active
 updated: 2026-07-18
-related: [boss-fights.md, quests.md, session-flow.md, ../economy/rewards-and-progression.md]
+related: [boss-fights.md, quests.md, session-flow.md, progression.md]
 sources: [db/adventures.ts, db/adventures-narrative.ts, "app/(tabs)/adventures/index.tsx", "app/(tabs)/adventures/[id].tsx"]
 ---
 
@@ -25,7 +25,7 @@ Think of adventures as storylines in an RPG:
 - Narrative text between steps
 - Progressive difficulty
 - Often ends with a Boss fight
-- XP, progress, story payoff, and optional passive resource flavor upon completion
+- XP, progress, and story payoff upon completion
 
 ---
 
@@ -341,20 +341,17 @@ Story continues after finishing:
 
 ### Per-Step Rewards
 
-Same as quest completion:
-
-- XP based on duration/difficulty
-- Resources based on exercises
+Same as quest completion: XP based on duration/difficulty.
 
 ### Adventure Completion Bonus
 
 Extra rewards for finishing entire adventure:
 
 - Bonus XP (20% of total)
-- Optional passive resource flavor
-- Boss token or village visual milestone for special adventures
+- A village visual milestone for special adventures
 
-Do not make Gold, shops, or manual building upgrades part of MVP adventure rewards.
+Do not make Gold, shops, resources, or manual building upgrades part of adventure rewards
+— see [progression.md](progression.md).
 
 ### Boss Completion
 

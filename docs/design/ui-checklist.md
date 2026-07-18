@@ -1,3 +1,11 @@
+---
+title: UI/UX Checklist
+type: design
+status: active
+updated: 2026-07-18
+related: [design-system.md]
+---
+
 # UI/UX Checklist (Bati)
 
 > Practical quality gate for Bati screens. Use before every UI PR and before merge.
@@ -53,8 +61,6 @@
 
 ---
 
-## Reference docs
+## Reference
 
-- [design-system.md](design-system.md)
-- [ui-guide.md](ui-guide.md)
-- [mobile-ux-handbook.md](mobile-ux-handbook.md)
+- [design-system.md](design-system.md) — the rules this checklist verifies

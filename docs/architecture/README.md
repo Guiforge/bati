@@ -14,6 +14,7 @@ related: [../README.md]
 
 - [technical-architecture.md](technical-architecture.md) — Tech stack, project structure
 - [database-api.md](database-api.md) — Database API reference (Drizzle)
+- [performance.md](performance.md) — RN performance best practices & antipatterns for this stack
 
 ## Related
 

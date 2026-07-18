@@ -533,6 +533,7 @@ useSessionStore.subscribe(
           currentExerciseIndex: state.currentExerciseIndex,
           startTime: state.startTime,
           totalPausedTime: state.totalPausedTime,
+          timerStartTimestamp: state.timerStartTimestamp,
           timerDuration: state.timerDuration,
           results: state.results,
           savedAt: Date.now(),

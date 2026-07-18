@@ -21,6 +21,7 @@ interface SavedSessionState {
   currentExerciseIndex: number;
   startTime: number;
   totalPausedTime: number;
+  timerStartTimestamp: number | null;
   timerDuration: number;
   results: CompletedExerciseInput[];
   savedAt: number; // Timestamp when state was saved
@@ -101,6 +102,9 @@ export function useSessionRecovery() {
       // Calculate time elapsed since saved (we were "paused")
       const now = Date.now();
       const pauseDuration = now - saved.savedAt;
+      const timerStartTimestamp = saved.timerStartTimestamp
+        ? saved.timerStartTimestamp + pauseDuration
+        : null;
 
       // Restore session state with adjusted pause time
       useSessionStore.setState({
@@ -116,7 +120,7 @@ export function useSessionRecovery() {
         startTime: saved.startTime,
         totalPausedTime: saved.totalPausedTime + pauseDuration,
         lastPauseTimestamp: now,
-        timerStartTimestamp: null, // Will be recalculated on resume
+        timerStartTimestamp,
         timerDuration: saved.timerDuration,
         results: saved.results.map((r) => ({
           ...r,
@@ -171,6 +175,7 @@ export async function saveSessionState(): Promise<void> {
     currentExerciseIndex: state.currentExerciseIndex,
     startTime: state.startTime ?? Date.now(),
     totalPausedTime: state.totalPausedTime,
+    timerStartTimestamp: state.timerStartTimestamp,
     timerDuration: state.timerDuration,
     results: state.results,
     savedAt: Date.now(),

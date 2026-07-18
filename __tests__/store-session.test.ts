@@ -1,4 +1,6 @@
+import { preferences } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
+import { saveSessionState } from "@/hooks/useSessionRecovery";
 import { useSessionStore } from "../stores/session";
 
 // Mock DB client to prevent actual SQLite initialization
@@ -196,5 +198,24 @@ describe("useSessionStore", () => {
 
     results = store.getState().results;
     expect(results[results.length - 1]?.result.value).toBe(1);
+  });
+
+  test("saveSessionState preserves active timer start for recovery", async () => {
+    store.setState({
+      quest: mockQuest,
+      status: "resting",
+      startTime: 1000,
+      totalPausedTime: 0,
+      timerStartTimestamp: 2000,
+      timerDuration: 30,
+    });
+
+    await saveSessionState();
+
+    expect(preferences.setSavedSession).toHaveBeenCalled();
+    const saved = JSON.parse(
+      (preferences.setSavedSession as jest.Mock).mock.calls.at(-1)?.[0] ?? "{}",
+    );
+    expect(saved.timerStartTimestamp).toBe(2000);
   });
 });

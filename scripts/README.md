@@ -21,7 +21,7 @@ uv run scripts/generate_image_mistral.py "A futuristic city" -o city.jpg
 You can also inject a style guide (for consistent art direction):
 
 ```bash
-uv run scripts/generate_image_mistral.py "A village under construction" -o village.png --style-file docs/IMAGE_STYLE_PROMPT.md
+uv run scripts/generate_image_mistral.py "A village under construction" -o village.png --style-file docs/content/image-style-prompt.md
 ```
 
 ## Arguments

@@ -4,29 +4,143 @@
   "title": "Design System: Bati",
   "extensions": {
     "colorMeta": {
-      "primary": { "role": "primary", "displayName": "Electric Blue", "canonical": "#0D33F2", "tonalRamp": ["#040a2e", "#071451", "#0a1f7d", "#0d33f2", "#2e5cff", "#5c82ff", "#9aaeff", "#d6dfff"] },
-      "secondary": { "role": "secondary", "displayName": "Magenta", "canonical": "#DB2777", "tonalRamp": ["#2e0819", "#4d0f2a", "#7d1a45", "#b31f61", "#db2777", "#e85a9b", "#f299c1", "#fcd8e8"] },
-      "bg-void": { "role": "neutral", "displayName": "The Void", "canonical": "#0B0F19", "tonalRamp": ["#05070d", "#0b0f19", "#101322", "#151a2e", "#232a45", "#3a446b", "#6b76a3", "#c3c9e0"] },
-      "surface": { "role": "neutral", "displayName": "Surface", "canonical": "#101322", "tonalRamp": ["#0b0f19", "#101322", "#151a2e", "#1c2338", "#2a3360", "#404b82", "#7681b0", "#c9cfe6"] },
-      "text": { "role": "neutral", "displayName": "Off-White", "canonical": "#E8ECFF", "tonalRamp": ["#1a1e33", "#2a3360", "#4a5488", "#7681b0", "#909acb", "#b6bde0", "#d3d9f2", "#e8ecff"] },
-      "resource-gold": { "role": "accent", "displayName": "Resource Gold", "canonical": "#FFD700", "tonalRamp": ["#332b00", "#665600", "#998200", "#ccae00", "#ffd700", "#ffe24d", "#ffed99", "#fff7cc"] }
+      "primary": {
+        "role": "primary",
+        "displayName": "Electric Blue",
+        "canonical": "#0D33F2",
+        "tonalRamp": [
+          "#040a2e",
+          "#071451",
+          "#0a1f7d",
+          "#0d33f2",
+          "#2e5cff",
+          "#5c82ff",
+          "#9aaeff",
+          "#d6dfff"
+        ]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Magenta",
+        "canonical": "#DB2777",
+        "tonalRamp": [
+          "#2e0819",
+          "#4d0f2a",
+          "#7d1a45",
+          "#b31f61",
+          "#db2777",
+          "#e85a9b",
+          "#f299c1",
+          "#fcd8e8"
+        ]
+      },
+      "bg-void": {
+        "role": "neutral",
+        "displayName": "The Void",
+        "canonical": "#0B0F19",
+        "tonalRamp": [
+          "#05070d",
+          "#0b0f19",
+          "#101322",
+          "#151a2e",
+          "#232a45",
+          "#3a446b",
+          "#6b76a3",
+          "#c3c9e0"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "#101322",
+        "tonalRamp": [
+          "#0b0f19",
+          "#101322",
+          "#151a2e",
+          "#1c2338",
+          "#2a3360",
+          "#404b82",
+          "#7681b0",
+          "#c9cfe6"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Off-White",
+        "canonical": "#E8ECFF",
+        "tonalRamp": [
+          "#1a1e33",
+          "#2a3360",
+          "#4a5488",
+          "#7681b0",
+          "#909acb",
+          "#b6bde0",
+          "#d3d9f2",
+          "#e8ecff"
+        ]
+      },
+      "resource-gold": {
+        "role": "accent",
+        "displayName": "Resource Gold",
+        "canonical": "#FFD700",
+        "tonalRamp": [
+          "#332b00",
+          "#665600",
+          "#998200",
+          "#ccae00",
+          "#ffd700",
+          "#ffe24d",
+          "#ffed99",
+          "#fff7cc"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Hero and logo moments only, e.g. boss name or level-up." },
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero and logo moments only, e.g. boss name or level-up."
+      },
       "headline": { "displayName": "Headline", "purpose": "Screen titles." },
       "title": { "displayName": "Title", "purpose": "Section and card headings." },
       "body": { "displayName": "Body", "purpose": "Reading text and descriptions; ~65-75ch." },
-      "label": { "displayName": "Label", "purpose": "Widely tracked HUD labels and stat chips, often uppercase." }
+      "label": {
+        "displayName": "Label",
+        "purpose": "Widely tracked HUD labels and stat chips, often uppercase."
+      }
     },
     "shadows": [
-      { "name": "sticker", "value": "0px 6px 0px #060812", "purpose": "Hard zero-blur stamp under interactive cards and buttons." },
-      { "name": "primary-glow", "value": "0 0 24px rgba(13, 51, 242, 0.45)", "purpose": "Powered-on halo under the single hero action." }
+      {
+        "name": "sticker",
+        "value": "0px 6px 0px #060812",
+        "purpose": "Hard zero-blur stamp under interactive cards and buttons."
+      },
+      {
+        "name": "primary-glow",
+        "value": "0 0 24px rgba(13, 51, 242, 0.45)",
+        "purpose": "Powered-on halo under the single hero action."
+      }
     ],
     "motion": [
-      { "name": "quick", "value": "spring(damping 20, mass 1.2, stiffness 250)", "purpose": "Default button/card press interaction." },
-      { "name": "bouncy", "value": "spring(damping 14, mass 0.8, stiffness 150)", "purpose": "Playful game-feel entrances." },
-      { "name": "lazy", "value": "spring(damping 20, stiffness 60)", "purpose": "Slow ambient transitions." },
-      { "name": "pulse", "value": "spring(damping 10, mass 0.9, stiffness 100)", "purpose": "Subtle idle/attention states." }
+      {
+        "name": "quick",
+        "value": "spring(damping 20, mass 1.2, stiffness 250)",
+        "purpose": "Default button/card press interaction."
+      },
+      {
+        "name": "bouncy",
+        "value": "spring(damping 14, mass 0.8, stiffness 150)",
+        "purpose": "Playful game-feel entrances."
+      },
+      {
+        "name": "lazy",
+        "value": "spring(damping 20, stiffness 60)",
+        "purpose": "Slow ambient transitions."
+      },
+      {
+        "name": "pulse",
+        "value": "spring(damping 10, mass 0.9, stiffness 100)",
+        "purpose": "Subtle idle/attention states."
+      }
     ],
     "breakpoints": []
   },
@@ -91,10 +205,26 @@
       "Meaning never rides on color alone; icons and labels back every state."
     ],
     "rules": [
-      { "name": "The One Signal Rule", "body": "Electric Blue marks a single primary action per screen. If two things are blue, the user can't tell which to press. Everything else is neutral, secondary, or a resource hue.", "section": "colors" },
-      { "name": "The Reserved Resource Rule", "body": "The resource palette (gold, wood, stone, fire, water, wind, grain) is never borrowed for decoration. A resource color always means that resource.", "section": "colors" },
-      { "name": "The Tracked-Caps-Are-Labels Rule", "body": "The wide 4px tracking is a label device, not a heading device. Use it for small HUD labels and stat chips; never stretch it across a paragraph or a long title.", "section": "typography" },
-      { "name": "The Hard-or-Glow Rule", "body": "Depth is a hard offset stamp on things you touch, or a colored glow on the one thing you should touch. Never a soft grey blur; that reads as generic Material and breaks the HUD world.", "section": "elevation" }
+      {
+        "name": "The One Signal Rule",
+        "body": "Electric Blue marks a single primary action per screen. If two things are blue, the user can't tell which to press. Everything else is neutral, secondary, or a resource hue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Reserved Resource Rule",
+        "body": "The resource palette (gold, wood, stone, fire, water, wind, grain) is never borrowed for decoration. A resource color always means that resource.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tracked-Caps-Are-Labels Rule",
+        "body": "The wide 4px tracking is a label device, not a heading device. Use it for small HUD labels and stat chips; never stretch it across a paragraph or a long title.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hard-or-Glow Rule",
+        "body": "Depth is a hard offset stamp on things you touch, or a colored glow on the one thing you should touch. Never a soft grey blur; that reads as generic Material and breaks the HUD world.",
+        "section": "elevation"
+      }
     ],
     "dos": [
       "Do reserve Electric Blue (#0D33F2) for a single primary action per screen; back it with Primary Glow when it's the hero action.",

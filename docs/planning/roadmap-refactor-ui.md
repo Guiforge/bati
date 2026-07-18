@@ -327,7 +327,7 @@ Quand vous implémentez un composant ou migrez un écran, la description (ou not
 
 Ces flows servent de **checklist QA** pendant la migration UI (éviter les régressions de navigation et de cohérence visuelle).
 
-> Voir aussi la carte de navigation complète : `docs/PRODUCT_GUIDE.md`.
+> Voir aussi la carte de navigation complète : [`docs/product/user-guide.md`](../product/user-guide.md).
 
 ### Onboarding
 

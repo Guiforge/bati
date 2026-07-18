@@ -9,7 +9,6 @@ import {
   dealDamage,
   getOrCreateBossFight,
 } from "@/db/bossFights";
-import { processSessionBuildingsFromResources, type SessionBuildingResult } from "@/db/buildings";
 import {
   type CompletedExerciseInput,
   createCompletedSession,
@@ -19,11 +18,6 @@ import { recordSessionForGoal } from "@/db/goals";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { isDailyQuest, type Quest } from "@/db/quests";
-import {
-  awardSessionResources,
-  type ExerciseResultForResources,
-  type ResourceLoot,
-} from "@/db/resources";
 import type { DifficultyCode, FeedbackCode, MuscleCode } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
@@ -87,8 +81,6 @@ interface SessionState {
     sessionId: number;
     xpEarned: number;
     dailyBonusApplied: boolean;
-    loot: ResourceLoot;
-    buildings: SessionBuildingResult;
     newRecords: NewRecordResult[];
     newAchievements: NewAchievementResult[];
     campaign: {
@@ -413,30 +405,6 @@ export const useSessionStore = create<SessionState>()(
       const newLevel = calculateLevelFromXp(newTotalXp);
       const levelUp = newLevel > oldLevel ? { oldLevel, newLevel } : null;
 
-      // Build exercise results with muscles for resource calculation
-      const exerciseResults: ExerciseResultForResources[] = results.map((r) => {
-        const questExercise = quest.exercises.find((qe) => qe.exercise.id === r.exerciseId);
-        return {
-          exerciseId: r.exerciseId,
-          muscles: questExercise?.exercise.muscles ?? [],
-          style: questExercise?.exercise.style ?? "strength",
-          result: { type: r.result.type, value: r.result.value },
-        };
-      });
-
-      // Award resources
-      const loot = await awardSessionResources({
-        durationSeconds,
-        userLevel,
-        completedSessionId: sessionId,
-        exerciseResults,
-      });
-
-      // Process building XP and unlocks from resources (supports style buildings)
-      const buildings = await processSessionBuildingsFromResources({
-        resources: loot.materials,
-      });
-
       const campaign =
         adventureRunStepId != null
           ? await completeAdventureRunStep({
@@ -474,8 +442,6 @@ export const useSessionStore = create<SessionState>()(
         sessionId,
         xpEarned,
         dailyBonusApplied,
-        loot,
-        buildings,
         newRecords,
         newAchievements,
         campaign,

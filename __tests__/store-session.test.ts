@@ -44,24 +44,6 @@ jest.mock("@/db/bossFights", () => ({
     resistancePenalty: false,
   }),
 }));
-jest.mock("@/db/resources", () => ({
-  awardSessionResources: jest.fn().mockResolvedValue({
-    gold: 10,
-    wood: 5,
-    stone: 0,
-    fire: 0,
-    water: 0,
-    wind: 0,
-    grain: 0,
-  }),
-}));
-jest.mock("@/db/buildings", () => ({
-  processSessionBuildings: jest.fn().mockResolvedValue({
-    xpGained: [],
-    levelUps: [],
-    newUnlocks: [],
-  }),
-}));
 jest.mock("@/db/goals", () => ({
   recordSessionForGoal: jest.fn().mockResolvedValue(undefined),
 }));

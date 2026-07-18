@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Avatar, Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { getAvatarById } from "@/constants/avatars";
-import { getResourceInventory } from "@/db/resources";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
@@ -15,16 +14,11 @@ export function HomeHeader() {
   const { villageName } = useUserStore();
   const { avatarId, language } = useSettingsStore();
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
-  const [_gold, setGold] = useState(0);
 
   const avatar = getAvatarById(avatarId);
 
   useEffect(() => {
     getUserLevelInfo().then(setLevelInfo);
-    getResourceInventory().then((inv) => {
-      const goldItem = inv.find((r) => r.resource === "gold");
-      setGold(goldItem?.amount ?? 0);
-    });
   }, []);
 
   const levelTitle = levelInfo ? (language === "fr" ? levelInfo.title.fr : levelInfo.title.en) : "";

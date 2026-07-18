@@ -187,7 +187,6 @@ async function calculateBossHp(adventureId: number): Promise<number> {
 /**
  * Deal damage to a boss after completing an exercise.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Boss damage calculation with phase transitions and combat logic
 export async function dealDamage(
   bossFightId: number,
   params: {

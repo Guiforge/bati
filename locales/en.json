@@ -138,6 +138,8 @@
     "filters_show": "Show",
     "filters_hide": "Hide",
     "filters_clear": "Clear filters",
+    "filters_close": "Close filters",
+    "filters_show_results": "Show {{count}} quests",
     "filter_muscles": "Muscles",
     "filter_equipment": "Equipment",
     "all": "All",

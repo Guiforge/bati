@@ -47,7 +47,7 @@ type QuestMeta = {
 };
 
 const PAGE_SIZE = 10;
-const FILTER_HANDLE_HEIGHT = 64;
+const FILTER_TRIGGER_SPACE = 64;
 const ANDROID_MIN_BOTTOM_INSET = 24;
 
 export default function QuestsGallery() {
@@ -75,6 +75,11 @@ export default function QuestsGallery() {
     setSelectedEquipment(e);
     setVisibleCount(PAGE_SIZE);
   }, []);
+
+  const clearFilters = useCallback(() => {
+    selectMuscle(null);
+    selectEquipment(null);
+  }, [selectEquipment, selectMuscle]);
 
   const load = useCallback(async () => {
     setState((s) => ({ status: "loading", quests: s.quests, exercisesById: s.exercisesById }));
@@ -301,6 +306,9 @@ export default function QuestsGallery() {
               <Paragraph color="$textSecondary" size="$3">
                 {t("quests.empty_filters_subtitle", "Try removing filters.")}
               </Paragraph>
+              <AppButton fullWidth={false} variant="secondary" onPress={clearFilters}>
+                {t("quests.filters_clear", "Clear filters")}
+              </AppButton>
             </YStack>
           </Card>
         </YStack>
@@ -350,7 +358,7 @@ export default function QuestsGallery() {
             paddingTop: 8,
             paddingBottom:
               Math.max(insets.bottom, Platform.OS === "android" ? ANDROID_MIN_BOTTOM_INSET : 0) +
-              FILTER_HANDLE_HEIGHT +
+              FILTER_TRIGGER_SPACE +
               30,
           }}
         />
@@ -365,7 +373,7 @@ export default function QuestsGallery() {
         selectedEquipment={selectedEquipment}
         onSelectEquipment={selectEquipment}
         bottomInset={insets.bottom}
-        handleHeight={FILTER_HANDLE_HEIGHT}
+        resultCount={filtered.length}
       />
     </YStack>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Card, Paragraph, XStack, YStack } from "tamagui";
+import { Paragraph, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
 import { BOSS_LOW_HP_TAUNTS, BOSS_TAUNTS } from "@/constants/bossTaunts";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -56,16 +57,15 @@ export function BossTauntOverlay() {
       <XStack items="flex-end" gap="$2">
         {/* Comic Bubble */}
         <Card
-          bg="white"
+          bg="$surface"
           p="$3"
           rounded="$4"
           borderWidth={1}
-          borderColor="black"
-          maxWidth={200}
-          elevation={5}
+          borderColor="$borderStrong"
+          maxW={200}
           style={{ borderBottomRightRadius: 0 }} // Speech bubble tail effect
         >
-          <Paragraph color="black" fontWeight="bold" fontSize={14}>
+          <Paragraph color="$text" fontWeight="bold" fontSize={14}>
             {taunt}
           </Paragraph>
         </Card>
@@ -77,7 +77,7 @@ export function BossTauntOverlay() {
           bg="$primary"
           rounded="$10"
           borderWidth={1}
-          borderColor="black"
+          borderColor="$borderStrong"
           overflow="hidden"
           items="center"
           justify="center"

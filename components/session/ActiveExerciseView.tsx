@@ -1,8 +1,10 @@
+import { ChevronDown, ChevronUp, Pause } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { GameIcon } from "@/components/common/GameIcon";
 import { getExerciseBgForSessionStep } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -111,10 +113,11 @@ export function ActiveExerciseView() {
         <Button
           size="$3"
           circular
-          icon={<Text fontSize={20}>⏸️</Text>}
+          icon={<Pause size={20} color="$text" />}
           onPress={pauseSession}
           chromeless
           hoverStyle={{ bg: "$pastelBlue" }}
+          pressStyle={{ opacity: 0.7 }}
           accessibilityLabel={t("session.pause_accessibility")}
           accessibilityRole="button"
         />
@@ -205,7 +208,7 @@ export function ActiveExerciseView() {
           justify="center"
         >
           {/* In a real app, we'd resolve currentEx.exercise.imagePath */}
-          <Text fontSize={50}>🏋️</Text>
+          <GameIcon name="muscle" size={64} color="$textSecondary" />
         </YStack>
 
         {/* Exercise Name + How to do it */}
@@ -235,9 +238,11 @@ export function ActiveExerciseView() {
                   <Text fontSize={12} fontWeight="700" color="$textSecondary">
                     {t("session.how_to_do_it")}
                   </Text>
-                  <Text fontSize={12} color="$textSecondary">
-                    {showHowTo ? "▲" : "▼"}
-                  </Text>
+                  {showHowTo ? (
+                    <ChevronUp size={14} color="$textSecondary" />
+                  ) : (
+                    <ChevronDown size={14} color="$textSecondary" />
+                  )}
                 </XStack>
               </Pressable>
               {showHowTo && (

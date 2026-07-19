@@ -452,6 +452,8 @@
     "pr_longest_session": "Plus long entraînement",
     "pr_more": "+{{count}} autres records",
     "summary_saving": "Enregistrement de ta séance…",
+    "summary_empty_title": "Beau boulot !",
+    "summary_empty_subtitle": "Séance enregistrée — garde ta série en vie.",
     "continue": "Continuer",
     "village_upgrades": "Améliorations du village",
     "building_unlocked": "Débloqué",

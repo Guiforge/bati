@@ -127,12 +127,13 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       month: "short",
     }).format(new Date(session.performedAt));
 
-    // Color based on difficulty level
-    let barColor = "#6366F1"; // primary - medium
+    // Color based on difficulty level (matches tamagui.config.ts token hex values —
+    // gifted-charts can't consume Tamagui tokens, so these must be kept in sync by hand)
+    let barColor = "#0D33F2"; // $primary - medium
     if (session.userLevel === "easy") {
-      barColor = "#22C55E"; // success - easy
+      barColor = "#16A34A"; // $success - easy
     } else if (session.userLevel === "hard") {
-      barColor = "#EF4444"; // error - hard
+      barColor = "#FF1744"; // $error - hard
     }
 
     return {
@@ -211,13 +212,13 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             maxValue={yAxisMax}
             yAxisThickness={0}
             xAxisThickness={1}
-            xAxisColor="#E5E7EB"
+            xAxisColor="#2A3360"
             yAxisTextStyle={{
-              color: "#9CA3AF",
+              color: "#909ACB",
               fontSize: 10,
             }}
             xAxisLabelTextStyle={{
-              color: "#9CA3AF",
+              color: "#909ACB",
               fontSize: 9,
               transform: [{ rotate: "-45deg" }],
             }}
@@ -230,19 +231,19 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         {/* Legend */}
         <XStack gap="$4" justify="center" flexWrap="wrap">
           <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="#22C55E" />
+            <YStack width={12} height={12} rounded={6} bg="$success" />
             <Text fontSize={11} color="$color" opacity={0.7}>
               {t("quests.level_easy")}
             </Text>
           </XStack>
           <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="#6366F1" />
+            <YStack width={12} height={12} rounded={6} bg="$primary" />
             <Text fontSize={11} color="$color" opacity={0.7}>
               {t("quests.level_medium")}
             </Text>
           </XStack>
           <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="#EF4444" />
+            <YStack width={12} height={12} rounded={6} bg="$error" />
             <Text fontSize={11} color="$color" opacity={0.7}>
               {t("quests.level_hard")}
             </Text>

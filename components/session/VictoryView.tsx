@@ -1,3 +1,4 @@
+import { Share2 } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,6 +9,7 @@ import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { GameIcon } from "@/components/common/GameIcon";
 import { useToast } from "@/components/common/Toast";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { SOUNDS } from "@/constants/sounds";
@@ -152,7 +154,7 @@ export function VictoryView() {
         {/* Hero */}
         <Card bg={questBg} width="100%" maxW={520} mt="$4">
           <YStack items="center" gap="$2">
-            <Text fontSize={64}>{isBossDefeat ? "⚔️" : "🏆"}</Text>
+            <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={64} color="$primary" />
             <Text
               fontWeight="700"
               color="$textSecondary"
@@ -307,7 +309,7 @@ export function VictoryView() {
           pressStyle={{ opacity: 0.8, scale: 0.98 }}
           accessibilityLabel={t("session.share", "Share Result")}
         >
-          <Text fontSize={22}>📤</Text>
+          <Share2 size={22} color="$text" />
         </Button>
         <AppButton
           onPress={handleContinue}

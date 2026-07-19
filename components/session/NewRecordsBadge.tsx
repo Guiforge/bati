@@ -11,6 +11,7 @@ import Animated, {
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import type { NewRecordResult } from "@/db/personalRecords";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
 
 type Props = {
@@ -52,16 +53,18 @@ const AnimatedView = Animated.View;
 export function NewRecordsBadge({ records }: Props) {
   const { t } = useTranslation();
   const { language } = useSettingsStore();
+  const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
 
   useEffect(() => {
+    if (reducedMotion) return;
     // Pulse animation
     scale.value = withRepeat(
       withSequence(withTiming(1.03, { duration: 500 }), withTiming(1, { duration: 500 })),
       3,
       false,
     );
-  }, [scale]);
+  }, [scale, reducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

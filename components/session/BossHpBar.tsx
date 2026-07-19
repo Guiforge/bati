@@ -1,3 +1,4 @@
+import { Swords, Target, Zap } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
@@ -99,18 +100,25 @@ export function BossHpBar({
             position="absolute"
             t={-24}
             r={0}
+            items="center"
+            gap="$1"
             animation="bouncy"
             enterStyle={{ opacity: 0, y: 10, scale: 0.8 }}
             exitStyle={{ opacity: 0, y: -10 }}
           >
+            {lastDamage.isCritical ? (
+              <Zap size={18} color="$error" />
+            ) : (
+              <Swords size={14} color="$secondary" />
+            )}
             <Text
               fontWeight="700"
               fontSize={lastDamage.isCritical ? 20 : 16}
               color={lastDamage.isCritical ? "$error" : "$secondary"}
             >
-              {lastDamage.isCritical ? `💥 ${t("common.crit")} ` : "⚔️ "}-{lastDamage.damage}
-              {lastDamage.weaknessBonus ? " 🎯" : ""}
+              {lastDamage.isCritical ? `${t("common.crit")} ` : ""}-{lastDamage.damage}
             </Text>
+            {lastDamage.weaknessBonus && <Target size={14} color="$secondary" />}
           </XStack>
         )}
       </YStack>

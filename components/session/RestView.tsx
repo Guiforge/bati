@@ -2,6 +2,7 @@ import { Minus, Plus } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
+import { GameIcon } from "@/components/common/GameIcon";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -71,7 +72,7 @@ export function RestView() {
         animation={reducedMotion ? undefined : "bouncy"}
         enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
       >
-        <Text fontSize={40}>🔥</Text>
+        <GameIcon name="flame" size={40} color="$warning" />
         <H3 color="$text" fontWeight="700">
           {t("session.rest_title")}
         </H3>
@@ -208,7 +209,7 @@ export function RestView() {
             borderWidth={1}
             borderColor="$borderStrong"
           >
-            <Text fontSize={24}>🏋️</Text>
+            <GameIcon name="muscle" size={28} color="$textSecondary" />
           </YStack>
           <YStack flex={1}>
             <Text fontWeight="700" fontSize={18} numberOfLines={1} color="$text">

@@ -256,6 +256,8 @@
     "pr_new_record": "New Record",
     "pr_more": "+{{count}} more records",
     "summary_saving": "Saving your workout…",
+    "summary_empty_title": "Nice work!",
+    "summary_empty_subtitle": "Session logged — keep your streak alive.",
     "continue": "Continue",
     "village_upgrades": "Village Upgrades",
     "building_unlocked": "Unlocked",

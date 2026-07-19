@@ -1,7 +1,8 @@
 import { AlertTriangle, Play, X } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button, Card, Text, XStack, YStack } from "tamagui";
+import { Button, Text, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
 import { useHaptics } from "@/hooks/useHaptics";
 import { type RecoverableSession, useSessionRecovery } from "@/hooks/useSessionRecovery";
 
@@ -40,15 +41,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
   };
 
   return (
-    <Card
-      bg="$pastelOrange"
-      p="$4"
-      borderWidth={1}
-      borderColor="$borderStrong"
-      rounded="$6"
-      animation="quick"
-      enterStyle={{ opacity: 0, y: -10 }}
-    >
+    <Card bg="$pastelOrange" rounded="$6" animation="quick" enterStyle={{ opacity: 0, y: -10 }}>
       <YStack gap="$3">
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primary" />

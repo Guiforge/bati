@@ -1,12 +1,10 @@
 {
   "expo": {
-    "jsEngine": "hermes",
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/app-icon.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.bati"
     },
@@ -20,7 +18,6 @@
       "bundleIdentifier": "com.anonymous.bati"
     },
     "name": "bati",
-    "newArchEnabled": true,
     "orientation": "portrait",
     "plugins": [
       [

@@ -21,7 +21,7 @@ export function AppBackground({ opacity = 0.18 }: AppBackgroundProps) {
     <YStack fullscreen pointerEvents="none" bg="$bgDark">
       <Image
         source={backgroundImage}
-        style={[StyleSheet.absoluteFillObject, { opacity }]}
+        style={[StyleSheet.absoluteFill, { opacity }]}
         contentFit="cover"
       />
     </YStack>

@@ -1,8 +1,10 @@
 import { ChevronLeft, Sparkles } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
@@ -12,8 +14,9 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
-import type { ActiveAdventureRun, AdventureDetails } from "@/db";
+import type { ActiveAdventureRun, AdventureDetails, AdventureStepTemplate } from "@/db";
 import {
   Difficulty,
   estimateQuestTemplateSeconds,
@@ -27,7 +30,16 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import { computeSessionXp } from "@/db/xp";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
+
+function resolveImage(
+  path: string | null | undefined,
+  getAsset: (id: string) => ImageSourcePropType,
+): ImageSourcePropType | null {
+  if (!path) return null;
+  return path.startsWith("http") ? { uri: path } : getAsset(path);
+}
 
 type LoadState =
   | {
@@ -73,6 +85,7 @@ export default function AdventureDetailsScreen() {
   const { t } = useTranslation();
   const { language } = useSettingsStore();
   const { showError } = useToast();
+  const reducedMotion = useReducedMotion();
   const [isStarting, setIsStarting] = useState(false);
 
   const adventureId = useMemo(() => {
@@ -145,6 +158,9 @@ export default function AdventureDetailsScreen() {
   const details = state.details;
   const run = state.activeRun;
   const suggestedDifficulty = state.suggestedDifficulty;
+  // A started run pins its difficulty for the whole campaign (schema comment on
+  // `difficultyOverride`); once set, every step must honor it instead of a fresh suggestion.
+  const effectiveDifficulty = run?.run.difficultyOverride ?? suggestedDifficulty;
 
   const langKey = language;
 
@@ -163,6 +179,7 @@ export default function AdventureDetailsScreen() {
   const effectiveSteps = details?.steps ?? [];
   const activeStep = run?.activeStep ?? null;
   const isBoss = details?.adventure.kind === "boss";
+  const heroImage = resolveImage(details?.adventure.imagePath, getAdventureAsset);
 
   const activeTemplateStep = useMemo(() => {
     if (!details) return null;
@@ -184,16 +201,16 @@ export default function AdventureDetailsScreen() {
     const durationSeconds = estimateQuestTemplateSeconds({
       template: activeTemplateStep.quest,
       exercisesById: state.exercisesById,
-      userLevel: suggestedDifficulty,
+      userLevel: effectiveDifficulty,
     });
 
-    const xp = computeSessionXp({ durationSeconds, userLevel: suggestedDifficulty });
+    const xp = computeSessionXp({ durationSeconds, userLevel: effectiveDifficulty });
 
     return {
       durationSeconds,
       xp,
     };
-  }, [activeTemplateStep, state.exercisesById, suggestedDifficulty]);
+  }, [activeTemplateStep, state.exercisesById, effectiveDifficulty]);
 
   const handleStartOrContinue = useCallback(async () => {
     if (!details || adventureId == null || isStarting) return;
@@ -213,8 +230,9 @@ export default function AdventureDetailsScreen() {
         return;
       }
 
+      const level = nextRun.run.difficultyOverride ?? suggestedDifficulty;
       router.push(
-        `/quests/${step.questId}?level=${encodeURIComponent(suggestedDifficulty)}&runStepId=${step.id}` as never,
+        `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}` as never,
       );
     } catch (e) {
       setIsStarting(false);
@@ -234,6 +252,58 @@ export default function AdventureDetailsScreen() {
     const tone = status === "completed" ? "primary" : status === "active" ? "secondary" : "default";
 
     return <Tag label={label} tone={tone} />;
+  };
+
+  const AdventureStepRow = ({ step }: { step: AdventureStepTemplate }) => {
+    const rs = run?.steps.find((x) => x.stepIndex === step.stepIndex);
+    const status: "locked" | "active" | "completed" =
+      rs?.status ?? (step.stepIndex === 0 ? "active" : "locked");
+
+    const stepTitle = langKey === "fr" ? step.quest.frTitle : step.quest.enTitle;
+
+    const narrative =
+      langKey === "fr"
+        ? step.frNarrative || step.enNarrative
+        : step.enNarrative || step.frNarrative;
+
+    const stepImage = resolveImage(step.imagePath, getQuestAsset);
+
+    return (
+      <XStack
+        items="center"
+        justify="space-between"
+        gap="$3"
+        borderBottomWidth={1}
+        borderColor="$borderStrong"
+        pb="$3"
+      >
+        <XStack flex={1} items="center" gap="$3">
+          {stepImage ? (
+            <Image
+              source={stepImage}
+              style={{ width: 44, height: 44, borderRadius: 10 }}
+              contentFit="cover"
+              accessible={false}
+            />
+          ) : null}
+
+          <YStack flex={1}>
+            <Text fontWeight="700" color="$text">
+              {t("adventures.step_label", { count: step.stepIndex + 1 })}
+              {": "}
+              {stepTitle}
+            </Text>
+            {narrative ? (
+              <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
+                {narrative}
+              </Paragraph>
+            ) : null}
+          </YStack>
+        </XStack>
+
+        <StepStatusTag status={status} />
+      </XStack>
+    );
   };
 
   if (!adventureId) {
@@ -271,7 +341,7 @@ export default function AdventureDetailsScreen() {
               </XStack>
             </XStack>
 
-            <Tag label={levelLabel(toDifficultyEnum(suggestedDifficulty), t)} tone="secondary" />
+            <Tag label={levelLabel(toDifficultyEnum(effectiveDifficulty), t)} tone="secondary" />
           </XStack>
 
           {state.status === "error" ? (
@@ -299,8 +369,24 @@ export default function AdventureDetailsScreen() {
           ) : null}
 
           {details ? (
-            <Card bg={tokens?.bg ?? "$surface"}>
-              <YStack gap="$2">
+            <Card
+              bg={tokens?.bg ?? "$surface"}
+              p="$0"
+              overflow="hidden"
+              animation={reducedMotion ? undefined : "bouncy"}
+              enterStyle={{ opacity: 0, scale: 0.96, y: 10 }}
+            >
+              {heroImage ? (
+                <Image
+                  source={heroImage}
+                  style={{ width: "100%", height: 180 }}
+                  contentFit="cover"
+                  transition={200}
+                  accessible={false}
+                />
+              ) : null}
+
+              <YStack gap="$2" p="$4">
                 <H2 color="$text" fontWeight="700" fontSize={26}>
                   {title}
                 </H2>
@@ -353,47 +439,9 @@ export default function AdventureDetailsScreen() {
                 </Text>
 
                 <YStack gap="$2">
-                  {effectiveSteps.map((s) => {
-                    const rs = run?.steps.find((x) => x.stepIndex === s.stepIndex);
-                    const status: "locked" | "active" | "completed" =
-                      rs?.status ?? (s.stepIndex === 0 ? "active" : "locked");
-
-                    const stepTitle = langKey === "fr" ? s.quest.frTitle : s.quest.enTitle;
-
-                    const narrative =
-                      langKey === "fr"
-                        ? s.frNarrative || s.enNarrative
-                        : s.enNarrative || s.frNarrative;
-
-                    return (
-                      <XStack
-                        key={s.stepIndex}
-                        items="center"
-                        justify="space-between"
-                        gap="$3"
-                        borderBottomWidth={1}
-                        borderColor="$borderStrong"
-                        pb="$3"
-                      >
-                        <YStack flex={1}>
-                          <Text fontWeight="700" color="$text">
-                            {t("adventures.step_label", {
-                              count: s.stepIndex + 1,
-                            })}
-                            {": "}
-                            {stepTitle}
-                          </Text>
-                          {narrative ? (
-                            <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
-                              {narrative}
-                            </Paragraph>
-                          ) : null}
-                        </YStack>
-
-                        <StepStatusTag status={status} />
-                      </XStack>
-                    );
-                  })}
+                  {effectiveSteps.map((s) => (
+                    <AdventureStepRow key={s.stepIndex} step={s} />
+                  ))}
                 </YStack>
               </YStack>
             </Card>

@@ -91,34 +91,47 @@ export type AdventureAssetKey = keyof typeof ADVENTURE_ASSETS;
 // ============================================================
 
 /**
- * Get exercise asset by ID (with fallback to placeholder)
+ * Content keys are bare names (e.g. "goblin_squat"); DB imagePath columns store the full
+ * bundled path (e.g. "assets/images/exercises/goblin_squat.png"). Strip directory + extension
+ * so either form resolves to the same map key.
  */
-export function getExerciseAsset(id: string) {
-  const key =
+function keyFromPath(id: string): string {
+  return (
     id
       .split("/")
       .pop()
-      ?.replace(/\.[^.]+$/, "") ?? id;
-  return EXERCISE_ASSETS[key as ExerciseAssetKey] ?? require("@/assets/placeholder.jpg");
+      ?.replace(/\.[^.]+$/, "") ?? id
+  );
+}
+
+/**
+ * Get exercise asset by ID (with fallback to placeholder)
+ */
+export function getExerciseAsset(id: string) {
+  return (
+    EXERCISE_ASSETS[keyFromPath(id) as ExerciseAssetKey] ?? require("@/assets/placeholder.jpg")
+  );
 }
 
 /**
  * Get quest cover asset by ID (with fallback to placeholder)
  */
 export function getQuestAsset(id: string) {
-  return QUEST_ASSETS[id as QuestAssetKey] ?? require("@/assets/placeholder.jpg");
+  return QUEST_ASSETS[keyFromPath(id) as QuestAssetKey] ?? require("@/assets/placeholder.jpg");
 }
 
 /**
  * Get boss asset by ID (with fallback to placeholder)
  */
 export function getBossAsset(id: string) {
-  return BOSS_ASSETS[id as BossAssetKey] ?? require("@/assets/placeholder.jpg");
+  return BOSS_ASSETS[keyFromPath(id) as BossAssetKey] ?? require("@/assets/placeholder.jpg");
 }
 
 /**
  * Get adventure cover asset by ID (with fallback to placeholder)
  */
 export function getAdventureAsset(id: string) {
-  return ADVENTURE_ASSETS[id as AdventureAssetKey] ?? require("@/assets/placeholder.jpg");
+  return (
+    ADVENTURE_ASSETS[keyFromPath(id) as AdventureAssetKey] ?? require("@/assets/placeholder.jpg")
+  );
 }

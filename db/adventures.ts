@@ -26,6 +26,7 @@ export type AdventureStepTemplate = {
   enNarrative: string;
   frNarrative: string;
   quest: QuestTemplate;
+  imagePath: string | null;
 };
 
 export type AdventureRun = {
@@ -61,6 +62,7 @@ export type Adventure = {
   frDescription: string;
   coverQuest: QuestTemplate;
   stepsCount: number;
+  imagePath: string | null;
 };
 
 export type AdventureDetails = {
@@ -76,6 +78,7 @@ export type AdventureDetails = {
     | "enDescription"
     | "frDescription"
     | "coverQuestId"
+    | "imagePath"
   >;
   steps: AdventureStepTemplate[];
 };
@@ -112,6 +115,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
       advFrTitle: adventures.frTitle,
       advEnDescription: adventures.enDescription,
       advFrDescription: adventures.frDescription,
+      advImagePath: adventures.imagePath,
 
       enTitle: quests.enTitle,
       frTitle: quests.frTitle,
@@ -178,6 +182,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
         frDescription: r.advFrDescription,
         coverQuest: quest,
         stepsCount: stepsCountByAdventureId.get(r.adventureId) ?? 0,
+        imagePath: r.advImagePath,
       });
     }
 
@@ -233,6 +238,7 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
       frTitle: adventures.frTitle,
       enDescription: adventures.enDescription,
       frDescription: adventures.frDescription,
+      imagePath: adventures.imagePath,
     })
     .from(adventures)
     .where(eq(adventures.id, adventureId))
@@ -249,6 +255,7 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
       questId: adventureSteps.questId,
       enNarrative: adventureSteps.enNarrative,
       frNarrative: adventureSteps.frNarrative,
+      imagePath: adventureSteps.imagePath,
     })
     .from(adventureSteps)
     .where(eq(adventureSteps.adventureId, adventureId))
@@ -265,6 +272,7 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
             questId: first.coverQuestId,
             enNarrative: "",
             frNarrative: "",
+            imagePath: first.imagePath,
           },
         ];
 
@@ -280,6 +288,7 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
       enNarrative: s.enNarrative,
       frNarrative: s.frNarrative,
       quest: q,
+      imagePath: s.imagePath,
     });
   }
 
@@ -295,6 +304,7 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
       frTitle: first.frTitle,
       enDescription: first.enDescription,
       frDescription: first.frDescription,
+      imagePath: first.imagePath,
     },
     steps: resolved,
   };

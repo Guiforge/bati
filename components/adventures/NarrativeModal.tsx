@@ -2,6 +2,7 @@ import { BlurView } from "expo-blur";
 import { useTranslation } from "react-i18next";
 import { Modal, Pressable } from "react-native";
 import { Button, Card, H3, Paragraph, ScrollView, Text, YStack } from "tamagui";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface NarrativeModalProps {
   visible: boolean;
@@ -23,6 +24,7 @@ export function NarrativeModal({
 }: NarrativeModalProps) {
   const { t } = useTranslation();
   const dismiss = onDismiss ?? onClose;
+  const reducedMotion = useReducedMotion();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss}>
@@ -39,6 +41,8 @@ export function NarrativeModal({
             borderWidth={1}
             p="$0"
             overflow="hidden"
+            animation={reducedMotion ? undefined : "bouncy"}
+            enterStyle={{ opacity: 0, scale: 0.9 }}
           >
             {/* Header */}
             <YStack bg="$primary" p="$4" items="center">
@@ -62,6 +66,7 @@ export function NarrativeModal({
                 onPress={onClose}
                 borderWidth={1}
                 borderColor="$borderStrong"
+                animation={reducedMotion ? undefined : "quick"}
                 pressStyle={{ opacity: 0.9, scale: 0.98 }}
               >
                 <Button.Text color="white" fontWeight="bold" fontSize={18}>
@@ -77,6 +82,7 @@ export function NarrativeModal({
                   accessibilityRole="button"
                   accessibilityLabel={t("common.not_now", "Not now")}
                   onPress={onDismiss}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                 >
                   <Text
                     color="$textSecondary"

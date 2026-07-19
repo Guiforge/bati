@@ -1,8 +1,10 @@
 import { LegendList } from "@legendapp/list";
 import { Sparkles } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
@@ -10,6 +12,8 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { GameIcon } from "@/components/common/GameIcon";
+import { getAdventureAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
 import {
   type Adventure,
@@ -20,7 +24,13 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import { computeSessionXp } from "@/db/xp";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
+
+function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
+  if (!path) return null;
+  return path.startsWith("http") ? { uri: path } : getAdventureAsset(path);
+}
 
 type LoadState =
   | { status: "loading"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
@@ -39,6 +49,7 @@ export default function AdventuresGallery() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { language } = useSettingsStore();
+  const reducedMotion = useReducedMotion();
 
   const [state, setState] = useState<LoadState>({
     status: "loading",
@@ -80,6 +91,7 @@ export default function AdventuresGallery() {
   const title = t("adventures.gallery_title", "Adventures");
 
   const renderItem = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Gallery card renderer with cover art + fallback states, refactor planned
     ({ item }: { item: Adventure }) => {
       const q = item.coverQuest;
       const qTitle = language === "fr" ? item.frTitle || q.frTitle : item.enTitle || q.enTitle;
@@ -108,19 +120,53 @@ export default function AdventuresGallery() {
             ? t("adventures.kind_event", "EVENT")
             : t("adventures.kind_route", "ROUTE");
 
+      const cover = resolveCoverImage(item.imagePath);
+      const kindChip = (
+        <Chip
+          label={kindLabel}
+          tone={item.kind === "boss" ? "primary" : undefined}
+          icon={
+            item.kind === "boss" ? (
+              <GameIcon name="sword" size={14} color="$bgDark" accessible={false} />
+            ) : undefined
+          }
+        />
+      );
+
       return (
         <YStack px="$5">
-          <Card bg={tokens.bg} onPress={() => router.push(`/adventures/${item.id}` as never)}>
-            <YStack gap="$3">
+          <Card
+            bg={tokens.bg}
+            p="$0"
+            overflow="hidden"
+            animation={reducedMotion ? undefined : "quick"}
+            onPress={() => router.push(`/adventures/${item.id}` as never)}
+          >
+            {cover ? (
+              <YStack height={140}>
+                <Image
+                  source={cover}
+                  style={{ width: "100%", height: "100%" }}
+                  contentFit="cover"
+                  transition={200}
+                  accessible={false}
+                />
+                <XStack position="absolute" t="$3" l="$3">
+                  {kindChip}
+                </XStack>
+              </YStack>
+            ) : null}
+
+            <YStack gap="$3" p="$4">
               <XStack items="center" justify="space-between" gap="$3">
                 <XStack items="center" gap="$2" flex={1}>
-                  <Text fontSize={22}>🗺️</Text>
+                  {!cover && <Text fontSize={22}>🗺️</Text>}
                   <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1} flex={1}>
                     {qTitle}
                   </Text>
                 </XStack>
 
-                <Chip label={kindLabel} tone={item.kind === "boss" ? "primary" : undefined} />
+                {!cover && kindChip}
               </XStack>
 
               <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
@@ -154,7 +200,7 @@ export default function AdventuresGallery() {
         </YStack>
       );
     },
-    [exercisesById, language, router, t],
+    [exercisesById, language, reducedMotion, router, t],
   );
 
   const StatusMessage = () => {

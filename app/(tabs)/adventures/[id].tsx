@@ -77,6 +77,79 @@ function toDifficultyEnum(code: "easy" | "medium" | "hard"): Difficulty {
   return Difficulty.Medium;
 }
 
+function StepStatusTag({ status }: { status: "locked" | "active" | "completed" }) {
+  const { t } = useTranslation();
+  const label =
+    status === "completed"
+      ? t("adventures.step_completed")
+      : status === "active"
+        ? t("adventures.step_active")
+        : t("adventures.step_locked");
+
+  const tone = status === "completed" ? "primary" : status === "active" ? "secondary" : "default";
+
+  return <Tag label={label} tone={tone} />;
+}
+
+function AdventureStepRow({
+  step,
+  run,
+}: {
+  step: AdventureStepTemplate;
+  run: ActiveAdventureRun | null;
+}) {
+  const { t } = useTranslation();
+  const { language: langKey } = useSettingsStore();
+
+  const rs = run?.steps.find((x) => x.stepIndex === step.stepIndex);
+  const status: "locked" | "active" | "completed" =
+    rs?.status ?? (step.stepIndex === 0 ? "active" : "locked");
+
+  const stepTitle = langKey === "fr" ? step.quest.frTitle : step.quest.enTitle;
+
+  const narrative =
+    langKey === "fr" ? step.frNarrative || step.enNarrative : step.enNarrative || step.frNarrative;
+
+  const stepImage = resolveImage(step.imagePath, getQuestAsset);
+
+  return (
+    <XStack
+      items="center"
+      justify="space-between"
+      gap="$3"
+      borderBottomWidth={1}
+      borderColor="$borderStrong"
+      pb="$3"
+    >
+      <XStack flex={1} items="center" gap="$3">
+        {stepImage ? (
+          <Image
+            source={stepImage}
+            style={{ width: 44, height: 44, borderRadius: 10 }}
+            contentFit="cover"
+            accessible={false}
+          />
+        ) : null}
+
+        <YStack flex={1}>
+          <Text fontWeight="700" color="$text">
+            {t("adventures.step_label", { count: step.stepIndex + 1 })}
+            {": "}
+            {stepTitle}
+          </Text>
+          {narrative ? (
+            <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
+              {narrative}
+            </Paragraph>
+          ) : null}
+        </YStack>
+      </XStack>
+
+      <StepStatusTag status={status} />
+    </XStack>
+  );
+}
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex screen component, refactor planned
 export default function AdventureDetailsScreen() {
   const router = useRouter();
@@ -248,71 +321,6 @@ export default function AdventureDetailsScreen() {
     }
   }, [adventureId, details, isStarting, router, run, showError, suggestedDifficulty, t]);
 
-  const StepStatusTag = ({ status }: { status: "locked" | "active" | "completed" }) => {
-    const label =
-      status === "completed"
-        ? t("adventures.step_completed")
-        : status === "active"
-          ? t("adventures.step_active")
-          : t("adventures.step_locked");
-
-    const tone = status === "completed" ? "primary" : status === "active" ? "secondary" : "default";
-
-    return <Tag label={label} tone={tone} />;
-  };
-
-  const AdventureStepRow = ({ step }: { step: AdventureStepTemplate }) => {
-    const rs = run?.steps.find((x) => x.stepIndex === step.stepIndex);
-    const status: "locked" | "active" | "completed" =
-      rs?.status ?? (step.stepIndex === 0 ? "active" : "locked");
-
-    const stepTitle = langKey === "fr" ? step.quest.frTitle : step.quest.enTitle;
-
-    const narrative =
-      langKey === "fr"
-        ? step.frNarrative || step.enNarrative
-        : step.enNarrative || step.frNarrative;
-
-    const stepImage = resolveImage(step.imagePath, getQuestAsset);
-
-    return (
-      <XStack
-        items="center"
-        justify="space-between"
-        gap="$3"
-        borderBottomWidth={1}
-        borderColor="$borderStrong"
-        pb="$3"
-      >
-        <XStack flex={1} items="center" gap="$3">
-          {stepImage ? (
-            <Image
-              source={stepImage}
-              style={{ width: 44, height: 44, borderRadius: 10 }}
-              contentFit="cover"
-              accessible={false}
-            />
-          ) : null}
-
-          <YStack flex={1}>
-            <Text fontWeight="700" color="$text">
-              {t("adventures.step_label", { count: step.stepIndex + 1 })}
-              {": "}
-              {stepTitle}
-            </Text>
-            {narrative ? (
-              <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
-                {narrative}
-              </Paragraph>
-            ) : null}
-          </YStack>
-        </XStack>
-
-        <StepStatusTag status={status} />
-      </XStack>
-    );
-  };
-
   if (!adventureId) {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
@@ -447,7 +455,7 @@ export default function AdventureDetailsScreen() {
 
                 <YStack gap="$2">
                   {effectiveSteps.map((s) => (
-                    <AdventureStepRow key={s.stepIndex} step={s} />
+                    <AdventureStepRow key={s.stepIndex} step={s} run={run} />
                   ))}
                 </YStack>
               </YStack>

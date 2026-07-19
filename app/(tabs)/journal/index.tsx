@@ -22,6 +22,42 @@ import { useSettingsStore } from "@/stores/settings";
 
 type TabType = "history" | "stats";
 
+function TabButton({
+  tab,
+  icon,
+  label,
+  activeTab,
+  onSelect,
+}: {
+  tab: TabType;
+  icon: React.ReactNode;
+  label: string;
+  activeTab: TabType;
+  onSelect: (tab: TabType) => void;
+}) {
+  const isActive = activeTab === tab;
+  return (
+    <AppButton
+      fullWidth={false}
+      flex={1}
+      height={44}
+      bg={isActive ? "$surface2" : "$surface"}
+      borderColor={isActive ? "$primary" : "$borderStrong"}
+      borderWidth={1}
+      rounded="$5"
+      onPress={() => onSelect(tab)}
+      pressStyle={{ opacity: 0.9 }}
+    >
+      <XStack items="center" gap="$2">
+        {icon}
+        <Text color="$text" fontWeight="700" fontSize={14}>
+          {label}
+        </Text>
+      </XStack>
+    </AppButton>
+  );
+}
+
 export default function JournalScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -82,38 +118,6 @@ export default function JournalScreen() {
     [router],
   );
 
-  const TabButton = ({
-    tab,
-    icon,
-    label,
-  }: {
-    tab: TabType;
-    icon: React.ReactNode;
-    label: string;
-  }) => {
-    const isActive = activeTab === tab;
-    return (
-      <AppButton
-        fullWidth={false}
-        flex={1}
-        height={44}
-        bg={isActive ? "$surface2" : "$surface"}
-        borderColor={isActive ? "$primary" : "$borderStrong"}
-        borderWidth={1}
-        rounded="$5"
-        onPress={() => setActiveTab(tab)}
-        pressStyle={{ opacity: 0.9 }}
-      >
-        <XStack items="center" gap="$2">
-          {icon}
-          <Text color="$text" fontWeight="700" fontSize={14}>
-            {label}
-          </Text>
-        </XStack>
-      </AppButton>
-    );
-  };
-
   return (
     <YStack flex={1} bg="$background">
       <YStack pt={insets.top + 12} px="$4" pb="$3" gap="$4">
@@ -135,11 +139,15 @@ export default function JournalScreen() {
                 <BarChart2 size={16} color="$color" opacity={activeTab === "stats" ? 1 : 0.7} />
               }
               label={t("journal.tab_stats", "Stats")}
+              activeTab={activeTab}
+              onSelect={setActiveTab}
             />
             <TabButton
               tab="history"
               icon={<List size={16} color="$text" opacity={activeTab === "history" ? 1 : 0.7} />}
               label={t("journal.tab_history", "History")}
+              activeTab={activeTab}
+              onSelect={setActiveTab}
             />
           </XStack>
         )}

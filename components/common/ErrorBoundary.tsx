@@ -56,67 +56,61 @@ interface ErrorFallbackProps {
  * Default error fallback UI
  */
 function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
-  // Since this is a function component inside a class component's render,
-  // we can use hooks here
-  const FallbackContent = () => {
-    const { t } = useTranslation();
-    const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
-    return (
-      <YStack
-        flex={1}
-        bg="$background"
-        pt={insets.top + 24}
-        pb={insets.bottom + 24}
-        px="$5"
-        items="center"
-        justify="center"
-        gap="$4"
-      >
-        <Text fontSize={64}>😵</Text>
-        <YStack items="center" gap="$2">
-          <H1 color="$color" fontWeight="700" fontSize={24} style={{ textAlign: "center" }}>
-            {t("errors.something_went_wrong", "Something went wrong")}
-          </H1>
-          <Paragraph color="$color" opacity={0.6} style={{ textAlign: "center" }}>
-            {t("errors.try_again_message", "Don't worry, you can try again.")}
-          </Paragraph>
-        </YStack>
-
-        {__DEV__ && error && (
-          <YStack
-            bg="$pastelPink"
-            p="$3"
-            rounded="$6"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            maxW="100%"
-          >
-            <Text fontSize={12} color="$color" numberOfLines={5}>
-              {error.message}
-            </Text>
-          </YStack>
-        )}
-
-        {onRetry && (
-          <Button
-            bg="$primary"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            rounded="$6"
-            onPress={onRetry}
-            pressStyle={{ opacity: 0.9, scale: 0.98 }}
-          >
-            <Text fontWeight="700" color="white">
-              {t("errors.try_again", "Try Again")}
-            </Text>
-          </Button>
-        )}
+  return (
+    <YStack
+      flex={1}
+      bg="$background"
+      pt={insets.top + 24}
+      pb={insets.bottom + 24}
+      px="$5"
+      items="center"
+      justify="center"
+      gap="$4"
+    >
+      <Text fontSize={64}>😵</Text>
+      <YStack items="center" gap="$2">
+        <H1 color="$color" fontWeight="700" fontSize={24} style={{ textAlign: "center" }}>
+          {t("errors.something_went_wrong", "Something went wrong")}
+        </H1>
+        <Paragraph color="$color" opacity={0.6} style={{ textAlign: "center" }}>
+          {t("errors.try_again_message", "Don't worry, you can try again.")}
+        </Paragraph>
       </YStack>
-    );
-  };
 
-  return <FallbackContent />;
+      {__DEV__ && error && (
+        <YStack
+          bg="$pastelPink"
+          p="$3"
+          rounded="$6"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          maxW="100%"
+        >
+          <Text fontSize={12} color="$color" numberOfLines={5}>
+            {error.message}
+          </Text>
+        </YStack>
+      )}
+
+      {onRetry && (
+        <Button
+          bg="$primary"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          rounded="$6"
+          onPress={onRetry}
+          pressStyle={{ opacity: 0.9, scale: 0.98 }}
+        >
+          <Text fontWeight="700" color="white">
+            {t("errors.try_again", "Try Again")}
+          </Text>
+        </Button>
+      )}
+    </YStack>
+  );
 }
 
 /**

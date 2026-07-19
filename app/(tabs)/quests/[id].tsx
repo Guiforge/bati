@@ -52,6 +52,38 @@ function levelLabel(level: Difficulty, t: TFunction) {
   return t("quests.level_medium", "Medium");
 }
 
+function LevelChip({
+  value,
+  level,
+  onSelect,
+}: {
+  value: Difficulty;
+  level: Difficulty;
+  onSelect: (value: Difficulty) => void;
+}) {
+  const { t } = useTranslation();
+  const active = value === level;
+
+  return (
+    <AppButton
+      onPress={() => onSelect(value)}
+      fullWidth={false}
+      height={40}
+      px="$3"
+      bg={active ? "$primary" : "$surface"}
+      borderColor={active ? "$primary" : "$borderStrong"}
+      borderWidth={1}
+      rounded="$10"
+      fontSize={14}
+      pressStyle={{ opacity: 0.9 }}
+    >
+      <Text color="$text" fontWeight="700">
+        {levelLabel(value, t)}
+      </Text>
+    </AppButton>
+  );
+}
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex screen component, refactor planned
 export default function QuestDetails() {
   const router = useRouter();
@@ -176,29 +208,6 @@ export default function QuestDetails() {
   };
 
   const headerImage = resolveQuestImage(quest?.exercises?.[0]?.images?.[0]);
-
-  const LevelChip = ({ value }: { value: Difficulty }) => {
-    const active = value === level;
-
-    return (
-      <AppButton
-        onPress={() => setLevel(value)}
-        fullWidth={false}
-        height={40}
-        px="$3"
-        bg={active ? "$primary" : "$surface"}
-        borderColor={active ? "$primary" : "$borderStrong"}
-        borderWidth={1}
-        rounded="$10"
-        fontSize={14}
-        pressStyle={{ opacity: 0.9 }}
-      >
-        <Text color="$text" fontWeight="700">
-          {levelLabel(value, t)}
-        </Text>
-      </AppButton>
-    );
-  };
 
   return (
     <YStack flex={1} bg="$background">
@@ -337,9 +346,9 @@ export default function QuestDetails() {
                   <Text fontWeight="700" color="$textSecondary">
                     {t("quests.level", "Level")}
                   </Text>
-                  <LevelChip value={Difficulty.Easy} />
-                  <LevelChip value={Difficulty.Medium} />
-                  <LevelChip value={Difficulty.Hard} />
+                  <LevelChip value={Difficulty.Easy} level={level} onSelect={setLevel} />
+                  <LevelChip value={Difficulty.Medium} level={level} onSelect={setLevel} />
+                  <LevelChip value={Difficulty.Hard} level={level} onSelect={setLevel} />
                 </XStack>
               </YStack>
             </Card>

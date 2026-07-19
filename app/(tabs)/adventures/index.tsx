@@ -44,6 +44,66 @@ type LoadState =
 
 const ANDROID_MIN_BOTTOM_INSET = 24;
 
+function StatusMessage({ state, onRetry }: { state: LoadState; onRetry: () => void }) {
+  const { t } = useTranslation();
+
+  if (state.status === "error") {
+    return (
+      <YStack px="$5">
+        <Card bg="$surface">
+          <YStack gap="$3" items="center" py="$2">
+            <Text fontSize={32}>😵</Text>
+            <Text fontWeight="700" fontSize={16} color="$text">
+              {t("quests.load_error", "Oops!")}
+            </Text>
+            <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
+              {state.message}
+            </Paragraph>
+            <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+              {t("quests.retry", "Retry")} ↻
+            </AppButton>
+          </YStack>
+        </Card>
+      </YStack>
+    );
+  }
+
+  if (state.status === "loading" && state.adventures.length === 0) {
+    return (
+      <YStack px="$5">
+        <Card bg="$surface">
+          <XStack items="center" justify="center" gap="$3" py="$4">
+            <Text fontSize={28}>🏗️</Text>
+            <Text fontWeight="700" fontSize={16} color="$text">
+              {t("quests.loading", "Loading...")}
+            </Text>
+          </XStack>
+        </Card>
+      </YStack>
+    );
+  }
+
+  if (state.status !== "loading" && state.adventures.length === 0) {
+    return (
+      <YStack px="$5">
+        <Card bg="$surface">
+          <YStack gap="$3" items="center" py="$2">
+            <Text fontSize={32}>🏚️</Text>
+            <Text fontWeight="700" fontSize={16} color="$text">
+              {t("adventures.empty_title", "No adventures yet")}
+            </Text>
+            <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
+              {t("adventures.empty_subtitle", "Come back soon!")}
+            </Paragraph>
+          </YStack>
+        </Card>
+      </YStack>
+    );
+  }
+
+  return null;
+}
+
 export default function AdventuresGallery() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -203,72 +263,6 @@ export default function AdventuresGallery() {
     [exercisesById, language, reducedMotion, router, t],
   );
 
-  const StatusMessage = () => {
-    if (state.status === "error") {
-      return (
-        <YStack px="$5">
-          <Card bg="$surface">
-            <YStack gap="$3" items="center" py="$2">
-              <Text fontSize={32}>😵</Text>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("quests.load_error", "Oops!")}
-              </Text>
-              <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
-                {state.message}
-              </Paragraph>
-              <AppButton
-                fullWidth={false}
-                variant="secondary"
-                onPress={() => {
-                  load().catch(() => {
-                    // Error already handled
-                  });
-                }}
-              >
-                {t("quests.retry", "Retry")} ↻
-              </AppButton>
-            </YStack>
-          </Card>
-        </YStack>
-      );
-    }
-
-    if (state.status === "loading" && adventures.length === 0) {
-      return (
-        <YStack px="$5">
-          <Card bg="$surface">
-            <XStack items="center" justify="center" gap="$3" py="$4">
-              <Text fontSize={28}>🏗️</Text>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("quests.loading", "Loading...")}
-              </Text>
-            </XStack>
-          </Card>
-        </YStack>
-      );
-    }
-
-    if (state.status !== "loading" && adventures.length === 0) {
-      return (
-        <YStack px="$5">
-          <Card bg="$surface">
-            <YStack gap="$3" items="center" py="$2">
-              <Text fontSize={32}>🏚️</Text>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("adventures.empty_title", "No adventures yet")}
-              </Text>
-              <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
-                {t("adventures.empty_subtitle", "Come back soon!")}
-              </Paragraph>
-            </YStack>
-          </Card>
-        </YStack>
-      );
-    }
-
-    return null;
-  };
-
   return (
     <YStack flex={1} bg="$background">
       <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
@@ -283,7 +277,14 @@ export default function AdventuresGallery() {
         </Text>
       </YStack>
 
-      <StatusMessage />
+      <StatusMessage
+        state={state}
+        onRetry={() => {
+          load().catch(() => {
+            // Error already handled
+          });
+        }}
+      />
 
       {adventures.length > 0 && (
         <LegendList

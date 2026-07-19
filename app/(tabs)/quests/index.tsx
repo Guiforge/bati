@@ -48,6 +48,97 @@ type QuestMeta = {
 
 const PAGE_SIZE = 10;
 const FILTER_TRIGGER_SPACE = 64;
+
+function StatusMessage({
+  state,
+  filteredCount,
+  onRetry,
+  onClearFilters,
+}: {
+  state: LoadState;
+  filteredCount: number;
+  onRetry: () => void;
+  onClearFilters: () => void;
+}) {
+  const { t } = useTranslation();
+
+  if (state.status === "error") {
+    return (
+      <YStack px="$5">
+        <Card>
+          <YStack gap="$3" items="center" py="$2">
+            <Text fontSize={32}>😵</Text>
+            <Text fontWeight="700" fontSize={16} color="$text">
+              {t("quests.load_error", "Oops!")}
+            </Text>
+            <Paragraph color="$textSecondary" size="$3">
+              {state.message}
+            </Paragraph>
+            <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+              {t("quests.retry", "Retry")} ↻
+            </AppButton>
+          </YStack>
+        </Card>
+      </YStack>
+    );
+  }
+
+  if (state.status === "loading" && state.quests.length === 0) {
+    return (
+      <YStack px="$5">
+        <Card>
+          <XStack items="center" justify="center" gap="$3" py="$4">
+            <Text fontSize={28}>🏗️</Text>
+            <Text fontWeight="700" fontSize={16} color="$text">
+              {t("quests.loading", "Loading...")}
+            </Text>
+          </XStack>
+        </Card>
+      </YStack>
+    );
+  }
+
+  if (state.status !== "loading" && state.quests.length === 0) {
+    return (
+      <YStack px="$5">
+        <Card>
+          <YStack gap="$3" items="center" py="$2">
+            <Text fontSize={32}>🏚️</Text>
+            <Text fontWeight="700" fontSize={16} color="$text">
+              {t("quests.empty_title", "No quests yet")}
+            </Text>
+            <Paragraph color="$textSecondary" size="$3">
+              {t("quests.empty_subtitle", "Come back soon!")}
+            </Paragraph>
+          </YStack>
+        </Card>
+      </YStack>
+    );
+  }
+
+  if (state.status !== "loading" && state.quests.length > 0 && filteredCount === 0) {
+    return (
+      <YStack px="$5">
+        <Card>
+          <YStack gap="$3" items="center" py="$2">
+            <Text fontSize={32}>🔍</Text>
+            <Text fontWeight="700" fontSize={16} color="$text">
+              {t("quests.empty_filters_title", "No matches")}
+            </Text>
+            <Paragraph color="$textSecondary" size="$3">
+              {t("quests.empty_filters_subtitle", "Try removing filters.")}
+            </Paragraph>
+            <AppButton fullWidth={false} variant="secondary" onPress={onClearFilters}>
+              {t("quests.filters_clear", "Clear filters")}
+            </AppButton>
+          </YStack>
+        </Card>
+      </YStack>
+    );
+  }
+
+  return null;
+}
 const ANDROID_MIN_BOTTOM_INSET = 24;
 
 export default function QuestsGallery() {
@@ -230,94 +321,6 @@ export default function QuestsGallery() {
     [exercisesById, language, router, t],
   );
 
-  // Status messages shown when list is empty
-  const StatusMessage = () => {
-    if (state.status === "error") {
-      return (
-        <YStack px="$5">
-          <Card>
-            <YStack gap="$3" items="center" py="$2">
-              <Text fontSize={32}>😵</Text>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("quests.load_error", "Oops!")}
-              </Text>
-              <Paragraph color="$textSecondary" size="$3">
-                {state.message}
-              </Paragraph>
-              <AppButton
-                fullWidth={false}
-                variant="secondary"
-                onPress={() => {
-                  load().catch(() => {
-                    // Error already handled
-                  });
-                }}
-              >
-                {t("quests.retry", "Retry")} ↻
-              </AppButton>
-            </YStack>
-          </Card>
-        </YStack>
-      );
-    }
-
-    if (state.status === "loading" && quests.length === 0) {
-      return (
-        <YStack px="$5">
-          <Card>
-            <XStack items="center" justify="center" gap="$3" py="$4">
-              <Text fontSize={28}>🏗️</Text>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("quests.loading", "Loading...")}
-              </Text>
-            </XStack>
-          </Card>
-        </YStack>
-      );
-    }
-
-    if (state.status !== "loading" && quests.length === 0) {
-      return (
-        <YStack px="$5">
-          <Card>
-            <YStack gap="$3" items="center" py="$2">
-              <Text fontSize={32}>🏚️</Text>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("quests.empty_title", "No quests yet")}
-              </Text>
-              <Paragraph color="$textSecondary" size="$3">
-                {t("quests.empty_subtitle", "Come back soon!")}
-              </Paragraph>
-            </YStack>
-          </Card>
-        </YStack>
-      );
-    }
-
-    if (state.status !== "loading" && quests.length > 0 && filtered.length === 0) {
-      return (
-        <YStack px="$5">
-          <Card>
-            <YStack gap="$3" items="center" py="$2">
-              <Text fontSize={32}>🔍</Text>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("quests.empty_filters_title", "No matches")}
-              </Text>
-              <Paragraph color="$textSecondary" size="$3">
-                {t("quests.empty_filters_subtitle", "Try removing filters.")}
-              </Paragraph>
-              <AppButton fullWidth={false} variant="secondary" onPress={clearFilters}>
-                {t("quests.filters_clear", "Clear filters")}
-              </AppButton>
-            </YStack>
-          </Card>
-        </YStack>
-      );
-    }
-
-    return null;
-  };
-
   return (
     <YStack flex={1} bg="$background">
       {/* Fixed Header - stays in place */}
@@ -341,7 +344,16 @@ export default function QuestsGallery() {
       </YStack>
 
       {/* Status Messages */}
-      <StatusMessage />
+      <StatusMessage
+        state={state}
+        filteredCount={filtered.length}
+        onRetry={() => {
+          load().catch(() => {
+            // Error already handled
+          });
+        }}
+        onClearFilters={clearFilters}
+      />
 
       {/* Scrollable Quest List */}
       {filtered.length > 0 && (

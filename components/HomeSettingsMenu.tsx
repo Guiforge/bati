@@ -24,6 +24,84 @@ import { useSettingsStore } from "@/stores/settings";
 
 type MenuStep = "main" | "language" | "avatar" | "theme" | "haptics" | "sound" | "motion";
 
+function MenuItem({
+  icon,
+  label,
+  onPress,
+  value,
+  color = "$bgLight",
+}: {
+  icon: ReactNode;
+  label: string;
+  onPress: () => void;
+  value?: string;
+  color?: ColorTokens;
+}) {
+  const tamaguiTheme = useTheme();
+  return (
+    <Button
+      onPress={onPress}
+      bg={color}
+      borderWidth={1}
+      borderColor="$borderStrong"
+      rounded="$6"
+      height={60}
+      pressStyle={{ opacity: 0.9, scale: 0.98 }}
+      justify="space-between"
+      px="$4"
+      mb="$3"
+    >
+      <XStack items="center" gap="$3">
+        {icon}
+        <Text fontWeight="700" fontSize={18} color={tamaguiTheme.color?.get() as any}>
+          {label}
+        </Text>
+      </XStack>
+      {value ? (
+        <Text fontWeight="700" opacity={0.6} color={tamaguiTheme.color?.get() as any}>
+          {value}
+        </Text>
+      ) : (
+        <ChevronRight size={20} color={tamaguiTheme.color?.get() as any} opacity={0.5} />
+      )}
+    </Button>
+  );
+}
+
+function OptionItem({
+  active,
+  label,
+  onPress,
+  icon,
+}: {
+  active: boolean;
+  label: string;
+  onPress: () => void;
+  icon?: ReactNode;
+}) {
+  return (
+    <Button
+      onPress={onPress}
+      bg={active ? "$primary" : "$background"}
+      borderWidth={1}
+      borderColor={active ? "$primary" : "$color"}
+      rounded="$6"
+      height={54}
+      pressStyle={{ opacity: 0.9 }}
+      justify="flex-start"
+      px="$4"
+      mb="$2"
+    >
+      <XStack items="center" gap="$3">
+        {icon}
+        <Text fontWeight="700" fontSize={16} color={active ? "white" : "$color"}>
+          {label}
+        </Text>
+      </XStack>
+    </Button>
+  );
+}
+
 export function HomeSettingsMenu() {
   const { t } = useTranslation();
   const tamaguiTheme = useTheme();
@@ -52,79 +130,6 @@ export function HomeSettingsMenu() {
     // Reset step after animation
     setTimeout(() => setStep("main"), 300);
   };
-
-  const MenuItem = ({
-    icon,
-    label,
-    onPress,
-    value,
-    color = "$bgLight",
-  }: {
-    icon: ReactNode;
-    label: string;
-    onPress: () => void;
-    value?: string;
-    color?: ColorTokens;
-  }) => (
-    <Button
-      onPress={onPress}
-      bg={color}
-      borderWidth={1}
-      borderColor="$borderStrong"
-      rounded="$6"
-      height={60}
-      pressStyle={{ opacity: 0.9, scale: 0.98 }}
-      justify="space-between"
-      px="$4"
-      mb="$3"
-    >
-      <XStack items="center" gap="$3">
-        {icon}
-        <Text fontWeight="700" fontSize={18} color={tamaguiTheme.color?.get() as any}>
-          {label}
-        </Text>
-      </XStack>
-      {value ? (
-        <Text fontWeight="700" opacity={0.6} color={tamaguiTheme.color?.get() as any}>
-          {value}
-        </Text>
-      ) : (
-        <ChevronRight size={20} color={tamaguiTheme.color?.get() as any} opacity={0.5} />
-      )}
-    </Button>
-  );
-
-  const OptionItem = ({
-    active,
-    label,
-    onPress,
-    icon,
-  }: {
-    active: boolean;
-    label: string;
-    onPress: () => void;
-    icon?: ReactNode;
-  }) => (
-    <Button
-      onPress={onPress}
-      bg={active ? "$primary" : "$background"}
-      borderWidth={1}
-      borderColor={active ? "$primary" : "$color"}
-      rounded="$6"
-      height={54}
-      pressStyle={{ opacity: 0.9 }}
-      justify="flex-start"
-      px="$4"
-      mb="$2"
-    >
-      <XStack items="center" gap="$3">
-        {icon}
-        <Text fontWeight="700" fontSize={16} color={active ? "white" : "$color"}>
-          {label}
-        </Text>
-      </XStack>
-    </Button>
-  );
 
   const renderMain = () => (
     <YStack animation="quick" enterStyle={{ opacity: 0, x: -20 }} opacity={1} x={0}>

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.4/schema.json",
   "files": {
     "ignoreUnknown": false,
     "includes": [
@@ -19,34 +19,69 @@
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 100
+    "lineWidth": 100,
+    "lineEnding": "lf"
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "double"
-    }
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always",
+      "bracketSameLine": false
+    },
+    "globals": ["__DEV__"]
   },
   "linter": {
     "enabled": true,
+    "domains": {
+      "react": "all",
+      "reactNative": "all"
+    },
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "complexity": {
         "noExcessiveCognitiveComplexity": "warn",
-        "noVoid": "error"
+        "noVoid": "error",
+        "noUselessFragments": "error",
+        "noExtraBooleanCast": "error",
+        "noForEach": "off"
       },
       "correctness": {
         "noUnusedImports": "error",
         "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn"
+        "noUnusedFunctionParameters": "error",
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "error",
+        "noConstantCondition": "error",
+        "noSwitchDeclarations": "error",
+        "noUndeclaredVariables": "error",
+        "noSelfAssign": "error",
+        "noVoidTypeReturn": "error"
       },
       "style": {
         "useImportType": "off",
         "noNonNullAssertion": "warn",
-        "useConst": "error"
+        "useConst": "error",
+        "useTemplate": "warn",
+        "noParameterAssign": "error",
+        "useSingleVarDeclarator": "error"
       },
       "suspicious": {
-        "noConsole": "warn",
-        "noDebugger": "error"
+        "noConsole": {
+          "level": "warn",
+          "options": {
+            "allow": ["warn", "error"]
+          }
+        },
+        "noDebugger": "error",
+        "noDoubleEquals": "error",
+        "noArrayIndexKey": "error",
+        "noDuplicateJsxProps": "error",
+        "noAssignInExpressions": "error",
+        "noImplicitAnyLet": "error",
+        "noRedeclare": "error",
+        "useAwait": "warn"
       }
     }
   },
@@ -75,6 +110,25 @@
       "includes": ["**/*.md"],
       "linter": {
         "enabled": false
+      }
+    },
+    {
+      "includes": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/__tests__/**"],
+      "javascript": {
+        "globals": ["jest"]
+      },
+      "linter": {
+        "domains": {
+          "test": "all"
+        },
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "off"
+          }
+        }
       }
     }
   ],

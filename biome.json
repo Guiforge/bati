@@ -10,7 +10,9 @@
       "!**/node_modules",
       "!**/babel.config.js",
       "!**/metro.config.js",
-      "!assets"
+      "!assets",
+      "!.claude",
+      "!.github"
     ]
   },
   "formatter": {

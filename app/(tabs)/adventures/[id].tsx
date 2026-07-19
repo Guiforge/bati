@@ -187,6 +187,13 @@ export default function AdventureDetailsScreen() {
     return effectiveSteps[0] ?? null;
   }, [activeStep, details, effectiveSteps]);
 
+  // A "boss" adventure is a multi-step campaign that culminates in the boss fight, not a boss
+  // fight from step one — the CTA should only read "Fight Boss" once that final step is next.
+  const isNextStepBossFight =
+    isBoss &&
+    activeTemplateStep != null &&
+    activeTemplateStep.stepIndex === effectiveSteps.length - 1;
+
   const tokens = useMemo(() => {
     if (!activeTemplateStep) return null;
     return getQuestColorTokensFromTemplateWithExercises({
@@ -477,10 +484,10 @@ export default function AdventureDetailsScreen() {
             <Text color="$text" fontWeight="700" fontSize={22}>
               {isStarting
                 ? t("quests.starting", "Starting…")
-                : run?.activeStep
-                  ? t("adventures.continue")
-                  : isBoss
-                    ? t("adventures.fight_boss")
+                : isNextStepBossFight
+                  ? t("adventures.fight_boss")
+                  : run?.activeStep
+                    ? t("adventures.continue")
                     : t("adventures.start")}
             </Text>
           </AppButton>

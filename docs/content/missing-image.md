@@ -4,7 +4,7 @@ type: content
 status: active
 updated: 2026-07-20
 related: [missing-covers.md, ../planning/screen-redesign-proposals.md, ../planning/dev-execution-plan.md]
-sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts]
+sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
 
 # Missing Images — inventory
@@ -23,9 +23,13 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts]
 
 - **Content art is complete**: every seeded exercise (20), quest (13), and adventure (3)
   resolves to real art. No content currently renders the placeholder.
-- **Missing = the two Village §3 layers only**: 5 tier illustrations + 6 sport sprites. These
-  are the sole blocker on finishing [dev-execution-plan.md](../planning/dev-execution-plan.md)
-  §3 layers 1–2.
+- **Missing, with a ready consumer already built**: `BossPhaseImage.tsx` — a 4-phase
+  (HP-based) boss visual, live inside `BossHpBar` during every boss fight — is 100% emoji
+  placeholders (👹😤😡🔥), by the code's own admission (`// replace with actual images when
+  available`). This is the single highest-leverage gap: it's rendered on every boss fight,
+  right now, and nothing built stands in the way of wiring it except the art.
+- **Missing, blocks a proposed feature**: the Village §3 layers — 5 tier illustrations + 6
+  sport sprites — from [dev-execution-plan.md](../planning/dev-execution-plan.md) §3 layers 1–2.
 
 ---
 
@@ -69,6 +73,33 @@ Generate via the existing pipeline (`scripts/generate-covers.py`, style from
 [image-style-prompt.md](image-style-prompt.md)); the dev side is then a small layered `Image`
 render mirroring the existing `FlameFlicker` overlay.
 
+### 1c. Boss phase art — blocks `BossPhaseImage` (highest leverage, live in every boss fight)
+
+`components/session/BossPhaseImage.tsx` defines 4 HP-based phases and renders one **live,
+during every boss fight**, inside `BossHpBar`:
+
+| Phase | HP range | Label | Current visual |
+| --- | --- | --- | --- |
+| 1 | 75–100% | Full Power | 👹 emoji |
+| 2 | 50–75% | Wounded | 😤 emoji |
+| 3 | 25–50% | Critical | 😡 emoji |
+| 4 | 0–25% | Enraged | 🔥 emoji + pulsing animation |
+
+**Schema note (changes the sizing of this task):** `boss_fights` has no creature-name or
+image field of its own — a "boss" is just an `adventures` row with `kind='boss'`; its only
+art today is the adventure's own cover (`adventures.imagePath`, already used for the village
+banner in §3 layer 3). The 5 separate creature portraits in `assets/images/bosses/`
+(`fire_dragon`, `forest_titan`, `shadow_serpent`, `stone_golem`, `wind_wraith`) aren't linked
+to any seeded boss — they're a thematic set with nowhere to attach, since there's no per-boss
+identity field to key them from.
+
+**Recommendation — layer, don't paint 4× per boss:** consistent with §3's "layers on one
+scene, not a combinatorial art set" principle — use the boss's existing single cover image as
+the base for all 4 phases, and vary a color/effect *treatment* per phase (desaturate → redder
+tint → shake/pulse at Enraged) rather than commissioning 4 distinct paintings per boss. That
+reuses art that already exists (adventure covers) and needs zero new assets to leave the emoji
+placeholder — it's a pure dev task, higher priority than it looked in the last pass.
+
 ---
 
 ## 2. COVERED — no action needed
@@ -91,13 +122,14 @@ The inverse problem — art shipped without content to use it:
 - **4 orphan adventure covers**: `guardian_oath`, `monk_enlightenment`, `ranger_journey`,
   `scout_trial` — present on disk and in `ADVENTURE_ASSETS`, but no seeded adventure references
   them. Either seed 4 more adventures to use them, or drop them.
-- **5 boss images unwired**: `assets/images/bosses/` (`fire_dragon`, `forest_titan`,
-  `shadow_serpent`, `stone_golem`, `wind_wraith`) + their `BOSS_ASSETS` keys are referenced
-  **nowhere** in `app/` or `components/` (`getBossAsset` has zero callers). Phase 3 rendered
-  boss banners from *adventure* art instead. Decide: wire boss art into the boss/session UI, or
-  remove the unused map.
 - **1 duplicate exercise file**: `ranger_single_leg_deadlift_1.png` — unreferenced orphan next
   to the real `ranger_single_leg_deadlift.png`.
+
+> Correction from the prior version of this doc: the 5 `assets/images/bosses/` creature
+> portraits were filed here as "unwired, decide whether to keep." That undersold it — there
+> **is** a ready consumer (`BossPhaseImage`, live in every boss fight), it just isn't linked to
+> any seeded boss identity (see §1c above). Moved to Missing since there's a real, current gap
+> to close, not a cleanup call.
 
 ## Related
 

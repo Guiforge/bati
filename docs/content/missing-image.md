@@ -23,55 +23,21 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 - **Content art is complete**: every seeded exercise (20), quest (13), and adventure (3)
   resolves to real art. No content currently renders the placeholder.
-- **Missing, with a ready consumer already built**: `BossPhaseImage.tsx` — a 4-phase
+- **§1a/§1b RESOLVED (2026-07-20)**: the 5 village tier illustrations + 6 sport sprites are
+  generated (`scripts/generate-village.py`) and registered in `assetMap.ts`
+  (`VILLAGE_TIER_ASSETS` / `SPORT_SPRITE_ASSETS` + `getVillageTierAsset` /
+  `getSportSpriteAsset`). Wiring them into `VillageScene.tsx` (§3 layers 1–2) remains the
+  separate, already-scheduled dev task from `dev-execution-plan.md` — the content blocker is
+  gone, the render work is not done here.
+- **Still missing, with a ready consumer already built**: `BossPhaseImage.tsx` — a 4-phase
   (HP-based) boss visual, live inside `BossHpBar` during every boss fight — is 100% emoji
   placeholders (👹😤😡🔥), by the code's own admission (`// replace with actual images when
-  available`). This is the single highest-leverage gap: it's rendered on every boss fight,
-  right now, and nothing built stands in the way of wiring it except the art.
-- **Missing, blocks a proposed feature**: the Village §3 layers — 5 tier illustrations + 6
-  sport sprites — from [dev-execution-plan.md](../planning/dev-execution-plan.md) §3 layers 1–2.
+  available`). Per §1c below, the recommended fix needs **zero new assets** (reuse + treat the
+  existing adventure cover), so this is a dev task, not an art task.
 
 ---
 
 ## 1. MISSING — must be created
-
-### 1a. Village tier illustrations (5) — blocks §3 layer 1
-
-One base illustration per village tier. **None exist** (`assets/images/` has only
-`adventures/ bosses/ exercises/ quests/`, no tier art). The Village scene currently reuses one
-generic castle icon for all 5 tiers.
-
-| Tier | Name (EN / FR) | Level floor | Asset needed |
-| --- | --- | --- | --- |
-| 1 | Hamlet / Hameau | 1 | `assets/images/village/tier_1.png` |
-| 2 | Village / Village | 5 | `assets/images/village/tier_2.png` |
-| 3 | Town / Bourg | 10 | `assets/images/village/tier_3.png` |
-| 4 | City / Cité | 15 | `assets/images/village/tier_4.png` |
-| 5 | Flourishing City / Cité florissante | 20 | `assets/images/village/tier_5.png` |
-
-(Tier→level floors from `db/village.ts` `TIER_LEVEL_FLOORS`.)
-
-### 1b. Sport-focus sprites (6) — blocks §3 layer 2
-
-One small foreground motif per muscle group, keyed to `scene.dominantSport.muscle`. **None
-exist.** Muscle codes from `db/muscles.ts` (`MUSCLE_LABELS`):
-
-| Muscle | Asset needed |
-| --- | --- |
-| arms | `assets/images/village/sport_arms.png` |
-| back | `assets/images/village/sport_back.png` |
-| shoulder | `assets/images/village/sport_shoulder.png` |
-| chest | `assets/images/village/sport_chest.png` |
-| abs | `assets/images/village/sport_abs.png` |
-| calf | `assets/images/village/sport_calf.png` |
-
-> Note: when running/cycling ship later (parked in `future-roadmap.md`), each adds one more
-> sport sprite here — the set is not final, it grows with supported sports.
-
-**Total missing: 11 assets** (5 tiers + 6 sprites), all in a new `assets/images/village/` dir.
-Generate via the existing pipeline (`scripts/generate-covers.py`, style from
-[image-style-prompt.md](image-style-prompt.md)); the dev side is then a small layered `Image`
-render mirroring the existing `FlameFlicker` overlay.
 
 ### 1c. Boss phase art — blocks `BossPhaseImage` (highest leverage, live in every boss fight)
 
@@ -112,6 +78,15 @@ All resolve to real art via `assetMap` (verified basename-key match):
 - **Quests — 13/13.** All seeded quest covers present in `QUEST_ASSETS`.
 - **Adventures — 3/3.** The Lumber Route, The Golem, The Iron Lord all have covers in
   `ADVENTURE_ASSETS`. (Per-boss village banners, §3 layer 3, reuse these via `getAdventureAsset`.)
+- **Village tiers — 5/5 (generated 2026-07-20).** One base illustration per tier
+  (`assets/images/village/tier_1.png` … `tier_5.png`, hamlet → flourishing city), in
+  `VILLAGE_TIER_ASSETS` via `getVillageTierAsset(tier)`. Blocks §3 layer 1 no longer — the
+  content exists, wiring it into `VillageScene.tsx` is the remaining (separately scheduled)
+  dev task.
+- **Sport sprites — 6/6 (generated 2026-07-20).** One glowing emblem per muscle group
+  (`sport_arms/back/chest/abs/shoulder/calf.png`, color-matched to `muscleToResource` — wood,
+  stone, fire, water, wind, grain), in `SPORT_SPRITE_ASSETS` via `getSportSpriteAsset(muscle)`.
+  Blocks §3 layer 2 no longer, same caveat as above. Set grows if running/cycling ship later.
 
 ---
 

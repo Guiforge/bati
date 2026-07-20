@@ -98,6 +98,31 @@ export const ADVENTURE_ASSETS = {
 } as const;
 
 // ============================================================
+// VILLAGE TIER ASSETS (5 tiers) — §3 layer 1, see docs/content/missing-image.md
+// ============================================================
+
+export const VILLAGE_TIER_ASSETS = {
+  1: require("@/assets/images/village/tier_1.png"),
+  2: require("@/assets/images/village/tier_2.png"),
+  3: require("@/assets/images/village/tier_3.png"),
+  4: require("@/assets/images/village/tier_4.png"),
+  5: require("@/assets/images/village/tier_5.png"),
+} as const;
+
+// ============================================================
+// SPORT-FOCUS SPRITES (one per muscle group) — §3 layer 2
+// ============================================================
+
+export const SPORT_SPRITE_ASSETS = {
+  arms: require("@/assets/images/village/sport_arms.png"),
+  back: require("@/assets/images/village/sport_back.png"),
+  chest: require("@/assets/images/village/sport_chest.png"),
+  abs: require("@/assets/images/village/sport_abs.png"),
+  shoulder: require("@/assets/images/village/sport_shoulder.png"),
+  calf: require("@/assets/images/village/sport_calf.png"),
+} as const;
+
+// ============================================================
 // TYPE EXPORTS
 // ============================================================
 
@@ -105,6 +130,8 @@ export type ExerciseAssetKey = keyof typeof EXERCISE_ASSETS;
 export type QuestAssetKey = keyof typeof QUEST_ASSETS;
 export type BossAssetKey = keyof typeof BOSS_ASSETS;
 export type AdventureAssetKey = keyof typeof ADVENTURE_ASSETS;
+export type VillageTierKey = keyof typeof VILLAGE_TIER_ASSETS;
+export type SportSpriteKey = keyof typeof SPORT_SPRITE_ASSETS;
 
 // ============================================================
 // HELPER FUNCTIONS
@@ -154,4 +181,18 @@ export function getAdventureAsset(id: string) {
   return (
     ADVENTURE_ASSETS[keyFromPath(id) as AdventureAssetKey] ?? require("@/assets/placeholder.jpg")
   );
+}
+
+/**
+ * Get the village base-scene illustration for a tier (1-5, see db/village.ts VillageTier)
+ */
+export function getVillageTierAsset(tier: VillageTierKey) {
+  return VILLAGE_TIER_ASSETS[tier];
+}
+
+/**
+ * Get the sport-focus overlay sprite for a muscle group (see db/schema.ts MuscleCode)
+ */
+export function getSportSpriteAsset(muscle: SportSpriteKey) {
+  return SPORT_SPRITE_ASSETS[muscle];
 }

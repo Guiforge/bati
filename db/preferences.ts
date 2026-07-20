@@ -3,6 +3,12 @@ import { db, schema } from "./client";
 
 const { userPreferences } = schema;
 
+export type TrainingLevel = "beginner" | "regular" | "advanced";
+
+function isTrainingLevel(value: string | null): value is TrainingLevel {
+  return value === "beginner" || value === "regular" || value === "advanced";
+}
+
 // Get a preference value by key
 export async function getPreference(key: string): Promise<string | null> {
   const result = await db
@@ -77,6 +83,17 @@ export const preferences = {
 
   async setAvatarId(avatarId: string): Promise<void> {
     await setPreference("avatarId", avatarId);
+  },
+
+  // Training level captured at onboarding (null = skipped). Read by the coach/
+  // suggestion layer as a starting signal; no store field until a reactive reader exists.
+  async getTrainingLevel(): Promise<TrainingLevel | null> {
+    const value = await getPreference("trainingLevel");
+    return isTrainingLevel(value) ? value : null;
+  },
+
+  async setTrainingLevel(level: TrainingLevel): Promise<void> {
+    await setPreference("trainingLevel", level);
   },
 
   async getHapticsEnabled(): Promise<boolean> {

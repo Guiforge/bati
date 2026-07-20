@@ -68,6 +68,7 @@ export {
   getPreference,
   preferences,
   setPreference,
+  type TrainingLevel,
 } from "./preferences";
 export { estimateQuestTemplateSeconds } from "./preview";
 export {

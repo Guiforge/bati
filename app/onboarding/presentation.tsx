@@ -78,7 +78,7 @@ export default function Presentation() {
 
           <AppButton
             variant="primary"
-            onPress={() => router.push("/onboarding/choose-avatar")}
+            onPress={() => router.push("/onboarding/hero-setup")}
             rounded="$10"
             borderWidth={0}
           >

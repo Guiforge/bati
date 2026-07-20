@@ -325,10 +325,11 @@ export function VictoryView() {
         </AppButton>
       </XStack>
 
-      {/* Confetti (single lighter burst) */}
-      {!reducedMotion && (
+      {/* Confetti: fewer pieces (JS-thread animated), and held until the save finishes so the
+          burst doesn't fight the DB write + sound decode on the mount frame. */}
+      {!reducedMotion && result && (
         <ConfettiCannon
-          count={isBossDefeat ? 300 : 180}
+          count={isBossDefeat ? 120 : 80}
           origin={{ x: width / 2, y: -20 }}
           autoStart={true}
           fadeOut={true}

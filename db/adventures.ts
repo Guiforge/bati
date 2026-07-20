@@ -1,6 +1,6 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
-import { getQuestTemplateById, type QuestTemplate } from "./quests";
+import { listQuestTemplates, type QuestTemplate } from "./quests";
 import type { DifficultyCode } from "./schema";
 
 const { adventureRuns, adventureRunSteps, adventures, adventureSteps, questExercises, quests } =
@@ -225,7 +225,24 @@ export function listAdventures(): Promise<Adventure[]> {
   return adventuresCache;
 }
 
-export async function getAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {
+// Static seed content (same reasoning as listAdventures/listQuestTemplates): the details for a
+// given adventure never change at runtime, so share one fetch across mounts instead of re-running
+// the whole query chain on every navigation into the screen.
+const adventureDetailsCache = new Map<number, Promise<AdventureDetails | null>>();
+
+export function getAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {
+  let cached = adventureDetailsCache.get(adventureId);
+  if (!cached) {
+    cached = fetchAdventureDetails(adventureId).catch((e) => {
+      adventureDetailsCache.delete(adventureId);
+      throw e;
+    });
+    adventureDetailsCache.set(adventureId, cached);
+  }
+  return cached;
+}
+
+async function fetchAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {
   const base = await db
     .select({
       id: adventures.id,
@@ -276,9 +293,14 @@ export async function getAdventureDetails(adventureId: number): Promise<Adventur
           },
         ];
 
+  // All quest templates are already cached in memory; resolve steps from that map instead of one
+  // sequential DB query per step (the old N+1). Zero extra round-trips.
+  const templates = await listQuestTemplates();
+  const templatesById = new Map(templates.map((q) => [q.id, q] as const));
+
   const resolved: AdventureStepTemplate[] = [];
   for (const s of effectiveSteps) {
-    const q = await getQuestTemplateById(s.questId);
+    const q = templatesById.get(s.questId);
     if (!q) continue;
     resolved.push({
       id: s.id,

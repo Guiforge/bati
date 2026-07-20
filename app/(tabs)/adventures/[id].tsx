@@ -177,7 +177,7 @@ export default function AdventureDetailsScreen() {
   });
 
   const load = useCallback(
-    async (id: number) => {
+    async (id: number, isStale: () => boolean = () => false) => {
       setState((s) => ({ ...s, status: "loading" }));
 
       try {
@@ -187,6 +187,8 @@ export default function AdventureDetailsScreen() {
           listExercises(),
           getRecentSessionHistory(10),
         ]);
+
+        if (isStale()) return;
 
         if (!details) {
           setState({
@@ -214,6 +216,7 @@ export default function AdventureDetailsScreen() {
           suggestedDifficulty,
         });
       } catch (e) {
+        if (isStale()) return;
         const message = e instanceof Error ? e.message : "Unknown error";
         setState((s) => ({ ...s, status: "error", message }));
       }
@@ -223,9 +226,14 @@ export default function AdventureDetailsScreen() {
 
   useEffect(() => {
     if (!adventureId) return;
-    load(adventureId).catch(() => {
+    let ignore = false;
+    // Guard against fast screen-switching: only the latest load commits state.
+    load(adventureId, () => ignore).catch(() => {
       // Error already handled in load function
     });
+    return () => {
+      ignore = true;
+    };
   }, [adventureId, load]);
 
   const details = state.details;

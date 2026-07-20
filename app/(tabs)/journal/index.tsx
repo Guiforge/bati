@@ -1,9 +1,9 @@
 import { LegendList } from "@legendapp/list";
 import { BarChart2, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { InteractionManager, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -67,6 +67,18 @@ export default function JournalScreen() {
   const [history, setHistory] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("stats");
+  // The stats tab mounts 8 cards that each fire their own DB query. Defer that burst until after
+  // the tab-switch/navigation interaction settles so it doesn't jank the tap frame.
+  const [statsReady, setStatsReady] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== "stats" || history.length === 0) {
+      setStatsReady(false);
+      return;
+    }
+    const task = InteractionManager.runAfterInteractions(() => setStatsReady(true));
+    return () => task.cancel();
+  }, [activeTab, history.length]);
 
   const loadHistory = useCallback(async () => {
     try {
@@ -190,6 +202,10 @@ export default function JournalScreen() {
                 {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
               </Paragraph>
             </YStack>
+          ) : !statsReady ? (
+            <Text style={{ textAlign: "center" }} mt="$10" color="$textSecondary">
+              {t("common.loading", "Loading...")}
+            </Text>
           ) : (
             <>
               <UserLevelCard />

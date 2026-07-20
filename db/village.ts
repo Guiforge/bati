@@ -7,6 +7,10 @@ import { getUserLevelInfo } from "./userLevel";
 
 const { bossFights, adventures } = schema;
 
+// Same fallback used by every getXAsset() helper in constants/assetMap.ts — never expose
+// `| null` for imagePath, resolve to the placeholder here so callers have one code path.
+const PLACEHOLDER_IMAGE_PATH = "assets/placeholder.jpg";
+
 export type VillageTier = 1 | 2 | 3 | 4 | 5;
 
 // Level buckets for the 5 illustrated tiers (hameau -> village -> bourg -> cité -> cité florissante).
@@ -43,7 +47,7 @@ export type BossBanner = {
   adventureId: number;
   enTitle: string;
   frTitle: string;
-  imagePath: string | null;
+  imagePath: string;
   defeatedAt: Date;
 };
 
@@ -66,7 +70,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       adventureId: row.adventureId,
       enTitle: row.enTitle,
       frTitle: row.frTitle,
-      imagePath: row.imagePath,
+      imagePath: row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       defeatedAt: row.defeatedAt,
     }));
 }

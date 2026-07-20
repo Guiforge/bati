@@ -8,6 +8,8 @@ type BossHpBarProps = {
   currentHp: number;
   totalHp: number;
   bossName?: string;
+  /** Adventure cover reused as boss phase art (BossFight.imagePath). */
+  bossImagePath: string;
   lastDamage?: {
     damage: number;
     isCritical: boolean;
@@ -20,6 +22,7 @@ export function BossHpBar({
   currentHp,
   totalHp,
   bossName,
+  bossImagePath,
   lastDamage,
   showPhaseImage = true,
 }: BossHpBarProps) {
@@ -59,7 +62,12 @@ export function BossHpBar({
       {/* Boss Phase Image */}
       {showPhaseImage && (
         <YStack items="center" py="$2">
-          <BossPhaseImage currentHp={currentHp} totalHp={totalHp} size={64} />
+          <BossPhaseImage
+            currentHp={currentHp}
+            totalHp={totalHp}
+            bossImagePath={bossImagePath}
+            size={64}
+          />
         </YStack>
       )}
 

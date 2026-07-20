@@ -1,15 +1,18 @@
+import { Image } from "expo-image";
 import { useEffect, useState } from "react";
-import { Text, YStack } from "tamagui";
+import { YStack } from "tamagui";
+import { getAdventureAsset } from "@/constants/assetMap";
 
 /**
- * Boss phase thresholds (HP percentage)
- * Each phase shows a different visual state
+ * Boss phase thresholds (HP percentage). Each phase is a color-tint treatment layered on the
+ * boss's own cover image (getAdventureAsset already falls back to the placeholder — no null
+ * handling needed here) — not 4 separate paintings per boss. See missing-image.md §1c.
  */
 const PHASE_THRESHOLDS = [
-  { minPercent: 75, phase: 1, emoji: "👹", label: "Full Power" },
-  { minPercent: 50, phase: 2, emoji: "😤", label: "Wounded" },
-  { minPercent: 25, phase: 3, emoji: "😡", label: "Critical" },
-  { minPercent: 0, phase: 4, emoji: "🔥", label: "Enraged" },
+  { minPercent: 75, phase: 1, label: "Full Power", tint: null },
+  { minPercent: 50, phase: 2, label: "Wounded", tint: "rgba(219, 39, 119, 0.15)" },
+  { minPercent: 25, phase: 3, label: "Critical", tint: "rgba(255, 23, 68, 0.3)" },
+  { minPercent: 0, phase: 4, label: "Enraged", tint: "rgba(255, 23, 68, 0.5)" },
 ] as const;
 
 type BossPhase = 1 | 2 | 3 | 4;
@@ -31,19 +34,26 @@ type BossPhaseImageProps = {
   currentHp: number;
   totalHp: number;
   size?: number;
+  /** Adventure cover reused as boss art (BossFight.imagePath — always a real or placeholder path). */
+  bossImagePath: string;
 };
 
 /**
- * Displays a boss image that changes based on HP phase.
- * Uses emoji placeholders - replace with actual images when available.
+ * Displays a boss image that changes based on HP phase: the boss's own cover art with an
+ * increasingly aggressive color tint as HP drops.
  *
  * Phases:
- * - Phase 1 (75-100%): Full power - confident boss
- * - Phase 2 (50-75%): Wounded - angrier
- * - Phase 3 (25-50%): Critical - desperate
- * - Phase 4 (0-25%): Enraged - final form
+ * - Phase 1 (75-100%): Full power - no tint
+ * - Phase 2 (50-75%): Wounded - light tint
+ * - Phase 3 (25-50%): Critical - stronger tint
+ * - Phase 4 (0-25%): Enraged - heaviest tint + pulsing animation
  */
-export function BossPhaseImage({ currentHp, totalHp, size = 80 }: BossPhaseImageProps) {
+export function BossPhaseImage({
+  currentHp,
+  totalHp,
+  size = 80,
+  bossImagePath,
+}: BossPhaseImageProps) {
   const hpPercent = totalHp > 0 ? (currentHp / totalHp) * 100 : 100;
   const currentPhase = getPhaseFromHp(hpPercent);
 
@@ -75,6 +85,7 @@ export function BossPhaseImage({ currentHp, totalHp, size = 80 }: BossPhaseImage
         width={size}
         height={size}
         rounded={size / 2}
+        overflow="hidden"
         bg={isEnraged ? "$pastelPink" : "$pastelPurple"}
         borderWidth={1}
         borderColor={isEnraged ? "$error" : "$color"}
@@ -90,14 +101,12 @@ export function BossPhaseImage({ currentHp, totalHp, size = 80 }: BossPhaseImage
           animation: "bouncy",
         })}
       >
-        <Text
-          fontSize={size * 0.5}
-          animation="quick"
-          scale={isTransitioning ? 0.5 : 1}
-          opacity={isTransitioning ? 0 : 1}
-        >
-          {displayConfig.emoji}
-        </Text>
+        <Image
+          source={getAdventureAsset(bossImagePath)}
+          style={{ width: "100%", height: "100%" }}
+          contentFit="cover"
+        />
+        {displayConfig.tint && <YStack position="absolute" fullscreen bg={displayConfig.tint} />}
       </YStack>
 
       {/* Phase indicator (small dots) */}
@@ -127,7 +136,6 @@ export function getBossPhaseInfo(hpPercent: number) {
   const config = getPhaseConfig(phase);
   return {
     phase,
-    emoji: config.emoji,
     label: config.label,
     minPercent: config.minPercent,
     isEnraged: phase === 4,

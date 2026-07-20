@@ -85,6 +85,7 @@ export function RestView() {
         <BossHpBar
           currentHp={bossFight.currentHp}
           totalHp={bossFight.totalHp}
+          bossImagePath={bossFight.imagePath}
           lastDamage={
             lastDamageResult
               ? {

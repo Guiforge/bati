@@ -1,4 +1,4 @@
-import { ArrowLeft, Crown } from "@tamagui/lucide-icons";
+import { ArrowLeft } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -163,24 +163,20 @@ export function VillageScene() {
                   return (
                     <Card key={banner.adventureId} bg="$surface" width="100%">
                       <XStack items="center" gap="$3">
-                        {banner.imagePath ? (
-                          <YStack
-                            width={40}
-                            height={40}
-                            rounded="$3"
-                            overflow="hidden"
-                            borderWidth={1}
-                            borderColor="$borderStrong"
-                          >
-                            <Image
-                              source={getAdventureAsset(banner.imagePath)}
-                              style={{ width: "100%", height: "100%" }}
-                              contentFit="cover"
-                            />
-                          </YStack>
-                        ) : (
-                          <Crown size={22} color="$primary" />
-                        )}
+                        <YStack
+                          width={40}
+                          height={40}
+                          rounded="$3"
+                          overflow="hidden"
+                          borderWidth={1}
+                          borderColor="$borderStrong"
+                        >
+                          <Image
+                            source={getAdventureAsset(banner.imagePath)}
+                            style={{ width: "100%", height: "100%" }}
+                            contentFit="cover"
+                          />
+                        </YStack>
                         <Text fontWeight="700" color="$text">
                           {title}
                         </Text>

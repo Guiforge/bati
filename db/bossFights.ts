@@ -4,6 +4,10 @@ import type { MuscleCode } from "./schema";
 
 const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises } = schema;
 
+// Same fallback used by every getXAsset() helper in constants/assetMap.ts — never expose
+// `| null` for imagePath, resolve to the placeholder here so callers have one code path.
+const PLACEHOLDER_IMAGE_PATH = "assets/placeholder.jpg";
+
 // ------------------------------------------------------------
 // Types
 // ------------------------------------------------------------
@@ -18,6 +22,8 @@ export type BossFight = {
   defeatedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  // Adventure cover, reused as the BossPhaseImage base art (see docs/content/missing-image.md §1c).
+  imagePath: string;
 };
 
 export type BossDamageEntry = {
@@ -57,6 +63,7 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
       bossTotalHp: adventures.bossTotalHp,
       bossWeaknessMuscle: adventures.bossWeaknessMuscle,
       bossResistanceMuscle: adventures.bossResistanceMuscle,
+      imagePath: adventures.imagePath,
     })
     .from(adventures)
     .where(eq(adventures.id, adventureId))
@@ -86,6 +93,7 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
       defeatedAt: row.defeatedAt,
       createdAt: row.createdAt ?? new Date(),
       updatedAt: row.updatedAt ?? new Date(),
+      imagePath: adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
     };
   }
 
@@ -117,6 +125,7 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
     defeatedAt: row.defeatedAt,
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
+    imagePath: adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
   };
 }
 
@@ -125,8 +134,20 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
  */
 export async function getBossFightByAdventure(adventureId: number): Promise<BossFight | null> {
   const rows = await db
-    .select()
+    .select({
+      id: bossFights.id,
+      adventureId: bossFights.adventureId,
+      totalHp: bossFights.totalHp,
+      currentHp: bossFights.currentHp,
+      weaknessMuscle: bossFights.weaknessMuscle,
+      resistanceMuscle: bossFights.resistanceMuscle,
+      defeatedAt: bossFights.defeatedAt,
+      createdAt: bossFights.createdAt,
+      updatedAt: bossFights.updatedAt,
+      imagePath: adventures.imagePath,
+    })
     .from(bossFights)
+    .innerJoin(adventures, eq(bossFights.adventureId, adventures.id))
     .where(eq(bossFights.adventureId, adventureId))
     .limit(1);
 
@@ -143,6 +164,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     defeatedAt: row.defeatedAt,
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
+    imagePath: row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
   };
 }
 

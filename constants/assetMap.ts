@@ -34,6 +34,13 @@ export const EXERCISE_ASSETS = {
   rogue_skater_hop: require("@/assets/images/exercises/rogue_skater_hop.png"),
   barbarian_overhead_press: require("@/assets/images/exercises/barbarian_overhead_press.png"),
   alchemist_hollow_body_hold: require("@/assets/images/exercises/alchemist_hollow_body.png"),
+  // Dedicated art for the generic exercises (0001) — see docs/content/missing-covers.md
+  squat: require("@/assets/images/exercises/squat.png"),
+  pushups: require("@/assets/images/exercises/pushups.png"),
+  pullups: require("@/assets/images/exercises/pullups.png"),
+  wall_sit: require("@/assets/images/exercises/wall_sit.png"),
+  plank: require("@/assets/images/exercises/plank.png"),
+  crunch: require("@/assets/images/exercises/crunch.png"),
 } as const;
 
 // ============================================================
@@ -51,6 +58,16 @@ export const QUEST_ASSETS = {
   build_stronghold: require("@/assets/images/quests/build_stronghold.jpg"),
   iron_gauntlet_challenge: require("@/assets/images/quests/iron_gauntlet_challenge.jpg"),
   morning_champion: require("@/assets/images/quests/morning_champion.jpg"),
+  // Covers for the hand-authored quests (0002) — see docs/content/missing-covers.md
+  chop_wood: require("@/assets/images/quests/chop_wood.jpg"),
+  gather_stones: require("@/assets/images/quests/gather_stones.jpg"),
+  raise_the_shelter: require("@/assets/images/quests/raise_the_shelter.jpg"),
+  golem_strike: require("@/assets/images/quests/golem_strike.jpg"),
+  golem_core: require("@/assets/images/quests/golem_core.jpg"),
+  tower_climb: require("@/assets/images/quests/tower_climb.jpg"),
+  knight_push: require("@/assets/images/quests/knight_push.jpg"),
+  shield_wall: require("@/assets/images/quests/shield_wall.jpg"),
+  core_forge: require("@/assets/images/quests/core_forge.jpg"),
 } as const;
 
 // ============================================================
@@ -75,6 +92,9 @@ export const ADVENTURE_ASSETS = {
   monk_enlightenment: require("@/assets/images/adventures/monk_enlightenment.jpg"),
   ranger_journey: require("@/assets/images/adventures/ranger_journey.jpg"),
   iron_lord_conquest: require("@/assets/images/adventures/iron_lord_conquest.jpg"),
+  // Covers for the hand-authored adventures (0003) — see docs/content/missing-covers.md
+  lumber_route: require("@/assets/images/adventures/lumber_route.jpg"),
+  the_golem: require("@/assets/images/adventures/the_golem.jpg"),
 } as const;
 
 // ============================================================

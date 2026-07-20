@@ -64,6 +64,13 @@
       "when": 1767632433406,
       "tag": "0008_seed_images",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1767632433407,
+      "tag": "0009_seed_missing_covers",
+      "breakpoints": true
     }
   ]
 }

@@ -2,7 +2,7 @@
 title: Boss Fights
 type: system
 status: active
-updated: 2026-07-18
+updated: 2026-07-20
 related: [adventures.md, session-flow.md, progression.md]
 sources: [db/bossFights.ts, components/session/BossHpBar.tsx, components/session/BossTauntOverlay.tsx]
 ---
@@ -39,7 +39,7 @@ Think of it like a video game boss with phases:
 
 ## 🎮 Boss Fight Mechanics
 
-### HP System (Planned)
+### HP System (Implemented)
 
 ```text
 BOSS: THE IRON GOLEM
@@ -51,9 +51,11 @@ HP: ████████████░░░░░░░░ 60/100
 **How HP Works:**
 
 - Boss starts with HP based on total exercise targets
-- Each completed rep/second reduces boss HP
+- Each completed rep/second reduces boss HP, shown live via `BossHpBar` during
+  `ActiveExerciseView`/`RestView`, with taunt copy via `BossTauntOverlay`
 - HP persists across sessions if multi-day fight
-- Boss defeated when HP reaches 0
+- Boss defeated when HP reaches 0 → `VictoryView` shows the boss-defeat variant
+  (different title/subtitle, bigger confetti burst) and the village gains a permanent banner
 
 ### Damage Calculation
 

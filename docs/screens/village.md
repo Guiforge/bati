@@ -3,8 +3,8 @@ title: Village
 type: screen
 route: /village
 status: active
-updated: 2026-07-18
-related: [../gameplay/progression.md, ../gameplay/boss-fights.md]
+updated: 2026-07-20
+related: [../gameplay/progression.md, ../gameplay/boss-fights.md, ../planning/screen-redesign-proposals.md]
 sources: [app/(tabs)/village.tsx]
 ---
 
@@ -44,7 +44,10 @@ bosses defeated)`. Full rules: [progression.md](../gameplay/progression.md).
 
 ## Implementation note
 
-The current implementation is a building-management screen (list of ~20 buildings with
-per-building XP/levels and a modal detail view) and needs to be rebuilt as the single-scene
-design above. See [system-redesign-options.md](../planning/system-redesign-options.md) (§2)
-for why.
+The rebuild described above has shipped: `VillageScene.tsx` renders one scene (tier name +
+level, flame overlay via `FlameFlicker`, dominant-sport line, boss banners) with no building
+list or management UI. The one open gap against the design intent: the tier badge is a single
+generic castle icon reused across all 5 tiers, not 5 distinct illustrated scenes — see the
+redesign proposal in
+[screen-redesign-proposals.md](../planning/screen-redesign-proposals.md#village) for the
+content/art gap this leaves.

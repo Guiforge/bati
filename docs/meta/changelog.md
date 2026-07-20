@@ -288,3 +288,54 @@ guidance into directly actionable checklists for delivery.
   [catalog](../README.md). Added a pointer in [`AGENTS.md`](../../AGENTS.md). No code was
   changed.
 
+## 2026-07-20 — Doc-vs-reality fixes + screen redesign proposals (draft)
+
+**Doc-vs-reality fixes** (found while auditing the real user journey against code, not just
+docs — same pattern as the Home i18n bug found in `ui-screen-audit-tracker.md` Round 6):
+
+- [product/feature-overview.md](../product/feature-overview.md): Flame/streak was listed
+  "Planned (Phase 2)" — it's implemented (`db/streaks.ts`, shown on Home and Village). Updated.
+- [gameplay/boss-fights.md](../gameplay/boss-fights.md): HP System was labeled "(Planned)" —
+  it's live (`BossHpBar`, `BossTauntOverlay`, wired into `ActiveExerciseView`/`RestView`).
+  Updated.
+- [screens/village.md](../screens/village.md): implementation note still described the old
+  ~20-building management screen as current. The single-scene rebuild
+  (`VillageScene.tsx`) already shipped — no buildings, no management. Updated; flagged the
+  one real remaining gap (generic icon reused across all 5 tiers, not distinct illustrations).
+
+**New draft page**: [planning/screen-redesign-proposals.md](../planning/screen-redesign-proposals.md)
+— options-to-review doc (same pattern as `system-redesign-options.md`) covering 4 findings
+from a code-level review: merge the Adventures/Quests tabs (duplicate a choice Home's smart
+CTA already makes), add one onboarding step for training level/focus (currently zero
+personalization signal is captured), give Village's 5 tiers distinct illustrations (currently
+one generic icon for all tiers — the biggest visible gap in the "accomplishment" loop), and
+delete an unused dead component (`ContinueAdventureFab.tsx`). Session, Victory, Journal, and
+Home reviewed and confirmed already matching the design system — no proposal needed there.
+Linked from the root [catalog](../README.md) and [planning/README.md](../planning/README.md).
+
+## 2026-07-20 — Screen redesign proposals: refined per user feedback
+
+Revised [planning/screen-redesign-proposals.md](../planning/screen-redesign-proposals.md)
+after review:
+
+- **§2 Onboarding**: changed from "add a 4th step" to "merge avatar + name into one lighter
+  screen, keep total steps flat at 3" — the full-screen swipe-gesture avatar picker
+  (`choose-avatar.tsx`) was flagged as disproportionately heavy for a cosmetic choice; the
+  merge pays for the previously-proposed training-level step without growing onboarding length.
+- **§3 Village**: expanded from "5 tier illustrations" into a 3-layer asset system (base tier,
+  sport-focus overlay by dominant muscle, per-boss banner icon reusing existing adventure art)
+  so feedback visibly varies by level, sport, and which boss was beaten — not just level.
+  Explicitly framed against a combinatorial art trap (tier × sport × boss ≠ separate paintings
+  per combination; layers on one scene, matching `progression.md`'s existing model).
+- **New §5 Session**: found `ActiveExerciseView.tsx`/`RestView.tsx` render a static generic
+  muscle icon for every exercise (`/* In a real app, we'd resolve currentEx.exercise.imagePath
+  */`) despite `exercises.imagePath` already existing in the schema — a rendering gap on the
+  screen the user spends the most time on mid-workout. Gated the recommendation on checking
+  real image coverage first via the existing [missing-covers.md](../content/missing-covers.md)
+  tracker, rather than assuming the art already exists.
+- Confirmed session *mechanics* (boss HP damage numbers, rep bounce, haptics, manual
+  completion) need no change — only the exercise imagery does.
+- Dev plan intentionally left as a pointer, not expanded — per instruction, this doc stays
+  product/design-only until the checkboxes are resolved; the dev task breakdown is the next,
+  separate deliverable.
+

@@ -2,7 +2,7 @@
 title: Features Overview
 type: product
 status: active
-updated: 2026-07-18
+updated: 2026-07-20
 related: [vision.md, user-guide.md, ../planning/roadmap-alignment.md, ../gameplay/progression.md]
 sources: [app, db, components]
 ---
@@ -76,10 +76,10 @@ Experience and progression system.
 
 Daily workout streak tracking.
 
-- **What**: Consecutive workout days
-- **Visual**: Growing flame in village
-- **Rewards**: Streak milestones
-- **Status**: Planned (Phase 2)
+- **What**: Consecutive workout days, derived from the session journal (`db/streaks.ts`)
+- **Visual**: Flame intensity shown on Home (`StatsOverview`) and the Village scene
+- **Behavior**: Missing a day dims the flame; it doesn't reset to zero
+- **Status**: Implemented
 
 ---
 

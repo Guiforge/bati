@@ -50,6 +50,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [roadmap-refactor-ui.md](planning/roadmap-refactor-ui.md) | NEW_STYLE UI refactor (design system, screen by screen) |
 | [ui-screen-audit-tracker.md](planning/ui-screen-audit-tracker.md) | Screen-by-screen critique/audit tracker + refonte actions |
 | [system-redesign-options.md](planning/system-redesign-options.md) | Minimalist progression/coach redesign — options considered |
+| [screen-redesign-proposals.md](planning/screen-redesign-proposals.md) | Screen-level design proposals (nav, onboarding, village) — options to review |
 | [future-roadmap.md](planning/future-roadmap.md) | Later phases (speculative, pre-alignment) |
 
 ## 🎮 Gameplay Systems — [gameplay/](gameplay/README.md)

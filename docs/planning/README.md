@@ -16,7 +16,8 @@ related: [../README.md]
 - [roadmap-alignment.md](roadmap-alignment.md) — ⭐ **Current execution plan** (priority, phases, acceptance criteria)
 - [roadmap-refactor-ui.md](roadmap-refactor-ui.md) — UI migration playbook (design system + rollout method)
 - [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) — Screen-by-screen critique/audit tracker and refonte backlog
-- [screen-redesign-proposals.md](screen-redesign-proposals.md) — Draft: nav/onboarding/village design proposals, options to review
+- [screen-redesign-proposals.md](screen-redesign-proposals.md) — Nav/onboarding/village design proposals, all 5 decisions recorded
+- [dev-execution-plan.md](dev-execution-plan.md) — Phased dev plan for the 4 approved redesigns (quality gate + commit per phase)
 - [future-roadmap.md](future-roadmap.md) — Parking lot (speculative ideas, explicitly non-MVP)
 - [roadmap-archive.md](roadmap-archive.md) — Historical record (archived)
 

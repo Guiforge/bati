@@ -350,3 +350,17 @@ checkbox with the decision date. Plan for devs section updated to name the 4 app
 (§1 excluded, no work follows) — task breakdown itself is still deferred as a separate
 deliverable, per standing instruction to keep this doc product/design-only.
 
+## 2026-07-20 — Dev execution plan for approved redesigns
+
+Added [planning/dev-execution-plan.md](../planning/dev-execution-plan.md): the phased task
+breakdown promised by the proposals doc. 4 phases ordered by ascending risk, each behind a
+quality gate (`npm run check` + `npm test` + UI checklist + screenshot) and its own
+single-scope commit: (1) delete dead FAB, (2) render exercise imagery, (3) per-boss village
+banners, (4) onboarding merge + skippable training-level step. Readiness was re-verified
+against the working tree, which changed the plan from the proposals doc's assumptions:
+exercise art (§5) and boss art (§3 layer 3) **already exist on disk** (landed in a prior
+content commit), so both are dev-ready now rather than content-blocked; only §3's tier
+illustrations + sport sprites remain blocked on missing art. §1 (nav) not scheduled. Gate
+scope explicitly limited to files each phase touches, not the ~147 pre-existing repo-wide lint
+warnings. Linked from the root [catalog](../README.md) and [planning/README.md](../planning/README.md).
+

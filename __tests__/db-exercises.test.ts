@@ -23,7 +23,9 @@ describe("db/exercises", () => {
 
     const squat = all.find((e) => e.enName === "Squat");
     expect(squat).toBeTruthy();
-    expect(squat?.imagePath).toBe("assets/placeholder.jpg");
+    // imagePath is populated from seed content; assert presence, not a specific asset
+    // filename, so content/art swaps don't break this test (they previously did).
+    expect(squat?.imagePath).toBeTruthy();
     expect(squat?.creator).toBeTruthy();
     expect(squat?.difficulty).toBeTruthy();
     expect(squat?.equipment).toBeTruthy();

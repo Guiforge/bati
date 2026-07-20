@@ -1,10 +1,11 @@
 import { ChevronDown, ChevronUp, Pause } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
-import { GameIcon } from "@/components/common/GameIcon";
+import { getExerciseAsset } from "@/constants/assetMap";
 import { getExerciseBgForSessionStep } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -195,7 +196,7 @@ export function ActiveExerciseView() {
 
       {/* Main Content */}
       <YStack flex={1} items="center" justify="center" gap="$5">
-        {/* Exercise Image Placeholder */}
+        {/* Exercise image — real per-exercise art, with placeholder fallback in getExerciseAsset */}
         <YStack
           width="100%"
           aspectRatio={16 / 10}
@@ -207,8 +208,12 @@ export function ActiveExerciseView() {
           items="center"
           justify="center"
         >
-          {/* In a real app, we'd resolve currentEx.exercise.imagePath */}
-          <GameIcon name="muscle" size={64} color="$textSecondary" />
+          <Image
+            source={getExerciseAsset(currentEx.exercise.imagePath)}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="cover"
+            transition={150}
+          />
         </YStack>
 
         {/* Exercise Name + How to do it */}

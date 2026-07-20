@@ -1,8 +1,10 @@
 import { Minus, Plus } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
+import { getExerciseAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -204,12 +206,18 @@ export function RestView() {
             height={50}
             bg="$surface2"
             rounded="$3"
+            overflow="hidden"
             items="center"
             justify="center"
             borderWidth={1}
             borderColor="$borderStrong"
           >
-            <GameIcon name="muscle" size={28} color="$textSecondary" />
+            <Image
+              source={getExerciseAsset(nextEx.exercise.imagePath)}
+              style={{ width: "100%", height: "100%" }}
+              contentFit="cover"
+              transition={150}
+            />
           </YStack>
           <YStack flex={1}>
             <Text fontWeight="700" fontSize={18} numberOfLines={1} color="$text">

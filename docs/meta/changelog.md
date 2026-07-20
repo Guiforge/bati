@@ -364,3 +364,27 @@ illustrations + sport sprites remain blocked on missing art. §1 (nav) not sched
 scope explicitly limited to files each phase touches, not the ~147 pre-existing repo-wide lint
 warnings. Linked from the root [catalog](../README.md) and [planning/README.md](../planning/README.md).
 
+## 2026-07-20 — All 4 approved redesign phases shipped
+
+Implemented every phase of the dev execution plan, each gated (tsc + jest green, lint clean on
+the diff) and committed separately:
+
+- `bd9e158` — **prerequisite:** fixed a stale `db-exercises` test whose hardcoded
+  `assets/placeholder.jpg` assertion broke once the `0006` seed shipped real exercise art;
+  now asserts `imagePath` presence, decoupled from the content filename.
+- `3ad0122` — **Phase 1 (§4):** deleted the unused `ContinueAdventureFab.tsx`.
+- `9097a1c` — **Phase 2 (§5):** `ActiveExerciseView` + `RestView` now render the real
+  per-exercise image via `getExerciseAsset` (placeholder fallback retained); layout unchanged.
+- `cdac3cb` — **Phase 3 (§3, layer 3 only):** `getBossBanners` returns `adventures.imagePath`
+  and `VillageScene` shows each boss's own art instead of the shared `Crown`. §3 layers 1–2
+  (tier illustrations, sport sprites) remain open, blocked on missing art.
+- `f845ec7` — **Phase 4 (§2):** merged the swipe avatar picker + name screen into one
+  `hero-setup` (tap-select strip + name), added a skippable `training-level` final step;
+  onboarding stays 3 steps (`presentation → hero-setup → training-level`). New `trainingLevel`
+  preference persisted via `db/preferences.ts` (null = skipped); no Zustand field added since
+  no reactive reader exists yet (coach wiring is a separate follow-up). Deleted
+  `choose-avatar.tsx` + `village-name.tsx`; added EN/FR keys.
+
+**Pending:** on-device screenshot QA for phases 2–4 (no simulator in the build env — automated
+gate passed, visual verification remains). §3 layers 1–2 and §1 unchanged.
+

@@ -39,12 +39,19 @@ fields, dead-code usage) — not assumed from the design doc.
 
 | Phase | Item | Risk | Asset dep | Status |
 | --- | --- | --- | --- | --- |
-| 1 | §4 delete dead FAB | trivial | none | ready |
-| 2 | §5 exercise imagery | low | ✅ on disk | ready |
-| 3 | §3 per-boss banners | low-med | ✅ on disk | ready (partial §3) |
-| 4 | §2 onboarding merge | medium | none | ready |
+| 1 | §4 delete dead FAB | trivial | none | ✅ shipped `3ad0122` |
+| 2 | §5 exercise imagery | low | ✅ on disk | ✅ shipped `9097a1c` |
+| 3 | §3 per-boss banners | low-med | ✅ on disk | ✅ shipped `cdac3cb` (partial §3) |
+| 4 | §2 onboarding merge | medium | none | ✅ shipped `f845ec7` |
 | — | §3 tier art + sport sprites | — | ❌ missing | **blocked on content** |
 | — | §1 navigation | — | — | not scheduled (decided B) |
+
+> All 4 approved phases shipped 2026-07-20, each behind its gate (tsc + jest green, lint clean
+> on the diff) and its own commit. A prerequisite stale-test fix landed first as `bd9e158`
+> (the `0006` image seed had broken `db-exercises`' hardcoded placeholder assertion).
+> **Device screenshot QA is still pending** for phases 2–4 (no simulator in the build env) —
+> the automated gate passed, but visual verification on-device remains, consistent with the
+> "re-audit on device pending" rows in [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md).
 
 ---
 

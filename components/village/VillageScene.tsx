@@ -11,6 +11,7 @@ import { AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { FlameFlicker } from "@/components/village/VillageAnimations";
+import { getAdventureAsset } from "@/constants/assetMap";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getVillageScene, type VillageScene as VillageSceneData } from "@/db/village";
 import { useGameIcons } from "@/hooks/useGameIcon";
@@ -147,7 +148,24 @@ export function VillageScene() {
                   return (
                     <Card key={banner.adventureId} bg="$surface" width="100%">
                       <XStack items="center" gap="$3">
-                        <Crown size={22} color="$primary" />
+                        {banner.imagePath ? (
+                          <YStack
+                            width={40}
+                            height={40}
+                            rounded="$3"
+                            overflow="hidden"
+                            borderWidth={1}
+                            borderColor="$borderStrong"
+                          >
+                            <Image
+                              source={getAdventureAsset(banner.imagePath)}
+                              style={{ width: "100%", height: "100%" }}
+                              contentFit="cover"
+                            />
+                          </YStack>
+                        ) : (
+                          <Crown size={22} color="$primary" />
+                        )}
                         <Text fontWeight="700" color="$text">
                           {title}
                         </Text>

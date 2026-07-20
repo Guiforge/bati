@@ -43,6 +43,7 @@ export type BossBanner = {
   adventureId: number;
   enTitle: string;
   frTitle: string;
+  imagePath: string | null;
   defeatedAt: Date;
 };
 
@@ -52,6 +53,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       adventureId: bossFights.adventureId,
       enTitle: adventures.enTitle,
       frTitle: adventures.frTitle,
+      imagePath: adventures.imagePath,
       defeatedAt: bossFights.defeatedAt,
     })
     .from(bossFights)
@@ -64,6 +66,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       adventureId: row.adventureId,
       enTitle: row.enTitle,
       frTitle: row.frTitle,
+      imagePath: row.imagePath,
       defeatedAt: row.defeatedAt,
     }));
 }

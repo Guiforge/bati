@@ -1,8 +1,10 @@
 import { LegendList } from "@legendapp/list";
 import { Map as MapIcon } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
@@ -11,6 +13,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
+import { getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
 import {
   estimateQuestTemplateSeconds,
@@ -38,6 +41,11 @@ function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
   if (exerciseCount >= 4) return "⚔️";
   return "🪓";
+}
+
+function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
+  if (!path) return null;
+  return path.startsWith("http") ? { uri: path } : getQuestAsset(path);
 }
 
 type QuestMeta = {
@@ -263,6 +271,7 @@ export default function QuestsGallery() {
 
       const qTitle = language === "fr" ? q.frTitle : q.enTitle;
       const qDesc = language === "fr" ? q.frDescription : q.enDescription;
+      const cover = resolveCoverImage(q.imagePath);
 
       return (
         <YStack px="$5">
@@ -277,8 +286,19 @@ export default function QuestsGallery() {
                 borderColor="$borderStrong"
                 justify="center"
                 items="center"
+                overflow="hidden"
               >
-                <Text fontSize={26}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+                {cover ? (
+                  <Image
+                    source={cover}
+                    style={{ width: "100%", height: "100%" }}
+                    contentFit="cover"
+                    transition={200}
+                    accessible={false}
+                  />
+                ) : (
+                  <Text fontSize={26}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+                )}
               </YStack>
 
               <YStack flex={1} gap="$2">

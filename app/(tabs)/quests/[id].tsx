@@ -13,6 +13,7 @@ import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
@@ -31,14 +32,12 @@ type LoadState =
 
 function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  if (path === "assets/placeholder.jpg") return require("../../../assets/placeholder.jpg");
-  return null;
+  return path.startsWith("http") ? { uri: path } : getQuestAsset(path);
 }
 
 function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  if (path === "assets/placeholder.jpg") return require("../../../assets/placeholder.jpg");
-  return null;
+  return path.startsWith("http") ? { uri: path } : getExerciseAsset(path);
 }
 
 function formatTarget(target: Target, lang: "en" | "fr") {
@@ -207,7 +206,7 @@ export default function QuestDetails() {
     proceedToSession();
   };
 
-  const headerImage = resolveQuestImage(quest?.exercises?.[0]?.images?.[0]);
+  const headerImage = resolveQuestImage(quest?.imagePath);
 
   return (
     <YStack flex={1} bg="$background">

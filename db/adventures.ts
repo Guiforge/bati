@@ -124,6 +124,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
       questAuthor: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      questImagePath: quests.imagePath,
 
       questExerciseId: questExercises.id,
       qexSortOrder: questExercises.sortOrder,
@@ -166,6 +167,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
         author: r.questAuthor,
         rounds: r.rounds,
         restSeconds: r.restSeconds,
+        imagePath: r.questImagePath ?? "assets/placeholder.jpg",
         exercises: [],
       };
 

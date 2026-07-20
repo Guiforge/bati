@@ -47,6 +47,7 @@ export type QuestTemplate = {
   author: string;
   rounds: number;
   restSeconds: number;
+  imagePath: string;
   exercises: QuestTemplateExercise[];
 };
 
@@ -59,6 +60,7 @@ export type Quest = {
   author: string;
   rounds: number;
   restSeconds: number;
+  imagePath: string;
   exercises: QuestExercise[];
 };
 
@@ -81,7 +83,7 @@ function safeParseImages(value: string): string[] {
 // DB helpers
 // ------------------------------------------------------------
 
-export type CreateQuestTemplateInput = Omit<QuestTemplate, "id" | "author"> & {
+export type CreateQuestTemplateInput = Omit<QuestTemplate, "id" | "author" | "imagePath"> & {
   author?: string;
 };
 
@@ -141,6 +143,7 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      imagePath: quests.imagePath,
 
       questExerciseId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -167,6 +170,7 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
         author: r.author,
         rounds: r.rounds,
         restSeconds: r.restSeconds,
+        imagePath: r.imagePath ?? "assets/placeholder.jpg",
         exercises: [],
       });
     }
@@ -217,6 +221,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      imagePath: quests.imagePath,
 
       questExerciseId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -243,6 +248,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
     author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
+    imagePath: first.imagePath ?? "assets/placeholder.jpg",
     exercises: [],
   };
 
@@ -284,6 +290,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      imagePath: quests.imagePath,
 
       qexId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -325,6 +332,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
+    imagePath: first.imagePath ?? "assets/placeholder.jpg",
     exercises: [],
   };
 

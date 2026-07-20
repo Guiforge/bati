@@ -17,6 +17,8 @@ related: [../README.md]
 - [workout-best-practices.md](workout-best-practices.md) — Workout design & balancing philosophy
 - [image-prompts.md](image-prompts.md) — Image generation prompts (Midjourney)
 - [image-style-prompt.md](image-style-prompt.md) — Base style prompt (used by scripts)
+- [missing-covers.md](missing-covers.md) — Prior adventure/quest cover gap (resolved) + generation pipeline
+- [missing-image.md](missing-image.md) — Current missing-image inventory (village tiers + sport sprites)
 
 ## Related
 

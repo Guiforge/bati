@@ -1,7 +1,7 @@
 ---
 title: Screen Redesign Proposals — options to review
 type: planning
-status: draft
+status: active
 updated: 2026-07-20
 related: [../design/design-system.md, roadmap-refactor-ui.md, roadmap-alignment.md, ../screens/README.md, ../content/missing-covers.md]
 sources: [app, components, db/schema.ts, docs/screens]
@@ -19,6 +19,20 @@ sources: [app, components, db/schema.ts, docs/screens]
 > [design-system.md](../design/design-system.md) as-is — dark-only, one primary CTA per
 > screen, tokens only, ≤2 taps to the next workout action, no new visual language. This is a
 > layout/IA pass on top of the existing design system, not a redesign of the system itself.
+
+## Decisions (2026-07-20)
+
+| § | Topic | Decision |
+| --- | --- | --- |
+| [1](#navigation) | Navigation | **B — keep Adventures + Quests as two separate tabs** (against recommendation A) |
+| [2](#onboarding) | Onboarding | **A — merge avatar + name into one screen** |
+| [3](#village) | Village | **A — 3-layer visual system** (tier + sport overlay + per-boss banner) |
+| [4](#dead-code) | Dead code | **Delete `ContinueAdventureFab.tsx`** |
+| [5](#session) | Session imagery | **A — render real `exercise.imagePath`** |
+
+All 5 resolved. §1 went against the doc's recommendation — noted in that section, not
+re-argued; the reasoning for keeping two tabs is the caller's to state if it matters later.
+See [Plan for devs](#plan-for-devs) for what happens next.
 
 ## Why this doc exists
 
@@ -84,7 +98,8 @@ One tab, one icon. Inside: a segmented control — **Program** (adventures) / **
 
 **Recommendation: A.**
 
-**Choice: ☐ A ☐ B**
+**Choice: ☐ A ☑ B — decided 2026-07-20.** Nav stays as-is: 5 tabs, Adventures and Quests
+remain separate. No nav work scheduled from this doc.
 
 ---
 
@@ -141,7 +156,7 @@ as a new 4th step.
 **Recommendation: A** — it's the only option that both fixes the "too big" feedback and adds
 the personalization signal without growing total onboarding length.
 
-**Choice: ☐ A ☐ B**
+**Choice: ☑ A ☐ B — decided 2026-07-20.**
 
 ---
 
@@ -219,7 +234,7 @@ already works in this codebase.
 task (base tiers + muscle sprites + boss icon crops), not a dev task; the dev-side change is
 a template that layers pre-supplied images, which is small.
 
-**Choice: ☐ A ☐ B**
+**Choice: ☑ A ☐ B — decided 2026-07-20.**
 
 ---
 
@@ -231,7 +246,7 @@ floating button, but is never imported anywhere (`grep` across `app/` and `compo
 confirms zero usages). Delete it — no behavior change, removes a trap for the next person who
 touches Home.
 
-**Choice: ☐ Delete ☐ Keep for a future use** (state the use if kept)
+**Choice: ☑ Delete ☐ Keep for a future use — decided 2026-07-20.**
 
 ---
 
@@ -294,7 +309,10 @@ slot and `RestView`'s "up next" thumbnail; keep the same layout, same card treat
 first (a content-inventory check, not a design decision) — see
 [missing-covers.md](../content/missing-covers.md).
 
-**Choice: ☐ A ☐ B**
+**Choice: ☑ A ☐ B — decided 2026-07-20.** Note: `docs/content/missing-covers.md` and a
+`scripts/generate-covers.py` pipeline already exist in the working tree (uncommitted, from
+outside this doc's work) — worth checking whether that pipeline already covers exercises
+before generating anything new for this item.
 
 ---
 
@@ -315,17 +333,23 @@ first (a content-inventory check, not a design decision) — see
 
 ## Plan for devs
 
-> Not started — this section stays a pointer, not an execution plan, until the checkboxes
-> above are resolved. The actual dev roadmap (task breakdown, PR sequencing) is the next
-> deliverable after this one, not part of it.
+> All 5 checkboxes are resolved (see [Decisions](#decisions-2026-07-20)). This section still
+> stays a pointer, not an execution plan — the task breakdown and PR sequencing is a separate
+> next deliverable, not part of this doc.
 
-1. Get checkboxes above resolved (product/design call, not a dev task).
-2. For approved items, add them to the execution order in
-   [roadmap-refactor-ui.md](roadmap-refactor-ui.md) at the appropriate phase: §1 (nav merge)
-   and §4 (dead code) are Phase B, high-impact flow; §2 (onboarding merge) is Phase B too —
-   onboarding is item 9 in that order today, but this change is small enough to pull forward;
-   §3 (village layers) and §5 (exercise imagery) are gated on content/art production, not pure
-   UI PRs — sequence those with whoever owns `docs/content/`.
+**Approved for scheduling**: §2 (onboarding merge), §3 (village 3-layer visuals), §4 (delete
+`ContinueAdventureFab.tsx`), §5 (render real exercise imagery). **Not scheduled**: §1 —
+navigation stays as-is, no work follows from it.
+
+1. ~~Get checkboxes above resolved~~ — done 2026-07-20.
+2. For the 4 approved items, add them to the execution order in
+   [roadmap-refactor-ui.md](roadmap-refactor-ui.md) at the appropriate phase: §4 (dead code) is
+   Phase B, high-impact flow, and the smallest/safest to schedule first; §2 (onboarding merge)
+   is Phase B too — onboarding is item 9 in that order today, but this change is small enough
+   to pull forward; §3 (village layers) and §5 (exercise imagery) are gated on content/art
+   production, not pure UI PRs — sequence those with whoever owns `docs/content/`, and check
+   the existing `scripts/generate-covers.py` pipeline (currently uncommitted in the working
+   tree) before commissioning new art for either.
 3. Each change still goes through the existing gate: one scope per PR, before/after
    screenshots, [ui-checklist.md](../design/ui-checklist.md) pass, `npm run check` + `npm test`.
 4. Update this file's checkboxes to reflect decisions, then update

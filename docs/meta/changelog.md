@@ -339,3 +339,14 @@ after review:
   product/design-only until the checkboxes are resolved; the dev task breakdown is the next,
   separate deliverable.
 
+## 2026-07-20 — Screen redesign proposals: all 5 decided
+
+All checkboxes in [planning/screen-redesign-proposals.md](../planning/screen-redesign-proposals.md)
+resolved: §1 Navigation → **B, keep two tabs** (against the doc's own recommendation — noted,
+not overridden); §2 Onboarding merge → A; §3 Village 3-layer visuals → A; §4 delete
+`ContinueAdventureFab.tsx` → yes; §5 render real exercise imagery → A. Status flipped from
+`draft` to `active`. Added a `Decisions` summary table up top and marked each section's
+checkbox with the decision date. Plan for devs section updated to name the 4 approved items
+(§1 excluded, no work follows) — task breakdown itself is still deferred as a separate
+deliverable, per standing instruction to keep this doc product/design-only.
+

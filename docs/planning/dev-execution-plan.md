@@ -41,17 +41,25 @@ fields, dead-code usage) — not assumed from the design doc.
 | --- | --- | --- | --- | --- |
 | 1 | §4 delete dead FAB | trivial | none | ✅ shipped `3ad0122` |
 | 2 | §5 exercise imagery | low | ✅ on disk | ✅ shipped `9097a1c` |
-| 3 | §3 per-boss banners | low-med | ✅ on disk | ✅ shipped `cdac3cb` (partial §3) |
+| 3 | §3 per-boss banners (layer 3) | low-med | ✅ on disk | ✅ shipped `cdac3cb` |
 | 4 | §2 onboarding merge | medium | none | ✅ shipped `f845ec7` |
-| — | §3 tier art + sport sprites | — | ❌ missing | **blocked on content** |
+| 5 | §3 tier art + sport sprites (layers 1–2) | low-med | ✅ generated 2026-07-20 | ✅ shipped `4356ee4` |
+| 6 | §1c boss phase art | low | ✅ reused adventure covers | ✅ shipped `2b06f3e` |
 | — | §1 navigation | — | — | not scheduled (decided B) |
 
-> All 4 approved phases shipped 2026-07-20, each behind its gate (tsc + jest green, lint clean
-> on the diff) and its own commit. A prerequisite stale-test fix landed first as `bd9e158`
-> (the `0006` image seed had broken `db-exercises`' hardcoded placeholder assertion).
-> **Device screenshot QA is still pending** for phases 2–4 (no simulator in the build env) —
-> the automated gate passed, but visual verification on-device remains, consistent with the
-> "re-audit on device pending" rows in [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md).
+> **All 6 phases shipped 2026-07-20**, each behind its gate (tsc + jest green, lint clean on
+> the diff) and its own commit. A prerequisite stale-test fix landed first as `bd9e158` (the
+> `0006` image seed had broken `db-exercises`' hardcoded placeholder assertion). Phases 5–6
+> were added mid-plan once village/sport art was generated and a real gap in `BossPhaseImage`
+> (still emoji, despite being live in every boss fight) was found while auditing missing art —
+> see [missing-image.md](../content/missing-image.md). Along the way, `BossFight.imagePath` /
+> `BossBanner.imagePath` were changed from `string | null` to plain `string` (placeholder
+> fallback resolved at the query layer, matching every other `getXAsset()` helper), removing
+> null-branching from `BossPhaseImage`/`VillageScene` per feedback.
+> **Device screenshot QA is still pending** for all UI-visible phases (no simulator in the
+> build env) — the automated gate passed, but visual verification on-device remains, consistent
+> with the "re-audit on device pending" rows in
+> [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md).
 
 ---
 
@@ -168,14 +176,64 @@ reading `trainingLevel` — a separate change once the signal exists.
 
 ---
 
-## Blocked — needs content before dev
+## Phase 5 — Village tier + sport-sprite art (§3 layers 1–2)
 
-- **§3 layer 1 (5 tier illustrations)** and **layer 2 (one sport sprite per muscle group)** —
-  no assets exist (`assets/images/` has adventures/bosses/exercises/quests, no village-tier or
-  muscle-sprite dir). Produce art via the existing pipeline
-  ([../content/missing-covers.md](../content/missing-covers.md),
-  `scripts/generate-covers.py`) first; the dev side is then a small layered-`Image` render on
-  top of Phase 3's scene, mirroring the existing `FlameFlicker` overlay pattern.
+**Scope:** `components/village/VillageScene.tsx` — render the generated tier illustration
+full-bleed as the scene, with the dominant-sport sprite as a corner overlay.
+
+**Why unblocked:** village art was generated (`scripts/generate-village.py`, 11 assets in
+`assets/images/village/`) and registered in `constants/assetMap.ts`
+(`VILLAGE_TIER_ASSETS`/`SPORT_SPRITE_ASSETS` + `getVillageTierAsset`/`getSportSpriteAsset`) —
+the content blocker from the original plan is gone.
+
+**Steps:**
+
+1. Replace the small circular castle-icon placeholder with a full-width `aspectRatio={4/3}`
+   tier illustration via `getVillageTierAsset(scene.tier)`.
+2. Layer the sport sprite (`getSportSpriteAsset(scene.dominantSport.muscle)`) as a small
+   bottom-right corner badge, only when `scene.dominantSport` exists.
+3. Keep tier name/level/flame/dominant-sport text below the image, unchanged in content.
+4. Gate.
+
+**Done when:** village scene shows real tier art + sport overlay, gate green, committed.
+
+**Commit:** `feat(village): wire generated tier illustrations + sport sprites (§3 layers 1-2)`
+
+---
+
+## Phase 6 — Boss phase art (§1c)
+
+**Scope:** `components/session/BossPhaseImage.tsx` (render), `components/session/BossHpBar.tsx`
+and its two callers (prop threading), `db/bossFights.ts` (add `imagePath` to `BossFight`),
+`db/village.ts` and `VillageScene.tsx` (drop `| null` from `BossBanner.imagePath` for
+consistency).
+
+**Why ready:** identified while auditing missing art
+([missing-image.md](../content/missing-image.md) §1c) — `BossPhaseImage` is live inside
+`BossHpBar` on every boss fight but was 100% emoji, with the code's own comment admitting it.
+Zero new assets needed: reuse the boss's adventure cover (already resolved via
+`getAdventureAsset`) with a per-phase color tint instead of 4 separate paintings.
+
+**Steps:**
+
+1. Add `imagePath: string` to `BossFight` (not `| null` — resolve to the placeholder path at
+   the query layer in `getOrCreateBossFight`/`getBossFightByAdventure`, matching the
+   `getXAsset()` convention everywhere else).
+2. `BossPhaseImage`: accept `bossImagePath: string`, always render via `getAdventureAsset`
+   (single code path, no emoji branch), overlay a `tint` per phase (none → light → stronger →
+   heaviest at Enraged).
+3. Thread `bossImagePath={bossFight.imagePath}` through `BossHpBar` from both callers
+   (`ActiveExerciseView`, `RestView`).
+4. Same null-removal pass on `BossBanner.imagePath` (`db/village.ts`) and `VillageScene.tsx`'s
+   banner render (drop the `<Crown>` fallback branch) for consistency.
+5. Gate.
+
+**Done when:** boss fights show real art with phase tinting, no `| null` imagePath anywhere in
+this chain, gate green, committed.
+
+**Commit:** `feat(boss): wire boss phase art from adventure cover (§1c)`
+
+---
 
 ## Not scheduled
 

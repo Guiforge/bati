@@ -1,5 +1,16 @@
 import { createTestDb } from "./helpers/testDb";
 
+// A fixed neutral time-of-day (noon) for tests that are NOT about time-based achievements.
+// Using `new Date()` here made the suite flaky: between midnight and 7am the current hour
+// satisfies the early_bird condition (hour < 7), so those tests would unlock early_bird as a
+// side effect and steal it from the dedicated early-bird test. Noon avoids both the early_bird
+// (<7) and night_owl (>=22) windows.
+function neutralTime(): Date {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  return d;
+}
+
 describe("db/achievements", () => {
   const t = createTestDb();
 
@@ -136,7 +147,7 @@ describe("db/achievements", () => {
       const newAchievements = await achievements.checkForNewAchievements({
         durationSeconds: 600,
         xpEarned: 50,
-        performedAt: new Date(),
+        performedAt: neutralTime(),
         questId: null,
       });
 
@@ -169,7 +180,7 @@ describe("db/achievements", () => {
       const newAchievements = await achievements.checkForNewAchievements({
         durationSeconds: 1800, // 30 minutes
         xpEarned: 100,
-        performedAt: new Date(),
+        performedAt: neutralTime(),
         questId: null,
       });
 

@@ -1,1948 +1,6 @@
--- Quest 2: Guard the Fortress Gate
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'Guard the Fortress Gate',
-        'Garder la Porte de la Forteresse',
-        'The enemy charges. You hold the line. Your body is the wall. Do not falter. Do not break.',
-        'L''ennemi charge. Vous tenez la ligne. Votre corps est le mur. Ne faiblis pas. Ne casse pas.',
-        'Admin',
-        3,
-        60,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'time',
-    30,
-    45,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Wall Sentinel Hold'
-WHERE q.`enTitle` = 'Guard the Fortress Gate';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'time',
-    30,
-    60,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Stone Guardian Plank'
-WHERE q.`enTitle` = 'Guard the Fortress Gate';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'reps',
-    12,
-    15,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Goblin Squat'
-WHERE q.`enTitle` = 'Guard the Fortress Gate';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    3,
-    'reps',
-    10,
-    12,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Shadow Step Lunge'
-WHERE q.`enTitle` = 'Guard the Fortress Gate';
---> statement-breakpoint
--- Quest 3: Forge the Dragon Blade
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'Forge the Dragon Blade',
-        'Forger la Lame du Dragon',
-        'The forge burns hot. Each strike of the hammer shapes legendary steel. Your chest and arms become the anvil.',
-        'La forge brûle. Chaque coup de marteau façonne l''acier légendaire. Votre poitrine et vos bras deviennent l''enclume.',
-        'Admin',
-        4,
-        60,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'reps',
-    12,
-    15,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Dragon Push-up'
-WHERE q.`enTitle` = 'Forge the Dragon Blade';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'reps',
-    8,
-    10,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Knight''s Diamond Push-up'
-WHERE q.`enTitle` = 'Forge the Dragon Blade';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'reps',
-    8,
-    12,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Titan''s Dip'
-WHERE q.`enTitle` = 'Forge the Dragon Blade';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    3,
-    'reps',
-    8,
-    10,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Archer''s Pike Push-up'
-WHERE q.`enTitle` = 'Forge the Dragon Blade';
---> statement-breakpoint
--- Quest 4: Climb the Titan's Tower
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'Climb the Titan''s Tower',
-        'Escalader la Tour du Titan',
-        'An ancient tower reaches the clouds. Each floor demands you pull yourself higher. Reach the summit or fall trying.',
-        'Une tour antique atteint les nuages. Chaque étage exige que vous vous tiriez plus haut. Atteignez le sommet ou tombez en essayant.',
-        'Admin',
-        3,
-        90,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'reps',
-    5,
-    8,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Iron Grip Pull-up'
-WHERE q.`enTitle` = 'Climb the Titan''s Tower';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'reps',
-    8,
-    10,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Ranger''s Single Leg Deadlift'
-WHERE q.`enTitle` = 'Climb the Titan''s Tower';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'time',
-    45,
-    60,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Stone Guardian Plank'
-WHERE q.`enTitle` = 'Climb the Titan''s Tower';
---> statement-breakpoint
--- Quest 5: The Arcane Gauntlet
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'The Arcane Gauntlet',
-        'Le Gant Arcanique',
-        'The wizard''s trial begins. Channel raw mana through perfect body control. Only those with iron cores pass.',
-        'L''épreuve du sorcier commence. Canalisez le mana brut par un contrôle corporel parfait. Seuls ceux avec des abdos de fer réussissent.',
-        'Admin',
-        4,
-        45,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'reps',
-    15,
-    20,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Wizard''s Bicycle Crunch'
-WHERE q.`enTitle` = 'The Arcane Gauntlet';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'time',
-    20,
-    30,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Alchemist''s Hollow Body Hold'
-WHERE q.`enTitle` = 'The Arcane Gauntlet';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'time',
-    45,
-    60,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Stone Guardian Plank'
-WHERE q.`enTitle` = 'The Arcane Gauntlet';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    3,
-    'time',
-    30,
-    40,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Monk''s Mountain Climber'
-WHERE q.`enTitle` = 'The Arcane Gauntlet';
---> statement-breakpoint
--- Quest 6: The Druid's Path
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'The Druid''s Path',
-        'Le Chemin du Druide',
-        'Walk the forest trail. Connect with earth energy. Stretch, breathe, restore. Nature heals the warrior''s weary body.',
-        'Parcourez le sentier forestier. Connectez-vous à l''énergie de la terre. Étirez-vous, respirez, restaurez. La nature guérit le corps fatigué du guerrier.',
-        'Admin',
-        2,
-        30,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'time',
-    30,
-    45,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Druid''s Cobra Stretch'
-WHERE q.`enTitle` = 'The Druid''s Path';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'time',
-    45,
-    60,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Samurai''s Warrior Pose'
-WHERE q.`enTitle` = 'The Druid''s Path';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'reps',
-    8,
-    10,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Shadow Step Lunge'
-WHERE q.`enTitle` = 'The Druid''s Path';
---> statement-breakpoint
--- Quest 7: Sprint Through the Shadowlands
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'Sprint Through the Shadowlands',
-        'Sprint à Travers les Terres d''Ombre',
-        'Darkness hunts you. Run. Don''t look back. Speed and stamina are your only weapons in this cursed realm.',
-        'Les ténèbres vous chassent. Courez. Ne regardez pas en arrière. Vitesse et endurance sont vos seules armes dans ce royaume maudit.',
-        'Admin',
-        3,
-        45,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'time',
-    40,
-    50,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Paladin''s High Knee'
-WHERE q.`enTitle` = 'Sprint Through the Shadowlands';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'reps',
-    15,
-    20,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Rogue''s Skater Hop'
-WHERE q.`enTitle` = 'Sprint Through the Shadowlands';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'reps',
-    10,
-    12,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Berserker Burpee'
-WHERE q.`enTitle` = 'Sprint Through the Shadowlands';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    3,
-    'reps',
-    25,
-    30,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Thunder Jumping Jack'
-WHERE q.`enTitle` = 'Sprint Through the Shadowlands';
---> statement-breakpoint
--- Quest 8: Build the Stronghold
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'Build the Stronghold',
-        'Construire le Bastion',
-        'Stone by stone, you raise mighty walls. Every muscle contributes. A balanced fortress requires a balanced hero.',
-        'Pierre par pierre, vous élevez de puissants murs. Chaque muscle contribue. Une forteresse équilibrée nécessite un héros équilibré.',
-        'Admin',
-        4,
-        60,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'reps',
-    15,
-    18,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Goblin Squat'
-WHERE q.`enTitle` = 'Build the Stronghold';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'reps',
-    12,
-    15,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Dragon Push-up'
-WHERE q.`enTitle` = 'Build the Stronghold';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'reps',
-    5,
-    7,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Iron Grip Pull-up'
-WHERE q.`enTitle` = 'Build the Stronghold';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    3,
-    'time',
-    45,
-    60,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Stone Guardian Plank'
-WHERE q.`enTitle` = 'Build the Stronghold';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    4,
-    'reps',
-    12,
-    15,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Shadow Step Lunge'
-WHERE q.`enTitle` = 'Build the Stronghold';
---> statement-breakpoint
--- Quest 9: The Iron Gauntlet Challenge
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'The Iron Gauntlet Challenge',
-        'Défi du Gantelet de Fer',
-        'Only the strongest dare enter. This trial breaks the weak, forges legends from the resilient. Prove your iron will.',
-        'Seuls les plus forts osent entrer. Cette épreuve brise les faibles, forge des légendes des résilients. Prouvez votre volonté de fer.',
-        'Admin',
-        4,
-        90,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'reps',
-    10,
-    12,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Knight''s Diamond Push-up'
-WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'reps',
-    8,
-    10,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Iron Grip Pull-up'
-WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'reps',
-    10,
-    12,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Titan''s Dip'
-WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    3,
-    'reps',
-    10,
-    12,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Archer''s Pike Push-up'
-WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    4,
-    'time',
-    30,
-    45,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Alchemist''s Hollow Body Hold'
-WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
---> statement-breakpoint
--- Quest 10: Morning of the Champion
-INSERT INTO `quests` (
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `rounds`,
-        `restSeconds`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        'Morning of the Champion',
-        'Matin du Champion',
-        'Greet the dawn like a warrior. Wake every muscle, ignite your spirit. This is how heroes start their day.',
-        'Saluez l''aube comme un guerrier. Réveillez chaque muscle, allumez votre esprit. C''est ainsi que les héros commencent leur journée.',
-        'Admin',
-        3,
-        30,
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    0,
-    'reps',
-    20,
-    25,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Thunder Jumping Jack'
-WHERE q.`enTitle` = 'Morning of the Champion';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    1,
-    'reps',
-    12,
-    15,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Goblin Squat'
-WHERE q.`enTitle` = 'Morning of the Champion';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    2,
-    'reps',
-    10,
-    12,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Dragon Push-up'
-WHERE q.`enTitle` = 'Morning of the Champion';
---> statement-breakpoint
-INSERT INTO `quest_exercises` (
-        `questId`,
-        `exerciseId`,
-        `sortOrder`,
-        `targetType`,
-        `targetMin`,
-        `targetMax`,
-        `imagesJson`
-    )
-SELECT q.id,
-    e.id,
-    3,
-    'time',
-    30,
-    40,
-    '[]'
-FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Druid''s Cobra Stretch'
-WHERE q.`enTitle` = 'Morning of the Champion';
---> statement-breakpoint
 -- ============================================================
--- PART 3: ADVENTURES (5 Campaigns)
+-- PART 1: EXERCISES (20 items) — defined first so quest_exercises name-joins resolve
 -- ============================================================
-DROP INDEX IF EXISTS `adventures_quest_unique`;
---> statement-breakpoint
--- Adventure 1: The Scout's Trial
-INSERT INTO `adventures` (
-        `questId`,
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `sortOrder`,
-        `kind`,
-        `isActive`,
-        `bossTotalHp`,
-        `bossWeaknessMuscle`,
-        `bossResistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        (
-            SELECT id
-            FROM `quests`
-            WHERE `enTitle` = 'Sprint Through the Shadowlands'
-        ),
-        'The Scout''s Trial',
-        'L''Épreuve de l''Éclaireur',
-        'The kingdom needs scouts who never tire. Run faster, last longer. Your legs become lightning, your lungs endless.',
-        'Le royaume a besoin d''éclaireurs qui ne se fatiguent jamais. Courez plus vite, durez plus longtemps. Vos jambes deviennent foudre, vos poumons infinis.',
-        'Admin',
-        0,
-        'boss',
-        1,
-        400,
-        'calf',
-        'arms',
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    0,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Sprint Through the Shadowlands'
-WHERE a.`enTitle` = 'The Scout''s Trial';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    1,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Sprint Through the Shadowlands'
-WHERE a.`enTitle` = 'The Scout''s Trial';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    2,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Escape the Collapsing Mine'
-WHERE a.`enTitle` = 'The Scout''s Trial';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    3,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Sprint Through the Shadowlands'
-WHERE a.`enTitle` = 'The Scout''s Trial';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    4,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Sprint Through the Shadowlands'
-WHERE a.`enTitle` = 'The Scout''s Trial';
---> statement-breakpoint
-INSERT INTO `boss_fights` (
-        `adventureId`,
-        `totalHp`,
-        `currentHp`,
-        `weaknessMuscle`,
-        `resistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    400,
-    400,
-    'calf',
-    'arms',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-WHERE a.`enTitle` = 'The Scout''s Trial';
---> statement-breakpoint
--- Adventure 2: The Guardian's Oath
-INSERT INTO `adventures` (
-        `questId`,
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `sortOrder`,
-        `kind`,
-        `isActive`,
-        `bossTotalHp`,
-        `bossWeaknessMuscle`,
-        `bossResistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        (
-            SELECT id
-            FROM `quests`
-            WHERE `enTitle` = 'Guard the Fortress Gate'
-        ),
-        'The Guardian''s Oath',
-        'Le Serment du Gardien',
-        'Swear to protect. Your back becomes armor. Your core becomes an unbreakable shield. Stand firm, guard the realm.',
-        'Jurez de protéger. Votre dos devient armure. Votre tronc devient un bouclier incassable. Tenez ferme, gardez le royaume.',
-        'Admin',
-        1,
-        'boss',
-        1,
-        600,
-        'back',
-        'chest',
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    0,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Guard the Fortress Gate'
-WHERE a.`enTitle` = 'The Guardian''s Oath';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    1,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Build the Stronghold'
-WHERE a.`enTitle` = 'The Guardian''s Oath';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    2,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Climb the Titan''s Tower'
-WHERE a.`enTitle` = 'The Guardian''s Oath';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    3,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Guard the Fortress Gate'
-WHERE a.`enTitle` = 'The Guardian''s Oath';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    4,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Arcane Gauntlet'
-WHERE a.`enTitle` = 'The Guardian''s Oath';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    5,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Guard the Fortress Gate'
-WHERE a.`enTitle` = 'The Guardian''s Oath';
---> statement-breakpoint
-INSERT INTO `boss_fights` (
-        `adventureId`,
-        `totalHp`,
-        `currentHp`,
-        `weaknessMuscle`,
-        `resistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    600,
-    600,
-    'back',
-    'chest',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-WHERE a.`enTitle` = 'The Guardian''s Oath';
---> statement-breakpoint
--- Adventure 3: The Monk's Enlightenment
-INSERT INTO `adventures` (
-        `questId`,
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `sortOrder`,
-        `kind`,
-        `isActive`,
-        `bossTotalHp`,
-        `bossWeaknessMuscle`,
-        `bossResistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        (
-            SELECT id
-            FROM `quests`
-            WHERE `enTitle` = 'The Druid''s Path'
-        ),
-        'The Monk''s Enlightenment',
-        'L''Illumination du Moine',
-        'Walk the path of balance. Master your body, master your mind. Core steel, spirit calm, movement pure.',
-        'Parcourez le chemin de l''équilibre. Maîtrisez votre corps, maîtrisez votre esprit. Tronc d''acier, esprit calme, mouvement pur.',
-        'Admin',
-        2,
-        'boss',
-        1,
-        350,
-        'abs',
-        'calf',
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    0,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Druid''s Path'
-WHERE a.`enTitle` = 'The Monk''s Enlightenment';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    1,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Arcane Gauntlet'
-WHERE a.`enTitle` = 'The Monk''s Enlightenment';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    2,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Druid''s Path'
-WHERE a.`enTitle` = 'The Monk''s Enlightenment';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    3,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Arcane Gauntlet'
-WHERE a.`enTitle` = 'The Monk''s Enlightenment';
---> statement-breakpoint
-INSERT INTO `boss_fights` (
-        `adventureId`,
-        `totalHp`,
-        `currentHp`,
-        `weaknessMuscle`,
-        `resistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    350,
-    350,
-    'abs',
-    'calf',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-WHERE a.`enTitle` = 'The Monk''s Enlightenment';
---> statement-breakpoint
--- Adventure 4: The Ranger's Journey
-INSERT INTO `adventures` (
-        `questId`,
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `sortOrder`,
-        `kind`,
-        `isActive`,
-        `bossTotalHp`,
-        `bossWeaknessMuscle`,
-        `bossResistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        (
-            SELECT id
-            FROM `quests`
-            WHERE `enTitle` = 'Morning of the Champion'
-        ),
-        'The Ranger''s Journey',
-        'Le Voyage du Ranger',
-        'The long road awaits. Miles to walk, battles to face, never stopping. Build the endurance to outlast any foe, any trial.',
-        'La longue route attend. Des kilomètres à parcourir, des batailles à affronter, ne jamais s''arrêter. Développez l''endurance pour surpasser tout ennemi, toute épreuve.',
-        'Admin',
-        3,
-        'boss',
-        1,
-        550,
-        'calf',
-        'shoulder',
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    0,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Morning of the Champion'
-WHERE a.`enTitle` = 'The Ranger''s Journey';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    1,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Build the Stronghold'
-WHERE a.`enTitle` = 'The Ranger''s Journey';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    2,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Sprint Through the Shadowlands'
-WHERE a.`enTitle` = 'The Ranger''s Journey';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    3,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Build the Stronghold'
-WHERE a.`enTitle` = 'The Ranger''s Journey';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    4,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Sprint Through the Shadowlands'
-WHERE a.`enTitle` = 'The Ranger''s Journey';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    5,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Build the Stronghold'
-WHERE a.`enTitle` = 'The Ranger''s Journey';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    6,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Morning of the Champion'
-WHERE a.`enTitle` = 'The Ranger''s Journey';
---> statement-breakpoint
-INSERT INTO `boss_fights` (
-        `adventureId`,
-        `totalHp`,
-        `currentHp`,
-        `weaknessMuscle`,
-        `resistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    550,
-    550,
-    'calf',
-    'shoulder',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-WHERE a.`enTitle` = 'The Ranger''s Journey';
---> statement-breakpoint
--- Adventure 5: The Iron Lord's Conquest
-INSERT INTO `adventures` (
-        `questId`,
-        `enTitle`,
-        `frTitle`,
-        `enDescription`,
-        `frDescription`,
-        `author`,
-        `sortOrder`,
-        `kind`,
-        `isActive`,
-        `bossTotalHp`,
-        `bossWeaknessMuscle`,
-        `bossResistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-VALUES (
-        (
-            SELECT id
-            FROM `quests`
-            WHERE `enTitle` = 'Forge the Dragon Blade'
-        ),
-        'The Iron Lord''s Conquest',
-        'La Conquête du Seigneur de Fer',
-        'The ultimate challenge. Face every trial, defeat every boss, emerge as the Iron Lord. Only legends complete this path.',
-        'Le défi ultime. Affrontez chaque épreuve, vainquez chaque boss, émergez comme le Seigneur de Fer. Seules les légendes achèvent ce chemin.',
-        'Admin',
-        4,
-        'boss',
-        1,
-        800,
-        'abs',
-        'chest',
-        strftime('%s', 'now') * 1000,
-        strftime('%s', 'now') * 1000
-    );
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    0,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Forge the Dragon Blade'
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    1,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Iron Gauntlet Challenge'
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    2,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Climb the Titan''s Tower'
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    3,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Forge the Dragon Blade'
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    4,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Iron Gauntlet Challenge'
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    5,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'Build the Stronghold'
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    6,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Iron Gauntlet Challenge'
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
---> statement-breakpoint
-INSERT INTO `adventure_steps` (
-        `adventureId`,
-        `stepIndex`,
-        `questId`,
-        `enNarrative`,
-        `frNarrative`,
-        `enOutroNarrative`,
-        `frOutroNarrative`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    7,
-    q.id,
-    '',
-    '',
-    '',
-    '',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-    JOIN `quests` q ON q.`enTitle` = 'The Iron Gauntlet Challenge'
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
---> statement-breakpoint
-INSERT INTO `boss_fights` (
-        `adventureId`,
-        `totalHp`,
-        `currentHp`,
-        `weaknessMuscle`,
-        `resistanceMuscle`,
-        `createdAt`,
-        `updatedAt`
-    )
-SELECT a.id,
-    800,
-    800,
-    'abs',
-    'chest',
-    strftime('%s', 'now') * 1000,
-    strftime('%s', 'now') * 1000
-FROM `adventures` a
-WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
 -- PART 1: NEW EXERCISES (20 Items)
 -- ============================================================
 -- Exercise 1: Goblin Squat
@@ -2746,13 +804,9 @@ FROM `exercises` e
 WHERE e.`enName` = 'Alchemist''s Hollow Body Hold';
 --> statement-breakpoint
 -- ============================================================
--- PART 2: NEW QUESTS (10 Workouts)
+-- PART 2: QUESTS (Iron Lord's Conquest chain) + their exercises
 -- ============================================================
--- NOTE: Quests are inserted below, with their associated quest_exercises
--- The quest_exercises entries reference the newly created exercises by name
--- (Content continues... this file would be ~2000+ lines with all quests)
--- For brevity, showing the pattern for Quest 1:
--- Quest 1: Escape the Collapsing Mine
+-- Quest 3: Forge the Dragon Blade
 INSERT INTO `quests` (
         `enTitle`,
         `frTitle`,
@@ -2765,18 +819,17 @@ INSERT INTO `quests` (
         `updatedAt`
     )
 VALUES (
-        'Escape the Collapsing Mine',
-        'Fuite de la Mine Effondrée',
-        'The tunnel rumbles. Rocks fall. You have minutes to reach sunlight. Move fast, move now, or be buried forever!',
-        'Le tunnel gronde. Des rochers tombent. Vous avez quelques minutes pour atteindre la lumière du jour. Bougez vite, bougez maintenant, ou soyez enterré à jamais!',
+        'Forge the Dragon Blade',
+        'Forger la Lame du Dragon',
+        'The forge burns hot. Each strike of the hammer shapes legendary steel. Your chest and arms become the anvil.',
+        'La forge brûle. Chaque coup de marteau façonne l''acier légendaire. Votre poitrine et vos bras deviennent l''enclume.',
         'Admin',
-        3,
-        45,
+        4,
+        60,
         strftime('%s', 'now') * 1000,
         strftime('%s', 'now') * 1000
     );
 --> statement-breakpoint
--- Quest 1 Exercises
 INSERT INTO `quest_exercises` (
         `questId`,
         `exerciseId`,
@@ -2790,12 +843,12 @@ SELECT q.id,
     e.id,
     0,
     'reps',
-    8,
     12,
+    15,
     '[]'
 FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Berserker Burpee'
-WHERE q.`enTitle` = 'Escape the Collapsing Mine';
+    JOIN `exercises` e ON e.`enName` = 'Dragon Push-up'
+WHERE q.`enTitle` = 'Forge the Dragon Blade';
 --> statement-breakpoint
 INSERT INTO `quest_exercises` (
         `questId`,
@@ -2809,13 +862,13 @@ INSERT INTO `quest_exercises` (
 SELECT q.id,
     e.id,
     1,
-    'time',
-    30,
-    45,
+    'reps',
+    8,
+    10,
     '[]'
 FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Monk''s Mountain Climber'
-WHERE q.`enTitle` = 'Escape the Collapsing Mine';
+    JOIN `exercises` e ON e.`enName` = 'Knight''s Diamond Push-up'
+WHERE q.`enTitle` = 'Forge the Dragon Blade';
 --> statement-breakpoint
 INSERT INTO `quest_exercises` (
         `questId`,
@@ -2829,13 +882,13 @@ INSERT INTO `quest_exercises` (
 SELECT q.id,
     e.id,
     2,
-    'time',
-    30,
-    45,
+    'reps',
+    8,
+    12,
     '[]'
 FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Paladin''s High Knee'
-WHERE q.`enTitle` = 'Escape the Collapsing Mine';
+    JOIN `exercises` e ON e.`enName` = 'Titan''s Dip'
+WHERE q.`enTitle` = 'Forge the Dragon Blade';
 --> statement-breakpoint
 INSERT INTO `quest_exercises` (
         `questId`,
@@ -2850,15 +903,595 @@ SELECT q.id,
     e.id,
     3,
     'reps',
-    20,
-    30,
+    8,
+    10,
     '[]'
 FROM `quests` q
-    JOIN `exercises` e ON e.`enName` = 'Thunder Jumping Jack'
-WHERE q.`enTitle` = 'Escape the Collapsing Mine';
+    JOIN `exercises` e ON e.`enName` = 'Archer''s Pike Push-up'
+WHERE q.`enTitle` = 'Forge the Dragon Blade';
+--> statement-breakpoint
+-- Quest 4: Climb the Titan's Tower
+INSERT INTO `quests` (
+        `enTitle`,
+        `frTitle`,
+        `enDescription`,
+        `frDescription`,
+        `author`,
+        `rounds`,
+        `restSeconds`,
+        `createdAt`,
+        `updatedAt`
+    )
+VALUES (
+        'Climb the Titan''s Tower',
+        'Escalader la Tour du Titan',
+        'An ancient tower reaches the clouds. Each floor demands you pull yourself higher. Reach the summit or fall trying.',
+        'Une tour antique atteint les nuages. Chaque étage exige que vous vous tiriez plus haut. Atteignez le sommet ou tombez en essayant.',
+        'Admin',
+        3,
+        90,
+        strftime('%s', 'now') * 1000,
+        strftime('%s', 'now') * 1000
+    );
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    0,
+    'reps',
+    5,
+    8,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Iron Grip Pull-up'
+WHERE q.`enTitle` = 'Climb the Titan''s Tower';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    1,
+    'reps',
+    8,
+    10,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Ranger''s Single Leg Deadlift'
+WHERE q.`enTitle` = 'Climb the Titan''s Tower';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    2,
+    'time',
+    45,
+    60,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Stone Guardian Plank'
+WHERE q.`enTitle` = 'Climb the Titan''s Tower';
+--> statement-breakpoint
+-- Quest 8: Build the Stronghold
+INSERT INTO `quests` (
+        `enTitle`,
+        `frTitle`,
+        `enDescription`,
+        `frDescription`,
+        `author`,
+        `rounds`,
+        `restSeconds`,
+        `createdAt`,
+        `updatedAt`
+    )
+VALUES (
+        'Build the Stronghold',
+        'Construire le Bastion',
+        'Stone by stone, you raise mighty walls. Every muscle contributes. A balanced fortress requires a balanced hero.',
+        'Pierre par pierre, vous élevez de puissants murs. Chaque muscle contribue. Une forteresse équilibrée nécessite un héros équilibré.',
+        'Admin',
+        4,
+        60,
+        strftime('%s', 'now') * 1000,
+        strftime('%s', 'now') * 1000
+    );
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    0,
+    'reps',
+    15,
+    18,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Goblin Squat'
+WHERE q.`enTitle` = 'Build the Stronghold';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    1,
+    'reps',
+    12,
+    15,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Dragon Push-up'
+WHERE q.`enTitle` = 'Build the Stronghold';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    2,
+    'reps',
+    5,
+    7,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Iron Grip Pull-up'
+WHERE q.`enTitle` = 'Build the Stronghold';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    3,
+    'time',
+    45,
+    60,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Stone Guardian Plank'
+WHERE q.`enTitle` = 'Build the Stronghold';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    4,
+    'reps',
+    12,
+    15,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Shadow Step Lunge'
+WHERE q.`enTitle` = 'Build the Stronghold';
+--> statement-breakpoint
+-- Quest 9: The Iron Gauntlet Challenge
+INSERT INTO `quests` (
+        `enTitle`,
+        `frTitle`,
+        `enDescription`,
+        `frDescription`,
+        `author`,
+        `rounds`,
+        `restSeconds`,
+        `createdAt`,
+        `updatedAt`
+    )
+VALUES (
+        'The Iron Gauntlet Challenge',
+        'Défi du Gantelet de Fer',
+        'Only the strongest dare enter. This trial breaks the weak, forges legends from the resilient. Prove your iron will.',
+        'Seuls les plus forts osent entrer. Cette épreuve brise les faibles, forge des légendes des résilients. Prouvez votre volonté de fer.',
+        'Admin',
+        4,
+        90,
+        strftime('%s', 'now') * 1000,
+        strftime('%s', 'now') * 1000
+    );
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    0,
+    'reps',
+    10,
+    12,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Knight''s Diamond Push-up'
+WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    1,
+    'reps',
+    8,
+    10,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Iron Grip Pull-up'
+WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    2,
+    'reps',
+    10,
+    12,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Titan''s Dip'
+WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    3,
+    'reps',
+    10,
+    12,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Archer''s Pike Push-up'
+WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
+--> statement-breakpoint
+INSERT INTO `quest_exercises` (
+        `questId`,
+        `exerciseId`,
+        `sortOrder`,
+        `targetType`,
+        `targetMin`,
+        `targetMax`,
+        `imagesJson`
+    )
+SELECT q.id,
+    e.id,
+    4,
+    'time',
+    30,
+    45,
+    '[]'
+FROM `quests` q
+    JOIN `exercises` e ON e.`enName` = 'Alchemist''s Hollow Body Hold'
+WHERE q.`enTitle` = 'The Iron Gauntlet Challenge';
 --> statement-breakpoint
 -- ============================================================
--- NOTE: Full migration would continue with all 10 quests
--- and their exercises, plus the 5 adventures with boss fights.
--- This is a template showing the structure.
+-- PART 3: ADVENTURE — The Iron Lord's Conquest (boss)
 -- ============================================================
+DROP INDEX IF EXISTS `adventures_quest_unique`;
+--> statement-breakpoint
+-- Adventure 5: The Iron Lord's Conquest
+INSERT INTO `adventures` (
+        `questId`,
+        `enTitle`,
+        `frTitle`,
+        `enDescription`,
+        `frDescription`,
+        `author`,
+        `sortOrder`,
+        `kind`,
+        `isActive`,
+        `bossTotalHp`,
+        `bossWeaknessMuscle`,
+        `bossResistanceMuscle`,
+        `createdAt`,
+        `updatedAt`
+    )
+VALUES (
+        (
+            SELECT id
+            FROM `quests`
+            WHERE `enTitle` = 'Forge the Dragon Blade'
+        ),
+        'The Iron Lord''s Conquest',
+        'La Conquête du Seigneur de Fer',
+        'The ultimate challenge. Face every trial, defeat every boss, emerge as the Iron Lord. Only legends complete this path.',
+        'Le défi ultime. Affrontez chaque épreuve, vainquez chaque boss, émergez comme le Seigneur de Fer. Seules les légendes achèvent ce chemin.',
+        'Admin',
+        4,
+        'boss',
+        1,
+        800,
+        'abs',
+        'chest',
+        strftime('%s', 'now') * 1000,
+        strftime('%s', 'now') * 1000
+    );
+--> statement-breakpoint
+INSERT INTO `adventure_steps` (
+        `adventureId`,
+        `stepIndex`,
+        `questId`,
+        `enNarrative`,
+        `frNarrative`,
+        `enOutroNarrative`,
+        `frOutroNarrative`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    0,
+    q.id,
+    '',
+    '',
+    '',
+    '',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+    JOIN `quests` q ON q.`enTitle` = 'Forge the Dragon Blade'
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
+--> statement-breakpoint
+INSERT INTO `adventure_steps` (
+        `adventureId`,
+        `stepIndex`,
+        `questId`,
+        `enNarrative`,
+        `frNarrative`,
+        `enOutroNarrative`,
+        `frOutroNarrative`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    1,
+    q.id,
+    '',
+    '',
+    '',
+    '',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+    JOIN `quests` q ON q.`enTitle` = 'The Iron Gauntlet Challenge'
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
+--> statement-breakpoint
+INSERT INTO `adventure_steps` (
+        `adventureId`,
+        `stepIndex`,
+        `questId`,
+        `enNarrative`,
+        `frNarrative`,
+        `enOutroNarrative`,
+        `frOutroNarrative`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    2,
+    q.id,
+    '',
+    '',
+    '',
+    '',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+    JOIN `quests` q ON q.`enTitle` = 'Climb the Titan''s Tower'
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
+--> statement-breakpoint
+INSERT INTO `adventure_steps` (
+        `adventureId`,
+        `stepIndex`,
+        `questId`,
+        `enNarrative`,
+        `frNarrative`,
+        `enOutroNarrative`,
+        `frOutroNarrative`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    3,
+    q.id,
+    '',
+    '',
+    '',
+    '',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+    JOIN `quests` q ON q.`enTitle` = 'Forge the Dragon Blade'
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
+--> statement-breakpoint
+INSERT INTO `adventure_steps` (
+        `adventureId`,
+        `stepIndex`,
+        `questId`,
+        `enNarrative`,
+        `frNarrative`,
+        `enOutroNarrative`,
+        `frOutroNarrative`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    4,
+    q.id,
+    '',
+    '',
+    '',
+    '',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+    JOIN `quests` q ON q.`enTitle` = 'The Iron Gauntlet Challenge'
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
+--> statement-breakpoint
+INSERT INTO `adventure_steps` (
+        `adventureId`,
+        `stepIndex`,
+        `questId`,
+        `enNarrative`,
+        `frNarrative`,
+        `enOutroNarrative`,
+        `frOutroNarrative`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    5,
+    q.id,
+    '',
+    '',
+    '',
+    '',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+    JOIN `quests` q ON q.`enTitle` = 'Build the Stronghold'
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
+--> statement-breakpoint
+INSERT INTO `adventure_steps` (
+        `adventureId`,
+        `stepIndex`,
+        `questId`,
+        `enNarrative`,
+        `frNarrative`,
+        `enOutroNarrative`,
+        `frOutroNarrative`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    6,
+    q.id,
+    '',
+    '',
+    '',
+    '',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+    JOIN `quests` q ON q.`enTitle` = 'The Iron Gauntlet Challenge'
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
+--> statement-breakpoint
+INSERT INTO `adventure_steps` (
+        `adventureId`,
+        `stepIndex`,
+        `questId`,
+        `enNarrative`,
+        `frNarrative`,
+        `enOutroNarrative`,
+        `frOutroNarrative`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    7,
+    q.id,
+    '',
+    '',
+    '',
+    '',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+    JOIN `quests` q ON q.`enTitle` = 'The Iron Gauntlet Challenge'
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';
+--> statement-breakpoint
+INSERT INTO `boss_fights` (
+        `adventureId`,
+        `totalHp`,
+        `currentHp`,
+        `weaknessMuscle`,
+        `resistanceMuscle`,
+        `createdAt`,
+        `updatedAt`
+    )
+SELECT a.id,
+    800,
+    800,
+    'abs',
+    'chest',
+    strftime('%s', 'now') * 1000,
+    strftime('%s', 'now') * 1000
+FROM `adventures` a
+WHERE a.`enTitle` = 'The Iron Lord''s Conquest';

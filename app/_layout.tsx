@@ -1,5 +1,4 @@
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { DefaultTheme, Slot, ThemeProvider, useRouter, useSegments } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";

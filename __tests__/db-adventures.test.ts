@@ -38,13 +38,13 @@ describe("db/adventures", () => {
     const adventures = require("../db/adventures") as typeof import("../db/adventures");
 
     const all = await adventures.listAdventures();
-    const scout = all.find((a) => a.enTitle === "The Scout's Trial");
-    expect(scout).toBeTruthy();
-    if (!scout) throw new Error("Expected seeded adventure 'The Scout's Trial'");
-    expect(scout.imagePath).toBe("assets/images/adventures/scout_trial.jpg");
+    const ironLord = all.find((a) => a.enTitle === "The Iron Lord's Conquest");
+    expect(ironLord).toBeTruthy();
+    if (!ironLord) throw new Error("Expected seeded adventure 'The Iron Lord's Conquest'");
+    expect(ironLord.imagePath).toBe("assets/images/adventures/iron_lord_conquest.jpg");
 
-    const details = await adventures.getAdventureDetails(scout.id);
-    expect(details?.adventure.imagePath).toBe("assets/images/adventures/scout_trial.jpg");
+    const details = await adventures.getAdventureDetails(ironLord.id);
+    expect(details?.adventure.imagePath).toBe("assets/images/adventures/iron_lord_conquest.jpg");
     expect(details?.steps[0]?.imagePath).toBeTruthy();
   });
 

@@ -14,7 +14,10 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
 import { getQuestAsset, getSportSpriteAsset } from "@/constants/assetMap";
-import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
+import {
+  getExerciseColorTokens,
+  getQuestColorTokensFromTemplateWithExercises,
+} from "@/constants/exerciseColors";
 import {
   estimateQuestTemplateSeconds,
   formatDuration,
@@ -55,16 +58,15 @@ function MuscleGlyphs({ muscles, language }: { muscles: MuscleCode[]; language: 
           width={22}
           height={22}
           rounded={11}
-          bg="$surface2"
+          bg={getExerciseColorTokens(m).bg}
           items="center"
           justify="center"
           accessibilityLabel={MUSCLE_LABELS[m]?.[language] ?? m}
         >
           <Image
             source={getSportSpriteAsset(m)}
-            style={{ width: 14, height: 14, opacity: 0.75 }}
+            style={{ width: 14, height: 14 }}
             contentFit="contain"
-            tintColor="#909ACB"
           />
         </YStack>
       ))}

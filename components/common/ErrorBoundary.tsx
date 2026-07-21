@@ -72,10 +72,10 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
     >
       <Text fontSize={64}>😵</Text>
       <YStack items="center" gap="$2">
-        <H1 color="$color" fontWeight="700" fontSize={24} style={{ textAlign: "center" }}>
+        <H1 color="$text" fontWeight="700" fontSize={24} style={{ textAlign: "center" }}>
           {t("errors.something_went_wrong", "Something went wrong")}
         </H1>
-        <Paragraph color="$color" opacity={0.6} style={{ textAlign: "center" }}>
+        <Paragraph color="$text" opacity={0.6} style={{ textAlign: "center" }}>
           {t("errors.try_again_message", "Don't worry, you can try again.")}
         </Paragraph>
       </YStack>
@@ -89,7 +89,7 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
           borderColor="$borderStrong"
           maxW="100%"
         >
-          <Text fontSize={12} color="$color" numberOfLines={5}>
+          <Text fontSize={12} color="$text" numberOfLines={5}>
             {error.message}
           </Text>
         </YStack>
@@ -130,7 +130,7 @@ export function InlineError({ message, onRetry }: { message?: string; onRetry?: 
       items="center"
     >
       <Text fontSize={32}>😵</Text>
-      <Text fontWeight="700" color="$color" style={{ textAlign: "center" }}>
+      <Text fontWeight="700" color="$text" style={{ textAlign: "center" }}>
         {message || t("errors.generic")}
       </Text>
       {onRetry && (
@@ -143,7 +143,7 @@ export function InlineError({ message, onRetry }: { message?: string; onRetry?: 
           onPress={onRetry}
           pressStyle={{ opacity: 0.9, scale: 0.98 }}
         >
-          <Button.Text fontWeight="700" color="$color">
+          <Button.Text fontWeight="700" color="$text">
             {t("errors.try_again", "Try Again")}
           </Button.Text>
         </Button>

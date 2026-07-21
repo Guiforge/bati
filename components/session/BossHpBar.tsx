@@ -55,7 +55,7 @@ export function BossHpBar({
       px="$3"
       py="$2"
       gap="$2"
-      shadowColor="$color"
+      shadowColor="$text"
       shadowRadius={0}
       shadowOffset={{ width: 0, height: 3 }}
     >
@@ -75,7 +75,7 @@ export function BossHpBar({
       <XStack justify="space-between" items="center">
         <XStack items="center" gap="$2">
           {!showPhaseImage && <Text fontSize={18}>👹</Text>}
-          <Text fontWeight="700" fontSize={14} color="$color" textTransform="uppercase">
+          <Text fontWeight="700" fontSize={14} color="$text" textTransform="uppercase">
             {bossName || t("adventures.kind_boss")}
           </Text>
         </XStack>
@@ -83,7 +83,7 @@ export function BossHpBar({
           <Text fontWeight="700" fontSize={16} color={hpColor} fontFamily="$body" animation="quick">
             {currentHp}
           </Text>
-          <Text fontWeight="700" fontSize={12} color="$color" opacity={0.5}>
+          <Text fontWeight="700" fontSize={12} color="$text" opacity={0.5}>
             /{totalHp}
           </Text>
         </XStack>

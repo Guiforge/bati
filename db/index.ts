@@ -63,6 +63,15 @@ export {
   formatDuration,
 } from "./estimate";
 export { getExerciseById, listExercises } from "./exercises";
+export type { Oath, OathMetric, OathProgress } from "./oaths";
+export {
+  breakOath,
+  checkOathFulfilled,
+  getOath,
+  getOathProgress,
+  oathNeedsExercise,
+  swearOath,
+} from "./oaths";
 export {
   getAllPreferences,
   getPreference,

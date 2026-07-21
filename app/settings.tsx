@@ -3,13 +3,14 @@ import {
   Languages,
   Moon,
   ScrollText,
+  Swords,
   Target,
   Vibrate,
   Volume2,
 } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -82,6 +83,10 @@ export default function SettingsScreen() {
   };
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const openOath = useCallback(() => {
+    router.push("/oath" as never);
+  }, [router]);
 
   const currentAvatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
 
@@ -171,14 +176,14 @@ export default function SettingsScreen() {
           </Text>
 
           <SettingRow
-            icon={<Languages size={22} color="$color" />}
+            icon={<Languages size={22} color="$text" />}
             label={t("settings.language", "Language")}
             value={language === "en" ? "English" : "Français"}
             onPress={toggleLanguage}
           />
 
           <SettingRow
-            icon={<Moon size={22} color="$color" />}
+            icon={<Moon size={22} color="$text" />}
             label={t("settings.theme", "Theme")}
             value={t("settings.dark", "Dark")}
             disabled
@@ -188,28 +193,34 @@ export default function SettingsScreen() {
           />
 
           <SettingRow
-            icon={<Vibrate size={22} color="$color" />}
+            icon={<Vibrate size={22} color="$text" />}
             label={t("settings.haptics", "Haptics")}
             value={hapticsEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => setHapticsEnabled(!hapticsEnabled)}
           />
 
           <SettingRow
-            icon={<Volume2 size={22} color="$color" />}
+            icon={<Volume2 size={22} color="$text" />}
             label={t("settings.sound", "Sound")}
             value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => setSoundEnabled(!soundEnabled)}
           />
 
           <SettingRow
-            icon={<Target size={22} color="$color" />}
+            icon={<Target size={22} color="$text" />}
             label={t("settings.weekly_goal_title", "Weekly Goal")}
             value={t("settings.weekly_goal_value", { count: weeklyGoal })}
             onPress={cycleWeeklyGoal}
           />
 
           <SettingRow
-            icon={<ScrollText size={22} color="$color" />}
+            icon={<Swords size={22} color="$text" />}
+            label={t("oath.screen_title", "Swear an Oath")}
+            onPress={openOath}
+          />
+
+          <SettingRow
+            icon={<ScrollText size={22} color="$text" />}
             label={t("credits.title", "Credits")}
             value={t("credits.open", "Open")}
             onPress={() => router.push("/credits")}

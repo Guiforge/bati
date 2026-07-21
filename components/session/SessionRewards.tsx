@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
+import { OathFulfilledCard } from "@/components/oath/OathFulfilledCard";
 import { getLevelTitle } from "@/db/userLevel";
 import type { useSessionStore } from "@/stores/session";
 import { NewRecordsBadge } from "./NewRecordsBadge";
@@ -20,13 +21,25 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
   const isFr = language === "fr";
 
   const hasRewards =
-    !!result.levelUp || result.newRecords.length > 0 || result.newAchievements.length > 0;
+    !!result.levelUp ||
+    result.newRecords.length > 0 ||
+    result.newAchievements.length > 0 ||
+    !!result.fulfilledOath;
 
   return (
     <>
+      {/* Oath fulfilled — the user's own promise, so it leads */}
+      {result.fulfilledOath !== null && <OathFulfilledCard oath={result.fulfilledOath} />}
+
       {/* Level up */}
       {result.levelUp && (
-        <Card {...revealProps} width="100%" maxW={520} bg="$pastelPurple" borderColor="$primary">
+        <Card
+          {...revealProps}
+          width="100%"
+          maxW={520}
+          bg="$pastelPurple"
+          borderColor="$glassBorder"
+        >
           <XStack items="center" gap="$3">
             <YStack
               width={52}
@@ -34,7 +47,7 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
               rounded={26}
               bg="$background"
               borderWidth={2}
-              borderColor="$primary"
+              borderColor="$glassBorder"
               items="center"
               justify="center"
             >
@@ -65,7 +78,7 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
           width="100%"
           maxW={520}
           bg="$pastelYellow"
-          borderColor="$primary"
+          borderColor="$glassBorder"
           gap="$3"
         >
           <XStack items="center" gap="$2" justify="center">
@@ -85,7 +98,7 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
                 p="$3"
                 rounded="$4"
                 borderWidth={1}
-                borderColor="$primary"
+                borderColor="$glassBorder"
                 items="center"
                 gap="$3"
               >
@@ -95,17 +108,17 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
                   rounded={24}
                   bg="$pastelYellow"
                   borderWidth={2}
-                  borderColor="$primary"
+                  borderColor="$glassBorder"
                   items="center"
                   justify="center"
                 >
                   <Text fontSize={26}>{a.definition.icon}</Text>
                 </YStack>
                 <YStack flex={1}>
-                  <Text fontWeight="700" fontSize={15} color="$color">
+                  <Text fontWeight="700" fontSize={15} color="$text">
                     {isFr ? a.definition.frTitle : a.definition.enTitle}
                   </Text>
-                  <Text fontSize={12} color="$color" opacity={0.7}>
+                  <Text fontSize={12} color="$text" opacity={0.7}>
                     {isFr ? a.definition.frDescription : a.definition.enDescription}
                   </Text>
                 </YStack>

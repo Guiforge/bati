@@ -21,6 +21,7 @@ related: [../README.md, ../planning/roadmap-alignment.md]
 - [progression.md](progression.md) — XP, derived village, flame — the loot loop
 - [statistics-progress.md](statistics-progress.md) — Statistics & progress (4 derived views)
 - [coach-planning.md](coach-planning.md) — Coach: weekly goal, weak-area & rest nudges
+- [oaths.md](oaths.md) — Oaths: the user's own target, derived from the journal
 
 ## Related
 

@@ -99,9 +99,9 @@ export default function TrainingLevelStep() {
                   key={id}
                   height={56}
                   rounded="$8"
-                  bg={isSelected ? "$primary" : "$surface"}
+                  bg={isSelected ? "$secondary" : "$surface"}
                   borderWidth={1}
-                  borderColor={isSelected ? "$primary" : "$borderStrong"}
+                  borderColor={isSelected ? "$secondary" : "$borderStrong"}
                   items="center"
                   justify="center"
                   pressStyle={{ scale: 0.98, opacity: 0.9 }}

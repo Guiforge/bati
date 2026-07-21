@@ -91,10 +91,10 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <Card>
         <YStack gap="$2" items="center" py="$2">
           <Text fontSize={24}>😵</Text>
-          <Text fontWeight="700" fontSize={14} color="$color">
+          <Text fontWeight="700" fontSize={14} color="$text">
             {t("chart.error")}
           </Text>
-          <Paragraph color="$color" opacity={0.6} size="$2">
+          <Paragraph color="$text" opacity={0.6} size="$2">
             {error}
           </Paragraph>
         </YStack>
@@ -107,10 +107,10 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <Card>
         <YStack gap="$2" items="center" py="$4">
           <Text fontSize={32}>📈</Text>
-          <Text fontWeight="700" fontSize={14} color="$color">
+          <Text fontWeight="700" fontSize={14} color="$text">
             {t("chart.no_data")}
           </Text>
-          <Paragraph color="$color" opacity={0.6} size="$2" style={{ textAlign: "center" }}>
+          <Paragraph color="$text" opacity={0.6} size="$2" style={{ textAlign: "center" }}>
             {t("chart.complete_more")}
           </Paragraph>
         </YStack>
@@ -163,10 +163,10 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <YStack gap="$4">
         {/* Title */}
         <YStack gap="$1">
-          <Text fontWeight="700" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$text">
             {title || t("chart.progression_title")}
           </Text>
-          <Paragraph color="$color" opacity={0.6} size="$2">
+          <Paragraph color="$text" opacity={0.6} size="$2">
             {mode === "quest" ? t("chart.quest_history") : t("chart.all_history")}
           </Paragraph>
         </YStack>
@@ -177,7 +177,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             <Text fontWeight="700" fontSize={24} color="$primary">
               {sessions.length}
             </Text>
-            <Text fontSize={12} color="$color" opacity={0.6}>
+            <Text fontSize={12} color="$text" opacity={0.6}>
               {t("chart.workouts")}
             </Text>
           </YStack>
@@ -185,7 +185,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             <Text fontWeight="700" fontSize={24} color="$success">
               {totalMinutes}
             </Text>
-            <Text fontSize={12} color="$color" opacity={0.6}>
+            <Text fontSize={12} color="$text" opacity={0.6}>
               {t("chart.total_mins")}
             </Text>
           </YStack>
@@ -193,7 +193,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             <Text fontWeight="700" fontSize={24} color="$secondary">
               {avgMinutes}
             </Text>
-            <Text fontSize={12} color="$color" opacity={0.6}>
+            <Text fontSize={12} color="$text" opacity={0.6}>
               {t("chart.avg_mins")}
             </Text>
           </YStack>
@@ -232,19 +232,19 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         <XStack gap="$4" justify="center" flexWrap="wrap">
           <XStack items="center" gap="$2">
             <YStack width={12} height={12} rounded={6} bg="$success" />
-            <Text fontSize={11} color="$color" opacity={0.7}>
+            <Text fontSize={11} color="$text" opacity={0.7}>
               {t("quests.level_easy")}
             </Text>
           </XStack>
           <XStack items="center" gap="$2">
             <YStack width={12} height={12} rounded={6} bg="$primary" />
-            <Text fontSize={11} color="$color" opacity={0.7}>
+            <Text fontSize={11} color="$text" opacity={0.7}>
               {t("quests.level_medium")}
             </Text>
           </XStack>
           <XStack items="center" gap="$2">
             <YStack width={12} height={12} rounded={6} bg="$error" />
-            <Text fontSize={11} color="$color" opacity={0.7}>
+            <Text fontSize={11} color="$text" opacity={0.7}>
               {t("quests.level_hard")}
             </Text>
           </XStack>

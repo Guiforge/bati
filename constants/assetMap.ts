@@ -123,6 +123,29 @@ export const SPORT_SPRITE_ASSETS = {
 } as const;
 
 // ============================================================
+// BUILDING ICONS (14) — §0, see docs/content/missing-image.md
+// The 6 tier-2 muscle buildings (archery_range/quarry/forge/well/windmill/farm) have no entry
+// here — they reuse SPORT_SPRITE_ASSETS via getSportSpriteAsset(relatedMuscle), zero new assets.
+// ============================================================
+
+export const BUILDING_ICON_ASSETS = {
+  campfire: require("@/assets/images/village/buildings/campfire.png"),
+  tent: require("@/assets/images/village/buildings/tent.png"),
+  training_dummy: require("@/assets/images/village/buildings/training_dummy.png"),
+  wizard_tower: require("@/assets/images/village/buildings/wizard_tower.png"),
+  druid_grove: require("@/assets/images/village/buildings/druid_grove.png"),
+  watchtower: require("@/assets/images/village/buildings/watchtower.png"),
+  castle_wall: require("@/assets/images/village/buildings/castle_wall.png"),
+  armory: require("@/assets/images/village/buildings/armory.png"),
+  fountain: require("@/assets/images/village/buildings/fountain.png"),
+  observatory: require("@/assets/images/village/buildings/observatory.png"),
+  barn: require("@/assets/images/village/buildings/barn.png"),
+  dragon_lair: require("@/assets/images/village/buildings/dragon_lair.png"),
+  heroes_hall: require("@/assets/images/village/buildings/heroes_hall.png"),
+  champion_arena: require("@/assets/images/village/buildings/champion_arena.png"),
+} as const;
+
+// ============================================================
 // TYPE EXPORTS
 // ============================================================
 
@@ -132,6 +155,7 @@ export type BossAssetKey = keyof typeof BOSS_ASSETS;
 export type AdventureAssetKey = keyof typeof ADVENTURE_ASSETS;
 export type VillageTierKey = keyof typeof VILLAGE_TIER_ASSETS;
 export type SportSpriteKey = keyof typeof SPORT_SPRITE_ASSETS;
+export type BuildingIconKey = keyof typeof BUILDING_ICON_ASSETS;
 
 // ============================================================
 // HELPER FUNCTIONS
@@ -195,4 +219,17 @@ export function getVillageTierAsset(tier: VillageTierKey) {
  */
 export function getSportSpriteAsset(muscle: SportSpriteKey) {
   return SPORT_SPRITE_ASSETS[muscle];
+}
+
+/**
+ * Get the icon for a village building (see db/schema.ts BuildingCode). The 6 tier-2 muscle
+ * buildings have no dedicated icon — they reuse the matching sport sprite instead ("layer,
+ * don't paint", docs/content/missing-image.md §0), so callers pass the building's
+ * `relatedMuscle` as fallback.
+ */
+export function getBuildingIconAsset(code: string, relatedMuscle?: SportSpriteKey | null) {
+  const icon = BUILDING_ICON_ASSETS[code as BuildingIconKey];
+  if (icon) return icon;
+  if (relatedMuscle) return SPORT_SPRITE_ASSETS[relatedMuscle];
+  return require("@/assets/placeholder.jpg");
 }

@@ -15,10 +15,10 @@ function toneToBg(tone: TagProps["tone"]): ColorTokens {
 }
 
 function toneToText(tone: TagProps["tone"]): ColorTokens {
-  if (tone === "primary") return "$color";
-  if (tone === "secondary") return "$color";
-  if (tone === "success") return "$color";
-  return "$color";
+  if (tone === "primary") return "$text";
+  if (tone === "secondary") return "$text";
+  if (tone === "success") return "$text";
+  return "$text";
 }
 
 /**

@@ -89,13 +89,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animation="quick"
               enterStyle={{ opacity: 0, y: 20 }}
               exitStyle={{ opacity: 0, y: 20 }}
-              shadowColor="$color"
+              shadowColor="$text"
               shadowOpacity={0.1}
               shadowRadius={4}
               shadowOffset={{ width: 0, height: 2 }}
             >
               <Text fontSize={16}>{getToastIcon(toast.type)}</Text>
-              <Text flex={1} fontWeight="700" color="$color" fontSize={14}>
+              <Text flex={1} fontWeight="700" color="$text" fontSize={14}>
                 {toast.message}
               </Text>
             </XStack>

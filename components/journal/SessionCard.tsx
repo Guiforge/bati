@@ -58,12 +58,12 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
           items="center"
           justify="center"
         >
-          <Trophy size={24} color="$color" />
+          <Trophy size={24} color="$text" />
         </YStack>
 
         <YStack flex={1} gap="$1">
           <XStack gap="$2" items="center">
-            <Text fontWeight="700" fontSize={16} numberOfLines={1} color="$color" flex={1}>
+            <Text fontWeight="700" fontSize={16} numberOfLines={1} color="$text" flex={1}>
               {entry.questTitle}
             </Text>
             {entry.hasNewRecords && (
@@ -77,8 +77,8 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
                 gap="$1"
                 items="center"
               >
-                <Star size={12} color="$color" fill="$color" />
-                <Text fontSize={10} fontWeight="bold" color="$color">
+                <Star size={12} color="$text" fill="$text" />
+                <Text fontSize={10} fontWeight="bold" color="$text">
                   {t("journal.pr_badge")}
                 </Text>
               </XStack>
@@ -86,8 +86,8 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
           </XStack>
 
           <XStack gap="$2" items="center">
-            <Calendar size={12} color="$color" opacity={0.5} />
-            <Text fontSize={12} opacity={0.6} color="$color">
+            <Calendar size={12} color="$text" opacity={0.5} />
+            <Text fontSize={12} opacity={0.6} color="$text">
               {dateLabel}
             </Text>
           </XStack>

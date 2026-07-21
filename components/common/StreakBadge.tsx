@@ -140,7 +140,7 @@ export function StreakBadge() {
   }
 
   const milestone = getStreakMilestone(streak.current);
-  const flameColor = streak.isActive ? "$error" : "$color";
+  const flameColor = streak.isActive ? "$error" : "$text";
   const flameSize = Math.min(28, 20 + streak.current * 2);
 
   return (
@@ -153,7 +153,7 @@ export function StreakBadge() {
       py="$2"
       items="center"
       gap="$2"
-      shadowColor="$color"
+      shadowColor="$text"
       shadowRadius={0}
       shadowOffset={{ width: 0, height: 3 }}
     >
@@ -164,12 +164,12 @@ export function StreakBadge() {
       />
       <YStack>
         <XStack items="center" gap="$1">
-          <Text fontWeight="700" fontSize={18} color="$color">
+          <Text fontWeight="700" fontSize={18} color="$text">
             {streak.current} {t("journal.days")}
           </Text>
           {milestone && <Text fontSize={14}>{milestone.emoji}</Text>}
         </XStack>
-        <Text fontSize={10} color="$color" opacity={0.6} fontWeight="700">
+        <Text fontSize={10} color="$text" opacity={0.6} fontWeight="700">
           {milestone
             ? milestone.name[language === "fr" ? "fr" : "en"]
             : streak.isActive

@@ -9,20 +9,12 @@ import { Text, XStack, YStack } from "tamagui";
 
 import { AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { FlameFlicker } from "@/components/village/VillageAnimations";
 import { getAdventureAsset, getSportSpriteAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { getVillageScene, type VillageScene as VillageSceneData } from "@/db/village";
+import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } from "@/db/village";
 import { useSettingsStore } from "@/stores/settings";
-
-const TIER_NAMES: Record<1 | 2 | 3 | 4 | 5, { en: string; fr: string }> = {
-  1: { en: "Hamlet", fr: "Hameau" },
-  2: { en: "Village", fr: "Village" },
-  3: { en: "Town", fr: "Bourg" },
-  4: { en: "City", fr: "Cité" },
-  5: { en: "Flourishing City", fr: "Cité florissante" },
-};
 
 export function VillageScene() {
   const { t } = useTranslation();
@@ -152,38 +144,89 @@ export function VillageScene() {
               </YStack>
             </Card>
 
-            {/* Boss banners */}
-            {scene.bossBanners.length > 0 && (
-              <YStack gap="$2">
-                <Text fontWeight="700" fontSize={16} color="$text">
-                  {t("village.banners_title", "Banners")}
-                </Text>
-                {scene.bossBanners.map((banner) => {
-                  const title = language === "fr" ? banner.frTitle : banner.enTitle;
+            {/* Buildings: derived from training, nothing to unlock by hand */}
+            <YStack gap="$2">
+              <Text fontWeight="700" fontSize={16} color="$text">
+                {t("village.buildings_title", "Buildings")}
+              </Text>
+              <XStack flexWrap="wrap" gap="$2">
+                {scene.buildings.map((building) => {
+                  const locked = building.level === 0;
+                  const name = language === "fr" ? building.frName : building.enName;
                   return (
-                    <Card key={banner.adventureId} bg="$surface" width="100%">
-                      <XStack items="center" gap="$3">
-                        <YStack
-                          width={40}
-                          height={40}
-                          rounded="$3"
-                          overflow="hidden"
-                          borderWidth={1}
-                          borderColor="$borderStrong"
-                        >
-                          <Image
-                            source={getAdventureAsset(banner.imagePath)}
-                            style={{ width: "100%", height: "100%" }}
-                            contentFit="cover"
-                          />
-                        </YStack>
-                        <Text fontWeight="700" color="$text">
-                          {title}
+                    <Card
+                      key={building.code}
+                      bg="$surface"
+                      width="48%"
+                      p="$3"
+                      gap="$1"
+                      opacity={locked ? 0.45 : 1}
+                    >
+                      <XStack items="center" gap="$2">
+                        <Text fontSize={24}>{locked ? "🔒" : building.emoji}</Text>
+                        <Text fontWeight="700" fontSize={13} color="$text" flex={1}>
+                          {name}
                         </Text>
                       </XStack>
+                      <Text fontSize={11} color="$textSecondary">
+                        {locked
+                          ? building.unlockCondition
+                          : `${t("village.level", { defaultValue: "Lv." })} ${building.level}`}
+                      </Text>
                     </Card>
                   );
                 })}
+              </XStack>
+            </YStack>
+
+            {/* Trophy shelf: achievements + defeated bosses, same rack */}
+            {scene.trophies.length > 0 && (
+              <YStack gap="$2">
+                <Text fontWeight="700" fontSize={16} color="$text">
+                  {t("village.trophies_title", "Trophies")}
+                </Text>
+                <XStack flexWrap="wrap" gap="$2">
+                  {scene.trophies.map((trophy) => {
+                    const title = language === "fr" ? trophy.frTitle : trophy.enTitle;
+                    return (
+                      <Card
+                        key={trophy.key}
+                        bg="$surface"
+                        width="48%"
+                        p="$3"
+                        gap="$2"
+                        items="center"
+                      >
+                        {trophy.imagePath ? (
+                          <YStack
+                            width={44}
+                            height={44}
+                            rounded={22}
+                            overflow="hidden"
+                            borderWidth={2}
+                            borderColor="$primary"
+                          >
+                            <Image
+                              source={getAdventureAsset(trophy.imagePath)}
+                              style={{ width: "100%", height: "100%" }}
+                              contentFit="cover"
+                            />
+                          </YStack>
+                        ) : (
+                          <Text fontSize={32}>{trophy.emoji}</Text>
+                        )}
+                        <Text
+                          fontSize={12}
+                          fontWeight="700"
+                          color="$text"
+                          style={{ textAlign: "center" }}
+                        >
+                          {title}
+                        </Text>
+                      </Card>
+                    );
+                  })}
+                </XStack>
               </YStack>
             )}
           </YStack>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import {
   formatDuration,
   getPersonalRecordsSummary,
@@ -40,14 +41,14 @@ function RecordItem({
       gap="$1"
     >
       {icon}
-      <Text fontSize={11} color="$color" opacity={0.6} style={{ textAlign: "center" }}>
+      <Text fontSize={11} color="$text" opacity={0.6} style={{ textAlign: "center" }}>
         {label}
       </Text>
-      <Text fontWeight="700" fontSize={18} color="$color" style={{ textAlign: "center" }}>
+      <Text fontWeight="700" fontSize={18} color="$text" style={{ textAlign: "center" }}>
         {value}
       </Text>
       {subLabel && (
-        <Text fontSize={10} color="$color" opacity={0.5} style={{ textAlign: "center" }}>
+        <Text fontSize={10} color="$text" opacity={0.5} style={{ textAlign: "center" }}>
           {subLabel}
         </Text>
       )}
@@ -82,7 +83,11 @@ export function PersonalRecordsCard() {
   }, []);
 
   if (isLoading) {
-    return null;
+    return (
+      <SkeletonCard>
+        <Skeleton height={132} />
+      </SkeletonCard>
+    );
   }
 
   if (!summary || summary.totalSessions === 0) {
@@ -99,7 +104,7 @@ export function PersonalRecordsCard() {
       <YStack gap="$3">
         <XStack items="center" gap="$2">
           <Trophy size={18} color="$primary" />
-          <Text fontWeight="700" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$text">
             {t("journal.personal_records")}
           </Text>
         </XStack>

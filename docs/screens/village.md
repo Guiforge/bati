@@ -12,10 +12,11 @@ sources: [app/(tabs)/village.tsx]
 
 ## Purpose
 
-The Village is the **visual reward layer**: one illustrated scene whose tier and overlays
-are a pure function of your training ([progression.md](../gameplay/progression.md)). There
-is nothing to manage here — no buildings to unlock individually, no XP bars, no prestige
-score.
+The Village is the **visual reward layer**: an illustrated scene, a grid of buildings, and a
+trophy shelf — all a pure function of your training
+([progression.md](../gameplay/progression.md)). Buildings have levels but nothing is
+*managed*: there is no unlock button, no resource spending, no prestige score. A building
+levels up because you trained the muscle it belongs to.
 
 ## Visual rules
 
@@ -28,7 +29,10 @@ score.
 
 - **Visual progression**: the scene's tier grows with your level.
 - **Training fingerprint**: your dominant sport shows up as a visual on the scene.
-- **Boss banners**: a permanent banner per boss defeated.
+- **Buildings with levels**: 20 buildings, each `level 0..5`. Starter buildings follow the
+  village tier, muscle buildings follow that muscle's lifetime volume, tier-3 buildings are
+  the upgrade of their tier-2 prerequisite, legendary buildings unlock on bosses defeated.
+- **Trophy shelf**: unlocked achievements and defeated bosses on one rack, newest first.
 - **No micromanagement**: nothing is chosen, unlocked, or spent — your workouts drive
   everything.
 
@@ -44,10 +48,13 @@ bosses defeated)`. Full rules: [progression.md](../gameplay/progression.md).
 
 ## Implementation note
 
-The rebuild described above has shipped: `VillageScene.tsx` renders one scene (tier name +
-level, flame overlay via `FlameFlicker`, dominant-sport line, boss banners) with no building
-list or management UI. The one open gap against the design intent: the tier badge is a single
-generic castle icon reused across all 5 tiers, not 5 distinct illustrated scenes — see the
-redesign proposal in
-[screen-redesign-proposals.md](../planning/screen-redesign-proposals.md#village) for the
-content/art gap this leaves.
+`VillageScene.tsx` renders the tier illustration (name + level, flame overlay via
+`FlameFlicker`, dominant-sport sprite), then the building grid, then the trophy shelf.
+
+Buildings are **derived, never stored**: `getVillageBuildings()` in [db/village.ts](../../db/village.ts)
+computes every level from existing signals (lifetime muscle volume, exercise-style volume,
+bosses defeated, village tier) using the `buildingDefinitions` / `buildingLevelThresholds`
+metadata already declared in `db/schema.ts`. The `village_buildings` and `village_stats`
+tables are seeded but unused — there is no unlock/upgrade write path to keep consistent.
+
+Open gap: buildings render as emoji, not art.

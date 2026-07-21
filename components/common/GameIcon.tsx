@@ -46,7 +46,7 @@ export function GameIcon({
   const finalBadgeColor = resolveColor(badgeColor) ?? finalColor;
 
   const resolvedBg = bgColor as unknown as GetProps<typeof YStack>["bg"];
-  const resolvedBorderColor = (borderColor ?? "$color") as unknown as GetProps<
+  const resolvedBorderColor = (borderColor ?? "$text") as unknown as GetProps<
     typeof YStack
   >["borderColor"];
   const resolvedBadgeBg = (badgeBg ?? "$background") as unknown as GetProps<typeof YStack>["bg"];

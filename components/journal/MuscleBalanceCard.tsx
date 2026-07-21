@@ -40,7 +40,7 @@ export function MuscleBalanceCard() {
   if (isLoading) {
     return (
       <Card bg="$bgLight">
-        <Text color="$color" opacity={0.6}>
+        <Text color="$text" opacity={0.6}>
           {t("common.loading")}
         </Text>
       </Card>
@@ -52,12 +52,12 @@ export function MuscleBalanceCard() {
       <Card bg="$bgLight">
         <YStack gap="$2">
           <XStack items="center" gap="$2">
-            <Target size={18} color="$color" />
-            <Text fontWeight="700" fontSize={16} color="$color">
+            <Target size={18} color="$text" />
+            <Text fontWeight="700" fontSize={16} color="$text">
               {t("journal.muscle_balance")}
             </Text>
           </XStack>
-          <Text color="$color" opacity={0.6} fontSize={13}>
+          <Text color="$text" opacity={0.6} fontSize={13}>
             {t("chart.complete_more")}
           </Text>
         </YStack>
@@ -73,8 +73,8 @@ export function MuscleBalanceCard() {
       <YStack gap="$3">
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$2">
-            <Target size={18} color="$color" />
-            <Text fontWeight="700" fontSize={16} color="$color">
+            <Target size={18} color="$text" />
+            <Text fontWeight="700" fontSize={16} color="$text">
               {t("journal.muscle_balance")}
             </Text>
           </XStack>
@@ -99,7 +99,7 @@ export function MuscleBalanceCard() {
               <XStack key={m.muscle} items="center" gap="$2">
                 <Text
                   fontSize={12}
-                  color={isWeak ? "$primary" : "$color"}
+                  color={isWeak ? "$primary" : "$text"}
                   fontWeight={isWeak ? "700" : "400"}
                   width={70}
                   numberOfLines={1}
@@ -113,7 +113,7 @@ export function MuscleBalanceCard() {
                     />
                   </Progress>
                 </YStack>
-                <Text fontSize={11} color="$color" opacity={0.6} width={35}>
+                <Text fontSize={11} color="$text" opacity={0.6} width={35}>
                   {Math.round(m.percentage)}%
                 </Text>
               </XStack>
@@ -122,7 +122,7 @@ export function MuscleBalanceCard() {
         </YStack>
 
         {recommendation.status === "needs_attention" && (
-          <Text fontSize={12} color="$color" opacity={0.7}>
+          <Text fontSize={12} color="$text" opacity={0.7}>
             {language === "fr" ? recommendation.message.fr : recommendation.message.en}
           </Text>
         )}

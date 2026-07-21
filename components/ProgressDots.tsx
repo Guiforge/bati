@@ -13,7 +13,7 @@ export function ProgressDots({ current, total }: ProgressDotsProps) {
       width={i === current - 1 ? 24 : 10}
       height={10}
       rounded={5}
-      bg={i < current ? "$primary" : "$color"}
+      bg={i < current ? "$primary" : "$text"}
       opacity={i < current ? 1 : 0.3}
     />
   ));

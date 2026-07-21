@@ -274,27 +274,23 @@ export default function SessionDetailScreen() {
                             justify="center"
                             items="center"
                           >
-                            <Dumbbell
-                              size={20}
-                              color={hitTarget ? "$color" : "$color"}
-                              strokeWidth={2.5}
-                            />
+                            <Dumbbell size={20} color="$text" strokeWidth={2.5} />
                           </YStack>
 
                           <YStack flex={1} gap="$2">
-                            <Text fontWeight="700" fontSize={16} color="$color">
+                            <Text fontWeight="700" fontSize={16} color="$text">
                               {exName}
                             </Text>
 
                             <XStack gap="$3" items="center">
                               <YStack>
-                                <Text fontSize={12} color="$color" opacity={0.6}>
+                                <Text fontSize={12} color="$text" opacity={0.6}>
                                   {t("journal.result", "Result")}
                                 </Text>
                                 <Text
                                   fontWeight="700"
                                   fontSize={18}
-                                  color={hitTarget ? "$success" : "$color"}
+                                  color={hitTarget ? "$success" : "$text"}
                                 >
                                   {resultLabel}
                                 </Text>
@@ -302,15 +298,15 @@ export default function SessionDetailScreen() {
 
                               {targetLabel && (
                                 <YStack>
-                                  <Text fontSize={12} color="$color" opacity={0.6}>
+                                  <Text fontSize={12} color="$text" opacity={0.6}>
                                     {t("journal.target", "Target")}
                                   </Text>
                                   <XStack items="center" gap="$1">
-                                    <Target size={14} color="$color" opacity={0.7} />
+                                    <Target size={14} color="$text" opacity={0.7} />
                                     <Text
                                       fontWeight="700"
                                       fontSize={16}
-                                      color="$color"
+                                      color="$text"
                                       opacity={0.7}
                                     >
                                       {targetLabel}
@@ -342,10 +338,10 @@ export default function SessionDetailScreen() {
               {session.notes && (
                 <Card>
                   <YStack gap="$2">
-                    <Text fontWeight="700" fontSize={14} color="$color">
+                    <Text fontWeight="700" fontSize={14} color="$text">
                       {t("journal.notes", "Notes")}
                     </Text>
-                    <Paragraph color="$color" opacity={0.7}>
+                    <Paragraph color="$text" opacity={0.7}>
                       {session.notes}
                     </Paragraph>
                   </YStack>

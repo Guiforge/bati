@@ -100,7 +100,7 @@ export function NewRecordsBadge({ records }: Props) {
                 gap="$2"
               >
                 <RecordIcon type={record.recordType} />
-                <Text flex={1} fontWeight="700" fontSize={13} color="$color">
+                <Text flex={1} fontWeight="700" fontSize={13} color="$text">
                   <RecordLabel record={record} language={language} />
                 </Text>
                 <Text fontWeight="700" fontSize={14} color="$primary">
@@ -111,7 +111,7 @@ export function NewRecordsBadge({ records }: Props) {
           </YStack>
 
           {records.length > 3 && (
-            <Text fontSize={12} color="$color" opacity={0.7} style={{ textAlign: "center" }}>
+            <Text fontSize={12} color="$text" opacity={0.7} style={{ textAlign: "center" }}>
               {t("session.pr_more", { count: records.length - 3 })}
             </Text>
           )}

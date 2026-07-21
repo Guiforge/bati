@@ -1,4 +1,6 @@
 import { Share2 } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +13,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { useToast } from "@/components/common/Toast";
+import { getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { SOUNDS } from "@/constants/sounds";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
@@ -151,55 +154,63 @@ export function VictoryView() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero */}
-        <Card bg={questBg} width="100%" maxW={520} mt="$4">
-          <YStack items="center" gap="$2">
-            <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={64} color="$primary" />
-            <Text
-              fontWeight="700"
-              color="$textSecondary"
-              fontSize={14}
-              style={{ textAlign: "center" }}
-            >
-              {isBossDefeat ? t("boss.victory_title") : t("session.victory_title")}
-            </Text>
-            <H1
-              fontWeight="700"
-              color="$text"
-              fontSize={30}
-              lineHeight={34}
-              style={{ textAlign: "center" }}
-            >
-              {questTitle}
-            </H1>
-            {isBossDefeat && (
+        {/* Hero: quest cover with the title laid over it */}
+        <Card bg={questBg} width="100%" maxW={520} mt="$4" p={0} overflow="hidden">
+          <YStack width="100%" aspectRatio={16 / 9} bg="$surface2">
+            <Image
+              source={getQuestAsset(quest.imagePath)}
+              style={{ width: "100%", height: "100%" }}
+              contentFit="cover"
+              transition={200}
+              accessible={false}
+            />
+            <LinearGradient
+              colors={["transparent", "rgba(11,15,25,0.55)", "rgba(11,15,25,0.95)"]}
+              style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: 0 }}
+            />
+            <YStack position="absolute" t="$3" l="$3">
+              <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$primary" />
+            </YStack>
+            <YStack position="absolute" b={0} l={0} r={0} p="$4" gap="$1">
               <Text
-                fontSize={15}
+                fontFamily="$body"
+                fontWeight="700"
                 color="$textSecondary"
-                fontStyle="italic"
-                style={{ textAlign: "center" }}
+                fontSize={13}
+                letterSpacing={1.2}
               >
-                {t("boss.victory_subtitle")}
+                {(isBossDefeat
+                  ? t("boss.victory_title")
+                  : t("session.victory_title")
+                ).toUpperCase()}
               </Text>
-            )}
+              <H1 fontFamily="$body" fontWeight="700" color="$text" fontSize={26} lineHeight={31}>
+                {questTitle}
+              </H1>
+              {isBossDefeat && (
+                <Text fontFamily="$body" fontSize={14} color="$textSecondary">
+                  {t("boss.victory_subtitle")}
+                </Text>
+              )}
+            </YStack>
           </YStack>
         </Card>
 
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
         <XStack width="100%" maxW={520} gap="$3">
-          <Card flex={1} bg="$surface" items="center" gap="$1" py="$3">
-            <Text fontWeight="700" fontSize={12} color="$textSecondary">
+          <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+            <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
               {t("session.total_time")}
             </Text>
-            <Text fontWeight="700" fontSize={24} color="$text" fontFamily="$body">
+            <Text fontWeight="700" fontSize={26} color="$text" fontFamily="$body">
               {formatTime(durationSeconds)}
             </Text>
           </Card>
-          <Card flex={1} bg="$surface" items="center" gap="$1" py="$3">
-            <Text fontWeight="700" fontSize={12} color="$textSecondary">
+          <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+            <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
               {t("session.xp_earned")}
             </Text>
-            <Text fontWeight="700" fontSize={24} color="$primary" fontFamily="$body">
+            <Text fontWeight="700" fontSize={26} color="$primary" fontFamily="$body">
               {result ? t("quests.reward_xp", { count: result.xpEarned }) : "…"}
             </Text>
             {result?.dailyBonusApplied && (
@@ -236,11 +247,12 @@ export function VictoryView() {
         {result && <SessionRewards result={result} language={language} />}
 
         {/* Feedback */}
-        <Card width="100%" maxW={520} bg="$surface" gap="$3">
+        <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
           <Text
+            fontFamily="$body"
             fontWeight="700"
-            fontSize={14}
-            color="$textSecondary"
+            fontSize={15}
+            color="$text"
             style={{ textAlign: "center" }}
           >
             {t("session.feedback_title")}
@@ -259,7 +271,7 @@ export function VictoryView() {
                 size="$4"
                 bg={feedback === value ? "$surface2" : "$surface"}
                 borderWidth={1}
-                borderColor={feedback === value ? accent : "$borderStrong"}
+                borderColor={feedback === value ? accent : "$glassBorder"}
                 opacity={feedback === value ? 1 : 0.85}
                 pressStyle={{ opacity: 0.8, scale: 0.98 }}
                 onPress={() => handleFeedbackSelect(value)}
@@ -296,7 +308,7 @@ export function VictoryView() {
         gap="$3"
         bg="$background"
         borderTopWidth={1}
-        borderColor="$borderStrong"
+        borderColor="$glassBorder"
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
       >
         <Button

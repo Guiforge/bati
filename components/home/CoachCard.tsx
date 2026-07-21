@@ -1,6 +1,6 @@
 import { Moon, Target } from "@tamagui/lucide-icons";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -68,11 +68,13 @@ export function CoachCard() {
     }
   }, [language, weeklyGoal]);
 
-  useEffect(() => {
-    load().catch(() => {
-      // Error already handled
-    });
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load().catch(() => {
+        // Error already handled
+      });
+    }, [load]),
+  );
 
   if (isLoading || !state) {
     return null;
@@ -83,12 +85,12 @@ export function CoachCard() {
       <Card bg="$pastelBlue" width="100%">
         <YStack gap="$2">
           <XStack items="center" gap="$2">
-            <Moon size={20} color="$color" />
-            <Text fontWeight="700" fontSize={16} color="$color">
+            <Moon size={20} color="$text" />
+            <Text fontWeight="700" fontSize={16} color="$text">
               {t("coach.rest_suggestion_title", "Coach says: Rest!")}
             </Text>
           </XStack>
-          <Text color="$color" fontSize={14} opacity={0.85}>
+          <Text color="$text" fontSize={14} opacity={0.85}>
             {t(state.messageKey, { count: state.count })}
           </Text>
         </YStack>
@@ -101,12 +103,12 @@ export function CoachCard() {
       <Card bg="$pastelBlue" width="100%">
         <YStack gap="$3">
           <XStack items="center" gap="$2">
-            <Target size={20} color="$color" />
-            <Text fontWeight="700" fontSize={16} color="$color">
+            <Target size={20} color="$text" />
+            <Text fontWeight="700" fontSize={16} color="$text">
               {t("coach.suggestion_title", "Coach Suggestion")}
             </Text>
           </XStack>
-          <Text color="$color" fontSize={14} opacity={0.85}>
+          <Text color="$text" fontSize={14} opacity={0.85}>
             {state.message}
           </Text>
           {state.quests.length > 0 && (
@@ -135,12 +137,12 @@ export function CoachCard() {
     <Card bg="$pastelBlue" width="100%">
       <XStack items="center" justify="space-between">
         <XStack items="center" gap="$2">
-          <Target size={20} color="$color" />
-          <Text fontWeight="700" fontSize={16} color="$color">
+          <Target size={20} color="$text" />
+          <Text fontWeight="700" fontSize={16} color="$text">
             {t("coach.weekly_goal_title", "This week")}
           </Text>
         </XStack>
-        <Text fontWeight="700" fontSize={16} color="$color">
+        <Text fontWeight="700" fontSize={16} color="$text">
           {t("coach.weekly_goal_progress", {
             completed: state.completed,
             goal: state.goal,

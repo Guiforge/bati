@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -15,8 +16,14 @@ export function UserLevelCard() {
     getUserLevelInfo().then(setLevelInfo);
   }, []);
 
+  // Reserve the card's real height while loading — 8 stats cards each popping in from nothing
+  // made the journal shuffle under the user's finger.
   if (!levelInfo) {
-    return null;
+    return (
+      <SkeletonCard>
+        <Skeleton height={104} />
+      </SkeletonCard>
+    );
   }
 
   const title = language === "fr" ? levelInfo.title.fr : levelInfo.title.en;
@@ -35,23 +42,23 @@ export function UserLevelCard() {
               items="center"
               justify="center"
             >
-              <Star size={28} color="$color" fill="$color" />
+              <Star size={28} color="$text" fill="$text" />
             </YStack>
             <YStack>
-              <Text fontWeight="700" fontSize={24} color="$color">
+              <Text fontWeight="700" fontSize={24} color="$text">
                 {t("journal.user_level", { level: levelInfo.level })}
               </Text>
-              <Text fontSize={14} color="$color" opacity={0.8} fontWeight="700">
+              <Text fontSize={14} color="$text" opacity={0.8} fontWeight="700">
                 {title}
               </Text>
             </YStack>
           </XStack>
           <YStack items="center">
-            <TrendingUp size={20} color="$color" opacity={0.7} />
-            <Text fontSize={12} color="$color" opacity={0.7}>
+            <TrendingUp size={20} color="$text" opacity={0.7} />
+            <Text fontSize={12} color="$text" opacity={0.7}>
               {t("journal.total_xp")}
             </Text>
-            <Text fontWeight="700" fontSize={18} color="$color">
+            <Text fontWeight="700" fontSize={18} color="$text">
               {levelInfo.totalXp.toLocaleString()}
             </Text>
           </YStack>
@@ -60,18 +67,18 @@ export function UserLevelCard() {
         {/* XP Progress bar */}
         <YStack gap="$1">
           <XStack items="center" justify="space-between">
-            <Text fontSize={12} color="$color" opacity={0.7}>
+            <Text fontSize={12} color="$text" opacity={0.7}>
               {t("journal.xp_progress", {
                 current: levelInfo.currentLevelXp,
                 next: levelInfo.currentLevelXp + levelInfo.xpToNextLevel,
               })}
             </Text>
-            <Text fontSize={12} color="$color" opacity={0.7}>
+            <Text fontSize={12} color="$text" opacity={0.7}>
               {Math.round(levelInfo.xpProgress)}%
             </Text>
           </XStack>
           <Progress value={levelInfo.xpProgress} bg="rgba(255,255,255,0.3)">
-            <Progress.Indicator animation="quick" bg="$color" />
+            <Progress.Indicator animation="quick" bg="$text" />
           </Progress>
         </YStack>
       </YStack>

@@ -73,7 +73,7 @@ export function CountdownView() {
           >
             {t("session.countdown_letsgo")}
           </H1>
-          <Text fontWeight="700" opacity={0.6} color="$color" style={{ textAlign: "center" }}>
+          <Text fontWeight="700" opacity={0.6} color="$text" style={{ textAlign: "center" }}>
             {t("session.countdown_warmup_done")}
           </Text>
         </YStack>
@@ -82,7 +82,7 @@ export function CountdownView() {
           fontWeight="700"
           fontSize={140}
           lineHeight={140}
-          color="$color"
+          color="$text"
           fontFamily="$body"
           animation={reducedMotion ? undefined : "quick"}
           key={reducedMotion ? undefined : String(remainingSeconds)}

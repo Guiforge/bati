@@ -90,6 +90,65 @@ SPRITES = [
      "warm golden-yellow energy."),
 ]
 
+# Village building icons (docs/content/missing-image.md §0). The 6 muscle buildings
+# (archery_range/quarry/forge/well/windmill/farm) reuse SPRITES above via
+# getSportSpriteAsset — zero new assets, "layer don't paint". These 14 are the ones with no
+# existing art: db/schema.ts buildingDefinitions tier 1 (starter), tier 2 style-unlocked, tier 3
+# (upgrades of the muscle buildings, same glow color but a grander structure), tier 4 (legendary).
+BUILDINGS = [
+    # Tier 1 — starter, always unlocked
+    ("buildings/campfire",
+     "A single stylized campfire ringed with stones, warm orange-yellow flames dancing "
+     "upward, a few sparks drifting off, glowing with cozy warm-orange energy."),
+    ("buildings/tent",
+     "A single stylized adventurer's canvas tent, entrance flap open, a warm lantern glowing "
+     "just inside, guy-ropes staked into the ground."),
+    ("buildings/training_dummy",
+     "A single stylized wooden training pell wrapped in worn straw padding, a few practice "
+     "sword nicks visible, standing upright on a round base."),
+    # Tier 2 — style-unlocked (calisthenics / yoga)
+    ("buildings/wizard_tower",
+     "A single stylized narrow spiraling stone wizard's tower, a glowing purple crystal orb "
+     "hovering above its pointed roof, faint arcane runes on the stonework."),
+    ("buildings/druid_grove",
+     "A single stylized ring of ancient standing stones wreathed in glowing emerald-green "
+     "vines and moss, a sacred grove clearing at its center."),
+    # Tier 3 — advanced upgrades, one per muscle building (grander structure, same glow color)
+    ("buildings/watchtower",
+     "A single stylized tall wooden watchtower with an archer's platform at the top, a bow "
+     "and quiver resting against the rail, glowing with warm amber-brown energy — an upgraded, "
+     "grander version of a simple archery range."),
+    ("buildings/castle_wall",
+     "A single stylized fortified stone castle-wall section with crenellated battlements and "
+     "a corner turret, glowing with cool stone-grey energy — an upgraded, grander version of a "
+     "simple quarry."),
+    ("buildings/armory",
+     "A single stylized stone armory building with weapon racks flanking its doorway, a "
+     "glowing forge-fire visible inside, radiating fiery orange-red energy — an upgraded, "
+     "grander version of a simple forge."),
+    ("buildings/fountain",
+     "A single stylized ornate stone fountain with tiered basins and cascading water, glowing "
+     "with electric-blue energy — an upgraded, grander version of a simple well."),
+    ("buildings/observatory",
+     "A single stylized stone observatory tower with a telescope silhouette in its open dome, "
+     "swirling cyan-white wind wisps around it — an upgraded, grander version of a simple "
+     "windmill."),
+    ("buildings/barn",
+     "A single stylized large wooden barn with stacked golden hay bales beside its open "
+     "doors, glowing with warm golden-yellow energy — an upgraded, grander version of a simple "
+     "farm."),
+    # Tier 4 — legendary, unlocked by major milestones
+    ("buildings/dragon_lair",
+     "A single stylized dark cave mouth carved into a mountainside, molten orange cracks "
+     "glowing along the rock and deep claw-gouges in the stone, ember light spilling out."),
+    ("buildings/heroes_hall",
+     "A single stylized grand stone hall with banners flanking its entrance and a "
+     "laurel-wreathed trophy pedestal out front, glowing with warm golden light."),
+    ("buildings/champion_arena",
+     "A single stylized circular stone gladiator arena with tiered stone seating, torches "
+     "lit around its rim, glowing with warm amber torchlight."),
+]
+
 
 def generate(prompt, style):
     body = json.dumps({"model": MODEL,
@@ -127,15 +186,21 @@ def main():
     only = set(sys.argv[1:])
     out_dir = os.path.join(ROOT, "assets", "images", "village")
     os.makedirs(out_dir, exist_ok=True)
-    for slug, scene, style in [(s, sc, SCENE_STYLE) for s, sc in TIERS] + [(s, sc, EMBLEM_STYLE) for s, sc in SPRITES]:
-        if only and slug not in only:
+    all_items = (
+        [(s, sc, SCENE_STYLE) for s, sc in TIERS]
+        + [(s, sc, EMBLEM_STYLE) for s, sc in SPRITES]
+        + [(s, sc, EMBLEM_STYLE) for s, sc in BUILDINGS]
+    )
+    for slug, scene, style in all_items:
+        if only and slug not in only and slug.split("/")[-1] not in only:
             continue
         out = os.path.join(out_dir, f"{slug}.png")
+        os.makedirs(os.path.dirname(out), exist_ok=True)
         if os.path.exists(out):
             print(f"skip  {slug} (exists)")
             continue
         print(f"gen   {slug} … ", end="", flush=True)
-        raw = os.path.join("/tmp", f"village_{slug}.png")
+        raw = os.path.join("/tmp", f"village_{slug.replace('/', '_')}.png")
         try:
             open(raw, "wb").write(generate(scene, style))
             magick(raw, "-resize", "1024x1024^", "-gravity", "center",

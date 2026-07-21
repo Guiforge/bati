@@ -21,11 +21,11 @@ export function EmptyState({ emoji = "📭", title, subtitle, action, ...props }
           {emoji}
         </Text>
         <YStack gap="$1" items="center">
-          <Text fontWeight="700" fontSize={18} color="$color" style={{ textAlign: "center" }}>
+          <Text fontWeight="700" fontSize={18} color="$text" style={{ textAlign: "center" }}>
             {title}
           </Text>
           {subtitle && (
-            <Paragraph color="$color" opacity={0.6} size="$3" style={{ textAlign: "center" }}>
+            <Paragraph color="$text" opacity={0.6} size="$3" style={{ textAlign: "center" }}>
               {subtitle}
             </Paragraph>
           )}

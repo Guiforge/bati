@@ -1,7 +1,7 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getAnyActiveAdventureRun } from "@/db/adventures";
+import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db/adventures";
 import { getSuggestedQuestsForWeakAreas } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { useSettingsStore } from "@/stores/settings";
@@ -11,6 +11,13 @@ export type SmartActionConfig = {
   subtext: string;
   onPress: () => void;
   variant: "plan" | "event" | "adventure" | "quest";
+  /** Adventure-only: what turns the hero card into a scene instead of a generic button. */
+  adventure?: {
+    title: string;
+    imagePath: string | null;
+    stepsDone: number;
+    stepsTotal: number;
+  };
 };
 
 export function useSmartAction() {
@@ -20,20 +27,40 @@ export function useSmartAction() {
   const [config, setConfig] = useState<SmartActionConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-
+  const determineAction = useCallback(
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Priority waterfall, refactor planned
-    async function determineAction() {
+    async (isCancelled: () => boolean) => {
       try {
         // 1. Check for Active Adventure
-        const activeRun = await getAnyActiveAdventureRun();
-        if (activeRun && !cancelled) {
+        const active = await getAnyActiveAdventureRun();
+        if (active && !isCancelled()) {
+          const details = await getAdventureDetails(active.adventureId);
+          if (isCancelled()) return;
+
+          const steps = active.activeRun.steps;
+          const stepsDone = steps.filter((s) => s.status === "completed").length;
+          const currentStep = Math.min(stepsDone + 1, steps.length);
+          const title = details
+            ? language === "fr"
+              ? details.adventure.frTitle
+              : details.adventure.enTitle
+            : t("home.resume_journey", "Resume your journey");
+
           setConfig({
             label: t("home.continue_adventure_label", "Continue Adventure"),
-            subtext: t("home.resume_journey", "Resume your journey"),
+            subtext: t("home.step_progress", {
+              current: currentStep,
+              total: steps.length,
+              defaultValue: `Step ${currentStep} of ${steps.length}`,
+            }),
             variant: "adventure",
-            onPress: () => router.push(`/adventures/${activeRun.adventureId}` as never),
+            onPress: () => router.push(`/adventures/${active.adventureId}` as never),
+            adventure: {
+              title,
+              imagePath: details?.adventure.imagePath ?? null,
+              stepsDone,
+              stepsTotal: steps.length,
+            },
           });
           setIsLoading(false);
           return;
@@ -41,7 +68,7 @@ export function useSmartAction() {
 
         // 2. Fallback: Suggest Quest
         const suggestions = await getSuggestedQuestsForWeakAreas(1);
-        if (suggestions.length > 0 && !cancelled) {
+        if (suggestions.length > 0 && !isCancelled()) {
           const suggestion = suggestions[0];
           const muscles = suggestion.matchingMuscles
             .map((m) => MUSCLE_LABELS[m]?.[language] ?? m)
@@ -61,7 +88,7 @@ export function useSmartAction() {
         }
 
         // 3. Default: no smart suggestion available, let the user pick from the quest gallery
-        if (!cancelled) {
+        if (!isCancelled()) {
           setConfig({
             label: t("home.start_quest_label", "Start Quest"),
             subtext: t("home.quick_workout", "Quick Workout"),
@@ -72,16 +99,22 @@ export function useSmartAction() {
       } catch {
         // Error handled silently: the widget's own default config covers this case
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!isCancelled()) setIsLoading(false);
       }
-    }
+    },
+    [router, t, language],
+  );
 
-    determineAction();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [router, t, language]);
+  // Reload on focus: coming back from a finished session must not leave a stale step count.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      determineAction(() => cancelled);
+      return () => {
+        cancelled = true;
+      };
+    }, [determineAction]),
+  );
 
   return { config, isLoading };
 }

@@ -53,7 +53,7 @@ export function NarrativeModal({
 
             {/* Content */}
             <ScrollView p="$5">
-              <Paragraph size="$4" lineHeight={28} style={{ textAlign: "left" }} color="$color">
+              <Paragraph size="$4" lineHeight={28} style={{ textAlign: "left" }} color="$text">
                 {text}
               </Paragraph>
             </ScrollView>

@@ -17,7 +17,7 @@ function toneToBg(tone: ChipProps["tone"]) {
 function toneToText(tone: ChipProps["tone"]) {
   if (tone === "secondary") return "white";
   if (tone === "primary" || tone === "success") return "$bgDark";
-  return "$color";
+  return "$text";
 }
 
 export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {

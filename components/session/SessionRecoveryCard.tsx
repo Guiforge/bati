@@ -45,23 +45,23 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
       <YStack gap="$3">
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primary" />
-          <Text fontSize={18} fontWeight="bold" color="$color">
+          <Text fontSize={18} fontWeight="bold" color="$text">
             {t("recovery.title")}
           </Text>
         </XStack>
 
-        <Text color="$color" opacity={0.8}>
+        <Text color="$text" opacity={0.8}>
           {t("recovery.description")}
         </Text>
 
         <YStack gap="$1" bg="$background" p="$2" rounded="$3">
-          <Text fontSize="$4" fontWeight="700" color="$color">
+          <Text fontSize="$4" fontWeight="700" color="$text">
             {session.questTitle}
           </Text>
-          <Text fontSize="$3" color="$color" opacity={0.7}>
+          <Text fontSize="$3" color="$text" opacity={0.7}>
             {t("recovery.progress", { progress: session.progress })}
           </Text>
-          <Text fontSize="$3" color="$color" opacity={0.7}>
+          <Text fontSize="$3" color="$text" opacity={0.7}>
             {t("recovery.elapsed", { time: formatTime(session.elapsedTime) })}
           </Text>
         </YStack>

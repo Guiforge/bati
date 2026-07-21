@@ -38,12 +38,12 @@ export function DifficultyProgressionCard() {
         </XStack>
 
         <YStack>
-          <Paragraph fontWeight="700" fontSize={16} color="$color">
+          <Paragraph fontWeight="700" fontSize={16} color="$text">
             {isIncrease
               ? t("progression.increase_title", "Level Up Available!")
               : t("progression.decrease_title", "Recovery Recommended")}
           </Paragraph>
-          <Paragraph fontSize={14} opacity={0.8} color="$color">
+          <Paragraph fontSize={14} opacity={0.8} color="$text">
             {isIncrease
               ? t(
                   "progression.increase_message",

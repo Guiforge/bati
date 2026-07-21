@@ -35,7 +35,7 @@ export default function TabsLayout() {
           title: t("tabs.home", "Home"),
           tabBarIcon: ({ focused, size }) => (
             <Home
-              color={focused ? "$primary" : "$color"}
+              color={focused ? "$primary" : "$text"}
               fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -50,7 +50,7 @@ export default function TabsLayout() {
           title: t("tabs.adventures", "Adventures"),
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
-              color={focused ? "$primary" : "$color"}
+              color={focused ? "$primary" : "$text"}
               fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -66,7 +66,7 @@ export default function TabsLayout() {
           title: t("tabs.quests", "Quests"),
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
-              color={focused ? "$primary" : "$color"}
+              color={focused ? "$primary" : "$text"}
               fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -82,7 +82,7 @@ export default function TabsLayout() {
           title: t("tabs.village", "Village"),
           tabBarIcon: ({ focused, size }) => (
             <Castle
-              color={focused ? "$primary" : "$color"}
+              color={focused ? "$primary" : "$text"}
               fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -98,7 +98,7 @@ export default function TabsLayout() {
           title: t("tabs.journal", "Journal"),
           tabBarIcon: ({ focused, size }) => (
             <Scroll
-              color={focused ? "$primary" : "$color"}
+              color={focused ? "$primary" : "$text"}
               fill={focused ? theme.primary?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}

@@ -19,7 +19,7 @@ function CreditLink({ title, subtitle, url, onPress }: CreditLinkProps) {
   return (
     <GlassCard onPress={() => onPress(url)} p="$3">
       <XStack items="center" gap="$3">
-        <ExternalLink size={20} color="$color" />
+        <ExternalLink size={20} color="$text" />
         <YStack flex={1} gap="$1">
           <Text fontSize="$4" fontWeight="700" color="$text">
             {title}

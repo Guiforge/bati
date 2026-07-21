@@ -88,7 +88,7 @@ export function BossPhaseImage({
         overflow="hidden"
         bg={isEnraged ? "$pastelPink" : "$pastelPurple"}
         borderWidth={1}
-        borderColor={isEnraged ? "$error" : "$color"}
+        borderColor={isEnraged ? "$error" : "$text"}
         items="center"
         justify="center"
         animation={isEnraged ? "bouncy" : "quick"}
@@ -117,7 +117,7 @@ export function BossPhaseImage({
             width={6}
             height={6}
             rounded={3}
-            bg={phase <= currentPhase ? "$color" : "$bgLight"}
+            bg={phase <= currentPhase ? "$text" : "$bgLight"}
             borderWidth={1}
             borderColor="$borderStrong"
             opacity={phase === currentPhase ? 1 : 0.4}

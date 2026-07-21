@@ -36,7 +36,10 @@ export function RestView() {
   const nextExName = language === "fr" ? nextEx.exercise.frName : nextEx.exercise.enName;
 
   const lastResult = results[results.length - 1];
-  const isLastRepBased = lastResult?.result.type === "reps";
+  // Time-based sets record whatever the timer read when you tapped "done" — often a few seconds
+  // off from what you actually held. Same ± control as reps, stepped by 5s.
+  const isLastTimeBased = lastResult?.result.type === "time";
+  const adjustStep = isLastTimeBased ? 5 : 1;
 
   const { bg: screenBg } = getQuestColorTokensFromQuest(quest);
 
@@ -141,8 +144,8 @@ export function RestView() {
         </XStack>
       </YStack>
 
-      {/* Last Set Review (if reps) */}
-      {isLastRepBased && (
+      {/* Last Set Review */}
+      {lastResult && (
         <YStack
           bg="$surface"
           p="$4"
@@ -154,10 +157,12 @@ export function RestView() {
           <XStack justify="space-between" items="center">
             <YStack>
               <Text color="$textSecondary" fontSize={12} fontWeight="700">
-                {t("session.adjust_reps_label")}
+                {isLastTimeBased
+                  ? t("session.adjust_seconds_label")
+                  : t("session.adjust_reps_label")}
               </Text>
               <Text fontSize={12} color="$textSecondary">
-                {t("session.adjust_reps_hint")}
+                {isLastTimeBased ? t("session.adjust_seconds_hint") : t("session.adjust_reps_hint")}
               </Text>
             </YStack>
 
@@ -166,21 +171,23 @@ export function RestView() {
                 size="$3"
                 circular
                 icon={<Minus size={16} />}
-                onPress={() => handleUpdateResult(Math.max(0, lastResult.result.value - 1))}
+                onPress={() =>
+                  handleUpdateResult(Math.max(1, lastResult.result.value - adjustStep))
+                }
               />
               <Text
                 fontWeight="700"
                 fontSize={20}
                 color="$text"
-                style={{ minWidth: 30, textAlign: "center" }}
+                style={{ minWidth: 42, textAlign: "center" }}
               >
-                {lastResult.result.value}
+                {isLastTimeBased ? `${lastResult.result.value}s` : lastResult.result.value}
               </Text>
               <Button
                 size="$3"
                 circular
                 icon={<Plus size={16} />}
-                onPress={() => handleUpdateResult(lastResult.result.value + 1)}
+                onPress={() => handleUpdateResult(lastResult.result.value + adjustStep)}
               />
             </XStack>
           </XStack>

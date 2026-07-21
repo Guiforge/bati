@@ -2,9 +2,9 @@
 title: Missing Images — inventory
 type: content
 status: active
-updated: 2026-07-20
+updated: 2026-07-21
 related: [missing-covers.md, ../planning/screen-redesign-proposals.md, ../planning/dev-execution-plan.md]
-sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
+sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
 
 # Missing Images — inventory
@@ -21,8 +21,15 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 ## TL;DR
 
-**Nothing outstanding.** All three missing-art items identified in this doc are resolved:
+Everything identified in this doc is now resolved:
 
+- **§0 RESOLVED (2026-07-21)**: all 20 village building icons now have real art — 14
+  generated (`scripts/generate-village.py buildings/*`, `assets/images/village/buildings/`)
+  and registered as `BUILDING_ICON_ASSETS` / `getBuildingIconAsset(code, relatedMuscle)` in
+  `assetMap.ts`; the other 6 (the tier-2 muscle buildings) reuse the existing `sport_*`
+  sprites via the same helper's fallback, zero new assets, as recommended. Wiring
+  `VillageScene.tsx`'s building grid to render these instead of the `emoji` field — and the
+  per-level tint ramp — remains a separate dev task, same boundary as §1a/§1b before it.
 - **Content art is complete**: every seeded exercise (20), quest (13), and adventure (3)
   resolves to real art. No content currently renders the placeholder.
 - **§1a/§1b RESOLVED (2026-07-20)**: 5 village tier illustrations + 6 sport sprites, generated
@@ -32,6 +39,32 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
   exactly as recommended (`2b06f3e`). `BossFight.imagePath`/`BossBanner.imagePath` are now
   plain `string` (never `| null`), resolving to the shared placeholder at the query layer —
   same convention as every other `getXAsset()` helper, no null-branching in components.
+
+---
+
+## 0. RESOLVED — village building icons (20/20 have art)
+
+`VillageScene.tsx` still renders the building grid from the `emoji` field on
+`buildingDefinitions` today — that UI wiring is unchanged. What changed is that real art now
+exists for every building, closing the content half of this gap
+([db/village.ts](../../db/village.ts) levels were already real).
+
+**14 generated (2026-07-21)**, `scripts/generate-village.py buildings/*` →
+`assets/images/village/buildings/`: 3 starter (`campfire`, `tent`, `training_dummy`), 2 style
+(`wizard_tower`, `druid_grove`), 6 tier-3 upgrades (`watchtower`, `castle_wall`, `armory`,
+`fountain`, `observatory`, `barn` — same muscle glow color as their tier-2 building, grander
+structure), 3 legendary (`dragon_lair`, `heroes_hall`, `champion_arena`). Registered as
+`BUILDING_ICON_ASSETS` in `assetMap.ts`.
+
+**6 covered by reuse, zero new assets**: the tier-2 muscle buildings (`archery_range`,
+`quarry`, `forge`, `well`, `windmill`, `farm`) have no dedicated icon — `getBuildingIconAsset`
+falls back to the matching `sport_*` sprite via `relatedMuscle`, per the "layer, don't paint"
+principle already used for §1c.
+
+**Remaining, still a dev task, not art**: wiring `VillageScene.tsx`'s grid to call
+`getBuildingIconAsset(building.code, def.relatedMuscle)` instead of rendering `emoji`, plus the
+per-level tint ramp (a level-5 forge should read differently from a level-1 forge — one tint
+ramp per icon, as `BossPhaseImage` already does per HP phase, not 5 assets per building).
 
 ---
 
@@ -70,8 +103,13 @@ All resolve to real art via `assetMap` (verified basename-key match):
   (`sport_arms/back/chest/abs/shoulder/calf.png`, color-matched to `muscleToResource` — wood,
   stone, fire, water, wind, grain), rendered as a corner overlay via `getSportSpriteAsset(muscle)`
   when a dominant sport exists. §3 layer 2 done. Set grows if running/cycling ship later.
+- **Building icons — 20/20 (14 generated, 6 reused — 2026-07-21).** See §0 above; content-side
+  done via `getBuildingIconAsset`, rendering them in `VillageScene.tsx` is the open dev task.
 - **Boss phase art (2026-07-20).** `BossPhaseImage` now renders each boss's adventure cover
   via `getAdventureAsset`, tinted per HP phase. §1c done (`2b06f3e`).
+- **Trophy shelf (2026-07-21).** Needs no new art: boss trophies reuse the adventure cover via
+  `getAdventureAsset`, achievement trophies use the `icon` emoji already on
+  `achievementDefinitions`. Deliberate — an emoji rack reads as a trophy shelf.
 
 ---
 

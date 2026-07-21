@@ -1,12 +1,18 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Avatar, Text, XStack, YStack } from "tamagui";
+import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { getAvatarById } from "@/constants/avatars";
+import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
+import { getFlameLevel } from "@/db/village";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
+
+// The flame grows with the streak (db/village.ts thresholds) so the header reads at a glance.
+const FLAME_SIZES: Record<number, number> = { 0: 18, 1: 18, 2: 22, 3: 26, 4: 30, 5: 34 };
 
 export function HomeHeader() {
   const { t } = useTranslation();
@@ -14,14 +20,21 @@ export function HomeHeader() {
   const { villageName } = useUserStore();
   const { avatarId, language } = useSettingsStore();
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
+  const [streak, setStreak] = useState<StreakInfo | null>(null);
 
   const avatar = getAvatarById(avatarId);
 
-  useEffect(() => {
-    getUserLevelInfo().then(setLevelInfo);
-  }, []);
+  // Refetch on focus: a session just logged must show up here, not on the next cold start.
+  useFocusEffect(
+    useCallback(() => {
+      getUserLevelInfo().then(setLevelInfo);
+      getStreakInfo().then(setStreak);
+    }, []),
+  );
 
   const levelTitle = levelInfo ? (language === "fr" ? levelInfo.title.fr : levelInfo.title.en) : "";
+  const currentStreak = streak?.current ?? 0;
+  const flameLevel = getFlameLevel(currentStreak);
 
   return (
     <XStack px="$4" pt="$2" pb="$3" items="center" gap="$3">
@@ -52,7 +65,7 @@ export function HomeHeader() {
               })
             : "..."}
         </Text>
-        <XStack items="center" gap="$2" mt="$1" mr="$4">
+        <XStack items="center" gap="$2" mt="$1">
           <ProgressBar
             progress={levelInfo?.xpProgress ?? 0}
             height={5}
@@ -64,6 +77,26 @@ export function HomeHeader() {
           </Text>
         </XStack>
       </YStack>
+
+      {/* Streak flame — the most motivating number on the screen, out of the stats row */}
+      {currentStreak > 0 && (
+        <YStack
+          items="center"
+          minW={44}
+          pressStyle={{ scale: 0.95 }}
+          onPress={() => router.push("/(tabs)/journal")}
+          accessibilityRole="button"
+          accessibilityLabel={t("home.streak_a11y", {
+            count: currentStreak,
+            defaultValue: `${currentStreak} day streak`,
+          })}
+        >
+          <FlameFlicker size={FLAME_SIZES[flameLevel]} />
+          <Text fontSize={15} fontWeight="700" color="$resourceFire">
+            {currentStreak}
+          </Text>
+        </YStack>
+      )}
     </XStack>
   );
 }

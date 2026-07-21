@@ -84,7 +84,7 @@ function OptionItem({
       onPress={onPress}
       bg={active ? "$primary" : "$background"}
       borderWidth={1}
-      borderColor={active ? "$primary" : "$color"}
+      borderColor={active ? "$primary" : "$text"}
       rounded="$6"
       height={54}
       pressStyle={{ opacity: 0.9 }}
@@ -94,7 +94,7 @@ function OptionItem({
     >
       <XStack items="center" gap="$3">
         {icon}
-        <Text fontWeight="700" fontSize={16} color={active ? "white" : "$color"}>
+        <Text fontWeight="700" fontSize={16} color={active ? "white" : "$text"}>
           {label}
         </Text>
       </XStack>
@@ -228,7 +228,7 @@ export function HomeSettingsMenu() {
             p={0}
             bg={selected ? "$primary" : "$bgLight"}
             borderWidth={1}
-            borderColor={selected ? "$primary" : "$color"}
+            borderColor={selected ? "$primary" : "$text"}
             width={70}
             height={70}
             rounded={35}

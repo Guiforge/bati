@@ -53,12 +53,12 @@ export function SuggestedQuestsCard() {
       <YStack gap="$3">
         <XStack items="center" gap="$2">
           <Sparkles size={18} color="$primary" />
-          <Text fontWeight="700" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$text">
             {t("journal.suggested_quests")}
           </Text>
         </XStack>
 
-        <Text fontSize={12} color="$color" opacity={0.7}>
+        <Text fontSize={12} color="$text" opacity={0.7}>
           {t("journal.suggested_quests_desc")}
         </Text>
 
@@ -77,7 +77,7 @@ export function SuggestedQuestsCard() {
                 onPress={() => router.push(`/quests/${quest.id}` as never)}
               >
                 <YStack flex={1} gap="$1">
-                  <Text fontWeight="700" fontSize={14} color="$color" numberOfLines={1}>
+                  <Text fontWeight="700" fontSize={14} color="$text" numberOfLines={1}>
                     {title}
                   </Text>
                   <XStack gap="$1" flexWrap="wrap">
@@ -91,7 +91,7 @@ export function SuggestedQuestsCard() {
                         borderWidth={1}
                         borderColor="$borderStrong"
                       >
-                        <Text fontSize={10} fontWeight="700" color="$color">
+                        <Text fontSize={10} fontWeight="700" color="$text">
                           {language === "fr" ? MUSCLE_LABELS[muscle].fr : MUSCLE_LABELS[muscle].en}
                         </Text>
                       </XStack>

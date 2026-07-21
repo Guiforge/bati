@@ -43,13 +43,13 @@ export function LevelBadge() {
         items="center"
         justify="center"
       >
-        <Star size={16} color="$color" fill="$color" />
+        <Star size={16} color="$text" fill="$text" />
       </YStack>
       <YStack>
-        <Text fontWeight="700" fontSize={14} color="$color">
+        <Text fontWeight="700" fontSize={14} color="$text">
           {t("journal.user_level", { level: levelInfo.level })}
         </Text>
-        <Text fontSize={10} color="$color" opacity={0.7} fontWeight="700">
+        <Text fontSize={10} color="$text" opacity={0.7} fontWeight="700">
           {title}
         </Text>
       </YStack>

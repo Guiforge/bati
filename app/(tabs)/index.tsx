@@ -5,7 +5,9 @@ import { Text, YStack } from "tamagui";
 import { CoachCard } from "@/components/home/CoachCard";
 import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
 import { HomeHeader } from "@/components/home/HomeHeader";
+import { OathCard } from "@/components/home/OathCard";
 import { StatsOverview } from "@/components/home/StatsOverview";
+import { VillageTeaser } from "@/components/home/VillageTeaser";
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -28,13 +30,19 @@ export default function HomeScreen() {
             {/* 3. Coach nudge (weekly goal / weak area / rest) */}
             <CoachCard />
 
-            {/* 4. Statistics Overview */}
+            {/* 4. Active oath (hidden when none is sworn) */}
+            <OathCard />
+
+            {/* 5. Statistics Overview */}
             <YStack mt="$2">
               <Text mb="$2" fontSize="$2" fontWeight="700" color="$textSecondary">
                 {t("home.stats", "Stats")}
               </Text>
               <StatsOverview />
             </YStack>
+
+            {/* 6. What the training built, as a way into the village */}
+            <VillageTeaser />
           </YStack>
         </ScrollView>
       </YStack>

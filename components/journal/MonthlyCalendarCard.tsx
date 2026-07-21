@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { listCompletedSessions } from "@/db/completed";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -206,7 +207,12 @@ export function MonthlyCalendarCard() {
   };
 
   if (!monthData) {
-    return null;
+    // Fixed-height placeholder: the grid is always 6 rows, so reserve it instead of popping in.
+    return (
+      <SkeletonCard>
+        <Skeleton height={296} />
+      </SkeletonCard>
+    );
   }
 
   const dayLabels = language === "fr" ? DAYS_FR : DAYS_EN;
@@ -218,26 +224,28 @@ export function MonthlyCalendarCard() {
         {/* Header with month navigation */}
         <XStack items="center" justify="space-between" px="$1">
           <Pressable onPress={goToPrevMonth}>
-            <ChevronLeft size={24} color="$color" />
+            <ChevronLeft size={24} color="$text" />
           </Pressable>
-          <Text fontWeight="700" fontSize={16} color="$color">
+          <Text fontWeight="700" fontSize={16} color="$text">
             {monthName} {monthData.year}
           </Text>
           <Pressable onPress={goToNextMonth}>
-            <ChevronRight size={24} color="$color" />
+            <ChevronRight size={24} color="$text" />
           </Pressable>
         </XStack>
 
         {/* Day labels */}
         <XStack justify="space-around">
-          {dayLabels.map((day) => (
+          {/* Index keys: French labels repeat ("M" for Mardi and Mercredi), so the label isn't unique. */}
+          {dayLabels.map((day, i) => (
             <Text
-              key={day}
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed 7-label list, never reordered
+              key={`${i}-${day}`}
               width={32}
               style={{ textAlign: "center" }}
               fontSize={12}
               fontWeight="700"
-              color="$color"
+              color="$text"
               opacity={0.6}
             >
               {day}
@@ -273,7 +281,7 @@ export function MonthlyCalendarCard() {
                   <Text
                     fontSize={13}
                     fontWeight={day.hasWorkout || day.isToday ? "700" : "400"}
-                    color={day.isToday ? "white" : "$color"}
+                    color={day.isToday ? "white" : "$text"}
                     opacity={day.isCurrentMonth ? 1 : 0.3}
                   >
                     {day.date}
@@ -293,10 +301,10 @@ export function MonthlyCalendarCard() {
           opacity={0.2}
         >
           <YStack items="center">
-            <Text fontWeight="700" fontSize={18} color="$color">
+            <Text fontWeight="700" fontSize={18} color="$text">
               {monthData.workoutCount}
             </Text>
-            <Text fontSize={11} color="$color" opacity={0.6}>
+            <Text fontSize={11} color="$text" opacity={0.6}>
               {t("journal.workout_days")}
             </Text>
           </YStack>
@@ -304,7 +312,7 @@ export function MonthlyCalendarCard() {
             <Text fontWeight="700" fontSize={18} color="$success">
               {monthData.streakDays}
             </Text>
-            <Text fontSize={11} color="$color" opacity={0.6}>
+            <Text fontSize={11} color="$text" opacity={0.6}>
               {t("journal.streak_active", "Streak days").replace(" 🔥", "")}
             </Text>
           </YStack>

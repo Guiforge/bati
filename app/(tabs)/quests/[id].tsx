@@ -69,8 +69,8 @@ function LevelChip({
       fullWidth={false}
       height={40}
       px="$3"
-      bg={active ? "$primary" : "$surface"}
-      borderColor={active ? "$primary" : "$borderStrong"}
+      bg={active ? "$secondary" : "$surface"}
+      borderColor={active ? "$secondary" : "$borderStrong"}
       borderWidth={1}
       rounded="$10"
       fontSize={14}

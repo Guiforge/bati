@@ -147,9 +147,7 @@ export default function JournalScreen() {
           <XStack gap="$2">
             <TabButton
               tab="stats"
-              icon={
-                <BarChart2 size={16} color="$color" opacity={activeTab === "stats" ? 1 : 0.7} />
-              }
+              icon={<BarChart2 size={16} color="$text" opacity={activeTab === "stats" ? 1 : 0.7} />}
               label={t("journal.tab_stats", "Stats")}
               activeTab={activeTab}
               onSelect={setActiveTab}

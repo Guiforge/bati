@@ -14,6 +14,7 @@ import {
   createCompletedSession,
   markSessionWithNewRecords,
 } from "@/db/completed";
+import { checkOathFulfilled, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { isDailyQuest, type Quest } from "@/db/quests";
@@ -82,6 +83,7 @@ interface SessionState {
     dailyBonusApplied: boolean;
     newRecords: NewRecordResult[];
     newAchievements: NewAchievementResult[];
+    fulfilledOath: OathProgress | null;
     campaign: {
       adventureId: number;
       runId: number;
@@ -431,12 +433,16 @@ export const useSessionStore = create<SessionState>()(
         questId: quest?.id ?? null,
       });
 
+      // Oath progress is derived; this only catches the moment it tips over.
+      const fulfilledOath = await checkOathFulfilled();
+
       return {
         sessionId,
         xpEarned,
         dailyBonusApplied,
         newRecords,
         newAchievements,
+        fulfilledOath,
         campaign,
         levelUp,
       };

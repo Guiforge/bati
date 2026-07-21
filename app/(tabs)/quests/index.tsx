@@ -13,7 +13,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
-import { getQuestAsset } from "@/constants/assetMap";
+import { getQuestAsset, getSportSpriteAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
 import {
   estimateQuestTemplateSeconds,
@@ -22,10 +22,11 @@ import {
   listQuestTemplates,
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
+import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
-import { useSettingsStore } from "@/stores/settings";
+import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
@@ -41,6 +42,34 @@ function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
   if (exerciseCount >= 4) return "⚔️";
   return "🪓";
+}
+
+/** Discreet muscle-group glyphs so the gallery reads at a glance without adding another chip row. */
+function MuscleGlyphs({ muscles, language }: { muscles: MuscleCode[]; language: AppLanguage }) {
+  if (muscles.length === 0) return null;
+  return (
+    <XStack gap="$1" items="center">
+      {muscles.map((m) => (
+        <YStack
+          key={m}
+          width={22}
+          height={22}
+          rounded={11}
+          bg="$surface2"
+          items="center"
+          justify="center"
+          accessibilityLabel={MUSCLE_LABELS[m]?.[language] ?? m}
+        >
+          <Image
+            source={getSportSpriteAsset(m)}
+            style={{ width: 14, height: 14, opacity: 0.75 }}
+            contentFit="contain"
+            tintColor="#909ACB"
+          />
+        </YStack>
+      ))}
+    </XStack>
+  );
 }
 
 function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
@@ -302,9 +331,12 @@ export default function QuestsGallery() {
               </YStack>
 
               <YStack flex={1} gap="$2">
-                <Text fontWeight="700" fontSize={18} color="$text">
-                  {qTitle}
-                </Text>
+                <XStack items="center" gap="$2">
+                  <Text flex={1} fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
+                    {qTitle}
+                  </Text>
+                  <MuscleGlyphs muscles={item.muscles} language={language} />
+                </XStack>
 
                 <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
                   {qDesc}

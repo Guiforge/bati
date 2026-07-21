@@ -152,7 +152,7 @@ export function ActiveExerciseView() {
           borderColor="$borderStrong"
           rounded="$4"
         >
-          <Progress.Indicator animation="bouncy" bg="$color" opacity={0.35} />
+          <Progress.Indicator animation="bouncy" bg="$text" opacity={0.35} />
         </Progress>
         <XStack justify="space-between">
           <Text fontSize={10} fontWeight="700" color="$textSecondary">

@@ -1,5 +1,4 @@
 import { DefaultTheme, Slot, ThemeProvider, useRouter, useSegments } from "expo-router";
-import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
@@ -81,34 +80,26 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <Head>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css"
-        />
-      </Head>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar style="light" />
-        <SafeAreaProvider>
-          <TamaguiProvider config={config} defaultTheme={colorScheme}>
-            <Theme name={colorScheme}>
-              <ThemeProvider value={MyTheme}>
-                <PortalProvider>
-                  <DatabaseProvider onReady={handleDatabaseReady}>
-                    <ToastProvider>
-                      <ErrorBoundary>
-                        <AppBackground />
-                        <Slot />
-                      </ErrorBoundary>
-                    </ToastProvider>
-                  </DatabaseProvider>
-                </PortalProvider>
-              </ThemeProvider>
-            </Theme>
-          </TamaguiProvider>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    </>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style="light" />
+      <SafeAreaProvider>
+        <TamaguiProvider config={config} defaultTheme={colorScheme}>
+          <Theme name={colorScheme}>
+            <ThemeProvider value={MyTheme}>
+              <PortalProvider>
+                <DatabaseProvider onReady={handleDatabaseReady}>
+                  <ToastProvider>
+                    <ErrorBoundary>
+                      <AppBackground />
+                      <Slot />
+                    </ErrorBoundary>
+                  </ToastProvider>
+                </DatabaseProvider>
+              </PortalProvider>
+            </ThemeProvider>
+          </Theme>
+        </TamaguiProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

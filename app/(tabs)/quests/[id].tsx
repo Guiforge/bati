@@ -19,6 +19,7 @@ import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { getCached } from "@/db/queryCache";
 import type { Quest, Target } from "@/db/quests";
 import type { DifficultyCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
@@ -117,9 +118,9 @@ export default function QuestDetails() {
   }, [params.level]);
 
   const [level, setLevel] = useState<Difficulty>(initialLevel);
-  const [state, setState] = useState<LoadState>({
-    status: "loading",
-    quest: null,
+  const [state, setState] = useState<LoadState>(() => {
+    const cached = questId != null ? getCached<Quest>(`quest:${questId}:${initialLevel}`) : null;
+    return cached ? { status: "ready", quest: cached } : { status: "loading", quest: null };
   });
   const [narrative, setNarrative] = useState<string | null>(null);
   const [showNarrative, setShowNarrative] = useState(false);

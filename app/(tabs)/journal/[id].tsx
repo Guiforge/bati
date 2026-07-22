@@ -12,6 +12,7 @@ import { formatDuration, getCompletedSessionById } from "@/db";
 import type { CompletedSession } from "@/db/completed";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { getCached, setCached } from "@/db/queryCache";
 import { listQuestTemplates } from "@/db/quests";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -32,15 +33,23 @@ export default function SessionDetailScreen() {
 
   const sessionId = parseId(params.id);
 
-  const [status, setStatus] = useState<Status>("loading");
-  const [session, setSession] = useState<CompletedSession | null>(null);
-  const [questTitle, setQuestTitle] = useState<string>("");
+  const [status, setStatus] = useState<Status>(() =>
+    sessionId != null && getCached<CompletedSession>(`session:${sessionId}`) ? "ready" : "loading",
+  );
+  const [session, setSession] = useState<CompletedSession | null>(() =>
+    sessionId != null ? (getCached<CompletedSession>(`session:${sessionId}`) ?? null) : null,
+  );
+  const [questTitle, setQuestTitle] = useState<string>(() =>
+    sessionId != null ? (getCached<string>(`sessionTitle:${sessionId}:${language}`) ?? "") : "",
+  );
   const [error, setError] = useState("");
 
   const load = useCallback(
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex loading logic, refactor planned
     async (id: number) => {
-      setStatus("loading");
+      // Keep the already-rendered session visible while revalidating; only show the
+      // loading card when there is nothing to show yet.
+      setStatus((s) => (s === "ready" ? "ready" : "loading"));
       setError("");
       try {
         const data = await getCompletedSessionById(id);
@@ -56,7 +65,9 @@ export default function SessionDetailScreen() {
           const quests = await listQuestTemplates();
           const quest = quests.find((q) => q.id === data.questId);
           if (quest) {
-            setQuestTitle(language === "fr" ? quest.frTitle : quest.enTitle);
+            const title = language === "fr" ? quest.frTitle : quest.enTitle;
+            setQuestTitle(title);
+            setCached(`sessionTitle:${id}:${language}`, title);
           }
         }
 

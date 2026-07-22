@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
+import { setCached } from "./queryCache";
 import type { QuestTargetType } from "./schema";
 import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
 
@@ -374,6 +375,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       qex.exercise.muscles.push(r.muscle);
     }
   }
+  setCached(`quest:${id}:${userLevel}`, quest);
   return quest;
 }
 

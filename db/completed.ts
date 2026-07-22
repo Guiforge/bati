@@ -3,6 +3,7 @@ import { desc, eq, gte } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
+import { setCached } from "./queryCache";
 import type { DifficultyCode, ExerciseStyle, FeedbackCode, QuestTargetType } from "./schema";
 
 const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
@@ -305,6 +306,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
     }
   }
 
+  setCached(`session:${id}`, session);
   return session;
 }
 

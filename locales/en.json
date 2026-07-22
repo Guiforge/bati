@@ -260,6 +260,7 @@
     "countdown_letsgo": "Let's go!",
     "countdown_warmup_done": "Warm-up done. Time to move.",
     "decrease_reps_accessibility": "Decrease reps by one",
+    "decrease_result_accessibility": "Decrease result",
     "exercise_label": "EXERCISE {{count}} / {{total}}",
     "feedback_easy": "Too Easy",
     "feedback_good": "Just Right",
@@ -269,6 +270,7 @@
     "finish_exercise_accessibility": "Finish exercise",
     "how_to_do_it": "How to do it",
     "increase_reps_accessibility": "Increase reps by one",
+    "increase_result_accessibility": "Increase result",
     "keep_going_hint": "Keep going! Timer continues after target.",
     "loot_title": "Loot Earned",
     "new_records": "New Personal Records!",
@@ -438,7 +440,9 @@
     "trends_up": "↑ {{change}}%",
     "trends_down": "↓ {{change}}%",
     "trends_stable": "stable",
-    "trends_no_data": "Train more to see trends"
+    "trends_no_data": "Train more to see trends",
+    "prev_month": "Previous month",
+    "next_month": "Next month"
   },
   "achievements": {
     "title": "Achievements",

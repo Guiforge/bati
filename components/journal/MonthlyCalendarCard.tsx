@@ -223,13 +223,23 @@ export function MonthlyCalendarCard() {
       <YStack gap="$2">
         {/* Header with month navigation */}
         <XStack items="center" justify="space-between" px="$1">
-          <Pressable onPress={goToPrevMonth}>
+          <Pressable
+            onPress={goToPrevMonth}
+            accessibilityRole="button"
+            accessibilityLabel={t("journal.prev_month", "Previous month")}
+            hitSlop={8}
+          >
             <ChevronLeft size={24} color="$text" />
           </Pressable>
           <Text fontWeight="700" fontSize={16} color="$text">
             {monthName} {monthData.year}
           </Text>
-          <Pressable onPress={goToNextMonth}>
+          <Pressable
+            onPress={goToNextMonth}
+            accessibilityRole="button"
+            accessibilityLabel={t("journal.next_month", "Next month")}
+            hitSlop={8}
+          >
             <ChevronRight size={24} color="$text" />
           </Pressable>
         </XStack>

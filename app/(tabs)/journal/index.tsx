@@ -50,6 +50,7 @@ function TabButton({
       borderWidth={1}
       rounded="$5"
       onPress={() => onSelect(tab)}
+      accessibilityState={{ selected: isActive }}
       pressStyle={{ opacity: 0.9 }}
     >
       <XStack items="center" gap="$2">

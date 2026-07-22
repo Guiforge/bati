@@ -232,7 +232,12 @@ export function ActiveExerciseView() {
           {/* How to do it - expandable */}
           {exerciseDescription ? (
             <YStack width="100%">
-              <Pressable onPress={handleToggleHowTo}>
+              <Pressable
+                onPress={handleToggleHowTo}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: showHowTo }}
+                accessibilityLabel={t("session.how_to_do_it")}
+              >
                 <XStack
                   items="center"
                   justify="center"

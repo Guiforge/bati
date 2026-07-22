@@ -125,6 +125,7 @@ function TrendsCardComponent() {
               borderWidth={1}
               borderColor="$borderStrong"
               onPress={() => setViewMode("weekly")}
+              accessibilityState={{ selected: viewMode === "weekly" }}
               rounded="$3"
               px="$2"
             >
@@ -142,6 +143,7 @@ function TrendsCardComponent() {
               borderWidth={1}
               borderColor="$borderStrong"
               onPress={() => setViewMode("monthly")}
+              accessibilityState={{ selected: viewMode === "monthly" }}
               rounded="$3"
               px="$2"
             >

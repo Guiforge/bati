@@ -131,6 +131,8 @@ export default function SettingsScreen() {
                   p={0}
                   borderWidth={avatarId === avatar.id ? 2 : 1}
                   borderColor={avatarId === avatar.id ? "$primary" : "$borderStrong"}
+                  accessibilityLabel={t(avatar.labelKey)}
+                  accessibilityState={{ selected: avatarId === avatar.id }}
                   onPress={() => {
                     setAvatarId(avatar.id);
                     setShowAvatarPicker(false);

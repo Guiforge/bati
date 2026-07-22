@@ -172,6 +172,7 @@ export function RestView() {
                 size="$3"
                 circular
                 icon={<Minus size={16} />}
+                accessibilityLabel={t("session.decrease_result_accessibility", "Decrease result")}
                 onPress={() =>
                   handleUpdateResult(Math.max(1, lastResult.result.value - adjustStep))
                 }
@@ -188,6 +189,7 @@ export function RestView() {
                 size="$3"
                 circular
                 icon={<Plus size={16} />}
+                accessibilityLabel={t("session.increase_result_accessibility", "Increase result")}
                 onPress={() => handleUpdateResult(lastResult.result.value + adjustStep)}
               />
             </XStack>

@@ -86,7 +86,7 @@ export function VillageScene() {
                   contentFit="cover"
                   transition={200}
                 />
-                {scene.dominantSport && (
+                {!!scene.dominantSport && (
                   <YStack
                     position="absolute"
                     b="$3"
@@ -130,7 +130,7 @@ export function VillageScene() {
                   </XStack>
                 )}
 
-                {scene.dominantSport && (
+                {!!scene.dominantSport && (
                   <Text fontSize={13} color="$textSecondary">
                     {t("village.dominant_sport", {
                       muscle:

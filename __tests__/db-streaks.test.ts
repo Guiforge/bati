@@ -18,7 +18,7 @@ describe("db/streaks", () => {
     t.close();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Clear completed sessions and streak cache
     t.db.delete(completedQuest).run();
     t.db.delete(userPreferences).run();

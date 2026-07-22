@@ -47,6 +47,9 @@
         "noExtraBooleanCast": "error",
         "noForEach": "off"
       },
+      "performance": {
+        "noJsxPropsBind": "off"
+      },
       "correctness": {
         "noUnusedImports": "error",
         "noUnusedVariables": "error",

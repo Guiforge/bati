@@ -223,6 +223,6 @@ export async function getStreakInfo(): Promise<StreakInfo> {
  * Update streak after completing a session
  * Call this after saving a session to update the cache
  */
-export async function updateStreakAfterSession(): Promise<StreakInfo> {
+export function updateStreakAfterSession(): Promise<StreakInfo> {
   return calculateAndCacheStreak();
 }

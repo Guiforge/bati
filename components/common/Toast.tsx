@@ -106,6 +106,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// biome-ignore lint/style/useComponentExportOnlyModules: provider + its hook colocated, idiomatic React
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {

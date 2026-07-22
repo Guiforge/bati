@@ -47,7 +47,7 @@ function RecordItem({
       <Text fontWeight="700" fontSize={18} color="$text" style={{ textAlign: "center" }}>
         {value}
       </Text>
-      {subLabel && (
+      {!!subLabel && (
         <Text fontSize={10} color="$text" opacity={0.5} style={{ textAlign: "center" }}>
           {subLabel}
         </Text>

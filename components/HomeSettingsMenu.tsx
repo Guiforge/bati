@@ -352,7 +352,7 @@ export function HomeSettingsMenu() {
       </XStack>
 
       <AnimatePresence>
-        {open && (
+        {!!open && (
           <YStack
             fullscreen
             z={1000}

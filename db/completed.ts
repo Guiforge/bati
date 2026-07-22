@@ -80,6 +80,7 @@ async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): 
   }
 }
 
+// biome-ignore lint/suspicious/useAwait: async keeps the guard throw a rejected promise, not a sync throw
 export async function createCompletedSession(input: CompletedSessionInput): Promise<number> {
   if (input.exercises.length === 0) throw new Error("A completed session must have exercises");
 

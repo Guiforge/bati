@@ -251,7 +251,7 @@ export function ActiveExerciseView() {
                   )}
                 </XStack>
               </Pressable>
-              {showHowTo && (
+              {!!showHowTo && (
                 <YStack
                   bg="$surface2"
                   p="$3"

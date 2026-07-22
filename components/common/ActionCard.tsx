@@ -39,16 +39,16 @@ export function ActionCard({
     >
       <XStack p="$4" items="center" gap="$3">
         {/* Optional Left Icon */}
-        {icon && <YStack>{icon}</YStack>}
+        {!!icon && <YStack>{icon}</YStack>}
 
         {/* Content */}
         <YStack flex={1} gap="$1">
-          {title && (
+          {!!title && (
             <Text fontSize="$4" fontWeight="700" color="$text" numberOfLines={1}>
               {title}
             </Text>
           )}
-          {subtitle && (
+          {!!subtitle && (
             <Text fontSize="$3" color="$textSecondary" numberOfLines={1}>
               {subtitle}
             </Text>
@@ -58,7 +58,7 @@ export function ActionCard({
 
         {/* Right Side: CTA or Chevron */}
         <XStack items="center" gap="$2">
-          {ctaText && (
+          {!!ctaText && (
             <Text fontSize="$3" color="$primary" fontWeight="700">
               {ctaText}
             </Text>

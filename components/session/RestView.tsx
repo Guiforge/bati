@@ -13,6 +13,7 @@ import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossHpBar } from "./BossHpBar";
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one screen component, boss/rest branches read top-to-bottom
 export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -145,7 +146,7 @@ export function RestView() {
       </YStack>
 
       {/* Last Set Review */}
-      {lastResult && (
+      {!!lastResult && (
         <YStack
           bg="$surface"
           p="$4"

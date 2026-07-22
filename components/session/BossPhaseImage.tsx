@@ -106,7 +106,7 @@ export function BossPhaseImage({
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
         />
-        {displayConfig.tint && <YStack position="absolute" fullscreen bg={displayConfig.tint} />}
+        {!!displayConfig.tint && <YStack position="absolute" fullscreen bg={displayConfig.tint} />}
       </YStack>
 
       {/* Phase indicator (small dots) */}
@@ -131,6 +131,7 @@ export function BossPhaseImage({
 /**
  * Get boss phase info for external use
  */
+// biome-ignore lint/style/useComponentExportOnlyModules: phase helper colocated with the image it drives
 export function getBossPhaseInfo(hpPercent: number) {
   const phase = getPhaseFromHp(hpPercent);
   const config = getPhaseConfig(phase);

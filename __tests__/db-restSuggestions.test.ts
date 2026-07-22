@@ -18,7 +18,7 @@ describe("db/restSuggestions", () => {
     t.close();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     t.db.delete(completedQuest).run();
   });
 

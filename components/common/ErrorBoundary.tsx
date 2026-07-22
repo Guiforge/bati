@@ -80,7 +80,7 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
         </Paragraph>
       </YStack>
 
-      {__DEV__ && error && (
+      {__DEV__ && !!error && (
         <YStack
           bg="$pastelPink"
           p="$3"
@@ -95,7 +95,7 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
         </YStack>
       )}
 
-      {onRetry && (
+      {!!onRetry && (
         <Button
           bg="$primary"
           borderWidth={1}
@@ -133,7 +133,7 @@ export function InlineError({ message, onRetry }: { message?: string; onRetry?: 
       <Text fontWeight="700" color="$text" style={{ textAlign: "center" }}>
         {message || t("errors.generic")}
       </Text>
-      {onRetry && (
+      {!!onRetry && (
         <Button
           size="$3"
           bg="$bgLight"

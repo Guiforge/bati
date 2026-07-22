@@ -44,6 +44,10 @@ type LoadState =
 
 const ANDROID_MIN_BOTTOM_INSET = 24;
 
+// Hoisted so the list doesn't get a fresh function identity on every parent render.
+const adventureKey = (a: Adventure) => String(a.id);
+const ListGap = () => <YStack height={12} />;
+
 function StatusMessage({ state, onRetry }: { state: LoadState; onRetry: () => void }) {
   const { t } = useTranslation();
 
@@ -290,8 +294,8 @@ export default function AdventuresGallery() {
         <LegendList
           data={adventures}
           renderItem={renderItem}
-          keyExtractor={(a) => String(a.id)}
-          ItemSeparatorComponent={() => <YStack height={12} />}
+          keyExtractor={adventureKey}
+          ItemSeparatorComponent={ListGap}
           recycleItems
           estimatedItemSize={240}
           contentContainerStyle={{

@@ -106,13 +106,10 @@ async function runMigrationsAsync(
         try {
           await txn.execAsync(stmt);
         } catch (e) {
-          // biome-ignore lint/suspicious/noConsole: Error logging
           console.error(
             `[DatabaseProvider] Error executing statement ${i + 1}/${effectiveStatements.length} in migration ${entry.tag}:`,
           );
-          // biome-ignore lint/suspicious/noConsole: Error logging
           console.error(stmt);
-          // biome-ignore lint/suspicious/noConsole: Error logging
           console.error(e);
 
           // Extra diagnostics for common schema/index issues.
@@ -127,14 +124,12 @@ async function runMigrationsAsync(
                 const indexes = await getAllAsync<{ name: string; sql: string | null }>(
                   "SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='adventures' ORDER BY name",
                 );
-                // biome-ignore lint/suspicious/noConsole: Error logging
                 console.error("[DatabaseProvider] adventures indexes:", indexes);
 
                 if (getFirstAsync) {
                   const tableSql = await getFirstAsync<{ sql: string | null }>(
                     "SELECT sql FROM sqlite_master WHERE type='table' AND name='adventures' LIMIT 1",
                   );
-                  // biome-ignore lint/suspicious/noConsole: Error logging
                   console.error("[DatabaseProvider] adventures table SQL:", tableSql?.sql);
                 }
               }
@@ -167,7 +162,6 @@ async function runMigrationsAsync(
     await runEntry(client);
     await client.execAsync("COMMIT");
   } catch (e) {
-    // biome-ignore lint/suspicious/noConsole: Error logging
     console.error("[DatabaseProvider] Migration failed:", e);
     await client.execAsync("ROLLBACK");
     throw e;

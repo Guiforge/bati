@@ -296,7 +296,7 @@ export default function SessionDetailScreen() {
                                 </Text>
                               </YStack>
 
-                              {targetLabel && (
+                              {!!targetLabel && (
                                 <YStack>
                                   <Text fontSize={12} color="$text" opacity={0.6}>
                                     {t("journal.target", "Target")}
@@ -335,7 +335,7 @@ export default function SessionDetailScreen() {
               ))}
 
               {/* Notes Section */}
-              {session.notes && (
+              {!!session.notes && (
                 <Card>
                   <YStack gap="$2">
                     <Text fontWeight="700" fontSize={14} color="$text">

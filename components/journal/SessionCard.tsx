@@ -66,7 +66,7 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
             <Text fontWeight="700" fontSize={16} numberOfLines={1} color="$text" flex={1}>
               {entry.questTitle}
             </Text>
-            {entry.hasNewRecords && (
+            {!!entry.hasNewRecords && (
               <XStack
                 bg="$primary"
                 px="$2"

@@ -213,7 +213,7 @@ export function VictoryView() {
             <Text fontWeight="700" fontSize={26} color="$primary" fontFamily="$body">
               {result ? t("quests.reward_xp", { count: result.xpEarned }) : "…"}
             </Text>
-            {result?.dailyBonusApplied && (
+            {!!result?.dailyBonusApplied && (
               <Text fontWeight="700" fontSize={11} color="$success">
                 {t("common.daily_xp_bonus")}
               </Text>
@@ -231,7 +231,7 @@ export function VictoryView() {
           </YStack>
         )}
 
-        {saveError && (
+        {!!saveError && (
           <YStack width="100%" maxW={520} items="center" gap="$3">
             <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
               {t("errors.save_session_failed")}
@@ -244,7 +244,7 @@ export function VictoryView() {
           </YStack>
         )}
 
-        {result && <SessionRewards result={result} language={language} />}
+        {!!result && <SessionRewards result={result} language={language} />}
 
         {/* Feedback */}
         <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">

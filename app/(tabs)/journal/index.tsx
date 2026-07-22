@@ -22,6 +22,10 @@ import { useSettingsStore } from "@/stores/settings";
 
 type TabType = "history" | "stats";
 
+// Hoisted so the list doesn't get a fresh function identity on every parent render.
+const journalKey = (entry: JournalEntry) => String(entry.id);
+const ListGap = () => <YStack height={12} />;
+
 function TabButton({
   tab,
   icon,
@@ -167,8 +171,8 @@ export default function JournalScreen() {
         <LegendList
           data={history}
           renderItem={renderHistoryItem}
-          keyExtractor={(entry) => String(entry.id)}
-          ItemSeparatorComponent={() => <YStack height={12} />}
+          keyExtractor={journalKey}
+          ItemSeparatorComponent={ListGap}
           estimatedItemSize={100}
           style={{ flex: 1 }}
           contentContainerStyle={{

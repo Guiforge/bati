@@ -18,7 +18,7 @@ describe("db/userLevel", () => {
     t.close();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     t.db.delete(completedQuest).run();
   });
 

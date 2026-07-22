@@ -32,7 +32,7 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
       {result.fulfilledOath !== null && <OathFulfilledCard oath={result.fulfilledOath} />}
 
       {/* Level up */}
-      {result.levelUp && (
+      {!!result.levelUp && (
         <Card
           {...revealProps}
           width="100%"

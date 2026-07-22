@@ -72,7 +72,7 @@ export function GameIcon({
         contentFit="contain"
         tintColor={finalColor}
       />
-      {badge && (
+      {!!badge && (
         <YStack
           position="absolute"
           b={0}

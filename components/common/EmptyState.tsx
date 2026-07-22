@@ -24,13 +24,13 @@ export function EmptyState({ emoji = "📭", title, subtitle, action, ...props }
           <Text fontWeight="700" fontSize={18} color="$text" style={{ textAlign: "center" }}>
             {title}
           </Text>
-          {subtitle && (
+          {!!subtitle && (
             <Paragraph color="$text" opacity={0.6} size="$3" style={{ textAlign: "center" }}>
               {subtitle}
             </Paragraph>
           )}
         </YStack>
-        {action && <YStack pt="$2">{action}</YStack>}
+        {!!action && <YStack pt="$2">{action}</YStack>}
       </YStack>
     </Card>
   );

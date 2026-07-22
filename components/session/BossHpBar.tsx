@@ -60,7 +60,7 @@ export function BossHpBar({
       shadowOffset={{ width: 0, height: 3 }}
     >
       {/* Boss Phase Image */}
-      {showPhaseImage && (
+      {!!showPhaseImage && (
         <YStack items="center" py="$2">
           <BossPhaseImage
             currentHp={currentHp}
@@ -103,7 +103,7 @@ export function BossHpBar({
         </Progress>
 
         {/* Damage Popup */}
-        {showDamage && lastDamage && (
+        {showDamage && !!lastDamage && (
           <XStack
             position="absolute"
             t={-24}
@@ -126,7 +126,7 @@ export function BossHpBar({
             >
               {lastDamage.isCritical ? `${t("common.crit")} ` : ""}-{lastDamage.damage}
             </Text>
-            {lastDamage.weaknessBonus && <Target size={14} color="$secondary" />}
+            {!!lastDamage.weaknessBonus && <Target size={14} color="$secondary" />}
           </XStack>
         )}
       </YStack>

@@ -167,7 +167,7 @@ function TrendsCardComponent() {
             {/* Trend Badges */}
             {viewMode === "weekly" && (sessionsAnalysis || minutesAnalysis) && (
               <XStack gap="$2" flexWrap="wrap">
-                {sessionsAnalysis && (
+                {!!sessionsAnalysis && (
                   <XStack items="center" gap="$1">
                     <Text fontSize={12} color="$text" opacity={0.6}>
                       {t("journal.trends_sessions")}:
@@ -175,7 +175,7 @@ function TrendsCardComponent() {
                     {renderTrendBadge(sessionsAnalysis)}
                   </XStack>
                 )}
-                {minutesAnalysis && (
+                {!!minutesAnalysis && (
                   <XStack items="center" gap="$1">
                     <Text fontSize={12} color="$text" opacity={0.6}>
                       {t("journal.trends_minutes")}:

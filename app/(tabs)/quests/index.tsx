@@ -88,6 +88,10 @@ type QuestMeta = {
 const PAGE_SIZE = 10;
 const FILTER_TRIGGER_SPACE = 64;
 
+// Hoisted so the list doesn't get a fresh function identity on every parent render.
+const questKey = (m: QuestMeta) => String(m.quest.id);
+const ListGap = () => <YStack height={12} />;
+
 function StatusMessage({
   state,
   filteredCount,
@@ -414,8 +418,8 @@ export default function QuestsGallery() {
         <LegendList
           data={visible}
           renderItem={renderItem}
-          keyExtractor={(m) => String(m.quest.id)}
-          ItemSeparatorComponent={() => <YStack height={12} />}
+          keyExtractor={questKey}
+          ItemSeparatorComponent={ListGap}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
           recycleItems

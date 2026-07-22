@@ -240,7 +240,7 @@ function AchievementRow({
       </YStack>
 
       {/* Unlocked checkmark */}
-      {isUnlocked && <Text fontSize={20}>✓</Text>}
+      {!!isUnlocked && <Text fontSize={20}>✓</Text>}
     </XStack>
   );
 }

@@ -2,9 +2,9 @@
 title: React Native Performance — Best Practices & Antipatterns
 type: technical
 status: active
-updated: 2026-07-18
+updated: 2026-07-22
 related: [technical-architecture.md, ../meta/wiki-protocol.md, ../design/design-system.md]
-sources: [app.json, stores/session.ts, components/session/PausedOverlay.tsx, app/(tabs)/quests/index.tsx, package.json]
+sources: [app.json, babel.config.js, stores/session.ts, components/session/PausedOverlay.tsx, app/(tabs)/quests/index.tsx, app/(tabs)/journal/index.tsx, package.json]
 ---
 
 # React Native Performance — Best Practices & Antipatterns
@@ -29,6 +29,34 @@ several of those defaults are already in place; this page tracks what's real for
 Because the React Compiler is on, manual `useMemo`/`useCallback` for render-time
 memoization is mostly redundant inside components — the compiler already does it. It does
 **not** help with the Zustand and Reanimated issues below; those are outside its scope.
+
+## Quick-win rules (ranked by effort × impact)
+
+Compiled from the general RN performance guides, then filtered to what applies to
+*this* stack and isn't already handled. Sorted easiest-first; impact breaks ties.
+Anything a generic article recommends that's missing here is in "Already covered" below —
+don't re-add it.
+
+| # | Rule | Effort | Impact | Status here |
+| --- | --- | --- | --- | --- |
+| 1 | **Profile on release builds only.** Dev builds are 2–5× slower (unminified, runtime checks) — never chase a jank number in dev. | trivial | high (diagnosis) | habit |
+| 2 | **Ship bundled art as WebP**, sized to display resolution. ~25–35% smaller than PNG/JPEG → less memory + smaller binary. | low | high | **not done** — `assets/` is 60 png + 43 jpg, 0 webp |
+| 3 | **Strip `console.*` in production** via `babel-plugin-transform-remove-console` (add to [babel.config.js](../../babel.config.js) prod env). Each call has bridge/JS overhead. | low | medium | **not done** — plugin not installed |
+| 4 | **Set `expo-image` `cachePolicy="memory-disk"`** (and a stable `recyclingKey` for images inside `@legendapp/list`) to kill flicker + redundant decodes. | low | medium | default policy today; none set explicitly |
+| 5 | **Debounce rapid inputs** (search/filter fields) so keystrokes don't fan out into renders/queries. | low | medium | no debounce in repo yet |
+| 6 | **`InteractionManager.runAfterInteractions()`** for heavy work triggered by navigation, so transitions land at 60fps first. | medium | med-high | used in [journal](../../app/(tabs)/journal/index.tsx); extend to other heavy screens |
+| 7 | **Paginate / window growing SQLite reads** (history, completed sets) — load a page, not the whole table, as user data grows. | medium | high (scales with data) | fine at today's data size; watch history views |
+| 8 | **Lazy-load rare/heavy screens** so they parse on first visit, not at startup (improves TTI). | medium | medium | not applied |
+
+### Already covered — don't re-add
+
+Generic guides push these; the stack already gives them, so skip:
+
+- **React.memo / useCallback / useMemo for render memoization** → React Compiler does it ([app.json](../../app.json) `reactCompiler: true`).
+- **FlashList / FastImage / native-stack navigator** → we use `@legendapp/list`, `expo-image`, and Expo Router (native stack by default).
+- **Hermes, New Architecture (Fabric/TurboModules/JSI)** → both already on (see status table above).
+- **StyleSheet over inline styles / PureComponent** → we use Tamagui `styled()` variants and function components; N/A.
+- **Tree-shake date-fns imports** → already imported per-function (`import { format } from "date-fns"`), no barrel; no lodash in the tree.
 
 ## Best practices
 

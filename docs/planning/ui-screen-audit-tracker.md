@@ -68,17 +68,21 @@ broader request to rebuild the app's UI/UX (immersive, fast, simple, playful, sp
 
 **Still open / follow-up** (not attempted this pass, flagged for a dedicated follow-up):
 
-- Load waterfall: every screen push refetches from SQLite and shows a loading card even though
-  the previous screen already held the data in memory. Passing data forward (route params or a
-  small query cache) would do more for perceived speed than any further motion tuning.
-- Full accessibility label sweep: ~30 tap handlers across Adventures/Quests had exactly one
-  accessibility attribute before this pass; the back-chevrons and filter controls are now
-  labeled, but selected-state chips/tags and the remaining icon-only buttons app-wide (Journal,
-  Settings, Village, session views) have not been swept.
+- ✅ **Load waterfall (done 2026-07-22):** added a tiny write-through query cache
+  (`db/queryCache.ts`); `getQuestById` / `getCompletedSessionById` populate it and the
+  quest-detail + session-detail screens seed initial state from a synchronous peek, so a
+  revisited detail paints instantly and still refetches to revalidate. Adventure detail left
+  as-is (its state blends live run/history data — seeding static details wouldn't drop the
+  loading card and caching the run risks showing stale progress).
+- ✅ **Accessibility label sweep (done 2026-07-22):** labeled the icon-only calendar
+  month-nav chevrons, the rest-view result +/- buttons, and the avatar-picker tiles; added
+  `accessibilityState={{ selected }}` to the journal stats/history tabs, the trends
+  weekly/monthly chips, and the avatar tiles; gave the "how to" disclosure a button role +
+  expanded state. Village back-chevron was already labeled.
 - The "adventure = programme, quest = workout" merge question from the critique (one Play
   surface vs. two tabs) — not attempted; a bigger IA change that deserves its own `shape` pass.
-- `swiper` in `package.json` is now an unused dependency (only consumer was the deleted
-  QuestCarousel) — left in place pending a deliberate lockfile update.
+- ✅ **`swiper` removed (done 2026-07-22):** dropped from `package.json`, deleted the dead
+  `<Head>` swiper-CSS `<link>` in `app/_layout.tsx`, and updated the lockfile.
 
 ## 2026-07-18 — Round 2: contrast bug was systemic, not screen-local
 

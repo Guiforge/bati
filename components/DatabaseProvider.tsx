@@ -1,9 +1,8 @@
 import * as SplashScreen from "expo-splash-screen";
-import { openDatabaseSync } from "expo-sqlite";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
-import { db, SCHEMA_VERSION } from "@/db/client";
+import { db } from "@/db/client";
 import migrations from "../drizzle/migrations";
 
 function getMigrationKeyFromIdx(idx: number) {
@@ -23,6 +22,10 @@ function sqlString(value: string) {
   return `'${value.replaceAll("'", "''")}'`;
 }
 
+// ponytail: hand-rolled instead of drizzle-orm/expo-sqlite/migrator's `useMigrations`
+// on purpose — that helper's `useNewConnection` transactions interact badly with Drizzle's
+// sync `prepareSync` on Android, and we need to seed inside one BEGIN IMMEDIATE. Revisit
+// dropping this for `useMigrations` once that Android issue is confirmed fixed.
 async function runMigrationsAsync(
   client: SqliteMigrationClient,
   config: {
@@ -72,34 +75,21 @@ async function runMigrationsAsync(
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
-      // Safety: some older bundled schema migrations created a UNIQUE index on adventures.questId
-      // (`adventures_quest_unique`). This breaks newer content where multiple adventures can
-      // start from the same quest. Since we don't need retro-compat here, we skip creating it.
-      // (Also helps if Metro/Expo has cached an older .sql asset.)
-      const effectiveStatements = statements.filter((stmt) => {
-        const shouldSkip = /CREATE\s+UNIQUE\s+INDEX\s+`adventures_quest_unique`/i.test(stmt);
-        if (shouldSkip && opts.debug) {
-          // biome-ignore lint/suspicious/noConsole: Debug logging
-          console.log("[DatabaseProvider] Skipping statement (adventures_quest_unique)");
-        }
-        return !shouldSkip;
-      });
-
       if (opts.debug) {
         // biome-ignore lint/suspicious/noConsole: Debug logging
         console.log(
           "[DatabaseProvider] Applying migration",
           entry.tag,
-          `(idx=${entry.idx}, stmts=${effectiveStatements.length})`,
+          `(idx=${entry.idx}, stmts=${statements.length})`,
         );
       }
 
-      for (let i = 0; i < effectiveStatements.length; i++) {
-        const stmt = effectiveStatements[i];
+      for (let i = 0; i < statements.length; i++) {
+        const stmt = statements[i];
         if (opts.debug) {
           // biome-ignore lint/suspicious/noConsole: Debug logging
           console.log(
-            `[DatabaseProvider]  stmt ${i + 1}/${effectiveStatements.length}:`,
+            `[DatabaseProvider]  stmt ${i + 1}/${statements.length}:`,
             stmt.slice(0, 120).replace(/\s+/g, " "),
           );
         }
@@ -107,7 +97,7 @@ async function runMigrationsAsync(
           await txn.execAsync(stmt);
         } catch (e) {
           console.error(
-            `[DatabaseProvider] Error executing statement ${i + 1}/${effectiveStatements.length} in migration ${entry.tag}:`,
+            `[DatabaseProvider] Error executing statement ${i + 1}/${statements.length} in migration ${entry.tag}:`,
           );
           console.error(stmt);
           console.error(e);
@@ -270,18 +260,6 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   useEffect(() => {
     if (!success || hasInitialized.current) return;
     hasInitialized.current = true;
-
-    // Save schema version after successful migration
-    try {
-      const rawDb = openDatabaseSync("bati.db");
-      rawDb.runSync(
-        `INSERT OR REPLACE INTO user_preferences (key, value, updatedAt) VALUES ('schema_version', ?, ?)`,
-        [String(SCHEMA_VERSION), Date.now()],
-      );
-    } catch {
-      // Error handled silently
-    }
-
     onReady?.();
   }, [success, onReady]);
 

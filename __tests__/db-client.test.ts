@@ -14,7 +14,7 @@ describe("db/client", () => {
     jest.doMock("drizzle-orm/expo-sqlite", () => ({ drizzle }));
 
     const client = require("../db/client") as typeof import("../db/client");
-    const expectedDbName = `bati.dev.v${client.SCHEMA_VERSION}.db`;
+    const expectedDbName = `bati.v${client.SCHEMA_VERSION}.db`;
 
     // module init should open the DB and create drizzle instance
     expect(openDatabaseSync).toHaveBeenCalledWith(expectedDbName, {

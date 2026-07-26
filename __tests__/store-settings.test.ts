@@ -1,0 +1,172 @@
+// loadFromDatabase merges eight preferences at once. The bug class it guards
+// against is "settings look right, then snap back to defaults": stored values
+// losing to the initial state, or one failed read wiping the other seven.
+//
+// The store reads getDevicePreferredAppLanguage() at module-load, so the mocks
+// must be registered before the store is required. Same jest.doMock + lazy
+// require pattern the db/* tests use.
+
+const prefs = {
+  getLanguage: jest.fn<Promise<string | null>, []>(),
+  getTheme: jest.fn<Promise<string | null>, []>(),
+  getAvatarId: jest.fn<Promise<string | null>, []>(),
+  getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
+  getSoundEnabled: jest.fn<Promise<boolean>, []>(),
+  getReducedMotion: jest.fn<Promise<boolean>, []>(),
+  getNotificationsEnabled: jest.fn<Promise<boolean>, []>(),
+  getNotificationTime: jest.fn<Promise<{ hour: number; minute: number }>, []>(),
+  setLanguage: jest.fn().mockResolvedValue(undefined),
+  setTheme: jest.fn().mockResolvedValue(undefined),
+  setAvatarId: jest.fn().mockResolvedValue(undefined),
+  setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
+  setSoundEnabled: jest.fn().mockResolvedValue(undefined),
+  setReducedMotion: jest.fn().mockResolvedValue(undefined),
+  setNotificationsEnabled: jest.fn().mockResolvedValue(undefined),
+  setNotificationTime: jest.fn().mockResolvedValue(undefined),
+};
+
+beforeAll(() => {
+  jest.resetModules();
+  jest.doMock("@/db", () => ({ preferences: prefs }));
+  jest.doMock("@/i18n", () => ({
+    __esModule: true,
+    default: { changeLanguage: jest.fn().mockResolvedValue(undefined) },
+  }));
+  // "fr" so the device fallback is distinguishable from the "en" default.
+  jest.doMock("@/src/i18n/deviceLanguage", () => ({
+    getDevicePreferredAppLanguage: () => "fr",
+  }));
+});
+
+afterAll(() => {
+  jest.resetModules();
+});
+
+function settingsStore() {
+  return (require("@/stores/settings") as typeof import("@/stores/settings")).useSettingsStore;
+}
+
+/** Every read succeeds, returning something different from the store default. */
+function storedSettings() {
+  prefs.getLanguage.mockResolvedValue("fr");
+  prefs.getTheme.mockResolvedValue("dark");
+  prefs.getAvatarId.mockResolvedValue("archmage");
+  prefs.getHapticsEnabled.mockResolvedValue(false);
+  prefs.getSoundEnabled.mockResolvedValue(false);
+  prefs.getReducedMotion.mockResolvedValue(true);
+  prefs.getNotificationsEnabled.mockResolvedValue(false);
+  prefs.getNotificationTime.mockResolvedValue({ hour: 7, minute: 30 });
+}
+
+const DEFAULTS = {
+  language: "fr" as const, // from the mocked device language
+  theme: "system" as const,
+  avatarId: "guardian" as const,
+  hapticsEnabled: true,
+  soundEnabled: true,
+  reducedMotion: false,
+  notificationsEnabled: true,
+  notificationTime: { hour: 18, minute: 0 },
+  isLoaded: false,
+};
+
+describe("useSettingsStore", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    settingsStore().setState({ ...DEFAULTS });
+  });
+
+  test("stored values win over the defaults, all eight of them", async () => {
+    storedSettings();
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState()).toMatchObject({
+      language: "fr",
+      theme: "dark",
+      avatarId: "archmage",
+      hapticsEnabled: false,
+      soundEnabled: false,
+      reducedMotion: true,
+      notificationsEnabled: false,
+      notificationTime: { hour: 7, minute: 30 },
+      isLoaded: true,
+    });
+  });
+
+  test("a language that was never chosen falls back to the device, not to en", async () => {
+    storedSettings();
+    prefs.getLanguage.mockResolvedValue(null);
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().language).toBe("fr");
+  });
+
+  test("a stored language other than fr reads as en", async () => {
+    storedSettings();
+    prefs.getLanguage.mockResolvedValue("de");
+
+    await settingsStore().getState().loadFromDatabase();
+
+    // Not the device's "fr": an explicit stored choice is honoured, then narrowed.
+    expect(settingsStore().getState().language).toBe("en");
+  });
+
+  test("junk in the theme or avatar column normalizes instead of leaking through", async () => {
+    storedSettings();
+    prefs.getTheme.mockResolvedValue("chartreuse");
+    prefs.getAvatarId.mockResolvedValue("not-an-avatar");
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().theme).toBe("system");
+    // normalizeAvatarId falls back to avatarIds[0] ("shadow"), not the store's
+    // initial "guardian" default — an unknown id snaps to the first valid avatar.
+    expect(settingsStore().getState().avatarId).toBe("shadow");
+  });
+
+  test("a failed read still marks the store loaded so the app does not hang", async () => {
+    storedSettings();
+    prefs.getTheme.mockRejectedValue(new Error("db is gone"));
+
+    await settingsStore().getState().loadFromDatabase();
+
+    const state = settingsStore().getState();
+    expect(state.isLoaded).toBe(true);
+    expect(state.theme).toBe("system");
+  });
+
+  test("every setter updates the store and writes through to the database", async () => {
+    const s = () => settingsStore().getState();
+
+    await s().setLanguage("fr");
+    await s().setTheme("dark");
+    await s().setAvatarId("scout");
+    await s().setHapticsEnabled(false);
+    await s().setSoundEnabled(false);
+    await s().setReducedMotion(true);
+    await s().setNotificationsEnabled(false);
+    await s().setNotificationTime({ hour: 6, minute: 15 });
+
+    expect(s()).toMatchObject({
+      language: "fr",
+      theme: "dark",
+      avatarId: "scout",
+      hapticsEnabled: false,
+      soundEnabled: false,
+      reducedMotion: true,
+      notificationsEnabled: false,
+      notificationTime: { hour: 6, minute: 15 },
+    });
+
+    expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
+    expect(prefs.setTheme).toHaveBeenCalledWith("dark");
+    expect(prefs.setAvatarId).toHaveBeenCalledWith("scout");
+    expect(prefs.setHapticsEnabled).toHaveBeenCalledWith(false);
+    expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
+    expect(prefs.setReducedMotion).toHaveBeenCalledWith(true);
+    expect(prefs.setNotificationsEnabled).toHaveBeenCalledWith(false);
+    expect(prefs.setNotificationTime).toHaveBeenCalledWith({ hour: 6, minute: 15 });
+  });
+});

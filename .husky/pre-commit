@@ -1,2 +1,2 @@
-npm run format
+npx lint-staged
 npx tsc --noEmit --project tsconfig.json

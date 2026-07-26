@@ -109,7 +109,7 @@
     "db:push": "npx drizzle-kit push",
     "format": "biome check --write .",
     "ios": "expo run:ios",
-    "prepare": "husky install",
+    "prepare": "husky",
     "start": "expo start",
     "test": "jest",
     "test:watch": "jest --watch",

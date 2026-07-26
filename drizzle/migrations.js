@@ -10,6 +10,8 @@ import m0006 from "./0006_content_expansion.sql";
 import m0007 from "./0007_add_image_paths.sql";
 import m0008 from "./0008_seed_images.sql";
 import m0009 from "./0009_seed_missing_covers.sql";
+import m0010 from "./0010_seed_bodyweight_exercises.sql";
+import m0011 from "./0011_seed_bodyweight_exercise_images.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -25,5 +27,7 @@ export default {
     m0007,
     m0008,
     m0009,
+    m0010,
+    m0011,
   },
 };

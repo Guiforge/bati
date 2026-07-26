@@ -41,6 +41,27 @@ export const EXERCISE_ASSETS = {
   wall_sit: require("@/assets/images/exercises/wall_sit.png"),
   plank: require("@/assets/images/exercises/plank.png"),
   crunch: require("@/assets/images/exercises/crunch.png"),
+  // Bodyweight exercises (0010, art assigned in 0011) — see docs/content/missing-image.md §4
+  chin_up: require("@/assets/images/exercises/chin_up.png"),
+  superman: require("@/assets/images/exercises/superman.png"),
+  bear_crawl: require("@/assets/images/exercises/bear_crawl.png"),
+  russian_twist: require("@/assets/images/exercises/russian_twist.png"),
+  side_plank: require("@/assets/images/exercises/side_plank.png"),
+  glute_bridge: require("@/assets/images/exercises/glute_bridge.png"),
+  standing_calf_raise: require("@/assets/images/exercises/standing_calf_raise.png"),
+  handstand_pushup: require("@/assets/images/exercises/handstand_pushup.png"),
+  wall_pushup: require("@/assets/images/exercises/wall_pushup.png"),
+  flutter_kicks: require("@/assets/images/exercises/flutter_kicks.png"),
+  inverted_row: require("@/assets/images/exercises/inverted_row.png"),
+  dead_bug: require("@/assets/images/exercises/dead_bug.png"),
+  hanging_leg_raise: require("@/assets/images/exercises/hanging_leg_raise.png"),
+  jump_squat: require("@/assets/images/exercises/jump_squat.png"),
+  reverse_crunch: require("@/assets/images/exercises/reverse_crunch.png"),
+  curtsy_squat: require("@/assets/images/exercises/curtsy_squat.png"),
+  scapular_pullup: require("@/assets/images/exercises/scapular_pullup.png"),
+  l_sit: require("@/assets/images/exercises/l_sit.png"),
+  star_jump: require("@/assets/images/exercises/star_jump.png"),
+  windshield_wipers: require("@/assets/images/exercises/windshield_wipers.png"),
 } as const;
 
 // ============================================================

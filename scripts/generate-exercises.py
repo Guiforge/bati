@@ -56,6 +56,83 @@ EXERCISES = [
      "A fantasy athlete hero performing an abdominal crunch, lying on the back with knees bent and "
      "the torso curled up toward the knees, hands beside the head; the abs glow with electric-blue "
      "energy, seen from the side."),
+    # --- 20 bodyweight exercises from drizzle/0010 (missing-image.md §4) ---
+    # Glow color follows the exercise's seeded muscle, matching the sport-sprite palette:
+    # arms=amber, back=silver-blue, chest=orange-red, abs=electric-blue, shoulder=cyan, calf=gold.
+    ("chin_up",
+     "A fantasy athlete hero hanging from a rugged stone bar with palms facing them, pulling up "
+     "until the chin clears the bar; the back and biceps flex and glow with metallic silver-blue "
+     "energy, seen from a slight low angle."),
+    ("superman",
+     "A fantasy athlete hero lying face down with arms and legs extended and lifted off the "
+     "ground in a superman hold, the whole back arched; the back glows with metallic silver-blue "
+     "energy, seen from the side."),
+    ("bear_crawl",
+     "A fantasy athlete hero mid bear-crawl, on hands and toes with knees hovering just above the "
+     "ground and hips low, one hand and the opposite foot advancing; the core and shoulders glow "
+     "with electric-blue energy, seen from the side."),
+    ("russian_twist",
+     "A fantasy athlete hero seated with knees bent and feet lifted, leaning back and rotating "
+     "the torso to one side with hands together; the obliques glow with electric-blue energy."),
+    ("side_plank",
+     "A fantasy athlete hero holding a side plank propped on one forearm, hips lifted and body a "
+     "straight diagonal line, top arm reaching to the sky; the side of the core glows with "
+     "electric-blue energy."),
+    ("glute_bridge",
+     "A fantasy athlete hero lying on their back with knees bent and hips driven up into a "
+     "straight line from shoulders to knees; the glutes and legs glow with warm golden energy, "
+     "seen from the side."),
+    ("standing_calf_raise",
+     "A fantasy athlete hero standing tall and risen high onto the balls of the feet, heels "
+     "lifted, calves flexed hard; the calves glow with warm golden energy, seen from the side."),
+    ("handstand_pushup",
+     "A fantasy athlete hero inverted in a handstand against a stone wall, elbows bent lowering "
+     "the head toward the floor; the shoulders and arms glow with cyan-white energy."),
+    ("wall_pushup",
+     "A fantasy athlete hero standing an arm's length from a stone wall, hands at shoulder height "
+     "and elbows bent bringing the chest toward the wall; the chest and arms glow with fiery "
+     "orange-red energy, seen from the side."),
+    ("flutter_kicks",
+     "A fantasy athlete hero lying on their back with legs extended just above the ground, "
+     "alternating small scissor kicks with motion streaks; the lower abs glow with electric-blue "
+     "energy, seen from the side."),
+    ("inverted_row",
+     "A fantasy athlete hero hanging beneath a low stone bar with body straight and heels on the "
+     "ground, pulling the chest up to the bar; the back and arms glow with metallic silver-blue "
+     "energy, seen from the side."),
+    ("dead_bug",
+     "A fantasy athlete hero lying on their back, one arm reaching overhead and the opposite leg "
+     "extended low while the other limbs stay raised at 90 degrees; the core glows with "
+     "electric-blue energy, seen from the side."),
+    ("hanging_leg_raise",
+     "A fantasy athlete hero hanging from a rugged stone bar with arms straight, raising straight "
+     "legs in front until parallel with the ground; the abs glow with electric-blue energy, seen "
+     "from the side."),
+    ("jump_squat",
+     "A fantasy athlete hero exploding upward out of a squat into a powerful jump, feet just "
+     "leaving the ground with impact dust and motion streaks below; the legs glow with warm "
+     "golden energy."),
+    ("reverse_crunch",
+     "A fantasy athlete hero lying on their back curling the hips off the floor to bring bent "
+     "knees toward the chest; the lower abs glow with electric-blue energy, seen from the side."),
+    ("curtsy_squat",
+     "A fantasy athlete hero stepping one leg diagonally behind the other into a deep curtsy "
+     "lunge, both knees bent; the legs glow with warm golden energy."),
+    ("scapular_pullup",
+     "A fantasy athlete hero hanging from a rugged stone bar with arms completely straight, "
+     "shoulder blades pulled down and together lifting the body only slightly; the upper back "
+     "glows with metallic silver-blue energy."),
+    ("l_sit",
+     "A fantasy athlete hero supporting their whole body on straight arms with hands pressed to "
+     "the ground beside the hips, legs held straight out horizontally in a rigid L-shape; the "
+     "core and arms glow with electric-blue energy, seen from the side."),
+    ("star_jump",
+     "A fantasy athlete hero at the peak of an explosive star jump, arms and legs flung wide into "
+     "a star shape mid-air with motion streaks; the whole body glows with cyan-white energy."),
+    ("windshield_wipers",
+     "A fantasy athlete hero lying on their back with arms stretched out to the sides and straight "
+     "legs held together, rotated to one side in a sweeping arc with motion streaks; the obliques "
+     "glow with electric-blue energy, seen from above."),
 ]
 
 

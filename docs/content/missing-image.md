@@ -2,7 +2,7 @@
 title: Missing Images — inventory
 type: content
 status: active
-updated: 2026-07-21
+updated: 2026-07-27
 related: [missing-covers.md, ../planning/screen-redesign-proposals.md, ../planning/dev-execution-plan.md]
 sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
@@ -21,8 +21,12 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 ## TL;DR
 
-Everything identified in this doc is now resolved:
+Everything identified in this doc is resolved — no content renders the placeholder.
 
+- **§4 RESOLVED (2026-07-27)**: the 20 bodyweight exercises from
+  `drizzle/0010_seed_bodyweight_exercises.sql` now have dedicated character-pose art,
+  assigned by `drizzle/0011_seed_bodyweight_exercise_images.sql` and registered in
+  `EXERCISE_ASSETS`. See §4 below.
 - **§0 RESOLVED (2026-07-21)**: all 20 village building icons now have real art — 14
   generated (`scripts/generate-village.py buildings/*`, `assets/images/village/buildings/`)
   and registered as `BUILDING_ICON_ASSETS` / `getBuildingIconAsset(code, relatedMuscle)` in
@@ -30,8 +34,7 @@ Everything identified in this doc is now resolved:
   sprites via the same helper's fallback, zero new assets, as recommended. Wiring
   `VillageScene.tsx`'s building grid to render these instead of the `emoji` field — and the
   per-level tint ramp — remains a separate dev task, same boundary as §1a/§1b before it.
-- **Content art is complete**: every seeded exercise (20), quest (13), and adventure (3)
-  resolves to real art. No content currently renders the placeholder.
+- **Content art**: all 46 seeded exercises, 13 quests, and 3 adventures resolve to real art.
 - **§1a/§1b RESOLVED (2026-07-20)**: 5 village tier illustrations + 6 sport sprites, generated
   (`scripts/generate-village.py`) and wired into `VillageScene.tsx` (`4356ee4`).
 - **§1c RESOLVED (2026-07-20)**: `BossPhaseImage.tsx` now renders the boss's own adventure
@@ -90,9 +93,10 @@ cleanup-or-wire-up call, not a missing-art gap.
 
 All resolve to real art via `assetMap` (verified basename-key match):
 
-- **Exercises — 20/20.** All seeded `imagePath`s map to a real `EXERCISE_ASSETS` key. (Note:
-  seed `alchemist_hollow_body_hold` correctly maps to the file `alchemist_hollow_body.png` via
-  its assetMap key — resolves fine despite the filename difference.)
+- **Exercises — 46/46.** All seeded `imagePath`s map to a real `EXERCISE_ASSETS` key: the
+  original 26 plus the 20 bodyweight ones from §4. (Note: seed `alchemist_hollow_body_hold`
+  correctly maps to the file `alchemist_hollow_body.png` via its assetMap key — resolves fine
+  despite the filename difference.)
 - **Quests — 13/13.** All seeded quest covers present in `QUEST_ASSETS`.
 - **Adventures — 3/3.** The Lumber Route, The Golem, The Iron Lord all have covers in
   `ADVENTURE_ASSETS`. (Per-boss village banners, §3 layer 3, reuse these via `getAdventureAsset`.)
@@ -129,6 +133,33 @@ The inverse problem — art shipped without content to use it:
   creature portraits (there's no per-boss identity field to key them from — see the schema note
   in §1c). Genuinely a cleanup-or-wire-up call now: either add a boss-identity concept to attach
   these to, or drop them.
+
+## 4. RESOLVED — 20 bodyweight exercises now have art (2026-07-27)
+
+**Closed the same day it opened.** All 20 now have dedicated character-pose art:
+
+- **Generated**: `scripts/generate-exercises.py` extended with the 20 (glow color per the
+  exercise's own seeded muscle — arms=amber, back=silver-blue, chest=orange-red,
+  abs=electric-blue, shoulder=cyan, calf=gold), output to `assets/images/exercises/`.
+- **DB**: `drizzle/0011_seed_bodyweight_exercise_images.sql` sets each row's `imagePath`,
+  mirroring `0009`'s pattern; registered in `migrations.js` + `meta/_journal.json` (idx 11).
+- **Render**: all 20 basename keys added to `EXERCISE_ASSETS` in `assetMap.ts` — required,
+  since `getExerciseAsset` resolves by basename key, not raw path. Verified 20 seeded = 20
+  updated = 20 assetMap keys, no drift.
+
+**Origin of the batch:** `drizzle/0010_seed_bodyweight_exercises.sql` added 20 bodyweight
+exercises curated from the
+[hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) `body weight`
+subset (EN + FR only, the other 8 dataset languages dropped; equipped/weighted exercises
+excluded per scope). They were seeded without an `imagePath`, so they fell back to the schema
+default (`assets/placeholder.jpg`) until `0011` assigned real art.
+
+The 20: Chin-Up, Superman, Bear Crawl, Russian Twist, Side Plank, Glute Bridge, Standing Calf
+Raise, Handstand Push-Up, Wall Push-Up, Flutter Kicks, Inverted Row, Dead Bug, Hanging Leg
+Raise, Jump Squat, Reverse Crunch, Curtsy Squat, Scapular Pull-Up, L-Sit, Star Jump, Windshield
+Wipers.
+
+---
 
 ## Related
 

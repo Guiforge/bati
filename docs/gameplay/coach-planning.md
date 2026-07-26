@@ -11,28 +11,23 @@ sources: [db/xp.ts, db/streaks.ts]
 
 ## Summary
 
-The Coach is a small card on Home, not a planning system. One setting is persisted (the
-user's weekly session goal); everything else is three rules evaluated against the session
-journal and the [muscle balance](statistics-progress.md#1-muscle-balance-last-30-days) view.
-No generated plans, no scheduling, no notifications — those are explicit non-goals (see
-below).
+The Coach is a small card on Home, not a planning system. It is **purely reactive**: two
+rules evaluated against the session journal and the
+[muscle balance](statistics-progress.md#1-muscle-balance-last-30-days) view. No persisted
+state, no generated plans, no scheduling, no notifications — those are explicit non-goals
+(see below). The user's chosen **objective** lives in the [Oath](oaths.md), not here — the
+Coach no longer echoes a weekly-goal count, so the two never compete for the objective slot.
 
-## The one setting
-
-**Weekly goal**: how many sessions per week the user wants to train. Chosen once in
-settings/onboarding, editable any time. This is the only piece of Coach state that isn't
-derived from the journal.
-
-## The three rules
+## The two rules
 
 | Rule | Trigger | Message example |
 | --- | --- | --- |
-| **Weekly goal** | Sessions this week vs. weekly goal | "2/3 séances cette semaine" |
-| **Weak area** | A muscle sits well below its share of 30-day volume ([statistics-progress.md](statistics-progress.md)) | "Tes jambes sont en retard — essaie [Quête jambes]" |
 | **Rest** | ≥5 consecutive days trained | "Pense à un jour de repos" |
+| **Weak area** | A muscle sits well below its share of 30-day volume ([statistics-progress.md](statistics-progress.md)) | "Tes jambes sont en retard — essaie [Quête jambes]" |
 
-Each rule that fires links to one concrete action (start a quest, or rest) — it doesn't just
-report a number.
+Priority: rest (safety) > weak-area. When neither fires the card renders nothing. Each rule
+that fires links to one concrete action (start a quest, or rest) — it doesn't just report a
+number.
 
 ## Why not more?
 

@@ -29,7 +29,9 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
   return (
     <>
       {/* Oath fulfilled — the user's own promise, so it leads */}
-      {result.fulfilledOath !== null && <OathFulfilledCard oath={result.fulfilledOath} />}
+      {result.fulfilledOath !== null && (
+        <OathFulfilledCard oath={result.fulfilledOath} bonusXp={result.oathBonusXp} />
+      )}
 
       {/* Level up */}
       {!!result.levelUp && (

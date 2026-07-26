@@ -41,7 +41,8 @@ Pick a Quest → Train → Earn XP → Your village reacts → Repeat
 - **XP & Level**: Progress earned by training. XP increases your level, which grows the village.
 - **Village**: Your “fitness fingerprint” shown as one growing fantasy scene — no resources, no buildings to manage.
 - **Journal**: Your training history, stats, and progress.
-- **Coach**: A small card that nudges you toward your weekly goal, a lagging muscle, or a rest day.
+- **Coach**: A small card that nudges you toward a lagging muscle or a rest day.
+- **Oath (Serment)**: The single objective you choose to work toward (a streak, a number of sessions, an exercise record).
 
 ---
 
@@ -84,8 +85,12 @@ After workouts, Bati rewards you with:
 
 ### 5) Get nudged (Coach)
 
-- Set a weekly session goal.
 - See a nudge toward a lagging muscle or a rest day, right on Home.
+
+### 6) Set an objective (Oath)
+
+- Swear one objective at a time — a ready-made challenge or a custom target.
+- Track its progress on Home; fulfilling it is celebrated with a bonus on the victory screen.
 
 ---
 
@@ -207,8 +212,8 @@ Preferences:
 
 **Purpose:** a light nudge toward what to do next, on Home.
 
-- Set a weekly session goal once.
-- See "X/Y sessions this week", a lagging-muscle suggestion, or a rest nudge — whichever applies.
+- See a lagging-muscle suggestion or a rest nudge — whichever applies.
+- Your chosen objective lives in the Oath card, not here.
 
 ### Settings
 

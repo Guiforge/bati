@@ -1,5 +1,5 @@
 import { format, startOfMonth, startOfWeek, subMonths, subWeeks } from "date-fns";
-import { desc, eq, gte } from "drizzle-orm";
+import { desc, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
@@ -162,6 +162,17 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
 
 export async function markSessionWithNewRecords(sessionId: number): Promise<void> {
   await db.update(completedQuest).set({ hasNewRecords: 1 }).where(eq(completedQuest.id, sessionId));
+}
+
+/**
+ * Add XP to a session already in the journal. Total XP is SUM(xpEarned) over sessions, so
+ * bumping the tip-over session's row is how an oath bonus reaches the level with no extra state.
+ */
+export async function addBonusXpToSession(sessionId: number, bonusXp: number): Promise<void> {
+  await db
+    .update(completedQuest)
+    .set({ xpEarned: sql`${completedQuest.xpEarned} + ${bonusXp}` })
+    .where(eq(completedQuest.id, sessionId));
 }
 
 export async function updateSessionFeedback(

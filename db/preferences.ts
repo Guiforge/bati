@@ -148,16 +148,6 @@ export const preferences = {
     await setPreference("soundEnabled", String(enabled));
   },
 
-  async getWeeklyGoal(): Promise<number> {
-    const value = await getPreference("weeklyGoal");
-    const parsed = value ? Number.parseInt(value, 10) : Number.NaN;
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 3;
-  },
-
-  async setWeeklyGoal(sessionsPerWeek: number): Promise<void> {
-    await setPreference("weeklyGoal", String(sessionsPerWeek));
-  },
-
   async getNotificationTime(): Promise<{ hour: number; minute: number }> {
     const value = await getPreference("notificationTime");
     if (value) {

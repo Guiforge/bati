@@ -40,6 +40,29 @@ export function oathNeedsExercise(metric: OathMetric): boolean {
   return metric === "exercise_pr" || metric === "exercise_volume";
 }
 
+/**
+ * Ready-made oaths so swearing is a tap, not a guessed target number. Exercise
+ * presets reference the seed exercise by `enName` (stable content); the swear
+ * screen resolves it to an id and drops any preset whose exercise is missing.
+ */
+export type OathPreset = {
+  id: string;
+  metric: OathMetric;
+  target: number;
+  exerciseName?: string; // matches Exercise.enName for the exercise_* metrics
+};
+
+export const OATH_PRESETS: OathPreset[] = [
+  { id: "streak_30", metric: "streak", target: 30 },
+  { id: "sessions_50", metric: "sessions", target: 50 },
+  { id: "pushups_1000", metric: "exercise_volume", target: 1000, exerciseName: "Push-ups" },
+  { id: "pullups_15", metric: "exercise_pr", target: 15, exerciseName: "Pull-ups" },
+];
+
+// ponytail: flat bonus, tune if oaths ever get tiers. A mini-boss-sized reward for the
+// user's biggest commitment — worth a few sessions so fulfilling it visibly moves the level.
+export const OATH_XP_BONUS = 250;
+
 function isOath(value: unknown): value is Oath {
   if (typeof value !== "object" || value === null) {
     return false;

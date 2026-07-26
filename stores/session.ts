@@ -10,11 +10,12 @@ import {
   getOrCreateBossFight,
 } from "@/db/bossFights";
 import {
+  addBonusXpToSession,
   type CompletedExerciseInput,
   createCompletedSession,
   markSessionWithNewRecords,
 } from "@/db/completed";
-import { checkOathFulfilled, type OathProgress } from "@/db/oaths";
+import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { isDailyQuest, type Quest } from "@/db/quests";
@@ -84,6 +85,7 @@ interface SessionState {
     newRecords: NewRecordResult[];
     newAchievements: NewAchievementResult[];
     fulfilledOath: OathProgress | null;
+    oathBonusXp: number;
     campaign: {
       adventureId: number;
       runId: number;
@@ -375,6 +377,7 @@ export const useSessionStore = create<SessionState>()(
       });
     },
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Linear reward pipeline (save → records → streak → achievements → oath bonus → level), reads top-to-bottom
     saveSession: async (feedback) => {
       const { quest, userLevel, startTime, totalPausedTime, results, adventureRunStepId } = get();
       if (!quest || !startTime) throw new Error("No active session");
@@ -401,11 +404,6 @@ export const useSessionStore = create<SessionState>()(
         performedAt: new Date(startTime),
       });
 
-      // Calculate level after saving
-      const newTotalXp = oldTotalXp + xpEarned;
-      const newLevel = calculateLevelFromXp(newTotalXp);
-      const levelUp = newLevel > oldLevel ? { oldLevel, newLevel } : null;
-
       const campaign =
         adventureRunStepId != null
           ? await completeAdventureRunStep({
@@ -425,7 +423,7 @@ export const useSessionStore = create<SessionState>()(
       // Update streak cache
       await updateStreakAfterSession();
 
-      // Check for new achievements
+      // Check for new achievements (on the base session XP, before the oath bonus)
       const newAchievements = await checkForNewAchievements({
         durationSeconds,
         xpEarned,
@@ -436,6 +434,19 @@ export const useSessionStore = create<SessionState>()(
       // Oath progress is derived; this only catches the moment it tips over.
       const fulfilledOath = await checkOathFulfilled();
 
+      // A fulfilled oath pays a mini-boss-sized bonus. Add it to the tip-over session row so
+      // total XP (a SUM over sessions) and the level below pick it up with no extra state.
+      const oathBonusXp = fulfilledOath ? OATH_XP_BONUS : 0;
+      if (oathBonusXp > 0) {
+        xpEarned += oathBonusXp;
+        await addBonusXpToSession(sessionId, oathBonusXp);
+      }
+
+      // Level after all XP (base + any oath bonus) is settled.
+      const newTotalXp = oldTotalXp + xpEarned;
+      const newLevel = calculateLevelFromXp(newTotalXp);
+      const levelUp = newLevel > oldLevel ? { oldLevel, newLevel } : null;
+
       return {
         sessionId,
         xpEarned,
@@ -443,6 +454,7 @@ export const useSessionStore = create<SessionState>()(
         newRecords,
         newAchievements,
         fulfilledOath,
+        oathBonusXp,
         campaign,
         levelUp,
       };

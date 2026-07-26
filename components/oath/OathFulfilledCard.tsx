@@ -9,7 +9,7 @@ import { useOathText } from "./useOathText";
  * Shown once, on the session that tips the oath over its target. The oath is the
  * user's own promise, so this outranks achievements on the victory screen.
  */
-export function OathFulfilledCard({ oath }: { oath: OathProgress }) {
+export function OathFulfilledCard({ oath, bonusXp }: { oath: OathProgress; bonusXp: number }) {
   const { t } = useTranslation();
   const label = useOathText(oath);
 
@@ -48,6 +48,11 @@ export function OathFulfilledCard({ oath }: { oath: OathProgress }) {
         <Text fontSize={13} color="$text" opacity={0.7} style={{ textAlign: "center" }}>
           {t("oath.fulfilled_subtitle")}
         </Text>
+        {bonusXp > 0 && (
+          <Text fontWeight="700" fontSize={15} color="$primary" style={{ textAlign: "center" }}>
+            {t("oath.fulfilled_xp_bonus", { count: bonusXp })}
+          </Text>
+        )}
       </YStack>
     </Card>
   );

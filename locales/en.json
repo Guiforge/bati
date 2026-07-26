@@ -79,9 +79,7 @@
   "coach": {
     "rest_suggestion_title": "Coach says: Rest!",
     "suggestion_title": "Coach Suggestion",
-    "try_these_quests": "Try these quests:",
-    "weekly_goal_title": "This week",
-    "weekly_goal_progress": "{{completed}}/{{goal}} sessions"
+    "try_these_quests": "Try these quests:"
   },
   "oath": {
     "screen_title": "Swear an Oath",
@@ -99,6 +97,7 @@
     "error_exercise": "Choose an exercise.",
     "fulfilled_title": "OATH FULFILLED",
     "fulfilled_subtitle": "You said you would. You did.",
+    "fulfilled_xp_bonus": "+{{count}} XP",
     "metric_label_exercise_pr": "In a row",
     "metric_label_exercise_volume": "Total reps",
     "metric_label_sessions": "Sessions",
@@ -106,7 +105,11 @@
     "metric_exercise_pr": "{{count}} × {{exercise}} in a row",
     "metric_exercise_volume": "{{count}} × {{exercise}} in total",
     "metric_sessions": "{{count}} sessions logged",
-    "metric_streak": "A {{count}}-day flame"
+    "metric_streak": "A {{count}}-day flame",
+    "presets_title": "READY-MADE OATHS",
+    "custom_toggle": "✍️ Custom oath",
+    "empty_cta": "Swear an oath",
+    "empty_hint": "Set a goal to work toward"
   },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",
@@ -121,8 +124,6 @@
   "settings.motion_title": "Animations",
   "settings.motion_full": "Full",
   "settings.motion_reduced": "Reduced",
-  "settings.weekly_goal_title": "Weekly Goal",
-  "settings.weekly_goal_value": "{{count}} sessions/week",
   "credits": {
     "title": "Credits",
     "open": "Open",

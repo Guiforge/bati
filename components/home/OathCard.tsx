@@ -1,3 +1,4 @@
+import { ChevronRight } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,11 +39,11 @@ function OathBody({ oath }: { oath: OathProgress }) {
 }
 
 /**
- * Sits under the coach nudge: the coach says what to do this week, the oath says
- * what the user is working toward. Renders nothing when no oath is sworn — an
- * empty prompt here would compete with the coach for the same slot.
+ * The user's chosen objective. When none is sworn it shows a CTA to swear one —
+ * this is the only entry point to the feature from Home, so it must not hide.
  */
 export function OathCard() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [oath, setOath] = useState<OathProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,8 +70,27 @@ export function OathCard() {
     router.push("/oath" as never);
   }, [router]);
 
-  if (isLoading || !oath) {
+  if (isLoading) {
     return null;
+  }
+
+  if (!oath) {
+    return (
+      <Card bg="$pastelPurple" width="100%" onPress={openOath}>
+        <XStack items="center" gap="$3">
+          <GameIcon name="star" size={20} color="$text" />
+          <YStack flex={1}>
+            <Text fontWeight="700" fontSize={16} color="$text">
+              {t("oath.empty_cta")}
+            </Text>
+            <Text fontSize={13} color="$text" opacity={0.7}>
+              {t("oath.empty_hint")}
+            </Text>
+          </YStack>
+          <ChevronRight size={20} color="$text" opacity={0.6} />
+        </XStack>
+      </Card>
+    );
   }
 
   return (

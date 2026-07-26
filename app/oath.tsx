@@ -1,4 +1,4 @@
-import { ChevronLeft } from "@tamagui/lucide-icons";
+import { ChevronLeft, ChevronRight } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,12 +8,15 @@ import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { GameIcon } from "@/components/common/GameIcon";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { type Exercise, listExercises } from "@/db/exercises";
 import {
   breakOath,
   getOathProgress,
+  OATH_PRESETS,
   type OathMetric,
+  type OathPreset,
   type OathProgress,
   oathNeedsExercise,
   swearOath,
@@ -60,6 +63,31 @@ function ExerciseChip({
   return <Chip label={label} tone={selected ? "primary" : "default"} onPress={press} />;
 }
 
+/** A ready-made oath: tap to swear it, no target to guess. */
+function PresetRow({
+  preset,
+  label,
+  onSwear,
+}: {
+  preset: OathPreset;
+  label: string;
+  onSwear: (preset: OathPreset) => void;
+}) {
+  const press = useCallback(() => onSwear(preset), [onSwear, preset]);
+
+  return (
+    <Card bg="$surface" onPress={press}>
+      <XStack items="center" gap="$3">
+        <GameIcon name="star" size={20} color="$primary" />
+        <Text flex={1} fontWeight="700" fontSize={15} color="$text">
+          {label}
+        </Text>
+        <ChevronRight size={20} color="$text" opacity={0.5} />
+      </XStack>
+    </Card>
+  );
+}
+
 /** Sensible starting target per metric, so the field is never empty on open. */
 const DEFAULT_TARGET: Record<OathMetric, number> = {
   exercise_pr: 10,
@@ -82,6 +110,7 @@ export default function OathScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showCustom, setShowCustom] = useState(false);
 
   useEffect(() => {
     getOathProgress()
@@ -113,6 +142,41 @@ export default function OathScreen() {
     // Long list on a phone mid-session: cap it and let the filter do the work.
     return matching.slice(0, 30);
   }, [exercises, filter, exerciseLabel]);
+
+  // Exercise presets need a real id; drop any whose seed exercise isn't loaded yet/present.
+  const presetRows = useMemo(() => {
+    const rows: { preset: OathPreset; label: string }[] = [];
+    for (const p of OATH_PRESETS) {
+      if (!oathNeedsExercise(p.metric)) {
+        rows.push({
+          preset: p,
+          label: t(`oath.metric_${p.metric}`, { count: p.target, exercise: "" }),
+        });
+        continue;
+      }
+      const ex = exercises.find((e) => e.enName === p.exerciseName);
+      if (!ex) continue;
+      rows.push({
+        preset: p,
+        label: t(`oath.metric_${p.metric}`, { count: p.target, exercise: exerciseLabel(ex) }),
+      });
+    }
+    return rows;
+  }, [exercises, exerciseLabel, t]);
+
+  const swearPreset = useCallback(
+    async (preset: OathPreset) => {
+      let id: number | null = null;
+      if (oathNeedsExercise(preset.metric)) {
+        const ex = exercises.find((e) => e.enName === preset.exerciseName);
+        if (!ex) return; // filtered out of the list, shouldn't reach here
+        id = ex.id;
+      }
+      await swearOath({ metric: preset.metric, target: preset.target, exerciseId: id });
+      router.back();
+    },
+    [exercises, router],
+  );
 
   const submit = useCallback(async () => {
     const parsed = Number.parseInt(target, 10);
@@ -172,73 +236,103 @@ export default function OathScreen() {
             </Card>
           )}
 
-          {/* Metric */}
-          <YStack gap="$2">
-            <Text fontSize={13} fontWeight="700" color="$textSecondary">
-              {t("oath.pick_metric")}
-            </Text>
-            <XStack gap="$2" flexWrap="wrap">
-              {METRICS.map((m) => (
-                <MetricChip key={m} metric={m} selected={metric === m} onSelect={pickMetric} />
-              ))}
-            </XStack>
-          </YStack>
-
-          {/* Target */}
-          <YStack gap="$2">
-            <Text fontSize={13} fontWeight="700" color="$textSecondary">
-              {t("oath.pick_target")}
-            </Text>
-            <Input
-              value={target}
-              onChangeText={setTarget}
-              keyboardType="number-pad"
-              bg="$surface"
-              borderColor="$borderStrong"
-              color="$text"
-              fontSize={18}
-              height={52}
-              accessibilityLabel={t("oath.pick_target")}
-            />
-          </YStack>
-
-          {/* Exercise — only for the exercise_* metrics */}
-          {oathNeedsExercise(metric) && (
+          {/* Ready-made oaths — a tap, no target to guess. The default path. */}
+          {!showCustom && (
             <YStack gap="$2">
               <Text fontSize={13} fontWeight="700" color="$textSecondary">
-                {t("oath.pick_exercise")}
+                {t("oath.presets_title")}
               </Text>
-              <Input
-                value={filter}
-                onChangeText={setFilter}
-                placeholder={t("oath.search_exercise")}
-                bg="$surface"
-                borderColor="$borderStrong"
-                color="$text"
-                height={48}
-                accessibilityLabel={t("oath.search_exercise")}
-              />
-              <YStack gap="$2">
-                {visibleExercises.map((e) => (
-                  <ExerciseChip
-                    key={e.id}
-                    exercise={e}
-                    label={exerciseLabel(e)}
-                    selected={exerciseId === e.id}
-                    onSelect={pickExercise}
-                  />
-                ))}
-              </YStack>
+              {presetRows.map((row) => (
+                <PresetRow
+                  key={row.preset.id}
+                  preset={row.preset}
+                  label={row.label}
+                  onSwear={swearPreset}
+                />
+              ))}
+              <AppButton
+                variant="outline"
+                size="$3"
+                fontSize={15}
+                onPress={() => setShowCustom(true)}
+              >
+                {t("oath.custom_toggle")}
+              </AppButton>
             </YStack>
           )}
 
-          {error !== null && (
-            <Text fontSize={14} color="$error" fontWeight="700">
-              {error}
-            </Text>
-          )}
+          {/* Custom form — behind the toggle, for power users who want an exact target. */}
+          {showCustom ? (
+            <>
+              {/* Metric */}
+              <YStack gap="$2">
+                <Text fontSize={13} fontWeight="700" color="$textSecondary">
+                  {t("oath.pick_metric")}
+                </Text>
+                <XStack gap="$2" flexWrap="wrap">
+                  {METRICS.map((m) => (
+                    <MetricChip key={m} metric={m} selected={metric === m} onSelect={pickMetric} />
+                  ))}
+                </XStack>
+              </YStack>
 
-          <AppButton onPress={submit}>{t("oath.swear")}</AppButton>
+              {/* Target */}
+              <YStack gap="$2">
+                <Text fontSize={13} fontWeight="700" color="$textSecondary">
+                  {t("oath.pick_target")}
+                </Text>
+                <Input
+                  value={target}
+                  onChangeText={setTarget}
+                  keyboardType="number-pad"
+                  bg="$surface"
+                  borderColor="$borderStrong"
+                  color="$text"
+                  fontSize={18}
+                  height={52}
+                  accessibilityLabel={t("oath.pick_target")}
+                />
+              </YStack>
+
+              {/* Exercise — only for the exercise_* metrics */}
+              {oathNeedsExercise(metric) && (
+                <YStack gap="$2">
+                  <Text fontSize={13} fontWeight="700" color="$textSecondary">
+                    {t("oath.pick_exercise")}
+                  </Text>
+                  <Input
+                    value={filter}
+                    onChangeText={setFilter}
+                    placeholder={t("oath.search_exercise")}
+                    bg="$surface"
+                    borderColor="$borderStrong"
+                    color="$text"
+                    height={48}
+                    accessibilityLabel={t("oath.search_exercise")}
+                  />
+                  <YStack gap="$2">
+                    {visibleExercises.map((e) => (
+                      <ExerciseChip
+                        key={e.id}
+                        exercise={e}
+                        label={exerciseLabel(e)}
+                        selected={exerciseId === e.id}
+                        onSelect={pickExercise}
+                      />
+                    ))}
+                  </YStack>
+                </YStack>
+              )}
+
+              {error !== null && (
+                <Text fontSize={14} color="$error" fontWeight="700">
+                  {error}
+                </Text>
+              )}
+
+              <AppButton onPress={submit}>{t("oath.swear")}</AppButton>
+            </>
+          ) : null}
         </YStack>
       </RNScrollView>
     </YStack>

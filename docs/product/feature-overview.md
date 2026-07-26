@@ -91,7 +91,7 @@ Comprehensive workout analytics.
 
 - **What**: Charts, metrics, progress views
 - **Contains**: Weekly/monthly views, muscle balance, records
-- **Status**: Planned (Phase 4)
+- **Status**: Implemented (Journal → Stats tab)
 - **Doc**: [STATISTICS.md](../gameplay/statistics-progress.md)
 
 ### Workout History
@@ -108,7 +108,7 @@ Track personal bests.
 
 - **What**: Best performances tracked
 - **Contains**: Max reps, longest sessions, best streaks
-- **Status**: Planned (Phase 4)
+- **Status**: Implemented (Journal → Stats tab)
 
 ---
 
@@ -116,12 +116,22 @@ Track personal bests.
 
 ### Coach
 
-Goal setting and auto-planning.
+A reactive nudge on Home.
 
-- **What**: Set goals, get auto-generated plans
-- **Contains**: Goal types, adventure generation, scheduling
-- **Status**: Planned (Phase 3)
+- **What**: One nudge at a time — rest (safety) or a lagging-muscle suggestion
+- **Note**: No longer echoes a weekly-goal count; the chosen objective is the Oath
+- **Status**: Implemented (Home `CoachCard`)
 - **Doc**: [COACH.md](../gameplay/coach-planning.md)
+
+### Oath (Serment)
+
+The user's single chosen objective.
+
+- **What**: One target the user swears (streak, sessions, exercise PR/volume)
+- **Contains**: Ready-made presets or a custom target; progress derived from the journal
+- **Where**: Swear from the Home Oath card; fulfilment celebrated on the victory screen
+- **Status**: Implemented
+- **Doc**: [oaths.md](../gameplay/oaths.md)
 
 ### Notifications
 

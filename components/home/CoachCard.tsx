@@ -17,22 +17,22 @@ import { useSettingsStore } from "@/stores/settings";
 type CoachState =
   | { rule: "rest"; messageKey: string; count: number }
   | { rule: "weak_area"; message: string; quests: SuggestedQuest[] }
-  | { rule: "weekly_goal"; completed: number; goal: number }
   | null;
 
 /**
- * Priority order: rest (safety) > weak-area nudge > weekly-goal progress.
- * Showing all three at once turns this into a dashboard; one clear message
- * at a time keeps it a nudge, not a report.
+ * Purely reactive nudge: rest (safety) > weak-area. The chosen objective lives
+ * in the Oath card, so the coach no longer echoes a weekly-goal count here —
+ * one objective surface, not two competing ones. Renders nothing when neither
+ * rule fires, keeping it a nudge, not a report.
  */
 export function CoachCard() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { language, weeklyGoal } = useSettingsStore();
+  const { language } = useSettingsStore();
   const [state, setState] = useState<CoachState>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Priority waterfall over 3 rules, same shape as useSmartAction/getRestSuggestion
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Priority waterfall (rest > weak-area) with try/catch, same shape as getRestSuggestion
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -60,13 +60,14 @@ export function CoachCard() {
         }
       }
 
-      setState({ rule: "weekly_goal", completed: rest.recentSessionCount, goal: weeklyGoal });
+      // Nothing to nudge — the coach stays silent, the Oath card carries the objective.
+      setState(null);
     } catch {
       setState(null);
     } finally {
       setIsLoading(false);
     }
-  }, [language, weeklyGoal]);
+  }, [language]);
 
   useFocusEffect(
     useCallback(() => {
@@ -133,23 +134,5 @@ export function CoachCard() {
     );
   }
 
-  return (
-    <Card bg="$pastelBlue" width="100%">
-      <XStack items="center" justify="space-between">
-        <XStack items="center" gap="$2">
-          <Target size={20} color="$text" />
-          <Text fontWeight="700" fontSize={16} color="$text">
-            {t("coach.weekly_goal_title", "This week")}
-          </Text>
-        </XStack>
-        <Text fontWeight="700" fontSize={16} color="$text">
-          {t("coach.weekly_goal_progress", {
-            completed: state.completed,
-            goal: state.goal,
-            defaultValue: `${state.completed}/${state.goal} sessions`,
-          })}
-        </Text>
-      </XStack>
-    </Card>
-  );
+  return null;
 }

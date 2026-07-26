@@ -79,9 +79,7 @@
   "coach": {
     "rest_suggestion_title": "Le Coach dit : Repos !",
     "suggestion_title": "Suggestion du Coach",
-    "try_these_quests": "Essaie ces quêtes :",
-    "weekly_goal_title": "Cette semaine",
-    "weekly_goal_progress": "{{completed}}/{{goal}} séances"
+    "try_these_quests": "Essaie ces quêtes :"
   },
   "oath": {
     "screen_title": "Prêter serment",
@@ -99,6 +97,7 @@
     "error_exercise": "Choisis un exercice.",
     "fulfilled_title": "SERMENT ACCOMPLI",
     "fulfilled_subtitle": "Tu l'avais juré. Tu l'as fait.",
+    "fulfilled_xp_bonus": "+{{count}} XP",
     "metric_label_exercise_pr": "D'affilée",
     "metric_label_exercise_volume": "Reps totales",
     "metric_label_sessions": "Séances",
@@ -106,7 +105,11 @@
     "metric_exercise_pr": "{{count}} × {{exercise}} d'affilée",
     "metric_exercise_volume": "{{count}} × {{exercise}} au total",
     "metric_sessions": "{{count}} séances accomplies",
-    "metric_streak": "Une flamme de {{count}} jours"
+    "metric_streak": "Une flamme de {{count}} jours",
+    "presets_title": "SERMENTS TOUT PRÊTS",
+    "custom_toggle": "✍️ Serment personnalisé",
+    "empty_cta": "Prête un serment",
+    "empty_hint": "Fixe-toi un objectif à atteindre"
   },
   "common": {
     "awesome": "Génial !",
@@ -527,8 +530,6 @@
   "settings.haptics_title": "Vibrations",
   "settings.motion_full": "Complètes",
   "settings.motion_reduced": "Réduites",
-  "settings.weekly_goal_title": "Objectif hebdomadaire",
-  "settings.weekly_goal_value": "{{count}} séances/semaine",
   "settings.motion_title": "Animations",
   "settings.sound_off": "Désactivés",
   "settings.sound_on": "Activés",

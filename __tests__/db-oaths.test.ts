@@ -130,6 +130,48 @@ describe("db/oaths", () => {
     expect(await o.getOath()).toBeNull();
   });
 
+  test("every preset is a unique, valid, swearable oath", async () => {
+    const o = oaths();
+
+    const ids = o.OATH_PRESETS.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+
+    for (const p of o.OATH_PRESETS) {
+      expect(p.target).toBeGreaterThan(0);
+      expect(["exercise_pr", "exercise_volume", "sessions", "streak"]).toContain(p.metric);
+      // Exercise metrics must name a seed exercise so the screen can resolve an id.
+      if (o.oathNeedsExercise(p.metric)) {
+        expect(typeof p.exerciseName).toBe("string");
+      }
+      // The preset's shape must swear without throwing (exercise id stubbed here).
+      await o.swearOath({
+        metric: p.metric,
+        target: p.target,
+        exerciseId: o.oathNeedsExercise(p.metric) ? 1 : null,
+      });
+      const oath = await o.getOath();
+      expect(oath?.metric).toBe(p.metric);
+      expect(oath?.target).toBe(p.target);
+    }
+  });
+
+  test("an oath bonus added to the tip-over session lands in total XP", async () => {
+    const o = oaths();
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const userLevel = require("../db/userLevel") as typeof import("../db/userLevel");
+
+    await o.swearOath({ metric: "sessions", target: 1 });
+    const sessionId = logExercise(1, 5); // one session, xpEarned 10 (from the helper)
+
+    expect(await o.checkOathFulfilled()).not.toBeNull();
+
+    const before = await userLevel.getTotalXp();
+    await completed.addBonusXpToSession(sessionId, o.OATH_XP_BONUS);
+    const after = await userLevel.getTotalXp();
+
+    expect(after - before).toBe(o.OATH_XP_BONUS);
+  });
+
   test("corrupted stored value is treated as no oath", async () => {
     const o = oaths();
     const prefs = require("../db/preferences") as typeof import("../db/preferences");

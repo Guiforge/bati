@@ -54,15 +54,25 @@ type Oath = {
 `swearOath()` replaces any existing oath. A list of simultaneous targets is a todo list, not
 an oath — the weight of the commitment is the point.
 
+## Swearing: presets first
+
+The default path is a deck of ready-made oaths (`OATH_PRESETS` in [db/oaths.ts](../../db/oaths.ts))
+— tap one and it's sworn, no target to guess. Exercise presets name their exercise by `enName`
+(stable seed content); the screen resolves the id and drops any preset whose exercise is absent.
+A "custom oath" toggle reveals the original metric/target/exercise form for exact targets.
+
 ## Surfaces
 
-1. **Home card** ([OathCard.tsx](../../components/home/OathCard.tsx)) — sits under the coach
-   nudge. The coach says what to do this week; the oath says what you are working toward.
-   Renders nothing when no oath is sworn, so it never competes with the coach for the slot.
+1. **Home card** ([OathCard.tsx](../../components/home/OathCard.tsx)) — shows the sworn oath's
+   progress, or a "swear an oath" CTA when none is set. It never hides: it is the only entry
+   point to the feature from Home. The coach ([CoachCard](../../components/home/CoachCard.tsx))
+   is now purely reactive (rest / weak-area), so the two no longer compete for the objective slot.
 2. **Victory screen** ([SessionRewards.tsx](../../components/session/SessionRewards.tsx)) —
    the fulfilment card leads, above level-up and achievements: it is the user's own promise.
-3. **Swear screen** ([app/oath.tsx](../../app/oath.tsx)) — metric, target, exercise. Reached
-   from Settings, or by tapping the home card.
+   Fulfilling an oath pays a flat `OATH_XP_BONUS` (added to the tip-over session's row, so the
+   XP `SUM` and level pick it up with no extra state) and fires the big-win confetti burst.
+3. **Swear screen** ([app/oath.tsx](../../app/oath.tsx)) — presets deck first, custom form behind
+   a toggle. Reached from Settings, or by tapping the home card.
 
 ## Related
 

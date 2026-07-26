@@ -1,0 +1,96 @@
+# Maestro E2E Test - Main Journey
+#
+# The one loop that has to work: onboarding -> home -> pick a quest -> run the
+# session -> victory -> back home. Every step asserts; nothing here is a
+# screenshot the reviewer has to eyeball.
+#
+# Targets testID only, never translated text, so an emulator in fr_FR passes
+# too. See README.md for the convention and the device-locale pin.
+
+appId: com.anonymous.bati
+
+---
+# Fresh install: no stored preferences, no training history.
+- launchApp:
+    clearState: true
+
+# --- Onboarding -------------------------------------------------------------
+
+- assertVisible:
+    id: "onboarding-presentation-continue"
+- tapOn:
+    id: "onboarding-presentation-continue"
+
+- assertVisible:
+    id: "onboarding-hero-name"
+- tapOn:
+    id: "onboarding-hero-name"
+- inputText: "Testville"
+- hideKeyboard
+
+# The button is disabled until the name clears MIN_NAME_LENGTH, so a tap that
+# does nothing here is caught by the home assertion below, not swallowed.
+- tapOn:
+    id: "onboarding-hero-continue"
+
+- assertVisible:
+    id: "onboarding-level-skip"
+- tapOn:
+    id: "onboarding-level-skip"
+
+# --- Home -------------------------------------------------------------------
+
+- assertVisible:
+    id: "home-start-session"
+
+# With no training history the smart action falls through to the quest gallery
+# (useSmartAction step 3). Deterministic on a cleared state.
+- tapOn:
+    id: "home-start-session"
+
+# --- Quest -> session -------------------------------------------------------
+
+- assertVisible:
+    id: "quests-quest-card"
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+
+- assertVisible:
+    id: "quest-start"
+- tapOn:
+    id: "quest-start"
+
+# 3s pre-start countdown before the first exercise renders.
+- assertVisible:
+    id: "session-complete-exercise"
+    timeout: 15000
+
+# Quests vary in rounds and exercises, so walk the session generically:
+# complete an exercise, skip the rest that follows, until victory shows up.
+# `times` is a guard against an infinite loop if a screen ever gets stuck.
+- repeat:
+    times: 40
+    while:
+      notVisible:
+        id: "session-victory-continue"
+    commands:
+      - tapOn:
+          id: "session-complete-exercise"
+          optional: true
+      - tapOn:
+          id: "session-skip-rest"
+          optional: true
+
+# --- Victory ----------------------------------------------------------------
+
+# Disabled until the session save resolves — a slow write must not fail the run.
+- assertVisible:
+    id: "session-victory-continue"
+    timeout: 20000
+- tapOn:
+    id: "session-victory-continue"
+
+# Full circle: back on home, with the session banked.
+- assertVisible:
+    id: "home-start-session"

@@ -90,6 +90,7 @@ locale drift can't fail a flow.
 | File | Description |
 |------|-------------|
 | `app-launch.yaml` | Verifies app launches correctly |
+| `main-journey.yaml` | The core loop: onboarding → home → session → victory |
 | `home-navigation.yaml` | Tests home screen and scrolling |
 | `quest-gallery.yaml` | Tests navigation to quest gallery |
 

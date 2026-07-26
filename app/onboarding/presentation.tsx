@@ -77,6 +77,7 @@ export default function Presentation() {
           </YStack>
 
           <AppButton
+            testID="onboarding-presentation-continue"
             variant="primary"
             onPress={() => router.push("/onboarding/hero-setup")}
             rounded="$10"

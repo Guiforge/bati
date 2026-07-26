@@ -137,6 +137,7 @@ export function CurrentAdventureWidget() {
 
         {/* CTA Button */}
         <Button
+          testID="home-start-session"
           size="$5"
           bg="$primary"
           color="$text"

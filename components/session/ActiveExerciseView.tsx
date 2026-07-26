@@ -385,6 +385,7 @@ export function ActiveExerciseView() {
 
       {/* Footer Action */}
       <Button
+        testID="session-complete-exercise"
         size="$6"
         bg={isOvertime ? "$success" : "$primary"}
         pressStyle={{ opacity: 0.8 }}

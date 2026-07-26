@@ -245,6 +245,7 @@ export function RestView() {
 
       {/* Skip Button */}
       <Button
+        testID="session-skip-rest"
         size="$6"
         bg="$primary"
         pressStyle={{ opacity: 0.9 }}

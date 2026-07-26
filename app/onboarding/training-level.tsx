@@ -135,6 +135,7 @@ export default function TrainingLevelStep() {
           </AppButton>
 
           <Text
+            testID="onboarding-level-skip"
             text="center"
             color="$textSecondary"
             fontSize={15}

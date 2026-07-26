@@ -32,6 +32,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          tabBarButtonTestID: "tab-home",
           title: t("tabs.home", "Home"),
           tabBarIcon: ({ focused, size }) => (
             <Home
@@ -47,6 +48,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="adventures"
         options={{
+          tabBarButtonTestID: "tab-adventures",
           title: t("tabs.adventures", "Adventures"),
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
@@ -63,6 +65,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="quests"
         options={{
+          tabBarButtonTestID: "tab-quests",
           title: t("tabs.quests", "Quests"),
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
@@ -79,6 +82,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="village"
         options={{
+          tabBarButtonTestID: "tab-village",
           title: t("tabs.village", "Village"),
           tabBarIcon: ({ focused, size }) => (
             <Castle
@@ -95,6 +99,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="journal"
         options={{
+          tabBarButtonTestID: "tab-journal",
           title: t("tabs.journal", "Journal"),
           tabBarIcon: ({ focused, size }) => (
             <Scroll

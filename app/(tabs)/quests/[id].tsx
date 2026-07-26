@@ -478,6 +478,7 @@ export default function QuestDetails() {
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         >
           <AppButton
+            testID="quest-start"
             height={60}
             variant="primary"
             pressStyle={{ opacity: 0.9 }}

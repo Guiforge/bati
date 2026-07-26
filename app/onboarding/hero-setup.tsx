@@ -159,6 +159,7 @@ export default function HeroSetup() {
             {/* Name input */}
             <YStack gap="$2">
               <TextInput
+                testID="onboarding-hero-name"
                 value={name}
                 onChangeText={handleChangeText}
                 placeholder={t("onboarding.village_name_placeholder") ?? "Your village name"}
@@ -191,6 +192,7 @@ export default function HeroSetup() {
             </YStack>
 
             <AppButton
+              testID="onboarding-hero-continue"
               onPress={handleContinue}
               disabled={!isValidName}
               bg={isValidName ? "$primary" : "$surface"}

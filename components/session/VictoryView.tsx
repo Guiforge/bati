@@ -324,6 +324,7 @@ export function VictoryView() {
           <Share2 size={22} color="$text" />
         </Button>
         <AppButton
+          testID="session-victory-continue"
           onPress={handleContinue}
           disabled={!result}
           height={60}

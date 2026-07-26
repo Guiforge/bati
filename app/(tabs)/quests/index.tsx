@@ -310,7 +310,11 @@ export default function QuestsGallery() {
 
       return (
         <YStack px="$5">
-          <Card bg={tokens.bg} onPress={() => router.push(`/quests/${q.id}` as never)}>
+          <Card
+            testID="quests-quest-card"
+            bg={tokens.bg}
+            onPress={() => router.push(`/quests/${q.id}` as never)}
+          >
             <XStack gap="$3" items="flex-start">
               <YStack
                 width={54}

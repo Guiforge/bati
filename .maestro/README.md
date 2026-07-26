@@ -10,7 +10,12 @@ This directory contains End-to-End tests using [Maestro](https://maestro.mobile.
    curl -Ls "https://get.maestro.mobile.dev" | bash
    ```
 
-2. Have an Android emulator or iOS simulator running
+2. Have an Android emulator or iOS simulator running, **started with a pinned
+   locale** so runs reproduce (see [Locale](#locale) below):
+
+   ```bash
+   maestro start-device --platform=android --device-locale=en_US
+   ```
 
 3. Build and install the app:
 
@@ -41,6 +46,44 @@ maestro test .maestro/app-launch.yaml
 ```bash
 maestro studio
 ```
+
+## `testID` convention
+
+Flows target `testID`, never translated text. A flow that taps `text: "Continue"`
+breaks the day someone runs the emulator in French — a `testID` never does.
+
+**Rule:** kebab-case, screen-namespaced — `<screen>-<element>`.
+
+| Example | Where |
+|---------|-------|
+| `onboarding-hero-continue` | onboarding hero-setup screen |
+| `home-start-session` | home screen CTA |
+| `session-complete-exercise` | active exercise footer |
+| `session-victory-continue` | victory screen |
+| `tab-adventures` | bottom tab bar |
+
+`AppButton` spreads its rest props onto the underlying Tamagui `Button`, so
+`testID` passes straight through — pass it at the call site, no component
+changes needed.
+
+Check what the device actually exposes with `maestro hierarchy`.
+
+## Locale
+
+The app picks its language from the **device** locale (`expo-localization` →
+`getDevicePreferredAppLanguage()`), and `clearState: true` wipes any stored
+preference. An emulator in `fr_FR` therefore renders a different app than one in
+`en_US`.
+
+Maestro has no per-flow locale setting — pin it when the device starts:
+
+```bash
+maestro start-device --platform=android --device-locale=en_US
+```
+
+For an already-running Android emulator, `adb shell` it or recreate the AVD with
+the locale set. The durable fix is the convention above: assert on `testID`, and
+locale drift can't fail a flow.
 
 ## Test Files
 

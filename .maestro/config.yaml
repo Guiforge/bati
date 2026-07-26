@@ -1,5 +1,9 @@
 # Maestro Configuration
 # https://maestro.mobile.dev/
+#
+# Locale is NOT settable here — Maestro pins it at device start:
+#   maestro start-device --platform=android --device-locale=en_US
+# Flows must assert on testID, never translated text. See README.md.
 
 flows:
   - app-launch.yaml

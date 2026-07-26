@@ -64,7 +64,7 @@ function calculateDamage(exercise: CompletedExercise): number {
   const baseDamage = exercise.resultValue; // reps or seconds
   const critChance = exercise.resultValue >= exercise.targetMax ? 0.3 : 0;
   const isCrit = Math.random() < critChance;
-  
+
   return isCrit ? baseDamage * 2 : baseDamage;
 }
 ```
@@ -234,7 +234,7 @@ Each boss has unique:
 ```typescript
 async function startBossFight(adventureId: number) {
   const adventure = await getAdventure(adventureId);
-  
+
   // Create boss fight record if doesn't exist
   let bossFight = await getBossFight(adventureId);
   if (!bossFight) {
@@ -246,7 +246,7 @@ async function startBossFight(adventureId: number) {
       resistance: adventure.bossResistance,
     });
   }
-  
+
   // Start adventure run as normal
   return startAdventureRun(adventureId);
 }
@@ -257,28 +257,28 @@ async function startBossFight(adventureId: number) {
 ```typescript
 async function dealDamage(bossFightId: number, exercise: CompletedExercise) {
   const bossFight = await getBossFight(bossFightId);
-  
+
   // Calculate damage with weakness/resistance
   let damage = exercise.resultValue;
   if (exercise.muscle === bossFight.weakness) damage *= 1.5;
   if (exercise.muscle === bossFight.resistance) damage *= 0.5;
-  
+
   // Check for critical
   const isCrit = exercise.resultValue >= exercise.targetMax && Math.random() < 0.3;
   if (isCrit) damage *= 2;
-  
+
   // Apply damage
   const newHp = Math.max(0, bossFight.currentHp - damage);
   await updateBossHp(bossFightId, newHp);
-  
+
   // Log the damage
   await logBossDamage(bossFightId, damage, isCrit);
-  
+
   // Check for victory
   if (newHp === 0) {
     await defeatBoss(bossFightId);
   }
-  
+
   return { damage, isCrit, newHp, defeated: newHp === 0 };
 }
 ```

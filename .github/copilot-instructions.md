@@ -119,4 +119,3 @@ durable knowledge (decisions, patterns, features, gotchas), follow the protocol 
 
 Read `docs/README.md` first to locate relevant pages; cite them with `[Text](path/to/file.md)`.
 Ground every claim in the codebase or `docs/raw/` — never invent.
-

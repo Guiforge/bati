@@ -387,4 +387,3 @@ the diff) and committed separately:
 
 **Pending:** on-device screenshot QA for phases 2–4 (no simulator in the build env — automated
 gate passed, visual verification remains). §3 layers 1–2 and §1 unchanged.
-

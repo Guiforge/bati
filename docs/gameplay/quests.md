@@ -108,7 +108,7 @@ CREATE TABLE quest_exercises (
 
 -- Indexes for performance
 CREATE INDEX quest_exercises_quest_idx ON quest_exercises(questId);
-CREATE UNIQUE INDEX quest_exercises_quest_sort_unique 
+CREATE UNIQUE INDEX quest_exercises_quest_sort_unique
   ON quest_exercises(questId, sortOrder);
 ```
 
@@ -266,7 +266,7 @@ INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, rounds, rest
 VALUES ('Iron Arms', 'Bras de Fer', 'Build arm strength', 'Renforcez vos bras', 3, 30);
 
 INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax)
-VALUES 
+VALUES
   (1, 1, 0, 'reps', 10, 15),
   (1, 2, 1, 'reps', 8, 12);
 ```

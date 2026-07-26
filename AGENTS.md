@@ -33,6 +33,22 @@ SQLite + Drizzle for offline-first persistence and Expo Router for navigation.
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.
 
+## Git hooks
+
+Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](.pre-commit-config.yaml).
+`npm install` runs `prek install`, which writes the shims into `.git/hooks`.
+
+- **pre-commit**: file hygiene, `gitleaks` secret scan, `biome check --write` on staged
+  files, `tsc --noEmit` when a `.ts`/`.tsx` is staged.
+- **pre-push**: `npm test`.
+
+- Run everything by hand: `npx prek run --all-files`
+- Skip once: `git commit --no-verify`
+- Coming from the old husky setup? Run `git config --unset core.hooksPath` once.
+
+Unlike lint-staged, prek does not re-stage files it rewrote: the commit fails with
+"files were modified by this hook", so `git add` the fixes and commit again.
+
 ## Database commands
 
 - Generate Drizzle output: `npm run db:generate`

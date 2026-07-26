@@ -280,7 +280,7 @@ export async function startAdventure(adventureId: number): Promise<AdventureRun>
 
 // Complete current step
 export async function completeAdventureStep(
-  runId: number, 
+  runId: number,
   completedSessionId: number
 ): Promise<void>
 

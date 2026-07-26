@@ -1,0 +1,49 @@
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
+repos:
+  - repo: builtin
+    hooks:
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-yaml
+        # Maestro flows are multi-document (config header `---` flow steps).
+        args: [--allow-multiple-documents]
+      - id: check-added-large-files
+        # Village/building art legitimately reaches ~1.8 MB.
+        args: [--maxkb=2048]
+        stages: [pre-commit]
+      - id: trailing-whitespace
+        exclude: ^(assets/|drizzle/|android/|package-lock\.json)
+        stages: [pre-commit]
+      - id: end-of-file-fixer
+        exclude: ^(assets/|drizzle/|android/|package-lock\.json)
+        stages: [pre-commit]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: biome
+        name: biome check
+        entry: npx biome check --write
+        language: system
+        types_or: [ts, tsx, javascript, json]
+
+      - id: tsc
+        name: tsc --noEmit
+        entry: npx tsc --noEmit --project tsconfig.json
+        language: system
+        pass_filenames: false
+        files: \.(ts|tsx)$
+
+      - id: jest
+        name: npm test
+        entry: npm test
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

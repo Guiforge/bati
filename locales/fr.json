@@ -109,7 +109,11 @@
     "presets_title": "SERMENTS TOUT PRÊTS",
     "custom_toggle": "✍️ Serment personnalisé",
     "empty_cta": "Prête un serment",
-    "empty_hint": "Fixe-toi un objectif à atteindre"
+    "empty_hint": "Fixe-toi un objectif à atteindre",
+    "metric_label_weekly_sessions": "Chaque semaine",
+    "metric_weekly_sessions": "{{weekly}} séances par semaine, pendant {{count}} semaines",
+    "pick_weekly": "SÉANCES PAR SEMAINE",
+    "weekly_chip": "{{count}}× / semaine"
   },
   "common": {
     "awesome": "Génial !",

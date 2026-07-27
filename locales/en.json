@@ -109,7 +109,11 @@
     "presets_title": "READY-MADE OATHS",
     "custom_toggle": "✍️ Custom oath",
     "empty_cta": "Swear an oath",
-    "empty_hint": "Set a goal to work toward"
+    "empty_hint": "Set a goal to work toward",
+    "metric_label_weekly_sessions": "Every week",
+    "metric_weekly_sessions": "{{weekly}} sessions a week, for {{count}} weeks",
+    "pick_weekly": "SESSIONS PER WEEK",
+    "weekly_chip": "{{count}}× / week"
   },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",

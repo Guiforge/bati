@@ -13,17 +13,30 @@ import { ProgressBar } from "@/components/common/ProgressBar";
 import { type Exercise, listExercises } from "@/db/exercises";
 import {
   breakOath,
+  DEFAULT_WEEKLY_TARGET,
   getOathProgress,
   OATH_PRESETS,
   type OathMetric,
   type OathPreset,
   type OathProgress,
   oathNeedsExercise,
+  oathNeedsWeeklyTarget,
   swearOath,
 } from "@/db/oaths";
+import { preferences } from "@/db/preferences";
+import type { EquipmentCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
 
-const METRICS: OathMetric[] = ["exercise_pr", "exercise_volume", "sessions", "streak"];
+const METRICS: OathMetric[] = [
+  "weekly_sessions",
+  "exercise_pr",
+  "exercise_volume",
+  "sessions",
+  "streak",
+];
+
+/** Sessions per week offered in the custom form. Two is a real answer, not a lesser one. */
+const WEEKLY_TARGETS = [2, 3, 4];
 
 /** Chip wrappers exist only so the list rows don't rebind a closure on every render. */
 function MetricChip({
@@ -41,6 +54,27 @@ function MetricChip({
   return (
     <Chip
       label={t(`oath.metric_label_${metric}`)}
+      tone={selected ? "primary" : "default"}
+      onPress={press}
+    />
+  );
+}
+
+function WeeklyChip({
+  value,
+  selected,
+  onSelect,
+}: {
+  value: number;
+  selected: boolean;
+  onSelect: (value: number) => void;
+}) {
+  const { t } = useTranslation();
+  const press = useCallback(() => onSelect(value), [onSelect, value]);
+
+  return (
+    <Chip
+      label={t("oath.weekly_chip", { count: value })}
       tone={selected ? "primary" : "default"}
       onPress={press}
     />
@@ -94,6 +128,7 @@ const DEFAULT_TARGET: Record<OathMetric, number> = {
   exercise_volume: 1000,
   sessions: 50,
   streak: 30,
+  weekly_sessions: 8, // weeks
 };
 
 export default function OathScreen() {
@@ -107,7 +142,9 @@ export default function OathScreen() {
   const [metric, setMetric] = useState<OathMetric>("exercise_pr");
   const [target, setTarget] = useState(String(DEFAULT_TARGET.exercise_pr));
   const [exerciseId, setExerciseId] = useState<number | null>(null);
+  const [weeklyTarget, setWeeklyTarget] = useState(DEFAULT_WEEKLY_TARGET);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [ownedEquipment, setOwnedEquipment] = useState<EquipmentCode[] | null>(null);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showCustom, setShowCustom] = useState(false);
@@ -116,6 +153,10 @@ export default function OathScreen() {
     getOathProgress()
       .then(setExisting)
       .catch(() => setExisting(null));
+    preferences
+      .getOwnedEquipment()
+      .then(setOwnedEquipment)
+      .catch(() => setOwnedEquipment(null));
     listExercises()
       .then(setExercises)
       .catch(() => setExercises([]));
@@ -150,19 +191,31 @@ export default function OathScreen() {
       if (!oathNeedsExercise(p.metric)) {
         rows.push({
           preset: p,
-          label: t(`oath.metric_${p.metric}`, { count: p.target, exercise: "" }),
+          label: t(`oath.metric_${p.metric}`, {
+            count: p.target,
+            exercise: "",
+            weekly: p.weeklyTarget ?? DEFAULT_WEEKLY_TARGET,
+          }),
         });
         continue;
       }
       const ex = exercises.find((e) => e.enName === p.exerciseName);
-      if (!ex) continue;
+      // Drop presets whose exercise is absent, and any that need kit the hero does not own —
+      // an oath you cannot move is worse than no oath at all.
+      if (
+        !ex ||
+        (ownedEquipment !== null &&
+          ex.equipment !== "none" &&
+          !ownedEquipment.includes(ex.equipment))
+      )
+        continue;
       rows.push({
         preset: p,
         label: t(`oath.metric_${p.metric}`, { count: p.target, exercise: exerciseLabel(ex) }),
       });
     }
     return rows;
-  }, [exercises, exerciseLabel, t]);
+  }, [exercises, exerciseLabel, ownedEquipment, t]);
 
   const swearPreset = useCallback(
     async (preset: OathPreset) => {
@@ -172,7 +225,12 @@ export default function OathScreen() {
         if (!ex) return; // filtered out of the list, shouldn't reach here
         id = ex.id;
       }
-      await swearOath({ metric: preset.metric, target: preset.target, exerciseId: id });
+      await swearOath({
+        metric: preset.metric,
+        target: preset.target,
+        exerciseId: id,
+        weeklyTarget: preset.weeklyTarget,
+      });
       router.back();
     },
     [exercises, router],
@@ -189,9 +247,9 @@ export default function OathScreen() {
       return;
     }
 
-    await swearOath({ metric, target: parsed, exerciseId });
+    await swearOath({ metric, target: parsed, exerciseId, weeklyTarget });
     router.back();
-  }, [metric, target, exerciseId, router, t]);
+  }, [metric, target, exerciseId, weeklyTarget, router, t]);
 
   const abandon = useCallback(async () => {
     await breakOath();
@@ -293,6 +351,25 @@ export default function OathScreen() {
                   accessibilityLabel={t("oath.pick_target")}
                 />
               </YStack>
+
+              {/* Sessions per week — only for the weekly metric */}
+              {oathNeedsWeeklyTarget(metric) && (
+                <YStack gap="$2">
+                  <Text fontSize={13} fontWeight="700" color="$textSecondary">
+                    {t("oath.pick_weekly")}
+                  </Text>
+                  <XStack gap="$2" flexWrap="wrap">
+                    {WEEKLY_TARGETS.map((n) => (
+                      <WeeklyChip
+                        key={n}
+                        value={n}
+                        selected={weeklyTarget === n}
+                        onSelect={setWeeklyTarget}
+                      />
+                    ))}
+                  </XStack>
+                </YStack>
+              )}
 
               {/* Exercise — only for the exercise_* metrics */}
               {oathNeedsExercise(metric) && (

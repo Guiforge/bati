@@ -589,54 +589,42 @@ the target is **chosen by the user** (SDT autonomy — self-chosen goals outperf
 progress is derived from the journal, one commitment at a time. The system does not need a
 redesign. Three things break or age badly because of the content work, and one is a genuine gap.
 
-### G1. Presets point at content that is changing (blocking)
+### G1. Presets point at content that is changing ✅
 
-`OATH_PRESETS` ([db/oaths.ts](../../db/oaths.ts)) resolves exercises by `enName`, and the screen
-silently drops any preset whose exercise is missing. After Phases C–D the catalogue has a real
-ladder, and one preset is a trap:
+> Applied in [db/oaths.ts](../../db/oaths.ts) and [app/oath.tsx](../../app/oath.tsx).
 
-| Preset today | Problem | Replacement |
-| --- | --- | --- |
-| `pullups_15` (PR on `Pull-ups`) | needs a bar — a bar-less user sees a goal they can never move | keep it, **add** `cellar_hauler_20` (PR on Table Row) as the equipment-free pull oath |
-| `pushups_1000` (volume) | fine | keep |
-| `sessions_50` | fine | keep |
-| `streak_30` | see G2 | see G2 |
-| — | no skill oath, though Phase D adds the ladder | **add** `lsit_30` (PR on L-Sit, 30 s) — "hold the Colossus pose" |
+The deck gains two exercise oaths that the content work made possible — `table_rows_15`, the
+first back oath a hero without a bar can actually move, and `lsit_30`, the top of the skill
+ladder authored in §2.3 — and the screen now **drops any preset whose exercise needs kit the
+hero does not own** (§8 F2). An oath you cannot move is worse than no oath at all.
 
-Preset decks should also be filtered by the user's equipment preference once §8 F2 lands: never
-offer a bar oath to someone who has said they have no bar.
+### G2. The streak oath still inherits the streak's problem
 
-### G2. The streak oath inherits the streak's problem
+Unchanged and still blocked on the streak rework: `metric: "streak"` reads
+`getStreakInfo().best`, which is monotonic — breaking a flame does *not* reset the oath's
+progress, and that accident should be kept deliberately when the streak becomes weekly. But the
+preset still asks for 30 consecutive training days while
+[restSuggestions](../../db/restSuggestions.ts) nudges a rest day at 5. **Do not ship a new streak
+preset before the streak model changes.**
 
-`metric: "streak"` measures `getStreakInfo().best`. Two consequences:
+### G3. Weekly consistency ✅
 
-- **Not destructive** — `best` is monotonic, so breaking a flame does *not* reset the oath's
-  progress. That is a good accident; keep it explicitly when the streak is reworked.
-- **But it prescribes 30 consecutive training days**, while [restSuggestions](../../db/restSuggestions.ts)
-  nudges a rest day at 5. The app asks the user to swear to something it will then advise them
-  against. When the streak becomes weekly (audit item, outside this plan), the preset becomes
-  `"a 12-week flame"` — same weight, no contradiction. **Do not ship a new streak preset before
-  the streak model changes**; just relabel `streak_30` to make the unit explicit until then.
+> Applied: `weekly_sessions` in [db/oaths.ts](../../db/oaths.ts), four cases in
+> [db-oaths.test.ts](../../__tests__/db-oaths.test.ts).
 
-### G3. Missing metric: weekly consistency (the real gap)
+The one metric that measures a habit instead of a result. `weekly_sessions` counts the weeks
+since the oath was sworn in which the hero logged at least `weeklyTarget` sessions — weeks run
+from the day of the promise, not from Monday, because the hero's week starts when they made it.
 
-Every metric today is an outcome (PR, volume, session count, best streak). The research's own
-recommendation — WHO baseline, habit formation over 2–3 months, "forgive the missed day" — maps
-to a **process** goal that Bati cannot currently express: *"3 sessions a week for 8 weeks."*
+The counting *is* the feature: a missed week costs that week and nothing else. Nothing resets,
+nothing is forfeited, and last week's miss cannot undo the eight weeks before it. That is the
+forgiveness a strict consecutive-day streak cannot offer, expressed as a promise rather than a
+punishment — and it is asserted directly ("a missed week costs one week and nothing else").
 
-Proposed fifth metric, same derive-on-read shape, no table:
-
-```ts
-metric: "weekly_sessions"      // target = number of qualifying weeks
-weeklyTarget: number           // sessions per week that make a week count
-```
-
-Measured as: count ISO weeks since `swornAt` where `COUNT(completed_sessions) >= weeklyTarget`.
-A missed week costs one week, it does not reset — that is the forgiveness the strict streak
-cannot offer, expressed as a promise instead of a punishment.
-Preset: `weekly_3x_8w` — *"Train three times a week, for eight weeks."*
-Cost: ~40 lines in `oaths.ts` + one query + one label pair. It is the single highest-value
-addition to the feature, and the only one that touches behaviour rather than content.
+Preset `weekly_3x_8w` leads the deck (WHO-aligned: ≥ 2 strength days a week, over the ~2-3 month
+horizon habit formation actually needs). The custom form exposes 2 / 3 / 4 per week, because a
+sedentary hero starting at twice a week is the exact user the research says to design for — "some
+is better than none".
 
 ### G4. Not doing
 
@@ -750,8 +738,8 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | 6 | E adventures | B, D | ✅ **done** — `0017_seed_adventures.sql` + damage normalisation; 8 adventures, all invariants live |
 | 7 | Art pass | D, E | assetMap keys resolve, no placeholder on new content |
 | 8 | F1 + F2 selection | E | ✅ **done** — eligibility gate on the Home suggestion and the daily pick, equipment preference + Settings row |
-| 9 | G1 oath presets | D | no preset resolves to a missing exercise; bar presets hidden without a bar |
-| 10 | G3 weekly-sessions oath | — | new metric derives from the journal, missed week costs one week, resets nothing |
+| 9 | G1 oath presets | D | ✅ **done** — equipment-free pull + skill presets, kit-aware deck |
+| 10 | G3 weekly-sessions oath | — | ✅ **done** — `weekly_sessions`, 2/3/4 per week, forgiveness asserted by test |
 
 G2 (streak oath wording) is blocked on the streak rework, which is not in this plan — relabel
 only. Phases 1–3 are shippable on their own and are the highest value per line of SQL: they fix the

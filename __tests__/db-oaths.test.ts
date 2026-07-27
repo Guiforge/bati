@@ -25,6 +25,20 @@ describe("db/oaths", () => {
     return require("../db/oaths") as typeof import("../db/oaths");
   }
 
+  /**
+   * Log a session `daysAgo` days back, for the week-counting metric.
+   * `performedAt` is declared `mode: "timestamp"`, i.e. seconds — writing raw milliseconds here
+   * would put every session tens of thousands of years in the future and quietly break the maths.
+   */
+  function logSessionAt(daysAgo: number): void {
+    const at = Math.floor((Date.now() - daysAgo * 24 * 60 * 60 * 1000) / 1000);
+    t.sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, ?)",
+      )
+      .run(at);
+  }
+
   /** Insert a session with one exercise result. Returns the session id. */
   function logExercise(exerciseId: number, resultValue: number): number {
     const now = Date.now();
@@ -138,7 +152,11 @@ describe("db/oaths", () => {
 
     for (const p of o.OATH_PRESETS) {
       expect(p.target).toBeGreaterThan(0);
-      expect(["exercise_pr", "exercise_volume", "sessions", "streak"]).toContain(p.metric);
+      expect(["exercise_pr", "exercise_volume", "sessions", "streak", "weekly_sessions"]).toContain(
+        p.metric,
+      );
+      // The weekly metric is the one that needs a quota; the others must not carry one.
+      expect(p.weeklyTarget !== undefined).toBe(o.oathNeedsWeeklyTarget(p.metric));
       // Exercise metrics must name a seed exercise so the screen can resolve an id.
       if (o.oathNeedsExercise(p.metric)) {
         expect(typeof p.exerciseName).toBe("string");
@@ -177,5 +195,63 @@ describe("db/oaths", () => {
     const prefs = require("../db/preferences") as typeof import("../db/preferences");
     await prefs.setPreference("oath", "{not json");
     expect(await o.getOath()).toBeNull();
+  });
+
+  describe("weekly_sessions", () => {
+    /** Swear the oath as if it had been made `daysAgo` days ago. */
+    async function swearWeeksAgo(target: number, weeklyTarget: number, daysAgo: number) {
+      const o = oaths();
+      await o.swearOath({ metric: "weekly_sessions", target, weeklyTarget });
+
+      const raw = t.sqlite
+        .prepare("SELECT value FROM user_preferences WHERE key = 'oath'")
+        .get() as { value: string };
+      const stored = JSON.parse(raw.value);
+      stored.swornAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
+      t.sqlite
+        .prepare("UPDATE user_preferences SET value = ? WHERE key = 'oath'")
+        .run(JSON.stringify(stored));
+    }
+
+    test("a week only counts once it hits the quota", async () => {
+      await swearWeeksAgo(8, 3, 21);
+
+      // Week 0: three sessions -> counts. Week 1: two -> does not.
+      logSessionAt(20);
+      logSessionAt(19);
+      logSessionAt(18);
+      logSessionAt(13);
+      logSessionAt(12);
+
+      expect((await oaths().getOathProgress())?.current).toBe(1);
+    });
+
+    test("a missed week costs one week and nothing else", async () => {
+      await swearWeeksAgo(8, 2, 28);
+
+      // Weeks 0, 1 and 3 qualify; week 2 is skipped entirely.
+      for (const day of [27, 26, 20, 19, 6, 5]) logSessionAt(day);
+
+      const progress = await oaths().getOathProgress();
+      // Three good weeks survive the gap: nothing resets, the miss is just not counted.
+      expect(progress?.current).toBe(3);
+      expect(progress?.isFulfilled).toBe(false);
+    });
+
+    test("it fulfils once enough weeks have qualified", async () => {
+      await swearWeeksAgo(2, 2, 14);
+
+      for (const day of [13, 12, 6, 5]) logSessionAt(day);
+
+      const fulfilled = await oaths().checkOathFulfilled();
+      expect(fulfilled?.isFulfilled).toBe(true);
+      expect(fulfilled?.current).toBe(2);
+    });
+
+    test("the weekly quota defaults rather than dividing by zero", async () => {
+      const o = oaths();
+      const oath = await o.swearOath({ metric: "weekly_sessions", target: 4 });
+      expect(oath.weeklyTarget).toBe(o.DEFAULT_WEEKLY_TARGET);
+    });
   });
 });

@@ -1,5 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "./client";
+import { isEquipmentCode } from "./equipment";
+import type { EquipmentCode } from "./schema";
 
 const { userPreferences } = schema;
 
@@ -94,6 +96,29 @@ export const preferences = {
 
   async setTrainingLevel(level: TrainingLevel): Promise<void> {
     await setPreference("trainingLevel", level);
+  },
+
+  // Equipment the hero actually owns. `null` means "never answered" and is treated as
+  // "show me everything" — the default must not silently hide content from existing users.
+  // An empty array is a real answer: bodyweight only.
+  async getOwnedEquipment(): Promise<EquipmentCode[] | null> {
+    const raw = await getPreference("ownedEquipment");
+    if (raw === null) return null;
+
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(isEquipmentCode) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  async setOwnedEquipment(equipment: EquipmentCode[] | null): Promise<void> {
+    if (equipment === null) {
+      await deletePreference("ownedEquipment");
+      return;
+    }
+    await setPreference("ownedEquipment", JSON.stringify(equipment));
   },
 
   async getHapticsEnabled(): Promise<boolean> {

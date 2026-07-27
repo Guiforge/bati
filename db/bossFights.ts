@@ -2,7 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { MuscleCode, QuestTargetType } from "./schema";
 
-const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises } = schema;
+const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises, quests } = schema;
 
 // Same fallback used by every getXAsset() helper in constants/assetMap.ts — never expose
 // `| null` for imagePath, resolve to the placeholder here so callers have one code path.
@@ -45,6 +45,9 @@ export type BossDamageEntry = {
  * `secondsPerRep`, which puts a 60 s hold and a 20-rep set on the same footing.
  */
 const SECONDS_PER_REP_EQUIVALENT = 3;
+
+/** A crit doubles damage and fires 30 % of the time when the target is met. */
+const EXPECTED_CRIT_MULTIPLIER = 1.3;
 
 function toRepEquivalent(resultValue: number, targetType: QuestTargetType | undefined): number {
   if (targetType !== "time") return resultValue;
@@ -183,8 +186,13 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
 }
 
 /**
- * Calculate total HP for a boss based on exercise targets.
- * HP = sum of all target values across all quest steps.
+ * Fallback HP for a boss adventure that ships without an explicit `bossTotalHp`. Every seeded
+ * boss sets one (see docs/planning/work-roadmap.md §E0), so this only catches new content.
+ *
+ * It mirrors how the seeded values were tuned: a step deals `rounds × Σ target`, seconds count
+ * as rep-equivalents like `dealDamage` treats them, and the whole campaign is scaled by the
+ * expected crit rate. Weakness and resistance are ignored — they roughly cancel across a
+ * campaign, and this is a fallback, not a balance pass.
  */
 async function calculateBossHp(adventureId: number): Promise<number> {
   // Get all quests in adventure steps
@@ -202,18 +210,26 @@ async function calculateBossHp(adventureId: number): Promise<number> {
     stepCountByQuestId.set(step.questId, (stepCountByQuestId.get(step.questId) ?? 0) + 1);
   }
 
+  const questIds = [...stepCountByQuestId.keys()];
+
   const exercises = await db
-    .select({ questId: questExercises.questId, targetMax: questExercises.targetMax })
+    .select({
+      questId: questExercises.questId,
+      targetMax: questExercises.targetMax,
+      targetType: questExercises.targetType,
+      rounds: quests.rounds,
+    })
     .from(questExercises)
-    .where(inArray(questExercises.questId, [...stepCountByQuestId.keys()]));
+    .innerJoin(quests, eq(quests.id, questExercises.questId))
+    .where(inArray(questExercises.questId, questIds));
 
-  const totalHp = exercises.reduce(
-    (sum, ex) => sum + ex.targetMax * (stepCountByQuestId.get(ex.questId) ?? 0),
-    0,
-  );
+  const totalHp = exercises.reduce((sum, ex) => {
+    const perSet = toRepEquivalent(ex.targetMax, ex.targetType);
+    return sum + perSet * ex.rounds * (stepCountByQuestId.get(ex.questId) ?? 0);
+  }, 0);
 
-  // Minimum HP of 50, multiply by difficulty factor
-  return Math.max(50, totalHp);
+  // Minimum HP of 50, scaled by the expected crit rate (30 % chance of double damage).
+  return Math.max(50, Math.round(totalHp * EXPECTED_CRIT_MULTIPLIER));
 }
 
 // ------------------------------------------------------------

@@ -58,14 +58,6 @@ const ARCHETYPES: Record<string, Archetype> = {
  */
 const SINGLE_PATTERN = new Set(["The Ploughman's Vow"]);
 
-/**
- * Exercises allowed to sit in the catalogue without a quest. Barbarian's Overhead Press (0006)
- * is the only `dumbbell` movement in a bodyweight app, and the declared equipment envelope is
- * bodyweight + pull-up bar + dip bar — so no quest can use it without pulling dumbbells into
- * the product. It stays browsable pending a call on deleting it (roadmap §14).
- */
-const CATALOGUE_EXEMPT = new Set(["Barbarian's Overhead Press"]);
-
 /** Quests allowed to require equipment. Everything else must be fully equipment-free. */
 const EQUIPMENT_QUESTS = new Set([
   "Tower Climb",
@@ -257,8 +249,7 @@ describe("content invariants", () => {
     const used = new Set(all.flatMap((q) => q.exercises.map((qex) => qex.exercise.id)));
     const orphans = (await exerciseApi.listExercises())
       .filter((e) => !used.has(e.id))
-      .map((e) => e.enName)
-      .filter((name) => !CATALOGUE_EXEMPT.has(name));
+      .map((e) => e.enName);
 
     expect(orphans).toEqual([]);
   });

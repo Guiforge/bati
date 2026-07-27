@@ -63,10 +63,23 @@ describe("db/bossFights", () => {
     return require("../db/bossFights") as typeof import("../db/bossFights");
   }
 
-  /** Sum of every exercise target in a quest — the unit calculateBossHp works in. */
-  function questTargetSum(questId: number): number {
+  /**
+   * One step's worth of the fallback HP pool, in the same unit as calculateBossHp: seconds
+   * count as rep-equivalents (3 s = 1 rep, as dealDamage treats them) and every round counts.
+   */
+  function questStepDamage(questId: number): number {
     const row = t.sqlite
-      .prepare("SELECT coalesce(sum(targetMax), 0) AS total FROM quest_exercises WHERE questId = ?")
+      .prepare(
+        `SELECT coalesce(sum(
+            CASE qe.targetType
+              WHEN 'time' THEN max(1, round(qe.targetMax / 3.0))
+              ELSE qe.targetMax
+            END
+          ), 0) * q.rounds AS total
+         FROM quest_exercises qe
+         JOIN quests q ON q.id = qe.questId
+         WHERE qe.questId = ?`,
+      )
       .get(questId) as { total: number };
     return row.total;
   }
@@ -114,11 +127,12 @@ describe("db/bossFights", () => {
   test("HP is derived from the step targets, counting a repeated quest twice", async () => {
     const b = boss();
 
-    const perStep = questTargetSum(1);
+    const perStep = questStepDamage(1);
     expect(perStep).toBeGreaterThan(0);
 
+    // Two steps of the same quest, scaled by the expected crit rate (30 % chance of double).
     const fight = await b.getOrCreateBossFight(BOSS_DERIVED_HP);
-    expect(fight?.totalHp).toBe(Math.max(50, perStep * 2));
+    expect(fight?.totalHp).toBe(Math.max(50, Math.round(perStep * 2 * 1.3)));
   });
 
   test("a boss with no steps falls back to the default pool", async () => {

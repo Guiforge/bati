@@ -544,17 +544,41 @@ Eight adventures, an ordered difficulty ramp, and five of them fully equipment-f
 
 ---
 
-## 8. Phase F — selection & surfacing (small code changes)
+## 8. Phase F — selection & surfacing
 
-- **F1. Daily quest awareness** — [getDailyQuest](../../db/quests.ts#L481) hashes the date over
-  *all* templates, including 24-minute elite quests and user-created ones. Filter the pool by
-  the user's `trainingLevel` preference and exclude quests whose primary muscle was trained
-  yesterday (data already in `completed_sessions`). ~30 lines, one test.
-- **F2. Equipment exclusion filter** — the quest filter currently *includes* by equipment;
-  add a persisted "no equipment" preference that hides bar quests and drives the Home CTA.
+> ✅ **F1 + F2 applied.** F3 remains open.
+
+**What the pre-flight found: `getDailyQuest` is dead code.** Nothing in the app calls it. The
+only live consumer of the daily hash is `isDailyQuest`, which grants a silent +50 % XP bonus if
+the quest you happened to pick is today's — the user is never told which one that is. The screen
+that actually decides what to put in front of someone is Home, through
+[`useSmartAction`](../../components/home/useSmartAction.ts): resume an adventure, otherwise
+`getSuggestedQuestsForWeakAreas(1)`. **That** is the function the audit's finding applies to, and
+it ignored level, equipment and recovery entirely while ranking by "matches the most weak
+muscles" — which correlates with the longest, hardest quests.
+
+- **F1 — eligibility.** [`getEligibleQuestIds`](../../db/quests.ts) is the one gate, used by the
+  Home suggestion and by the daily pick. It excludes exactly two things, both of which leave a
+  hero stuck rather than challenged: equipment they do not own, and `advanced` quests for
+  someone who said they are a beginner. A "regular" hero is still offered advanced work — that
+  is a stretch, not a wall — and a hero who skipped the onboarding question is not filtered at
+  all. A quest's level is the **upper median** of its exercise difficulties, derived rather than
+  stored: one hard movement does not make a whole session advanced, and one easy finisher does
+  not soften a hard one.
+- **F1b — recovery.** Muscles trained yesterday **demote** a suggestion instead of excluding it.
+  The 48 h guidance is real, but a hard filter stacked on top of "weak areas only" could empty
+  the list; a lower rank achieves the rotation without the cliff.
+- **F2 — equipment.** `ownedEquipment` is a preference holding the codes the hero owns, cycled
+  from one Settings row: *show all → bodyweight only → pull-up bar → bar + dip station*. `null`
+  means never answered and shows everything, so nobody loses content by not opening the screen.
+  The **quest gallery is deliberately left unfiltered**: hiding content from someone who is
+  browsing on purpose is worse than showing it, and its own equipment filter already narrows.
 - **F3. Archetype badge** — quests carry no type column. Derive the archetype at read time from
   `restSeconds` + composition (no migration) and show it as a badge, so "20 min · Strength" is
-  visible before starting. Optional; skip if the quest card is already dense.
+  visible before starting. Still open; optional if the quest card is already dense.
+
+Fallbacks everywhere: if filtering leaves nothing, the unfiltered pool is used. A preference
+should never be able to leave the hero with no workout.
 
 ---
 
@@ -725,7 +749,7 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | 5 | D new quests | C | ✅ **done** — `0016_seed_new_quests.sql`; 27 quests, catalogue coverage now a real test |
 | 6 | E adventures | B, D | ✅ **done** — `0017_seed_adventures.sql` + damage normalisation; 8 adventures, all invariants live |
 | 7 | Art pass | D, E | assetMap keys resolve, no placeholder on new content |
-| 8 | F selection | E | daily quest respects level + yesterday's muscles |
+| 8 | F1 + F2 selection | E | ✅ **done** — eligibility gate on the Home suggestion and the daily pick, equipment preference + Settings row |
 | 9 | G1 oath presets | D | no preset resolves to a missing exercise; bar presets hidden without a bar |
 | 10 | G3 weekly-sessions oath | — | new metric derives from the journal, missed week costs one week, resets nothing |
 
@@ -742,15 +766,11 @@ data that is actively wrong and triple the catalogue with content that is alread
   authors the ladder into the content so the system can be added later without re-authoring.
 - **Per-set RIR capture**, warm-up blocks, deload weeks, streak forgiveness — audit items that
   belong to the session and habit layers, not the content layer.
-- **`calculateBossHp`**, the fallback used when an adventure has no explicit `bossTotalHp`, sums
-  `targetMax` once per step and ignores rounds entirely, so it lands ~3× low. Every boss now sets
-  its HP explicitly, so nothing reaches the fallback — but it will mislead whoever adds the next
-  boss without one.
-- **Deleting Barbarian's Overhead Press.** It is the only `dumbbell` movement in the catalogue
-  and the only exercise no quest can use, since the declared equipment envelope is bodyweight +
-  pull-up bar + dip bar. It stays browsable, exempted by name in the coverage invariant, until
-  someone decides whether the product ever wants dumbbells. Deleting it is one `DELETE` and one
-  line out of the test.
+Both open decisions from this list have since been taken: `calculateBossHp` now counts rounds and
+normalises seconds like `dealDamage` does, and Barbarian's Overhead Press is deleted by
+[`0018`](../../drizzle/0018_delete_dumbbell_exercise.sql) — guarded, because
+`completed_exercises.exerciseId` is `ON DELETE NO ACTION` and would have aborted the migration
+for anyone who had logged it through a custom quest.
 
 ## Related
 

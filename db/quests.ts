@@ -2,8 +2,9 @@ import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
+import { preferences, type TrainingLevel } from "./preferences";
 import { setCached } from "./queryCache";
-import type { QuestTargetType } from "./schema";
+import type { DifficultyCode, QuestTargetType } from "./schema";
 import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
@@ -474,39 +475,99 @@ export async function ensureQuestHasExercise(
   });
 }
 
+// ------------------------------------------------------------
+// Eligibility — what the app is allowed to put in front of this user
+// ------------------------------------------------------------
+
+const DIFFICULTY_RANK: Record<DifficultyCode, number> = { easy: 0, medium: 1, hard: 2 };
+const LEVEL_BY_RANK: TrainingLevel[] = ["beginner", "regular", "advanced"];
+
+/**
+ * The level a quest is written for, derived from the difficulty of its exercises rather than
+ * stored: quests have no level column, and one hard movement should not make a whole session
+ * advanced. The upper median is used, so a lone easy finisher cannot soften a hard quest either.
+ */
+export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLevel {
+  if (difficulties.length === 0) return "regular";
+
+  const ranks = difficulties.map((d) => DIFFICULTY_RANK[d]).sort((a, b) => a - b);
+  return LEVEL_BY_RANK[ranks[Math.ceil(ranks.length / 2) - 1]];
+}
+
+/**
+ * Quest ids the app may suggest, given what the hero owns and where they are starting from.
+ *
+ * Only two things are excluded, both because they leave the user stuck rather than challenged:
+ * equipment they do not have, and advanced quests for someone who said they are a beginner.
+ * A "regular" hero still gets offered advanced work — that is a stretch, not a wall — and a
+ * hero who skipped the onboarding question (`null`) is not filtered at all.
+ */
+export async function getEligibleQuestIds(): Promise<Set<number>> {
+  const [ownedEquipment, trainingLevel, rows] = await Promise.all([
+    preferences.getOwnedEquipment(),
+    preferences.getTrainingLevel(),
+    db
+      .select({
+        questId: questExercises.questId,
+        difficulty: exercises.difficulty,
+        equipment: exercises.equipment,
+      })
+      .from(questExercises)
+      .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId)),
+  ]);
+
+  const byQuest = new Map<number, { difficulties: DifficultyCode[]; equipment: Set<string> }>();
+  for (const row of rows) {
+    const entry = byQuest.get(row.questId) ?? { difficulties: [], equipment: new Set<string>() };
+    entry.difficulties.push(row.difficulty);
+    if (row.equipment !== "none") entry.equipment.add(row.equipment);
+    byQuest.set(row.questId, entry);
+  }
+
+  const owned = ownedEquipment === null ? null : new Set<string>(ownedEquipment);
+  const eligible = new Set<number>();
+
+  for (const [questId, entry] of byQuest) {
+    const hasKit = owned === null || [...entry.equipment].every((code) => owned.has(code));
+    const tooHard =
+      trainingLevel === "beginner" && questTrainingLevel(entry.difficulties) === "advanced";
+
+    if (hasKit && !tooHard) eligible.add(questId);
+  }
+
+  return eligible;
+}
+
 /**
  * Get the daily quest based on the current date.
- * Deterministically picks a quest from all available quests.
+ * Deterministically picks a quest from all available quests the user can actually train.
  */
-export async function getDailyQuest(userLevel: UserLevel): Promise<Quest | null> {
+async function pickDailyTemplate(): Promise<QuestTemplate | null> {
   const templates = await listQuestTemplates();
   if (templates.length === 0) return null;
 
+  // Falling back to the whole catalogue keeps the daily bonus reachable even if the hero's
+  // filters leave nothing — an empty pool would silently remove the bonus altogether.
+  const eligible = await getEligibleQuestIds();
+  const pool = templates.filter((tpl) => eligible.has(tpl.id));
+  const candidates = pool.length > 0 ? pool : templates;
+
   const today = new Date().toISOString().split("T")[0];
-  // Simple hash of the date string
   let hash = 0;
   for (let i = 0; i < today.length; i++) {
     hash = (hash << 5) - hash + today.charCodeAt(i);
     hash |= 0; // Convert to 32bit integer
   }
 
-  const index = Math.abs(hash) % templates.length;
-  const template = templates[index];
+  return candidates[Math.abs(hash) % candidates.length];
+}
 
-  return getQuestById(template.id, userLevel);
+export async function getDailyQuest(userLevel: UserLevel): Promise<Quest | null> {
+  const template = await pickDailyTemplate();
+  return template ? await getQuestById(template.id, userLevel) : null;
 }
 
 export async function isDailyQuest(questId: number): Promise<boolean> {
-  const templates = await listQuestTemplates();
-  if (templates.length === 0) return false;
-
-  const today = new Date().toISOString().split("T")[0];
-  let hash = 0;
-  for (let i = 0; i < today.length; i++) {
-    hash = (hash << 5) - hash + today.charCodeAt(i);
-    hash |= 0;
-  }
-
-  const index = Math.abs(hash) % templates.length;
-  return templates[index].id === questId;
+  const template = await pickDailyTemplate();
+  return template?.id === questId;
 }

@@ -1,5 +1,6 @@
 import {
   ChevronLeft,
+  Dumbbell,
   Languages,
   Moon,
   ScrollText,
@@ -9,7 +10,7 @@ import {
 } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,6 +18,8 @@ import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
 import { AVATARS } from "@/constants/avatars";
+import { preferences } from "@/db";
+import type { EquipmentCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
 
 type SettingRowProps = {
@@ -73,6 +76,50 @@ export default function SettingsScreen() {
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  // What the hero owns, cycled through in one row: unanswered -> nothing -> bar -> bar + dips.
+  // Unanswered shows everything, so nobody loses content by never opening this screen.
+  const [ownedEquipment, setOwnedEquipment] = useState<EquipmentCode[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    preferences
+      .getOwnedEquipment()
+      .then((value) => {
+        if (!cancelled) setOwnedEquipment(value);
+      })
+      .catch(() => {
+        // Non-blocking: an unreadable preference just means "show everything".
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const cycleEquipment = useCallback(() => {
+    const next =
+      ownedEquipment === null
+        ? []
+        : ownedEquipment.length === 0
+          ? (["pullup_bar"] as EquipmentCode[])
+          : ownedEquipment.length === 1
+            ? (["pullup_bar", "dip_bar"] as EquipmentCode[])
+            : null;
+
+    setOwnedEquipment(next);
+    preferences.setOwnedEquipment(next).catch(() => {
+      // Non-blocking: the filter is a preference, not a gate.
+    });
+  }, [ownedEquipment]);
+
+  const equipmentLabel =
+    ownedEquipment === null
+      ? t("settings.equipment_any", "Show all")
+      : ownedEquipment.length === 0
+        ? t("settings.equipment_none", "Bodyweight only")
+        : ownedEquipment.length === 1
+          ? t("settings.equipment_bar", "Pull-up bar")
+          : t("settings.equipment_bar_dip", "Bar + dip station");
 
   const openOath = useCallback(() => {
     router.push("/oath" as never);
@@ -196,6 +243,13 @@ export default function SettingsScreen() {
             label={t("settings.sound", "Sound")}
             value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => setSoundEnabled(!soundEnabled)}
+          />
+
+          <SettingRow
+            icon={<Dumbbell size={22} color="$text" />}
+            label={t("settings.equipment", "Equipment")}
+            value={equipmentLabel}
+            onPress={cycleEquipment}
           />
 
           <SettingRow

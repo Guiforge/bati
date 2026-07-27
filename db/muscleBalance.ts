@@ -1,6 +1,7 @@
-import { desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { MUSCLE_LABELS } from "./muscles";
+import { getEligibleQuestIds } from "./quests";
 import { type MuscleCode, muscleCodes } from "./schema";
 
 const { completedQuest, completedExercises, exercises, exerciseMuscles, quests, questExercises } =
@@ -216,6 +217,23 @@ export type SuggestedQuest = {
  * Get quests that focus on weak muscle areas.
  * Ranks quests by how many weak-area muscles they target.
  */
+/** Muscles worked during yesterday's sessions — used to demote, never to exclude. */
+async function getMusclesTrainedYesterday(): Promise<Set<MuscleCode>> {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  start.setDate(start.getDate() - 1);
+
+  const rows = await db
+    .select({ muscle: exerciseMuscles.muscle })
+    .from(completedQuest)
+    .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
+    .innerJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, completedExercises.exerciseId))
+    .where(and(gte(completedQuest.performedAt, start), lt(completedQuest.performedAt, end)));
+
+  return new Set(rows.map((r) => r.muscle as MuscleCode));
+}
+
 export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<SuggestedQuest[]> {
   const focusAreas = await getSuggestedFocusAreas(3);
 
@@ -269,8 +287,19 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
     });
   }
 
-  // Sort by match score descending, then by id for stability
-  results.sort((a, b) => b.matchScore - a.matchScore || a.id - b.id);
+  // Never suggest a quest the hero cannot actually train: no bar, no bar quest, and no
+  // handstand push-ups for someone who just told us they are starting out.
+  const eligible = await getEligibleQuestIds();
+  const trainable = results.filter((r) => eligible.has(r.id));
+  const pool = trainable.length > 0 ? trainable : results;
 
-  return results.slice(0, limit);
+  // Muscles trained yesterday are demoted rather than excluded — the 48 h guidance is about
+  // recovery, but a hard filter here could empty a list that is already down to weak areas.
+  const restingMuscles = await getMusclesTrainedYesterday();
+  const score = (r: SuggestedQuest) =>
+    r.matchScore - r.matchingMuscles.filter((m) => restingMuscles.has(m)).length;
+
+  pool.sort((a, b) => score(b) - score(a) || a.id - b.id);
+
+  return pool.slice(0, limit);
 }

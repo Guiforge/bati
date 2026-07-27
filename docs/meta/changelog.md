@@ -387,3 +387,38 @@ the diff) and committed separately:
 
 **Pending:** on-device screenshot QA for phases 2–4 (no simulator in the build env — automated
 gate passed, visual verification remains). §3 layers 1–2 and §1 unchanged.
+
+---
+
+## 2026-07-27 — Ingest (source only): bodyweight fitness research dossier
+
+- **Added** [`raw/bodyweight-app-research.md`](../raw/bodyweight-app-research.md) — external
+  literature review (training science: volume/frequency/RIR/bodyweight progression;
+  gamification & retention evidence; competitor teardown; WHO guidelines). Stored verbatim
+  as an immutable source.
+- **Updated** [`raw/README.md`](../raw/README.md) — new `Sources` index listing it.
+- **Updated** [`content/workout-best-practices.md`](../content/workout-best-practices.md) —
+  header now points to the research as its evidence base and flags that the research wins
+  on conflict.
+
+**Pending:** the actual ingest. The dossier is *not* reflected in the wiki pages it should
+inform — `content/workout-best-practices.md` (volume/rest/RIR targets, exercise order),
+`gameplay/progression.md` + `gameplay/oaths.md` (streak forgiveness / repair mechanics),
+`gameplay/coach-planning.md` (48 h rule, deload, weekly goal vs WHO baseline),
+`screens/onboarding.md` (D1 activation, PAR-Q). Ask for it as a separate pass.
+
+---
+
+## 2026-07-27 — Content audit + quests/adventures work roadmap
+
+- **Audited** the seeded content against the research dossier (measured, not assumed): the 13
+  quests are 4–41 min (target 10–25), 20 of 46 exercises are used by zero quest, `Squat` and
+  `Wall Sit` are tagged `chest` (skews boss damage + the Coach's weak-area rule), and 6 quests /
+  4 adventures / 4 bosses that are fully specified **and already illustrated** were never seeded.
+- **Added** [`planning/work-roadmap.md`](../planning/work-roadmap.md) — the overhaul plan:
+  design rules per quest archetype, per-quest rebalance table for the 13 existing quests,
+  seeding of the written-but-unseeded content, 2 equipment-free pull exercises, 8 new quests,
+  5 new adventures (incl. a beginner on-ramp), migrations `0012`–`0018`, content-invariant
+  tests, art checklist and phase gates.
+- **Updated** [`planning/README.md`](../planning/README.md) and the root
+  [catalog](../README.md) with the new page.

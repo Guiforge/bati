@@ -18,6 +18,7 @@ related: [../README.md]
 - [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) — Screen-by-screen critique/audit tracker and refonte backlog
 - [screen-redesign-proposals.md](screen-redesign-proposals.md) — Nav/onboarding/village design proposals, all 5 decisions recorded
 - [dev-execution-plan.md](dev-execution-plan.md) — Phased dev plan for the 4 approved redesigns (quality gate + commit per phase)
+- [work-roadmap.md](work-roadmap.md) — Quests & adventures overhaul: rebalance the 13 seeded quests, seed the 10 written-but-unseeded quests/adventures, 8 new quests, 5 new adventures
 - [future-roadmap.md](future-roadmap.md) — Parking lot (speculative ideas, explicitly non-MVP)
 - [roadmap-archive.md](roadmap-archive.md) — Historical record (archived)
 

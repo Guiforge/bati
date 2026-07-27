@@ -52,6 +52,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [system-redesign-options.md](planning/system-redesign-options.md) | Minimalist progression/coach redesign — options considered |
 | [screen-redesign-proposals.md](planning/screen-redesign-proposals.md) | Screen-level design proposals (nav, onboarding, village) — decisions recorded |
 | [dev-execution-plan.md](planning/dev-execution-plan.md) | Phased dev plan for the approved redesigns (gate + commit per phase) |
+| [work-roadmap.md](planning/work-roadmap.md) | Quests & adventures overhaul (rebalance, seed the unseeded, 8 new quests, 5 new adventures) |
 | [future-roadmap.md](planning/future-roadmap.md) | Later phases (speculative, pre-alignment) |
 
 ## 🎮 Gameplay Systems — [gameplay/](gameplay/README.md)

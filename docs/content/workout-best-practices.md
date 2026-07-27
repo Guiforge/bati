@@ -1,6 +1,11 @@
 # 🏋️ Best Practice Workout Design for BATI
 
 > **Mission**: Transform real fitness science into epic RPG content.
+>
+> **Underlying science**: [`raw/bodyweight-app-research.md`](../raw/bodyweight-app-research.md)
+> (volume, frequency, RIR, bodyweight progression, gamification & retention evidence).
+> This page is the *game-design* translation; that source is the evidence base and has
+> **not been ingested here yet** — where they disagree, the research wins.
 
 ---
 

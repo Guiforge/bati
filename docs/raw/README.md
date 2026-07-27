@@ -12,6 +12,12 @@ related: [../meta/wiki-protocol.md]
 (design references, research notes, meeting/voice transcripts, competitor teardowns,
 spec PDFs converted to markdown, etc.), then ask the agent to **ingest** it into the wiki.
 
+## Sources
+
+- [bodyweight-app-research.md](bodyweight-app-research.md) — literature review: training science
+  (volume, frequency, RIR, bodyweight progression), gamification & retention evidence,
+  competitor teardown (Freeletics, NTC, Duolingo, Habitica), WHO guidelines. Not yet ingested.
+
 ## Rules
 
 - Files here are **read-only** to the agent — it summarizes and links them, never rewrites them.

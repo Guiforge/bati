@@ -612,7 +612,7 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 
 | # | Phase | Depends on | Gate |
 | --: | --- | --- | --- |
-| 1 | A1 muscle fixes | — | `db-muscleBalance` + `db-bossFights` pass with updated expectations |
+| 1 | A1 muscle fixes | — | ✅ **done** — `0012_fix_exercise_muscles.sql`; suite green, `db-exercises` expectation updated (it asserted the bug) |
 | 2 | A2 quest rebalance | A1 | new invariants test green on the 13 existing quests |
 | 3 | B seed spec quests | A2 | 19 quests, all in window, covers resolve |
 | 4 | C pull exercises | — | 2 rows + muscles, placeholder art accepted |

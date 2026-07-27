@@ -85,6 +85,13 @@
       "when": 1767632433409,
       "tag": "0011_seed_bodyweight_exercise_images",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1785110400000,
+      "tag": "0012_fix_exercise_muscles",
+      "breakpoints": true
     }
   ]
 }

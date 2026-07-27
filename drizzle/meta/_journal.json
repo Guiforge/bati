@@ -120,6 +120,13 @@
       "when": 1785110400004,
       "tag": "0016_seed_new_quests",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1785110400005,
+      "tag": "0017_seed_adventures",
+      "breakpoints": true
     }
   ]
 }

@@ -254,6 +254,7 @@ export const useSessionStore = create<SessionState>()(
             resultValue: safeResultValue,
             targetValue: currentEx.target.value,
             muscle: primaryMuscle,
+            targetType: currentEx.target.type,
           });
 
           // Update boss fight state

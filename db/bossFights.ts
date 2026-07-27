@@ -1,6 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
 import { db, schema } from "./client";
-import type { MuscleCode } from "./schema";
+import type { MuscleCode, QuestTargetType } from "./schema";
 
 const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises } = schema;
 
@@ -36,6 +36,20 @@ export type BossDamageEntry = {
   muscle: MuscleCode | null;
   createdAt: Date;
 };
+
+/**
+ * Damage is the result value, but reps and seconds are not the same unit: taken at face value a
+ * 60 s plank hit five times harder than a 12-rep squat, so the app's hardest content (low-rep
+ * strength work) dealt the least damage and every boss HP had to be tuned per campaign to
+ * compensate. Seconds are converted to rep-equivalents at the catalogue's median
+ * `secondsPerRep`, which puts a 60 s hold and a 20-rep set on the same footing.
+ */
+const SECONDS_PER_REP_EQUIVALENT = 3;
+
+function toRepEquivalent(resultValue: number, targetType: QuestTargetType | undefined): number {
+  if (targetType !== "time") return resultValue;
+  return Math.max(1, Math.round(resultValue / SECONDS_PER_REP_EQUIVALENT));
+}
 
 export type DamageResult = {
   damage: number;
@@ -217,6 +231,8 @@ export async function dealDamage(
     resultValue: number;
     targetValue: number;
     muscle?: MuscleCode;
+    /** Omitted means reps. Time results are normalised before they become damage. */
+    targetType?: QuestTargetType;
   },
 ): Promise<DamageResult> {
   // Get current boss fight state
@@ -244,8 +260,8 @@ export async function dealDamage(
     };
   }
 
-  // Base damage = result value (reps or seconds)
-  let damage = params.resultValue;
+  // Base damage = the result value, with seconds converted to rep-equivalents
+  let damage = toRepEquivalent(params.resultValue, params.targetType);
   let weaknessBonus = false;
   let resistancePenalty = false;
 

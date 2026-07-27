@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm";
+
 import { createTestDb } from "./helpers/testDb";
 
 /**
@@ -289,6 +291,34 @@ describe("content invariants", () => {
     expect(offenders).toEqual([]);
   });
 
-  // Lands with Phase E: The Iron Lord's Conquest repeats the same quest on steps 6 and 7.
-  test.todo("no adventure repeats the same quest on consecutive steps");
+  test("adventures have at least two steps and never repeat a quest back to back", async () => {
+    const schema = require("../db/schema") as typeof import("../db/schema");
+    const rows = await t.db
+      .select({
+        title: schema.adventures.enTitle,
+        stepIndex: schema.adventureSteps.stepIndex,
+        questId: schema.adventureSteps.questId,
+      })
+      .from(schema.adventures)
+      .innerJoin(schema.adventureSteps, eq(schema.adventureSteps.adventureId, schema.adventures.id))
+      .orderBy(schema.adventures.id, schema.adventureSteps.stepIndex);
+
+    const byAdventure = new Map<string, number[]>();
+    for (const row of rows) {
+      byAdventure.set(row.title, [...(byAdventure.get(row.title) ?? []), row.questId]);
+    }
+
+    expect(byAdventure.size).toBeGreaterThan(0);
+
+    const offenders = [...byAdventure].flatMap(([title, questIds]) => {
+      if (questIds.length < 2) return [`${title}: only ${questIds.length} step`];
+      return questIds
+        .slice(1)
+        .flatMap((id, i) =>
+          id === questIds[i] ? [`${title}: step ${i + 1} repeats step ${i}`] : [],
+        );
+    });
+
+    expect(offenders).toEqual([]);
+  });
 });

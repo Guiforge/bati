@@ -53,8 +53,10 @@ A month grid, one dot per day trained — the "did I show up" view.
 
 ## Streak
 
-See [progression.md](progression.md#flame-streak) — the flame is the visual layer on top of
-the same streak count shown here.
+See [progression.md](progression.md#flame-consistency-streak) — the flame is the visual layer on
+top of the same count shown here. It measures days of consistency, so a rest day never reduces
+it; the calendar grid above is the "did I show up" view, the flame is the "am I holding my
+rhythm" one.
 
 ## What was removed, and why
 

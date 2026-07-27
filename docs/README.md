@@ -109,5 +109,5 @@ See [`screens/`](screens/README.md) — one spec per screen (home, quests, sessi
 | **Session** | Active workout |
 | **Boss** | Epic challenge with HP |
 | **Village** | Your fitness fingerprint (derived, read-only — see [progression.md](gameplay/progression.md)) |
-| **Flame** | Daily streak |
+| **Flame** | Consistency streak — days the weekly quota held, rest days included |
 | **XP** | Experience points |

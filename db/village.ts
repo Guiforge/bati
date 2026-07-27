@@ -51,7 +51,8 @@ export function getVillageTier(level: number): VillageTier {
 
 export type FlameLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
-// Matches the flame table in docs/gameplay/progression.md.
+// Matches the flame table in docs/gameplay/progression.md. The unit is days the flame stayed
+// lit (see db/streaks.ts), not days trained in a row — rest days count.
 export function getFlameLevel(streakDays: number): FlameLevel {
   if (streakDays >= 100) return 5;
   if (streakDays >= 30) return 4;

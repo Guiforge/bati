@@ -542,27 +542,32 @@ interface ScheduledSessionWithQuest extends ScheduledSession {
 
 ## Streaks
 
-Workout consistency tracking.
+Consistency tracking. `current` counts **days the flame stayed lit**, not days trained: a day
+counts while the trailing 7-day window holds the hero's weekly quota of sessions, or the week
+before it did. See [gameplay/progression.md](../gameplay/progression.md#flame-consistency-streak).
 
 ### Types
 
 ```typescript
 interface StreakInfo {
-  current: number;
-  best: number;
-  isActive: boolean;
-  lastWorkoutDate: Date | null;
+  current: number;   // days lit, rest days included
+  best: number;      // longest run ever held
+  isActive: boolean; // === current > 0
+  lastWorkoutDate: string | null; // ISO date, "YYYY-MM-DD"
 }
+
+const DEFAULT_WEEKLY_QUOTA = 2; // WHO baseline; a weekly_sessions oath overrides it
 ```
 
 ### Functions
 
 | Function | Description |
 |----------|-------------|
-| `getStreakInfo()` | Get current streak info |
-| `getCachedStreak()` | Get cached streak (fast) |
-| `calculateAndCacheStreak()` | Recalculate and cache |
-| `updateStreakAfterSession()` | Update after workout |
+| `getStreakInfo()` | Current flame, from cache when it is still valid |
+| `getCachedStreak()` | Cached value, or `null` if written on another day or under another quota |
+| `calculateAndCacheStreak()` | Recalculate from the journal and cache |
+| `updateStreakAfterSession()` | Recalculate after a workout |
+| `calculateStreakFromSessions(dates, quota, now?)` | Pure core, injectable clock — what the tests drive |
 
 ---
 

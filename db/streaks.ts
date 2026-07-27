@@ -7,6 +7,29 @@ const { completedQuest, userPreferences } = schema;
 const STREAK_CURRENT_KEY = "streak_current";
 const STREAK_BEST_KEY = "streak_best";
 const STREAK_LAST_DATE_KEY = "streak_last_date";
+const STREAK_CACHED_ON_KEY = "streak_cached_on";
+const STREAK_QUOTA_KEY = "streak_quota";
+
+/**
+ * The flame is a consistency streak, not an attendance streak.
+ *
+ * It used to count consecutive training days, which put the app at war with itself: the coach
+ * nudges a rest day after 5 days in a row (db/restSuggestions.ts) while an achievement asked for
+ * 100 days in a row, and the research is explicit that breaking a strict streak pushes people to
+ * quit rather than restart. A day now keeps the flame lit if the hero has trained enough
+ * *recently* — rest days cost nothing, and the flame measures the habit instead of the grind.
+ *
+ * A day is lit when the trailing 7-day window holds at least `quota` sessions, **or** when the
+ * week before it did. That second clause is the forgiveness: one blank week never breaks a
+ * flame, two consecutive blank weeks do.
+ *
+ * The quota is the hero's own promise. Swearing a `weekly_sessions` oath raises the bar the
+ * flame is measured against; without one it sits at the WHO baseline of two sessions a week, so
+ * someone who has sworn nothing still has a flame worth keeping.
+ */
+export const DEFAULT_WEEKLY_QUOTA = 2;
+
+const WINDOW_DAYS = 7;
 
 export type StreakInfo = {
   current: number;
@@ -15,128 +38,152 @@ export type StreakInfo = {
   lastWorkoutDate: string | null;
 };
 
-/**
- * Calculate streak from session dates
- */
-function calculateStreakFromDates(uniqueDays: string[]): {
-  current: number;
-  best: number;
-  isActive: boolean;
-} {
-  if (uniqueDays.length === 0) {
-    return { current: 0, best: 0, isActive: false };
-  }
+function startOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
-  // Sort days (newest first for current streak)
-  const sortedDaysDesc = [...uniqueDays].sort().reverse();
-
-  // Check if streak is active (worked out today or yesterday)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const lastWorkoutDate = new Date(sortedDaysDesc[0]);
-  lastWorkoutDate.setHours(0, 0, 0, 0);
-
-  const isActive =
-    lastWorkoutDate.getTime() === today.getTime() ||
-    lastWorkoutDate.getTime() === yesterday.getTime();
-
-  // Calculate current streak
-  let current = 0;
-  if (isActive) {
-    const checkDate = new Date(lastWorkoutDate);
-    for (const dayStr of sortedDaysDesc) {
-      const day = new Date(dayStr);
-      day.setHours(0, 0, 0, 0);
-
-      if (day.getTime() === checkDate.getTime()) {
-        current++;
-        checkDate.setDate(checkDate.getDate() - 1);
-      } else if (day.getTime() < checkDate.getTime()) {
-        break;
-      }
-    }
-  }
-
-  // Calculate best streak (sorted ascending)
-  const sortedDaysAsc = [...uniqueDays].sort();
-  let best = 0;
-  let tempStreak = 1;
-
-  for (let i = 1; i < sortedDaysAsc.length; i++) {
-    const prev = new Date(sortedDaysAsc[i - 1]);
-    const curr = new Date(sortedDaysAsc[i]);
-    const diffDays = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
-
-    if (diffDays === 1) {
-      tempStreak++;
-    } else {
-      best = Math.max(best, tempStreak);
-      tempStreak = 1;
-    }
-  }
-  best = Math.max(best, tempStreak);
-
-  return { current, best, isActive };
+function shiftDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
 }
 
 /**
- * Get cached streak info from preferences
+ * The flame's bar, read straight from the stored oath rather than through `db/oaths.ts`: oaths
+ * already import this module for the `streak` metric, and a cycle between the two is not worth
+ * the tidiness. Any oath shape other than `weekly_sessions` leaves the baseline alone.
+ */
+async function getWeeklyQuota(): Promise<number> {
+  const rows = await db
+    .select({ value: userPreferences.value })
+    .from(userPreferences)
+    .where(sql`${userPreferences.key} = 'oath'`)
+    .limit(1);
+
+  if (rows.length === 0) return DEFAULT_WEEKLY_QUOTA;
+
+  try {
+    const parsed: unknown = JSON.parse(rows[0].value);
+    if (typeof parsed !== "object" || parsed === null) return DEFAULT_WEEKLY_QUOTA;
+
+    const { metric, weeklyTarget } = parsed as { metric?: string; weeklyTarget?: number };
+    if (metric !== "weekly_sessions" || typeof weeklyTarget !== "number") {
+      return DEFAULT_WEEKLY_QUOTA;
+    }
+
+    return Math.max(1, Math.floor(weeklyTarget));
+  } catch {
+    return DEFAULT_WEEKLY_QUOTA;
+  }
+}
+
+/** Sessions per day, keyed by local midnight — the unit every window below counts in. */
+function groupByDay(performedAt: Date[]): Map<number, number> {
+  const byDay = new Map<number, number>();
+
+  for (const date of performedAt) {
+    const key = startOfDay(date).getTime();
+    byDay.set(key, (byDay.get(key) ?? 0) + 1);
+  }
+
+  return byDay;
+}
+
+function countInWindow(byDay: Map<number, number>, endDay: Date, lengthDays: number): number {
+  let total = 0;
+  let cursor = endDay;
+
+  for (let i = 0; i < lengthDays; i++) {
+    total += byDay.get(cursor.getTime()) ?? 0;
+    cursor = shiftDays(cursor, -1);
+  }
+
+  return total;
+}
+
+/** Is the flame lit on this day? Either this week is over quota, or the week before it was. */
+function isLit(byDay: Map<number, number>, day: Date, quota: number): boolean {
+  if (countInWindow(byDay, day, WINDOW_DAYS) >= quota) return true;
+  return countInWindow(byDay, shiftDays(day, -WINDOW_DAYS), WINDOW_DAYS) >= quota;
+}
+
+export function calculateStreakFromSessions(
+  performedAt: Date[],
+  quota: number,
+  now: Date = new Date(),
+): { current: number; best: number; isActive: boolean } {
+  if (performedAt.length === 0) {
+    return { current: 0, best: 0, isActive: false };
+  }
+
+  const byDay = groupByDay(performedAt);
+  const today = startOfDay(now);
+  const firstDay = startOfDay(new Date(Math.min(...performedAt.map((d) => d.getTime()))));
+
+  // Current: walk back from today for as long as the flame stayed lit.
+  let current = 0;
+  for (let day = today; isLit(byDay, day, quota); day = shiftDays(day, -1)) {
+    current++;
+    // Nothing before the first session can be lit, so the walk always terminates.
+    if (day.getTime() <= firstDay.getTime()) break;
+  }
+
+  // Best: one pass over every day since the hero's first session.
+  let best = 0;
+  let run = 0;
+  for (let day = firstDay; day.getTime() <= today.getTime(); day = shiftDays(day, 1)) {
+    run = isLit(byDay, day, quota) ? run + 1 : 0;
+    best = Math.max(best, run);
+  }
+
+  return { current, best, isActive: current > 0 };
+}
+
+/**
+ * Get cached streak info from preferences. The cache is only trusted for the day it was written
+ * and the quota it was written under: the flame now moves on days with no session at all, and
+ * swearing an oath changes the bar it is measured against.
  */
 export async function getCachedStreak(): Promise<StreakInfo | null> {
-  const rows = await db
-    .select()
-    .from(userPreferences)
-    .where(
-      sql`${userPreferences.key} IN (${STREAK_CURRENT_KEY}, ${STREAK_BEST_KEY}, ${STREAK_LAST_DATE_KEY})`,
-    );
-
-  if (rows.length < 3) return null;
+  const rows = await db.select().from(userPreferences);
 
   const cache: Record<string, string> = {};
   for (const row of rows) {
     cache[row.key] = row.value;
   }
 
-  if (!cache[STREAK_CURRENT_KEY] || !cache[STREAK_BEST_KEY] || !cache[STREAK_LAST_DATE_KEY]) {
+  if (!cache[STREAK_CURRENT_KEY] || !cache[STREAK_BEST_KEY] || !cache[STREAK_CACHED_ON_KEY]) {
     return null;
   }
+  if (cache[STREAK_CACHED_ON_KEY] !== new Date().toISOString().split("T")[0]) return null;
+  if (cache[STREAK_QUOTA_KEY] !== String(await getWeeklyQuota())) return null;
 
-  const lastDate = cache[STREAK_LAST_DATE_KEY];
-
-  // Check if cache is still valid (last workout was today or yesterday)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const lastWorkoutDate = new Date(lastDate);
-  lastWorkoutDate.setHours(0, 0, 0, 0);
-
-  const isActive =
-    lastWorkoutDate.getTime() === today.getTime() ||
-    lastWorkoutDate.getTime() === yesterday.getTime();
+  const current = Number.parseInt(cache[STREAK_CURRENT_KEY], 10) || 0;
 
   return {
-    current: Number.parseInt(cache[STREAK_CURRENT_KEY], 10) || 0,
+    current,
     best: Number.parseInt(cache[STREAK_BEST_KEY], 10) || 0,
-    isActive,
-    lastWorkoutDate: lastDate,
+    isActive: current > 0,
+    lastWorkoutDate: cache[STREAK_LAST_DATE_KEY] || null,
   };
 }
 
-/**
- * Save streak info to preferences cache
- */
-async function saveStreakCache(current: number, best: number, lastDate: string): Promise<void> {
+async function saveStreakCache(
+  current: number,
+  best: number,
+  lastDate: string | null,
+  quota: number,
+): Promise<void> {
   await db
     .insert(userPreferences)
     .values([
       { key: STREAK_CURRENT_KEY, value: String(current) },
       { key: STREAK_BEST_KEY, value: String(best) },
-      { key: STREAK_LAST_DATE_KEY, value: lastDate },
+      { key: STREAK_LAST_DATE_KEY, value: lastDate ?? "" },
+      { key: STREAK_CACHED_ON_KEY, value: new Date().toISOString().split("T")[0] },
+      { key: STREAK_QUOTA_KEY, value: String(quota) },
     ])
     .onConflictDoUpdate({
       target: userPreferences.key,
@@ -148,75 +195,34 @@ async function saveStreakCache(current: number, best: number, lastDate: string):
  * Calculate streak from database and update cache
  */
 export async function calculateAndCacheStreak(): Promise<StreakInfo> {
-  // Get all session dates
-  const rows = await db
-    .select({ performedAt: completedQuest.performedAt })
-    .from(completedQuest)
-    .orderBy(desc(completedQuest.performedAt));
+  const [quota, rows] = await Promise.all([
+    getWeeklyQuota(),
+    db
+      .select({ performedAt: completedQuest.performedAt })
+      .from(completedQuest)
+      .orderBy(desc(completedQuest.performedAt)),
+  ]);
 
   if (rows.length === 0) {
     return { current: 0, best: 0, isActive: false, lastWorkoutDate: null };
   }
 
-  // Get unique days
-  const uniqueDays = new Set<string>();
-  for (const row of rows) {
-    const date = row.performedAt;
-    uniqueDays.add(date.toISOString().split("T")[0]);
-  }
+  const performedAt = rows.map((r) => r.performedAt);
+  const result = calculateStreakFromSessions(performedAt, quota);
+  const lastDate = new Date(Math.max(...performedAt.map((d) => d.getTime())))
+    .toISOString()
+    .split("T")[0];
 
-  const daysArray = Array.from(uniqueDays);
-  const result = calculateStreakFromDates(daysArray);
+  await saveStreakCache(result.current, result.best, lastDate, quota);
 
-  // Get last workout date
-  const lastDate = daysArray.sort().reverse()[0];
-
-  // Save to cache
-  await saveStreakCache(result.current, result.best, lastDate);
-
-  return {
-    ...result,
-    lastWorkoutDate: lastDate,
-  };
+  return { ...result, lastWorkoutDate: lastDate };
 }
 
 /**
  * Get streak info - use cache if valid, otherwise recalculate
  */
 export async function getStreakInfo(): Promise<StreakInfo> {
-  // Try cache first
-  const cached = await getCachedStreak();
-
-  // If we have a cached value with valid last date, use it
-  // But we need to verify it's still accurate for "isActive"
-  if (cached) {
-    // Check if the cached streak is still accurate
-    // If the last workout was yesterday and current streak > 0, it's still valid
-    // If the last workout was before yesterday, streak may have broken
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const dayBeforeYesterday = new Date(today);
-    dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2);
-
-    const lastWorkoutDate = cached.lastWorkoutDate ? new Date(cached.lastWorkoutDate) : null;
-
-    if (lastWorkoutDate) {
-      lastWorkoutDate.setHours(0, 0, 0, 0);
-
-      // If last workout was more than 2 days ago, streak is broken
-      if (lastWorkoutDate.getTime() < dayBeforeYesterday.getTime()) {
-        // Recalculate to confirm
-        return calculateAndCacheStreak();
-      }
-
-      // Cache is still valid
-      return cached;
-    }
-  }
-
-  // No cache or invalid, calculate fresh
-  return calculateAndCacheStreak();
+  return (await getCachedStreak()) ?? (await calculateAndCacheStreak());
 }
 
 /**

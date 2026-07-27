@@ -113,7 +113,8 @@
     "metric_label_weekly_sessions": "Every week",
     "metric_weekly_sessions": "{{weekly}} sessions a week, for {{count}} weeks",
     "pick_weekly": "SESSIONS PER WEEK",
-    "weekly_chip": "{{count}}× / week"
+    "weekly_chip": "{{count}}× / week",
+    "streak_hint": "Rest days count — the flame tracks consistency, not attendance."
   },
   "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",

@@ -23,6 +23,9 @@ Coach no longer echoes a weekly-goal count, so the two never compete for the obj
 | Rule | Trigger | Message example |
 | --- | --- | --- |
 | **Rest** | ≥5 consecutive days trained | "Pense à un jour de repos" |
+
+The rest rule no longer contradicts the [flame](progression.md#flame-consistency-streak): taking
+the day off costs nothing, so the Coach can advise rest without the app punishing it.
 | **Weak area** | A muscle sits well below its share of 30-day volume ([statistics-progress.md](statistics-progress.md)) | "Tes jambes sont en retard — essaie [Quête jambes]" |
 
 Priority: rest (safety) > weak-area. When neither fires the card renders nothing. Each rule

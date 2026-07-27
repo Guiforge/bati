@@ -3,6 +3,11 @@ import { createTestDb } from "./helpers/testDb";
 
 const { completedQuest, userPreferences } = schema;
 
+/**
+ * The flame measures consistency, not attendance: a day stays lit while the trailing week holds
+ * the hero's quota of sessions, and one blank week is forgiven. These tests are written against
+ * that promise — rest days must cost nothing, and a single missed week must not wipe a flame.
+ */
 describe("db/streaks", () => {
   const t = createTestDb();
 
@@ -19,12 +24,14 @@ describe("db/streaks", () => {
   });
 
   beforeEach(() => {
-    // Clear completed sessions and streak cache
     t.db.delete(completedQuest).run();
     t.db.delete(userPreferences).run();
   });
 
-  // Helper to add a session on a specific date
+  function streaks() {
+    return require("../db/streaks") as typeof import("../db/streaks");
+  }
+
   async function addSessionOnDate(daysAgo: number): Promise<void> {
     const date = new Date();
     date.setDate(date.getDate() - daysAgo);
@@ -39,124 +46,134 @@ describe("db/streaks", () => {
     });
   }
 
-  test("getStreakInfo returns 0 for empty database", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    const result = await streaks.getStreakInfo();
+  /** Swear a weekly oath, which is what raises the flame's bar. */
+  function swearWeekly(weeklyTarget: number): void {
+    t.db
+      .insert(userPreferences)
+      .values({
+        key: "oath",
+        value: JSON.stringify({
+          metric: "weekly_sessions",
+          exerciseId: null,
+          target: 8,
+          weeklyTarget,
+          swornAt: new Date().toISOString(),
+          fulfilledAt: null,
+        }),
+      })
+      .run();
+  }
+
+  test("no sessions, no flame", async () => {
+    const result = await streaks().getStreakInfo();
+
     expect(result.current).toBe(0);
     expect(result.best).toBe(0);
     expect(result.isActive).toBe(false);
     expect(result.lastWorkoutDate).toBeNull();
   });
 
-  test("calculates current streak of 1 for workout today", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    await addSessionOnDate(0); // Today
+  test("one session is not yet a habit — the default quota is two a week", async () => {
+    await addSessionOnDate(0);
 
-    const result = await streaks.calculateAndCacheStreak();
-    expect(result.current).toBe(1);
-    expect(result.isActive).toBe(true);
-  });
-
-  test("calculates current streak of 1 for workout yesterday", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    await addSessionOnDate(1); // Yesterday
-
-    const result = await streaks.calculateAndCacheStreak();
-    expect(result.current).toBe(1);
-    expect(result.isActive).toBe(true);
-  });
-
-  test("streak is inactive if last workout was 2+ days ago", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    await addSessionOnDate(2); // 2 days ago
-
-    const result = await streaks.calculateAndCacheStreak();
+    const result = await streaks().calculateAndCacheStreak();
     expect(result.current).toBe(0);
     expect(result.isActive).toBe(false);
   });
 
-  test("calculates consecutive day streak", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    await addSessionOnDate(0); // Today
-    await addSessionOnDate(1); // Yesterday
-    await addSessionOnDate(2); // 2 days ago
+  test("hitting the quota lights the flame, and it keeps burning through rest days", async () => {
+    // Two sessions six days ago and five days ago: the quota was met, then nothing since.
+    await addSessionOnDate(6);
+    await addSessionOnDate(5);
 
-    const result = await streaks.calculateAndCacheStreak();
-    expect(result.current).toBe(3);
+    const result = await streaks().calculateAndCacheStreak();
+
+    // Lit every day since the quota was met, including the five rest days that followed.
+    expect(result.current).toBe(6);
     expect(result.isActive).toBe(true);
   });
 
-  test("streak breaks on skipped day", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    await addSessionOnDate(0); // Today
-    await addSessionOnDate(1); // Yesterday
-    // Skip day 2
-    await addSessionOnDate(3); // 3 days ago
+  test("a rest day never breaks the flame", async () => {
+    // Trained twice a week for three weeks, never on consecutive days.
+    for (const daysAgo of [20, 17, 13, 10, 6, 3]) await addSessionOnDate(daysAgo);
 
-    const result = await streaks.calculateAndCacheStreak();
-    expect(result.current).toBe(2); // Only today and yesterday
+    const result = await streaks().calculateAndCacheStreak();
+
+    // Under the old consecutive-day rule this hero's flame was permanently 1.
+    expect(result.current).toBeGreaterThanOrEqual(14);
     expect(result.isActive).toBe(true);
   });
 
-  test("calculates best streak correctly", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    // A streak of 5 days ending 10 days ago
+  test("one blank week is forgiven, two are not", async () => {
+    // Quota met 10 and 9 days ago, then nothing at all.
     await addSessionOnDate(10);
-    await addSessionOnDate(11);
-    await addSessionOnDate(12);
-    await addSessionOnDate(13);
-    await addSessionOnDate(14);
+    await addSessionOnDate(9);
 
-    // A streak of 2 days ending yesterday
-    await addSessionOnDate(0);
-    await addSessionOnDate(1);
+    const forgiven = await streaks().calculateAndCacheStreak();
+    expect(forgiven.isActive).toBe(true);
 
-    const result = await streaks.calculateAndCacheStreak();
-    expect(result.current).toBe(2);
-    expect(result.best).toBe(5);
+    t.db.delete(completedQuest).run();
+    t.db.delete(userPreferences).run();
+
+    // Same shape, but the good week is now three weeks back: the grace has run out.
+    await addSessionOnDate(24);
+    await addSessionOnDate(23);
+
+    const broken = await streaks().calculateAndCacheStreak();
+    expect(broken.current).toBe(0);
+    expect(broken.isActive).toBe(false);
+    // The flame it once had is still on the record.
+    expect(broken.best).toBeGreaterThan(0);
   });
 
-  test("caches streak in preferences", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    await addSessionOnDate(0);
+  test("a weekly oath raises the bar the flame is measured against", async () => {
+    // Two sessions this week: enough for the default, not for a hero who swore four.
+    await addSessionOnDate(2);
     await addSessionOnDate(1);
 
-    await streaks.calculateAndCacheStreak();
+    expect((await streaks().calculateAndCacheStreak()).isActive).toBe(true);
 
-    // Check cache exists
-    const cached = t.db.select().from(userPreferences).all();
-    const keys = cached.map((p) => p.key);
+    swearWeekly(4);
+    expect((await streaks().calculateAndCacheStreak()).isActive).toBe(false);
 
-    expect(keys).toContain("streak_current");
-    expect(keys).toContain("streak_best");
-    expect(keys).toContain("streak_last_date");
+    await addSessionOnDate(3);
+    await addSessionOnDate(4);
+    expect((await streaks().calculateAndCacheStreak()).isActive).toBe(true);
   });
 
-  test("getStreakInfo uses cache when valid", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    await addSessionOnDate(0);
+  test("best keeps the longest flame ever held", async () => {
+    // A long consistent run that ended a while ago.
+    for (const daysAgo of [40, 37, 34, 31, 28, 25]) await addSessionOnDate(daysAgo);
+    // Then a short recent one.
+    await addSessionOnDate(2);
     await addSessionOnDate(1);
 
-    // First call calculates and caches
-    const first = await streaks.calculateAndCacheStreak();
+    const result = await streaks().calculateAndCacheStreak();
 
-    // Second call should use cache
-    const second = await streaks.getStreakInfo();
-
-    expect(second.current).toBe(first.current);
-    expect(second.best).toBe(first.best);
+    expect(result.best).toBeGreaterThan(result.current);
+    expect(result.current).toBeGreaterThan(0);
   });
 
-  test("updateStreakAfterSession recalculates streak", async () => {
-    const streaks = require("../db/streaks") as typeof import("../db/streaks");
-    await addSessionOnDate(0);
-    const initial = await streaks.getStreakInfo();
-    expect(initial.current).toBe(1);
-
-    // Add another session (simulating a new workout)
+  test("the cache is scoped to the day and the quota that produced it", async () => {
     await addSessionOnDate(1);
-    const updated = await streaks.updateStreakAfterSession();
+    await addSessionOnDate(0);
 
-    expect(updated.current).toBe(2);
+    const fresh = await streaks().calculateAndCacheStreak();
+    expect(await streaks().getCachedStreak()).toEqual(fresh);
+
+    // Swearing an oath changes the bar, so yesterday's answer is no longer the right one.
+    swearWeekly(4);
+    expect(await streaks().getCachedStreak()).toBeNull();
+  });
+
+  test("finishing a session refreshes the cached flame", async () => {
+    await addSessionOnDate(0);
+    expect((await streaks().getStreakInfo()).isActive).toBe(false);
+
+    await addSessionOnDate(1);
+    const updated = await streaks().updateStreakAfterSession();
+
+    expect(updated.isActive).toBe(true);
+    expect((await streaks().getStreakInfo()).current).toBe(updated.current);
   });
 });

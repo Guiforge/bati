@@ -422,3 +422,35 @@ inform — `content/workout-best-practices.md` (volume/rest/RIR targets, exercis
   tests, art checklist and phase gates.
 - **Updated** [`planning/README.md`](../planning/README.md) and the root
   [catalog](../README.md) with the new page.
+
+---
+
+## 2026-07-27 — Content overhaul shipped (phases A–G) + the flame reworked
+
+Seven migrations (`0012`–`0018`) and the code changes their pre-flights exposed. Full plan and
+per-phase state: [planning/work-roadmap.md](../planning/work-roadmap.md).
+
+**Content:** 48 exercises (all but zero used by a quest), 27 quests all inside the 10–25 min
+window, 8 adventures in a difficulty ramp with 34 EN/FR step narratives. Guarded by
+[`content-invariants.test.ts`](../../__tests__/content-invariants.test.ts), which reads the
+catalogue back through the app's own accessors rather than trusting the SQL.
+
+**Bugs the work surfaced, all pre-existing:** `Squat` and `Wall Sit` were tagged `chest`, which
+skewed the Coach's weak-area rule and gave squats a boss-weakness bonus; boss damage took reps
+and seconds at face value, so the hardest content dealt the least damage; every boss died two
+steps into its campaign; `calculateBossHp` ignored rounds; and the Home suggestion ignored level
+and equipment entirely.
+
+**Pages updated:** [gameplay/progression.md](../gameplay/progression.md) (the flame is now a
+consistency streak — definition, quota, and why it changed),
+[gameplay/oaths.md](../gameplay/oaths.md) (the oath sets the flame's bar; the new
+`weekly_sessions` metric), [gameplay/statistics-progress.md](../gameplay/statistics-progress.md),
+[gameplay/coach-planning.md](../gameplay/coach-planning.md) (the rest rule no longer contradicts
+the flame), [product/feature-overview.md](../product/feature-overview.md),
+[architecture/database-api.md](../architecture/database-api.md) (streak API),
+[planning/work-roadmap.md](../planning/work-roadmap.md), and the root
+[catalog](../README.md) terminology.
+
+**Still open:** the art pass (11 assets — paths are already seeded, so it is files plus
+`assetMap` keys and no SQL), F3's archetype badge, and the muscle-taxonomy migration, which bit
+this work three times and remains its own roadmap.

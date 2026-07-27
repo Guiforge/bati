@@ -113,7 +113,8 @@
     "metric_label_weekly_sessions": "Chaque semaine",
     "metric_weekly_sessions": "{{weekly}} séances par semaine, pendant {{count}} semaines",
     "pick_weekly": "SÉANCES PAR SEMAINE",
-    "weekly_chip": "{{count}}× / semaine"
+    "weekly_chip": "{{count}}× / semaine",
+    "streak_hint": "Les jours de repos comptent — la flamme mesure la régularité, pas l'assiduité."
   },
   "common": {
     "awesome": "Génial !",

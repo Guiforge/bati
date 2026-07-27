@@ -598,14 +598,37 @@ first back oath a hero without a bar can actually move, and `lsit_30`, the top o
 ladder authored in §2.3 — and the screen now **drops any preset whose exercise needs kit the
 hero does not own** (§8 F2). An oath you cannot move is worse than no oath at all.
 
-### G2. The streak oath still inherits the streak's problem
+### G2. Resolved — the flame now measures consistency ✅
 
-Unchanged and still blocked on the streak rework: `metric: "streak"` reads
-`getStreakInfo().best`, which is monotonic — breaking a flame does *not* reset the oath's
-progress, and that accident should be kept deliberately when the streak becomes weekly. But the
-preset still asks for 30 consecutive training days while
-[restSuggestions](../../db/restSuggestions.ts) nudges a rest day at 5. **Do not ship a new streak
-preset before the streak model changes.**
+> Applied in [db/streaks.ts](../../db/streaks.ts), with the wording chased through
+> [db/achievements.ts](../../db/achievements.ts), the oath presets and both locales.
+
+G2 was never blocked on code. It was blocked on a contradiction: the app cannot ask someone to
+swear to 30 consecutive training days while the Coach nudges a rest day at 5. Relabelling the
+preset would have hidden that, not fixed it — so the flame changed instead.
+
+**The flame counts days of consistency.** A day stays lit while the trailing 7-day window holds
+the hero's quota of sessions, or the week before it did: rest days cost nothing, one blank week
+is forgiven, two put it out. The unit is still days, so `getFlameLevel`'s thresholds
+(3/7/14/30/100) and all six streak achievements keep working untouched — and because the streak
+was always derived from the journal rather than stored, no migration was needed. Every hero's
+flame simply grew the day it shipped.
+
+**The oath sets the flame's bar.** Without an oath the quota is the WHO baseline of 2 a week;
+a `weekly_sessions` oath raises it to the chosen 2, 3 or 4. That is this plan's answer to "could
+the flame *be* the oath": the flame is the live representation of whether the hero is keeping
+their promise, with a sensible default promise for anyone who has not made one. One mechanic,
+one unit, a target that is chosen rather than imposed.
+
+Two things kept deliberately:
+
+- The `streak` oath still reads `best`, not `current` — a flame going out does not undo the
+  oath's progress. It was an accident of the old implementation; it is now a decision.
+- Achievement descriptions now say "keep your flame lit for N days" instead of "achieve an N-day
+  streak", because the second sentence is no longer true.
+
+Deleted on the way: `components/common/StreakBadge.tsx`, a second, unused implementation of the
+old consecutive-day rule that nothing imported and that would have drifted silently.
 
 ### G3. Weekly consistency ✅
 
@@ -740,9 +763,9 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | 8 | F1 + F2 selection | E | ✅ **done** — eligibility gate on the Home suggestion and the daily pick, equipment preference + Settings row |
 | 9 | G1 oath presets | D | ✅ **done** — equipment-free pull + skill presets, kit-aware deck |
 | 10 | G3 weekly-sessions oath | — | ✅ **done** — `weekly_sessions`, 2/3/4 per week, forgiveness asserted by test |
+| 11 | G2 flame rework | G3 | ✅ **done** — consistency streak, quota set by the oath, 9 tests rewritten |
 
-G2 (streak oath wording) is blocked on the streak rework, which is not in this plan — relabel
-only. Phases 1–3 are shippable on their own and are the highest value per line of SQL: they fix the
+Phases 1–3 are shippable on their own and are the highest value per line of SQL: they fix the
 data that is actively wrong and triple the catalogue with content that is already paid for.
 
 ## 14. Deliberately not in this plan

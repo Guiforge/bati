@@ -30,7 +30,7 @@ never prescribes, so there is nothing to validate.
 
 ```ts
 type Oath = {
-  metric: "exercise_pr" | "exercise_volume" | "sessions" | "streak";
+  metric: "exercise_pr" | "exercise_volume" | "sessions" | "streak" | "weekly_sessions";
   exerciseId: number | null;   // required by the exercise_* metrics
   target: number;
   swornAt: string;
@@ -47,7 +47,23 @@ type Oath = {
 | `exercise_pr` | "10 pull-ups in a row" | `MAX(resultValue)` for that exercise |
 | `exercise_volume` | "1000 push-ups" | `SUM(resultValue)` for that exercise |
 | `sessions` | "100 sessions" | `COUNT(*)` on the journal |
-| `streak` | "a 30-day flame" | `getStreakInfo().best` |
+| `streak` | "a 30-day flame" | `getStreakInfo().best` — days of consistency, not days trained |
+| `weekly_sessions` | "3 a week, for 8 weeks" | weeks since `swornAt` that hit `weeklyTarget` |
+
+## The oath sets the flame's bar
+
+A `weekly_sessions` oath is not just a target: its `weeklyTarget` **is** the quota the
+[flame](progression.md#flame-consistency-streak) is measured against. Swear three a week and the
+flame asks for three; swear nothing and it sits at the WHO baseline of two. That is deliberate —
+the hero should have one commitment, chosen by them, rendered in the most visible place on Home,
+instead of a promise they made competing with a streak the app imposed.
+
+## Forgiveness is in the definition, not in a token
+
+`weekly_sessions` counts the weeks that hit the quota. A missed week costs that week and nothing
+else: nothing resets, and last week's miss cannot undo the eight before it. The flame follows the
+same principle at day granularity — one blank week forgiven, two not. Neither needs a "streak
+freeze" item, because neither punishes rest in the first place.
 
 ## One oath at a time
 

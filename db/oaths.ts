@@ -68,6 +68,8 @@ export const OATH_PRESETS: OathPreset[] = [
   // The process goal leads the deck: habit forms over ~2-3 months, and a week you miss costs
   // one week instead of resetting anything (docs/raw/bodyweight-app-research.md §5).
   { id: "weekly_3x_8w", metric: "weekly_sessions", target: 8, weeklyTarget: 3 },
+  // A 30-day flame no longer means 30 days of training in a row: the flame counts days of
+  // consistency (db/streaks.ts), so this asks for a month of holding the line, rest included.
   { id: "streak_30", metric: "streak", target: 30 },
   { id: "sessions_50", metric: "sessions", target: 50 },
   { id: "pushups_1000", metric: "exercise_volume", target: 1000, exerciseName: "Push-ups" },
@@ -173,6 +175,8 @@ async function measure(oath: Oath): Promise<number> {
       return rows[0]?.value ?? 0;
     }
     case "streak": {
+      // `best`, not `current`: a flame that goes out does not undo the oath's progress. That
+      // was an accident of the old implementation; it is kept on purpose.
       const info = await getStreakInfo();
       return info.best;
     }

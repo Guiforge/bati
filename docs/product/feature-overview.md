@@ -72,13 +72,16 @@ Experience and progression system.
 - **Status**: Implemented
 - **Doc**: [STATISTICS.md](../gameplay/statistics-progress.md)
 
-### Flame (Streak)
+### Flame (Consistency streak)
 
-Daily workout streak tracking.
+Consistency tracking — days the hero held their weekly rhythm, not days they trained.
 
-- **What**: Consecutive workout days, derived from the session journal (`db/streaks.ts`)
+- **What**: Days the flame stayed lit, derived from the session journal (`db/streaks.ts`). A day
+  counts while the trailing week holds the hero's session quota, or the week before it did.
+- **Quota**: 2 sessions a week by default (WHO baseline); a `weekly_sessions`
+  [oath](../gameplay/oaths.md) raises it to the hero's chosen 2, 3 or 4.
 - **Visual**: Flame intensity shown on Home (`StatsOverview`) and the Village scene
-- **Behavior**: Missing a day dims the flame; it doesn't reset to zero
+- **Behavior**: Rest days cost nothing. One blank week is forgiven, two put the flame out.
 - **Status**: Implemented
 
 ---

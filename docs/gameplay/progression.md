@@ -41,16 +41,21 @@ The village is **one illustrated scene**, not a list of buildings to manage.
 1. **Tier** is a function of level: `hameau → village → bourg → cité → cité florissante`
    (5 illustrated tiers). No build menu, nothing chosen or spent.
 2. **Overlays** layer on top conditionally:
-   - Flame intensity (0–3), from the current streak
+   - Flame intensity (0–3), from the current consistency streak
    - Dominant-sport visual (from the last 7 days of training)
    - A permanent banner per boss defeated (see [boss-fights.md](boss-fights.md))
 3. **Milestones** reveal a detail on the scene at a training-volume threshold —
    e.g. `totalArmReps >= 500` reveals a forge silhouette — not a separate badge/collection
    system, not a stored unlock.
 
-## Flame (streak)
+## Flame (consistency streak)
 
-| Days | Flame level |
+**The flame counts days of consistency, not days trained.** A day keeps the flame lit when the
+trailing 7-day window holds at least the hero's weekly quota of sessions — **or** when the week
+before it did. Rest days therefore cost nothing, and one blank week is forgiven; two consecutive
+blank weeks put it out.
+
+| Days lit | Flame level |
 | --- | --- |
 | 3+ | 🔥 Spark |
 | 7+ | 🔥🔥 Ember |
@@ -58,8 +63,25 @@ The village is **one illustrated scene**, not a list of buildings to manage.
 | 30+ | 🔥🔥🔥🔥 Inferno |
 | 100+ | ✨🔥✨ Eternal |
 
-Missing a day dims the flame; it doesn't reset to zero. See
-[session-flow.md](session-flow.md) for the "Marche de repentance" (rally quest) recovery flow.
+### The quota is the hero's own promise
+
+Without an oath the bar sits at the WHO baseline, **2 sessions a week**, so someone who has sworn
+nothing still has a flame worth keeping. Swearing a [`weekly_sessions` oath](oaths.md) raises it
+to their chosen 2, 3 or 4 — the flame becomes the live representation of whether they are keeping
+the promise they made. One mechanic, one unit, and the target is chosen rather than imposed.
+
+### Why it changed
+
+The flame used to count consecutive training days, which put the app at war with itself: an
+achievement asked for 100 days in a row while the [Coach](coach-planning.md) nudges a rest day
+after 5. The research is explicit that breaking a strict streak pushes people to abandon rather
+than restart, and that missing a single day does not compromise habit formation — so the day a
+hero rests must not cost them anything. See
+[raw/bodyweight-app-research.md](../raw/bodyweight-app-research.md) §5.
+
+The counter is still derived from the session journal on read (`db/streaks.ts`), so the change
+needed no migration — but every hero's flame grew the day it shipped, because their rest days
+now count.
 
 ## Victory screen (example)
 
@@ -68,7 +90,7 @@ Missing a day dims the flame; it doesn't reset to zero. See
 │    ⚔️ QUEST COMPLETE! ⚔️    │
 ├─────────────────────────────┤
 │  +150 XP   Level 5 ████░░   │
-│  🔥 5-day streak             │
+│  🔥 12-day flame            │
 │                             │
 │  🏰 The village grows!      │
 │  (forge silhouette revealed)│

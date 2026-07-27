@@ -3,16 +3,17 @@
 #
 # Locale is NOT settable here — Maestro pins it at device start:
 #   maestro start-device --platform=android --device-locale=en_US
-# Flows must assert on testID, never translated text. See README.md.
+# Flows assert on testID, never translated text, so the device locale
+# (this project ships en + fr) can't break them. See README.md.
 
 flows:
   - app-launch.yaml
   - main-journey.yaml
-  - home-navigation.yaml
-  - quest-gallery.yaml
+  - explore-tabs.yaml
 
-# Default app ID
+# subflows/ holds reusable fragments (e.g. complete-onboarding.yaml) pulled in
+# via `runFlow:` — they are not standalone entries here.
+
 appId: com.anonymous.bati
 
-# Screenshots output directory
 screenshotsDir: ./screenshots

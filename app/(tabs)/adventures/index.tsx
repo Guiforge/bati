@@ -268,7 +268,7 @@ export default function AdventuresGallery() {
   );
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack testID="adventures-screen" flex={1} bg="$background">
       <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
         <XStack items="center" gap="$2">
           <Sparkles size={18} color="$primary" strokeWidth={2.5} />

@@ -47,6 +47,29 @@ maestro test .maestro/app-launch.yaml
 maestro studio
 ```
 
+### Dev build vs release build (important)
+
+The flows use `launchApp: { clearState: true }`. That works cleanly against a
+**release/preview APK** (self-contained JS) — the recommended CI target.
+
+Against a **dev build** (`npx expo run:android`), `clearState` also wipes the
+expo-dev-client's saved server URL, so the app boots to the "Development servers"
+menu instead of the app. To run locally against a dev build you must have Metro
+up and the client pointed at it:
+
+```bash
+# 1. Metro
+npx expo start --dev-client --port 8081
+# 2. Route the device's localhost to the host Metro (physical device or emulator)
+adb reverse tcp:8081 tcp:8081
+# 3. Load the JS bundle into the client once (or type localhost:8081 → Connect in
+#    the dev-launcher menu):
+adb shell am start -a android.intent.action.VIEW \
+  -d "bati://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+# 4. Then run flows WITHOUT the clearState launch (drive the already-loaded app),
+#    or build a release APK for the full clearState flows.
+```
+
 ## `testID` convention
 
 Flows target `testID`, never translated text. A flow that taps `text: "Continue"`
@@ -89,10 +112,10 @@ locale drift can't fail a flow.
 
 | File | Description |
 |------|-------------|
-| `app-launch.yaml` | Verifies app launches correctly |
+| `app-launch.yaml` | Fresh install boots to the first onboarding screen |
 | `main-journey.yaml` | The core loop: onboarding → home → session → victory |
-| `home-navigation.yaml` | Tests home screen and scrolling |
-| `quest-gallery.yaml` | Tests navigation to quest gallery |
+| `explore-tabs.yaml` | Smoke: each of the 5 main tabs renders its screen |
+| `subflows/complete-onboarding.yaml` | Reusable onboarding walk, pulled in via `runFlow:` |
 
 ## Screenshots
 

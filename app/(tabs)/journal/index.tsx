@@ -136,7 +136,7 @@ export default function JournalScreen() {
   );
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack testID="journal-screen" flex={1} bg="$background">
       <YStack pt={insets.top + 12} px="$4" pb="$3" gap="$4">
         <YStack>
           <H2 fontWeight="700" fontSize={32} color="$text">

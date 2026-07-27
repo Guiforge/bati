@@ -16,27 +16,7 @@ appId: com.anonymous.bati
 
 # --- Onboarding -------------------------------------------------------------
 
-- assertVisible:
-    id: "onboarding-presentation-continue"
-- tapOn:
-    id: "onboarding-presentation-continue"
-
-- assertVisible:
-    id: "onboarding-hero-name"
-- tapOn:
-    id: "onboarding-hero-name"
-- inputText: "Testville"
-- hideKeyboard
-
-# The button is disabled until the name clears MIN_NAME_LENGTH, so a tap that
-# does nothing here is caught by the home assertion below, not swallowed.
-- tapOn:
-    id: "onboarding-hero-continue"
-
-- assertVisible:
-    id: "onboarding-level-skip"
-- tapOn:
-    id: "onboarding-level-skip"
+- runFlow: subflows/complete-onboarding.yaml
 
 # --- Home -------------------------------------------------------------------
 
@@ -62,8 +42,9 @@ appId: com.anonymous.bati
     id: "quest-start"
 
 # 3s pre-start countdown before the first exercise renders.
-- assertVisible:
-    id: "session-complete-exercise"
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
     timeout: 15000
 
 # Quests vary in rounds and exercises, so walk the session generically:
@@ -85,8 +66,9 @@ appId: com.anonymous.bati
 # --- Victory ----------------------------------------------------------------
 
 # Disabled until the session save resolves — a slow write must not fail the run.
-- assertVisible:
-    id: "session-victory-continue"
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-continue"
     timeout: 20000
 - tapOn:
     id: "session-victory-continue"

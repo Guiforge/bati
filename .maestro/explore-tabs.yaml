@@ -1,0 +1,36 @@
+# Smoke test for the five main feature tabs: onboard, then visit each tab and
+# assert its screen actually rendered (not just that the tab button exists).
+# testID only, so locale-agnostic.
+appId: com.anonymous.bati
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+
+- runFlow: subflows/complete-onboarding.yaml
+
+- tapOn:
+    id: "tab-adventures"
+- assertVisible:
+    id: "adventures-screen"
+
+- tapOn:
+    id: "tab-quests"
+- assertVisible:
+    id: "quests-quest-card"
+
+- tapOn:
+    id: "tab-village"
+- assertVisible:
+    id: "village-screen"
+
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+
+- tapOn:
+    id: "tab-home"
+- assertVisible:
+    id: "home-start-session"

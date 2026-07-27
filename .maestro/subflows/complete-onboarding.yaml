@@ -1,0 +1,27 @@
+# Reusable: walk through the 3-step onboarding and land on the home tab.
+# Assumes the app was just launched with clearState (so onboarding is shown).
+# Selects by testID only, so it is locale-agnostic (en/fr).
+appId: com.anonymous.bati
+---
+- assertVisible:
+    id: "onboarding-presentation-continue"
+- tapOn:
+    id: "onboarding-presentation-continue"
+
+- assertVisible:
+    id: "onboarding-hero-name"
+- tapOn:
+    id: "onboarding-hero-name"
+- inputText: "Testville"
+- hideKeyboard
+- tapOn:
+    id: "onboarding-hero-continue"
+
+- assertVisible:
+    id: "onboarding-level-skip"
+- tapOn:
+    id: "onboarding-level-skip"
+
+# Onboarding complete -> tab bar is present.
+- assertVisible:
+    id: "tab-home"

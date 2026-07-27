@@ -37,7 +37,7 @@ export function VillageScene() {
   const tierName = scene ? TIER_NAMES[scene.tier][language === "fr" ? "fr" : "en"] : "";
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack testID="village-screen" flex={1} bg="$background">
       <XStack
         pt={insets.top + 8}
         px="$4"

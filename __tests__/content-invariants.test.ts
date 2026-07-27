@@ -38,14 +38,39 @@ const ARCHETYPES: Record<string, Archetype> = {
   "The Druid's Path": "mobility",
   "Sprint Through the Shadowlands": "metabolic",
   "Morning of the Champion": "circuit",
+  // Phase D — seeded by 0016
+  "The Squire's Awakening": "circuit",
+  "The Bear's Road": "circuit",
+  "The Cellar Hauler": "hypertrophy",
+  "The Ploughman's Vow": "hypertrophy",
+  "The Crow's Ascent": "strength",
+  "The Colossus Trial": "skill",
+  "Storm of Blades": "metabolic",
+  "The Serpent's Coil": "core",
 };
 
-/** Quests allowed to require a pull-up bar. Everything else must be fully equipment-free. */
-const BAR_QUESTS = new Set([
+/**
+ * Quests that train one movement pattern on purpose. With six muscle codes the taxonomy cannot
+ * tell a hinge from a squat from a calf raise — they all read `calf` — so the consecutive-muscle
+ * rule would make a leg-focused quest impossible to write. The 12-set cap is what guards these.
+ */
+const SINGLE_PATTERN = new Set(["The Ploughman's Vow"]);
+
+/**
+ * Exercises allowed to sit in the catalogue without a quest. Barbarian's Overhead Press (0006)
+ * is the only `dumbbell` movement in a bodyweight app, and the declared equipment envelope is
+ * bodyweight + pull-up bar + dip bar — so no quest can use it without pulling dumbbells into
+ * the product. It stays browsable pending a call on deleting it (roadmap §14).
+ */
+const CATALOGUE_EXEMPT = new Set(["Barbarian's Overhead Press"]);
+
+/** Quests allowed to require equipment. Everything else must be fully equipment-free. */
+const EQUIPMENT_QUESTS = new Set([
   "Tower Climb",
   "Climb the Titan's Tower",
   "Build the Stronghold",
   "The Iron Gauntlet Challenge",
+  "The Crow's Ascent",
 ]);
 
 /**
@@ -157,25 +182,26 @@ describe("content invariants", () => {
 
   test("consecutive exercises do not stack the same muscles", async () => {
     const all = await loadQuests();
-    const offenders: string[] = [];
 
-    for (const quest of all) {
-      if (STACKING_ALLOWED.has(ARCHETYPES[quest.enTitle])) continue;
+    const offenders = all
+      .filter(
+        (quest) =>
+          !STACKING_ALLOWED.has(ARCHETYPES[quest.enTitle]) && !SINGLE_PATTERN.has(quest.enTitle),
+      )
+      .flatMap((quest) =>
+        quest.exercises.slice(1).flatMap((qex, index) => {
+          const prev = quest.exercises[index].exercise;
+          const shared = qex.exercise.muscles.filter((m) => prev.muscles.includes(m));
+          const identical =
+            shared.length === prev.muscles.length && shared.length === qex.exercise.muscles.length;
 
-      for (let i = 1; i < quest.exercises.length; i++) {
-        const prev = new Set(quest.exercises[i - 1].exercise.muscles);
-        const curr = quest.exercises[i].exercise.muscles;
-        const shared = curr.filter((m) => prev.has(m));
-
-        const identical = shared.length === prev.size && shared.length === curr.length;
-        if (identical || shared.length >= 2) {
-          offenders.push(
-            `${quest.enTitle}: ${quest.exercises[i - 1].exercise.enName} → ` +
-              `${quest.exercises[i].exercise.enName} (shares ${shared.join(", ")})`,
-          );
-        }
-      }
-    }
+          return identical || shared.length >= 2
+            ? [
+                `${quest.enTitle}: ${prev.enName} → ${qex.exercise.enName} (shares ${shared.join(", ")})`,
+              ]
+            : [];
+        }),
+      );
 
     expect(offenders).toEqual([]);
   });
@@ -211,15 +237,28 @@ describe("content invariants", () => {
     expect(offenders).toEqual([]);
   });
 
-  test("a quest is either equipment-free or a declared bar quest", async () => {
+  test("a quest is either equipment-free or a declared equipment quest", async () => {
     const all = await loadQuests();
 
     const offenders = all
       .filter((q) => q.exercises.some((qex) => qex.exercise.equipment !== "none"))
       .map((q) => q.enTitle)
-      .filter((title) => !BAR_QUESTS.has(title));
+      .filter((title) => !EQUIPMENT_QUESTS.has(title));
 
     expect(offenders).toEqual([]);
+  });
+
+  test("every exercise in the catalogue is used by at least one quest", async () => {
+    const exerciseApi = require("../db/exercises") as typeof import("../db/exercises");
+    const all = await loadQuests();
+
+    const used = new Set(all.flatMap((q) => q.exercises.map((qex) => qex.exercise.id)));
+    const orphans = (await exerciseApi.listExercises())
+      .filter((e) => !used.has(e.id))
+      .map((e) => e.enName)
+      .filter((name) => !CATALOGUE_EXEMPT.has(name));
+
+    expect(orphans).toEqual([]);
   });
 
   // No "strength quests need an antagonist" test: the muscle taxonomy cannot express movement
@@ -249,9 +288,6 @@ describe("content invariants", () => {
 
     expect(offenders).toEqual([]);
   });
-
-  // Lands with Phase D: the 20 exercises seeded by 0010 are still used by zero quest.
-  test.todo("every exercise in the catalogue is used by at least one quest");
 
   // Lands with Phase E: The Iron Lord's Conquest repeats the same quest on steps 6 and 7.
   test.todo("no adventure repeats the same quest on consecutive steps");

@@ -274,8 +274,13 @@ Deviations from the spec, and why:
 
 ## 5. Phase C — close the equipment-free pull gap
 
-The catalogue cannot build a balanced program without a bar: the only equipment-free pulling
-movement is `Superman`. Two new exercises, both from the research's own list of no-equipment
+> ✅ **Applied** — [`0015_seed_pull_exercises.sql`](../../drizzle/0015_seed_pull_exercises.sql),
+> plus `dip_bar` added to `equipmentCodes` ([db/schema.ts](../../db/schema.ts)) and its labels.
+> The equipment column has no `CHECK` constraint, so a new code costs two TypeScript lines and
+> no migration. Declared equipment envelope: bodyweight + pull-up bar + dip bar.
+
+The catalogue could not build a balanced program without a bar: the only equipment-free pulling
+movement was `Superman`. Two new exercises, both from the research's own list of no-equipment
 pull solutions:
 
 | EN / FR | Difficulty | Equipment | s/rep | Muscles | Description hook |
@@ -283,8 +288,10 @@ pull solutions:
 | **Table Row** / Tirage sous la table | medium | none | 3 | back, arms | Lie under a sturdy table, grip the edge, pull your chest to it. Body straight, heels on the floor. |
 | **Towel Door Row** / Tirage à la serviette | easy | none | 3 | back, arms | Loop a towel around a door handle on both sides, lean back, pull yourself upright. Step your feet closer to make it harder. |
 
-RPG naming to match the catalogue voice: **"Cellar Hauler"** / *Tirage du Cellier* and
-**"Rope of the Keep"** / *Corde du Donjon* — final naming decided when the covers are prompted.
+Naming follows `0010`, the most recent exercise batch: plain and descriptive on the exercise,
+fiction on the quest that uses them (D3 is still *The Cellar Hauler*). Both are tagged
+`equipment = 'none'` — a kitchen table and a door handle are furniture, not fitness gear, and
+the requirement is carried by the description.
 
 Art: 2 new exercise images required (`table_row.png`, `towel_door_row.png`), same pipeline as
 [missing-image.md](../content/missing-image.md) §4. Until they exist, both rows fall back to the
@@ -294,9 +301,20 @@ placeholder — acceptable, the quest still runs.
 
 ## 6. Phase D — eight new quests
 
+> ✅ **Applied** — [`0016_seed_new_quests.sql`](../../drizzle/0016_seed_new_quests.sql).
+> Catalogue: 48 exercises, 27 quests, **zero unused exercises** (one documented exception, see
+> below). Covers do not exist yet, so these eight resolve to the placeholder until the art pass.
+
 Designed to cover every hole the audit found: absolute beginner, hinge, equipment-free pull,
-bar pull, skill, explosive legs, anti-rotation core. All estimates computed with the app's
-estimator.
+bar pull, skill, explosive legs, anti-rotation core. Three compositions changed between the
+draft below and the migration, each caught by running the invariants before writing the SQL:
+
+- **The Cellar Hauler**: Dead Bug inserted between the two rows — Table Row and Towel Door Row
+  carry identical muscle sets, which the consecutive-muscle rule forbids.
+- **The Ploughman's Vow**: reordered hardest-first, and added to the single-pattern allow-list.
+  Every leg movement tags `calf`, so a leg-focused quest cannot satisfy the rule at all; the
+  12-set cap guards it instead (it sits exactly at 12).
+- **The Crow's Ascent**: the hanging leg raise moves to second so difficulty is non-increasing.
 
 ### D1. The Squire's Awakening / L'Éveil de l'Écuyer
 
@@ -604,7 +622,7 @@ actually serves, not what the SQL was meant to say.
 | 6 | `restSeconds` inside the archetype's range | ✅ |
 | 7 | All-`none` equipment, or in the bar allow-list | ✅ |
 | 8 | Boss adventures set hp + weakness + resistance | ✅ |
-| 9 | Every exercise used by ≥ 1 quest | `test.todo` — lands with Phase D |
+| 9 | Every exercise used by ≥ 1 quest | ✅ (one documented exemption) |
 | 10 | No quest repeated on consecutive adventure steps | `test.todo` — lands with Phase E |
 | 11 | Every `imagePath` resolves to an `assetMap` key | extend [assetMap.test.ts](../../__tests__/assetMap.test.ts) with the art pass |
 
@@ -652,8 +670,8 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | 1 | A1 muscle fixes | — | ✅ **done** — `0012_fix_exercise_muscles.sql`; suite green, `db-exercises` expectation updated (it asserted the bug) |
 | 2 | A2 quest rebalance | A1 | ✅ **done** — `0013_rebalance_quests.sql`; 9 invariants green on the 13 quests, full suite passes |
 | 3 | B seed spec quests | A2 | ✅ **done** — `0014_seed_spec_quests.sql`; 19 quests, all in window, every cover resolves |
-| 4 | C pull exercises | — | 2 rows + muscles, placeholder art accepted |
-| 5 | D new quests | C | 27 quests, every exercise used ≥ 1× |
+| 4 | C pull exercises | — | ✅ **done** — `0015_seed_pull_exercises.sql` + `dip_bar` code; 48 exercises |
+| 5 | D new quests | C | ✅ **done** — `0016_seed_new_quests.sql`; 27 quests, catalogue coverage now a real test |
 | 6 | E adventures | B, D | 8 adventures, boss fields set, no repeated consecutive step |
 | 7 | Art pass | D, E | assetMap keys resolve, no placeholder on new content |
 | 8 | F selection | E | daily quest respects level + yesterday's muscles |
@@ -673,6 +691,11 @@ data that is actively wrong and triple the catalogue with content that is alread
   authors the ladder into the content so the system can be added later without re-authoring.
 - **Per-set RIR capture**, warm-up blocks, deload weeks, streak forgiveness — audit items that
   belong to the session and habit layers, not the content layer.
+- **Deleting Barbarian's Overhead Press.** It is the only `dumbbell` movement in the catalogue
+  and the only exercise no quest can use, since the declared equipment envelope is bodyweight +
+  pull-up bar + dip bar. It stays browsable, exempted by name in the coverage invariant, until
+  someone decides whether the product ever wants dumbbells. Deleting it is one `DELETE` and one
+  line out of the test.
 
 ## Related
 

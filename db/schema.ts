@@ -10,6 +10,7 @@ export type MuscleCode = (typeof muscleCodes)[number];
 export const equipmentCodes = [
   "none",
   "pullup_bar",
+  "dip_bar",
   "dumbbell",
   "barbell",
   "kettlebell",

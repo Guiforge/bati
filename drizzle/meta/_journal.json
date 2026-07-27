@@ -92,6 +92,13 @@
       "when": 1785110400000,
       "tag": "0012_fix_exercise_muscles",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1785110400001,
+      "tag": "0013_rebalance_quests",
+      "breakpoints": true
     }
   ]
 }

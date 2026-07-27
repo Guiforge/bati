@@ -143,10 +143,13 @@ of [raw/bodyweight-app-research.md](../raw/bodyweight-app-research.md) §1–§3
 ### 2.2 Hard constraints (enforced by tests, see §11)
 
 1. Estimated duration ∈ **[8 min, 25 min]** (mobility quests: ≥ 5 min).
-2. **Never two consecutive exercises sharing a primary muscle** — except in a declared Core
-   or Skill quest, and never three in a row anywhere.
-3. **Hardest / most technical exercise first** (`difficulty = hard` before `medium` before
-   `easy`), skill work before metabolic work.
+2. **Consecutive exercises may share at most one muscle**, and never have identical muscle
+   sets — except in Core, Strength and Skill quests, where stacking one pattern *is* the
+   identity of the session (a push day is a push day). In every archetype, **no muscle may
+   survive four consecutive exercises**: that is the rule that catches the real defect
+   (Forge's four straight push movements), and it is not relaxed for anyone.
+3. **Hardest / most technical exercise first** — difficulty must be non-increasing
+   (`hard` → `medium` → `easy`), skill work before metabolic work.
 4. **≤ 12 sets on a single muscle per quest** — a session is not a week.
 5. Rest matches the archetype (±15 s). No quest under 40 s rest that stacks the same muscle.
 6. Every quest is either **fully equipment-free** or flagged as needing a bar. No mixed quest
@@ -197,27 +200,32 @@ migration comment so a future pass does not "re-fix" them.
 
 ### A2. Rebalance the 13 existing quests
 
-Every row below is a `UPDATE quests SET rounds/restSeconds` plus, where the composition column
-says so, a delete + re-insert of `quest_exercises`. New estimates are computed.
+> ✅ **Applied** — [`0013_rebalance_quests.sql`](../../drizzle/0013_rebalance_quests.sql).
+> Estimates below are the real output of [db/estimate.ts](../../db/estimate.ts) at `medium`,
+> asserted by [`content-invariants.test.ts`](../../__tests__/content-invariants.test.ts).
+
+Every row is a `UPDATE quests SET rounds/restSeconds` plus, where the composition column says
+so, a delete + re-insert of `quest_exercises`.
 
 | Quest | Archetype | R | Rest | Composition change | New est. |
 | --- | --- | --: | --: | --- | --: |
 | Chop Wood | Circuit | 3 | 45 s | unchanged (Squat → Push-ups → Plank) | 11:30 |
-| Tower Climb | Hypertrophy | 3 | 60 s | insert **Goblin Squat** between Pull-ups and Plank; drop Crunch (abs on abs) | 13:12 |
-| Knight Push | Circuit | 3 | 45 s | append **Superman** (first equipment-free pull in the starter set) | 11:45 |
-| Shield Wall | Core | 3 | 45 s | append **Superman** | 11:45 |
+| Tower Climb | Hypertrophy | 3 | 60 s | insert **Goblin Squat** between Pull-ups and Plank; drop Crunch (abs on abs) | 13:24 |
+| Knight Push | Circuit | 3 | 45 s | append **Superman** (first equipment-free pull in the starter set) | 11:54 |
+| Shield Wall | Core | 3 | 45 s | append **Superman** | 11:48 |
 | Gather Stones | Circuit | 3 | 45 s | append **Glute Bridge** (hinge) | 12:00 |
-| Raise the Shelter | Circuit | 3 | 45 s | append **Dead Bug** | 10:48 |
-| Core Forge | Core | 3 | 60 s | Stone Guardian Plank → **Reverse Crunch** → **Side Plank** (was Plank+Crunch) | 13:15 |
-| Golem Strike | Circuit | 3 | 45 s | append **Superman** | 13:15 |
-| Golem Core | Core | 3 | 60 s | append **Side Plank** | 14:03 |
+| Raise the Shelter | Circuit | 3 | 45 s | append **Dead Bug** | 10:57 |
+| Core Forge | Core | 3 | 60 s | Stone Guardian Plank → **Reverse Crunch** → **Side Plank** (was Plank+Crunch) | 13:18 |
+| Golem Strike | Circuit | 3 | 45 s | append **Superman** | 13:24 |
+| Golem Core | Core | 3 | 60 s | insert **Side Plank** before Crunch (hardest first: medium → medium → easy) | 14:42 |
 | Forge the Dragon Blade | Strength | 3 | 90 s | reorder hardest-first: Archer's Pike → Diamond → Titan's Dip; **drop Dragon Push-up**, append **Superman** as antagonist. 16 push sets → 9 | 22:27 |
 | Climb the Titan's Tower | Strength | 3 | 90 s | **unchanged** — already correct | 17:36 |
-| Build the Stronghold | Hypertrophy | 3 | 60 s | 5 → 4 exercises: Iron Grip Pull-up → Dragon Push-up → Goblin Squat → Stone Guardian Plank (drop Shadow Step Lunge) | 19:18 |
+| Build the Stronghold | Hypertrophy | 3 | 60 s | 5 → 4 exercises: Iron Grip Pull-up → Dragon Push-up → Goblin Squat → Stone Guardian Plank (drop Shadow Step Lunge) | 19:30 |
 | The Iron Gauntlet Challenge | Strength | 3 | 90 s | 5 → 4: Archer's Pike → Iron Grip Pull-up → Titan's Dip → Hollow Body (drop Diamond Push-up). Push sets 15 → 6 | 24:03 |
 
-Result: all 13 quests land in **10:48 – 24:03**, no quest exceeds 12 sets on one muscle, no
-three-in-a-row same-muscle sequence, and rest matches archetype.
+Result: all 13 quests land in **10:57 – 24:03**, no quest exceeds 12 sets on one muscle, no
+muscle survives four consecutive exercises, difficulty is non-increasing, and rest matches
+archetype.
 
 ### A3. Equipment honesty
 
@@ -571,23 +579,38 @@ Non-SQL files touched:
 
 ## 11. Tests & invariants
 
-One new test file, `__tests__/content-invariants.test.ts`, running against the seeded DB via the
-existing helpers in [`__tests__/helpers`](../../__tests__/helpers). It encodes §2.2:
+✅ [`__tests__/content-invariants.test.ts`](../../__tests__/content-invariants.test.ts) — runs the
+real migrations into an in-memory DB via [`helpers/testDb`](../../__tests__/helpers/testDb.ts),
+then reads the content back through `getQuestById(..., "medium")`, so it asserts what the app
+actually serves, not what the SQL was meant to say.
 
-1. Every quest's `estimateQuestSeconds` at `medium` ∈ [480, 1500] s (mobility: ≥ 300).
-2. No three consecutive `quest_exercises` share a primary muscle; no two outside Core/Skill quests.
-3. Sets per muscle per quest ≤ 12.
-4. `restSeconds` ∈ [30, 120] and ≥ 40 when consecutive exercises share a muscle.
-5. Every exercise row is referenced by ≥ 1 `quest_exercises` row.
-6. Every quest is either all-`none` equipment or explicitly in the bar allow-list.
-7. Every `imagePath` on quests/adventures/exercises resolves to a real key in `assetMap`
-   (extends the existing [assetMap.test.ts](../../__tests__/assetMap.test.ts)).
-8. Every adventure has ≥ 2 steps, no quest repeated in consecutive steps, and boss adventures
-   have `bossTotalHp`, `bossWeaknessMuscle`, `bossResistanceMuscle` all set.
+| # | Invariant | Status |
+| --: | --- | --- |
+| 1 | Every seeded quest declares an archetype | ✅ |
+| 2 | `estimateQuestSeconds` at `medium` ∈ [480, 1500] s (mobility ≥ 300) | ✅ |
+| 3 | Difficulty non-increasing (hardest first) | ✅ |
+| 4 | Consecutive exercises share ≤ 1 muscle, never identical sets (Core/Strength/Skill exempt) | ✅ |
+| 5 | No muscle survives four consecutive exercises (no exemption) | ✅ |
+| 6 | ≤ 12 sets per muscle per quest | ✅ |
+| 7 | `restSeconds` inside the archetype's range | ✅ |
+| 8 | All-`none` equipment, or in the bar allow-list | ✅ |
+| 9 | Boss adventures set hp + weakness + resistance | ✅ |
+| 10 | Every exercise used by ≥ 1 quest | `test.todo` — lands with Phase D |
+| 11 | No quest repeated on consecutive adventure steps | `test.todo` — lands with Phase E |
+| 12 | Every `imagePath` resolves to an `assetMap` key | extend [assetMap.test.ts](../../__tests__/assetMap.test.ts) with the art pass |
 
-Existing tests to re-run and expect changes: `db-quests`, `db-adventures`,
-`db-adventures-campaign`, `db-bossFights`, `db-muscleBalance` (the Squat tag fix moves volume
-out of `chest`).
+Two rules from §2.2 are deliberately **not** tests:
+
+- **"Strength quests need an antagonist"** — the taxonomy cannot express movement patterns
+  (`back` covers a pull-up, a hinge and a spinal-erector hold), so the rule false-positives on
+  Climb the Titan's Tower and is toothless everywhere else. Invariants 5 and 6 catch the defect
+  it was written for. It stays as authoring guidance.
+- **The archetype registry itself** lives in the test file until §8 F3 derives it at read time.
+  That is intentional: a new quest cannot be seeded without declaring what it is meant to be.
+
+Existing tests touched so far: `db-exercises` (it asserted the `Squat → chest` bug). `db-quests`,
+`db-adventures`, `db-adventures-campaign`, `db-bossFights` and `db-muscleBalance` all still pass
+unchanged after A1 + A2.
 
 ---
 
@@ -613,7 +636,7 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | # | Phase | Depends on | Gate |
 | --: | --- | --- | --- |
 | 1 | A1 muscle fixes | — | ✅ **done** — `0012_fix_exercise_muscles.sql`; suite green, `db-exercises` expectation updated (it asserted the bug) |
-| 2 | A2 quest rebalance | A1 | new invariants test green on the 13 existing quests |
+| 2 | A2 quest rebalance | A1 | ✅ **done** — `0013_rebalance_quests.sql`; 9 invariants green on the 13 quests, full suite passes |
 | 3 | B seed spec quests | A2 | 19 quests, all in window, covers resolve |
 | 4 | C pull exercises | — | 2 rows + muscles, placeholder art accepted |
 | 5 | D new quests | C | 27 quests, every exercise used ≥ 1× |

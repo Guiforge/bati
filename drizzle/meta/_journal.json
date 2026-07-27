@@ -99,6 +99,13 @@
       "when": 1785110400001,
       "tag": "0013_rebalance_quests",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1785110400002,
+      "tag": "0014_seed_spec_quests",
+      "breakpoints": true
     }
   ]
 }

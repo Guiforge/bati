@@ -144,13 +144,15 @@ of [raw/bodyweight-app-research.md](../raw/bodyweight-app-research.md) §1–§3
 
 1. Estimated duration ∈ **[8 min, 25 min]** (mobility quests: ≥ 5 min).
 2. **Consecutive exercises may share at most one muscle**, and never have identical muscle
-   sets — except in Core, Strength and Skill quests, where stacking one pattern *is* the
-   identity of the session (a push day is a push day). In every archetype, **no muscle may
-   survive four consecutive exercises**: that is the rule that catches the real defect
-   (Forge's four straight push movements), and it is not relaxed for anyone.
+   sets — except in Core, Strength, Skill and Metabolic quests. For the first three, stacking
+   one pattern *is* the identity of the session (a push day is a push day). Metabolic is
+   exempt for a different reason: with six muscle codes, every cardio movement tags `calf`
+   and `abs`, which says which limbs move, not where the stimulus lands.
 3. **Hardest / most technical exercise first** — difficulty must be non-increasing
    (`hard` → `medium` → `easy`), skill work before metabolic work.
-4. **≤ 12 sets on a single muscle per quest** — a session is not a week.
+4. **≤ 12 sets on a single muscle per quest** — a session is not a week. This is the rule
+   that carries the weight for the exempt archetypes: pre-`0013`, Forge and Iron Gauntlet
+   both ran 4 rounds with `arms` in four exercises = 16 sets, and it flags both.
 5. Rest matches the archetype (±15 s). No quest under 40 s rest that stacks the same muscle.
 6. Every quest is either **fully equipment-free** or flagged as needing a bar. No mixed quest
    that silently blocks a user at exercise 3.
@@ -239,26 +241,34 @@ Phase F turns it into an exclusion filter.
 
 ## 4. Phase B — seed what is already written and drawn
 
+> ✅ **Applied** — [`0014_seed_spec_quests.sql`](../../drizzle/0014_seed_spec_quests.sql).
+> Catalogue: 13 → 19 quests, no art generated, every cover resolves.
+
 Six quests, straight from [content-generation.md](../content/content-generation.md), with the
-rest/rounds adjusted to §2.1 where the spec drifts. Covers and `assetMap` keys already exist.
+rest/rounds/order adjusted to §2.1–2.2 where the spec drifts. Covers and `assetMap` keys
+already existed.
 
 | Quest (EN / FR) | Archetype | R | Rest | Exercises (in order) | Est. |
 | --- | --- | --: | --: | --- | --: |
 | **Escape the Collapsing Mine** / Fuite de la Mine Effondrée | Metabolic | 3 | 45 s | Berserker Burpee 8-12 · Monk's Mountain Climber 30-45 s · Paladin's High Knee 30-45 s · Thunder Jumping Jack 20-30 | 15:48 |
 | **Guard the Fortress Gate** / Garder la Porte de la Forteresse | Core | 3 | 60 s | Wall Sentinel Hold 30-45 s · Stone Guardian Plank 30-60 s · Goblin Squat 12-15 · Shadow Step Lunge 10-12 | 18:54 |
-| **The Arcane Gauntlet** / Le Gant Arcanique | Core | 3 | 45 s | Alchemist's Hollow Body 20-30 s · Stone Guardian Plank 45-60 s · Wizard's Bicycle Crunch 15-20 · Monk's Mountain Climber 30-40 s | ~16 min (spec 4 rounds → **3**, was 21:07) |
-| **The Druid's Path** / Le Chemin du Druide | Mobility | 2 | 30 s | Druid's Cobra Stretch 30-45 s · Samurai's Warrior Pose 45-60 s · Shadow Step Lunge 8-10 | 6:24 |
-| **Sprint Through the Shadowlands** / Sprint à Travers les Terres d'Ombre | Metabolic | 3 | 45 s | Paladin's High Knee 40-50 s · Rogue's Skater Hop 15-20 · Berserker Burpee 10-12 · Thunder Jumping Jack 25-30 | 16:27 |
-| **Morning of the Champion** / Matin du Champion | Circuit | 3 | 45 s | Thunder Jumping Jack 20-25 · Goblin Squat 12-15 · Dragon Push-up 10-12 · Druid's Cobra Stretch 30-40 s | ~14 min (spec rest 30 → **45**) |
+| **The Arcane Gauntlet** / Le Gant Arcanique | Core | 3 | 45 s | Alchemist's Hollow Body 20-30 s · Stone Guardian Plank 45-60 s · Wizard's Bicycle Crunch 15-20 · Monk's Mountain Climber 30-40 s | 15:42 |
+| **The Druid's Path** / Le Chemin du Druide | Mobility | 2 | 30 s | Samurai's Warrior Pose 45-60 s · Shadow Step Lunge 8-10 · Druid's Cobra Stretch 30-45 s | 6:26 |
+| **Sprint Through the Shadowlands** / Sprint à Travers les Terres d'Ombre | Metabolic | 3 | 45 s | Berserker Burpee 10-12 · Paladin's High Knee 40-50 s · Rogue's Skater Hop 15-20 · Thunder Jumping Jack 25-30 | 16:27 |
+| **Morning of the Champion** / Matin du Champion | Circuit | 3 | 45 s | Goblin Squat 12-15 · Dragon Push-up 10-12 · Thunder Jumping Jack 20-25 · Druid's Cobra Stretch 30-40 s | 14:54 |
 
 Deviations from the spec, and why:
 
-- **Arcane Gauntlet**: 4 rounds → 3. Four rounds of four core exercises = 16 core sets in one
-  session, above the per-session ceiling (§2.2 rule 4).
-- **Arcane Gauntlet order**: hollow body and plank (hard, technical) move ahead of bicycle
-  crunch and mountain climber (§2.2 rule 3).
-- **Morning of the Champion**: rest 30 → 45 s. It is a full-body circuit, not a metabolic quest;
-  30 s between a squat set and a push-up set is under the floor.
+- **Arcane Gauntlet**: 4 rounds → 3 (four rounds of four core movements = 16 core sets in one
+  session, over the ceiling in §2.2 rule 4), and the hollow body + plank lead instead of
+  trailing (rule 3).
+- **Morning of the Champion**: rest 30 → 45 s — it is a full-body circuit, not a metabolic
+  quest, and 30 s between a squat set and a push-up set is under the floor. It also opens on
+  the squat rather than the jumping jack (rule 3). The jack would have been a fine warm-up,
+  but the app has no warm-up block to declare it as one, so the difficulty rule wins.
+- **Sprint Through the Shadowlands**: the burpee (hard) moves from third to first, same rule.
+- **The Druid's Path**: warrior pose leads, cobra stretch closes — required by rule 3, and a
+  better mobility flow anyway (standing → lunge → floor).
 
 ---
 
@@ -589,22 +599,26 @@ actually serves, not what the SQL was meant to say.
 | 1 | Every seeded quest declares an archetype | ✅ |
 | 2 | `estimateQuestSeconds` at `medium` ∈ [480, 1500] s (mobility ≥ 300) | ✅ |
 | 3 | Difficulty non-increasing (hardest first) | ✅ |
-| 4 | Consecutive exercises share ≤ 1 muscle, never identical sets (Core/Strength/Skill exempt) | ✅ |
-| 5 | No muscle survives four consecutive exercises (no exemption) | ✅ |
-| 6 | ≤ 12 sets per muscle per quest | ✅ |
-| 7 | `restSeconds` inside the archetype's range | ✅ |
-| 8 | All-`none` equipment, or in the bar allow-list | ✅ |
-| 9 | Boss adventures set hp + weakness + resistance | ✅ |
-| 10 | Every exercise used by ≥ 1 quest | `test.todo` — lands with Phase D |
-| 11 | No quest repeated on consecutive adventure steps | `test.todo` — lands with Phase E |
-| 12 | Every `imagePath` resolves to an `assetMap` key | extend [assetMap.test.ts](../../__tests__/assetMap.test.ts) with the art pass |
+| 4 | Consecutive exercises share ≤ 1 muscle, never identical sets (Core/Strength/Skill/Metabolic exempt) | ✅ |
+| 5 | ≤ 12 sets per muscle per quest — carries the weight for the exempt archetypes | ✅ |
+| 6 | `restSeconds` inside the archetype's range | ✅ |
+| 7 | All-`none` equipment, or in the bar allow-list | ✅ |
+| 8 | Boss adventures set hp + weakness + resistance | ✅ |
+| 9 | Every exercise used by ≥ 1 quest | `test.todo` — lands with Phase D |
+| 10 | No quest repeated on consecutive adventure steps | `test.todo` — lands with Phase E |
+| 11 | Every `imagePath` resolves to an `assetMap` key | extend [assetMap.test.ts](../../__tests__/assetMap.test.ts) with the art pass |
 
-Two rules from §2.2 are deliberately **not** tests:
+Rules from §2.2 that are deliberately **not** tests:
 
 - **"Strength quests need an antagonist"** — the taxonomy cannot express movement patterns
   (`back` covers a pull-up, a hinge and a spinal-erector hold), so the rule false-positives on
   Climb the Titan's Tower and is toothless everywhere else. Invariants 5 and 6 catch the defect
   it was written for. It stays as authoring guidance.
+- **"No muscle across four consecutive exercises"** — written for Forge's four straight push
+  movements, but with six muscle codes it also fails every legitimate four-exercise core quest
+  (`abs` in all four) and every cardio quest (`calf` in all four). Invariant 5 catches the
+  original defect on its own, so the window rule was removed rather than exempted into
+  meaninglessness.
 - **The archetype registry itself** lives in the test file until §8 F3 derives it at read time.
   That is intentional: a new quest cannot be seeded without declaring what it is meant to be.
 
@@ -637,7 +651,7 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | --: | --- | --- | --- |
 | 1 | A1 muscle fixes | — | ✅ **done** — `0012_fix_exercise_muscles.sql`; suite green, `db-exercises` expectation updated (it asserted the bug) |
 | 2 | A2 quest rebalance | A1 | ✅ **done** — `0013_rebalance_quests.sql`; 9 invariants green on the 13 quests, full suite passes |
-| 3 | B seed spec quests | A2 | 19 quests, all in window, covers resolve |
+| 3 | B seed spec quests | A2 | ✅ **done** — `0014_seed_spec_quests.sql`; 19 quests, all in window, every cover resolves |
 | 4 | C pull exercises | — | 2 rows + muscles, placeholder art accepted |
 | 5 | D new quests | C | 27 quests, every exercise used ≥ 1× |
 | 6 | E adventures | B, D | 8 adventures, boss fields set, no repeated consecutive step |

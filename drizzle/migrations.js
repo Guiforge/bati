@@ -14,6 +14,7 @@ import m0010 from "./0010_seed_bodyweight_exercises.sql";
 import m0011 from "./0011_seed_bodyweight_exercise_images.sql";
 import m0012 from "./0012_fix_exercise_muscles.sql";
 import m0013 from "./0013_rebalance_quests.sql";
+import m0014 from "./0014_seed_spec_quests.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -33,5 +34,6 @@ export default {
     m0011,
     m0012,
     m0013,
+    m0014,
   },
 };

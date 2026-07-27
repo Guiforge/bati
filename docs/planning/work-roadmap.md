@@ -393,6 +393,55 @@ at least one quest, and every movement pattern has an equipment-free quest:
 
 ## 7. Phase E — adventures
 
+### E0. Pre-flight: the boss HP in the spec is wrong by 3-6×
+
+Before writing any SQL, every proposed campaign was replayed against the **real** damage
+formula ([db/bossFights.ts](../../db/bossFights.ts) + the `muscles[0]` primary-muscle pick in
+[stores/session.ts:249](../../stores/session.ts#L249)): `damage = resultValue × 1.5 if weakness
+× 0.5 if resistance`, doubled on a crit that fires 30 % of the time when the target is met.
+Expected damage per set is therefore `target × modifier × 1.3`, summed over exercises × rounds.
+
+| Campaign | Steps | Spec HP | Damage, step 1 | Campaign total | Boss dies at |
+| --- | --: | --: | --: | --: | --- |
+| The Scout's Trial | 5 | 400 | 394 | 2 539 | step 2 of 5 |
+| The Guardian's Oath | 6 | 600 | 421 | 2 098 | step 2 of 6 |
+| The Monk's Enlightenment | 4 | 350 | 177 | 1 590 | step 2 of 4 |
+| The Ranger's Journey | 7 | 550 | 394 | 2 879 | step 2 of 7 |
+| The Iron Lord's Conquest | 8 | 800 | 168 | 2 101 | step 4 of 8 |
+| **The Golem** (shipped) | 2 | **200** | **242** | 655 | **step 1 of 2** |
+
+Two consequences.
+
+**The Golem is broken in the app right now.** It was roughly calibrated before — 2 rounds dealt
+~130 damage against 200 HP, so it died on the last step — and the A2 rebalance took Golem Strike
+from 2 rounds to 3. It now dies on the first session of a two-session campaign. The roadmap
+guessed a bump to 320; the measured number is **600**.
+
+**HP is a per-campaign tuning value, not a difficulty signal.** Because damage is the raw rep or
+second count, a beginner cardio quest (25-30 jumping jacks × 3 rounds) deals far more than an
+elite strength quest (8-12 reps × 3 rounds): the Iron Lord's opening step deals 168, the Scout's
+Trial's opens at 394. Tuning each boss to its own campaign is the content-level fix, and it means
+`bossTotalHp` no longer reads as "this boss is harder".
+
+**HP set so the boss falls on the last step** (≈ 92 % of campaign total, leaving headroom for
+users who beat their targets):
+
+| Boss | Was | Becomes |
+| --- | --: | --: |
+| Wind Wraith (Scout's Trial) | 400 | **2 330** |
+| Stone Golem (Guardian's Oath) | 600 | **1 930** |
+| Shadow Serpent (Monk's Enlightenment) | 350 | **1 460** |
+| Forest Titan (Ranger's Journey) | 550 | **2 640** |
+| The Iron Lord | 800 | **1 930** |
+| The Golem (existing) | 200 | **600** |
+
+⚠️ **Flagged, not fixed here — seconds and reps are not the same unit.** A 60 s plank deals 60
+damage; a 12-rep squat deals 12. That is why The Arcane Gauntlet (long holds) deals 760 while
+The Druid's Path deals 177, and why the app's hardest content deals the least damage. The
+content-level fix is per-campaign HP; the real fix is dividing time-based results by
+`secondsPerRep` in `dealDamage`, which is a formula change in `db/bossFights.ts` and belongs to
+its own change, not to a seed migration. Recorded in §14.
+
 ### E1. New: The Squire's Path / Le Chemin de l'Écuyer
 
 `kind = route`, no boss, 4 steps, 100 % equipment-free, ~50 min of total training.
@@ -411,7 +460,7 @@ Art: **new cover required** (`squire_path.jpg`).
 
 ### E2. Seed The Scout's Trial (cardio, boss: Wind Wraith)
 
-`bossTotalHp 400`, weakness `calf`, resistance `arms`. Cover + boss art exist.
+`bossTotalHp 2330` (see E0), weakness `calf`, resistance `arms`. Cover + boss art exist.
 Spec repeats `sprint_shadowlands` three times; replaced with real variety:
 
 | Step | Quest |
@@ -426,7 +475,7 @@ Weakness `calf` is coherent: every step is leg-dominant, so the fight actually r
 
 ### E3. Seed The Guardian's Oath (strength/defence, boss: Stone Golem)
 
-`bossTotalHp 600`, weakness `back`, resistance `chest`. 6 steps:
+`bossTotalHp 1930` (see E0), weakness `back`, resistance `chest`. 6 steps:
 
 | Step | Quest |
 | --: | --- |
@@ -442,13 +491,13 @@ which the spec's original composition did not.
 
 ### E4. Seed The Monk's Enlightenment (mobility/core, boss: Shadow Serpent)
 
-`bossTotalHp 350`, weakness `abs`, resistance `calf`. 4 steps:
+`bossTotalHp 1460` (see E0), weakness `abs`, resistance `calf`. 4 steps:
 The Druid's Path → The Arcane Gauntlet → The Serpent's Coil (D8) → The Druid's Path.
 The lightest campaign — the "keep the flame alive on a tired week" path.
 
 ### E5. Seed The Ranger's Journey (endurance, boss: Forest Titan)
 
-`bossTotalHp 550`, weakness `calf`, resistance `shoulder`. 7 steps:
+`bossTotalHp 2640` (see E0), weakness `calf`, resistance `shoulder`. 7 steps:
 Morning of the Champion → The Ploughman's Vow (D4) → Sprint Through the Shadowlands →
 Build the Stronghold → Storm of Blades (D7) → The Bear's Road (D2) → Morning of the Champion.
 
@@ -469,17 +518,17 @@ patterns and to use the new advanced quests:
 | 6 | The Colossus Trial (D6) | skill |
 | 7 | The Iron Gauntlet Challenge | mixed |
 
-Total ≈ 2 h 40 across 8 sessions, no pattern twice in a row. Keep `bossTotalHp 800`, weakness
-`abs`, resistance `chest`.
+Total **2 h 46** across 8 sessions, no pattern twice in a row. `bossTotalHp` 800 → **1930**
+(see E0), weakness `abs`, resistance `chest`.
 
 ### E7. Adjust the two existing adventures
 
 - **The Lumber Route**: unchanged step list; its three quests are already rebalanced by A2
   (11:30 / 12:00 / 10:48 instead of 9:30 / 4:34 / 3:58). Re-describe as the *second* route,
   after The Squire's Path.
-- **The Golem**: weakness `chest` is correct only after A1 fixes the Squat tag. Bump
-  `bossTotalHp` 200 → 320 to match the rebalanced quests (Golem Strike 5:30 → 13:15 means each
-  session now deals ~2.4× the damage; without the bump the boss dies in one session).
+- **The Golem**: weakness `chest` is correct only after A1 fixes the Squat tag. `bossTotalHp`
+  200 → **600** (E0). This is a live bug, not a nice-to-have: with A2 shipped, Golem Strike
+  alone deals 242 against 200 HP, so the boss dies on the first of its two sessions.
 
 ### E8. Adventure catalogue after Phase E
 
@@ -691,6 +740,11 @@ data that is actively wrong and triple the catalogue with content that is alread
   authors the ladder into the content so the system can be added later without re-authoring.
 - **Per-set RIR capture**, warm-up blocks, deload weeks, streak forgiveness — audit items that
   belong to the session and habit layers, not the content layer.
+- **Normalising boss damage across reps and seconds.** `dealDamage` takes the raw result value,
+  so a 60 s hold deals five times a 12-rep set of the same movement. Dividing time results by the
+  exercise's `secondsPerRep` would make the two comparable and let boss HP mean something across
+  campaigns again. It is a formula change in [db/bossFights.ts](../../db/bossFights.ts) plus a
+  re-tune of every HP value — its own change, not a seed migration.
 - **Deleting Barbarian's Overhead Press.** It is the only `dumbbell` movement in the catalogue
   and the only exercise no quest can use, since the declared equipment envelope is bodyweight +
   pull-up bar + dip bar. It stays browsable, exempted by name in the coverage invariant, until

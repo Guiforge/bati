@@ -1,8 +1,9 @@
+import { Pause, SkipBack, SkipForward } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, YStack } from "tamagui";
+import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import { type Exercise, listExercises } from "@/db/exercises";
@@ -26,7 +27,9 @@ export function WarmupView() {
 
   const warmupIndex = useSessionStore((s) => s.warmupIndex);
   const nextWarmupStep = useSessionStore((s) => s.nextWarmupStep);
+  const previousWarmupStep = useSessionStore((s) => s.previousWarmupStep);
   const skipWarmup = useSessionStore((s) => s.skipWarmup);
+  const pauseSession = useSessionStore((s) => s.pauseSession);
   const { remainingSeconds, progress } = useSessionTimer();
 
   const [catalogue, setCatalogue] = useState<Exercise[]>([]);
@@ -54,55 +57,151 @@ export function WarmupView() {
   const step = WARMUP_SEQUENCE[warmupIndex];
   if (!step) return null;
 
+  const nameOf = (enName: string) => {
+    const found = catalogue.find((e) => e.enName === enName);
+    if (!found) return enName;
+    return language === "fr" ? found.frName : found.enName;
+  };
+
   const exercise = catalogue.find((e) => e.enName === step.exerciseName);
-  const label = exercise
-    ? language === "fr"
-      ? exercise.frName
-      : exercise.enName
-    : step.exerciseName;
+  const label = nameOf(step.exerciseName);
+
+  const nextStep = WARMUP_SEQUENCE[warmupIndex + 1];
+  const nextExercise = nextStep
+    ? catalogue.find((e) => e.enName === nextStep.exerciseName)
+    : undefined;
+
+  const isFirst = warmupIndex === 0;
 
   return (
-    <YStack
-      flex={1}
-      bg="$background"
-      pt={insets.top + 16}
-      pb={insets.bottom + 16}
-      px="$5"
-      items="center"
-      justify="center"
-      gap="$4"
-    >
-      <Text fontSize={13} fontWeight="700" color="$textSecondary" letterSpacing={1}>
-        {t("session.warmup_title", "WARM-UP")}
-      </Text>
-
-      {exercise ? (
-        <Image
-          source={getExerciseAsset(exercise.imagePath)}
-          style={{ width: 180, height: 180, borderRadius: 16 }}
-          contentFit="cover"
+    <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16} px="$5" gap="$4">
+      <XStack justify="flex-end">
+        <Button
+          testID="session-pause"
+          size="$3"
+          circular
+          icon={<Pause size={20} color="$text" />}
+          onPress={pauseSession}
+          chromeless
+          pressStyle={{ opacity: 0.7 }}
+          accessibilityLabel={t("session.pause_accessibility")}
+          accessibilityRole="button"
         />
+      </XStack>
+
+      <YStack flex={1} items="center" justify="center" gap="$4">
+        <Text fontSize={13} fontWeight="700" color="$textSecondary" letterSpacing={1}>
+          {t("session.warmup_title", "WARM-UP")}
+        </Text>
+
+        {exercise ? (
+          <Image
+            source={getExerciseAsset(exercise.imagePath)}
+            style={{ width: 180, height: 180, borderRadius: 16 }}
+            contentFit="cover"
+          />
+        ) : null}
+
+        <H3 color="$text" fontWeight="700" style={{ textAlign: "center" }}>
+          {label}
+        </H3>
+
+        <H1 color="$primary" fontSize={64} fontWeight="700">
+          {formatTime(Math.max(0, remainingSeconds))}
+        </H1>
+
+        <Progress value={Math.min(100, progress * 100)} width="100%" bg="$surface">
+          <Progress.Indicator bg="$primary" />
+        </Progress>
+
+        <XStack items="center" gap="$5">
+          <Button
+            testID="session-warmup-prev"
+            size="$4"
+            circular
+            icon={<SkipBack size={20} color="$text" />}
+            disabled={isFirst}
+            opacity={isFirst ? 0.35 : 1}
+            bg="$surface"
+            borderWidth={1}
+            borderColor="$borderStrong"
+            pressStyle={{ opacity: 0.7 }}
+            onPress={() => {
+              selection();
+              previousWarmupStep();
+            }}
+            accessibilityLabel={t("session.warmup_prev_accessibility")}
+            accessibilityRole="button"
+          />
+
+          <Text fontSize={13} color="$textSecondary">
+            {t("session.warmup_step", {
+              current: warmupIndex + 1,
+              total: WARMUP_SEQUENCE.length,
+              defaultValue: `${warmupIndex + 1} of ${WARMUP_SEQUENCE.length}`,
+            })}
+          </Text>
+
+          <Button
+            testID="session-warmup-next"
+            size="$4"
+            circular
+            icon={<SkipForward size={20} color="$text" />}
+            bg="$surface"
+            borderWidth={1}
+            borderColor="$borderStrong"
+            pressStyle={{ opacity: 0.7 }}
+            onPress={() => {
+              selection();
+              nextWarmupStep();
+            }}
+            accessibilityLabel={t("session.warmup_next_accessibility")}
+            accessibilityRole="button"
+          />
+        </XStack>
+      </YStack>
+
+      {nextStep ? (
+        <XStack
+          bg="$surface"
+          p="$3"
+          rounded="$6"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          gap="$3"
+          items="center"
+        >
+          <YStack
+            width={50}
+            height={50}
+            bg="$surface2"
+            rounded="$3"
+            overflow="hidden"
+            borderWidth={1}
+            borderColor="$borderStrong"
+          >
+            {nextExercise ? (
+              <Image
+                source={getExerciseAsset(nextExercise.imagePath)}
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+                transition={150}
+              />
+            ) : null}
+          </YStack>
+          <YStack flex={1}>
+            <Text color="$textSecondary" fontSize={12} fontWeight="700">
+              {t("session.up_next")}
+            </Text>
+            <Text fontWeight="700" fontSize={16} numberOfLines={1} color="$text">
+              {nameOf(nextStep.exerciseName)}
+            </Text>
+          </YStack>
+          <Text color="$textSecondary" fontSize={13}>
+            {nextStep.seconds}s
+          </Text>
+        </XStack>
       ) : null}
-
-      <H3 color="$text" fontWeight="700" style={{ textAlign: "center" }}>
-        {label}
-      </H3>
-
-      <H1 color="$primary" fontSize={64} fontWeight="700">
-        {formatTime(Math.max(0, remainingSeconds))}
-      </H1>
-
-      <Progress value={Math.min(100, progress * 100)} width="100%" bg="$surface">
-        <Progress.Indicator bg="$primary" />
-      </Progress>
-
-      <Text fontSize={13} color="$textSecondary">
-        {t("session.warmup_step", {
-          current: warmupIndex + 1,
-          total: WARMUP_SEQUENCE.length,
-          defaultValue: `${warmupIndex + 1} of ${WARMUP_SEQUENCE.length}`,
-        })}
-      </Text>
 
       <Button
         testID="session-skip-warmup"

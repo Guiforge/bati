@@ -246,6 +246,38 @@ describe("useSessionStore", () => {
       expect(store.getState().results).toEqual([]);
     });
 
+    test("stepping back returns to the previous movement with its timer full", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      store.getState().nextWarmupStep();
+      store.getState().previousWarmupStep();
+
+      expect(store.getState().status).toBe("warmup");
+      expect(store.getState().warmupIndex).toBe(0);
+      expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[0].seconds);
+    });
+
+    test("stepping back on the first movement does nothing", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      store.getState().previousWarmupStep();
+
+      expect(store.getState().status).toBe("warmup");
+      expect(store.getState().warmupIndex).toBe(0);
+    });
+
+    test("quitting resets the warm-up position", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      store.getState().nextWarmupStep();
+
+      store.getState().quitSession();
+
+      expect(store.getState().warmupIndex).toBe(0);
+    });
+
     test("turning it off starts on the countdown, as before", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(false);
 

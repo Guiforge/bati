@@ -356,6 +356,8 @@
     "warmup_title": "WARM-UP",
     "warmup_skip": "Skip warm-up",
     "warmup_step": "{{current}} of {{total}}",
+    "warmup_prev_accessibility": "Previous movement",
+    "warmup_next_accessibility": "Next movement",
     "countdown_subtitle": "Time to move.",
     "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure."
   },

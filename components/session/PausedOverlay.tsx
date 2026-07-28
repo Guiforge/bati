@@ -11,11 +11,16 @@ export function PausedOverlay() {
   const router = useRouter();
   const { mediumImpact, warning } = useHaptics();
   const status = useSessionStore((s) => s.status);
+  const prePauseStatus = useSessionStore((s) => s.prePauseStatus);
   const resumeSession = useSessionStore((s) => s.resumeSession);
   const restartRound = useSessionStore((s) => s.restartRound);
   const quitSession = useSessionStore((s) => s.quitSession);
 
   if (status !== "paused") return null;
+
+  // No round has begun before the first exercise, and restartRound() would jump straight to
+  // "running" — skipping the rest of the warm-up and the 3-2-1 countdown with it.
+  const canRestartRound = prePauseStatus !== "warmup" && prePauseStatus !== "countdown";
 
   const handleResume = () => {
     mediumImpact();
@@ -67,17 +72,19 @@ export function PausedOverlay() {
               {t("session.resume_button")}
             </AppButton>
 
-            <AppButton
-              testID="session-restart-round"
-              onPress={handleRestartRound}
-              variant="outline"
-              backgroundColor="$surface2"
-              pressStyle={{ opacity: 0.9 }}
-              accessibilityLabel={t("session.restart_round_button")}
-              accessibilityRole="button"
-            >
-              {t("session.restart_round_button")}
-            </AppButton>
+            {canRestartRound ? (
+              <AppButton
+                testID="session-restart-round"
+                onPress={handleRestartRound}
+                variant="outline"
+                backgroundColor="$surface2"
+                pressStyle={{ opacity: 0.9 }}
+                accessibilityLabel={t("session.restart_round_button")}
+                accessibilityRole="button"
+              >
+                {t("session.restart_round_button")}
+              </AppButton>
+            ) : null}
 
             <AppButton
               testID="session-quit"

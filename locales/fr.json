@@ -577,6 +577,8 @@
     "warmup_title": "ÉCHAUFFEMENT",
     "warmup_skip": "Passer l'échauffement",
     "warmup_step": "{{current}} sur {{total}}",
+    "warmup_prev_accessibility": "Mouvement précédent",
+    "warmup_next_accessibility": "Mouvement suivant",
     "countdown_subtitle": "C'est l'heure de bouger.",
     "reserve_hint": "Garde 1 à 2 répétitions en réserve — ne va pas à l'échec."
   },

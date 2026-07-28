@@ -17,6 +17,7 @@ interface SavedSessionState {
   lastDamageResult: DamageResult | null;
   status: SessionStatus;
   prePauseStatus: SessionStatus | null;
+  warmupIndex: number;
   currentRoundIndex: number;
   currentExerciseIndex: number;
   startTime: number;
@@ -115,6 +116,8 @@ export function useSessionRecovery() {
         lastDamageResult: saved.lastDamageResult,
         status: "paused", // Always resume in paused state
         prePauseStatus: saved.status === "paused" ? saved.prePauseStatus : saved.status,
+        // ?? 0 covers snapshots written before warmupIndex was part of the payload.
+        warmupIndex: saved.warmupIndex ?? 0,
         currentRoundIndex: saved.currentRoundIndex,
         currentExerciseIndex: saved.currentExerciseIndex,
         startTime: saved.startTime,
@@ -171,6 +174,7 @@ export async function saveSessionState(): Promise<void> {
     lastDamageResult: state.lastDamageResult,
     status: state.status,
     prePauseStatus: state.prePauseStatus,
+    warmupIndex: state.warmupIndex,
     currentRoundIndex: state.currentRoundIndex,
     currentExerciseIndex: state.currentExerciseIndex,
     startTime: state.startTime ?? Date.now(),

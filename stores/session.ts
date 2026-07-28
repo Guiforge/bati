@@ -76,6 +76,7 @@ interface SessionState {
     },
   ) => Promise<void>;
   nextWarmupStep: () => void;
+  previousWarmupStep: () => void;
   skipWarmup: () => void;
   finishCountdown: () => void;
   pauseSession: () => void;
@@ -178,6 +179,19 @@ export const useSessionStore = create<SessionState>()(
       });
     },
 
+    /** Step back one movement, timer full again. Stops at the first: there is nothing before it. */
+    previousWarmupStep: () => {
+      const { status, warmupIndex } = get();
+      if (status !== "warmup" || warmupIndex === 0) return;
+
+      const prev = warmupIndex - 1;
+      set({
+        warmupIndex: prev,
+        timerStartTimestamp: Date.now(),
+        timerDuration: WARMUP_SEQUENCE[prev].seconds,
+      });
+    },
+
     /** Leave the warm-up for the countdown. Nothing is journaled: a warm-up is not work. */
     skipWarmup: () => {
       if (get().status !== "warmup") return;
@@ -265,6 +279,7 @@ export const useSessionStore = create<SessionState>()(
         bossFight: null,
         lastDamageResult: null,
         prePauseStatus: null,
+        warmupIndex: 0,
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
         startTime: null,

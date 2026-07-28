@@ -763,9 +763,9 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | 9 | G1 oath presets | D | ✅ **done** — equipment-free pull + skill presets, kit-aware deck |
 | 10 | G3 weekly-sessions oath | — | ✅ **done** — `weekly_sessions`, 2/3/4 per week, forgiveness asserted by test |
 | 11 | G2 flame rework | G3 | ✅ **done** — consistency streak, quota set by the oath, 9 tests rewritten |
-| 12 | H1 readiness + disclaimer | — | the text exists, is reachable from onboarding and Settings, and is translated |
-| 13 | H3 first session in onboarding | — | a new hero can finish a workout without leaving onboarding, and can skip it |
-| 14 | H2 warm-up | — | a session can start with a warm-up, and the countdown stops claiming one |
+| 12 | H1 readiness + disclaimer | — | ✅ **done** — `app/safety.tsx`, a line on the last onboarding step, a Settings row |
+| 13 | H3 first session in onboarding | — | ✅ **done** — `onboarding/first-session.tsx` offers The Squire's Awakening, skippable |
+| 14 | H2 warm-up | — | ✅ **done** — 2 min dynamic warm-up, skippable, nothing journaled; countdown copy fixed |
 | 15 | H4 deload nudge | H2 | the Coach can notice several heavy weeks and suggest an easier one |
 | 16 | Art pass | D, E | assetMap keys resolve, no placeholder on new content |
 | 17 | F3 archetype badge | F1 | a quest card says what kind of session it is before you start |
@@ -784,17 +784,17 @@ problems and are closed by phases A–G; the rest live here so none of them is l
 | # | Finding | Where it lives now |
 | --: | --- | --- |
 | 1 | The daily streak contradicted the Coach's rest rule | ✅ §9 G2 — the flame counts consistency |
-| 2 | No medical disclaimer, no readiness question | **H1 below** |
-| 3 | No warm-up; the countdown claims one happened | **H2 below** |
+| 2 | No medical disclaimer, no readiness question | ✅ H1 below |
+| 3 | No warm-up; the countdown claims one happened | ✅ H2 below |
 | 4 | `Squat` / `Wall Sit` tagged `chest` | ✅ §3 A1 — `0012` |
 | 5 | Muscle taxonomy has no real lower body | §15 — its own roadmap, and it bit this plan three times |
 | 6 | Pulling without equipment was impossible | ✅ §5 C + §6 D3 |
 | 7 | Progression is a rep multiplier, not a ladder | §15 — the ladder is authored in §2.3, the unlock system is not built |
 | 8 | Rest at 30 s on 9 of 13 quests | ✅ §3 A2 — `0013` |
 | 9 | No deload, no 48 h rule | ⚠️ half — §8 F1b demotes yesterday's muscles; deload is **H4 below** |
-| 10 | Onboarding never reaches a first session | **H3 below** |
+| 10 | Onboarding never reaches a first session | ✅ H3 below |
 
-### H1. Readiness and the medical disclaimer
+### H1. Readiness and the medical disclaimer ✅
 
 Zero occurrences of any health warning anywhere in the app today. This is the research's first
 guardrail (§4 of the dossier) and a store requirement, and it is the cheapest item on this page.
@@ -806,18 +806,33 @@ guardrail (§4 of the dossier) and a store requirement, and it is the cheapest i
 - No PAR-Q questionnaire with branching: a questionnaire the app does nothing with is theatre.
   It asks, it warns, it gets out of the way.
 
-### H2. The warm-up
+### H2. The warm-up ✅
 
-The only thing resembling a warm-up is a 3-second countdown whose copy says *"Warm-up done. Time
-to move."* — the app claims a warm-up it never ran. The warm-up is also the **one** element of a
-session with real evidence behind it for injury risk; the cool-down, by contrast, has none, which
-is why none is planned.
+> Applied: `status: "warmup"` in [stores/session.ts](../../stores/session.ts),
+> [WarmupView](../../components/session/WarmupView.tsx),
+> [constants/warmup.ts](../../constants/warmup.ts), four cases in `store-session.test.ts`.
 
-- A short dynamic warm-up before the first exercise, skippable, off the same session machinery.
-- Drawn from the catalogue rather than a new content type where possible.
-- Fix the countdown copy either way: it should not claim work that did not happen.
+A session now opens on a **2-minute dynamic warm-up** — jumping jacks, glute bridge, bear crawl,
+cobra stretch — drawn from the seeded catalogue by name, so the movements arrive with their own
+bilingual labels and art and there is no second kind of content to maintain. Two minutes rather
+than the five to ten the literature describes: a five-minute warm-up in front of a twelve-minute
+quest is a warm-up nobody does twice.
 
-### H3. The first session inside onboarding
+Nothing in it is journaled — no volume, no records, no boss damage. A warm-up is preparation, not
+work, and a test asserts the journal stays empty through it.
+
+It is skippable in one tap, and a Settings toggle saves that tap for anyone who never wants it.
+The countdown no longer claims *"Warm-up done"*: it says the neutral thing, because it could not
+know whether one had happened. No cool-down is planned — it is the one part of a session the
+evidence says does nothing.
+
+**A regression the tests caught, not the plan.** Reading the preference made `startSession`
+asynchronous *before* it populated the store, and two callers did not await it — the session
+screen would have mounted on an empty store and redirected the hero home. Both now await. The
+same latent race already existed on the adventure path, where the boss fight is loaded before the
+state is set.
+
+### H3. The first session inside onboarding ✅
 
 Onboarding is presentation → hero setup → training level → Home. The hero reaches the home screen
 having done nothing. Completing a first meaningful action on day one is the single strongest

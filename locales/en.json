@@ -273,7 +273,6 @@
     "complete_overtime": "FINISH! 🎉",
     "continue": "Continue",
     "countdown_letsgo": "Let's go!",
-    "countdown_warmup_done": "Warm-up done. Time to move.",
     "decrease_reps_accessibility": "Decrease reps by one",
     "decrease_result_accessibility": "Decrease result",
     "exercise_label": "EXERCISE {{count}} / {{total}}",
@@ -317,7 +316,11 @@
     "up_next": "Up Next",
     "victory_title": "Quest Complete!",
     "village_upgrades": "Village Upgrades",
-    "xp_earned": "XP Earned"
+    "xp_earned": "XP Earned",
+    "warmup_title": "WARM-UP",
+    "warmup_skip": "Skip warm-up",
+    "warmup_step": "{{current}} of {{total}}",
+    "countdown_subtitle": "Time to move."
   },
   "resources": {
     "gold": "Gold",
@@ -615,5 +618,6 @@
     "onboarding_line": "Train within your limits. If you have a health condition, an injury, or you are pregnant, talk to a doctor first.",
     "read_more": "Read the safety notice"
   },
-  "settings.safety": "Train safely"
+  "settings.safety": "Train safely",
+  "settings.warmup": "Warm-up"
 }

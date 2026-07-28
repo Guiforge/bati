@@ -9,6 +9,7 @@ import { CountdownView } from "@/components/session/CountdownView";
 import { PausedOverlay } from "@/components/session/PausedOverlay";
 import { RestView } from "@/components/session/RestView";
 import { VictoryView } from "@/components/session/VictoryView";
+import { WarmupView } from "@/components/session/WarmupView";
 import { useSessionStore } from "@/stores/session";
 
 export default function SessionScreen() {
@@ -23,7 +24,12 @@ export default function SessionScreen() {
   // Handle Android Hardware Back Button
   useEffect(() => {
     const onBackPress = () => {
-      if (status === "countdown" || status === "running" || status === "resting") {
+      if (
+        status === "warmup" ||
+        status === "countdown" ||
+        status === "running" ||
+        status === "resting"
+      ) {
         pauseSession();
         return true; // Prevent default behavior (exit)
       }
@@ -47,6 +53,7 @@ export default function SessionScreen() {
   return (
     <YStack flex={1} bg="$background">
       <BossTauntOverlay />
+      {displayStatus === "warmup" && <WarmupView />}
       {displayStatus === "countdown" && <CountdownView />}
       {displayStatus === "running" && <ActiveExerciseView />}
       {displayStatus === "resting" && <RestView />}

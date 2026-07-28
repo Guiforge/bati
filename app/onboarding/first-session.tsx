@@ -57,11 +57,13 @@ export default function FirstSessionStep() {
 
   const skip = useCallback(() => router.replace("/"), [router]);
 
-  const start = useCallback(() => {
+  const start = useCallback(async () => {
     if (!quest) return skip();
 
     success();
-    startSession(quest, Difficulty.Easy);
+    // Awaited: the store is only populated once the boss fight and warm-up preference resolve,
+    // and the session screen redirects home if it mounts before that.
+    await startSession(quest, Difficulty.Easy);
     router.replace("/session" as never);
   }, [quest, skip, startSession, success, router]);
 

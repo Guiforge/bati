@@ -1,6 +1,7 @@
 import {
   ChevronLeft,
   Dumbbell,
+  Flame,
   HeartPulse,
   Languages,
   Moon,
@@ -81,9 +82,18 @@ export default function SettingsScreen() {
   // What the hero owns, cycled through in one row: unanswered -> nothing -> bar -> bar + dips.
   // Unanswered shows everything, so nobody loses content by never opening this screen.
   const [ownedEquipment, setOwnedEquipment] = useState<EquipmentCode[] | null>(null);
+  const [warmupEnabled, setWarmupEnabledState] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+    preferences
+      .getWarmupEnabled()
+      .then((value) => {
+        if (!cancelled) setWarmupEnabledState(value);
+      })
+      .catch(() => {
+        // Non-blocking: the warm-up defaults to on.
+      });
     preferences
       .getOwnedEquipment()
       .then((value) => {
@@ -244,6 +254,19 @@ export default function SettingsScreen() {
             label={t("settings.sound", "Sound")}
             value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => setSoundEnabled(!soundEnabled)}
+          />
+
+          <SettingRow
+            icon={<Flame size={22} color="$text" />}
+            label={t("settings.warmup", "Warm-up")}
+            value={warmupEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            onPress={() => {
+              const next = !warmupEnabled;
+              setWarmupEnabledState(next);
+              preferences.setWarmupEnabled(next).catch(() => {
+                // Non-blocking: it can be skipped in-session either way.
+              });
+            }}
           />
 
           <SettingRow

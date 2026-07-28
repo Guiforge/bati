@@ -1,3 +1,4 @@
+import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import { preferences } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import { saveSessionState } from "@/hooks/useSessionRecovery";
@@ -31,6 +32,9 @@ jest.mock("@/db/preferences", () => ({
     getSavedSession: jest.fn().mockResolvedValue(null),
     setSavedSession: jest.fn().mockResolvedValue(undefined),
     clearSavedSession: jest.fn().mockResolvedValue(undefined),
+    // Off by default here so the existing cases start on the countdown; the warm-up has its
+    // own cases below.
+    getWarmupEnabled: jest.fn().mockResolvedValue(false),
   },
 }));
 jest.mock("@/db/bossFights", () => ({
@@ -98,8 +102,8 @@ describe("useSessionStore", () => {
     });
   });
 
-  test("startSession initializes state correctly", () => {
-    store.getState().startSession(mockQuest, "medium");
+  test("startSession initializes state correctly", async () => {
+    await store.getState().startSession(mockQuest, "medium");
 
     const state = store.getState();
     expect(state.status).toBe("countdown");
@@ -109,15 +113,15 @@ describe("useSessionStore", () => {
     expect(state.timerDuration).toBe(3); // Pre-start countdown
   });
 
-  test("finishCountdown transitions to running", () => {
-    store.getState().startSession(mockQuest, "medium");
+  test("finishCountdown transitions to running", async () => {
+    await store.getState().startSession(mockQuest, "medium");
     store.getState().finishCountdown();
 
     expect(store.getState().status).toBe("running");
   });
 
   test("completeExercise advances to next exercise", async () => {
-    store.getState().startSession(mockQuest, "medium");
+    await store.getState().startSession(mockQuest, "medium");
     store.getState().finishCountdown();
     await store.getState().completeExercise(10);
 
@@ -128,7 +132,7 @@ describe("useSessionStore", () => {
   });
 
   test("completeExercise triggers rest between rounds", async () => {
-    store.getState().startSession(mockQuest, "medium");
+    await store.getState().startSession(mockQuest, "medium");
     store.getState().finishCountdown();
     await store.getState().completeExercise(10);
     await store.getState().completeExercise(60);
@@ -139,7 +143,7 @@ describe("useSessionStore", () => {
   });
 
   test("skipRest starts next round", async () => {
-    store.getState().startSession(mockQuest, "medium");
+    await store.getState().startSession(mockQuest, "medium");
     store.getState().finishCountdown();
     await store.getState().completeExercise(10);
     await store.getState().completeExercise(60);
@@ -151,8 +155,8 @@ describe("useSessionStore", () => {
     expect(state.currentExerciseIndex).toBe(0);
   });
 
-  test("pauseSession and resumeSession work", () => {
-    store.getState().startSession(mockQuest, "medium");
+  test("pauseSession and resumeSession work", async () => {
+    await store.getState().startSession(mockQuest, "medium");
     store.getState().finishCountdown();
     store.getState().pauseSession();
 
@@ -165,7 +169,7 @@ describe("useSessionStore", () => {
   });
 
   test("updateLastResult clamps values to be > 0", async () => {
-    store.getState().startSession(mockQuest, "medium");
+    await store.getState().startSession(mockQuest, "medium");
     store.getState().finishCountdown();
     await store.getState().completeExercise(10);
     store.getState().updateLastResult(0);
@@ -196,5 +200,58 @@ describe("useSessionStore", () => {
       (preferences.setSavedSession as jest.Mock).mock.calls.at(-1)?.[0] ?? "{}",
     );
     expect(saved.timerStartTimestamp).toBe(2000);
+  });
+
+  describe("warm-up", () => {
+    const prefs = require("@/db/preferences").preferences as {
+      getWarmupEnabled: jest.Mock;
+    };
+
+    afterEach(() => {
+      prefs.getWarmupEnabled.mockResolvedValue(false);
+    });
+
+    test("a session opens on the warm-up when it is enabled", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+
+      await store.getState().startSession(mockQuest, "medium");
+
+      expect(store.getState().status).toBe("warmup");
+      expect(store.getState().warmupIndex).toBe(0);
+      expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[0].seconds);
+    });
+
+    test("it walks the sequence, then hands over to the countdown", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      for (let i = 1; i < WARMUP_SEQUENCE.length; i++) {
+        store.getState().nextWarmupStep();
+        expect(store.getState().status).toBe("warmup");
+        expect(store.getState().warmupIndex).toBe(i);
+      }
+
+      store.getState().nextWarmupStep();
+      expect(store.getState().status).toBe("countdown");
+    });
+
+    test("skipping goes straight to the countdown and journals nothing", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      store.getState().skipWarmup();
+
+      expect(store.getState().status).toBe("countdown");
+      // A warm-up is preparation, not work: no result may reach the journal from it.
+      expect(store.getState().results).toEqual([]);
+    });
+
+    test("turning it off starts on the countdown, as before", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(false);
+
+      await store.getState().startSession(mockQuest, "medium");
+
+      expect(store.getState().status).toBe("countdown");
+    });
   });
 });

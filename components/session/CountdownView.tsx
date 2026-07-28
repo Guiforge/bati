@@ -74,7 +74,7 @@ export function CountdownView() {
             {t("session.countdown_letsgo")}
           </H1>
           <Text fontWeight="700" opacity={0.6} color="$text" style={{ textAlign: "center" }}>
-            {t("session.countdown_warmup_done")}
+            {t("session.countdown_subtitle")}
           </Text>
         </YStack>
       ) : (

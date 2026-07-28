@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-
+import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import { completeAdventureRunStep } from "@/db";
 import { checkForNewAchievements, type NewAchievementResult } from "@/db/achievements";
 import {
@@ -24,7 +24,14 @@ import { updateStreakAfterSession } from "@/db/streaks";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { computeSessionXp } from "@/db/xp";
 
-export type SessionStatus = "idle" | "countdown" | "running" | "resting" | "paused" | "finished";
+export type SessionStatus =
+  | "idle"
+  | "warmup"
+  | "countdown"
+  | "running"
+  | "resting"
+  | "paused"
+  | "finished";
 
 const PRE_START_COUNTDOWN_SECONDS = 3;
 
@@ -41,6 +48,8 @@ interface SessionState {
   // Dynamic State
   status: SessionStatus;
   prePauseStatus: SessionStatus | null;
+  /** Index into WARMUP_SEQUENCE while `status === "warmup"`. */
+  warmupIndex: number;
   currentRoundIndex: number; // 0-based
   currentExerciseIndex: number; // 0-based
 
@@ -65,6 +74,8 @@ interface SessionState {
       adventureId?: number | null;
     },
   ) => Promise<void>;
+  nextWarmupStep: () => void;
+  skipWarmup: () => void;
   finishCountdown: () => void;
   pauseSession: () => void;
   resumeSession: () => void;
@@ -106,6 +117,7 @@ export const useSessionStore = create<SessionState>()(
     lastDamageResult: null,
     status: "idle",
     prePauseStatus: null,
+    warmupIndex: 0,
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
     startTime: null,
@@ -122,23 +134,57 @@ export const useSessionStore = create<SessionState>()(
         bossFight = await getOrCreateBossFight(options.adventureId);
       }
 
+      // The warm-up runs first unless the hero switched it off; skipping it is always one tap
+      // away, so the preference only exists to save that tap for people who never want it.
+      const warmupEnabled = await preferences.getWarmupEnabled().catch(() => true);
+      const warmupFirst = warmupEnabled && WARMUP_SEQUENCE.length > 0;
+
       set({
         quest,
         userLevel,
         adventureRunStepId: options?.adventureRunStepId ?? null,
         bossFight,
         lastDamageResult: null,
-        status: "countdown",
+        status: warmupFirst ? "warmup" : "countdown",
         prePauseStatus: null,
+        warmupIndex: 0,
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
         startTime: Date.now(),
         totalPausedTime: 0,
         lastPauseTimestamp: null,
-        // Countdown timer (full-screen 3..2..1). Exercise timers start AFTER the countdown.
+        // Warm-up step, or the full-screen 3..2..1. Exercise timers start after the countdown.
+        timerStartTimestamp: Date.now(),
+        timerDuration: warmupFirst ? WARMUP_SEQUENCE[0].seconds : PRE_START_COUNTDOWN_SECONDS,
+        results: [],
+      });
+    },
+
+    nextWarmupStep: () => {
+      const { status, warmupIndex } = get();
+      if (status !== "warmup") return;
+
+      const next = warmupIndex + 1;
+      if (next >= WARMUP_SEQUENCE.length) {
+        get().skipWarmup();
+        return;
+      }
+
+      set({
+        warmupIndex: next,
+        timerStartTimestamp: Date.now(),
+        timerDuration: WARMUP_SEQUENCE[next].seconds,
+      });
+    },
+
+    /** Leave the warm-up for the countdown. Nothing is journaled: a warm-up is not work. */
+    skipWarmup: () => {
+      if (get().status !== "warmup") return;
+
+      set({
+        status: "countdown",
         timerStartTimestamp: Date.now(),
         timerDuration: PRE_START_COUNTDOWN_SECONDS,
-        results: [],
       });
     },
 

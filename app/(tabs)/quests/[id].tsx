@@ -181,11 +181,13 @@ export default function QuestDetails() {
         })
       : null;
 
-  const proceedToSession = () => {
-    if (quest) {
-      startSession(quest, level, { adventureRunStepId: runStepId });
-      router.push("/session" as never);
-    }
+  const proceedToSession = async () => {
+    if (!quest) return;
+
+    // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
+    // populates the store, and the session screen redirects home if it mounts on an empty one.
+    await startSession(quest, level, { adventureRunStepId: runStepId });
+    router.push("/session" as never);
   };
 
   const handleStart = async () => {
@@ -204,7 +206,7 @@ export default function QuestDetails() {
       }
     }
 
-    proceedToSession();
+    await proceedToSession();
   };
 
   const headerImage = resolveQuestImage(quest?.imagePath);
@@ -498,7 +500,9 @@ export default function QuestDetails() {
         text={narrative ?? ""}
         onClose={() => {
           setShowNarrative(false);
-          proceedToSession();
+          proceedToSession().catch(() => {
+            // Non-blocking: the hero stays on the quest screen and can tap start again.
+          });
         }}
         onDismiss={() => setShowNarrative(false)}
         type="intro"

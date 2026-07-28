@@ -113,6 +113,16 @@ export const preferences = {
     }
   },
 
+  // The warm-up runs by default: it is the one part of a session with evidence behind it for
+  // injury risk. The toggle exists so someone who always skips it does not have to tap twice.
+  async getWarmupEnabled(): Promise<boolean> {
+    return (await getPreference("warmupEnabled")) !== "false";
+  },
+
+  async setWarmupEnabled(enabled: boolean): Promise<void> {
+    await setPreference("warmupEnabled", String(enabled));
+  },
+
   async setOwnedEquipment(equipment: EquipmentCode[] | null): Promise<void> {
     if (equipment === null) {
       await deletePreference("ownedEquipment");

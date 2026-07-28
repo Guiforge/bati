@@ -485,7 +485,6 @@
     "complete_overtime": "TERMINÉ ! 🎉",
     "continue": "Continuer",
     "countdown_letsgo": "C'est parti !",
-    "countdown_warmup_done": "Échauffement terminé. En avant.",
     "decrease_reps_accessibility": "Diminuer les répétitions",
     "decrease_result_accessibility": "Diminuer le résultat",
     "exercise_label": "EXERCICE {{count}} / {{total}}",
@@ -529,7 +528,11 @@
     "up_next": "À suivre",
     "victory_title": "Quête accomplie !",
     "village_upgrades": "Améliorations du village",
-    "xp_earned": "XP gagnés"
+    "xp_earned": "XP gagnés",
+    "warmup_title": "ÉCHAUFFEMENT",
+    "warmup_skip": "Passer l'échauffement",
+    "warmup_step": "{{current}} sur {{total}}",
+    "countdown_subtitle": "C'est l'heure de bouger."
   },
   "settings": "Paramètres",
   "settings.haptics_off": "Désactivées",
@@ -615,5 +618,6 @@
     "onboarding_line": "Entraînez-vous dans vos limites. En cas de problème de santé, de blessure ou de grossesse, parlez-en d'abord à un médecin.",
     "read_more": "Lire les consignes de sécurité"
   },
-  "settings.safety": "S'entraîner en sécurité"
+  "settings.safety": "S'entraîner en sécurité",
+  "settings.warmup": "Échauffement"
 }

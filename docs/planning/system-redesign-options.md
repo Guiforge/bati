@@ -1,9 +1,9 @@
 ---
 title: Refonte minimaliste — options à reviewer
 type: planning
-status: draft
-updated: 2026-07-18
-related: [roadmap-alignment.md, ../economy/rewards-and-progression.md, ../gameplay/coach-planning.md, ../gameplay/statistics-progress.md, ../product/vision.md]
+status: archived
+updated: 2026-07-28
+related: [roadmap-alignment.md, ../gameplay/progression.md, ../gameplay/coach-planning.md, ../gameplay/statistics-progress.md, ../product/vision.md]
 ---
 
 # Refonte minimaliste du système de progression — options
@@ -85,7 +85,7 @@ intensité de flamme (streak), PNJ du sport dominant (7 derniers jours), banniè
 et quelques détails-milestones (ex. `500 reps bras → la forge apparaît`). Aucune donnée village
 en base : tout est `f(journal)`.
 
-- ➕ C'est déjà la cible écrite dans [rewards-and-progression.md](../economy/rewards-and-progression.md) — les docs et le code convergent enfin
+- ➕ C'est déjà la cible écrite dans [rewards-and-progression.md](../gameplay/progression.md) — les docs et le code convergent enfin
 - ➕ 2 tables et ~480 lignes supprimées ; l'écran village devient une vue, pas un gestionnaire
 - ➕ Le village reste le miroir de l'entraînement (sport dominant visible) = la promesse produit
 - ➖ Demande 5 illustrations de tiers + assets d'overlays (coût contenu/art, pas code)

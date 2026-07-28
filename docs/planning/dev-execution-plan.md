@@ -1,8 +1,8 @@
 ---
 title: Dev Execution Plan — approved screen redesigns
 type: planning
-status: active
-updated: 2026-07-20
+status: archived
+updated: 2026-07-28
 related: [screen-redesign-proposals.md, roadmap-refactor-ui.md, ../design/ui-checklist.md, ui-screen-audit-tracker.md]
 sources: [app, components, db, stores, assets]
 ---

@@ -1,8 +1,8 @@
 ---
 title: Screen Redesign Proposals — options to review
 type: planning
-status: active
-updated: 2026-07-20
+status: archived
+updated: 2026-07-28
 related: [../design/design-system.md, roadmap-refactor-ui.md, roadmap-alignment.md, ../screens/README.md, ../content/missing-covers.md]
 sources: [app, components, db/schema.ts, docs/screens]
 ---

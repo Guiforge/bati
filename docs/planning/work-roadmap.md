@@ -740,42 +740,26 @@ unchanged after A1 + A2.
 | 6 quest covers (Phase B) | escape_collapsing_mine, guard_fortress_gate, arcane_gauntlet, druid_path, sprint_shadowlands, morning_champion | ✅ on disk + in assetMap |
 | 4 adventure covers (Phase E2–E5) | scout_trial, guardian_oath, monk_enlightenment, ranger_journey | ✅ on disk + in assetMap |
 | 4 boss images | wind_wraith, stone_golem, shadow_serpent, forest_titan | ✅ on disk + in assetMap |
-| 8 quest covers (Phase D) | squire_awakening, bears_road, cellar_hauler, ploughmans_vow, crows_ascent, colossus_trial, storm_of_blades, serpents_coil | ❌ generate — paths already seeded |
-| 1 adventure cover (E1) | squire_path | ❌ generate — path already seeded |
-| 2 exercise images (Phase C) | table_row, towel_door_row | ❌ generate — paths already seeded |
+| 8 quest covers (Phase D) | squire_awakening, bears_road, cellar_hauler, ploughmans_vow, crows_ascent, colossus_trial, storm_of_blades, serpents_coil | ✅ generated + wired |
+| 1 adventure cover (E1) | squire_path | ✅ generated + wired |
+| 2 exercise images (Phase C) | table_row, towel_door_row | ✅ generated + wired |
 
 All eleven paths are already written to the database by `0017`, and every `getXAsset()` helper
 resolves an unknown key to the placeholder. The art pass is therefore: generate the files, drop
 them in `assets/images/`, add the eleven keys to [assetMap.ts](../../constants/assetMap.ts). No
 migration, no content change.
 
-The **11 prompts are already written** into `scripts/generate-covers.py` (9) and
-`scripts/generate-exercises.py` (2), in the house style and following the conventions those files
-already encode — environment-only scenes for covers, glowing character poses for exercises, and
-the "no people in frame" negative that earlier batches needed. Generating them is one command:
+✅ **Done.** All eleven were generated with `gemini-3.1-flash-image-preview`, reviewed on a
+contact sheet before wiring — this is the step [missing-image.md](../content/missing-image.md)
+warns is the only way to catch a hallucinated caption or a baked-in status bar — and registered
+in [assetMap.ts](../../constants/assetMap.ts).
 
-```sh
-MAMMOUTH_API_KEY=sk-… python3 scripts/generate-covers.py squire_path squire_awakening \
-  bears_road cellar_hauler ploughmans_vow crows_ascent colossus_trial storm_of_blades serpents_coil
-MAMMOUTH_API_KEY=sk-… python3 scripts/generate-exercises.py table_row towel_door_row
-```
+Verified by replaying every migration and matching each seeded `imagePath` basename against the
+assetMap keys: **47/47 exercises, 27/27 quests, 8/8 adventures**. Nothing seeded renders the
+placeholder. (47 rather than 48: `0018` deleted the catalogue's only dumbbell movement.)
 
-Then add the 11 keys to [assetMap.ts](../../constants/assetMap.ts). No SQL: `0017` already wrote
-every `imagePath`. Model choice and review method are recorded in
-[missing-covers.md](../content/missing-covers.md) (`gemini-3.1-flash-image-preview`, 1024×768 JPG
-for covers; PNG for exercises per [missing-image.md](../content/missing-image.md) §5).
-
-`generate-covers.py` was the one script without the 429/5xx backoff its siblings have — a known
-failure mode in [missing-image.md](../content/missing-image.md), and this batch is nine covers
-long, so it now retries like the others. The prompts were also checked against that page's rules:
-shot type first, semantic negatives ("the trail is empty — no animals, no people"), and no
-restating of the art direction, which the shared `STYLE` constant appends on its own.
-
-The key is not present in this environment — not in the shell, not in a profile, not in a
-dotfile — so the files cannot be produced here. That is the one remaining item on this page, and
-it is a credential away rather than a decision away. Once run: review a contact sheet, check the
-corner pixel is near-black, then add the 11 keys to `assetMap` — the count-match target is
-**48/48 exercises, 27/27 quests, 8/8 adventures**.
+`generate-covers.py` was the one script missing the 429/5xx backoff its siblings have, which is
+exactly what a nine-cover batch trips; it now retries like the others.
 
 ---
 
@@ -797,7 +781,7 @@ corner pixel is near-black, then add the 11 keys to `assetMap` — the count-mat
 | 13 | H3 first session in onboarding | — | ✅ **done** — `onboarding/first-session.tsx` offers The Squire's Awakening, skippable |
 | 14 | H2 warm-up | — | ✅ **done** — 2 min dynamic warm-up, skippable, nothing journaled; countdown copy fixed |
 | 15 | H4 deload nudge | — | ✅ **done** — `deload` reason after 4 heavy weeks, acute rules still win |
-| 16 | Art pass | D, E | ⏳ **blocked on a `MAMMOUTH_API_KEY`** — the 11 prompts are written into the generators; running them is one command |
+| 16 | Art pass | D, E | ✅ **done** — 11 assets generated, reviewed and wired; 47/47 exercises, 27/27 quests, 8/8 adventures |
 | 17 | F3 archetype badge | F1 | ✅ **done** — `0019` adds `quests.archetype`; the test reads it, the card shows it |
 
 Phases 1–3 are shippable on their own and are the highest value per line of SQL: they fix the

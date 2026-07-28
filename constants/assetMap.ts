@@ -62,6 +62,9 @@ export const EXERCISE_ASSETS = {
   l_sit: require("@/assets/images/exercises/l_sit.png"),
   star_jump: require("@/assets/images/exercises/star_jump.png"),
   windshield_wipers: require("@/assets/images/exercises/windshield_wipers.png"),
+  // The equipment-free pulls from 0015
+  table_row: require("@/assets/images/exercises/table_row.png"),
+  towel_door_row: require("@/assets/images/exercises/towel_door_row.png"),
 } as const;
 
 // ============================================================
@@ -89,6 +92,15 @@ export const QUEST_ASSETS = {
   knight_push: require("@/assets/images/quests/knight_push.jpg"),
   shield_wall: require("@/assets/images/quests/shield_wall.jpg"),
   core_forge: require("@/assets/images/quests/core_forge.jpg"),
+  // Phase C/D/E batch — see docs/content/missing-image.md §5
+  squire_awakening: require("@/assets/images/quests/squire_awakening.jpg"),
+  bears_road: require("@/assets/images/quests/bears_road.jpg"),
+  cellar_hauler: require("@/assets/images/quests/cellar_hauler.jpg"),
+  ploughmans_vow: require("@/assets/images/quests/ploughmans_vow.jpg"),
+  crows_ascent: require("@/assets/images/quests/crows_ascent.jpg"),
+  colossus_trial: require("@/assets/images/quests/colossus_trial.jpg"),
+  storm_of_blades: require("@/assets/images/quests/storm_of_blades.jpg"),
+  serpents_coil: require("@/assets/images/quests/serpents_coil.jpg"),
 } as const;
 
 // ============================================================
@@ -116,6 +128,8 @@ export const ADVENTURE_ASSETS = {
   // Covers for the hand-authored adventures (0003) — see docs/content/missing-covers.md
   lumber_route: require("@/assets/images/adventures/lumber_route.jpg"),
   the_golem: require("@/assets/images/adventures/the_golem.jpg"),
+  // The beginner on-ramp route the 8 covers above belong to
+  squire_path: require("@/assets/images/adventures/squire_path.jpg"),
 } as const;
 
 // ============================================================

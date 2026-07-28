@@ -454,3 +454,32 @@ the flame), [product/feature-overview.md](../product/feature-overview.md),
 **Still open:** the art pass (11 assets — paths are already seeded, so it is files plus
 `assetMap` keys and no SQL), F3's archetype badge, and the muscle-taxonomy migration, which bit
 this work three times and remains its own roadmap.
+
+---
+
+## 2026-07-27 — Roadmap closed: the audit findings outside the content layer (phase H) + F3
+
+The [work roadmap](../planning/work-roadmap.md) now carries a traceability table for all ten
+findings of the original content audit (§14.0), so none of them lives only in a conversation.
+Six were closed by phases A–G; this pass closed the rest.
+
+- **H1 — safety.** The app had no health warning of any kind. [`app/safety.tsx`](../../app/safety.tsx)
+  says the true thing once — when to see a doctor first, what to do when something hurts, and
+  that an app counting reps cannot see your technique. A condensed line sits on the last
+  onboarding step, the full text stays reachable from Settings. Deliberately not a PAR-Q
+  questionnaire: a form whose answers the app ignores is theatre.
+- **H3 — first session on day one.** Onboarding ended by dropping a new hero on the home screen
+  having done nothing. It now offers *The Squire's Awakening*, the 8-minute no-equipment on-ramp
+  the content plan authored for exactly this, and marks onboarding finished **before** the offer
+  so skipping or crashing never traps anyone back at step one.
+- **H2 — the warm-up.** The 3-second countdown used to say *"Warm-up done"*. A session now opens
+  on a real 2-minute dynamic warm-up drawn from the seeded catalogue, skippable in one tap,
+  journaled nowhere. See [gameplay/session-flow.md](../gameplay/session-flow.md).
+- **H4 — deload.** Every Coach rule was acute. A fourth reason counts heavy weeks and suggests a
+  lighter one after four in a row; an easier week resets the count.
+- **F3 — archetype.** The plan wanted it derived at read time; the data cannot support that (a
+  cardio quest and a full-body circuit are identical on rest and muscle tags). It became a
+  column (`0019`), which *removed* a duplication: the invariants test used to hold the registry.
+
+**Open:** the art pass alone — 11 assets whose prompts are now written into the generators, and
+whose generation needs an API key this environment does not have.

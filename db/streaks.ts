@@ -1,5 +1,7 @@
+import { startOfDay } from "date-fns";
 import { desc, sql } from "drizzle-orm";
 import { db, schema } from "./client";
+import { dayKey } from "./dates";
 
 const { completedQuest, userPreferences } = schema;
 
@@ -37,12 +39,6 @@ export type StreakInfo = {
   isActive: boolean;
   lastWorkoutDate: string | null;
 };
-
-function startOfDay(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
 
 function shiftDays(date: Date, days: number): Date {
   const d = new Date(date);
@@ -157,7 +153,7 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
   if (!cache[STREAK_CURRENT_KEY] || !cache[STREAK_BEST_KEY] || !cache[STREAK_CACHED_ON_KEY]) {
     return null;
   }
-  if (cache[STREAK_CACHED_ON_KEY] !== new Date().toISOString().split("T")[0]) return null;
+  if (cache[STREAK_CACHED_ON_KEY] !== dayKey(new Date())) return null;
   if (cache[STREAK_QUOTA_KEY] !== String(await getWeeklyQuota())) return null;
 
   const current = Number.parseInt(cache[STREAK_CURRENT_KEY], 10) || 0;
@@ -182,7 +178,7 @@ async function saveStreakCache(
       { key: STREAK_CURRENT_KEY, value: String(current) },
       { key: STREAK_BEST_KEY, value: String(best) },
       { key: STREAK_LAST_DATE_KEY, value: lastDate ?? "" },
-      { key: STREAK_CACHED_ON_KEY, value: new Date().toISOString().split("T")[0] },
+      { key: STREAK_CACHED_ON_KEY, value: dayKey(new Date()) },
       { key: STREAK_QUOTA_KEY, value: String(quota) },
     ])
     .onConflictDoUpdate({
@@ -209,9 +205,7 @@ export async function calculateAndCacheStreak(): Promise<StreakInfo> {
 
   const performedAt = rows.map((r) => r.performedAt);
   const result = calculateStreakFromSessions(performedAt, quota);
-  const lastDate = new Date(Math.max(...performedAt.map((d) => d.getTime())))
-    .toISOString()
-    .split("T")[0];
+  const lastDate = dayKey(new Date(Math.max(...performedAt.map((d) => d.getTime()))));
 
   await saveStreakCache(result.current, result.best, lastDate, quota);
 

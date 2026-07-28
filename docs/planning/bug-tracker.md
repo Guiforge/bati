@@ -69,7 +69,7 @@ dans la condition, ou n'avancer que sur une transition `>0 → <=0`).
 
 ## P1 — données fausses
 
-### BUG-004 · Points du calendrier sur le mauvais jour hors UTC — `open`
+### BUG-004 · Points du calendrier sur le mauvais jour hors UTC — `fixed`
 
 **Symptôme** : une séance du soir (fuseaux UTC−) ou de la nuit (UTC+) s'affiche sur le jour
 suivant / précédent dans le calendrier mensuel du journal.
@@ -78,17 +78,18 @@ suivant / précédent dans le calendrier mensuel du journal.
 construit la clé avec `performedAt.toISOString().split("T")[0]` (date **UTC**), alors que la
 grille est bâtie en local (`new Date(year, month, date)`, `getMonth()`).
 
-**Fix** : formater la clé en local (`getFullYear`/`getMonth`/`getDate`, ou `format(d, "yyyy-MM-dd")`
-de date-fns qui est déjà une dépendance).
+**Fix** : `dayKey()` ([`db/dates.ts`](../../db/dates.ts)), la clé de jour **locale** partagée par
+les six sites de cette famille. `toISOString()` ne doit plus jamais servir à faire un jour.
 
-### BUG-005 · Même mélange UTC/local dans le cache de flamme — `open`
+### BUG-005 · Même mélange UTC/local dans le cache de flamme — `fixed`
 
 **Cause** : [`db/streaks.ts`](../../db/streaks.ts) calcule les jours avec `startOfDay()` (local)
 mais écrit `lastWorkoutDate` et `streak_cached_on` avec `toISOString().split("T")[0]` (UTC).
 Conséquences : `lastWorkoutDate` affiché peut être décalé d'un jour, et le cache s'invalide
 en avance ou en retard selon le fuseau.
 
-**Fix** : une seule helper de clé de jour locale, partagée avec BUG-004.
+**Fix** : `dayKey()` ici aussi, et `startOfDay` réimplémenté à la main remplacé par celui de
+date-fns.
 
 ### BUG-006 · La clé de semaine casse au passage d'année — `open`
 
@@ -221,7 +222,7 @@ accompli, sans bonus ni écran de victoire.
 Le mélange jour UTC / jour local ne touche pas que le calendrier. Trois sites de plus, même
 cause, même correctif (`format(date, "yyyy-MM-dd")` en local).
 
-### BUG-017 · La quête du jour tourne à minuit UTC — `open`
+### BUG-017 · La quête du jour tourne à minuit UTC — `fixed`
 
 **Symptôme** : la quête du jour, et avec elle son bonus XP ×1,5, change à 02:00 heure locale en
 UTC+2 et à 19:00 en UTC−5.
@@ -230,14 +231,14 @@ UTC+2 et à 19:00 en UTC−5.
 `new Date().toISOString().split("T")[0]`. `isDailyQuest` gouverne le multiplicateur dans
 [`stores/session.ts`](../../stores/session.ts).
 
-### BUG-018 · Le graphe 7 jours perd la séance du jour — `open`
+### BUG-018 · Le graphe 7 jours perd la séance du jour — `fixed`
 
 **Cause** : [`components/journal/JournalStats.tsx:49`](../../components/journal/JournalStats.tsx#L49)
 étiquette les barres depuis un minuit **local** converti en clé UTC, puis clé les séances en UTC
 direct (ligne 58). Les deux chaînes ne coïncident pas hors UTC : la séance du jour ne trouve
 aucune barre et disparaît du graphe.
 
-### BUG-019 · Suggestions de repos comptées en jours UTC — `open`
+### BUG-019 · Suggestions de repos comptées en jours UTC — `fixed`
 
 **Cause** : [`db/restSuggestions.ts:94`](../../db/restSuggestions.ts#L94) clé les jours
 d'entraînement en UTC puis les compare à un `today` local.

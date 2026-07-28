@@ -1,5 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
+import { dayKey } from "./dates";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { preferences, type TrainingLevel } from "./preferences";
@@ -603,7 +604,7 @@ async function pickDailyTemplate(): Promise<QuestTemplate | null> {
   const pool = templates.filter((tpl) => eligible.has(tpl.id));
   const candidates = pool.length > 0 ? pool : templates;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = dayKey(new Date());
   let hash = 0;
   for (let i = 0; i < today.length; i++) {
     hash = (hash << 5) - hash + today.charCodeAt(i);

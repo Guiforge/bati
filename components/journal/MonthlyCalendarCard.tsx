@@ -6,6 +6,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { listCompletedSessions } from "@/db/completed";
+import { dayKey } from "@/db/dates";
 import { useSettingsStore } from "@/stores/settings";
 
 type DayData = {
@@ -180,7 +181,7 @@ export function MonthlyCalendarCard() {
 
       const workoutDates = new Set<string>();
       for (const session of sessions) {
-        const dateStr = session.performedAt.toISOString().split("T")[0];
+        const dateStr = dayKey(session.performedAt);
         workoutDates.add(dateStr);
       }
 

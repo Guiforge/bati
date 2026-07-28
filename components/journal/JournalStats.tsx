@@ -7,6 +7,7 @@ import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { TrendsCard } from "@/components/journal/TrendsCard";
+import { dayKey } from "@/db/dates";
 import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -46,7 +47,7 @@ function getLast7DaysData(sessions: JournalStatsProps["sessions"], language: str
   for (let i = 6; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = dayKey(date);
     const label = new Intl.DateTimeFormat(language, {
       weekday: "short",
     }).format(date);
@@ -55,7 +56,7 @@ function getLast7DaysData(sessions: JournalStatsProps["sessions"], language: str
   }
 
   sessions.forEach((s) => {
-    const dateStr = new Date(s.performedAt).toISOString().split("T")[0];
+    const dateStr = dayKey(new Date(s.performedAt));
     const dayData = days.find((d) => d.date === dateStr);
     if (dayData && s.durationSeconds) {
       dayData.minutes += Math.round(s.durationSeconds / 60);

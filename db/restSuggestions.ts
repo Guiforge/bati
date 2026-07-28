@@ -1,5 +1,6 @@
 import { desc, gte } from "drizzle-orm";
 import { db, schema } from "./client";
+import { dayKey } from "./dates";
 
 const { completedQuest } = schema;
 
@@ -91,7 +92,7 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
   // Calculate unique training days in the last 7 days
   const trainingDays = new Set<string>();
   for (const session of recentSessions) {
-    const dateStr = session.performedAt.toISOString().split("T")[0];
+    const dateStr = dayKey(session.performedAt);
     trainingDays.add(dateStr);
   }
 

@@ -3,7 +3,7 @@ title: Dev Execution Plan — approved screen redesigns
 type: planning
 status: archived
 updated: 2026-07-28
-related: [screen-redesign-proposals.md, roadmap-refactor-ui.md, ../design/ui-checklist.md, ui-screen-audit-tracker.md]
+related: [screen-redesign-proposals.md, roadmap.md, ../design/ui-checklist.md, ui-screen-audit-tracker.md]
 sources: [app, components, db, stores, assets]
 ---
 
@@ -11,7 +11,7 @@ sources: [app, components, db, stores, assets]
 
 > The task breakdown promised by [screen-redesign-proposals.md](screen-redesign-proposals.md)
 > (§ Plan for devs). Method and PR rules come from
-> [roadmap-refactor-ui.md](roadmap-refactor-ui.md); this file is only the concrete, ordered
+> [roadmap.md](roadmap.md); this file is only the concrete, ordered
 > phases for the 4 approved items. One phase = one scope = one commit, each behind the same
 > quality gate.
 
@@ -247,5 +247,5 @@ and tick the matching row here. This file tracks execution; the tracker records 
 ## Related
 
 - [screen-redesign-proposals.md](screen-redesign-proposals.md) — the decisions this executes
-- [roadmap-refactor-ui.md](roadmap-refactor-ui.md) — migration method + PR delivery rules
+- [roadmap.md](roadmap.md) — open work, guardrails and PR delivery rules
 - [../design/ui-checklist.md](../design/ui-checklist.md) — the per-phase UI gate

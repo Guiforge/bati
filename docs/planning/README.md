@@ -2,38 +2,38 @@
 title: Planning & Roadmap
 type: category
 status: active
-updated: 2026-07-28
+updated: 2026-07-29
 related: [../README.md]
 ---
 
 # Planning & Roadmap
 
-> Prioritization and scope. [roadmap-alignment.md](roadmap-alignment.md) sets the **MVP
-> boundaries** — what is in scope at all. [work-roadmap.md](work-roadmap.md) is the **live
-> execution doc** — what is being built right now. Everything else here is either a method
-> playbook or history.
+> One roadmap, and it only lists what is unfinished. [roadmap.md](roadmap.md) merged the five
+> roadmap pages this folder used to carry — scope authority, live execution doc, UI playbook,
+> archive, parking lot — and dropped everything they recorded as shipped. Git history is the
+> record of what was built.
 
 ## Active
 
-- [roadmap-alignment.md](roadmap-alignment.md) — ⭐ **Scope authority**: MVP boundaries, north star, acceptance-criteria template. If another planning doc contradicts it, this one wins.
-- [work-roadmap.md](work-roadmap.md) — ⭐ **Current work**: quests & adventures overhaul (rebalance the seeded quests, seed the written-but-unseeded content, movement patterns, variation ladder)
-- [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) — Screen-by-screen audit log and remaining UI backlog
-- [roadmap-refactor-ui.md](roadmap-refactor-ui.md) — UI migration playbook (method, not scope: guardrails, PR delivery rules, quality gate)
-- [future-roadmap.md](future-roadmap.md) — Parking lot (speculative, explicitly non-MVP)
+- [roadmap.md](roadmap.md) — ⭐ **The roadmap**: north star, guardrails, open work (release &
+  distribution, the UI closing pass, village motion), the post-MVP parking lot, and the
+  decisions that are closed for good.
+- [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) — screen-by-screen audit log and the
+  cross-screen UI backlog. Read its 2026-07-18 correction before trusting any checkmark in it.
 
 ## Archived — kept for traceability, not for planning decisions
 
 - [screen-redesign-proposals.md](screen-redesign-proposals.md) — the 5 nav/onboarding/village decisions, all recorded and shipped
 - [dev-execution-plan.md](dev-execution-plan.md) — the phased plan that executed those decisions; all 6 phases shipped 2026-07-20
-- [system-redesign-options.md](system-redesign-options.md) — the progression-simplification options; the chosen path (no resources, no Gold, no Treasury) is now stated in `roadmap-alignment.md` and shipped
-- [roadmap-archive.md](roadmap-archive.md) — older historical record
+- [system-redesign-options.md](system-redesign-options.md) — the progression-simplification options; the chosen path (no resources, no Gold, no Treasury) is now stated in `roadmap.md` and shipped
 
 ## How to use this folder
 
-1. Check scope against [roadmap-alignment.md](roadmap-alignment.md).
-2. Pick up work from [work-roadmap.md](work-roadmap.md).
-3. Use [roadmap-refactor-ui.md](roadmap-refactor-ui.md) when the work is UI.
-4. Promote a [future-roadmap.md](future-roadmap.md) idea only by moving it into alignment first.
+1. Check scope and guardrails against [roadmap.md](roadmap.md).
+2. Pick up open work from the same page — if it isn't there, it isn't planned.
+3. Use [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) when the work is UI.
+4. A parking-lot idea becomes work only when it has a concrete user problem, an owner and
+   testable acceptance criteria.
 5. Don't plan from the archived pages — read them to find out *why* something is the way it is.
 
 ## Related

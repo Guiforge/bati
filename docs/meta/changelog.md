@@ -2,7 +2,7 @@
 title: Docs Wiki — Operation Log
 type: technical
 status: active
-updated: 2026-07-28
+updated: 2026-07-29
 related: [wiki-protocol.md, ../README.md]
 ---
 
@@ -562,3 +562,35 @@ installed. That dead state is now the feature's storage, and the UI row that was
 
 Docs touched: [gameplay/oaths.md](../gameplay/oaths.md) gains the reminder section,
 [product/feature-overview.md](../product/feature-overview.md) moves Notifications to Implemented.
+
+---
+
+## 2026-07-29 — Official exercise names, and five roadmaps become one
+
+**The catalogue stopped shipping two naming conventions.** `0006` had seeded 20 exercises under
+heroic-fantasy names (Goblin Squat, Thunder Jumping Jack) next to 28 seeded under their real ones.
+[`drizzle/0023_official_exercise_names.sql`](../../drizzle/0023_official_exercise_names.sql)
+renames the 14 that name a real movement and **merges the 5 that were plain duplicates** into the
+`0001` rows they duplicated — journal entries, quests, boss damage and the variation ladder all
+repointed before the delete, because `completed_exercises.exerciseId` is `ON DELETE NO ACTION` and
+a naive delete would abort the migration on anyone who had trained. 47 exercises → 42, no session
+lost. Descriptions were rewritten from RPG flavour to execution cues; the quests, adventures and
+bosses keep the fiction.
+
+One consequence had to be fixed in the same migration: Wall Sentinel Hold (`medium`) merged into
+Wall Sit (`easy`), which left *Guard the Fortress Gate* opening on its easiest movement and broke
+the hardest-first invariant. The wall sit moved to the end of the quest — the difficulty was not
+bumped to make one quest pass.
+
+The 14 poses were regenerated (they staged a goblin, a dragon, a wizard) and
+[content/missing-image.md](../content/missing-image.md) gains §6. `generate-exercises.py` now
+writes JPG (~75 KB a frame against ~850 KB) and skips on either extension.
+
+**Five roadmap pages merged into one.** `roadmap-alignment.md`, `work-roadmap.md`,
+`roadmap-refactor-ui.md`, `roadmap-archive.md` and `future-roadmap.md` are deleted;
+[planning/roadmap.md](../planning/roadmap.md) keeps their guardrails, their open items and their
+closed decisions, and nothing they recorded as shipped. The quests & adventures overhaul that
+filled `work-roadmap.md` is done (`0012`–`0023`) and its rules are enforced by
+`__tests__/content-invariants.test.ts` — a test, not a document. Every pointer in code, migrations
+and docs was repointed or dropped; the dead links in the older entries of *this* log are left as
+they are, because a dated record of what happened is not a page to maintain.

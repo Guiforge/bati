@@ -3,7 +3,7 @@ title: UI Screen Audit Tracker
 type: planning
 status: active
 updated: 2026-07-18
-related: [roadmap-refactor-ui.md, roadmap-alignment.md, ../design/ui-checklist.md]
+related: [roadmap.md, roadmap.md, ../design/ui-checklist.md]
 ---
 
 # UI Screen Audit Tracker

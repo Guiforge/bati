@@ -1,4 +1,3 @@
--- Phase D of docs/planning/work-roadmap.md §6.
 -- Eight quests covering every hole the audit left: absolute beginner, equipment-free pull,
 -- hinge, bar pull, skill, explosive legs, anti-rotation core. They also consume the last of
 -- the 20 exercises seeded by 0010 that no quest had ever used.

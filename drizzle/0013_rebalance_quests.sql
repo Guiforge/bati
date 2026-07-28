@@ -1,4 +1,3 @@
--- Phase A2 of docs/planning/work-roadmap.md §3.
 -- The seeded quests sit outside their own design window: the 0002 starter quests estimate
 -- at 4-9 min (two-exercise stubs at 30 s rest), the 0006 expansion quests at 24-41 min with
 -- single-pattern volume (16 straight push sets in Forge, 15 of 20 in Iron Gauntlet).

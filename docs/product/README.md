@@ -9,7 +9,7 @@ related: [../README.md]
 # Product & Vision
 
 > What Bati is, why it exists, and how it's positioned. For the current MVP scope and
-> prioritization, see [planning/roadmap-alignment.md](../planning/roadmap-alignment.md).
+> prioritization, see [planning/roadmap.md](../planning/roadmap.md).
 
 ## Pages
 

@@ -77,7 +77,7 @@ Use the same section order across similar pages:
 
 Don't silently resolve it. Either:
 - pick the version backed by the strongest source of truth (external product wiki >
-  `planning/roadmap-alignment.md` > everything else) and add a `⚠️ Status & scope` note
+  `planning/roadmap.md` > everything else) and add a `⚠️ Status & scope` note
   explaining the correction and what changed, or
 - if you're not sure which version is correct, flag it in the page and in
   [meta/changelog.md](meta/changelog.md) instead of guessing.

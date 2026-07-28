@@ -1,4 +1,3 @@
--- Phase C of docs/planning/work-roadmap.md §5.
 -- Before this migration the catalogue has exactly one equipment-free pulling movement
 -- (Superman). Every row and every pull-up needs a bar, so a user without one cannot train
 -- their back at all — the single biggest hole the content audit found.

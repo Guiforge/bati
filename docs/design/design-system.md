@@ -102,7 +102,7 @@ components:
 ## 1) System intent
 
 **Creative north star:** *The Hero's HUD* — immersive but operationally clear mid-workout.
-Ties directly to [roadmap-alignment.md](../planning/roadmap-alignment.md) (north star) and
+Ties directly to [roadmap.md](../planning/roadmap.md) (north star) and
 [positioning.md](../product/positioning.md) (brand): sport-first ergonomics over decorative
 complexity, dark-only visual world, one-screen-one-priority hierarchy.
 

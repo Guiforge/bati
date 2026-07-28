@@ -187,7 +187,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
 
 /**
  * Fallback HP for a boss adventure that ships without an explicit `bossTotalHp`. Every seeded
- * boss sets one (see docs/planning/work-roadmap.md §E0), so this only catches new content.
+ * boss sets one, so this only catches new content.
  *
  * It mirrors how the seeded values were tuned: a step deals `rounds × Σ target`, seconds count
  * as rep-equivalents like `dealDamage` treats them, and the whole campaign is scaled by the

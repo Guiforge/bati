@@ -3,7 +3,7 @@ title: Statistics & Progress
 type: system
 status: active
 updated: 2026-07-18
-related: [progression.md, coach-planning.md, ../planning/roadmap-alignment.md]
+related: [progression.md, coach-planning.md, ../planning/roadmap.md]
 sources: [db/xp.ts, db/streaks.ts]
 ---
 

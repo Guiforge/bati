@@ -111,7 +111,7 @@ SQLite is the local source of truth. Drizzle defines schema and typed queries; d
 
 The code has resources and Treasury visibility, but the product source of truth treats them as
 passive/read-only MVP feedback. Gold-first spending, shops, and manual building management are Phase
-2+ concepts unless re-approved in [roadmap-alignment.md](../planning/roadmap-alignment.md).
+2+ concepts unless re-approved in [roadmap.md](../planning/roadmap.md).
 
 ## Core data model
 
@@ -153,5 +153,5 @@ helpers.
 ## Related
 
 - [database-api.md](database-api.md) — DB module reference
-- [roadmap-alignment.md](../planning/roadmap-alignment.md) — product scope decisions
+- [roadmap.md](../planning/roadmap.md) — product scope decisions
 - [design-system.md](../design/design-system.md) — dark-only UI and token rules

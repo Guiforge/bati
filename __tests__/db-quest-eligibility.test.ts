@@ -1,7 +1,7 @@
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
- * What the app is allowed to put in front of a hero — see docs/planning/work-roadmap.md §8 F1/F2.
+ * What the app is allowed to put in front of a hero.
  * These run against the real seeded catalogue, so a future quest that breaks the rules shows up
  * here rather than in someone's home screen.
  */

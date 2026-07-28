@@ -1,4 +1,3 @@
--- Phase A1 of docs/planning/work-roadmap.md §3.
 -- `0001_seed_exercises.sql` tags two lower-body exercises as `chest`:
 --   Squat    -> calf, chest
 --   Wall Sit -> calf, chest

@@ -75,7 +75,7 @@ root [`README.md`](../README.md) catalog.
   the same folder). Trace app claims to code.
 - **External source of truth**: when a page's content is sourced from
   `proj/wiki/projets/bati*.md` (outside this repo), link it explicitly and treat conflicts
-  in favor of that source — see `planning/roadmap-alignment.md`.
+  in favor of that source — see `planning/roadmap.md`.
 - **Small pages**: keep under ~400 lines; split or link out beyond that.
 
 ---

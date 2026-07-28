@@ -1,6 +1,6 @@
 -- Movement patterns, and `calf` renamed to `legs`.
 --
--- Three design rules in docs/planning/work-roadmap.md §2.2 were abandoned or weakened because
+-- Three of the content plan's design rules were abandoned or weakened because
 -- the data could not express them: "no two consecutive exercises on the same pattern", "a
 -- strength quest needs an antagonist", and "every pattern needs an equipment-free quest". None
 -- of them wanted finer muscles — they wanted movement patterns, which `arms/back/chest/abs/

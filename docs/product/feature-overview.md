@@ -3,7 +3,7 @@ title: Features Overview
 type: product
 status: active
 updated: 2026-07-28
-related: [vision.md, user-guide.md, ../planning/roadmap-alignment.md, ../gameplay/progression.md]
+related: [vision.md, user-guide.md, ../planning/roadmap.md, ../gameplay/progression.md]
 sources: [app, db, components]
 ---
 
@@ -233,7 +233,7 @@ Technical stack details.
 - Smartwatch integration
 - Cloud sync
 
-**Full roadmap**: [FUTURE.md](../planning/future-roadmap.md)
+**Full roadmap**: [roadmap.md](../planning/roadmap.md)
 
 ---
 
@@ -252,6 +252,6 @@ Technical stack details.
 | [EXERCISE_COLORS.md](../design/exercise-colors.md) | Color system |
 | [design-system.md](../design/design-system.md) | Visual design system |
 | [ARCHITECTURE.md](../architecture/technical-architecture.md) | Technical architecture |
-| [FUTURE.md](../planning/future-roadmap.md) | Future roadmap |
+| [roadmap.md](../planning/roadmap.md) | Roadmap — open work and the parking lot |
 | [QUEST_SESSION_SPEC.md](../gameplay/session-flow.md) | Technical session spec |
 | [IMAGE_PROMPTS.md](../content/image-prompts.md) | AI image generation prompts |

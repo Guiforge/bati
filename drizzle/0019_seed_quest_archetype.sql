@@ -1,4 +1,3 @@
--- Phase F3 of docs/planning/work-roadmap.md §8.
 -- Every quest was authored against a declared archetype -- what kind of session it is meant to
 -- be, which sets its rest range, its rep targets and how its exercises may stack. That
 -- declaration lived only in a hand-maintained map inside __tests__/content-invariants.test.ts,

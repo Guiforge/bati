@@ -3,7 +3,7 @@ title: Refonte minimaliste — options à reviewer
 type: planning
 status: archived
 updated: 2026-07-28
-related: [roadmap-alignment.md, ../gameplay/progression.md, ../gameplay/coach-planning.md, ../gameplay/statistics-progress.md, ../product/vision.md]
+related: [roadmap.md, ../gameplay/progression.md, ../gameplay/coach-planning.md, ../gameplay/statistics-progress.md, ../product/vision.md]
 ---
 
 # Refonte minimaliste du système de progression — options
@@ -20,7 +20,7 @@ related: [roadmap-alignment.md, ../gameplay/progression.md, ../gameplay/coach-pl
 Les ressources sont des **stats musculaires avec un skin fantasy** : « bois » = total reps bras,
 « pierre » = total reps dos, etc. Le journal de sessions (`completed_sessions` /
 `completed_exercises`) est déjà la source de vérité
-([roadmap-alignment.md](roadmap-alignment.md)). Tout le reste peut être **dérivé** par des
+([roadmap.md](roadmap.md)). Tout le reste peut être **dérivé** par des
 fonctions pures — c'est le levier principal de simplification : moins de tables, moins d'états
 à synchroniser, zéro bug de désynchronisation possible.
 

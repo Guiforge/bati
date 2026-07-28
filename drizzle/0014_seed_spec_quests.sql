@@ -1,4 +1,3 @@
--- Phase B of docs/planning/work-roadmap.md §4.
 -- The six quests specified in docs/content/content-generation.md that were never seeded.
 -- Their covers already exist on disk and are keyed in constants/assetMap.ts, so this is
 -- pure SQL: the catalogue goes from 13 to 19 quests with no art to generate.

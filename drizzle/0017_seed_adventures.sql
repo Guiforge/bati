@@ -1,4 +1,3 @@
--- Phase E of docs/planning/work-roadmap.md §7.
 -- Seeds the four campaigns that were specified in docs/content/content-generation.md and never
 -- shipped (their covers and boss art are already on disk and keyed in constants/assetMap.ts),
 -- adds a beginner on-ramp, restructures The Iron Lord's Conquest, and re-tunes every boss.

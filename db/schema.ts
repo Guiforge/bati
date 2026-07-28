@@ -148,7 +148,7 @@ export const quests = sqliteTable("quests", {
   restSeconds: int().notNull().default(30),
 
   // What kind of session this is meant to be — sets the rest range, the rep targets and how far
-  // its exercises may stack (docs/planning/work-roadmap.md §2.1). Null for user-authored quests.
+  // its exercises may stack. Null for user-authored quests.
   archetype: text().$type<QuestArchetype>(),
 
   // Main cover image for the quest

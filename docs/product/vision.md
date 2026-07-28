@@ -3,7 +3,7 @@ title: Vision
 type: product
 status: active
 updated: 2026-07-14
-related: [../planning/roadmap-alignment.md, feature-overview.md, ../gameplay/progression.md, ../design/design-system.md]
+related: [../planning/roadmap.md, feature-overview.md, ../gameplay/progression.md, ../design/design-system.md]
 ---
 
 # Bati - Vision
@@ -13,7 +13,7 @@ related: [../planning/roadmap-alignment.md, feature-overview.md, ../gameplay/pro
 **Bati** transforms workouts into a fantasy RPG adventure. Complete quests, watch your village grow, defeat bosses.
 
 > ⚠️ **Alignment (2026-07).** The **canonical MVP is simplified** — see
-> **[roadmap-alignment.md](../planning/roadmap-alignment.md)** (north star). Loot is
+> **[roadmap.md](../planning/roadmap.md)** (north star). Loot is
 > **XP only**. The **village is DERIVED / read-only** (*calculated* from your workouts,
 > never managed) — no resources, no Gold, no buildings to unlock or upgrade. Full design:
 > [progression.md](../gameplay/progression.md).
@@ -94,4 +94,4 @@ Daily workouts fuel your Sacred Flame:
 - [quests.md](../gameplay/quests.md) — Workout templates
 - [adventures.md](../gameplay/adventures.md) — Multi-quest campaigns
 - [session-flow.md](../gameplay/session-flow.md) — Active workout flow
-- [roadmap-archive.md](../planning/roadmap-archive.md) — What's next
+- [roadmap.md](../planning/roadmap.md) — What's next

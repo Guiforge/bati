@@ -3,7 +3,7 @@ title: Progression (XP, Village, Flame)
 type: system
 status: active
 updated: 2026-07-18
-related: [../planning/roadmap-alignment.md, session-flow.md, statistics-progress.md, coach-planning.md]
+related: [../planning/roadmap.md, session-flow.md, statistics-progress.md, coach-planning.md]
 sources: [db/xp.ts, db/streaks.ts]
 ---
 

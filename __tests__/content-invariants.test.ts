@@ -4,7 +4,8 @@ import { movementPatterns, type QuestArchetype } from "../db/schema";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
- * Content invariants — the gate for docs/planning/work-roadmap.md §2.2.
+ * Content invariants — the hard constraints every seeded quest has to satisfy. This file is
+ * where they live now: the plan that wrote them in prose is gone, the test is the rule.
  *
  * A quest's archetype is what it is meant to be, and it is now a column (`0019`) rather than a
  * map maintained inside this file: the app needs it too, to say what kind of session a card is

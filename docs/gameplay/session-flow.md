@@ -20,7 +20,7 @@ The Session is the core experience — where the actual workout happens. It must
 Completion is always **manual** (the user taps "Done" / "I'm done"): there is no silent
 auto-transition out of an exercise, even when a timer reaches zero — this matches the
 "real-friction input" anti-cheat principle in
-[roadmap-alignment.md](../planning/roadmap-alignment.md) (2 real taps, not a passive
+[roadmap.md](../planning/roadmap.md) (2 real taps, not a passive
 countdown).
 
 ---
@@ -421,4 +421,4 @@ This creates visual variety and helps users quickly identify exercise types.
 
 - [progression.md](progression.md) — what the victory screen grants (XP + derived village reaction)
 - [adventures.md](adventures.md) — "no session is wasted" rule when a day's quest is skipped
-- [roadmap-alignment.md](../planning/roadmap-alignment.md) — anti-cheat doctrine (real-friction input, plausibility caps)
+- [roadmap.md](../planning/roadmap.md) — anti-cheat doctrine (real-friction input, plausibility caps)

@@ -3,7 +3,7 @@ title: Screen Redesign Proposals — options to review
 type: planning
 status: archived
 updated: 2026-07-28
-related: [../design/design-system.md, roadmap-refactor-ui.md, roadmap-alignment.md, ../screens/README.md, ../content/missing-covers.md]
+related: [../design/design-system.md, roadmap.md, ../screens/README.md, ../content/missing-covers.md]
 sources: [app, components, db/schema.ts, docs/screens]
 ---
 
@@ -12,7 +12,7 @@ sources: [app, components, db/schema.ts, docs/screens]
 > **Format**: same pattern as [system-redesign-options.md](system-redesign-options.md) — one
 > section per screen, grounded in the current implementation (not invented), a proposal, and
 > a checkbox decision. Nothing here is built yet; once choices are made, move the approved
-> items into [roadmap-refactor-ui.md](roadmap-refactor-ui.md) execution order and the code
+> items into [roadmap.md](roadmap.md) execution order and the code
 > follows.
 >
 > **Constraint for every proposal below**: must pass
@@ -343,7 +343,7 @@ navigation stays as-is, no work follows from it.
 
 1. ~~Get checkboxes above resolved~~ — done 2026-07-20.
 2. For the 4 approved items, add them to the execution order in
-   [roadmap-refactor-ui.md](roadmap-refactor-ui.md) at the appropriate phase: §4 (dead code) is
+   [roadmap.md](roadmap.md) at the appropriate phase: §4 (dead code) is
    Phase B, high-impact flow, and the smallest/safest to schedule first; §2 (onboarding merge)
    is Phase B too — onboarding is item 9 in that order today, but this change is small enough
    to pull forward; §3 (village layers) and §5 (exercise imagery) are gated on content/art
@@ -359,7 +359,7 @@ navigation stays as-is, no work follows from it.
 ## Related
 
 - [design-system.md](../design/design-system.md) — the rules every proposal above must pass
-- [roadmap-refactor-ui.md](roadmap-refactor-ui.md) — where approved items get scheduled
+- [roadmap.md](roadmap.md) — where approved items get scheduled
 - [system-redesign-options.md](system-redesign-options.md) — same doc pattern, prior example
 - [../content/missing-covers.md](../content/missing-covers.md) — existing image-coverage gap
   tracker + generation pipeline (`scripts/generate-covers.py`), relevant to §3 and §5's art needs

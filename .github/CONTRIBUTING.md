@@ -8,7 +8,7 @@ Welcome! This guide helps you contribute quality code to Bati.
 
 ### Before You Code
 
-1. **Check the roadmap** — See [roadmap-alignment.md](../docs/planning/roadmap-alignment.md) for current priorities
+1. **Check the roadmap** — See [roadmap.md](../docs/planning/roadmap.md) for current priorities
 2. **Understand the style** — Read [design-system.md](../docs/design/design-system.md) for design principles
 3. **Plan your changes** — Break large features into small, reviewable pieces
 
@@ -190,4 +190,4 @@ Open an issue or check existing documentation:
 
 - [vision.md](../docs/product/vision.md) — Product overview
 - [technical-architecture.md](../docs/architecture/technical-architecture.md) — Technical stack
-- [roadmap-alignment.md](../docs/planning/roadmap-alignment.md) — Current priorities
+- [roadmap.md](../docs/planning/roadmap.md) — Current priorities

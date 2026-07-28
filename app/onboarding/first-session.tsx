@@ -70,7 +70,7 @@ export default function FirstSessionStep() {
   return (
     <YStack flex={1} bg="$bgDark">
       <Image
-        source={require("../../assets/onboardings/splash-bg3.jpg")}
+        source={require("../../assets/splash-bg3.jpg")}
         style={{ position: "absolute", width: "100%", height: "100%" }}
         contentFit="cover"
       />
@@ -111,13 +111,20 @@ export default function FirstSessionStep() {
         </YStack>
 
         <YStack gap="$3">
-          <AppButton onPress={start} disabled={!quest} bg="$primary" borderWidth={0} rounded="$10">
+          <AppButton
+            testID="onboarding-first-session-start"
+            onPress={start}
+            disabled={!quest}
+            bg="$primary"
+            borderWidth={0}
+            rounded="$10"
+          >
             <Text color="$text" fontSize={17} fontWeight="700">
               {t("onboarding.first_session_start", "Start now")}
             </Text>
           </AppButton>
 
-          <Button chromeless size="$3" onPress={skip}>
+          <Button testID="onboarding-first-session-skip" chromeless size="$3" onPress={skip}>
             <Text color="$textSecondary" fontSize={15}>
               {t("onboarding.first_session_later", "Later")}
             </Text>

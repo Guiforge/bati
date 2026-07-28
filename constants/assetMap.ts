@@ -14,26 +14,26 @@
 // ============================================================
 
 export const EXERCISE_ASSETS = {
-  goblin_squat: require("@/assets/images/exercises/goblin_squat.png"),
-  dragon_pushup: require("@/assets/images/exercises/dragon_pushup.png"),
-  iron_grip_pullup: require("@/assets/images/exercises/iron_grip_pullup.png"),
-  stone_guardian_plank: require("@/assets/images/exercises/stone_guardian_plank.png"),
-  shadow_step_lunge: require("@/assets/images/exercises/shadow_step_lunge.png"),
-  berserker_burpee: require("@/assets/images/exercises/berserker_burpee.png"),
-  monk_mountain_climber: require("@/assets/images/exercises/monk_mountain_climber.png"),
-  titan_dip: require("@/assets/images/exercises/titan_dip.png"),
-  archer_pike_pushup: require("@/assets/images/exercises/archer_pike_pushup.png"),
-  wall_sentinel_hold: require("@/assets/images/exercises/wall_sentinel_hold.png"),
-  thunder_jumping_jack: require("@/assets/images/exercises/thunder_jumping_jack.png"),
-  paladin_high_knee: require("@/assets/images/exercises/paladin_high_knee.png"),
-  wizard_bicycle_crunch: require("@/assets/images/exercises/wizard_bicycle_crunch.png"),
-  knight_diamond_pushup: require("@/assets/images/exercises/knight_diamond_pushup.png"),
-  ranger_single_leg_deadlift: require("@/assets/images/exercises/ranger_single_leg_deadlift.png"),
-  druid_cobra_stretch: require("@/assets/images/exercises/druid_cobra_stretch.png"),
-  samurai_warrior_pose: require("@/assets/images/exercises/samurai_warrior_pose.png"),
-  rogue_skater_hop: require("@/assets/images/exercises/rogue_skater_hop.png"),
-  barbarian_overhead_press: require("@/assets/images/exercises/barbarian_overhead_press.png"),
-  alchemist_hollow_body_hold: require("@/assets/images/exercises/alchemist_hollow_body.png"),
+  goblin_squat: require("@/assets/images/exercises/goblin_squat.jpg"),
+  dragon_pushup: require("@/assets/images/exercises/dragon_pushup.jpg"),
+  iron_grip_pullup: require("@/assets/images/exercises/iron_grip_pullup.jpg"),
+  stone_guardian_plank: require("@/assets/images/exercises/stone_guardian_plank.jpg"),
+  shadow_step_lunge: require("@/assets/images/exercises/shadow_step_lunge.jpg"),
+  berserker_burpee: require("@/assets/images/exercises/berserker_burpee.jpg"),
+  monk_mountain_climber: require("@/assets/images/exercises/monk_mountain_climber.jpg"),
+  titan_dip: require("@/assets/images/exercises/titan_dip.jpg"),
+  archer_pike_pushup: require("@/assets/images/exercises/archer_pike_pushup.jpg"),
+  wall_sentinel_hold: require("@/assets/images/exercises/wall_sentinel_hold.jpg"),
+  thunder_jumping_jack: require("@/assets/images/exercises/thunder_jumping_jack.jpg"),
+  paladin_high_knee: require("@/assets/images/exercises/paladin_high_knee.jpg"),
+  wizard_bicycle_crunch: require("@/assets/images/exercises/wizard_bicycle_crunch.jpg"),
+  knight_diamond_pushup: require("@/assets/images/exercises/knight_diamond_pushup.jpg"),
+  ranger_single_leg_deadlift: require("@/assets/images/exercises/ranger_single_leg_deadlift.jpg"),
+  druid_cobra_stretch: require("@/assets/images/exercises/druid_cobra_stretch.jpg"),
+  samurai_warrior_pose: require("@/assets/images/exercises/samurai_warrior_pose.jpg"),
+  rogue_skater_hop: require("@/assets/images/exercises/rogue_skater_hop.jpg"),
+  barbarian_overhead_press: require("@/assets/images/exercises/barbarian_overhead_press.jpg"),
+  alchemist_hollow_body_hold: require("@/assets/images/exercises/alchemist_hollow_body.jpg"),
   // Dedicated art for the generic exercises (0001) — see docs/content/missing-covers.md
   squat: require("@/assets/images/exercises/squat.png"),
   pushups: require("@/assets/images/exercises/pushups.png"),
@@ -108,11 +108,11 @@ export const QUEST_ASSETS = {
 // ============================================================
 
 export const BOSS_ASSETS = {
-  wind_wraith: require("@/assets/images/bosses/wind_wraith.png"),
-  stone_golem: require("@/assets/images/bosses/stone_golem.png"),
-  shadow_serpent: require("@/assets/images/bosses/shadow_serpent.png"),
-  forest_titan: require("@/assets/images/bosses/forest_titan.png"),
-  fire_dragon: require("@/assets/images/bosses/fire_dragon.png"),
+  wind_wraith: require("@/assets/images/bosses/wind_wraith.jpg"),
+  stone_golem: require("@/assets/images/bosses/stone_golem.jpg"),
+  shadow_serpent: require("@/assets/images/bosses/shadow_serpent.jpg"),
+  forest_titan: require("@/assets/images/bosses/forest_titan.jpg"),
+  fire_dragon: require("@/assets/images/bosses/fire_dragon.jpg"),
 } as const;
 
 // ============================================================

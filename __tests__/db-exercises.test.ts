@@ -32,10 +32,10 @@ describe("db/exercises", () => {
     expect(typeof squat?.secondsPerRep).toBe("number");
     // `chest` was removed by 0012 — a squat is not a chest movement, and the wrong tag
     // fed both the coach's weak-area rule and The Golem's weakness multiplier.
-    expect(squat?.muscles.sort()).toEqual(["calf"]);
+    expect(squat?.muscles.sort()).toEqual(["legs"]);
 
     const wallSit = all.find((e) => e.enName === "Wall Sit");
-    expect(wallSit?.muscles.sort()).toEqual(["calf"]);
+    expect(wallSit?.muscles.sort()).toEqual(["legs"]);
   });
 
   test("getExerciseById returns one exercise with muscles", async () => {

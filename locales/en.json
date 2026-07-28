@@ -265,7 +265,11 @@
     "not_found": "Exercise not found",
     "invalid_id": "Invalid exercise",
     "go_back": "Go back",
-    "seconds_per_rep": "{{count}}s/rep"
+    "seconds_per_rep": "{{count}}s/rep",
+    "next_step": "Next step",
+    "next_step_earned": "You have earned it — give it a try.",
+    "next_step_progress": "Hit your target {{count}} more time to earn it.",
+    "next_step_progress_plural": "Hit your target {{count}} more times to earn it."
   },
   "session": {
     "adjust_reps_hint": "Did you do more or less?",
@@ -327,7 +331,8 @@
     "warmup_title": "WARM-UP",
     "warmup_skip": "Skip warm-up",
     "warmup_step": "{{current}} of {{total}}",
-    "countdown_subtitle": "Time to move."
+    "countdown_subtitle": "Time to move.",
+    "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure."
   },
   "resources": {
     "gold": "Gold",

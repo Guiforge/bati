@@ -371,6 +371,12 @@ export function ActiveExerciseView() {
                   {t("session.adjust_reps_hint")}
                 </Text>
               )}
+              {/* Intensity as reps-in-reserve rather than "go to failure" — the safer and more
+                  teachable framing, and one the app can give as a cue instead of collecting as
+                  data (docs/planning/work-roadmap.md §15). */}
+              <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                {t("session.reserve_hint")}
+              </Text>
             </YStack>
           )}
         </YStack>

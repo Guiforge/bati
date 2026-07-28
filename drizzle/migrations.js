@@ -20,6 +20,9 @@ import m0016 from "./0016_seed_new_quests.sql";
 import m0017 from "./0017_seed_adventures.sql";
 import m0018 from "./0018_delete_dumbbell_exercise.sql";
 import m0019 from "./0019_seed_quest_archetype.sql";
+import m0020 from "./0020_movement_patterns.sql";
+import m0021 from "./0021_pattern_balance.sql";
+import m0022 from "./0022_progression_ladder.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -45,5 +48,8 @@ export default {
     m0017,
     m0018,
     m0019,
+    m0020,
+    m0021,
+    m0022,
   },
 };

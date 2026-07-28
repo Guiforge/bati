@@ -4,8 +4,27 @@ import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-
 // Exercises catalogue
 // ------------------------------------------------------------
 
-export const muscleCodes = ["arms", "back", "shoulder", "chest", "abs", "calf"] as const;
+export const muscleCodes = ["arms", "back", "shoulder", "chest", "abs", "legs"] as const;
 export type MuscleCode = (typeof muscleCodes)[number];
+
+/**
+ * What a movement *is*, independent of what it works. Muscles cannot express this: a pull-up and
+ * a row are both `back`, a squat and a deadlift are both lower body. Every balance rule the
+ * content plan wanted — no two consecutive exercises on one pattern, an antagonist in a strength
+ * quest, an equipment-free option per pattern — is a statement about patterns, not muscles.
+ */
+export const movementPatterns = [
+  "push_horizontal",
+  "push_vertical",
+  "pull_horizontal",
+  "pull_vertical",
+  "squat",
+  "hinge",
+  "core",
+  "locomotion",
+  "mobility",
+] as const;
+export type MovementPattern = (typeof movementPatterns)[number];
 
 export const questArchetypes = [
   "strength",
@@ -74,6 +93,13 @@ export const exercises = sqliteTable(
 
     // Training style for resource generation
     style: text().notNull().default("strength").$type<ExerciseStyle>(),
+
+    // Movement family. Null only for user-authored content.
+    pattern: text().$type<MovementPattern>(),
+
+    // The movement to own before this one — the variation ladder (0022). A hint on the exercise
+    // screen, never a gate: nothing in the app is locked behind it.
+    prerequisiteExerciseId: int(),
 
     // For rep-based targets: rough average seconds per repetition.
     // Used to estimate quest duration. (Time-based exercises ignore it.)
@@ -459,7 +485,7 @@ export const muscleToResource: Record<MuscleCode, ResourceCode> = {
   chest: "fire",
   abs: "water",
   shoulder: "wind",
-  calf: "grain",
+  legs: "grain",
 } as const;
 
 // User's current resource inventory
@@ -553,7 +579,7 @@ export const muscleToBuilding: Record<MuscleCode, BuildingCode> = {
   chest: "forge",
   abs: "well",
   shoulder: "windmill",
-  calf: "farm",
+  legs: "farm",
 };
 
 // Mapping resources to their related buildings
@@ -655,7 +681,7 @@ export const buildingDefinitions: Record<
   farm: {
     tier: 2,
     emoji: "🌾",
-    relatedMuscle: "calf",
+    relatedMuscle: "legs",
     unlockCondition: "50+ leg exercise reps",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
@@ -723,7 +749,7 @@ export const buildingDefinitions: Record<
   barn: {
     tier: 3,
     emoji: "🏚️",
-    relatedMuscle: "calf",
+    relatedMuscle: "legs",
     unlockCondition: "Farm Level 3",
     prerequisiteBuilding: "farm",
     prerequisiteLevel: 3,

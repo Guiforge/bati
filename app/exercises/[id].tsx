@@ -13,6 +13,7 @@ import { Tag } from "@/components/common/Tag";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { getExerciseById } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -111,6 +112,39 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
   );
 }
 
+/**
+ * What comes after this movement. A hint, never a gate — nothing in the app is locked behind it,
+ * and a hero who wants to try the next step tonight can (roadmap §15, the progression ladder).
+ */
+function NextStepCard({ progression }: { progression: NextProgression }) {
+  const { language } = useSettingsStore();
+  const { t } = useTranslation();
+
+  const name = language === "fr" ? progression.next.frName : progression.next.enName;
+  const remaining = Math.max(0, progression.required - progression.metTarget);
+
+  return (
+    <Card>
+      <YStack gap="$2">
+        <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
+          {t("exercises.next_step", "NEXT STEP").toUpperCase()}
+        </Text>
+        <Text color="$text" fontWeight="700" fontSize={18}>
+          {name}
+        </Text>
+        <Paragraph color="$text" opacity={0.7} size="$3">
+          {progression.isEarned
+            ? t("exercises.next_step_earned", "You have earned it — give it a try.")
+            : t("exercises.next_step_progress", {
+                count: remaining,
+                defaultValue: `Hit your target ${remaining} more times to earn it.`,
+              })}
+        </Paragraph>
+      </YStack>
+    </Card>
+  );
+}
+
 function ExerciseContent({ exercise }: { exercise: Exercise }) {
   const { language } = useSettingsStore();
   const { t } = useTranslation();
@@ -119,6 +153,22 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
   const desc = language === "fr" ? exercise.frDescription : exercise.enDescription;
   const equipmentLabel = EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment;
   const img = resolveAsset(exercise.imagePath);
+
+  const [progression, setProgression] = useState<NextProgression | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getNextProgression(exercise.id)
+      .then((next) => {
+        if (!cancelled) setProgression(next);
+      })
+      .catch(() => {
+        // The ladder is a hint; its absence changes nothing about the screen.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [exercise.id]);
 
   return (
     <YStack gap="$4">
@@ -169,6 +219,8 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
           )}
         </YStack>
       </Card>
+
+      {progression ? <NextStepCard progression={progression} /> : null}
     </YStack>
   );
 }

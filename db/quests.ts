@@ -326,6 +326,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exEquipment: exercises.equipment,
       exStyle: exercises.style,
       exSecondsPerRep: exercises.secondsPerRep,
+      exPattern: exercises.pattern,
 
       muscle: exerciseMuscles.muscle,
     })
@@ -378,6 +379,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
           equipment: r.exEquipment,
           style: r.exStyle ?? "strength",
           secondsPerRep: r.exSecondsPerRep,
+          pattern: r.exPattern ?? null,
           muscles: [],
         },
         images: safeParseImages(r.imagesJson),

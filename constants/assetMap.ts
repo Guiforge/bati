@@ -154,7 +154,7 @@ export const SPORT_SPRITE_ASSETS = {
   chest: require("@/assets/images/village/sport_chest.png"),
   abs: require("@/assets/images/village/sport_abs.png"),
   shoulder: require("@/assets/images/village/sport_shoulder.png"),
-  calf: require("@/assets/images/village/sport_calf.png"),
+  legs: require("@/assets/images/village/sport_legs.png"),
 } as const;
 
 // ============================================================

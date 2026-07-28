@@ -91,7 +91,7 @@ describe("db/muscleBalance", () => {
     // Chest and arms should be strong (lots of push-ups)
     // Muscles with 0 volume should be weak
     expect(balance.weakAreas).toContain("abs");
-    expect(balance.weakAreas).toContain("calf");
+    expect(balance.weakAreas).toContain("legs");
   });
 
   test("getSuggestedFocusAreas returns empty array when no data", async () => {
@@ -123,7 +123,7 @@ describe("db/muscleBalance", () => {
     // Should suggest muscles with 0 volume
     expect(suggestions.length).toBe(2);
     // These should be muscles not worked (back, calf, abs, shoulder)
-    expect(["back", "calf", "abs", "shoulder"]).toEqual(expect.arrayContaining(suggestions));
+    expect(["back", "legs", "abs", "shoulder"]).toEqual(expect.arrayContaining(suggestions));
   });
 
   test("getBalanceRecommendation returns no_data status when no training", () => {
@@ -174,15 +174,15 @@ describe("db/muscleBalance", () => {
       totalVolume: 600,
       totalSessions: 10,
       muscles: [],
-      weakAreas: ["abs", "calf"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "calf")[],
-      strongAreas: ["chest"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "calf")[],
+      weakAreas: ["abs", "legs"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "legs")[],
+      strongAreas: ["chest"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "legs")[],
     };
 
     const rec = getBalanceRecommendation(balance);
     expect(rec.status).toBe("needs_attention");
     expect(rec.message.en).toContain("abs");
-    expect(rec.message.en).toContain("calves");
-    expect(rec.focusAreas).toEqual(["abs", "calf"]);
+    expect(rec.message.en).toContain("legs");
+    expect(rec.focusAreas).toEqual(["abs", "legs"]);
   });
 
   test("getSuggestedQuestsForWeakAreas returns empty when no training history", async () => {

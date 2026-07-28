@@ -210,7 +210,11 @@
     "loading": "Chargement...",
     "not_found": "Exercice introuvable",
     "retry": "Réessayer",
-    "seconds_per_rep": "{{count}}s/reps"
+    "seconds_per_rep": "{{count}}s/reps",
+    "next_step": "Prochain palier",
+    "next_step_earned": "Tu l'as mérité — tente-le.",
+    "next_step_progress": "Atteins ta cible encore {{count}} fois pour le débloquer.",
+    "next_step_progress_plural": "Atteins ta cible encore {{count}} fois pour le débloquer."
   },
   "explore": "Explorer",
   "goals": {
@@ -540,7 +544,8 @@
     "warmup_title": "ÉCHAUFFEMENT",
     "warmup_skip": "Passer l'échauffement",
     "warmup_step": "{{current}} sur {{total}}",
-    "countdown_subtitle": "C'est l'heure de bouger."
+    "countdown_subtitle": "C'est l'heure de bouger.",
+    "reserve_hint": "Garde 1 à 2 répétitions en réserve — ne va pas à l'échec."
   },
   "settings": "Paramètres",
   "settings.haptics_off": "Désactivées",

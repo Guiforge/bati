@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import type { QuestArchetype } from "../db/schema";
+import { movementPatterns, type QuestArchetype } from "../db/schema";
 import { createTestDb } from "./helpers/testDb";
 
 /**
@@ -13,13 +13,6 @@ import { createTestDb } from "./helpers/testDb";
  */
 type Archetype = QuestArchetype;
 
-/**
- * Quests that train one movement pattern on purpose. With six muscle codes the taxonomy cannot
- * tell a hinge from a squat from a calf raise — they all read `calf` — so the consecutive-muscle
- * rule would make a leg-focused quest impossible to write. The 12-set cap is what guards these.
- */
-const SINGLE_PATTERN = new Set(["The Ploughman's Vow"]);
-
 /** Quests allowed to require equipment. Everything else must be fully equipment-free. */
 const EQUIPMENT_QUESTS = new Set([
   "Tower Climb",
@@ -29,13 +22,8 @@ const EQUIPMENT_QUESTS = new Set([
   "The Crow's Ascent",
 ]);
 
-/**
- * Archetypes whose identity IS stacking one pattern (a push day is a push day, a core quest is
- * core). `metabolic` is here for a different reason: with a six-muscle taxonomy every cardio
- * movement tags `calf` and `abs`, which describes which limbs move, not where the stimulus
- * lands. The 12-sets-per-muscle cap is what actually guards those quests.
- */
-const STACKING_ALLOWED = new Set<Archetype>(["strength", "skill", "core", "metabolic"]);
+/** Archetypes whose identity IS repeating one pattern: a push day is a push day, core is core. */
+const STACKING_ALLOWED = new Set<Archetype>(["strength", "skill", "core", "mobility"]);
 
 const REST_RANGE: Record<Archetype, [number, number]> = {
   strength: [90, 120],
@@ -48,6 +36,7 @@ const REST_RANGE: Record<Archetype, [number, number]> = {
 };
 
 const DIFFICULTY_RANK = { hard: 0, medium: 1, easy: 2 } as const;
+const MOVEMENT_PATTERNS = [...movementPatterns];
 
 const MIN_SECONDS = 8 * 60;
 const MAX_SECONDS = 25 * 60;
@@ -141,24 +130,26 @@ describe("content invariants", () => {
     expect(misordered).toEqual([]);
   });
 
-  test("consecutive exercises do not stack the same muscles", async () => {
+  test("every exercise declares a movement pattern", async () => {
+    const all = await loadQuests();
+
+    const undeclared = all.flatMap((q) =>
+      q.exercises.filter((qex) => qex.exercise.pattern === null).map((qex) => qex.exercise.enName),
+    );
+
+    expect([...new Set(undeclared)]).toEqual([]);
+  });
+
+  test("consecutive exercises do not repeat a pattern", async () => {
     const all = await loadQuests();
 
     const offenders = all
-      .filter(
-        (quest) => !STACKING_ALLOWED.has(archetypeOf(quest)) && !SINGLE_PATTERN.has(quest.enTitle),
-      )
+      .filter((quest) => !STACKING_ALLOWED.has(archetypeOf(quest)))
       .flatMap((quest) =>
         quest.exercises.slice(1).flatMap((qex, index) => {
           const prev = quest.exercises[index].exercise;
-          const shared = qex.exercise.muscles.filter((m) => prev.muscles.includes(m));
-          const identical =
-            shared.length === prev.muscles.length && shared.length === qex.exercise.muscles.length;
-
-          return identical || shared.length >= 2
-            ? [
-                `${quest.enTitle}: ${prev.enName} → ${qex.exercise.enName} (shares ${shared.join(", ")})`,
-              ]
+          return qex.exercise.pattern === prev.pattern
+            ? [`${quest.enTitle}: ${prev.enName} → ${qex.exercise.enName} (${prev.pattern})`]
             : [];
         }),
       );
@@ -166,11 +157,47 @@ describe("content invariants", () => {
     expect(offenders).toEqual([]);
   });
 
-  // There is no "no muscle across four consecutive exercises" test. It was written to catch
-  // Forge's four straight push movements, but with this taxonomy it also fails every legitimate
-  // four-exercise core quest (`abs` in all four) and every cardio quest (`calf` in all four).
-  // The 12-sets-per-muscle cap below catches the original defect on its own: pre-0013 Forge and
-  // Iron Gauntlet both ran 4 rounds with `arms` in four exercises = 16 sets.
+  // The rule that was abandoned when muscles were the only vocabulary: every core quest reads
+  // `abs` four times over and every cardio quest reads `legs`, so it could not be expressed.
+  // Patterns can say it, and it is not relaxed for anyone.
+  test("no pattern survives four consecutive exercises, anywhere", async () => {
+    const all = await loadQuests();
+    const offenders: string[] = [];
+
+    for (const quest of all) {
+      for (let i = 3; i < quest.exercises.length; i++) {
+        const window = quest.exercises.slice(i - 3, i + 1).map((qex) => qex.exercise.pattern);
+        // A core quest made of four core movements is the session, not a defect — but a
+        // strength quest made of four pushes still is. The exemption is exactly that narrow:
+        // the archetype has to name the very pattern being repeated.
+        if (window[0] === archetypeOf(quest)) continue;
+        if (window.every((p) => p !== null && p === window[0])) {
+          offenders.push(`${quest.enTitle}: four in a row on ${window[0]}`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
+  // Also previously impossible: `back` covers a pull-up, a hinge and a plank, so "has an
+  // antagonist" false-positived on Climb the Titan's Tower. Patterns tell them apart.
+  test("a strength or skill quest balances its lead with another pattern", async () => {
+    const all = await loadQuests();
+    const offenders: string[] = [];
+
+    for (const quest of all) {
+      const archetype = archetypeOf(quest);
+      if (archetype !== "strength" && archetype !== "skill") continue;
+
+      const lead = quest.exercises[0].exercise.pattern;
+      const balanced = quest.exercises.slice(1).some((qex) => qex.exercise.pattern !== lead);
+
+      if (!balanced) offenders.push(`${quest.enTitle}: every exercise is ${lead}`);
+    }
+
+    expect(offenders).toEqual([]);
+  });
 
   test("no quest puts more than 12 sets on one muscle", async () => {
     const all = await loadQuests();
@@ -225,6 +252,25 @@ describe("content invariants", () => {
   // false-positives on Climb the Titan's Tower — pull + hinge + core, all tagged `back` — or is
   // toothless. The defect it was written for (Forge's 4 straight push exercises) is caught twice
   // over by the four-in-a-row and the 12-sets-per-muscle tests above.
+
+  // The finding the audit could only state in prose: the hinge was invisible because `legs`
+  // covered a squat and a deadlift alike. Now it is a test — every pattern a hero can train
+  // without equipment must have at least one quest they can reach without any.
+  test("every movement pattern has an equipment-free quest", async () => {
+    const all = await loadQuests();
+
+    const covered = new Set(
+      all
+        .filter((q) => q.exercises.every((qex) => qex.exercise.equipment === "none"))
+        .flatMap((q) => q.exercises.map((qex) => qex.exercise.pattern)),
+    );
+
+    // Vertical pulling needs a bar, and no amount of content design changes that.
+    const uncoverable = new Set(["pull_vertical"]);
+    const missing = MOVEMENT_PATTERNS.filter((p) => !covered.has(p) && !uncoverable.has(p));
+
+    expect(missing).toEqual([]);
+  });
 
   test("boss adventures declare hp, weakness and resistance", async () => {
     const schema = require("../db/schema") as typeof import("../db/schema");

@@ -801,9 +801,9 @@ problems and are closed by phases A–G; the rest live here so none of them is l
 | 2 | No medical disclaimer, no readiness question | ✅ H1 below |
 | 3 | No warm-up; the countdown claims one happened | ✅ H2 below |
 | 4 | `Squat` / `Wall Sit` tagged `chest` | ✅ §3 A1 — `0012` |
-| 5 | Muscle taxonomy has no real lower body | §15 — its own roadmap, and it bit this plan three times |
+| 5 | Muscle taxonomy has no real lower body | ✅ §15 — `legs` replaces `calf`, and `pattern` is the axis the rules actually wanted |
 | 6 | Pulling without equipment was impossible | ✅ §5 C + §6 D3 |
-| 7 | Progression is a rep multiplier, not a ladder | §15 — the ladder is authored in §2.3, the unlock system is not built |
+| 7 | Progression is a rep multiplier, not a ladder | ✅ §15 — the ladder is data (`0022`) and a hint on the exercise screen |
 | 8 | Rest at 30 s on 9 of 13 quests | ✅ §3 A2 — `0013` |
 | 9 | No deload, no 48 h rule | ✅ §8 F1b demotes yesterday's muscles; H4 below adds the deload |
 | 10 | Onboarding never reaches a first session | ✅ H3 below |
@@ -875,23 +875,63 @@ No new system, no persisted state, no notification: one more branch in the rule 
 already renders, and it stays behind the acute rules. Being told to rest today outranks being
 told to plan an easier week.
 
-## 15. Deliberately not in this plan
+## 15. The three remaining items — decided and applied
 
-- **Muscle taxonomy migration** (`calf` → quads/hamstrings/glutes/calves). Every quest in this
-  plan is authored so it stays correct *after* that migration, but the migration itself touches
-  the village, the boss modifiers, the exercise colours and the stats screen — its own roadmap.
-- **A real progression/unlock system** (variation tiers gated by clean-rep thresholds). §2.3
-  authors the ladder into the content so the system can be added later without re-authoring.
-- **Per-set RIR capture.** The research's safest way to express intensity is "how many reps did
-  you have left?", and the app still only asks easy/good/hard once per session. That is a session
-  UI change and a schema field, and the post-session feedback already drives the difficulty
-  suggestion — worth doing, not worth bundling here. (Warm-up blocks, deload weeks and streak
-  forgiveness were on this list too; H2, H4 and G2 shipped them.)
-Both open decisions from this list have since been taken: `calculateBossHp` now counts rounds and
-normalises seconds like `dealDamage` does, and Barbarian's Overhead Press is deleted by
-[`0018`](../../drizzle/0018_delete_dumbbell_exercise.sql) — guarded, because
-`completed_exercises.exerciseId` is `ON DELETE NO ACTION` and would have aborted the migration
-for anyone who had logged it through a custom quest.
+With no users yet, all three were open to being changed rather than worked around.
+
+### Taxonomy: a second axis, not finer muscles ✅ (`0020`, `0021`)
+
+The obvious move was 6 muscles → 12. **Rejected**: `muscleToResource` maps muscles 1:1 onto the
+village's six resources, so every muscle added costs a resource, a building, a sprite and a
+colour — an economy rewrite for a problem that was never about muscles.
+
+Every rule that broke wanted **movement patterns**. A pull-up and a row are both `back`; a squat
+and a deadlift are both lower body. So `exercises.pattern` was added — push h/v, pull h/v, squat,
+hinge, core, locomotion, mobility — orthogonal to muscles, touching nothing else. And `calf`
+became `legs`, because the old name was simply false: the app claimed a squat trained calves.
+
+What it bought, immediately:
+
+| Rule | Before | Now |
+| --- | --- | --- |
+| No two consecutive exercises on one pattern | approximated by muscle overlap, exempted for 4 archetypes | real, exempt only where the archetype *is* the pattern |
+| No pattern across four consecutive exercises | **deleted** — unimplementable | real, and not relaxed for anyone |
+| A strength quest needs an antagonist | **deleted** — false-positived on Climb the Titan's Tower | real |
+| Every pattern has an equipment-free quest | **inexpressible** | real |
+
+It found three genuine defects on the first run: both cardio quests were four `locomotion` drills
+in a row (burpees, climbers, high knees and jacks are the same bouncing movement), and The
+Squire's Awakening put two core movements side by side. **Fixed in the content, not by exempting
+the rule** — `0021` alternates locomotion with a squat and a core movement, which is better
+training as well as a passing test.
+
+### Progression: the ladder as data, no locked content ✅ (`0022`)
+
+`exercises.prerequisiteExerciseId` carries the 27-link ladder §2.3 had only ever written in
+prose, and the exercise screen shows *"Next step: Push-ups — hit your target 2 more times"*.
+
+**Nothing is gated.** Locking quests behind unlocks would show a beginner 3 quests out of 27 and
+turn the catalogue into a waiting room — the opposite of what the research says about competence.
+The threshold is something the app can observe (the last three logged sets met their target)
+rather than "3×12 clean reps", which would mean judging technique it cannot see.
+
+### RIR: a cue, not a form ✅
+
+The research's point about reps-in-reserve is that it is a **safer way to express intensity**
+than "go to failure" — a coaching instruction, not a data-collection requirement. Capturing it
+per set would be twelve extra interactions per session, in an app that has spent this whole plan
+removing friction.
+
+So the rep target now reads *"Stop with 1-2 reps left in the tank — not at failure."* Zero
+schema, zero friction, and the post-session easy/good/hard already closes the feedback loop by
+driving the difficulty suggestion. If the data is ever wanted for real, one optional field on the
+last set of an exercise is the door — not twelve.
+
+## 16. Still deliberately out
+
+- **A skill-tree screen.** The ladder is data and a hint; turning it into a browsable tree is a
+  product decision, not a gap.
+- **Per-set RIR capture.** See above — the framing shipped, the form did not.
 
 ## Related
 

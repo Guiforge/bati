@@ -483,3 +483,29 @@ Six were closed by phases A–G; this pass closed the rest.
 
 **Open:** the art pass alone — 11 assets whose prompts are now written into the generators, and
 whose generation needs an API key this environment does not have.
+
+---
+
+## 2026-07-27 — Movement patterns, the variation ladder, and RIR as a cue
+
+The last three open questions, taken with no users on the app and therefore no reason to work
+around anything. Full reasoning in [work-roadmap.md §15](../planning/work-roadmap.md).
+
+- **`exercises.pattern`** (`0020`) — push h/v, pull h/v, squat, hinge, core, locomotion, mobility.
+  Muscles were deliberately **not** split further: `muscleToResource` maps them 1:1 onto the
+  village's six resources, so each new muscle would cost a resource, a building, a sprite and a
+  colour. Every rule that had been abandoned wanted patterns, not finer muscles.
+- **`calf` → `legs`** — the old name claimed a squat trained the calves. `exercise_muscles` pins
+  the vocabulary in a CHECK, so the table was rebuilt; the village keeps `grain`.
+- **Three invariants came back from the dead**: no pattern twice in a row, no pattern across four
+  exercises, a strength quest needs an antagonist — plus a new one that was never expressible,
+  every pattern has an equipment-free quest. They found three real defects on the first run, all
+  fixed in the content (`0021`) rather than by exempting the rule.
+- **`exercises.prerequisiteExerciseId`** (`0022`) — the 27-link variation ladder, surfaced as
+  "next step" on the exercise screen. Nothing is locked: gating quests would show a beginner 3 of
+  27 and turn the catalogue into a waiting room.
+- **RIR shipped as a cue, not a form** — the rep target now says "stop with 1-2 reps left". The
+  research's point is a safer framing than "to failure", not a data-collection requirement.
+
+Docs touched: [gameplay/progression.md](../gameplay/progression.md) is unaffected (the flame is
+unchanged); the roadmap's audit traceability table now shows all ten findings closed.

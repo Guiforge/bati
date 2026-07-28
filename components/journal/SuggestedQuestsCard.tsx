@@ -15,7 +15,7 @@ const MUSCLE_COLORS: Record<string, ColorTokens> = {
   chest: "$pastelYellow",
   abs: "$pastelGreen",
   shoulder: "$pastelPurple",
-  calf: "$pastelOrange",
+  legs: "$pastelOrange",
 };
 
 export function SuggestedQuestsCard() {

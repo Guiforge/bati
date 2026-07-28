@@ -141,6 +141,27 @@
       "when": 1785110400007,
       "tag": "0019_seed_quest_archetype",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1785110400008,
+      "tag": "0020_movement_patterns",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1785110400009,
+      "tag": "0021_pattern_balance",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1785110400010,
+      "tag": "0022_progression_ladder",
+      "breakpoints": true
     }
   ]
 }

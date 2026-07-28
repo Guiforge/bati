@@ -6,7 +6,7 @@ export const MUSCLE_LABELS: Record<MuscleCode, { en: string; fr: string }> = {
   shoulder: { en: "Shoulders", fr: "Épaules" },
   chest: { en: "Chest", fr: "Pectoraux" },
   abs: { en: "Abs", fr: "Abdos" },
-  calf: { en: "Calves", fr: "Mollets" },
+  legs: { en: "Legs", fr: "Jambes" },
 };
 
 export function isMuscleCode(value: unknown): value is MuscleCode {

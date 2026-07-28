@@ -19,7 +19,7 @@ const MUSCLE_BG: Record<MuscleCode, ColorTokens> = {
   chest: "$pastelYellow",
   abs: "$pastelGreen",
   // No dedicated "pastelOrange" in the theme for now.
-  calf: "$pastelYellow",
+  legs: "$pastelYellow",
 };
 
 const TARGET_BG: Record<QuestTargetType, ColorTokens> = {

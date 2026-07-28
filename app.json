@@ -2,20 +2,20 @@
   "expo": {
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/app-icon.png"
+        "backgroundColor": "#101323",
+        "foregroundImage": "./assets/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.bati"
+      "package": "com.guiforge.bati"
     },
     "experiments": {
       "reactCompiler": true,
       "typedRoutes": true
     },
-    "icon": "./assets/app-icon.png",
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.bati"
+      "bundleIdentifier": "com.guiforge.bati"
     },
     "name": "bati",
     "orientation": "portrait",
@@ -23,8 +23,8 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#000000",
-          "image": "./assets/images/splash-icon.png",
+          "backgroundColor": "#101323",
+          "image": "./assets/adaptive-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain"
         }
@@ -47,7 +47,7 @@
     "userInterfaceStyle": "dark",
     "version": "1.0.0",
     "web": {
-      "favicon": "./assets/app-icon.png",
+      "favicon": "./assets/favicon.png",
       "output": "static"
     }
   }

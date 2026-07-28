@@ -36,8 +36,8 @@ export default function Presentation() {
         <YStack items="center" gap="$3">
           {/* Use Bati branding here (avoid game icons on presentation) */}
           <Image
-            source={require("@/assets/app-icon.png")}
-            style={{ width: 80, height: 80 }}
+            source={require("@/assets/adaptive-icon.png")}
+            style={{ width: 110, height: 110 }}
             contentFit="contain"
           />
           <H1

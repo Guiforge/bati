@@ -75,11 +75,15 @@ export function HomeHeader() {
         </XStack>
       </YStack>
 
-      {/* Streak flame — the most motivating number on the screen, out of the stats row */}
-      {currentStreak > 0 && (
+      {/* Streak flame — the most motivating number on the screen, out of the stats row.
+          Always rendered: an unlit flame is the thing to relight, and hiding it made the
+          header jump and left FLAME_SIZES[0] unreachable. Out only until the first read
+          lands, so it doesn't flash a zero on top of a real streak. */}
+      {!!streak && (
         <YStack
           items="center"
           minW={44}
+          opacity={currentStreak > 0 ? 1 : 0.4}
           pressStyle={{ scale: 0.95 }}
           onPress={() => router.push("/(tabs)/journal")}
           accessibilityRole="button"
@@ -88,7 +92,7 @@ export function HomeHeader() {
             defaultValue: `${currentStreak} day streak`,
           })}
         >
-          <FlameFlicker size={FLAME_SIZES[flameLevel]} />
+          <FlameFlicker size={FLAME_SIZES[flameLevel]} animate={currentStreak > 0} />
           <Text fontSize={15} fontWeight="700" color="$resourceFire">
             {currentStreak}
           </Text>

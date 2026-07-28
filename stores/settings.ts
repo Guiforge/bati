@@ -45,7 +45,10 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>((set) => ({
   language: getDevicePreferredAppLanguage(),
   theme: "system",
-  avatarId: "guardian",
+  // Same default the DB read normalises to (normalizeAvatarId). It used to say "guardian"
+  // here and fall back to avatarIds[0] there, so a hero who never picked one watched their
+  // avatar change from guardian to shadow a beat after every cold start.
+  avatarId: avatarIds[0],
   hapticsEnabled: true,
   soundEnabled: true,
   reducedMotion: false,

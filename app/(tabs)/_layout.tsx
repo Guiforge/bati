@@ -67,6 +67,11 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: "tab-quests",
           title: t("tabs.quests", "Quests"),
+          // The only tab entered from outside itself: the home CTA and every adventure step
+          // push /quests/{id}. Without this the detail stays on the stack, so tapping the
+          // Quests tab later dropped the hero straight back into a quest instead of the
+          // gallery. The tab is a section, and a section opens on its index.
+          popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
               color={focused ? "$primary" : "$text"}

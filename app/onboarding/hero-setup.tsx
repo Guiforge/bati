@@ -13,7 +13,7 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 const CURRENT_STEP = 2;
 const MIN_NAME_LENGTH = 3;
 const MAX_NAME_LENGTH = 20;

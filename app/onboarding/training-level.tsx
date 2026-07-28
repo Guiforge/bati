@@ -11,7 +11,7 @@ import { preferences, type TrainingLevel } from "@/db";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useUserStore } from "@/stores/user";
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 const CURRENT_STEP = 3;
 
 const LEVELS: { id: TrainingLevel; labelKey: string }[] = [
@@ -20,8 +20,9 @@ const LEVELS: { id: TrainingLevel; labelKey: string }[] = [
   { id: "advanced", labelKey: "onboarding.level_advanced" },
 ];
 
-// Final onboarding step. Skippable — the training level is a starting signal for the
+// Third onboarding step. Skippable — the training level is a starting signal for the
 // coach/suggestion layer, not a gate. See docs/planning/screen-redesign-proposals.md §2.
+// It hands over to the first-session offer (roadmap §14 H3).
 export default function TrainingLevelStep() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -39,8 +40,10 @@ export default function TrainingLevelStep() {
         });
       }
       success();
+      // Onboarding is done here, before the first-session offer: skipping it, backing out of it
+      // or crashing during it must never drop the hero back into onboarding.
       setHasFinishedOnboarding(true);
-      router.replace("/");
+      router.replace("/onboarding/first-session" as never);
     },
     [success, setHasFinishedOnboarding, router],
   );
@@ -120,6 +123,17 @@ export default function TrainingLevelStep() {
               );
             })}
           </YStack>
+
+          <Paragraph
+            text="center"
+            color="$textSecondary"
+            fontSize={12}
+            opacity={0.85}
+            textShadowColor="rgba(0,0,0,0.5)"
+            textShadowRadius={4}
+          >
+            {t("safety.onboarding_line")}
+          </Paragraph>
 
           <AppButton
             onPress={() => complete(selected)}

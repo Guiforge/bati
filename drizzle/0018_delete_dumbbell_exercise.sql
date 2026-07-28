@@ -1,6 +1,6 @@
 -- Barbarian's Overhead Press (0006) is the only `dumbbell` movement in a bodyweight app and
 -- the only exercise no quest can use, since the declared equipment envelope is bodyweight +
--- pull-up bar + dip bar. See docs/planning/work-roadmap.md §14.
+-- pull-up bar + dip bar. See docs/planning/work-roadmap.md §15.
 --
 -- The delete is guarded, not unconditional. `completed_exercises.exerciseId` is ON DELETE
 -- NO ACTION, so removing an exercise that appears in someone's journal would abort the whole

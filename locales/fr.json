@@ -387,7 +387,11 @@
     "valid": "Parfait !",
     "village_name_placeholder": "Ton nom de village",
     "village_name_subtitle": "Chaque légende a un nom. Quel sera le tien ?",
-    "village_name_title": "Nomme ton village"
+    "village_name_title": "Nomme ton village",
+    "first_session_title": "Ta première marche",
+    "first_session_subtitle": "Huit minutes, quatre mouvements, sans matériel. Un écuyer commence bien quelque part.",
+    "first_session_start": "Commencer",
+    "first_session_later": "Plus tard"
   },
   "progression": {
     "decrease_message": "Ça semble dur ces derniers temps. Baisser la difficulté peut t'aider à rester régulier.",
@@ -599,5 +603,17 @@
     "flame_4": "Enfer",
     "flame_5": "Éternelle"
   },
-  "welcome": "Bienvenue sur Bati !"
+  "welcome": "Bienvenue sur Bati !",
+  "safety": {
+    "title": "S'entraîner en sécurité",
+    "before_title": "Avant de commencer",
+    "before_body": "Si vous êtes enceinte, en convalescence après une blessure ou une opération, si vous vivez avec un problème cardiaque, articulaire ou de tension, ou si vous êtes inactif depuis longtemps, parlez-en à un médecin avant de démarrer ce programme ou tout autre.",
+    "during_title": "Pendant l'effort",
+    "during_body": "Une douleur vive n'est pas de l'effort : arrêtez-vous. Vertiges, douleur à la poitrine ou souffle coupé signifient arrêt et avis médical. Chaque objectif ici est une suggestion : mieux vaut finir une série avec une ou deux répétitions en réserve que courir après un chiffre en cassant sa technique.",
+    "not_a_coach_title": "Bati n'est pas un coach",
+    "not_a_coach_body": "Cette app compte ce que vous faites et en raconte une histoire. Elle ne voit pas votre technique, et ne donne pas d'avis médical. Pour un diagnostic, une blessure ou un programme adapté à votre corps, consultez un professionnel qualifié.",
+    "onboarding_line": "Entraînez-vous dans vos limites. En cas de problème de santé, de blessure ou de grossesse, parlez-en d'abord à un médecin.",
+    "read_more": "Lire les consignes de sécurité"
+  },
+  "settings.safety": "S'entraîner en sécurité"
 }

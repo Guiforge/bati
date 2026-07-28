@@ -65,7 +65,11 @@
     "valid": "Valid!",
     "village_name_placeholder": "Your village name",
     "village_name_subtitle": "Every legend needs a name. What will yours be?",
-    "village_name_title": "Name your village"
+    "village_name_title": "Name your village",
+    "first_session_title": "Your first march",
+    "first_session_subtitle": "Eight minutes, four movements, no equipment. A squire has to start somewhere.",
+    "first_session_start": "Start now",
+    "first_session_later": "Later"
   },
   "scheduling": {
     "title": "Weekly Schedule",
@@ -599,5 +603,17 @@
     "inactivity_body": "It's been a while. The monsters are getting closer...",
     "boss_title": "⚔️ The Boss Awaits!",
     "boss_body": "You're at the final step. Face the boss and claim victory!"
-  }
+  },
+  "safety": {
+    "title": "Train safely",
+    "before_title": "Before you start",
+    "before_body": "If you are pregnant, recovering from an injury or surgery, live with a heart, joint or blood-pressure condition, or have been inactive for a long time, talk to a doctor before starting this or any training programme.",
+    "during_title": "While you train",
+    "during_body": "Sharp pain is not effort — stop. Dizziness, chest pain or shortness of breath mean stop and seek medical advice. Every target here is a suggestion: end a set with a rep or two left in you rather than chasing a number with broken form.",
+    "not_a_coach_title": "Bati is not a coach",
+    "not_a_coach_body": "This app counts what you do and tells a story about it. It cannot see your technique, and it is not medical advice. For a diagnosis, an injury or a plan built around your body, see a qualified professional.",
+    "onboarding_line": "Train within your limits. If you have a health condition, an injury, or you are pregnant, talk to a doctor first.",
+    "read_more": "Read the safety notice"
+  },
+  "settings.safety": "Train safely"
 }

@@ -98,6 +98,47 @@ COVERS = [
      "fire, steel bars heating red-hot, hammers and tongs resting nearby, bright sparks flying "
      "through the dim smoky air, intense orange heat glow against deep shadow. The forge is "
      "unattended, no smith present."),
+    # --- Phase C/D/E batch (docs/content/missing-image.md §5) ---
+    ("squire_path", "adventures",
+     "A wide establishing shot at first light of a worn footpath leaving a sleeping village, "
+     "climbing gently between low stone walls toward distant pine ridges; a plain wooden training "
+     "shield and a straw practice dummy lean by the gate, dew on the grass, pale gold light just "
+     "touching the hills. Quiet, humble, the very beginning of a road — no people in frame."),
+    ("squire_awakening", "quests",
+     "A wide shot of a bare stone courtyard at dawn, a scuffed practice shield propped against a "
+     "low wall beside a coil of rope and a wooden bucket, long soft shadows across worn flagstones, "
+     "the keep still dark behind. Humble and unglamorous, the first morning of training — deserted, "
+     "no people."),
+    ("bears_road", "quests",
+     "A wide shot of a steep forest trail winding upward through dense pines, thick roots crossing "
+     "the path like steps, deep bear tracks pressed into the mud, cold blue mist between the trunks "
+     "and a shaft of low sun ahead. The trail is empty — no animals, no people."),
+    ("cellar_hauler", "quests",
+     "A dramatic low-angle shot from inside a dim stone cellar looking up at a heavy timber hatch "
+     "in the ceiling, a thick knotted rope hanging from it, storm light and rain spilling through "
+     "the gap around its edge, crates and barrels in the shadows below. Tense and close — no people "
+     "in frame."),
+    ("ploughmans_vow", "quests",
+     "A wide shot of a ploughed field at golden hour, deep furrows running to the horizon, a heavy "
+     "wooden plough left standing in the earth with a yoke resting beside it, a stone farmhouse "
+     "small in the distance. Honest, heavy, unromantic labour — the field is deserted, no people."),
+    ("crows_ascent", "quests",
+     "A dramatic low-angle wide shot of a sheer fortress wall rising into low cloud, iron rungs and "
+     "a weathered beam jutting from the stone far above, crows wheeling around the parapet against "
+     "a bruised evening sky. Vertigo and height — no climbers, no people in frame."),
+    ("colossus_trial", "quests",
+     "A dramatic low-angle wide shot of a vast toppled stone colossus lying face down in a desert "
+     "arena, one enormous carved hand thrust up out of the sand as if holding the sky, dust drifting "
+     "in hard sunlight, cracked flagstones radiating from the impact. Immense and silent — no people."),
+    ("storm_of_blades", "quests",
+     "A wide shot of a windswept dune ridge at dusk, dozens of swords and spears driven point-down "
+     "into the sand in a long broken line, tattered banners snapping in the gale, sand streaming off "
+     "the crest against a violet storm sky. Movement everywhere, no combatants — the field is empty."),
+    ("serpents_coil", "quests",
+     "A tight dramatic shot of the coils of an enormous stone serpent statue wound around a central "
+     "pillar in a flooded temple chamber, violet mist pooling between the rings, faint light from a "
+     "shaft above catching the carved scales. Pressure and constriction — a carving, not a creature; "
+     "no people."),
 ]
 
 

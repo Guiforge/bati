@@ -133,6 +133,17 @@ EXERCISES = [
      "A fantasy athlete hero lying on their back with arms stretched out to the sides and straight "
      "legs held together, rotated to one side in a sweeping arc with motion streaks; the obliques "
      "glow with electric-blue energy, seen from above."),
+    # --- Phase C batch: the equipment-free pulls (docs/content/missing-image.md §5) ---
+    ("table_row",
+     "A fantasy athlete hero lying face-up beneath a heavy wooden table, both hands gripping its "
+     "edge, body held rigid in a straight line from heels to shoulders as they pull their chest up "
+     "toward the underside of the table; the back and arm muscles glow with silver-blue energy, "
+     "seen from the side."),
+    ("towel_door_row",
+     "A fantasy athlete hero leaning back with straight arms, both hands gripping the ends of a "
+     "thick cloth looped around a sturdy door handle, heels planted and body angled back, pulling "
+     "themselves upright with elbows driving past the ribs; the back muscles glow with silver-blue "
+     "energy, seen from the side."),
 ]
 
 

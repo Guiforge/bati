@@ -766,7 +766,7 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | 12 | H1 readiness + disclaimer | — | ✅ **done** — `app/safety.tsx`, a line on the last onboarding step, a Settings row |
 | 13 | H3 first session in onboarding | — | ✅ **done** — `onboarding/first-session.tsx` offers The Squire's Awakening, skippable |
 | 14 | H2 warm-up | — | ✅ **done** — 2 min dynamic warm-up, skippable, nothing journaled; countdown copy fixed |
-| 15 | H4 deload nudge | H2 | the Coach can notice several heavy weeks and suggest an easier one |
+| 15 | H4 deload nudge | — | ✅ **done** — `deload` reason after 4 heavy weeks, acute rules still win |
 | 16 | Art pass | D, E | assetMap keys resolve, no placeholder on new content |
 | 17 | F3 archetype badge | F1 | a quest card says what kind of session it is before you start |
 
@@ -791,7 +791,7 @@ problems and are closed by phases A–G; the rest live here so none of them is l
 | 6 | Pulling without equipment was impossible | ✅ §5 C + §6 D3 |
 | 7 | Progression is a rep multiplier, not a ladder | §15 — the ladder is authored in §2.3, the unlock system is not built |
 | 8 | Rest at 30 s on 9 of 13 quests | ✅ §3 A2 — `0013` |
-| 9 | No deload, no 48 h rule | ⚠️ half — §8 F1b demotes yesterday's muscles; deload is **H4 below** |
+| 9 | No deload, no 48 h rule | ✅ §8 F1b demotes yesterday's muscles; H4 below adds the deload |
 | 10 | Onboarding never reaches a first session | ✅ H3 below |
 
 ### H1. Readiness and the medical disclaimer ✅
@@ -841,14 +841,21 @@ predictor of D30 retention in the research, and the content plan built the exact
 
 - Offer it as the last onboarding step, skippable, never a gate.
 
-### H4. Deload and accumulated fatigue
+### H4. Deload and accumulated fatigue ✅
 
-[restSuggestions](../../db/restSuggestions.ts) looks at consecutive days and raw session count in
-the last 7 days. It has no notion of accumulated load over weeks, so the 4–8 week deload the
-research describes cannot happen. This is the least certain item on the page and the most likely
-to be over-built: the smallest honest version is a Coach rule that notices several hard weeks in
-a row and suggests an easier one, using quests the catalogue already has (`The Druid's Path`,
-`The Squire's Awakening`).
+> Applied: a `deload` reason in [restSuggestions](../../db/restSuggestions.ts), three cases in
+> `db-restSuggestions.test.ts`.
+
+Every rule in that file was acute — days in a row, sessions this week — so nothing could see
+fatigue accumulating across a month, which is the window the deload guidance is actually about.
+A fourth reason now counts back in 7-day buckets and stops at the first week that was not heavy:
+**four consecutive weeks of 4+ sessions earns a suggestion to take a lighter one.** An easier week
+anywhere in the chain resets the count, which is the point — the hero who already deloads is
+never told to.
+
+No new system, no persisted state, no notification: one more branch in the rule the Coach card
+already renders, and it stays behind the acute rules. Being told to rest today outranks being
+told to plan an easier week.
 
 ## 15. Deliberately not in this plan
 

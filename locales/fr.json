@@ -344,7 +344,8 @@
     "user_level": "Niveau {{level}}",
     "when_you_train": "Quand tu t'entraînes habituellement",
     "workout_days": "Jours d'Entraînement",
-    "xp_progress": "{{current}} / {{next}} XP"
+    "xp_progress": "{{current}} / {{next}} XP",
+    "rest_suggestion_deload": "Quatre semaines chargées d'affilée. Prends-en une plus légère — moins de volume, pas moins d'entraînement. Ton prochain mois commence là."
   },
   "language": "Langue",
   "light": "Clair",

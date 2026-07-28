@@ -5,11 +5,53 @@ const { completedQuest } = schema;
 
 export type RestSuggestion = {
   shouldRest: boolean;
-  reason: "overtraining" | "consecutive_days" | "high_volume" | "none";
+  reason: "overtraining" | "consecutive_days" | "high_volume" | "deload" | "none";
   daysInARow: number;
   recentSessionCount: number;
   message: string;
+  /** Only set by the `deload` reason: how many heavy weeks are behind this suggestion. */
+  heavyWeeks?: number;
 };
+
+/** A week with this many sessions counts as heavy for the deload rule. */
+const HEAVY_WEEK_SESSIONS = 4;
+
+/** Consecutive heavy weeks before an easier one is suggested. */
+const HEAVY_WEEKS_BEFORE_DELOAD = 4;
+
+/**
+ * Consecutive heavy weeks ending today.
+ *
+ * The other rules in this file are acute — days in a row, sessions this week. None of them can
+ * see fatigue accumulating across a month, which is the window the deload guidance is about
+ * (docs/raw/bodyweight-app-research.md §2). This is the smallest thing that can: count back in
+ * 7-day buckets and stop at the first week that was not heavy.
+ */
+async function countHeavyWeeks(now: Date): Promise<number> {
+  const horizonWeeks = HEAVY_WEEKS_BEFORE_DELOAD + 1;
+  const horizon = new Date(now);
+  horizon.setDate(horizon.getDate() - horizonWeeks * 7);
+
+  const rows = await db
+    .select({ performedAt: completedQuest.performedAt })
+    .from(completedQuest)
+    .where(gte(completedQuest.performedAt, horizon));
+
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const perWeek = new Map<number, number>();
+  for (const row of rows) {
+    const weeksAgo = Math.floor((now.getTime() - row.performedAt.getTime()) / msPerWeek);
+    perWeek.set(weeksAgo, (perWeek.get(weeksAgo) ?? 0) + 1);
+  }
+
+  let heavy = 0;
+  for (let weeksAgo = 0; weeksAgo < horizonWeeks; weeksAgo++) {
+    if ((perWeek.get(weeksAgo) ?? 0) < HEAVY_WEEK_SESSIONS) break;
+    heavy++;
+  }
+
+  return heavy;
+}
 
 /**
  * Analyze recent workout patterns to detect overtraining and suggest rest days.
@@ -121,6 +163,19 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
       daysInARow: consecutiveDays,
       recentSessionCount: sessionCount,
       message: "rest_suggestion_overtraining",
+    };
+  }
+
+  // Nothing acute — but fatigue may still be piling up across weeks.
+  const heavyWeeks = await countHeavyWeeks(now);
+  if (heavyWeeks >= HEAVY_WEEKS_BEFORE_DELOAD) {
+    return {
+      shouldRest: true,
+      reason: "deload",
+      daysInARow: consecutiveDays,
+      recentSessionCount: sessionCount,
+      message: "rest_suggestion_deload",
+      heavyWeeks,
     };
   }
 

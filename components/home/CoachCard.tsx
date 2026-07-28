@@ -41,7 +41,12 @@ export function CoachCard() {
         setState({
           rule: "rest",
           messageKey: `journal.${rest.message}`,
-          count: rest.reason === "consecutive_days" ? rest.daysInARow : rest.recentSessionCount,
+          count:
+            rest.reason === "consecutive_days"
+              ? rest.daysInARow
+              : rest.reason === "deload"
+                ? (rest.heavyWeeks ?? 0)
+                : rest.recentSessionCount,
         });
         return;
       }

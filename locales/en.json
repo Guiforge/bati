@@ -460,7 +460,8 @@
     "trends_stable": "stable",
     "trends_no_data": "Train more to see trends",
     "prev_month": "Previous month",
-    "next_month": "Next month"
+    "next_month": "Next month",
+    "rest_suggestion_deload": "Four hard weeks in a row. Take an easier one — less volume, not less training. Your next month starts here."
   },
   "achievements": {
     "title": "Achievements",

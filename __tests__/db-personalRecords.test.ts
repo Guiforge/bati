@@ -198,15 +198,4 @@ describe("db/personalRecords", () => {
     expect(durationPr).toBeUndefined();
     expect(xpPr).toBeUndefined();
   });
-
-  test("formatDuration formats correctly", () => {
-    const { formatDuration } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
-
-    expect(formatDuration(30)).toBe("30s");
-    expect(formatDuration(60)).toBe("1m");
-    expect(formatDuration(90)).toBe("1m 30s");
-    expect(formatDuration(600)).toBe("10m");
-    expect(formatDuration(3661)).toBe("61m 1s");
-  });
 });

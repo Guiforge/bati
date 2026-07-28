@@ -40,7 +40,6 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 **Preferences**
 - [settings.md](settings.md) — app preferences → Credits
 - [credits.md](credits.md) — attributions
-- [dev.md](dev.md) — internal dev tools
 
 ## Conventions
 

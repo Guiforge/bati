@@ -4,11 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import {
-  formatDuration,
-  getPersonalRecordsSummary,
-  type PersonalRecord,
-} from "@/db/personalRecords";
+import { formatDuration } from "@/db/estimate";
+import { getPersonalRecordsSummary, type PersonalRecord } from "@/db/personalRecords";
 import { getStreakInfo } from "@/db/streaks";
 
 type RecordsSummary = {

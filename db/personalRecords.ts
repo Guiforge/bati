@@ -239,18 +239,3 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
 
   return newRecords;
 }
-
-/**
- * Format duration in seconds to human-readable string
- */
-export function formatDuration(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  if (mins === 0) {
-    return `${secs}s`;
-  }
-  if (secs === 0) {
-    return `${mins}m`;
-  }
-  return `${mins}m ${secs}s`;
-}

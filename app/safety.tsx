@@ -2,9 +2,10 @@ import { ChevronLeft, HeartPulse } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
-import { Button, Paragraph, Text, XStack } from "tamagui";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
 
-import { RPGTitle, ScreenContainer, SolidCard } from "@/src/ui";
+import { Card } from "@/components/common/Card";
 
 /**
  * Train safely — the one health warning in the app (roadmap §14 H1).
@@ -16,9 +17,10 @@ import { RPGTitle, ScreenContainer, SolidCard } from "@/src/ui";
 export default function SafetyScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScreenContainer>
+    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Button
           size="$3"
@@ -31,32 +33,34 @@ export default function SafetyScreen() {
         />
         <XStack flex={1} items="center" gap="$2">
           <HeartPulse size={20} color="$primary" />
-          <RPGTitle>{t("safety.title")}</RPGTitle>
+          <Text fontSize={22} fontWeight="700" color="$text">
+            {t("safety.title")}
+          </Text>
         </XStack>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
-        <SolidCard p="$4" gap="$3">
+        <Card gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
             {t("safety.before_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("safety.before_body")}</Paragraph>
-        </SolidCard>
+        </Card>
 
-        <SolidCard p="$4" gap="$3">
+        <Card gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
             {t("safety.during_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("safety.during_body")}</Paragraph>
-        </SolidCard>
+        </Card>
 
-        <SolidCard p="$4" gap="$3">
+        <Card gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
             {t("safety.not_a_coach_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("safety.not_a_coach_body")}</Paragraph>
-        </SolidCard>
+        </Card>
       </RNScrollView>
-    </ScreenContainer>
+    </YStack>
   );
 }

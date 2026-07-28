@@ -4,9 +4,11 @@ import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Paragraph, Separator, Text, XStack, YStack } from "tamagui";
 
-import { GlassCard, RPGButton, RPGTitle, ScreenContainer, SolidCard } from "@/src/ui";
+import { AppButton } from "@/components/common/AppButton";
+import { Card } from "@/components/common/Card";
 
 type CreditLinkProps = {
   title: string;
@@ -17,7 +19,7 @@ type CreditLinkProps = {
 
 function CreditLink({ title, subtitle, url, onPress }: CreditLinkProps) {
   return (
-    <GlassCard onPress={() => onPress(url)} p="$3">
+    <Card onPress={() => onPress(url)} p="$3">
       <XStack items="center" gap="$3">
         <ExternalLink size={20} color="$text" />
         <YStack flex={1} gap="$1">
@@ -31,13 +33,14 @@ function CreditLink({ title, subtitle, url, onPress }: CreditLinkProps) {
           ) : null}
         </YStack>
       </XStack>
-    </GlassCard>
+    </Card>
   );
 }
 
 export default function CreditsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const openUrl = useCallback(async (url: string) => {
     try {
@@ -50,7 +53,7 @@ export default function CreditsScreen() {
   }, []);
 
   return (
-    <ScreenContainer noGutter>
+    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Button
           size="$3"
@@ -63,19 +66,21 @@ export default function CreditsScreen() {
         />
         <XStack flex={1} items="center" gap="$2">
           <ScrollText size={20} color="$primary" />
-          <RPGTitle>{t("credits.title")}</RPGTitle>
+          <Text fontSize={22} fontWeight="700" color="$text">
+            {t("credits.title")}
+          </Text>
         </XStack>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
-        <SolidCard p="$4" gap="$3">
+        <Card gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
             {t("credits.third_party_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("credits.third_party_body")}</Paragraph>
-        </SolidCard>
+        </Card>
 
-        <SolidCard p="$4" gap="$3">
+        <Card gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
             {t("credits.icons_title")}
           </Text>
@@ -107,16 +112,17 @@ export default function CreditsScreen() {
           <Paragraph color="$textSecondary">{t("credits.attribution_example")}</Paragraph>
 
           <XStack>
-            <RPGButton
+            <AppButton
               variant="secondary"
+              fullWidth={false}
               onPress={() => openUrl("https://game-icons.net/about.html#authors")}
             >
               {t("credits.view_authors")}
-            </RPGButton>
+            </AppButton>
           </XStack>
-        </SolidCard>
+        </Card>
 
-        <SolidCard p="$4" gap="$3">
+        <Card gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
             {t("credits.open_source_title")}
           </Text>
@@ -154,8 +160,8 @@ export default function CreditsScreen() {
             url="https://orm.drizzle.team"
             onPress={openUrl}
           />
-        </SolidCard>
+        </Card>
       </RNScrollView>
-    </ScreenContainer>
+    </YStack>
   );
 }

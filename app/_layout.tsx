@@ -11,7 +11,7 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { rescheduleOathReminder } from "@/src/notifications";
-import { AppBackground } from "@/src/ui";
+import { AppBackground } from "@/src/ui/AppBackground";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";

@@ -1,14 +1,11 @@
-import { createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/oaths", () => {
   const t = createTestDb();
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
-      db: t.db,
-      schema: require("../db/schema"),
-    }));
+    jest.doMock("../db/client", () => clientMock(t));
   });
 
   afterAll(() => {
@@ -105,6 +102,31 @@ describe("db/oaths", () => {
 
     // Second check on the same fulfilled oath must stay silent.
     expect(await o.checkOathFulfilled()).toBeNull();
+  });
+
+  // Regression: crediting the oath's XP bonus used to happen after fulfilledAt was already
+  // persisted, and a fulfilled oath is a no-op on every later call — a crash between the two
+  // writes lost the bonus forever. onFulfilled now runs in the same transaction, so a failed
+  // credit must leave the oath un-fulfilled and retryable.
+  test("a failed bonus credit must not mark the oath fulfilled", async () => {
+    const o = oaths();
+    await o.swearOath({ metric: "exercise_pr", target: 10, exerciseId: 1 });
+    logExercise(1, 10);
+
+    await expect(
+      o.checkOathFulfilled(async () => {
+        throw new Error("simulated crash while crediting the bonus");
+      }),
+    ).rejects.toThrow("simulated crash while crediting the bonus");
+
+    expect(await o.getOath()).toMatchObject({ fulfilledAt: null });
+
+    let credited = false;
+    const fulfilled = await o.checkOathFulfilled(async () => {
+      credited = true;
+    });
+    expect(credited).toBe(true);
+    expect(fulfilled?.isFulfilled).toBe(true);
   });
 
   test("progress is clamped once the target is passed", async () => {

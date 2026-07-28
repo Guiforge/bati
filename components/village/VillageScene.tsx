@@ -15,12 +15,14 @@ import { getAdventureAsset, getSportSpriteAsset, getVillageTierAsset } from "@/c
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } from "@/db/village";
 import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
 
 export function VillageScene() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { language } = useSettingsStore();
+  const { villageName } = useUserStore();
 
   const [scene, setScene] = useState<VillageSceneData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,9 +114,11 @@ export function VillageScene() {
 
               <YStack items="center" gap="$3" px="$4" pb="$5" pt="$3">
                 <Text fontWeight="700" fontSize={22} color="$text">
-                  {tierName}
+                  {villageName || tierName}
                 </Text>
                 <Text fontSize={13} color="$textSecondary">
+                  {/* The tier only needs saying separately once the village has its own name */}
+                  {villageName ? `${tierName} • ` : ""}
                   {t("village.level_line", {
                     level: scene.level,
                     defaultValue: `Level ${scene.level}`,

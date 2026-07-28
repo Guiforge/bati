@@ -9,7 +9,6 @@ import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { getFlameLevel } from "@/db/village";
 import { useSettingsStore } from "@/stores/settings";
-import { useUserStore } from "@/stores/user";
 
 // The flame grows with the streak (db/village.ts thresholds) so the header reads at a glance.
 const FLAME_SIZES: Record<number, number> = { 0: 18, 1: 18, 2: 22, 3: 26, 4: 30, 5: 34 };
@@ -17,7 +16,6 @@ const FLAME_SIZES: Record<number, number> = { 0: 18, 1: 18, 2: 22, 3: 26, 4: 30,
 export function HomeHeader() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { villageName } = useUserStore();
   const { avatarId, language } = useSettingsStore();
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
   const [streak, setStreak] = useState<StreakInfo | null>(null);
@@ -54,10 +52,8 @@ export function HomeHeader() {
 
       {/* Identity & XP */}
       <YStack flex={1} gap="$1">
+        {/* Identity here is progression, not the village name — the village owns its name */}
         <Text fontWeight="700" fontSize="$4" color="$text" numberOfLines={1}>
-          {villageName || t("home.default_hero_name", "Hero")}
-        </Text>
-        <Text fontSize="$2" color="$textSecondary" numberOfLines={1}>
           {levelInfo
             ? t("home.level_line", {
                 level: levelInfo.level,

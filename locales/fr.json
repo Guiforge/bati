@@ -281,7 +281,6 @@
     "no_active_adventure": "Choisis ta voie",
     "start_journey": "Commence ton aventure",
     "play": "Jouer",
-    "default_hero_name": "Héros",
     "level_line": "Niveau {{level}} • {{title}}",
     "current_adventure": "Aventure en cours",
     "step_progress": "Étape {{current}} sur {{total}}",
@@ -380,11 +379,8 @@
     "oath_body": "{{oath}} — {{current}} / {{target}}. Trois jours depuis la dernière séance."
   },
   "onboarding": {
-    "avatar_subtitle": "Glisse pour parcourir les héros",
-    "avatar_title": "Choisis ton avatar",
     "chars_min": "car. min",
     "finish": "Commencer",
-    "hero_setup_title": "Choisis ton héros",
     "kingdom_founded": "ROYAUME FONDÉ",
     "language_selection": "Choisis ta langue",
     "level_advanced": "Confirmé",
@@ -393,7 +389,6 @@
     "level_subtitle": "Pour te proposer les bons entraînements. Modifiable plus tard.",
     "level_title": "Quel est ton niveau ?",
     "next": "Commencer mon aventure sportive",
-    "next_avatar": "Continuer",
     "presentation_description": "Chaque entraînement construit ton village. Commence ton aventure aujourd'hui.",
     "presentation_title": "Ta forme physique est\nta forteresse.",
     "skip": "Passer",
@@ -572,7 +567,6 @@
     "total_time": "Temps total",
     "up_next": "À suivre",
     "victory_title": "Quête accomplie !",
-    "village_upgrades": "Améliorations du village",
     "xp_earned": "XP gagnés",
     "warmup_title": "ÉCHAUFFEMENT",
     "warmup_skip": "Passer l'échauffement",
@@ -599,7 +593,6 @@
   "settings.sound_off": "Désactivés",
   "settings.sound_on": "Activés",
   "settings.sound_title": "Effets Sonores",
-  "settings_avatar_hint": "Tape sur un avatar pour changer.",
   "splash": {
     "loading": "Construction du village..."
   },
@@ -612,13 +605,6 @@
     "village": "Village"
   },
   "theme": "Thème",
-  "treasury": {
-    "earned_from": "Gagné avec",
-    "subtitle": "Tes ressources collectées lors des batailles et quêtes",
-    "tip_body": "Accomplis des quêtes ciblant des groupes musculaires spécifiques pour gagner leurs ressources correspondantes. Utilise les ressources pour améliorer les bâtiments de ton village !",
-    "tip_title": "Comment gagner des ressources",
-    "title": "Salle des Coffres"
-  },
   "village": {
     "bonus_prestige": "+{{points}} Prestige",
     "bonus_resources": "+{{percent}}% {{resource}}",

@@ -23,7 +23,6 @@
     "no_active_adventure": "Choose your path",
     "start_journey": "Start your journey",
     "play": "Play",
-    "default_hero_name": "Hero",
     "level_line": "Level {{level}} • {{title}}",
     "current_adventure": "Current adventure",
     "step_progress": "Step {{current}} of {{total}}",
@@ -46,10 +45,7 @@
   },
   "onboarding": {
     "chars_min": "chars min",
-    "avatar_subtitle": "Swipe to browse heroes",
-    "avatar_title": "Choose your avatar",
     "finish": "Start my training journey",
-    "hero_setup_title": "Choose your hero",
     "kingdom_founded": "KINGDOM FOUNDED",
     "language_selection": "Pick your language",
     "level_advanced": "Advanced",
@@ -58,7 +54,6 @@
     "level_subtitle": "So we can suggest the right workouts. You can change this later.",
     "level_title": "What's your level?",
     "next": "Start my training adventure",
-    "next_avatar": "Continue",
     "presentation_description": "Every workout builds your village. Start your adventure today.",
     "presentation_title": "Your fitness is\nyour fortress.",
     "skip": "Skip",
@@ -120,7 +115,6 @@
     "weekly_chip": "{{count}}× / week",
     "streak_hint": "Rest days count — the flame tracks consistency, not attendance."
   },
-  "settings_avatar_hint": "Tap an avatar to swap.",
   "settings": "Settings",
   "settings.haptics_title": "Haptics",
   "settings.haptics_on": "On",
@@ -351,7 +345,6 @@
     "total_time": "Total Time",
     "up_next": "Up Next",
     "victory_title": "Quest Complete!",
-    "village_upgrades": "Village Upgrades",
     "xp_earned": "XP Earned",
     "warmup_title": "WARM-UP",
     "warmup_skip": "Skip warm-up",
@@ -370,13 +363,6 @@
     "wind": "Wind Essence",
     "grain": "Grain",
     "boss_token": "Boss Token"
-  },
-  "treasury": {
-    "title": "Treasury",
-    "subtitle": "Your collected resources from battles and quests",
-    "earned_from": "Earned from",
-    "tip_title": "How to earn resources",
-    "tip_body": "Complete quests targeting specific muscle groups to earn their corresponding resources. Use resources to upgrade buildings in your village!"
   },
   "muscles": {
     "arms": "Arms",

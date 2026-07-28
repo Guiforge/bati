@@ -3,14 +3,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, useTheme, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ProgressDots } from "@/components/ProgressDots";
-import { AVATARS, getAvatarById } from "@/constants/avatars";
-import { useHaptics } from "@/hooks/useHaptics";
-import { useSettingsStore } from "@/stores/settings";
+import { getVillageTierAsset } from "@/constants/assetMap";
 import { useUserStore } from "@/stores/user";
 
 const TOTAL_STEPS = 4;
@@ -18,34 +16,20 @@ const CURRENT_STEP = 2;
 const MIN_NAME_LENGTH = 3;
 const MAX_NAME_LENGTH = 20;
 
-// Merged avatar + village-name step: one lighter screen, tap-to-select strip (no swipe
-// gesture, no full-screen background swap per avatar), name input below. See
-// docs/planning/screen-redesign-proposals.md §2.
+// Name-your-village step. The avatar picker used to live here too, but the avatar has no
+// gameplay and is editable in Settings — the only onboarding choice left is the name.
 export default function HeroSetup() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const { selection } = useHaptics();
-  const { avatarId, setAvatarId } = useSettingsStore();
   const { setVillageName } = useUserStore();
 
   const [name, setName] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
-  const currentAvatar = getAvatarById(avatarId);
   const trimmedName = useMemo(() => name.trim(), [name]);
   const isValidName = trimmedName.length >= MIN_NAME_LENGTH;
-
-  const handleSelectAvatar = useCallback(
-    (id: (typeof AVATARS)[number]["id"]) => {
-      selection();
-      setAvatarId(id).catch(() => {
-        // Error handled silently: selection still reflected in UI state
-      });
-    },
-    [selection, setAvatarId],
-  );
 
   const handleChangeText = useCallback((text: string) => {
     setName(text.slice(0, MAX_NAME_LENGTH));
@@ -65,9 +49,9 @@ export default function HeroSetup() {
 
   return (
     <YStack flex={1} bg="$background">
-      {/* Immersive background: the currently selected hero */}
+      {/* Immersive background: the tier-1 hamlet the player is about to name */}
       <Image
-        source={currentAvatar.source}
+        source={getVillageTierAsset(1)}
         style={{ position: "absolute", width: "100%", height: "100%" }}
         contentFit="cover"
         contentPosition="top"
@@ -105,46 +89,12 @@ export default function HeroSetup() {
               textShadowOffset={{ width: 1, height: 1 }}
               textShadowRadius={4}
             >
-              {t("onboarding.hero_setup_title", "Choose your hero")}
+              {t("onboarding.village_name_title", "Name your village")}
             </H2>
           </YStack>
 
-          {/* Bottom section: avatar strip + name */}
+          {/* Bottom section: subtitle + name */}
           <YStack gap="$4">
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 12, paddingHorizontal: 4 }}
-            >
-              {AVATARS.map((a) => {
-                const selected = a.id === avatarId;
-                return (
-                  <YStack
-                    key={a.id}
-                    width={72}
-                    height={72}
-                    rounded={36}
-                    overflow="hidden"
-                    borderWidth={selected ? 3 : 1}
-                    borderColor={selected ? "$primary" : "$borderStrong"}
-                    opacity={selected ? 1 : 0.6}
-                    pressStyle={{ scale: 0.95 }}
-                    onPress={() => handleSelectAvatar(a.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={t(a.labelKey)}
-                    accessibilityState={{ selected }}
-                  >
-                    <Image
-                      source={a.source}
-                      style={{ width: "100%", height: "100%" }}
-                      contentFit="cover"
-                      contentPosition="top"
-                    />
-                  </YStack>
-                );
-              })}
-            </ScrollView>
-
             <Text
               text="center"
               color="$text"
@@ -153,7 +103,7 @@ export default function HeroSetup() {
               textShadowColor="rgba(0,0,0,0.5)"
               textShadowRadius={4}
             >
-              {t(currentAvatar.labelKey)}
+              {t("onboarding.village_name_subtitle")}
             </Text>
 
             {/* Name input */}
@@ -206,7 +156,7 @@ export default function HeroSetup() {
                 fontWeight="700"
                 fontSize={18}
               >
-                {t("onboarding.next_avatar", "Continue")}
+                {t("onboarding.next", "Continue")}
               </Paragraph>
             </AppButton>
           </YStack>

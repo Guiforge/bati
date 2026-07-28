@@ -848,12 +848,16 @@ state is set.
 
 ### H3. The first session inside onboarding ✅
 
-Onboarding is presentation → hero setup → training level → Home. The hero reaches the home screen
-having done nothing. Completing a first meaningful action on day one is the single strongest
-predictor of D30 retention in the research, and the content plan built the exact quest for it:
-*The Squire's Awakening*, 8 minutes, four movements, no equipment.
+> Applied: [`app/onboarding/first-session.tsx`](../../app/onboarding/first-session.tsx).
 
-- Offer it as the last onboarding step, skippable, never a gate.
+Onboarding used to run presentation → hero setup → training level → Home, so a new hero reached
+the home screen having done nothing. Completing a first meaningful action on day one is the
+single strongest predictor of D30 retention, and the content plan had already authored the exact
+quest for it: *The Squire's Awakening*, 8 minutes, four movements, no equipment.
+
+It is an offer, never a gate. Onboarding is marked finished by the **previous** step, so
+skipping, backing out or crashing mid-session all land the hero in the app rather than back at
+step one.
 
 ### H4. Deload and accumulated fatigue ✅
 
@@ -878,8 +882,11 @@ told to plan an easier week.
   the village, the boss modifiers, the exercise colours and the stats screen — its own roadmap.
 - **A real progression/unlock system** (variation tiers gated by clean-rep thresholds). §2.3
   authors the ladder into the content so the system can be added later without re-authoring.
-- **Per-set RIR capture**, warm-up blocks, deload weeks, streak forgiveness — audit items that
-  belong to the session and habit layers, not the content layer.
+- **Per-set RIR capture.** The research's safest way to express intensity is "how many reps did
+  you have left?", and the app still only asks easy/good/hard once per session. That is a session
+  UI change and a schema field, and the post-session feedback already drives the difficulty
+  suggestion — worth doing, not worth bundling here. (Warm-up blocks, deload weeks and streak
+  forgiveness were on this list too; H2, H4 and G2 shipped them.)
 Both open decisions from this list have since been taken: `calculateBossHp` now counts rounds and
 normalises seconds like `dealDamage` does, and Barbarian's Overhead Press is deleted by
 [`0018`](../../drizzle/0018_delete_dumbbell_exercise.sql) — guarded, because

@@ -23,6 +23,7 @@ import type { DifficultyCode, FeedbackCode, MuscleCode } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { computeSessionXp } from "@/db/xp";
+import { rescheduleOathReminder } from "@/src/notifications";
 
 export type SessionStatus =
   | "idle"
@@ -480,6 +481,11 @@ export const useSessionStore = create<SessionState>()(
 
       // Oath progress is derived; this only catches the moment it tips over.
       const fulfilledOath = await checkOathFulfilled();
+
+      // The idle clock just reset, and a fulfilled oath has nothing left to nag about.
+      rescheduleOathReminder().catch(() => {
+        // Non-blocking: never fail a logged session over a notification.
+      });
 
       // A fulfilled oath pays a mini-boss-sized bonus. Add it to the tip-over session row so
       // total XP (a SUM over sessions) and the level below pick it up with no extra state.

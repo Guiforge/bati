@@ -369,7 +369,9 @@
     "inactivity_body": "Ça fait longtemps. Les monstres se rapprochent...",
     "inactivity_title": "Ton village te manque 🏚️",
     "streak_body": "Tu as une série de {{count}} jours. Ne laisse pas le feu s'éteindre !",
-    "streak_title": "🔥 Série en danger !"
+    "streak_title": "🔥 Série en danger !",
+    "oath_title": "Ton serment t'attend ⚔️",
+    "oath_body": "{{oath}} — {{current}} / {{target}}. Trois jours depuis la dernière séance."
   },
   "onboarding": {
     "avatar_subtitle": "Glisse pour parcourir les héros",
@@ -632,5 +634,6 @@
     "read_more": "Lire les consignes de sécurité"
   },
   "settings.safety": "S'entraîner en sécurité",
-  "settings.warmup": "Échauffement"
+  "settings.warmup": "Échauffement",
+  "settings.notifications": "Rappel du serment"
 }

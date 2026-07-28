@@ -2,9 +2,9 @@
 title: Oaths (Serments)
 type: system
 status: active
-updated: 2026-07-21
+updated: 2026-07-28
 related: [progression.md, coach-planning.md, statistics-progress.md, ../planning/system-redesign-options.md]
-sources: [db/oaths.ts, app/oath.tsx, components/home/OathCard.tsx]
+sources: [db/oaths.ts, db/oathReminder.ts, app/oath.tsx, components/home/OathCard.tsx, src/notifications.ts]
 ---
 
 # Oaths
@@ -89,6 +89,25 @@ A "custom oath" toggle reveals the original metric/target/exercise form for exac
    XP `SUM` and level pick it up with no extra state) and fires the big-win confetti burst.
 3. **Swear screen** ([app/oath.tsx](../../app/oath.tsx)) — presets deck first, custom form behind
    a toggle. Reached from Settings, or by tapping the home card.
+4. **The reminder** ([src/notifications.ts](../../src/notifications.ts)) — one local notification,
+   fired three idle days after the last session. See below.
+
+## The reminder is one pending notification, not a system
+
+The oath is the only thing Bati ever notifies about, and it does so through a single **one-shot**
+local notification. There is no scheduler, no background task, no push server and no ids to track:
+
+- [db/oathReminder.ts](../../db/oathReminder.ts) is a pure function — last activity + chosen hour
+  → the date to fire, or the next occurrence of that hour if the deadline already passed.
+- `rescheduleOathReminder()` cancels everything and schedules that one date. It runs at exactly
+  two moments: cold start ([app/_layout.tsx](../../app/_layout.tsx)) and after a session is
+  journaled ([stores/session.ts](../../stores/session.ts)). Cancel-then-schedule makes it
+  idempotent, which is why a one-shot is enough — the app re-derives it every time it is used.
+- It is silent by default: no permission, toggle off, no oath sworn, or oath already fulfilled all
+  produce nothing scheduled. Permission is requested only from the Settings toggle, never on launch.
+
+The reminder reuses the oath label from [useOathText.ts](../../components/oath/useOathText.ts), so
+the notification says the same thing as the home card.
 
 ## Related
 

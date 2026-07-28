@@ -42,7 +42,8 @@
         }
       ],
       "expo-router",
-      "expo-audio"
+      "expo-audio",
+      "expo-notifications"
     ],
     "scheme": "bati",
     "slug": "bati",

@@ -2,7 +2,7 @@
 title: Features Overview
 type: product
 status: active
-updated: 2026-07-20
+updated: 2026-07-28
 related: [vision.md, user-guide.md, ../planning/roadmap-alignment.md, ../gameplay/progression.md]
 sources: [app, db, components]
 ---
@@ -140,9 +140,11 @@ The user's single chosen objective.
 
 Reminders and alerts.
 
-- **What**: Workout reminders, streak warnings
-- **Contains**: Scheduled notifications, motivational messages
-- **Status**: Planned (Phase 3)
+- **What**: One local reminder for the sworn oath, three idle days after the last session
+- **Contains**: A single pending notification, recomputed on launch and after each session
+- **Where**: Toggled in Settings; silent when no oath is sworn or permission is denied
+- **Status**: Implemented
+- **Doc**: [oaths.md](../gameplay/oaths.md#the-reminder-is-one-pending-notification-not-a-system)
 
 ---
 

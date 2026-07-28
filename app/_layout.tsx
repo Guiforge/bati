@@ -10,6 +10,7 @@ import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { rescheduleOathReminder } from "@/src/notifications";
 import { AppBackground } from "@/src/ui";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
@@ -42,6 +43,11 @@ export default function RootLayout() {
   const handleDatabaseReady = useCallback(() => {
     loadUserFromDatabase();
     loadSettingsFromDatabase();
+    // The oath reminder is a single pending notification recomputed from current state, so a
+    // cold start is one of the two moments it needs to be refreshed (the other is a session).
+    rescheduleOathReminder().catch(() => {
+      // Non-blocking: a reminder that fails to schedule must never hold up the app.
+    });
   }, [loadUserFromDatabase, loadSettingsFromDatabase]);
 
   useEffect(() => {

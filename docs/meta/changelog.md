@@ -2,7 +2,7 @@
 title: Docs Wiki — Operation Log
 type: technical
 status: active
-updated: 2026-07-18
+updated: 2026-07-28
 related: [wiki-protocol.md, ../README.md]
 ---
 
@@ -509,3 +509,56 @@ around anything. Full reasoning in [work-roadmap.md §15](../planning/work-roadm
 
 Docs touched: [gameplay/progression.md](../gameplay/progression.md) is unaffected (the flame is
 unchanged); the roadmap's audit traceability table now shows all ten findings closed.
+
+---
+
+## 2026-07-28 — Repo cleanup: dead code out, planning folder told the truth
+
+A cleanup pass, no behaviour change. Tests stayed green (197 passed) and `tsc` reported nothing
+new.
+
+- **Deleted 7 unreferenced components + one stale backup** (~820 lines): `HomeSettingsMenu.tsx`,
+  `common/{ActionCard,EmptyState,LevelBadge,RecentAchievements}.tsx`,
+  `village/VillageAnimations.tsx`, and `app/_layout.tsx.bak` (a copy predating the SplashScreen
+  removal in `ad66856`). None was imported anywhere in the tree.
+- **`planning/` now distinguishes active from history.** Seven of ten pages claimed
+  `status: active` while only three were. Archived: `dev-execution-plan.md` (its own table says
+  all 6 phases shipped 2026-07-20), `screen-redesign-proposals.md` (the decisions that plan
+  executed), `system-redesign-options.md` (was `draft`; the chosen path — no resources, no Gold,
+  no Treasury — is stated in `roadmap-alignment.md` and shipped).
+- **The README stopped naming one source of truth for two jobs.** `roadmap-alignment.md` is the
+  scope authority (MVP boundaries); `work-roadmap.md` is the live execution doc. It previously
+  pointed only at the former, which had not moved since 2026-07-18.
+- **Two dead links fixed**: `.github/CONTRIBUTING.md` pointed at `design/ui-guide.md`, merged
+  into [design-system.md](../design/design-system.md) long ago; `system-redesign-options.md`
+  linked `../economy/`, a folder that doc itself planned to delete and which is gone.
+
+**Known and left alone:** session recovery (`hooks/useSessionRecovery.ts`,
+`components/session/SessionRecoveryCard.tsx`) is fully written but never called from `app/` —
+only a test keeps it reachable. That is an unwired feature, not dead code, so it was not deleted.
+
+---
+
+## 2026-07-28 — The oath speaks: notifications, in the smallest shape that works
+
+Notifications were listed as "Planned (Phase 3)" while `notificationsEnabled` and
+`notificationTime` had been sitting in [db/preferences.ts](../../db/preferences.ts) and the
+settings store — persisted, unit-tested, and read by nobody. `expo-notifications` was not even
+installed. That dead state is now the feature's storage, and the UI row that was missing exists.
+
+- **One pending notification, not a system.** The OS does the scheduling, so the code is a pure
+  date function ([db/oathReminder.ts](../../db/oathReminder.ts)) plus three expo calls
+  ([src/notifications.ts](../../src/notifications.ts)). Cancel-everything-then-schedule makes it
+  idempotent, which removes the need for a repeating trigger, notification ids, a queue, a
+  background task or a push server.
+- **Two hook points**: cold start and the moment a session is journaled. Because the app
+  recomputes the date every time it is opened, a one-shot trigger is enough.
+- **Silent unless earned**: no oath sworn, oath fulfilled, toggle off or permission denied all
+  schedule nothing. Permission is asked from the Settings tap only, never on launch, and the
+  row shows Off when the OS says no — the preference alone was allowed to lie before.
+- **A weekly oath's label was rendering with a hole in it.** `useOathText` never passed
+  `weekly`, so `metric_weekly_sessions` lost its first number on Home and the victory screen.
+  Fixed at the source while extracting `oathText()` so the notification reuses the same wording.
+
+Docs touched: [gameplay/oaths.md](../gameplay/oaths.md) gains the reminder section,
+[product/feature-overview.md](../product/feature-overview.md) moves Notifications to Implemented.

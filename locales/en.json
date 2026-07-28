@@ -618,7 +618,9 @@
     "inactivity_title": "Your village misses you 🏚️",
     "inactivity_body": "It's been a while. The monsters are getting closer...",
     "boss_title": "⚔️ The Boss Awaits!",
-    "boss_body": "You're at the final step. Face the boss and claim victory!"
+    "boss_body": "You're at the final step. Face the boss and claim victory!",
+    "oath_title": "Your oath is waiting ⚔️",
+    "oath_body": "{{oath}} — {{current}} / {{target}}. Three days since the last session."
   },
   "safety": {
     "title": "Train safely",
@@ -632,5 +634,6 @@
     "read_more": "Read the safety notice"
   },
   "settings.safety": "Train safely",
-  "settings.warmup": "Warm-up"
+  "settings.warmup": "Warm-up",
+  "settings.notifications": "Oath reminder"
 }

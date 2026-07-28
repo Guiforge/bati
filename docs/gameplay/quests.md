@@ -271,23 +271,32 @@ VALUES
   (1, 2, 1, 'reps', 8, 12);
 ```
 
-### User-Created Quests (Future)
+### User-Created Quests
 
-```typescript
-// Future: Allow users to create custom quests
-interface CreateQuestInput {
-  title: string;          // User's language
-  description: string;
-  exercises: {
-    exerciseId: number;
-    targetType: 'reps' | 'time';
-    targetMin: number;
-    targetMax: number;
-  }[];
-  rounds: number;
-  restSeconds: number;
-}
-```
+Written in the app from `app/(tabs)/quests/edit.tsx` (`+` in the gallery header, pencil on a quest
+you wrote). It calls `createQuestTemplate` / `updateQuestMeta` / `setQuestExercises` / `deleteQuest`.
+
+- Author is stamped `USER_QUEST_AUTHOR` (`"hero"`). Only those quests expose edit and delete —
+  seed content is shared and a content update must never lose to a local edit.
+- One target value per exercise (`min === max`), not the range seed content uses: the editor asks
+  for a number, not a bracket.
+- Title and description are written to both language columns. A quest written in the app has one
+  language — the hero's — and a machine translation is not an improvement on that.
+- `archetype` stays null, so the gallery shows no archetype chip.
+
+Writes invalidate `listQuestTemplates` and the cached quest detail through
+`invalidateQuestTemplates`; the gallery and the detail screen reload on focus.
+
+### Per-Quest Config
+
+What the hero changes on a quest sticks, without touching the shared template: level, rounds, rest
+and per-exercise targets live in `user_preferences` under `quest:<id>:config` (see
+[`db/questConfig.ts`](../../db/questConfig.ts)).
+
+`applyQuestConfig(quest, config)` folds it into the loaded quest once, so the estimate, the XP
+preview and the session that starts all read the same numbers. A level passed in the route (an
+adventure step) still wins over the remembered one. Stored values are re-clamped on read — they are
+untrusted text from SQLite.
 
 ---
 
@@ -297,7 +306,7 @@ interface CreateQuestInput {
 
 - Pre-designed quests reduce decision fatigue
 - User doesn't need to plan workouts
-- Focus on doing, not configuring
+- Configuring is opt-in: the quest runs as written until the hero opens the settings card
 
 ### Balanced Variety
 

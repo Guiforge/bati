@@ -80,6 +80,17 @@ export {
   type TrainingLevel,
 } from "./preferences";
 export { estimateQuestTemplateSeconds } from "./preview";
+export type { QuestConfig } from "./questConfig";
+export {
+  applyQuestConfig,
+  clearQuestConfig,
+  getQuestConfig,
+  hasQuestOverrides,
+  REST_RANGE,
+  ROUNDS_RANGE,
+  saveQuestConfig,
+  TARGET_RANGE,
+} from "./questConfig";
 export {
   createQuestTemplate,
   Difficulty,
@@ -87,8 +98,10 @@ export {
   generateTarget,
   getQuestById,
   getQuestTemplateById,
+  isUserQuest,
   listQuestTemplates,
   setQuestExercises,
+  USER_QUEST_AUTHOR,
   updateQuestMeta,
 } from "./quests";
 export type { RestSuggestion } from "./restSuggestions";

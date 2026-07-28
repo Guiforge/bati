@@ -14,3 +14,10 @@ export function getCached<T>(key: string): T | undefined {
 export function setCached<T>(key: string, value: T): void {
   cache.set(key, value);
 }
+
+/** Drop every entry under a key prefix — a quest is cached once per level, so edits clear all. */
+export function clearCached(prefix: string): void {
+  for (const key of cache.keys()) {
+    if (key.startsWith(prefix)) cache.delete(key);
+  }
+}

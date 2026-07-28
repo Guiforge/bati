@@ -1,15 +1,15 @@
 import { LegendList } from "@legendapp/list";
-import { Map as MapIcon } from "@tamagui/lucide-icons";
+import { Map as MapIcon, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
-import { AppButton } from "@/components/common/AppButton";
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
@@ -232,11 +232,14 @@ export default function QuestsGallery() {
     }
   }, []);
 
-  useEffect(() => {
-    load().catch(() => {
-      // Error already handled
-    });
-  }, [load]);
+  // On focus: a quest written or deleted in the editor has to show up here on the way back.
+  useFocusEffect(
+    useCallback(() => {
+      load().catch(() => {
+        // Error already handled
+      });
+    }, [load]),
+  );
 
   const quests = state.quests;
   const exercisesById = state.exercisesById;
@@ -400,10 +403,25 @@ export default function QuestsGallery() {
               {title}
             </Text>
           </XStack>
-          <Chip
-            label={t("quests.count", { count: filtered.length, defaultValue: "{{count}} quests" })}
-            tone="secondary"
-          />
+          <XStack items="center" gap="$2">
+            <Chip
+              label={t("quests.count", {
+                count: filtered.length,
+                defaultValue: "{{count}} quests",
+              })}
+              tone="secondary"
+            />
+            <AppIconButton
+              width={36}
+              height={36}
+              rounded={18}
+              onPress={() => router.push("/quests/edit" as never)}
+              accessibilityRole="button"
+              accessibilityLabel={t("quests.editor_new_title", "New quest")}
+            >
+              <Plus size={18} color="$text" strokeWidth={2.5} />
+            </AppIconButton>
+          </XStack>
         </XStack>
         <Text color="$textSecondary" fontSize={13}>
           {t("quests.gallery_subtitle", "Single workouts — pick one and go")}

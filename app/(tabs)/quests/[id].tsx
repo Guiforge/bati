@@ -1,6 +1,6 @@
-import { ChevronLeft, Dumbbell, Sparkles } from "@tamagui/lucide-icons";
+import { ChevronLeft, Dumbbell, Pencil, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,9 +13,20 @@ import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
 import { getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
-import { Difficulty, estimateQuestSeconds, formatDuration, getQuestById } from "@/db";
+import {
+  applyQuestConfig,
+  Difficulty,
+  estimateQuestSeconds,
+  formatDuration,
+  getQuestById,
+  getQuestConfig,
+  isUserQuest,
+  type QuestConfig,
+  saveQuestConfig,
+} from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
@@ -117,7 +128,8 @@ export default function QuestDetails() {
     return Difficulty.Medium;
   }, [params.level]);
 
-  const [level, setLevel] = useState<Difficulty>(initialLevel);
+  const [config, setConfig] = useState<QuestConfig>(() => ({ level: initialLevel }));
+  const level = config.level;
   const [state, setState] = useState<LoadState>(() => {
     const cached = questId != null ? getCached<Quest>(`quest:${questId}:${initialLevel}`) : null;
     return cached ? { status: "ready", quest: cached } : { status: "loading", quest: null };
@@ -147,12 +159,57 @@ export default function QuestDetails() {
     [t],
   );
 
+  // On focus, not on mount: coming back from the editor must show the edited quest.
+  useFocusEffect(
+    useCallback(() => {
+      if (!questId) return;
+      load(questId, level).catch(() => {
+        // Error already handled
+      });
+    }, [questId, level, load]),
+  );
+
+  // What the hero last set on this quest. A level passed in the route (an adventure step picks
+  // one) outranks the remembered one; the rounds/rest/target overrides apply either way.
   useEffect(() => {
     if (!questId) return;
-    load(questId, level).catch(() => {
-      // Error already handled
-    });
-  }, [questId, level, load]);
+    let cancelled = false;
+
+    getQuestConfig(questId)
+      .then((saved) => {
+        if (cancelled || !saved) return;
+        setConfig(params.level ? { ...saved, level: initialLevel } : saved);
+      })
+      .catch(() => {
+        // A missing or corrupt config just means "run the quest as written".
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [questId, params.level, initialLevel]);
+
+  const updateConfig = useCallback(
+    (next: QuestConfig) => {
+      setConfig(next);
+      if (questId == null) return;
+      saveQuestConfig(questId, next).catch(() => {
+        // Persisting is best-effort: the session still runs with what is on screen.
+      });
+    },
+    [questId],
+  );
+
+  const selectLevel = useCallback(
+    (nextLevel: Difficulty) => {
+      updateConfig({ ...config, level: nextLevel });
+    },
+    [config, updateConfig],
+  );
+
+  const resetConfig = useCallback(() => {
+    updateConfig({ level: config.level });
+  }, [config.level, updateConfig]);
 
   if (!questId) {
     return (
@@ -167,7 +224,9 @@ export default function QuestDetails() {
     );
   }
 
-  const quest = state.quest;
+  // Everything below — the estimate, the XP preview, the session that gets started — reads the
+  // configured quest, so the numbers on screen are the numbers that will run.
+  const quest = state.quest ? applyQuestConfig(state.quest, config) : null;
   const questTitle = quest ? (language === "fr" ? quest.frTitle : quest.enTitle) : "";
   const questDesc = quest ? (language === "fr" ? quest.frDescription : quest.enDescription) : "";
   const questTokens = quest ? getQuestColorTokensFromQuest(quest) : null;
@@ -233,7 +292,19 @@ export default function QuestDetails() {
               </XStack>
             </XStack>
 
-            <Tag label={levelLabel(level, t)} tone="secondary" />
+            <XStack items="center" gap="$2">
+              <Tag label={levelLabel(level, t)} tone="secondary" />
+              {/* Only quests written in the app may be edited: seed content is shared. */}
+              {quest && isUserQuest(quest) ? (
+                <AppIconButton
+                  onPress={() => router.push(`/quests/edit?id=${quest.id}` as never)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("quests.edit_quest", "Edit quest")}
+                >
+                  <Pencil size={18} color="$text" strokeWidth={2.5} />
+                </AppIconButton>
+              ) : null}
+            </XStack>
           </XStack>
 
           {headerImage ? (
@@ -348,12 +419,22 @@ export default function QuestDetails() {
                   <Text fontWeight="700" color="$textSecondary">
                     {t("quests.level", "Level")}
                   </Text>
-                  <LevelChip value={Difficulty.Easy} level={level} onSelect={setLevel} />
-                  <LevelChip value={Difficulty.Medium} level={level} onSelect={setLevel} />
-                  <LevelChip value={Difficulty.Hard} level={level} onSelect={setLevel} />
+                  <LevelChip value={Difficulty.Easy} level={level} onSelect={selectLevel} />
+                  <LevelChip value={Difficulty.Medium} level={level} onSelect={selectLevel} />
+                  <LevelChip value={Difficulty.Hard} level={level} onSelect={selectLevel} />
                 </XStack>
               </YStack>
             </Card>
+          ) : null}
+
+          {quest ? (
+            <QuestConfigCard
+              quest={quest}
+              config={config}
+              language={language}
+              onChange={updateConfig}
+              onReset={resetConfig}
+            />
           ) : null}
 
           {quest ? (

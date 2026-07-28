@@ -3,7 +3,7 @@ import { db, schema } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { preferences, type TrainingLevel } from "./preferences";
-import { setCached } from "./queryCache";
+import { clearCached, setCached } from "./queryCache";
 import type { DifficultyCode, QuestArchetype, QuestTargetType } from "./schema";
 import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
 
@@ -89,6 +89,16 @@ function safeParseImages(value: string): string[] {
 // DB helpers
 // ------------------------------------------------------------
 
+/**
+ * Author stamped on quests written in the app. Seed content is "Admin"; only quests carrying this
+ * author may be edited or deleted from the UI, so a content update can never be clobbered.
+ */
+export const USER_QUEST_AUTHOR = "hero";
+
+export function isUserQuest(quest: Pick<QuestTemplate, "author">): boolean {
+  return quest.author === USER_QUEST_AUTHOR;
+}
+
 export type CreateQuestTemplateInput = Omit<
   QuestTemplate,
   "id" | "author" | "imagePath" | "archetype"
@@ -135,13 +145,20 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
     );
   }
 
+  invalidateQuestTemplates();
   return questId;
 }
 
-// Quest templates are seed content with no live in-app authoring flow today (createQuestTemplate/
-// deleteQuest/updateQuestMeta exist for content tooling but have no runtime caller), so every
-// screen that mounts the gallery can share one fetch instead of refetching on every navigation.
+// The gallery is read far more often than it is written, so every screen that mounts it shares one
+// fetch instead of refetching on every navigation. Authoring writes go through the helpers below,
+// which all call `invalidateQuestTemplates`.
 let questTemplatesCache: Promise<QuestTemplate[]> | null = null;
+
+/** Drop the shared list and any cached quest detail, so the next read sees the write. */
+export function invalidateQuestTemplates(questId?: number): void {
+  questTemplatesCache = null;
+  clearCached(questId == null ? "quest:" : `quest:${questId}:`);
+}
 
 async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
   const rows = await db
@@ -399,6 +416,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
 
 export async function deleteQuest(id: number): Promise<void> {
   await db.delete(quests).where(eq(quests.id, id));
+  invalidateQuestTemplates(id);
 }
 
 export async function updateQuestMeta(
@@ -417,6 +435,8 @@ export async function updateQuestMeta(
       updatedAt: new Date(),
     })
     .where(eq(quests.id, id));
+
+  invalidateQuestTemplates(id);
 }
 
 export async function setQuestExercises(
@@ -453,10 +473,13 @@ export async function setQuestExercises(
       e.message.includes("Transaction function cannot return a promise")
     ) {
       await run(db as unknown as TransactionTx);
+      invalidateQuestTemplates(questId);
       return;
     }
     throw e;
   }
+
+  invalidateQuestTemplates(questId);
 }
 
 export async function ensureQuestHasExercise(
@@ -490,6 +513,8 @@ export async function ensureQuestHasExercise(
     targetMax: baseTarget.max,
     imagesJson: "[]",
   });
+
+  invalidateQuestTemplates(questId);
 }
 
 // ------------------------------------------------------------

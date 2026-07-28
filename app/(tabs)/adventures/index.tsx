@@ -2,7 +2,7 @@ import { LegendList } from "@legendapp/list";
 import { Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
@@ -14,7 +14,10 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
 import { getAdventureAsset } from "@/constants/assetMap";
-import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
+import {
+  type ExerciseColorTokens,
+  getQuestColorTokensFromTemplateWithExercises,
+} from "@/constants/exerciseColors";
 import {
   type Adventure,
   estimateQuestTemplateSeconds,
@@ -44,8 +47,18 @@ type LoadState =
 
 const ANDROID_MIN_BOTTOM_INSET = 24;
 
+// Precomputed once per data load — recomputing these in renderItem made every recycled
+// row rebuild color maps and re-run the duration estimator while scrolling.
+type AdventureRow = {
+  adventure: Adventure;
+  tokens: ExerciseColorTokens;
+  durationSeconds: number;
+  xp: number;
+  cover: ImageSourcePropType | null;
+};
+
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
-const adventureKey = (a: Adventure) => String(a.id);
+const adventureKey = (a: AdventureRow) => String(a.adventure.id);
 const ListGap = () => <YStack height={12} />;
 
 function StatusMessage({ state, onRetry }: { state: LoadState; onRetry: () => void }) {
@@ -112,7 +125,7 @@ export default function AdventuresGallery() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
 
   const [state, setState] = useState<LoadState>({
@@ -152,11 +165,33 @@ export default function AdventuresGallery() {
   const adventures = state.adventures;
   const exercisesById = state.exercisesById;
 
+  const rows = useMemo((): AdventureRow[] => {
+    return adventures.map((a) => {
+      const durationSeconds = estimateQuestTemplateSeconds({
+        template: a.coverQuest,
+        exercisesById,
+        userLevel: "medium",
+      });
+
+      return {
+        adventure: a,
+        tokens: getQuestColorTokensFromTemplateWithExercises({
+          quest: a.coverQuest,
+          exercisesById,
+        }),
+        durationSeconds,
+        xp: computeSessionXp({ durationSeconds, userLevel: "medium" }),
+        cover: resolveCoverImage(a.imagePath),
+      };
+    });
+  }, [adventures, exercisesById]);
+
   const title = t("adventures.gallery_title", "Adventures");
 
   const renderItem = useCallback(
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Gallery card renderer with cover art + fallback states, refactor planned
-    ({ item }: { item: Adventure }) => {
+    ({ item: row }: { item: AdventureRow }) => {
+      const item = row.adventure;
       const q = item.coverQuest;
       const qTitle = language === "fr" ? item.frTitle || q.frTitle : item.enTitle || q.enTitle;
       const qDesc =
@@ -164,18 +199,8 @@ export default function AdventuresGallery() {
           ? item.frDescription || q.frDescription
           : item.enDescription || q.enDescription;
 
-      const tokens = getQuestColorTokensFromTemplateWithExercises({
-        quest: q,
-        exercisesById,
-      });
-
-      const durationSeconds = estimateQuestTemplateSeconds({
-        template: q,
-        exercisesById,
-        userLevel: "medium",
-      });
-      const estimate = formatDuration(durationSeconds, language);
-      const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
+      const estimate = formatDuration(row.durationSeconds, language);
+      const xp = row.xp;
 
       const kindLabel =
         item.kind === "boss"
@@ -184,7 +209,7 @@ export default function AdventuresGallery() {
             ? t("adventures.kind_event", "EVENT")
             : t("adventures.kind_route", "ROUTE");
 
-      const cover = resolveCoverImage(item.imagePath);
+      const cover = row.cover;
       const kindChip = (
         <Chip
           label={kindLabel}
@@ -201,7 +226,7 @@ export default function AdventuresGallery() {
         <YStack px="$5">
           <Card
             testID="adventures-adventure-card"
-            bg={tokens.bg}
+            bg={row.tokens.bg}
             p="$0"
             overflow="hidden"
             animation={reducedMotion ? undefined : "quick"}
@@ -213,7 +238,6 @@ export default function AdventuresGallery() {
                   source={cover}
                   style={{ width: "100%", height: "100%" }}
                   contentFit="cover"
-                  transition={200}
                   accessible={false}
                 />
                 <XStack position="absolute" t="$3" l="$3">
@@ -265,7 +289,7 @@ export default function AdventuresGallery() {
         </YStack>
       );
     },
-    [exercisesById, language, reducedMotion, router, t],
+    [language, reducedMotion, router, t],
   );
 
   return (
@@ -293,7 +317,7 @@ export default function AdventuresGallery() {
 
       {adventures.length > 0 && (
         <LegendList
-          data={adventures}
+          data={rows}
           renderItem={renderItem}
           keyExtractor={adventureKey}
           ItemSeparatorComponent={ListGap}

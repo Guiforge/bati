@@ -15,6 +15,7 @@ import { Chip } from "@/components/common/Chip";
 import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
 import { getQuestAsset, getSportSpriteAsset } from "@/constants/assetMap";
 import {
+  type ExerciseColorTokens,
   getExerciseColorTokens,
   getQuestColorTokensFromTemplateWithExercises,
 } from "@/constants/exerciseColors";
@@ -83,6 +84,12 @@ type QuestMeta = {
   quest: QuestTemplate;
   muscles: MuscleCode[];
   equipment: EquipmentCode[];
+  // Precomputed once per data load — recomputing these in renderItem made every
+  // recycled row rebuild color maps and re-run the duration estimator while scrolling.
+  tokens: ExerciseColorTokens;
+  durationSeconds: number;
+  xp: number;
+  cover: ImageSourcePropType | null;
 };
 
 const PAGE_SIZE = 10;
@@ -188,7 +195,7 @@ export default function QuestsGallery() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
 
   const [state, setState] = useState<LoadState>({
     status: "loading",
@@ -256,7 +263,21 @@ export default function QuestsGallery() {
         for (const m of ex.muscles) muscles.add(m);
       }
 
-      return { quest: q, muscles: [...muscles], equipment: [...equipment] };
+      const durationSeconds = estimateQuestTemplateSeconds({
+        template: q,
+        exercisesById,
+        userLevel: "medium",
+      });
+
+      return {
+        quest: q,
+        muscles: [...muscles],
+        equipment: [...equipment],
+        tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
+        durationSeconds,
+        xp: computeSessionXp({ durationSeconds, userLevel: "medium" }),
+        cover: resolveCoverImage(q.imagePath),
+      };
     });
   }, [exercisesById, quests]);
 
@@ -294,28 +315,18 @@ export default function QuestsGallery() {
     ({ item }: { item: QuestMeta }) => {
       const q = item.quest;
 
-      const tokens = getQuestColorTokensFromTemplateWithExercises({
-        quest: q,
-        exercisesById,
-      });
-
-      const durationSeconds = estimateQuestTemplateSeconds({
-        template: q,
-        exercisesById,
-        userLevel: "medium",
-      });
-      const estimate = formatDuration(durationSeconds, language);
-      const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
+      const estimate = formatDuration(item.durationSeconds, language);
+      const xp = item.xp;
 
       const qTitle = language === "fr" ? q.frTitle : q.enTitle;
       const qDesc = language === "fr" ? q.frDescription : q.enDescription;
-      const cover = resolveCoverImage(q.imagePath);
+      const cover = item.cover;
 
       return (
         <YStack px="$5">
           <Card
             testID="quests-quest-card"
-            bg={tokens.bg}
+            bg={item.tokens.bg}
             onPress={() => router.push(`/quests/${q.id}` as never)}
           >
             <XStack gap="$3" items="flex-start">
@@ -335,7 +346,6 @@ export default function QuestsGallery() {
                     source={cover}
                     style={{ width: "100%", height: "100%" }}
                     contentFit="cover"
-                    transition={200}
                     accessible={false}
                   />
                 ) : (
@@ -388,7 +398,7 @@ export default function QuestsGallery() {
         </YStack>
       );
     },
-    [exercisesById, language, router, t],
+    [language, router, t],
   );
 
   return (
@@ -450,7 +460,7 @@ export default function QuestsGallery() {
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
           recycleItems
-          estimatedItemSize={260}
+          estimatedItemSize={170}
           contentContainerStyle={{
             paddingTop: 8,
             paddingBottom:

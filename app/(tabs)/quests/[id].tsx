@@ -2,7 +2,7 @@ import { ChevronLeft, Dumbbell, Pencil, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
@@ -169,25 +169,31 @@ export default function QuestDetails() {
     }, [questId, level, load]),
   );
 
-  // What the hero last set on this quest. A level passed in the route (an adventure step picks
-  // one) outranks the remembered one; the rounds/rest/target overrides apply either way.
-  useEffect(() => {
-    if (!questId) return;
-    let cancelled = false;
+  // What the hero last set on this quest. Re-read on focus, not just on mount: editing a quest
+  // you wrote drops its overrides, and the screen underneath must not keep showing them.
+  // A level passed in the route (an adventure step picks one) outranks the remembered one.
+  useFocusEffect(
+    useCallback(() => {
+      if (!questId) return;
+      let cancelled = false;
 
-    getQuestConfig(questId)
-      .then((saved) => {
-        if (cancelled || !saved) return;
-        setConfig(params.level ? { ...saved, level: initialLevel } : saved);
-      })
-      .catch(() => {
-        // A missing or corrupt config just means "run the quest as written".
-      });
+      getQuestConfig(questId)
+        .then((saved) => {
+          if (cancelled) return;
+          const next = saved ?? { level: initialLevel };
+          setConfig(params.level ? { ...next, level: initialLevel } : next);
+        })
+        .catch(() => {
+          // A missing or corrupt config just means "run the quest as written".
+        });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [questId, params.level, initialLevel]);
+      return () => {
+        cancelled = true;
+      };
+      // `level` is deliberately absent: it is written by this effect, and reading it back would
+      // make the two focus effects chase each other.
+    }, [questId, params.level, initialLevel]),
+  );
 
   const updateConfig = useCallback(
     (next: QuestConfig) => {

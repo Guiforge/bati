@@ -14,10 +14,12 @@ import {
   clearQuestConfig,
   createQuestTemplate,
   deleteQuest,
+  getQuestConfig,
   getQuestTemplateById,
   listExercises,
   REST_RANGE,
   ROUNDS_RANGE,
+  saveQuestConfig,
   setQuestExercises,
   TARGET_RANGE,
   USER_QUEST_AUTHOR,
@@ -180,6 +182,14 @@ export default function QuestEditor() {
         restSeconds: rest,
       });
       await setQuestExercises(questId, payload);
+
+      // The editor is the source of truth for a quest you own, so what was just typed replaces
+      // the per-quest overrides. Target overrides could not survive anyway: they are keyed by
+      // quest_exercises row id and this write rebuilds those rows. The remembered level stays —
+      // that is a personal setting, not a property of the template.
+      const saved = await getQuestConfig(questId);
+      if (saved) await saveQuestConfig(questId, { level: saved.level });
+
       router.back();
     } catch (e) {
       const message = e instanceof Error ? e.message : "Unknown error";

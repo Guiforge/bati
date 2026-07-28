@@ -1,4 +1,4 @@
-import { createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/bossFights", () => {
   const t = createTestDb();
@@ -11,10 +11,7 @@ describe("db/bossFights", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
-      db: t.db,
-      schema: require("../db/schema"),
-    }));
+    jest.doMock("../db/client", () => clientMock(t));
   });
 
   afterAll(() => {

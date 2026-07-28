@@ -1,5 +1,5 @@
 import { eq, gte, sql } from "drizzle-orm";
-import { db, schema } from "./client";
+import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { deletePreference, getPreference, setPreference } from "./preferences";
 import { getStreakInfo } from "./streaks";
 
@@ -255,8 +255,15 @@ export async function getOathProgress(): Promise<OathProgress | null> {
 /**
  * Call after a session is journaled. Returns the oath only on the transition to
  * fulfilled, so the victory screen celebrates it exactly once.
+ *
+ * `onFulfilled` (e.g. crediting the oath's XP bonus to the session) runs in the same
+ * transaction as the fulfilledAt write: a crash between the two used to mark the oath
+ * fulfilled forever while the bonus was never credited, since a fulfilled oath is a
+ * no-op on every later call. Committing both together removes that window.
  */
-export async function checkOathFulfilled(): Promise<OathProgress | null> {
+export async function checkOathFulfilled(
+  onFulfilled?: (tx: TransactionTx) => Promise<void>,
+): Promise<OathProgress | null> {
   const oath = await getOath();
   if (!oath || oath.fulfilledAt !== null) {
     return null;
@@ -267,6 +274,9 @@ export async function checkOathFulfilled(): Promise<OathProgress | null> {
   }
 
   const fulfilled: Oath = { ...oath, fulfilledAt: new Date().toISOString() };
-  await setPreference(OATH_KEY, JSON.stringify(fulfilled));
+  await transactionOrFallback(async (tx) => {
+    if (onFulfilled) await onFulfilled(tx);
+    await setPreference(OATH_KEY, JSON.stringify(fulfilled), tx);
+  });
   return await toProgress(fulfilled);
 }

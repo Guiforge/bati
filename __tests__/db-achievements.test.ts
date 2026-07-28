@@ -1,4 +1,4 @@
-import { createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb } from "./helpers/testDb";
 
 // A fixed neutral time-of-day (noon) for tests that are NOT about time-based achievements.
 // Using `new Date()` here made the suite flaky: between midnight and 7am the current hour
@@ -16,10 +16,7 @@ describe("db/achievements", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
-      db: t.db,
-      schema: require("../db/schema"),
-    }));
+    jest.doMock("../db/client", () => clientMock(t));
   });
 
   afterAll(() => {

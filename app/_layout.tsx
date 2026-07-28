@@ -59,10 +59,15 @@ export default function RootLayout() {
     if (!(isNavigationReady && userLoaded && settingsLoaded)) return;
 
     const inOnboardingGroup = segments[0] === "onboarding";
+    // Onboarding is marked finished one step before this offer screen on purpose (see
+    // app/onboarding/first-session.tsx docstring), so it must stay reachable even though
+    // hasFinishedOnboarding is already true — only stale re-entries into the rest of the
+    // onboarding group should be kicked back to "/".
+    const isPostOnboardingOffer = segments[1] === "first-session";
 
     if (!hasFinishedOnboarding && !inOnboardingGroup) {
       router.replace("/onboarding");
-    } else if (hasFinishedOnboarding && inOnboardingGroup) {
+    } else if (hasFinishedOnboarding && inOnboardingGroup && !isPostOnboardingOffer) {
       router.replace("/");
     }
 

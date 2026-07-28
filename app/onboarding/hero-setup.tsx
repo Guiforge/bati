@@ -51,9 +51,9 @@ export default function HeroSetup() {
     setName(text.slice(0, MAX_NAME_LENGTH));
   }, []);
 
-  const handleContinue = useCallback(() => {
+  const handleContinue = useCallback(async () => {
     if (!isValidName) return;
-    setVillageName(trimmedName);
+    await setVillageName(trimmedName);
     router.push("/onboarding/training-level");
   }, [isValidName, setVillageName, trimmedName, router]);
 

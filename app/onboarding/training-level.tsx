@@ -33,7 +33,7 @@ export default function TrainingLevelStep() {
   const [selected, setSelected] = useState<TrainingLevel | null>(null);
 
   const complete = useCallback(
-    (level: TrainingLevel | null) => {
+    async (level: TrainingLevel | null) => {
       if (level) {
         preferences.setTrainingLevel(level).catch(() => {
           // Non-blocking: level is a soft signal, onboarding still completes
@@ -41,8 +41,9 @@ export default function TrainingLevelStep() {
       }
       success();
       // Onboarding is done here, before the first-session offer: skipping it, backing out of it
-      // or crashing during it must never drop the hero back into onboarding.
-      setHasFinishedOnboarding(true);
+      // or crashing during it must never drop the hero back into onboarding. Awaited so the
+      // flag is durably persisted before we navigate, not just set in memory.
+      await setHasFinishedOnboarding(true);
       router.replace("/onboarding/first-session" as never);
     },
     [success, setHasFinishedOnboarding, router],

@@ -479,20 +479,25 @@ export const useSessionStore = create<SessionState>()(
         questId: quest?.id ?? null,
       });
 
-      // Oath progress is derived; this only catches the moment it tips over.
-      const fulfilledOath = await checkOathFulfilled();
+      // Oath progress is derived; this only catches the moment it tips over. The bonus
+      // credit runs inside checkOathFulfilled's own transaction, atomically with marking
+      // the oath fulfilled — a crash between the two would otherwise lose the bonus for
+      // good, since a fulfilled oath is a no-op on every later call.
+      let oathBonusXp = 0;
+      const fulfilledOath = await checkOathFulfilled(async (tx) => {
+        oathBonusXp = OATH_XP_BONUS;
+        await addBonusXpToSession(sessionId, OATH_XP_BONUS, tx);
+      });
 
       // The idle clock just reset, and a fulfilled oath has nothing left to nag about.
       rescheduleOathReminder().catch(() => {
         // Non-blocking: never fail a logged session over a notification.
       });
 
-      // A fulfilled oath pays a mini-boss-sized bonus. Add it to the tip-over session row so
+      // A fulfilled oath pays a mini-boss-sized bonus. Added to the tip-over session row so
       // total XP (a SUM over sessions) and the level below pick it up with no extra state.
-      const oathBonusXp = fulfilledOath ? OATH_XP_BONUS : 0;
       if (oathBonusXp > 0) {
         xpEarned += oathBonusXp;
-        await addBonusXpToSession(sessionId, oathBonusXp);
       }
 
       // Level after all XP (base + any oath bonus) is settled.

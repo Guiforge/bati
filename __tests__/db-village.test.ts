@@ -1,4 +1,4 @@
-import { createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb } from "./helpers/testDb";
 
 // Buildings have their own suite (db-village-buildings.test.ts). This one covers
 // the rest of db/village: the two pure ladders, the boss banners they read from,
@@ -9,10 +9,7 @@ describe("db/village", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
-      db: t.db,
-      schema: require("../db/schema"),
-    }));
+    jest.doMock("../db/client", () => clientMock(t));
   });
 
   afterAll(() => {

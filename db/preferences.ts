@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db, schema } from "./client";
+import { db, schema, type TransactionTx } from "./client";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
 
@@ -22,9 +22,13 @@ export async function getPreference(key: string): Promise<string | null> {
   return result[0]?.value ?? null;
 }
 
-// Set a preference value
-export async function setPreference(key: string, value: string): Promise<void> {
-  await db
+// Set a preference value. Pass `tx` to run as part of a caller's transaction.
+export async function setPreference(
+  key: string,
+  value: string,
+  tx: TransactionTx | typeof db = db,
+): Promise<void> {
+  await tx
     .insert(userPreferences)
     .values({ key, value })
     .onConflictDoUpdate({

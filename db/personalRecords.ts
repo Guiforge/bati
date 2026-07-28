@@ -201,8 +201,10 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
     }
   }
 
-  // Check exercise PRs
-  const exerciseResults = await db
+  // Check exercise PRs. A quest round is per-exercise-per-round, so a multi-round quest
+  // has one row per round for the same exercise — keep only the best round here, or the
+  // same exercise would be flagged as a new record once per round.
+  const exerciseResultRows = await db
     .select({
       exerciseId: completedExercises.exerciseId,
       resultValue: completedExercises.resultValue,
@@ -213,7 +215,15 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
     .where(eq(completedExercises.sessionId, sessionId));
 
-  for (const result of exerciseResults) {
+  const bestByExercise = new Map<number, (typeof exerciseResultRows)[number]>();
+  for (const row of exerciseResultRows) {
+    const best = bestByExercise.get(row.exerciseId);
+    if (!best || row.resultValue > best.resultValue) {
+      bestByExercise.set(row.exerciseId, row);
+    }
+  }
+
+  for (const result of bestByExercise.values()) {
     // Get previous max for this exercise (excluding current session)
     const previousMax = await db
       .select({

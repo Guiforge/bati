@@ -34,6 +34,22 @@ function applyMigrations(sqlite: Database.Database): void {
   }
 }
 
+/**
+ * The module shape `db/*` expects from `./client`, wired to an in-memory test db.
+ *
+ * `transactionOrFallback` has to be here: better-sqlite3 cannot run an async transaction
+ * callback, so the real one in db/client.ts runs the body directly on that driver — which
+ * is exactly what this does. A mock that omits it makes every write path throw
+ * "transactionOrFallback is not a function".
+ */
+export function clientMock(t: { db: unknown }) {
+  return {
+    db: t.db,
+    schema: require("../../db/schema"),
+    transactionOrFallback: <T>(fn: (tx: never) => Promise<T>) => fn(t.db as never),
+  };
+}
+
 export function createTestDb() {
   const sqlite = new Database(":memory:");
 

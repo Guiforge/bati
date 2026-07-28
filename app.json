@@ -23,10 +23,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          },
+          "backgroundColor": "#000000",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain"
@@ -47,7 +44,7 @@
     ],
     "scheme": "bati",
     "slug": "bati",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "version": "1.0.0",
     "web": {
       "favicon": "./assets/app-icon.png",

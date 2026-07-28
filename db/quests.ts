@@ -109,26 +109,35 @@ export type CreateQuestTemplateInput = Omit<
 };
 
 export async function createQuestTemplate(input: CreateQuestTemplateInput): Promise<number> {
-  await db.insert(quests).values({
-    enTitle: input.enTitle,
-    frTitle: input.frTitle,
-    enDescription: input.enDescription,
-    frDescription: input.frDescription,
-    author: input.author ?? "Admin",
-    rounds: input.rounds,
-    restSeconds: input.restSeconds,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
+  // .returning() avoids the id race a "select the newest row with this title" lookup would
+  // have: enTitle isn't unique, so two concurrent same-titled creations could both resolve
+  // to the same (most recent) id and attach their exercises to the wrong quest.
+  const inserted = await db
+    .insert(quests)
+    .values({
+      enTitle: input.enTitle,
+      frTitle: input.frTitle,
+      enDescription: input.enDescription,
+      frDescription: input.frDescription,
+      author: input.author ?? "Admin",
+      rounds: input.rounds,
+      restSeconds: input.restSeconds,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning({ id: quests.id });
 
-  const row = await db
-    .select({ id: quests.id })
-    .from(quests)
-    .where(eq(quests.enTitle, input.enTitle))
-    .orderBy(desc(quests.id))
-    .limit(1);
+  let questId = inserted[0]?.id;
+  if (questId == null) {
+    const row = await db
+      .select({ id: quests.id })
+      .from(quests)
+      .where(eq(quests.enTitle, input.enTitle))
+      .orderBy(desc(quests.id))
+      .limit(1);
+    questId = row[0]?.id;
+  }
 
-  const questId = row[0]?.id;
   if (questId == null) throw new Error("Failed to create quest");
 
   if (input.exercises.length > 0) {

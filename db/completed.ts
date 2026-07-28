@@ -1,6 +1,6 @@
 import { format, startOfMonth, startOfWeek, subMonths, subWeeks } from "date-fns";
 import { desc, eq, gte, sql } from "drizzle-orm";
-import { db, schema } from "./client";
+import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { setCached } from "./queryCache";
@@ -55,30 +55,10 @@ export type CompletedSession = {
   exercises: CompletedExercise[];
 };
 
-type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
-type TransactionTx = Parameters<TransactionCallback>[0];
-
 function parseExerciseStyle(value: unknown): ExerciseStyle {
   return value === "strength" || value === "calisthenics" || value === "yoga" || value === "cardio"
     ? value
     : "strength";
-}
-
-async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
-  try {
-    // Expo SQLite supports async transaction callbacks.
-    return await db.transaction(fn);
-  } catch (e) {
-    // better-sqlite3 (used in Node unit tests) only supports sync callbacks.
-    if (
-      e instanceof TypeError &&
-      typeof e.message === "string" &&
-      e.message.includes("Transaction function cannot return a promise")
-    ) {
-      return await fn(db as unknown as TransactionTx);
-    }
-    throw e;
-  }
 }
 
 // biome-ignore lint/suspicious/useAwait: async keeps the guard throw a rejected promise, not a sync throw
@@ -168,8 +148,12 @@ export async function markSessionWithNewRecords(sessionId: number): Promise<void
  * Add XP to a session already in the journal. Total XP is SUM(xpEarned) over sessions, so
  * bumping the tip-over session's row is how an oath bonus reaches the level with no extra state.
  */
-export async function addBonusXpToSession(sessionId: number, bonusXp: number): Promise<void> {
-  await db
+export async function addBonusXpToSession(
+  sessionId: number,
+  bonusXp: number,
+  tx: TransactionTx | typeof db = db,
+): Promise<void> {
+  await tx
     .update(completedQuest)
     .set({ xpEarned: sql`${completedQuest.xpEarned} + ${bonusXp}` })
     .where(eq(completedQuest.id, sessionId));

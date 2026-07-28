@@ -1,4 +1,4 @@
-import { createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
  * What the app is allowed to put in front of a hero — see docs/planning/work-roadmap.md §8 F1/F2.
@@ -10,10 +10,7 @@ describe("quest eligibility", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
-      db: t.db,
-      schema: require("../db/schema"),
-    }));
+    jest.doMock("../db/client", () => clientMock(t));
   });
 
   afterEach(() => {

@@ -1,4 +1,4 @@
-import { createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
  * The variation ladder (0022). It is a hint, not a gate — these tests assert the reading of it,
@@ -9,10 +9,7 @@ describe("db/exercises — variation ladder", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
-      db: t.db,
-      schema: require("../db/schema"),
-    }));
+    jest.doMock("../db/client", () => clientMock(t));
   });
 
   afterEach(() => {

@@ -70,7 +70,12 @@ export function useSessionTimer() {
       return;
     }
 
-    if (status !== "running" && status !== "resting" && status !== "countdown") {
+    if (
+      status !== "running" &&
+      status !== "resting" &&
+      status !== "countdown" &&
+      status !== "warmup"
+    ) {
       return;
     }
 

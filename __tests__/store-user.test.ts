@@ -68,4 +68,24 @@ describe("useUserStore", () => {
     expect(prefs.setHasFinishedOnboarding).toHaveBeenCalledWith(true);
     expect(prefs.setVillageName).toHaveBeenCalledWith("Gondor");
   });
+
+  // Regression: callers navigate right after calling this, assuming the flag survived a
+  // crash by then. That only holds if the returned promise doesn't resolve before the
+  // underlying preferences write does.
+  test("setHasFinishedOnboarding resolves only after the write settles", async () => {
+    let writeResolved = false;
+    prefs.setHasFinishedOnboarding.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          setTimeout(() => {
+            writeResolved = true;
+            resolve();
+          }, 0);
+        }),
+    );
+
+    await userStore().getState().setHasFinishedOnboarding(true);
+
+    expect(writeResolved).toBe(true);
+  });
 });

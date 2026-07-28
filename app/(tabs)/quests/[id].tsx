@@ -52,9 +52,11 @@ function resolveExerciseImage(path?: string | null): ImageSourcePropType | null 
   return path.startsWith("http") ? { uri: path } : getExerciseAsset(path);
 }
 
-function formatTarget(target: Target, lang: "en" | "fr") {
-  if (target.type === "time") return lang === "fr" ? `${target.value}s` : `${target.value}s`;
-  return lang === "fr" ? `${target.value} reps` : `${target.value} reps`;
+// "reps" reads fine in French too — see the "reps"/"config_reps" locale keys, which are
+// the same word in both languages — so there is no per-language branch here.
+function formatTarget(target: Target) {
+  if (target.type === "time") return `${target.value}s`;
+  return `${target.value} reps`;
 }
 
 function levelLabel(level: Difficulty, t: TFunction) {
@@ -488,7 +490,7 @@ export default function QuestDetails() {
                             {i + 1}. {exName}
                           </Text>
                           <Tag
-                            label={formatTarget(qex.target, language)}
+                            label={formatTarget(qex.target)}
                             tone={qex.target.type === "time" ? "secondary" : "primary"}
                           />
                         </XStack>

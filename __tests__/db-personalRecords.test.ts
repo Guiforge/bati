@@ -1,14 +1,11 @@
-import { createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/personalRecords", () => {
   const t = createTestDb();
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
-      db: t.db,
-      schema: require("../db/schema"),
-    }));
+    jest.doMock("../db/client", () => clientMock(t));
   });
 
   afterAll(() => {
@@ -171,6 +168,38 @@ describe("db/personalRecords", () => {
     expect(exercisePr?.newValue).toBe(25);
     expect(exercisePr?.previousValue).toBe(15);
     expect(exercisePr?.exerciseId).toBe(exerciseId);
+  });
+
+  // Regression: a multi-round quest wrote one completed_exercises row per round for the
+  // same exercise. Comparing every row against "the rest of history" (not against the
+  // other rounds of this same session) flagged the same exercise as a new record once per
+  // round instead of once per session.
+  test("checkForNewRecords flags a multi-round exercise PR only once", async () => {
+    const { checkForNewRecords } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+
+    const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
+      | { id: number }
+      | undefined;
+    const exerciseId = exerciseRow?.id ?? 1;
+
+    // First time ever doing this exercise, across 3 rounds of the same session.
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, roundIndex, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${exerciseId}, 0, 'reps', 10, ${now}, 0),
+        (1, ${exerciseId}, 1, 'reps', 12, ${now}, 1),
+        (1, ${exerciseId}, 2, 'reps', 8, ${now}, 2);
+    `);
+
+    const newRecords = await checkForNewRecords(1);
+
+    const exercisePrs = newRecords.filter(
+      (r) => r.recordType === "exercise_max_reps" && r.exerciseId === exerciseId,
+    );
+    expect(exercisePrs).toHaveLength(1);
+    expect(exercisePrs[0].newValue).toBe(12);
   });
 
   test("checkForNewRecords returns empty for non-PR session", async () => {

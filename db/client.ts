@@ -85,3 +85,43 @@ export async function resetDatabase() {
 export const db = singleton.db;
 
 export { schema };
+
+type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
+export type TransactionTx = Parameters<TransactionCallback>[0];
+
+function isAsyncTransactionUnsupported(e: unknown): boolean {
+  // better-sqlite3 (used in Node unit tests) only supports sync callbacks.
+  return (
+    e instanceof TypeError &&
+    typeof e.message === "string" &&
+    e.message.includes("Transaction function cannot return a promise")
+  );
+}
+
+/** Memoised so the probe below runs at most once per process. */
+let asyncTransactions: boolean | null = null;
+
+/**
+ * Probing with an empty transaction, rather than with the real work, is the whole point:
+ * better-sqlite3 rejects an async callback only *after* its body has started writing, so
+ * catching that rejection and retrying would apply the same inserts twice.
+ */
+async function supportsAsyncTransactions(): Promise<boolean> {
+  if (asyncTransactions !== null) return asyncTransactions;
+  try {
+    await db.transaction(async () => {});
+    asyncTransactions = true;
+  } catch (e) {
+    if (!isAsyncTransactionUnsupported(e)) throw e;
+    asyncTransactions = false;
+  }
+  return asyncTransactions;
+}
+
+/** Runs `fn` atomically, falling back to a plain call on runtimes without async transactions. */
+export async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
+  if (!(await supportsAsyncTransactions())) {
+    return await fn(db as unknown as TransactionTx);
+  }
+  return await db.transaction(fn);
+}

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { movementPatterns, type QuestArchetype } from "../db/schema";
-import { createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
  * Content invariants — the gate for docs/planning/work-roadmap.md §2.2.
@@ -69,10 +69,7 @@ describe("content invariants", () => {
 
   beforeAll(() => {
     jest.resetModules();
-    jest.doMock("../db/client", () => ({
-      db: t.db,
-      schema: require("../db/schema"),
-    }));
+    jest.doMock("../db/client", () => clientMock(t));
   });
 
   afterAll(() => {

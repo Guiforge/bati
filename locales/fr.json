@@ -118,8 +118,10 @@
   },
   "common": {
     "awesome": "Génial !",
+    "begin_adventure": "Commencer l'aventure",
     "by": "Par {{author}}",
     "cancel": "Annuler",
+    "continue": "Continuer",
     "crit": "CRIT !",
     "daily_xp_bonus": "+50% XP",
     "decrease": "Diminuer {{label}}",
@@ -130,6 +132,7 @@
     "language_en": "Anglais",
     "language_fr": "Français",
     "loading": "Chargement...",
+    "not_now": "Plus tard",
     "retry": "Réessayer",
     "saving": "Sauvegarde...",
     "xp": "XP",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Paragraph, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { BOSS_LOW_HP_TAUNTS, BOSS_TAUNTS } from "@/constants/bossTaunts";
@@ -13,18 +13,28 @@ export function BossTauntOverlay() {
 
   // Only show taunts during active parts of the session
   const isActive = status === "running" || status === "countdown";
+  const bossFightId = bossFight?.id ?? null;
+
+  // HP changes every exercise (new bossFight object each hit); the taunt schedule must
+  // survive that, so live HP is read from a ref instead of the effect's closure.
+  const bossFightRef = useRef(bossFight);
+  bossFightRef.current = bossFight;
 
   useEffect(() => {
-    if (!bossFight || !isActive) {
+    if (bossFightId === null || !isActive) {
       setTaunt(null);
       return;
     }
+
+    let hideTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
     // Randomly show a taunt every 15-45 seconds
     const scheduleNextTaunt = () => {
       const delay = Math.random() * 30000 + 15000;
       return setTimeout(() => {
-        const isLowHp = bossFight.currentHp / bossFight.totalHp < 0.3;
+        const currentFight = bossFightRef.current;
+        if (!currentFight) return;
+        const isLowHp = currentFight.currentHp / currentFight.totalHp < 0.3;
         const pool = isLowHp ? BOSS_LOW_HP_TAUNTS : BOSS_TAUNTS;
         const messages = pool[language as "en" | "fr"] || pool.en;
         const message = messages[Math.floor(Math.random() * messages.length)];
@@ -32,7 +42,7 @@ export function BossTauntOverlay() {
         setTaunt(message);
 
         // Hide after 4 seconds
-        setTimeout(() => setTaunt(null), 4000);
+        hideTimeoutId = setTimeout(() => setTaunt(null), 4000);
 
         // Schedule next
         timeoutId = scheduleNextTaunt();
@@ -41,8 +51,11 @@ export function BossTauntOverlay() {
 
     let timeoutId = scheduleNextTaunt();
 
-    return () => clearTimeout(timeoutId);
-  }, [bossFight, isActive, language]);
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(hideTimeoutId);
+    };
+  }, [bossFightId, isActive, language]);
 
   if (!taunt) return null;
 

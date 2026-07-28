@@ -5,8 +5,8 @@ interface UserState {
   hasFinishedOnboarding: boolean;
   villageName: string;
   isLoaded: boolean;
-  setHasFinishedOnboarding: (hasFinished: boolean) => void;
-  setVillageName: (name: string) => void;
+  setHasFinishedOnboarding: (hasFinished: boolean) => Promise<void>;
+  setVillageName: (name: string) => Promise<void>;
   loadFromDatabase: () => Promise<void>;
 }
 

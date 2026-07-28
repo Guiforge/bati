@@ -527,8 +527,10 @@
   },
   "common": {
     "awesome": "Awesome!",
+    "begin_adventure": "Begin Adventure",
     "by": "By {{author}}",
     "cancel": "Cancel",
+    "continue": "Continue",
     "decrease": "Decrease {{label}}",
     "increase": "Increase {{label}}",
     "language_en": "English",
@@ -538,6 +540,7 @@
     "error": "Oops!",
     "retry": "Retry",
     "go_back": "Go back",
+    "not_now": "Not now",
     "xp": "XP",
     "xp_value": "{{value}} XP",
     "exercises_short": "ex",

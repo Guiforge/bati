@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db, schema } from "./client";
+import { db, schema, transactionOrFallback } from "./client";
 import { listCompletedSessions } from "./completed";
 import { getStreakInfo } from "./streaks";
 
@@ -304,37 +304,50 @@ export async function getUnlockedAchievements(): Promise<UnlockedAchievement[]> 
   }
 }
 
-export async function unlockAchievement(code: AchievementCode): Promise<boolean> {
-  const unlocked = await getUnlockedAchievements();
-
-  // Already unlocked
-  if (unlocked.some((a) => a.code === code)) {
-    return false;
-  }
-
-  const newUnlocked: UnlockedAchievement[] = [
-    ...unlocked,
-    { code, unlockedAt: new Date().toISOString() },
-  ];
-
-  const existing = await db
-    .select()
-    .from(userPreferences)
-    .where(eq(userPreferences.key, ACHIEVEMENTS_KEY));
-
-  if (existing.length > 0) {
-    await db
-      .update(userPreferences)
-      .set({ value: JSON.stringify(newUnlocked), updatedAt: new Date() })
+export function unlockAchievement(code: AchievementCode): Promise<boolean> {
+  // Read-modify-write on a single JSON blob, so it must run in one transaction: two
+  // overlapping calls (e.g. an effect double-invoked, or two save flows in flight at
+  // once) would otherwise read the same list and the last write wins, silently dropping
+  // whichever unlock was written first.
+  return transactionOrFallback(async (tx) => {
+    const rows = await tx
+      .select()
+      .from(userPreferences)
       .where(eq(userPreferences.key, ACHIEVEMENTS_KEY));
-  } else {
-    await db.insert(userPreferences).values({
-      key: ACHIEVEMENTS_KEY,
-      value: JSON.stringify(newUnlocked),
-    });
-  }
 
-  return true;
+    let unlocked: UnlockedAchievement[] = [];
+    if (rows.length > 0) {
+      try {
+        unlocked = JSON.parse(rows[0].value) as UnlockedAchievement[];
+      } catch {
+        unlocked = [];
+      }
+    }
+
+    // Already unlocked
+    if (unlocked.some((a) => a.code === code)) {
+      return false;
+    }
+
+    const newUnlocked: UnlockedAchievement[] = [
+      ...unlocked,
+      { code, unlockedAt: new Date().toISOString() },
+    ];
+
+    if (rows.length > 0) {
+      await tx
+        .update(userPreferences)
+        .set({ value: JSON.stringify(newUnlocked), updatedAt: new Date() })
+        .where(eq(userPreferences.key, ACHIEVEMENTS_KEY));
+    } else {
+      await tx.insert(userPreferences).values({
+        key: ACHIEVEMENTS_KEY,
+        value: JSON.stringify(newUnlocked),
+      });
+    }
+
+    return true;
+  });
 }
 
 export interface AchievementProgress {

@@ -573,9 +573,14 @@ muscles" — which correlates with the longest, hardest quests.
   means never answered and shows everything, so nobody loses content by not opening the screen.
   The **quest gallery is deliberately left unfiltered**: hiding content from someone who is
   browsing on purpose is worse than showing it, and its own equipment filter already narrows.
-- **F3. Archetype badge** — quests carry no type column. Derive the archetype at read time from
-  `restSeconds` + composition (no migration) and show it as a badge, so "20 min · Strength" is
-  visible before starting. Still open; optional if the quest card is already dense.
+- **F3 — archetype, as a column.** ✅ The plan said "derive it at read time, no migration". That
+  does not survive contact with the data: a metabolic quest and a full-body circuit both rest 45 s
+  and both tag `calf` and `abs`, so rest length and muscles cannot tell them apart. Meanwhile the
+  declaration existed — in a hand-maintained map inside the invariants test, where the app could
+  not reach it. `0019` promotes it to a nullable `quests.archetype` column, seeded for all 27
+  quests. The test now reads the column instead of duplicating it, so the migration removed a
+  duplication rather than adding one, and the quest card shows the badge. User-authored quests
+  leave it null and simply show one chip fewer.
 
 Fallbacks everywhere: if filtering leaves nothing, the unfiltered pool is used. A preference
 should never be able to leave the hero with no workout.
@@ -718,8 +723,9 @@ Rules from §2.2 that are deliberately **not** tests:
   (`abs` in all four) and every cardio quest (`calf` in all four). Invariant 5 catches the
   original defect on its own, so the window rule was removed rather than exempted into
   meaninglessness.
-- **The archetype registry itself** lives in the test file until §8 F3 derives it at read time.
-  That is intentional: a new quest cannot be seeded without declaring what it is meant to be.
+- **The archetype registry** used to live in this test file. It is now the `quests.archetype`
+  column (`0019`), and the first invariant fails for any seeded quest that leaves it null — a new
+  quest still cannot ship without declaring what it is meant to be.
 
 Existing tests touched so far: `db-exercises` (it asserted the `Squat → chest` bug). `db-quests`,
 `db-adventures`, `db-adventures-campaign`, `db-bossFights` and `db-muscleBalance` all still pass
@@ -768,7 +774,7 @@ for covers; PNG for exercises per [missing-image.md](../content/missing-image.md
 | 14 | H2 warm-up | — | ✅ **done** — 2 min dynamic warm-up, skippable, nothing journaled; countdown copy fixed |
 | 15 | H4 deload nudge | — | ✅ **done** — `deload` reason after 4 heavy weeks, acute rules still win |
 | 16 | Art pass | D, E | assetMap keys resolve, no placeholder on new content |
-| 17 | F3 archetype badge | F1 | a quest card says what kind of session it is before you start |
+| 17 | F3 archetype badge | F1 | ✅ **done** — `0019` adds `quests.archetype`; the test reads it, the card shows it |
 
 Phases 1–3 are shippable on their own and are the highest value per line of SQL: they fix the
 data that is actively wrong and triple the catalogue with content that is already paid for.

@@ -4,7 +4,7 @@ import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { preferences, type TrainingLevel } from "./preferences";
 import { setCached } from "./queryCache";
-import type { DifficultyCode, QuestTargetType } from "./schema";
+import type { DifficultyCode, QuestArchetype, QuestTargetType } from "./schema";
 import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
@@ -49,6 +49,8 @@ export type QuestTemplate = {
   author: string;
   rounds: number;
   restSeconds: number;
+  /** What kind of session this is. Null for user-authored quests. */
+  archetype: QuestArchetype | null;
   imagePath: string;
   exercises: QuestTemplateExercise[];
 };
@@ -62,6 +64,8 @@ export type Quest = {
   author: string;
   rounds: number;
   restSeconds: number;
+  /** What kind of session this is. Null for user-authored quests. */
+  archetype: QuestArchetype | null;
   imagePath: string;
   exercises: QuestExercise[];
 };
@@ -85,8 +89,13 @@ function safeParseImages(value: string): string[] {
 // DB helpers
 // ------------------------------------------------------------
 
-export type CreateQuestTemplateInput = Omit<QuestTemplate, "id" | "author" | "imagePath"> & {
+export type CreateQuestTemplateInput = Omit<
+  QuestTemplate,
+  "id" | "author" | "imagePath" | "archetype"
+> & {
   author?: string;
+  /** Optional: user-authored quests declare no archetype. */
+  archetype?: QuestArchetype | null;
 };
 
 export async function createQuestTemplate(input: CreateQuestTemplateInput): Promise<number> {
@@ -145,6 +154,7 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      archetype: quests.archetype,
       imagePath: quests.imagePath,
 
       questExerciseId: questExercises.id,
@@ -172,6 +182,7 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
         author: r.author,
         rounds: r.rounds,
         restSeconds: r.restSeconds,
+        archetype: r.archetype ?? null,
         imagePath: r.imagePath ?? "assets/placeholder.jpg",
         exercises: [],
       });
@@ -223,6 +234,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      archetype: quests.archetype,
       imagePath: quests.imagePath,
 
       questExerciseId: questExercises.id,
@@ -250,6 +262,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
     author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
+    archetype: first.archetype ?? null,
     imagePath: first.imagePath ?? "assets/placeholder.jpg",
     exercises: [],
   };
@@ -292,6 +305,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      archetype: quests.archetype,
       imagePath: quests.imagePath,
 
       qexId: questExercises.id,
@@ -334,6 +348,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
+    archetype: first.archetype ?? null,
     imagePath: first.imagePath ?? "assets/placeholder.jpg",
     exercises: [],
   };

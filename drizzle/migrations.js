@@ -19,6 +19,7 @@ import m0015 from "./0015_seed_pull_exercises.sql";
 import m0016 from "./0016_seed_new_quests.sql";
 import m0017 from "./0017_seed_adventures.sql";
 import m0018 from "./0018_delete_dumbbell_exercise.sql";
+import m0019 from "./0019_seed_quest_archetype.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -43,5 +44,6 @@ export default {
     m0016,
     m0017,
     m0018,
+    m0019,
   },
 };

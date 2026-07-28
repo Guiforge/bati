@@ -444,7 +444,14 @@
     "rounds": "{{count}} manches",
     "seconds_per_rep": "{{count}}s/reps",
     "see_all": "Voir tout",
-    "start_button": "Commencer la quête"
+    "start_button": "Commencer la quête",
+    "archetype_strength": "Force",
+    "archetype_skill": "Technique",
+    "archetype_hypertrophy": "Muscle",
+    "archetype_circuit": "Circuit",
+    "archetype_metabolic": "Cardio",
+    "archetype_core": "Gainage",
+    "archetype_mobility": "Mobilité"
   },
   "recovery": {
     "description": "Vous avez une session inachevée",

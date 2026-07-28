@@ -7,6 +7,17 @@ import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-
 export const muscleCodes = ["arms", "back", "shoulder", "chest", "abs", "calf"] as const;
 export type MuscleCode = (typeof muscleCodes)[number];
 
+export const questArchetypes = [
+  "strength",
+  "skill",
+  "hypertrophy",
+  "circuit",
+  "metabolic",
+  "core",
+  "mobility",
+] as const;
+export type QuestArchetype = (typeof questArchetypes)[number];
+
 export const equipmentCodes = [
   "none",
   "pullup_bar",
@@ -109,6 +120,10 @@ export const quests = sqliteTable("quests", {
 
   // Rest between sets (a "set" = one exercise target). In seconds.
   restSeconds: int().notNull().default(30),
+
+  // What kind of session this is meant to be — sets the rest range, the rep targets and how far
+  // its exercises may stack (docs/planning/work-roadmap.md §2.1). Null for user-authored quests.
+  archetype: text().$type<QuestArchetype>(),
 
   // Main cover image for the quest
   imagePath: text(),

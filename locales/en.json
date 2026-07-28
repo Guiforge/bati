@@ -209,7 +209,14 @@
     "home_cta_button": "Open gallery",
     "home_overview_title": "Pick a quest",
     "see_all": "See all",
-    "start_button": "Start Quest"
+    "start_button": "Start Quest",
+    "archetype_strength": "Strength",
+    "archetype_skill": "Skill",
+    "archetype_hypertrophy": "Muscle",
+    "archetype_circuit": "Circuit",
+    "archetype_metabolic": "Cardio",
+    "archetype_core": "Core",
+    "archetype_mobility": "Mobility"
   },
   "adventures": {
     "gallery_title": "Adventures",

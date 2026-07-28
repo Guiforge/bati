@@ -134,6 +134,13 @@
       "when": 1785110400006,
       "tag": "0018_delete_dumbbell_exercise",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1785110400007,
+      "tag": "0019_seed_quest_archetype",
+      "breakpoints": true
     }
   ]
 }

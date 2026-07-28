@@ -1,55 +1,17 @@
 import { eq } from "drizzle-orm";
 
+import type { QuestArchetype } from "../db/schema";
 import { createTestDb } from "./helpers/testDb";
 
 /**
  * Content invariants — the gate for docs/planning/work-roadmap.md §2.2.
  *
- * Quests carry no archetype column: it is meant to be derived at read time (§8 F3), so until
- * that lands this map IS the declaration. Every seeded quest must appear here, which is also
- * how a new quest gets its design intent reviewed: you cannot seed one without saying what it
- * is meant to be.
+ * A quest's archetype is what it is meant to be, and it is now a column (`0019`) rather than a
+ * map maintained inside this file: the app needs it too, to say what kind of session a card is
+ * before the hero starts. Seeding a quest without one fails the first test below, which is the
+ * point — the design intent has to be declared, not inferred.
  */
-type Archetype =
-  | "strength"
-  | "skill"
-  | "hypertrophy"
-  | "circuit"
-  | "metabolic"
-  | "core"
-  | "mobility";
-
-const ARCHETYPES: Record<string, Archetype> = {
-  "Chop Wood": "circuit",
-  "Tower Climb": "hypertrophy",
-  "Knight Push": "circuit",
-  "Shield Wall": "core",
-  "Gather Stones": "circuit",
-  "Raise the Shelter": "circuit",
-  "Core Forge": "core",
-  "Golem Strike": "circuit",
-  "Golem Core": "core",
-  "Forge the Dragon Blade": "strength",
-  "Climb the Titan's Tower": "strength",
-  "Build the Stronghold": "hypertrophy",
-  "The Iron Gauntlet Challenge": "strength",
-  // Phase B — seeded by 0014
-  "Escape the Collapsing Mine": "metabolic",
-  "Guard the Fortress Gate": "core",
-  "The Arcane Gauntlet": "core",
-  "The Druid's Path": "mobility",
-  "Sprint Through the Shadowlands": "metabolic",
-  "Morning of the Champion": "circuit",
-  // Phase D — seeded by 0016
-  "The Squire's Awakening": "circuit",
-  "The Bear's Road": "circuit",
-  "The Cellar Hauler": "hypertrophy",
-  "The Ploughman's Vow": "hypertrophy",
-  "The Crow's Ascent": "strength",
-  "The Colossus Trial": "skill",
-  "Storm of Blades": "metabolic",
-  "The Serpent's Coil": "core",
-};
+type Archetype = QuestArchetype;
 
 /**
  * Quests that train one movement pattern on purpose. With six muscle codes the taxonomy cannot
@@ -91,6 +53,11 @@ const MIN_SECONDS = 8 * 60;
 const MAX_SECONDS = 25 * 60;
 const MOBILITY_MIN_SECONDS = 5 * 60;
 const MAX_SETS_PER_MUSCLE = 12;
+
+/** A seeded quest always has one; the fallback only keeps the helpers total. */
+function archetypeOf(quest: { archetype: Archetype | null }): Archetype {
+  return quest.archetype ?? "circuit";
+}
 
 /** One round through the quest = one set per exercise, so a muscle scores `rounds` per tag. */
 function setsPerMuscle(quest: {
@@ -138,7 +105,7 @@ describe("content invariants", () => {
     const all = await loadQuests();
     expect(all.length).toBeGreaterThan(0);
 
-    const undeclared = all.map((q) => q.enTitle).filter((title) => !(title in ARCHETYPES));
+    const undeclared = all.filter((q) => q.archetype === null).map((q) => q.enTitle);
     expect(undeclared).toEqual([]);
   });
 
@@ -153,7 +120,7 @@ describe("content invariants", () => {
           restSeconds: q.restSeconds,
           exercises: q.exercises.map((qex) => ({ exercise: qex.exercise, target: qex.target })),
         });
-        const min = ARCHETYPES[q.enTitle] === "mobility" ? MOBILITY_MIN_SECONDS : MIN_SECONDS;
+        const min = archetypeOf(q) === "mobility" ? MOBILITY_MIN_SECONDS : MIN_SECONDS;
         return { title: q.enTitle, seconds, ok: seconds >= min && seconds <= MAX_SECONDS };
       })
       .filter((r) => !r.ok);
@@ -179,8 +146,7 @@ describe("content invariants", () => {
 
     const offenders = all
       .filter(
-        (quest) =>
-          !STACKING_ALLOWED.has(ARCHETYPES[quest.enTitle]) && !SINGLE_PATTERN.has(quest.enTitle),
+        (quest) => !STACKING_ALLOWED.has(archetypeOf(quest)) && !SINGLE_PATTERN.has(quest.enTitle),
       )
       .flatMap((quest) =>
         quest.exercises.slice(1).flatMap((qex, index) => {
@@ -223,10 +189,10 @@ describe("content invariants", () => {
 
     const offenders = all
       .filter((q) => {
-        const [min, max] = REST_RANGE[ARCHETYPES[q.enTitle]];
+        const [min, max] = REST_RANGE[archetypeOf(q)];
         return q.restSeconds < min || q.restSeconds > max;
       })
-      .map((q) => `${q.enTitle}: ${q.restSeconds}s (${ARCHETYPES[q.enTitle]})`);
+      .map((q) => `${q.enTitle}: ${q.restSeconds}s (${archetypeOf(q)})`);
 
     expect(offenders).toEqual([]);
   });

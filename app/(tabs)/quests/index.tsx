@@ -366,6 +366,11 @@ export default function QuestsGallery() {
                     })}
                     tone="primary"
                   />
+                  {/* What kind of session this is, so the hero knows before they tap. Absent on
+                      user-authored quests, which declare no archetype. */}
+                  {q.archetype ? (
+                    <Chip label={t(`quests.archetype_${q.archetype}`)} tone="secondary" />
+                  ) : null}
                   <Chip
                     label={t("quests.reward_xp", {
                       count: xp,

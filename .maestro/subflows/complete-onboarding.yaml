@@ -1,4 +1,4 @@
-# Reusable: walk through the 3-step onboarding and land on the home tab.
+# Reusable: walk through onboarding and land on the home tab.
 # Assumes the app was just launched with clearState (so onboarding is shown).
 # Selects by testID only, so it is locale-agnostic (en/fr).
 appId: com.anonymous.bati
@@ -21,6 +21,14 @@ appId: com.anonymous.bati
     id: "onboarding-level-skip"
 - tapOn:
     id: "onboarding-level-skip"
+
+# Picking a level hands off to the first-session offer (training-level.tsx replaces the
+# route with /onboarding/first-session). Decline it: flows that want a session start one
+# deliberately, from a quest they chose.
+- assertVisible:
+    id: "onboarding-first-session-skip"
+- tapOn:
+    id: "onboarding-first-session-skip"
 
 # Onboarding complete -> tab bar is present.
 - assertVisible:

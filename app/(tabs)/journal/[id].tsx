@@ -133,7 +133,7 @@ export default function SessionDetailScreen() {
     .sort((a, b) => a - b);
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack testID="session-details-screen" flex={1} bg="$background">
       <ScrollView
         contentContainerStyle={{
           paddingBottom: insets.bottom + 24,

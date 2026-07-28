@@ -1,0 +1,61 @@
+# Maestro E2E Test - Swearing an oath and its reminder
+#
+# The oath is the app's single chosen objective, and the only thing that schedules a
+# notification. Covers: swear a preset from Home, then toggle the reminder in Settings.
+#
+# The reminder itself is not asserted — a scheduled local notification is invisible to
+# Maestro, and it is unit-tested in __tests__/notifications.test.ts. What this flow buys
+# is that the two screens which drive it are reachable and wired.
+#
+# testID only, so an emulator in fr_FR passes too.
+
+appId: com.anonymous.bati
+---
+- launchApp:
+    clearState: true
+
+- runFlow: subflows/complete-onboarding.yaml
+
+# --- Swear ------------------------------------------------------------------
+
+# With nothing sworn the card is the empty-state CTA; either way it opens the oath screen.
+- assertVisible:
+    id: "home-oath-card"
+- tapOn:
+    id: "home-oath-card"
+
+- assertVisible:
+    id: "oath-screen"
+- assertVisible:
+    id: "oath-preset"
+
+# Tapping a preset swears it and returns to Home (app/oath.tsx swearPreset -> router.back).
+- tapOn:
+    id: "oath-preset"
+    index: 0
+
+- assertVisible:
+    id: "home-oath-card"
+
+# Re-opening now shows the sworn oath and its progress. The presets stay on screen
+# (swearing a new one replaces the old), so their absence is not the thing to assert.
+- tapOn:
+    id: "home-oath-card"
+- assertVisible:
+    id: "oath-screen"
+- assertVisible:
+    id: "oath-current"
+- back
+
+# --- The reminder toggle ----------------------------------------------------
+
+- tapOn:
+    id: "home-settings"
+- assertVisible:
+    id: "settings-screen"
+
+# Tapping asks for permission on first use; the row must survive either answer.
+- tapOn:
+    id: "settings-notifications"
+- assertVisible:
+    id: "settings-screen"

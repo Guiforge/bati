@@ -105,6 +105,7 @@ export function WarmupView() {
       </Text>
 
       <Button
+        testID="session-skip-warmup"
         chromeless
         size="$3"
         onPress={() => {

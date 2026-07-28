@@ -76,7 +76,7 @@ export function OathCard() {
 
   if (!oath) {
     return (
-      <Card bg="$pastelPurple" width="100%" onPress={openOath}>
+      <Card testID="home-oath-card" bg="$pastelPurple" width="100%" onPress={openOath}>
         <XStack items="center" gap="$3">
           <GameIcon name="star" size={20} color="$text" />
           <YStack flex={1}>
@@ -94,7 +94,7 @@ export function OathCard() {
   }
 
   return (
-    <Card bg="$pastelPurple" width="100%" onPress={openOath}>
+    <Card testID="home-oath-card" bg="$pastelPurple" width="100%" onPress={openOath}>
       <OathBody oath={oath} />
     </Card>
   );

@@ -482,6 +482,7 @@ export default function AdventureDetailsScreen() {
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         >
           <AppButton
+            testID="adventure-start"
             onPress={() => {
               handleStartOrContinue().catch(() => {
                 // Error already handled via showError above

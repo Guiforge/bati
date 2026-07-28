@@ -40,6 +40,7 @@ export function HomeHeader() {
     <XStack px="$4" pt="$2" pb="$3" items="center" gap="$3">
       {/* Avatar - Tap to edit profile */}
       <Avatar
+        testID="home-settings"
         circular
         size="$6"
         borderWidth={1}

@@ -36,43 +36,10 @@ appId: com.anonymous.bati
     id: "quests-quest-card"
     index: 0
 
-- assertVisible:
-    id: "quest-start"
-- tapOn:
-    id: "quest-start"
+- runFlow: subflows/complete-a-session.yaml
 
-# 3s pre-start countdown before the first exercise renders.
-- extendedWaitUntil:
-    visible:
-      id: "session-complete-exercise"
-    timeout: 15000
+# --- Full circle ------------------------------------------------------------
 
-# Quests vary in rounds and exercises, so walk the session generically:
-# complete an exercise, skip the rest that follows, until victory shows up.
-# `times` is a guard against an infinite loop if a screen ever gets stuck.
-- repeat:
-    times: 40
-    while:
-      notVisible:
-        id: "session-victory-continue"
-    commands:
-      - tapOn:
-          id: "session-complete-exercise"
-          optional: true
-      - tapOn:
-          id: "session-skip-rest"
-          optional: true
-
-# --- Victory ----------------------------------------------------------------
-
-# Disabled until the session save resolves — a slow write must not fail the run.
-- extendedWaitUntil:
-    visible:
-      id: "session-victory-continue"
-    timeout: 20000
-- tapOn:
-    id: "session-victory-continue"
-
-# Full circle: back on home, with the session banked.
+# Back on home, with the session banked.
 - assertVisible:
     id: "home-start-session"

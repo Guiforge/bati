@@ -1,0 +1,70 @@
+# Maestro E2E Test - The journal earns its entry
+#
+# Covers the "statistics" journey: a finished session must show up in the training
+# history, open its own report, and the two journal tabs must show different things.
+#
+# The tab assertion is the point — switching to Stats has to actually swap the content,
+# not just repaint a button. Proving the session card is gone is stronger than asserting
+# a chart exists, and needs no testID on every card.
+#
+# testID only, so an emulator in fr_FR passes too.
+
+appId: com.anonymous.bati
+---
+- launchApp:
+    clearState: true
+
+- runFlow: subflows/complete-onboarding.yaml
+
+# --- Earn something worth logging -------------------------------------------
+
+- assertVisible:
+    id: "home-start-session"
+- tapOn:
+    id: "home-start-session"
+
+- assertVisible:
+    id: "quests-quest-card"
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+
+- runFlow: subflows/complete-a-session.yaml
+
+# --- History ----------------------------------------------------------------
+
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+
+- tapOn:
+    id: "journal-tab-history"
+- assertVisible:
+    id: "journal-session-card"
+
+# --- The session report -----------------------------------------------------
+
+- tapOn:
+    id: "journal-session-card"
+    index: 0
+- assertVisible:
+    id: "session-details-screen"
+- back
+
+# --- Stats ------------------------------------------------------------------
+
+- assertVisible:
+    id: "journal-screen"
+- tapOn:
+    id: "journal-tab-stats"
+
+# Stats replaced the history list rather than stacking on top of it.
+- assertNotVisible:
+    id: "journal-session-card"
+
+# And the switch is reversible.
+- tapOn:
+    id: "journal-tab-history"
+- assertVisible:
+    id: "journal-session-card"

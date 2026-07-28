@@ -58,6 +58,7 @@ export function PausedOverlay() {
 
           <YStack width="100%" gap="$3" pt="$2">
             <AppButton
+              testID="session-resume"
               onPress={handleResume}
               variant="primary"
               accessibilityLabel={t("session.resume_button")}
@@ -67,6 +68,7 @@ export function PausedOverlay() {
             </AppButton>
 
             <AppButton
+              testID="session-restart-round"
               onPress={handleRestartRound}
               variant="outline"
               backgroundColor="$surface2"
@@ -78,6 +80,7 @@ export function PausedOverlay() {
             </AppButton>
 
             <AppButton
+              testID="session-quit"
               onPress={handleQuit}
               variant="outline"
               backgroundColor="$surface2"

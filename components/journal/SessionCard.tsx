@@ -45,7 +45,7 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
         : "$pastelBlue";
 
   return (
-    <Card onPress={onPress} bg={sessionBg}>
+    <Card testID="journal-session-card" onPress={onPress} bg={sessionBg}>
       <XStack gap="$3" items="center">
         {/* Icon */}
         <YStack

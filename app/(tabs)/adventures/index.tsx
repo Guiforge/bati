@@ -200,6 +200,7 @@ export default function AdventuresGallery() {
       return (
         <YStack px="$5">
           <Card
+            testID="adventures-adventure-card"
             bg={tokens.bg}
             p="$0"
             overflow="hidden"

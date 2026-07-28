@@ -1,0 +1,48 @@
+# Reusable: from a quest details screen (quest-start visible) all the way through the
+# session to the victory screen, then dismiss it.
+#
+# Quests vary in rounds and exercises, so the session is walked generically rather than
+# step-counted: complete an exercise, skip the rest that follows, until victory shows up.
+# Selects by testID only, so it is locale-agnostic (en/fr).
+appId: com.anonymous.bati
+---
+- assertVisible:
+    id: "quest-start"
+- tapOn:
+    id: "quest-start"
+
+# Warm-up runs first and is on by default (preferences.getWarmupEnabled defaults to true).
+# Skip it: these flows are about the workout, and walking the warm-up would add minutes of
+# real timers to every run. `optional` keeps the subflow usable when it is turned off.
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+
+# 3s pre-start countdown before the first exercise renders.
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 15000
+
+# `times` is a guard against an infinite loop if a screen ever gets stuck.
+- repeat:
+    times: 40
+    while:
+      notVisible:
+        id: "session-victory-continue"
+    commands:
+      - tapOn:
+          id: "session-complete-exercise"
+          optional: true
+      - tapOn:
+          id: "session-skip-rest"
+          optional: true
+
+# Generous, because the session save writes before the button becomes usable — a slow
+# write must not fail the run.
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-continue"
+    timeout: 20000
+- tapOn:
+    id: "session-victory-continue"

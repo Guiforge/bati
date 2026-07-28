@@ -112,6 +112,7 @@ export function ActiveExerciseView() {
           </Text>
         </YStack>
         <Button
+          testID="session-pause"
           size="$3"
           circular
           icon={<Pause size={20} color="$text" />}

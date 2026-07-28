@@ -42,6 +42,7 @@ function TabButton({
   const isActive = activeTab === tab;
   return (
     <AppButton
+      testID={`journal-tab-${tab}`}
       fullWidth={false}
       flex={1}
       height={44}

@@ -1,0 +1,49 @@
+# Maestro E2E Test - Adventure (campaign) journey
+#
+# The second way into a workout: browse campaigns -> open one -> start its next step ->
+# run that step's session to victory. Distinct from main-journey.yaml, which reaches a
+# session through the quest gallery; this one goes through the campaign runner.
+#
+# Stops at "the step's session completed". Asserting exact campaign progress copy would
+# pin translated text, and the step count differs per adventure — what matters here is
+# that the campaign entry point actually produces a playable session.
+#
+# testID only, so an emulator in fr_FR passes too.
+
+appId: com.anonymous.bati
+---
+- launchApp:
+    clearState: true
+
+- runFlow: subflows/complete-onboarding.yaml
+
+# --- Browse campaigns -------------------------------------------------------
+
+- tapOn:
+    id: "tab-adventures"
+- assertVisible:
+    id: "adventures-screen"
+- assertVisible:
+    id: "adventures-adventure-card"
+
+- tapOn:
+    id: "adventures-adventure-card"
+    index: 0
+
+# --- Start the next step ----------------------------------------------------
+
+# One CTA drives both "start" and "continue" — on a cleared state it is step 1.
+- assertVisible:
+    id: "adventure-start"
+- tapOn:
+    id: "adventure-start"
+
+# Starting a run hands off to the step's quest details screen.
+- runFlow: subflows/complete-a-session.yaml
+
+# --- Still navigable afterwards ---------------------------------------------
+
+- tapOn:
+    id: "tab-adventures"
+- assertVisible:
+    id: "adventures-adventure-card"

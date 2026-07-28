@@ -1,0 +1,94 @@
+# Maestro E2E Test - Interrupting a session
+#
+# The data-loss path. A session that cannot be paused, resumed or abandoned cleanly is
+# how a hero loses their work. The crash-and-recover half is unit-tested
+# (__tests__/useSessionRecovery.test.ts) because killing the process mid-flow is not
+# something Maestro can do reliably; this covers the three deliberate interruptions.
+#
+# testID only, so an emulator in fr_FR passes too.
+
+appId: com.anonymous.bati
+---
+- launchApp:
+    clearState: true
+
+- runFlow: subflows/complete-onboarding.yaml
+
+- assertVisible:
+    id: "home-start-session"
+- tapOn:
+    id: "home-start-session"
+
+- assertVisible:
+    id: "quests-quest-card"
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+
+- assertVisible:
+    id: "quest-start"
+- tapOn:
+    id: "quest-start"
+
+# Warm-up is on by default; skip straight to the workout being interrupted.
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+
+# 3s pre-start countdown before the first exercise renders.
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 15000
+
+# --- Pause and resume -------------------------------------------------------
+
+- tapOn:
+    id: "session-pause"
+- assertVisible:
+    id: "session-resume"
+
+# The paused view is not asserted by the *absence* of the exercise controls: the overlay
+# covers them but leaves them mounted, and Maestro reads the view tree, not occlusion.
+
+- tapOn:
+    id: "session-resume"
+
+# Back to the exercise, overlay gone.
+- assertVisible:
+    id: "session-complete-exercise"
+- assertNotVisible:
+    id: "session-resume"
+
+# --- Restart the round ------------------------------------------------------
+
+- tapOn:
+    id: "session-pause"
+- assertVisible:
+    id: "session-restart-round"
+- tapOn:
+    id: "session-restart-round"
+- assertVisible:
+    id: "session-complete-exercise"
+
+# --- Abandon ----------------------------------------------------------------
+
+- tapOn:
+    id: "session-pause"
+- assertVisible:
+    id: "session-quit"
+- tapOn:
+    id: "session-quit"
+
+# Quitting pops the session off the stack, landing back on the quest it came from
+# (PausedOverlay handleQuit -> router.back), not on a dead screen.
+- extendedWaitUntil:
+    visible:
+      id: "quest-start"
+    timeout: 10000
+
+# And the app is still navigable, not stuck in a torn-down session.
+- tapOn:
+    id: "tab-home"
+- assertVisible:
+    id: "home-start-session"

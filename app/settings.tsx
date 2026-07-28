@@ -31,6 +31,7 @@ import {
 import { useSettingsStore } from "@/stores/settings";
 
 type SettingRowProps = {
+  testID?: string;
   icon: React.ReactNode;
   label: string;
   value?: string;
@@ -38,9 +39,10 @@ type SettingRowProps = {
   disabled?: boolean;
 };
 
-function SettingRow({ icon, label, value, onPress, disabled }: SettingRowProps) {
+function SettingRow({ testID, icon, label, value, onPress, disabled }: SettingRowProps) {
   return (
     <Button
+      testID={testID}
       bg="$surface"
       borderColor="$borderStrong"
       borderWidth={1}
@@ -176,7 +178,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top}>
+    <YStack testID="settings-screen" flex={1} bg="$background" pt={insets.top}>
       {/* Header */}
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Button
@@ -288,6 +290,7 @@ export default function SettingsScreen() {
           />
 
           <SettingRow
+            testID="settings-notifications"
             icon={<Bell size={22} color="$text" />}
             label={t("settings.notifications", "Oath reminder")}
             value={remindersOn ? t("common.on", "On") : t("common.off", "Off")}

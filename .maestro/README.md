@@ -115,7 +115,18 @@ locale drift can't fail a flow.
 | `app-launch.yaml` | Fresh install boots to the first onboarding screen |
 | `main-journey.yaml` | The core loop: onboarding → home → session → victory |
 | `explore-tabs.yaml` | Smoke: each of the 5 main tabs renders its screen |
+| `journal-after-session.yaml` | A finished session reaches the journal, its report, and the Stats tab |
+| `adventure-journey.yaml` | The campaign route into a workout: adventure → step → session |
+| `oath-flow.yaml` | Swear a preset oath from Home, then toggle its reminder in Settings |
+| `session-interruptions.yaml` | Pause, resume, restart the round, and abandon mid-session |
 | `subflows/complete-onboarding.yaml` | Reusable onboarding walk, pulled in via `runFlow:` |
+| `subflows/complete-a-session.yaml` | Reusable: quest details → whole session → dismiss victory |
+
+Two journeys are deliberately **not** end-to-end tested, because a device flow cannot
+observe them and unit tests can:
+
+- the scheduled oath **notification** (`__tests__/notifications.test.ts`)
+- **crash recovery** mid-session, which needs the process killed (`__tests__/useSessionRecovery.test.ts`)
 
 ## Screenshots
 

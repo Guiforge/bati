@@ -110,7 +110,7 @@ function PresetRow({
   const press = useCallback(() => onSwear(preset), [onSwear, preset]);
 
   return (
-    <Card bg="$surface" onPress={press}>
+    <Card testID="oath-preset" bg="$surface" onPress={press}>
       <XStack items="center" gap="$3">
         <GameIcon name="star" size={20} color="$primary" />
         <Text flex={1} fontWeight="700" fontSize={15} color="$text">
@@ -257,7 +257,7 @@ export default function OathScreen() {
   }, [router]);
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top}>
+    <YStack testID="oath-screen" flex={1} bg="$background" pt={insets.top}>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Button
           size="$3"
@@ -277,7 +277,7 @@ export default function OathScreen() {
         <YStack px="$4" gap="$4">
           {/* Current oath — swearing a new one replaces it, so say so up front */}
           {existing !== null && (
-            <Card bg="$pastelPurple" gap="$2">
+            <Card testID="oath-current" bg="$pastelPurple" gap="$2">
               <Text fontWeight="700" fontSize={13} color="$text" opacity={0.8}>
                 {t("oath.current_title")}
               </Text>

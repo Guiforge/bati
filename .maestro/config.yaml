@@ -10,6 +10,10 @@ flows:
   - app-launch.yaml
   - main-journey.yaml
   - explore-tabs.yaml
+  - journal-after-session.yaml
+  - adventure-journey.yaml
+  - oath-flow.yaml
+  - session-interruptions.yaml
 
 # subflows/ holds reusable fragments (e.g. complete-onboarding.yaml) pulled in
 # via `runFlow:` — they are not standalone entries here.

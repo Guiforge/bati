@@ -19,6 +19,7 @@ jest.mock("@/db/quests", () => ({
 // Mock DB calls
 jest.mock("@/db", () => ({
   completeAdventureRunStep: jest.fn(),
+  getAdventureIdForRunStep: jest.fn().mockResolvedValue(null),
 }));
 jest.mock("@/db/completed", () => ({
   createCompletedSession: jest.fn().mockResolvedValue(1),
@@ -200,6 +201,72 @@ describe("useSessionStore", () => {
       (preferences.setSavedSession as jest.Mock).mock.calls.at(-1)?.[0] ?? "{}",
     );
     expect(saved.timerStartTimestamp).toBe(2000);
+  });
+
+  /**
+   * Regression: `startSession` only loaded a boss when handed an `adventureId`, and no caller
+   * ever had one — an adventure step carries its run step id and nothing else. The whole boss
+   * system (HP bar, damage, taunts, defeat, village banners) was unreachable in the app while
+   * its own tests passed.
+   */
+  describe("boss fights", () => {
+    const dbMock = require("@/db") as { getAdventureIdForRunStep: jest.Mock };
+    const bossMock = require("@/db/bossFights") as { getOrCreateBossFight: jest.Mock };
+
+    const boss = {
+      id: 7,
+      adventureId: 42,
+      totalHp: 100,
+      currentHp: 100,
+      weaknessMuscle: null,
+      resistanceMuscle: null,
+      defeatedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      imagePath: "assets/placeholder.jpg",
+    };
+
+    beforeEach(() => {
+      dbMock.getAdventureIdForRunStep.mockClear().mockResolvedValue(42);
+      bossMock.getOrCreateBossFight.mockClear().mockResolvedValue(boss);
+    });
+
+    afterEach(() => {
+      dbMock.getAdventureIdForRunStep.mockResolvedValue(null);
+      bossMock.getOrCreateBossFight.mockResolvedValue(null);
+    });
+
+    test("resolves the adventure from the run step alone", async () => {
+      await store.getState().startSession(mockQuest, "medium", { adventureRunStepId: 5 });
+
+      expect(dbMock.getAdventureIdForRunStep).toHaveBeenCalledWith(5);
+      expect(bossMock.getOrCreateBossFight).toHaveBeenCalledWith(42);
+      expect(store.getState().bossFight).toEqual(boss);
+    });
+
+    test("takes an explicit adventureId without a lookup", async () => {
+      await store.getState().startSession(mockQuest, "medium", { adventureId: 42 });
+
+      expect(dbMock.getAdventureIdForRunStep).not.toHaveBeenCalled();
+      expect(bossMock.getOrCreateBossFight).toHaveBeenCalledWith(42);
+    });
+
+    test("starts a plain quest with no boss and no lookup", async () => {
+      await store.getState().startSession(mockQuest, "medium");
+
+      expect(dbMock.getAdventureIdForRunStep).not.toHaveBeenCalled();
+      expect(store.getState().bossFight).toBeNull();
+    });
+
+    // A failed lookup must not take the session down with it.
+    test("still starts the session when the lookup throws", async () => {
+      dbMock.getAdventureIdForRunStep.mockRejectedValue(new Error("no db"));
+
+      await store.getState().startSession(mockQuest, "medium", { adventureRunStepId: 5 });
+
+      expect(store.getState().status).toBe("countdown");
+      expect(store.getState().bossFight).toBeNull();
+    });
   });
 
   describe("warm-up", () => {

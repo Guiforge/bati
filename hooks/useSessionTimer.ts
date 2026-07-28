@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSessionStore } from "@/stores/session";
+import { type SessionStatus, useSessionStore } from "@/stores/session";
 
 export function formatTime(seconds: number) {
   const absSeconds = Math.abs(seconds);
@@ -15,80 +15,116 @@ export function formatOvertime(seconds: number) {
   return `+${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export function useSessionTimer() {
+export type SessionTimerState = {
+  /** Positive = time left, negative = overtime. */
+  remainingSeconds: number;
+  /** Total time spent on this exercise/rest. */
+  elapsedSeconds: number;
+  /** 0 (start) to 1 (target reached), can exceed 1 for overtime. */
+  progress: number;
+  isOvertime: boolean;
+};
+
+const IDLE_TIMER: SessionTimerState = {
+  remainingSeconds: 0,
+  elapsedSeconds: 0,
+  progress: 0,
+  isOvertime: false,
+};
+
+type TimerInputs = {
+  timerStartTimestamp: number | null;
+  timerDuration: number;
+  status: SessionStatus;
+  lastPauseTimestamp: number | null;
+};
+
+function computeAt(now: number, timerStartTimestamp: number, inputs: TimerInputs) {
+  const { timerDuration, status } = inputs;
+  const elapsed = (now - timerStartTimestamp) / 1000;
+  const remaining = timerDuration - elapsed;
+
+  // Time-based exercises keep counting past the target ("running" allows overtime); rest and
+  // countdown clamp at zero, they have nothing to reward for going over.
+  const overtimeAllowed = status === "running";
+
+  return {
+    elapsedSeconds: Math.floor(elapsed),
+    remainingSeconds: overtimeAllowed ? Math.ceil(remaining) : Math.max(0, Math.ceil(remaining)),
+    isOvertime: overtimeAllowed && remaining < 0,
+    // Cap at 200% for display.
+    progress: timerDuration > 0 ? Math.min(2, elapsed / timerDuration) : 0,
+  };
+}
+
+/**
+ * What the timer reads right now, or `null` for "leave the last value alone" — a status that
+ * neither ticks nor is frozen on a pause (idle, finished) keeps whatever was on screen.
+ *
+ * Exported so the initial state and every tick go through the same math. It used to live
+ * inside the effect, which meant the first render always returned a zeroed timer: `WarmupView`
+ * read that zero as "this step is over" and skipped the first movement outright, and
+ * `CountdownView` fired its success haptic before the countdown had started.
+ */
+export function readTimerState(inputs: TimerInputs): SessionTimerState | null {
+  const { timerStartTimestamp, status, lastPauseTimestamp } = inputs;
+
+  if (!timerStartTimestamp) return IDLE_TIMER;
+  if (status === "paused") {
+    return lastPauseTimestamp ? computeAt(lastPauseTimestamp, timerStartTimestamp, inputs) : null;
+  }
+  if (status !== "running" && status !== "resting" && status !== "countdown" && status !== "warmup")
+    return null;
+
+  return computeAt(Date.now(), timerStartTimestamp, inputs);
+}
+
+function isSameTimerState(a: SessionTimerState, b: SessionTimerState): boolean {
+  return (
+    a.remainingSeconds === b.remainingSeconds &&
+    a.elapsedSeconds === b.elapsedSeconds &&
+    a.isOvertime === b.isOvertime &&
+    a.progress === b.progress
+  );
+}
+
+export function useSessionTimer(): SessionTimerState {
   const timerStartTimestamp = useSessionStore((s) => s.timerStartTimestamp);
   const timerDuration = useSessionStore((s) => s.timerDuration);
   const status = useSessionStore((s) => s.status);
   const lastPauseTimestamp = useSessionStore((s) => s.lastPauseTimestamp);
 
-  // remainingSeconds: positive = time left, negative = overtime
-  const [remainingSeconds, setRemainingSeconds] = useState(0);
-  // elapsedSeconds: total time spent on this exercise/rest
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  // progress: 0 (start) to 1 (target reached), can exceed 1 for overtime
-  const [progress, setProgress] = useState(0);
-  // isOvertime: true when user has exceeded the target time
-  const [isOvertime, setIsOvertime] = useState(false);
+  const [state, setState] = useState<SessionTimerState>(
+    () =>
+      readTimerState({ timerStartTimestamp, timerDuration, status, lastPauseTimestamp }) ??
+      IDLE_TIMER,
+  );
 
   useEffect(() => {
-    if (!timerStartTimestamp) {
-      setRemainingSeconds(0);
-      setElapsedSeconds(0);
-      setProgress(0);
-      setIsOvertime(false);
-      return;
-    }
+    const inputs = { timerStartTimestamp, timerDuration, status, lastPauseTimestamp };
 
-    const calculate = (now: number) => {
-      const elapsed = (now - timerStartTimestamp) / 1000;
-      const elapsedInt = Math.floor(elapsed);
-      const remaining = timerDuration - elapsed;
-
-      setElapsedSeconds(elapsedInt);
-
-      // For time-based exercises in "running" status, allow negative remaining (overtime)
-      // For rest/countdown periods, clamp at 0
-      if (status === "running") {
-        // Allow overtime - remaining can go negative
-        setRemainingSeconds(Math.ceil(remaining));
-        setIsOvertime(remaining < 0);
-      } else {
-        // For resting/countdown, clamp at 0
-        setRemainingSeconds(Math.max(0, Math.ceil(remaining)));
-        setIsOvertime(false);
-      }
-
-      if (timerDuration > 0) {
-        setProgress(Math.min(2, elapsed / timerDuration)); // Cap at 200% for display
-      } else {
-        setProgress(0);
-      }
+    const tick = () => {
+      const next = readTimerState(inputs);
+      // Ticks 10x a second but the values only move once a second: bail on an unchanged read,
+      // or every session screen re-renders ten times per second for nothing.
+      if (next) setState((prev) => (isSameTimerState(prev, next) ? prev : next));
     };
 
-    if (status === "paused" && lastPauseTimestamp) {
-      calculate(lastPauseTimestamp);
-      return;
-    }
+    tick(); // Immediate update
 
+    // A paused or idle timer has nothing to count: one read is the whole story.
+    if (status === "paused" || !timerStartTimestamp) return;
     if (
       status !== "running" &&
       status !== "resting" &&
       status !== "countdown" &&
       status !== "warmup"
-    ) {
+    )
       return;
-    }
 
-    const tick = () => calculate(Date.now());
-    tick(); // Immediate update
     const interval = setInterval(tick, 100);
     return () => clearInterval(interval);
   }, [timerStartTimestamp, timerDuration, status, lastPauseTimestamp]);
 
-  return {
-    remainingSeconds,
-    elapsedSeconds,
-    progress,
-    isOvertime,
-  };
+  return state;
 }

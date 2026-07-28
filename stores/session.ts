@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
-import { completeAdventureRunStep } from "@/db";
+import { completeAdventureRunStep, getAdventureIdForRunStep } from "@/db";
 import { checkForNewAchievements, type NewAchievementResult } from "@/db/achievements";
 import {
   type BossFight,
@@ -130,10 +130,19 @@ export const useSessionStore = create<SessionState>()(
     results: [],
 
     startSession: async (quest, userLevel, options) => {
-      // Load boss fight if this is a boss adventure
+      // Load boss fight if this is a boss adventure. Callers only ever hold the run step id —
+      // it is what the adventure screen puts in the URL and what the victory screen chains to —
+      // so resolve the adventure here rather than threading a second param through three
+      // screens that can drift apart. getOrCreateBossFight returns null unless kind === "boss".
+      const adventureId =
+        options?.adventureId ??
+        (options?.adventureRunStepId != null
+          ? await getAdventureIdForRunStep(options.adventureRunStepId).catch(() => null)
+          : null);
+
       let bossFight: BossFight | null = null;
-      if (options?.adventureId) {
-        bossFight = await getOrCreateBossFight(options.adventureId);
+      if (adventureId) {
+        bossFight = await getOrCreateBossFight(adventureId);
       }
 
       // The warm-up runs first unless the hero switched it off; skipping it is always one tap

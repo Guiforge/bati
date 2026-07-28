@@ -30,6 +30,7 @@ export {
   completeAdventureRunStep,
   getActiveAdventureRun,
   getAdventureDetails,
+  getAdventureIdForRunStep,
   getAnyActiveAdventureRun,
   listAdventures,
   setAdventureRunDifficultyOverride,

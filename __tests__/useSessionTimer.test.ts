@@ -1,6 +1,11 @@
 import { act, renderHook } from "@testing-library/react-native";
 
-import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import {
+  formatOvertime,
+  formatTime,
+  readTimerState,
+  useSessionTimer,
+} from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 
 /**
@@ -163,5 +168,65 @@ describe("useSessionTimer", () => {
 
     expect(result.current.remainingSeconds).toBe(40);
     expect(result.current.elapsedSeconds).toBe(20);
+  });
+});
+
+/**
+ * The timer's *first render* used to report zero for everything, because the real value was
+ * only computed inside an effect. `renderHook` flushes effects, so every test above passed
+ * while consumers reading the first render got a lie: `WarmupView` treated it as "this step is
+ * over" and skipped the first movement, `CountdownView` fired its success haptic on mount.
+ *
+ * These assert the pure read, which is what the initial state is now seeded from.
+ */
+describe("readTimerState", () => {
+  const NEVER_PAUSED = { lastPauseTimestamp: null };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("reports the real remaining time, not zero, on the first read", () => {
+    const state = readTimerState({
+      timerStartTimestamp: NOW,
+      timerDuration: 30,
+      status: "warmup",
+      ...NEVER_PAUSED,
+    });
+
+    expect(state).toEqual({
+      remainingSeconds: 30,
+      elapsedSeconds: 0,
+      progress: 0,
+      isOvertime: false,
+    });
+  });
+
+  it("reads zero when no timer is armed", () => {
+    expect(
+      readTimerState({
+        timerStartTimestamp: null,
+        timerDuration: 30,
+        status: "warmup",
+        ...NEVER_PAUSED,
+      }),
+    ).toEqual({ remainingSeconds: 0, elapsedSeconds: 0, progress: 0, isOvertime: false });
+  });
+
+  // null means "leave whatever is on screen alone" — idle and finished have no timer to show.
+  it.each(["idle", "finished"] as const)("returns null for %s", (status) => {
+    expect(
+      readTimerState({
+        timerStartTimestamp: NOW,
+        timerDuration: 30,
+        status,
+        ...NEVER_PAUSED,
+      }),
+    ).toBeNull();
   });
 });

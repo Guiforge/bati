@@ -491,6 +491,23 @@ export async function setAdventureRunDifficultyOverride(input: {
     .where(eq(adventureRuns.id, input.runId));
 }
 
+/**
+ * Which adventure a run step belongs to. A session only ever carries its `runStepId` (the URL
+ * an adventure step pushes, and the one the victory screen chains to), so this is how the
+ * store finds the adventure a boss fight hangs off without a second route param to keep in
+ * sync across three screens.
+ */
+export async function getAdventureIdForRunStep(runStepId: number): Promise<number | null> {
+  const rows = await db
+    .select({ adventureId: adventureRuns.adventureId })
+    .from(adventureRunSteps)
+    .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
+    .where(eq(adventureRunSteps.id, runStepId))
+    .limit(1);
+
+  return rows[0]?.adventureId ?? null;
+}
+
 export async function completeAdventureRunStep(input: {
   runStepId: number;
   completedSessionId: number;

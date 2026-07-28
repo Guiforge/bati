@@ -77,11 +77,9 @@ export function useSmartAction() {
             label: t("home.start_quest_label", "Start Quest"),
             subtext: t("home.focus_on", { muscles, defaultValue: `Focus: ${muscles}` }),
             variant: "quest",
-            onPress: () =>
-              router.push({
-                pathname: "/session",
-                params: { questId: suggestion.id },
-              } as never),
+            // The quest detail screen, not /session: only startSession fills the store, and
+            // /session redirects home when it finds it empty.
+            onPress: () => router.push(`/quests/${suggestion.id}` as never),
           });
           setIsLoading(false);
           return;

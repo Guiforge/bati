@@ -3,7 +3,7 @@ import { BarChart2, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { InteractionManager, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -82,8 +82,11 @@ export default function JournalScreen() {
       setStatsReady(false);
       return;
     }
-    const task = InteractionManager.runAfterInteractions(() => setStatsReady(true));
-    return () => task.cancel();
+    // ponytail: defers one frame, not until every animation settles like the
+    // deprecated InteractionManager did. If the stats tab janks on switch,
+    // upgrade to requestIdleCallback (untyped in RN 0.86, needs a cast).
+    const frame = requestAnimationFrame(() => setStatsReady(true));
+    return () => cancelAnimationFrame(frame);
   }, [activeTab, history.length]);
 
   const loadHistory = useCallback(async () => {

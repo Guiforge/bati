@@ -45,10 +45,14 @@ const bodyFont = createFont({
     2: 14,
     3: 16,
     4: 18,
+    5: 20,
+    6: 24,
     true: 16,
   },
   lineHeight: {
     3: 24,
+    5: 28,
+    6: 32,
   },
   weight: {
     4: "400",
@@ -156,50 +160,20 @@ export const config = createTamagui({
   themes: {
     // We force a unified DARK theme structure even for 'light' key
     // to prevent white flash if system theme is light.
+    // Every colour token is a theme key: SVG icons (@tamagui/lucide-icons)
+    // resolve `color="$x"` against the theme only, never the token map.
     light: {
+      ...tokens.color,
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
-
-      // Semantic mappings
-      primary: tokens.color.primary,
-      secondary: tokens.color.secondary,
-      success: tokens.color.success,
-      warning: tokens.color.warning,
-      danger: tokens.color.error,
-
-      // Surface mappings
-      surface: tokens.color.surface,
-      surface2: tokens.color.surface2,
-      borderStrong: tokens.color.borderStrong,
-
-      // Glass
-      glassBg: tokens.color.glassBg,
-      glassBorder: tokens.color.glassBorder,
-      primaryGlow: tokens.color.primaryGlow,
-      shadowColor: tokens.color.shadowColor,
-
-      // Text
-      muted: tokens.color.textSecondary,
+      danger: tokens.color.error, // alias, no matching token
+      muted: tokens.color.textSecondary, // deliberately not tokens.color.muted
     },
     dark: {
+      ...tokens.color,
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
-
-      primary: tokens.color.primary,
-      secondary: tokens.color.secondary,
-      success: tokens.color.success,
-      warning: tokens.color.warning,
       danger: tokens.color.error,
-
-      surface: tokens.color.surface,
-      surface2: tokens.color.surface2,
-      borderStrong: tokens.color.borderStrong,
-
-      glassBg: tokens.color.glassBg,
-      glassBorder: tokens.color.glassBorder,
-      primaryGlow: tokens.color.primaryGlow,
-      shadowColor: tokens.color.shadowColor,
-
       muted: tokens.color.textSecondary,
     },
   },

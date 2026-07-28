@@ -765,8 +765,17 @@ every `imagePath`. Model choice and review method are recorded in
 [missing-covers.md](../content/missing-covers.md) (`gemini-3.1-flash-image-preview`, 1024×768 JPG
 for covers; PNG for exercises per [missing-image.md](../content/missing-image.md) §5).
 
-The key is not present in this environment, so the files cannot be produced here — that is the
-one remaining item on this page, and it is a credential away rather than a decision away.
+`generate-covers.py` was the one script without the 429/5xx backoff its siblings have — a known
+failure mode in [missing-image.md](../content/missing-image.md), and this batch is nine covers
+long, so it now retries like the others. The prompts were also checked against that page's rules:
+shot type first, semantic negatives ("the trail is empty — no animals, no people"), and no
+restating of the art direction, which the shared `STYLE` constant appends on its own.
+
+The key is not present in this environment — not in the shell, not in a profile, not in a
+dotfile — so the files cannot be produced here. That is the one remaining item on this page, and
+it is a credential away rather than a decision away. Once run: review a contact sheet, check the
+corner pixel is near-black, then add the 11 keys to `assetMap` — the count-match target is
+**48/48 exercises, 27/27 quests, 8/8 adventures**.
 
 ---
 

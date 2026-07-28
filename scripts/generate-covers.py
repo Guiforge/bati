@@ -23,6 +23,7 @@ import os
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 
 API = "https://api.mammouth.ai/v1/chat/completions"
@@ -152,8 +153,21 @@ def generate(prompt):
         headers={"Authorization": f"Bearer {KEY}", "Content-Type": "application/json",
                  "User-Agent": "curl/8.0"},
     )
-    with urllib.request.urlopen(req, timeout=200) as r:
-        d = json.load(r)
+    # Backoff on 429 / transient 5xx, matching generate-exercises.py. Without it a long batch
+    # dies partway and has to be re-run by hand — documented as a known failure mode in
+    # docs/content/missing-image.md, and the phase-C/D/E batch below is nine covers long.
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(req, timeout=200) as r:
+                d = json.load(r)
+            break
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 500, 502, 503, 524) and attempt < 5:
+                wait = 30 * (attempt + 1)
+                print(f"[{e.code}, retry in {wait}s] ", end="", flush=True)
+                time.sleep(wait)
+                continue
+            raise
     if "error" in d:
         raise RuntimeError(d["error"])
     imgs = d["choices"][0]["message"].get("images") or []

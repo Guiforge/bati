@@ -10,30 +10,26 @@
  */
 
 // ============================================================
-// EXERCISE ASSETS (20 items)
+// EXERCISE ASSETS (42 items)
 // ============================================================
 
 export const EXERCISE_ASSETS = {
-  goblin_squat: require("@/assets/images/exercises/goblin_squat.jpg"),
-  dragon_pushup: require("@/assets/images/exercises/dragon_pushup.jpg"),
-  iron_grip_pullup: require("@/assets/images/exercises/iron_grip_pullup.jpg"),
-  stone_guardian_plank: require("@/assets/images/exercises/stone_guardian_plank.jpg"),
-  shadow_step_lunge: require("@/assets/images/exercises/shadow_step_lunge.jpg"),
-  berserker_burpee: require("@/assets/images/exercises/berserker_burpee.jpg"),
-  monk_mountain_climber: require("@/assets/images/exercises/monk_mountain_climber.jpg"),
-  titan_dip: require("@/assets/images/exercises/titan_dip.jpg"),
-  archer_pike_pushup: require("@/assets/images/exercises/archer_pike_pushup.jpg"),
-  wall_sentinel_hold: require("@/assets/images/exercises/wall_sentinel_hold.jpg"),
-  thunder_jumping_jack: require("@/assets/images/exercises/thunder_jumping_jack.jpg"),
-  paladin_high_knee: require("@/assets/images/exercises/paladin_high_knee.jpg"),
-  wizard_bicycle_crunch: require("@/assets/images/exercises/wizard_bicycle_crunch.jpg"),
-  knight_diamond_pushup: require("@/assets/images/exercises/knight_diamond_pushup.jpg"),
-  ranger_single_leg_deadlift: require("@/assets/images/exercises/ranger_single_leg_deadlift.jpg"),
-  druid_cobra_stretch: require("@/assets/images/exercises/druid_cobra_stretch.jpg"),
-  samurai_warrior_pose: require("@/assets/images/exercises/samurai_warrior_pose.jpg"),
-  rogue_skater_hop: require("@/assets/images/exercises/rogue_skater_hop.jpg"),
-  barbarian_overhead_press: require("@/assets/images/exercises/barbarian_overhead_press.jpg"),
-  alchemist_hollow_body_hold: require("@/assets/images/exercises/alchemist_hollow_body.jpg"),
+  // The 0006 batch, renamed to the movements' official names by 0023 — the five that duplicated
+  // a 0001 exercise were merged into it and their art dropped.
+  lunge: require("@/assets/images/exercises/lunge.jpg"),
+  burpee: require("@/assets/images/exercises/burpee.jpg"),
+  mountain_climber: require("@/assets/images/exercises/mountain_climber.jpg"),
+  dip: require("@/assets/images/exercises/dip.jpg"),
+  pike_pushup: require("@/assets/images/exercises/pike_pushup.jpg"),
+  jumping_jack: require("@/assets/images/exercises/jumping_jack.jpg"),
+  high_knees: require("@/assets/images/exercises/high_knees.jpg"),
+  bicycle_crunch: require("@/assets/images/exercises/bicycle_crunch.jpg"),
+  diamond_pushup: require("@/assets/images/exercises/diamond_pushup.jpg"),
+  single_leg_deadlift: require("@/assets/images/exercises/single_leg_deadlift.jpg"),
+  cobra_stretch: require("@/assets/images/exercises/cobra_stretch.jpg"),
+  warrior_pose: require("@/assets/images/exercises/warrior_pose.jpg"),
+  skater_hop: require("@/assets/images/exercises/skater_hop.jpg"),
+  hollow_body_hold: require("@/assets/images/exercises/hollow_body_hold.jpg"),
   // Dedicated art for the generic exercises (0001) — see docs/content/missing-covers.md
   squat: require("@/assets/images/exercises/squat.png"),
   pushups: require("@/assets/images/exercises/pushups.png"),

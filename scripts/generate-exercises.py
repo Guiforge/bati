@@ -5,7 +5,8 @@ Plank, Crunch) that previously fell back to placeholder.jpg. Character-pose styl
 
   MAMMOUTH_API_KEY=sk-... python3 scripts/generate-exercises.py [slug ...]
 
-Output: 1024x768 PNG in assets/images/exercises/. Skips existing files.
+Output: 1024x768 JPG (quality 82, ~100 KB against ~850 KB for the same frame as PNG) in
+assets/images/exercises/. Skips a slug that already has a .jpg *or* a .png.
 """
 import base64
 import json
@@ -144,6 +145,67 @@ EXERCISES = [
      "thick cloth looped around a sturdy door handle, heels planted and body angled back, pulling "
      "themselves upright with elbows driving past the ribs; the back muscles glow with silver-blue "
      "energy, seen from the side."),
+    # --- 0023 rename batch: the old 0006 art staged a goblin, a dragon, a wizard. Same movements,
+    # --- official names now, so the same lone hero as every other pose above.
+    # The first pass handed this hero a war hammer and turned the lunge into a charge — hence the
+    # explicit empty hands. Static hold, not a stride.
+    ("lunge",
+     "A fantasy athlete hero holding a static forward lunge, front knee bent to a right angle "
+     "directly over the ankle and the back knee hovering just above the ground, torso tall and "
+     "vertical, both hands empty and resting on the hips, carrying no weapon and no equipment; "
+     "the legs glow with warm golden energy, seen from the side."),
+    ("burpee",
+     "A fantasy athlete hero at the top of a burpee, exploding into a jump with arms stretched "
+     "overhead and feet just off the ground, impact dust and motion streaks below; the whole body "
+     "glows with cyan-white energy."),
+    ("mountain_climber",
+     "A fantasy athlete hero in a push-up position with hands under the shoulders, driving one "
+     "knee toward the chest while the other leg stays extended, motion streaks behind the moving "
+     "leg; the core glows with electric-blue energy, seen from the side."),
+    ("dip",
+     "A fantasy athlete hero supported on two rugged stone parallel bars, elbows bent to a right "
+     "angle lowering the body between them, chest slightly forward; the arms and chest glow with "
+     "amber energy, seen from the side."),
+    ("pike_pushup",
+     "A fantasy athlete hero in a pike position, hips high in an inverted V with straight legs and "
+     "elbows bent to bring the top of the head toward the ground; the shoulders glow with "
+     "cyan-white energy, seen from the side."),
+    ("jumping_jack",
+     "A fantasy athlete hero mid jumping jack, feet apart and arms swept overhead, just off the "
+     "ground with motion streaks tracing the arms; the whole body glows with cyan-white energy."),
+    ("high_knees",
+     "A fantasy athlete hero running in place with one knee driven up to hip height and the other "
+     "foot on the ball of the foot, torso upright, motion streaks below; the legs glow with warm "
+     "golden energy."),
+    ("bicycle_crunch",
+     "A fantasy athlete hero lying on their back, one elbow rotating toward the opposite bent knee "
+     "while the other leg extends straight and low; the obliques glow with electric-blue energy, "
+     "seen from above at a slight angle."),
+    ("diamond_pushup",
+     "A fantasy athlete hero in a push-up with the hands close together under the chest, thumbs "
+     "and index fingers forming a diamond, elbows tucked to the ribs and body a straight line; the "
+     "arms and chest glow with amber energy, seen from a low front angle."),
+    ("single_leg_deadlift",
+     "A fantasy athlete hero balanced on one leg, hinged forward at the hip with a flat back, "
+     "hands reaching toward the ground and the free leg extended straight behind; the hamstrings "
+     "and back glow with warm golden energy, seen from the side."),
+    ("cobra_stretch",
+     "A fantasy athlete hero lying face down with hands under the shoulders, chest pressed up and "
+     "the spine arched while the hips stay on the ground, head lifted; the chest and back glow "
+     "with silver-blue energy, seen from the side."),
+    ("warrior_pose",
+     "A fantasy athlete hero in a wide warrior stance, front knee bent over the ankle and back leg "
+     "straight, both arms extended at shoulder height in opposite directions, gaze forward; the "
+     "legs glow with warm golden energy, seen from the side."),
+    ("skater_hop",
+     "A fantasy athlete hero mid lateral bound, landing on one bent leg with the free leg crossing "
+     "behind, arms swept across the body, motion streaks trailing sideways; the legs glow with "
+     "warm golden energy."),
+    ("hollow_body_hold",
+     "A fantasy athlete hero holding a hollow body position on their back, lower back pressed "
+     "down, shoulders and straight legs lifted a few centimetres off the ground and arms extended "
+     "overhead in a shallow banana shape; the abs glow with electric-blue energy, seen from the "
+     "side."),
 ]
 
 
@@ -184,8 +246,11 @@ def main():
     for slug, scene in EXERCISES:
         if only and slug not in only:
             continue
-        out = os.path.join(ROOT, "assets", "images", "exercises", f"{slug}.png")
-        if os.path.exists(out):
+        d = os.path.join(ROOT, "assets", "images", "exercises")
+        out = os.path.join(d, f"{slug}.jpg")
+        # The catalogue is mid-migration from PNG to JPG: skip on either, or a re-run regenerates
+        # every exercise that still ships its original PNG.
+        if any(os.path.exists(os.path.join(d, f"{slug}.{ext}")) for ext in ("jpg", "png")):
             print(f"skip  {slug} (exists)")
             continue
         print(f"gen   {slug} … ", end="", flush=True)
@@ -193,7 +258,7 @@ def main():
         try:
             open(raw, "wb").write(generate(scene))
             magick(raw, "-resize", "1024x768^", "-gravity", "center",
-                   "-background", BG, "-extent", "1024x768", out)
+                   "-background", BG, "-extent", "1024x768", "-quality", "82", out)
             print("ok")
         except Exception as e:
             print(f"FAIL: {e}")

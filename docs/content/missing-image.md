@@ -2,7 +2,7 @@
 title: Missing Images — inventory
 type: content
 status: active
-updated: 2026-07-27
+updated: 2026-07-28
 related: [missing-covers.md, ../planning/screen-redesign-proposals.md, ../planning/dev-execution-plan.md]
 sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
@@ -12,7 +12,7 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 > What art is still missing (nothing, as of this pass), what is covered, what exists but is
 > unused — and
 > [how to generate the gaps](#how-to-generate-missing-art).
-> Re-verified 2026-07-27 (through migration `0018`) by diffing seed `imagePath` basenames
+> Re-verified 2026-07-28 (through migration `0023`) by diffing seed `imagePath` basenames
 > against `constants/assetMap.ts` keys and files on disk. The render path resolves images by
 > **basename key** through `assetMap` (e.g. `getExerciseAsset`), not by the raw seed path — so
 > coverage is measured against assetMap keys, not filenames: a row can have a perfectly good
@@ -24,6 +24,9 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 ## TL;DR
 
+- **§6 RESOLVED (2026-07-28)**: `0023` renamed the `0006` batch to the movements' official names
+  and merged five duplicates away; the 14 poses that staged a goblin, a dragon or a wizard were
+  regenerated as the same lone hero as the rest of the set. **Every gap in this doc is closed.**
 - **§5 RESOLVED (2026-07-27)**: the 11 assets the phase-C/D/E batch pointed at now exist,
   are reviewed and are registered in `assetMap`. **Every gap in this doc is closed.**
 - **§4 RESOLVED (2026-07-27)**: the 20 bodyweight exercises from
@@ -37,9 +40,10 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
   sprites via the same helper's fallback, zero new assets, as recommended. Wiring
   `VillageScene.tsx`'s building grid to render these instead of the `emoji` field — and the
   per-level tint ramp — remains a separate dev task, same boundary as §1a/§1b before it.
-- **Content art: 47/47 exercises, 27/27 quests, 8/8 adventures.** Nothing seeded renders the
-  placeholder. (47, not 48: `0018` deleted Barbarian's Overhead Press, the catalogue's only
-  dumbbell movement — see the work roadmap §15.)
+- **Content art: 42/42 exercises, 27/27 quests, 8/8 adventures.** Nothing seeded renders the
+  placeholder. (42, not 48: `0018` deleted Barbarian's Overhead Press, the catalogue's only
+  dumbbell movement — see the work roadmap §15 — and `0023` merged five `0006` exercises into
+  the `0001` originals they duplicated.)
 - **§1a/§1b RESOLVED (2026-07-20)**: 5 village tier illustrations + 6 sport sprites, generated
   (`scripts/generate-village.py`) and wired into `VillageScene.tsx` (`4356ee4`).
 - **§1c RESOLVED (2026-07-20)**: `BossPhaseImage.tsx` now renders the boss's own adventure
@@ -67,7 +71,7 @@ magick --version                 # ImageMagick — used for the resize/pad step
 | Script | Produces | Output |
 | --- | --- | --- |
 | `scripts/generate-covers.py` | quest + adventure covers | `1024x768` JPG → `assets/images/{quests,adventures}/` |
-| `scripts/generate-exercises.py` | exercise character poses | `1024x768` PNG → `assets/images/exercises/` |
+| `scripts/generate-exercises.py` | exercise character poses | `1024x768` JPG → `assets/images/exercises/` |
 | `scripts/generate-village.py` | village tiers, sport sprites, building icons | `1024x1024` PNG → `assets/images/village/[buildings/]` |
 
 ```bash
@@ -77,7 +81,8 @@ MODEL=gemini-2.5-flash-image python3 scripts/…     # override the model
 ```
 
 Each script **skips slugs whose file already exists** — so a re-run only fills gaps, and
-regenerating one image means deleting it first.
+regenerating one image means deleting it first. `generate-exercises.py` checks both extensions,
+because the exercise folder is mid-conversion from PNG to JPG (~850 KB → ~100 KB a frame).
 
 ### Adding a new asset
 
@@ -197,10 +202,9 @@ cleanup-or-wire-up call, not a missing-art gap.
 
 All resolve to real art via `assetMap` (verified basename-key match):
 
-- **Exercises — 46/48.** The original 26 plus the 20 bodyweight ones from §4 all map to a real
-  `EXERCISE_ASSETS` key. (Note: seed `alchemist_hollow_body_hold` correctly maps to the file
-  `alchemist_hollow_body.png` via its assetMap key — resolves fine despite the filename
-  difference.) The 2 missing are the §5 pull exercises.
+- **Exercises — 42/42.** Every row maps to a real `EXERCISE_ASSETS` key. (The
+  `alchemist_hollow_body_hold` key / `alchemist_hollow_body` filename mismatch this section used
+  to flag is gone: both became `hollow_body_hold` in §6.)
 - **Quests — 19/27.** 19 covers present in `QUEST_ASSETS`; the 8 missing are the §5 batch.
 - **Adventures — 7/8.** Includes The Lumber Route, The Golem, The Iron Lord; the missing one is
   §5's The Squire's Path. (Per-boss village banners, §3 layer 3, reuse these via
@@ -229,8 +233,8 @@ The inverse problem — art shipped without content to use it:
 - **4 orphan adventure covers**: `guardian_oath`, `monk_enlightenment`, `ranger_journey`,
   `scout_trial` — present on disk and in `ADVENTURE_ASSETS`, but no seeded adventure references
   them. Either seed 4 more adventures to use them, or drop them.
-- **1 duplicate exercise file**: `ranger_single_leg_deadlift_1.png` — unreferenced orphan next
-  to the real `ranger_single_leg_deadlift.png`.
+- ~~**1 duplicate exercise file**: `ranger_single_leg_deadlift_1`~~ — deleted in the §6 pass,
+  along with the 6 poses the merges and `0018` had orphaned.
 
 - **5 unlinked boss creature portraits**: `assets/images/bosses/` (`fire_dragon`,
   `forest_titan`, `shadow_serpent`, `stone_golem`, `wind_wraith`) — `BossPhaseImage` now has a
@@ -307,6 +311,61 @@ already noted in §2.
 under §Known failure modes. This batch was nine covers long, exactly the case that trips it, so
 it now retries like its siblings.
 
+---
+
+## 6. RESOLVED — the 0006 batch renamed and repainted (14 poses, 2026-07-28)
+
+`drizzle/0023_official_exercise_names.sql` renamed the `0006` batch to the movements' real names
+and merged the five that duplicated a `0001` exercise. Their art was staged for the old names — a
+goblin squatting, a dragon pressing, a wizard crunching — so it was regenerated in the same pass:
+same lone hero as every other pose in `EXERCISES`, no creature. Files were renamed *before*
+regenerating, so nothing rendered the placeholder in between.
+
+| Old slug | New slug | Exercise |
+| --- | --- | --- |
+| `shadow_step_lunge` | `lunge` | Lunge |
+| `berserker_burpee` | `burpee` | Burpee |
+| `monk_mountain_climber` | `mountain_climber` | Mountain Climber |
+| `titan_dip` | `dip` | Dip |
+| `archer_pike_pushup` | `pike_pushup` | Pike Push-Up |
+| `thunder_jumping_jack` | `jumping_jack` | Jumping Jack |
+| `paladin_high_knee` | `high_knees` | High Knees |
+| `wizard_bicycle_crunch` | `bicycle_crunch` | Bicycle Crunch |
+| `knight_diamond_pushup` | `diamond_pushup` | Diamond Push-Up |
+| `ranger_single_leg_deadlift` | `single_leg_deadlift` | Single-Leg Deadlift |
+| `druid_cobra_stretch` | `cobra_stretch` | Cobra Stretch |
+| `samurai_warrior_pose` | `warrior_pose` | Warrior Pose |
+| `rogue_skater_hop` | `skater_hop` | Skater Hop |
+| `alchemist_hollow_body` | `hollow_body_hold` | Hollow Body Hold |
+
+The last row closes the one key/filename mismatch this page has been carrying since §2: the
+`assetMap` key was `alchemist_hollow_body_hold`, the file was `alchemist_hollow_body`. Both are
+`hollow_body_hold` now, and the test that guarded the divergence has nothing left to guard.
+
+**Generated** with `gemini-3.1-flash-image-preview`, 14 prompts appended to
+`scripts/generate-exercises.py`. To redo one, delete it first — the script skips any slug that
+already has a file, now checked on **both** `.jpg` and `.png` since the folder is mid-conversion:
+
+```bash
+rm assets/images/exercises/lunge.jpg
+MAMMOUTH_API_KEY=sk-… python3 scripts/generate-exercises.py lunge
+magick montage assets/images/exercises/*.jpg -tile 4x4 -geometry 300x225+3+3 /tmp/sheet.jpg
+```
+
+**Reviewed.** Corner-pixel check passed on all 14 (darkest `srgb(0,2,1)`, lightest
+`srgb(6,14,27)` — no white-background failures), no baked-in captions or UI chrome, all
+`1024x768`, 46–102 KB each. One reject caught by looking, exactly the case this page keeps
+warning about: the first `lunge` handed the hero a war hammer and read as a charge, not a
+lunge. Its prompt now says empty hands, no weapon, static hold — regenerated and correct.
+
+**Output is JPG now**, not PNG: ~75 KB a frame against ~850 KB for the same image, so the 14
+poses cost less than one of the `0010` PNGs still in the folder.
+
+**Deleted in the same pass** (6 files, ~700 KB): `goblin_squat`, `dragon_pushup`,
+`iron_grip_pullup`, `stone_guardian_plank` and `wall_sentinel_hold` — merged into Squat,
+Push-ups, Pull-ups, Plank and Wall Sit, which keep their own `0001` art — plus
+`barbarian_overhead_press`, orphaned since `0018` deleted that exercise, and the byte-identical
+`ranger_single_leg_deadlift_1` duplicate flagged in §3.
 
 ---
 

@@ -2,6 +2,11 @@
 
 > **Generated**: January 5, 2026
 > **Purpose**: Production-ready content for BATI v3
+> **Historical, as of 2026-07-28**: the 20 exercise names below shipped as
+> `drizzle/0006_content_expansion.sql` and were renamed to the movements' official names by
+> `drizzle/0023_official_exercise_names.sql` — Goblin Squat became Squat (merged into the `0001`
+> row it duplicated), Thunder Jumping Jack became Jumping Jack, and so on. The migrations are
+> the source of truth for the catalogue; the quest and adventure content here is unaffected.
 
 ---
 

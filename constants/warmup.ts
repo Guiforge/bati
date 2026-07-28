@@ -21,10 +21,10 @@ export type WarmupStep = {
 };
 
 export const WARMUP_SEQUENCE: WarmupStep[] = [
-  { exerciseName: "Thunder Jumping Jack", seconds: 30 }, // raise temperature and heart rate
+  { exerciseName: "Jumping Jack", seconds: 30 }, // raise temperature and heart rate
   { exerciseName: "Glute Bridge", seconds: 30 }, // wake the hips before anything loads them
   { exerciseName: "Bear Crawl", seconds: 30 }, // shoulders, core, coordination
-  { exerciseName: "Druid's Cobra Stretch", seconds: 30 }, // open the front, extend the spine
+  { exerciseName: "Cobra Stretch", seconds: 30 }, // open the front, extend the spine
 ];
 
 export const WARMUP_TOTAL_SECONDS = WARMUP_SEQUENCE.reduce((sum, step) => sum + step.seconds, 0);

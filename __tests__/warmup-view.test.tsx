@@ -4,6 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { WarmupView } from "@/components/session/WarmupView";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
+import { listExercises } from "@/db/exercises";
 import { useSessionStore } from "@/stores/session";
 import config from "@/tamagui.config";
 
@@ -30,8 +31,9 @@ jest.mock("@/i18n", () => ({ __esModule: true, default: { changeLanguage: jest.f
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 
 async function mountWarmup() {
+  let result!: ReturnType<typeof render>;
   await act(async () => {
-    render(
+    result = render(
       <SafeAreaProvider
         initialMetrics={{
           frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -44,6 +46,7 @@ async function mountWarmup() {
       </SafeAreaProvider>,
     );
   });
+  return result;
 }
 
 describe("WarmupView", () => {
@@ -75,5 +78,23 @@ describe("WarmupView", () => {
     });
 
     expect(useSessionStore.getState().warmupIndex).toBe(1);
+  });
+
+  it("shows the movement's description, so the hero knows what to do", async () => {
+    (listExercises as jest.Mock).mockResolvedValueOnce([
+      {
+        enName: WARMUP_SEQUENCE[0].exerciseName,
+        frName: "Jumping Jack",
+        enDescription: "Jump while spreading your legs and raising your arms overhead.",
+        frDescription: "Sautez en écartant les jambes et en levant les bras.",
+        imagePath: "unknown",
+      },
+    ]);
+
+    const { getByText } = await mountWarmup();
+
+    expect(
+      getByText("Jump while spreading your legs and raising your arms overhead."),
+    ).toBeTruthy();
   });
 });

@@ -65,6 +65,11 @@ export function WarmupView() {
 
   const exercise = catalogue.find((e) => e.enName === step.exerciseName);
   const label = nameOf(step.exerciseName);
+  const description = exercise
+    ? language === "fr"
+      ? exercise.frDescription
+      : exercise.enDescription
+    : undefined;
 
   const nextStep = WARMUP_SEQUENCE[warmupIndex + 1];
   const nextExercise = nextStep
@@ -105,6 +110,18 @@ export function WarmupView() {
         <H3 color="$text" fontWeight="700" style={{ textAlign: "center" }}>
           {label}
         </H3>
+
+        {description ? (
+          <Text
+            fontSize={14}
+            color="$textSecondary"
+            lineHeight={20}
+            numberOfLines={3}
+            style={{ textAlign: "center" }}
+          >
+            {description}
+          </Text>
+        ) : null}
 
         <H1 color="$primary" fontSize={64} fontWeight="700">
           {formatTime(Math.max(0, remainingSeconds))}

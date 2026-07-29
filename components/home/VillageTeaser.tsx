@@ -18,7 +18,7 @@ import { useSettingsStore } from "@/stores/settings";
 export function VillageTeaser() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const [tier, setTier] = useState<VillageTier | null>(null);
   const [level, setLevel] = useState(0);
 

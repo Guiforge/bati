@@ -49,7 +49,7 @@ export default function QuestEditor() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
 
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const questId = useMemo(() => {

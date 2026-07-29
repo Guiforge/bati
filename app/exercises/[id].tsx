@@ -117,7 +117,7 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
  * and a hero who wants to try the next step tonight can (roadmap §15, the progression ladder).
  */
 function NextStepCard({ progression }: { progression: NextProgression }) {
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
 
   const name = language === "fr" ? progression.next.frName : progression.next.enName;
@@ -146,7 +146,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
 }
 
 function ExerciseContent({ exercise }: { exercise: Exercise }) {
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
 
   const title = language === "fr" ? exercise.frName : exercise.enName;

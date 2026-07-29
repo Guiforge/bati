@@ -36,7 +36,7 @@ export function VictoryView() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
   const { success, selection } = useHaptics();
   const { playSound } = useSound();

@@ -9,7 +9,7 @@ import { useSettingsStore } from "@/stores/settings";
 
 export function UserLevelCard() {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
 
   useEffect(() => {

@@ -166,7 +166,7 @@ function calculateStreakDates(workoutDates: Set<string>): Set<string> {
 
 export function MonthlyCalendarCard() {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
 
   const [monthData, setMonthData] = useState<MonthData | null>(null);
   const [currentMonth, setCurrentMonth] = useState(() => {

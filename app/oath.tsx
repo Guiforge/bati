@@ -135,7 +135,7 @@ export default function OathScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const isFr = language === "fr";
 
   const [existing, setExisting] = useState<OathProgress | null>(null);

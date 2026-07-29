@@ -52,8 +52,10 @@ function computeAt(now: number, timerStartTimestamp: number, inputs: TimerInputs
     elapsedSeconds: Math.floor(elapsed),
     remainingSeconds: overtimeAllowed ? Math.ceil(remaining) : Math.max(0, Math.ceil(remaining)),
     isOvertime: overtimeAllowed && remaining < 0,
-    // Cap at 200% for display.
-    progress: timerDuration > 0 ? Math.min(2, elapsed / timerDuration) : 0,
+    // Cap at 200% for display. Derived from the floored second, not raw elapsed: a continuous
+    // float made every 100 ms tick a "new" state, defeating isSameTimerState's bail-out and
+    // re-rendering the whole session screen at 10 Hz.
+    progress: timerDuration > 0 ? Math.min(2, Math.floor(elapsed) / timerDuration) : 0,
   };
 }
 

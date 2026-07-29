@@ -21,8 +21,8 @@ export function VillageScene() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { language } = useSettingsStore();
-  const { villageName } = useUserStore();
+  const language = useSettingsStore((s) => s.language);
+  const villageName = useUserStore((s) => s.villageName);
 
   const [scene, setScene] = useState<VillageSceneData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

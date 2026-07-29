@@ -23,7 +23,7 @@ export default function HeroSetup() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const { setVillageName } = useUserStore();
+  const setVillageName = useUserStore((s) => s.setVillageName);
 
   const [name, setName] = useState("");
   const [isFocused, setIsFocused] = useState(false);

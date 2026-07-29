@@ -30,7 +30,7 @@ type ChartDataPoint = {
 
 export function ProgressionChart({ questId, limit = 10, title }: ProgressionChartProps) {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const { width } = useWindowDimensions();
 
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
@@ -223,8 +223,6 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
               transform: [{ rotate: "-45deg" }],
             }}
             hideRules
-            isAnimated
-            animationDuration={500}
           />
         </YStack>
 

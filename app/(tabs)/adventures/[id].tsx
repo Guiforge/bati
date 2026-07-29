@@ -2,7 +2,7 @@ import { ChevronLeft, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
@@ -91,19 +91,15 @@ function StepStatusTag({ status }: { status: "locked" | "active" | "completed" }
   return <Tag label={label} tone={tone} />;
 }
 
-function AdventureStepRow({
+const AdventureStepRow = memo(function AdventureStepRow({
   step,
-  run,
+  status,
 }: {
   step: AdventureStepTemplate;
-  run: ActiveAdventureRun | null;
+  status: "locked" | "active" | "completed";
 }) {
   const { t } = useTranslation();
-  const { language: langKey } = useSettingsStore();
-
-  const rs = run?.steps.find((x) => x.stepIndex === step.stepIndex);
-  const status: "locked" | "active" | "completed" =
-    rs?.status ?? (step.stepIndex === 0 ? "active" : "locked");
+  const langKey = useSettingsStore((s) => s.language);
 
   const stepTitle = langKey === "fr" ? step.quest.frTitle : step.quest.enTitle;
 
@@ -148,7 +144,7 @@ function AdventureStepRow({
       <StepStatusTag status={status} />
     </XStack>
   );
-}
+});
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex screen component, refactor planned
 export default function AdventureDetailsScreen() {
@@ -156,7 +152,7 @@ export default function AdventureDetailsScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const { showError } = useToast();
   const reducedMotion = useReducedMotion();
   const [isStarting, setIsStarting] = useState(false);
@@ -259,6 +255,13 @@ export default function AdventureDetailsScreen() {
 
   const effectiveSteps = details?.steps ?? [];
   const activeStep = run?.activeStep ?? null;
+
+  // One Map instead of a run.steps.find() per row (O(n²) over the step list).
+  const stepStatusByIndex = useMemo(() => {
+    const byIndex = new Map<number, "locked" | "active" | "completed">();
+    for (const s of run?.steps ?? []) byIndex.set(s.stepIndex, s.status);
+    return byIndex;
+  }, [run]);
   const isBoss = details?.adventure.kind === "boss";
   const heroImage = resolveImage(details?.adventure.imagePath, getAdventureAsset);
 
@@ -461,7 +464,14 @@ export default function AdventureDetailsScreen() {
 
                 <YStack gap="$2">
                   {effectiveSteps.map((s) => (
-                    <AdventureStepRow key={s.stepIndex} step={s} run={run} />
+                    <AdventureStepRow
+                      key={s.stepIndex}
+                      step={s}
+                      status={
+                        stepStatusByIndex.get(s.stepIndex) ??
+                        (s.stepIndex === 0 ? "active" : "locked")
+                      }
+                    />
                   ))}
                 </YStack>
               </YStack>

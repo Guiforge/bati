@@ -23,7 +23,7 @@ export type SmartActionConfig = {
 export function useSmartAction() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const [config, setConfig] = useState<SmartActionConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -30,7 +30,7 @@ export default function SessionDetailScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
 
   const sessionId = parseId(params.id);
 

@@ -118,7 +118,7 @@ function StatCard({
 
 export function JournalStats({ sessions }: JournalStatsProps) {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const { width } = useWindowDimensions();
 
   const stats = useMemo(() => {
@@ -183,26 +183,33 @@ export function JournalStats({ sessions }: JournalStatsProps) {
   const weekdayData = useMemo(() => getWeekdayStats(sessions, language), [sessions, language]);
   const last7Days = useMemo(() => getLast7DaysData(sessions, language), [sessions, language]);
 
+  // Memoized like weekdayData/last7Days above: gifted-charts rebuilds (and re-animates)
+  // its whole SVG tree whenever the data array identity changes.
+  const weekdayChartData = useMemo(
+    () =>
+      weekdayData.map((d) => ({
+        value: d.count,
+        label: d.day,
+        frontColor: d.count > 0 ? "#0D33F2" : "#2A3360",
+      })),
+    [weekdayData],
+  );
+
+  const lineChartData = useMemo(
+    () =>
+      last7Days.map((d) => ({
+        value: d.minutes,
+        label: d.label,
+        dataPointText: d.minutes > 0 ? String(d.minutes) : "",
+      })),
+    [last7Days],
+  );
+
   if (!stats || sessions.length === 0) {
     return null;
   }
 
   const chartWidth = Math.min(width - 80, 300);
-
-  // Prepare weekday chart data
-  const weekdayChartData = weekdayData.map((d) => ({
-    value: d.count,
-    label: d.day,
-    frontColor: d.count > 0 ? "#0D33F2" : "#2A3360",
-  }));
-
-  // Prepare last 7 days line chart data
-  const lineChartData = last7Days.map((d) => ({
-    value: d.minutes,
-    label: d.label,
-    dataPointText: d.minutes > 0 ? String(d.minutes) : "",
-  }));
-
   const maxWeekdayCount = Math.max(...weekdayData.map((d) => d.count), 1);
   const maxDailyMinutes = Math.max(...last7Days.map((d) => d.minutes), 1);
 
@@ -357,8 +364,6 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               yAxisTextStyle={{ color: "#909ACB", fontSize: 10 }}
               xAxisLabelTextStyle={{ color: "#909ACB", fontSize: 9 }}
               hideRules
-              isAnimated
-              animationDuration={500}
             />
           </YStack>
         </YStack>
@@ -395,8 +400,6 @@ export function JournalStats({ sessions }: JournalStatsProps) {
                 fontWeight: "600",
               }}
               hideRules
-              isAnimated
-              animationDuration={500}
             />
           </YStack>
         </YStack>

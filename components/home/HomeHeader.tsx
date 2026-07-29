@@ -16,7 +16,8 @@ const FLAME_SIZES: Record<number, number> = { 0: 18, 1: 18, 2: 22, 3: 26, 4: 30,
 export function HomeHeader() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { avatarId, language } = useSettingsStore();
+  const avatarId = useSettingsStore((s) => s.avatarId);
+  const language = useSettingsStore((s) => s.language);
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
   const [streak, setStreak] = useState<StreakInfo | null>(null);
 

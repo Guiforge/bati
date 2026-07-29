@@ -21,7 +21,7 @@ const MUSCLE_COLORS: Record<string, ColorTokens> = {
 export function SuggestedQuestsCard() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const [quests, setQuests] = useState<SuggestedQuest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

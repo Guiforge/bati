@@ -1,7 +1,7 @@
 import { TrendingDown, TrendingUp } from "@tamagui/lucide-icons";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
@@ -17,7 +17,7 @@ type ViewMode = "weekly" | "monthly";
 
 function TrendsCardComponent() {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
 
   const [viewMode, setViewMode] = useState<ViewMode>("weekly");
   const [weeklyTrends, setWeeklyTrends] = useState<WeeklyTrend[]>([]);
@@ -50,18 +50,26 @@ function TrendsCardComponent() {
   // trained would otherwise be shown eight blank bars instead of "no data yet".
   const hasData = currentData.some((d) => d.sessionCount > 0);
 
-  // Get max values for scaling the bars
-  const maxSessions = Math.max(1, ...currentData.map((d) => d.sessionCount));
-  const maxMinutes = Math.max(1, ...currentData.map((d) => d.totalMinutes));
-
-  const formatPeriodLabel = (item: WeeklyTrend | MonthlyTrend) => {
-    if ("weekKey" in item) {
-      // Weekly - show short date range
-      return format(item.weekStart, "d MMM", { locale: language === "fr" ? fr : undefined });
-    }
-    // Monthly
-    return format(item.monthStart, "MMM", { locale: language === "fr" ? fr : undefined });
-  };
+  // Bars precomputed once per data/language change — date-fns format() ran 16× per render
+  // and the slice was rebuilt twice.
+  const bars = useMemo(() => {
+    const formatPeriodLabel = (item: WeeklyTrend | MonthlyTrend) => {
+      if ("weekKey" in item) {
+        // Weekly - show short date range
+        return format(item.weekStart, "d MMM", { locale: language === "fr" ? fr : undefined });
+      }
+      // Monthly
+      return format(item.monthStart, "MMM", { locale: language === "fr" ? fr : undefined });
+    };
+    const maxSessions = Math.max(1, ...currentData.map((d) => d.sessionCount));
+    const maxMinutes = Math.max(1, ...currentData.map((d) => d.totalMinutes));
+    return currentData.slice(-8).map((item) => ({
+      key: "weekKey" in item ? item.weekKey : item.monthKey,
+      label: formatPeriodLabel(item),
+      sessionHeight: (item.sessionCount / maxSessions) * 100,
+      minutesHeight: (item.totalMinutes / maxMinutes) * 100,
+    }));
+  }, [currentData, language]);
 
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Trend badge requires multiple conditional renderings
   const renderTrendBadge = (analysis: TrendAnalysis | null) => {
@@ -196,29 +204,21 @@ function TrendsCardComponent() {
                 {t("journal.trends_sessions")}
               </Text>
               <XStack gap="$1" items="flex-end" height={60}>
-                {currentData.slice(-8).map((item) => {
-                  const height = (item.sessionCount / maxSessions) * 100;
-                  return (
+                {bars.map((bar) => (
+                  <YStack key={bar.key} flex={1} items="center" gap="$1">
                     <YStack
-                      key={"weekKey" in item ? item.weekKey : item.monthKey}
-                      flex={1}
-                      items="center"
-                      gap="$1"
-                    >
-                      <YStack
-                        width="100%"
-                        height={`${Math.max(4, height)}%`}
-                        bg="$primary"
-                        rounded="$2"
-                        borderWidth={1}
-                        borderColor="$borderStrong"
-                      />
-                      <Text fontSize={9} color="$text" opacity={0.5}>
-                        {formatPeriodLabel(item)}
-                      </Text>
-                    </YStack>
-                  );
-                })}
+                      width="100%"
+                      height={`${Math.max(4, bar.sessionHeight)}%`}
+                      bg="$primary"
+                      rounded="$2"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
+                    />
+                    <Text fontSize={9} color="$text" opacity={0.5}>
+                      {bar.label}
+                    </Text>
+                  </YStack>
+                ))}
               </XStack>
             </YStack>
 
@@ -228,29 +228,21 @@ function TrendsCardComponent() {
                 {t("journal.trends_minutes")}
               </Text>
               <XStack gap="$1" items="flex-end" height={60}>
-                {currentData.slice(-8).map((item) => {
-                  const height = (item.totalMinutes / maxMinutes) * 100;
-                  return (
+                {bars.map((bar) => (
+                  <YStack key={bar.key} flex={1} items="center" gap="$1">
                     <YStack
-                      key={"weekKey" in item ? item.weekKey : item.monthKey}
-                      flex={1}
-                      items="center"
-                      gap="$1"
-                    >
-                      <YStack
-                        width="100%"
-                        height={`${Math.max(4, height)}%`}
-                        bg="$secondary"
-                        rounded="$2"
-                        borderWidth={1}
-                        borderColor="$borderStrong"
-                      />
-                      <Text fontSize={9} color="$text" opacity={0.5}>
-                        {formatPeriodLabel(item)}
-                      </Text>
-                    </YStack>
-                  );
-                })}
+                      width="100%"
+                      height={`${Math.max(4, bar.minutesHeight)}%`}
+                      bg="$secondary"
+                      rounded="$2"
+                      borderWidth={1}
+                      borderColor="$borderStrong"
+                    />
+                    <Text fontSize={9} color="$text" opacity={0.5}>
+                      {bar.label}
+                    </Text>
+                  </YStack>
+                ))}
               </XStack>
             </YStack>
           </>

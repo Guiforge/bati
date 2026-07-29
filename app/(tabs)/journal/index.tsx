@@ -68,7 +68,7 @@ export default function JournalScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
 
   const [history, setHistory] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,11 +132,11 @@ export default function JournalScreen() {
     }, [loadHistory]),
   );
 
+  const openSession = useCallback((id: number) => router.push(`/journal/${id}` as never), [router]);
+
   const renderHistoryItem = useCallback(
-    ({ item }: { item: JournalEntry }) => (
-      <SessionCard entry={item} onPress={() => router.push(`/journal/${item.id}` as never)} />
-    ),
-    [router],
+    ({ item }: { item: JournalEntry }) => <SessionCard entry={item} onPressEntry={openSession} />,
+    [openSession],
   );
 
   return (

@@ -36,13 +36,13 @@ const MyTheme = {
 };
 
 export default function RootLayout() {
-  const {
-    hasFinishedOnboarding,
-    isLoaded: userLoaded,
-    loadFromDatabase: loadUserFromDatabase,
-  } = useUserStore();
-  const { isLoaded: settingsLoaded, loadFromDatabase: loadSettingsFromDatabase } =
-    useSettingsStore();
+  // Selector subscriptions: the root layout re-renders the entire tree, so it must not
+  // subscribe to whole stores (any settings write would re-render every screen).
+  const hasFinishedOnboarding = useUserStore((s) => s.hasFinishedOnboarding);
+  const userLoaded = useUserStore((s) => s.isLoaded);
+  const loadUserFromDatabase = useUserStore((s) => s.loadFromDatabase);
+  const settingsLoaded = useSettingsStore((s) => s.isLoaded);
+  const loadSettingsFromDatabase = useSettingsStore((s) => s.loadFromDatabase);
 
   const segments = useSegments();
   const router = useRouter();

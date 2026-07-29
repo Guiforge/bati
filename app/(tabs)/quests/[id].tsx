@@ -107,7 +107,7 @@ export default function QuestDetails() {
     runStepId?: string;
   }>();
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const { startSession } = useSessionStore();
 
   const questId = useMemo(() => {
@@ -219,6 +219,28 @@ export default function QuestDetails() {
     updateConfig({ level: config.level });
   }, [config.level, updateConfig]);
 
+  // Everything below — the estimate, the XP preview, the session that gets started — reads the
+  // configured quest, so the numbers on screen are the numbers that will run. Memoized: this
+  // used to run in the render body, so any unrelated re-render rebuilt the whole quest object
+  // and re-ran the color/duration/XP pipeline.
+  const derived = useMemo(() => {
+    if (!state.quest) return null;
+    const quest = applyQuestConfig(state.quest, config);
+    const estimatedSeconds = estimateQuestSeconds(quest);
+    return {
+      quest,
+      questTitle: language === "fr" ? quest.frTitle : quest.enTitle,
+      questDesc: language === "fr" ? quest.frDescription : quest.enDescription,
+      questTokens: getQuestColorTokensFromQuest(quest),
+      estimatedSeconds,
+      estimate: formatDuration(estimatedSeconds, language),
+      xpReward: computeSessionXp({
+        durationSeconds: estimatedSeconds,
+        userLevel: level as unknown as DifficultyCode,
+      }),
+    };
+  }, [state.quest, config, language, level]);
+
   if (!questId) {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
@@ -232,21 +254,12 @@ export default function QuestDetails() {
     );
   }
 
-  // Everything below — the estimate, the XP preview, the session that gets started — reads the
-  // configured quest, so the numbers on screen are the numbers that will run.
-  const quest = state.quest ? applyQuestConfig(state.quest, config) : null;
-  const questTitle = quest ? (language === "fr" ? quest.frTitle : quest.enTitle) : "";
-  const questDesc = quest ? (language === "fr" ? quest.frDescription : quest.enDescription) : "";
-  const questTokens = quest ? getQuestColorTokensFromQuest(quest) : null;
-  const estimatedSeconds = quest ? estimateQuestSeconds(quest) : null;
-  const estimate = estimatedSeconds != null ? formatDuration(estimatedSeconds, language) : null;
-  const xpReward =
-    estimatedSeconds != null
-      ? computeSessionXp({
-          durationSeconds: estimatedSeconds,
-          userLevel: level as unknown as DifficultyCode,
-        })
-      : null;
+  const quest = derived?.quest ?? null;
+  const questTitle = derived?.questTitle ?? "";
+  const questDesc = derived?.questDesc ?? "";
+  const questTokens = derived?.questTokens ?? null;
+  const estimate = derived?.estimate ?? null;
+  const xpReward = derived?.xpReward ?? null;
 
   const proceedToSession = async () => {
     if (!quest) return;

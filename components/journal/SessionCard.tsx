@@ -1,4 +1,5 @@
 import { Calendar, Star, Trophy } from "@tamagui/lucide-icons";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
@@ -19,7 +20,9 @@ export interface JournalEntry {
 
 interface SessionCardProps {
   entry: JournalEntry;
-  onPress?: () => void;
+  // Takes the id instead of a closure so the list can pass one stable handler to every
+  // row and React.memo actually skips re-renders.
+  onPressEntry?: (id: number) => void;
 }
 
 const SESSION_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
@@ -30,9 +33,10 @@ const SESSION_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   minute: "2-digit",
 };
 
-export function SessionCard({ entry, onPress }: SessionCardProps) {
+export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: SessionCardProps) {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
+  const onPress = onPressEntry ? () => onPressEntry(entry.id) : undefined;
 
   const dateLabel = getDateTimeFormat(language, SESSION_DATE_OPTIONS).format(
     new Date(entry.performedAt),
@@ -105,4 +109,4 @@ export function SessionCard({ entry, onPress }: SessionCardProps) {
       </XStack>
     </Card>
   );
-}
+});

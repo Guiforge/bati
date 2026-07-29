@@ -27,7 +27,6 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import { computeSessionXp } from "@/db/xp";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
 
 function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
@@ -126,7 +125,6 @@ export default function AdventuresGallery() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
-  const reducedMotion = useReducedMotion();
 
   const [state, setState] = useState<LoadState>({
     status: "loading",
@@ -225,11 +223,11 @@ export default function AdventuresGallery() {
       return (
         <YStack px="$5">
           <Card
+            flat
             testID="adventures-adventure-card"
             bg={row.tokens.bg}
             p="$0"
             overflow="hidden"
-            animation={reducedMotion ? undefined : "quick"}
             onPress={() => router.push(`/adventures/${item.id}` as never)}
           >
             {cover ? (
@@ -290,7 +288,7 @@ export default function AdventuresGallery() {
         </YStack>
       );
     },
-    [language, reducedMotion, router, t],
+    [language, router, t],
   );
 
   return (

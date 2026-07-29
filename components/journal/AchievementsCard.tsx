@@ -1,5 +1,5 @@
 import { Award, Lock } from "@tamagui/lucide-icons";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
@@ -15,7 +15,7 @@ type CategoryFilter = "all" | "sessions" | "streaks" | "xp" | "special";
 
 export function AchievementsCard() {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const [achievements, setAchievements] = useState<AchievementProgress[]>([]);
   const [stats, setStats] = useState({ total: 0, unlocked: 0, percentage: 0 });
   const [filter, setFilter] = useState<CategoryFilter>("all");
@@ -40,23 +40,29 @@ export function AchievementsCard() {
     loadAchievements();
   }, [loadAchievements]);
 
-  const filteredAchievements =
-    filter === "all" ? achievements : achievements.filter((a) => a.definition.category === filter);
-
   // Sort: unlocked first, then by progress
-  const sortedAchievements = [...filteredAchievements].sort((a, b) => {
-    if (a.isUnlocked && !b.isUnlocked) return -1;
-    if (!a.isUnlocked && b.isUnlocked) return 1;
-    return b.progress - a.progress;
-  });
+  const sortedAchievements = useMemo(() => {
+    const filtered =
+      filter === "all"
+        ? achievements
+        : achievements.filter((a) => a.definition.category === filter);
+    return [...filtered].sort((a, b) => {
+      if (a.isUnlocked && !b.isUnlocked) return -1;
+      if (!a.isUnlocked && b.isUnlocked) return 1;
+      return b.progress - a.progress;
+    });
+  }, [achievements, filter]);
 
-  const categories: { key: CategoryFilter; label: string }[] = [
-    { key: "all", label: t("achievements.filter_all") },
-    { key: "sessions", label: t("achievements.filter_sessions") },
-    { key: "streaks", label: t("achievements.filter_streaks") },
-    { key: "xp", label: t("achievements.filter_xp") },
-    { key: "special", label: t("achievements.filter_special") },
-  ];
+  const categories: { key: CategoryFilter; label: string }[] = useMemo(
+    () => [
+      { key: "all", label: t("achievements.filter_all") },
+      { key: "sessions", label: t("achievements.filter_sessions") },
+      { key: "streaks", label: t("achievements.filter_streaks") },
+      { key: "xp", label: t("achievements.filter_xp") },
+      { key: "special", label: t("achievements.filter_special") },
+    ],
+    [t],
+  );
 
   if (loading) {
     return (

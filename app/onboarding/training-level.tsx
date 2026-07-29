@@ -28,7 +28,7 @@ export default function TrainingLevelStep() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { selection, success } = useHaptics();
-  const { setHasFinishedOnboarding } = useUserStore();
+  const setHasFinishedOnboarding = useUserStore((s) => s.setHasFinishedOnboarding);
 
   const [selected, setSelected] = useState<TrainingLevel | null>(null);
 

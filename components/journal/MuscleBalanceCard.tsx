@@ -17,7 +17,7 @@ const MUSCLE_COLORS: Record<string, ColorTokens> = {
 
 export function MuscleBalanceCard() {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const [balance, setBalance] = useState<MuscleBalance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

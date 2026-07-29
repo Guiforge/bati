@@ -55,7 +55,7 @@ const AnimatedView = Animated.View;
 
 export function NewRecordsBadge({ records }: Props) {
   const { t } = useTranslation();
-  const { language } = useSettingsStore();
+  const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
 

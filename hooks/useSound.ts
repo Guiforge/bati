@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { useSettingsStore } from "@/stores/settings";
 
 export function useSound() {
-  const { soundEnabled } = useSettingsStore();
+  const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const playerRef = useRef<AudioPlayer | null>(null);
 
   function playSound(soundFile: AudioSource | null | undefined) {

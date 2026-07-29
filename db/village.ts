@@ -153,6 +153,8 @@ export type VillageBuilding = {
   enName: string;
   frName: string;
   unlockCondition: string;
+  /** The 6 muscle buildings have no icon of their own; they borrow that muscle's sport sprite. */
+  relatedMuscle: MuscleCode | null;
 };
 
 /** Level 1..5 from the shared XP ladder in schema.ts. Caller decides what "xp" means. */
@@ -254,6 +256,7 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
     enName: BUILDING_LABELS[code].en,
     frName: BUILDING_LABELS[code].fr,
     unlockCondition: buildingDefinitions[code].unlockCondition,
+    relatedMuscle: buildingDefinitions[code].relatedMuscle,
   }));
 }
 

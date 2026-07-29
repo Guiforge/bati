@@ -12,7 +12,10 @@
     "title": "Succès"
   },
   "adventures": {
+    "completed_times_one": "Terminée une fois",
+    "completed_times_other": "Terminée {{count}} fois",
     "continue": "Continuer",
+    "cta_replay": "Recommencer l’aventure",
     "details_title": "Aventure",
     "empty_subtitle": "Reviens bientôt — le village prépare des aventures.",
     "empty_title": "Aucune aventure pour l'instant",
@@ -33,6 +36,7 @@
     "step_completed": "Terminée",
     "step_label": "Étape {{count}}",
     "step_locked": "Verrouillée",
+    "step_progress": "Étape {{current}}/{{total}}",
     "steps": "{{count}} étapes",
     "steps_title": "Étapes de la campagne",
     "weeks_one": "≈ {{count}} semaine",
@@ -633,6 +637,8 @@
     "dominant_sport": "Focus d'entraînement : {{muscle}}",
     "banners_title": "Bannières",
     "buildings_title": "Bâtiments",
+    "built_title": "Bâti",
+    "to_build_title": "À bâtir",
     "trophies_title": "Trophées",
     "flame_1": "Étincelle",
     "flame_2": "Braise",

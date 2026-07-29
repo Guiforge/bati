@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
 import { listQuestTemplates, type QuestTemplate } from "./quests";
 import type { DifficultyCode } from "./schema";
@@ -416,6 +416,17 @@ export async function getAnyActiveAdventureRun(): Promise<{
   if (!activeRun) return null;
 
   return { adventureId: first.adventureId, activeRun };
+}
+
+/** How many times each adventure has been completed — feeds the gallery's replay stars. */
+export async function getFinishedRunCountsByAdventure(): Promise<Map<number, number>> {
+  const rows = await db
+    .select({ adventureId: adventureRuns.adventureId, finished: count() })
+    .from(adventureRuns)
+    .where(eq(adventureRuns.status, "finished"))
+    .groupBy(adventureRuns.adventureId);
+
+  return new Map(rows.map((r) => [r.adventureId, Number(r.finished)]));
 }
 
 async function insertWithFallback(input: {

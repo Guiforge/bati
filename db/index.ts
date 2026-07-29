@@ -32,6 +32,7 @@ export {
   getAdventureDetails,
   getAdventureIdForRunStep,
   getAnyActiveAdventureRun,
+  getFinishedRunCountsByAdventure,
   listAdventures,
   setAdventureRunDifficultyOverride,
   startAdventureRun,

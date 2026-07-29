@@ -59,4 +59,29 @@ describe("db/adventures", () => {
     expect(boss.author).toBe("Admin");
     expect(boss.stepsCount).toBeGreaterThanOrEqual(2);
   });
+
+  test("getFinishedRunCountsByAdventure counts only finished runs, per adventure", async () => {
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+
+    const all = await adventures.listAdventures();
+    const [first, second] = all;
+    expect(first).toBeTruthy();
+    expect(second).toBeTruthy();
+
+    expect((await adventures.getFinishedRunCountsByAdventure()).size).toBe(0);
+
+    t.sqlite.exec(
+      `INSERT INTO adventure_runs (adventureId, status) VALUES
+        (${first.id}, 'finished'),
+        (${first.id}, 'finished'),
+        (${second.id}, 'finished'),
+        (${second.id}, 'active')`,
+    );
+
+    const counts = await adventures.getFinishedRunCountsByAdventure();
+    expect(counts.get(first.id)).toBe(2);
+    expect(counts.get(second.id)).toBe(1);
+
+    t.sqlite.exec(`DELETE FROM adventure_runs`);
+  });
 });

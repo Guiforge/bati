@@ -9,6 +9,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
+import { starsFor } from "@/components/adventures/replayStars";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -23,6 +24,7 @@ import {
   estimateQuestTemplateSeconds,
   getActiveAdventureRun,
   getAdventureDetails,
+  getFinishedRunCountsByAdventure,
   getRecentSessionHistory,
   listExercises,
   startAdventureRun,
@@ -156,6 +158,7 @@ export default function AdventureDetailsScreen() {
   const { showError } = useToast();
   const reducedMotion = useReducedMotion();
   const [isStarting, setIsStarting] = useState(false);
+  const [finishedCount, setFinishedCount] = useState(0);
 
   const adventureId = useMemo(() => {
     const raw = params.id;
@@ -177,14 +180,16 @@ export default function AdventureDetailsScreen() {
       setState((s) => ({ ...s, status: "loading" }));
 
       try {
-        const [details, activeRun, exercises, history] = await Promise.all([
+        const [details, activeRun, exercises, history, finishedCounts] = await Promise.all([
           getAdventureDetails(id),
           getActiveAdventureRun(id),
           listExercises(),
           getRecentSessionHistory(10),
+          getFinishedRunCountsByAdventure(),
         ]);
 
         if (isStale()) return;
+        setFinishedCount(finishedCounts.get(id) ?? 0);
 
         if (!details) {
           setState({
@@ -413,9 +418,21 @@ export default function AdventureDetailsScreen() {
               ) : null}
 
               <YStack gap="$2" p="$4">
-                <H2 color="$text" fontWeight="700" fontSize={26}>
-                  {title}
-                </H2>
+                <XStack items="center" gap="$3">
+                  <H2 flex={1} color="$text" fontWeight="700" fontSize={26}>
+                    {title}
+                  </H2>
+                  {starsFor(finishedCount) ? (
+                    <Text
+                      fontSize={16}
+                      fontWeight="700"
+                      color="$resourceGold"
+                      accessibilityLabel={t("adventures.completed_times", { count: finishedCount })}
+                    >
+                      {starsFor(finishedCount)}
+                    </Text>
+                  ) : null}
+                </XStack>
 
                 {isBoss ? (
                   <XStack gap="$2" flexWrap="wrap">
@@ -513,7 +530,9 @@ export default function AdventureDetailsScreen() {
                   ? t("adventures.fight_boss")
                   : run?.activeStep
                     ? t("adventures.continue")
-                    : t("adventures.start")}
+                    : finishedCount > 0
+                      ? t("adventures.cta_replay")
+                      : t("adventures.start")}
             </Text>
           </AppButton>
         </YStack>

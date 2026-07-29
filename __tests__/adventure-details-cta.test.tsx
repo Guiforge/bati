@@ -58,6 +58,7 @@ jest.mock("@/db", () => ({
     steps: [mockStep(0), mockStep(1)],
   }),
   getActiveAdventureRun: jest.fn().mockResolvedValue(null),
+  getFinishedRunCountsByAdventure: jest.fn().mockResolvedValue(new Map()),
   listExercises: jest.fn().mockResolvedValue([]),
   getRecentSessionHistory: jest.fn().mockResolvedValue([]),
   startAdventureRun: jest.fn(),
@@ -75,4 +76,19 @@ test("boss adventure CTA reads Start Adventure on step 1, not Fight Boss", async
 
   expect(await findByText("Start Adventure")).toBeVisible();
   expect(queryByText("Fight Boss")).toBeNull();
+});
+
+test("a completed adventure offers a replay and wears its stars", async () => {
+  const db = require("@/db") as { getFinishedRunCountsByAdventure: jest.Mock };
+  db.getFinishedRunCountsByAdventure.mockResolvedValue(new Map([[1, 2]]));
+
+  const { findByText, queryByText } = await render(
+    <TamaguiProvider config={config}>
+      <AdventureDetailsScreen />
+    </TamaguiProvider>,
+  );
+
+  expect(await findByText("Replay Adventure")).toBeVisible();
+  expect(await findByText("★★")).toBeVisible();
+  expect(queryByText("Start Adventure")).toBeNull();
 });

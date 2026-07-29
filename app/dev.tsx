@@ -18,6 +18,12 @@ import {
   startAdventureRun,
 } from "@/db";
 import { getOrCreateBossFight } from "@/db/bossFights";
+import {
+  clearSeededHistory,
+  countSeededSessions,
+  maxVillage,
+  seedHistory,
+} from "@/db/devSeedHistory";
 import { useUserStore } from "@/stores/user";
 
 // Dev-only screen: no i18n, no polish. Reachable from Settings, and only under __DEV__.
@@ -49,12 +55,16 @@ export default function DevScreen() {
   const setHasFinishedOnboarding = useUserStore((s) => s.setHasFinishedOnboarding);
 
   const [xp, setXp] = useState(0);
+  const [seeded, setSeeded] = useState(0);
   const [status, setStatus] = useState("");
 
   const refresh = useCallback(() => {
     getTotalXp()
       .then(setXp)
       .catch(() => setStatus("XP read failed"));
+    countSeededSessions()
+      .then(setSeeded)
+      .catch(() => setStatus("Seed count read failed"));
   }, []);
 
   useEffect(refresh, [refresh]);
@@ -82,6 +92,34 @@ export default function DevScreen() {
       })
       .catch(() => setStatus("Reset failed"));
   }, [refresh]);
+
+  const runSeed = useCallback(
+    (years: number) => {
+      setStatus(`Seeding ${years}y…`);
+      seedHistory(years)
+        .then(({ sessions, exercises }) => {
+          setStatus(`Seeded ${sessions} sessions, ${exercises} exercise rows`);
+          refresh();
+        })
+        .catch((e: unknown) => setStatus(e instanceof Error ? e.message : "Seed failed"));
+    },
+    [refresh],
+  );
+
+  const clearSeed = useCallback(() => {
+    clearSeededHistory()
+      .then(() => {
+        setStatus("");
+        refresh();
+      })
+      .catch(() => setStatus("Clear failed"));
+  }, [refresh]);
+
+  const runMaxVillage = useCallback(() => {
+    maxVillage()
+      .then(() => setStatus("Village maxed out"))
+      .catch(() => setStatus("Village update failed"));
+  }, []);
 
   // Boss adventures are campaigns whose last step is the fight, so getting there normally means
   // playing every step before it. This completes them and drops straight into the final step.
@@ -179,6 +217,44 @@ export default function DevScreen() {
           </XStack>
           <Paragraph fontSize="$2" color="$textSecondary">
             Going down only removes fake XP: real sessions keep their levels.
+          </Paragraph>
+        </Card>
+
+        <Card p="$4" gap="$3">
+          <Text fontSize="$4" fontWeight="700" color="$text">
+            Fake history — {seeded} sessions
+          </Text>
+          <XStack gap="$2">
+            <AppButton fullWidth={false} onPress={() => runSeed(1)}>
+              1y
+            </AppButton>
+            <AppButton fullWidth={false} onPress={() => runSeed(3)}>
+              3y
+            </AppButton>
+            <AppButton fullWidth={false} onPress={() => runSeed(5)}>
+              5y
+            </AppButton>
+            <AppButton fullWidth={false} variant="secondary" onPress={clearSeed}>
+              Clear
+            </AppButton>
+          </XStack>
+          <Paragraph fontSize="$2" color="$textSecondary">
+            For profiling the real screens against a real row count. Sessions and exercises only,
+            built from the quest catalogue. Seeding again replaces the batch; Clear removes it and
+            leaves real history untouched. 5y is ~910 sessions and takes a moment.
+          </Paragraph>
+        </Card>
+
+        <Card p="$4" gap="$3">
+          <Text fontSize="$4" fontWeight="700" color="$text">
+            Village
+          </Text>
+          <AppButton variant="secondary" onPress={runMaxVillage}>
+            Max out village
+          </AppButton>
+          <Paragraph fontSize="$2" color="$textSecondary">
+            Every building unlocked at level 5, resources filled. Not undone by Clear — only a DB
+            reset (EXPO_PUBLIC_FORCE_DB_RESET=1) puts the village back.
           </Paragraph>
         </Card>
 

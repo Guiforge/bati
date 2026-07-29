@@ -1,4 +1,12 @@
-import { format, startOfMonth, startOfWeek, subMonths, subWeeks } from "date-fns";
+import {
+  eachMonthOfInterval,
+  eachWeekOfInterval,
+  format,
+  startOfMonth,
+  startOfWeek,
+  subMonths,
+  subWeeks,
+} from "date-fns";
 import { desc, eq, gte, sql } from "drizzle-orm";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
@@ -380,6 +388,14 @@ export async function getRecentSessionHistory(limit = 30): Promise<SessionSummar
 // Historical Trends
 // ------------------------------------------------------------
 
+/**
+ * ISO week-numbering year + ISO week, so the key sorts chronologically across a new year.
+ * `yyyy-'W'ww` mixed the calendar year with the local week number and stamped Monday
+ * 2025-12-29 as "2025-W01" — a key that sorts *before* "2025-W52", which put the bars in the
+ * wrong order and made "this week vs last week" compare the wrong two weeks every January.
+ */
+const WEEK_KEY_FORMAT = "RRRR-'W'II";
+
 export type WeeklyTrend = {
   weekKey: string; // ISO week format "2026-W01"
   weekStart: Date;
@@ -403,15 +419,8 @@ export type TrendAnalysis = {
   trend: "up" | "down" | "stable";
 };
 
-/**
- * Get weekly trends for the past N weeks
- */
-export async function getWeeklyTrends(weeks = 12): Promise<WeeklyTrend[]> {
-  const cutoff = startOfWeek(subWeeks(new Date(), weeks - 1), {
-    weekStartsOn: 1,
-  });
-
-  const rows = await db
+function selectTrendRows(cutoff: Date) {
+  return db
     .select({
       id: completedQuest.id,
       durationSeconds: completedQuest.durationSeconds,
@@ -420,81 +429,73 @@ export async function getWeeklyTrends(weeks = 12): Promise<WeeklyTrend[]> {
     })
     .from(completedQuest)
     .where(gte(completedQuest.performedAt, cutoff));
-
-  // Group by ISO week
-  const weekMap = new Map<string, WeeklyTrend>();
-
-  for (const row of rows) {
-    const date = row.performedAt;
-    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
-    const weekKey = format(weekStart, "yyyy-'W'ww");
-
-    if (!weekMap.has(weekKey)) {
-      weekMap.set(weekKey, {
-        weekKey,
-        weekStart,
-        sessionCount: 0,
-        totalMinutes: 0,
-        totalXp: 0,
-      });
-    }
-
-    const week = weekMap.get(weekKey);
-    if (week) {
-      week.sessionCount += 1;
-      week.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
-      week.totalXp += row.xpEarned ?? 0;
-    }
-  }
-
-  // Sort by week key and return
-  return Array.from(weekMap.values()).sort((a, b) => a.weekKey.localeCompare(b.weekKey));
 }
 
 /**
- * Get monthly trends for the past N months
+ * Get weekly trends for the past N weeks.
+ *
+ * Every week in the window is returned, including the empty ones. Only weeks that held a
+ * session used to come back, which made a blank week invisible on the chart and — worse — let
+ * `getTrendSummary` pick the last two *rows* as "this week" and "last week". After a fortnight
+ * off, the badge cheerfully compared two month-old weeks and reported no change.
  */
-export async function getMonthlyTrends(months = 6): Promise<MonthlyTrend[]> {
-  const cutoff = startOfMonth(subMonths(new Date(), months - 1));
+export async function getWeeklyTrends(weeks = 12): Promise<WeeklyTrend[]> {
+  const now = new Date();
+  const cutoff = startOfWeek(subWeeks(now, weeks - 1), { weekStartsOn: 1 });
 
-  const rows = await db
-    .select({
-      id: completedQuest.id,
-      durationSeconds: completedQuest.durationSeconds,
-      xpEarned: completedQuest.xpEarned,
-      performedAt: completedQuest.performedAt,
-    })
-    .from(completedQuest)
-    .where(gte(completedQuest.performedAt, cutoff));
-
-  // Group by month
-  const monthMap = new Map<string, MonthlyTrend>();
-
-  for (const row of rows) {
-    const date = row.performedAt;
-    const monthStart = startOfMonth(date);
-    const monthKey = format(monthStart, "yyyy-MM");
-
-    if (!monthMap.has(monthKey)) {
-      monthMap.set(monthKey, {
-        monthKey,
-        monthStart,
-        sessionCount: 0,
-        totalMinutes: 0,
-        totalXp: 0,
-      });
-    }
-
-    const month = monthMap.get(monthKey);
-    if (month) {
-      month.sessionCount += 1;
-      month.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
-      month.totalXp += row.xpEarned ?? 0;
-    }
+  const byWeek = new Map<string, WeeklyTrend>();
+  for (const weekStart of eachWeekOfInterval({ start: cutoff, end: now }, { weekStartsOn: 1 })) {
+    byWeek.set(format(weekStart, WEEK_KEY_FORMAT), {
+      weekKey: format(weekStart, WEEK_KEY_FORMAT),
+      weekStart,
+      sessionCount: 0,
+      totalMinutes: 0,
+      totalXp: 0,
+    });
   }
 
-  // Sort by month key and return
-  return Array.from(monthMap.values()).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+  for (const row of await selectTrendRows(cutoff)) {
+    const week = byWeek.get(
+      format(startOfWeek(row.performedAt, { weekStartsOn: 1 }), WEEK_KEY_FORMAT),
+    );
+    if (!week) continue; // A row from beyond the window's edge; the query is inclusive of it.
+
+    week.sessionCount += 1;
+    week.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
+    week.totalXp += row.xpEarned ?? 0;
+  }
+
+  return Array.from(byWeek.values()).sort((a, b) => a.weekKey.localeCompare(b.weekKey));
+}
+
+/**
+ * Get monthly trends for the past N months. Empty months are included, same reason as weeks.
+ */
+export async function getMonthlyTrends(months = 6): Promise<MonthlyTrend[]> {
+  const now = new Date();
+  const cutoff = startOfMonth(subMonths(now, months - 1));
+
+  const byMonth = new Map<string, MonthlyTrend>();
+  for (const monthStart of eachMonthOfInterval({ start: cutoff, end: now })) {
+    byMonth.set(format(monthStart, "yyyy-MM"), {
+      monthKey: format(monthStart, "yyyy-MM"),
+      monthStart,
+      sessionCount: 0,
+      totalMinutes: 0,
+      totalXp: 0,
+    });
+  }
+
+  for (const row of await selectTrendRows(cutoff)) {
+    const month = byMonth.get(format(startOfMonth(row.performedAt), "yyyy-MM"));
+    if (!month) continue;
+
+    month.sessionCount += 1;
+    month.totalMinutes += Math.round((row.durationSeconds ?? 0) / 60);
+    month.totalXp += row.xpEarned ?? 0;
+  }
+
+  return Array.from(byMonth.values()).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
 }
 
 /**

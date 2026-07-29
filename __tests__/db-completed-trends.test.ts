@@ -156,20 +156,51 @@ describe("db/completed — history and trends", () => {
         xpEarned: 10,
       });
 
-      const trends = await completed().getWeeklyTrends(12);
+      const worked = (await completed().getWeeklyTrends(12)).filter((w) => w.sessionCount > 0);
 
-      expect(trends.length).toBe(1);
-      expect(trends[0]).toMatchObject({ sessionCount: 2, totalMinutes: 20, totalXp: 20 });
+      expect(worked.length).toBe(1);
+      expect(worked[0]).toMatchObject({ sessionCount: 2, totalMinutes: 20, totalXp: 20 });
     });
 
     it("drops sessions older than the window", async () => {
       await bankSession({ performedAt: subWeeks(new Date(), 30) });
 
-      expect(await completed().getWeeklyTrends(4)).toEqual([]);
+      const trends = await completed().getWeeklyTrends(4);
+
+      expect(trends.every((w) => w.sessionCount === 0)).toBe(true);
     });
 
-    it("returns nothing for an empty journal", async () => {
-      expect(await completed().getWeeklyTrends(12)).toEqual([]);
+    // The window is the chart's x-axis: a week you skipped is a gap the hero should see, not a
+    // row that quietly vanishes and shifts every later bar one notch to the left.
+    it("returns the whole window, blank weeks included", async () => {
+      expect(await completed().getWeeklyTrends(12)).toHaveLength(12);
+
+      await bankSession({ performedAt: subWeeks(new Date(), 2) });
+
+      const trends = await completed().getWeeklyTrends(12);
+      expect(trends).toHaveLength(12);
+      expect(trends.filter((w) => w.sessionCount > 0)).toHaveLength(1);
+    });
+
+    /**
+     * Regression: the key was `yyyy-'W'ww`, the calendar year glued to the local week number.
+     * Monday 2025-12-29 came out as "2025-W01" — sorting before "2025-W52" — so every January
+     * the bars were served in the wrong order and the week-over-week read compared the wrong
+     * pair. ISO week-numbering year fixes both.
+     */
+    it("keeps the keys in order across a new year", async () => {
+      jest.useFakeTimers().setSystemTime(new Date("2026-01-08T12:00:00"));
+      try {
+        const trends = await completed().getWeeklyTrends(4);
+        const keys = trends.map((w) => w.weekKey);
+
+        expect(keys).toEqual([...keys].sort((a, b) => a.localeCompare(b)));
+        // The window straddles the new year, so it must contain weeks from both sides.
+        expect(keys.some((k) => k.startsWith("2025-"))).toBe(true);
+        expect(keys.some((k) => k.startsWith("2026-"))).toBe(true);
+      } finally {
+        jest.useRealTimers();
+      }
     });
   });
 
@@ -180,18 +211,23 @@ describe("db/completed — history and trends", () => {
       await bankSession({ performedAt: subMonths(now, 2), durationSeconds: 1200, xpEarned: 40 });
 
       const trends = await completed().getMonthlyTrends(6);
+      const worked = trends.filter((m) => m.sessionCount > 0);
 
-      expect(trends.length).toBe(2);
+      expect(trends).toHaveLength(6);
+      expect(worked).toHaveLength(2);
       expect(trends.map((m) => m.monthKey)).toEqual(
         [...trends.map((m) => m.monthKey)].sort((a, b) => a.localeCompare(b)),
       );
-      expect(trends.every((m) => m.totalMinutes === 20 && m.totalXp === 40)).toBe(true);
+      expect(worked.every((m) => m.totalMinutes === 20 && m.totalXp === 40)).toBe(true);
     });
 
     it("drops sessions older than the window", async () => {
       await bankSession({ performedAt: subMonths(new Date(), 12) });
 
-      expect(await completed().getMonthlyTrends(3)).toEqual([]);
+      const trends = await completed().getMonthlyTrends(3);
+
+      expect(trends).toHaveLength(3);
+      expect(trends.every((m) => m.sessionCount === 0)).toBe(true);
     });
   });
 
@@ -200,8 +236,8 @@ describe("db/completed — history and trends", () => {
     it("stays renderable with no training at all", async () => {
       const summary = await completed().getTrendSummary();
 
-      expect(summary.weeklyTrends).toEqual([]);
-      expect(summary.monthlyTrends).toEqual([]);
+      expect(summary.weeklyTrends.every((w) => w.sessionCount === 0)).toBe(true);
+      expect(summary.monthlyTrends.every((m) => m.sessionCount === 0)).toBe(true);
       expect(summary.sessionsAnalysis).toMatchObject({ trend: "stable", change: 0 });
       expect(summary.minutesAnalysis.currentPeriod).toBe(0);
       expect(summary.xpAnalysis.previousPeriod).toBe(0);
@@ -212,12 +248,33 @@ describe("db/completed — history and trends", () => {
 
       const summary = await completed().getTrendSummary();
 
-      expect(summary.weeklyTrends.length).toBe(1);
-      expect(summary.monthlyTrends.length).toBe(1);
+      expect(summary.weeklyTrends).toHaveLength(8);
+      expect(summary.monthlyTrends).toHaveLength(6);
       // One week of history and nothing before it: a climb from zero.
       expect(summary.sessionsAnalysis).toMatchObject({ currentPeriod: 1, trend: "up" });
       expect(summary.minutesAnalysis.currentPeriod).toBe(30);
       expect(summary.xpAnalysis.currentPeriod).toBe(100);
+    });
+
+    /**
+     * Regression: only weeks holding a session came back, and the summary read the last two
+     * rows as "this week" and "last week". A fortnight off therefore compared two month-old
+     * weeks to each other and reported no change, while the hero had in fact stopped.
+     */
+    it("counts a week off as a week off, not as no change", async () => {
+      await bankSession({ performedAt: subWeeks(new Date(), 2), durationSeconds: 1800 });
+
+      const summary = await completed().getTrendSummary();
+
+      expect(summary.sessionsAnalysis).toMatchObject({
+        currentPeriod: 0,
+        previousPeriod: 0,
+        trend: "stable",
+      });
+      // The idle fortnight is on the chart rather than absent from it.
+      expect(summary.weeklyTrends.at(-1)?.sessionCount).toBe(0);
+      expect(summary.weeklyTrends.at(-2)?.sessionCount).toBe(0);
+      expect(summary.weeklyTrends.at(-3)?.sessionCount).toBe(1);
     });
   });
 });

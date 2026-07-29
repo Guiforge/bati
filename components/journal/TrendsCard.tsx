@@ -46,7 +46,9 @@ function TrendsCardComponent() {
   }, [loadData]);
 
   const currentData = viewMode === "weekly" ? weeklyTrends : monthlyTrends;
-  const hasData = currentData.length > 0;
+  // The window always comes back full now, empty periods included — a hero who has never
+  // trained would otherwise be shown eight blank bars instead of "no data yet".
+  const hasData = currentData.some((d) => d.sessionCount > 0);
 
   // Get max values for scaling the bars
   const maxSessions = Math.max(1, ...currentData.map((d) => d.sessionCount));

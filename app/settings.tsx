@@ -10,7 +10,9 @@ import {
   Swords,
   Vibrate,
   Volume2,
+  Wrench,
 } from "@tamagui/lucide-icons";
+import Constants from "expo-constants";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -29,6 +31,18 @@ import {
   rescheduleOathReminder,
 } from "@/src/notifications";
 import { useSettingsStore } from "@/stores/settings";
+
+// Version comes from the embedded manifest: EAS owns the build number (appVersionSource: remote),
+// so it is only meaningful in a real build — in Expo Go / dev it can be missing.
+const buildNumber =
+  Constants.expoConfig?.android?.versionCode ?? Constants.expoConfig?.ios?.buildNumber;
+const versionLabel = [
+  Constants.expoConfig?.version,
+  buildNumber && `(${buildNumber})`,
+  __DEV__ && "· DEV",
+]
+  .filter(Boolean)
+  .join(" ");
 
 type SettingRowProps = {
   testID?: string;
@@ -65,6 +79,20 @@ function SettingRow({ testID, icon, label, value, onPress, disabled }: SettingRo
         ) : null}
       </XStack>
     </Button>
+  );
+}
+
+function DevFooter() {
+  const router = useRouter();
+  if (!__DEV__) return null;
+  return (
+    <SettingRow
+      testID="settings-dev"
+      icon={<Wrench size={22} color="$text" />}
+      label="Dev tools"
+      // `as never`: same typed-route caveat as the pushes above.
+      onPress={() => router.push("/dev" as never)}
+    />
   );
 }
 
@@ -341,6 +369,11 @@ export default function SettingsScreen() {
             value={t("credits.open", "Open")}
             onPress={() => router.push("/credits")}
           />
+
+          <DevFooter />
+          <Text testID="settings-version" fontSize="$2" color="$textSecondary" text="center">
+            {versionLabel}
+          </Text>
         </YStack>
       </RNScrollView>
     </YStack>

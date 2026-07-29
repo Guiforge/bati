@@ -63,15 +63,15 @@ describe("db/personalRecords", () => {
     expect(result?.sessionId).toBe(2);
   });
 
-  test("getExerciseMaxReps returns null for unseen exercise", async () => {
-    const { getExerciseMaxReps } =
+  test("getExerciseMax returns null for unseen exercise", async () => {
+    const { getExerciseMax } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");
-    const result = await getExerciseMaxReps(999);
+    const result = await getExerciseMax(999);
     expect(result).toBeNull();
   });
 
-  test("getExerciseMaxReps returns the max reps for an exercise", async () => {
-    const { getExerciseMaxReps } =
+  test("getExerciseMax returns the max reps for an exercise", async () => {
+    const { getExerciseMax } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
 
@@ -88,10 +88,38 @@ describe("db/personalRecords", () => {
         (2, ${exerciseId}, 'reps', 20, ${now}, 0);
     `);
 
-    const result = await getExerciseMaxReps(exerciseId);
+    const result = await getExerciseMax(exerciseId);
     expect(result).not.toBeNull();
     expect(result?.type).toBe("exercise_max_reps");
     expect(result?.value).toBe(20);
+  });
+
+  /**
+   * Regression: reps and seconds share the resultValue column, and the max was taken across
+   * both. A 60 s hold therefore outranked every rep set on the same movement and reported
+   * itself as a rep record.
+   */
+  test("getExerciseMax keeps reps and seconds apart", async () => {
+    const { getExerciseMax } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
+      | { id: number }
+      | undefined;
+    const exerciseId = exerciseRow?.id ?? 1;
+
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now}), (2, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${exerciseId}, 'reps', 12, ${now}, 0),
+        (2, ${exerciseId}, 'time', 90, ${now}, 0);
+    `);
+
+    const reps = await getExerciseMax(exerciseId, "reps");
+    expect(reps).toMatchObject({ type: "exercise_max_reps", value: 12 });
+
+    const hold = await getExerciseMax(exerciseId, "time");
+    expect(hold).toMatchObject({ type: "exercise_max_time", value: 90 });
   });
 
   test("getPersonalRecordsSummary returns all records and session count", async () => {

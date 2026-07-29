@@ -1,5 +1,6 @@
-import { desc, eq, max, sql } from "drizzle-orm";
+import { and, desc, eq, max, sql } from "drizzle-orm";
 import { db, schema } from "./client";
+import type { QuestTargetType } from "./schema";
 
 const { completedQuest, completedExercises, exercises } = schema;
 
@@ -84,9 +85,15 @@ export async function getMostXpSession(): Promise<PersonalRecord | null> {
 }
 
 /**
- * Get the max reps achieved for a specific exercise
+ * Best single result for an exercise, in one unit.
+ *
+ * The unit is not optional: reps and seconds share the `resultValue` column, so pooling them
+ * makes a 60 s hold outrank every rep set the hero has ever done on the same movement.
  */
-export async function getExerciseMaxReps(exerciseId: number): Promise<PersonalRecord | null> {
+export async function getExerciseMax(
+  exerciseId: number,
+  resultType: QuestTargetType = "reps",
+): Promise<PersonalRecord | null> {
   const rows = await db
     .select({
       sessionId: completedExercises.sessionId,
@@ -97,7 +104,12 @@ export async function getExerciseMaxReps(exerciseId: number): Promise<PersonalRe
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
-    .where(eq(completedExercises.exerciseId, exerciseId))
+    .where(
+      and(
+        eq(completedExercises.exerciseId, exerciseId),
+        eq(completedExercises.resultType, resultType),
+      ),
+    )
     .orderBy(desc(completedExercises.resultValue))
     .limit(1);
 
@@ -106,7 +118,7 @@ export async function getExerciseMaxReps(exerciseId: number): Promise<PersonalRe
   }
 
   return {
-    type: "exercise_max_reps",
+    type: resultType === "time" ? "exercise_max_time" : "exercise_max_reps",
     value: rows[0].resultValue,
     achievedAt: rows[0].performedAt,
     exerciseId,
@@ -204,9 +216,14 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
   // Check exercise PRs. A quest round is per-exercise-per-round, so a multi-round quest
   // has one row per round for the same exercise — keep only the best round here, or the
   // same exercise would be flagged as a new record once per round.
+  //
+  // Reps and seconds are separate records for the same exercise, never one pooled max: a
+  // 60 s hold is not "60 reps", and an exercise trained both ways would have had its rep PR
+  // permanently buried under its own hold times.
   const exerciseResultRows = await db
     .select({
       exerciseId: completedExercises.exerciseId,
+      resultType: completedExercises.resultType,
       resultValue: completedExercises.resultValue,
       enName: exercises.enName,
       frName: exercises.frName,
@@ -215,30 +232,31 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
     .where(eq(completedExercises.sessionId, sessionId));
 
-  const bestByExercise = new Map<number, (typeof exerciseResultRows)[number]>();
+  const bestByExercise = new Map<string, (typeof exerciseResultRows)[number]>();
   for (const row of exerciseResultRows) {
-    const best = bestByExercise.get(row.exerciseId);
+    const key = `${row.exerciseId}:${row.resultType}`;
+    const best = bestByExercise.get(key);
     if (!best || row.resultValue > best.resultValue) {
-      bestByExercise.set(row.exerciseId, row);
+      bestByExercise.set(key, row);
     }
   }
 
   for (const result of bestByExercise.values()) {
-    // Get previous max for this exercise (excluding current session)
+    // Get previous max for this exercise, in this unit, excluding the current session.
     const previousMax = await db
       .select({
         maxValue: max(completedExercises.resultValue),
       })
       .from(completedExercises)
       .where(
-        sql`${completedExercises.exerciseId} = ${result.exerciseId} AND ${completedExercises.sessionId} != ${sessionId}`,
+        sql`${completedExercises.exerciseId} = ${result.exerciseId} AND ${completedExercises.resultType} = ${result.resultType} AND ${completedExercises.sessionId} != ${sessionId}`,
       );
 
     const prevMax = previousMax[0]?.maxValue ?? 0;
     if (result.resultValue > prevMax) {
       newRecords.push({
         isNewRecord: true,
-        recordType: "exercise_max_reps",
+        recordType: result.resultType === "time" ? "exercise_max_time" : "exercise_max_reps",
         newValue: result.resultValue,
         previousValue: prevMax > 0 ? prevMax : null,
         exerciseId: result.exerciseId,

@@ -26,6 +26,8 @@ function RecordIcon({ type }: { type: NewRecordResult["recordType"] }) {
       return <Star size={20} color="$pastelYellow" />;
     case "exercise_max_reps":
       return <TrendingUp size={20} color="$secondary" />;
+    case "exercise_max_time":
+      return <Clock size={20} color="$secondary" />;
     default:
       return <Award size={20} color="$primary" />;
   }
@@ -39,7 +41,8 @@ function RecordLabel({ record, language }: { record: NewRecordResult; language: 
       return t("session.pr_longest_session");
     case "most_xp":
       return t("session.pr_most_xp");
-    case "exercise_max_reps": {
+    case "exercise_max_reps":
+    case "exercise_max_time": {
       const name = language === "fr" ? record.exerciseName?.fr : record.exerciseName?.en;
       return t("session.pr_exercise", { exercise: name });
     }
@@ -104,7 +107,9 @@ export function NewRecordsBadge({ records }: Props) {
                   <RecordLabel record={record} language={language} />
                 </Text>
                 <Text fontWeight="700" fontSize={14} color="$primary">
-                  {record.newValue}
+                  {record.recordType === "exercise_max_time"
+                    ? `${record.newValue}s`
+                    : record.newValue}
                 </Text>
               </XStack>
             ))}

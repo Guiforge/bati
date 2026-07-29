@@ -3,7 +3,7 @@ import { Map as MapIcon, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { memo, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
@@ -62,7 +62,7 @@ const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
  * row. Plain colored dots, not sprite images: the previous version put up to 6 expo-image
  * instances per row, each re-decoded on recycle while scrolling.
  */
-const MuscleGlyphs = memo(function MuscleGlyphs({ glyphs }: { glyphs: QuestGlyph[] }) {
+function MuscleGlyphs({ glyphs }: { glyphs: QuestGlyph[] }) {
   if (glyphs.length === 0) return null;
   return (
     <XStack gap="$1.5" items="center">
@@ -80,7 +80,7 @@ const MuscleGlyphs = memo(function MuscleGlyphs({ glyphs }: { glyphs: QuestGlyph
       ))}
     </XStack>
   );
-});
+}
 
 function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
@@ -165,15 +165,11 @@ function buildQuestMeta(
   };
 }
 
-const QuestRow = memo(function QuestRow({
-  meta,
-  onPressQuest,
-}: {
-  meta: QuestMeta;
-  onPressQuest: (id: number) => void;
-}) {
+// No manual memo/useCallback: the React Compiler (app.json experiments.reactCompiler)
+// memoizes components and closures automatically.
+function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: number) => void }) {
   const q = meta.quest;
-  const handlePress = useCallback(() => onPressQuest(q.id), [onPressQuest, q.id]);
+  const handlePress = () => onPressQuest(q.id);
 
   return (
     <YStack px="$5">
@@ -231,7 +227,7 @@ const QuestRow = memo(function QuestRow({
       </Card>
     </YStack>
   );
-});
+}
 
 const PAGE_SIZE = 10;
 const FILTER_TRIGGER_SPACE = 64;
@@ -348,20 +344,22 @@ export default function QuestsGallery() {
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentCode | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const selectMuscle = useCallback((m: MuscleCode | null) => {
+  // Handlers below are plain closures on purpose: the React Compiler
+  // (app.json experiments.reactCompiler) stabilizes them automatically.
+  const selectMuscle = (m: MuscleCode | null) => {
     setSelectedMuscle(m);
     setVisibleCount(PAGE_SIZE);
-  }, []);
+  };
 
-  const selectEquipment = useCallback((e: EquipmentCode | null) => {
+  const selectEquipment = (e: EquipmentCode | null) => {
     setSelectedEquipment(e);
     setVisibleCount(PAGE_SIZE);
-  }, []);
+  };
 
-  const clearFilters = useCallback(() => {
+  const clearFilters = () => {
     selectMuscle(null);
     selectEquipment(null);
-  }, [selectEquipment, selectMuscle]);
+  };
 
   const load = useCallback(async () => {
     // Only show the loading state on first load — on focus refetches we already have data
@@ -431,18 +429,17 @@ export default function QuestsGallery() {
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const canLoadMore = visible.length < filtered.length;
 
-  const onEndReached = useCallback(() => {
+  const onEndReached = () => {
     if (!canLoadMore) return;
     setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
-  }, [canLoadMore, filtered.length]);
+  };
 
   const title = t("quests.gallery_title", "Quests");
 
-  const onPressQuest = useCallback((id: number) => router.push(`/quests/${id}` as never), [router]);
+  const onPressQuest = (id: number) => router.push(`/quests/${id}` as never);
 
-  const renderItem = useCallback(
-    ({ item }: { item: QuestMeta }) => <QuestRow meta={item} onPressQuest={onPressQuest} />,
-    [onPressQuest],
+  const renderItem = ({ item }: { item: QuestMeta }) => (
+    <QuestRow meta={item} onPressQuest={onPressQuest} />
   );
 
   return (

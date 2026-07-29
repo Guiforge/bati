@@ -7,8 +7,9 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns";
-import { desc, eq, gte, sql } from "drizzle-orm";
+import { count, countDistinct, desc, eq, gte, sql, sum } from "drizzle-orm";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
+import { dayKey } from "./dates";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { setCached } from "./queryCache";
@@ -206,6 +207,42 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
     performedAt: r.performedAt,
     hasNewRecords: r.hasNewRecords === 1,
   }));
+}
+
+/**
+ * Session totals as one aggregate query — achievements used to load 1000 rows and reduce
+ * in JS to get these three numbers.
+ */
+export async function getSessionAggregates(): Promise<{
+  totalSessions: number;
+  totalXp: number;
+  uniqueQuests: number;
+}> {
+  const [row] = await db
+    .select({
+      totalSessions: count(),
+      totalXp: sum(completedQuest.xpEarned),
+      // countDistinct skips NULL questIds, matching the old filter(s => s.questId).
+      uniqueQuests: countDistinct(completedQuest.questId),
+    })
+    .from(completedQuest);
+
+  return {
+    totalSessions: Number(row?.totalSessions ?? 0),
+    totalXp: Number(row?.totalXp ?? 0),
+    uniqueQuests: Number(row?.uniqueQuests ?? 0),
+  };
+}
+
+/**
+ * Distinct workout day keys, one column instead of the whole session list — the calendar
+ * only needs "was there a workout that day".
+ */
+export async function listWorkoutDayKeys(): Promise<Set<string>> {
+  const rows = await db.select({ performedAt: completedQuest.performedAt }).from(completedQuest);
+  const days = new Set<string>();
+  for (const r of rows) days.add(dayKey(r.performedAt));
+  return days;
 }
 
 export async function getCompletedSessionById(id: number): Promise<CompletedSession | null> {

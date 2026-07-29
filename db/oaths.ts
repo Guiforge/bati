@@ -1,7 +1,7 @@
 import { eq, gte, sql } from "drizzle-orm";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { deletePreference, getPreference, setPreference } from "./preferences";
-import { getStreakInfo } from "./streaks";
+import { getStreakInfo, invalidateStreakInfo } from "./streaks";
 
 const { completedQuest, completedExercises, exercises } = schema;
 
@@ -139,12 +139,15 @@ export async function swearOath(input: {
     oath.weeklyTarget = Math.max(1, Math.floor(input.weeklyTarget ?? DEFAULT_WEEKLY_TARGET));
   }
   await setPreference(OATH_KEY, JSON.stringify(oath));
+  // The oath sets the flame's weekly quota — a memoized streak would be stale.
+  invalidateStreakInfo();
   return oath;
 }
 
 /** Abandon the current oath. */
 export async function breakOath(): Promise<void> {
   await deletePreference(OATH_KEY);
+  invalidateStreakInfo();
 }
 
 /** Current value of the metric, read straight from the journal. */

@@ -17,6 +17,9 @@ describe("db/userLevel", () => {
 
   beforeEach(() => {
     t.db.delete(completedQuest).run();
+    const { clearShortLivedQueries } =
+      require("../db/queryCache") as typeof import("../db/queryCache");
+    clearShortLivedQueries();
   });
 
   describe("calculateLevelFromXp", () => {

@@ -212,11 +212,30 @@ export async function calculateAndCacheStreak(): Promise<StreakInfo> {
   return { ...result, lastWorkoutDate: lastDate };
 }
 
+// In-process memo: one journal open used to run this pipeline (prefs full scan + quota
+// query, or the whole per-day walk) 3-4 times, once per stats card. Keyed on the day so
+// it can't serve yesterday's flame after midnight.
+let streakMemo: { day: string; promise: Promise<StreakInfo> } | null = null;
+
+/** Drop the in-process memo — after a session write or an oath change. */
+export function invalidateStreakInfo(): void {
+  streakMemo = null;
+}
+
 /**
  * Get streak info - use cache if valid, otherwise recalculate
  */
-export async function getStreakInfo(): Promise<StreakInfo> {
-  return (await getCachedStreak()) ?? (await calculateAndCacheStreak());
+export function getStreakInfo(): Promise<StreakInfo> {
+  const today = dayKey(new Date());
+  if (!streakMemo || streakMemo.day !== today) {
+    const promise = (async () => (await getCachedStreak()) ?? (await calculateAndCacheStreak()))();
+    promise.catch(() => {
+      // don't cache a failure - let the next caller retry
+      if (streakMemo?.promise === promise) streakMemo = null;
+    });
+    streakMemo = { day: today, promise };
+  }
+  return streakMemo.promise;
 }
 
 /**
@@ -224,5 +243,10 @@ export async function getStreakInfo(): Promise<StreakInfo> {
  * Call this after saving a session to update the cache
  */
 export function updateStreakAfterSession(): Promise<StreakInfo> {
-  return calculateAndCacheStreak();
+  const promise = calculateAndCacheStreak();
+  streakMemo = { day: dayKey(new Date()), promise };
+  promise.catch(() => {
+    if (streakMemo?.promise === promise) streakMemo = null;
+  });
+  return promise;
 }

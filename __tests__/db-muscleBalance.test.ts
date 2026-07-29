@@ -16,6 +16,9 @@ describe("db/muscleBalance", () => {
     // Clean up completed sessions before each test
     t.sqlite.exec(`DELETE FROM completed_exercises`);
     t.sqlite.exec(`DELETE FROM completed_sessions`);
+    const { clearShortLivedQueries } =
+      require("../db/queryCache") as typeof import("../db/queryCache");
+    clearShortLivedQueries();
   });
 
   test("getMuscleBalance returns empty balance when no sessions exist", async () => {

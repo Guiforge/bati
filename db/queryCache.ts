@@ -21,3 +21,30 @@ export function clearCached(prefix: string): void {
     if (key.startsWith(prefix)) cache.delete(key);
   }
 }
+
+const inflight = new Map<string, { at: number; promise: Promise<unknown> }>();
+
+/**
+ * Memoize a query promise for a few seconds. Several cards on one screen ask for the same
+ * aggregate in the same mount/focus burst (streak ×3, muscle balance ×2, level info ×2 on
+ * Home) — every query is a synchronous SQLite call on the JS thread, so each duplicate is
+ * paid in dropped frames. A short TTL dedupes the burst without invalidation plumbing:
+ * anything that changes these aggregates (finishing a session) takes minutes, not seconds.
+ */
+/** Drop every short-lived memo — for tests that rewrite the DB between cases. */
+export function clearShortLivedQueries(): void {
+  inflight.clear();
+}
+
+export function shortLivedQuery<T>(key: string, run: () => Promise<T>, ttlMs = 5000): Promise<T> {
+  const hit = inflight.get(key);
+  const now = Date.now();
+  if (hit && now - hit.at < ttlMs) return hit.promise as Promise<T>;
+  const promise = run();
+  promise.catch(() => {
+    // don't cache a failure - let the next caller retry
+    if (inflight.get(key)?.promise === promise) inflight.delete(key);
+  });
+  inflight.set(key, { at: now, promise });
+  return promise;
+}

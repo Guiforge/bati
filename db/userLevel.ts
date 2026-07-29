@@ -1,5 +1,6 @@
-import { sum } from "drizzle-orm";
+import { count, sum } from "drizzle-orm";
 import { db, schema } from "./client";
+import { shortLivedQuery } from "./queryCache";
 
 const { completedQuest } = schema;
 
@@ -123,7 +124,12 @@ export async function getTotalXp(): Promise<number> {
 /**
  * Get comprehensive user level info
  */
-export async function getUserLevelInfo(): Promise<UserLevelInfo> {
+export function getUserLevelInfo(): Promise<UserLevelInfo> {
+  // Home asks for this twice per focus (header + village teaser), the journal once more.
+  return shortLivedQuery("userLevelInfo", computeUserLevelInfo);
+}
+
+async function computeUserLevelInfo(): Promise<UserLevelInfo> {
   const totalXp = await getTotalXp();
   const level = calculateLevelFromXp(totalXp);
   const currentLevelStart = getXpForLevel(level);
@@ -154,15 +160,19 @@ export async function getTotalStats(): Promise<{
   totalSeconds: number;
   totalXp: number;
 }> {
-  // Fetch all sessions and compute stats
-  const sessions = await db.select().from(completedQuest);
-
-  const totalSeconds = sessions.reduce((acc, s) => acc + (s.durationSeconds ?? 0), 0);
-  const totalXp = sessions.reduce((acc, s) => acc + s.xpEarned, 0);
+  // One aggregate query — this used to SELECT * over the whole table on every Home focus
+  // and reduce in JS.
+  const [row] = await db
+    .select({
+      totalSessions: count(),
+      totalSeconds: sum(completedQuest.durationSeconds),
+      totalXp: sum(completedQuest.xpEarned),
+    })
+    .from(completedQuest);
 
   return {
-    totalSessions: sessions.length,
-    totalSeconds,
-    totalXp,
+    totalSessions: Number(row?.totalSessions ?? 0),
+    totalSeconds: Number(row?.totalSeconds ?? 0),
+    totalXp: Number(row?.totalXp ?? 0),
   };
 }

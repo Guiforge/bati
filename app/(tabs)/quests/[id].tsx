@@ -241,6 +241,26 @@ export default function QuestDetails() {
     };
   }, [state.quest, config, language, level]);
 
+  // Thumbnails resolved once per quest — resolveExerciseImage (a split+regex asset lookup)
+  // used to run twice per thumb on every render: once to filter, once to display.
+  const thumbsByExercise = useMemo(() => {
+    const map = new Map<number, { key: string; source: ImageSourcePropType }[]>();
+    for (const qex of derived?.quest.exercises ?? []) {
+      const paths = Array.from(new Set([qex.exercise.imagePath, ...qex.images].filter(Boolean)));
+      const thumbs: { key: string; source: ImageSourcePropType }[] = [];
+      for (const p of paths) {
+        // A handful of 42px tiles reads fine; past 4 it was a nested horizontal ScrollView.
+        if (thumbs.length >= 4) break;
+        const source = resolveExerciseImage(p);
+        // Only keep thumbs that actually resolve to a real image; a row of
+        // fallback-emoji tiles is noise, not content.
+        if (source != null && typeof p === "string") thumbs.push({ key: p, source });
+      }
+      map.set(qex.id, thumbs);
+    }
+    return map;
+  }, [derived]);
+
   if (!questId) {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
@@ -470,13 +490,7 @@ export default function QuestDetails() {
                 const exDesc =
                   language === "fr" ? qex.exercise.frDescription : qex.exercise.enDescription;
 
-                const thumbPaths = [qex.exercise.imagePath, ...qex.images].filter(Boolean);
-                const uniqueThumbPaths = Array.from(new Set(thumbPaths));
-                // Only keep thumbs that actually resolve to a real image; a row of
-                // fallback-emoji tiles is noise, not content.
-                const thumbs = uniqueThumbPaths
-                  .slice(0, 10)
-                  .filter((p) => resolveExerciseImage(p) != null);
+                const thumbs = thumbsByExercise.get(qex.id) ?? [];
 
                 return (
                   <Card
@@ -509,30 +523,27 @@ export default function QuestDetails() {
                         </XStack>
 
                         {thumbs.length > 0 ? (
-                          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <XStack gap="$2" pt="$2" pb="$1">
-                              {thumbs.map((p, idx) => (
-                                <YStack
-                                  // biome-ignore lint/suspicious/noArrayIndexKey: stable enough for static lists
-                                  key={`${p}-${idx}`}
-                                  width={42}
-                                  height={42}
-                                  rounded={12}
-                                  overflow="hidden"
-                                  bg="$surface"
-                                  borderWidth={1}
-                                  borderColor="$borderStrong"
-                                >
-                                  <Image
-                                    source={resolveExerciseImage(p)}
-                                    style={{ width: "100%", height: "100%" }}
-                                    contentFit="cover"
-                                    transition={0}
-                                  />
-                                </YStack>
-                              ))}
-                            </XStack>
-                          </ScrollView>
+                          <XStack gap="$2" pt="$2" pb="$1">
+                            {thumbs.map((thumb) => (
+                              <YStack
+                                key={thumb.key}
+                                width={42}
+                                height={42}
+                                rounded={12}
+                                overflow="hidden"
+                                bg="$surface"
+                                borderWidth={1}
+                                borderColor="$borderStrong"
+                              >
+                                <Image
+                                  source={thumb.source}
+                                  style={{ width: "100%", height: "100%" }}
+                                  contentFit="cover"
+                                  transition={0}
+                                />
+                              </YStack>
+                            ))}
+                          </XStack>
                         ) : null}
 
                         <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>

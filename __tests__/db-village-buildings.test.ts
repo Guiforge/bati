@@ -15,6 +15,9 @@ describe("db/village buildings", () => {
   beforeEach(() => {
     t.sqlite.exec(`DELETE FROM completed_exercises`);
     t.sqlite.exec(`DELETE FROM completed_sessions`);
+    const { clearShortLivedQueries } =
+      require("../db/queryCache") as typeof import("../db/queryCache");
+    clearShortLivedQueries();
   });
 
   test("a fresh village has only its starter buildings", async () => {

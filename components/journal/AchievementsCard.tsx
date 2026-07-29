@@ -4,11 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
-import {
-  type AchievementProgress,
-  getAchievementStats,
-  getAllAchievementsWithProgress,
-} from "@/db/achievements";
+import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
 import { useSettingsStore } from "@/stores/settings";
 
 type CategoryFilter = "all" | "sessions" | "streaks" | "xp" | "special";
@@ -24,12 +20,17 @@ export function AchievementsCard() {
   const loadAchievements = useCallback(async () => {
     try {
       setLoading(true);
-      const [allAchievements, achievementStats] = await Promise.all([
-        getAllAchievementsWithProgress(),
-        getAchievementStats(),
-      ]);
+      // One pipeline: the stats are derivable from the progress list, no second round
+      // of queries needed.
+      const allAchievements = await getAllAchievementsWithProgress();
+      const total = allAchievements.length;
+      const unlocked = allAchievements.filter((a) => a.isUnlocked).length;
       setAchievements(allAchievements);
-      setStats(achievementStats);
+      setStats({
+        total,
+        unlocked,
+        percentage: total > 0 ? Math.round((unlocked / total) * 100) : 0,
+      });
     } catch (_e) {
     } finally {
       setLoading(false);

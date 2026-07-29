@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
-import { listCompletedSessions } from "./completed";
+import { getSessionAggregates } from "./completed";
 import { getStreakInfo } from "./streaks";
 
 const { userPreferences } = schema;
@@ -365,10 +365,7 @@ export async function getAllAchievementsWithProgress(): Promise<AchievementProgr
   const unlockedMap = new Map(unlocked.map((a) => [a.code, a]));
 
   // Get stats for progress calculation
-  const sessions = await listCompletedSessions(1000);
-  const totalSessions = sessions.length;
-  const totalXp = sessions.reduce((sum, s) => sum + s.xpEarned, 0);
-  const uniqueQuests = new Set(sessions.filter((s) => s.questId).map((s) => s.questId)).size;
+  const { totalSessions, totalXp, uniqueQuests } = await getSessionAggregates();
 
   // Get streak info
   const streakInfo = await getStreakInfo();
@@ -508,10 +505,7 @@ export async function checkForNewAchievements(sessionInfo: {
   const newlyUnlocked: NewAchievementResult[] = [];
 
   // Get current stats
-  const sessions = await listCompletedSessions(1000);
-  const totalSessions = sessions.length;
-  const totalXp = sessions.reduce((sum, s) => sum + s.xpEarned, 0);
-  const uniqueQuests = new Set(sessions.filter((s) => s.questId).map((s) => s.questId)).size;
+  const { totalSessions, totalXp, uniqueQuests } = await getSessionAggregates();
 
   // Get streak info
   const streakInfo = await getStreakInfo();

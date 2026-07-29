@@ -5,8 +5,7 @@ import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { listCompletedSessions } from "@/db/completed";
-import { dayKey } from "@/db/dates";
+import { listWorkoutDayKeys } from "@/db/completed";
 import { useSettingsStore } from "@/stores/settings";
 
 type DayData = {
@@ -176,15 +175,7 @@ export function MonthlyCalendarCard() {
 
   useEffect(() => {
     async function loadData() {
-      // Get all sessions for workout dates
-      const sessions = await listCompletedSessions(500);
-
-      const workoutDates = new Set<string>();
-      for (const session of sessions) {
-        const dateStr = dayKey(session.performedAt);
-        workoutDates.add(dateStr);
-      }
-
+      const workoutDates = await listWorkoutDayKeys();
       const streakDates = calculateStreakDates(workoutDates);
       const data = getMonthData(currentMonth.year, currentMonth.month, workoutDates, streakDates);
       setMonthData(data);

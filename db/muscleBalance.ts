@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { MUSCLE_LABELS } from "./muscles";
+import { shortLivedQuery } from "./queryCache";
 import { getEligibleQuestIds } from "./quests";
 import { type MuscleCode, muscleCodes } from "./schema";
 
@@ -30,8 +31,16 @@ export type MuscleBalance = {
  * Calculate muscle balance based on workout history.
  * Returns volume per muscle group and identifies weak/strong areas.
  */
+export function getMuscleBalance(
+  period: "7d" | "30d" | "90d" | "all" = "30d",
+): Promise<MuscleBalance> {
+  // Dedupes the journal-open burst: the balance card and the suggested-quests pipeline
+  // both run this 4-table join within the same mount.
+  return shortLivedQuery(`muscleBalance:${period}`, () => computeMuscleBalance(period));
+}
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Muscle balance analysis requires aggregating and comparing multiple muscle groups
-export async function getMuscleBalance(
+async function computeMuscleBalance(
   period: "7d" | "30d" | "90d" | "all" = "30d",
 ): Promise<MuscleBalance> {
   const now = new Date();

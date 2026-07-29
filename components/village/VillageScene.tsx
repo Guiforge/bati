@@ -159,6 +159,7 @@ export function VillageScene() {
                   const name = language === "fr" ? building.frName : building.enName;
                   return (
                     <Card
+                      flat
                       key={building.code}
                       bg="$surface"
                       width="48%"
@@ -194,6 +195,7 @@ export function VillageScene() {
                     const title = language === "fr" ? trophy.frTitle : trophy.enTitle;
                     return (
                       <Card
+                        flat
                         key={trophy.key}
                         bg="$surface"
                         width="48%"

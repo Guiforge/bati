@@ -54,7 +54,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
         : "$pastelBlue";
 
   return (
-    <Card testID="journal-session-card" onPress={onPress} bg={sessionBg}>
+    <Card flat testID="journal-session-card" onPress={onPress} bg={sessionBg}>
       <XStack gap="$3" items="center">
         {/* Icon */}
         <YStack

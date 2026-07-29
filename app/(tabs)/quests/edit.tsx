@@ -1,4 +1,5 @@
 import { ChevronLeft, Trash2, X } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +11,8 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { Stepper } from "@/components/common/Stepper";
+import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
+import { getExerciseAsset } from "@/constants/assetMap";
 import {
   clearQuestConfig,
   createQuestTemplate,
@@ -42,9 +45,6 @@ const DEFAULT_REPS = 10;
 const DEFAULT_SECONDS = 30;
 const REST_STEP = 5;
 
-/** How many candidates the picker shows at once — the search box is how you reach the rest. */
-const PICKER_LIMIT = 24;
-
 export default function QuestEditor() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -64,7 +64,6 @@ export default function QuestEditor() {
   const [rounds, setRounds] = useState(DEFAULT_ROUNDS);
   const [rest, setRest] = useState(DEFAULT_REST);
   const [picked, setPicked] = useState<PickedExercise[]>([]);
-  const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
 
   const exerciseName = useCallback(
@@ -115,17 +114,10 @@ export default function QuestEditor() {
     [exercises],
   );
 
-  const candidates = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    const chosen = new Set(picked.map((p) => p.exerciseId));
-    return exercises
-      .filter((e) => !chosen.has(e.id) && exerciseName(e).toLowerCase().includes(needle))
-      .slice(0, PICKER_LIMIT);
-  }, [exercises, exerciseName, picked, search]);
+  const pickedIds = useMemo(() => picked.map((p) => p.exerciseId), [picked]);
 
   const addExercise = useCallback((exercise: Exercise) => {
     setPicked((prev) => [...prev, { exerciseId: exercise.id, type: "reps", value: DEFAULT_REPS }]);
-    setSearch("");
   }, []);
 
   const removeExercise = useCallback((exerciseId: number) => {
@@ -321,7 +313,15 @@ export default function QuestEditor() {
             return (
               <Card key={p.exerciseId}>
                 <YStack gap="$3">
-                  <XStack items="center" gap="$2">
+                  <XStack items="center" gap="$3">
+                    <YStack width={48} height={48} rounded="$4" overflow="hidden" bg="$background">
+                      <Image
+                        source={getExerciseAsset(exercise.imagePath)}
+                        style={{ width: "100%", height: "100%" }}
+                        contentFit="cover"
+                        transition={0}
+                      />
+                    </YStack>
                     <Text flex={1} fontWeight="700" fontSize={16} color="$text">
                       {i + 1}. {exerciseName(exercise)}
                     </Text>
@@ -365,30 +365,13 @@ export default function QuestEditor() {
             );
           })}
 
-          <Card bg="$surface">
-            <YStack gap="$3">
-              <Text fontWeight="700" fontSize={14} color="$textSecondary">
-                {t("quests.editor_add_exercise", "Add an exercise")}
-              </Text>
-              <Input
-                value={search}
-                onChangeText={setSearch}
-                placeholder={t("quests.editor_search", "Search")}
-                bg="$background"
-                borderColor="$borderStrong"
-                color="$text"
-              />
-              <XStack gap="$2" flexWrap="wrap">
-                {candidates.map((exercise) => (
-                  <Chip
-                    key={exercise.id}
-                    label={exerciseName(exercise)}
-                    onPress={() => addExercise(exercise)}
-                  />
-                ))}
-              </XStack>
-            </YStack>
-          </Card>
+          <ExercisePickerSheet
+            exercises={exercises}
+            pickedIds={pickedIds}
+            language={language}
+            onAdd={addExercise}
+            bottomInset={insets.bottom}
+          />
         </YStack>
       </ScrollView>
 

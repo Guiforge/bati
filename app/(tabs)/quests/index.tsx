@@ -2,7 +2,7 @@ import { LegendList } from "@legendapp/list";
 import { Map as MapIcon, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
@@ -30,7 +30,7 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
-import { type AppLanguage, useSettingsStore } from "@/stores/settings";
+import { useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
@@ -48,32 +48,43 @@ function questEmoji(rounds: number, exerciseCount: number) {
   return "🪓";
 }
 
+type QuestGlyph = {
+  code: MuscleCode;
+  bg: ExerciseColorTokens["bg"];
+  label: string;
+  sprite: ImageSourcePropType;
+};
+
+const GLYPH_IMAGE_STYLE = { width: 14, height: 14 } as const;
+const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
+
 /** Discreet muscle-group glyphs so the gallery reads at a glance without adding another chip row. */
-function MuscleGlyphs({ muscles, language }: { muscles: MuscleCode[]; language: AppLanguage }) {
-  if (muscles.length === 0) return null;
+const MuscleGlyphs = memo(function MuscleGlyphs({ glyphs }: { glyphs: QuestGlyph[] }) {
+  if (glyphs.length === 0) return null;
   return (
     <XStack gap="$1" items="center">
-      {muscles.map((m) => (
+      {glyphs.map((g) => (
         <YStack
-          key={m}
+          key={g.code}
           width={22}
           height={22}
           rounded={11}
-          bg={getExerciseColorTokens(m).bg}
+          bg={g.bg}
           items="center"
           justify="center"
-          accessibilityLabel={MUSCLE_LABELS[m]?.[language] ?? m}
+          accessibilityLabel={g.label}
         >
           <Image
-            source={getSportSpriteAsset(m)}
-            style={{ width: 14, height: 14 }}
+            source={g.sprite}
+            recyclingKey={g.code}
+            style={GLYPH_IMAGE_STYLE}
             contentFit="contain"
           />
         </YStack>
       ))}
     </XStack>
   );
-}
+});
 
 function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
@@ -85,12 +96,85 @@ type QuestMeta = {
   muscles: MuscleCode[];
   equipment: EquipmentCode[];
   // Precomputed once per data load — recomputing these in renderItem made every
-  // recycled row rebuild color maps and re-run the duration estimator while scrolling.
+  // recycled row rebuild color maps, re-run the duration estimator, and re-interpolate
+  // i18next strings while scrolling.
   tokens: ExerciseColorTokens;
   durationSeconds: number;
   xp: number;
   cover: ImageSourcePropType | null;
+  title: string;
+  description: string;
+  glyphs: QuestGlyph[];
+  estimateLabel: string;
+  exercisesLabel: string;
+  archetypeLabel: string | null;
+  xpLabel: string;
 };
+
+const QuestRow = memo(function QuestRow({
+  meta,
+  onPressQuest,
+}: {
+  meta: QuestMeta;
+  onPressQuest: (id: number) => void;
+}) {
+  const q = meta.quest;
+  const handlePress = useCallback(() => onPressQuest(q.id), [onPressQuest, q.id]);
+
+  return (
+    <YStack px="$5">
+      <Card flat testID="quests-quest-card" bg={meta.tokens.bg} onPress={handlePress}>
+        <XStack gap="$3" items="flex-start">
+          <YStack
+            width={54}
+            height={54}
+            rounded="$4"
+            bg="$surface"
+            borderWidth={1}
+            borderColor="$borderStrong"
+            justify="center"
+            items="center"
+            overflow="hidden"
+          >
+            {meta.cover ? (
+              <Image
+                source={meta.cover}
+                recyclingKey={String(q.id)}
+                style={COVER_IMAGE_STYLE}
+                contentFit="cover"
+                accessible={false}
+              />
+            ) : (
+              <Text fontSize={26}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+            )}
+          </YStack>
+
+          <YStack flex={1} gap="$2">
+            <XStack items="center" gap="$2">
+              <Text flex={1} fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
+                {meta.title}
+              </Text>
+              <MuscleGlyphs glyphs={meta.glyphs} />
+            </XStack>
+
+            <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
+              {meta.description}
+            </Paragraph>
+
+            <XStack gap="$2" flexWrap="wrap" pt="$1">
+              <Chip label={meta.estimateLabel} />
+              <Chip label={meta.exercisesLabel} tone="primary" />
+              {/* What kind of session this is, so the hero knows before they tap. Absent on
+                  user-authored quests, which declare no archetype. */}
+              {meta.archetypeLabel ? <Chip label={meta.archetypeLabel} tone="secondary" /> : null}
+              <Chip label={meta.xpLabel} tone="secondary" />
+            </XStack>
+          </YStack>
+        </XStack>
+      </Card>
+    </YStack>
+  );
+});
 
 const PAGE_SIZE = 10;
 const FILTER_TRIGGER_SPACE = 64;
@@ -223,11 +307,22 @@ export default function QuestsGallery() {
   }, [selectEquipment, selectMuscle]);
 
   const load = useCallback(async () => {
-    setState((s) => ({ status: "loading", quests: s.quests, exercisesById: s.exercisesById }));
+    // Only show the loading state on first load — on focus refetches we already have data
+    // and flipping status would re-render the whole gallery for nothing.
+    setState((s) =>
+      s.quests.length > 0
+        ? s
+        : { status: "loading", quests: s.quests, exercisesById: s.exercisesById },
+    );
     try {
       const [quests, exercises] = await Promise.all([listQuestTemplates(), listExercises()]);
-      const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-      setState({ status: "ready", quests, exercisesById });
+      setState((s) => {
+        // listQuestTemplates/listExercises are promise-cached: a warm cache returns the same
+        // array identity. Bail so a tab refocus doesn't invalidate questMeta → filtered → list.
+        if (s.status === "ready" && s.quests === quests) return s;
+        const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
+        return { status: "ready", quests, exercisesById };
+      });
     } catch (e) {
       const message = e instanceof Error ? e.message : "Unknown error";
       setState((s) => ({
@@ -268,18 +363,36 @@ export default function QuestsGallery() {
         exercisesById,
         userLevel: "medium",
       });
+      const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
+      const estimate = formatDuration(durationSeconds, language);
+      const muscleList = [...muscles];
 
       return {
         quest: q,
-        muscles: [...muscles],
+        muscles: muscleList,
         equipment: [...equipment],
         tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
         durationSeconds,
-        xp: computeSessionXp({ durationSeconds, userLevel: "medium" }),
+        xp,
         cover: resolveCoverImage(q.imagePath),
+        title: language === "fr" ? q.frTitle : q.enTitle,
+        description: language === "fr" ? q.frDescription : q.enDescription,
+        glyphs: muscleList.map((m) => ({
+          code: m,
+          bg: getExerciseColorTokens(m).bg,
+          label: MUSCLE_LABELS[m]?.[language] ?? m,
+          sprite: getSportSpriteAsset(m),
+        })),
+        estimateLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
+        exercisesLabel: t("quests.exercises", {
+          count: q.exercises.length,
+          defaultValue: `${q.exercises.length} exercises`,
+        }),
+        archetypeLabel: q.archetype ? t(`quests.archetype_${q.archetype}`) : null,
+        xpLabel: t("quests.reward_xp", { count: xp, defaultValue: `+${xp} XP` }),
       };
     });
-  }, [exercisesById, quests]);
+  }, [exercisesById, quests, language, t]);
 
   const availableMuscles = useMemo(() => {
     const s = new Set<MuscleCode>();
@@ -311,94 +424,11 @@ export default function QuestsGallery() {
 
   const title = t("quests.gallery_title", "Quests");
 
+  const onPressQuest = useCallback((id: number) => router.push(`/quests/${id}` as never), [router]);
+
   const renderItem = useCallback(
-    ({ item }: { item: QuestMeta }) => {
-      const q = item.quest;
-
-      const estimate = formatDuration(item.durationSeconds, language);
-      const xp = item.xp;
-
-      const qTitle = language === "fr" ? q.frTitle : q.enTitle;
-      const qDesc = language === "fr" ? q.frDescription : q.enDescription;
-      const cover = item.cover;
-
-      return (
-        <YStack px="$5">
-          <Card
-            testID="quests-quest-card"
-            bg={item.tokens.bg}
-            onPress={() => router.push(`/quests/${q.id}` as never)}
-          >
-            <XStack gap="$3" items="flex-start">
-              <YStack
-                width={54}
-                height={54}
-                rounded="$4"
-                bg="$surface"
-                borderWidth={1}
-                borderColor="$borderStrong"
-                justify="center"
-                items="center"
-                overflow="hidden"
-              >
-                {cover ? (
-                  <Image
-                    source={cover}
-                    style={{ width: "100%", height: "100%" }}
-                    contentFit="cover"
-                    accessible={false}
-                  />
-                ) : (
-                  <Text fontSize={26}>{questEmoji(q.rounds, q.exercises.length)}</Text>
-                )}
-              </YStack>
-
-              <YStack flex={1} gap="$2">
-                <XStack items="center" gap="$2">
-                  <Text flex={1} fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
-                    {qTitle}
-                  </Text>
-                  <MuscleGlyphs muscles={item.muscles} language={language} />
-                </XStack>
-
-                <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
-                  {qDesc}
-                </Paragraph>
-
-                <XStack gap="$2" flexWrap="wrap" pt="$1">
-                  <Chip
-                    label={t("quests.estimate", {
-                      duration: estimate,
-                      defaultValue: `≈ ${estimate}`,
-                    })}
-                  />
-                  <Chip
-                    label={t("quests.exercises", {
-                      count: q.exercises.length,
-                      defaultValue: `${q.exercises.length} exercises`,
-                    })}
-                    tone="primary"
-                  />
-                  {/* What kind of session this is, so the hero knows before they tap. Absent on
-                      user-authored quests, which declare no archetype. */}
-                  {q.archetype ? (
-                    <Chip label={t(`quests.archetype_${q.archetype}`)} tone="secondary" />
-                  ) : null}
-                  <Chip
-                    label={t("quests.reward_xp", {
-                      count: xp,
-                      defaultValue: `+${xp} XP`,
-                    })}
-                    tone="secondary"
-                  />
-                </XStack>
-              </YStack>
-            </XStack>
-          </Card>
-        </YStack>
-      );
-    },
-    [language, router, t],
+    ({ item }: { item: QuestMeta }) => <QuestRow meta={item} onPressQuest={onPressQuest} />,
+    [onPressQuest],
   );
 
   return (

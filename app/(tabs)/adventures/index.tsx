@@ -236,6 +236,7 @@ export default function AdventuresGallery() {
               <YStack height={140}>
                 <Image
                   source={cover}
+                  recyclingKey={String(item.id)}
                   style={{ width: "100%", height: "100%" }}
                   contentFit="cover"
                   accessible={false}

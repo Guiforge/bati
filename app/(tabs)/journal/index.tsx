@@ -178,6 +178,7 @@ export default function JournalScreen() {
           renderItem={renderHistoryItem}
           keyExtractor={journalKey}
           ItemSeparatorComponent={ListGap}
+          recycleItems
           estimatedItemSize={100}
           style={{ flex: 1 }}
           contentContainerStyle={{

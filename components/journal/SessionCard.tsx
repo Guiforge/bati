@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDuration } from "@/db";
 import type { DifficultyCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
@@ -21,17 +22,21 @@ interface SessionCardProps {
   onPress?: () => void;
 }
 
+const SESSION_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+};
+
 export function SessionCard({ entry, onPress }: SessionCardProps) {
   const { t } = useTranslation();
   const { language } = useSettingsStore();
 
-  const dateLabel = new Intl.DateTimeFormat(language, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(entry.performedAt));
+  const dateLabel = getDateTimeFormat(language, SESSION_DATE_OPTIONS).format(
+    new Date(entry.performedAt),
+  );
 
   const durationLabel = entry.durationSeconds
     ? formatDuration(entry.durationSeconds, language)

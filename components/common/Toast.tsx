@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Text, XStack, YStack } from "tamagui";
 
@@ -62,8 +62,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Stable context value — an object literal here re-rendered every useToast() consumer
+  // each time a toast appeared or expired.
+  const contextValue = useMemo(
+    () => ({ showToast, showSuccess, showError, showInfo }),
+    [showToast, showSuccess, showError, showInfo],
+  );
+
   return (
-    <ToastContext.Provider value={{ showToast, showSuccess, showError, showInfo }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       {/* Toast container */}
       <YStack

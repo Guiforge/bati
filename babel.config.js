@@ -1,5 +1,7 @@
 module.exports = (api) => {
-  api.cache(true);
+  // The config branches on NODE_ENV — cache(true) would freeze the first build's branch
+  // (a dev-warmed cache silently shipping a prod bundle without Tamagui extraction).
+  api.cache.using(() => process.env.NODE_ENV);
 
   const isDev = process.env.NODE_ENV === "development";
 

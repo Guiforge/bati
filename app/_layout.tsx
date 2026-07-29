@@ -21,6 +21,20 @@ LogBox.ignoreLogs(["Expo AV has been deprecated"]);
 
 SplashScreen.preventAutoHideAsync();
 
+// Custom Navigation Theme to force Cream background. Module scope: built from static tokens,
+// and a fresh object per render would invalidate the ThemeProvider context for the whole
+// navigator tree on every navigation.
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: config.tokens.color.bgOverlay.val,
+    card: config.tokens.color.surface.val,
+    text: config.tokens.color.text.val,
+    border: config.tokens.color.borderStrong.val,
+  },
+};
+
 export default function RootLayout() {
   const {
     hasFinishedOnboarding,
@@ -73,18 +87,6 @@ export default function RootLayout() {
 
     SplashScreen.hideAsync();
   }, [hasFinishedOnboarding, isNavigationReady, router, segments, settingsLoaded, userLoaded]);
-
-  // Custom Navigation Theme to force Cream background
-  const MyTheme = {
-    ...DefaultTheme,
-    colors: {
-      ...DefaultTheme.colors,
-      background: config.tokens.color.bgOverlay.val,
-      card: config.tokens.color.surface.val,
-      text: config.tokens.color.text.val,
-      border: config.tokens.color.borderStrong.val,
-    },
-  };
 
   if (!isNavigationReady) {
     return null;

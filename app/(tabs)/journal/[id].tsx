@@ -8,6 +8,7 @@ import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDuration, getCompletedSessionById } from "@/db";
 import type { CompletedSession } from "@/db/completed";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
@@ -101,7 +102,7 @@ export default function SessionDetailScreen() {
   }
 
   const dateLabel = session
-    ? new Intl.DateTimeFormat(language, {
+    ? getDateTimeFormat(language, {
         weekday: "long",
         day: "numeric",
         month: "long",

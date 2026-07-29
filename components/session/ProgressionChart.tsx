@@ -5,6 +5,7 @@ import { BarChart } from "react-native-gifted-charts";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import type { SessionSummary } from "@/db";
 import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
 import { useSettingsStore } from "@/stores/settings";
@@ -122,10 +123,9 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   const chartData: ChartDataPoint[] = sessions.map((session) => {
     const durationMinutes = session.durationSeconds ? Math.round(session.durationSeconds / 60) : 0;
 
-    const dateLabel = new Intl.DateTimeFormat(language, {
-      day: "numeric",
-      month: "short",
-    }).format(new Date(session.performedAt));
+    const dateLabel = getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
+      new Date(session.performedAt),
+    );
 
     // Color based on difficulty level (matches tamagui.config.ts token hex values —
     // gifted-charts can't consume Tamagui tokens, so these must be kept in sync by hand)

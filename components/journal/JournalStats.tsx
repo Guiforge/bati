@@ -7,6 +7,7 @@ import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { TrendsCard } from "@/components/journal/TrendsCard";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { dayKey } from "@/db/dates";
 import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { useSettingsStore } from "@/stores/settings";
@@ -48,9 +49,7 @@ function getLast7DaysData(sessions: JournalStatsProps["sessions"], language: str
     const date = new Date(today);
     date.setDate(date.getDate() - i);
     const dateStr = dayKey(date);
-    const label = new Intl.DateTimeFormat(language, {
-      weekday: "short",
-    }).format(date);
+    const label = getDateTimeFormat(language, { weekday: "short" }).format(date);
 
     days.push({ date: dateStr, label, minutes: 0 });
   }

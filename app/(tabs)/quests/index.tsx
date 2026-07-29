@@ -2,6 +2,7 @@ import { LegendList } from "@legendapp/list";
 import { Map as MapIcon, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
+import type { TFunction } from "i18next";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
@@ -30,7 +31,7 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
-import { useSettingsStore } from "@/stores/settings";
+import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 type LoadState =
   | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
@@ -100,9 +101,69 @@ type QuestMeta = {
   title: string;
   description: string;
   glyphs: QuestGlyph[];
-  /** "≈ 12 min · 4 exercises · Strength · +45 XP" — one Text instead of four bordered Chips. */
+  /** "≈ 12 min" — worn as a chip over the cover banner. */
+  durationLabel: string;
+  /** "4 exercises · Strength" — one Text instead of bordered Chips. */
   metaLabel: string;
+  /** "+45 XP" — the reward, in gold. */
+  xpLabel: string;
 };
+
+function buildQuestMeta(
+  q: QuestTemplate,
+  exercisesById: Record<number, Exercise>,
+  language: AppLanguage,
+  t: TFunction,
+): QuestMeta {
+  const muscles = new Set<MuscleCode>();
+  const equipment = new Set<EquipmentCode>();
+
+  for (const qex of q.exercises) {
+    const ex = exercisesById[qex.exerciseId];
+    if (!ex) continue;
+    equipment.add(ex.equipment);
+    for (const m of ex.muscles) muscles.add(m);
+  }
+
+  const durationSeconds = estimateQuestTemplateSeconds({
+    template: q,
+    exercisesById,
+    userLevel: "medium",
+  });
+  const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
+  const estimate = formatDuration(durationSeconds, language);
+  const muscleList = [...muscles];
+
+  return {
+    quest: q,
+    muscles: muscleList,
+    equipment: [...equipment],
+    tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
+    durationSeconds,
+    xp,
+    cover: resolveCoverImage(q.imagePath),
+    title: language === "fr" ? q.frTitle : q.enTitle,
+    description: language === "fr" ? q.frDescription : q.enDescription,
+    glyphs: muscleList.map((m) => ({
+      code: m,
+      bg: getExerciseColorTokens(m).bg,
+      label: MUSCLE_LABELS[m]?.[language] ?? m,
+    })),
+    durationLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
+    metaLabel: [
+      t("quests.exercises", {
+        count: q.exercises.length,
+        defaultValue: `${q.exercises.length} exercises`,
+      }),
+      // What kind of session this is, so the hero knows before they tap. Absent on
+      // user-authored quests, which declare no archetype.
+      q.archetype ? t(`quests.archetype_${q.archetype}`) : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    xpLabel: t("quests.reward_xp", { count: xp, defaultValue: `+${xp} XP` }),
+  };
+}
 
 const QuestRow = memo(function QuestRow({
   meta,
@@ -116,49 +177,57 @@ const QuestRow = memo(function QuestRow({
 
   return (
     <YStack px="$5">
-      <Card flat testID="quests-quest-card" bg={meta.tokens.bg} onPress={handlePress}>
-        <XStack gap="$3" items="flex-start">
-          <YStack
-            width={54}
-            height={54}
-            rounded="$4"
-            bg="$surface"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            justify="center"
-            items="center"
-            overflow="hidden"
-          >
-            {meta.cover ? (
-              <Image
-                source={meta.cover}
-                recyclingKey={String(q.id)}
-                style={COVER_IMAGE_STYLE}
-                contentFit="cover"
-                accessible={false}
-              />
-            ) : (
-              <Text fontSize={26}>{questEmoji(q.rounds, q.exercises.length)}</Text>
-            )}
-          </YStack>
+      <Card
+        flat
+        testID="quests-quest-card"
+        bg="$surface"
+        p="$0"
+        overflow="hidden"
+        onPress={handlePress}
+      >
+        {/* Cover banner — same card family as the adventures gallery. */}
+        <YStack height={140}>
+          {meta.cover ? (
+            <Image
+              source={meta.cover}
+              recyclingKey={String(q.id)}
+              style={COVER_IMAGE_STYLE}
+              contentFit="cover"
+              accessible={false}
+            />
+          ) : (
+            // User-authored quests have no cover art: the muscle tint carries the banner.
+            <YStack flex={1} bg={meta.tokens.bg} items="center" justify="center">
+              <Text fontSize={44}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+            </YStack>
+          )}
+          <XStack position="absolute" t="$3" l="$3">
+            <Chip label={meta.durationLabel} />
+          </XStack>
+        </YStack>
 
-          <YStack flex={1} gap="$2">
-            <XStack items="center" gap="$2">
-              <Text flex={1} fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
-                {meta.title}
-              </Text>
-              <MuscleGlyphs glyphs={meta.glyphs} />
-            </XStack>
+        <YStack gap="$2" p="$4">
+          <XStack items="center" gap="$2">
+            <Text flex={1} fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
+              {meta.title}
+            </Text>
+            <MuscleGlyphs glyphs={meta.glyphs} />
+          </XStack>
 
-            <Paragraph color="$textSecondary" size="$3" numberOfLines={1}>
-              {meta.description}
-            </Paragraph>
+          <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
+            {meta.description}
+          </Paragraph>
 
-            <Text fontSize={12} fontWeight="700" color="$textSecondary" pt="$1">
+          <XStack items="center" justify="space-between" gap="$2">
+            <Text flex={1} fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
               {meta.metaLabel}
             </Text>
-          </YStack>
-        </XStack>
+            {/* The reward reads in gold — the design system's resource color for loot. */}
+            <Text fontSize={14} fontWeight="700" color="$resourceGold">
+              {meta.xpLabel}
+            </Text>
+          </XStack>
+        </YStack>
       </Card>
     </YStack>
   );
@@ -334,58 +403,10 @@ export default function QuestsGallery() {
   const quests = state.quests;
   const exercisesById = state.exercisesById;
 
-  const questMeta = useMemo(() => {
-    return quests.map((q): QuestMeta => {
-      const muscles = new Set<MuscleCode>();
-      const equipment = new Set<EquipmentCode>();
-
-      for (const qex of q.exercises) {
-        const ex = exercisesById[qex.exerciseId];
-        if (!ex) continue;
-        equipment.add(ex.equipment);
-        for (const m of ex.muscles) muscles.add(m);
-      }
-
-      const durationSeconds = estimateQuestTemplateSeconds({
-        template: q,
-        exercisesById,
-        userLevel: "medium",
-      });
-      const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
-      const estimate = formatDuration(durationSeconds, language);
-      const muscleList = [...muscles];
-
-      return {
-        quest: q,
-        muscles: muscleList,
-        equipment: [...equipment],
-        tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
-        durationSeconds,
-        xp,
-        cover: resolveCoverImage(q.imagePath),
-        title: language === "fr" ? q.frTitle : q.enTitle,
-        description: language === "fr" ? q.frDescription : q.enDescription,
-        glyphs: muscleList.map((m) => ({
-          code: m,
-          bg: getExerciseColorTokens(m).bg,
-          label: MUSCLE_LABELS[m]?.[language] ?? m,
-        })),
-        metaLabel: [
-          t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
-          t("quests.exercises", {
-            count: q.exercises.length,
-            defaultValue: `${q.exercises.length} exercises`,
-          }),
-          // What kind of session this is, so the hero knows before they tap. Absent on
-          // user-authored quests, which declare no archetype.
-          q.archetype ? t(`quests.archetype_${q.archetype}`) : null,
-          t("quests.reward_xp", { count: xp, defaultValue: `+${xp} XP` }),
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      };
-    });
-  }, [exercisesById, quests, language, t]);
+  const questMeta = useMemo(
+    () => quests.map((q) => buildQuestMeta(q, exercisesById, language, t)),
+    [exercisesById, quests, language, t],
+  );
 
   const availableMuscles = useMemo(() => {
     const s = new Set<MuscleCode>();
@@ -487,7 +508,7 @@ export default function QuestsGallery() {
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
           recycleItems
-          estimatedItemSize={110}
+          estimatedItemSize={240}
           contentContainerStyle={{
             paddingTop: 8,
             paddingBottom:

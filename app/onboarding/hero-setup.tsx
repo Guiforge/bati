@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,18 +28,18 @@ export default function HeroSetup() {
   const [name, setName] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
-  const trimmedName = useMemo(() => name.trim(), [name]);
+  const trimmedName = name.trim();
   const isValidName = trimmedName.length >= MIN_NAME_LENGTH;
 
-  const handleChangeText = useCallback((text: string) => {
+  const handleChangeText = (text: string) => {
     setName(text.slice(0, MAX_NAME_LENGTH));
-  }, []);
+  };
 
-  const handleContinue = useCallback(async () => {
+  const handleContinue = async () => {
     if (!isValidName) return;
     await setVillageName(trimmedName);
     router.push("/onboarding/training-level");
-  }, [isValidName, setVillageName, trimmedName, router]);
+  };
 
   const inputBorderColor = isFocused
     ? theme.primary?.val

@@ -38,7 +38,6 @@ const METRICS: OathMetric[] = [
 /** Sessions per week offered in the custom form. Two is a real answer, not a lesser one. */
 const WEEKLY_TARGETS = [2, 3, 4];
 
-/** Chip wrappers exist only so the list rows don't rebind a closure on every render. */
 function MetricChip({
   metric,
   selected,
@@ -49,13 +48,12 @@ function MetricChip({
   onSelect: (metric: OathMetric) => void;
 }) {
   const { t } = useTranslation();
-  const press = useCallback(() => onSelect(metric), [onSelect, metric]);
 
   return (
     <Chip
       label={t(`oath.metric_label_${metric}`)}
       tone={selected ? "primary" : "default"}
-      onPress={press}
+      onPress={() => onSelect(metric)}
     />
   );
 }
@@ -70,13 +68,12 @@ function WeeklyChip({
   onSelect: (value: number) => void;
 }) {
   const { t } = useTranslation();
-  const press = useCallback(() => onSelect(value), [onSelect, value]);
 
   return (
     <Chip
       label={t("oath.weekly_chip", { count: value })}
       tone={selected ? "primary" : "default"}
-      onPress={press}
+      onPress={() => onSelect(value)}
     />
   );
 }
@@ -92,9 +89,13 @@ function ExerciseChip({
   selected: boolean;
   onSelect: (id: number) => void;
 }) {
-  const press = useCallback(() => onSelect(exercise.id), [onSelect, exercise.id]);
-
-  return <Chip label={label} tone={selected ? "primary" : "default"} onPress={press} />;
+  return (
+    <Chip
+      label={label}
+      tone={selected ? "primary" : "default"}
+      onPress={() => onSelect(exercise.id)}
+    />
+  );
 }
 
 /** A ready-made oath: tap to swear it, no target to guess. */
@@ -107,10 +108,8 @@ function PresetRow({
   label: string;
   onSwear: (preset: OathPreset) => void;
 }) {
-  const press = useCallback(() => onSwear(preset), [onSwear, preset]);
-
   return (
-    <Card testID="oath-preset" bg="$surface" onPress={press}>
+    <Card testID="oath-preset" bg="$surface" onPress={() => onSwear(preset)}>
       <XStack items="center" gap="$3">
         <GameIcon name="star" size={20} color="$primary" />
         <Text flex={1} fontWeight="700" fontSize={15} color="$text">

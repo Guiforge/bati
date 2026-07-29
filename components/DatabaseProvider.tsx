@@ -1,5 +1,5 @@
 import * as SplashScreen from "expo-splash-screen";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { db } from "@/db/client";
@@ -166,18 +166,16 @@ interface DatabaseProviderProps {
 export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const { t } = useTranslation();
 
-  const migrationMaxIdx = useMemo(() => {
-    // Allows quickly isolating a hanging migration on-device.
-    // Examples:
-    // - EXPO_PUBLIC_MIGRATION_MAX_IDX=0  -> only schema
-    // - EXPO_PUBLIC_MIGRATION_MAX_IDX=1  -> schema + seed_exercises
-    // Default: run all migrations.
-    const raw = process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
-    const parsed = raw === undefined ? Number.POSITIVE_INFINITY : Number(raw);
-    return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
-  }, []);
+  // Allows quickly isolating a hanging migration on-device.
+  // Examples:
+  // - EXPO_PUBLIC_MIGRATION_MAX_IDX=0  -> only schema
+  // - EXPO_PUBLIC_MIGRATION_MAX_IDX=1  -> schema + seed_exercises
+  // Default: run all migrations.
+  const rawMaxIdx = process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
+  const parsedMaxIdx = rawMaxIdx === undefined ? Number.POSITIVE_INFINITY : Number(rawMaxIdx);
+  const migrationMaxIdx = Number.isFinite(parsedMaxIdx) ? parsedMaxIdx : Number.POSITIVE_INFINITY;
 
-  const migrationConfig = useMemo(() => {
+  const migrationConfig = (() => {
     const entries = migrations.journal?.entries ?? [];
     const filteredEntries = entries.filter((e) => e.idx <= migrationMaxIdx);
 
@@ -214,7 +212,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
       },
       migrations: filteredMigrations,
     };
-  }, [migrationMaxIdx]);
+  })();
 
   const [migrationState, setMigrationState] = useState<MigrationState>({
     success: false,

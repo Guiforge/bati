@@ -1,5 +1,4 @@
 import * as Haptics from "expo-haptics";
-import { useCallback } from "react";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -9,52 +8,40 @@ import { useSettingsStore } from "@/stores/settings";
 export function useHaptics() {
   const hapticsEnabled = useSettingsStore((s) => s.hapticsEnabled);
 
-  const impact = useCallback(
-    (style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Medium) => {
-      if (hapticsEnabled) {
-        Haptics.impactAsync(style).catch(() => {
-          // Haptics errors are non-critical
-        });
-      }
-    },
-    [hapticsEnabled],
-  );
+  function impact(style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Medium) {
+    if (hapticsEnabled) {
+      Haptics.impactAsync(style).catch(() => {
+        // Haptics errors are non-critical
+      });
+    }
+  }
 
-  const notification = useCallback(
-    (type: Haptics.NotificationFeedbackType) => {
-      if (hapticsEnabled) {
-        Haptics.notificationAsync(type).catch(() => {
-          // Haptics errors are non-critical
-        });
-      }
-    },
-    [hapticsEnabled],
-  );
+  function notification(type: Haptics.NotificationFeedbackType) {
+    if (hapticsEnabled) {
+      Haptics.notificationAsync(type).catch(() => {
+        // Haptics errors are non-critical
+      });
+    }
+  }
 
-  const selection = useCallback(() => {
+  function selection() {
     if (hapticsEnabled) {
       Haptics.selectionAsync().catch(() => {
         // Haptics errors are non-critical
       });
     }
-  }, [hapticsEnabled]);
+  }
 
   return {
     impact,
     notification,
     selection,
     // Common presets
-    lightImpact: useCallback(() => impact(Haptics.ImpactFeedbackStyle.Light), [impact]),
-    mediumImpact: useCallback(() => impact(Haptics.ImpactFeedbackStyle.Medium), [impact]),
-    heavyImpact: useCallback(() => impact(Haptics.ImpactFeedbackStyle.Heavy), [impact]),
-    success: useCallback(
-      () => notification(Haptics.NotificationFeedbackType.Success),
-      [notification],
-    ),
-    warning: useCallback(
-      () => notification(Haptics.NotificationFeedbackType.Warning),
-      [notification],
-    ),
-    error: useCallback(() => notification(Haptics.NotificationFeedbackType.Error), [notification]),
+    lightImpact: () => impact(Haptics.ImpactFeedbackStyle.Light),
+    mediumImpact: () => impact(Haptics.ImpactFeedbackStyle.Medium),
+    heavyImpact: () => impact(Haptics.ImpactFeedbackStyle.Heavy),
+    success: () => notification(Haptics.NotificationFeedbackType.Success),
+    warning: () => notification(Haptics.NotificationFeedbackType.Warning),
+    error: () => notification(Haptics.NotificationFeedbackType.Error),
   };
 }

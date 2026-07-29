@@ -18,9 +18,9 @@ import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
 import type { ActiveAdventureRun, AdventureDetails, AdventureStepTemplate } from "@/db";
 import {
+  adventureWeeks,
   Difficulty,
   estimateQuestTemplateSeconds,
-  formatDuration,
   getActiveAdventureRun,
   getAdventureDetails,
   getRecentSessionHistory,
@@ -433,13 +433,11 @@ export default function AdventureDetailsScreen() {
                     })}
                   />
 
-                  {preview ? (
-                    <Chip
-                      label={t("quests.estimate", {
-                        duration: formatDuration(preview.durationSeconds, langKey),
-                      })}
-                    />
-                  ) : null}
+                  <Chip
+                    label={t("adventures.weeks", {
+                      count: adventureWeeks(effectiveSteps.length),
+                    })}
+                  />
 
                   {preview ? (
                     <Chip

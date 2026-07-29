@@ -63,7 +63,7 @@ jest.mock("@/db", () => ({
   startAdventureRun: jest.fn(),
   suggestDifficultyFromSessions: jest.fn().mockReturnValue("medium"),
   estimateQuestTemplateSeconds: jest.fn().mockReturnValue(300),
-  formatDuration: jest.fn().mockReturnValue("5 min"),
+  adventureWeeks: jest.fn().mockReturnValue(1),
 }));
 
 test("boss adventure CTA reads Start Adventure on step 1, not Fight Boss", async () => {

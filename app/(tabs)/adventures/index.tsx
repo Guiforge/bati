@@ -20,8 +20,8 @@ import {
 } from "@/constants/exerciseColors";
 import {
   type Adventure,
+  adventureWeeks,
   estimateQuestTemplateSeconds,
-  formatDuration,
   listAdventures,
   listExercises,
 } from "@/db";
@@ -199,7 +199,7 @@ export default function AdventuresGallery() {
           ? item.frDescription || q.frDescription
           : item.enDescription || q.enDescription;
 
-      const estimate = formatDuration(row.durationSeconds, language);
+      const weeks = adventureWeeks(item.stepsCount);
       const xp = row.xp;
 
       const kindLabel =
@@ -264,9 +264,9 @@ export default function AdventuresGallery() {
 
               <XStack gap="$2" flexWrap="wrap">
                 <Chip
-                  label={t("quests.estimate", {
-                    duration: estimate,
-                    defaultValue: `≈ ${estimate}`,
+                  label={t("adventures.weeks", {
+                    count: weeks,
+                    defaultValue: `≈ ${weeks} weeks`,
                   })}
                 />
                 <Chip

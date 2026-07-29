@@ -32,6 +32,14 @@ export function estimateQuestSeconds(quest: EstimateQuestInput) {
   return rounds * workPerRound + restCount * restSeconds;
 }
 
+/**
+ * An adventure is a multi-session campaign — "≈ 32 min" describes one step, not the journey.
+ * Weeks read like a training plan: steps spread over the hero's weekly rhythm.
+ */
+export function adventureWeeks(stepsCount: number, sessionsPerWeek = 3) {
+  return Math.max(1, Math.ceil(Math.max(0, stepsCount) / Math.max(1, sessionsPerWeek)));
+}
+
 export function formatDuration(seconds: number, lang: "en" | "fr" = "en") {
   const s = Math.max(0, Math.round(seconds));
   const m = Math.floor(s / 60);

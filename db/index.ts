@@ -59,6 +59,7 @@ export {
 export { suggestDifficultyFromSessions } from "./difficultySuggestion";
 export { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
 export {
+  adventureWeeks,
   estimateExerciseSeconds,
   estimateQuestSeconds,
   formatDuration,

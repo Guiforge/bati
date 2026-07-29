@@ -240,6 +240,8 @@
     "invalid_id": "Invalid adventure",
     "load_error": "Failed to load adventure",
     "steps": "{{count}} steps",
+    "weeks_one": "≈ {{count}} week",
+    "weeks_other": "≈ {{count}} weeks",
     "steps_title": "Campaign steps",
     "step_label": "Step {{count}}",
     "step_completed": "Completed",

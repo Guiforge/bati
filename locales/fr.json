@@ -34,7 +34,9 @@
     "step_label": "Étape {{count}}",
     "step_locked": "Verrouillée",
     "steps": "{{count}} étapes",
-    "steps_title": "Étapes de la campagne"
+    "steps_title": "Étapes de la campagne",
+    "weeks_one": "≈ {{count}} semaine",
+    "weeks_other": "≈ {{count}} semaines"
   },
   "avatars": {
     "archer": "Archer",

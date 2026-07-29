@@ -13,7 +13,7 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
-import { getQuestAsset, getSportSpriteAsset } from "@/constants/assetMap";
+import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
   getExerciseColorTokens,
@@ -52,35 +52,30 @@ type QuestGlyph = {
   code: MuscleCode;
   bg: ExerciseColorTokens["bg"];
   label: string;
-  sprite: ImageSourcePropType;
 };
 
-const GLYPH_IMAGE_STYLE = { width: 14, height: 14 } as const;
 const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
 
-/** Discreet muscle-group glyphs so the gallery reads at a glance without adding another chip row. */
+/**
+ * Discreet muscle-group dots so the gallery reads at a glance without adding another chip
+ * row. Plain colored dots, not sprite images: the previous version put up to 6 expo-image
+ * instances per row, each re-decoded on recycle while scrolling.
+ */
 const MuscleGlyphs = memo(function MuscleGlyphs({ glyphs }: { glyphs: QuestGlyph[] }) {
   if (glyphs.length === 0) return null;
   return (
-    <XStack gap="$1" items="center">
+    <XStack gap="$1.5" items="center">
       {glyphs.map((g) => (
         <YStack
           key={g.code}
-          width={22}
-          height={22}
-          rounded={11}
+          width={10}
+          height={10}
+          rounded={5}
           bg={g.bg}
-          items="center"
-          justify="center"
+          borderWidth={1}
+          borderColor="$borderStrong"
           accessibilityLabel={g.label}
-        >
-          <Image
-            source={g.sprite}
-            recyclingKey={g.code}
-            style={GLYPH_IMAGE_STYLE}
-            contentFit="contain"
-          />
-        </YStack>
+        />
       ))}
     </XStack>
   );
@@ -105,10 +100,8 @@ type QuestMeta = {
   title: string;
   description: string;
   glyphs: QuestGlyph[];
-  estimateLabel: string;
-  exercisesLabel: string;
-  archetypeLabel: string | null;
-  xpLabel: string;
+  /** "≈ 12 min · 4 exercises · Strength · +45 XP" — one Text instead of four bordered Chips. */
+  metaLabel: string;
 };
 
 const QuestRow = memo(function QuestRow({
@@ -157,18 +150,13 @@ const QuestRow = memo(function QuestRow({
               <MuscleGlyphs glyphs={meta.glyphs} />
             </XStack>
 
-            <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
+            <Paragraph color="$textSecondary" size="$3" numberOfLines={1}>
               {meta.description}
             </Paragraph>
 
-            <XStack gap="$2" flexWrap="wrap" pt="$1">
-              <Chip label={meta.estimateLabel} />
-              <Chip label={meta.exercisesLabel} tone="primary" />
-              {/* What kind of session this is, so the hero knows before they tap. Absent on
-                  user-authored quests, which declare no archetype. */}
-              {meta.archetypeLabel ? <Chip label={meta.archetypeLabel} tone="secondary" /> : null}
-              <Chip label={meta.xpLabel} tone="secondary" />
-            </XStack>
+            <Text fontSize={12} fontWeight="700" color="$textSecondary" pt="$1">
+              {meta.metaLabel}
+            </Text>
           </YStack>
         </XStack>
       </Card>
@@ -381,15 +369,20 @@ export default function QuestsGallery() {
           code: m,
           bg: getExerciseColorTokens(m).bg,
           label: MUSCLE_LABELS[m]?.[language] ?? m,
-          sprite: getSportSpriteAsset(m),
         })),
-        estimateLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
-        exercisesLabel: t("quests.exercises", {
-          count: q.exercises.length,
-          defaultValue: `${q.exercises.length} exercises`,
-        }),
-        archetypeLabel: q.archetype ? t(`quests.archetype_${q.archetype}`) : null,
-        xpLabel: t("quests.reward_xp", { count: xp, defaultValue: `+${xp} XP` }),
+        metaLabel: [
+          t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
+          t("quests.exercises", {
+            count: q.exercises.length,
+            defaultValue: `${q.exercises.length} exercises`,
+          }),
+          // What kind of session this is, so the hero knows before they tap. Absent on
+          // user-authored quests, which declare no archetype.
+          q.archetype ? t(`quests.archetype_${q.archetype}`) : null,
+          t("quests.reward_xp", { count: xp, defaultValue: `+${xp} XP` }),
+        ]
+          .filter(Boolean)
+          .join(" · "),
       };
     });
   }, [exercisesById, quests, language, t]);
@@ -432,9 +425,13 @@ export default function QuestsGallery() {
   );
 
   return (
-    <YStack flex={1} bg="$background">
+    // Opaque background on purpose: $background is translucent (alpha 0.92) over the
+    // full-screen AppBackground image, which makes the compositor blend the entire
+    // viewport on every scroll frame. Same RGB as $background, so visually identical
+    // (the image showed through at ~1.4%).
+    <YStack flex={1} bg="$bgDark">
       {/* Fixed Header - stays in place */}
-      <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
+      <YStack bg="$bgDark" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
         {/* Title Row */}
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$2">
@@ -490,7 +487,7 @@ export default function QuestsGallery() {
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
           recycleItems
-          estimatedItemSize={170}
+          estimatedItemSize={110}
           contentContainerStyle={{
             paddingTop: 8,
             paddingBottom:

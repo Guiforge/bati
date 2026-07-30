@@ -48,7 +48,7 @@ export function HomeHeader() {
         onPress={() => router.push("/settings")}
       >
         <Avatar.Image source={avatar.source} />
-        <Avatar.Fallback backgroundColor="$primary" />
+        <Avatar.Fallback background="$primary" />
       </Avatar>
 
       {/* Identity & XP */}

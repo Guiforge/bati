@@ -1,4 +1,4 @@
-import { LegendList } from "@legendapp/list";
+import { LegendList } from "@legendapp/list/react-native";
 import { Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";

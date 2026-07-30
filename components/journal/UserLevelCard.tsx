@@ -78,7 +78,7 @@ export function UserLevelCard() {
             </Text>
           </XStack>
           <Progress value={levelInfo.xpProgress} bg="rgba(255,255,255,0.3)">
-            <Progress.Indicator animation="quick" bg="$text" />
+            <Progress.Indicator transition="quick" bg="$text" />
           </Progress>
         </YStack>
       </YStack>

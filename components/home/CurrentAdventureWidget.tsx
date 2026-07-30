@@ -54,7 +54,7 @@ export function CurrentAdventureWidget() {
       elevation={5}
       onPress={handlePress}
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
-      animation="quick"
+      transition="quick"
       overflow="hidden"
       mb="$2"
     >

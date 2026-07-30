@@ -404,7 +404,7 @@ export default function AdventureDetailsScreen() {
               bg={tokens?.bg ?? "$surface"}
               p="$0"
               overflow="hidden"
-              animation={reducedMotion ? undefined : "bouncy"}
+              transition={reducedMotion ? undefined : "bouncy"}
               enterStyle={{ opacity: 0, scale: 0.96, y: 10 }}
             >
               {heroImage ? (

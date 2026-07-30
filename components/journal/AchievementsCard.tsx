@@ -131,7 +131,7 @@ export function AchievementsCard() {
         borderColor="$borderStrong"
         rounded="$4"
       >
-        <Progress.Indicator animation="bouncy" bg="$primary" />
+        <Progress.Indicator transition="bouncy" bg="$primary" />
       </Progress>
 
       {/* Category Filters */}
@@ -193,7 +193,7 @@ function AchievementRow({
       borderWidth={1}
       borderColor={isUnlocked ? "$success" : "$text"}
       opacity={isUnlocked ? 1 : 0.7}
-      animation="quick"
+      transition="quick"
       enterStyle={{ opacity: 0, x: 20 }}
     >
       {/* Icon */}
@@ -241,7 +241,7 @@ function AchievementRow({
             rounded="$2"
             mt="$1"
           >
-            <Progress.Indicator animation="bouncy" bg="$primary" opacity={0.8} />
+            <Progress.Indicator transition="bouncy" bg="$primary" opacity={0.8} />
           </Progress>
         )}
       </YStack>

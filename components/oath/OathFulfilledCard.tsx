@@ -15,7 +15,7 @@ export function OathFulfilledCard({ oath, bonusXp }: { oath: OathProgress; bonus
 
   return (
     <Card
-      animation="bouncy"
+      transition="bouncy"
       enterStyle={{ opacity: 0, scale: 0.92, y: 14 }}
       width="100%"
       maxW={520}

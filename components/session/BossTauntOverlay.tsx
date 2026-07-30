@@ -62,7 +62,7 @@ export function BossTauntOverlay() {
   return (
     <YStack
       position="absolute"
-      animation="bouncy"
+      transition="bouncy"
       enterStyle={{ opacity: 0, scale: 0.5, y: -20 }}
       exitStyle={{ opacity: 0, scale: 0.5, y: -20 }}
       style={{ top: 120, right: 20, zIndex: 1000 }}

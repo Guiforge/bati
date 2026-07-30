@@ -21,9 +21,11 @@ let mockSavedSlot: string | null = null;
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn(async () => mockSavedSlot),
+    // biome-ignore lint/suspicious/useAwait: mirrors preferences' real Promise<void> signature
     setSavedSession: jest.fn(async (v: string) => {
       mockSavedSlot = v;
     }),
+    // biome-ignore lint/suspicious/useAwait: mirrors preferences' real Promise<void> signature
     clearSavedSession: jest.fn(async () => {
       mockSavedSlot = null;
     }),

@@ -91,14 +91,14 @@ export function BossPhaseImage({
         borderColor={isEnraged ? "$error" : "$text"}
         items="center"
         justify="center"
-        animation={isEnraged ? "bouncy" : "quick"}
+        transition={isEnraged ? "bouncy" : "quick"}
         scale={isTransitioning ? 1.2 : 1}
         rotate={isTransitioning ? "10deg" : "0deg"}
         opacity={isTransitioning ? 0.7 : 1}
         // Pulsing animation for enraged state
         {...(isEnraged && {
           animateOnly: ["scale", "opacity"],
-          animation: "bouncy",
+          transition: "bouncy",
         })}
       >
         <Image
@@ -110,7 +110,7 @@ export function BossPhaseImage({
       </YStack>
 
       {/* Phase indicator (small dots) */}
-      <YStack flexDirection="row" gap="$1" items="center" animation="quick" opacity={0.7}>
+      <YStack flexDirection="row" gap="$1" items="center" transition="quick" opacity={0.7}>
         {[1, 2, 3, 4].map((phase) => (
           <YStack
             key={phase}

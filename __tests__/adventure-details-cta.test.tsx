@@ -69,7 +69,7 @@ jest.mock("@/db", () => ({
 
 test("boss adventure CTA reads Start Adventure on step 1, not Fight Boss", async () => {
   const { findByText, queryByText } = await render(
-    <TamaguiProvider config={config}>
+    <TamaguiProvider config={config} defaultTheme="dark">
       <AdventureDetailsScreen />
     </TamaguiProvider>,
   );
@@ -83,7 +83,7 @@ test("a completed adventure offers a replay and wears its stars", async () => {
   db.getFinishedRunCountsByAdventure.mockResolvedValue(new Map([[1, 2]]));
 
   const { findByText, queryByText } = await render(
-    <TamaguiProvider config={config}>
+    <TamaguiProvider config={config} defaultTheme="dark">
       <AdventureDetailsScreen />
     </TamaguiProvider>,
   );

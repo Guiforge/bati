@@ -41,7 +41,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
   };
 
   return (
-    <Card bg="$pastelOrange" rounded="$6" animation="quick" enterStyle={{ opacity: 0, y: -10 }}>
+    <Card bg="$pastelOrange" rounded="$6" transition="quick" enterStyle={{ opacity: 0, y: -10 }}>
       <YStack gap="$3">
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primary" />

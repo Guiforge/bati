@@ -16,7 +16,6 @@ jest.mock("expo-router", () => ({
   // The hook loads on focus; run the callback once, like a first focus.
   useFocusEffect: (cb: () => undefined | (() => void)) => {
     const { useEffect } = require("react");
-    // biome-ignore lint/correctness/useExhaustiveDependencies: mirrors expo-router's own signature
     useEffect(() => cb(), []);
   },
 }));

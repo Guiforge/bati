@@ -60,7 +60,7 @@ export function CountdownView() {
         <YStack
           items="center"
           gap="$2"
-          animation={reducedMotion ? undefined : "bouncy"}
+          transition={reducedMotion ? undefined : "bouncy"}
           enterStyle={reducedMotion ? undefined : { scale: 0.9 }}
         >
           <H1
@@ -84,7 +84,7 @@ export function CountdownView() {
           lineHeight={140}
           color="$text"
           fontFamily="$body"
-          animation={reducedMotion ? undefined : "quick"}
+          transition={reducedMotion ? undefined : "quick"}
           key={reducedMotion ? undefined : String(remainingSeconds)}
           enterStyle={reducedMotion ? undefined : { scale: 0.92, opacity: 0.6 }}
           style={{ textAlign: "center" }}

@@ -57,22 +57,22 @@ describe("BossTauntOverlay", () => {
 
   it("keeps the taunt schedule alive across HP updates on the same fight", async () => {
     const { getByText, queryByText } = await render(
-      <TamaguiProvider config={config}>
+      <TamaguiProvider config={config} defaultTheme="dark">
         <BossTauntOverlay />
       </TamaguiProvider>,
     );
 
-    await act(async () => {
+    await act(() => {
       jest.advanceTimersByTime(10_000);
     });
     expect(queryByText(BOSS_TAUNTS.en[0])).toBeNull();
 
     // A hit lands: same fight (id 1), new object, lower HP — must not reset the timer.
-    await act(async () => {
+    await act(() => {
       useSessionStore.setState({ bossFight: makeBossFight(90) });
     });
 
-    await act(async () => {
+    await act(() => {
       jest.advanceTimersByTime(5_000);
     });
 

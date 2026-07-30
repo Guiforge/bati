@@ -80,7 +80,13 @@ export function BossHpBar({
           </Text>
         </XStack>
         <XStack items="center" gap="$1">
-          <Text fontWeight="700" fontSize={16} color={hpColor} fontFamily="$body" animation="quick">
+          <Text
+            fontWeight="700"
+            fontSize={16}
+            color={hpColor}
+            fontFamily="$body"
+            transition="quick"
+          >
             {currentHp}
           </Text>
           <Text fontWeight="700" fontSize={12} color="$text" opacity={0.5}>
@@ -99,7 +105,7 @@ export function BossHpBar({
           borderColor="$borderStrong"
           rounded="$4"
         >
-          <Progress.Indicator animation={isEnraged ? "bouncy" : "quick"} bg={hpColor} />
+          <Progress.Indicator transition={isEnraged ? "bouncy" : "quick"} bg={hpColor} />
         </Progress>
 
         {/* Damage Popup */}
@@ -110,7 +116,7 @@ export function BossHpBar({
             r={0}
             items="center"
             gap="$1"
-            animation="bouncy"
+            transition="bouncy"
             enterStyle={{ opacity: 0, y: 10, scale: 0.8 }}
             exitStyle={{ opacity: 0, y: -10 }}
           >
@@ -139,7 +145,7 @@ export function BossHpBar({
           color="$error"
           textTransform="uppercase"
           style={{ textAlign: "center" }}
-          animation="bouncy"
+          transition="bouncy"
         >
           🔥 {t("boss.enraged", "ENRAGED!")} 🔥
         </Text>

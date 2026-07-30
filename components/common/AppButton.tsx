@@ -49,7 +49,7 @@ export function AppButton({
       borderColor="$borderStrong"
       fontWeight="700"
       fontSize={20}
-      animation="quick"
+      transition="quick"
       pressStyle={{ opacity: 0.9, scale: 0.98 }}
       {...buttonProps}
     >

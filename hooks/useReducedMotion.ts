@@ -6,23 +6,23 @@ import { useSettingsStore } from "@/stores/settings";
  *
  * @example
  * const reducedMotion = useReducedMotion();
- * const animation = reducedMotion ? undefined : "quick";
- * <YStack animation={animation}>...</YStack>
+ * const transition = reducedMotion ? undefined : "quick";
+ * <YStack transition={transition}>...</YStack>
  */
 export function useReducedMotion(): boolean {
   return useSettingsStore((s) => s.reducedMotion);
 }
 
 /**
- * Returns animation props based on reduced motion preference.
- * If reduced motion is enabled, returns undefined for animation props.
+ * Returns transition props based on reduced motion preference.
+ * If reduced motion is enabled, returns undefined for transition props.
  *
  * @example
  * const animProps = useAnimationProps("quick", { opacity: 0, y: 20 });
  * <YStack {...animProps}>...</YStack>
  */
 export function useAnimationProps(
-  animation: string = "quick",
+  transition: string = "quick",
   enterStyle?: Record<string, number | string>,
 ) {
   const reducedMotion = useReducedMotion();
@@ -32,7 +32,7 @@ export function useAnimationProps(
   }
 
   return {
-    animation,
+    transition,
     ...(enterStyle ? { enterStyle } : {}),
   };
 }

@@ -12,7 +12,7 @@ import config from "@/tamagui.config";
 
 test("testID reaches the tree through AppButton, Card and a bare Button", async () => {
   const { getByTestId } = await render(
-    <TamaguiProvider config={config}>
+    <TamaguiProvider config={config} defaultTheme="dark">
       <AppButton testID="app-button">go</AppButton>
       <Card testID="card">
         <Text>body</Text>

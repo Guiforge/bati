@@ -451,7 +451,6 @@ export const useSessionStore = create<SessionState>()(
       });
     },
 
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Linear reward pipeline (save → records → streak → achievements → oath bonus → level), reads top-to-bottom
     saveSession: async (feedback) => {
       const { quest, userLevel, startTime, totalPausedTime, results, adventureRunStepId } = get();
       if (!quest || !startTime) throw new Error("No active session");

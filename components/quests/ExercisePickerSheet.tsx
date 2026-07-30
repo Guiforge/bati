@@ -59,12 +59,12 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
         onOpenChange={setOpen}
         snapPoints={[85]}
         dismissOnSnapToBottom
-        animation={reducedMotion ? undefined : "quick"}
+        transition={reducedMotion ? undefined : "quick"}
         zIndex={100_000}
       >
         <Sheet.Overlay
           bg="rgba(0,0,0,0.5)"
-          animation={reducedMotion ? undefined : "quick"}
+          transition={reducedMotion ? undefined : "quick"}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
         />

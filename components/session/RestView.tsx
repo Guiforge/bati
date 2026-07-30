@@ -68,14 +68,14 @@ export function RestView() {
       px="$4"
       gap="$6"
       justify="center"
-      animation={reducedMotion ? undefined : "quick"}
+      transition={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
       {/* Header */}
       <YStack
         items="center"
         gap="$2"
-        animation={reducedMotion ? undefined : "bouncy"}
+        transition={reducedMotion ? undefined : "bouncy"}
         enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
       >
         <GameIcon name="flame" size={40} color="$warning" />
@@ -117,7 +117,7 @@ export function RestView() {
           width="100%"
           style={{ maxWidth: 360 }}
         >
-          <Progress.Indicator animation="quick" bg="$primary" />
+          <Progress.Indicator transition="quick" bg="$primary" />
         </Progress>
         <XStack gap="$3">
           <Button
@@ -205,7 +205,7 @@ export function RestView() {
         borderWidth={1}
         borderColor="$borderStrong"
         gap="$2"
-        animation={reducedMotion ? undefined : "bouncy"}
+        transition={reducedMotion ? undefined : "bouncy"}
         enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
       >
         <Text color="$textSecondary" fontSize={12} fontWeight="700">

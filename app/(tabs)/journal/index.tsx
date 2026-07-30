@@ -1,4 +1,4 @@
-import { LegendList } from "@legendapp/list";
+import { LegendList } from "@legendapp/list/react-native";
 import { BarChart2, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";

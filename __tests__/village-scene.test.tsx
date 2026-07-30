@@ -52,7 +52,7 @@ function mockScene(buildings: village.VillageBuilding[]) {
 function renderScene() {
   return render(
     <SafeAreaProvider initialMetrics={METRICS}>
-      <TamaguiProvider config={config}>
+      <TamaguiProvider config={config} defaultTheme="dark">
         <VillageScene />
       </TamaguiProvider>
     </SafeAreaProvider>,

@@ -93,7 +93,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               borderColor="$borderStrong"
               items="center"
               gap="$2"
-              animation="quick"
+              transition="quick"
               enterStyle={{ opacity: 0, y: 20 }}
               exitStyle={{ opacity: 0, y: 20 }}
               shadowColor="$text"

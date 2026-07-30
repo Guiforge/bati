@@ -32,7 +32,7 @@ jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: (
 
 async function mountWarmup() {
   let result!: ReturnType<typeof render>;
-  await act(async () => {
+  await act(() => {
     result = render(
       <SafeAreaProvider
         initialMetrics={{
@@ -73,7 +73,7 @@ describe("WarmupView", () => {
   it("still advances on its own once the step's timer runs out", async () => {
     await mountWarmup();
 
-    await act(async () => {
+    await act(() => {
       jest.advanceTimersByTime(WARMUP_SEQUENCE[0].seconds * 1000 + 200);
     });
 

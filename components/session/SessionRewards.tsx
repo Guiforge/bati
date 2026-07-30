@@ -15,7 +15,7 @@ type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>
 
 // Shared bouncy reveal for each reward card.
 const revealProps = {
-  animation: "bouncy",
+  transition: "bouncy",
   enterStyle: { opacity: 0, scale: 0.92, y: 14 },
 } as const;
 

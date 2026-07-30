@@ -148,7 +148,7 @@ describe("useSessionTimer", () => {
     const { result } = await renderHook(() => useSessionTimer());
     expect(result.current.remainingSeconds).toBe(50);
 
-    await act(async () => {
+    await act(() => {
       jest.advanceTimersByTime(5000);
     });
 
@@ -162,7 +162,7 @@ describe("useSessionTimer", () => {
     expect(result.current.remainingSeconds).toBe(40);
 
     // Time passes while the hero is away; the frozen reading must not move.
-    await act(async () => {
+    await act(() => {
       jest.advanceTimersByTime(30_000);
     });
 

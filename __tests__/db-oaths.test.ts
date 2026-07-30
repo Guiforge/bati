@@ -114,6 +114,7 @@ describe("db/oaths", () => {
     logExercise(1, 10);
 
     await expect(
+      // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's onFulfilled: () => Promise<void>
       o.checkOathFulfilled(async () => {
         throw new Error("simulated crash while crediting the bonus");
       }),
@@ -122,6 +123,7 @@ describe("db/oaths", () => {
     expect(await o.getOath()).toMatchObject({ fulfilledAt: null });
 
     let credited = false;
+    // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's onFulfilled: () => Promise<void>
     const fulfilled = await o.checkOathFulfilled(async () => {
       credited = true;
     });

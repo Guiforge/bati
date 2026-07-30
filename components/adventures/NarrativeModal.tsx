@@ -31,17 +31,20 @@ export function NarrativeModal({
       <BlurView intensity={80} tint="dark" style={{ flex: 1 }}>
         <YStack flex={1} justify="center" items="center" p="$4">
           <Card
-            bordered
-            elevate
             width="100%"
             maxWidth={500}
             maxHeight="80%"
             bg="$bgLight"
             borderColor="$primary"
             borderWidth={1}
+            shadowColor="$shadowColor"
+            shadowRadius={8}
+            shadowOffset={{ width: 0, height: 4 }}
+            shadowOpacity={0.15}
+            elevation={5}
             p="$0"
             overflow="hidden"
-            animation={reducedMotion ? undefined : "bouncy"}
+            transition={reducedMotion ? undefined : "bouncy"}
             enterStyle={{ opacity: 0, scale: 0.9 }}
           >
             {/* Header */}
@@ -66,7 +69,7 @@ export function NarrativeModal({
                 onPress={onClose}
                 borderWidth={1}
                 borderColor="$borderStrong"
-                animation={reducedMotion ? undefined : "quick"}
+                transition={reducedMotion ? undefined : "quick"}
                 pressStyle={{ opacity: 0.9, scale: 0.98 }}
               >
                 <Button.Text color="white" fontWeight="bold" fontSize={18}>

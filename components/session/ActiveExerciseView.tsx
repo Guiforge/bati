@@ -92,7 +92,7 @@ export function ActiveExerciseView() {
       pb={insets.bottom + 16}
       px="$4"
       gap="$4"
-      animation={reducedMotion ? undefined : "quick"}
+      transition={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
       {/* Header: Progress & Pause */}
@@ -153,7 +153,7 @@ export function ActiveExerciseView() {
           borderColor="$borderStrong"
           rounded="$4"
         >
-          <Progress.Indicator animation="bouncy" bg="$text" opacity={0.35} />
+          <Progress.Indicator transition="bouncy" bg="$text" opacity={0.35} />
         </Progress>
         <XStack justify="space-between">
           <Text fontSize={10} fontWeight="700" color="$textSecondary">
@@ -188,7 +188,7 @@ export function ActiveExerciseView() {
             rounded="$6"
           >
             <Progress.Indicator
-              animation="quick"
+              transition="quick"
               bg={isOvertime ? "$success" : "$primary"}
               opacity={isOvertime ? 0.9 : 1}
             />
@@ -265,7 +265,7 @@ export function ActiveExerciseView() {
                   borderWidth={1}
                   borderColor="$borderStrong"
                   mt="$2"
-                  animation="quick"
+                  transition="quick"
                   enterStyle={{ opacity: 0, scale: 0.95 }}
                 >
                   <Text fontSize={14} color="$textSecondary" lineHeight={20}>
@@ -288,7 +288,7 @@ export function ActiveExerciseView() {
           width="100%"
           items="center"
           justify="center"
-          animation="quick"
+          transition="quick"
         >
           {isTimeBased ? (
             <YStack items="center" gap="$2">
@@ -340,7 +340,7 @@ export function ActiveExerciseView() {
                 <YStack
                   items="center"
                   key={reducedMotion ? undefined : adjustedReps}
-                  animation={reducedMotion ? undefined : "bouncy"}
+                  transition={reducedMotion ? undefined : "bouncy"}
                   enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
                   scale={1}
                 >

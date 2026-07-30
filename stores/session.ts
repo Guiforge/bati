@@ -23,7 +23,13 @@ import { isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
-import { diffVillageGrowth, getVillageBuildings, type VillageGrowth } from "@/db/village";
+import {
+  diffVillageGrowth,
+  diffVillageTier,
+  getVillageBuildings,
+  type VillageGrowth,
+  type VillageTierUp,
+} from "@/db/village";
 import { computeSessionXp } from "@/db/xp";
 import { rescheduleOathReminder } from "@/src/notifications";
 import { requestFlameWidgetUpdate } from "@/src/widget";
@@ -116,6 +122,7 @@ interface SessionState {
       nextQuestId: number | null;
     } | null;
     levelUp: { oldLevel: number; newLevel: number } | null;
+    tierUp: VillageTierUp | null;
     villageGrowth: VillageGrowth[];
   }>;
 }
@@ -552,6 +559,10 @@ export const useSessionStore = create<SessionState>()(
       const newLevel = calculateLevelFromXp(newTotalXp);
       const levelUp = newLevel > oldLevel ? { oldLevel, newLevel } : null;
 
+      // The village's own "grand moment": crossing a tier is bigger than any one
+      // building leveling up, but the per-building diff below can't see it.
+      const tierUp = diffVillageTier(oldLevel, newLevel);
+
       // Everything that could move a building's level (volume, boss count, village tier)
       // is settled now, so this is the one honest "after" snapshot for the diff.
       //
@@ -574,6 +585,7 @@ export const useSessionStore = create<SessionState>()(
         oathBonusXp,
         campaign,
         levelUp,
+        tierUp,
         villageGrowth,
       };
     },

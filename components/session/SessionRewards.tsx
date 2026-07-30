@@ -6,8 +6,9 @@ import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { OathFulfilledCard } from "@/components/oath/OathFulfilledCard";
 import { LevelPips } from "@/components/village/LevelPips";
-import { getBuildingIconAsset } from "@/constants/assetMap";
+import { getBuildingIconAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { getLevelTitle } from "@/db/userLevel";
+import { TIER_NAMES } from "@/db/village";
 import type { useSessionStore } from "@/stores/session";
 import { NewRecordsBadge } from "./NewRecordsBadge";
 
@@ -82,6 +83,26 @@ export function SessionRewards({
               </Text>
             </YStack>
           </XStack>
+        </Card>
+      )}
+
+      {/* Village tier crossed — the biggest village moment there is, bigger than any one
+          building leveling up, so it gets the real tier art instead of an icon. */}
+      {!!result.tierUp && (
+        <Card {...revealProps} width="100%" maxW={520} bg="$pastelPurple" p="$0" overflow="hidden">
+          <Image
+            source={getVillageTierAsset(result.tierUp.newTier)}
+            style={{ width: "100%", height: 140 }}
+            contentFit="cover"
+          />
+          <YStack p="$4" gap="$1" items="center">
+            <Text fontWeight="700" fontSize={13} color="$primary" textTransform="uppercase">
+              {t("session.village_tier_up_title", "Your village grew!")}
+            </Text>
+            <Text fontWeight="700" fontSize={20} color="$text" style={{ textAlign: "center" }}>
+              {isFr ? TIER_NAMES[result.tierUp.newTier].fr : TIER_NAMES[result.tierUp.newTier].en}
+            </Text>
+          </YStack>
         </Card>
       )}
 

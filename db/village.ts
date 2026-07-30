@@ -428,6 +428,15 @@ export function diffVillageGrowth(
     }));
 }
 
+export type VillageTierUp = { oldTier: VillageTier; newTier: VillageTier };
+
+/** Did this level jump cross into a new village tier — the "grand moment" of the scene? */
+export function diffVillageTier(oldLevel: number, newLevel: number): VillageTierUp | null {
+  const oldTier = getVillageTier(oldLevel);
+  const newTier = getVillageTier(newLevel);
+  return newTier > oldTier ? { oldTier, newTier } : null;
+}
+
 // ------------------------------------------------------------
 // Trophies
 // ------------------------------------------------------------

@@ -351,12 +351,12 @@ export function VictoryView() {
           burst doesn't fight the DB write + sound decode on the mount frame. */}
       {!reducedMotion && result && (
         <ConfettiCannon
-          // A boss defeat or a fulfilled oath is a big win — bigger, faster burst.
-          count={isBossDefeat || result.fulfilledOath ? 120 : 80}
+          // A boss defeat, a fulfilled oath, or a village tier crossed is a big win — bigger, faster burst.
+          count={isBossDefeat || result.fulfilledOath || result.tierUp ? 120 : 80}
           origin={{ x: width / 2, y: -20 }}
           autoStart={true}
           fadeOut={true}
-          explosionSpeed={isBossDefeat || result.fulfilledOath ? 450 : 350}
+          explosionSpeed={isBossDefeat || result.fulfilledOath || result.tierUp ? 450 : 350}
           fallSpeed={3000}
         />
       )}

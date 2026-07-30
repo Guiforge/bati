@@ -189,6 +189,21 @@ export function VillageScene() {
         </YStack>
 
         <YStack gap="$5" px="$4" pt="$4">
+          {/* Empty hamlet: the wall of silhouettes below needs one line saying why it's bare */}
+          {built.length === 0 && (
+            <YStack testID="village-empty" gap="$2" {...sectionAnim}>
+              <Text fontWeight="700" fontSize={16} color="$text">
+                {t("village.empty_title", "Nothing built yet")}
+              </Text>
+              <Text fontSize={13} color="$textSecondary">
+                {t(
+                  "village.empty_subtitle",
+                  "Your first quest will raise the first building here.",
+                )}
+              </Text>
+            </YStack>
+          )}
+
           {/* Built: derived from training, nothing to unlock by hand */}
           {built.length > 0 && (
             <YStack testID="village-built" gap="$3" {...sectionAnim}>

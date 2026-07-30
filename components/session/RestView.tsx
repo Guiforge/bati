@@ -13,7 +13,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { BossHpBar } from "./BossHpBar";
+import { BossArena } from "./BossArena";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one screen component, boss/rest branches read top-to-bottom
 export function RestView() {
@@ -95,9 +95,9 @@ export function RestView() {
         </H3>
       </YStack>
 
-      {/* Boss HP Bar (only for boss fights) */}
+      {/* The fight itself: the boss owns the top of the screen during a boss adventure. */}
       {bossFight && (
-        <BossHpBar
+        <BossArena
           currentHp={bossFight.currentHp}
           totalHp={bossFight.totalHp}
           bossImagePath={bossFight.imagePath}

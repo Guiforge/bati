@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { GameIcon } from "@/components/common/GameIcon";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { getExerciseBgForSessionStep } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -12,7 +13,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { BossHpBar } from "./BossHpBar";
+import { BossArena } from "./BossArena";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
 export function ActiveExerciseView() {
@@ -125,9 +126,9 @@ export function ActiveExerciseView() {
         />
       </XStack>
 
-      {/* Boss HP Bar (only for boss fights) */}
+      {/* The fight itself: the boss owns the top of the screen during a boss adventure. */}
       {bossFight && (
-        <BossHpBar
+        <BossArena
           currentHp={bossFight.currentHp}
           totalHp={bossFight.totalHp}
           bossImagePath={bossFight.imagePath}
@@ -208,37 +209,61 @@ export function ActiveExerciseView() {
         showsVerticalScrollIndicator={false}
       >
         <YStack items="center" justify="center" gap="$5">
-          {/* Exercise image — real per-exercise art, with placeholder fallback in getExerciseAsset */}
-          <YStack
-            width="100%"
-            aspectRatio={16 / 10}
-            bg="$surface"
-            rounded="$4"
-            overflow="hidden"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            items="center"
-            justify="center"
-          >
-            <Image
-              source={getExerciseAsset(currentEx.exercise.imagePath)}
-              style={{ width: "100%", height: "100%" }}
-              contentFit="cover"
-              transition={150}
-            />
-          </YStack>
+          {/* In a boss fight the arena above already owns the picture slot, so the exercise art
+              drops to a thumbnail beside its name. The screen swaps one image for the other
+              instead of stacking both — that is what keeps the column short enough for the CTA. */}
+          {!bossFight && (
+            <YStack
+              width="100%"
+              aspectRatio={16 / 10}
+              bg="$surface"
+              rounded="$4"
+              overflow="hidden"
+              borderWidth={1}
+              borderColor="$borderStrong"
+              items="center"
+              justify="center"
+            >
+              <Image
+                source={getExerciseAsset(currentEx.exercise.imagePath)}
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+                transition={150}
+              />
+            </YStack>
+          )}
 
           {/* Exercise Name + How to do it */}
           <YStack items="center" gap="$2" width="100%">
-            <H2
-              fontWeight="700"
-              fontSize={28}
-              lineHeight={32}
-              style={{ textAlign: "center" }}
-              color="$text"
-            >
-              {exerciseName}
-            </H2>
+            <XStack items="center" justify="center" gap="$3" width="100%">
+              {!!bossFight && (
+                <YStack
+                  width={52}
+                  height={52}
+                  bg="$surface"
+                  rounded="$4"
+                  overflow="hidden"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                >
+                  <Image
+                    source={getExerciseAsset(currentEx.exercise.imagePath)}
+                    style={{ width: "100%", height: "100%" }}
+                    contentFit="cover"
+                    transition={150}
+                  />
+                </YStack>
+              )}
+              <H2
+                fontWeight="700"
+                fontSize={28}
+                lineHeight={32}
+                style={{ textAlign: "center", flexShrink: 1 }}
+                color="$text"
+              >
+                {exerciseName}
+              </H2>
+            </XStack>
 
             {/* How to do it - expandable */}
             {exerciseDescription ? (
@@ -305,9 +330,13 @@ export function ActiveExerciseView() {
                 {isOvertime ? (
                   <>
                     {/* Overtime display - counting UP */}
-                    <Text fontSize={14} fontWeight="700" color="$textSecondary">
-                      🔥 {t("session.overtime")} 🔥
-                    </Text>
+                    <XStack items="center" gap="$2">
+                      <GameIcon name="flame" size={16} color="$success" />
+                      <Text fontSize={14} fontWeight="700" color="$textSecondary">
+                        {t("session.overtime")}
+                      </Text>
+                      <GameIcon name="flame" size={16} color="$success" />
+                    </XStack>
                     <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$success">
                       {formatOvertime(overtimeSeconds)}
                     </H1>

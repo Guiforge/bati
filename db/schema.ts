@@ -225,6 +225,10 @@ export const adventures = sqliteTable(
     bossTotalHp: int(),
     bossWeaknessMuscle: text().$type<MuscleCode>(),
     bossResistanceMuscle: text().$type<MuscleCode>(),
+    // The monster's own painting (assets/images/bosses/*), distinct from the campaign cover
+    // above: a boss fight shows the thing you are hitting, not the poster for the journey.
+    // Null falls back to imagePath, so a boss without art still renders.
+    bossImagePath: text(),
 
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),

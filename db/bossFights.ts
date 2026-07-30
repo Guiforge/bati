@@ -22,7 +22,8 @@ export type BossFight = {
   defeatedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  // Adventure cover, reused as the BossPhaseImage base art (see docs/content/missing-image.md §1c).
+  // The monster's own painting when the campaign has one, else its cover as a fallback. Resolve
+  // with getBossAsset(): a fight should show what you are hitting, not the poster for the journey.
   imagePath: string;
   // The boss wears its adventure's title. Both locales travel together so the HUD can pick one
   // without a second query — the session store holds the fight, not the adventure.
@@ -85,6 +86,7 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
       bossWeaknessMuscle: adventures.bossWeaknessMuscle,
       bossResistanceMuscle: adventures.bossResistanceMuscle,
       imagePath: adventures.imagePath,
+      bossImagePath: adventures.bossImagePath,
       enTitle: adventures.enTitle,
       frTitle: adventures.frTitle,
     })
@@ -116,7 +118,7 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
       defeatedAt: row.defeatedAt,
       createdAt: row.createdAt ?? new Date(),
       updatedAt: row.updatedAt ?? new Date(),
-      imagePath: adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+      imagePath: adventure.bossImagePath ?? adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       enName: adventure.enTitle,
       frName: adventure.frTitle,
     };
@@ -150,7 +152,7 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
     defeatedAt: row.defeatedAt,
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
-    imagePath: adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+    imagePath: adventure.bossImagePath ?? adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
     enName: adventure.enTitle,
     frName: adventure.frTitle,
   };
@@ -172,6 +174,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
       createdAt: bossFights.createdAt,
       updatedAt: bossFights.updatedAt,
       imagePath: adventures.imagePath,
+      bossImagePath: adventures.bossImagePath,
       enTitle: adventures.enTitle,
       frTitle: adventures.frTitle,
     })
@@ -193,7 +196,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     defeatedAt: row.defeatedAt,
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
-    imagePath: row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+    imagePath: row.bossImagePath ?? row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
     enName: row.enTitle,
     frName: row.frTitle,
   };

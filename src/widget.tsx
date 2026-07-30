@@ -1,3 +1,5 @@
+"use no memo";
+
 import { Platform } from "react-native";
 import {
   FlexWidget,
@@ -33,9 +35,14 @@ function FlameWidget({ streak, flameLevel }: { streak: number; flameLevel: Flame
         borderRadius: 16,
       }}
     >
-      <TextWidget
-        text={flameLevel > 0 ? "🔥" : "🕯️"}
-        style={{ fontSize: 32, color: flameLevel > 0 ? FLAME_COLOR : DIM_COLOR }}
+      <FlexWidget
+        style={{
+          width: 32,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: flameLevel > 0 ? FLAME_COLOR : DIM_COLOR,
+          marginBottom: 8,
+        }}
       />
       <TextWidget
         text={String(streak)}

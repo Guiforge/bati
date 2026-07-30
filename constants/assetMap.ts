@@ -61,6 +61,14 @@ export const EXERCISE_ASSETS = {
   // The equipment-free pulls from 0015
   table_row: require("@/assets/images/exercises/table_row.png"),
   towel_door_row: require("@/assets/images/exercises/towel_door_row.png"),
+  // The mobility branch from 0024 — see docs/content/missing-image.md §7
+  wrist_circles: require("@/assets/images/exercises/wrist_circles.jpg"),
+  cat_cow: require("@/assets/images/exercises/cat_cow.jpg"),
+  thread_the_needle: require("@/assets/images/exercises/thread_the_needle.jpg"),
+  standing_forward_fold: require("@/assets/images/exercises/standing_forward_fold.jpg"),
+  downward_dog: require("@/assets/images/exercises/downward_dog.jpg"),
+  pigeon_pose: require("@/assets/images/exercises/pigeon_pose.jpg"),
+  worlds_greatest_stretch: require("@/assets/images/exercises/worlds_greatest_stretch.jpg"),
 } as const;
 
 // ============================================================
@@ -97,6 +105,11 @@ export const QUEST_ASSETS = {
   colossus_trial: require("@/assets/images/quests/colossus_trial.jpg"),
   storm_of_blades: require("@/assets/images/quests/storm_of_blades.jpg"),
   serpents_coil: require("@/assets/images/quests/serpents_coil.jpg"),
+  // Mobility branch (0024) — see docs/content/missing-image.md §7. Calm and unpeopled by
+  // design: these are rest-day sessions, and a cover that shouts undercuts what they are for.
+  dawn_ritual: require("@/assets/images/quests/dawn_ritual.jpg"),
+  hearthside_unbinding: require("@/assets/images/quests/hearthside_unbinding.jpg"),
+  handlers_vigil: require("@/assets/images/quests/handlers_vigil.jpg"),
 } as const;
 
 // ============================================================

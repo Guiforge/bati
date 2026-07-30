@@ -217,9 +217,15 @@ EXERCISES = [
      "head tucked and shoulder blades spread; the whole line of the spine glows with metallic "
      "silver-blue energy, seen from the side."),
     ("thread_the_needle",
-     "A fantasy athlete hero kneeling with one shoulder and the side of the head resting on the "
-     "ground, the opposite arm threaded through underneath and the hips stacked high over the "
-     "knees; the upper back and shoulder glow with silver-blue energy, seen from a low angle."),
+     "A fantasy athlete hero kneeling on all fours who has rotated their torso sideways: one "
+     "shoulder and the side of the head are pressed flat against the ground, and that same arm "
+     "is threaded straight through the gap under the chest so the hand sticks out past the "
+     "opposite knee, palm up. The other hand stays planted, the hips stay high and square over "
+     "the knees, and the chest faces the side wall rather than the floor. This is a spinal "
+     "rotation, not a forward reach: nothing extends in front of the head. The twisted upper "
+     "back and the grounded shoulder glow with silver-blue energy, seen from a low three-quarter "
+     "angle. The background must be dark navy-black filling the whole frame, with no coloured "
+     "border, halo or vignette of any kind."),
     ("standing_forward_fold",
      "A fantasy athlete hero folded forward from the hips with the torso hanging heavy, knees "
      "softly bent and hands drifting toward the floor, hair falling free; the hamstrings and lower "

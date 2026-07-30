@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react-native";
+import { render, waitFor } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
 import AdventureDetailsScreen from "@/app/(tabs)/adventures/[id]";
@@ -82,13 +82,21 @@ test("a completed adventure offers a replay and wears its stars", async () => {
   const db = require("@/db") as { getFinishedRunCountsByAdventure: jest.Mock };
   db.getFinishedRunCountsByAdventure.mockResolvedValue(new Map([[1, 2]]));
 
-  const { findByText, queryByText } = await render(
+  const { findByText, getByText, queryByText } = await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <AdventureDetailsScreen />
     </TamaguiProvider>,
   );
 
   expect(await findByText("Replay Adventure")).toBeVisible();
-  expect(await findByText("★★")).toBeVisible();
+
+  // The stars live inside the details Card, which mounts with `enterStyle={{ opacity: 0, … }}`.
+  // `findByText` resolves the moment the node joins the tree — sometimes mid-animation, while an
+  // ancestor is still fully transparent — so asserting visibility straight off it failed about
+  // one run in three. `waitFor` retries until the enter transition has settled, which keeps the
+  // assertion (they must be *visible*, not merely rendered) instead of weakening it to a
+  // truthiness check. The CTA above sits outside that Card and never raced.
+  await waitFor(() => expect(getByText("★★")).toBeVisible());
+
   expect(queryByText("Start Adventure")).toBeNull();
 });

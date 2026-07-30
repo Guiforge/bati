@@ -8,11 +8,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
-import { DifficultyProgressionCard } from "@/components/journal/DifficultyProgressionCard";
 import { JournalStats } from "@/components/journal/JournalStats";
 import { MonthlyCalendarCard } from "@/components/journal/MonthlyCalendarCard";
 import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
 import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
+import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
@@ -217,7 +217,7 @@ export default function JournalScreen() {
           ) : (
             <>
               <UserLevelCard />
-              <DifficultyProgressionCard />
+              <ProgressionCard />
               <PersonalRecordsCard />
               <AchievementsCard />
               <JournalStats sessions={history} />

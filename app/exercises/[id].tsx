@@ -125,22 +125,43 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
 
   return (
     <Card>
-      <YStack gap="$2">
-        <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
-          {t("exercises.next_step", "NEXT STEP").toUpperCase()}
-        </Text>
-        <Text color="$text" fontWeight="700" fontSize={18}>
-          {name}
-        </Text>
-        <Paragraph color="$text" opacity={0.7} size="$3">
-          {progression.isEarned
-            ? t("exercises.next_step_earned", "You have earned it — give it a try.")
-            : t("exercises.next_step_progress", {
-                count: remaining,
-                defaultValue: `Hit your target ${remaining} more times to earn it.`,
-              })}
-        </Paragraph>
-      </YStack>
+      {/* The pose was always in the payload and never rendered — a named step you cannot see is
+          a to-do list item, an illustrated one is a movement you want to try. */}
+      <XStack gap="$3" items="center">
+        <YStack
+          width={80}
+          height={80}
+          rounded="$8"
+          bg="$bgLight"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          overflow="hidden"
+        >
+          <Image
+            source={resolveAsset(progression.next.imagePath)}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="cover"
+            transition={200}
+          />
+        </YStack>
+
+        <YStack gap="$2" flex={1}>
+          <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
+            {t("exercises.next_step", "NEXT STEP").toUpperCase()}
+          </Text>
+          <Text color="$text" fontWeight="700" fontSize={18}>
+            {name}
+          </Text>
+          <Paragraph color="$text" opacity={0.7} size="$3">
+            {progression.isEarned
+              ? t("exercises.next_step_earned", "You have earned it — give it a try.")
+              : t("exercises.next_step_progress", {
+                  count: remaining,
+                  defaultValue: `Hit your target ${remaining} more times to earn it.`,
+                })}
+          </Paragraph>
+        </YStack>
+      </XStack>
     </Card>
   );
 }

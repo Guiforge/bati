@@ -157,7 +157,14 @@
     "decrease_title": "Recovery Recommended",
     "decrease_message": "It seems tough lately. Lowering difficulty can help you maintain consistency.",
     "maintain_title": "Steady Progress",
-    "maintain_message": "You found your sweet spot. Keep it up!"
+    "maintain_message": "You found your sweet spot. Keep it up!",
+    "chain_position": "Rung {{position}}/{{total}} · {{name}}",
+    "step_earned": "You have mastered {{name}} — this is the next step.",
+    "step_progress_one": "Hit your target {{count}} more time on {{name}} to earn it.",
+    "step_progress_other": "Hit your target {{count}} more times on {{name}} to earn it.",
+    "new_rung": "New step unlocked",
+    "new_rungs": "{{count}} new steps unlocked",
+    "new_rung_from": "You have mastered {{name}}"
   },
   "quests": {
     "gallery_title": "Quest gallery",

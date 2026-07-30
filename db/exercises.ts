@@ -159,14 +159,85 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
 /** Sessions meeting the target before the next variation is considered earned. */
 export const PROGRESSION_SESSIONS_REQUIRED = 3;
 
-export type NextProgression = {
-  /** The harder variation this exercise leads to. */
-  next: { id: number; enName: string; frName: string; imagePath: string };
-  /** How many of the last sessions on this exercise met or beat their target. */
+/** How many recent rows to scan when looking for the most recently trained movements. */
+const RECENT_RESULT_ROWS = 60;
+
+type MovementRef = { id: number; enName: string; frName: string; imagePath: string };
+
+/** One rung of the ladder, seen from below: the movement, and how close its next step is. */
+export type VariationStep = {
+  /** The movement being mastered. */
+  from: MovementRef;
+  /** The harder variation it leads to. */
+  next: MovementRef;
+  /** How many of the last sessions on `from` met or beat their target. */
   metTarget: number;
   required: number;
   isEarned: boolean;
 };
+
+/** Kept for the exercise screen, which imported this name before the ladder had other readers. */
+export type NextProgression = VariationStep;
+
+type LadderRow = MovementRef & { prerequisiteExerciseId: number | null };
+
+/** The whole ladder in one query — `exercises` is static seed content and ~50 rows deep. */
+async function fetchLadderRows(): Promise<LadderRow[]> {
+  return await db
+    .select({
+      id: exercises.id,
+      enName: exercises.enName,
+      frName: exercises.frName,
+      imagePath: exercises.imagePath,
+      prerequisiteExerciseId: exercises.prerequisiteExerciseId,
+    })
+    .from(exercises);
+}
+
+/**
+ * The last `limit` logged sets on one movement, most recent first, as "did it meet its target?".
+ *
+ * Rows, not sessions: a three-round quest logs three of them, and that is the semantic the ladder
+ * has always had. `id` breaks the tie because rows written in the same session share a timestamp
+ * to the second — without it "the last three" is not a stable set.
+ *
+ * ponytail: one indexed seek per movement (`completed_exercises_exercise_idx`), called with a
+ * handful of ids at a time. If a caller ever needs the whole ladder at once, replace it with a
+ * single ROW_NUMBER() window query.
+ */
+async function recentMetFlags(exerciseId: number, limit: number): Promise<boolean[]> {
+  const rows = await db
+    .select({
+      resultValue: schema.completedExercises.resultValue,
+      targetValue: schema.completedExercises.targetValue,
+    })
+    .from(schema.completedExercises)
+    .where(eq(schema.completedExercises.exerciseId, exerciseId))
+    .orderBy(desc(schema.completedExercises.performedAt), desc(schema.completedExercises.id))
+    .limit(limit);
+
+  return rows.map((r) => r.targetValue !== null && r.resultValue >= r.targetValue);
+}
+
+const stripPrerequisite = ({ id, enName, frName, imagePath }: LadderRow): MovementRef => ({
+  id,
+  enName,
+  frName,
+  imagePath,
+});
+
+async function buildStep(from: LadderRow, next: LadderRow): Promise<VariationStep> {
+  const flags = await recentMetFlags(from.id, PROGRESSION_SESSIONS_REQUIRED);
+  const metTarget = flags.filter(Boolean).length;
+
+  return {
+    from: stripPrerequisite(from),
+    next: stripPrerequisite(next),
+    metTarget,
+    required: PROGRESSION_SESSIONS_REQUIRED,
+    isEarned: metTarget >= PROGRESSION_SESSIONS_REQUIRED,
+  };
+}
 
 /**
  * What comes after this movement, and how close the hero is to it.
@@ -177,39 +248,153 @@ export type NextProgression = {
  * three logged sets met their target — rather than "3×12 clean reps", which would require seeing
  * technique the app cannot see.
  */
-export async function getNextProgression(exerciseId: number): Promise<NextProgression | null> {
-  const nextRows = await db
-    .select({
-      id: exercises.id,
-      enName: exercises.enName,
-      frName: exercises.frName,
-      imagePath: exercises.imagePath,
-    })
-    .from(exercises)
-    .where(eq(exercises.prerequisiteExerciseId, exerciseId))
-    .limit(1);
+export async function getNextProgression(exerciseId: number): Promise<VariationStep | null> {
+  const rows = await fetchLadderRows();
+  const from = rows.find((r) => r.id === exerciseId);
+  const next = rows.find((r) => r.prerequisiteExerciseId === exerciseId);
+  if (!from || !next) return null;
 
-  const next = nextRows[0];
-  if (!next) return null;
+  return await buildStep(from, next);
+}
 
-  const recent = await db
-    .select({
-      resultValue: schema.completedExercises.resultValue,
-      targetValue: schema.completedExercises.targetValue,
-    })
+/** A rung on the chain leading to a movement, and whether the hero has mastered it. */
+export type ChainRung = {
+  exercise: MovementRef;
+  metTarget: number;
+  required: number;
+  isEarned: boolean;
+};
+
+export type Chain = {
+  /** Easiest first, ending on the movement asked for. */
+  rungs: ChainRung[];
+  /** 1-based rung the hero is standing on: the first one not yet mastered. */
+  position: number;
+};
+
+/**
+ * The whole path up to a movement — what the hero has to own before it, and where they stand.
+ *
+ * Returns `null` when the movement is not on the ladder at all, so a caller can stay silent rather
+ * than render a chain of one. Nothing here gates anything: a hero can attempt the top of the chain
+ * tonight, this only says how far along the authored path they are.
+ */
+export async function getChainTo(exerciseId: number): Promise<Chain | null> {
+  const rows = await fetchLadderRows();
+  const byId = new Map(rows.map((r) => [r.id, r]));
+
+  const chain: LadderRow[] = [];
+  const seen = new Set<number>();
+  let cursor = byId.get(exerciseId);
+
+  // Walk down to the easiest variation. `seen` guards against a cycle in the seed data, which
+  // would otherwise hang the caller rather than fail.
+  while (cursor && !seen.has(cursor.id)) {
+    seen.add(cursor.id);
+    chain.unshift(cursor);
+    cursor = cursor.prerequisiteExerciseId ? byId.get(cursor.prerequisiteExerciseId) : undefined;
+  }
+
+  if (chain.length < 2) return null;
+
+  const rungs = await Promise.all(
+    chain.map(async (row): Promise<ChainRung> => {
+      const flags = await recentMetFlags(row.id, PROGRESSION_SESSIONS_REQUIRED);
+      const metTarget = flags.filter(Boolean).length;
+      return {
+        exercise: stripPrerequisite(row),
+        metTarget,
+        required: PROGRESSION_SESSIONS_REQUIRED,
+        isEarned: metTarget >= PROGRESSION_SESSIONS_REQUIRED,
+      };
+    }),
+  );
+
+  // Contiguous from the bottom: mastering a hard variation out of order does not skip the ones
+  // below it, and the count would otherwise read as progress the hero has not made.
+  let climbed = 0;
+  while (climbed < rungs.length && rungs[climbed].isEarned) climbed++;
+
+  return { rungs, position: Math.min(climbed + 1, rungs.length) };
+}
+
+/**
+ * The variations this session just unlocked.
+ *
+ * Same shape as `checkForNewRecords(sessionId)`: it answers "what did *this* session change?", so
+ * the victory screen can celebrate it once. A rung already earned before tonight returns nothing —
+ * otherwise every subsequent session would re-announce the same step.
+ */
+export async function checkForNewRungs(sessionId: number): Promise<VariationStep[]> {
+  const [rows, sessionRows] = await Promise.all([
+    fetchLadderRows(),
+    db
+      .selectDistinct({ exerciseId: schema.completedExercises.exerciseId })
+      .from(schema.completedExercises)
+      .where(eq(schema.completedExercises.sessionId, sessionId)),
+  ]);
+
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const unlocked: VariationStep[] = [];
+
+  for (const { exerciseId } of sessionRows) {
+    const from = byId.get(exerciseId);
+    const next = rows.find((r) => r.prerequisiteExerciseId === exerciseId);
+    if (!from || !next) continue;
+
+    // One row deeper than the threshold: the extra row is what the streak looked like *before*
+    // tonight's set joined it.
+    const flags = await recentMetFlags(from.id, PROGRESSION_SESSIONS_REQUIRED + 1);
+    const met = (offset: number) =>
+      flags.length >= offset + PROGRESSION_SESSIONS_REQUIRED &&
+      flags.slice(offset, offset + PROGRESSION_SESSIONS_REQUIRED).every(Boolean);
+
+    if (met(0) && !met(1)) {
+      unlocked.push({
+        from: stripPrerequisite(from),
+        next: stripPrerequisite(next),
+        metTarget: PROGRESSION_SESSIONS_REQUIRED,
+        required: PROGRESSION_SESSIONS_REQUIRED,
+        isEarned: true,
+      });
+    }
+  }
+
+  return unlocked;
+}
+
+/**
+ * The step worth naming right now, across everything the hero has trained lately: one that is
+ * already earned if there is one, otherwise the closest to being earned.
+ *
+ * This is what "progressive overload" means without weights, and it is the answer the journal owes
+ * a bodyweight athlete — a harder variation, not a bigger multiplier.
+ */
+export async function getReadyStep(): Promise<VariationStep | null> {
+  const recentRows = await db
+    .select({ exerciseId: schema.completedExercises.exerciseId })
     .from(schema.completedExercises)
-    .where(eq(schema.completedExercises.exerciseId, exerciseId))
-    .orderBy(desc(schema.completedExercises.performedAt))
-    .limit(PROGRESSION_SESSIONS_REQUIRED);
+    .orderBy(desc(schema.completedExercises.performedAt), desc(schema.completedExercises.id))
+    .limit(RECENT_RESULT_ROWS);
 
-  const metTarget = recent.filter(
-    (r) => r.targetValue !== null && r.resultValue >= r.targetValue,
-  ).length;
+  // Most recently trained first: it doubles as the tie-break between two equally advanced steps.
+  const recentIds = [...new Set(recentRows.map((r) => r.exerciseId))];
+  if (recentIds.length === 0) return null;
 
-  return {
-    next,
-    metTarget,
-    required: PROGRESSION_SESSIONS_REQUIRED,
-    isEarned: metTarget >= PROGRESSION_SESSIONS_REQUIRED,
-  };
+  const rows = await fetchLadderRows();
+  const byId = new Map(rows.map((r) => [r.id, r]));
+
+  let best: VariationStep | null = null;
+
+  for (const id of recentIds) {
+    const from = byId.get(id);
+    const next = rows.find((r) => r.prerequisiteExerciseId === id);
+    if (!from || !next) continue;
+
+    const step = await buildStep(from, next);
+    if (!best || step.metTarget > best.metTarget) best = step;
+    if (best.isEarned) break;
+  }
+
+  return best;
 }

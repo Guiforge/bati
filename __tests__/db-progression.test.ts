@@ -31,14 +31,15 @@ describe("db/exercises — variation ladder", () => {
     ).id;
   }
 
-  /** Log one set of `exerciseId`, hitting or missing its target. */
-  function logSet(exerciseId: number, resultValue: number, targetValue: number) {
+  /** Log one set of `exerciseId`, hitting or missing its target. Returns the session id. */
+  function logSet(exerciseId: number, resultValue: number, targetValue: number): number {
     const at = Math.floor(Date.now() / 1000);
     const info = t.sqlite
       .prepare(
         "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, ?)",
       )
       .run(at);
+    const sessionId = Number(info.lastInsertRowid);
     t.sqlite
       .prepare(
         `INSERT INTO completed_exercises
@@ -46,7 +47,8 @@ describe("db/exercises — variation ladder", () => {
             targetValue, performedAt)
          VALUES (?, ?, 0, 0, 'reps', ?, 'reps', ?, ?)`,
       )
-      .run(Number(info.lastInsertRowid), exerciseId, resultValue, targetValue, at);
+      .run(sessionId, exerciseId, resultValue, targetValue, at);
+    return sessionId;
   }
 
   test("the ladder points at the harder variation, not the easier one", async () => {
@@ -78,5 +80,91 @@ describe("db/exercises — variation ladder", () => {
     const progression = await exercisesApi().getNextProgression(wallPushUp);
     expect(progression?.metTarget).toBe(2);
     expect(progression?.isEarned).toBe(false);
+  });
+
+  describe("the chain up to a movement", () => {
+    test("reads easiest first and ends on the movement asked for", async () => {
+      const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
+
+      expect(chain?.rungs.map((r) => r.exercise.enName)).toEqual([
+        "Towel Door Row",
+        "Table Row",
+        "Inverted Row",
+        "Scapular Pull-Up",
+        "Chin-Up",
+        "Pull-ups",
+      ]);
+      // Nothing trained yet: standing on the first rung, not past it.
+      expect(chain?.position).toBe(1);
+    });
+
+    test("a movement off the ladder has no chain to show", async () => {
+      expect(await exercisesApi().getChainTo(idOf("Burpee"))).toBeNull();
+    });
+
+    test("the position climbs with each rung mastered", async () => {
+      for (let i = 0; i < 3; i++) logSet(idOf("Towel Door Row"), 12, 12);
+      for (let i = 0; i < 3; i++) logSet(idOf("Table Row"), 12, 12);
+
+      const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
+      expect(chain?.position).toBe(3);
+      expect(chain?.rungs[2].exercise.enName).toBe("Inverted Row");
+    });
+
+    test("mastering a rung out of order does not count as the ones below it", async () => {
+      for (let i = 0; i < 3; i++) logSet(idOf("Chin-Up"), 12, 12);
+
+      // Contiguous from the bottom: the hero still owes every rung under the one they skipped to.
+      const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
+      expect(chain?.position).toBe(1);
+      expect(chain?.rungs[4].isEarned).toBe(true);
+    });
+  });
+
+  describe("what a session just unlocked", () => {
+    test("the third set on target unlocks the next variation", async () => {
+      const wallPushUp = idOf("Wall Push-Up");
+      logSet(wallPushUp, 12, 12);
+      logSet(wallPushUp, 12, 12);
+      const sessionId = logSet(wallPushUp, 12, 12);
+
+      const unlocked = await exercisesApi().checkForNewRungs(sessionId);
+      expect(unlocked.map((s) => s.next.enName)).toEqual(["Push-ups"]);
+      expect(unlocked[0].from.enName).toBe("Wall Push-Up");
+    });
+
+    test("a rung already earned before tonight is not announced again", async () => {
+      const wallPushUp = idOf("Wall Push-Up");
+      for (let i = 0; i < 3; i++) logSet(wallPushUp, 12, 12);
+      const sessionId = logSet(wallPushUp, 12, 12);
+
+      expect(await exercisesApi().checkForNewRungs(sessionId)).toEqual([]);
+    });
+
+    test("two out of three unlocks nothing", async () => {
+      const wallPushUp = idOf("Wall Push-Up");
+      logSet(wallPushUp, 12, 12);
+      logSet(wallPushUp, 8, 12);
+      const sessionId = logSet(wallPushUp, 12, 12);
+
+      expect(await exercisesApi().checkForNewRungs(sessionId)).toEqual([]);
+    });
+  });
+
+  describe("the step worth naming right now", () => {
+    test("an earned step beats one still in progress", async () => {
+      // Trained more recently, but not earned — the earned one still wins.
+      for (let i = 0; i < 3; i++) logSet(idOf("Table Row"), 12, 12);
+      logSet(idOf("Wall Push-Up"), 12, 12);
+
+      const step = await exercisesApi().getReadyStep();
+      expect(step?.from.enName).toBe("Table Row");
+      expect(step?.next.enName).toBe("Inverted Row");
+      expect(step?.isEarned).toBe(true);
+    });
+
+    test("nothing logged, nothing to suggest", async () => {
+      expect(await exercisesApi().getReadyStep()).toBeNull();
+    });
   });
 });

@@ -6,7 +6,7 @@ import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { OathFulfilledCard } from "@/components/oath/OathFulfilledCard";
 import { LevelPips } from "@/components/village/LevelPips";
-import { getBuildingIconAsset, getVillageTierAsset } from "@/constants/assetMap";
+import { getBuildingIconAsset, getExerciseAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { getLevelTitle } from "@/db/userLevel";
 import { TIER_NAMES } from "@/db/village";
 import type { useSessionStore } from "@/stores/session";
@@ -38,6 +38,7 @@ export function SessionRewards({
   const hasRewards =
     !!result.levelUp ||
     result.newRecords.length > 0 ||
+    result.newRungs.length > 0 ||
     result.newAchievements.length > 0 ||
     !!result.fulfilledOath ||
     result.villageGrowth.length > 0;
@@ -160,6 +161,58 @@ export function SessionRewards({
 
       {/* New personal records */}
       {result.newRecords.length > 0 && <NewRecordsBadge records={result.newRecords} />}
+
+      {/* Variations unlocked — progressive overload without weights is a harder movement, so this
+          is the moment that actually moves a bodyweight athlete forward. */}
+      {result.newRungs.length > 0 && (
+        <Card {...revealProps} width="100%" maxW={520} bg="$surface2" gap="$3">
+          <XStack items="center" gap="$2" justify="center">
+            <GameIcon name="muscle" size={20} color="$primary" />
+            <Text fontWeight="700" fontSize={16} color="$primary" style={{ textAlign: "center" }}>
+              {result.newRungs.length === 1
+                ? t("progression.new_rung", "New step unlocked")
+                : t("progression.new_rungs", {
+                    count: result.newRungs.length,
+                    defaultValue: `${result.newRungs.length} new steps unlocked`,
+                  })}
+            </Text>
+            <GameIcon name="muscle" size={20} color="$primary" />
+          </XStack>
+          <YStack gap="$2">
+            {result.newRungs.map((step) => (
+              <XStack
+                key={step.next.id}
+                bg="$background"
+                p="$3"
+                rounded="$4"
+                borderWidth={1}
+                borderColor="$glassBorder"
+                items="center"
+                gap="$3"
+              >
+                <YStack width={56} height={56} rounded="$4" overflow="hidden" bg="$surface">
+                  <Image
+                    source={getExerciseAsset(step.next.imagePath)}
+                    style={{ width: "100%", height: "100%" }}
+                    contentFit="cover"
+                  />
+                </YStack>
+                <YStack flex={1}>
+                  <Text fontWeight="700" fontSize={15} color="$text">
+                    {isFr ? step.next.frName : step.next.enName}
+                  </Text>
+                  <Text fontSize={12} color="$text" opacity={0.7}>
+                    {t("progression.new_rung_from", {
+                      name: isFr ? step.from.frName : step.from.enName,
+                      defaultValue: `You have mastered ${isFr ? step.from.frName : step.from.enName}`,
+                    })}
+                  </Text>
+                </YStack>
+              </XStack>
+            ))}
+          </YStack>
+        </Card>
+      )}
 
       {/* Achievements unlocked — the centerpiece of this screen */}
       {result.newAchievements.length > 0 && (

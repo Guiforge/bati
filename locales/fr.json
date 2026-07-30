@@ -410,12 +410,19 @@
     "first_session_later": "Plus tard"
   },
   "progression": {
+    "chain_position": "Marche {{position}}/{{total}} · {{name}}",
     "decrease_message": "Ça semble dur ces derniers temps. Baisser la difficulté peut t'aider à rester régulier.",
     "decrease_title": "Récupération Recommandée",
     "increase_message": "Tu assures grave ces derniers temps. Essaie d'augmenter la difficulté pour de meilleures récompenses !",
     "increase_title": "Niveau Supérieur Disponible !",
     "maintain_message": "Tu as trouvé ton rythme. Continue comme ça !",
     "maintain_title": "Progrès Constant",
+    "new_rung": "Nouvelle marche débloquée",
+    "new_rung_from": "Tu as maîtrisé {{name}}",
+    "new_rungs": "{{count}} nouvelles marches débloquées",
+    "step_earned": "Tu as maîtrisé {{name}} — voici la marche suivante.",
+    "step_progress_one": "Atteins ta cible encore {{count}} fois sur {{name}} pour la débloquer.",
+    "step_progress_other": "Atteins ta cible encore {{count}} fois sur {{name}} pour la débloquer.",
     "title": "Suggestion du Coach"
   },
   "quests": {

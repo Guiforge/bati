@@ -67,7 +67,14 @@ export {
   estimateQuestSeconds,
   formatDuration,
 } from "./estimate";
-export { getExerciseById, listExercises } from "./exercises";
+export type { Chain, ChainRung, VariationStep } from "./exercises";
+export {
+  checkForNewRungs,
+  getChainTo,
+  getExerciseById,
+  getReadyStep,
+  listExercises,
+} from "./exercises";
 export type { Oath, OathMetric, OathProgress } from "./oaths";
 export {
   breakOath,

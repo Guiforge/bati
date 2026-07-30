@@ -15,6 +15,7 @@ import {
   createCompletedSession,
   markSessionWithNewRecords,
 } from "@/db/completed";
+import { checkForNewRungs, type VariationStep } from "@/db/exercises";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
@@ -111,6 +112,7 @@ interface SessionState {
     xpEarned: number;
     dailyBonusApplied: boolean;
     newRecords: NewRecordResult[];
+    newRungs: VariationStep[];
     newAchievements: NewAchievementResult[];
     fulfilledOath: OathProgress | null;
     oathBonusXp: number;
@@ -516,6 +518,10 @@ export const useSessionStore = create<SessionState>()(
         await markSessionWithNewRecords(sessionId);
       }
 
+      // The variations tonight's sets just unlocked. Same question as the records above — what
+      // did *this* session change — so it is answered in the same place, from the journal.
+      const newRungs = await checkForNewRungs(sessionId);
+
       // Update streak cache
       await updateStreakAfterSession();
 
@@ -580,6 +586,7 @@ export const useSessionStore = create<SessionState>()(
         xpEarned,
         dailyBonusApplied,
         newRecords,
+        newRungs,
         newAchievements,
         fulfilledOath,
         oathBonusXp,

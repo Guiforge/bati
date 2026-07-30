@@ -84,12 +84,16 @@ export function HomeHeader() {
           <Skeleton height={22} width={150} bg="$surface2" />
         )}
         <XStack items="center" gap="$2" mt="$1">
-          <ProgressBar
-            progress={levelInfo?.xpProgress ?? 0}
-            height={5}
-            color="$resourceGold"
-            trackColor="$surface2"
-          />
+          {/* ProgressBar is width:100% and doesn't shrink — without this flex wrapper it
+              takes the whole row and pushes the % out under the flame. */}
+          <XStack flex={1}>
+            <ProgressBar
+              progress={levelInfo?.xpProgress ?? 0}
+              height={5}
+              color="$resourceGold"
+              trackColor="$surface2"
+            />
+          </XStack>
           <Text fontSize={11} fontWeight="700" color="$resourceGold">
             {levelInfo?.xpProgress.toFixed(0) ?? 0}%
           </Text>

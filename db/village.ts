@@ -260,6 +260,33 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
   }));
 }
 
+export type VillageGrowth = {
+  code: BuildingCode;
+  enName: string;
+  frName: string;
+  relatedMuscle: MuscleCode | null;
+  oldLevel: number;
+  newLevel: number;
+};
+
+/** Which buildings rose since the last snapshot — the "village grows" moment on save. */
+export function diffVillageGrowth(
+  before: VillageBuilding[],
+  after: VillageBuilding[],
+): VillageGrowth[] {
+  const beforeLevel = new Map(before.map((b) => [b.code, b.level]));
+  return after
+    .filter((b) => b.level > (beforeLevel.get(b.code) ?? 0))
+    .map((b) => ({
+      code: b.code,
+      enName: b.enName,
+      frName: b.frName,
+      relatedMuscle: b.relatedMuscle,
+      oldLevel: beforeLevel.get(b.code) ?? 0,
+      newLevel: b.level,
+    }));
+}
+
 // ------------------------------------------------------------
 // Trophies
 // ------------------------------------------------------------

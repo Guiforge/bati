@@ -22,6 +22,7 @@ import { isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
+import { diffVillageGrowth, getVillageBuildings, type VillageGrowth } from "@/db/village";
 import { computeSessionXp } from "@/db/xp";
 import { rescheduleOathReminder } from "@/src/notifications";
 
@@ -107,6 +108,7 @@ interface SessionState {
       nextQuestId: number | null;
     } | null;
     levelUp: { oldLevel: number; newLevel: number } | null;
+    villageGrowth: VillageGrowth[];
   }>;
 }
 
@@ -457,6 +459,10 @@ export const useSessionStore = create<SessionState>()(
       const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
       let xpEarned = computeSessionXp({ durationSeconds, userLevel });
 
+      // Snapshot before this session's exercises land, so the village-growth diff at the
+      // end reflects exactly what this save changed.
+      const beforeBuildings = await getVillageBuildings();
+
       const dailyBonusApplied = await isDailyQuest(quest.id);
       if (dailyBonusApplied) {
         xpEarned = Math.round(xpEarned * 1.5);
@@ -529,6 +535,11 @@ export const useSessionStore = create<SessionState>()(
       const newLevel = calculateLevelFromXp(newTotalXp);
       const levelUp = newLevel > oldLevel ? { oldLevel, newLevel } : null;
 
+      // Everything that could move a building's level (volume, boss count, village tier)
+      // is settled now, so this is the one honest "after" snapshot for the diff.
+      const afterBuildings = await getVillageBuildings();
+      const villageGrowth = diffVillageGrowth(beforeBuildings, afterBuildings);
+
       return {
         sessionId,
         xpEarned,
@@ -539,6 +550,7 @@ export const useSessionStore = create<SessionState>()(
         oathBonusXp,
         campaign,
         levelUp,
+        villageGrowth,
       };
     },
   })),

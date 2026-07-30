@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, useWindowDimensions } from "react-native";
@@ -10,6 +10,8 @@ import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
+import { GrowthPulse } from "@/components/village/GrowthPulse";
+import { LevelPips } from "@/components/village/LevelPips";
 import {
   getAdventureAsset,
   getBuildingIconAsset,
@@ -22,26 +24,8 @@ import { useAnimationProps } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
-const PIP_SLOTS = [1, 2, 3, 4, 5] as const;
 /** The unbuilt icons read as silhouettes, not greyed-out buttons: same shape, no detail. */
 const SILHOUETTE_TINT = "#2A3360";
-
-/** Level 1..5 as filled pips — a number would compete with the scene, five dots don't. */
-function LevelPips({ level }: { level: number }) {
-  return (
-    <XStack gap={3} items="center">
-      {PIP_SLOTS.map((slot) => (
-        <YStack
-          key={slot}
-          width={5}
-          height={5}
-          rounded={3}
-          bg={slot <= level ? "$primary" : "$borderStrong"}
-        />
-      ))}
-    </XStack>
-  );
-}
 
 export function VillageScene() {
   const { t } = useTranslation();
@@ -50,6 +34,11 @@ export function VillageScene() {
   const language = useSettingsStore((s) => s.language);
   const villageName = useUserStore((s) => s.villageName);
   const sectionAnim = useAnimationProps("bouncy", { opacity: 0, y: 12 });
+
+  // Set once from the arrival params, never recomputed: a later tab-bar visit shouldn't
+  // replay the "just grew" pulse for a building that grew several sessions ago.
+  const { grown } = useLocalSearchParams<{ grown?: string }>();
+  const [highlighted] = useState(() => new Set((grown ?? "").split(",").filter(Boolean)));
 
   const [scene, setScene] = useState<VillageSceneData | null>(null);
 
@@ -192,33 +181,42 @@ export function VillageScene() {
                 {t("village.built_title", "Built")}
               </Text>
               <XStack flexWrap="wrap" gap="$2">
-                {built.map((building) => (
-                  <Card
-                    flat
-                    key={building.code}
-                    bg="$surface"
-                    width="31.5%"
-                    p="$3"
-                    gap="$2"
-                    items="center"
-                  >
-                    <Image
-                      source={getBuildingIconAsset(building.code, building.relatedMuscle)}
-                      style={{ width: 48, height: 48 }}
-                      contentFit="contain"
-                    />
-                    <Text
-                      fontSize={12}
-                      fontWeight="700"
-                      color="$text"
-                      numberOfLines={1}
-                      style={{ textAlign: "center" }}
-                    >
-                      {language === "fr" ? building.frName : building.enName}
-                    </Text>
-                    <LevelPips level={building.level} />
-                  </Card>
-                ))}
+                {built.map((building) => {
+                  const justGrew = highlighted.has(building.code);
+                  return (
+                    <GrowthPulse key={building.code} active={justGrew}>
+                      <Card
+                        flat
+                        bg="$surface"
+                        width="31.5%"
+                        p="$3"
+                        gap="$2"
+                        items="center"
+                        borderWidth={justGrew ? 2 : undefined}
+                        borderColor={justGrew ? "$primary" : undefined}
+                        shadowColor={justGrew ? "$shadowColor" : undefined}
+                        shadowRadius={justGrew ? 8 : undefined}
+                        shadowOpacity={justGrew ? 0.4 : undefined}
+                      >
+                        <Image
+                          source={getBuildingIconAsset(building.code, building.relatedMuscle)}
+                          style={{ width: 48, height: 48 }}
+                          contentFit="contain"
+                        />
+                        <Text
+                          fontSize={12}
+                          fontWeight="700"
+                          color="$text"
+                          numberOfLines={1}
+                          style={{ textAlign: "center" }}
+                        >
+                          {language === "fr" ? building.frName : building.enName}
+                        </Text>
+                        <LevelPips level={building.level} />
+                      </Card>
+                    </GrowthPulse>
+                  );
+                })}
               </XStack>
             </YStack>
           )}

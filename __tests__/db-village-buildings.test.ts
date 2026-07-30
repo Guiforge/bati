@@ -61,6 +61,65 @@ describe("db/village buildings", () => {
     expect(buildings.find((b) => b.code === "castle_wall")?.level).toBe(0);
   });
 
+  test("diffVillageGrowth only returns buildings whose level rose", () => {
+    const { diffVillageGrowth } = require("../db/village") as typeof import("../db/village");
+
+    const make = (code: string, level: number) => ({
+      code: code as never,
+      emoji: "🔥",
+      tier: 1 as const,
+      level,
+      enName: code,
+      frName: code,
+      unlockCondition: "",
+      relatedMuscle: null,
+    });
+
+    const before = [make("forge", 2), make("well", 1), make("campfire", 3)];
+    const after = [make("forge", 3), make("well", 1), make("campfire", 2)];
+
+    const growth = diffVillageGrowth(before, after);
+
+    expect(growth).toEqual([
+      {
+        code: "forge",
+        enName: "forge",
+        frName: "forge",
+        relatedMuscle: null,
+        oldLevel: 2,
+        newLevel: 3,
+      },
+    ]);
+  });
+
+  test("diffVillageGrowth treats an unseen building as rising from 0", () => {
+    const { diffVillageGrowth } = require("../db/village") as typeof import("../db/village");
+
+    const make = (code: string, level: number) => ({
+      code: code as never,
+      emoji: "🔥",
+      tier: 1 as const,
+      level,
+      enName: code,
+      frName: code,
+      unlockCondition: "",
+      relatedMuscle: null,
+    });
+
+    const growth = diffVillageGrowth([], [make("dragon_lair", 1)]);
+
+    expect(growth).toEqual([
+      {
+        code: "dragon_lair",
+        enName: "dragon_lair",
+        frName: "dragon_lair",
+        relatedMuscle: null,
+        oldLevel: 0,
+        newLevel: 1,
+      },
+    ]);
+  });
+
   test("trophies merge achievements and defeated bosses, newest first", async () => {
     const { getTrophies } = require("../db/village") as typeof import("../db/village");
 

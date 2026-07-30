@@ -1,8 +1,12 @@
+import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { OathFulfilledCard } from "@/components/oath/OathFulfilledCard";
+import { LevelPips } from "@/components/village/LevelPips";
+import { getBuildingIconAsset } from "@/constants/assetMap";
 import { getLevelTitle } from "@/db/userLevel";
 import type { useSessionStore } from "@/stores/session";
 import { NewRecordsBadge } from "./NewRecordsBadge";
@@ -15,8 +19,18 @@ const revealProps = {
   enterStyle: { opacity: 0, scale: 0.92, y: 14 },
 } as const;
 
+const VILLAGE_GROWTH_SHOWN = 2;
+
 /** The reveal content of the victory screen — rendered once the session is saved. */
-export function SessionRewards({ result, language }: { result: SaveResult; language: string }) {
+export function SessionRewards({
+  result,
+  language,
+  onViewVillage,
+}: {
+  result: SaveResult;
+  language: string;
+  onViewVillage: () => void;
+}) {
   const { t } = useTranslation();
   const isFr = language === "fr";
 
@@ -24,7 +38,8 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
     !!result.levelUp ||
     result.newRecords.length > 0 ||
     result.newAchievements.length > 0 ||
-    !!result.fulfilledOath;
+    !!result.fulfilledOath ||
+    result.villageGrowth.length > 0;
 
   return (
     <>
@@ -67,6 +82,58 @@ export function SessionRewards({ result, language }: { result: SaveResult; langu
               </Text>
             </YStack>
           </XStack>
+        </Card>
+      )}
+
+      {/* Village grows — a building rose because of this session, nothing to manage */}
+      {result.villageGrowth.length > 0 && (
+        <Card {...revealProps} width="100%" maxW={520} bg="$surface2" gap="$3">
+          <XStack items="center" gap="$2" justify="center">
+            <GameIcon name="castle" size={22} color="$primary" />
+            <Text fontWeight="700" fontSize={16} color="$primary" style={{ textAlign: "center" }}>
+              {t("session.village_growth_title", "Your village grows")}
+            </Text>
+            <GameIcon name="castle" size={22} color="$primary" />
+          </XStack>
+          <YStack gap="$2">
+            {result.villageGrowth.slice(0, VILLAGE_GROWTH_SHOWN).map((g) => (
+              <XStack
+                key={g.code}
+                bg="$background"
+                p="$3"
+                rounded="$4"
+                borderWidth={1}
+                borderColor="$glassBorder"
+                items="center"
+                gap="$3"
+              >
+                <Image
+                  source={getBuildingIconAsset(g.code, g.relatedMuscle)}
+                  style={{ width: 40, height: 40 }}
+                  contentFit="contain"
+                />
+                <YStack flex={1} gap="$1">
+                  <Text fontWeight="700" fontSize={14} color="$text">
+                    {isFr ? g.frName : g.enName}
+                  </Text>
+                  <LevelPips level={g.newLevel} />
+                </YStack>
+              </XStack>
+            ))}
+          </YStack>
+          {result.villageGrowth.length > VILLAGE_GROWTH_SHOWN && (
+            <Text fontSize={12} color="$text" opacity={0.7} style={{ textAlign: "center" }}>
+              {t("session.village_growth_more", {
+                count: result.villageGrowth.length - VILLAGE_GROWTH_SHOWN,
+                defaultValue: `+${result.villageGrowth.length - VILLAGE_GROWTH_SHOWN} more`,
+              })}
+            </Text>
+          )}
+          <AppButton backgroundColor="$surface" onPress={onViewVillage}>
+            <Text color="$text" fontSize={14} fontWeight="700">
+              {t("session.village_growth_cta", "View my village")}
+            </Text>
+          </AppButton>
         </Card>
       )}
 

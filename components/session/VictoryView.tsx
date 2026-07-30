@@ -125,6 +125,13 @@ export function VictoryView() {
     if (result) updateSessionFeedback(result.sessionId, next);
   };
 
+  const handleViewVillage = () => {
+    if (!result) return;
+    quitSession();
+    const codes = result.villageGrowth.map((g) => g.code).join(",");
+    router.push(`/(tabs)/village?grown=${codes}` as never);
+  };
+
   const handleContinue = () => {
     if (!result) return;
     quitSession();
@@ -244,7 +251,9 @@ export function VictoryView() {
           </YStack>
         )}
 
-        {!!result && <SessionRewards result={result} language={language} />}
+        {!!result && (
+          <SessionRewards result={result} language={language} onViewVillage={handleViewVillage} />
+        )}
 
         {/* Feedback */}
         <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">

@@ -655,3 +655,59 @@ catalogue, justified by tendon-adaptation safety, and costing a beginner nothing
 beginner never reaches that branch. It stays undecided: the catalogue has no handstand, planche
 or lever, so there is nothing to gate yet. **Per-set RIR capture stays closed** —
 `analyzeDifficultyProgression()` already auto-adjusts from per-session feedback.
+
+---
+
+## 2026-07-30 — What the research asked for, in four commits
+
+The [dossier v2](../raw/bodyweight-app-research.md) was ingested that morning (entry above).
+This is what the wiki learned turning into code — four changes, each one closing a gap where
+Bati already had the data or the mechanic and was not using it.
+
+**Holds were prescribed blind** (`7eb0e0f`). `getExerciseMax(id, "time")` has returned the
+hero's longest logged hold since personal records shipped; `generateTarget` multiplied a
+hardcoded range by a difficulty coefficient and never read it. So a hero holding a two-minute
+plank was asked for 45 seconds, forever. §8.3 gives isometrics a formula rather than a range —
+work at **60–75 % of max**, because holding to failure every set is *the* classic mistake — and
+the app now derives it. Clamped to the quest's own window at both ends: `resultValue` records
+what the hero *did*, usually the target they were handed, so an unclamped 67 % would ratchet
+every hold downward each session. `createCompletedSession` now drops the quest detail cache,
+which only ever cleared on authoring writes and would otherwise show the old number until
+restart.
+
+**The journal could not see a pull deficit** (`17854fc`). `exercises.pattern` has existed since
+`0020` and nothing ever summed it, so the balance card could show six healthy bars while the
+hero had not pulled in a month — a row and a push-up both count as "arms". §10.4 names the
+failure outright. `getPatternBalance` runs its own query rather than reusing the muscle rows,
+which go through `exercise_muscles` and would triple-count an exercise tagged with three
+muscles; a test pins exactly that.
+
+**Mobility had a mechanic and no content** (`5e91fee`). The flame has counted rest days since
+`f037d9e` and the `mobility` archetype has been a column since `0019` — and the catalogue held
+**two** mobility movements and **one** mobility quest, so §11.4's rest-day session had nowhere
+to live. `0024` seeds seven movements and three quests (9:10 to 12:00, inside the window). It
+also writes the amplitude cues §11.1 makes into training content rather than prose: Squat,
+Push-ups, Lunge, Pull-ups and Dip now name their range. Ten assets have no art yet — the first
+real gap [missing-image.md](../content/missing-image.md) has carried since §6 closed, tracked
+there as §7 with prompts staged in both generators. No `assetMap` entries: Metro resolves
+`require()` at bundle time, so registering art that does not exist breaks the build.
+
+**The warm-up prepared the same four things for every session** (`b34f329`). `buildWarmup`
+keeps the four slots and their order — pulse, hips, shoulders, spine — and swaps which movement
+fills one, from the quest's own patterns. The wrist step is the one that mattered: Handstand
+Push-Up, Pike Push-Up and L-Sit had been loading wrists nothing had touched, and §8.6.4 makes
+that preparation non-optional. It needed `Wrist Circles` to exist first, which is why the
+mobility branch came before it. A content invariant now walks every branch `buildWarmup` can
+take and checks the movement still exists — verified by breaking it, since `0023` has already
+renamed and merged movements once.
+
+**Not built, deliberately.** No cool-down (§1: "largely ineffective" — the app not having one
+was already right). No calorie counting and no numeric weight goal (§9.4 names these as the
+mechanics most likely to harm users with disordered-eating tendencies; the codebase has no
+calorie surface at all, and that is the correct default). No per-set RIR capture — the session
+feedback already drives `analyzeDifficultyProgression`.
+
+**Still open.** The advanced skill families of §8.1 — planche, front lever, freestanding
+handstand — do not exist in the catalogue, which is why the reopened gating question in
+[roadmap.md](../planning/roadmap.md) §4 cannot be answered yet, and why ROM benchmarks sit
+behind them. `getRestSuggestion()` remains written, tested and wired to nothing.

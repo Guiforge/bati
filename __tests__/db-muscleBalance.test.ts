@@ -230,4 +230,94 @@ describe("db/muscleBalance", () => {
       expect(s.matchingMuscles).not.toContain("chest");
     }
   });
+  // ----------------------------------------------------------
+  // Movement-pattern balance
+  // ----------------------------------------------------------
+
+  /** Seeds one session per (exercise, volume) pair. Patterns come from migration 0020. */
+  function seedByName(entries: { name: string; volume: number }[]): void {
+    const now = Math.floor(Date.now() / 1000);
+    entries.forEach((e, i) => {
+      const row = t.sqlite.prepare(`SELECT id FROM exercises WHERE enName = ?`).get(e.name) as
+        | { id: number }
+        | undefined;
+      if (!row) throw new Error(`Seed exercise missing: ${e.name}`);
+      const sessionId = i + 1;
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES (${sessionId}, ${now - i * 3600});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder)
+        VALUES (${sessionId}, ${row.id}, 'reps', ${e.volume}, ${now - i * 3600}, 0);
+      `);
+    });
+  }
+
+  test("getPatternBalance is empty with no sessions", async () => {
+    const { getPatternBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+    const balance = await getPatternBalance("30d");
+
+    expect(balance.totalVolume).toBe(0);
+    expect(balance.pushVolume).toBe(0);
+    expect(balance.pullVolume).toBe(0);
+    expect(balance.pullPerPush).toBeNull();
+    expect(balance.patterns.length).toBe(9);
+  });
+
+  test("getPatternBalance sums volume per movement family", async () => {
+    const { getPatternBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    seedByName([
+      { name: "Push-ups", volume: 100 }, // push_horizontal
+      { name: "Table Row", volume: 30 }, // pull_horizontal
+      { name: "Pull-ups", volume: 10 }, // pull_vertical
+    ]);
+
+    const balance = await getPatternBalance("30d");
+
+    expect(balance.pushVolume).toBe(100);
+    expect(balance.pullVolume).toBe(40);
+    expect(balance.pullPerPush).toBeCloseTo(0.4);
+
+    // An exercise is counted once, not once per muscle it happens to tag: Push-ups hit both
+    // chest and arms, and 200 here would mean the exercise_muscles join had leaked in.
+    const pushH = balance.patterns.find((p) => p.pattern === "push_horizontal");
+    expect(pushH?.volume).toBe(100);
+    expect(balance.totalVolume).toBe(140);
+  });
+
+  test("getPullDeficit fires only when pulling is under half of pushing", async () => {
+    const { getPatternBalance, getPullDeficit } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    seedByName([
+      { name: "Push-ups", volume: 100 },
+      { name: "Table Row", volume: 40 },
+    ]);
+
+    const deficit = getPullDeficit(await getPatternBalance("30d"));
+    expect(deficit).toEqual({ pullVolume: 40, pushVolume: 100 });
+  });
+
+  test("getPullDeficit stays quiet when pulling keeps up", async () => {
+    const { getPatternBalance, getPullDeficit } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    seedByName([
+      { name: "Push-ups", volume: 100 },
+      { name: "Table Row", volume: 80 },
+    ]);
+
+    expect(getPullDeficit(await getPatternBalance("30d"))).toBeNull();
+  });
+
+  test("getPullDeficit stays quiet on too little pushing to judge", async () => {
+    const { getPatternBalance, getPullDeficit } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    // One session's worth of pushing and no pulling at all is not a posture problem yet.
+    seedByName([{ name: "Push-ups", volume: 20 }]);
+
+    expect(getPullDeficit(await getPatternBalance("30d"))).toBeNull();
+  });
 });

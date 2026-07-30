@@ -295,6 +295,8 @@
     "avg_duration": "Durée Moy.",
     "balance_good": "Équilibré !",
     "balance_needs_work": "À travailler",
+    "pull_deficit_title": "Ton tirage est en retard",
+    "pull_deficit_body": "{{pull}} de tirage contre {{push}} de poussée sur 30 jours. Sans barre, c'est le tirage qui disparaît en premier — rowing sous une table, tirage à la serviette, ou une barre de porte.",
     "best_streak": "Record",
     "days": "jours",
     "difficulty_split": "Répartition Difficulté",

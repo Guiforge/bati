@@ -1,12 +1,27 @@
 import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { MUSCLE_LABELS } from "./muscles";
+import { isMovementPattern, PATTERN_LABELS, PULL_PATTERNS, PUSH_PATTERNS } from "./patterns";
 import { shortLivedQuery } from "./queryCache";
 import { getEligibleQuestIds } from "./quests";
-import { type MuscleCode, muscleCodes } from "./schema";
+import { type MovementPattern, type MuscleCode, movementPatterns, muscleCodes } from "./schema";
 
 const { completedQuest, completedExercises, exercises, exerciseMuscles, quests, questExercises } =
   schema;
+
+export type BalancePeriod = "7d" | "30d" | "90d" | "all";
+
+const PERIOD_DAYS: Record<Exclude<BalancePeriod, "all">, number> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+};
+
+/** Start of the window, shared by both balance views so they can never drift apart. */
+function periodStart(period: BalancePeriod, now = new Date()): Date {
+  if (period === "all") return new Date(0); // Unix epoch
+  return new Date(now.getTime() - PERIOD_DAYS[period] * 24 * 60 * 60 * 1000);
+}
 
 export type MuscleVolume = {
   muscle: MuscleCode;
@@ -17,7 +32,7 @@ export type MuscleVolume = {
 };
 
 export type MuscleBalance = {
-  period: "7d" | "30d" | "90d" | "all";
+  period: BalancePeriod;
   startDate: Date;
   endDate: Date;
   totalVolume: number;
@@ -31,36 +46,16 @@ export type MuscleBalance = {
  * Calculate muscle balance based on workout history.
  * Returns volume per muscle group and identifies weak/strong areas.
  */
-export function getMuscleBalance(
-  period: "7d" | "30d" | "90d" | "all" = "30d",
-): Promise<MuscleBalance> {
+export function getMuscleBalance(period: BalancePeriod = "30d"): Promise<MuscleBalance> {
   // Dedupes the journal-open burst: the balance card and the suggested-quests pipeline
   // both run this 4-table join within the same mount.
   return shortLivedQuery(`muscleBalance:${period}`, () => computeMuscleBalance(period));
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Muscle balance analysis requires aggregating and comparing multiple muscle groups
-async function computeMuscleBalance(
-  period: "7d" | "30d" | "90d" | "all" = "30d",
-): Promise<MuscleBalance> {
-  const now = new Date();
-  const endDate = now;
-  let startDate: Date;
-
-  switch (period) {
-    case "7d":
-      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      break;
-    case "30d":
-      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      break;
-    case "90d":
-      startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-      break;
-    case "all":
-      startDate = new Date(0); // Unix epoch
-      break;
-  }
+async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<MuscleBalance> {
+  const endDate = new Date();
+  const startDate = periodStart(period, endDate);
 
   // Get all completed exercises with their muscles in the time period
   const whereClause = period === "all" ? undefined : gte(completedQuest.performedAt, startDate);
@@ -212,6 +207,114 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
     },
     focusAreas: balance.weakAreas.slice(0, 2),
   };
+}
+
+// ------------------------------------------------------------
+// Movement-pattern balance
+// ------------------------------------------------------------
+
+export type PatternVolume = {
+  pattern: MovementPattern;
+  label: { en: string; fr: string };
+  volume: number; // Same "work units" as MuscleVolume (reps + seconds)
+  percentage: number;
+};
+
+export type PatternBalance = {
+  period: BalancePeriod;
+  totalVolume: number;
+  patterns: PatternVolume[];
+  pushVolume: number;
+  pullVolume: number;
+  /** Pull work units per unit of push. Null when the hero has pushed nothing. */
+  pullPerPush: number | null;
+};
+
+/**
+ * Volume per movement family — the balance the muscle taxonomy cannot express.
+ *
+ * The research is specific about why this view has to exist: pulling is the structural weak
+ * point of training without equipment (§2, §10.2), because without a bar the vertical pull
+ * nearly disappears, and the failure it produces is "your pulling volume is 4 sets vs 16
+ * pushing" (§10.4). Muscles cannot say that — a row and a push-up both hit "arms".
+ *
+ * Its own query rather than a reuse of `computeMuscleBalance`'s rows: that one joins
+ * `exercise_muscles`, so an exercise tagged with three muscles appears three times, and
+ * summing its volume per pattern off those rows would triple-count it.
+ *
+ * Exercises with no pattern (user-authored content — the column is nullable on purpose) are
+ * left out entirely rather than bucketed, so they dilute no percentage.
+ */
+export function getPatternBalance(period: BalancePeriod = "30d"): Promise<PatternBalance> {
+  return shortLivedQuery(`patternBalance:${period}`, () => computePatternBalance(period));
+}
+
+async function computePatternBalance(period: BalancePeriod): Promise<PatternBalance> {
+  const startDate = periodStart(period);
+
+  const rows = await db
+    .select({
+      pattern: exercises.pattern,
+      resultValue: completedExercises.resultValue,
+    })
+    .from(completedQuest)
+    .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    .where(period === "all" ? undefined : gte(completedQuest.performedAt, startDate));
+
+  const volumes = new Map<MovementPattern, number>();
+  for (const pattern of movementPatterns) volumes.set(pattern, 0);
+
+  let totalVolume = 0;
+  for (const row of rows) {
+    if (!isMovementPattern(row.pattern)) continue;
+    volumes.set(row.pattern, (volumes.get(row.pattern) ?? 0) + row.resultValue);
+    totalVolume += row.resultValue;
+  }
+
+  const sumOf = (family: readonly MovementPattern[]) =>
+    family.reduce((acc, p) => acc + (volumes.get(p) ?? 0), 0);
+
+  const pushVolume = sumOf(PUSH_PATTERNS);
+  const pullVolume = sumOf(PULL_PATTERNS);
+
+  const patterns: PatternVolume[] = movementPatterns
+    .map((pattern) => ({
+      pattern,
+      label: PATTERN_LABELS[pattern],
+      volume: volumes.get(pattern) ?? 0,
+      percentage: totalVolume > 0 ? ((volumes.get(pattern) ?? 0) / totalVolume) * 100 : 0,
+    }))
+    .sort((a, b) => b.volume - a.volume);
+
+  return {
+    period,
+    totalVolume,
+    patterns,
+    pushVolume,
+    pullVolume,
+    pullPerPush: pushVolume > 0 ? pullVolume / pushVolume : null,
+  };
+}
+
+/**
+ * Pulling should not sit far below pushing. Below half is the point where it is worth saying
+ * something — the hero is not "a bit unbalanced", they are building a posture problem.
+ *
+ * ponytail: one flat ratio, not a per-pattern model. The research gives a direction, not a
+ * number; refine it if heroes start reporting the nudge as noise.
+ */
+const PULL_DEFICIT_RATIO = 0.5;
+
+/** Enough push volume that the ratio means something — one warm-up's worth would not. */
+const MIN_PUSH_VOLUME_TO_JUDGE = 100;
+
+export function getPullDeficit(
+  balance: PatternBalance,
+): { pullVolume: number; pushVolume: number } | null {
+  if (balance.pushVolume < MIN_PUSH_VOLUME_TO_JUDGE) return null;
+  if (balance.pullPerPush == null || balance.pullPerPush >= PULL_DEFICIT_RATIO) return null;
+  return { pullVolume: balance.pullVolume, pushVolume: balance.pushVolume };
 }
 
 export type SuggestedQuest = {

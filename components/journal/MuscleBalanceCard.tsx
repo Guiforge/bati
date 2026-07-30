@@ -3,7 +3,14 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type ColorTokens, Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { getBalanceRecommendation, getMuscleBalance, type MuscleBalance } from "@/db/muscleBalance";
+import {
+  getBalanceRecommendation,
+  getMuscleBalance,
+  getPatternBalance,
+  getPullDeficit,
+  type MuscleBalance,
+  type PatternBalance,
+} from "@/db/muscleBalance";
 import { useSettingsStore } from "@/stores/settings";
 
 const MUSCLE_COLORS: Record<string, ColorTokens> = {
@@ -19,13 +26,20 @@ export function MuscleBalanceCard() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const [balance, setBalance] = useState<MuscleBalance | null>(null);
+  const [patterns, setPatterns] = useState<PatternBalance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const data = await getMuscleBalance("30d");
-        setBalance(data);
+        // Two views of the same 30 days: muscles say *what* was worked, patterns say what the
+        // body was *doing*, and only the second can see a pull deficit.
+        const [muscles, byPattern] = await Promise.all([
+          getMuscleBalance("30d"),
+          getPatternBalance("30d"),
+        ]);
+        setBalance(muscles);
+        setPatterns(byPattern);
       } catch {
         // Error handled silently
       } finally {
@@ -67,6 +81,7 @@ export function MuscleBalanceCard() {
 
   const recommendation = getBalanceRecommendation(balance);
   const maxVolume = Math.max(...balance.muscles.map((m) => m.volume));
+  const pullDeficit = patterns ? getPullDeficit(patterns) : null;
 
   return (
     <Card bg="$bgLight">
@@ -126,6 +141,22 @@ export function MuscleBalanceCard() {
             {language === "fr" ? recommendation.message.fr : recommendation.message.en}
           </Text>
         )}
+
+        {/* The muscle bars above cannot show this: a row and a push-up both count as "arms".
+            Pulling is the first thing to vanish when you train without a bar. */}
+        {pullDeficit ? (
+          <YStack gap="$1" borderTopWidth={1} borderColor="$borderStrong" pt="$2">
+            <Text fontSize={12} fontWeight="700" color="$primary">
+              {t("journal.pull_deficit_title")}
+            </Text>
+            <Text fontSize={12} color="$text" opacity={0.7}>
+              {t("journal.pull_deficit_body", {
+                pull: Math.round(pullDeficit.pullVolume),
+                push: Math.round(pullDeficit.pushVolume),
+              })}
+            </Text>
+          </YStack>
+        ) : null}
       </YStack>
     </Card>
   );

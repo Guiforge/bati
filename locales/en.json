@@ -32,6 +32,11 @@
   "language": "Language",
   "light": "Light",
   "avatars": {
+    "elf": "Elf",
+    "kid": "Young Hero",
+    "mage": "Mage",
+    "rogue": "Rogue",
+    "gravity_mage": "Gravity Mage",
     "shadow": "Shadow",
     "scout": "Scout",
     "guardian": "Guardian",

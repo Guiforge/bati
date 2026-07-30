@@ -47,7 +47,12 @@
     "archer": "Archer",
     "archmage": "Archimage",
     "elder": "Ancien",
+    "elf": "Elfe",
+    "gravity_mage": "Mage Gravité",
     "guardian": "Gardien",
+    "kid": "Jeune Héros",
+    "mage": "Mage",
+    "rogue": "Voleur",
     "scout": "Éclaireuse",
     "shadow": "Ombre"
   },

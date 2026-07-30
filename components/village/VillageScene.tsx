@@ -32,6 +32,19 @@ const SILHOUETTE_TINT = "#2A3360";
 /** The shelf is already newest-first; dating it turns the rack into the road travelled. */
 const TROPHY_DATE_OPTIONS: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
 
+/** A defeated boss is the hardest trophy on the rack, so its medal is the one that shines. */
+const MEDAL_BOSS = {
+  bg: "$surface",
+  borderColor: "$resourceGold",
+  shadowColor: "$resourceGold",
+  shadowRadius: 10,
+  shadowOpacity: 0.55,
+  shadowOffset: { width: 0, height: 0 },
+  elevation: 6,
+} as const;
+
+const MEDAL_PLAIN = { bg: "$surface2", borderColor: "$borderStrong" } as const;
+
 export function VillageScene() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -322,33 +335,28 @@ export function VillageScene() {
                     accessibilityRole="button"
                     accessibilityLabel={language === "fr" ? trophy.frTitle : trophy.enTitle}
                   >
-                    {trophy.imagePath ? (
-                      <YStack
-                        width={56}
-                        height={56}
-                        rounded={28}
-                        overflow="hidden"
-                        borderWidth={2}
-                        borderColor="$primary"
-                      >
+                    {/* One medal disc for both kinds; only the rim says which. A defeated
+                        boss is the hardest trophy on the rack, so it alone keeps a glow. */}
+                    <YStack
+                      width={56}
+                      height={56}
+                      rounded={28}
+                      overflow="hidden"
+                      items="center"
+                      justify="center"
+                      borderWidth={2}
+                      {...(trophy.kind === "boss" ? MEDAL_BOSS : MEDAL_PLAIN)}
+                    >
+                      {trophy.imagePath ? (
                         <Image
                           source={getAdventureAsset(trophy.imagePath)}
                           style={{ width: "100%", height: "100%" }}
                           contentFit="cover"
                         />
-                      </YStack>
-                    ) : (
-                      <YStack
-                        width={56}
-                        height={56}
-                        rounded={28}
-                        bg="$surface"
-                        items="center"
-                        justify="center"
-                      >
+                      ) : (
                         <Text fontSize={28}>{trophy.emoji}</Text>
-                      </YStack>
-                    )}
+                      )}
+                    </YStack>
                     <Text
                       fontSize={11}
                       color="$textSecondary"

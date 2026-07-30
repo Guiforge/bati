@@ -1,4 +1,3 @@
-import { ChevronRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -6,12 +5,18 @@ import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/components/common/ProgressBar";
-import { getAdventureAsset } from "@/constants/assetMap";
-import { useGameIcons } from "@/hooks/useGameIcon";
+import { Skeleton } from "@/components/common/Skeleton";
+import { ADVENTURE_ASSETS, getAdventureAsset } from "@/constants/assetMap";
 import { useSmartAction } from "./useSmartAction";
 
-function resolveCover(path?: string | null): ImageSourcePropType | null {
-  if (!path) return null;
+const COVER_HEIGHT = 196;
+// Cover + the action block under it (progress row, PLAY button, padding): the stage
+// must reserve its full height or everything below drops when the scene lands.
+const STAGE_HEIGHT = COVER_HEIGHT + 134;
+
+/** The stage is always a scene. With no adventure running, the on-ramp route's art stands in. */
+function resolveCover(path?: string | null): ImageSourcePropType {
+  if (!path) return ADVENTURE_ASSETS.squire_path;
   return path.startsWith("http") ? { uri: path } : getAdventureAsset(path);
 }
 
@@ -19,25 +24,24 @@ export function CurrentAdventureWidget() {
   const router = useRouter();
   const { t } = useTranslation();
   const { config, isLoading } = useSmartAction();
-  const icons = useGameIcons(["scroll", "sword"]);
 
   if (isLoading) {
-    return null;
+    // Reserve the stage so the HUD frame doesn't jump when the scene lands.
+    return <Skeleton height={STAGE_HEIGHT} radius={16} bg="$surface" />;
   }
 
   const effectiveConfig = config || {
-    variant: "adventure" as const,
     label: t("home.start_adventure", "Start Adventure"),
     subtext: t("home.no_active_adventure", "Choose your path"),
     onPress: () => router.push("/adventures"),
   };
 
-  const isAdventure = effectiveConfig.variant === "adventure";
   const adventure = config?.adventure ?? null;
   const subtitle = effectiveConfig.subtext || t("home.start_journey", "Start your journey");
-  const label = effectiveConfig.label || t("home.play", "PLAY");
+  const label = effectiveConfig.label || t("home.play", "Play");
   const handlePress = effectiveConfig.onPress || (() => router.push("/adventures"));
   const cover = resolveCover(adventure?.imagePath);
+  const sceneTitle = adventure?.title ?? subtitle;
   const stepProgress =
     adventure && adventure.stepsTotal > 0 ? (adventure.stepsDone / adventure.stepsTotal) * 100 : 0;
 
@@ -46,96 +50,60 @@ export function CurrentAdventureWidget() {
       bg="$surface"
       borderWidth={1}
       borderColor="$borderStrong"
-      rounded="$4"
+      rounded="$8"
       shadowColor="$shadowColor"
-      shadowRadius={8}
-      shadowOffset={{ width: 0, height: 4 }}
-      shadowOpacity={0.15}
+      shadowRadius={12}
+      shadowOffset={{ width: 0, height: 6 }}
+      shadowOpacity={0.14}
       elevation={5}
       onPress={handlePress}
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
       transition="quick"
       overflow="hidden"
-      mb="$2"
     >
-      {/* The adventure's own cover is the card: a scene to walk back into, not a generic tile. */}
-      {cover ? (
-        <YStack height={168} width="100%" position="relative">
-          <Image
-            source={cover}
-            style={{ width: "100%", height: "100%" }}
-            contentFit="cover"
-            transition={200}
-          />
-          <LinearGradient
-            colors={["rgba(11,15,25,0.15)", "rgba(11,15,25,0.95)"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
-          />
-          <YStack position="absolute" l="$4" r="$4" b="$3" gap="$1">
-            <Text fontSize={11} fontWeight="700" color="$textSecondary" letterSpacing={2}>
-              {t("home.current_adventure", "Current adventure").toUpperCase()}
-            </Text>
-            <H3 fontSize={22} fontWeight="700" color="$text" numberOfLines={2} lineHeight={28}>
-              {adventure?.title}
-            </H3>
-          </YStack>
+      {/* The cover is the card: a scene to walk back into, not a generic tile.
+          No eyebrow above the title — the art says "adventure" on its own. */}
+      <YStack height={COVER_HEIGHT} width="100%" position="relative">
+        <Image
+          source={cover}
+          style={{ width: "100%", height: "100%" }}
+          contentFit="cover"
+          transition={200}
+        />
+        {/* $bgDark (#0B0F19) as rgba — LinearGradient takes plain colors, not tokens. */}
+        <LinearGradient
+          colors={["rgba(11,15,25,0.1)", "rgba(11,15,25,0.95)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
+        />
+        <YStack position="absolute" l="$4" r="$4" b="$3">
+          <H3 fontSize={24} fontWeight="700" color="$text" numberOfLines={2} lineHeight={30}>
+            {sceneTitle}
+          </H3>
         </YStack>
-      ) : null}
+      </YStack>
 
       <YStack p="$4" gap="$3">
-        {cover ? (
+        {adventure ? (
           <YStack gap="$2">
             <XStack justify="space-between" items="center">
               <Text fontSize={14} fontWeight="700" color="$textSecondary">
                 {subtitle}
               </Text>
               <Text fontSize={14} fontWeight="700" color="$resourceGold">
-                {adventure ? `${adventure.stepsDone}/${adventure.stepsTotal}` : ""}
+                {`${adventure.stepsDone}/${adventure.stepsTotal}`}
               </Text>
             </XStack>
             <ProgressBar progress={stepProgress} height={6} color="$resourceGold" />
           </YStack>
         ) : (
-          <>
-            <XStack justify="space-between" items="center">
-              <Text fontSize="$2" fontWeight="700" color="$textSecondary">
-                {t("home.current_objective", "Current Objective")}
-              </Text>
-              <ChevronRight size={20} color="$textSecondary" opacity={0.5} />
-            </XStack>
-
-            <XStack gap="$4" items="center">
-              <YStack
-                width={60}
-                height={60}
-                bg="$primary"
-                rounded="$4"
-                justify="center"
-                items="center"
-                shadowColor="$text"
-                shadowRadius={4}
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.2}
-              >
-                <Image
-                  source={isAdventure ? icons.scroll : icons.sword}
-                  style={{ width: 32, height: 32, tintColor: "white" }}
-                  contentFit="contain"
-                />
-              </YStack>
-
-              <YStack flex={1}>
-                <H3 fontSize={22} fontWeight="700" color="$text" numberOfLines={2} lineHeight={28}>
-                  {subtitle}
-                </H3>
-              </YStack>
-            </XStack>
-          </>
+          <Text fontSize={14} fontWeight="700" color="$textSecondary">
+            {t("home.start_journey", "Start your journey")}
+          </Text>
         )}
 
-        {/* CTA Button */}
+        {/* The one primary action on the screen */}
         <Button
           testID="home-start-session"
           size="$5"

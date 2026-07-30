@@ -1,47 +1,48 @@
-import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Text, YStack } from "tamagui";
+import { YStack } from "tamagui";
 import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { OathCard } from "@/components/home/OathCard";
 import { StatsOverview } from "@/components/home/StatsOverview";
 import { VillageTeaser } from "@/components/home/VillageTeaser";
 
+/**
+ * THESIS: Home is the hero's HUD — fixed chrome frames a living center stage.
+ * Refused default: a scrolling stack of same-size stat cards under a greeting.
+ * OWN-WORLD: void ground, hairline-framed chrome strips, electric blue for the
+ * one action, gold for all progression, adventure art as the only scene.
+ * STORY: where I am (top strip), tonight's quest (stage, one tap to PLAY),
+ * what my effort built (village band).
+ * FIRST VIEWPORT: status strip pinned top; adventure scene + PLAY commanding
+ * the center; oath and lifetime legend below; village band pinned bottom.
+ * FORM: HUD frame — candidate 3 of the grounded list, seed 8f3d5359;
+ * challengers discarded (none beat it without breaking the committed identity).
+ */
 export default function HomeScreen() {
-  const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
-
   return (
-    <YStack flex={1} bg="$background" pt={insets.top}>
-      <YStack flex={1} position="relative">
-        {/* 1. Header: Identity & Level */}
-        <HomeHeader />
+    <YStack flex={1} bg="$background">
+      {/* HUD top chrome: identity, level, XP, streak — owns the top inset, never scrolls */}
+      <HomeHeader />
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
-        >
-          <YStack px="$4" gap="$4" pt="$2">
-            {/* 2. Current Adventure (HERO) */}
-            <CurrentAdventureWidget />
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <YStack px="$4" pt="$3" gap="$4">
+          {/* Center stage: the current adventure, one PLAY action */}
+          <CurrentAdventureWidget />
 
-            {/* 3. Active oath (hidden when none is sworn) */}
-            <OathCard />
+          {/* Chosen objective (shows a swear-CTA when none is active) */}
+          <OathCard />
 
-            {/* 4. Statistics Overview */}
-            <YStack mt="$2">
-              <Text mb="$2" fontSize="$2" fontWeight="700" color="$textSecondary">
-                {t("home.stats", "Stats")}
-              </Text>
-              <StatsOverview />
-            </YStack>
+          {/* Lifetime legend: one line, not a stat-card grid */}
+          <StatsOverview />
+        </YStack>
+      </ScrollView>
 
-            {/* 5. What the training built, as a way into the village */}
-            <VillageTeaser />
-          </YStack>
-        </ScrollView>
-      </YStack>
+      {/* HUD bottom chrome: the world the training built — never scrolls */}
+      <VillageTeaser />
     </YStack>
   );
 }

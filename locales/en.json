@@ -26,7 +26,8 @@
     "level_line": "Level {{level}} • {{title}}",
     "current_adventure": "Current adventure",
     "step_progress": "Step {{current}} of {{total}}",
-    "streak_a11y": "{{count}} day streak"
+    "streak_a11y": "{{count}} day streak",
+    "open_settings_a11y": "Open settings"
   },
   "language": "Language",
   "light": "Light",

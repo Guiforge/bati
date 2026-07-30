@@ -288,7 +288,8 @@
     "level_line": "Niveau {{level}} • {{title}}",
     "current_adventure": "Aventure en cours",
     "step_progress": "Étape {{current}} sur {{total}}",
-    "streak_a11y": "Flamme de {{count}} jours"
+    "streak_a11y": "Flamme de {{count}} jours",
+    "open_settings_a11y": "Ouvrir les réglages"
   },
   "home_continue_adventure_subtitle": "Reprends là où tu t'es arrêté.",
   "home_continue_adventure_title": "Continuer ton aventure",

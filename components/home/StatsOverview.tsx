@@ -2,13 +2,18 @@ import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, Text, XStack, YStack } from "tamagui";
+import { Text, useTheme, XStack } from "tamagui";
 import { getTotalStats } from "@/db/userLevel";
 import { useGameIcons } from "@/hooks/useGameIcon";
 
+/**
+ * Lifetime legend as a single quiet line, not a stat-card grid: the numbers
+ * are supporting proof under the stage, and one row keeps them out of the way.
+ */
 export function StatsOverview() {
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
   const icons = useGameIcons(["sword", "trophy"]);
   const [totalStats, setTotalStats] = useState<{
     totalSessions: number;
@@ -21,59 +26,43 @@ export function StatsOverview() {
     }, []),
   );
 
-  return (
-    <XStack gap="$3">
-      {/* Quests Done Card */}
-      <Card
-        flex={1}
-        bg="$surface2"
-        borderColor="$borderStrong"
-        borderWidth={1}
-        borderRadius="$4"
-        p="$3"
-        pressStyle={{ scale: 0.98 }}
-        onPress={() => router.push("/(tabs)/journal")}
-      >
-        <YStack items="center" gap="$1">
-          <Image source={icons.sword} style={{ width: 24, height: 24 }} contentFit="contain" />
-          <Text fontSize={20} fontWeight="700" color="$text">
-            {totalStats?.totalSessions ?? 0}
-          </Text>
-          <Text fontSize={11} fontWeight="700" color="$textSecondary">
-            {t("home.quests_done", "Quests")}
-          </Text>
-        </YStack>
-      </Card>
+  const xp = totalStats?.totalXp ?? 0;
+  const xpLabel = xp >= 1000 ? `${(xp / 1000).toFixed(1)}k` : `${xp}`;
 
-      {/* Total XP Card */}
-      <Card
-        flex={1}
-        bg="$surface"
-        borderColor="$borderStrong"
-        borderWidth={1}
-        borderRadius="$4"
-        p="$3"
-        pressStyle={{ scale: 0.98 }}
-        onPress={() => router.push("/(tabs)/journal")}
-      >
-        <YStack items="center" gap="$1">
-          <Image
-            source={icons.trophy}
-            style={{ width: 24, height: 24, tintColor: "#FFD700" }}
-            contentFit="contain"
-          />
-          <Text fontSize={20} fontWeight="700" color="$text">
-            {totalStats?.totalXp
-              ? totalStats.totalXp >= 1000
-                ? `${(totalStats.totalXp / 1000).toFixed(1)}k`
-                : totalStats.totalXp
-              : 0}
-          </Text>
-          <Text fontSize={11} fontWeight="700" color="$textSecondary">
-            {t("common.xp", "XP")}
-          </Text>
-        </YStack>
-      </Card>
+  return (
+    <XStack
+      items="center"
+      justify="center"
+      gap="$5"
+      py="$2"
+      minH={44}
+      onPress={() => router.push("/(tabs)/journal")}
+      pressStyle={{ opacity: 0.7 }}
+      accessibilityRole="button"
+    >
+      <XStack items="center" gap="$2">
+        <Image source={icons.sword} style={{ width: 18, height: 18 }} contentFit="contain" />
+        <Text fontSize={14} fontWeight="700" color="$text">
+          {totalStats?.totalSessions ?? 0}
+        </Text>
+        <Text fontSize={14} fontWeight="700" color="$textSecondary">
+          {t("home.quests_done", "Quests")}
+        </Text>
+      </XStack>
+
+      <XStack items="center" gap="$2">
+        <Image
+          source={icons.trophy}
+          style={{ width: 18, height: 18, tintColor: theme.resourceGold?.val }}
+          contentFit="contain"
+        />
+        <Text fontSize={14} fontWeight="700" color="$text">
+          {xpLabel}
+        </Text>
+        <Text fontSize={14} fontWeight="700" color="$textSecondary">
+          {t("common.xp", "XP")}
+        </Text>
+      </XStack>
     </XStack>
   );
 }

@@ -12,12 +12,14 @@ import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
 import { GrowthPulse } from "@/components/village/GrowthPulse";
 import { LevelPips } from "@/components/village/LevelPips";
+import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import {
   getAdventureAsset,
   getBuildingIconAsset,
   getSportSpriteAsset,
   getVillageTierAsset,
 } from "@/constants/assetMap";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } from "@/db/village";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
@@ -26,6 +28,9 @@ import { useUserStore } from "@/stores/user";
 
 /** The unbuilt icons read as silhouettes, not greyed-out buttons: same shape, no detail. */
 const SILHOUETTE_TINT = "#2A3360";
+
+/** The shelf is already newest-first; dating it turns the rack into the road travelled. */
+const TROPHY_DATE_OPTIONS: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
 
 export function VillageScene() {
   const { t } = useTranslation();
@@ -41,6 +46,16 @@ export function VillageScene() {
   const [highlighted] = useState(() => new Set((grown ?? "").split(",").filter(Boolean)));
 
   const [scene, setScene] = useState<VillageSceneData | null>(null);
+  // Read-only: a tap explains what earned the building, it never unlocks anything.
+  const [selected, setSelected] = useState<VillageSelection | null>(null);
+  // The sheet (portal, overlay, frame) is dead weight behind the scene until the first tap,
+  // and has to outlive the selection afterwards or it would vanish instead of sliding shut.
+  const [sheetMounted, setSheetMounted] = useState(false);
+
+  const openDetail = (selection: VillageSelection) => {
+    setSheetMounted(true);
+    setSelected(selection);
+  };
 
   // Refetch on focus: the whole point of this screen is "what changed since I trained",
   // and a tab screen stays mounted, so a mount-only effect would show yesterday forever.
@@ -192,6 +207,8 @@ export function VillageScene() {
                         p="$3"
                         gap="$2"
                         items="center"
+                        onPress={() => openDetail({ kind: "building", building })}
+                        accessibilityLabel={language === "fr" ? building.frName : building.enName}
                         borderWidth={justGrew ? 2 : undefined}
                         borderColor={justGrew ? "$primary" : undefined}
                         shadowColor={justGrew ? "$shadowColor" : undefined}
@@ -229,7 +246,16 @@ export function VillageScene() {
               </Text>
               <XStack flexWrap="wrap" gap="$3">
                 {unbuilt.map((building) => (
-                  <YStack key={building.code} width="22%" items="center" gap="$1">
+                  <YStack
+                    key={building.code}
+                    width="22%"
+                    items="center"
+                    gap="$1"
+                    onPress={() => openDetail({ kind: "building", building })}
+                    pressStyle={{ opacity: 0.85 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={language === "fr" ? building.frName : building.enName}
+                  >
                     <YStack
                       width={52}
                       height={52}
@@ -271,7 +297,16 @@ export function VillageScene() {
                 contentContainerStyle={{ gap: 12, paddingRight: 16 }}
               >
                 {scene.trophies.map((trophy) => (
-                  <YStack key={trophy.key} width={80} items="center" gap="$2">
+                  <YStack
+                    key={trophy.key}
+                    width={80}
+                    items="center"
+                    gap="$2"
+                    onPress={() => openDetail({ kind: "trophy", trophy })}
+                    pressStyle={{ opacity: 0.85 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={language === "fr" ? trophy.frTitle : trophy.enTitle}
+                  >
                     {trophy.imagePath ? (
                       <YStack
                         width={56}
@@ -307,6 +342,9 @@ export function VillageScene() {
                     >
                       {language === "fr" ? trophy.frTitle : trophy.enTitle}
                     </Text>
+                    <Text fontSize={10} color="$muted">
+                      {getDateTimeFormat(language, TROPHY_DATE_OPTIONS).format(trophy.earnedAt)}
+                    </Text>
                   </YStack>
                 ))}
               </ScrollView>
@@ -314,6 +352,15 @@ export function VillageScene() {
           )}
         </YStack>
       </ScrollView>
+
+      {sheetMounted ? (
+        <VillageDetailSheet
+          selected={selected}
+          onClose={() => setSelected(null)}
+          language={language}
+          bottomInset={insets.bottom}
+        />
+      ) : null}
     </YStack>
   );
 }

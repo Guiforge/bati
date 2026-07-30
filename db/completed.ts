@@ -12,7 +12,7 @@ import { db, schema, type TransactionTx, transactionOrFallback } from "./client"
 import { dayKey } from "./dates";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
-import { setCached } from "./queryCache";
+import { clearCached, setCached } from "./queryCache";
 import type { DifficultyCode, ExerciseStyle, FeedbackCode, QuestTargetType } from "./schema";
 
 const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
@@ -144,6 +144,11 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
       };
     });
     await tx.insert(completedExercises).values(rowsToInsert);
+
+    // Hold targets are now derived from the journal (`generateTarget` reads the hero's longest
+    // logged hold), so a cached quest detail goes stale the moment a session lands. Cheap to
+    // drop: the cache exists to make a revisit paint instantly, and it refills on the next read.
+    clearCached("quest:");
 
     return sessionId;
   });

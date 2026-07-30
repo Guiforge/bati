@@ -1,4 +1,4 @@
-import { and, desc, eq, max, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { QuestTargetType } from "./schema";
 
@@ -125,6 +125,40 @@ export async function getExerciseMax(
     exerciseName: { en: rows[0].enName, fr: rows[0].frName },
     sessionId: rows[0].sessionId,
   };
+}
+
+/**
+ * Longest logged hold per exercise, for a batch of exercises, in one query.
+ *
+ * `getExerciseMax` above answers for one exercise and joins the name and session for display.
+ * Opening a quest needs neither, and needs the answer for every hold in it — one grouped read
+ * instead of three round trips, because each is a synchronous SQLite call on the JS thread and
+ * duplicates are paid in dropped frames (same reasoning as `shortLivedQuery`).
+ *
+ * Exercises with no logged hold are simply absent from the map.
+ */
+export async function getMaxHoldSeconds(exerciseIds: number[]): Promise<Map<number, number>> {
+  if (exerciseIds.length === 0) return new Map();
+
+  const rows = await db
+    .select({
+      exerciseId: completedExercises.exerciseId,
+      best: max(completedExercises.resultValue),
+    })
+    .from(completedExercises)
+    .where(
+      and(
+        inArray(completedExercises.exerciseId, exerciseIds),
+        eq(completedExercises.resultType, "time"),
+      ),
+    )
+    .groupBy(completedExercises.exerciseId);
+
+  const byExercise = new Map<number, number>();
+  for (const r of rows) {
+    if (r.best != null && r.best > 0) byExercise.set(r.exerciseId, r.best);
+  }
+  return byExercise;
 }
 
 /**

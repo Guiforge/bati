@@ -3,6 +3,7 @@ import { db, schema } from "./client";
 import { dayKey } from "./dates";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
+import { getMaxHoldSeconds } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import type { DifficultyCode, QuestArchetype, QuestTargetType } from "./schema";
@@ -366,6 +367,13 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
 
   if (rows.length === 0) return null;
 
+  // Holds are prescribed from the hero's own longest hold (60-75% of max), so read the records
+  // for this quest's time-based movements before building any target. One grouped query, and
+  // none at all for a quest that has no holds in it.
+  const maxHolds = await getMaxHoldSeconds([
+    ...new Set(rows.filter((r) => r.targetType === "time").map((r) => r.exId)),
+  ]);
+
   const first = rows[0];
   const quest: Quest = {
     id: first.questId,
@@ -410,7 +418,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
           muscles: [],
         },
         images: safeParseImages(r.imagesJson),
-        target: generateTarget(base, userLevel),
+        target: generateTarget(base, userLevel, maxHolds.get(r.exId)),
       };
       byQuestExercise.set(r.qexId, qex);
       quest.exercises.push(qex);

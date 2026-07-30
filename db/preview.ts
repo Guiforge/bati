@@ -21,6 +21,10 @@ export function estimateQuestTemplateSeconds(input: {
       const ex = input.exercisesById[qex.exerciseId];
       if (!ex) return null;
 
+      // No personal best passed on purpose: this is a synchronous duration estimate for the
+      // authoring preview, and a hold derived from the journal is clamped inside the same
+      // [min, max] window the estimate already assumes. Reading records here would make the
+      // whole authoring screen async to move a number by a few seconds.
       const target = generateTarget(
         {
           type: qex.baseTarget.type,

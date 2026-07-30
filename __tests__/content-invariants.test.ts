@@ -322,4 +322,43 @@ describe("content invariants", () => {
 
     expect(offenders).toEqual([]);
   });
+  // `buildWarmup` names its movements as strings and resolves them against this catalogue at
+  // render time, so a rename or a merge (`0023` did both) silently degrades the warm-up to an
+  // English label with a placeholder image instead of failing. This is the check that notices.
+  test("every warm-up movement exists in the catalogue", async () => {
+    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
+    const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
+
+    const catalogue = new Set((await listExercises()).map((e) => e.enName));
+
+    // Every branch buildWarmup can take, so a movement reachable only by one rule still counts.
+    const shapes = [
+      { archetype: null, exercises: [{ exercise: { pattern: null } }] },
+      {
+        archetype: "skill" as const,
+        exercises: [{ exercise: { pattern: "push_vertical" as const } }],
+      },
+      {
+        archetype: "strength" as const,
+        exercises: [
+          { exercise: { pattern: "squat" as const } },
+          { exercise: { pattern: "hinge" as const } },
+        ],
+      },
+      {
+        archetype: "strength" as const,
+        exercises: [
+          { exercise: { pattern: "pull_vertical" as const } },
+          { exercise: { pattern: "pull_horizontal" as const } },
+        ],
+      },
+    ];
+
+    const missing = shapes
+      .flatMap((shape) => buildWarmup(shape))
+      .map((step) => step.exerciseName)
+      .filter((name) => !catalogue.has(name));
+
+    expect([...new Set(missing)]).toEqual([]);
+  });
 });

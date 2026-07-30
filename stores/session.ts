@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { WARMUP_SEQUENCE } from "@/constants/warmup";
+import { buildWarmup, type WarmupStep } from "@/constants/warmup";
 import { completeAdventureRunStep, getAdventureIdForRunStep } from "@/db";
 import { checkForNewAchievements, type NewAchievementResult } from "@/db/achievements";
 import {
@@ -51,7 +51,13 @@ interface SessionState {
   // Dynamic State
   status: SessionStatus;
   prePauseStatus: SessionStatus | null;
-  /** Index into WARMUP_SEQUENCE while `status === "warmup"`. */
+  /**
+   * The warm-up this quest gets, built once at `startSession` from what it is about to load
+   * (`buildWarmup`). Held in state rather than recomputed per render so the sequence cannot
+   * change under the hero mid-warm-up.
+   */
+  warmupSequence: WarmupStep[];
+  /** Index into `warmupSequence` while `status === "warmup"`. */
   warmupIndex: number;
   currentRoundIndex: number; // 0-based
   currentExerciseIndex: number; // 0-based
@@ -122,6 +128,7 @@ export const useSessionStore = create<SessionState>()(
     lastDamageResult: null,
     status: "idle",
     prePauseStatus: null,
+    warmupSequence: [],
     warmupIndex: 0,
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
@@ -151,7 +158,8 @@ export const useSessionStore = create<SessionState>()(
       // The warm-up runs first unless the hero switched it off; skipping it is always one tap
       // away, so the preference only exists to save that tap for people who never want it.
       const warmupEnabled = await preferences.getWarmupEnabled().catch(() => true);
-      const warmupFirst = warmupEnabled && WARMUP_SEQUENCE.length > 0;
+      const warmupSequence = buildWarmup(quest);
+      const warmupFirst = warmupEnabled && warmupSequence.length > 0;
 
       set({
         quest,
@@ -161,6 +169,7 @@ export const useSessionStore = create<SessionState>()(
         lastDamageResult: null,
         status: warmupFirst ? "warmup" : "countdown",
         prePauseStatus: null,
+        warmupSequence,
         warmupIndex: 0,
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
@@ -169,17 +178,17 @@ export const useSessionStore = create<SessionState>()(
         lastPauseTimestamp: null,
         // Warm-up step, or the full-screen 3..2..1. Exercise timers start after the countdown.
         timerStartTimestamp: Date.now(),
-        timerDuration: warmupFirst ? WARMUP_SEQUENCE[0].seconds : PRE_START_COUNTDOWN_SECONDS,
+        timerDuration: warmupFirst ? warmupSequence[0].seconds : PRE_START_COUNTDOWN_SECONDS,
         results: [],
       });
     },
 
     nextWarmupStep: () => {
-      const { status, warmupIndex } = get();
+      const { status, warmupIndex, warmupSequence } = get();
       if (status !== "warmup") return;
 
       const next = warmupIndex + 1;
-      if (next >= WARMUP_SEQUENCE.length) {
+      if (next >= warmupSequence.length) {
         get().skipWarmup();
         return;
       }
@@ -187,20 +196,20 @@ export const useSessionStore = create<SessionState>()(
       set({
         warmupIndex: next,
         timerStartTimestamp: Date.now(),
-        timerDuration: WARMUP_SEQUENCE[next].seconds,
+        timerDuration: warmupSequence[next].seconds,
       });
     },
 
     /** Step back one movement, timer full again. Stops at the first: there is nothing before it. */
     previousWarmupStep: () => {
-      const { status, warmupIndex } = get();
+      const { status, warmupIndex, warmupSequence } = get();
       if (status !== "warmup" || warmupIndex === 0) return;
 
       const prev = warmupIndex - 1;
       set({
         warmupIndex: prev,
         timerStartTimestamp: Date.now(),
-        timerDuration: WARMUP_SEQUENCE[prev].seconds,
+        timerDuration: warmupSequence[prev].seconds,
       });
     },
 
@@ -291,6 +300,7 @@ export const useSessionStore = create<SessionState>()(
         bossFight: null,
         lastDamageResult: null,
         prePauseStatus: null,
+        warmupSequence: [],
         warmupIndex: 0,
         currentRoundIndex: 0,
         currentExerciseIndex: 0,

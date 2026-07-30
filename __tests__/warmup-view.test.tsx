@@ -54,6 +54,9 @@ describe("WarmupView", () => {
     jest.useFakeTimers();
     useSessionStore.setState({
       status: "warmup",
+      // The sequence lives in state now (built per quest by `buildWarmup`), so a test that
+      // drives the store directly has to seed it — the view renders nothing without one.
+      warmupSequence: WARMUP_SEQUENCE,
       warmupIndex: 0,
       timerStartTimestamp: Date.now(),
       timerDuration: WARMUP_SEQUENCE[0].seconds,

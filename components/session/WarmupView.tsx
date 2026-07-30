@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseAsset } from "@/constants/assetMap";
-import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import { type Exercise, listExercises } from "@/db/exercises";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
@@ -26,6 +25,8 @@ export function WarmupView() {
   const { selection } = useHaptics();
 
   const warmupIndex = useSessionStore((s) => s.warmupIndex);
+  // Built per quest at startSession — a squat day and a handstand day do not warm up the same.
+  const warmupSequence = useSessionStore((s) => s.warmupSequence);
   const nextWarmupStep = useSessionStore((s) => s.nextWarmupStep);
   const previousWarmupStep = useSessionStore((s) => s.previousWarmupStep);
   const skipWarmup = useSessionStore((s) => s.skipWarmup);
@@ -54,7 +55,7 @@ export function WarmupView() {
     nextWarmupStep();
   }, [remainingSeconds, nextWarmupStep]);
 
-  const step = WARMUP_SEQUENCE[warmupIndex];
+  const step = warmupSequence[warmupIndex];
   if (!step) return null;
 
   const nameOf = (enName: string) => {
@@ -71,7 +72,7 @@ export function WarmupView() {
       : exercise.enDescription
     : undefined;
 
-  const nextStep = WARMUP_SEQUENCE[warmupIndex + 1];
+  const nextStep = warmupSequence[warmupIndex + 1];
   const nextExercise = nextStep
     ? catalogue.find((e) => e.enName === nextStep.exerciseName)
     : undefined;
@@ -154,8 +155,8 @@ export function WarmupView() {
           <Text fontSize={13} color="$textSecondary">
             {t("session.warmup_step", {
               current: warmupIndex + 1,
-              total: WARMUP_SEQUENCE.length,
-              defaultValue: `${warmupIndex + 1} of ${WARMUP_SEQUENCE.length}`,
+              total: warmupSequence.length,
+              defaultValue: `${warmupIndex + 1} of ${warmupSequence.length}`,
             })}
           </Text>
 

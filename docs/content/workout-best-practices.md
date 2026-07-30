@@ -290,9 +290,14 @@ pretend otherwise.
 
 ### Session structure (§1)
 
-- **Warm-up: dynamic, 5–10 min.** Real evidence for injury-risk reduction (Fradkin 2006;
-  FIFA 11+ trials). The app runs 2 min rather than 5–10 — a deliberate trade: a five-minute
-  warm-up in front of a twelve-minute quest is a warm-up nobody does twice.
+- **Warm-up: dynamic, 5–10 min, and specific to what follows.** Real evidence for injury-risk
+  reduction (Fradkin 2006; FIFA 11+ trials). The app runs 2 min rather than 5–10 — a deliberate
+  trade: a five-minute warm-up in front of a twelve-minute quest is a warm-up nobody does twice.
+  It buys specificity instead of length (`buildWarmup` in `constants/warmup.ts`): four fixed
+  slots — pulse, hips, shoulders, spine — filled from the quest's own movement patterns, plus a
+  **non-optional wrist step** whenever the session presses vertically or is a skill quest. That
+  last one is §8.6.4, and it is a safety rule rather than a preference: connective tissue adapts
+  more slowly than muscle, and wrist/elbow overuse is the classic failure mode of hand-balancing.
 - **Cool-down: not built, on purpose.** Van Hooren & Peake 2018 find active cool-downs
   "largely ineffective" for soreness, recovery markers, range of motion, and they "do not
   appear to prevent injuries". Bati has no cool-down and should not grow one — the honest

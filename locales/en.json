@@ -499,6 +499,7 @@
     "filter_xp": "XP",
     "filter_special": "Special",
     "more_count": "+{{count}} more achievements",
+    "show_less": "Show less",
     "new_unlock": "Achievement Unlocked!",
     "new_unlocks": "{{count}} Achievements Unlocked!"
   },

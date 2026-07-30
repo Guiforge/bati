@@ -6,6 +6,7 @@
     "filter_streaks": "Séries",
     "filter_xp": "XP",
     "more_count": "+{{count}} autres succès",
+    "show_less": "Afficher moins",
     "new_unlock": "Succès Débloqué !",
     "new_unlocks": "{{count}} Succès Débloqués !",
     "progress": "{{unlocked}} / {{total}} débloqués",

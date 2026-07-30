@@ -9,12 +9,16 @@ import { useSettingsStore } from "@/stores/settings";
 
 type CategoryFilter = "all" | "sessions" | "streaks" | "xp" | "special";
 
+/** Enough to show the shelf without the card swallowing the stats tab. */
+const COLLAPSED_ROWS = 8;
+
 export function AchievementsCard() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const [achievements, setAchievements] = useState<AchievementProgress[]>([]);
   const [stats, setStats] = useState({ total: 0, unlocked: 0, percentage: 0 });
   const [filter, setFilter] = useState<CategoryFilter>("all");
+  const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadAchievements = useCallback(async () => {
@@ -157,14 +161,29 @@ export function AchievementsCard() {
 
       {/* Achievements Grid */}
       <YStack gap="$3">
-        {sortedAchievements.slice(0, 8).map((achievement) => (
-          <AchievementRow key={achievement.code} achievement={achievement} language={language} />
-        ))}
+        {(expanded ? sortedAchievements : sortedAchievements.slice(0, COLLAPSED_ROWS)).map(
+          (achievement) => (
+            <AchievementRow key={achievement.code} achievement={achievement} language={language} />
+          ),
+        )}
       </YStack>
 
-      {sortedAchievements.length > 8 && (
-        <Text fontSize={12} color="$text" opacity={0.6} style={{ textAlign: "center" }}>
-          {t("achievements.more_count", { count: sortedAchievements.length - 8 })}
+      {/* The count was a dead end: it named the rest of the shelf without a way to reach it. */}
+      {sortedAchievements.length > COLLAPSED_ROWS && (
+        <Text
+          fontSize={12}
+          color="$text"
+          opacity={0.6}
+          style={{ textAlign: "center" }}
+          pressStyle={{ opacity: 1 }}
+          accessibilityRole="button"
+          onPress={() => setExpanded((value) => !value)}
+        >
+          {expanded
+            ? t("achievements.show_less", "Show less")
+            : t("achievements.more_count", {
+                count: sortedAchievements.length - COLLAPSED_ROWS,
+              })}
         </Text>
       )}
     </Card>

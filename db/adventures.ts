@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { listQuestTemplates, type QuestTemplate } from "./quests";
 import type { DifficultyCode } from "./schema";
@@ -427,6 +427,57 @@ export async function getFinishedRunCountsByAdventure(): Promise<Map<number, num
     .groupBy(adventureRuns.adventureId);
 
   return new Map(rows.map((r) => [r.adventureId, Number(r.finished)]));
+}
+
+export type FinishedAdventureSummary = {
+  adventureId: number;
+  kind: AdventureKind;
+  enTitle: string;
+  frTitle: string;
+  imagePath: string | null;
+  timesFinished: number;
+  firstFinishedAt: Date | null;
+  lastFinishedAt: Date | null;
+};
+
+/**
+ * Every adventure the hero has finished, with how many times and when — the accomplishment
+ * log behind the Hall of Heroes. `getFinishedRunCountsByAdventure()` answers the same question
+ * for the gallery's replay stars but throws the dates away.
+ */
+export async function listFinishedRunSummaries(): Promise<FinishedAdventureSummary[]> {
+  // Raw min/max instead of drizzle's aggregates: those re-apply the column's timestamp
+  // decoder, these return the stored unix seconds, so the conversion stays visible here.
+  const rows = await db
+    .select({
+      adventureId: adventureRuns.adventureId,
+      kind: adventures.kind,
+      enTitle: adventures.enTitle,
+      frTitle: adventures.frTitle,
+      imagePath: adventures.imagePath,
+      timesFinished: count(),
+      firstFinishedAt: sql<number | null>`min(${adventureRuns.finishedAt})`,
+      lastFinishedAt: sql<number | null>`max(${adventureRuns.finishedAt})`,
+    })
+    .from(adventureRuns)
+    .innerJoin(adventures, eq(adventures.id, adventureRuns.adventureId))
+    .where(eq(adventureRuns.status, "finished"))
+    .groupBy(adventureRuns.adventureId);
+
+  const toDate = (seconds: number | null) => (seconds == null ? null : new Date(seconds * 1000));
+
+  return rows
+    .map((r) => ({
+      adventureId: r.adventureId,
+      kind: (r.kind as AdventureKind) ?? "route",
+      enTitle: r.enTitle,
+      frTitle: r.frTitle,
+      imagePath: r.imagePath,
+      timesFinished: Number(r.timesFinished),
+      firstFinishedAt: toDate(r.firstFinishedAt),
+      lastFinishedAt: toDate(r.lastFinishedAt),
+    }))
+    .sort((a, b) => (b.lastFinishedAt?.getTime() ?? 0) - (a.lastFinishedAt?.getTime() ?? 0));
 }
 
 async function insertWithFallback(input: {

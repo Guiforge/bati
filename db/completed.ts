@@ -13,7 +13,13 @@ import { dayKey } from "./dates";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { clearCached, setCached } from "./queryCache";
-import type { DifficultyCode, ExerciseStyle, FeedbackCode, QuestTargetType } from "./schema";
+import type {
+  DifficultyCode,
+  ExerciseStyle,
+  FeedbackCode,
+  MuscleCode,
+  QuestTargetType,
+} from "./schema";
 
 const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
 
@@ -423,6 +429,52 @@ export async function getRecentSessionHistory(limit = 30): Promise<SessionSummar
     durationSeconds: r.durationSeconds ?? null,
     performedAt: r.performedAt,
     feedback: r.feedback,
+  }));
+}
+
+export type ContributingSession = {
+  sessionId: number;
+  performedAt: Date;
+  volume: number;
+};
+
+/**
+ * The last sessions that fed a muscle (or a training style) and how much work each one
+ * contributed — the "here is what raised this building" line in the village detail sheet.
+ * Same join chain and same work-unit definition as computeMuscleBalance in db/muscleBalance.ts.
+ */
+export async function getRecentContributingSessions(
+  filter: { muscle: MuscleCode } | { style: ExerciseStyle },
+  limit = 3,
+): Promise<ContributingSession[]> {
+  const volume = sql<number>`coalesce(sum(${completedExercises.resultValue}), 0)`;
+
+  const base = db
+    .select({
+      sessionId: completedQuest.id,
+      performedAt: completedQuest.performedAt,
+      volume,
+    })
+    .from(completedQuest)
+    .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId));
+
+  // One exerciseMuscles row per muscle an exercise trains, so filtering on the muscle here
+  // counts that exercise once — joining without the filter would multiply the volume.
+  const rows = await ("muscle" in filter
+    ? base
+        .innerJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
+        .where(eq(exerciseMuscles.muscle, filter.muscle))
+    : base.where(eq(exercises.style, filter.style))
+  )
+    .groupBy(completedQuest.id)
+    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
+    .limit(limit);
+
+  return rows.map((r) => ({
+    sessionId: r.sessionId,
+    performedAt: r.performedAt,
+    volume: Number(r.volume),
   }));
 }
 

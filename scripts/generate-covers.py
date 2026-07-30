@@ -140,6 +140,19 @@ COVERS = [
      "pillar in a flooded temple chamber, violet mist pooling between the rings, faint light from a "
      "shaft above catching the carved scales. Pressure and constriction — a carving, not a creature; "
      "no people."),
+    # Mobility quests (0024) -- rest-day sessions, so the scenes are calm by design.
+    ("dawn_ritual", "quests",
+     "A wide shot of a bare stone terrace on a keep's roof at first light, a single woven mat "
+     "unrolled at its centre, cold mist lying in the valley below and the sun just clearing the "
+     "far ridge. Stillness before anything begins -- the terrace is deserted, no people."),
+    ("hearthside_unbinding", "quests",
+     "A warm interior wide shot of a great hearth burning low, travelling packs and muddy boots "
+     "set down beside a thick rug, firelight pooling across worn flagstones and a cloak drying on "
+     "a hook. The march is over -- the room is empty, no one in frame."),
+    ("handlers_vigil", "quests",
+     "A quiet night shot of a workbench under a shuttered window, a pair of chalk-dusted hand "
+     "wraps unrolled beside a guttering candle, a bowl of water and a whetstone within reach, "
+     "moonlight edging the sill. Careful preparation -- the room is unoccupied, no people."),
 ]
 
 

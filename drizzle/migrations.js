@@ -24,6 +24,7 @@ import m0020 from "./0020_movement_patterns.sql";
 import m0021 from "./0021_pattern_balance.sql";
 import m0022 from "./0022_progression_ladder.sql";
 import m0023 from "./0023_official_exercise_names.sql";
+import m0024 from "./0024_mobility_branch.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -53,5 +54,6 @@ export default {
     m0021,
     m0022,
     m0023,
+    m0024,
   },
 };

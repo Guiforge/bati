@@ -169,6 +169,13 @@
       "when": 1785110400011,
       "tag": "0023_official_exercise_names",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1785110400012,
+      "tag": "0024_mobility_branch",
+      "breakpoints": true
     }
   ]
 }

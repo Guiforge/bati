@@ -206,6 +206,36 @@ EXERCISES = [
      "down, shoulders and straight legs lifted a few centimetres off the ground and arms extended "
      "overhead in a shallow banana shape; the abs glow with electric-blue energy, seen from the "
      "side."),
+    # Mobility branch (0024) -- §11 of the research dossier. Glow follows the muscle the
+    # movement opens, per the palette rule in docs/content/image-style-prompt.md.
+    ("wrist_circles",
+     "A fantasy athlete hero on hands and knees rocking gently forward over flat palms, fingers "
+     "splayed wide on the ground and wrists visibly loaded, head neutral and gaze down; the "
+     "forearms and wrists glow with fiery orange-red energy, seen from a low three-quarter angle."),
+    ("cat_cow",
+     "A fantasy athlete hero on hands and knees with the spine arched high toward the ceiling, "
+     "head tucked and shoulder blades spread; the whole line of the spine glows with metallic "
+     "silver-blue energy, seen from the side."),
+    ("thread_the_needle",
+     "A fantasy athlete hero kneeling with one shoulder and the side of the head resting on the "
+     "ground, the opposite arm threaded through underneath and the hips stacked high over the "
+     "knees; the upper back and shoulder glow with silver-blue energy, seen from a low angle."),
+    ("standing_forward_fold",
+     "A fantasy athlete hero folded forward from the hips with the torso hanging heavy, knees "
+     "softly bent and hands drifting toward the floor, hair falling free; the hamstrings and lower "
+     "back glow with warm golden energy, seen from the side."),
+    ("downward_dog",
+     "A fantasy athlete hero in a downward dog, hips pushed high into a sharp inverted V, arms and "
+     "legs straight, heels reaching for the ground and head between the arms; the shoulders and "
+     "hamstrings glow with silver-blue and golden energy, seen from the side."),
+    ("pigeon_pose",
+     "A fantasy athlete hero in a pigeon pose, one shin folded forward across the ground and the "
+     "other leg extended straight behind, chest lifted and hips square; the front hip and glute "
+     "glow with warm golden energy, seen from a three-quarter angle."),
+    ("worlds_greatest_stretch",
+     "A fantasy athlete hero in a deep lunge with one hand planted inside the front foot and the "
+     "other arm reaching straight up in a full rotation, gaze following the raised hand; the front "
+     "hip and the twisting upper back glow with golden and silver-blue energy, seen from the side."),
 ]
 
 

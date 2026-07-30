@@ -2,17 +2,17 @@
 title: Missing Images — inventory
 type: content
 status: active
-updated: 2026-07-28
+updated: 2026-07-30
 related: [missing-covers.md, ../planning/screen-redesign-proposals.md, ../planning/dev-execution-plan.md]
 sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
 
 # Missing Images — inventory
 
-> What art is still missing (nothing, as of this pass), what is covered, what exists but is
-> unused — and
+> What art is still missing (**10 assets**, all from the `0024` mobility branch — see §7), what
+> is covered, what exists but is unused — and
 > [how to generate the gaps](#how-to-generate-missing-art).
-> Re-verified 2026-07-28 (through migration `0023`) by diffing seed `imagePath` basenames
+> Re-verified 2026-07-30 (through migration `0024`) by diffing seed `imagePath` basenames
 > against `constants/assetMap.ts` keys and files on disk. The render path resolves images by
 > **basename key** through `assetMap` (e.g. `getExerciseAsset`), not by the raw seed path — so
 > coverage is measured against assetMap keys, not filenames: a row can have a perfectly good
@@ -24,11 +24,15 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 ## TL;DR
 
+- **§7 OPEN (2026-07-30)**: the mobility branch (`0024`) seeds **7 exercises and 3 quest covers
+  with no art yet** — the first genuine gap on this page since §6 closed. Prompts are staged in
+  both generators; nothing has been generated. The rows render `placeholder.jpg` until they are.
+  See §7 below.
 - **§6 RESOLVED (2026-07-28)**: `0023` renamed the `0006` batch to the movements' official names
   and merged five duplicates away; the 14 poses that staged a goblin, a dragon or a wizard were
-  regenerated as the same lone hero as the rest of the set. **Every gap in this doc is closed.**
+  regenerated as the same lone hero as the rest of the set.
 - **§5 RESOLVED (2026-07-27)**: the 11 assets the phase-C/D/E batch pointed at now exist,
-  are reviewed and are registered in `assetMap`. **Every gap in this doc is closed.**
+  are reviewed and are registered in `assetMap`.
 - **§4 RESOLVED (2026-07-27)**: the 20 bodyweight exercises from
   `drizzle/0010_seed_bodyweight_exercises.sql` now have dedicated character-pose art,
   assigned by `drizzle/0011_seed_bodyweight_exercise_images.sql` and registered in
@@ -40,10 +44,10 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
   sprites via the same helper's fallback, zero new assets, as recommended. Wiring
   `VillageScene.tsx`'s building grid to render these instead of the `emoji` field — and the
   per-level tint ramp — remains a separate dev task, same boundary as §1a/§1b before it.
-- **Content art: 42/42 exercises, 27/27 quests, 8/8 adventures.** Nothing seeded renders the
-  placeholder. (42, not 48: `0018` deleted Barbarian's Overhead Press, the catalogue's only
-  dumbbell movement — see the work roadmap §15 — and `0023` merged five `0006` exercises into
-  the `0001` originals they duplicated.)
+- **Content art: 42/49 exercises, 27/30 quests, 8/8 adventures.** The 10 missing are all `0024`
+  (§7). (49, not 55: `0018` deleted Barbarian's Overhead Press, the catalogue's only dumbbell
+  movement — see the work roadmap §15 — and `0023` merged five `0006` exercises into the `0001`
+  originals they duplicated.)
 - **§1a/§1b RESOLVED (2026-07-20)**: 5 village tier illustrations + 6 sport sprites, generated
   (`scripts/generate-village.py`) and wired into `VillageScene.tsx` (`4356ee4`).
 - **§1c RESOLVED (2026-07-20)**: `BossPhaseImage.tsx` now renders the boss's own adventure
@@ -366,6 +370,55 @@ poses cost less than one of the `0010` PNGs still in the folder.
 Push-ups, Pull-ups, Plank and Wall Sit, which keep their own `0001` art — plus
 `barbarian_overhead_press`, orphaned since `0018` deleted that exercise, and the byte-identical
 `ranger_single_leg_deadlift_1` duplicate flagged in §3.
+
+---
+
+## 7. OPEN — the mobility branch has no art yet (10 assets, 2026-07-30)
+
+`drizzle/0024_mobility_branch.sql` seeds 7 mobility exercises and 3 mobility quests. **None of
+the 10 has art.** They render `placeholder.jpg` through the usual `getExerciseAsset()` /
+`getQuestAsset()` fallback, so the app is correct — just plain — until they are generated.
+
+Why the content shipped ahead of the art, unlike §4–§6: the branch existed to be *used*. The
+catalogue held two mobility movements and one mobility quest, which is why §11.4's rest-day
+session had nowhere to live, and `WARMUP_SEQUENCE` could not prepare a wrist because no wrist
+movement existed to draw by name (§8.6.4). The seeds unblock both; the art is cosmetic and the
+placeholder is honest meanwhile.
+
+| Slug | Kind | Row |
+| --- | --- | --- |
+| `wrist_circles` | exercise | Wrist Circles — the prehab movement the warm-up needs |
+| `cat_cow` | exercise | Cat-Cow |
+| `thread_the_needle` | exercise | Thread the Needle |
+| `standing_forward_fold` | exercise | Standing Forward Fold |
+| `downward_dog` | exercise | Downward Dog |
+| `pigeon_pose` | exercise | Pigeon Pose |
+| `worlds_greatest_stretch` | exercise | World's Greatest Stretch |
+| `dawn_ritual` | quest cover | The Dawn Ritual |
+| `hearthside_unbinding` | quest cover | The Hearthside Unbinding |
+| `handlers_vigil` | quest cover | The Handler's Vigil |
+
+**Prompts are already staged** — 7 appended to `EXERCISES` in `scripts/generate-exercises.py`,
+3 appended to `COVERS` in `scripts/generate-covers.py`. The three cover scenes are deliberately
+calm and unpeopled: these are rest-day sessions, and a cover that shouts undercuts the one thing
+the session is for.
+
+```bash
+MAMMOUTH_API_KEY=sk-… python3 scripts/generate-exercises.py wrist_circles cat_cow \
+  thread_the_needle standing_forward_fold downward_dog pigeon_pose worlds_greatest_stretch
+MAMMOUTH_API_KEY=sk-… python3 scripts/generate-covers.py dawn_ritual hearthside_unbinding handlers_vigil
+magick montage assets/images/exercises/*.jpg -tile 4x4 -geometry 300x225+3+3 /tmp/sheet.jpg
+```
+
+**Then wire them** — generating the files is not enough (see *Wiring* above):
+
+1. Add 7 `EXERCISE_ASSETS` and 3 `QUEST_ASSETS` `require()` entries in `constants/assetMap.ts`.
+   **Not before the files exist** — Metro resolves `require()` at bundle time, so an entry
+   pointing at a missing file breaks the build, which is exactly why `0024` shipped without one.
+2. No migration needed: `0024` already writes the intended `imagePath` for all 10 rows.
+3. Review before accepting — corner-pixel check for white backgrounds, and look for baked-in
+   captions. `wrist_circles` is the one most likely to go wrong: "wrists" is an abstract subject
+   and the model may reach for a full push-up instead of a loaded-palm rock.
 
 ---
 

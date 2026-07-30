@@ -91,6 +91,18 @@ export const preferences = {
     await setPreference("avatarId", avatarId);
   },
 
+  async getCustomAvatarUri(): Promise<string | null> {
+    return await getPreference("customAvatarUri");
+  },
+
+  async setCustomAvatarUri(uri: string | null): Promise<void> {
+    if (uri === null) {
+      await deletePreference("customAvatarUri");
+      return;
+    }
+    await setPreference("customAvatarUri", uri);
+  },
+
   // Training level captured at onboarding (null = skipped). Read by the coach/
   // suggestion layer as a starting signal; no store field until a reactive reader exists.
   async getTrainingLevel(): Promise<TrainingLevel | null> {

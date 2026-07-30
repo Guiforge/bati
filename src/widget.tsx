@@ -17,6 +17,9 @@ const DIM_COLOR = "#64748B";
 const SURFACE_COLOR = "#101322";
 const TEXT_COLOR = "#E8ECFF";
 
+// Drawn by a headless Android task, never mounted in the React tree, so Fast Refresh has
+// nothing to refresh here — the two render sites below are the only consumers.
+// biome-ignore lint/style/useComponentExportOnlyModules: headless widget task, not a screen
 function FlameWidget({ streak, flameLevel }: { streak: number; flameLevel: FlameLevel }) {
   return (
     <FlexWidget

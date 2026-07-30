@@ -4,6 +4,7 @@ import {
   Dumbbell,
   Flame,
   HeartPulse,
+  ImagePlus,
   Languages,
   Moon,
   ScrollText,
@@ -14,6 +15,7 @@ import {
 } from "@tamagui/lucide-icons";
 import Constants from "expo-constants";
 import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,7 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
-import { AVATARS } from "@/constants/avatars";
+import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
 import {
@@ -82,6 +84,108 @@ function SettingRow({ testID, icon, label, value, onPress, disabled }: SettingRo
   );
 }
 
+type AvatarSectionProps = {
+  avatarId: AvatarId;
+  customAvatarUri: string | null;
+  showAvatarPicker: boolean;
+  setShowAvatarPicker: (show: boolean) => void;
+  setAvatarId: (id: AvatarId) => void;
+  pickCustomAvatar: () => void;
+};
+
+function AvatarSection({
+  avatarId,
+  customAvatarUri,
+  showAvatarPicker,
+  setShowAvatarPicker,
+  setAvatarId,
+  pickCustomAvatar,
+}: AvatarSectionProps) {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const currentAvatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
+  const currentAvatarSource = getAvatarSource(avatarId, customAvatarUri);
+  const currentAvatarLabel = customAvatarUri
+    ? t("settings.avatar_custom", "Photo perso")
+    : t(currentAvatar.labelKey);
+
+  return (
+    <Card bg="$surface" p="$4" gap="$3">
+      <Text fontSize="$3" fontWeight="bold" color="$textSecondary">
+        {t("settings.avatar", "AVATAR")}
+      </Text>
+
+      {showAvatarPicker ? (
+        <XStack flexWrap="wrap" gap="$3" justify="center">
+          {AVATARS.map((avatar) => (
+            <Button
+              key={avatar.id}
+              size="$5"
+              circular
+              p={0}
+              borderWidth={avatarId === avatar.id && !customAvatarUri ? 2 : 1}
+              borderColor={
+                avatarId === avatar.id && !customAvatarUri ? "$primary" : "$borderStrong"
+              }
+              accessibilityLabel={t(avatar.labelKey)}
+              accessibilityState={{ selected: avatarId === avatar.id && !customAvatarUri }}
+              onPress={() => {
+                setAvatarId(avatar.id);
+                setShowAvatarPicker(false);
+              }}
+            >
+              <Image source={avatar.source} style={{ width: 48, height: 48, borderRadius: 24 }} />
+            </Button>
+          ))}
+          <Button
+            size="$5"
+            circular
+            p={0}
+            bg="$surface2"
+            borderWidth={customAvatarUri ? 2 : 1}
+            borderColor={customAvatarUri ? "$primary" : "$borderStrong"}
+            accessibilityLabel={t("settings.avatar_custom", "Photo perso")}
+            accessibilityState={{ selected: !!customAvatarUri }}
+            onPress={pickCustomAvatar}
+          >
+            {customAvatarUri ? (
+              <Image
+                source={{ uri: customAvatarUri }}
+                style={{ width: 48, height: 48, borderRadius: 24 }}
+              />
+            ) : (
+              <ImagePlus size={22} color="$textSecondary" />
+            )}
+          </Button>
+        </XStack>
+      ) : (
+        <Button bg="transparent" height="auto" p="$2" onPress={() => setShowAvatarPicker(true)}>
+          <XStack items="center" gap="$3">
+            <Image
+              source={currentAvatarSource}
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 32,
+                borderWidth: 2,
+                borderColor: theme.borderStrong?.val,
+              }}
+            />
+            <YStack>
+              <Text fontSize="$4" fontWeight="bold" color="$text">
+                {currentAvatarLabel}
+              </Text>
+              <Text fontSize="$2" color="$textSecondary">
+                {t("settings.tap_change", "Tap to change")}
+              </Text>
+            </YStack>
+          </XStack>
+        </Button>
+      )}
+    </Card>
+  );
+}
+
 function DevFooter() {
   const router = useRouter();
   if (!__DEV__) return null;
@@ -100,22 +204,39 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
-  const theme = useTheme();
 
   const {
     language,
     avatarId,
+    customAvatarUri,
     hapticsEnabled,
     soundEnabled,
     notificationsEnabled,
     setLanguage,
     setAvatarId,
+    setCustomAvatarUri,
     setHapticsEnabled,
     setSoundEnabled,
     setNotificationsEnabled,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const pickCustomAvatar = useCallback(async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+
+    await setCustomAvatarUri(result.assets[0].uri);
+    setShowAvatarPicker(false);
+  }, [setCustomAvatarUri]);
 
   // What the hero owns, cycled through in one row: unanswered -> nothing -> bar -> bar + dips.
   // Unanswered shows everything, so nobody loses content by never opening this screen.
@@ -197,8 +318,6 @@ export default function SettingsScreen() {
     router.push("/oath" as never);
   }, [router]);
 
-  const currentAvatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
-
   const toggleLanguage = () => {
     const newLang = language === "en" ? "fr" : "en";
     setLanguage(newLang);
@@ -225,60 +344,14 @@ export default function SettingsScreen() {
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         {/* Avatar Section */}
-        <Card bg="$surface" p="$4" gap="$3">
-          <Text fontSize="$3" fontWeight="bold" color="$textSecondary">
-            {t("settings.avatar", "AVATAR")}
-          </Text>
-
-          {showAvatarPicker ? (
-            <XStack flexWrap="wrap" gap="$3" justify="center">
-              {AVATARS.map((avatar) => (
-                <Button
-                  key={avatar.id}
-                  size="$5"
-                  circular
-                  p={0}
-                  borderWidth={avatarId === avatar.id ? 2 : 1}
-                  borderColor={avatarId === avatar.id ? "$primary" : "$borderStrong"}
-                  accessibilityLabel={t(avatar.labelKey)}
-                  accessibilityState={{ selected: avatarId === avatar.id }}
-                  onPress={() => {
-                    setAvatarId(avatar.id);
-                    setShowAvatarPicker(false);
-                  }}
-                >
-                  <Image
-                    source={avatar.source}
-                    style={{ width: 48, height: 48, borderRadius: 24 }}
-                  />
-                </Button>
-              ))}
-            </XStack>
-          ) : (
-            <Button bg="transparent" height="auto" p="$2" onPress={() => setShowAvatarPicker(true)}>
-              <XStack items="center" gap="$3">
-                <Image
-                  source={currentAvatar.source}
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
-                    borderWidth: 2,
-                    borderColor: theme.borderStrong?.val,
-                  }}
-                />
-                <YStack>
-                  <Text fontSize="$4" fontWeight="bold" color="$text">
-                    {t(currentAvatar.labelKey)}
-                  </Text>
-                  <Text fontSize="$2" color="$textSecondary">
-                    {t("settings.tap_change", "Tap to change")}
-                  </Text>
-                </YStack>
-              </XStack>
-            </Button>
-          )}
-        </Card>
+        <AvatarSection
+          avatarId={avatarId}
+          customAvatarUri={customAvatarUri}
+          showAvatarPicker={showAvatarPicker}
+          setShowAvatarPicker={setShowAvatarPicker}
+          setAvatarId={setAvatarId}
+          pickCustomAvatar={pickCustomAvatar}
+        />
 
         {/* Preferences */}
         <YStack gap="$3">

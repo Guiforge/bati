@@ -6,7 +6,7 @@ import { Avatar, Text, XStack, YStack } from "tamagui";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
-import { getAvatarById } from "@/constants/avatars";
+import { getAvatarSource } from "@/constants/avatars";
 import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { getFlameLevel } from "@/db/village";
@@ -20,11 +20,12 @@ export function HomeHeader() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const avatarId = useSettingsStore((s) => s.avatarId);
+  const customAvatarUri = useSettingsStore((s) => s.customAvatarUri);
   const language = useSettingsStore((s) => s.language);
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
   const [streak, setStreak] = useState<StreakInfo | null>(null);
 
-  const avatar = getAvatarById(avatarId);
+  const avatarSource = getAvatarSource(avatarId, customAvatarUri);
 
   // Refetch on focus: a session just logged must show up here, not on the next cold start.
   useFocusEffect(
@@ -64,7 +65,7 @@ export function HomeHeader() {
         accessibilityRole="button"
         accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
       >
-        <Avatar.Image source={avatar.source} />
+        <Avatar.Image source={avatarSource} />
         <Avatar.Fallback background="$primary" />
       </Avatar>
 

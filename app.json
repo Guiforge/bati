@@ -42,6 +42,12 @@
       "expo-audio",
       "expo-notifications",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Utilisée pour choisir une photo comme avatar."
+        }
+      ],
+      [
         "react-native-android-widget",
         {
           "widgets": [

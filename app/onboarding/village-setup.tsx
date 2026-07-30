@@ -18,7 +18,7 @@ const MAX_NAME_LENGTH = 20;
 
 // Name-your-village step. The avatar picker used to live here too, but the avatar has no
 // gameplay and is editable in Settings — the only onboarding choice left is the name.
-export default function HeroSetup() {
+export default function VillageSetup() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -105,11 +105,20 @@ export default function HeroSetup() {
             >
               {t("onboarding.village_name_subtitle")}
             </Text>
+            <Text
+              text="center"
+              color="$textSecondary"
+              fontSize={13}
+              textShadowColor="rgba(0,0,0,0.5)"
+              textShadowRadius={4}
+            >
+              {t("onboarding.village_name_hint", "Every muscle you train raises a building here.")}
+            </Text>
 
             {/* Name input */}
             <YStack gap="$2">
               <TextInput
-                testID="onboarding-hero-name"
+                testID="onboarding-village-name"
                 value={name}
                 onChangeText={handleChangeText}
                 placeholder={t("onboarding.village_name_placeholder") ?? "Your village name"}
@@ -142,7 +151,7 @@ export default function HeroSetup() {
             </YStack>
 
             <AppButton
-              testID="onboarding-hero-continue"
+              testID="onboarding-village-continue"
               onPress={handleContinue}
               disabled={!isValidName}
               bg={isValidName ? "$primary" : "$surface"}

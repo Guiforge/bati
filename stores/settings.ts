@@ -23,6 +23,7 @@ interface SettingsState {
   language: AppLanguage;
   theme: ThemePreference;
   avatarId: AvatarId;
+  customAvatarUri: string | null;
   hapticsEnabled: boolean;
   soundEnabled: boolean;
   reducedMotion: boolean;
@@ -33,6 +34,7 @@ interface SettingsState {
   setLanguage: (language: AppLanguage) => Promise<void>;
   setTheme: (theme: ThemePreference) => Promise<void>;
   setAvatarId: (avatarId: AvatarId) => Promise<void>;
+  setCustomAvatarUri: (uri: string | null) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => Promise<void>;
   setSoundEnabled: (enabled: boolean) => Promise<void>;
   setReducedMotion: (enabled: boolean) => Promise<void>;
@@ -49,6 +51,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   // here and fall back to avatarIds[0] there, so a hero who never picked one watched their
   // avatar change from guardian to shadow a beat after every cold start.
   avatarId: avatarIds[0],
+  customAvatarUri: null,
   hapticsEnabled: true,
   soundEnabled: true,
   reducedMotion: false,
@@ -70,8 +73,14 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   },
 
   setAvatarId: async (avatarId) => {
-    set({ avatarId });
+    set({ avatarId, customAvatarUri: null });
     await preferences.setAvatarId(avatarId);
+    await preferences.setCustomAvatarUri(null);
+  },
+
+  setCustomAvatarUri: async (uri) => {
+    set({ customAvatarUri: uri });
+    await preferences.setCustomAvatarUri(uri);
   },
 
   setHapticsEnabled: async (enabled) => {
@@ -105,6 +114,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         language,
         theme,
         avatarId,
+        customAvatarUri,
         hapticsEnabled,
         soundEnabled,
         reducedMotion,
@@ -114,6 +124,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getLanguage(),
         preferences.getTheme(),
         preferences.getAvatarId(),
+        preferences.getCustomAvatarUri(),
         preferences.getHapticsEnabled(),
         preferences.getSoundEnabled(),
         preferences.getReducedMotion(),
@@ -128,6 +139,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         language: normalizedLanguage,
         theme: normalizeTheme(theme),
         avatarId: normalizeAvatarId(avatarId),
+        customAvatarUri,
         hapticsEnabled,
         soundEnabled,
         reducedMotion,

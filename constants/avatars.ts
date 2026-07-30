@@ -52,3 +52,10 @@ export function getAvatarById(id: AvatarId): Avatar {
   // biome-ignore lint/style/noNonNullAssertion: ids are exhaustive
   return found!;
 }
+
+export function getAvatarSource(
+  avatarId: AvatarId,
+  customAvatarUri: string | null,
+): ImageSourcePropType {
+  return customAvatarUri ? { uri: customAvatarUri } : getAvatarById(avatarId).source;
+}

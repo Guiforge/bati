@@ -1,6 +1,10 @@
-// loadFromDatabase merges eight preferences at once. The bug class it guards
+// loadFromDatabase merges nine preferences at once. The bug class it guards
 // against is "settings look right, then snap back to defaults": stored values
-// losing to the initial state, or one failed read wiping the other seven.
+// losing to the initial state, or one failed read wiping the other eight.
+//
+// Every read the store makes must be mocked here, including new ones: a missing
+// mock throws while the Promise.all array is being built, which orphans the
+// already-rejected reads and takes the whole jest worker down with it.
 //
 // The store reads getDevicePreferredAppLanguage() at module-load, so the mocks
 // must be registered before the store is required. Same jest.doMock + lazy
@@ -10,6 +14,7 @@ const prefs = {
   getLanguage: jest.fn<Promise<string | null>, []>(),
   getTheme: jest.fn<Promise<string | null>, []>(),
   getAvatarId: jest.fn<Promise<string | null>, []>(),
+  getCustomAvatarUri: jest.fn<Promise<string | null>, []>(),
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
   getReducedMotion: jest.fn<Promise<boolean>, []>(),
@@ -18,6 +23,7 @@ const prefs = {
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setTheme: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
+  setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
   setReducedMotion: jest.fn().mockResolvedValue(undefined),
@@ -51,6 +57,7 @@ function storedSettings() {
   prefs.getLanguage.mockResolvedValue("fr");
   prefs.getTheme.mockResolvedValue("dark");
   prefs.getAvatarId.mockResolvedValue("archmage");
+  prefs.getCustomAvatarUri.mockResolvedValue("file:///stored-avatar.jpg");
   prefs.getHapticsEnabled.mockResolvedValue(false);
   prefs.getSoundEnabled.mockResolvedValue(false);
   prefs.getReducedMotion.mockResolvedValue(true);

@@ -79,7 +79,7 @@ export default function Presentation() {
           <AppButton
             testID="onboarding-presentation-continue"
             variant="primary"
-            onPress={() => router.push("/onboarding/hero-setup")}
+            onPress={() => router.push("/onboarding/village-setup")}
             rounded="$10"
             borderWidth={0}
           >

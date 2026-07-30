@@ -26,6 +26,7 @@ import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { diffVillageGrowth, getVillageBuildings, type VillageGrowth } from "@/db/village";
 import { computeSessionXp } from "@/db/xp";
 import { rescheduleOathReminder } from "@/src/notifications";
+import { requestFlameWidgetUpdate } from "@/src/widget";
 
 export type SessionStatus =
   | "idle"
@@ -510,6 +511,12 @@ export const useSessionStore = create<SessionState>()(
 
       // Update streak cache
       await updateStreakAfterSession();
+
+      // The flame widget reads the streak straight from the DB, but only on an OS-driven
+      // tick or a poke — a finished session is one of the two moments the number can move.
+      requestFlameWidgetUpdate().catch(() => {
+        // Non-blocking: never fail a logged session over a widget redraw.
+      });
 
       // Check for new achievements (on the base session XP, before the oath bonus)
       const newAchievements = await checkForNewAchievements({

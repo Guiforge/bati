@@ -30,6 +30,7 @@
     "react-dom": "19.2.3",
     "react-i18next": "^17.0.11",
     "react-native": "0.86.2",
+    "react-native-android-widget": "^0.21.0",
     "react-native-confetti-cannon": "^1.5.2",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-gifted-charts": "^1.4.77",
@@ -99,7 +100,7 @@
     },
     "collectCoverage": true
   },
-  "main": "expo-router/entry",
+  "main": "index.ts",
   "name": "bati",
   "private": true,
   "scripts": {

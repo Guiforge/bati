@@ -12,6 +12,7 @@ import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { rescheduleOathReminder } from "@/src/notifications";
 import { AppBackground } from "@/src/ui/AppBackground";
+import { requestFlameWidgetUpdate } from "@/src/widget";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
@@ -61,6 +62,11 @@ export default function RootLayout() {
     // cold start is one of the two moments it needs to be refreshed (the other is a session).
     rescheduleOathReminder().catch(() => {
       // Non-blocking: a reminder that fails to schedule must never hold up the app.
+    });
+    // The streak window can roll over while the app is closed (e.g. midnight passing),
+    // so a cold start is the other moment the flame widget needs a redraw.
+    requestFlameWidgetUpdate().catch(() => {
+      // Non-blocking: never hold up the app over a widget redraw.
     });
   }, [loadUserFromDatabase, loadSettingsFromDatabase]);
 

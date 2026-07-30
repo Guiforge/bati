@@ -40,7 +40,24 @@
       ],
       "expo-router",
       "expo-audio",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "Flame",
+              "label": "Bati — Flame",
+              "description": "Your current training streak.",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ]
     ],
     "scheme": "bati",
     "slug": "bati",

@@ -319,15 +319,13 @@ export function VillageScene() {
               <Text fontWeight="700" fontSize={16} color="$text">
                 {t("village.trophies_title", "Trophies")}
               </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12, paddingRight: 16 }}
-              >
+              {/* A wall, not a rail: the whole rack is visible at once, same wrapping grid
+                  as the buildings above, instead of hiding older medals off-screen. */}
+              <XStack flexWrap="wrap" gap="$3">
                 {scene.trophies.map((trophy) => (
                   <YStack
                     key={trophy.key}
-                    width={80}
+                    width="22%"
                     items="center"
                     gap="$2"
                     onPress={() => openDetail({ kind: "trophy", trophy })}
@@ -370,7 +368,7 @@ export function VillageScene() {
                     </Text>
                   </YStack>
                 ))}
-              </ScrollView>
+              </XStack>
             </YStack>
           )}
         </YStack>

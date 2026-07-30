@@ -2,8 +2,15 @@
 title: Oaths (Serments)
 type: system
 status: active
-updated: 2026-07-28
-related: [progression.md, coach-planning.md, statistics-progress.md, ../planning/system-redesign-options.md]
+updated: 2026-07-30
+related:
+  [
+    progression.md,
+    coach-planning.md,
+    statistics-progress.md,
+    ../planning/system-redesign-options.md,
+    ../raw/bodyweight-app-research.md,
+  ]
 sources: [db/oaths.ts, db/oathReminder.ts, app/oath.tsx, components/home/OathCard.tsx, src/notifications.ts]
 ---
 
@@ -58,6 +65,18 @@ flame asks for three; swear nothing and it sits at the WHO baseline of two. That
 the hero should have one commitment, chosen by them, rendered in the most visible place on Home,
 instead of a promise they made competing with a streak the app imposed.
 
+**Where "two" comes from.** [§7](../raw/bodyweight-app-research.md) of the research dossier:
+the WHO 2020 recommendation for adults is 150–300 min/week of moderate activity **plus
+muscle-strengthening activities involving all major muscle groups on ≥2 days a week**. That
+second half is exactly what a bodyweight app delivers, so it is the floor a hero who has sworn
+nothing is measured against — not a number picked for feel. The same section supplies the
+reason the presets deck offers 2, 3 and 4 rather than pushing everyone to the maximum:
+**"some is better than none"**, and someone sedentary should be allowed to start below the
+threshold rather than bounce off it.
+
+§5 supplies the other half of the design: self-chosen goals outperform imposed ones, which is
+why Bati asks the hero to swear rather than assigning them a quota.
+
 ## Forgiveness is in the definition, not in a token
 
 `weekly_sessions` counts the weeks that hit the quota. A missed week costs that week and nothing
@@ -81,8 +100,9 @@ A "custom oath" toggle reveals the original metric/target/exercise form for exac
 
 1. **Home card** ([OathCard.tsx](../../components/home/OathCard.tsx)) — shows the sworn oath's
    progress, or a "swear an oath" CTA when none is set. It never hides: it is the only entry
-   point to the feature from Home. The coach ([CoachCard](../../components/home/CoachCard.tsx))
-   is now purely reactive (rest / weak-area), so the two no longer compete for the objective slot.
+   point to the feature from Home. The [coach](coach-planning.md)
+   ([useSmartAction.ts](../../components/home/useSmartAction.ts)) is purely reactive — it picks
+   the next *action*, never a target — so the two do not compete for the objective slot.
 2. **Victory screen** ([SessionRewards.tsx](../../components/session/SessionRewards.tsx)) —
    the fulfilment card leads, above level-up and achievements: it is the user's own promise.
    Fulfilling an oath pays a flat `OATH_XP_BONUS` (added to the tip-over session's row, so the

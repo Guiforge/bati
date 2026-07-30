@@ -1,11 +1,29 @@
+---
+title: Workout Design & Balancing
+type: content
+status: active
+updated: 2026-07-30
+related:
+  [
+    README.md,
+    content-generation.md,
+    ../gameplay/quests.md,
+    ../gameplay/progression.md,
+    ../raw/bodyweight-app-research.md,
+  ]
+sources: [db/targets.ts, db/schema.ts, constants/warmup.ts, raw/bodyweight-app-research.md]
+---
+
 # 🏋️ Best Practice Workout Design for BATI
 
 > **Mission**: Transform real fitness science into epic RPG content.
 >
 > **Underlying science**: [`raw/bodyweight-app-research.md`](../raw/bodyweight-app-research.md)
 > (volume, frequency, RIR, bodyweight progression, gamification & retention evidence).
-> This page is the *game-design* translation; that source is the evidence base and has
-> **not been ingested here yet** — where they disagree, the research wins.
+> This page is the *game-design* translation; that source is the evidence base — where they
+> disagree, the research wins. Ingested 2026-07-30: see
+> [The evidence behind the numbers](#-the-evidence-behind-the-numbers) below, which is the
+> part of this page that is **not** negotiable for flavour.
 
 ---
 
@@ -239,6 +257,85 @@ When a Tier 2 building reaches **Level 3**, its Tier 3 upgrade unlocks:
 - 🏟️ Champion Arena (Defeat 10 Bosses)
 
 **Unlock Logic**: Spend Boss Tokens (3-5 per legendary building).
+
+---
+
+## 🧬 The evidence behind the numbers
+
+Ingested from [`raw/bodyweight-app-research.md`](../raw/bodyweight-app-research.md) on
+2026-07-30. Everything else on this page is game design and can be tuned for fun. **This
+section is the training science** — change it only when the source changes.
+
+### Volume, frequency, intensity (§2)
+
+| Lever | Evidence-based target | Source |
+| --- | --- | --- |
+| **Weekly volume** | 10–20 hard sets per muscle per week; diminishing returns past ~20 | Schoenfeld/Ogborn/Krieger 2017; Pelland 2024 |
+| **Frequency** | Each muscle ≥2×/week — at *equal volume* frequency itself changes little, so it is a distribution tool, not a magic number | Schoenfeld 2019 |
+| **Reps** | 6–30 reps grow muscle about equally *when the set ends close to failure* | Schoenfeld 2017 |
+| **Intensity** | **1–3 reps in reserve.** Training to failure is not superior for hypertrophy and costs fatigue and technique | Refalo 2023/2024; Robinson 2024 |
+| **Rest** | 60–120 s. Under 60 s measurably reduces gains; past 120 s adds little for hypertrophy (more for strength) | "Give it a Rest" 2024 |
+
+**Bodyweight progressive overload** has five levers, in rough order of how the app should
+reach for them: reps/sets → tempo (slow eccentric) → range of motion → leverage (elevation,
+body angle) → variation change. Push-up training alone produces real hypertrophy (pec +18.3 %,
+triceps +9.5 % — Kikuchi & Nakazato 2017), so "bodyweight can't build muscle" is false; the
+real constraint is *keeping the movement hard enough as the hero gets stronger*, which is what
+the variation ladder (`exercises.prerequisiteExerciseId`) exists to solve.
+
+**The weak point is pulling.** Without a bar the vertical pull nearly disappears. Table rows,
+towel/doorway rows and slowed eccentrics cover it; the honest answer is that a doorway pull-up
+bar is the single highest-value object a hero can own, and the app should say so rather than
+pretend otherwise.
+
+### Session structure (§1)
+
+- **Warm-up: dynamic, 5–10 min.** Real evidence for injury-risk reduction (Fradkin 2006;
+  FIFA 11+ trials). The app runs 2 min rather than 5–10 — a deliberate trade: a five-minute
+  warm-up in front of a twelve-minute quest is a warm-up nobody does twice.
+- **Cool-down: not built, on purpose.** Van Hooren & Peake 2018 find active cool-downs
+  "largely ineffective" for soreness, recovery markers, range of motion, and they "do not
+  appear to prevent injuries". Bati has no cool-down and should not grow one — the honest
+  version would be an optional comfort ritual, sold as nothing more.
+- **Order**: compound / technical / skill movements first, while the nervous system is fresh;
+  isolation and high-rep work last. Skill practice belongs at the *start*, never after
+  fatiguing work — a shaky rep rehearses bad technique.
+
+### Holds are prescribed submaximally (§8.3)
+
+For any isometric (Plank, L-Sit, Hollow Body Hold, Wall Sit, Side Plank, Superman,
+Scapular Pull-Up), the coaching standard is: know the hero's max hold, then **work at 60–75 %
+of it**. Holding to failure every set is named in the source as *the* classic mistake — it
+accumulates fatigue and breaks the exact positions the hold is meant to train. Bati derives
+this from the journal (`getExerciseMax(id, "time")`) rather than asking.
+
+### Full range of motion *is* mobility training (§11.1)
+
+The most useful finding in the dossier for a bodyweight app: strength training through full
+ROM and stretching produce **similar** range-of-motion gains (Afonso 2021), and full-ROM
+resistance training builds strength on top (2024 RCT). So deep squats, chest-to-floor
+push-ups, full-hang pull-ups and controlled eccentrics *are* the mobility program. Standalone
+stretching is a supplement for specific goals, not a prerequisite.
+
+Consequence for content: **execution cues must name the range** (depth, full lockout, full
+hang). An amplitude cue is training content, not a stylistic detail.
+
+### Guardrails (§4)
+
+- Frame intensity as reps-in-reserve, never "go to failure".
+- Respect ~48 h per muscle group; plan a deload every 4–8 weeks.
+- Progress on clean-rep thresholds, and **regress the moment form consistently breaks**.
+- Overreach shows up first as sustained performance decline — the app's guardrails are
+  preventive, not diagnostic, and should defer to a health professional.
+
+### Not built, deliberately (§9, §10)
+
+Fat loss and muscle gain need no separate training engine — §9 and §10 both point back at the
+volume/frequency/RIR rules above. What changes is diet, and the source is explicit that
+**exercise is a poor tool for creating an energy deficit and an excellent one for protecting
+muscle while dieting**. Bati therefore counts no calories, frames no session as "burning off"
+anything, and keeps nutrition guidance directional at most (protein ~1.6 g/kg/day) with an
+explicit deferral to a doctor or dietitian.
 
 ---
 

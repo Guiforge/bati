@@ -2,8 +2,15 @@
 title: Progression (XP, Village, Flame)
 type: system
 status: active
-updated: 2026-07-18
-related: [../planning/roadmap.md, session-flow.md, statistics-progress.md, coach-planning.md]
+updated: 2026-07-30
+related:
+  [
+    ../planning/roadmap.md,
+    session-flow.md,
+    statistics-progress.md,
+    coach-planning.md,
+    ../raw/bodyweight-app-research.md,
+  ]
 sources: [db/xp.ts, db/streaks.ts]
 ---
 
@@ -82,6 +89,18 @@ hero rests must not cost them anything. See
 The counter is still derived from the session journal on read (`db/streaks.ts`), so the change
 needed no migration — but every hero's flame grew the day it shipped, because their rest days
 now count.
+
+### A mobility session is how a rest day still counts as work
+
+[§11.4](../raw/bodyweight-app-research.md) names this the cleanest overlap the dossier found
+between good programming and good retention design: a 10–15 min mobility session is
+low-fatigue by design, so it can be done on a day the hero should not train hard, and it still
+lights the day. Skill practice (§8.6.7) has the same property for the same reason — it is
+capped by quality, not by effort.
+
+The mechanic already exists on both sides: the flame counts a day the quota held, and the
+`mobility` quest archetype is in the schema. What was missing was **content** — the catalogue
+shipped exactly one mobility quest. See [quests.md](quests.md).
 
 ## Victory screen (example)
 

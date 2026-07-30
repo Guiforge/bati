@@ -2,7 +2,7 @@
 title: Docs Wiki — Operation Log
 type: technical
 status: active
-updated: 2026-07-29
+updated: 2026-07-30
 related: [wiki-protocol.md, ../README.md]
 ---
 
@@ -594,3 +594,64 @@ filled `work-roadmap.md` is done (`0012`–`0023`) and its rules are enforced by
 `__tests__/content-invariants.test.ts` — a test, not a document. Every pointer in code, migrations
 and docs was repointed or dropped; the dead links in the older entries of *this* log are left as
 they are, because a dated record of what happened is not a page to maintain.
+
+---
+
+## 2026-07-30 — The research dossier v2, and the ingest that was owed since 2026-07-27
+
+**The source grew four sections.** [`raw/bodyweight-app-research.md`](../raw/bodyweight-app-research.md)
+was replaced by its v2. The diff is **purely additive** — 182 insertions, and the only deleted
+line is the frontmatter's own `updated:`. Nothing in §1–7 was rewritten:
+
+- Key Findings 8–11, and four new caveats (fat-loss evidence quality, nutrition is not
+  individualised advice, stretching dose is genuinely unsettled, flexibility ≠ injury prevention).
+- **§8 — advanced calisthenics skills.** Three skill families with three training logics
+  (balance / straight-arm strength / dynamic), submaximal hold programming at 60–75 % of max,
+  the tendon bottleneck, the one-arm handstand progression, and prehab as non-negotiable.
+- **§9 — fat loss.** Diet creates the deficit; training protects the muscle. Without resistance
+  training, 20–30 % of weight lost is lean mass.
+- **§10 — muscle gain.** No separate engine: the same volume/frequency/RIR rules as §2, plus
+  eating and sleeping enough.
+- **§11 — mobility.** Full-ROM resistance training and stretching produce *similar* ROM gains,
+  so training through full range **is** the mobility program.
+
+**The ingest that entry #393 marked "Pending" is done.** It had been outstanding since
+2026-07-27, and the v2 landed on top of it rather than on a current wiki:
+
+- [content/workout-best-practices.md](../content/workout-best-practices.md) — gains a
+  **"The evidence behind the numbers"** section (volume 10–20 sets/muscle/week, ≥2×/week
+  frequency, 6–30 reps, **1–3 RIR**, 60–120 s rest, the five bodyweight overload levers, why
+  pulling is the structural weak point, submaximal holds, full ROM as mobility, and the §4
+  guardrails). Also gains the frontmatter it never had, and loses the "not been ingested here
+  yet" warning it had carried since it was written.
+- [gameplay/progression.md](../gameplay/progression.md) — §11.4: a 10–15 min mobility session
+  is how a rest day still lights the flame. The mechanic already existed on both sides; the
+  catalogue shipped exactly one mobility quest.
+- [gameplay/oaths.md](../gameplay/oaths.md) — §7 grounds the WHO baseline of two sessions that
+  the flame already used as its floor, and §5 explains why the hero swears the target instead
+  of being assigned one.
+- [gameplay/coach-planning.md](../gameplay/coach-planning.md) — rewritten, see below.
+- [planning/roadmap.md](../planning/roadmap.md) — new §4 *Open questions*; the parking lot gains
+  advanced skill content, ROM benchmarks, and the fat-loss/muscle-gain variants with §9.4's
+  warning attached (**do not build calorie counting casually**). Sections renumbered 4→5, 5→6.
+
+**Two pages described components that do not exist.** Found while tracing the ingest targets
+back to code, which is the point of the exercise:
+
+- `coach-planning.md` claimed a **Rest rule fires on Home** ahead of the weak-area rule. It does
+  not, and never has: [`getRestSuggestion()`](../../db/restSuggestions.ts) is implemented,
+  exported and unit-tested, but **no component calls it**. The real coach is
+  [`useSmartAction.ts`](../../components/home/useSmartAction.ts) — a three-branch waterfall
+  (active adventure → weak-area quest → gallery). The page now documents what runs, and records
+  the unwired rule as a gap against §4 rather than deleting it. Its broken markdown table (a
+  paragraph spliced between two rows) is fixed too.
+- `CoachCard.tsx` is referenced by `oaths.md` and `product/feature-overview.md`. It does not
+  exist. Both repointed to `useSmartAction.ts`.
+
+**Decisions recorded.** "A skill-tree screen" moved out of *Decided — do not re-open* into the
+new §4: §8.6.2 makes a case the original decision never weighed — a hard gate on **one advanced
+branch** (OAHS locked until a 45–60 s freestanding handstand is logged) rather than on the
+catalogue, justified by tendon-adaptation safety, and costing a beginner nothing because a
+beginner never reaches that branch. It stays undecided: the catalogue has no handstand, planche
+or lever, so there is nothing to gate yet. **Per-set RIR capture stays closed** —
+`analyzeDifficultyProgression()` already auto-adjusts from per-session feedback.

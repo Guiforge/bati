@@ -2,7 +2,7 @@
 title: Source Inbox
 type: technical
 status: active
-updated: 2026-07-14
+updated: 2026-07-30
 related: [../meta/wiki-protocol.md]
 ---
 
@@ -14,9 +14,12 @@ spec PDFs converted to markdown, etc.), then ask the agent to **ingest** it into
 
 ## Sources
 
-- [bodyweight-app-research.md](bodyweight-app-research.md) — literature review: training science
-  (volume, frequency, RIR, bodyweight progression), gamification & retention evidence,
-  competitor teardown (Freeletics, NTC, Duolingo, Habitica), WHO guidelines. Not yet ingested.
+- [bodyweight-app-research.md](bodyweight-app-research.md) — literature review, **v2** (2026-07-30).
+  §1–7: training science (volume, frequency, RIR, bodyweight progression), gamification &
+  retention evidence, competitor teardown (Freeletics, NTC, Duolingo, Habitica), WHO guidelines.
+  §8–11, added in v2: advanced calisthenics skills (the three skill families, submaximal hold
+  programming, tendon adaptation), fat loss, muscle gain, mobility & flexibility. Ingested
+  2026-07-30 — see [changelog](../meta/changelog.md).
 
 ## Rules
 

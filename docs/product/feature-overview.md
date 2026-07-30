@@ -121,10 +121,11 @@ Track personal bests.
 
 A reactive nudge on Home.
 
-- **What**: One nudge at a time — rest (safety) or a lagging-muscle suggestion
-- **Note**: No longer echoes a weekly-goal count; the chosen objective is the Oath
-- **Status**: Implemented (Home `CoachCard`)
-- **Doc**: [COACH.md](../gameplay/coach-planning.md)
+- **What**: One action at a time — resume an adventure, or a lagging-muscle quest suggestion
+- **Note**: Never echoes a weekly-goal count; the chosen objective is the Oath
+- **Status**: Implemented (Home, `useSmartAction.ts`). The rest/overreach rule
+  (`db/restSuggestions.ts`) is written and tested but **not wired to any surface**
+- **Doc**: [coach-planning.md](../gameplay/coach-planning.md)
 
 ### Oath (Serment)
 

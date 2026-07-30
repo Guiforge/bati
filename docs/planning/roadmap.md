@@ -2,7 +2,7 @@
 title: Roadmap
 type: planning
 status: active
-updated: 2026-07-29
+updated: 2026-07-30
 related:
   [
     README.md,
@@ -10,6 +10,7 @@ related:
     ../design/ui-checklist.md,
     ../product/vision.md,
     ../content/missing-image.md,
+    ../raw/bodyweight-app-research.md,
   ]
 ---
 
@@ -100,7 +101,31 @@ The village is functionally complete and derived from session history; what is m
 feedback, not features: flame animation, building-unlock animation, resource-gain animation.
 Low priority by design — a village that animates better does not make anyone train more.
 
-## 4. Parking lot (post-MVP)
+## 4. Open questions — decided once, reopened by new evidence
+
+### Gating a skill branch (reopened 2026-07-30)
+
+This was closed as "a skill-tree screen": the variation ladder is data
+(`exercises.prerequisiteExerciseId`) and a hint on the exercise screen, and **gating content
+behind it would show a beginner 3 quests out of 27**. That argument still holds — for the
+catalogue.
+
+[§8.6.2](../raw/bodyweight-app-research.md) of the research dossier introduces a case the
+decision never considered: a hard gate on **one advanced skill branch**, not on the catalogue.
+The example is concrete — the one-arm handstand branch stays locked until a freestanding
+handstand of 45–60 s is logged — and the justification is safety as much as pedagogy. §8.3 is
+blunt about why: straight-arm skills load tendons and ligaments far beyond what the muscles
+feel, connective tissue adapts more slowly than muscle, and elbow/wrist overuse is *the*
+classic failure mode of people who got strong enough for the skill before their joints were
+ready. A gate there costs a beginner nothing, because a beginner was never going to see that
+branch.
+
+**Blocked on content, not on the decision.** The catalogue has no freestanding handstand, no
+planche, no front lever, no tuck lever — the entire "straight-arm strength" family of §8.1 is
+absent. Until that exists there is nothing to gate. Decide the principle when the content is
+proposed, not before.
+
+## 5. Parking lot (post-MVP)
 
 Speculative. Nothing here has an owner or acceptance criteria, and nothing moves out of this
 section until it does.
@@ -113,20 +138,28 @@ section until it does.
 - **Coaching intelligence** — adaptive planning, recovery/load guidance, personalisation from
   training history.
 - **Platform** — performance hardening, accessibility beyond baseline AA, release automation.
+- **Advanced skill content** — the straight-arm family (planche, front lever, back lever) and
+  freestanding handstand work: exercises, art, hold-time ladders, prehab. Prerequisite for the
+  gating question in §4, and the reason it cannot be answered yet.
+- **ROM benchmarks** — wall shoulder flexion, squat depth, pancake width tracked like reps and
+  hold times ([§11.4](../raw/bodyweight-app-research.md)). Depends on the skill content above.
+- **Fat-loss / muscle-gain goal variants** — [§9](../raw/bodyweight-app-research.md) and §10
+  need no separate training engine (same volume/frequency/RIR rules), so the delta is framing
+  and nutrition guidance. §9.4 is a warning as much as a feature request: **do not build
+  calorie counting or numeric weight goals casually** — they are the mechanics most likely to
+  harm users with disordered-eating tendencies. Bati currently has no calorie surface at all,
+  which is the correct default and should not be given up lightly.
 
 **Promotion criteria** — an idea leaves this list only when the user problem is concrete and
 validated, the scope is small enough to ship incrementally, the core workout loop carries no
 regression risk, and the acceptance criteria are testable.
 
-## 5. Decided — do not re-open
+## 6. Decided — do not re-open
 
 Each of these was proposed, considered, and closed. They are here so they stop coming back.
 
 - **Economy loops, shops, manual building upgrades, a Treasury surface.** Rewards are XP plus a
   derived village reaction. No resources, no Gold.
-- **A skill-tree screen.** The variation ladder is data (`exercises.prerequisiteExerciseId`) and
-  a hint on the exercise screen. Turning it into a browsable tree is a product decision, not a
-  gap — and gating content behind it would show a beginner 3 quests out of 27.
 - **Per-set RIR capture.** The framing shipped ("stop with 1-2 reps left, not at failure"); the
   form did not. Twelve extra interactions a session, in an app that spent a whole roadmap
   removing friction. One optional field on an exercise's last set is the door if the data is

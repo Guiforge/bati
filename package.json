@@ -63,6 +63,12 @@
       "^@/(.*)$": "<rootDir>/$1"
     },
     "preset": "jest-expo",
+    "resolver": "react-native-worklets/jest/resolver.js",
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|tamagui|@tamagui|@legendapp))",
+      "/node_modules/react-native-reanimated/plugin/",
+      "/node_modules/@react-native/babel-preset/"
+    ],
     "testMatch": [
       "**/__tests__/**/*.(spec|test).(js|jsx|ts|tsx)"
     ],
@@ -116,6 +122,12 @@
     "esbuild@0.25.12": true,
     "esbuild@0.27.7": true,
     "esbuild@0.28.1": true
+  },
+  "overrides": {
+    "@tamagui/lucide-icons": {
+      "@tamagui/core": "2.6.0",
+      "@tamagui/helpers-icon": "2.6.0"
+    }
   },
   "version": "1.0.0"
 }

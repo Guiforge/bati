@@ -15,6 +15,7 @@ import config from "@/tamagui.config";
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("expo-router", () => ({
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
+  useLocalSearchParams: () => ({}),
 }));
 // Reanimated needs a native worklets module jest-expo doesn't install.
 jest.mock("@/components/common/FlameFlicker", () => ({ FlameFlicker: () => null }));

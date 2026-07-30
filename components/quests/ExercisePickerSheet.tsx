@@ -29,7 +29,7 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  // Same reason as QuestFiltersSheet: Android reports a 0 bottom inset over the gesture area.
+  // Android reports a 0 bottom inset even where the system gesture area eats taps.
   const bottomPad = Math.max(bottomInset, Platform.OS === "android" ? 24 : 0) + 10;
 
   const results = useMemo(() => {

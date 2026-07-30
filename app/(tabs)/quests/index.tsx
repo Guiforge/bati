@@ -1,19 +1,18 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { Map as MapIcon, Plus } from "@tamagui/lucide-icons";
+import { Map as MapIcon, Plus, X } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Platform } from "react-native";
+import { Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
-import { QuestFiltersSheet } from "@/components/QuestFiltersSheet";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
@@ -21,11 +20,20 @@ import {
   getQuestColorTokensFromTemplateWithExercises,
 } from "@/constants/exerciseColors";
 import {
+  DURATION_BUCKETS,
+  type DurationBucket,
+  matchesFilters,
+  NO_FILTERS,
+  type QuestFilters,
+  toggleInSet,
+} from "@/constants/questFilters";
+import {
   estimateQuestTemplateSeconds,
   formatDuration,
   listExercises,
   listQuestTemplates,
 } from "@/db";
+import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
@@ -230,11 +238,64 @@ function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: 
 }
 
 const PAGE_SIZE = 10;
-const FILTER_TRIGGER_SPACE = 64;
 
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 const questKey = (m: QuestMeta) => String(m.quest.id);
 const ListGap = () => <YStack height={12} />;
+
+const RAIL_CONTENT_STYLE = { gap: 8, paddingHorizontal: 24, paddingBottom: 12 } as const;
+
+const DURATION_FALLBACKS: Record<DurationBucket, string> = {
+  short: "≤ 15 min",
+  medium: "≤ 30 min",
+  long: "30 min+",
+};
+
+type RailChip = { key: string; label: string; active: boolean; onPress: () => void };
+
+/**
+ * Filters live in the page, not behind a modal: the sheet showed one dimension at a time,
+ * cost three taps to apply what already updated live behind it, and reserved 94px of list
+ * padding for its floating trigger. Active chips sort to the front so what's applied never
+ * scrolls out of sight.
+ */
+function FilterRail({ chips, onClearAll }: { chips: RailChip[]; onClearAll: () => void }) {
+  const { t } = useTranslation();
+
+  if (chips.length === 0) return null;
+  const anyActive = chips.some((c) => c.active);
+
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={RAIL_CONTENT_STYLE}
+      style={RAIL_STYLE}
+    >
+      {anyActive ? (
+        <Chip
+          label={t("quests.filter_clear_all", "Clear")}
+          icon={<X size={14} color="$text" />}
+          onPress={onClearAll}
+          accessibilityRole="button"
+        />
+      ) : null}
+      {chips.map((c) => (
+        <Chip
+          key={c.key}
+          label={c.label}
+          tone={c.active ? "primary" : "default"}
+          onPress={c.onPress}
+          accessibilityRole="button"
+          accessibilityState={{ selected: c.active }}
+        />
+      ))}
+    </ScrollView>
+  );
+}
+
+// A horizontal ScrollView in a flex column would otherwise stretch to fill the leftover height.
+const RAIL_STYLE = { flexGrow: 0 } as const;
 
 function StatusMessage({
   state,
@@ -340,26 +401,28 @@ export default function QuestsGallery() {
     exercisesById: {},
   });
 
-  const [selectedMuscle, setSelectedMuscle] = useState<MuscleCode | null>(null);
-  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentCode | null>(null);
+  const [filters, setFilters] = useState<QuestFilters>(NO_FILTERS);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Handlers below are plain closures on purpose: the React Compiler
   // (app.json experiments.reactCompiler) stabilizes them automatically.
-  const selectMuscle = (m: MuscleCode | null) => {
-    setSelectedMuscle(m);
+  // Narrowing the results always resets pagination — page 3 of the old list means nothing.
+  const applyFilters = (next: (f: QuestFilters) => QuestFilters) => {
+    setFilters(next);
     setVisibleCount(PAGE_SIZE);
   };
 
-  const selectEquipment = (e: EquipmentCode | null) => {
-    setSelectedEquipment(e);
-    setVisibleCount(PAGE_SIZE);
-  };
+  const toggleMuscle = (m: MuscleCode) =>
+    applyFilters((f) => ({ ...f, muscles: toggleInSet(f.muscles, m) }));
 
-  const clearFilters = () => {
-    selectMuscle(null);
-    selectEquipment(null);
-  };
+  const toggleEquipment = (e: EquipmentCode) =>
+    applyFilters((f) => ({ ...f, equipment: toggleInSet(f.equipment, e) }));
+
+  // Single-select: you only ever have one amount of time. Tapping the active one clears it.
+  const toggleDuration = (d: DurationBucket) =>
+    applyFilters((f) => ({ ...f, duration: f.duration === d ? null : d }));
+
+  const clearFilters = () => applyFilters(() => NO_FILTERS);
 
   const load = useCallback(async () => {
     // Only show the loading state on first load — on focus refetches we already have data
@@ -418,13 +481,33 @@ export default function QuestsGallery() {
     return [...s];
   }, [questMeta]);
 
-  const filtered = useMemo(() => {
-    return questMeta.filter((m) => {
-      const okMuscle = selectedMuscle ? m.muscles.includes(selectedMuscle) : true;
-      const okEquip = selectedEquipment ? m.equipment.includes(selectedEquipment) : true;
-      return okMuscle && okEquip;
-    });
-  }, [questMeta, selectedEquipment, selectedMuscle]);
+  const filtered = useMemo(
+    () => questMeta.filter((m) => matchesFilters(m, filters)),
+    [questMeta, filters],
+  );
+
+  // Duration first (the "how long have I got" question), then muscles, then equipment —
+  // with the active ones hoisted to the front. Array.sort is stable, so ties keep this order.
+  const railChips: RailChip[] = [
+    ...DURATION_BUCKETS.map((b) => ({
+      key: `d-${b}`,
+      label: t(`quests.filter_duration_${b}`, DURATION_FALLBACKS[b]),
+      active: filters.duration === b,
+      onPress: () => toggleDuration(b),
+    })),
+    ...availableMuscles.map((m) => ({
+      key: `m-${m}`,
+      label: MUSCLE_LABELS[m]?.[language] ?? m,
+      active: filters.muscles.has(m),
+      onPress: () => toggleMuscle(m),
+    })),
+    ...availableEquipment.map((e) => ({
+      key: `e-${e}`,
+      label: EQUIPMENT_LABELS[e]?.[language] ?? e,
+      active: filters.equipment.has(e),
+      onPress: () => toggleEquipment(e),
+    })),
+  ].sort((a, b) => Number(b.active) - Number(a.active));
 
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const canLoadMore = visible.length < filtered.length;
@@ -483,6 +566,10 @@ export default function QuestsGallery() {
         </Text>
       </YStack>
 
+      {/* Filters, in the page rather than behind a modal. Above StatusMessage on purpose:
+          when a filter empties the list, the way out stays right under the message. */}
+      {quests.length > 0 ? <FilterRail chips={railChips} onClearAll={clearFilters} /> : null}
+
       {/* Status Messages */}
       <StatusMessage
         state={state}
@@ -510,23 +597,10 @@ export default function QuestsGallery() {
             paddingTop: 8,
             paddingBottom:
               Math.max(insets.bottom, Platform.OS === "android" ? ANDROID_MIN_BOTTOM_INSET : 0) +
-              FILTER_TRIGGER_SPACE +
               30,
           }}
         />
       )}
-
-      <QuestFiltersSheet
-        language={language}
-        availableMuscles={availableMuscles}
-        selectedMuscle={selectedMuscle}
-        onSelectMuscle={selectMuscle}
-        availableEquipment={availableEquipment}
-        selectedEquipment={selectedEquipment}
-        onSelectEquipment={selectEquipment}
-        bottomInset={insets.bottom}
-        resultCount={filtered.length}
-      />
     </YStack>
   );
 }

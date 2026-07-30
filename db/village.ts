@@ -1,5 +1,6 @@
 import { eq, isNotNull, sql } from "drizzle-orm";
 import { achievementDefinitions, getUnlockedAchievements } from "./achievements";
+import { listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
 import { getMuscleBalance } from "./muscleBalance";
 import {
@@ -70,28 +71,76 @@ export type BossBanner = {
   defeatedAt: Date;
 };
 
+/**
+ * Bosses the hero has beaten, from both records that prove it.
+ *
+ * `boss_fights.defeatedAt` is the live fight and resetBossFight() nulls it the moment a
+ * replay starts, so it alone would blink a trophy out of the shelf — and drop the legendary
+ * buildings that count it — for as long as the rematch lasts. A finished boss campaign in
+ * `adventure_runs` is never deleted, so it carries the victory across the replay.
+ */
 export async function getBossBanners(): Promise<BossBanner[]> {
-  const rows = await db
-    .select({
-      adventureId: bossFights.adventureId,
-      enTitle: adventures.enTitle,
-      frTitle: adventures.frTitle,
-      imagePath: adventures.imagePath,
-      defeatedAt: bossFights.defeatedAt,
-    })
-    .from(bossFights)
-    .innerJoin(adventures, eq(bossFights.adventureId, adventures.id))
-    .where(isNotNull(bossFights.defeatedAt));
+  const [rows, summaries] = await Promise.all([
+    db
+      .select({
+        adventureId: bossFights.adventureId,
+        enTitle: adventures.enTitle,
+        frTitle: adventures.frTitle,
+        imagePath: adventures.imagePath,
+        defeatedAt: bossFights.defeatedAt,
+      })
+      .from(bossFights)
+      .innerJoin(adventures, eq(bossFights.adventureId, adventures.id))
+      .where(isNotNull(bossFights.defeatedAt)),
+    listFinishedRunSummaries(),
+  ]);
 
-  return rows
-    .filter((row): row is typeof row & { defeatedAt: Date } => row.defeatedAt !== null)
-    .map((row) => ({
+  const banners = new Map<number, BossBanner>();
+
+  for (const s of summaries) {
+    if (s.kind !== "boss" || !s.lastFinishedAt) continue;
+    banners.set(s.adventureId, {
+      adventureId: s.adventureId,
+      enTitle: s.enTitle,
+      frTitle: s.frTitle,
+      imagePath: s.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+      defeatedAt: s.lastFinishedAt,
+    });
+  }
+
+  // A standing defeat wins on the date: it is the fight itself, not the campaign around it.
+  for (const row of rows) {
+    if (!row.defeatedAt) continue;
+    banners.set(row.adventureId, {
       adventureId: row.adventureId,
       enTitle: row.enTitle,
       frTitle: row.frTitle,
       imagePath: row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       defeatedAt: row.defeatedAt,
-    }));
+    });
+  }
+
+  return [...banners.values()];
+}
+
+type RunTally = {
+  /** Finished campaigns of every kind — the Hall of Heroes counts these. */
+  finishedRuns: number;
+  /** Finished boss campaigns, replays included — the arena counts these. */
+  bossVictories: number;
+};
+
+async function tallyFinishedRuns(): Promise<RunTally> {
+  const summaries = await listFinishedRunSummaries();
+
+  let finishedRuns = 0;
+  let bossVictories = 0;
+  for (const s of summaries) {
+    finishedRuns += s.timesFinished;
+    if (s.kind === "boss") bossVictories += s.timesFinished;
+  }
+
+  return { finishedRuns, bossVictories };
 }
 
 export type DominantSportOverlay = {
@@ -138,12 +187,15 @@ export const BUILDING_LABELS: Record<BuildingCode, { en: string; fr: string }> =
   champion_arena: { en: "Champion Arena", fr: "Arène des champions" },
 };
 
-// Boss counts that unlock the three legendary buildings, in buildingCodes order.
-const TIER_4_BOSS_FLOORS: Record<string, number> = {
-  dragon_lair: 1,
-  heroes_hall: 3,
-  champion_arena: 10,
-};
+/** What raises a building, so the detail sheet can answer "why is it at this level". */
+export type BuildingDriver =
+  | "tier"
+  | "muscle"
+  | "style"
+  | "prereq"
+  | "bosses"
+  | "adventures"
+  | "boss_victories";
 
 export type VillageBuilding = {
   code: BuildingCode;
@@ -155,15 +207,50 @@ export type VillageBuilding = {
   unlockCondition: string;
   /** The 6 muscle buildings have no icon of their own; they borrow that muscle's sport sprite. */
   relatedMuscle: MuscleCode | null;
+  driver: BuildingDriver;
+  /** The driver's value today: work units, hero level, prerequisite level, or a deed count. */
+  metricValue: number;
+  /** What the driver must reach for the next level; null once the building is maxed. */
+  nextTarget: number | null;
 };
 
-/** Level 1..5 from the shared XP ladder in schema.ts. Caller decides what "xp" means. */
-function levelFromXp(xp: number): number {
-  let level = 1;
-  for (const [lvl, floor] of Object.entries(buildingLevelThresholds)) {
-    if (xp >= floor) level = Number(lvl);
+// The shared ladder from schema.ts, with level 1 at "any work at all" — a building appears
+// the first time its muscle is trained, which is what the old `xp > 0` guard meant.
+const VOLUME_FLOORS: readonly number[] = [1, 2, 3, 4, 5].map((lvl) =>
+  lvl === 1 ? 1 : (buildingLevelThresholds[lvl] ?? 0),
+);
+
+// The legendary three answer to deeds, not to volume, and each names a different deed so its
+// detail sheet has one sentence to say. Five bosses exist in the content, so the lair maxes on
+// the full set instead of the old unreachable ten; the arena counts victories with replays
+// included; the hall counts finished campaigns, which is what its unlock text always claimed.
+const BOSS_FLOORS: readonly number[] = [1, 2, 3, 4, 5];
+const ADVENTURE_FLOORS: readonly number[] = [1, 3, 6, 10, 15];
+const VICTORY_FLOORS: readonly number[] = [3, 5, 8, 12, 20];
+
+const TIER_4_DRIVERS: Partial<
+  Record<BuildingCode, { driver: BuildingDriver; floors: readonly number[] }>
+> = {
+  dragon_lair: { driver: "bosses", floors: BOSS_FLOORS },
+  heroes_hall: { driver: "adventures", floors: ADVENTURE_FLOORS },
+  champion_arena: { driver: "boss_victories", floors: VICTORY_FLOORS },
+};
+
+// A tier-3 upgrade trails two rungs behind the building it extends, which tops out at 5.
+const T3_MAX_LEVEL = 3;
+
+/** Level 1..5 from a floor table indexed by level - 1; below the first floor, 0 = not earned. */
+function levelFromFloors(value: number, floors: readonly number[]): number {
+  let level = 0;
+  for (const [index, floor] of floors.entries()) {
+    if (value >= floor) level = index + 1;
   }
   return level;
+}
+
+/** What the driver must reach for the next rung, or null once every floor is cleared. */
+function nextFloor(level: number, floors: readonly number[]): number | null {
+  return floors[level] ?? null;
 }
 
 /** Lifetime work units per exercise style, for the two style-gated buildings. */
@@ -182,29 +269,63 @@ async function getStyleVolumes(): Promise<Partial<Record<ExerciseStyle, number>>
 
 type LevelInputs = {
   villageTier: VillageTier;
+  heroLevel: number;
   bossesDefeated: number;
+  finishedRuns: number;
+  bossVictories: number;
   volumeByMuscle: Map<MuscleCode, number>;
   styleVolumes: Partial<Record<ExerciseStyle, number>>;
 };
 
+type DerivedLevel = Pick<VillageBuilding, "level" | "driver" | "metricValue" | "nextTarget">;
+
 /** Level for everything except tier 3, which needs its prerequisite resolved first. */
-function baseLevel(code: BuildingCode, inputs: LevelInputs): number {
+function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
   const def = buildingDefinitions[code];
 
   // Starter buildings always stand; they grow with the village itself.
-  if (def.tier === 1) return inputs.villageTier;
-
-  if (def.tier === 4) {
-    const floor = TIER_4_BOSS_FLOORS[code] ?? 1;
-    return inputs.bossesDefeated >= floor ? Math.min(5, inputs.bossesDefeated) : 0;
+  if (def.tier === 1) {
+    return {
+      level: inputs.villageTier,
+      driver: "tier",
+      metricValue: inputs.heroLevel,
+      nextTarget: TIER_LEVEL_FLOORS[(inputs.villageTier + 1) as VillageTier] ?? null,
+    };
   }
 
-  if (def.tier !== 2) return 0;
+  if (def.tier === 4) {
+    const spec = TIER_4_DRIVERS[code] ?? { driver: "bosses" as const, floors: BOSS_FLOORS };
+    const value =
+      spec.driver === "adventures"
+        ? inputs.finishedRuns
+        : spec.driver === "boss_victories"
+          ? inputs.bossVictories
+          : inputs.bossesDefeated;
+    const level = levelFromFloors(value, spec.floors);
+    return {
+      level,
+      driver: spec.driver,
+      metricValue: value,
+      nextTarget: nextFloor(level, spec.floors),
+    };
+  }
 
-  const xp = def.relatedMuscle
+  // Tier 3 is resolved in a second pass; this placeholder is overwritten there.
+  if (def.tier !== 2) {
+    return { level: 0, driver: "prereq", metricValue: 0, nextTarget: null };
+  }
+
+  const volume = def.relatedMuscle
     ? (inputs.volumeByMuscle.get(def.relatedMuscle) ?? 0)
     : (inputs.styleVolumes[def.relatedStyle ?? "strength"] ?? 0);
-  return xp > 0 ? levelFromXp(xp) : 0;
+  const level = levelFromFloors(volume, VOLUME_FLOORS);
+
+  return {
+    level,
+    driver: def.relatedMuscle ? "muscle" : "style",
+    metricValue: volume,
+    nextTarget: nextFloor(level, VOLUME_FLOORS),
+  };
 }
 
 /**
@@ -214,24 +335,28 @@ function baseLevel(code: BuildingCode, inputs: LevelInputs): number {
  * still showing a village that grows building by building.
  */
 export async function getVillageBuildings(): Promise<VillageBuilding[]> {
-  const [balance, styleVolumes, banners, levelInfo] = await Promise.all([
+  const [balance, styleVolumes, banners, levelInfo, tally] = await Promise.all([
     getMuscleBalance("all"),
     getStyleVolumes(),
     getBossBanners(),
     getUserLevelInfo(),
+    tallyFinishedRuns(),
   ]);
 
   const volumeByMuscle = new Map(balance.muscles.map((m) => [m.muscle, m.volume]));
   const villageTier = getVillageTier(levelInfo.level);
 
-  const levelOf = new Map<BuildingCode, number>();
+  const derivedOf = new Map<BuildingCode, DerivedLevel>();
 
   for (const code of buildingCodes) {
-    levelOf.set(
+    derivedOf.set(
       code,
-      baseLevel(code, {
+      deriveLevel(code, {
         villageTier,
+        heroLevel: levelInfo.level,
         bossesDefeated: banners.length,
+        finishedRuns: tally.finishedRuns,
+        bossVictories: tally.bossVictories,
         volumeByMuscle,
         styleVolumes,
       }),
@@ -244,20 +369,36 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
   for (const code of buildingCodes) {
     const def = buildingDefinitions[code];
     if (def.tier !== 3) continue;
-    const prereq = def.prerequisiteBuilding ? (levelOf.get(def.prerequisiteBuilding) ?? 0) : 0;
-    levelOf.set(code, prereq >= (def.prerequisiteLevel ?? 3) ? prereq - 2 : 0);
+    const required = def.prerequisiteLevel ?? 3;
+    const prereq = def.prerequisiteBuilding
+      ? (derivedOf.get(def.prerequisiteBuilding)?.level ?? 0)
+      : 0;
+    const level = prereq >= required ? prereq - 2 : 0;
+    derivedOf.set(code, {
+      level,
+      driver: "prereq",
+      metricValue: prereq,
+      // Every rung of the upgrade waits on one more level of the building it extends.
+      nextTarget: level === 0 ? required : level < T3_MAX_LEVEL ? level + 3 : null,
+    });
   }
 
-  return buildingCodes.map((code) => ({
-    code,
-    emoji: buildingDefinitions[code].emoji,
-    tier: buildingDefinitions[code].tier,
-    level: levelOf.get(code) ?? 0,
-    enName: BUILDING_LABELS[code].en,
-    frName: BUILDING_LABELS[code].fr,
-    unlockCondition: buildingDefinitions[code].unlockCondition,
-    relatedMuscle: buildingDefinitions[code].relatedMuscle,
-  }));
+  return buildingCodes.map((code) => {
+    const derived = derivedOf.get(code);
+    return {
+      code,
+      emoji: buildingDefinitions[code].emoji,
+      tier: buildingDefinitions[code].tier,
+      level: derived?.level ?? 0,
+      enName: BUILDING_LABELS[code].en,
+      frName: BUILDING_LABELS[code].fr,
+      unlockCondition: buildingDefinitions[code].unlockCondition,
+      relatedMuscle: buildingDefinitions[code].relatedMuscle,
+      driver: derived?.driver ?? "tier",
+      metricValue: derived?.metricValue ?? 0,
+      nextTarget: derived?.nextTarget ?? null,
+    };
+  });
 }
 
 export type VillageGrowth = {
@@ -294,10 +435,17 @@ export function diffVillageGrowth(
 export type Trophy = {
   key: string;
   kind: "achievement" | "boss";
+  /** Set for achievements: the code its definition is filed under. */
+  code: string | null;
+  /** Set for bosses: the adventure whose campaign the victory belongs to. */
+  adventureId: number | null;
   emoji: string | null;
   imagePath: string | null;
   enTitle: string;
   frTitle: string;
+  /** What the trophy was earned for; bosses tell that story in the adventure itself. */
+  enDescription: string | null;
+  frDescription: string | null;
   earnedAt: Date;
 };
 
@@ -312,10 +460,14 @@ export async function getTrophies(banners: BossBanner[]): Promise<Trophy[]> {
       {
         key: `achievement:${a.code}`,
         kind: "achievement" as const,
+        code: a.code,
+        adventureId: null,
         emoji: def.icon,
         imagePath: null,
         enTitle: def.enTitle,
         frTitle: def.frTitle,
+        enDescription: def.enDescription,
+        frDescription: def.frDescription,
         earnedAt: new Date(a.unlockedAt),
       },
     ];
@@ -324,10 +476,14 @@ export async function getTrophies(banners: BossBanner[]): Promise<Trophy[]> {
   const bossTrophies: Trophy[] = banners.map((b) => ({
     key: `boss:${b.adventureId}`,
     kind: "boss" as const,
+    code: null,
+    adventureId: b.adventureId,
     emoji: null,
     imagePath: b.imagePath,
     enTitle: b.enTitle,
     frTitle: b.frTitle,
+    enDescription: null,
+    frDescription: null,
     earnedAt: b.defeatedAt,
   }));
 

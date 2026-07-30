@@ -18,6 +18,7 @@ import {
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
+import { clearShortLivedQueries } from "@/db/queryCache";
 import { isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
@@ -536,6 +537,13 @@ export const useSessionStore = create<SessionState>()(
 
       // Everything that could move a building's level (volume, boss count, village tier)
       // is settled now, so this is the one honest "after" snapshot for the diff.
+      //
+      // The short-lived memos have to go first. They hold aggregates like the lifetime muscle
+      // balance for 5 s on the assumption that nothing changes them faster than that — true
+      // everywhere except right here, where a whole session lands between two reads seconds
+      // apart. Without this, "after" replayed the pre-session volumes and no muscle-driven
+      // building ever appeared to grow on the victory screen.
+      clearShortLivedQueries();
       const afterBuildings = await getVillageBuildings();
       const villageGrowth = diffVillageGrowth(beforeBuildings, afterBuildings);
 

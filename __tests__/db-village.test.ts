@@ -18,6 +18,8 @@ describe("db/village", () => {
 
   beforeEach(() => {
     t.sqlite.exec("DELETE FROM boss_fights");
+    t.sqlite.exec("DELETE FROM adventure_run_steps");
+    t.sqlite.exec("DELETE FROM adventure_runs");
     t.sqlite.exec("DELETE FROM completed_exercises");
     t.sqlite.exec("DELETE FROM completed_sessions");
     t.sqlite.exec("DELETE FROM user_preferences");
@@ -125,7 +127,26 @@ describe("db/village", () => {
     expect(trophies[1].imagePath).toBeTruthy();
   });
 
-  test("the legendary buildings are gated on the boss count", async () => {
+  /** A finished campaign run, at a fixed instant. */
+  function finishRun(adventureId: number, finishedAt: Date) {
+    const at = Math.floor(finishedAt.getTime() / 1000);
+    t.sqlite
+      .prepare(
+        `INSERT INTO adventure_runs (adventureId, status, startedAt, finishedAt)
+         VALUES (?, 'finished', ?, ?)`,
+      )
+      .run(adventureId, at, at);
+  }
+
+  function adventureIdOfKind(kind: string): number {
+    const row = t.sqlite
+      .prepare("SELECT id FROM adventures WHERE kind = ? ORDER BY id LIMIT 1")
+      .get(kind) as { id: number } | undefined;
+    if (!row) throw new Error(`Expected a seeded '${kind}' adventure`);
+    return row.id;
+  }
+
+  test("the dragon lair counts the bosses actually beaten", async () => {
     const { getVillageBuildings } = village();
 
     const levelOf = async (code: string) =>
@@ -135,10 +156,56 @@ describe("db/village", () => {
 
     defeatBoss(2, new Date("2026-01-02T00:00:00Z"));
 
-    // One boss opens the lair; the hall needs 3 and the arena 10.
+    // One boss raises the lair; the other two legendaries answer to different deeds.
     expect(await levelOf("dragon_lair")).toBe(1);
     expect(await levelOf("heroes_hall")).toBe(0);
     expect(await levelOf("champion_arena")).toBe(0);
+  });
+
+  test("the hall counts finished campaigns and the arena counts boss victories", async () => {
+    const { getVillageBuildings } = village();
+    const route = adventureIdOfKind("route");
+    const boss = adventureIdOfKind("boss");
+
+    const buildingOf = async (code: string) =>
+      (await getVillageBuildings()).find((b) => b.code === code);
+
+    finishRun(route, new Date("2026-01-01T00:00:00Z"));
+
+    const hall = await buildingOf("heroes_hall");
+    expect(hall?.level).toBe(1);
+    expect(hall?.driver).toBe("adventures");
+    expect(hall?.metricValue).toBe(1);
+    expect(hall?.nextTarget).toBe(3);
+    expect((await buildingOf("champion_arena"))?.level).toBe(0);
+
+    // Three boss victories open the arena — beating the same boss again counts.
+    finishRun(boss, new Date("2026-01-02T00:00:00Z"));
+    finishRun(boss, new Date("2026-01-03T00:00:00Z"));
+    finishRun(boss, new Date("2026-01-04T00:00:00Z"));
+
+    const arena = await buildingOf("champion_arena");
+    expect(arena?.level).toBe(1);
+    expect(arena?.metricValue).toBe(3);
+    // Four finished runs: past the hall's second floor, short of its third.
+    expect((await buildingOf("heroes_hall"))?.level).toBe(2);
+    // Three wins over one boss is still one boss defeated.
+    expect((await buildingOf("dragon_lair"))?.level).toBe(1);
+  });
+
+  test("a boss replay does not erase the victory already won", async () => {
+    const { getBossBanners, getVillageBuildings } = village();
+    const boss = adventureIdOfKind("boss");
+
+    finishRun(boss, new Date("2026-01-02T00:00:00Z"));
+    // resetBossFight() nulls defeatedAt for the rematch; the finished campaign stands.
+    defeatBoss(boss, null);
+
+    const banners = await getBossBanners();
+
+    expect(banners.map((b) => b.adventureId)).toEqual([boss]);
+    expect(banners[0].defeatedAt).toEqual(new Date("2026-01-02T00:00:00Z"));
+    expect((await getVillageBuildings()).find((b) => b.code === "dragon_lair")?.level).toBe(1);
   });
 
   test("a fresh village scene is the tier-1 starting state", async () => {

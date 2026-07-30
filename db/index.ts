@@ -25,6 +25,7 @@ export type {
   AdventureRun,
   AdventureRunStep,
   AdventureStepTemplate,
+  FinishedAdventureSummary,
 } from "./adventures";
 export {
   completeAdventureRunStep,
@@ -34,6 +35,7 @@ export {
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
   listAdventures,
+  listFinishedRunSummaries,
   setAdventureRunDifficultyOverride,
   startAdventureRun,
 } from "./adventures";

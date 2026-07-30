@@ -197,6 +197,13 @@ export default function QuestDetails() {
     }, [questId, params.level, initialLevel]),
   );
 
+  // Not router.back(): this screen is pushed from home, the journal and adventure steps as well
+  // as from the gallery, so "back" used to land wherever you came from. A quest belongs to the
+  // gallery, and dismissTo unwinds to it — it already sits at the bottom of this tab's stack.
+  const goToGallery = useCallback(() => {
+    router.dismissTo("/quests");
+  }, [router]);
+
   const updateConfig = useCallback(
     (next: QuestConfig) => {
       setConfig(next);
@@ -267,7 +274,7 @@ export default function QuestDetails() {
         <Text fontWeight="700" fontSize={18} color="$text">
           {t("quests.invalid_id", "Invalid quest")}
         </Text>
-        <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
+        <AppButton fullWidth={false} variant="secondary" onPress={goToGallery}>
           {t("quests.go_back", "Go back")}
         </AppButton>
       </YStack>
@@ -318,7 +325,7 @@ export default function QuestDetails() {
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
               <AppIconButton
-                onPress={() => router.back()}
+                onPress={goToGallery}
                 accessibilityRole="button"
                 accessibilityLabel={t("quests.go_back", "Go back")}
               >

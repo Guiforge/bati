@@ -2,7 +2,7 @@ import { ChevronDown, ChevronUp, Pause } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseAsset } from "@/constants/assetMap";
@@ -131,6 +131,8 @@ export function ActiveExerciseView() {
           currentHp={bossFight.currentHp}
           totalHp={bossFight.totalHp}
           bossImagePath={bossFight.imagePath}
+          bossName={language === "fr" ? bossFight.frName : bossFight.enName}
+          weaknessMuscle={bossFight.weaknessMuscle}
           lastDamage={
             lastDamageResult
               ? {
@@ -196,199 +198,208 @@ export function ActiveExerciseView() {
         </YStack>
       )}
 
-      {/* Main Content */}
-      <YStack flex={1} items="center" justify="center" gap="$5">
-        {/* Exercise image — real per-exercise art, with placeholder fallback in getExerciseAsset */}
-        <YStack
-          width="100%"
-          aspectRatio={16 / 10}
-          bg="$surface"
-          rounded="$4"
-          overflow="hidden"
-          borderWidth={1}
-          borderColor="$borderStrong"
-          items="center"
-          justify="center"
-        >
-          <Image
-            source={getExerciseAsset(currentEx.exercise.imagePath)}
-            style={{ width: "100%", height: "100%" }}
-            contentFit="cover"
-            transition={150}
-          />
-        </YStack>
-
-        {/* Exercise Name + How to do it */}
-        <YStack items="center" gap="$2" width="100%">
-          <H2
-            fontWeight="700"
-            fontSize={28}
-            lineHeight={32}
-            style={{ textAlign: "center" }}
-            color="$text"
+      {/* Main Content — scrolls so the footer CTA below stays reachable. The header, the boss
+          HUD and the progress bars are fixed-height siblings in a column that does not shrink
+          (flexShrink is 0 in RN), so before this the tall content simply pushed "done" past the
+          bottom edge — worst on a boss fight, on a small screen, or with "how to" expanded. */}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        showsVerticalScrollIndicator={false}
+      >
+        <YStack items="center" justify="center" gap="$5">
+          {/* Exercise image — real per-exercise art, with placeholder fallback in getExerciseAsset */}
+          <YStack
+            width="100%"
+            aspectRatio={16 / 10}
+            bg="$surface"
+            rounded="$4"
+            overflow="hidden"
+            borderWidth={1}
+            borderColor="$borderStrong"
+            items="center"
+            justify="center"
           >
-            {exerciseName}
-          </H2>
+            <Image
+              source={getExerciseAsset(currentEx.exercise.imagePath)}
+              style={{ width: "100%", height: "100%" }}
+              contentFit="cover"
+              transition={150}
+            />
+          </YStack>
 
-          {/* How to do it - expandable */}
-          {exerciseDescription ? (
-            <YStack width="100%">
-              <Pressable
-                onPress={handleToggleHowTo}
-                accessibilityRole="button"
-                accessibilityState={{ expanded: showHowTo }}
-                accessibilityLabel={t("session.how_to_do_it")}
-              >
-                <XStack
-                  items="center"
-                  justify="center"
-                  gap="$2"
-                  py="$1"
-                  opacity={0.7}
-                  hoverStyle={{ opacity: 1 }}
+          {/* Exercise Name + How to do it */}
+          <YStack items="center" gap="$2" width="100%">
+            <H2
+              fontWeight="700"
+              fontSize={28}
+              lineHeight={32}
+              style={{ textAlign: "center" }}
+              color="$text"
+            >
+              {exerciseName}
+            </H2>
+
+            {/* How to do it - expandable */}
+            {exerciseDescription ? (
+              <YStack width="100%">
+                <Pressable
+                  onPress={handleToggleHowTo}
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: showHowTo }}
+                  accessibilityLabel={t("session.how_to_do_it")}
                 >
-                  <Text fontSize={12} fontWeight="700" color="$textSecondary">
-                    {t("session.how_to_do_it")}
-                  </Text>
-                  {showHowTo ? (
-                    <ChevronUp size={14} color="$textSecondary" />
-                  ) : (
-                    <ChevronDown size={14} color="$textSecondary" />
-                  )}
+                  <XStack
+                    items="center"
+                    justify="center"
+                    gap="$2"
+                    py="$1"
+                    opacity={0.7}
+                    hoverStyle={{ opacity: 1 }}
+                  >
+                    <Text fontSize={12} fontWeight="700" color="$textSecondary">
+                      {t("session.how_to_do_it")}
+                    </Text>
+                    {showHowTo ? (
+                      <ChevronUp size={14} color="$textSecondary" />
+                    ) : (
+                      <ChevronDown size={14} color="$textSecondary" />
+                    )}
+                  </XStack>
+                </Pressable>
+                {!!showHowTo && (
+                  <YStack
+                    bg="$surface2"
+                    p="$3"
+                    rounded="$4"
+                    borderWidth={1}
+                    borderColor="$borderStrong"
+                    mt="$2"
+                    transition="quick"
+                    enterStyle={{ opacity: 0, scale: 0.95 }}
+                  >
+                    <Text fontSize={14} color="$textSecondary" lineHeight={20}>
+                      {exerciseDescription}
+                    </Text>
+                  </YStack>
+                )}
+              </YStack>
+            ) : null}
+          </YStack>
+
+          {/* Big Counter */}
+          <YStack
+            bg={isTimeBased ? (isOvertime ? "$surface2" : "$surface") : "$surface"}
+            py="$6"
+            px="$8"
+            rounded="$8"
+            borderWidth={1}
+            borderColor={isOvertime ? "$success" : "$borderStrong"}
+            width="100%"
+            items="center"
+            justify="center"
+            transition="quick"
+          >
+            {isTimeBased ? (
+              <YStack items="center" gap="$2">
+                {isOvertime ? (
+                  <>
+                    {/* Overtime display - counting UP */}
+                    <Text fontSize={14} fontWeight="700" color="$textSecondary">
+                      🔥 {t("session.overtime")} 🔥
+                    </Text>
+                    <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$success">
+                      {formatOvertime(overtimeSeconds)}
+                    </H1>
+                    <Paragraph fontWeight="700" color="$textSecondary">
+                      {t("session.target_reached")}
+                    </Paragraph>
+                  </>
+                ) : (
+                  <>
+                    {/* Normal countdown */}
+                    <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$text">
+                      {formatTime(remainingSeconds)}
+                    </H1>
+                    <Paragraph fontWeight="700" color="$textSecondary">
+                      {t("session.seconds")}
+                    </Paragraph>
+                  </>
+                )}
+              </YStack>
+            ) : (
+              <YStack items="center" gap="$2">
+                <XStack items="center" gap="$4">
+                  <Button
+                    size="$4"
+                    circular
+                    bg="$surface2"
+                    borderWidth={1}
+                    borderColor="$borderStrong"
+                    onPress={() => handleAdjustReps(-1)}
+                    pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                    disabled={adjustedReps <= 1}
+                    opacity={adjustedReps <= 1 ? 0.4 : 1}
+                    accessibilityLabel={t("session.decrease_reps_accessibility")}
+                    accessibilityRole="button"
+                  >
+                    <Text fontSize={24} fontWeight="700" color="$text">
+                      −
+                    </Text>
+                  </Button>
+                  <YStack
+                    items="center"
+                    key={reducedMotion ? undefined : adjustedReps}
+                    transition={reducedMotion ? undefined : "bouncy"}
+                    enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
+                    scale={1}
+                  >
+                    <H1 fontSize={80} fontWeight="700" fontFamily="$body" color="$text">
+                      {adjustedReps}
+                    </H1>
+                    <Paragraph fontWeight="700" color="$textSecondary">
+                      {t("session.reps")}
+                    </Paragraph>
+                  </YStack>
+                  <Button
+                    size="$4"
+                    circular
+                    bg="$surface2"
+                    borderWidth={1}
+                    borderColor="$borderStrong"
+                    onPress={() => handleAdjustReps(1)}
+                    pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                    accessibilityLabel={t("session.increase_reps_accessibility")}
+                    accessibilityRole="button"
+                  >
+                    <Text fontSize={24} fontWeight="700" color="$text">
+                      +
+                    </Text>
+                  </Button>
                 </XStack>
-              </Pressable>
-              {!!showHowTo && (
-                <YStack
-                  bg="$surface2"
-                  p="$3"
-                  rounded="$4"
-                  borderWidth={1}
-                  borderColor="$borderStrong"
-                  mt="$2"
-                  transition="quick"
-                  enterStyle={{ opacity: 0, scale: 0.95 }}
-                >
-                  <Text fontSize={14} color="$textSecondary" lineHeight={20}>
-                    {exerciseDescription}
+                {adjustedReps !== targetValue && (
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("session.adjust_reps_hint")}
                   </Text>
-                </YStack>
-              )}
-            </YStack>
-          ) : null}
-        </YStack>
-
-        {/* Big Counter */}
-        <YStack
-          bg={isTimeBased ? (isOvertime ? "$surface2" : "$surface") : "$surface"}
-          py="$6"
-          px="$8"
-          rounded="$8"
-          borderWidth={1}
-          borderColor={isOvertime ? "$success" : "$borderStrong"}
-          width="100%"
-          items="center"
-          justify="center"
-          transition="quick"
-        >
-          {isTimeBased ? (
-            <YStack items="center" gap="$2">
-              {isOvertime ? (
-                <>
-                  {/* Overtime display - counting UP */}
-                  <Text fontSize={14} fontWeight="700" color="$textSecondary">
-                    🔥 {t("session.overtime")} 🔥
-                  </Text>
-                  <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$success">
-                    {formatOvertime(overtimeSeconds)}
-                  </H1>
-                  <Paragraph fontWeight="700" color="$textSecondary">
-                    {t("session.target_reached")}
-                  </Paragraph>
-                </>
-              ) : (
-                <>
-                  {/* Normal countdown */}
-                  <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$text">
-                    {formatTime(remainingSeconds)}
-                  </H1>
-                  <Paragraph fontWeight="700" color="$textSecondary">
-                    {t("session.seconds")}
-                  </Paragraph>
-                </>
-              )}
-            </YStack>
-          ) : (
-            <YStack items="center" gap="$2">
-              <XStack items="center" gap="$4">
-                <Button
-                  size="$4"
-                  circular
-                  bg="$surface2"
-                  borderWidth={1}
-                  borderColor="$borderStrong"
-                  onPress={() => handleAdjustReps(-1)}
-                  pressStyle={{ opacity: 0.8, scale: 0.95 }}
-                  disabled={adjustedReps <= 1}
-                  opacity={adjustedReps <= 1 ? 0.4 : 1}
-                  accessibilityLabel={t("session.decrease_reps_accessibility")}
-                  accessibilityRole="button"
-                >
-                  <Text fontSize={24} fontWeight="700" color="$text">
-                    −
-                  </Text>
-                </Button>
-                <YStack
-                  items="center"
-                  key={reducedMotion ? undefined : adjustedReps}
-                  transition={reducedMotion ? undefined : "bouncy"}
-                  enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
-                  scale={1}
-                >
-                  <H1 fontSize={80} fontWeight="700" fontFamily="$body" color="$text">
-                    {adjustedReps}
-                  </H1>
-                  <Paragraph fontWeight="700" color="$textSecondary">
-                    {t("session.reps")}
-                  </Paragraph>
-                </YStack>
-                <Button
-                  size="$4"
-                  circular
-                  bg="$surface2"
-                  borderWidth={1}
-                  borderColor="$borderStrong"
-                  onPress={() => handleAdjustReps(1)}
-                  pressStyle={{ opacity: 0.8, scale: 0.95 }}
-                  accessibilityLabel={t("session.increase_reps_accessibility")}
-                  accessibilityRole="button"
-                >
-                  <Text fontSize={24} fontWeight="700" color="$text">
-                    +
-                  </Text>
-                </Button>
-              </XStack>
-              {adjustedReps !== targetValue && (
-                <Text fontSize={12} color="$textSecondary">
-                  {t("session.adjust_reps_hint")}
-                </Text>
-              )}
-              {/* Intensity as reps-in-reserve rather than "go to failure" — the safer and more
+                )}
+                {/* Intensity as reps-in-reserve rather than "go to failure" — the safer and more
                   teachable framing, and one the app can give as a cue instead of collecting as
                   data. */}
-              <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {t("session.reserve_hint")}
-              </Text>
-            </YStack>
+                <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                  {t("session.reserve_hint")}
+                </Text>
+              </YStack>
+            )}
+          </YStack>
+
+          {/* Hint for time-based exercises */}
+          {isTimeBased && !isOvertime && (
+            <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+              {t("session.keep_going_hint")}
+            </Text>
           )}
         </YStack>
-
-        {/* Hint for time-based exercises */}
-        {isTimeBased && !isOvertime && (
-          <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-            {t("session.keep_going_hint")}
-          </Text>
-        )}
-      </YStack>
+      </ScrollView>
 
       {/* Footer Action */}
       <Button

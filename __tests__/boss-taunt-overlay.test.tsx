@@ -1,4 +1,5 @@
 import { act, render } from "@testing-library/react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { BossTauntOverlay } from "@/components/session/BossTauntOverlay";
@@ -39,6 +40,8 @@ function makeBossFight(currentHp: number): BossFight {
     createdAt: new Date(),
     updatedAt: new Date(),
     imagePath: "assets/placeholder.jpg",
+    enName: "The Warden",
+    frName: "Le Gardien",
   };
 }
 
@@ -57,9 +60,16 @@ describe("BossTauntOverlay", () => {
 
   it("keeps the taunt schedule alive across HP updates on the same fight", async () => {
     const { getByText, queryByText } = await render(
-      <TamaguiProvider config={config} defaultTheme="dark">
-        <BossTauntOverlay />
-      </TamaguiProvider>,
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <BossTauntOverlay />
+        </TamaguiProvider>
+      </SafeAreaProvider>,
     );
 
     await act(() => {

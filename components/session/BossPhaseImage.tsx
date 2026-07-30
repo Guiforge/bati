@@ -46,7 +46,10 @@ type BossPhaseImageProps = {
  * - Phase 1 (75-100%): Full power - no tint
  * - Phase 2 (50-75%): Wounded - light tint
  * - Phase 3 (25-50%): Critical - stronger tint
- * - Phase 4 (0-25%): Enraged - heaviest tint + pulsing animation
+ * - Phase 4 (0-25%): Enraged - heaviest tint + red rim
+ *
+ * Phase is also readable from the HP bar this sits next to, so the image carries no separate
+ * phase indicator of its own.
  */
 export function BossPhaseImage({
   currentHp,
@@ -79,51 +82,27 @@ export function BossPhaseImage({
   const isEnraged = currentPhase === 4;
 
   return (
-    <YStack items="center" gap="$1">
-      {/* Boss Image Container */}
-      <YStack
-        width={size}
-        height={size}
-        rounded={size / 2}
-        overflow="hidden"
-        bg={isEnraged ? "$pastelPink" : "$pastelPurple"}
-        borderWidth={1}
-        borderColor={isEnraged ? "$error" : "$text"}
-        items="center"
-        justify="center"
-        transition={isEnraged ? "bouncy" : "quick"}
-        scale={isTransitioning ? 1.2 : 1}
-        rotate={isTransitioning ? "10deg" : "0deg"}
-        opacity={isTransitioning ? 0.7 : 1}
-        // Pulsing animation for enraged state
-        {...(isEnraged && {
-          animateOnly: ["scale", "opacity"],
-          transition: "bouncy",
-        })}
-      >
-        <Image
-          source={getAdventureAsset(bossImagePath)}
-          style={{ width: "100%", height: "100%" }}
-          contentFit="cover"
-        />
-        {!!displayConfig.tint && <YStack position="absolute" fullscreen bg={displayConfig.tint} />}
-      </YStack>
-
-      {/* Phase indicator (small dots) */}
-      <YStack flexDirection="row" gap="$1" items="center" transition="quick" opacity={0.7}>
-        {[1, 2, 3, 4].map((phase) => (
-          <YStack
-            key={phase}
-            width={6}
-            height={6}
-            rounded={3}
-            bg={phase <= currentPhase ? "$text" : "$bgLight"}
-            borderWidth={1}
-            borderColor="$borderStrong"
-            opacity={phase === currentPhase ? 1 : 0.4}
-          />
-        ))}
-      </YStack>
+    <YStack
+      width={size}
+      height={size}
+      rounded={size / 2}
+      overflow="hidden"
+      bg="$surface2"
+      borderWidth={1}
+      borderColor={isEnraged ? "$error" : "$borderStrong"}
+      items="center"
+      justify="center"
+      transition={isEnraged ? "bouncy" : "quick"}
+      scale={isTransitioning ? 1.2 : 1}
+      rotate={isTransitioning ? "10deg" : "0deg"}
+      opacity={isTransitioning ? 0.7 : 1}
+    >
+      <Image
+        source={getAdventureAsset(bossImagePath)}
+        style={{ width: "100%", height: "100%" }}
+        contentFit="cover"
+      />
+      {!!displayConfig.tint && <YStack position="absolute" fullscreen bg={displayConfig.tint} />}
     </YStack>
   );
 }

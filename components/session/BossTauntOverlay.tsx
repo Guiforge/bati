@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import { Paragraph, XStack, YStack } from "tamagui";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Paragraph, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { BOSS_LOW_HP_TAUNTS, BOSS_TAUNTS } from "@/constants/bossTaunts";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
+/** Session top padding (16) + header row (~40) + gap (16) + the bounded HUD strip (~76). */
+const HUD_BOTTOM_OFFSET = 148;
+
 export function BossTauntOverlay() {
   const bossFight = useSessionStore((s) => s.bossFight);
   const status = useSessionStore((s) => s.status);
   const language = useSettingsStore((s) => s.language);
+  const insets = useSafeAreaInsets();
   const [taunt, setTaunt] = useState<string | null>(null);
 
   // Only show taunts during active parts of the session
@@ -60,44 +65,31 @@ export function BossTauntOverlay() {
   if (!taunt) return null;
 
   return (
+    // Anchored just under the boss HUD rather than at a magic `top: 120` that landed on top of
+    // it. Non-interactive: a decorative bubble must never swallow a tap aimed at the session.
     <YStack
       position="absolute"
+      pointerEvents="none"
       transition="bouncy"
       enterStyle={{ opacity: 0, scale: 0.5, y: -20 }}
       exitStyle={{ opacity: 0, scale: 0.5, y: -20 }}
-      style={{ top: 120, right: 20, zIndex: 1000 }}
+      style={{ top: insets.top + HUD_BOTTOM_OFFSET, right: 20, zIndex: 1000 }}
     >
-      <XStack items="flex-end" gap="$2">
-        {/* Comic Bubble */}
-        <Card
-          bg="$surface"
-          p="$3"
-          rounded="$4"
-          borderWidth={1}
-          borderColor="$borderStrong"
-          maxW={200}
-          style={{ borderBottomRightRadius: 0 }} // Speech bubble tail effect
-        >
-          <Paragraph color="$text" fontWeight="bold" fontSize={14}>
-            {taunt}
-          </Paragraph>
-        </Card>
-
-        {/* Boss Avatar Placeholder */}
-        <YStack
-          width={60}
-          height={60}
-          bg="$primary"
-          rounded="$10"
-          borderWidth={1}
-          borderColor="$borderStrong"
-          overflow="hidden"
-          items="center"
-          justify="center"
-        >
-          <Paragraph fontSize={30}>👹</Paragraph>
-        </YStack>
-      </XStack>
+      {/* The HUD already shows the boss's real art — the bubble only needs its voice, and its
+          tail points back up at the portrait. */}
+      <Card
+        bg="$surface"
+        p="$3"
+        rounded="$4"
+        borderWidth={1}
+        borderColor="$borderStrong"
+        maxW={220}
+        style={{ borderTopRightRadius: 0 }}
+      >
+        <Paragraph color="$text" fontWeight="700" fontSize={14}>
+          {taunt}
+        </Paragraph>
+      </Card>
     </YStack>
   );
 }

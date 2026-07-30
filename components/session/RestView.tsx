@@ -1,6 +1,8 @@
 import { Minus, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
@@ -28,7 +30,17 @@ export function RestView() {
   const updateLastResult = useSessionStore((s) => s.updateLastResult);
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
+  const status = useSessionStore((s) => s.status);
   const { remainingSeconds, progress } = useSessionTimer();
+
+  // The rest timer runs out on its own and nothing consumed the zero: useSessionTimer floors
+  // `resting` at 0, so the screen parked on 0:00 and the next exercise never started unless you
+  // tapped "skip". Same hands-free advance the warm-up and the countdown already do.
+  // skipRest() re-checks the status itself, so a repeat render firing this is harmless.
+  useEffect(() => {
+    if (status !== "resting" || remainingSeconds > 0) return;
+    skipRest();
+  }, [status, remainingSeconds, skipRest]);
 
   if (!quest) return null;
 
@@ -66,8 +78,7 @@ export function RestView() {
       pt={insets.top + 16}
       pb={insets.bottom + 16}
       px="$4"
-      gap="$6"
-      justify="center"
+      gap="$4"
       transition={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
@@ -90,6 +101,8 @@ export function RestView() {
           currentHp={bossFight.currentHp}
           totalHp={bossFight.totalHp}
           bossImagePath={bossFight.imagePath}
+          bossName={language === "fr" ? bossFight.frName : bossFight.enName}
+          weaknessMuscle={bossFight.weaknessMuscle}
           lastDamage={
             lastDamageResult
               ? {
@@ -102,51 +115,112 @@ export function RestView() {
         />
       )}
 
-      {/* Timer */}
-      <YStack items="center" gap="$2">
-        <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
-          {formatTime(remainingSeconds)}
-        </H1>
-        <Progress
-          value={Math.min(1, Math.max(0, progress)) * 100}
-          size="$4"
-          bg="$surface2"
-          borderWidth={1}
-          borderColor="$borderStrong"
-          rounded="$6"
-          width="100%"
-          style={{ maxWidth: 360 }}
-        >
-          <Progress.Indicator transition="quick" bg="$primary" />
-        </Progress>
-        <XStack gap="$3">
-          <Button
-            size="$3"
-            bg="$surface"
+      {/* Scrolls so the skip CTA below stays reachable — the timer, the set review and the
+          up-next card are fixed-height siblings that never shrink, and a boss fight adds the HUD
+          on top of them. */}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center", gap: 24 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Timer */}
+        <YStack items="center" gap="$2">
+          <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
+            {formatTime(remainingSeconds)}
+          </H1>
+          <Progress
+            value={Math.min(1, Math.max(0, progress)) * 100}
+            size="$4"
+            bg="$surface2"
             borderWidth={1}
             borderColor="$borderStrong"
-            onPress={() => handleAddRestTime(10)}
+            rounded="$6"
+            width="100%"
+            style={{ maxWidth: 360 }}
           >
-            <Text fontWeight="700" color="$text">
-              +10s
-            </Text>
-          </Button>
-          <Button
-            size="$3"
-            bg="$surface"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            onPress={() => handleAddRestTime(30)}
-          >
-            <Text fontWeight="700" color="$text">
-              +30s
-            </Text>
-          </Button>
-        </XStack>
-      </YStack>
+            <Progress.Indicator transition="quick" bg="$primary" />
+          </Progress>
+          <XStack gap="$3">
+            <Button
+              size="$3"
+              bg="$surface"
+              borderWidth={1}
+              borderColor="$borderStrong"
+              onPress={() => handleAddRestTime(10)}
+            >
+              <Text fontWeight="700" color="$text">
+                +10s
+              </Text>
+            </Button>
+            <Button
+              size="$3"
+              bg="$surface"
+              borderWidth={1}
+              borderColor="$borderStrong"
+              onPress={() => handleAddRestTime(30)}
+            >
+              <Text fontWeight="700" color="$text">
+                +30s
+              </Text>
+            </Button>
+          </XStack>
+        </YStack>
 
-      {/* Last Set Review */}
-      {!!lastResult && (
+        {/* Last Set Review */}
+        {!!lastResult && (
+          <YStack
+            bg="$surface"
+            p="$4"
+            rounded="$6"
+            borderWidth={1}
+            borderColor="$borderStrong"
+            gap="$2"
+          >
+            <XStack justify="space-between" items="center">
+              <YStack>
+                <Text color="$textSecondary" fontSize={12} fontWeight="700">
+                  {isLastTimeBased
+                    ? t("session.adjust_seconds_label")
+                    : t("session.adjust_reps_label")}
+                </Text>
+                <Text fontSize={12} color="$textSecondary">
+                  {isLastTimeBased
+                    ? t("session.adjust_seconds_hint")
+                    : t("session.adjust_reps_hint")}
+                </Text>
+              </YStack>
+
+              <XStack items="center" gap="$3">
+                <Button
+                  size="$3"
+                  circular
+                  icon={<Minus size={16} />}
+                  accessibilityLabel={t("session.decrease_result_accessibility", "Decrease result")}
+                  onPress={() =>
+                    handleUpdateResult(Math.max(1, lastResult.result.value - adjustStep))
+                  }
+                />
+                <Text
+                  fontWeight="700"
+                  fontSize={20}
+                  color="$text"
+                  style={{ minWidth: 42, textAlign: "center" }}
+                >
+                  {isLastTimeBased ? `${lastResult.result.value}s` : lastResult.result.value}
+                </Text>
+                <Button
+                  size="$3"
+                  circular
+                  icon={<Plus size={16} />}
+                  accessibilityLabel={t("session.increase_result_accessibility", "Increase result")}
+                  onPress={() => handleUpdateResult(lastResult.result.value + adjustStep)}
+                />
+              </XStack>
+            </XStack>
+          </YStack>
+        )}
+
+        {/* Up Next Card */}
         <YStack
           bg="$surface"
           p="$4"
@@ -154,94 +228,44 @@ export function RestView() {
           borderWidth={1}
           borderColor="$borderStrong"
           gap="$2"
+          transition={reducedMotion ? undefined : "bouncy"}
+          enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
         >
-          <XStack justify="space-between" items="center">
-            <YStack>
-              <Text color="$textSecondary" fontSize={12} fontWeight="700">
-                {isLastTimeBased
-                  ? t("session.adjust_seconds_label")
-                  : t("session.adjust_reps_label")}
+          <Text color="$textSecondary" fontSize={12} fontWeight="700">
+            {t("session.up_next")}
+          </Text>
+          <XStack gap="$3" items="center">
+            <YStack
+              width={50}
+              height={50}
+              bg="$surface2"
+              rounded="$3"
+              overflow="hidden"
+              items="center"
+              justify="center"
+              borderWidth={1}
+              borderColor="$borderStrong"
+            >
+              <Image
+                source={getExerciseAsset(nextEx.exercise.imagePath)}
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+                transition={150}
+              />
+            </YStack>
+            <YStack flex={1}>
+              <Text fontWeight="700" fontSize={18} numberOfLines={1} color="$text">
+                {nextExName}
               </Text>
-              <Text fontSize={12} color="$textSecondary">
-                {isLastTimeBased ? t("session.adjust_seconds_hint") : t("session.adjust_reps_hint")}
+              <Text color="$textSecondary">
+                {nextEx.target.type === "time"
+                  ? `${nextEx.target.value}s`
+                  : `${nextEx.target.value} reps`}
               </Text>
             </YStack>
-
-            <XStack items="center" gap="$3">
-              <Button
-                size="$3"
-                circular
-                icon={<Minus size={16} />}
-                accessibilityLabel={t("session.decrease_result_accessibility", "Decrease result")}
-                onPress={() =>
-                  handleUpdateResult(Math.max(1, lastResult.result.value - adjustStep))
-                }
-              />
-              <Text
-                fontWeight="700"
-                fontSize={20}
-                color="$text"
-                style={{ minWidth: 42, textAlign: "center" }}
-              >
-                {isLastTimeBased ? `${lastResult.result.value}s` : lastResult.result.value}
-              </Text>
-              <Button
-                size="$3"
-                circular
-                icon={<Plus size={16} />}
-                accessibilityLabel={t("session.increase_result_accessibility", "Increase result")}
-                onPress={() => handleUpdateResult(lastResult.result.value + adjustStep)}
-              />
-            </XStack>
           </XStack>
         </YStack>
-      )}
-
-      {/* Up Next Card */}
-      <YStack
-        bg="$surface"
-        p="$4"
-        rounded="$6"
-        borderWidth={1}
-        borderColor="$borderStrong"
-        gap="$2"
-        transition={reducedMotion ? undefined : "bouncy"}
-        enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
-      >
-        <Text color="$textSecondary" fontSize={12} fontWeight="700">
-          {t("session.up_next")}
-        </Text>
-        <XStack gap="$3" items="center">
-          <YStack
-            width={50}
-            height={50}
-            bg="$surface2"
-            rounded="$3"
-            overflow="hidden"
-            items="center"
-            justify="center"
-            borderWidth={1}
-            borderColor="$borderStrong"
-          >
-            <Image
-              source={getExerciseAsset(nextEx.exercise.imagePath)}
-              style={{ width: "100%", height: "100%" }}
-              contentFit="cover"
-              transition={150}
-            />
-          </YStack>
-          <YStack flex={1}>
-            <Text fontWeight="700" fontSize={18} numberOfLines={1} color="$text">
-              {nextExName}
-            </Text>
-            <Text color="$textSecondary">
-              {nextEx.target.type === "time"
-                ? `${nextEx.target.value}s`
-                : `${nextEx.target.value} reps`}
-            </Text>
-          </YStack>
-        </XStack>
-      </YStack>
+      </ScrollView>
 
       {/* Skip Button */}
       <Button
@@ -252,7 +276,6 @@ export function RestView() {
         onPress={handleSkipRest}
         borderWidth={0}
         rounded="$6"
-        mt="auto"
         accessibilityLabel={t("session.skip_rest_accessibility")}
         accessibilityRole="button"
       >

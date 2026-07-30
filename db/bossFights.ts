@@ -24,6 +24,10 @@ export type BossFight = {
   updatedAt: Date;
   // Adventure cover, reused as the BossPhaseImage base art (see docs/content/missing-image.md §1c).
   imagePath: string;
+  // The boss wears its adventure's title. Both locales travel together so the HUD can pick one
+  // without a second query — the session store holds the fight, not the adventure.
+  enName: string;
+  frName: string;
 };
 
 export type BossDamageEntry = {
@@ -81,6 +85,8 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
       bossWeaknessMuscle: adventures.bossWeaknessMuscle,
       bossResistanceMuscle: adventures.bossResistanceMuscle,
       imagePath: adventures.imagePath,
+      enTitle: adventures.enTitle,
+      frTitle: adventures.frTitle,
     })
     .from(adventures)
     .where(eq(adventures.id, adventureId))
@@ -111,6 +117,8 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
       createdAt: row.createdAt ?? new Date(),
       updatedAt: row.updatedAt ?? new Date(),
       imagePath: adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+      enName: adventure.enTitle,
+      frName: adventure.frTitle,
     };
   }
 
@@ -143,6 +151,8 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
     imagePath: adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+    enName: adventure.enTitle,
+    frName: adventure.frTitle,
   };
 }
 
@@ -162,6 +172,8 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
       createdAt: bossFights.createdAt,
       updatedAt: bossFights.updatedAt,
       imagePath: adventures.imagePath,
+      enTitle: adventures.enTitle,
+      frTitle: adventures.frTitle,
     })
     .from(bossFights)
     .innerJoin(adventures, eq(bossFights.adventureId, adventures.id))
@@ -182,6 +194,8 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
     imagePath: row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+    enName: row.enTitle,
+    frName: row.frTitle,
   };
 }
 

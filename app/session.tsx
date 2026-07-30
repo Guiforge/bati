@@ -20,6 +20,8 @@ export default function SessionScreen() {
   const prePauseStatus = useSessionStore((s) => s.prePauseStatus);
   const quest = useSessionStore((s) => s.quest);
   const pauseSession = useSessionStore((s) => s.pauseSession);
+  const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
+  const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
 
   // Handle Android Hardware Back Button
   useEffect(() => {
@@ -55,7 +57,12 @@ export default function SessionScreen() {
       <BossTauntOverlay />
       {displayStatus === "warmup" && <WarmupView />}
       {displayStatus === "countdown" && <CountdownView />}
-      {displayStatus === "running" && <ActiveExerciseView />}
+      {/* Keyed on the step: with restSeconds 0 the store goes running -> running without a rest
+          screen in between, so the view stayed mounted and its rep counter kept the previous
+          exercise's value instead of the new target. */}
+      {displayStatus === "running" && (
+        <ActiveExerciseView key={`${currentRoundIndex}:${currentExerciseIndex}`} />
+      )}
       {displayStatus === "resting" && <RestView />}
       {status === "finished" && <VictoryView />}
 

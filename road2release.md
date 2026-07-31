@@ -93,18 +93,16 @@ pas de liste de cases cochées.
 
 ---
 
-## Phase 2 — Le dernier trou fonctionnel (½ journée)
+## Phase 2 — Le dernier trou fonctionnel — ✔ fait le 2026-07-31 (`c485fa0`, `8f89121`)
 
-**Monter `SessionRecoveryBanner`.** `components/session/SessionRecoveryCard.tsx` n'est importé
-par rien (`npm run knip` le dit en une seconde). Le store écrit les snapshots, le hook les relit,
-la carte sait les afficher, quinze tests couvrent le tout — et l'utilisateur ne se voit **jamais**
-proposer de reprendre une séance interrompue.
+`SessionRecoveryBanner` est monté en tête d'accueil, au-dessus de `HomeStage` : une séance
+interrompue passe avant n'importe quelle suggestion, et la bannière ne rend rien quand il n'y a
+rien à reprendre.
 
-Ce n'est pas un bloquant store. C'est un bloquant qualité : perdre l'entraînement de quelqu'un
-sans rien lui proposer est exactement ce qui fait désinstaller une app de sport.
-
-Le choix de l'écran est un arbitrage produit. L'accueil me semble juste — c'est là que revient
-quelqu'un qui a fermé l'app — mais c'est ton appel.
+Le chemin a été vérifié de bout en bout, pas seulement le montage : « Reprendre » restaure le
+store puis navigue vers `/session`, et `app/session.tsx:47` redirige vers l'accueil si aucune
+quête n'est revenue — donc une restauration ratée ne laisse jamais sur un écran vide. La
+navigation ne part plus que si la restauration a réussi.
 
 ---
 

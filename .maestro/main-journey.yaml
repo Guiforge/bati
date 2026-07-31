@@ -7,7 +7,7 @@
 # Targets testID only, never translated text, so an emulator in fr_FR passes
 # too. See README.md for the convention and the device-locale pin.
 
-appId: com.anonymous.bati
+appId: com.guiforge.bati
 
 ---
 # Fresh install: no stored preferences, no training history.

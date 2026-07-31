@@ -1,7 +1,7 @@
 # Reusable: walk through onboarding and land on the home tab.
 # Assumes the app was just launched with clearState (so onboarding is shown).
 # Selects by testID only, so it is locale-agnostic (en/fr).
-appId: com.anonymous.bati
+appId: com.guiforge.bati
 ---
 - assertVisible:
     id: "onboarding-presentation-continue"
@@ -9,13 +9,13 @@ appId: com.anonymous.bati
     id: "onboarding-presentation-continue"
 
 - assertVisible:
-    id: "onboarding-hero-name"
+    id: "onboarding-village-name"
 - tapOn:
-    id: "onboarding-hero-name"
+    id: "onboarding-village-name"
 - inputText: "Testville"
 - hideKeyboard
 - tapOn:
-    id: "onboarding-hero-continue"
+    id: "onboarding-village-continue"
 
 - assertVisible:
     id: "onboarding-level-skip"

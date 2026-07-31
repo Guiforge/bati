@@ -63,12 +63,9 @@
             }
           ]
         }
-      ]
+      ],
+      "./plugins/withAndroidLintExtraTranslation"
     ],
-    "locales": {
-      "en": "./locales/ios/en.json",
-      "fr": "./locales/ios/fr.json"
-    },
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -79,6 +76,10 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"
+    },
+    "locales": {
+      "en": "./locales/ios/en.json",
+      "fr": "./locales/ios/fr.json"
     }
   }
 }

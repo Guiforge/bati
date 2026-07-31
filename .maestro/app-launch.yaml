@@ -1,6 +1,6 @@
 # Smoke: a fresh install boots all the way to the first onboarding screen.
 # Asserts a testID rather than taking a screenshot nobody looks at.
-appId: com.anonymous.bati
+appId: com.guiforge.bati
 tags:
   - smoke
 ---

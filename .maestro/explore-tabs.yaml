@@ -1,7 +1,7 @@
 # Smoke test for the five main feature tabs: onboard, then visit each tab and
 # assert its screen actually rendered (not just that the tab button exists).
 # testID only, so locale-agnostic.
-appId: com.anonymous.bati
+appId: com.guiforge.bati
 tags:
   - smoke
 ---

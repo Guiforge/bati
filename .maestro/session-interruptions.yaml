@@ -7,7 +7,7 @@
 #
 # testID only, so an emulator in fr_FR passes too.
 
-appId: com.anonymous.bati
+appId: com.guiforge.bati
 ---
 - launchApp:
     clearState: true

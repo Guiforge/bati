@@ -112,6 +112,79 @@ quelqu'un qui a fermé l'app — mais c'est ton appel.
 
 ---
 
+## Phase 2 bis — Rendre le feedback facile (½ journée, avant la bêta copains)
+
+Une bêta entre amis échoue presque toujours de la même façon : les gens l'utilisent, trouvent
+ça « bien », et ne disent rien. Pas par politesse — parce qu'écrire un retour demande de sortir
+de l'app, d'ouvrir un mail, de retrouver quoi dire. Chaque friction retirée multiplie le nombre
+de retours.
+
+### Ce qui existe déjà, et qui est bon
+
+`src/crashLog.ts` fait exactement ce qu'il faut : capture locale, `mailto:` pré-rempli et
+entièrement modifiable, **aucun envoi tant que la personne n'appuie pas sur envoyer dans son
+propre client**. Pas de HTTP, pas de consentement déguisé. C'est la bonne architecture pour une
+app offline-first, et il ne faut pas la remplacer par un SDK de feedback tiers.
+
+`buildBugReportMailto` gère déjà le cas « aucun crash » (`No crash was recorded on this
+device.`) — la fonction est prête, c'est l'UI qui bloque.
+
+### Le blocage
+
+`app/settings.tsx:478` — `disabled={crashCount === 0}`.
+
+> **Quelqu'un dont l'app n'a jamais planté ne peut rien t'écrire depuis l'app.**
+
+C'est l'inverse de ce qu'il faut pour une bêta : les retours les plus utiles viennent de gens
+dont l'app fonctionne — « je n'ai pas compris à quoi sert le village », « le minuteur de repos
+est trop court », « j'aurais aimé pouvoir… ». Aucun de ces messages n'est un crash.
+
+### Les quatre changements, par rapport valeur / effort
+
+| # | Quoi | Effort | Pourquoi |
+|---|---|---|---|
+| 1 | **Dégriser la ligne** et la renommer « Un retour, une idée, un bug » | ~10 lignes + 4 clés i18n | Débloque le seul canal existant pour 100 % des testeurs au lieu de ceux qui ont planté |
+| 2 | **Ajouter appareil + OS** au bloc technique du `mailto` | 3 lignes dans `buildBugReportMailto` | « ça rame » sans le modèle de téléphone est inexploitable |
+| 3 | **Traduire sujet et corps** du mail | 6 clés i18n | `buildBugReportMailto` écrit en anglais en dur ; tes copains écriront en français |
+| 4 | **Remonter l'entrée** hors du bas des réglages | 1 ligne | Une entrée en bas d'écran de réglages ne se trouve pas ; pendant la bêta seulement, elle mérite d'être visible |
+
+Les points 1 à 3 tiennent en une demi-journée et n'ont besoin d'aucun appareil.
+
+### Les questions à poser, et où
+
+Le corps du mail demande aujourd'hui « What were you doing when it broke? » — la bonne question
+pour un crash, la mauvaise pour un avis. Pour la bêta, trois questions valent mieux qu'un champ
+vide :
+
+1. Qu'est-ce qui t'a fait ouvrir l'app aujourd'hui ?
+2. Qu'est-ce qui t'a agacé ?
+3. Qu'est-ce que tu as failli chercher sans le trouver ?
+
+La troisième est celle qui remonte les vraies manques : personne ne signale spontanément une
+fonctionnalité absente, tout le monde se souvient de l'avoir cherchée.
+
+### Ce qu'il ne faut pas faire
+
+- **Pas de SDK de feedback tiers** (Instabug, Sentry User Feedback, etc.). Ils ouvrent un canal
+  réseau dans une app dont l'argument est « rien ne sort de ton téléphone », et la politique de
+  confidentialité que tu viens d'écrire devient fausse le jour où tu en ajoutes un.
+- **Pas de formulaire in-app avec envoi HTTP** : même problème, plus un backend à tenir.
+- **Pas de pop-up « notez l'application »** pendant la bêta. Tu veux des phrases, pas des
+  étoiles.
+
+### Le canal, hors de l'app
+
+- **TestFlight** (iOS) a un retour intégré : capture d'écran + commentaire, sans quitter l'app.
+  Gratuit et déjà relié à ton build. C'est le meilleur canal de la bêta iOS, et il ne demande
+  aucun code.
+- **Play test fermé** n'a pas d'équivalent aussi bon : le retour passe par un lien de feedback
+  optionnel. Le `mailto:` de l'app reste le canal principal côté Android.
+- **Un groupe de discussion** (Signal, WhatsApp) avec les 12 testeurs vaut plus que n'importe
+  quel outil. Les gens qui n'écriraient jamais un mail écrivent volontiers dans un fil, et tu
+  as besoin de ces 12 personnes actives pendant 14 jours de toute façon (phase 0.1).
+
+---
+
 ## Phase 3 — La passe sur appareil (le vrai travail : des jours, pas des heures)
 
 **C'est la phase qui décide si « c'est de la qualité », et rien de ce qui précède ne la
@@ -218,6 +291,7 @@ Aujourd'hui   Phase 0  ───────────────────
                  │
                  ├─ Phase 1 (½ j, config store)
                  ├─ Phase 2 (½ j, bannière de reprise)
+                 ├─ Phase 2 bis (½ j, canal de feedback)  ◄── avant la bêta copains
                  └─ Phase 3 (passe appareil, le vrai travail)
                         └─ Phase 4 (captures + listings)
                                 └─ Phase 5 (sortie)

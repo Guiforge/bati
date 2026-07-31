@@ -122,7 +122,7 @@ export async function readCrashLog(): Promise<CrashReport[]> {
  * The one place the contact address is written in code. The same address appears in the
  * privacy text in `locales/*.json` and in `docs/legal/privacy.md`; change all three together.
  */
-export const CONTACT_EMAIL = "guillaume.pouyat@protonmail.com";
+export const CONTACT_EMAIL = "feedback.bati@proton.me";
 
 /**
  * A `mailto:` the hero's own mail app opens, pre-filled and fully editable.

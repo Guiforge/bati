@@ -31,36 +31,36 @@ export const EXERCISE_ASSETS = {
   skater_hop: require("@/assets/images/exercises/skater_hop.jpg"),
   hollow_body_hold: require("@/assets/images/exercises/hollow_body_hold.jpg"),
   // Dedicated art for the generic exercises (0001) — see docs/content/missing-covers.md
-  squat: require("@/assets/images/exercises/squat.png"),
-  pushups: require("@/assets/images/exercises/pushups.png"),
-  pullups: require("@/assets/images/exercises/pullups.png"),
-  wall_sit: require("@/assets/images/exercises/wall_sit.png"),
-  plank: require("@/assets/images/exercises/plank.png"),
-  crunch: require("@/assets/images/exercises/crunch.png"),
+  squat: require("@/assets/images/exercises/squat.jpg"),
+  pushups: require("@/assets/images/exercises/pushups.jpg"),
+  pullups: require("@/assets/images/exercises/pullups.jpg"),
+  wall_sit: require("@/assets/images/exercises/wall_sit.jpg"),
+  plank: require("@/assets/images/exercises/plank.jpg"),
+  crunch: require("@/assets/images/exercises/crunch.jpg"),
   // Bodyweight exercises (0010, art assigned in 0011) — see docs/content/missing-image.md §4
-  chin_up: require("@/assets/images/exercises/chin_up.png"),
-  superman: require("@/assets/images/exercises/superman.png"),
-  bear_crawl: require("@/assets/images/exercises/bear_crawl.png"),
-  russian_twist: require("@/assets/images/exercises/russian_twist.png"),
-  side_plank: require("@/assets/images/exercises/side_plank.png"),
-  glute_bridge: require("@/assets/images/exercises/glute_bridge.png"),
-  standing_calf_raise: require("@/assets/images/exercises/standing_calf_raise.png"),
-  handstand_pushup: require("@/assets/images/exercises/handstand_pushup.png"),
-  wall_pushup: require("@/assets/images/exercises/wall_pushup.png"),
-  flutter_kicks: require("@/assets/images/exercises/flutter_kicks.png"),
-  inverted_row: require("@/assets/images/exercises/inverted_row.png"),
-  dead_bug: require("@/assets/images/exercises/dead_bug.png"),
-  hanging_leg_raise: require("@/assets/images/exercises/hanging_leg_raise.png"),
-  jump_squat: require("@/assets/images/exercises/jump_squat.png"),
-  reverse_crunch: require("@/assets/images/exercises/reverse_crunch.png"),
-  curtsy_squat: require("@/assets/images/exercises/curtsy_squat.png"),
-  scapular_pullup: require("@/assets/images/exercises/scapular_pullup.png"),
-  l_sit: require("@/assets/images/exercises/l_sit.png"),
-  star_jump: require("@/assets/images/exercises/star_jump.png"),
-  windshield_wipers: require("@/assets/images/exercises/windshield_wipers.png"),
+  chin_up: require("@/assets/images/exercises/chin_up.jpg"),
+  superman: require("@/assets/images/exercises/superman.jpg"),
+  bear_crawl: require("@/assets/images/exercises/bear_crawl.jpg"),
+  russian_twist: require("@/assets/images/exercises/russian_twist.jpg"),
+  side_plank: require("@/assets/images/exercises/side_plank.jpg"),
+  glute_bridge: require("@/assets/images/exercises/glute_bridge.jpg"),
+  standing_calf_raise: require("@/assets/images/exercises/standing_calf_raise.jpg"),
+  handstand_pushup: require("@/assets/images/exercises/handstand_pushup.jpg"),
+  wall_pushup: require("@/assets/images/exercises/wall_pushup.jpg"),
+  flutter_kicks: require("@/assets/images/exercises/flutter_kicks.jpg"),
+  inverted_row: require("@/assets/images/exercises/inverted_row.jpg"),
+  dead_bug: require("@/assets/images/exercises/dead_bug.jpg"),
+  hanging_leg_raise: require("@/assets/images/exercises/hanging_leg_raise.jpg"),
+  jump_squat: require("@/assets/images/exercises/jump_squat.jpg"),
+  reverse_crunch: require("@/assets/images/exercises/reverse_crunch.jpg"),
+  curtsy_squat: require("@/assets/images/exercises/curtsy_squat.jpg"),
+  scapular_pullup: require("@/assets/images/exercises/scapular_pullup.jpg"),
+  l_sit: require("@/assets/images/exercises/l_sit.jpg"),
+  star_jump: require("@/assets/images/exercises/star_jump.jpg"),
+  windshield_wipers: require("@/assets/images/exercises/windshield_wipers.jpg"),
   // The equipment-free pulls from 0015
-  table_row: require("@/assets/images/exercises/table_row.png"),
-  towel_door_row: require("@/assets/images/exercises/towel_door_row.png"),
+  table_row: require("@/assets/images/exercises/table_row.jpg"),
+  towel_door_row: require("@/assets/images/exercises/towel_door_row.jpg"),
   // The mobility branch from 0024 — see docs/content/missing-image.md §7
   wrist_circles: require("@/assets/images/exercises/wrist_circles.jpg"),
   cat_cow: require("@/assets/images/exercises/cat_cow.jpg"),
@@ -207,7 +207,7 @@ export type BuildingIconKey = keyof typeof BUILDING_ICON_ASSETS;
 
 /**
  * Content keys are bare names (e.g. "goblin_squat"); DB imagePath columns store the full
- * bundled path (e.g. "assets/images/exercises/goblin_squat.png"). Strip directory + extension
+ * bundled path (e.g. "assets/images/exercises/goblin_squat.jpg"). Strip directory + extension
  * so either form resolves to the same map key.
  */
 function keyFromPath(id: string): string {

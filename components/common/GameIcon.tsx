@@ -33,12 +33,15 @@ export function GameIcon({
   const badgeSource = useGameIcon(badge ?? "sword");
   const theme = useTheme();
 
-  // Helper to resolve color tokens if needed, though Tamagui usually handles it.
-  // For expo-image tintColor, we might need the raw value.
-  // We try to get it from theme if it matches a key, otherwise use as is.
+  // expo-image's tintColor takes a real colour, not a token, so a `$name` has to be resolved
+  // here. Theme keys are unprefixed — `theme.text`, never `theme["$text"]` — so the lookup has
+  // to drop the `$` first. Without that every token missed, fell through to the raw string, and
+  // expo-image was handed the literal "$text": nineteen call sites all tinted with the fallback,
+  // and one warning per icon.
   const resolveColor = (c?: string | ColorTokens) => {
     if (!c) return undefined;
-    const val = theme[c]?.val;
+    const key = typeof c === "string" && c.startsWith("$") ? c.slice(1) : (c as string);
+    const val = theme[key]?.val;
     return val ? (val as string) : (c as string);
   };
 

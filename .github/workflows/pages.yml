@@ -29,7 +29,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # `enablement: true` turns Pages on for the repository the first time this runs. Without
+      # it the step fails with "Get Pages site failed ... Not Found", because Pages has to
+      # already exist before it can be configured — and enabling it by hand in the settings UI
+      # is a step nobody remembers a year later when the workflow is re-read.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/jekyll-build-pages@v1
         with:
           source: ./docs/legal

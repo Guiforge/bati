@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
+import { TamaguiProvider, Theme } from "tamagui";
 
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
@@ -50,7 +50,11 @@ export default function RootLayout() {
   const settingsLoaded = useSettingsStore((s) => s.isLoaded);
   const loadSettingsFromDatabase = useSettingsStore((s) => s.loadFromDatabase);
 
-  const segments = useSegments();
+  // Typed as `string[]` rather than expo-router's tuple, which is built from the route types
+  // generated into .expo/types by a dev server run. CI has never run one, so there the tuple is
+  // `[string]` and reading `segments[1]` below is a compile error — green locally, red in CI,
+  // for eight runs. The values are plain strings either way.
+  const segments = useSegments() as string[];
   const router = useRouter();
 
   // NEW_STYLE: force dark-only theme across the whole app.
@@ -110,16 +114,16 @@ export default function RootLayout() {
         <TamaguiProvider config={config} defaultTheme={colorScheme}>
           <Theme name={colorScheme}>
             <ThemeProvider value={MyTheme}>
-              <PortalProvider>
-                <DatabaseProvider onReady={handleDatabaseReady}>
-                  <ToastProvider>
-                    <ErrorBoundary onError={(error) => recordCrash("render", error)}>
-                      <AppBackground />
-                      <Slot />
-                    </ErrorBoundary>
-                  </ToastProvider>
-                </DatabaseProvider>
-              </PortalProvider>
+              {/* No PortalProvider here: TamaguiProvider already mounts one, and nesting a
+                  second root host is what the "hydration mismatches" warning was about. */}
+              <DatabaseProvider onReady={handleDatabaseReady}>
+                <ToastProvider>
+                  <ErrorBoundary onError={(error) => recordCrash("render", error)}>
+                    <AppBackground />
+                    <Slot />
+                  </ErrorBoundary>
+                </ToastProvider>
+              </DatabaseProvider>
             </ThemeProvider>
           </Theme>
         </TamaguiProvider>

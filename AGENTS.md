@@ -78,30 +78,27 @@ outlived it.
   but they must keep reading the same saved config, or Home and the quest screen will start
   different sessions for the same quest.
 
-## Branching and releases
+## Releases
 
-**main is merge-only.** Work on a branch, open a pull request, let CI go green, merge.
-
-```bash
-git switch -c my-change
-npm run pr          # push the branch and open the PR with gh
-```
-
-A `pre-push` hook refuses a direct push to main. It is a reminder, not enforcement — anyone can
-pass `--no-verify`, and GitHub's real branch protection needs Pro or a public repository, which
-this one is not yet. The command to turn on the real thing the day that changes is written at the
-top of [`scripts/no-direct-push-to-main.sh`](scripts/no-direct-push-to-main.sh).
-
-**Releases are on demand**, never automatic on merge: `appVersionSource: remote` means EAS owns
-the build number, so shipping is a decision rather than a side effect of merging.
+Commit to main; the hooks and CI are the gate, not a review step. Cutting a release is one
+command:
 
 ```bash
-npm run release     # opens the Release workflow; pick platform, profile, submit yes/no
+npm run release            # 1.0.0 -> 1.0.1
+npm run release -- minor   # 1.0.0 -> 1.1.0
 ```
 
-It re-runs every gate before building, so a release can never outrun a red check. It cannot work
-until `eas init` has minted a project id and an `EXPO_TOKEN` secret exists — see
-[`road2release.md`](road2release.md) phase 0.
+It refuses a dirty tree, refuses a branch other than main, refuses to run when main and origin
+disagree, bumps `package.json` **and** `app.json` together, tags, and pushes. The tag is what
+[`.github/workflows/release.yml`](.github/workflows/release.yml) watches: it re-runs every gate,
+builds the APK, and publishes it as a GitHub Release.
+
+No store is involved yet. [`docs/fdroid.md`](docs/fdroid.md) covers the F-Droid repository that
+turns those APKs into something that updates itself, and `road2release.md` covers the stores.
+
+**One thing gates all of it: a real release keystore.** Release builds are still signed with
+Expo's debug key, which is fine for handing an APK to a friend and useless for anything that has
+to ship an update over it.
 
 ## Git hooks
 

@@ -1,74 +1,97 @@
-# Build (and optionally submit) a store release, on demand.
+# Build a signed APK on a version tag and publish it as a GitHub Release.
 #
-# Deliberately manual. `appVersionSource: remote` in eas.json means EAS owns the build number and
-# increments it itself, so a release is "run this when you decide", not "every push to main".
+# No store involved. `npm run release` bumps the version, tags it and pushes; this picks the tag
+# up, runs every gate, builds, and attaches the APK to a Release that the F-Droid job downstream
+# can also serve.
 #
-# Prerequisites, none of which exist yet — see road2release.md phase 0:
-#   - `eas init` to mint the project id into app.json
-#   - an EXPO_TOKEN repository secret (Expo dashboard → Access tokens)
-#   - Android keystore / Apple credentials configured on EAS
+# Signing: SIGNING_KEYSTORE_BASE64 + SIGNING_* secrets, when they exist. Without them the build
+# falls back to Expo's debug keystore, which is fine for passing an APK to friends but produces
+# an app that can never be updated in place by a properly signed one — and F-Droid needs a stable
+# key. See road2release.md phase 0.3.
 name: Release
 
 on:
+  push:
+    tags: ["v*"]
   workflow_dispatch:
-    inputs:
-      platform:
-        description: Which store
-        type: choice
-        options: [android, ios, all]
-        default: android
-      profile:
-        description: eas.json build profile
-        type: choice
-        options: [production, preview]
-        default: production
-      submit:
-        description: Submit to the store after building
-        type: boolean
-        default: false
+
+permissions:
+  contents: write
 
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
-  release:
+  apk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: npm
       - run: npm ci
 
-      # The same gates CI runs. A release should never be the first time they are checked, but it
-      # should also never be possible to ship past a red one.
+      # The same gates CI runs. A release should never be the first time they are checked, and it
+      # must never be possible to ship past a red one.
       - run: npx biome check .
       - run: npx tsc --noEmit --project tsconfig.json
       - run: npm test
       - run: npm run knip
 
-      - uses: expo/expo-github-action@v8
+      - uses: actions/setup-java@v4
         with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+
+      - name: Generate the native project
+        run: npx expo prebuild --clean --platform android
+
+      - name: Restore the signing key
+        if: ${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_B64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > android/app/release.keystore
+          {
+            echo "MYAPP_UPLOAD_STORE_FILE=release.keystore"
+            echo "MYAPP_UPLOAD_STORE_PASSWORD=$STORE_PASSWORD"
+            echo "MYAPP_UPLOAD_KEY_ALIAS=$KEY_ALIAS"
+            echo "MYAPP_UPLOAD_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> android/gradle.properties
 
       - name: Build
-        run: |
-          eas build \
-            --platform ${{ inputs.platform }} \
-            --profile ${{ inputs.profile }} \
-            --non-interactive \
-            --wait
+        run: ./gradlew assembleRelease --no-daemon
+        working-directory: android
 
-      # Off by default: building and submitting are different decisions, and the first internal
-      # track upload is worth watching by hand.
-      - name: Submit
-        if: ${{ inputs.submit }}
+      - name: Name the artefact after the tag
+        id: apk
         run: |
-          eas submit \
-            --platform ${{ inputs.platform }} \
-            --profile ${{ inputs.profile }} \
-            --latest \
-            --non-interactive
+          version="${GITHUB_REF_NAME#v}"
+          src=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          dest="bati-${version:-dev}.apk"
+          cp "$src" "$dest"
+          echo "path=$dest" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ steps.apk.outputs.path }}
+          generate_release_notes: true
+          body: |
+            Install directly, or add the F-Droid repository for automatic updates:
+            `https://guiforge.github.io/bati/fdroid/repo`
+
+            This APK is not from an app store. Android will ask you to allow installs from an
+            unknown source the first time.
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: ${{ steps.apk.outputs.path }}

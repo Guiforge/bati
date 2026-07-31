@@ -1,14 +1,25 @@
-# Publishes the legal pages the app stores require a URL for.
+# The whole public site, in one deployment.
 #
-# Only `docs/legal/` is published, never `docs/` as a whole: the wiki holds the bug tracker,
-# the roadmap and the planning notes, and pointing Pages at the folder root would put all of
-# it on the open web to serve one privacy policy.
+# It serves two unrelated things, and they share a workflow for one reason: a GitHub Pages site
+# has a single deployment. Two workflows each uploading their own artefact do not merge — the
+# second wipes the first — so the legal pages and the F-Droid repository are assembled together
+# or not at all.
+#
+#   /privacy/      the policy both app stores require a URL for
+#   /fdroid/repo   a self-hosted F-Droid repository, so the app can update itself
+#
+# Only `docs/legal/` is published from the wiki, never `docs/` as a whole: it holds planning notes
+# that have no business on the open web.
 name: Pages
 
 on:
   push:
     branches: [main]
     paths: ["docs/legal/**", ".github/workflows/pages.yml"]
+  # A new release means a new APK to fold into the F-Droid index.
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -23,23 +34,71 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # `enablement: true` turns Pages on for the repository the first time this runs. Without
-      # it the step fails with "Get Pages site failed ... Not Found", because Pages has to
-      # already exist before it can be configured — and enabling it by hand in the settings UI
-      # is a step nobody remembers a year later when the workflow is re-read.
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - uses: actions/jekyll-build-pages@v1
+
+      - name: Build the legal pages
+        uses: actions/jekyll-build-pages@v1
         with:
           source: ./docs/legal
           destination: ./_site
+
+      # --- F-Droid ------------------------------------------------------------------------
+      # Skipped wholesale until the repository signing key exists, so the legal pages can ship
+      # long before F-Droid is ready. See docs/fdroid.md.
+      - name: Is F-Droid configured?
+        id: fdroid
+        run: |
+          if [ -f fdroid/config.yml ] && [ -n "${{ secrets.FDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "No fdroid/config.yml or no signing key — publishing the legal pages only."
+          fi
+
+      - name: Install fdroidserver
+        if: steps.fdroid.outputs.ready == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fdroidserver
+
+      - name: Take the APK from the release build
+        if: steps.fdroid.outputs.ready == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: apk
+          path: fdroid/repo
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rebuild the index
+        if: steps.fdroid.outputs.ready == 'true'
+        env:
+          KEYSTORE_B64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > fdroid/keystore.p12
+          {
+            echo "keystorepass: $KEYSTORE_PASSWORD"
+            echo "keypass: $KEYSTORE_PASSWORD"
+          } >> fdroid/config.yml
+          # `-c` reads metadata straight from the APKs, so a release needs no hand-written file.
+          (cd fdroid && fdroid update -c --pretty)
+          # The keys must never reach Pages — everything copied below is served publicly.
+          rm -f fdroid/keystore.p12 fdroid/config.yml
+          mkdir -p _site/fdroid
+          cp -r fdroid/repo _site/fdroid/repo
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
       - id: deployment
         uses: actions/deploy-pages@v4

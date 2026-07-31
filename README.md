@@ -12,7 +12,7 @@
 ![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![SQLite + Drizzle](https://img.shields.io/badge/SQLite-Drizzle-C5F74F?logo=sqlite&logoColor=black)
 ![Status: pre-release](https://img.shields.io/badge/status-pre--release-orange)
-![Licence: all rights reserved](https://img.shields.io/badge/licence-all_rights_reserved-lightgrey)
+![Licence: MIT](https://img.shields.io/badge/licence-MIT-green)
 
 </div>
 
@@ -131,11 +131,30 @@ All of these run in CI; the first three also run on commit or push.
 - [`PRODUCT.md`](PRODUCT.md) — who it is for, and what it refuses to be
 - [`road2release.md`](road2release.md) — the critical path to v1: what blocks what
 
+## Install it
+
+Releases are published as APKs: [Releases](https://github.com/Guiforge/bati/releases). Android
+will ask you to allow installs from an unknown source the first time — these are not from a store.
+
+For updates without re-downloading anything by hand, add the F-Droid repository once:
+
+```
+https://guiforge.github.io/bati/fdroid/repo
+```
+
+See [`docs/fdroid.md`](docs/fdroid.md) for how that is put together, and what is still missing
+before it works.
+
+## Contributing
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for code, [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for
+the wiki, [`SECURITY.md`](SECURITY.md) to report something that should not be a public issue.
+Or just write to **feedback.bati@proton.me** — an idea is welcome in whatever form it arrives.
+
 ## Licence
 
-None yet. No `LICENSE` file means default copyright — all rights reserved. The code is public to
-be read, not to be reused as-is. If you want to do something with it, ask.
+[MIT](LICENSE) for the code.
 
-The generated art carries the terms of whichever model produced it — Midjourney's for the
-original batch, Google's for the Gemini additions — separately from whatever licence the code
-eventually gets.
+**Not** for the artwork. The illustrations in `assets/` were generated with Midjourney and with
+Google Gemini image models, and each carries the terms of the service that produced it — the MIT
+grant above cannot and does not extend to them. If you fork this, bring your own art.

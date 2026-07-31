@@ -2,6 +2,7 @@ import { eq, gte, sql } from "drizzle-orm";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { deletePreference, getPreference, setPreference } from "./preferences";
 import { getStreakInfo, invalidateStreakInfo } from "./streaks";
+import { repEquivalentSql } from "./workUnits";
 
 const { completedQuest, completedExercises, exercises } = schema;
 
@@ -12,12 +13,15 @@ const OATH_KEY = "oath";
  * journal. Nothing about progress is stored: only the target itself, plus the
  * timestamp of the moment it was reached (so the victory screen fires once).
  */
-export type OathMetric =
-  | "exercise_pr" // best single result on one exercise ("10 pull-ups in a row")
-  | "exercise_volume" // cumulated reps/seconds on one exercise ("1000 push-ups")
-  | "sessions" // total sessions logged
-  | "streak" // best flame ever reached
-  | "weekly_sessions"; // weeks that hit a session quota ("3 a week, for 8 weeks")
+export const oathMetrics = [
+  "exercise_pr", // best single result on one exercise ("10 pull-ups in a row")
+  "exercise_volume", // cumulated reps/seconds on one exercise ("1000 push-ups")
+  "sessions", // total sessions logged
+  "streak", // best flame ever reached
+  "weekly_sessions", // weeks that hit a session quota ("3 a week, for 8 weeks")
+] as const;
+
+export type OathMetric = (typeof oathMetrics)[number];
 
 /** How many sessions make a week count, when the metric is `weekly_sessions`. */
 export const DEFAULT_WEEKLY_TARGET = 3;
@@ -84,13 +88,22 @@ export const OATH_PRESETS: OathPreset[] = [
 // user's biggest commitment — worth a few sessions so fulfilling it visibly moves the level.
 export const OATH_XP_BONUS = 250;
 
+/**
+ * Only a metric the switch in `measure` actually handles. Accepting any string let a blob
+ * through to a switch with no `default`, which returned `undefined` and turned every downstream
+ * number into `NaN` — a progress bar with no value and no error.
+ */
+function isOathMetric(value: unknown): value is OathMetric {
+  return oathMetrics.includes(value as OathMetric);
+}
+
 function isOath(value: unknown): value is Oath {
   if (typeof value !== "object" || value === null) {
     return false;
   }
   const o = value as Partial<Oath>;
   return (
-    typeof o.metric === "string" &&
+    isOathMetric(o.metric) &&
     typeof o.target === "number" &&
     Number.isFinite(o.target) &&
     o.target > 0 &&
@@ -98,7 +111,15 @@ function isOath(value: unknown): value is Oath {
   );
 }
 
-/** The single active oath, or null. One oath at a time: a list of targets is a todo list. */
+/**
+ * The single active oath, or null. One oath at a time: a list of targets is a todo list.
+ *
+ * The two `?? null` are load-bearing, not defensive noise. A stored blob missing `fulfilledAt`
+ * reads back as `undefined`, and `undefined !== null` is true — which made `checkOathFulfilled`
+ * treat the oath as already fulfilled and return early on every call, for good. The oath stayed
+ * on screen, progressed, reached its target, and never fired. Same shape for `exerciseId`:
+ * `undefined` slips past an `=== null` guard and reaches the query as a bound `undefined`.
+ */
 export async function getOath(): Promise<Oath | null> {
   const raw = await getPreference(OATH_KEY);
   if (!raw) {
@@ -106,7 +127,14 @@ export async function getOath(): Promise<Oath | null> {
   }
   try {
     const parsed: unknown = JSON.parse(raw);
-    return isOath(parsed) ? parsed : null;
+    if (!isOath(parsed)) {
+      return null;
+    }
+    return {
+      ...parsed,
+      exerciseId: parsed.exerciseId ?? null,
+      fulfilledAt: parsed.fulfilledAt ?? null,
+    };
   } catch {
     return null;
   }
@@ -157,18 +185,32 @@ async function measure(oath: Oath): Promise<number> {
       if (oath.exerciseId === null) {
         return 0;
       }
+      // A PR target is written in the exercise's own unit — `lsit_30` means 30 seconds,
+      // `pullups_15` means 15 reps — so this one must NOT convert to rep-equivalents, or the
+      // L-Sit oath would report 10 of 30 for a hold that already met it. It only has to stop
+      // comparing across units: the type the exercise is logged in most is its real unit, and
+      // a stray set logged the other way can no longer outrank every honest attempt.
       const rows = await db
-        .select({ value: sql<number>`COALESCE(MAX(${completedExercises.resultValue}), 0)` })
+        .select({
+          resultType: completedExercises.resultType,
+          best: sql<number>`COALESCE(MAX(${completedExercises.resultValue}), 0)`,
+          logged: sql<number>`COUNT(*)`,
+        })
         .from(completedExercises)
-        .where(eq(completedExercises.exerciseId, oath.exerciseId));
-      return rows[0]?.value ?? 0;
+        .where(eq(completedExercises.exerciseId, oath.exerciseId))
+        .groupBy(completedExercises.resultType);
+
+      return rows.sort((a, b) => b.logged - a.logged)[0]?.best ?? 0;
     }
     case "exercise_volume": {
       if (oath.exerciseId === null) {
         return 0;
       }
+      // Summed, so seconds have to become rep-equivalents first — see ./workUnits.
       const rows = await db
-        .select({ value: sql<number>`COALESCE(SUM(${completedExercises.resultValue}), 0)` })
+        .select({
+          value: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType)}), 0)`,
+        })
         .from(completedExercises)
         .where(eq(completedExercises.exerciseId, oath.exerciseId));
       return rows[0]?.value ?? 0;

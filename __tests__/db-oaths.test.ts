@@ -37,7 +37,11 @@ describe("db/oaths", () => {
   }
 
   /** Insert a session with one exercise result. Returns the session id. */
-  function logExercise(exerciseId: number, resultValue: number): number {
+  function logExercise(
+    exerciseId: number,
+    resultValue: number,
+    resultType: "reps" | "time" = "reps",
+  ): number {
     const now = Date.now();
     const info = t.sqlite
       .prepare(
@@ -49,9 +53,9 @@ describe("db/oaths", () => {
       .prepare(
         `INSERT INTO completed_exercises
            (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, performedAt)
-         VALUES (?, ?, 0, 0, 'reps', ?, ?)`,
+         VALUES (?, ?, 0, 0, ?, ?, ?)`,
       )
-      .run(sessionId, exerciseId, resultValue, now);
+      .run(sessionId, exerciseId, resultType, resultValue, now);
     return sessionId;
   }
 
@@ -85,6 +89,47 @@ describe("db/oaths", () => {
 
     const progress = await o.getOathProgress();
     expect(progress?.current).toBe(50);
+  });
+
+  // BUG-009, the half of it that is a summation: seconds have to become rep-equivalents before
+  // they join reps in a total, or "1000 push-ups" could be finished by planking.
+  test("exercise_volume converts holds to rep-equivalents before summing", async () => {
+    const o = oaths();
+    await o.swearOath({ metric: "exercise_volume", target: 100, exerciseId: 1 });
+
+    logExercise(1, 30); // reps
+    logExercise(1, 60, "time"); // 60 s -> 20
+
+    expect((await o.getOathProgress())?.current).toBe(50);
+  });
+
+  // BUG-009, the half that is NOT a summation. A PR target is written in the exercise's own
+  // unit — `lsit_30` means a 30-second hold — so converting here would report 10 of 30 for an
+  // oath already met. The fix is only to stop letting a stray set logged in the other unit
+  // outrank every honest attempt.
+  test("exercise_pr keeps the exercise's own unit rather than converting", async () => {
+    const o = oaths();
+    await o.swearOath({ metric: "exercise_pr", target: 30, exerciseId: 1 });
+
+    logExercise(1, 25, "time");
+    logExercise(1, 30, "time");
+
+    const progress = await o.getOathProgress();
+    expect(progress?.current).toBe(30); // the hold itself, not 30/3
+    expect(progress?.isFulfilled).toBe(true);
+  });
+
+  test("exercise_pr ignores a set logged in the minority unit", async () => {
+    const o = oaths();
+    await o.swearOath({ metric: "exercise_pr", target: 30, exerciseId: 1 });
+
+    // Three honest holds and one stray rep-logged set that would otherwise be the "record".
+    logExercise(1, 20, "time");
+    logExercise(1, 22, "time");
+    logExercise(1, 25, "time");
+    logExercise(1, 99, "reps");
+
+    expect((await o.getOathProgress())?.current).toBe(25);
   });
 
   test("fulfilment fires exactly once", async () => {
@@ -219,6 +264,45 @@ describe("db/oaths", () => {
     const prefs = require("../db/preferences") as typeof import("../db/preferences");
     await prefs.setPreference("oath", "{not json");
     expect(await o.getOath()).toBeNull();
+  });
+
+  // BUG-016. Valid JSON with a key missing is not "corrupted" — it parses, it validates, and
+  // it used to poison everything downstream. These are the blobs an older build could leave.
+  describe("a structurally valid but incomplete blob", () => {
+    async function store(blob: Record<string, unknown>) {
+      const prefs = require("../db/preferences") as typeof import("../db/preferences");
+      await prefs.setPreference("oath", JSON.stringify(blob));
+    }
+
+    // `undefined !== null` is true, so checkOathFulfilled saw an oath already fulfilled and
+    // returned early forever: the oath could reach its target and never fire.
+    test("a missing fulfilledAt does not make the oath permanently unfulfillable", async () => {
+      const o = oaths();
+      await store({ metric: "exercise_pr", exerciseId: 1, target: 10, swornAt: "2026-01-01" });
+
+      expect((await o.getOath())?.fulfilledAt).toBeNull();
+
+      logExercise(1, 12);
+      expect(await o.checkOathFulfilled()).not.toBeNull();
+    });
+
+    test("a missing exerciseId reads back as null", async () => {
+      const o = oaths();
+      await store({ metric: "exercise_pr", target: 10, swornAt: "2026-01-01" });
+
+      expect((await o.getOath())?.exerciseId).toBeNull();
+      expect((await o.getOathProgress())?.current).toBe(0);
+    });
+
+    // The switch in measure() has no default; an unknown metric returned undefined and every
+    // number derived from it became NaN.
+    test("an unknown metric is rejected outright", async () => {
+      const o = oaths();
+      await store({ metric: "reps", target: 10, swornAt: "2026-01-01" });
+
+      expect(await o.getOath()).toBeNull();
+      expect(await o.getOathProgress()).toBeNull();
+    });
   });
 
   describe("weekly_sessions", () => {

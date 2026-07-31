@@ -109,9 +109,9 @@ SQLite is the local source of truth. Drizzle defines schema and typed queries; d
 
 ### Reward scope
 
-The code has resources and Treasury visibility, but the product source of truth treats them as
-passive/read-only MVP feedback. Gold-first spending, shops, and manual building management are Phase
-2+ concepts unless re-approved in [roadmap.md](../planning/roadmap.md).
+Rewards are XP plus a derived village reaction, and nothing else. Gold-first spending, shops,
+manual building management and the Treasury surface are **closed**, not deferred — see
+[roadmap.md](../planning/roadmap.md) §7. The Treasury screen has been removed from the code.
 
 ## Core data model
 

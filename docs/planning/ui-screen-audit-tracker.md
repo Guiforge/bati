@@ -2,8 +2,8 @@
 title: UI Screen Audit Tracker
 type: planning
 status: active
-updated: 2026-07-18
-related: [roadmap.md, roadmap.md, ../design/ui-checklist.md]
+updated: 2026-07-31
+related: [roadmap.md, ../design/ui-checklist.md]
 ---
 
 # UI Screen Audit Tracker
@@ -245,7 +245,7 @@ now-fixed bugs in source.
 | 4 | Adventures | implementation done | Re-audit on device/simulator pending |
 | 5 | Journal + Session Details | implementation done | Re-audit on device/simulator pending |
 | 6 | Village | implementation done | Re-audit on device/simulator pending |
-| 7 | Treasury | implementation done | Re-audit on device/simulator pending |
+| 7 | ~~Treasury~~ | **removed from the product** | The screen no longer exists — `grep -rn treasur app components src` is empty. Kept as a numbered row so scopes 8-10 keep the numbers used in the sections below. Nine scopes remain to re-audit, not ten. |
 | 8 | Goals + Schedule | implementation done | Re-audit on device/simulator pending |
 | 9 | Onboarding | implementation done | Re-audit on device/simulator pending |
 | 10 | Settings + Credits | implementation done | Re-audit on device/simulator pending |

@@ -9,8 +9,8 @@ related: [../README.md, ../planning/roadmap.md]
 # Gameplay Systems
 
 > The mechanics of playing Bati: quests, adventures, boss fights, the session flow,
-> coaching, and stats. MVP scope for these systems is defined in
-> [roadmap.md](../planning/roadmap.md) — the 6-mechanic MVP set.
+> coaching, and stats. The pages below are the scope — what is out of it is listed in
+> [roadmap.md](../planning/roadmap.md) §7.
 
 ## Pages
 

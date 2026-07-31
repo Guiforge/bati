@@ -16,8 +16,9 @@ related: [../README.md]
 ## Active
 
 - [roadmap.md](roadmap.md) — ⭐ **The roadmap**: north star, guardrails, open work (release &
-  distribution, the UI closing pass, village motion), the post-MVP parking lot, and the
-  decisions that are closed for good.
+  distribution, the UI closing pass, the debt that has a deadline, village motion), the post-MVP
+  parking lot, and the decisions that are closed for good. Every number on it is reproducible by
+  a command — run the command before trusting a line that looks stale.
 - [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) — screen-by-screen audit log and the
   cross-screen UI backlog. Read its 2026-07-18 correction before trusting any checkmark in it.
 

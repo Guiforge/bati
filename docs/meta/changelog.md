@@ -2,7 +2,7 @@
 title: Docs Wiki — Operation Log
 type: technical
 status: active
-updated: 2026-07-30
+updated: 2026-07-31
 related: [wiki-protocol.md, ../README.md]
 ---
 
@@ -709,5 +709,41 @@ feedback already drives `analyzeDifficultyProgression`.
 
 **Still open.** The advanced skill families of §8.1 — planche, front lever, freestanding
 handstand — do not exist in the catalogue, which is why the reopened gating question in
-[roadmap.md](../planning/roadmap.md) §4 cannot be answered yet, and why ROM benchmarks sit
+[roadmap.md](../planning/roadmap.md) §5 cannot be answered yet, and why ROM benchmarks sit
 behind them. `getRestSuggestion()` remains written, tested and wired to nothing.
+
+---
+
+## 2026-07-31 — The roadmap said things the code disagreed with
+
+[roadmap.md](../planning/roadmap.md) opened with a **"Done (2026-07-31)" block**, four
+paragraphs under a preamble that says shipped work is deleted rather than maintained. The block
+is what rotted: it missed the three phases that shipped that same day, and it described the
+crash channel as crash-only after `844f93f` had opened it to everyone. It is gone. What survived
+from it are the three lines that carry a *decision* no commit message repeats — native crashes
+are not captured and why `react-native-exception-handler` cannot be linked under CNG,
+`runtimeVersion` was set before the first signed build because moving it breaks OTA, and Pages
+publishes only `docs/legal/` because aiming it at the folder root would put this log on the open
+web to serve one policy.
+
+**Four numbers were wrong, and every replacement is reproducible by a command.** Ten UI scopes
+to re-audit were nine — scope 7 is Treasury, a screen removed from the product, and
+`grep -rn treasur app components src` is empty; the row is struck out in
+[ui-screen-audit-tracker.md](../planning/ui-screen-audit-tracker.md) rather than deleted, so the
+section numbering below it still matches. 168 pressables were 146. Eight Maestro flows are
+seven. Three missing village animations are one: `FlameFlicker` and `GrowthPulse` ship in
+`VillageScene.tsx`, only the resource-gain animation is left.
+
+**The knip gate does not gate**, which is new and is now §3. `npm run knip` runs in CI under a
+comment claiming "Knip is at zero; anything it reports is new" — it reports 21 unused exports
+and one unused type, and exits 0. The debt section exists because that class of item lived only
+in a quality-gate table elsewhere, where nothing forced a decision on it.
+
+**Four pages cited the roadmap for text it no longer contains** — the merge of five roadmaps on
+2026-07-29 dropped it and the citations stayed. `gameplay/README.md` promised a "6-mechanic MVP
+set"; `session-flow.md` cited an "anti-cheat doctrine (real-friction input, plausibility caps)"
+twice; `technical-architecture.md` deferred Gold and shops to "Phase 2+ unless re-approved".
+Each is fixed where it stands rather than by restoring the lost text: the real-friction
+principle is stated inline in `session-flow.md`, which is the only page that uses it, and the
+reward scope in `technical-architecture.md` now says what §7 says — closed, not deferred, and
+the Treasury screen is gone from the code.

@@ -2,7 +2,7 @@
 title: Roadmap
 type: planning
 status: active
-updated: 2026-07-30
+updated: 2026-07-31
 related:
   [
     README.md,
@@ -16,17 +16,13 @@ related:
 
 # Roadmap
 
-> **Only what is unfinished.** This page merges the five roadmap docs that used to live here —
-> `roadmap-alignment.md`, `work-roadmap.md`, `roadmap-refactor-ui.md`, `roadmap-archive.md` and
-> `future-roadmap.md` — and keeps their open items, their guardrails, and the decisions that
-> close a question for good. Everything they recorded as shipped was deleted rather than
-> maintained: the commit history is the record of what was built, and a checklist of ✅ rows
-> costs attention without paying any back.
+> **Only what is unfinished.** Nothing here records what shipped: git history is the register of
+> what was built, and a page of ✅ rows costs attention without paying any back. The rule is easy
+> to state and easy to break — this page carried a "Done" block for two days before anyone
+> noticed it contradicted this paragraph.
 >
-> The quests & adventures overhaul that filled `work-roadmap.md` is done: phases A→H all shipped
-> (migrations `0012`–`0023`), and the content invariants in
-> [`__tests__/content-invariants.test.ts`](../../__tests__/content-invariants.test.ts) are what
-> enforce its rules now — a test, not a document.
+> Every number below is reproducible by a command. If one looks stale, run the command rather
+> than trusting the line.
 
 ## North star
 
@@ -46,40 +42,44 @@ mini-game. If a reward surface competes with starting or continuing a workout, d
 
 ---
 
-## 1. Release & distribution — in progress
+## 1. Release & distribution
 
-Everything in this block that is code is done. What remains needs an account, a card, or a
-device, and cannot be written here.
+**Everything in this block that is code is done.** What remains needs an account, a card, or a
+device, and cannot be written here. It is also the longest pole: the code left in §2 is days of
+work, the accounts below are weeks of waiting, and the waiting cannot start until the accounts
+exist.
 
-**Done (2026-07-31)**
+- **Apple Developer account**, certificates, provisioning profiles.
+- **Google Play account type — check this first.** A *personal* account (as opposed to an
+  organisation account) has owed Google, since late 2023, **12 testers enrolled in closed
+  testing for 14 continuous days** before production access can even be requested. Those two
+  weeks are incompressible and cannot begin before a signed build sits on the test track. It is
+  a five-minute check that decides a fortnight.
+- **Android signing keystore**, generated and backed up **outside the repository**. The only
+  irreversible item on this page: a lost keystore means the published app can never be updated
+  again.
+- **Enable GitHub Pages** — one command, because the Actions `GITHUB_TOKEN` may not create the
+  site: `gh api -X POST repos/Guiforge/bati/pages -f build_type=workflow`. **Store-blocking**:
+  both platforms require a working privacy-policy URL before review, and Google's Data Safety
+  form consumes it. The workflow and the bilingual policy have been ready since 2026-07-31; only
+  the site was never created.
+- **`eas init` + `eas update:configure`**, to mint the project id and the `updates` block. Left
+  undone deliberately — fabricating a project id would be worse than an empty field.
+- **Store listings, screenshots, Data Safety form, age rating.** Screenshots depend on §2: they
+  must show the UI that ships, not the one before the device pass.
+- **Bundle-size analysis and performance profiling** — startup, memory, frame rate under
+  animation. On a **release** build, never in dev
+  ([../architecture/performance.md](../architecture/performance.md), rule 1).
 
-- Privacy policy: [`../legal/privacy.md`](../legal/privacy.md) (bilingual, one URL for both
-  stores), the offline screen at `app/privacy.tsx`, and a Pages workflow that publishes
-  **only** `docs/legal/` — pointing Pages at the folder root would put this tracker and the
-  roadmap on the open web to serve one policy.
-- Crash capture: [`src/crashLog.ts`](../../src/crashLog.ts). Local-only, sent by the hero via
-  `mailto:` or not at all. **Does not catch native crashes** — that needs a native handler, and
+**Decisions that outlive the work**, kept because no commit message says them:
+
+- `src/crashLog.ts` captures JS only. Native crashes need a native handler, and
   `react-native-exception-handler` is unmaintained since 2022 with no Expo config plugin, so it
-  cannot be linked under CNG. Revisit only if reports point at crashes JS never sees.
-- Asset conversion finished: the 28 remaining exercise PNGs became JPGs, `assets/` went from
-  81 MB to 60 MB. The icons were already 1024×1024 and losslessly compressed as far as they go
-  — they are detailed artwork in a format that suits it badly, and lossy quantisation is not
-  worth risking the app's face over ~400 KB that the build pipeline resizes anyway.
-- `eas.json`: production profile builds an app-bundle with `autoIncrement`; submit targets the
-  Play `internal` track.
-- `app.json`: `runtimeVersion` policy set **before** the first signed build, because changing it
-  afterwards breaks OTA. iOS permission strings localised through Expo's `locales` field
-  (`locales/ios/*.json`) rather than the single hardcoded French string that shipped before.
-
-**Still open — none of it is code**
-
-- Apple Developer account, provisioning profiles, certificates. Longest lead time in the whole
-  plan; start it first.
-- Android signing keystore.
-- `eas init` + `eas update:configure` to mint the project id and the `updates` block. Left
-  undone deliberately: fabricating a project id would be worse than an empty field.
-- Store listings, screenshots, and Google's Data Safety form (the privacy URL feeds it).
-- Bundle-size analysis and performance profiling: startup, memory, frame rate under animation.
+  cannot be linked under CNG. Reopen only if reports point at crashes JS never sees.
+- `runtimeVersion` was set **before** the first signed build, because changing it afterwards
+  breaks OTA. It must not move now.
+- The Pages workflow publishes **only** `docs/legal/`. Pointing it at the folder root would put
+  this roadmap and the audit tracker on the open web in order to serve one policy.
 
 ## 2. UI refonte — the closing pass
 
@@ -90,30 +90,54 @@ lied for weeks** because the shared `AppButton` primitive underneath still carri
 anti-pattern, so every screen importing it had regressed. Trust a fresh grep over any checkmark
 in that file.
 
-- **Device re-audit, all 10 scopes.** Simulator screenshots are not enough — the two bugs that
+- **Device re-audit, 9 scopes.** Scope 7 on the board was *Treasury*, a screen removed from the
+  product (§7), and is struck out. Simulator screenshots are not enough: the two bugs that
   triggered the whole pass (English strings in a French UI, a "Treasur/y" wrap) were only ever
   visible on a real screen.
-- **Accessibility validation.** Contrast was fixed at the primitive layer and passes on the
-  primary button (6.45:1). Still unverified end to end: touch-target sizing, one-handed
-  ergonomics, reduced-motion behaviour, legibility in bright ambient light.
-- **Cross-screen backlog** (from the tracker, P1 first): unify card/control primitives across the
-  legacy screens and `src/ui`; re-establish one-primary-action hierarchy on Home and the
-  Quest/Adventure detail screens; then small-label readability in Journal/Session/Quest cards,
-  onboarding/settings motion alignment, and chip overload.
+- **Contrast has never been measured.** The primary button passes (6.45:1). First pair to test:
+  `$textSecondary #909ACB` on `$surface #101322`.
+- **Touch targets ≥ 44×44** — 146 pressables in the repo (`grep -rEo "onPress=" app components src
+  | wc -l`), none verified on a screen.
+- **Reduced motion** — the plumbing follows the OS correctly; the actual behaviour has never
+  been observed with the system setting on.
+- **Legibility in bright ambient light** — `PRODUCT.md` requires it explicitly ("variable gym
+  lighting"), and a dark-only app tests badly for it indoors.
+- **Cross-screen backlog** (P1 first): unify card/control primitives across the legacy screens
+  and `src/ui`; re-establish one-primary-action hierarchy on Home and the Quest/Adventure detail
+  screens; then small-label readability in Journal/Session/Quest cards, onboarding/settings
+  motion alignment, and chip overload.
 
 **Method.** One scope unit per PR — one screen, or one shared component family — with rationale,
 impacted files, before/after screenshots, checklist pass, and `npm run check` + `npm test` green.
-Impeccable is the default QA loop: `critique` → `audit` → fix by category (`layout`, `typeset`,
-`colorize`, `clarify`, `harden`, `optimize`, `adapt`) → `polish` → re-`audit`. Severity order
-P0 → P1 → P2 → P3; never polish before P0/P1 are gone.
+Severity order P0 → P1 → P2 → P3; never polish before P0/P1 are gone.
 
-## 3. Village motion polish
+## 3. Debt with a deadline
 
-The village is functionally complete and derived from session history; what is missing is
-feedback, not features: flame animation, building-unlock animation, resource-gain animation.
-Low priority by design — a village that animates better does not make anyone train more.
+Not tidiness. Each line below is a gate that does not close, or a risk with a date on it.
 
-## 4. Open questions — decided once, reopened by new evidence
+- **The knip gate does not gate.** `npm run knip` runs in CI and `ci.yml` claims "Knip is at
+  zero; anything it reports is new" — it reports **21 unused exports and 1 unused type**, and
+  exits 0. Either clean them and make the failure blocking, or the comment is false and the step
+  is decoration. Deciding is the work; postponing it is what made the claim rot.
+- **`db/index.ts` is excluded from knip** — a barrel of ~60 re-exports of which a third are used.
+  Trim it to what callers import, then drop the exclusion.
+- **`getQuickRestCheck()`** (`db/restSuggestions.ts`) has no caller. Its sibling
+  `getRestSuggestion()` was wired into Home on 2026-07-31; this one was not.
+- **The 7 Maestro flows never run in CI, and they do not assert state.**
+  `session-interruptions.yaml` performed two boss-damage bugs and passed, because it only checked
+  that the UI came back. They are worth "the app does not crash on this path", nothing more.
+- **No migration runner.** The riskiest, least covered code in the repo — and **harmless for
+  v1**, because nobody has a database to migrate. It becomes critical at **v1.1**, and it will
+  then have to be tested against a real v1 database, not a fresh one.
+
+## 4. Village motion polish
+
+The village is functionally complete and derived from session history. Two of the three
+animations it was missing have shipped — `FlameFlicker` (`components/village/VillageScene.tsx:184`)
+and `GrowthPulse` (`:232`). What is left is the **resource-gain animation**, and it stays low
+priority by design: a village that animates better does not make anyone train more.
+
+## 5. Open questions — decided once, reopened by new evidence
 
 ### Gating a skill branch (reopened 2026-07-30)
 
@@ -137,7 +161,7 @@ planche, no front lever, no tuck lever — the entire "straight-arm strength" fa
 absent. Until that exists there is nothing to gate. Decide the principle when the content is
 proposed, not before.
 
-## 5. Parking lot (post-MVP)
+## 6. Parking lot (post-MVP)
 
 Speculative. Nothing here has an owner or acceptance criteria, and nothing moves out of this
 section until it does.
@@ -152,7 +176,7 @@ section until it does.
 - **Platform** — performance hardening, accessibility beyond baseline AA, release automation.
 - **Advanced skill content** — the straight-arm family (planche, front lever, back lever) and
   freestanding handstand work: exercises, art, hold-time ladders, prehab. Prerequisite for the
-  gating question in §4, and the reason it cannot be answered yet.
+  gating question in §5, and the reason it cannot be answered yet.
 - **ROM benchmarks** — wall shoulder flexion, squat depth, pancake width tracked like reps and
   hold times ([§11.4](../raw/bodyweight-app-research.md)). Depends on the skill content above.
 - **Fat-loss / muscle-gain goal variants** — [§9](../raw/bodyweight-app-research.md) and §10
@@ -166,12 +190,13 @@ section until it does.
 validated, the scope is small enough to ship incrementally, the core workout loop carries no
 regression risk, and the acceptance criteria are testable.
 
-## 6. Decided — do not re-open
+## 7. Decided — do not re-open
 
 Each of these was proposed, considered, and closed. They are here so they stop coming back.
 
 - **Economy loops, shops, manual building upgrades, a Treasury surface.** Rewards are XP plus a
-  derived village reaction. No resources, no Gold.
+  derived village reaction. No resources, no Gold. The Treasury screen is gone from the code;
+  only the audit tracker's board still lists it (§2).
 - **Per-set RIR capture.** The framing shipped ("stop with 1-2 reps left, not at failure"); the
   form did not. Twelve extra interactions a session, in an app that spent a whole roadmap
   removing friction. One optional field on an exercise's last set is the door if the data is

@@ -81,19 +81,15 @@ fonctionnelle avant review, et le formulaire Data Safety de Google la consomme.
 
 ---
 
-## Phase 1 — Config store (½ journée, tout est du code)
+## Phase 1 — Config store — ✔ fait le 2026-07-31 (`2f1f878`)
 
-Petits diffs, gros effet : c'est ce que voient les utilisateurs avant même d'ouvrir l'app.
+Nom d'affichage, les deux fonds sombres, `supportsTablet`, et la preuve périmée du doc perf.
+Détail dans le message de commit ; pas recopié ici, pour la même raison que la roadmap ne tient
+pas de liste de cases cochées.
 
-| # | Quoi | Où | Pourquoi |
-|---|---|---|---|
-| 1.1 | `name: "bati"` → `"Bati"` | `app.json` | Nom sous l'icône et dans les stores. Le produit s'écrit « Bati » partout ailleurs. |
-| 1.2 | `#101323` ×2 → valeur de token | `app.json` (adaptiveIcon, splash) | La valeur dérivée que l'audit traquait — `surface` vaut `#101322`, et un splash veut probablement `$bgDark` `#0B0F19`. Ma règle anti-hex ne voit pas le JSON. |
-| 1.3 | `ios.supportsTablet: true` → `false` | `app.json` | Revendique iPad. Apple review sur iPad et rejette les mises en page cassées. `PRODUCT.md` dit « téléphone en main, en pleine séance ». |
-| 1.4 | Vérifier `newArchEnabled` | `app.json` vs `docs/architecture/performance.md` | Le doc affirme `newArchEnabled: true` dans `app.json` ; la clé est **absente**. En SDK 57 la New Arch est active par défaut, donc le comportement est sans doute correct — mais le doc ment, et c'est lui qu'on relira dans six mois. |
-
-Aucun de ces quatre points ne demande d'appareil. Ils peuvent être faits pendant que les comptes
-sont en attente.
+**Une conséquence à connaître** : `android/` est gitignoré, donc le `#101323` figé dans son
+`colors.xml` est un prebuild local périmé. EAS le régénère depuis `app.json` ; en local il faut
+`npx expo prebuild --clean` pour voir le nouveau splash.
 
 ---
 

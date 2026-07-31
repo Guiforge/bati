@@ -1,0 +1,74 @@
+# Build (and optionally submit) a store release, on demand.
+#
+# Deliberately manual. `appVersionSource: remote` in eas.json means EAS owns the build number and
+# increments it itself, so a release is "run this when you decide", not "every push to main".
+#
+# Prerequisites, none of which exist yet — see road2release.md phase 0:
+#   - `eas init` to mint the project id into app.json
+#   - an EXPO_TOKEN repository secret (Expo dashboard → Access tokens)
+#   - Android keystore / Apple credentials configured on EAS
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Which store
+        type: choice
+        options: [android, ios, all]
+        default: android
+      profile:
+        description: eas.json build profile
+        type: choice
+        options: [production, preview]
+        default: production
+      submit:
+        description: Submit to the store after building
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+
+      # The same gates CI runs. A release should never be the first time they are checked, but it
+      # should also never be possible to ship past a red one.
+      - run: npx biome check .
+      - run: npx tsc --noEmit --project tsconfig.json
+      - run: npm test
+      - run: npm run knip
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build
+        run: |
+          eas build \
+            --platform ${{ inputs.platform }} \
+            --profile ${{ inputs.profile }} \
+            --non-interactive \
+            --wait
+
+      # Off by default: building and submitting are different decisions, and the first internal
+      # track upload is worth watching by hand.
+      - name: Submit
+        if: ${{ inputs.submit }}
+        run: |
+          eas submit \
+            --platform ${{ inputs.platform }} \
+            --profile ${{ inputs.profile }} \
+            --latest \
+            --non-interactive

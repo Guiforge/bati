@@ -114,13 +114,15 @@
     "db:push": "npx drizzle-kit push",
     "format": "biome check --write .",
     "ios": "expo run:ios",
+    "knip": "knip",
     "maestro": "bash scripts/maestro.sh",
+    "pr": "git push -u origin HEAD && gh pr create --fill",
     "prepare": "prek install",
+    "release": "gh workflow run release.yml --ref main",
     "start": "expo start",
     "test": "jest",
     "test:watch": "jest --watch",
-    "web": "expo start --web",
-    "knip": "knip"
+    "web": "expo start --web"
   },
   "allowScripts": {
     "better-sqlite3@13.0.2": true,

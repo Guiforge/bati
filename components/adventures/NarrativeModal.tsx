@@ -64,6 +64,7 @@ export function NarrativeModal({
             {/* Footer */}
             <YStack p="$4" pt="$2" gap="$3">
               <Button
+                testID="narrative-confirm"
                 bg="$primary"
                 fontSize={18}
                 onPress={onClose}
@@ -81,6 +82,7 @@ export function NarrativeModal({
 
               {type === "intro" && onDismiss ? (
                 <Pressable
+                  testID="narrative-dismiss"
                   hitSlop={12}
                   accessibilityRole="button"
                   accessibilityLabel={t("common.not_now", "Not now")}

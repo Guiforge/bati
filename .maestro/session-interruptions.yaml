@@ -14,10 +14,11 @@ appId: com.guiforge.bati
 
 - runFlow: subflows/complete-onboarding.yaml
 
-- assertVisible:
-    id: "home-start-session"
+# Through the Quests tab, not the Home button: `home-start-session` runs useSmartAction, whose
+# destination depends on the active oath and the suggestion state. A flow that has to end up on
+# a specific quest cannot start from a button that decides where to go.
 - tapOn:
-    id: "home-start-session"
+    id: "tab-quests"
 
 - assertVisible:
     id: "quests-quest-card"
@@ -30,7 +31,13 @@ appId: com.guiforge.bati
 - tapOn:
     id: "quest-start"
 
-# Warm-up is on by default; skip straight to the workout being interrupted.
+# Warm-up is on by default; skip straight to the workout being interrupted. Waited for, not
+# fired blind — see the note in subflows/complete-a-session.yaml.
+- extendedWaitUntil:
+    visible:
+      id: "session-skip-warmup"
+    timeout: 15000
+    optional: true
 - tapOn:
     id: "session-skip-warmup"
     optional: true

@@ -47,6 +47,20 @@ maestro test .maestro/app-launch.yaml
 maestro studio
 ```
 
+### The screen must stay awake (important)
+
+A dozing device screenshots as pure black, and every `assertVisible` fails on an element that is
+genuinely on screen. It looks exactly like a startup crash. `scripts/maestro.sh` now wakes the
+device and sets `svc power stayon usb` before running, but if you drive `maestro` directly:
+
+```bash
+adb shell input keyevent KEYCODE_WAKEUP
+adb shell svc power stayon usb
+```
+
+Symptom to recognise: some flows pass and some fail on the *same* assertion in one run, and the
+failure screenshots are entirely black.
+
 ### Dev build vs release build (important)
 
 The flows use `launchApp: { clearState: true }`. That works cleanly against a

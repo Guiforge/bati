@@ -11,9 +11,26 @@ appId: com.guiforge.bati
 - tapOn:
     id: "quest-start"
 
+# An adventure step opens with its story before the session does. Nothing on the quest gallery
+# path shows one, so `optional` covers both entry points — but a flow that does not know about
+# the modal simply sits behind it until it times out, which is what adventure-journey did.
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+
 # Warm-up runs first and is on by default (preferences.getWarmupEnabled defaults to true).
-# Skip it: these flows are about the workout, and walking the warm-up would add minutes of
-# real timers to every run. `optional` keeps the subflow usable when it is turned off.
+# Skip it: these flows are about the workout, and walking the warm-up adds minutes of real
+# timers to every run.
+#
+# Wait for the button before tapping it. A bare `optional` tap silently does nothing when the
+# warm-up screen has not mounted yet, and the flow then sat through the whole warm-up — which
+# is 4 to 10 steps depending on the quest's length, far past the 15s below. That is what made
+# adventure-journey fail and what made the passing flows take five minutes each.
+- extendedWaitUntil:
+    visible:
+      id: "session-skip-warmup"
+    timeout: 15000
+    optional: true
 - tapOn:
     id: "session-skip-warmup"
     optional: true

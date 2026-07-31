@@ -45,6 +45,25 @@ interface SettingsState {
   loadFromDatabase: () => Promise<void>;
 }
 
+/**
+ * How long the accessibility service gets to answer before we stop waiting for it.
+ *
+ * `loadFromDatabase` gates the splash screen: nothing renders until `isLoaded` flips, and every
+ * read sits in one `Promise.all`, so the slowest answer decides when the app first paints.
+ * `AccessibilityInfo` talks to a system service that is not always up at cold start — logcat
+ * shows `AccessibilityManagerService: wait for adding window timeout` on this device — and a
+ * cosmetic preference must never be able to hold the first frame hostage.
+ */
+const ACCESSIBILITY_PROBE_MS = 1000;
+
+/** The OS reduce-motion preference, or `false` if the service does not answer in time. */
+function deviceReducedMotionWithin(ms: number): Promise<boolean> {
+  return Promise.race([
+    AccessibilityInfo.isReduceMotionEnabled().catch(() => false),
+    new Promise<boolean>((resolve) => setTimeout(() => resolve(false), ms)),
+  ]);
+}
+
 export const useSettingsStore = create<SettingsState>((set) => ({
   language: getDevicePreferredAppLanguage(),
   theme: "system",
@@ -132,7 +151,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getReducedMotion(),
         preferences.getNotificationsEnabled(),
         preferences.getNotificationTime(),
-        AccessibilityInfo.isReduceMotionEnabled().catch(() => false),
+        deviceReducedMotionWithin(ACCESSIBILITY_PROBE_MS),
       ]);
 
       const normalizedLanguage =

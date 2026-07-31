@@ -13,6 +13,12 @@ set -euo pipefail
 # non-interactive shells (which is what npm scripts run in).
 export PATH="$PATH:$HOME/.maestro/bin"
 
+# Keep the screen awake for the whole run. A dozing device screenshots as pure black and every
+# assertion fails on an element that is really there — which reads exactly like a crash, and
+# cost an afternoon once. `stayon usb` lasts until the device is unplugged.
+adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+adb shell svc power stayon usb >/dev/null 2>&1 || true
+
 if ! command -v maestro >/dev/null 2>&1; then
   echo "maestro not found. Install it: curl -Ls \"https://get.maestro.mobile.dev\" | bash" >&2
   exit 1

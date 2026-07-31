@@ -59,11 +59,14 @@ jobs:
           KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
           echo "$KEYSTORE_B64" | base64 -d > android/app/release.keystore
+          # keytool's default store type is PKCS12, where the key password *is* the store
+          # password — so SIGNING_KEY_PASSWORD is optional and falls back rather than failing the
+          # build on a secret that had no reason to exist.
           {
             echo "MYAPP_UPLOAD_STORE_FILE=release.keystore"
             echo "MYAPP_UPLOAD_STORE_PASSWORD=$STORE_PASSWORD"
             echo "MYAPP_UPLOAD_KEY_ALIAS=$KEY_ALIAS"
-            echo "MYAPP_UPLOAD_KEY_PASSWORD=$KEY_PASSWORD"
+            echo "MYAPP_UPLOAD_KEY_PASSWORD=${KEY_PASSWORD:-$STORE_PASSWORD}"
           } >> android/gradle.properties
 
       - name: Build

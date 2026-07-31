@@ -64,7 +64,8 @@
           ]
         }
       ],
-      "./plugins/withAndroidLintExtraTranslation"
+      "./plugins/withAndroidLintExtraTranslation",
+      "./plugins/withAndroidReleaseSigning"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

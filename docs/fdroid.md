@@ -45,7 +45,9 @@ base64 so CI can sign with it:
 base64 -w0 bati-release.keystore   # -> SIGNING_KEYSTORE_BASE64
 ```
 
-Plus `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`.
+Plus `SIGNING_STORE_PASSWORD` and `SIGNING_KEY_ALIAS`. `SIGNING_KEY_PASSWORD` is optional:
+keytool's default store type is PKCS12, where the key password *is* the store password, so the
+workflow falls back rather than failing on a secret that had no reason to exist.
 
 **A public repository with Pages.** The index has to be served over HTTPS. GitHub Pages does it
 for free on a public repo — the same requirement that gates the privacy policy, so one decision
@@ -75,11 +77,37 @@ repo_description: >-
 Drop a signed APK into `fdroid/repo/`, run `fdroid update -c`, and the index appears beside it.
 Publish the `fdroid/` directory through Pages and the repository URL is live.
 
+## What is verified, and what is not
+
+`plugins/withAndroidReleaseSigning.js` is verified at the level that matters for *correctness of
+the config*: prebuild was run and the generated `android/app/build.gradle` was read back — the
+`release` signing config is there and `buildTypes.release` picks it when `MYAPP_UPLOAD_STORE_FILE`
+is set. Without the plugin, Expo's template points release at the **debug** key and reads no
+upload properties at all, so CI would have produced a debug-signed APK and reported success.
+
+**A signed build has not been run end to end.** A local `./gradlew assembleRelease` fails on a
+`node` process during configuration, with no message beyond the exit code, on a machine that
+builds fine through `expo run:android`. It looks environmental rather than related to signing,
+but it was not chased to the bottom. Treat the first CI release as the real test, and check the
+signature of the APK it produces before handing it to anyone:
+
+```bash
+keytool -printcert -jarfile bati-1.0.1.apk
+```
+
+If it says `CN=Android Debug`, the signing did not take effect and the APK must not be published
+— an app shipped under the debug key cannot be updated by a properly signed one later.
+
 ## Automating it
 
-`.github/workflows/fdroid.yml` does the recurring half: it takes the APK the release workflow
-built, adds it to the repository, regenerates the index and publishes. It needs
-`FDROID_KEYSTORE_BASE64` and `FDROID_KEYSTORE_PASSWORD` on top of the signing secrets above.
+[`.github/workflows/pages.yml`](../.github/workflows/pages.yml) does the recurring half: it takes
+the APK the release workflow built, folds it into the repository index and publishes. It needs
+`FDROID_KEYSTORE_BASE64` and `FDROID_KEYSTORE_PASSWORD` on top of the signing secrets above, and
+skips itself cleanly when they are missing.
+
+It lives in the Pages workflow rather than its own because **a GitHub Pages site has a single
+deployment**: two workflows each uploading their own artefact do not merge, the second wipes the
+first. So the privacy policy and the F-Droid index are assembled together or not at all.
 
 > **Untested.** It is written from the documented procedure, not from a run — there is no signing
 > key and no Pages site yet, so nothing has exercised it end to end. Treat the first run as part

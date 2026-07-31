@@ -263,4 +263,88 @@ describe("db/bossFights", () => {
     await expect(b.resetBossFight(999_999)).resolves.toBeUndefined();
     expect(await b.getBossDamageHistory(999_999)).toEqual([]);
   });
+
+  /**
+   * A live session banks its hits in memory and commits them here, once, when the session is
+   * saved. This is the write path the app actually uses, so it gets the same scrutiny the
+   * per-hit one has.
+   */
+  describe("persistSessionDamage", () => {
+    const hit = (damage: number, exerciseId = 1) => ({
+      roundIndex: 0,
+      exerciseId,
+      damage,
+      isCritical: false,
+      muscle: null,
+    });
+
+    /**
+     * `bossDamageLog.completedSessionId` is a real foreign key, so the attribution can only be
+     * written against a session that exists. In the app that is guaranteed — the hits are
+     * committed just after `createCompletedSession` returns its id — so the fixture mirrors it.
+     */
+    const seedSession = (id: number) => {
+      t.sqlite
+        .prepare("INSERT OR IGNORE INTO completed_sessions (id, performedAt) VALUES (?, ?)")
+        .run(id, Math.floor(Date.now() / 1000));
+      return id;
+    };
+
+    test("commits every banked hit and takes their total off the boss", async () => {
+      const b = boss();
+      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+      if (!fight) throw new Error("Expected a boss fight");
+
+      await b.persistSessionDamage(fight.id, [hit(30), hit(20, 2)], seedSession(77));
+
+      expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.currentHp).toBe(50);
+
+      const history = await b.getBossDamageHistory(fight.id);
+      expect(history).toHaveLength(2);
+      // The attribution the per-hit path could never record: the session that earned them.
+      expect(history.every((e) => e.completedSessionId === 77)).toBe(true);
+    });
+
+    test("commits nothing when the session landed no hits", async () => {
+      const b = boss();
+      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+      if (!fight) throw new Error("Expected a boss fight");
+
+      await b.persistSessionDamage(fight.id, [], seedSession(78));
+
+      expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.currentHp).toBe(100);
+      expect(await b.getBossDamageHistory(fight.id)).toEqual([]);
+    });
+
+    test("overkill clamps to zero and marks the boss defeated", async () => {
+      const b = boss();
+      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+      if (!fight) throw new Error("Expected a boss fight");
+
+      await b.persistSessionDamage(fight.id, [hit(80), hit(90, 2)], seedSession(79));
+
+      const dead = await b.getBossFightByAdventure(BOSS_WITH_HP);
+      expect(dead?.currentHp).toBe(0);
+      expect(dead?.defeatedAt).toBeInstanceOf(Date);
+    });
+
+    test("leaves an already-dead boss alone", async () => {
+      const b = boss();
+      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+      if (!fight) throw new Error("Expected a boss fight");
+      await b.persistSessionDamage(fight.id, [hit(500)], seedSession(80));
+
+      await b.persistSessionDamage(fight.id, [hit(10)], seedSession(81));
+
+      // The second commit found the fight already over and wrote nothing.
+      expect(await b.getBossDamageHistory(fight.id)).toHaveLength(1);
+    });
+
+    test("committing against a missing fight is a no-op, not a throw", async () => {
+      const b = boss();
+      await expect(
+        b.persistSessionDamage(999_999, [hit(10)], seedSession(82)),
+      ).resolves.toBeUndefined();
+    });
+  });
 });

@@ -1,32 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import type { BossFight, DamageResult } from "@/db/bossFights";
-import type { CompletedExerciseInput } from "@/db/completed";
 import { preferences } from "@/db/preferences";
-import type { Quest } from "@/db/quests";
-import type { DifficultyCode } from "@/db/schema";
-import { type SessionStatus, useSessionStore } from "@/stores/session";
-
-/**
- * Serializable session state for recovery
- */
-interface SavedSessionState {
-  quest: Quest;
-  userLevel: DifficultyCode;
-  adventureRunStepId: number | null;
-  bossFight: BossFight | null;
-  lastDamageResult: DamageResult | null;
-  status: SessionStatus;
-  prePauseStatus: SessionStatus | null;
-  warmupIndex: number;
-  currentRoundIndex: number;
-  currentExerciseIndex: number;
-  startTime: number;
-  totalPausedTime: number;
-  timerStartTimestamp: number | null;
-  timerDuration: number;
-  results: CompletedExerciseInput[];
-  savedAt: number; // Timestamp when state was saved
-}
+import { localizedTitle } from "@/src/i18n/localized";
+import { type SavedSessionState, useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 
 /**
  * Session recovery info for UI
@@ -47,6 +23,7 @@ const SESSION_EXPIRY_MS = 4 * 60 * 60 * 1000; // 4 hours - session is stale afte
 export function useSessionRecovery() {
   const [recoverableSession, setRecoverableSession] = useState<RecoverableSession | null>(null);
   const [isChecking, setIsChecking] = useState(true);
+  const language = useSettingsStore((s) => s.language);
 
   const checkForRecoverableSession = useCallback(async () => {
     setIsChecking(true);
@@ -67,6 +44,14 @@ export function useSessionRecovery() {
         return;
       }
 
+      // A snapshot without its quest is not resumable — it can only ever restore into a blank
+      // session screen, so drop it rather than offer it.
+      if (!saved.quest) {
+        await preferences.clearSavedSession();
+        setRecoverableSession(null);
+        return;
+      }
+
       // Session is valid and recoverable
       const rounds = saved.quest.rounds;
       const exercises = saved.quest.exercises.length;
@@ -75,18 +60,20 @@ export function useSessionRecovery() {
       }/${rounds}, Exercise ${saved.currentExerciseIndex + 1}/${exercises}`;
 
       setRecoverableSession({
-        questTitle: saved.quest.enTitle,
+        questTitle: localizedTitle(saved.quest, language),
         questId: saved.quest.id,
         progress,
         savedAt: new Date(saved.savedAt),
-        elapsedTime: Math.floor((saved.savedAt - saved.startTime - saved.totalPausedTime) / 1000),
+        elapsedTime: Math.floor(
+          (saved.savedAt - (saved.startTime ?? saved.savedAt) - saved.totalPausedTime) / 1000,
+        ),
       });
     } catch (_error) {
       setRecoverableSession(null);
     } finally {
       setIsChecking(false);
     }
-  }, []);
+  }, [language]);
 
   // Check for saved session on mount
   useEffect(() => {
@@ -107,24 +94,23 @@ export function useSessionRecovery() {
         ? saved.timerStartTimestamp + pauseDuration
         : null;
 
-      // Restore session state with adjusted pause time
+      // Spread the snapshot rather than copy it field by field: every key of SavedSessionState is
+      // a key of the store, so a field added to the snapshot is restored without touching this
+      // function. Copying by hand is what lost `warmupSequence` and `bossStartHp`.
+      const { savedAt: _savedAt, ...restored } = saved;
+
       useSessionStore.setState({
-        quest: saved.quest,
-        userLevel: saved.userLevel,
-        adventureRunStepId: saved.adventureRunStepId,
-        bossFight: saved.bossFight,
-        lastDamageResult: saved.lastDamageResult,
+        ...restored,
         status: "paused", // Always resume in paused state
         prePauseStatus: saved.status === "paused" ? saved.prePauseStatus : saved.status,
         // ?? 0 covers snapshots written before warmupIndex was part of the payload.
         warmupIndex: saved.warmupIndex ?? 0,
-        currentRoundIndex: saved.currentRoundIndex,
-        currentExerciseIndex: saved.currentExerciseIndex,
-        startTime: saved.startTime,
+        warmupSequence: saved.warmupSequence ?? [],
+        pendingDamage: saved.pendingDamage ?? [],
         totalPausedTime: saved.totalPausedTime + pauseDuration,
         lastPauseTimestamp: now,
         timerStartTimestamp,
-        timerDuration: saved.timerDuration,
+        // JSON has no Date, so every `performedAt` came back as a string.
         results: saved.results.map((r) => ({
           ...r,
           performedAt: r.performedAt ? new Date(r.performedAt) : new Date(),
@@ -155,46 +141,7 @@ export function useSessionRecovery() {
   };
 }
 
-/**
- * Save session state for recovery (call this periodically during session)
- */
-export async function saveSessionState(): Promise<void> {
-  const state = useSessionStore.getState();
-
-  // Only save if there's an active session
-  if (!state.quest || state.status === "idle" || state.status === "finished") {
-    return;
-  }
-
-  const savedState: SavedSessionState = {
-    quest: state.quest,
-    userLevel: state.userLevel,
-    adventureRunStepId: state.adventureRunStepId,
-    bossFight: state.bossFight,
-    lastDamageResult: state.lastDamageResult,
-    status: state.status,
-    prePauseStatus: state.prePauseStatus,
-    warmupIndex: state.warmupIndex,
-    currentRoundIndex: state.currentRoundIndex,
-    currentExerciseIndex: state.currentExerciseIndex,
-    startTime: state.startTime ?? Date.now(),
-    totalPausedTime: state.totalPausedTime,
-    timerStartTimestamp: state.timerStartTimestamp,
-    timerDuration: state.timerDuration,
-    results: state.results,
-    savedAt: Date.now(),
-  };
-
-  try {
-    await preferences.setSavedSession(JSON.stringify(savedState));
-  } catch (_error) {}
-}
-
-/**
- * Clear saved session state (call on successful completion or quit)
- */
-export async function clearSavedSession(): Promise<void> {
-  try {
-    await preferences.clearSavedSession();
-  } catch (_error) {}
-}
+// `saveSessionState()` and `clearSavedSession()` used to live here. Nothing ever called them,
+// and their payload had drifted from the one the store's own subscriber writes — which is how
+// `warmupIndex` ended up required by the type and written by neither. The subscriber in
+// stores/session.ts is the single writer now.

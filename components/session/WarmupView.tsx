@@ -56,6 +56,15 @@ export function WarmupView() {
   }, [remainingSeconds, nextWarmupStep]);
 
   const step = warmupSequence[warmupIndex];
+
+  // A warm-up with no step to show is a dead end: the screen renders nothing and no timer ever
+  // fires to move it along, so the hero is stranded on black with their session still open.
+  // It happened to every recovered warm-up, back when the sequence was not part of the snapshot.
+  // Leaving for the countdown is the honest recovery — a warm-up is not journaled anyway.
+  useEffect(() => {
+    if (!step) skipWarmup();
+  }, [step, skipWarmup]);
+
   if (!step) return null;
 
   const nameOf = (enName: string) => {

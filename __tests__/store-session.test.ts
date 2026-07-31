@@ -1,7 +1,7 @@
+import { waitFor } from "@testing-library/react-native";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import { preferences } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
-import { saveSessionState } from "@/hooks/useSessionRecovery";
 import { useSessionStore } from "../stores/session";
 
 // Mock DB client to prevent actual SQLite initialization
@@ -24,6 +24,35 @@ jest.mock("@/db", () => ({
 jest.mock("@/db/completed", () => ({
   createCompletedSession: jest.fn().mockResolvedValue(1),
   markSessionWithNewRecords: jest.fn().mockResolvedValue(undefined),
+  addBonusXpToSession: jest.fn().mockResolvedValue(undefined),
+}));
+// The rest of what saveSession touches on its way through. Stubbed so the store's own
+// behaviour — what it banks, commits and clears — is what these cases actually measure.
+jest.mock("@/db/exercises", () => ({
+  checkForNewRungs: jest.fn().mockResolvedValue([]),
+}));
+jest.mock("@/db/oaths", () => ({
+  checkOathFulfilled: jest.fn().mockResolvedValue(null),
+  // biome-ignore lint/style/useNamingConvention: mirrors the module's exported constant
+  OATH_XP_BONUS: 50,
+}));
+jest.mock("@/db/queryCache", () => ({
+  clearShortLivedQueries: jest.fn(),
+}));
+jest.mock("@/db/userLevel", () => ({
+  getTotalXp: jest.fn().mockResolvedValue(0),
+  calculateLevelFromXp: jest.fn().mockReturnValue(1),
+}));
+jest.mock("@/db/village", () => ({
+  getVillageBuildings: jest.fn().mockResolvedValue([]),
+  diffVillageGrowth: jest.fn().mockReturnValue([]),
+  diffVillageTier: jest.fn().mockReturnValue(null),
+}));
+jest.mock("@/src/notifications", () => ({
+  rescheduleOathReminder: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("@/src/widget", () => ({
+  requestFlameWidgetUpdate: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("@/db/xp", () => ({
   computeSessionXp: jest.fn().mockReturnValue(100),
@@ -38,16 +67,13 @@ jest.mock("@/db/preferences", () => ({
     getWarmupEnabled: jest.fn().mockResolvedValue(false),
   },
 }));
+// `computeDamage` stays real — it is pure maths and the store's damage behaviour is only
+// meaningful if the numbers are the ones the app actually uses. Only the two functions that
+// touch the database are stubbed.
 jest.mock("@/db/bossFights", () => ({
+  ...jest.requireActual("@/db/bossFights"),
   getOrCreateBossFight: jest.fn().mockResolvedValue(null),
-  dealDamage: jest.fn().mockResolvedValue({
-    damage: 10,
-    isCritical: false,
-    newHp: 90,
-    defeated: false,
-    weaknessBonus: false,
-    resistancePenalty: false,
-  }),
+  persistSessionDamage: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("@/db/personalRecords", () => ({
   checkForNewRecords: jest.fn().mockResolvedValue([]),
@@ -184,7 +210,7 @@ describe("useSessionStore", () => {
     expect(results[results.length - 1]?.result.value).toBe(1);
   });
 
-  test("saveSessionState preserves active timer start for recovery", async () => {
+  test("the recovery snapshot preserves the active timer start", async () => {
     store.setState({
       quest: mockQuest,
       status: "resting",
@@ -194,9 +220,11 @@ describe("useSessionStore", () => {
       timerDuration: 30,
     });
 
-    await saveSessionState();
+    // The store's subscriber is the only writer of the slot; a result landing is the
+    // progress change it saves on.
+    store.setState((s) => ({ results: [...s.results, s.results[0] ?? ({} as never)] }));
 
-    expect(preferences.setSavedSession).toHaveBeenCalled();
+    await waitFor(() => expect(preferences.setSavedSession).toHaveBeenCalled());
     const saved = JSON.parse(
       (preferences.setSavedSession as jest.Mock).mock.calls.at(-1)?.[0] ?? "{}",
     );
@@ -351,6 +379,108 @@ describe("useSessionStore", () => {
       await store.getState().startSession(mockQuest, "medium");
 
       expect(store.getState().status).toBe("countdown");
+    });
+  });
+
+  /**
+   * Damage used to be written to the database the instant an exercise was completed, which made
+   * the boss's HP a fact before the session that caused it existed. Two ways to exploit that:
+   * replay a round and its damage counted twice, or quit before the victory screen and the
+   * damage stuck with no session to account for it. Hits are now banked in memory and committed
+   * once, in `saveSession`.
+   */
+  describe("boss damage is only owed until the session is saved", () => {
+    // biome-ignore lint/style/useNamingConvention: jest module mock handle
+    const bossMock = require("@/db/bossFights") as { persistSessionDamage: jest.Mock };
+
+    const boss = {
+      id: 3,
+      adventureId: 42,
+      totalHp: 1000,
+      currentHp: 1000,
+      weaknessMuscle: null,
+      resistanceMuscle: null,
+      defeatedAt: null,
+    };
+
+    beforeEach(() => {
+      bossMock.persistSessionDamage.mockClear();
+      store.setState({
+        quest: mockQuest,
+        status: "running",
+        startTime: 1000,
+        bossFight: { ...boss } as never,
+        bossStartHp: 1000,
+        pendingDamage: [],
+        currentRoundIndex: 0,
+        currentExerciseIndex: 0,
+        results: [],
+      });
+    });
+
+    test("a hit lands on screen without reaching the database", async () => {
+      await store.getState().completeExercise(10);
+
+      const state = store.getState();
+      expect(state.pendingDamage).toHaveLength(1);
+      expect(state.bossFight?.currentHp).toBeLessThan(1000);
+      expect(bossMock.persistSessionDamage).not.toHaveBeenCalled();
+    });
+
+    test("restarting a round gives back exactly the HP that round took off", async () => {
+      // Round 1, both exercises.
+      await store.getState().completeExercise(10);
+      await store.getState().completeExercise(60);
+      const afterRoundOne = store.getState().bossFight?.currentHp ?? 0;
+      expect(store.getState().currentRoundIndex).toBe(1);
+
+      // Round 2, one exercise in — then the hero restarts it.
+      await store.getState().completeExercise(10);
+      expect(store.getState().bossFight?.currentHp).toBeLessThan(afterRoundOne);
+
+      store.getState().restartRound();
+
+      const state = store.getState();
+      // Back to where round 2 began, not lower.
+      expect(state.bossFight?.currentHp).toBe(afterRoundOne);
+      // Only round 1's hits survive.
+      expect(state.pendingDamage.every((hit) => hit.roundIndex === 0)).toBe(true);
+    });
+
+    test("quitting takes the damage with it", async () => {
+      await store.getState().completeExercise(10);
+      expect(store.getState().pendingDamage).toHaveLength(1);
+
+      store.getState().quitSession();
+
+      expect(store.getState().pendingDamage).toEqual([]);
+      expect(store.getState().bossFight).toBeNull();
+      expect(bossMock.persistSessionDamage).not.toHaveBeenCalled();
+    });
+
+    test("saving commits the banked hits once, against the session that earned them", async () => {
+      await store.getState().completeExercise(10);
+      await store.getState().completeExercise(60);
+
+      await store.getState().saveSession(null);
+
+      expect(bossMock.persistSessionDamage).toHaveBeenCalledTimes(1);
+      const [fightId, hits, sessionId] = bossMock.persistSessionDamage.mock.calls[0];
+      expect(fightId).toBe(3);
+      expect(hits).toHaveLength(2);
+      expect(sessionId).toBe(1);
+      // Emptied, so the victory screen's retry cannot land them a second time.
+      expect(store.getState().pendingDamage).toEqual([]);
+    });
+
+    test("a boss already dead when the session opened takes no further hits", async () => {
+      store.setState({
+        bossFight: { ...boss, currentHp: 0, defeatedAt: new Date() } as never,
+      });
+
+      await store.getState().completeExercise(10);
+
+      expect(store.getState().pendingDamage).toEqual([]);
     });
   });
 });

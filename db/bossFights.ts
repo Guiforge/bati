@@ -68,6 +68,89 @@ export type DamageResult = {
   resistancePenalty: boolean;
 };
 
+/**
+ * One landed hit, held in memory until the session it belongs to is saved.
+ * `roundIndex` is what lets a restarted round drop exactly its own hits.
+ */
+export type PendingHit = {
+  roundIndex: number;
+  exerciseId: number;
+  damage: number;
+  isCritical: boolean;
+  muscle: MuscleCode | null;
+};
+
+/** The fight fields the damage maths reads. Keeps `computeDamage` callable on an in-memory fight. */
+type DamageableFight = Pick<
+  BossFight,
+  "currentHp" | "weaknessMuscle" | "resistanceMuscle" | "defeatedAt"
+>;
+
+export type DamageParams = {
+  resultValue: number;
+  targetValue: number;
+  muscle?: MuscleCode;
+  /** Omitted means reps. Time results are normalised before they become damage. */
+  targetType?: QuestTargetType;
+};
+
+/**
+ * The damage maths, with no database in it.
+ *
+ * Split out so a live session can show a hit land without committing it: the session store runs
+ * this against the fight it holds in memory and banks the result, and `dealDamage` runs the same
+ * function inside its transaction. One set of rules, two moments.
+ */
+export function computeDamage(fight: DamageableFight, params: DamageParams): DamageResult {
+  if (fight.defeatedAt || fight.currentHp <= 0) {
+    return {
+      damage: 0,
+      isCritical: false,
+      newHp: 0,
+      defeated: true,
+      weaknessBonus: false,
+      resistancePenalty: false,
+    };
+  }
+
+  // Base damage = the result value, with seconds converted to rep-equivalents
+  let damage = toRepEquivalent(params.resultValue, params.targetType);
+  let weaknessBonus = false;
+  let resistancePenalty = false;
+
+  // Apply weakness bonus (1.5x damage)
+  if (params.muscle && fight.weaknessMuscle === params.muscle) {
+    damage = Math.floor(damage * 1.5);
+    weaknessBonus = true;
+  }
+
+  // Apply resistance penalty (0.5x damage)
+  if (params.muscle && fight.resistanceMuscle === params.muscle) {
+    damage = Math.floor(damage * 0.5);
+    resistancePenalty = true;
+  }
+
+  // Check for critical hit (exceeded target = 30% crit chance)
+  const isCritical = params.resultValue >= params.targetValue && Math.random() < 0.3;
+  if (isCritical) {
+    damage = damage * 2;
+  }
+
+  // Ensure minimum 1 damage
+  damage = Math.max(1, damage);
+
+  const newHp = Math.max(0, fight.currentHp - damage);
+
+  return {
+    damage,
+    isCritical,
+    newHp,
+    defeated: newHp === 0,
+    weaknessBonus,
+    resistancePenalty,
+  };
+}
+
 // ------------------------------------------------------------
 // Boss Fight CRUD
 // ------------------------------------------------------------
@@ -271,7 +354,6 @@ export function dealDamage(
   // Read-modify-write on currentHp, so the whole thing runs in one transaction: two
   // concurrent hits reading the same HP before either writes would otherwise silently
   // drop one of the two damage updates.
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: weakness/resistance/crit math wrapped in a transaction for an atomic read-modify-write on currentHp
   return transactionOrFallback(async (tx) => {
     // Get current boss fight state
     const fightRows = await tx
@@ -284,78 +366,81 @@ export function dealDamage(
       throw new Error(`Boss fight ${bossFightId} not found`);
     }
 
-    const fight = fightRows[0];
+    const result = computeDamage(fightRows[0], params);
 
-    // If already defeated, no damage
-    if (fight.defeatedAt || fight.currentHp <= 0) {
-      return {
-        damage: 0,
-        isCritical: false,
-        newHp: 0,
-        defeated: true,
-        weaknessBonus: false,
-        resistancePenalty: false,
-      };
-    }
+    // Already defeated: computeDamage reports zero damage and there is nothing to write.
+    if (result.damage === 0) return result;
 
-    // Base damage = the result value, with seconds converted to rep-equivalents
-    let damage = toRepEquivalent(params.resultValue, params.targetType);
-    let weaknessBonus = false;
-    let resistancePenalty = false;
-
-    // Apply weakness bonus (1.5x damage)
-    if (params.muscle && fight.weaknessMuscle === params.muscle) {
-      damage = Math.floor(damage * 1.5);
-      weaknessBonus = true;
-    }
-
-    // Apply resistance penalty (0.5x damage)
-    if (params.muscle && fight.resistanceMuscle === params.muscle) {
-      damage = Math.floor(damage * 0.5);
-      resistancePenalty = true;
-    }
-
-    // Check for critical hit (exceeded target = 30% crit chance)
-    const isCritical = params.resultValue >= params.targetValue && Math.random() < 0.3;
-    if (isCritical) {
-      damage = damage * 2;
-    }
-
-    // Ensure minimum 1 damage
-    damage = Math.max(1, damage);
-
-    // Calculate new HP
-    const newHp = Math.max(0, fight.currentHp - damage);
-    const defeated = newHp === 0;
-
-    // Update boss fight
     await tx
       .update(bossFights)
       .set({
-        currentHp: newHp,
-        defeatedAt: defeated ? new Date() : null,
+        currentHp: result.newHp,
+        defeatedAt: result.defeated ? new Date() : null,
         updatedAt: new Date(),
       })
       .where(eq(bossFights.id, bossFightId));
 
-    // Log the damage
     await tx.insert(bossDamageLog).values({
       bossFightId,
       completedSessionId: params.completedSessionId ?? null,
       exerciseId: params.exerciseId,
-      damageDealt: damage,
-      isCritical: isCritical ? 1 : 0,
+      damageDealt: result.damage,
+      isCritical: result.isCritical ? 1 : 0,
       muscle: params.muscle ?? null,
     });
 
-    return {
-      damage,
-      isCritical,
-      newHp,
-      defeated,
-      weaknessBonus,
-      resistancePenalty,
-    };
+    return result;
+  });
+}
+
+/**
+ * Commit a session's worth of hits in one transaction, tagged with the session that earned them.
+ *
+ * HP is recomputed from the stored row rather than trusted from the caller: the fight the session
+ * has been holding in memory can be minutes old, and the dev screen can reset a boss underneath it.
+ * The hits are the durable fact; the resulting HP is derived here.
+ */
+export async function persistSessionDamage(
+  bossFightId: number,
+  hits: PendingHit[],
+  completedSessionId: number,
+): Promise<void> {
+  if (hits.length === 0) return;
+
+  await transactionOrFallback(async (tx) => {
+    const fightRows = await tx
+      .select()
+      .from(bossFights)
+      .where(eq(bossFights.id, bossFightId))
+      .limit(1);
+
+    if (fightRows.length === 0) return;
+
+    const fight = fightRows[0];
+    if (fight.defeatedAt || fight.currentHp <= 0) return;
+
+    const total = hits.reduce((sum, hit) => sum + hit.damage, 0);
+    const newHp = Math.max(0, fight.currentHp - total);
+
+    await tx
+      .update(bossFights)
+      .set({
+        currentHp: newHp,
+        defeatedAt: newHp === 0 ? new Date() : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(bossFights.id, bossFightId));
+
+    await tx.insert(bossDamageLog).values(
+      hits.map((hit) => ({
+        bossFightId,
+        completedSessionId,
+        exerciseId: hit.exerciseId,
+        damageDealt: hit.damage,
+        isCritical: hit.isCritical ? 1 : 0,
+        muscle: hit.muscle,
+      })),
+    );
   });
 }
 

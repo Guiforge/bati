@@ -5,9 +5,11 @@ import { completeAdventureRunStep, getAdventureIdForRunStep } from "@/db";
 import { checkForNewAchievements, type NewAchievementResult } from "@/db/achievements";
 import {
   type BossFight,
+  computeDamage,
   type DamageResult,
-  dealDamage,
   getOrCreateBossFight,
+  type PendingHit,
+  persistSessionDamage,
 } from "@/db/bossFights";
 import {
   addBonusXpToSession,
@@ -55,6 +57,24 @@ interface SessionState {
   // Boss Fight Data
   bossFight: BossFight | null;
   lastDamageResult: DamageResult | null;
+  /**
+   * Hits landed this session, not yet in the database.
+   *
+   * Damage used to be written the instant an exercise was completed, which made the boss's HP
+   * a fact before the session that caused it existed. Two things fell out of that: replaying a
+   * round re-applied damage the hero had already dealt, and quitting before the victory screen
+   * kept the damage with no session to account for it — a boss could be worn down by starting
+   * and abandoning sessions. Hits are accumulated here and persisted once, in `saveSession`,
+   * where they can also be tagged with the session that earned them.
+   */
+  pendingDamage: PendingHit[];
+  /**
+   * The boss's HP when this session began. A boss is a campaign-length pool — seeded so it falls
+   * on the campaign's last step — so a single session takes off ~1/steps of it, and a bar drawn
+   * against `totalHp` alone looks untouched for the whole workout. This is what the arena
+   * measures today's damage against.
+   */
+  bossStartHp: number | null;
 
   // Dynamic State
   status: SessionStatus;
@@ -129,12 +149,63 @@ interface SessionState {
   }>;
 }
 
+/**
+ * The crash-recovery snapshot: every piece of session state that has to survive the app dying,
+ * and nothing else.
+ *
+ * Derived from `SessionState` rather than written out a second time, because it was written out
+ * a second time and the two copies drifted — the writer forgot `warmupIndex`, the reader's type
+ * demanded it, and neither ever carried `warmupSequence`, which left a recovered warm-up
+ * rendering an empty screen. Adding a field to `SessionState` and persisting it is now one list:
+ * name it here and both sides fail to compile until they agree.
+ */
+export type SavedSessionState = Pick<
+  SessionState,
+  | "quest"
+  | "userLevel"
+  | "adventureRunStepId"
+  | "bossFight"
+  | "bossStartHp"
+  | "pendingDamage"
+  | "lastDamageResult"
+  | "status"
+  | "prePauseStatus"
+  | "warmupSequence"
+  | "warmupIndex"
+  | "currentRoundIndex"
+  | "currentExerciseIndex"
+  | "startTime"
+  | "totalPausedTime"
+  | "timerStartTimestamp"
+  | "timerDuration"
+  | "results"
+> & { savedAt: number };
+
+/**
+ * Write the hits a session banked, then drop them.
+ *
+ * Clearing is the point: the victory screen retries `saveSession` on failure, and hits that
+ * survived a retry would land on the boss twice.
+ */
+async function commitPendingDamage(
+  bossFight: BossFight | null,
+  pendingDamage: PendingHit[],
+  sessionId: number,
+): Promise<void> {
+  if (!bossFight || pendingDamage.length === 0) return;
+
+  await persistSessionDamage(bossFight.id, pendingDamage, sessionId);
+  useSessionStore.setState({ pendingDamage: [] });
+}
+
 export const useSessionStore = create<SessionState>()(
   subscribeWithSelector((set, get) => ({
     quest: null,
     userLevel: "medium",
     adventureRunStepId: null,
     bossFight: null,
+    bossStartHp: null,
+    pendingDamage: [],
     lastDamageResult: null,
     status: "idle",
     prePauseStatus: null,
@@ -176,6 +247,8 @@ export const useSessionStore = create<SessionState>()(
         userLevel,
         adventureRunStepId: options?.adventureRunStepId ?? null,
         bossFight,
+        bossStartHp: bossFight?.currentHp ?? null,
+        pendingDamage: [],
         lastDamageResult: null,
         status: warmupFirst ? "warmup" : "countdown",
         prePauseStatus: null,
@@ -278,7 +351,7 @@ export const useSessionStore = create<SessionState>()(
     },
 
     restartRound: () => {
-      const { quest, currentRoundIndex, results } = get();
+      const { quest, currentRoundIndex, results, pendingDamage, bossFight } = get();
       if (!quest) return;
 
       // Remove results from the current round (keep only prior rounds)
@@ -286,9 +359,28 @@ export const useSessionStore = create<SessionState>()(
         (r) => r.roundIndex !== undefined && r.roundIndex < currentRoundIndex,
       );
 
+      // Give the boss back what this round took off. The hits were never written, so undoing
+      // them is just dropping them — but the fight held in memory has to be walked back too,
+      // or the arena keeps showing damage the hero is about to deal a second time.
+      const keptDamage = pendingDamage.filter((hit) => hit.roundIndex < currentRoundIndex);
+      const refunded = pendingDamage
+        .filter((hit) => hit.roundIndex >= currentRoundIndex)
+        .reduce((sum, hit) => sum + hit.damage, 0);
+
+      // `refunded > 0` also keeps a boss that was already dead when the session opened dead:
+      // no hit was ever computed against it, so there is nothing to undo.
+      const restoredFight =
+        bossFight && refunded > 0
+          ? {
+              ...bossFight,
+              currentHp: Math.min(bossFight.totalHp, bossFight.currentHp + refunded),
+              defeatedAt: null,
+            }
+          : bossFight;
+
       // Get target duration for first exercise in round (if time-based)
       const firstExercise = quest.exercises[0];
-      const isTimeBased = firstExercise.target.type === "time";
+      const isTimeBased = firstExercise?.target.type === "time";
       const targetDuration = isTimeBased ? firstExercise.target.value : 0;
 
       set({
@@ -298,6 +390,8 @@ export const useSessionStore = create<SessionState>()(
         timerStartTimestamp: isTimeBased ? Date.now() : null,
         timerDuration: targetDuration,
         results: resultsForPriorRounds,
+        pendingDamage: keptDamage,
+        bossFight: restoredFight,
         lastDamageResult: null,
       });
     },
@@ -308,6 +402,9 @@ export const useSessionStore = create<SessionState>()(
         status: "idle",
         adventureRunStepId: null,
         bossFight: null,
+        bossStartHp: null,
+        // Abandoning a session takes its damage with it — none of it was ever written.
+        pendingDamage: [],
         lastDamageResult: null,
         prePauseStatus: null,
         warmupSequence: [],
@@ -336,33 +433,37 @@ export const useSessionStore = create<SessionState>()(
 
       const currentEx = quest.exercises[currentExerciseIndex];
 
-      // Deal damage to boss if in boss fight
-      let damageResult: DamageResult | null = null;
+      // Land the hit on the fight we hold, and bank it. Nothing reaches the database until
+      // saveSession: see `pendingDamage`. This is pure maths now, so there is no failure to
+      // swallow and no await between the read and the write of `bossFight`.
       if (bossFight && !bossFight.defeatedAt) {
-        // Get primary muscle for the exercise
         const primaryMuscle = currentEx.exercise.muscles[0] as MuscleCode | undefined;
 
-        try {
-          damageResult = await dealDamage(bossFight.id, {
-            exerciseId: currentEx.exercise.id,
-            resultValue: safeResultValue,
-            targetValue: currentEx.target.value,
-            muscle: primaryMuscle,
-            targetType: currentEx.target.type,
-          });
+        const damageResult = computeDamage(bossFight, {
+          resultValue: safeResultValue,
+          targetValue: currentEx.target.value,
+          muscle: primaryMuscle,
+          targetType: currentEx.target.type,
+        });
 
-          // Update boss fight state
-          set({
-            bossFight: {
-              ...bossFight,
-              currentHp: damageResult.newHp,
-              defeatedAt: damageResult.defeated ? new Date() : null,
+        set({
+          bossFight: {
+            ...bossFight,
+            currentHp: damageResult.newHp,
+            defeatedAt: damageResult.defeated ? new Date() : null,
+          },
+          lastDamageResult: damageResult,
+          pendingDamage: [
+            ...get().pendingDamage,
+            {
+              roundIndex: currentRoundIndex,
+              exerciseId: currentEx.exercise.id,
+              damage: damageResult.damage,
+              isCritical: damageResult.isCritical,
+              muscle: primaryMuscle ?? null,
             },
-            lastDamageResult: damageResult,
-          });
-        } catch {
-          // Error handled silently
-        }
+          ],
+        });
       }
 
       // Record result
@@ -473,7 +574,16 @@ export const useSessionStore = create<SessionState>()(
     },
 
     saveSession: async (feedback) => {
-      const { quest, userLevel, startTime, totalPausedTime, results, adventureRunStepId } = get();
+      const {
+        quest,
+        userLevel,
+        startTime,
+        totalPausedTime,
+        results,
+        adventureRunStepId,
+        bossFight,
+        pendingDamage,
+      } = get();
       if (!quest || !startTime) throw new Error("No active session");
 
       const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
@@ -501,6 +611,11 @@ export const useSessionStore = create<SessionState>()(
         exercises: results,
         performedAt: new Date(startTime),
       });
+
+      // The session exists now, so the hits it earned can be written and attributed to it. This
+      // runs before the campaign step below, which reads the fight to decide whether the run is
+      // over — the boss has to be at its true HP by then.
+      await commitPendingDamage(bossFight, pendingDamage, sessionId);
 
       const campaign =
         adventureRunStepId != null
@@ -640,14 +755,19 @@ useSessionStore.subscribe(
 
     if (hasProgressed) {
       try {
-        const savedState = {
+        // Typed, so a field added to SavedSessionState fails to compile until it is written here.
+        const savedState: SavedSessionState = {
           quest: state.quest,
           userLevel: state.userLevel,
           adventureRunStepId: state.adventureRunStepId,
           bossFight: state.bossFight,
+          bossStartHp: state.bossStartHp,
+          pendingDamage: state.pendingDamage,
           lastDamageResult: state.lastDamageResult,
           status: state.status,
           prePauseStatus: state.prePauseStatus,
+          warmupSequence: state.warmupSequence,
+          warmupIndex: state.warmupIndex,
           currentRoundIndex: state.currentRoundIndex,
           currentExerciseIndex: state.currentExerciseIndex,
           startTime: state.startTime,

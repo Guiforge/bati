@@ -1,45 +1,122 @@
-# Capture the store screenshots, in order, from a real device.
+# Capture the store screenshots from a real device.
 #
-#   npm run screenshots            # raw shots into fastlane/raw/
-#   npm run screenshots:frame      # dresses them into fastlane/metadata/.../phoneScreenshots/
+#   npm run screenshots              # en-US
+#   npm run screenshots -- fr-FR     # phone switched to French
 #
-# Deliberately not a test: nothing here asserts. It walks the app to the six screens worth
-# showing and photographs each one. If a step drifts, the shot is wrong rather than the run red,
-# so look at the output before shipping it.
+# Deliberately not a test: nothing asserts a value. It walks the app to the eight screens worth
+# showing and photographs each one, so a drifting step produces a wrong picture to look at rather
+# than a red run to debug.
 #
-# Runs a full session first, because every interesting screen is empty on a fresh install — an
-# empty village and a blank journal sell nothing. That is why this takes a few minutes.
+# It seeds a believable hero first, through the dev screen: three years of history, a maxed
+# village and ten extra levels. A store screenshot of an empty village sells nothing, and a level
+# 1 journal with one session in it sells less. **This needs a debug build** — the dev screen is
+# behind __DEV__ — so run `npx expo run:android --variant debug` before this.
 #
-# The device language decides the language of the shots. Switch the phone to French and run it
-# again into fastlane/raw-fr/ for the fr-FR listing.
+# The device language decides the language of the shots.
 appId: com.guiforge.bati
 tags:
   - screenshots
 ---
-- launchApp:
-    clearState: true
+# No `clearState` here on purpose: on a debug build it also wipes the dev-client's saved server
+# URL, and the app boots to the "Development servers" menu instead of itself. scripts/screenshots.sh
+# clears the data and re-points the client before this runs.
+- launchApp
+
+# A debug build fetches its bundle from Metro, which takes noticeably longer than a release build
+# reading it off disk, and `pm clear` also resets Expo's "developer menu already seen" flag — so
+# the menu opens over the app and covers the onboarding button. Both are waited out here: poll
+# until the button is reachable, dismissing the sheet whenever it is the thing in the way.
+- repeat:
+    times: 30
+    while:
+      notVisible:
+        id: "onboarding-presentation-continue"
+    commands:
+      - runFlow:
+          when:
+            visible: "This is the developer menu.*"
+          commands:
+            # Its backdrop, not its button: the app's own "Continuer" would match a text
+            # selector for "Continue" just as well, and tapping that skips a screen.
+            - tapOn:
+                point: "50%,12%"
+      - waitForAnimationToEnd:
+          timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-presentation-continue"
+    timeout: 90000
+
+# --- 0. The first thing anyone ever sees ------------------------------------
+# Photographed before the subflow clicks through it: this screen only exists once per install.
+- takeScreenshot: 0-onboarding
 
 - runFlow: subflows/complete-onboarding.yaml
 
-# --- 1. Home, before anything has been logged -------------------------------
-# The first screen a new user meets, and the one they will see most.
+# --- Seed a hero worth photographing ---------------------------------------
+# The dev screen has no testIDs and no i18n — its labels are stable English, so text is the only
+# selector available and the safest one here.
+- tapOn:
+    id: "home-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "settings-dev"
+    direction: DOWN
+- tapOn:
+    id: "settings-dev"
+
+- scrollUntilVisible:
+    element:
+      text: "3y"
+    direction: DOWN
+- tapOn: "3y"           # ~550 sessions: streaks, records, achievements, muscle balance
+- scrollUntilVisible:
+    element:
+      text: "Max out village"
+    direction: DOWN
+- tapOn: "Max out village"
+- scrollUntilVisible:
+    element:
+      text: "+5"
+    direction: UP
+- tapOn: "+5"
+- tapOn: "+5"
+
+- back
+- back
+
+# --- 1. Home ----------------------------------------------------------------
+- tapOn:
+    id: "tab-home"
+- extendedWaitUntil:
+    visible:
+      id: "home-start-session"
+    timeout: 30000
 - takeScreenshot: 1-home
 
 # --- 2. The quest gallery ---------------------------------------------------
 - tapOn:
     id: "tab-quests"
-- assertVisible:
-    id: "quests-quest-card"
+- extendedWaitUntil:
+    visible:
+      id: "quests-quest-card"
+    timeout: 30000
 - takeScreenshot: 2-quests
 
-# --- 3. A session in progress ----------------------------------------------
-# The heart of the app: this is where the reps happen.
+# --- 3. A quest, before committing to it ------------------------------------
 - tapOn:
     id: "quests-quest-card"
     index: 0
 - assertVisible:
     id: "quest-start"
 - takeScreenshot: 3-quest-detail
+
+# --- 4. Mid-set -------------------------------------------------------------
 - tapOn:
     id: "quest-start"
 - tapOn:
@@ -59,7 +136,8 @@ tags:
     timeout: 20000
 - takeScreenshot: 4-session
 
-# --- 4. Through to victory --------------------------------------------------
+# --- 6. Victory -------------------------------------------------------------
+# (5 is the boss arena, captured last: jumping to it ends this session.)
 - repeat:
     times: 40
     while:
@@ -76,20 +154,85 @@ tags:
     visible:
       id: "session-victory-continue"
     timeout: 25000
-- takeScreenshot: 5-victory
+- takeScreenshot: 6-victory
 - tapOn:
     id: "session-victory-continue"
 
-# --- 5. The village, now that something has been earned ---------------------
+# --- 7. The village, maxed --------------------------------------------------
 - tapOn:
     id: "tab-village"
-- assertVisible:
-    id: "village-screen"
-- takeScreenshot: 6-village
+- extendedWaitUntil:
+    visible:
+      id: "village-screen"
+    timeout: 30000
+- takeScreenshot: 7-village
 
-# --- 6. The journal, with one session in it ---------------------------------
+# --- 8. The journal, three years deep ---------------------------------------
 - tapOn:
     id: "tab-journal"
-- assertVisible:
-    id: "journal-screen"
-- takeScreenshot: 7-journal
+- extendedWaitUntil:
+    visible:
+      id: "journal-screen"
+    timeout: 30000
+# The stats tab defers its cards by a frame and each one runs its own query; against three years
+# of seeded history that is not instant, and the shot caught an empty screen. Land on the tab
+# explicitly, then let it settle before photographing it.
+- tapOn:
+    id: "journal-tab-stats"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: 8-journal
+
+# --- 5. The boss arena ------------------------------------------------------
+# Last, because the jump drops straight into a session and there is no coming back to the tabs
+# without quitting it. Worth the awkward ordering: it is the screen that explains the whole app.
+- tapOn:
+    id: "tab-home"
+- tapOn:
+    id: "home-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-dev"
+    direction: DOWN
+- tapOn:
+    id: "settings-dev"
+- scrollUntilVisible:
+    element:
+      text: "Jump to boss fight"
+    direction: DOWN
+- tapOn: "Jump to boss fight"
+
+# The jump lands on the boss step's quest screen, not inside the session — the fight still has to
+# be started like any other.
+- extendedWaitUntil:
+    visible:
+      id: "quest-start"
+    timeout: 20000
+- tapOn:
+    id: "quest-start"
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-skip-warmup"
+    timeout: 15000
+    optional: true
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 25000
+# One completed exercise, so the arena shows damage landing rather than a boss at full health:
+# the bar moving is the whole point of the screen.
+- tapOn:
+    id: "session-complete-exercise"
+- tapOn:
+    id: "session-skip-rest"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 5-boss

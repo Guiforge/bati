@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Dress raw device screenshots into store screenshots.
+"""Turn raw device captures into store screenshots.
 
-    python3 scripts/frame-screenshots.py                    # en-US, from fastlane/raw/
-    python3 scripts/frame-screenshots.py --locale fr-FR --src fastlane/raw-fr
+    python3 scripts/frame-screenshots.py --locale fr-FR --src fastlane/raw
 
-A raw screencap is honest but flat: it sells nothing next to a listing whose competitors all
-have a headline and a bit of colour. This puts each shot on the app's own background, rounds
-its corners, and writes one line above it — the promise that screen keeps.
+A raw screencap is honest and flat. On a store page it sits next to competitors who all have a
+headline, a device frame and some colour, and it loses on sight before anyone reads a word.
 
-Nothing here invents UI. The phone content is exactly what the device showed; the frame is the
-only thing added, which is the line the stores draw too.
+This composes each capture into a phone, on a lit background, under a headline that names the
+feature and a line that says why it matters. Nothing here invents UI: the screen inside the phone
+is exactly what the device displayed. The frame is the only thing added, which is the line the
+stores draw too.
 """
 
 import argparse
@@ -18,67 +18,85 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-# The app's own palette, so the frame belongs to the same world as the screen inside it.
-BG_TOP = (11, 15, 25)  # $bgDark — "The Void"
-BG_BOTTOM = (16, 19, 34)  # $surface
+# ---------------------------------------------------------------------------------------------
+# Palette — the app's own, so a screenshot and the app it shows belong to one world.
+# ---------------------------------------------------------------------------------------------
+VOID = (11, 15, 25)  # $bgDark
+SURFACE = (16, 19, 34)  # $surface
 TEXT = (232, 236, 255)  # $text
+DIM = (144, 154, 203)  # $textSecondary
 ACCENT = (100, 124, 247)  # $primaryText — the AA-legible blue, not the fill blue
+GOLD = (255, 215, 0)  # $resourceGold, for the one number worth shouting
 
 CANVAS = (1242, 2688)  # Play's tallest phone slot; F-Droid takes the same file
-MARGIN = 72
-HEADLINE_TOP = 96
+MARGIN = 64
 
-# One line per shot. Deliberately about what the hero gets, not what the screen is called: a
-# caption reading "Journal" tells nobody why they should care.
-CAPTIONS = {
+# ---------------------------------------------------------------------------------------------
+# Copy. Each shot gets an eyebrow (what feature), a headline (the promise) and the phone below.
+# Written to be read in the half second a thumbnail gets, so the headline carries the meaning on
+# its own and the eyebrow is only there to orient.
+# ---------------------------------------------------------------------------------------------
+COPY = {
     "en-US": {
-        "1-home": "One screen. One thing to do next.",
-        "2-quests": "Every workout is a quest.",
-        "3-quest-detail": "Know the session before you start it.",
-        "4-session": "Your reps land as damage.",
-        "5-victory": "Effort becomes progress you can see.",
-        "6-village": "A village built out of what you lifted.",
-        "7-journal": "Your history, and nobody else's.",
+        "0-onboarding": ("WELCOME", "Your training,\nas an adventure."),
+        "1-home": ("TODAY", "Your next session,\none tap away."),
+        "2-quests": ("QUESTS", "Every workout\nis a quest."),
+        "3-quest-detail": ("BEFORE YOU LIFT", "See the whole session\nbefore you start it."),
+        "4-session": ("MID-SESSION", "Every rep\ndoes damage."),
+        "5-boss": ("BOSS FIGHTS", "Some sessions\nfight back."),
+        "6-victory": ("VICTORY", "The loot drops\nwhen the work is done."),
+        "7-village": ("YOUR VILLAGE", "Your reps\nbuilt all of this."),
+        "8-journal": ("PROGRESS", "Years of training,\non one screen."),
     },
     "fr-FR": {
-        "1-home": "Un écran. Une seule chose à faire.",
-        "2-quests": "Chaque séance est une quête.",
-        "3-quest-detail": "Tu sais ce qui t'attend avant de commencer.",
-        "4-session": "Tes répétitions deviennent des dégâts.",
-        "5-victory": "L'effort devient un progrès visible.",
-        "6-village": "Un village bâti avec ce que tu as soulevé.",
-        "7-journal": "Ton historique, et celui de personne d'autre.",
+        "0-onboarding": ("BIENVENUE", "Ton entraînement,\nen aventure."),
+        "1-home": ("AUJOURD'HUI", "Ta prochaine séance,\nen un coup d'œil."),
+        "2-quests": ("QUÊTES", "Chaque séance\nest une quête."),
+        "3-quest-detail": ("AVANT DE COMMENCER", "Toute la séance,\navant de t'y mettre."),
+        "4-session": ("EN PLEINE SÉANCE", "Chaque répétition\nfait des dégâts."),
+        "5-boss": ("COMBATS DE BOSS", "Certaines séances\nse défendent."),
+        "6-victory": ("VICTOIRE", "Le butin tombe\nquand le travail est fait."),
+        "7-village": ("TON VILLAGE", "Tes séances\nont bâti tout ça."),
+        "8-journal": ("PROGRESSION", "Des années de sport,\nsur un seul écran."),
     },
 }
 
-FONT_CANDIDATES = [
+FONT_PATHS = [
     "/usr/share/fonts/google-noto-vf/NotoSans[wght].ttf",
     "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf",
 ]
 
 
-def load_font(size: int) -> ImageFont.FreeTypeFont:
-    for path in FONT_CANDIDATES:
+def font(size: int, weight: str = "Bold") -> ImageFont.FreeTypeFont:
+    for path in FONT_PATHS:
         if pathlib.Path(path).exists():
-            font = ImageFont.truetype(path, size)
-            # Variable fonts default to Regular; a headline wants weight behind it.
+            f = ImageFont.truetype(path, size)
             try:
-                font.set_variation_by_name("Bold")
+                f.set_variation_by_name(weight)
             except (AttributeError, OSError):
-                pass
-            return font
-    raise SystemExit("frame-screenshots: no usable font found; install Noto Sans or DejaVu")
+                pass  # static font: the file already is the weight it is
+            return f
+    raise SystemExit("frame-screenshots: install Noto Sans or DejaVu")
 
 
-def gradient(size: tuple[int, int]) -> Image.Image:
-    """Vertical wash from the void to the surface — the same move the app makes behind its art."""
-    width, height = size
-    base = Image.new("RGB", (1, height))
-    pixels = base.load()
-    for y in range(height):
-        t = y / max(height - 1, 1)
-        pixels[0, y] = tuple(round(a + (b - a) * t) for a, b in zip(BG_TOP, BG_BOTTOM))
-    return base.resize(size)
+def backdrop() -> Image.Image:
+    """A lit background: the void, a vertical lift, and a soft accent glow behind the phone."""
+    w, h = CANVAS
+    base = Image.new("RGB", (1, h))
+    px = base.load()
+    for y in range(h):
+        t = y / (h - 1)
+        # Ease the wash so the top stays dark and the lift happens behind the device.
+        e = t * t * (3 - 2 * t)
+        px[0, y] = tuple(round(a + (b - a) * e) for a, b in zip(VOID, SURFACE))
+    canvas = base.resize(CANVAS).convert("RGBA")
+
+    glow = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
+    ImageDraw.Draw(glow).ellipse(
+        [(-w * 0.35, h * 0.16), (w * 1.35, h * 0.92)], fill=(*ACCENT, 46)
+    )
+    canvas.alpha_composite(glow.filter(ImageFilter.GaussianBlur(190)))
+    return canvas
 
 
 def rounded(image: Image.Image, radius: int) -> Image.Image:
@@ -89,123 +107,118 @@ def rounded(image: Image.Image, radius: int) -> Image.Image:
     return out
 
 
-# A phone body around the screen, rather than a bare rounded rectangle. It costs nothing and it
-# tells the eye "this is an app" before the eye has read anything — which is the entire job of a
-# store screenshot at thumbnail size.
-BEZEL = 18  # the dark rim around the screen
-BODY_RADIUS = 76
-SCREEN_RADIUS = 58
+BEZEL = 16
+BODY_RADIUS = 84
+SCREEN_RADIUS = 68
+SHADOW_PAD = 70
 
 
 def in_phone(shot: Image.Image) -> Image.Image:
-    """Set the screenshot into a phone body, with a rim light and a drop shadow."""
+    """Set the capture into a phone body: shadow, rim light, bezel, and a notch cut for realism."""
     w, h = shot.size
-    body_w, body_h = w + BEZEL * 2, h + BEZEL * 2
-    pad = 40  # room for the shadow to fall into
+    body = (w + BEZEL * 2, h + BEZEL * 2)
+    size = (body[0] + SHADOW_PAD * 2, body[1] + SHADOW_PAD * 2)
+    x0, y0 = SHADOW_PAD, SHADOW_PAD
 
-    canvas = Image.new("RGBA", (body_w + pad * 2, body_h + pad * 2), (0, 0, 0, 0))
+    canvas = Image.new("RGBA", size, (0, 0, 0, 0))
 
-    # Shadow first: a blurred silhouette of the body, offset down.
-    shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    shadow = Image.new("RGBA", size, (0, 0, 0, 0))
     ImageDraw.Draw(shadow).rounded_rectangle(
-        [(pad, pad + 12), (pad + body_w, pad + body_h + 12)], radius=BODY_RADIUS, fill=(0, 0, 0, 150)
+        [(x0, y0 + 26), (x0 + body[0], y0 + body[1] + 26)], radius=BODY_RADIUS, fill=(0, 0, 0, 170)
     )
-    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(22)))
+    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(34)))
 
-    # The body, a shade darker than the darkest thing on screen so the screen reads as lit.
-    body = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(body)
-    draw.rounded_rectangle(
-        [(pad, pad), (pad + body_w, pad + body_h)], radius=BODY_RADIUS, fill=(6, 8, 18, 255)
+    frame = Image.new("RGBA", size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(frame)
+    d.rounded_rectangle(
+        [(x0, y0), (x0 + body[0], y0 + body[1])], radius=BODY_RADIUS, fill=(4, 6, 14, 255)
     )
-    # A single hairline of rim light along the edge: enough to separate body from background.
-    draw.rounded_rectangle(
-        [(pad, pad), (pad + body_w, pad + body_h)],
+    # Two hairlines: a brighter one on top where light would fall, a dim one all round.
+    d.rounded_rectangle(
+        [(x0, y0), (x0 + body[0], y0 + body[1])],
         radius=BODY_RADIUS,
-        outline=(58, 66, 102, 255),
-        width=2,
+        outline=(52, 60, 96, 255),
+        width=3,
     )
-    canvas.alpha_composite(body)
-    canvas.alpha_composite(rounded(shot, SCREEN_RADIUS), (pad + BEZEL, pad + BEZEL))
+    canvas.alpha_composite(frame)
+    canvas.alpha_composite(rounded(shot, SCREEN_RADIUS), (x0 + BEZEL, y0 + BEZEL))
+
+    # A pill notch, drawn over the screen: it is what makes the eye read "phone" instantly.
+    notch_w, notch_h = round(w * 0.30), 34
+    nx = x0 + BEZEL + (w - notch_w) // 2
+    ImageDraw.Draw(canvas).rounded_rectangle(
+        [(nx, y0 + BEZEL + 12), (nx + notch_w, y0 + BEZEL + 12 + notch_h)],
+        radius=notch_h // 2,
+        fill=(4, 6, 14, 255),
+    )
     return canvas
 
 
-def wrap(draw: ImageDraw.ImageDraw, text: str, font, max_width: int) -> list[str]:
-    lines, line = [], ""
-    for word in text.split():
-        candidate = f"{line} {word}".strip()
-        if draw.textlength(candidate, font=font) <= max_width:
-            line = candidate
-        else:
-            if line:
-                lines.append(line)
-            line = word
-    if line:
-        lines.append(line)
-    return lines
+def draw_centred(draw, text: str, f, y: int, fill, tracking: int = 0) -> int:
+    if tracking:
+        width = sum(draw.textlength(c, font=f) + tracking for c in text) - tracking
+        x = (CANVAS[0] - width) / 2
+        for c in text:
+            draw.text((x, y), c, font=f, fill=fill)
+            x += draw.textlength(c, font=f) + tracking
+    else:
+        draw.text(((CANVAS[0] - draw.textlength(text, font=f)) / 2, y), text, font=f, fill=fill)
+    return y
 
 
-def compose(shot: pathlib.Path, caption: str, dest: pathlib.Path) -> None:
-    canvas = gradient(CANVAS).convert("RGBA")
+def compose(shot: pathlib.Path, eyebrow: str, headline: str, dest: pathlib.Path) -> None:
+    canvas = backdrop()
     draw = ImageDraw.Draw(canvas)
 
-    font = load_font(64)
-    max_text_width = CANVAS[0] - 2 * MARGIN
-    lines = wrap(draw, caption, font, max_text_width)
+    y = 104
+    draw_centred(draw, eyebrow, font(34, "Bold"), y, ACCENT, tracking=7)
+    y += 76
 
-    y = HEADLINE_TOP
-    for line in lines:
-        width = draw.textlength(line, font=font)
-        draw.text(((CANVAS[0] - width) / 2, y), line, font=font, fill=TEXT)
-        y += 78
-
-    # A short accent rule under the headline: enough to look composed, not enough to distract.
-    rule_width = 120
-    y += 24
-    draw.rounded_rectangle(
-        [((CANVAS[0] - rule_width) / 2, y), ((CANVAS[0] + rule_width) / 2, y + 8)],
-        radius=4,
-        fill=ACCENT,
-    )
-    y += 64
+    head_font = font(78, "Bold")
+    for line in headline.split("\n"):
+        draw_centred(draw, line, head_font, y, TEXT)
+        y += 92
+    y += 44
 
     phone = in_phone(Image.open(shot).convert("RGB"))
-    available_h = CANVAS[1] - y - MARGIN // 2
-    available_w = CANVAS[0] - MARGIN
-    scale = min(available_w / phone.width, available_h / phone.height)
+    room_h = CANVAS[1] - y + SHADOW_PAD  # the shadow may run off the bottom edge
+    room_w = CANVAS[0] - MARGIN
+    scale = min(room_w / phone.width, room_h / phone.height)
     phone = phone.resize((round(phone.width * scale), round(phone.height * scale)), Image.LANCZOS)
 
-    canvas.alpha_composite(phone, (round((CANVAS[0] - phone.width) / 2), round(y)))
+    canvas.alpha_composite(phone, (round((CANVAS[0] - phone.width) / 2), round(y - SHADOW_PAD * scale)))
     dest.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(dest, "PNG", optimize=True)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--locale", default="en-US")
-    parser.add_argument("--src", default="fastlane/raw")
-    args = parser.parse_args()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--locale", default="en-US")
+    ap.add_argument("--src", default="fastlane/raw")
+    args = ap.parse_args()
 
-    captions = CAPTIONS.get(args.locale)
-    if captions is None:
-        print(f"no captions written for {args.locale}", file=sys.stderr)
+    copy = COPY.get(args.locale)
+    if copy is None:
+        print(f"no copy written for {args.locale}", file=sys.stderr)
         return 1
 
     src = pathlib.Path(args.src)
     shots = sorted(src.glob("*.png"))
     if not shots:
-        print(f"no screenshots in {src} — run `npm run screenshots` first", file=sys.stderr)
+        print(f"no captures in {src} — run `npm run screenshots` first", file=sys.stderr)
         return 1
 
     out = pathlib.Path(f"fastlane/metadata/android/{args.locale}/images/phoneScreenshots")
+    for old in out.glob("*.png"):
+        old.unlink()  # a renamed shot must not leave its predecessor behind on the listing
+
     for shot in shots:
-        caption = captions.get(shot.stem)
-        if caption is None:
-            print(f"  skipped {shot.name} (no caption)")
+        entry = copy.get(shot.stem)
+        if entry is None:
+            print(f"  skipped {shot.name} (no copy)")
             continue
-        dest = out / f"{shot.stem}.png"
-        compose(shot, caption, dest)
-        print(f"  {shot.name} -> {dest}")
+        compose(shot, entry[0], entry[1], out / f"{shot.stem}.png")
+        print(f"  {shot.name} -> {out / f'{shot.stem}.png'}")
     return 0
 
 

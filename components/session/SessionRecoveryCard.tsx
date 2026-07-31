@@ -31,8 +31,11 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
 
   const handleResume = async () => {
     haptics.mediumImpact();
-    await onRecover();
-    router.push("/session");
+    // Only leave Home if the session actually came back. `recoverSession` returns false on a
+    // corrupt or already-consumed slot, and pushing anyway meant the session screen's own
+    // no-quest guard bounced straight back — a navigation round trip the hero sees as a flicker.
+    const recovered = await onRecover();
+    if (recovered) router.push("/session");
   };
 
   const handleDiscard = async () => {

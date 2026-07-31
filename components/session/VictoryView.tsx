@@ -58,6 +58,7 @@ export function VictoryView() {
   const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
   const savedRef = useRef(false);
+  const feedbackTouched = useRef(false);
 
   const isBossDefeat = Boolean(bossFight && bossFight.currentHp <= 0);
 
@@ -92,6 +93,17 @@ export function VictoryView() {
     runSave();
   }, [runSave]);
 
+  // The feeling can be tapped while the save is still in flight, but persisting it needs a
+  // session id that only exists once `result` lands. Writing it from the tap handler meant the
+  // early taps were dropped on the floor — the button lit up, the row kept `feedback: null`.
+  // Keyed on both, so a tap before the save and a tap after take the same path.
+  useEffect(() => {
+    if (!result || !feedbackTouched.current) return;
+    updateSessionFeedback(result.sessionId, feedback).catch(() => {
+      // A feeling that fails to save is not worth interrupting the victory screen for.
+    });
+  }, [result, feedback]);
+
   useEffect(() => {
     if (adventureRunStepId) {
       getAdventureStepOutroNarrative(adventureRunStepId, language).then((text) => {
@@ -124,9 +136,9 @@ export function VictoryView() {
 
   const handleFeedbackSelect = (value: FeedbackCode) => {
     selection();
+    feedbackTouched.current = true;
     const next = feedback === value ? null : value;
     setFeedback(next);
-    if (result) updateSessionFeedback(result.sessionId, next);
   };
 
   const handleViewVillage = () => {

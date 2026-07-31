@@ -19,7 +19,7 @@ spec PDFs converted to markdown, etc.), then ask the agent to **ingest** it into
   retention evidence, competitor teardown (Freeletics, NTC, Duolingo, Habitica), WHO guidelines.
   §8–11, added in v2: advanced calisthenics skills (the three skill families, submaximal hold
   programming, tendon adaptation), fat loss, muscle gain, mobility & flexibility. Ingested
-  2026-07-30 — see [changelog](../meta/changelog.md).
+  2026-07-30.
 
 ## Rules
 

@@ -22,7 +22,7 @@ const LEVELS: { id: TrainingLevel; labelKey: string }[] = [
 ];
 
 // Third onboarding step. Skippable — the training level is a starting signal for the
-// coach/suggestion layer, not a gate. See docs/planning/screen-redesign-proposals.md §2.
+// coach/suggestion layer, not a gate.
 // It hands over to the first-session offer (roadmap §14 H3).
 export default function TrainingLevelStep() {
   const router = useRouter();

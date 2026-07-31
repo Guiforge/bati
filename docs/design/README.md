@@ -20,8 +20,8 @@ related: [../README.md]
 
 - Reuse shared primitives first (`card`, `button`, `header`, `state`, `screen`).
 - If a screen needs a new visual pattern, add it to `design-system.md` before copying it elsewhere.
-- If a screen breaks a rule, flag it in `ui-checklist.md` and track it in
-  [../planning/ui-screen-audit-tracker.md](../planning/ui-screen-audit-tracker.md).
+- If a screen breaks a rule, flag it in `ui-checklist.md` and add it to the UI backlog in
+  [../planning/roadmap.md](../planning/roadmap.md) §2.
 
 ## Related
 

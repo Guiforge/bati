@@ -18,8 +18,7 @@ sources: [db/xp.ts, db/streaks.ts]
 
 > Replaces the former `economy/rewards-and-progression.md`. Resources, buildings, and Gold
 > are gone — the village is a **pure function of the session journal**, nothing is stored or
-> managed. See [system-redesign-options.md](../planning/system-redesign-options.md) for the
-> options considered and why.
+> managed. See [roadmap.md](../planning/roadmap.md) §7 — the decision is closed.
 
 ## Summary
 

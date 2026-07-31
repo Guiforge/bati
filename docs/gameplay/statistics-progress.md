@@ -63,9 +63,7 @@ rhythm" one.
 The previous version of this page specified 3 dedicated tables (`personal_records`,
 `streak_data`, `daily_stats`), rep-level charts, and a full stats dashboard. All of it is
 recomputable from the journal on read; dedicated tables are an implementation optimization
-(cache), not a product concept, so they don't belong in this design doc. See
-[system-redesign-options.md](../planning/system-redesign-options.md) (§6) for the option
-comparison.
+(cache), not a product concept, so they don't belong in this design doc.
 
 ## Related
 

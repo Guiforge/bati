@@ -14,7 +14,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 
 > 🧠 **This folder is maintained as an [LLM wiki](meta/wiki-protocol.md)** (Karpathy pattern): an agent
 > keeps pages cross-linked, consistent, and current. This README is the **catalog** —
-> read it first. Protocol → [wiki-protocol.md](meta/wiki-protocol.md) · change log → [changelog.md](meta/changelog.md) ·
+> read it first. Protocol → [wiki-protocol.md](meta/wiki-protocol.md) ·
 > conventions → [CONTRIBUTING.md](CONTRIBUTING.md) · source inbox → [raw/](raw/README.md).
 
 ---
@@ -44,12 +44,8 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 
 | Doc | What it covers |
 | --- | --- |
-| [roadmap.md](planning/roadmap.md) | ⭐ The roadmap — guardrails, open work, parking lot, closed decisions |
-| [ui-screen-audit-tracker.md](planning/ui-screen-audit-tracker.md) | Screen-by-screen critique/audit tracker + refonte actions |
-| *archived* | *history, not planning input* |
-| [screen-redesign-proposals.md](planning/screen-redesign-proposals.md) | The 5 nav/onboarding/village decisions — recorded and shipped |
-| [dev-execution-plan.md](planning/dev-execution-plan.md) | The plan that executed them — all 6 phases shipped 2026-07-20 |
-| [system-redesign-options.md](planning/system-redesign-options.md) | Progression-simplification options — chosen path shipped |
+| [roadmap.md](planning/roadmap.md) | ⭐ The only planning page — guardrails, open work, parking lot, closed decisions |
+| [../road2release.md](../road2release.md) | The critical path to v1: what blocks what, and in which order |
 
 ## 🎮 Gameplay Systems — [gameplay/](gameplay/README.md)
 

@@ -114,10 +114,8 @@ A full plan-generation system (goals with types, auto-built multi-week adventure
 push notifications) was previously designed here but never shipped. It adds three database
 tables and an algorithm that needs validation by a sports professional before it can safely
 tell someone what to do. A handful of rules against the existing journal delivers the "tell me
-what to do next" need without that cost. See
-[system-redesign-options.md](../planning/system-redesign-options.md) (§7) for the option
-comparison — a weekly suggested-quest list (Option B there) is the natural next step if user
-feedback asks for more direction than these rules give.
+what to do next" need without that cost. A weekly suggested-quest list is the natural next
+step if user feedback asks for more direction than these rules give.
 
 ## Related
 

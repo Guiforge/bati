@@ -3,7 +3,7 @@ title: Road to release — chemin critique vers la v1
 type: planning
 status: active
 updated: 2026-07-31
-related: [audit.md, docs/planning/roadmap.md, docs/planning/ui-screen-audit-tracker.md]
+related: [docs/planning/roadmap.md, AGENTS.md]
 ---
 
 # Road to release
@@ -11,9 +11,9 @@ related: [audit.md, docs/planning/roadmap.md, docs/planning/ui-screen-audit-trac
 ## Ce que ce document est, et n'est pas
 
 Ce n'est **pas** une deuxième roadmap. [`docs/planning/roadmap.md`](docs/planning/roadmap.md)
-reste la source sur *ce qui reste à faire* (§1 Release & distribution, §2 UI refonte), et
-[`audit.md`](audit.md) sur *ce qui a été corrigé et ce qui a été délibérément reporté*. Les
-redire ici les ferait diverger — le travers que l'audit a passé la journée à retirer.
+reste la source sur *ce qui reste à faire* (§1 Release & distribution, §2 UI refonte), et les
+règles de qualité d'[`AGENTS.md`](AGENTS.md) sur les habitudes qu'a laissées l'audit. Les redire
+ici les ferait diverger — le travers que l'audit a passé la journée à retirer.
 
 Ce document répond à une autre question : **dans quel ordre, et qu'est-ce qui bloque quoi.**
 C'est un chemin critique, pas une liste de tâches.
@@ -183,7 +183,7 @@ remplace.** Tout le reste de ce document a été vérifié en lisant du code ; c
 l'être.
 
 La roadmap §2 la cadre déjà, avec un avertissement qu'il faut prendre au sérieux : les coches
-par écran de `ui-screen-audit-tracker.md` **ont menti pendant des semaines**, parce que le
+par écran de l'ancien suivi d'audit UI **ont menti pendant des semaines**, parce que le
 primitif `AppButton` partagé portait encore l'anti-pattern sous les écrans marqués verts.
 
 À vérifier, dans l'ordre :
@@ -195,7 +195,7 @@ primitif `AppButton` partagé portait encore l'anti-pattern sous les écrans mar
    comportement réel n'a jamais été observé avec le réglage système activé.
 4. **Lisibilité en lumière vive** — `PRODUCT.md` l'exige explicitement (« variable gym
    lighting »), et une app dark-only s'y teste mal en intérieur.
-5. **Les 10 scopes** de `ui-screen-audit-tracker.md`, un par PR.
+5. **Les 9 scopes d'écran** listés dans la roadmap §2, un par PR.
 
 **Méthode** : un scope par PR, `npm run check` + `npm test` verts, captures avant/après. Ne
 jamais polir avant que P0/P1 soient partis.

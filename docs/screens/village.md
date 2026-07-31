@@ -4,7 +4,7 @@ type: screen
 route: /village
 status: active
 updated: 2026-07-20
-related: [../gameplay/progression.md, ../gameplay/boss-fights.md, ../planning/screen-redesign-proposals.md]
+related: [../gameplay/progression.md, ../gameplay/boss-fights.md]
 sources: [app/(tabs)/village.tsx]
 ---
 

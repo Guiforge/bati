@@ -2,8 +2,8 @@
 title: Bati Docs — LLM Wiki Protocol
 type: technical
 status: active
-updated: 2026-07-18
-related: [../README.md, changelog.md, ../CONTRIBUTING.md]
+updated: 2026-07-31
+related: [../README.md, ../CONTRIBUTING.md]
 ---
 
 # Bati Docs — LLM Wiki Protocol
@@ -26,7 +26,7 @@ related: [../README.md, changelog.md, ../CONTRIBUTING.md]
 | **Wiki** | `docs/<topic>/*.md` (one folder per domain) | Agent-maintained pages, grouped by topic folder (below). Humans mostly read. |
 | **Schema** | this file (`meta/wiki-protocol.md`) | Conventions + workflows. The most important file. |
 | **Catalog** | [`../README.md`](../README.md) | The navigable index. **Updated on every add/remove/rename.** Read it first. |
-| **Log** | [`changelog.md`](changelog.md) | Append-only record of every meaningful change. |
+| **Log** | `git log -- docs/` | The record of what changed and when. There is no hand-written change log: it duplicated git, and it drifted. |
 
 ---
 
@@ -35,18 +35,19 @@ related: [../README.md, changelog.md, ../CONTRIBUTING.md]
 | Folder | Covers |
 | :--- | :--- |
 | `product/` | Vision, positioning, user guide, feature overview |
-| `planning/` | Roadmap alignment (⭐ north star), roadmap archive, UI refactor, future ideas |
+| `planning/` | The roadmap, and only the roadmap (⭐ north star, open work, parking lot, closed decisions) |
 | `gameplay/` | Quests, adventures, boss fights, session flow, progression, stats, coach |
 | `design/` | Design system tokens, UI guide, checklist, exercise colors, mobile reference |
 | `architecture/` | Tech stack, project structure, database API |
 | `content/` | Content generation specs, workout design philosophy, image prompts |
 | `screens/` | One spec per app screen (route-level UI specs) |
-| `meta/` | This protocol + the changelog |
+| `meta/` | This protocol |
 | `raw/` | Read-only source inbox (external material, never authored here) |
 
-Every topic folder has its own `README.md` acting as a local table of contents. Adding a
-**new topic folder** is allowed: create it with a `README.md`, then add it here and in the
-root [`README.md`](../README.md) catalog.
+A topic folder holding more than one page has its own `README.md` acting as a local table of
+contents; a folder with a single page does not need one (`meta/` is the case). Adding a
+**new topic folder** is allowed: create it, then add it here and in the root
+[`README.md`](../README.md) catalog.
 
 ---
 
@@ -88,13 +89,13 @@ new source dropped in `raw/`).
 1. Find the right page (or create one in the correct topic folder).
 2. Write/update it; add or adjust cross-links to related pages.
 3. If a page was **added / removed / renamed**, update the topic folder's `README.md`
-   and the root [catalog](../README.md).
-4. Append an entry to [`changelog.md`](changelog.md): date · what changed · pages touched.
+   and the root [catalog](../README.md). Say what changed in the commit message; that is
+   the log.
 
 ### 2. Query — answer from the wiki
 1. Read the [catalog](../README.md) to locate relevant pages.
 2. Read those pages; answer with `[Text](../topic/file.md)` citations.
-3. If the answer is novel and durable, file it into a page (then do Ingest steps 3–4).
+3. If the answer is novel and durable, file it into a page (then do Ingest step 3).
 
 ### 3. Lint — health check
 Scan `docs/` (schedule it, or run on demand) for:
@@ -102,7 +103,9 @@ Scan `docs/` (schedule it, or run on demand) for:
 - **Duplicated / contradictory** content across pages.
 - **Missing frontmatter**; stale `updated`; `status` drift.
 - **Missing pages**: concepts referenced but without their own page.
-Record findings in `changelog.md` (or `outputs/lint-YYYY-MM-DD.md` for big passes).
+- **Pages that only record what shipped.** A tracker whose every line reads `fixed` is
+  noise: delete it, git keeps it. This is what emptied `planning/` down to the roadmap.
+Fix what you find in the same pass — a list of findings is one more page to let rot.
 
 ---
 
@@ -117,6 +120,6 @@ Record findings in `changelog.md` (or `outputs/lint-YYYY-MM-DD.md` for big passe
 
 ## 📎 See also
 
-- [../README.md](../README.md) — the catalog · [changelog.md](changelog.md) — the change log
+- [../README.md](../README.md) — the catalog
 - [../CONTRIBUTING.md](../CONTRIBUTING.md) — quick-start conventions
 - [../raw/README.md](../raw/README.md) — source inbox · [../architecture/technical-architecture.md](../architecture/technical-architecture.md) — the codebase it describes

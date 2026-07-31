@@ -697,6 +697,28 @@
     "onboarding_line": "Train within your limits. If you have a health condition, an injury, or you are pregnant, talk to a doctor first.",
     "read_more": "Read the safety notice"
   },
+  "privacy": {
+    "title": "Privacy",
+    "summary": "Bati collects nothing. Nothing you do in this app leaves your phone unless you send it yourself, deliberately, by email.",
+    "storage_title": "Where your training lives",
+    "storage_body": "Every session, set, quest, adventure, achievement and setting is written to a database inside this app's private storage on your device. It is never uploaded and never synced. There is no server to upload it to, and no account to attach it to. Deleting the app deletes all of it.",
+    "never_title": "What Bati never does",
+    "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. The app makes no network requests at all, at any point.",
+    "permissions_title": "Permissions",
+    "permissions_body": "Photos: only if you pick one as your avatar — it stays on your device. Notifications: only when you turn a reminder on yourself, and they are scheduled locally by your phone, never pushed from a server. The Android widget reads your streak from the same local database.",
+    "crashes_title": "Crash reports",
+    "crashes_body": "If the app crashes, the error is written to your device only. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
+    "children_title": "Children",
+    "children_body": "Bati is a general-audience fitness app and is not directed at children under 13. It collects no personal data from anyone, of any age.",
+    "contact_title": "Questions",
+    "contact_body": "Write to guillaume.pouyat@protonmail.com. Since the app holds no data about you, there is nothing for us to export or delete on your behalf — uninstalling erases every record it ever made.",
+    "updated": "Last updated 31 July 2026"
+  },
+  "settings.privacy": "Privacy",
+  "settings.report_bug": "Report a bug",
+  "settings.report_bug_count": "{{count}} crash",
+  "settings.report_bug_count_plural": "{{count}} crashes",
+  "settings.report_bug_empty": "Nothing recorded",
   "settings.safety": "Train safely",
   "settings.warmup": "Warm-up",
   "settings.notifications": "Oath reminder"

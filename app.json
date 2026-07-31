@@ -44,7 +44,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Utilisée pour choisir une photo comme avatar."
+          "photosPermission": "Used to pick a photo as your hero's avatar. The image stays on your device and is never uploaded."
         }
       ],
       [
@@ -65,6 +65,13 @@
         }
       ]
     ],
+    "locales": {
+      "en": "./locales/ios/en.json",
+      "fr": "./locales/ios/fr.json"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",

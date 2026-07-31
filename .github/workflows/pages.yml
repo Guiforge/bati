@@ -1,0 +1,39 @@
+# Publishes the legal pages the app stores require a URL for.
+#
+# Only `docs/legal/` is published, never `docs/` as a whole: the wiki holds the bug tracker,
+# the roadmap and the planning notes, and pointing Pages at the folder root would put all of
+# it on the open web to serve one privacy policy.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/legal/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# A deploy in flight is never worth cancelling; a queued one is.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs/legal
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v3
+      - id: deployment
+        uses: actions/deploy-pages@v4

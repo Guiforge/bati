@@ -697,6 +697,28 @@
     "onboarding_line": "Entraînez-vous dans vos limites. En cas de problème de santé, de blessure ou de grossesse, parlez-en d'abord à un médecin.",
     "read_more": "Lire les consignes de sécurité"
   },
+  "privacy": {
+    "title": "Confidentialité",
+    "summary": "Bati ne collecte rien. Rien de ce que vous faites ici ne quitte votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail.",
+    "storage_title": "Où vivent vos entraînements",
+    "storage_body": "Chaque séance, série, quête, aventure, haut fait et réglage est écrit dans une base de données située dans le stockage privé de l'application, sur votre appareil. Rien n'est envoyé, rien n'est synchronisé. Il n'existe aucun serveur où l'envoyer, ni aucun compte auquel le rattacher. Désinstaller l'application supprime l'ensemble.",
+    "never_title": "Ce que Bati ne fait jamais",
+    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. L'application ne fait aucune requête réseau, à aucun moment.",
+    "permissions_title": "Permissions",
+    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar — elle reste sur votre appareil. Notifications : uniquement quand vous activez vous-même un rappel, et elles sont programmées localement par votre téléphone, jamais poussées depuis un serveur. Le widget Android lit votre flamme dans cette même base locale.",
+    "crashes_title": "Rapports de crash",
+    "crashes_body": "En cas de plantage, l'erreur est écrite uniquement sur votre appareil. Rien n'est envoyé automatiquement. « Signaler un bug » ouvre votre propre application e-mail avec le rapport pré-rempli : vous pouvez le lire, le modifier ou le supprimer avant envoi. Si vous ne l'envoyez jamais, il ne quitte jamais votre téléphone.",
+    "children_title": "Enfants",
+    "children_body": "Bati est une application de sport tout public, non destinée aux enfants de moins de 13 ans. Elle ne collecte aucune donnée personnelle, quel que soit l'âge.",
+    "contact_title": "Questions",
+    "contact_body": "Écrivez à guillaume.pouyat@protonmail.com. Comme l'application ne détient aucune donnée vous concernant, nous n'avons rien à exporter ni à supprimer pour vous — la désinstallation efface chaque enregistrement qu'elle a produit.",
+    "updated": "Dernière mise à jour : 31 juillet 2026"
+  },
+  "settings.privacy": "Confidentialité",
+  "settings.report_bug": "Signaler un bug",
+  "settings.report_bug_count": "{{count}} plantage",
+  "settings.report_bug_count_plural": "{{count}} plantages",
+  "settings.report_bug_empty": "Rien d'enregistré",
   "settings.safety": "S'entraîner en sécurité",
   "settings.warmup": "Échauffement",
   "settings.notifications": "Rappel du serment"

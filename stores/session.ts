@@ -685,11 +685,14 @@ export const useSessionStore = create<SessionState>()(
         // Non-blocking: never fail a logged session over a widget redraw.
       });
 
-      // Check for new achievements (on the base session XP, before the oath bonus)
+      // Check for new achievements (on the base session XP, before the oath bonus).
+      // `startTime`, not `new Date()`: the session row is written with the start too, and the
+      // time-of-day achievements read the hour off this. A workout begun at 06:40 and finished
+      // at 07:05 is an early bird; reading the clock at save time said otherwise.
       const newAchievements = await checkForNewAchievements({
         durationSeconds,
         xpEarned,
-        performedAt: new Date(),
+        performedAt: new Date(startTime),
         questId: quest?.id ?? null,
       });
 

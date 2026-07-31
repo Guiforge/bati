@@ -54,9 +54,15 @@ node -e '
   fs.writeFileSync("app.json", after);
 ' "$next"
 
-git add app.json
+# `npm version` on its own refuses to run with anything staged, and app.json has to be staged
+# to ride along in the same commit — so it only writes package.json here, and the commit and tag
+# are made by hand. One commit, both files, one tag: a version that exists in package.json and
+# not in app.json is an app that reports a number it is not.
+npm version "$next" --no-git-tag-version --allow-same-version >/dev/null
 
-npm version "$next" --message "chore(release): v%s" >/dev/null
+git add app.json package.json package-lock.json
+git commit -q -m "chore(release): v$next"
+git tag -a "v$next" -m "v$next"
 
 git push --follow-tags
 

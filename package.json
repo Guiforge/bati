@@ -118,6 +118,7 @@
     "maestro": "bash scripts/maestro.sh",
     "prepare": "prek install",
     "release": "bash scripts/release.sh",
+    "screenshots": "bash scripts/screenshots.sh",
     "start": "expo start",
     "test": "jest",
     "test:watch": "jest --watch",

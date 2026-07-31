@@ -74,3 +74,6 @@ app-example
 
 
 .impeccable
+
+# Raw device captures: an input to the store shots, not an artefact worth versioning.
+fastlane/raw*/

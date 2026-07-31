@@ -1,0 +1,95 @@
+# Capture the store screenshots, in order, from a real device.
+#
+#   npm run screenshots            # raw shots into fastlane/raw/
+#   npm run screenshots:frame      # dresses them into fastlane/metadata/.../phoneScreenshots/
+#
+# Deliberately not a test: nothing here asserts. It walks the app to the six screens worth
+# showing and photographs each one. If a step drifts, the shot is wrong rather than the run red,
+# so look at the output before shipping it.
+#
+# Runs a full session first, because every interesting screen is empty on a fresh install — an
+# empty village and a blank journal sell nothing. That is why this takes a few minutes.
+#
+# The device language decides the language of the shots. Switch the phone to French and run it
+# again into fastlane/raw-fr/ for the fr-FR listing.
+appId: com.guiforge.bati
+tags:
+  - screenshots
+---
+- launchApp:
+    clearState: true
+
+- runFlow: subflows/complete-onboarding.yaml
+
+# --- 1. Home, before anything has been logged -------------------------------
+# The first screen a new user meets, and the one they will see most.
+- takeScreenshot: ../fastlane/raw/1-home
+
+# --- 2. The quest gallery ---------------------------------------------------
+- tapOn:
+    id: "tab-quests"
+- assertVisible:
+    id: "quests-quest-card"
+- takeScreenshot: ../fastlane/raw/2-quests
+
+# --- 3. A session in progress ----------------------------------------------
+# The heart of the app: this is where the reps happen.
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+- assertVisible:
+    id: "quest-start"
+- takeScreenshot: ../fastlane/raw/3-quest-detail
+- tapOn:
+    id: "quest-start"
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-skip-warmup"
+    timeout: 15000
+    optional: true
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 20000
+- takeScreenshot: ../fastlane/raw/4-session
+
+# --- 4. Through to victory --------------------------------------------------
+- repeat:
+    times: 40
+    while:
+      notVisible:
+        id: "session-victory-continue"
+    commands:
+      - tapOn:
+          id: "session-complete-exercise"
+          optional: true
+      - tapOn:
+          id: "session-skip-rest"
+          optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-continue"
+    timeout: 25000
+- takeScreenshot: ../fastlane/raw/5-victory
+- tapOn:
+    id: "session-victory-continue"
+
+# --- 5. The village, now that something has been earned ---------------------
+- tapOn:
+    id: "tab-village"
+- assertVisible:
+    id: "village-screen"
+- takeScreenshot: ../fastlane/raw/6-village
+
+# --- 6. The journal, with one session in it ---------------------------------
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+- takeScreenshot: ../fastlane/raw/7-journal

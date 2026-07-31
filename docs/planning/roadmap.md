@@ -46,28 +46,40 @@ mini-game. If a reward surface competes with starting or continuing a workout, d
 
 ---
 
-## 1. Release & distribution — not started
+## 1. Release & distribution — in progress
 
-The one large block nothing has touched. Nothing here is blocked; it has simply never been the
-next thing.
+Everything in this block that is code is done. What remains needs an account, a card, or a
+device, and cannot be written here.
 
-**Build optimisation**
+**Done (2026-07-31)**
 
-- Bundle-size analysis: tree-shaking audit, unused-dependency sweep, code splitting.
-- Asset optimisation: the exercise folder is mid-conversion (PNG ~850 KB → JPG ~75 KB a frame —
-  see [../content/missing-image.md](../content/missing-image.md) §6); finish it, then splash and
-  font subsetting.
-- Performance profiling: startup time, memory, frame rate under animation.
+- Privacy policy: [`../legal/privacy.md`](../legal/privacy.md) (bilingual, one URL for both
+  stores), the offline screen at `app/privacy.tsx`, and a Pages workflow that publishes
+  **only** `docs/legal/` — pointing Pages at the folder root would put this tracker and the
+  roadmap on the open web to serve one policy.
+- Crash capture: [`src/crashLog.ts`](../../src/crashLog.ts). Local-only, sent by the hero via
+  `mailto:` or not at all. **Does not catch native crashes** — that needs a native handler, and
+  `react-native-exception-handler` is unmaintained since 2022 with no Expo config plugin, so it
+  cannot be linked under CNG. Revisit only if reports point at crashes JS never sees.
+- Asset conversion finished: the 28 remaining exercise PNGs became JPGs, `assets/` went from
+  81 MB to 60 MB. The icons were already 1024×1024 and losslessly compressed as far as they go
+  — they are detailed artwork in a format that suits it badly, and lossy quantisation is not
+  worth risking the app's face over ~400 KB that the build pipeline resizes anyway.
+- `eas.json`: production profile builds an app-bundle with `autoIncrement`; submit targets the
+  Play `internal` track.
+- `app.json`: `runtimeVersion` policy set **before** the first signed build, because changing it
+  afterwards breaks OTA. iOS permission strings localised through Expo's `locales` field
+  (`locales/ios/*.json`) rather than the single hardcoded French string that shipped before.
 
-**Android**
+**Still open — none of it is code**
 
-- EAS Build: `eas.json`, development / preview / production profiles.
-- Signing keystore, R8 config, adaptive icons, Android 12+ splash.
-
-**iOS**
-
-- Apple Developer account, provisioning profiles, certificates.
-- App icons at every size, launch screen, permission usage descriptions.
+- Apple Developer account, provisioning profiles, certificates. Longest lead time in the whole
+  plan; start it first.
+- Android signing keystore.
+- `eas init` + `eas update:configure` to mint the project id and the `updates` block. Left
+  undone deliberately: fabricating a project id would be worse than an empty field.
+- Store listings, screenshots, and Google's Data Safety form (the privacy URL feeds it).
+- Bundle-size analysis and performance profiling: startup, memory, frame rate under animation.
 
 ## 2. UI refonte — the closing pass
 

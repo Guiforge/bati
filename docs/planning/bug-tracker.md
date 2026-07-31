@@ -2,17 +2,24 @@
 title: Bug Tracker
 type: tracker
 status: active
-updated: 2026-07-29
+updated: 2026-07-31
 related: [roadmap.md, ../architecture/database-api.md, ../gameplay/session-flow.md]
 ---
 
 # Bug Tracker
 
-> Résultat d'un audit de lecture du code (2026-07-29). `tsc` et les 274 tests passent :
-> aucun de ces bugs n'est attrapé par la suite actuelle. Chaque entrée donne le symptôme
-> visible, la cause exacte et la piste de correction.
+> Résultat d'un audit de lecture du code (2026-07-29), repassé le 2026-07-31.
+> **Les 22 entrées sont closes.** Chacune donne le symptôme visible, la cause exacte et ce qui
+> a été fait.
 >
 > Statuts : `open` · `fixed` · `wontfix`
+>
+> **Ce document a menti dans les deux sens et mérite d'être lu avec méfiance.** Au 31/07 il
+> listait dix bugs `open` : quatre (006, 007, 008, 011) étaient déjà corrigés depuis des jours,
+> et BUG-009 ne nommait qu'un site sur six. Un tracker tenu à la main dérive dès qu'on corrige
+> sans revenir l'éditer. La règle du roadmap s'applique ici aussi : **un grep frais vaut mieux
+> que n'importe quelle case cochée sur cette page**, et un bug qui mérite de ne pas revenir
+> mérite un test, pas une ligne de markdown.
 
 ## P0 — fonctionnalités mortes
 
@@ -91,7 +98,7 @@ en avance ou en retard selon le fuseau.
 **Fix** : `dayKey()` ici aussi, et `startOfDay` réimplémenté à la main remplacé par celui de
 date-fns.
 
-### BUG-006 · La clé de semaine casse au passage d'année — `open`
+### BUG-006 · La clé de semaine casse au passage d'année — `fixed`
 
 **Symptôme** : fin décembre / début janvier, les barres hebdomadaires du journal se
 réordonnent et la comparaison « cette semaine vs la précédente » compare les mauvaises
@@ -107,7 +114,7 @@ n'utilise pas de dates à cheval sur une année.
 **Fix** : `format(weekStart, "RRRR-'I'II")` (année ISO + semaine ISO), ou trier sur
 `weekStart.getTime()` plutôt que sur la chaîne.
 
-### BUG-007 · Les tendances ignorent les semaines sans séance — `open`
+### BUG-007 · Les tendances ignorent les semaines sans séance — `fixed`
 
 **Symptôme** : une semaine sans entraînement n'apparaît pas et le badge de tendance affiche
 « stable » ou « ↑ » alors que l'utilisateur n'a rien fait.
@@ -119,7 +126,7 @@ de pause, la comparaison porte sur deux semaines vieilles d'un mois. Idem pour l
 
 **Fix** : remplir la fenêtre (`weeks` / `months`) avec des périodes à zéro avant d'agréger.
 
-### BUG-008 · Les records mélangent répétitions et secondes — `open`
+### BUG-008 · Les records mélangent répétitions et secondes — `fixed`
 
 **Symptôme** : un gainage de 60 s remonte comme record de « reps ». Un exercice fait tantôt
 en temps tantôt en reps compare deux unités dans le même max.
@@ -132,31 +139,46 @@ produit.
 
 **Fix** : grouper par `(exerciseId, resultType)` et choisir le `recordType` en conséquence.
 
-### BUG-009 · L'équilibre musculaire additionne reps et secondes — `open`
+### BUG-009 · Six agrégats additionnent reps et secondes — `fixed`
 
-**Cause** : [`db/muscleBalance.ts:88`](../../db/muscleBalance.ts#L88) fait
-`data.volume += row.resultValue` quel que soit `resultType`. Un gainage de 60 s pèse six fois
-un set de 10 pompes. `db/bossFights.ts` a déjà résolu exactement ce problème avec
-`toRepEquivalent()` ([:52](../../db/bossFights.ts#L52)) — la logique existe, elle n'est juste
-pas réutilisée ici.
+**Cause** : `resultValue` stocke tantôt des reps tantôt des secondes, et `resultType` est la
+seule colonne qui le dit. Un gainage de 60 s pesait six fois un set de 10 pompes.
 
-**Impact** : fausse les zones faibles, donc la suggestion de quête de l'accueil, le village
-(`getStyleVolumes`, overlay de sport dominant) et la carte d'équilibre du journal.
+**Cette entrée ne nommait qu'un site sur six.** L'audit du 31/07 a trouvé la même cause à
+`db/muscleBalance.ts` (×2, dont `getPatternBalance`), `db/village.ts` (×2), `db/completed.ts`
+(`getRecentContributingSessions`) et `db/oaths.ts` (×2). Corriger le seul site listé aurait
+laissé le village et les serments faux — et personne ne serait revenu vérifier.
 
-**Fix** : réutiliser `toRepEquivalent` (l'extraire dans un module partagé).
+**Impact** : zones faibles, donc suggestion de quête de l'accueil ; niveaux de bâtiments du
+village ; ratio push/pull ; carte d'équilibre du journal ; progression des serments.
+
+**Corrigé** : `toRepEquivalent` extrait de `db/bossFights.ts` vers
+[`db/workUnits.ts`](../../db/workUnits.ts), plus `repEquivalentSql` pour les agrégats qui
+tournent en SQL. Les six sites l'utilisent.
+
+**Sauf `exercise_pr`**, qui est un bug distinct sous la même cause : une cible de record est
+écrite dans l'unité de l'exercice — `lsit_30` vaut 30 **secondes**, `pullups_15` vaut 15 reps.
+Convertir y aurait affiché « 10 / 30 » à un héros tenant déjà son L-Sit de 30 s. Ce site
+compare désormais dans l'unité majoritaire de l'exercice au lieu de convertir.
+
+Aucun préréglage de serment livré ne change de valeur : `pushups_1000` est en reps, où la
+conversion est l'identité.
 
 ## P2 — comportements gênants
 
-### BUG-010 · Le ressenti coché pendant la sauvegarde est perdu — `open`
+### BUG-010 · Le ressenti coché pendant la sauvegarde est perdu — `fixed`
 
 **Cause** : [`components/session/VictoryView.tsx:125`](../../components/session/VictoryView.tsx#L125)
 n'écrit que `if (result)`. Les boutons ne sont pas désactivés pendant le spinner : le choix
 s'affiche sélectionné mais n'est jamais persisté (la session est créée avec `feedback: null`).
 
-**Fix** : désactiver les boutons tant que `result` est nul, ou rejouer la sélection en
-attente une fois `result` arrivé.
+**Corrigé** : l'écriture quitte le handler de tap pour un effet clé sur `result` **et**
+`feedback`, avec un ref qui distingue « pas encore touché » de « désélectionné ». Un tap avant
+et un tap après la sauvegarde prennent le même chemin. Désactiver les boutons aurait été plus
+court mais aurait éteint l'écran de victoire pendant tout le spinner.
+Couvert par [`__tests__/victory-view.test.tsx`](../../__tests__/victory-view.test.tsx).
 
-### BUG-011 · Le compteur de reps ne se réinitialise pas quand le repos vaut 0 — `open`
+### BUG-011 · Le compteur de reps ne se réinitialise pas quand le repos vaut 0 — `fixed`
 
 **Cause** : [`components/session/ActiveExerciseView.tsx:38`](../../components/session/ActiveExerciseView.tsx#L38)
 initialise `adjustedReps` avec `useState(targetValue)`, sans effet de reset sur
@@ -166,7 +188,7 @@ elle reste montée et garde la valeur de l'exercice précédent.
 
 **Fix** : `key={currentExerciseIndex}` sur la vue, ou un effet de reset.
 
-### BUG-012 · La reprise après crash perd l'étape de warm-up — `open`
+### BUG-012 · La reprise après crash perd l'étape de warm-up — `fixed`
 
 **Cause** : deux sérialisations divergentes du même état. `saveSessionState()`
 ([`hooks/useSessionRecovery.ts:169-186`](../../hooks/useSessionRecovery.ts#L169-L186)) inclut
@@ -181,23 +203,29 @@ résultats change, ou sur pause — rien de tout ça ne bouge pendant le warm-up
 **Fix** : une seule fonction de sérialisation, appelée par l'abonnement ; ajouter
 `warmupIndex` aux valeurs surveillées.
 
-### BUG-013 · Recommencer un round frappe le boss deux fois — `open`
+### BUG-013 · Recommencer un round frappe le boss deux fois — `fixed`
 
 **Cause** : [`stores/session.ts:249-272`](../../stores/session.ts#L249-L272) retire les
 résultats du round courant, mais les dégâts ont déjà été écrits en base par `dealDamage`
 (transaction immédiate à chaque exercice). Refaire le round réinflige les dégâts.
 
-**Fix** : journaliser les dégâts en fin de session, ou annuler les entrées de
-`bossDamageLog` du round au moment du restart. *(Bloqué en pratique par BUG-002.)*
+**Corrigé** : les dégâts ne touchent plus la base en cours de séance. `completeExercise` banque
+un `PendingHit` (qui porte son `roundIndex`) et `saveSession` les persiste en une fois via
+`persistSessionDamage`. `restartRound` défausse les hits de son propre round et rend les PV.
+Cela règle aussi le cas où abandonner une séance gardait les dégâts sans séance pour les
+justifier. `dealDamage` n'a plus d'appelant en production.
 
-### BUG-014 · « Lève-tôt » / « Oiseau de nuit » lisent l'heure de sauvegarde — `open`
+Ce bug était classé P2 « bloqué par BUG-002 ». BUG-002 corrigé, les boss tournent : il était
+devenu vivant, pas théorique.
+
+### BUG-014 · « Lève-tôt » / « Oiseau de nuit » lisent l'heure de sauvegarde — `fixed`
 
 **Cause** : [`stores/session.ts:493`](../../stores/session.ts#L493) passe
 `performedAt: new Date()` à `checkForNewAchievements`, alors que la ligne de session est
 écrite avec `new Date(startTime)`. `db/achievements.ts:614` compare donc l'heure de **fin**.
 Une séance commencée à 6 h 40 et finie à 7 h 05 ne débloque pas « lève-tôt ».
 
-**Fix** : passer `new Date(startTime)`.
+**Corrigé** : `performedAt: new Date(startTime)`, la même valeur que la ligne de session.
 
 ### BUG-015 · Haptique de succès parasite au lancement du décompte — `fixed`
 
@@ -207,7 +235,7 @@ même `remainingSeconds === 0` périmé que BUG-003. Le `finishCountdown` est bi
 
 **Fix** : même garde que BUG-003.
 
-### BUG-016 · Un serment sans `fulfilledAt` ne peut plus jamais être accompli — `open`
+### BUG-016 · Un serment sans `fulfilledAt` ne peut plus jamais être accompli — `fixed`
 
 **Cause** : `isOath()` ([`db/oaths.ts:87-99`](../../db/oaths.ts#L87-L99)) ne valide pas
 `fulfilledAt` et ne le normalise pas. Si le JSON stocké ne contient pas la clé,
@@ -215,7 +243,13 @@ même `remainingSeconds === 0` périmé que BUG-003. Le `finishCountdown` est bi
 ([:268](../../db/oaths.ts#L268)) sort immédiatement : le serment est traité comme déjà
 accompli, sans bonus ni écran de victoire.
 
-**Fix** : normaliser à `fulfilledAt ?? null` dans `getOath()`.
+**Corrigé** : `getOath()` normalise `fulfilledAt ?? null` et `exerciseId ?? null`. `isOath`
+valide en plus que `metric` appartient bien à `oathMetrics` — un `metric` inconnu passait la
+validation, atteignait un `switch` sans `default`, renvoyait `undefined`, et transformait
+chaque nombre dérivé en `NaN` : une barre de progression sans valeur et sans erreur.
+
+Le blob « valide mais incomplet » n'était couvert par aucun test — celui qui existait ne
+testait que du JSON franchement corrompu, qui n'a jamais été le cas dangereux.
 
 ## P1 — trouvés en cherchant la racine de BUG-004/005 (2026-07-29)
 

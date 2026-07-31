@@ -7,6 +7,8 @@ permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
 
+<p align="right"><strong>English</strong> · <a href="#politique-de-confidentialité--bati">Français</a></p>
+
 # Privacy Policy — Bati
 
 **Last updated: 31 July 2026**
@@ -78,6 +80,8 @@ Questions about this policy — and anything else: a bug, an idea, a feature you
 **feedback.bati@proton.me**
 
 ---
+
+<p align="right"><a href="#privacy-policy--bati">English</a> · <strong>Français</strong></p>
 
 # Politique de confidentialité — Bati
 

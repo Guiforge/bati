@@ -87,7 +87,16 @@ jobs:
             echo "keystorepass: $KEYSTORE_PASSWORD"
             echo "keypass: $KEYSTORE_PASSWORD"
           } >> fdroid/config.yml
-          # `-c` reads metadata straight from the APKs, so a release needs no hand-written file.
+          # The store copy lives once, in fastlane/metadata — Play and F-Droid read the same
+          # layout, so neither ends up with a stale copy of the other's. F-Droid wants it under
+          # metadata/<applicationId>/<locale>/, which is the only difference.
+          for locale in fastlane/metadata/android/*/; do
+            name=$(basename "$locale")
+            dest="fdroid/metadata/com.guiforge.bati/$name"
+            mkdir -p "$dest"
+            cp -r "$locale". "$dest/"
+          done
+          # `-c` also reads what it can straight from the APK, so a release needs no extra file.
           (cd fdroid && fdroid update -c --pretty)
           # The keys must never reach Pages — everything copied below is served publicly.
           rm -f fdroid/keystore.p12 fdroid/config.yml

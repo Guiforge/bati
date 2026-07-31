@@ -1,0 +1,4 @@
+First public build.
+
+Quests, adventures, boss fights, the village, oaths and the journal — all offline,
+with no account and no network requests of any kind.

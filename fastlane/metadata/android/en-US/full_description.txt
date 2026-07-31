@@ -1,0 +1,24 @@
+Train like a hero, build like a king.
+
+Bati turns strength training into a dark-fantasy RPG. A workout is a quest. Reps land as damage on a boss. The muscles you actually work raise the buildings of a village that grows out of what you lifted — not out of what you bought.
+
+SPORT FIRST, RPG SECOND
+The training logic leads and the game amplifies it. Nothing decorative gets between you and your next set: large tap targets, high-contrast text, and a screen designed for one hand in a noisy gym.
+
+WHAT YOU GET
+• Quests — guided sessions with targets that adapt to your level
+• Adventures — multi-session campaigns with a story between steps
+• Boss fights — reps become damage; weaknesses and criticals make the numbers mean something
+• A village — buildings level up from the volume you actually logged
+• Oaths — pick one goal and let the app hold you to it
+• A journal — history, personal records, streaks, muscle balance
+
+NOTHING LEAVES YOUR PHONE
+No account. No sign-up. No servers. No analytics, no ads, no tracking of any kind. Bati makes no network requests at all: your training history lives in a database on your device and nowhere else. Uninstalling it destroys every record the app ever made.
+
+That is not a setting you have to find. It is the whole architecture.
+
+BODYWEIGHT FIRST
+The exercise catalogue is built around what you can do with no equipment, and adapts if you own some. Warm-ups are dynamic and scaled to the session in front of you, because a five-minute warm-up before a six-minute workout is a warm-up nobody does twice.
+
+Open source: https://github.com/Guiforge/bati

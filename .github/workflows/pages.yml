@@ -75,14 +75,17 @@ jobs:
         if: steps.fdroid.outputs.ready == 'true'
         run: pip install "setuptools<81" fdroidserver
 
-      - name: Take the APK from the release build
+      # From the published Release, not the build artefact. Artefacts belong to one run — a manual
+      # re-deploy has none to find, which is exactly how this failed the first time — and they
+      # expire after 90 days, while the index has to keep describing an APK that still exists.
+      - name: Take the APK from the latest release
         if: steps.fdroid.outputs.ready == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: apk
-          path: fdroid/repo
-          run-id: ${{ github.event.workflow_run.id || github.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p fdroid/repo
+          gh release download --pattern '*.apk' --dir fdroid/repo --clobber
+          ls -la fdroid/repo
 
       - name: Rebuild the index
         if: steps.fdroid.outputs.ready == 'true'

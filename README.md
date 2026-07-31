@@ -41,6 +41,47 @@ architecture, not a setting you have to find.
 > on Google Play or the App Store yet, and the APKs below are signed by me rather than by a store.
 > Bugs and rough edges are expected — [tell me about them](#contributing), that is the point.
 
+## See it
+
+<div align="center">
+<table border="0">
+<tr>
+<td width="33%"><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/1-home.png" alt="Home: your next session, one tap away" /></td>
+<td width="33%"><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/2-quests.png" alt="Quests: every workout is a quest" /></td>
+<td width="33%"><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/4-session.png" alt="Mid-session: every rep does damage" /></td>
+</tr>
+<tr>
+<td><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/5-boss.png" alt="Boss fights: some sessions fight back" /></td>
+<td><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/6-victory.png" alt="Victory: the loot drops when the work is done" /></td>
+<td><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/7-village.png" alt="Village: your reps built all of this" /></td>
+</tr>
+</table>
+
+<sub>Real screenshots from a real device, shown here in French — nothing is a mockup.
+The app ships in English and French; <code>npm run screenshots</code> captures either.</sub>
+
+</div>
+
+## What it does
+
+**Every workout is a quest.** A campaign with a story, chapters and a map — not a list of sets you
+tick off. You pick the next quest; it knows what you trained last.
+
+**Your reps land as damage.** Finish a set and the boss takes the hit. The bar moves because you
+moved, and the fight is over when the session is.
+
+**Some sessions fight back.** Boss fights close a chapter and ask for a real effort — the one
+session in the arc you have to show up for.
+
+**The village is made of what you lifted.** Train shoulders, the forge rises. Nothing in it can be
+bought, skipped or rushed; every building is a receipt for work you actually did.
+
+**Years of history, on one screen.** Streaks, records, muscle balance and every session you ever
+finished — read from a database on your phone, with nothing to log in to.
+
+**No account, no network.** Bati makes no requests at all. There is no server to leak, no analytics
+to opt out of, and no cloud copy of your training. [Privacy policy](https://guiforge.github.io/bati/privacy/).
+
 ## This repo is heavily vibe coded, and says so
 
 Most of this codebase was written with AI assistance, in long conversations rather than

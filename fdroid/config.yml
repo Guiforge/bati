@@ -1,0 +1,21 @@
+# F-Droid repository config.
+#
+# The passwords are deliberately absent: .github/workflows/pages.yml appends `keystorepass` and
+# `keypass` from the FDROID_KEYSTORE_PASSWORD secret at build time, and deletes this file again
+# before anything is published — everything under fdroid/ is served publicly.
+#
+# keystore.p12 is gitignored (*.p12). Losing it means every subscriber has to re-add the
+# repository by hand, so it belongs in the same backup as the APK signing key.
+# see https://gitlab.com/fdroid/fdroidserver/blob/2.4.5/examples/config.yml
+sdk_path: $ANDROID_HOME
+keystore: keystore.p12
+repo_keyalias: bati-repo
+keydname: CN=bati-repo, OU=F-Droid
+
+repo_url: https://guiforge.github.io/bati/fdroid/repo
+repo_name: Bati
+repo_description: >-
+  Dark-fantasy fitness RPG. Offline-first: no account, no servers, no tracking.
+  Turn workouts into quests, boss fights and a village built by your training.
+repo_icon: icon.png
+archive_older: 0

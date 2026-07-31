@@ -10,6 +10,7 @@ import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { installCrashHandler, recordCrash } from "@/src/crashLog";
 import { rescheduleOathReminder } from "@/src/notifications";
 import { AppBackground } from "@/src/ui/AppBackground";
 import { requestFlameWidgetUpdate } from "@/src/widget";
@@ -19,6 +20,10 @@ import "../i18n";
 import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);
+
+// Module scope, so it is armed before the first component renders — a crash during startup is
+// the one most worth having a trace of. Writes to the local database only; see src/crashLog.ts.
+installCrashHandler();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -108,7 +113,7 @@ export default function RootLayout() {
               <PortalProvider>
                 <DatabaseProvider onReady={handleDatabaseReady}>
                   <ToastProvider>
-                    <ErrorBoundary>
+                    <ErrorBoundary onError={(error) => recordCrash("render", error)}>
                       <AppBackground />
                       <Slot />
                     </ErrorBoundary>

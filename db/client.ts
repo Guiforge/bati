@@ -62,6 +62,18 @@ export function reopenDatabase() {
   });
 }
 
+/**
+ * The raw expo-sqlite handle, for the one caller that cannot await.
+ *
+ * A fatal JS error gives the app a single tick before the runtime tears it down, which is not
+ * enough for an awaited insert to flush — and a crash log that loses exactly the crashes that
+ * killed the app is worse than none. `src/crashLog.ts` uses `runSync` on this handle for that
+ * path only. A function rather than the binding itself because `reopenDatabase` reassigns it.
+ */
+export function getRawDb() {
+  return expoDb;
+}
+
 export async function resetDatabase() {
   try {
     const maybeDb = expoDb as unknown as {

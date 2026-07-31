@@ -35,6 +35,7 @@ import {
 } from "@/db/village";
 import { computeSessionXp } from "@/db/xp";
 import { rescheduleOathReminder } from "@/src/notifications";
+import { reportError } from "@/src/reportError";
 import { requestFlameWidgetUpdate } from "@/src/widget";
 
 export type SessionStatus =
@@ -730,8 +731,9 @@ useSessionStore.subscribe(
       if (prev.status !== "idle" && prev.status !== "finished") {
         try {
           await preferences.clearSavedSession();
-        } catch {
-          // Error handled silently
+        } catch (error) {
+          // A slot that will not clear offers the hero a session they already finished.
+          reportError("session.clearSavedSession", error);
         }
       }
       return;
@@ -778,8 +780,10 @@ useSessionStore.subscribe(
           savedAt: Date.now(),
         };
         await preferences.setSavedSession(JSON.stringify(savedState));
-      } catch {
-        // Error handled silently
+      } catch (error) {
+        // This is the whole crash-recovery safety net. If it stops writing, nothing looks
+        // wrong until the app dies mid-session and the workout is gone.
+        reportError("session.saveSnapshot", error);
       }
     }
   },

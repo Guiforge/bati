@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx } from "./client";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
@@ -207,7 +208,11 @@ export const preferences = {
         if (typeof parsed.hour === "number" && typeof parsed.minute === "number") {
           return parsed;
         }
-      } catch {}
+      } catch (error) {
+        // Falling back to 18:00 is correct, but a stored value that will not parse means
+        // the hero's chosen reminder time is being ignored every single day.
+        reportError("preferences.notificationTime", error);
+      }
     }
     // Default to 18:00 (6 PM)
     return { hour: 18, minute: 0 };

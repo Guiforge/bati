@@ -115,7 +115,10 @@ export function VictoryView() {
         defaultValue: `I just completed the '${questTitle}' quest and earned ${result?.xpEarned ?? 0} XP in Bati! ⚔️ #BatiApp`,
       });
       await Share.share({ message });
-    } catch {}
+    } catch {
+      // Dismissing the share sheet rejects. That is the hero changing their mind, not a
+      // failure — there is nothing to report and nothing to tell them.
+    }
   };
 
   const handleFeedbackSelect = (value: FeedbackCode) => {

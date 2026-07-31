@@ -1,5 +1,6 @@
 import { type AudioPlayer, type AudioSource, createAudioPlayer } from "expo-audio";
 import { useEffect, useRef } from "react";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 export function useSound() {
@@ -18,7 +19,11 @@ export function useSound() {
       const player = createAudioPlayer(soundFile);
       playerRef.current = player;
       player.play();
-    } catch (_error) {}
+    } catch (error) {
+      // A sound that will not decode must never take the session down with it — but it should
+      // not vanish either, or "the app went quiet" has nowhere to start.
+      reportError("sound.play", error);
+    }
   }
 
   useEffect(() => {

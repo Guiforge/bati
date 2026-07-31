@@ -18,6 +18,7 @@ import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 type TabType = "history" | "stats";
@@ -119,8 +120,10 @@ export default function JournalScreen() {
       });
 
       setHistory(entries);
-    } catch {
-      // Error handled silently
+    } catch (error) {
+      // The journal renders its empty state either way; without this, a read that keeps
+      // failing is indistinguishable from a hero who has not trained yet.
+      reportError("journal.loadHistory", error);
     } finally {
       setLoading(false);
     }

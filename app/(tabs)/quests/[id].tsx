@@ -34,6 +34,7 @@ import { getCached } from "@/db/queryCache";
 import type { Quest, Target } from "@/db/quests";
 import type { DifficultyCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
+import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -308,8 +309,9 @@ export default function QuestDetails() {
           setShowNarrative(true);
           return;
         }
-      } catch {
-        // Error handled silently
+      } catch (error) {
+        // Deliberate fall-through: no narrative is a fine session, so the hero still trains.
+        reportError("quest.introNarrative", error);
       }
     }
 

@@ -11,6 +11,7 @@ import {
   type MuscleBalance,
   type PatternBalance,
 } from "@/db/muscleBalance";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 const MUSCLE_COLORS: Record<string, ColorTokens> = {
@@ -40,8 +41,10 @@ export function MuscleBalanceCard() {
         ]);
         setBalance(muscles);
         setPatterns(byPattern);
-      } catch {
-        // Error handled silently
+      } catch (error) {
+        // Same trap as the journal's history: a card that fails to load looks exactly like a
+        // card with nothing to show.
+        reportError("journal.muscleBalance", error);
       } finally {
         setIsLoading(false);
       }

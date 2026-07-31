@@ -76,6 +76,31 @@ The full account is in [`audit.md`](audit.md); these are the habits that come ou
   but they must keep reading the same saved config, or Home and the quest screen will start
   different sessions for the same quest.
 
+## Branching and releases
+
+**main is merge-only.** Work on a branch, open a pull request, let CI go green, merge.
+
+```bash
+git switch -c my-change
+npm run pr          # push the branch and open the PR with gh
+```
+
+A `pre-push` hook refuses a direct push to main. It is a reminder, not enforcement — anyone can
+pass `--no-verify`, and GitHub's real branch protection needs Pro or a public repository, which
+this one is not yet. The command to turn on the real thing the day that changes is written at the
+top of [`scripts/no-direct-push-to-main.sh`](scripts/no-direct-push-to-main.sh).
+
+**Releases are on demand**, never automatic on merge: `appVersionSource: remote` means EAS owns
+the build number, so shipping is a decision rather than a side effect of merging.
+
+```bash
+npm run release     # opens the Release workflow; pick platform, profile, submit yes/no
+```
+
+It re-runs every gate before building, so a release can never outrun a red check. It cannot work
+until `eas init` has minted a project id and an `EXPO_TOKEN` secret exists — see
+[`road2release.md`](road2release.md) phase 0.
+
 ## Git hooks
 
 Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](.pre-commit-config.yaml).

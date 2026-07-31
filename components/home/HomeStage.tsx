@@ -12,7 +12,7 @@ import { type SmartActionConfig, useSmartAction } from "./useSmartAction";
 const COVER_HEIGHT = 196;
 // The block under the cover: two content rows, the button, padding. Fixed so the adventure and
 // quest scenes reserve the same space and the skeleton matches both.
-const ACTION_HEIGHT = 142;
+const ACTION_HEIGHT = 160;
 const STAGE_HEIGHT = COVER_HEIGHT + ACTION_HEIGHT;
 
 /** The stage is always a scene. With nothing running, the on-ramp route's art stands in. */
@@ -110,7 +110,7 @@ export function HomeStage() {
             <ProgressBar progress={stepProgress} height={6} color="$resourceGold" />
           </YStack>
         ) : (
-          <Text fontSize={13} color="$resourceGold" numberOfLines={1}>
+          <Text fontSize={13} color="$resourceGold" numberOfLines={2} lineHeight={18}>
             {subtitle}
           </Text>
         )}

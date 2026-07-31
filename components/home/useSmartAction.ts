@@ -10,7 +10,6 @@ import { getOathProgress, oathNeedsExercise } from "@/db/oaths";
 import { loadConfiguredQuest } from "@/db/questConfig";
 import { findQuestWithExercise } from "@/db/quests";
 import { localizedTitle } from "@/src/i18n/localized";
-import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
 /** What the stage shows: a scene to walk into, whether it is an adventure or tonight's quest. */
@@ -35,7 +34,6 @@ export function useSmartAction() {
   const router = useRouter();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
-  const { startSession } = useSessionStore();
   const [config, setConfig] = useState<SmartActionConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -45,10 +43,11 @@ export function useSmartAction() {
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above
     async (isCancelled: () => boolean) => {
       /**
-       * A quest turned into the one thing on Home: the scene names it, the button runs it.
+       * A quest turned into the one thing on Home: the scene announces it, the button opens it.
        *
-       * The quest is loaded here rather than on tap, so the hero sees what they are accepting
-       * before they accept it — and so pressing start has nothing left to wait for.
+       * The quest is loaded here rather than on tap, so the scene can name what it is offering
+       * instead of a generic illustration. Only the detail screen starts a session — Home never
+       * pushes a session route, it hands over the quest and lets the hero commit there.
        */
       const questAction = async (
         questId: number,
@@ -57,11 +56,14 @@ export function useSmartAction() {
         const loaded = await loadConfiguredQuest(questId);
         if (!loaded) return null;
 
-        const { quest, level } = loaded;
+        const { quest } = loaded;
         const seconds = estimateQuestSeconds(quest);
 
         return {
-          label: t("quests.start_button", "Start Quest"),
+          // Not "Start Quest": the detail screen owns that verb, and two synonymous buttons
+          // across two screens is what made the old flow unreadable. This one only promises
+          // what it does — it shows you the quest.
+          label: t("home.see_quest", "See the quest"),
           subtext,
           variant: "quest",
           scene: {
@@ -81,16 +83,7 @@ export function useSmartAction() {
               .filter(Boolean)
               .join(" · "),
           },
-          // The only "start" in the app that means training begins now: no confirmation screen
-          // in between, because the scene above the button already showed what it starts.
-          onPress: () => {
-            startSession(quest, level)
-              .then(() => router.push("/session" as never))
-              .catch(() => {
-                // The session screen redirects home on an empty store, so a failed start lands
-                // the hero back where they already are rather than on a broken screen.
-              });
-          },
+          onPress: () => router.push(`/quests/${questId}` as never),
         };
       };
 
@@ -147,21 +140,26 @@ export function useSmartAction() {
           const questId = await findQuestWithExercise(targetId);
 
           if (questId !== null && !isCancelled()) {
-            const name = rung
+            // A full sentence, not the compact "Marche 2/5 · Rowing inversé" the ladder uses
+            // elsewhere: on the exercise screen the ladder is drawn right there to explain
+            // itself, and here it is not. Home is where the hero meets it cold.
+            const goal = oath?.exerciseName?.[language] ?? "";
+            const rungName = rung
               ? language === "fr"
                 ? rung.exercise.frName
                 : rung.exercise.enName
-              : (oath?.exerciseName?.[language] ?? "");
-            const detail =
+              : goal;
+            const subtext =
               chain && rung
-                ? t("progression.chain_position", {
+                ? t("home.oath_focus_chain", {
+                    goal,
                     position: chain.position,
                     total: chain.rungs.length,
-                    name,
+                    name: rungName,
                   })
-                : name;
+                : t("home.oath_focus_simple", { goal });
 
-            const action = await questAction(questId, t("home.oath_focus", { detail }));
+            const action = await questAction(questId, subtext);
             if (action && !isCancelled()) {
               setConfig(action);
               setIsLoading(false);
@@ -205,7 +203,7 @@ export function useSmartAction() {
         if (!isCancelled()) setIsLoading(false);
       }
     },
-    [router, t, language, startSession],
+    [router, t, language],
   );
 
   // Reload on focus: coming back from a finished session must not leave a stale step count.

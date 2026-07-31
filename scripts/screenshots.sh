@@ -46,6 +46,16 @@ mkdir -p "$raw"
 
 maestro test .maestro/screenshots.yaml
 
+# Maestro resolves takeScreenshot paths against its own artefact directory, not the project, so
+# the flow uses plain names and the files are collected here. Newest run wins.
+shots_dir="$(find "$HOME/.maestro/tests" -maxdepth 3 -type d -name screenshots -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)"
+if [ -z "$shots_dir" ]; then
+  echo "No Maestro screenshot directory found." >&2
+  exit 1
+fi
+find "$shots_dir" -name '*.png' -exec cp {} "$raw"/ \;
+echo "  Collected $(ls -1 "$raw" | wc -l) shots from $shots_dir"
+
 python3 scripts/frame-screenshots.py --locale "$locale" --src "$raw"
 
 echo

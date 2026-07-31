@@ -23,14 +23,14 @@ tags:
 
 # --- 1. Home, before anything has been logged -------------------------------
 # The first screen a new user meets, and the one they will see most.
-- takeScreenshot: ../fastlane/raw/1-home
+- takeScreenshot: 1-home
 
 # --- 2. The quest gallery ---------------------------------------------------
 - tapOn:
     id: "tab-quests"
 - assertVisible:
     id: "quests-quest-card"
-- takeScreenshot: ../fastlane/raw/2-quests
+- takeScreenshot: 2-quests
 
 # --- 3. A session in progress ----------------------------------------------
 # The heart of the app: this is where the reps happen.
@@ -39,7 +39,7 @@ tags:
     index: 0
 - assertVisible:
     id: "quest-start"
-- takeScreenshot: ../fastlane/raw/3-quest-detail
+- takeScreenshot: 3-quest-detail
 - tapOn:
     id: "quest-start"
 - tapOn:
@@ -57,7 +57,7 @@ tags:
     visible:
       id: "session-complete-exercise"
     timeout: 20000
-- takeScreenshot: ../fastlane/raw/4-session
+- takeScreenshot: 4-session
 
 # --- 4. Through to victory --------------------------------------------------
 - repeat:
@@ -76,7 +76,7 @@ tags:
     visible:
       id: "session-victory-continue"
     timeout: 25000
-- takeScreenshot: ../fastlane/raw/5-victory
+- takeScreenshot: 5-victory
 - tapOn:
     id: "session-victory-continue"
 
@@ -85,11 +85,11 @@ tags:
     id: "tab-village"
 - assertVisible:
     id: "village-screen"
-- takeScreenshot: ../fastlane/raw/6-village
+- takeScreenshot: 6-village
 
 # --- 6. The journal, with one session in it ---------------------------------
 - tapOn:
     id: "tab-journal"
 - assertVisible:
     id: "journal-screen"
-- takeScreenshot: ../fastlane/raw/7-journal
+- takeScreenshot: 7-journal

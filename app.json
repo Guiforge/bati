@@ -8,6 +8,7 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.guiforge.bati"
     },
+    "backgroundColor": "#0B0F19",
     "experiments": {
       "reactCompiler": true,
       "typedRoutes": true
@@ -16,6 +17,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.guiforge.bati"
+    },
+    "locales": {
+      "en": "./locales/ios/en.json",
+      "fr": "./locales/ios/fr.json"
     },
     "name": "Bati",
     "orientation": "portrait",
@@ -77,10 +82,6 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"
-    },
-    "locales": {
-      "en": "./locales/ios/en.json",
-      "fr": "./locales/ios/fr.json"
     }
   }
 }

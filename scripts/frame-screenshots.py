@@ -16,7 +16,7 @@ import argparse
 import pathlib
 import sys
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 # The app's own palette, so the frame belongs to the same world as the screen inside it.
 BG_TOP = (11, 15, 25)  # $bgDark — "The Void"
@@ -89,6 +89,47 @@ def rounded(image: Image.Image, radius: int) -> Image.Image:
     return out
 
 
+# A phone body around the screen, rather than a bare rounded rectangle. It costs nothing and it
+# tells the eye "this is an app" before the eye has read anything — which is the entire job of a
+# store screenshot at thumbnail size.
+BEZEL = 18  # the dark rim around the screen
+BODY_RADIUS = 76
+SCREEN_RADIUS = 58
+
+
+def in_phone(shot: Image.Image) -> Image.Image:
+    """Set the screenshot into a phone body, with a rim light and a drop shadow."""
+    w, h = shot.size
+    body_w, body_h = w + BEZEL * 2, h + BEZEL * 2
+    pad = 40  # room for the shadow to fall into
+
+    canvas = Image.new("RGBA", (body_w + pad * 2, body_h + pad * 2), (0, 0, 0, 0))
+
+    # Shadow first: a blurred silhouette of the body, offset down.
+    shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        [(pad, pad + 12), (pad + body_w, pad + body_h + 12)], radius=BODY_RADIUS, fill=(0, 0, 0, 150)
+    )
+    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(22)))
+
+    # The body, a shade darker than the darkest thing on screen so the screen reads as lit.
+    body = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(body)
+    draw.rounded_rectangle(
+        [(pad, pad), (pad + body_w, pad + body_h)], radius=BODY_RADIUS, fill=(6, 8, 18, 255)
+    )
+    # A single hairline of rim light along the edge: enough to separate body from background.
+    draw.rounded_rectangle(
+        [(pad, pad), (pad + body_w, pad + body_h)],
+        radius=BODY_RADIUS,
+        outline=(58, 66, 102, 255),
+        width=2,
+    )
+    canvas.alpha_composite(body)
+    canvas.alpha_composite(rounded(shot, SCREEN_RADIUS), (pad + BEZEL, pad + BEZEL))
+    return canvas
+
+
 def wrap(draw: ImageDraw.ImageDraw, text: str, font, max_width: int) -> list[str]:
     lines, line = [], ""
     for word in text.split():
@@ -128,12 +169,11 @@ def compose(shot: pathlib.Path, caption: str, dest: pathlib.Path) -> None:
     )
     y += 64
 
-    phone = Image.open(shot).convert("RGB")
-    available_h = CANVAS[1] - y - MARGIN
-    available_w = CANVAS[0] - 2 * MARGIN
+    phone = in_phone(Image.open(shot).convert("RGB"))
+    available_h = CANVAS[1] - y - MARGIN // 2
+    available_w = CANVAS[0] - MARGIN
     scale = min(available_w / phone.width, available_h / phone.height)
     phone = phone.resize((round(phone.width * scale), round(phone.height * scale)), Image.LANCZOS)
-    phone = rounded(phone, radius=48)
 
     canvas.alpha_composite(phone, (round((CANVAS[0] - phone.width) / 2), round(y)))
     dest.parent.mkdir(parents=True, exist_ok=True)

@@ -1,6 +1,20 @@
+<div align="center">
+
+<img src="assets/icon.png" alt="" width="128" />
+
 # Bati
 
-> Train like a hero, build like a king.
+**Train like a hero, build like a king.**
+
+[![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
+![Expo 57](https://img.shields.io/badge/Expo-57-000020?logo=expo&logoColor=white)
+![React Native 0.86](https://img.shields.io/badge/React_Native-0.86-61DAFB?logo=react&logoColor=black)
+![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![SQLite + Drizzle](https://img.shields.io/badge/SQLite-Drizzle-C5F74F?logo=sqlite&logoColor=black)
+![Status: pre-release](https://img.shields.io/badge/status-pre--release-orange)
+![Licence: all rights reserved](https://img.shields.io/badge/licence-all_rights_reserved-lightgrey)
+
+</div>
 
 Bati is a dark-fantasy fitness RPG built with **Expo + React Native + Tamagui**. Workouts drive
 progression: the app turns training into quests, adventures, boss fights, and a village that
@@ -121,5 +135,6 @@ All of these run in CI; the first three also run on commit or push.
 None yet. No `LICENSE` file means default copyright — all rights reserved. The code is public to
 be read, not to be reused as-is. If you want to do something with it, ask.
 
-The Midjourney-generated art is subject to Midjourney's own terms, separately from whatever
-licence the code eventually gets.
+The generated art carries the terms of whichever model produced it — Midjourney's for the
+original batch, Google's for the Gemini additions — separately from whatever licence the code
+eventually gets.

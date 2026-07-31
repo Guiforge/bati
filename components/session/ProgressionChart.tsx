@@ -173,7 +173,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         {/* Stats Row */}
         <XStack gap="$4" justify="space-around">
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$primary">
+            <Text fontWeight="700" fontSize={24} color="$primaryText">
               {sessions.length}
             </Text>
             <Text fontSize={12} color="$text" opacity={0.6}>

@@ -67,7 +67,7 @@ export function CountdownView() {
             fontWeight="700"
             fontSize={64}
             lineHeight={66}
-            color="$primary"
+            color="$primaryText"
             textTransform="uppercase"
             style={{ textAlign: "center" }}
           >

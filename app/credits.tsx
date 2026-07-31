@@ -65,7 +65,7 @@ export default function CreditsScreen() {
           accessibilityLabel={t("quests.go_back", "Go back")}
         />
         <XStack flex={1} items="center" gap="$2">
-          <ScrollText size={20} color="$primary" />
+          <ScrollText size={20} color="$primaryText" />
           <Text fontSize={22} fontWeight="700" color="$text">
             {t("credits.title")}
           </Text>

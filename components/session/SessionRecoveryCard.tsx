@@ -47,7 +47,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
     <Card bg="$pastelOrange" rounded="$6" transition="quick" enterStyle={{ opacity: 0, y: -10 }}>
       <YStack gap="$3">
         <XStack gap="$2" items="center">
-          <AlertTriangle size={20} color="$primary" />
+          <AlertTriangle size={20} color="$primaryText" />
           <Text fontSize={18} fontWeight="bold" color="$text">
             {t("recovery.title")}
           </Text>

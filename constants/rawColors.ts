@@ -18,6 +18,16 @@ import type { DifficultyCode } from "@/db/schema";
 export const rawColors = {
   // --- Core ---
   primary: "#0D33F2", // Electric Blue
+  /**
+   * The same blue, light enough to read as text on a dark background.
+   *
+   * `primary` is a fill colour: white on it clears AA comfortably (6.44:1 on the primary
+   * button). As *text* on any of our dark surfaces it lands at 2.53:1 — under AA even at large
+   * sizes, and under the 3:1 that WCAG asks of meaningful icons. Same hue, same saturation,
+   * raised in lightness until it clears AA body on bgDark, surface and surface2 (5.26 / 5.07 /
+   * 4.73). Use this for text and icons; keep `primary` for anything you fill.
+   */
+  primaryText: "#647CF7",
   primaryHover: "#2E5CFF",
   primaryPress: "#0A25B0",
   secondary: "#DB2777", // Magenta

@@ -137,7 +137,7 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
                     </Text>
                   </YStack>
 
-                  <Plus size={20} color="$primary" strokeWidth={2.5} />
+                  <Plus size={20} color="$primaryText" strokeWidth={2.5} />
                 </XStack>
               ))}
 

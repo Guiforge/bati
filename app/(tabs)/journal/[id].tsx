@@ -153,7 +153,7 @@ export default function SessionDetailScreen() {
               <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
             <XStack items="center" gap="$2">
-              <Dumbbell size={18} color="$primary" strokeWidth={2.5} />
+              <Dumbbell size={18} color="$primaryText" strokeWidth={2.5} />
               <Text fontWeight="700" fontSize={20} color="$text">
                 {t("journal.session_details", "Session Details")}
               </Text>

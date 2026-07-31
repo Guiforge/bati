@@ -133,7 +133,7 @@ export function WarmupView() {
           </Text>
         ) : null}
 
-        <H1 color="$primary" fontSize={64} fontWeight="700">
+        <H1 color="$primaryText" fontSize={64} fontWeight="700">
           {formatTime(Math.max(0, remainingSeconds))}
         </H1>
 

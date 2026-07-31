@@ -263,6 +263,8 @@ export function JournalStats({ sessions }: JournalStatsProps) {
           icon={<Trophy size={18} color="white" />}
           value={stats.totalWorkouts}
           label={t("journal.total_workouts", "Total Workouts")}
+          // StatCard's `color` fills the icon disc (`bg={color}`) — it is a background, so it
+          // stays $primary while foreground uses moved to $primaryText.
           color="$primary"
           bgColor="$pastelBlue"
         />
@@ -291,8 +293,8 @@ export function JournalStats({ sessions }: JournalStatsProps) {
           <XStack gap="$4" justify="space-around">
             <YStack items="center" gap="$1">
               <XStack items="center" gap="$2">
-                <Target size={16} color="$primary" />
-                <Text fontWeight="700" fontSize={24} color="$primary">
+                <Target size={16} color="$primaryText" />
+                <Text fontWeight="700" fontSize={24} color="$primaryText">
                   {stats.thisWeekCount}
                 </Text>
               </XStack>

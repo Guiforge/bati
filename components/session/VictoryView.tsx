@@ -192,7 +192,7 @@ export function VictoryView() {
               style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: 0 }}
             />
             <YStack position="absolute" t="$3" l="$3">
-              <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$primary" />
+              <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$primaryText" />
             </YStack>
             <YStack position="absolute" b={0} l={0} r={0} p="$4" gap="$1">
               <Text
@@ -233,7 +233,7 @@ export function VictoryView() {
             <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
               {t("session.xp_earned")}
             </Text>
-            <Text fontWeight="700" fontSize={26} color="$primary" fontFamily="$body">
+            <Text fontWeight="700" fontSize={26} color="$primaryText" fontFamily="$body">
               {result ? t("quests.reward_xp", { count: result.xpEarned }) : "…"}
             </Text>
             {!!result?.dailyBonusApplied && (

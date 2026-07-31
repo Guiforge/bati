@@ -103,7 +103,7 @@ export function PersonalRecordsCard() {
     <Card bg="$bgLight">
       <YStack gap="$3">
         <XStack items="center" gap="$2">
-          <Trophy size={18} color="$primary" />
+          <Trophy size={18} color="$primaryText" />
           <Text fontWeight="700" fontSize={16} color="$text">
             {t("journal.personal_records")}
           </Text>
@@ -111,7 +111,7 @@ export function PersonalRecordsCard() {
 
         <XStack gap="$2">
           <RecordItem
-            icon={<Flame size={20} color="$primary" />}
+            icon={<Flame size={20} color="$primaryText" />}
             label={t("journal.pr_total_sessions")}
             value={summary.totalSessions.toString()}
           />

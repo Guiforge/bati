@@ -34,7 +34,7 @@ export default function PrivacyScreen() {
           accessibilityLabel={t("quests.go_back", "Go back")}
         />
         <XStack flex={1} items="center" gap="$2">
-          <ShieldCheck size={20} color="$primary" />
+          <ShieldCheck size={20} color="$primaryText" />
           <Text fontSize={22} fontWeight="700" color="$text">
             {t("privacy.title")}
           </Text>

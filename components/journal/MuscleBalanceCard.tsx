@@ -149,7 +149,7 @@ export function MuscleBalanceCard() {
             Pulling is the first thing to vanish when you train without a bar. */}
         {pullDeficit ? (
           <YStack gap="$1" borderTopWidth={1} borderColor="$borderStrong" pt="$2">
-            <Text fontSize={12} fontWeight="700" color="$primary">
+            <Text fontSize={12} fontWeight="700" color="$primaryText">
               {t("journal.pull_deficit_title")}
             </Text>
             <Text fontSize={12} color="$text" opacity={0.7}>

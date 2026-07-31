@@ -376,7 +376,7 @@ export default function AdventureDetailsScreen() {
               </AppIconButton>
 
               <XStack items="center" gap="$2">
-                <Sparkles size={18} color="$primary" />
+                <Sparkles size={18} color="$primaryText" />
                 <Text fontWeight="700" fontSize={20} color="$text">
                   {t("adventures.details_title")}
                 </Text>

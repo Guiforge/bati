@@ -56,7 +56,7 @@ export function SuggestedQuestsCard() {
     <Card bg="$bgLight">
       <YStack gap="$3">
         <XStack items="center" gap="$2">
-          <Sparkles size={18} color="$primary" />
+          <Sparkles size={18} color="$primaryText" />
           <Text fontWeight="700" fontSize={16} color="$text">
             {t("journal.suggested_quests")}
           </Text>

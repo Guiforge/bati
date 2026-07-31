@@ -113,7 +113,7 @@ function PresetRow({
   return (
     <Card testID="oath-preset" bg="$surface" onPress={() => onSwear(preset)}>
       <XStack items="center" gap="$3">
-        <GameIcon name="star" size={20} color="$primary" />
+        <GameIcon name="star" size={20} color="$primaryText" />
         <Text flex={1} fontWeight="700" fontSize={15} color="$text">
           {label}
         </Text>

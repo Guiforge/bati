@@ -189,7 +189,7 @@ function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: 
           </Text>
 
           {meta.focusLabel ? (
-            <Text fontSize={12} fontWeight="700" color="$primary" numberOfLines={1}>
+            <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
               {meta.focusLabel}
             </Text>
           ) : null}

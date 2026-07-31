@@ -14,7 +14,6 @@
     "@react-navigation/elements",
     "@react-navigation/native",
     "expo-updates",
-    "expo-system-ui",
     "@tamagui/babel-plugin",
     "babel-plugin-inline-import",
     "babel-plugin-transform-remove-console",

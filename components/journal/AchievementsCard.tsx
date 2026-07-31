@@ -124,7 +124,7 @@ export function AchievementsCard() {
           </Text>
         </YStack>
         <YStack items="center">
-          <Text fontWeight="700" fontSize={24} color="$primary">
+          <Text fontWeight="700" fontSize={24} color="$primaryText">
             {stats.percentage}%
           </Text>
         </YStack>

@@ -15,7 +15,11 @@ name: Pages
 on:
   push:
     branches: [main]
-    paths: ["docs/legal/**", ".github/workflows/pages.yml"]
+    # fastlane/metadata is the F-Droid listing — new screenshots or new copy have to reach the
+    # index, and waiting for the next release to carry them there means the store page describes
+    # the app as it was two versions ago.
+    paths:
+      ["docs/legal/**", "fastlane/metadata/**", ".github/workflows/pages.yml"]
   # A new release means a new APK to fold into the F-Droid index.
   workflow_run:
     workflows: [Release]

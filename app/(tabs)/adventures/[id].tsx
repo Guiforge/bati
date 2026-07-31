@@ -20,8 +20,8 @@ import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerci
 import type {
   ActiveAdventureRun,
   AdventureDetails,
-  AdventureFocus,
   AdventureStepTemplate,
+  TrainingFocus,
 } from "@/db";
 import {
   adventureWeeks,
@@ -73,7 +73,7 @@ type LoadState =
       message: string;
     };
 
-const EMPTY_FOCUS: AdventureFocus = { archetype: null, muscles: [] };
+const EMPTY_FOCUS: TrainingFocus = { archetype: null, muscles: [] };
 
 function levelLabel(level: Difficulty, t: TFunction) {
   if (level === Difficulty.Easy) return t("quests.level_easy");

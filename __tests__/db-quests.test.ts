@@ -29,6 +29,34 @@ describe("db/quests", () => {
     expect(extra?.exercises.length).toBeGreaterThan(0);
   });
 
+  test("trainingFocus keeps what a quest is for and drops what it only brushes", () => {
+    const quests = require("../db/quests") as typeof import("../db/quests");
+    type Quests = typeof quests;
+
+    // Only the fields trainingFocus reads. Arms 3, back 2, legs 1.
+    const exercisesById = {
+      1: { id: 1, muscles: ["arms", "back"] },
+      2: { id: 2, muscles: ["arms", "back"] },
+      3: { id: 3, muscles: ["arms"] },
+      4: { id: 4, muscles: ["legs"] },
+    } as unknown as Parameters<Quests["trainingFocus"]>[1];
+
+    const quest = {
+      archetype: "strength",
+      exercises: [1, 2, 3, 4].map((exerciseId) => ({ exerciseId })),
+    } as unknown as Parameters<Quests["trainingFocus"]>[0][number];
+
+    const focus = quests.trainingFocus([quest], exercisesById);
+
+    // Legs sits under half of arms' count: one exercise out of four says nothing about the quest.
+    expect(focus.muscles).toEqual(["arms", "back"]);
+    expect(focus.archetype).toBe("strength");
+
+    // User-authored quests declare no archetype — the label starts on the muscles instead.
+    const authored = { ...quest, archetype: null } as typeof quest;
+    expect(quests.trainingFocus([authored], exercisesById).archetype).toBeNull();
+  });
+
   test("getQuestById computes targets from user level", async () => {
     const quests = require("../db/quests") as typeof import("../db/quests");
 

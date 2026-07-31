@@ -6,7 +6,7 @@ import { isMuscleCode } from "./muscles";
 import { getMaxHoldSeconds } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
-import type { DifficultyCode, QuestArchetype, QuestTargetType } from "./schema";
+import type { DifficultyCode, MuscleCode, QuestArchetype, QuestTargetType } from "./schema";
 import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
@@ -71,6 +71,49 @@ export type Quest = {
   imagePath: string;
   exercises: QuestExercise[];
 };
+
+/** What a session trains — the answer to "is this arms or legs?" without reading its exercises. */
+export type TrainingFocus = {
+  /** The archetype the quests declare, `null` when none of them do. */
+  archetype: QuestArchetype | null;
+  /** The muscles carrying the volume, heaviest first, at most three. */
+  muscles: MuscleCode[];
+};
+
+/**
+ * One quest for a gallery card, every step's quest for a campaign poster. Both galleries read
+ * this so a quest and the adventure containing it describe themselves the same way.
+ */
+export function trainingFocus(
+  quests: QuestTemplate[],
+  exercisesById: Record<number, Exercise>,
+): TrainingFocus {
+  const archetypes = new Map<QuestArchetype, number>();
+  const muscles = new Map<MuscleCode, number>();
+
+  for (const q of quests) {
+    if (q.archetype) archetypes.set(q.archetype, (archetypes.get(q.archetype) ?? 0) + 1);
+    for (const qex of q.exercises) {
+      for (const m of exercisesById[qex.exerciseId]?.muscles ?? []) {
+        muscles.set(m, (muscles.get(m) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Maps iterate in insertion order and sort is stable, so ties break on the earliest exercise.
+  const rankedMuscles = [...muscles.entries()].sort((a, b) => b[1] - a[1]);
+  const leader = rankedMuscles[0]?.[1] ?? 0;
+
+  return {
+    archetype: [...archetypes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
+    // An eight-session campaign touches all six muscle groups somewhere, and so does a long
+    // quest; only the ones above half the leader's count say what it is actually *for*.
+    muscles: rankedMuscles
+      .filter(([, n]) => n * 2 >= leader)
+      .slice(0, 3)
+      .map(([m]) => m),
+  };
+}
 
 // ------------------------------------------------------------
 // Target generation

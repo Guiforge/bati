@@ -16,7 +16,6 @@ import { Chip } from "@/components/common/Chip";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
-  getExerciseColorTokens,
   getQuestColorTokensFromTemplateWithExercises,
 } from "@/constants/exerciseColors";
 import {
@@ -32,6 +31,7 @@ import {
   formatDuration,
   listExercises,
   listQuestTemplates,
+  trainingFocus,
 } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
@@ -58,38 +58,7 @@ function questEmoji(rounds: number, exerciseCount: number) {
   return "🪓";
 }
 
-type QuestGlyph = {
-  code: MuscleCode;
-  bg: ExerciseColorTokens["bg"];
-  label: string;
-};
-
 const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
-
-/**
- * Discreet muscle-group dots so the gallery reads at a glance without adding another chip
- * row. Plain colored dots, not sprite images: the previous version put up to 6 expo-image
- * instances per row, each re-decoded on recycle while scrolling.
- */
-function MuscleGlyphs({ glyphs }: { glyphs: QuestGlyph[] }) {
-  if (glyphs.length === 0) return null;
-  return (
-    <XStack gap="$1.5" items="center">
-      {glyphs.map((g) => (
-        <YStack
-          key={g.code}
-          width={10}
-          height={10}
-          rounded={5}
-          bg={g.bg}
-          borderWidth={1}
-          borderColor="$borderStrong"
-          accessibilityLabel={g.label}
-        />
-      ))}
-    </XStack>
-  );
-}
 
 function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
@@ -98,6 +67,7 @@ function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
 
 type QuestMeta = {
   quest: QuestTemplate;
+  /** Every muscle the quest touches — what the filter rail offers and `matchesFilters` reads. */
   muscles: MuscleCode[];
   equipment: EquipmentCode[];
   archetype: QuestArchetype | null;
@@ -110,10 +80,11 @@ type QuestMeta = {
   cover: ImageSourcePropType | null;
   title: string;
   description: string;
-  glyphs: QuestGlyph[];
+  /** "Strength · Arms · Back" — what the quest trains, in words. Colored dots said nothing. */
+  focusLabel: string;
   /** "≈ 12 min" — worn as a chip over the cover banner. */
   durationLabel: string;
-  /** "4 exercises · Strength" — one Text instead of bordered Chips. */
+  /** "4 exercises" — one Text instead of bordered Chips. */
   metaLabel: string;
   /** "+45 XP" — the reward, in gold. */
   xpLabel: string;
@@ -143,6 +114,9 @@ function buildQuestMeta(
   const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
   const estimate = formatDuration(durationSeconds, language);
   const muscleList = [...muscles];
+  // Ranked, not the full set above: a five-exercise quest brushes five muscle groups, and the
+  // two it brushes once say nothing. Same rule as the adventure posters.
+  const focus = trainingFocus([q], exercisesById);
 
   return {
     quest: q,
@@ -155,23 +129,19 @@ function buildQuestMeta(
     cover: resolveCoverImage(q.imagePath),
     title: localizedTitle(q, language),
     description: language === "fr" ? q.frDescription : q.enDescription,
-    glyphs: muscleList.map((m) => ({
-      code: m,
-      bg: getExerciseColorTokens(m).bg,
-      label: MUSCLE_LABELS[m]?.[language] ?? m,
-    })),
-    durationLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
-    metaLabel: [
-      t("quests.exercises", {
-        count: q.exercises.length,
-        defaultValue: `${q.exercises.length} exercises`,
-      }),
-      // What kind of session this is, so the hero knows before they tap. Absent on
-      // user-authored quests, which declare no archetype.
-      q.archetype ? t(`quests.archetype_${q.archetype}`) : null,
+    // The archetype leads it — what kind of session this is, then what it works. Absent on
+    // user-authored quests, which declare no archetype, so their line starts on the muscles.
+    focusLabel: [
+      focus.archetype ? t(`quests.archetype_${focus.archetype}`) : null,
+      ...focus.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
     ]
       .filter(Boolean)
       .join(" · "),
+    durationLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
+    metaLabel: t("quests.exercises", {
+      count: q.exercises.length,
+      defaultValue: `${q.exercises.length} exercises`,
+    }),
     xpLabel: t("quests.reward_xp", { count: xp, defaultValue: `+${xp} XP` }),
   };
 }
@@ -214,12 +184,15 @@ function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: 
         </YStack>
 
         <YStack gap="$2" p="$4">
-          <XStack items="center" gap="$2">
-            <Text flex={1} fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
-              {meta.title}
+          <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
+            {meta.title}
+          </Text>
+
+          {meta.focusLabel ? (
+            <Text fontSize={12} fontWeight="700" color="$primary" numberOfLines={1}>
+              {meta.focusLabel}
             </Text>
-            <MuscleGlyphs glyphs={meta.glyphs} />
-          </XStack>
+          ) : null}
 
           <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
             {meta.description}

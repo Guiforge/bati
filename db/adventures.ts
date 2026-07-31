@@ -1,8 +1,13 @@
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { listExercises } from "./exercises";
-import { listQuestTemplates, type QuestTemplate } from "./quests";
-import type { DifficultyCode, MuscleCode, QuestArchetype } from "./schema";
+import {
+  listQuestTemplates,
+  type QuestTemplate,
+  type TrainingFocus,
+  trainingFocus,
+} from "./quests";
+import type { DifficultyCode } from "./schema";
 
 const { adventureRuns, adventureRunSteps, adventures, adventureSteps, questExercises, quests } =
   schema;
@@ -50,45 +55,6 @@ export type AdventureRunStep = {
   completedAt: Date | null;
 };
 
-/** What a campaign trains — the answer to "is this arms or legs?" without opening four quests. */
-export type AdventureFocus = {
-  /** The archetype most of the campaign's steps declare, `null` when none of them do. */
-  archetype: QuestArchetype | null;
-  /** The muscles carrying the campaign's volume, heaviest first, at most three. */
-  muscles: MuscleCode[];
-};
-
-function focusOf(
-  stepQuests: QuestTemplate[],
-  musclesByExerciseId: Map<number, MuscleCode[]>,
-): AdventureFocus {
-  const archetypes = new Map<QuestArchetype, number>();
-  const muscles = new Map<MuscleCode, number>();
-
-  for (const q of stepQuests) {
-    if (q.archetype) archetypes.set(q.archetype, (archetypes.get(q.archetype) ?? 0) + 1);
-    for (const qex of q.exercises) {
-      for (const m of musclesByExerciseId.get(qex.exerciseId) ?? []) {
-        muscles.set(m, (muscles.get(m) ?? 0) + 1);
-      }
-    }
-  }
-
-  // Maps iterate in insertion order and sort is stable, so ties break on the earliest step.
-  const rankedMuscles = [...muscles.entries()].sort((a, b) => b[1] - a[1]);
-  const leader = rankedMuscles[0]?.[1] ?? 0;
-
-  return {
-    archetype: [...archetypes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
-    // An eight-session campaign touches all six muscle groups somewhere; only the ones carrying
-    // half the leader's volume say what the route is actually *for*.
-    muscles: rankedMuscles
-      .filter(([, n]) => n * 2 >= leader)
-      .slice(0, 3)
-      .map(([m]) => m),
-  };
-}
-
 export type Adventure = {
   id: number;
   coverQuestId: number;
@@ -103,7 +69,7 @@ export type Adventure = {
   coverQuest: QuestTemplate;
   stepsCount: number;
   imagePath: string | null;
-  focus: AdventureFocus;
+  focus: TrainingFocus;
 };
 
 export type AdventureDetails = {
@@ -199,7 +165,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
   // step actually trains costs no extra round-trip.
   const [templates, exercises] = await Promise.all([listQuestTemplates(), listExercises()]);
   const templatesById = new Map(templates.map((q) => [q.id, q] as const));
-  const musclesByExerciseId = new Map(exercises.map((e) => [e.id, e.muscles] as const));
+  const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
 
   const byAdventureId = new Map<number, Adventure>();
 
@@ -235,9 +201,9 @@ async function fetchAdventures(): Promise<Adventure[]> {
         coverQuest: quest,
         stepsCount: stepQuestIds.length,
         imagePath: r.advImagePath,
-        focus: focusOf(
+        focus: trainingFocus(
           stepQuestIds.flatMap((id) => templatesById.get(id) ?? []),
-          musclesByExerciseId,
+          exercisesById,
         ),
       });
     }
@@ -383,9 +349,9 @@ async function fetchAdventureDetails(adventureId: number): Promise<AdventureDeta
       enDescription: first.enDescription,
       frDescription: first.frDescription,
       imagePath: first.imagePath,
-      focus: focusOf(
+      focus: trainingFocus(
         resolved.map((s) => s.quest),
-        new Map(exercises.map((e) => [e.id, e.muscles] as const)),
+        Object.fromEntries(exercises.map((e) => [e.id, e] as const)),
       ),
     },
     steps: resolved,

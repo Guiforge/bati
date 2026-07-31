@@ -21,7 +21,6 @@ export type {
   ActiveAdventureRun,
   Adventure,
   AdventureDetails,
-  AdventureFocus,
   AdventureKind,
   AdventureRun,
   AdventureRunStep,
@@ -103,6 +102,7 @@ export {
   saveQuestConfig,
   TARGET_RANGE,
 } from "./questConfig";
+export type { TrainingFocus } from "./quests";
 export {
   createQuestTemplate,
   Difficulty,
@@ -113,6 +113,7 @@ export {
   isUserQuest,
   listQuestTemplates,
   setQuestExercises,
+  trainingFocus,
   USER_QUEST_AUTHOR,
   updateQuestMeta,
 } from "./quests";

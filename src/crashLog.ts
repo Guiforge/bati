@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { getRawDb } from "@/db/client";
 import { getPreference, setPreference } from "@/db/preferences";
 
@@ -131,26 +132,59 @@ export const CONTACT_EMAIL = "feedback.bati@proton.me";
  * means "later". Nothing has been sent until they press send in their own client, and the body
  * is plain text they can read and cut down first.
  */
-export function buildBugReportMailto(reports: CrashReport[], appVersion: string): string {
+/**
+ * The wording of the draft, supplied by the caller.
+ *
+ * Kept out of this module so the mail can be written in the hero's language without dragging
+ * i18n into a file the crash handler loads at startup. The screen has `t`; this has the data.
+ */
+export type BugReportStrings = {
+  subject: string;
+  /** What the hero is invited to write. Several lines is fine — an empty draft gets no reply. */
+  prompt: string;
+  technicalHeader: string;
+  noCrash: string;
+};
+
+/**
+ * What the phone is, in one line.
+ *
+ * Android exposes brand and model through `Platform.constants`; iOS does not expose a model at
+ * all, so it gets the OS version it does give. No `expo-device` for this — a whole dependency
+ * to add one word on one platform is not a trade worth making.
+ */
+function deviceLine(): string {
+  const constants = Platform.constants as Record<string, unknown> | undefined;
+  const model = [constants?.Brand, constants?.Model].filter(Boolean).join(" ");
+  const os = `${Platform.OS} ${Platform.Version}`;
+  return model ? `${model} — ${os}` : os;
+}
+
+export function buildBugReportMailto(
+  reports: CrashReport[],
+  appVersion: string,
+  strings: BugReportStrings,
+): string {
   const header = [
     "",
     "",
-    "--- Technical details (edit or delete anything below) ---",
+    `--- ${strings.technicalHeader} ---`,
     `App: Bati ${appVersion}`,
+    // "It lags" is unactionable without knowing what it lagged on.
+    `Device: ${deviceLine()}`,
   ];
 
   const body = [
-    "What were you doing when it broke?",
+    strings.prompt,
     ...header,
     ...(reports.length === 0
-      ? ["No crash was recorded on this device."]
+      ? [strings.noCrash]
       : reports.map(
           (r, i) => `\n[${i + 1}] ${r.at} (${r.context})\n${r.message}\n${r.stack ?? ""}`,
         )),
   ].join("\n");
 
-  const subject = `Bati ${appVersion} — bug report`;
-  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(strings.subject)}&body=${encodeURIComponent(body)}`;
 }
 
 export async function clearCrashLog(): Promise<void> {

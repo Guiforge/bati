@@ -235,7 +235,12 @@ export default function SettingsScreen() {
   // is on disk now, and the row only ever needed the count.
   const openBugReport = useCallback(async () => {
     const reports = await readCrashLog();
-    const url = buildBugReportMailto(reports, versionLabel);
+    const url = buildBugReportMailto(reports, versionLabel, {
+      subject: t("feedback.subject", { version: versionLabel }),
+      prompt: t("feedback.prompt"),
+      technicalHeader: t("feedback.technical_header"),
+      noCrash: t("feedback.no_crash"),
+    });
     try {
       if (!(await Linking.canOpenURL(url))) return;
       await Linking.openURL(url);
@@ -243,7 +248,7 @@ export default function SettingsScreen() {
       // No mail client configured, or a restricted simulator. Nothing was sent, which is the
       // safe direction to fail in.
     }
-  }, []);
+  }, [t]);
 
   const pickCustomAvatar = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -451,6 +456,20 @@ export default function SettingsScreen() {
             onPress={openOath}
           />
 
+          {/* Not gated on the crash log any more. The reports worth having come from people
+              whose app works — "I never understood the village", "the rest timer is too short" —
+              and none of that is a crash. The count still shows when there is one to send. */}
+          <SettingRow
+            icon={<Bug size={22} color="$text" />}
+            label={t("settings.feedback", "Feedback, an idea, a bug")}
+            value={
+              crashCount > 0
+                ? t("settings.report_bug_count", { count: crashCount })
+                : t("settings.feedback_hint", "Write to me")
+            }
+            onPress={openBugReport}
+          />
+
           <SettingRow
             icon={<HeartPulse size={22} color="$text" />}
             label={t("safety.title", "Train safely")}
@@ -463,20 +482,6 @@ export default function SettingsScreen() {
             icon={<ShieldCheck size={22} color="$text" />}
             label={t("settings.privacy", "Privacy")}
             onPress={() => router.push("/privacy" as never)}
-          />
-
-          <SettingRow
-            icon={<Bug size={22} color="$text" />}
-            label={t("settings.report_bug", "Report a bug")}
-            // Nothing recorded means nothing worth an email — the row says so rather than
-            // opening a mail draft that only contains "no crash was recorded".
-            value={
-              crashCount > 0
-                ? t("settings.report_bug_count", { count: crashCount })
-                : t("settings.report_bug_empty", "Nothing recorded")
-            }
-            disabled={crashCount === 0}
-            onPress={openBugReport}
           />
 
           <SettingRow

@@ -16,6 +16,7 @@ jest.mock("@/db/preferences", () => ({
 }));
 
 import {
+  type BugReportStrings,
   buildBugReportMailto,
   CONTACT_EMAIL,
   type CrashReport,
@@ -123,8 +124,16 @@ describe("crashLog", () => {
       { at: "2026-07-31T10:00:00.000Z", context: "render", message: "boom", stack: "at foo()" },
     ];
 
+    /** The screen passes these through `t`; the module itself holds no wording. */
+    const strings: BugReportStrings = {
+      subject: "Bati 1.0.0 — retour",
+      prompt: "Dis-moi tout",
+      technicalHeader: "Détails techniques",
+      noCrash: "Aucun plantage enregistré sur cet appareil.",
+    };
+
     test("is a mailto to the contact address, carrying the crash", () => {
-      const url = buildBugReportMailto(reports, "1.0.0 (7)");
+      const url = buildBugReportMailto(reports, "1.0.0 (7)", strings);
 
       expect(url.startsWith(`mailto:${CONTACT_EMAIL}?`)).toBe(true);
       expect(decodeURIComponent(url)).toContain("boom");
@@ -132,11 +141,28 @@ describe("crashLog", () => {
       expect(decodeURIComponent(url)).toContain("Bati 1.0.0 (7)");
     });
 
+    // The wording travels from the caller, so a French hero writes a French mail.
+    test("carries the caller's wording, not a hardcoded English draft", () => {
+      const url = decodeURIComponent(buildBugReportMailto(reports, "1.0.0", strings));
+
+      expect(url).toContain("subject=Bati 1.0.0 — retour");
+      expect(url).toContain("Dis-moi tout");
+      expect(url).toContain("Détails techniques");
+    });
+
+    // "It lags" is unactionable without knowing what it lagged on.
+    test("names the device it was sent from", () => {
+      const url = decodeURIComponent(buildBugReportMailto(reports, "1.0.0", strings));
+
+      expect(url).toContain("Device: ");
+    });
+
     // A body pasted raw into a URL breaks on the first `&` or newline.
     test("escapes the body", () => {
       const url = buildBugReportMailto(
         [{ at: "2026-07-31T10:00:00.000Z", context: "render", message: "a&b", stack: null }],
         "1.0.0",
+        strings,
       );
 
       expect(url).not.toContain("a&b");
@@ -144,8 +170,8 @@ describe("crashLog", () => {
     });
 
     test("still composes when nothing was recorded", () => {
-      const url = buildBugReportMailto([], "1.0.0");
-      expect(decodeURIComponent(url)).toContain("No crash was recorded");
+      const url = buildBugReportMailto([], "1.0.0", strings);
+      expect(decodeURIComponent(url)).toContain("Aucun plantage enregistré");
     });
   });
 });

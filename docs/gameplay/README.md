@@ -20,7 +20,7 @@ related: [../README.md, ../planning/roadmap.md]
 - [session-flow.md](session-flow.md) — Active workout screens + technical spec
 - [progression.md](progression.md) — XP, derived village, flame — the loot loop
 - [statistics-progress.md](statistics-progress.md) — Statistics & progress (4 derived views)
-- [coach-planning.md](coach-planning.md) — Coach: weekly goal, weak-area & rest nudges
+- [coach-planning.md](coach-planning.md) — what Home offers next: oath, weak-area & rest rules
 - [oaths.md](oaths.md) — Oaths: the user's own target, derived from the journal
 
 ## Related

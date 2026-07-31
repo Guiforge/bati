@@ -599,6 +599,51 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
 }
 
 /**
+ * A quest the hero can train tonight that contains this movement.
+ *
+ * The bridge from an oath to a session: swearing "15 pull-ups" names an exercise, the ladder names
+ * the rung to train for it, and this turns that rung into something to press play on. Without it
+ * the objective the hero chose never reaches the content — Home would keep suggesting whatever
+ * muscle was lagging instead.
+ *
+ * Seed content first, then the fewest exercises: a four-movement quest built around the rung beats
+ * a twelve-movement circuit that happens to include it.
+ */
+export async function findQuestWithExercise(exerciseId: number): Promise<number | null> {
+  const [eligible, rows] = await Promise.all([
+    getEligibleQuestIds(),
+    db
+      .select({
+        questId: questExercises.questId,
+        exerciseId: questExercises.exerciseId,
+        author: quests.author,
+      })
+      .from(questExercises)
+      .innerJoin(quests, eq(quests.id, questExercises.questId)),
+  ]);
+
+  const byQuest = new Map<number, { size: number; hasIt: boolean; author: string }>();
+  for (const row of rows) {
+    const entry = byQuest.get(row.questId) ?? { size: 0, hasIt: false, author: row.author };
+    entry.size++;
+    if (row.exerciseId === exerciseId) entry.hasIt = true;
+    byQuest.set(row.questId, entry);
+  }
+
+  const pool = [...byQuest].filter(([id, entry]) => entry.hasIt && eligible.has(id));
+  if (pool.length === 0) return null;
+
+  pool.sort(
+    ([idA, a], [idB, b]) =>
+      Number(a.author === USER_QUEST_AUTHOR) - Number(b.author === USER_QUEST_AUTHOR) ||
+      a.size - b.size ||
+      idA - idB,
+  );
+
+  return pool[0][0];
+}
+
+/**
  * Get the daily quest based on the current date.
  * Deterministically picks a quest from all available quests the user can actually train.
  */

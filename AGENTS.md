@@ -68,8 +68,13 @@ The full account is in [`audit.md`](audit.md); these are the habits that come ou
 
 - `db/index.ts` is excluded from `knip` because it re-exports ~60 symbols of which a third are
   used. Worth trimming to what callers actually import, then removing the exclusion.
-- `components/session/SessionRecoveryCard.tsx` is not mounted anywhere: crash recovery works
-  end to end but has no way into the UI.
+- `db/restSuggestions.ts` still exports `getQuickRestCheck()` with no caller. Its sibling
+  `getRestSuggestion()` was wired into Home on 2026-07-31; this one was not.
+- `app/(tabs)/quests/[id].tsx` composes `getQuestById` + `getQuestConfig` + `applyQuestConfig`
+  in React state, which is what `loadConfiguredQuest()` does in one call. The screen needs the
+  config in state so the hero can edit it before starting, so the two are not trivially merged —
+  but they must keep reading the same saved config, or Home and the quest screen will start
+  different sessions for the same quest.
 
 ## Git hooks
 

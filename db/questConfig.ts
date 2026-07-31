@@ -1,5 +1,5 @@
 import { deletePreference, getPreference, setPreference } from "./preferences";
-import type { Quest } from "./quests";
+import { getQuestById, type Quest } from "./quests";
 import { Difficulty, type UserLevel } from "./targets";
 
 /**
@@ -120,4 +120,23 @@ export function applyQuestConfig(quest: Quest, config: QuestConfig | null): Ques
       return value === undefined ? qex : { ...qex, target: { ...qex.target, value } };
     }),
   };
+}
+
+/**
+ * A quest ready to run, for a caller that only has its id: the saved level, the template at that
+ * level, and the hero's overrides applied.
+ *
+ * Home starts a session without opening the quest screen, so the two paths have to agree on what
+ * "this quest" means. They agree by reading the same saved config — the quest screen composes these
+ * same three calls in React state instead, because there the hero can still change them before
+ * pressing start.
+ */
+export async function loadConfiguredQuest(
+  questId: number,
+): Promise<{ quest: Quest; level: UserLevel } | null> {
+  const config = await getQuestConfig(questId);
+  const level = config?.level ?? Difficulty.Medium;
+  const quest = await getQuestById(questId, level);
+
+  return quest ? { quest: applyQuestConfig(quest, config), level } : null;
 }

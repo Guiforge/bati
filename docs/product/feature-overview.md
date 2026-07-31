@@ -117,14 +117,16 @@ Track personal bests.
 
 ## 🎯 Planning Features
 
-### Coach
+### What Home offers next
 
-A reactive nudge on Home.
+One action at a time, on Home. Deliberately unnamed in the UI — see the doc for why "Coach" was
+dropped.
 
-- **What**: One action at a time — resume an adventure, or a lagging-muscle quest suggestion
-- **Note**: Never echoes a weekly-goal count; the chosen objective is the Oath
+- **What**: resume an adventure → serve the Oath → cover a lagging muscle → open the gallery
+- **Note**: it picks an *action*, never a target. The chosen objective is the Oath, which it now
+  reads to decide what to offer
 - **Status**: Implemented (Home, `useSmartAction.ts`). The rest/overreach rule
-  (`db/restSuggestions.ts`) is written and tested but **not wired to any surface**
+  (`db/restSuggestions.ts`) renders as a line under the stage, never as the primary button
 - **Doc**: [coach-planning.md](../gameplay/coach-planning.md)
 
 ### Oath (Serment)
@@ -220,7 +222,7 @@ Technical stack details.
 
 ### Phase 2: Coach
 
-- Weekly goal + weak-area + rest rules (see [coach-planning.md](../gameplay/coach-planning.md))
+- Oath + weak-area + rest rules (see [coach-planning.md](../gameplay/coach-planning.md))
 - Weekly suggested-quest list, if user feedback asks for more direction
 
 ### Phase 3: Statistics polish
@@ -248,7 +250,7 @@ Technical stack details.
 | [BOSS.md](../gameplay/boss-fights.md) | Boss fight mechanics |
 | [SESSION.md](../gameplay/session-flow.md) | Active workout UI |
 | [progression.md](../gameplay/progression.md) | XP, village, flame |
-| [COACH.md](../gameplay/coach-planning.md) | Weekly goal, weak-area & rest nudges |
+| [coach-planning.md](../gameplay/coach-planning.md) | What Home offers next: oath, weak-area & rest rules |
 | [STATISTICS.md](../gameplay/statistics-progress.md) | Stats & progress tracking |
 | [EXERCISE_COLORS.md](../design/exercise-colors.md) | Color system |
 | [design-system.md](../design/design-system.md) | Visual design system |

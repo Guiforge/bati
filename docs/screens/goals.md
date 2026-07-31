@@ -10,7 +10,7 @@ sources: [app/goals.tsx]
 
 # Goals (`/goals`)
 
-> ⚠️ **Status: deferred.** The Coach redesign
+> ⚠️ **Status: deferred.** The Home-stage redesign
 > ([coach-planning.md](../gameplay/coach-planning.md)) replaces a dedicated goal-setting
 > flow (type + days/week + session length + generated plan preview) with a single weekly
 > session-count setting, shown as a card on Home. This full screen is not part of that

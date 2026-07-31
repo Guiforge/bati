@@ -34,8 +34,8 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 - [village.md](village.md) — visual reward layer (village growth)
 
 **Planning (deferred)**
-- [goals.md](goals.md) — ⚠️ deferred, replaced by the Coach card on Home
-- [schedule.md](schedule.md) — ⚠️ deferred, replaced by the Coach card on Home
+- [goals.md](goals.md) — ⚠️ deferred, replaced by the Oath and the Home stage
+- [schedule.md](schedule.md) — ⚠️ deferred, replaced by the Oath and the Home stage
 
 **Preferences**
 - [settings.md](settings.md) — app preferences → Credits

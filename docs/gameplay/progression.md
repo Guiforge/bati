@@ -80,7 +80,7 @@ the promise they made. One mechanic, one unit, and the target is chosen rather t
 ### Why it changed
 
 The flame used to count consecutive training days, which put the app at war with itself: an
-achievement asked for 100 days in a row while the [Coach](coach-planning.md) nudges a rest day
+achievement asked for 100 days in a row while the [rest rule](coach-planning.md) nudges a rest day
 after 5. The research is explicit that breaking a strict streak pushes people to abandon rather
 than restart, and that missing a single day does not compromise habit formation — so the day a
 hero rests must not cost them anything. See
@@ -129,6 +129,6 @@ boss victories now live directly as village banners instead of a spendable token
 ## Related
 
 - [statistics-progress.md](statistics-progress.md) — muscle balance, PRs, sessions/week, calendar
-- [coach-planning.md](coach-planning.md) — weekly goal, weak-area nudge, rest nudge
+- [coach-planning.md](coach-planning.md) — what Home offers next: oath, weak-area, rest
 - [session-flow.md](session-flow.md) — flame, victory screen, "no session is wasted" rule
 - [boss-fights.md](boss-fights.md) — boss victories as village banners

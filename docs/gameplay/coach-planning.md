@@ -1,8 +1,8 @@
 ---
-title: Coach
+title: What Home offers next
 type: system
 status: active
-updated: 2026-07-30
+updated: 2026-07-31
 related:
   [
     progression.md,
@@ -14,17 +14,22 @@ sources:
   [components/home/useSmartAction.ts, db/muscleBalance.ts, db/restSuggestions.ts, db/streaks.ts]
 ---
 
-# Coach
+# What Home offers next
 
 ## Summary
 
-The Coach is not a planning system. It is **one priority waterfall on Home**, implemented in
+This is not a planning system, and as of 2026-07-31 it is **not called "the Coach" anywhere in
+the UI**. It is **one priority waterfall on Home**, implemented in
 [`components/home/useSmartAction.ts`](../../components/home/useSmartAction.ts) and evaluated
-against the session journal and the
+against the session journal, the [Oath](oaths.md) and the
 [muscle balance](statistics-progress.md#1-muscle-balance-last-30-days) view. No persisted
 state, no generated plans, no scheduling, no notifications — those are explicit non-goals
-(see below). The user's chosen **objective** lives in the [Oath](oaths.md), not here, so the
-two never compete for the objective slot.
+(see below).
+
+The word "Coach" was dropped because it named a feature that does not exist while hiding the one
+that does. It only ever appeared on the journal's `ProgressionCard`, whose content is usually the
+variation ladder; that card now says what it shows ("Your next rung" / "Adjust the difficulty").
+`app/safety.tsx` states plainly that Bati is not a coach, and the UI no longer contradicts it.
 
 ## What actually runs
 
@@ -32,27 +37,50 @@ two never compete for the objective slot.
 
 | # | Rule | Source | Result |
 | --- | --- | --- | --- |
-| 1 | An adventure run is active | `getAnyActiveAdventureRun()` | "Continue Adventure" + step count, rendered as a scene |
-| 2 | A muscle sits below its share of 30-day volume | `getSuggestedQuestsForWeakAreas(1)` | "Start Quest" + the muscles it targets |
-| 3 | Neither | — | "Start Quest" → the quest gallery |
+| 1 | An adventure run is active | `getAnyActiveAdventureRun()` | "Continue Adventure" + step count, rendered as a scene → the adventure map |
+| 2 | An unfulfilled oath names an exercise | `getOathProgress()` → `getChainTo()` → `findQuestWithExercise()` | "Start Quest" + `Oath · Rung 4/6 · <movement>` → **starts the session** |
+| 3 | A muscle sits below its share of 30-day volume | `getSuggestedQuestsForWeakAreas(1)` | "Start Quest" + the muscles it targets → **starts the session** |
+| 4 | None of those | — | "Pick a quest" → the quest gallery |
 
-Each branch links to one concrete action. It never just reports a number.
+Each branch links to one concrete action, and its label names that action. It never just reports
+a number.
 
-### The rest rule is written but not wired
+### The oath outranks the weak areas
 
-[`db/restSuggestions.ts`](../../db/restSuggestions.ts) implements `getRestSuggestion()` and
-`getQuickRestCheck()` — consecutive-days-trained detection, an `overtraining` reason, the whole
-thing. It is exported from `db/index.ts` and covered by `__tests__/db-restSuggestions.test.ts`.
-**No component calls it.** This page previously claimed a Rest rule fired on Home ahead of the
-weak-area rule; it does not, and has not.
+Rule 2 is the spine of the app: an objective the hero chose, the ladder that leads to it, and a
+session that climbs one rung of it. Balance is the app's opinion; the oath is the hero's, so the
+oath goes first. It targets **the rung the hero is standing on**, not the movement they swore —
+`getChainTo(oath.exerciseId).rungs[position - 1]` — because the top of the chain is the goal and
+the rung underneath is tonight.
 
-That is a gap rather than dead code to delete: [§4](../raw/bodyweight-app-research.md) puts
-overreach detection among the guardrails a training app owes its users, and the function
-already encodes it. Wiring it into the waterfall — above the weak-area rule, since safety
-outranks balance — is the smallest way to close it.
+Oath metrics that name no exercise (`sessions`, `streak`, `weekly_sessions`) match nothing here
+and fall through to rule 3 with no special case. So does an oath whose rung appears in no quest
+the hero can train.
 
-When it is wired, it must not contradict the [flame](progression.md#flame-consistency-streak):
-taking the day off costs nothing, so the Coach can advise rest without the app punishing it.
+### Rules 2 and 3 start the session
+
+They call `startSession` directly and push `/session`. The scene above the button shows the quest
+being offered — cover, title, `4 exercises · Strength · ≈ 20 min` — so the hero sees what they are
+accepting before they accept it. Previously the button read "Start a quest" and pushed a detail
+screen carrying a second button reading "Begin the quest": two synonymous verbs, and a generic
+illustration in place of the thing being started.
+
+Both paths read the same saved per-quest config through `loadConfiguredQuest()`
+([`db/questConfig.ts`](../../db/questConfig.ts)), so starting from Home and starting from the
+quest screen run the same session.
+
+### Rest is advice, never the primary button
+
+[`db/restSuggestions.ts`](../../db/restSuggestions.ts) `getRestSuggestion()` is wired as of
+2026-07-31 — but **not** as a branch of the waterfall. The one primary button on Home must never
+read "do not train tonight". It renders as a quiet line under the stage
+([`components/home/RestNote.tsx`](../../components/home/RestNote.tsx)), and the session is still
+on offer underneath it.
+
+It does not contradict the [flame](progression.md#flame-consistency-streak): taking the day off
+costs nothing, so the app can advise rest without punishing it.
+
+`getQuickRestCheck()` remains exported with no caller.
 
 ### Pattern balance, not just muscle balance
 
@@ -69,7 +97,7 @@ but nothing aggregates it over the journal. See
 ## The training rules any nudge must respect
 
 From [`raw/bodyweight-app-research.md`](../raw/bodyweight-app-research.md) §2, §4 and §7 —
-these bound what the Coach is allowed to say:
+these bound what any nudge here is allowed to say:
 
 - **~48 h per muscle group** between hard sessions; ≥1 full rest day per week.
 - **Deload every 4–8 weeks** (reduced volume/intensity) to clear accumulated fatigue.

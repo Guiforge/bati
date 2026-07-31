@@ -10,7 +10,7 @@ sources: [app/schedule.tsx]
 
 # Schedule (`/schedule`)
 
-> ⚠️ **Status: deferred.** The Coach redesign
+> ⚠️ **Status: deferred.** The Home-stage redesign
 > ([coach-planning.md](../gameplay/coach-planning.md)) has no scheduling concept — no
 > planned days, no reminder times. The weekly-goal rule ("2/3 sessions this week") lives on
 > the Home coach card instead of a dedicated weekly-view screen. See

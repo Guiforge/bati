@@ -37,7 +37,7 @@ import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
-import type { EquipmentCode, MuscleCode } from "@/db/schema";
+import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 import { localizedTitle } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -100,6 +100,7 @@ type QuestMeta = {
   quest: QuestTemplate;
   muscles: MuscleCode[];
   equipment: EquipmentCode[];
+  archetype: QuestArchetype | null;
   // Precomputed once per data load — recomputing these in renderItem made every
   // recycled row rebuild color maps, re-run the duration estimator, and re-interpolate
   // i18next strings while scrolling.
@@ -147,6 +148,7 @@ function buildQuestMeta(
     quest: q,
     muscles: muscleList,
     equipment: [...equipment],
+    archetype: q.archetype,
     tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
     durationSeconds,
     xp,
@@ -419,6 +421,9 @@ export default function QuestsGallery() {
   const toggleEquipment = (e: EquipmentCode) =>
     applyFilters((f) => ({ ...f, equipment: toggleInSet(f.equipment, e) }));
 
+  const toggleArchetype = (a: QuestArchetype) =>
+    applyFilters((f) => ({ ...f, archetypes: toggleInSet(f.archetypes, a) }));
+
   // Single-select: you only ever have one amount of time. Tapping the active one clears it.
   const toggleDuration = (d: DurationBucket) =>
     applyFilters((f) => ({ ...f, duration: f.duration === d ? null : d }));
@@ -482,19 +487,33 @@ export default function QuestsGallery() {
     return [...s];
   }, [questMeta]);
 
+  const availableArchetypes = useMemo(() => {
+    const s = new Set<QuestArchetype>();
+    for (const m of questMeta) if (m.archetype) s.add(m.archetype);
+    return [...s];
+  }, [questMeta]);
+
   const filtered = useMemo(
     () => questMeta.filter((m) => matchesFilters(m, filters)),
     [questMeta, filters],
   );
 
-  // Duration first (the "how long have I got" question), then muscles, then equipment —
-  // with the active ones hoisted to the front. Array.sort is stable, so ties keep this order.
+  // Duration first (the "how long have I got" question), then the kind of training, then muscles,
+  // then equipment — with the active ones hoisted to the front. Array.sort is stable, so ties keep
+  // this order. The archetype was already printed on every row and could not be searched by: a
+  // hero training for strength had no way to ask for it.
   const railChips: RailChip[] = [
     ...DURATION_BUCKETS.map((b) => ({
       key: `d-${b}`,
       label: t(`quests.filter_duration_${b}`, DURATION_FALLBACKS[b]),
       active: filters.duration === b,
       onPress: () => toggleDuration(b),
+    })),
+    ...availableArchetypes.map((a) => ({
+      key: `a-${a}`,
+      label: t(`quests.archetype_${a}`),
+      active: filters.archetypes.has(a),
+      onPress: () => toggleArchetype(a),
     })),
     ...availableMuscles.map((m) => ({
       key: `m-${m}`,

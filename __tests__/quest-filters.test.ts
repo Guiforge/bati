@@ -4,15 +4,21 @@ import {
   type QuestFilters,
   toggleInSet,
 } from "@/constants/questFilters";
-import type { EquipmentCode, MuscleCode } from "@/db/schema";
+import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 
 // The gallery rail is JSX; this predicate is the only real logic behind it. What matters:
 // OR inside a dimension, AND across dimensions, and that "≤ 30 min" swallows the short ones.
 
-const quest = (muscles: MuscleCode[], equipment: EquipmentCode[], durationSeconds: number) => ({
+const quest = (
+  muscles: MuscleCode[],
+  equipment: EquipmentCode[],
+  durationSeconds: number,
+  archetype: QuestArchetype | null = null,
+) => ({
   muscles,
   equipment,
   durationSeconds,
+  archetype,
 });
 
 const filters = (over: Partial<QuestFilters> = {}): QuestFilters => ({
@@ -63,6 +69,15 @@ test("duration buckets — 30 min or less includes the short quests", () => {
   expect(matchesFilters(quest(["chest"], ["dumbbell"], 15 * 60), short)).toBe(true);
   expect(matchesFilters(quest(["chest"], ["dumbbell"], 30 * 60), medium)).toBe(true);
   expect(matchesFilters(quest(["chest"], ["dumbbell"], 30 * 60), long)).toBe(false);
+});
+
+test("archetype filter — a quest with no archetype is not 'strength'", () => {
+  const f = filters({ archetypes: new Set<QuestArchetype>(["strength"]) });
+
+  expect(matchesFilters(quest(["chest"], ["none"], 600, "strength"), f)).toBe(true);
+  expect(matchesFilters(quest(["chest"], ["none"], 600, "circuit"), f)).toBe(false);
+  // User-authored quests declare none, and must not slip into a filter they never claimed.
+  expect(matchesFilters(chestDumbbell10min, f)).toBe(false);
 });
 
 test("toggleInSet adds then removes, without mutating the original", () => {

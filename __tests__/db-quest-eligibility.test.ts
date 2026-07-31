@@ -116,6 +116,42 @@ describe("quest eligibility", () => {
     expect((await quests().getEligibleQuestIds()).has(colossus)).toBe(true);
   });
 
+  /**
+   * The bridge from an oath to a session. It runs against the real catalogue on purpose: the
+   * failure that matters is not a bad query, it is a rung of the seeded ladder that no quest
+   * contains — the hero would swear a goal and Home would silently fall back to weak areas.
+   */
+  describe("findQuestWithExercise", () => {
+    function exerciseId(enName: string): number {
+      return (
+        t.sqlite.prepare("SELECT id FROM exercises WHERE enName = ?").get(enName) as { id: number }
+      ).id;
+    }
+
+    test("returns a quest that actually contains the movement", async () => {
+      const pullups = exerciseId("Pull-ups");
+      const questId = await quests().findQuestWithExercise(pullups);
+
+      expect(questId).not.toBeNull();
+      const contains = t.sqlite
+        .prepare("SELECT 1 FROM quest_exercises WHERE questId = ? AND exerciseId = ?")
+        .get(questId, pullups);
+      expect(contains).toBeTruthy();
+    });
+
+    test("never hands back a quest the hero cannot train", async () => {
+      setPreference("ownedEquipment", "[]");
+
+      const pullups = exerciseId("Pull-ups");
+      // Pull-ups need a bar, so every quest holding them is out for a bodyweight-only hero.
+      expect(await quests().findQuestWithExercise(pullups)).toBeNull();
+    });
+
+    test("returns null for a movement no quest uses", async () => {
+      expect(await quests().findQuestWithExercise(-1)).toBeNull();
+    });
+  });
+
   test("the daily quest comes from the eligible pool", async () => {
     setPreference("ownedEquipment", "[]");
     setPreference("trainingLevel", "beginner");

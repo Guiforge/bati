@@ -41,7 +41,7 @@ Pick a Quest → Train → Earn XP → Your village reacts → Repeat
 - **XP & Level**: Progress earned by training. XP increases your level, which grows the village.
 - **Village**: Your “fitness fingerprint” shown as one growing fantasy scene — no resources, no buildings to manage.
 - **Journal**: Your training history, stats, and progress.
-- **Coach**: A small card that nudges you toward a lagging muscle or a rest day.
+- **Tonight's quest**: Home picks one thing to offer — the quest that advances your Oath, or one covering a lagging muscle — and starts it in one tap.
 - **Oath (Serment)**: The single objective you choose to work toward (a streak, a number of sessions, an exercise record).
 
 ---
@@ -83,9 +83,11 @@ After workouts, Bati rewards you with:
 
 - A visual representation of your progress and rewards.
 
-### 5) Get nudged (Coach)
+### 5) Be told what to train tonight
 
-- See a nudge toward a lagging muscle or a rest day, right on Home.
+- Home offers one quest: the one that advances your Oath, or one covering a lagging muscle.
+- Tapping it starts the session. No second screen to confirm on.
+- If you have been training hard for days, a quiet line suggests an easier day. It never blocks you.
 
 ### 6) Set an objective (Oath)
 
@@ -153,9 +155,9 @@ Preferences:
 - **Home** (`/`)
   - Shows your current status at a glance (progress highlights).
   - Quick access to:
-    - continuing your current adventure,
+    - the one session on offer tonight — one tap to start it,
+    - your Oath and the rung of the ladder you are on,
     - visiting the village,
-    - your Coach nudge for the week,
     - seeing a compact overview of stats.
 
 ### Quests (workouts)
@@ -208,12 +210,15 @@ Preferences:
   - Visualizes your progress as a growing village.
   - Reinforces the “train → earn → build” loop.
 
-### Coach
+### What Home offers next
 
-**Purpose:** a light nudge toward what to do next, on Home.
+**Purpose:** one thing to do right now, on Home.
 
-- See a lagging-muscle suggestion or a rest nudge — whichever applies.
-- Your chosen objective lives in the Oath card, not here.
+- An adventure in progress, else the quest that advances your Oath, else one for a lagging muscle,
+  else the gallery.
+- The button starts the session; the scene above it shows what you are about to train.
+- A rest suggestion, when one applies, is a line under it — advice, never a gate.
+- Your chosen objective lives in the Oath card. Home serves it; it does not replace it.
 
 ### Settings
 

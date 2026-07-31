@@ -6,21 +6,31 @@ import type { ImageSourcePropType } from "react-native";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
-import { ADVENTURE_ASSETS, getAdventureAsset } from "@/constants/assetMap";
-import { useSmartAction } from "./useSmartAction";
+import { ADVENTURE_ASSETS, getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
+import { type SmartActionConfig, useSmartAction } from "./useSmartAction";
 
 const COVER_HEIGHT = 196;
-// Cover + the action block under it (progress row, PLAY button, padding): the stage
-// must reserve its full height or everything below drops when the scene lands.
-const STAGE_HEIGHT = COVER_HEIGHT + 134;
+// The block under the cover: two content rows, the button, padding. Fixed so the adventure and
+// quest scenes reserve the same space and the skeleton matches both.
+const ACTION_HEIGHT = 142;
+const STAGE_HEIGHT = COVER_HEIGHT + ACTION_HEIGHT;
 
-/** The stage is always a scene. With no adventure running, the on-ramp route's art stands in. */
-function resolveCover(path?: string | null): ImageSourcePropType {
+/** The stage is always a scene. With nothing running, the on-ramp route's art stands in. */
+function resolveCover(config: SmartActionConfig | null): ImageSourcePropType {
+  const path = config?.scene?.imagePath;
   if (!path) return ADVENTURE_ASSETS.squire_path;
-  return path.startsWith("http") ? { uri: path } : getAdventureAsset(path);
+  if (path.startsWith("http")) return { uri: path };
+  return config?.variant === "quest" ? getQuestAsset(path) : getAdventureAsset(path);
 }
 
-export function CurrentAdventureWidget() {
+/**
+ * The one thing Home asks the hero to do tonight, shown as the thing itself.
+ *
+ * The scene names what the button starts — an adventure to walk back into, or the quest that
+ * serves the oath. A button that promises a session over a generic illustration is a button you
+ * have to tap to find out what it meant.
+ */
+export function HomeStage() {
   const router = useRouter();
   const { t } = useTranslation();
   const { config, isLoading } = useSmartAction();
@@ -30,20 +40,18 @@ export function CurrentAdventureWidget() {
     return <Skeleton height={STAGE_HEIGHT} radius={16} bg="$surface" />;
   }
 
-  const effectiveConfig = config || {
+  const effectiveConfig = config ?? {
     label: t("home.start_adventure", "Start Adventure"),
     subtext: t("home.no_active_adventure", "Choose your path"),
     onPress: () => router.push("/adventures"),
   };
 
-  const adventure = config?.adventure ?? null;
+  const scene = config?.scene ?? null;
   const subtitle = effectiveConfig.subtext || t("home.start_journey", "Start your journey");
   const label = effectiveConfig.label || t("home.play", "Play");
-  const handlePress = effectiveConfig.onPress || (() => router.push("/adventures"));
-  const cover = resolveCover(adventure?.imagePath);
-  const sceneTitle = adventure?.title ?? subtitle;
-  const stepProgress =
-    adventure && adventure.stepsTotal > 0 ? (adventure.stepsDone / adventure.stepsTotal) * 100 : 0;
+  const handlePress = effectiveConfig.onPress;
+  const progress = scene?.progress ?? null;
+  const stepProgress = progress && progress.total > 0 ? (progress.done / progress.total) * 100 : 0;
 
   return (
     <YStack
@@ -56,16 +64,13 @@ export function CurrentAdventureWidget() {
       shadowOffset={{ width: 0, height: 6 }}
       shadowOpacity={0.14}
       elevation={5}
-      onPress={handlePress}
-      pressStyle={{ scale: 0.98, opacity: 0.9 }}
-      transition="quick"
       overflow="hidden"
     >
-      {/* The cover is the card: a scene to walk back into, not a generic tile.
-          No eyebrow above the title — the art says "adventure" on its own. */}
+      {/* The cover is the card: a scene to walk into, not a generic tile. No eyebrow above the
+          title — the art says what this is on its own. */}
       <YStack height={COVER_HEIGHT} width="100%" position="relative">
         <Image
-          source={cover}
+          source={resolveCover(config)}
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
           transition={200}
@@ -79,27 +84,34 @@ export function CurrentAdventureWidget() {
         />
         <YStack position="absolute" l="$4" r="$4" b="$3">
           <H3 fontSize={24} fontWeight="700" color="$text" numberOfLines={2} lineHeight={30}>
-            {sceneTitle}
+            {scene?.title ?? t("home.start_journey", "Start your journey")}
           </H3>
         </YStack>
       </YStack>
 
-      <YStack p="$4" gap="$3">
-        {adventure ? (
+      <YStack p="$4" gap="$2" minH={ACTION_HEIGHT}>
+        {/* What the session is made of, then why it is the one being offered. */}
+        {scene?.meta ? (
+          <Text fontSize={14} fontWeight="700" color="$textSecondary">
+            {scene.meta}
+          </Text>
+        ) : null}
+
+        {progress ? (
           <YStack gap="$2">
             <XStack justify="space-between" items="center">
               <Text fontSize={14} fontWeight="700" color="$textSecondary">
                 {subtitle}
               </Text>
               <Text fontSize={14} fontWeight="700" color="$resourceGold">
-                {`${adventure.stepsDone}/${adventure.stepsTotal}`}
+                {`${progress.done}/${progress.total}`}
               </Text>
             </XStack>
             <ProgressBar progress={stepProgress} height={6} color="$resourceGold" />
           </YStack>
         ) : (
-          <Text fontSize={14} fontWeight="700" color="$textSecondary">
-            {t("home.start_journey", "Start your journey")}
+          <Text fontSize={13} color="$resourceGold" numberOfLines={1}>
+            {subtitle}
           </Text>
         )}
 
@@ -114,7 +126,7 @@ export function CurrentAdventureWidget() {
           width="100%"
           onPress={handlePress}
           pressStyle={{ opacity: 0.8, scale: 0.98 }}
-          mt="$2"
+          mt="auto"
           shadowColor="$primary"
           shadowRadius={8}
           shadowOffset={{ width: 0, height: 4 }}

@@ -1,10 +1,12 @@
 import { ScrollView } from "react-native";
 import { YStack } from "tamagui";
-import { CurrentAdventureWidget } from "@/components/home/CurrentAdventureWidget";
 import { HomeHeader } from "@/components/home/HomeHeader";
+import { HomeStage } from "@/components/home/HomeStage";
 import { OathCard } from "@/components/home/OathCard";
+import { RestNote } from "@/components/home/RestNote";
 import { StatsOverview } from "@/components/home/StatsOverview";
 import { VillageTeaser } from "@/components/home/VillageTeaser";
+import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard";
 
 /**
  * THESIS: Home is the hero's HUD — fixed chrome frames a living center stage.
@@ -30,8 +32,15 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
       >
         <YStack px="$4" pt="$3" gap="$4">
-          {/* Center stage: the current adventure, one PLAY action */}
-          <CurrentAdventureWidget />
+          {/* An interrupted session outranks any suggestion — it renders nothing when there is
+              none to resume. Without it, quitting mid-quest left no trace anywhere. */}
+          <SessionRecoveryBanner />
+
+          {/* Center stage: tonight's scene, one action that starts it */}
+          <HomeStage />
+
+          {/* Advice, never a gate: the stage still offers a session underneath it */}
+          <RestNote />
 
           {/* Chosen objective (shows a swear-CTA when none is active) */}
           <OathCard />

@@ -1,4 +1,4 @@
-import type { EquipmentCode, MuscleCode } from "@/db/schema";
+import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 
 /**
  * How much time the hero has right now. Single-select on purpose: you only ever have one
@@ -11,12 +11,14 @@ export const DURATION_BUCKETS: DurationBucket[] = ["short", "medium", "long"];
 export type QuestFilters = {
   muscles: Set<MuscleCode>;
   equipment: Set<EquipmentCode>;
+  archetypes: Set<QuestArchetype>;
   duration: DurationBucket | null;
 };
 
 export const NO_FILTERS: QuestFilters = {
   muscles: new Set(),
   equipment: new Set(),
+  archetypes: new Set(),
   duration: null,
 };
 
@@ -24,6 +26,8 @@ export const NO_FILTERS: QuestFilters = {
 type Filterable = {
   muscles: MuscleCode[];
   equipment: EquipmentCode[];
+  /** Null on user-authored quests, which declare no archetype. */
+  archetype: QuestArchetype | null;
   durationSeconds: number;
 };
 
@@ -42,6 +46,11 @@ export function matchesFilters(quest: Filterable, filters: QuestFilters): boolea
   if (filters.muscles.size > 0 && !quest.muscles.some((c) => filters.muscles.has(c))) return false;
   if (filters.equipment.size > 0 && !quest.equipment.some((c) => filters.equipment.has(c))) {
     return false;
+  }
+  // A hero training for strength can now say so. Quests with no archetype drop out of an
+  // archetype filter rather than matching everything — "Strength" must mean strength.
+  if (filters.archetypes.size > 0) {
+    if (quest.archetype === null || !filters.archetypes.has(quest.archetype)) return false;
   }
   return matchesDuration(quest.durationSeconds, filters.duration);
 }

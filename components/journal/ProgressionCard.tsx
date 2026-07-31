@@ -40,7 +40,7 @@ function LadderStep({ step }: { step: VariationStep }) {
         <XStack items="center" gap="$2">
           <TrendingUp size={20} color={step.isEarned ? "$success" : "$primary"} />
           <H3 fontSize={16} color={step.isEarned ? "$success" : "$primary"}>
-            {t("progression.title", "Coach Suggestion")}
+            {t("progression.ladder_title", "Your next rung")}
           </H3>
         </XStack>
 
@@ -96,7 +96,7 @@ function DifficultyNudge({ recommendation }: { recommendation: ProgressionRecomm
         <XStack items="center" gap="$2">
           <Icon size={20} color={color} />
           <H3 fontSize={16} color={color}>
-            {t("progression.title", "Coach Suggestion")}
+            {t("progression.difficulty_title", "Adjust the difficulty")}
           </H3>
         </XStack>
 
@@ -130,6 +130,9 @@ function DifficultyNudge({ recommendation }: { recommendation: ProgressionRecomm
  * (`drizzle/0022_progression_ladder.sql`), so naming the next movement is a truer answer than
  * "try hard mode". The difficulty nudge stays behind it — still the right advice for a hero whose
  * recent work is not on the ladder, or who has built no momentum on it yet.
+ *
+ * Both branches used to be titled "Coach Suggestion", which named a feature that does not exist
+ * and hid the one that does: the ladder. Each branch now says what it is showing.
  */
 export function ProgressionCard() {
   const [recommendation, setRecommendation] = useState<ProgressionRecommendation | null>(null);

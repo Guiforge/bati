@@ -13,7 +13,7 @@ import { Tag } from "@/components/common/Tag";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { getExerciseById } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { getNextProgression, type NextProgression } from "@/db/exercises";
+import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -113,10 +113,59 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
 }
 
 /**
+ * The whole path in one line and one bar: how far the hero has climbed, where they stand.
+ *
+ * Segments, not a list of named nodes. A dedicated "my path" screen was designed and dropped for
+ * showing a wall of unlit movements; the same wall would be no kinder here. The rung the hero is
+ * on is named in the text above, so the colours reinforce it rather than carry it alone.
+ */
+function LadderStrip({ chain }: { chain: Chain }) {
+  const language = useSettingsStore((s) => s.language);
+  const { t } = useTranslation();
+
+  const current = chain.rungs[chain.position - 1].exercise;
+
+  return (
+    <YStack gap="$2">
+      <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
+        {t("progression.chain_position", {
+          position: chain.position,
+          total: chain.rungs.length,
+          name: language === "fr" ? current.frName : current.enName,
+        })}
+      </Text>
+      <XStack gap="$1">
+        {chain.rungs.map((rung, index) => (
+          <YStack
+            key={rung.exercise.id}
+            flex={1}
+            height={4}
+            rounded="$1"
+            bg={
+              index < chain.position - 1
+                ? "$resourceGold"
+                : index === chain.position - 1
+                  ? "$primary"
+                  : "$borderStrong"
+            }
+          />
+        ))}
+      </XStack>
+    </YStack>
+  );
+}
+
+/**
  * What comes after this movement. A hint, never a gate — nothing in the app is locked behind it,
  * and a hero who wants to try the next step tonight can (roadmap §15, the progression ladder).
  */
-function NextStepCard({ progression }: { progression: NextProgression }) {
+function NextStepCard({
+  progression,
+  chain,
+}: {
+  progression: NextProgression;
+  chain: Chain | null;
+}) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
 
@@ -125,9 +174,11 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
 
   return (
     <Card>
+      {chain ? <LadderStrip chain={chain} /> : null}
+
       {/* The pose was always in the payload and never rendered — a named step you cannot see is
           a to-do list item, an illustrated one is a movement you want to try. */}
-      <XStack gap="$3" items="center">
+      <XStack gap="$3" items="center" mt={chain ? "$3" : undefined}>
         <YStack
           width={80}
           height={80}
@@ -176,12 +227,15 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
   const img = resolveAsset(exercise.imagePath);
 
   const [progression, setProgression] = useState<NextProgression | null>(null);
+  const [chain, setChain] = useState<Chain | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    getNextProgression(exercise.id)
-      .then((next) => {
-        if (!cancelled) setProgression(next);
+    Promise.all([getNextProgression(exercise.id), getChainTo(exercise.id)])
+      .then(([next, path]) => {
+        if (cancelled) return;
+        setProgression(next);
+        setChain(path);
       })
       .catch(() => {
         // The ladder is a hint; its absence changes nothing about the screen.
@@ -241,7 +295,7 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
         </YStack>
       </Card>
 
-      {progression ? <NextStepCard progression={progression} /> : null}
+      {progression ? <NextStepCard progression={progression} chain={chain} /> : null}
     </YStack>
   );
 }

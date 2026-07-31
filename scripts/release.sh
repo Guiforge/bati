@@ -39,12 +39,21 @@ next="$(node -p "
 
 echo "  $current -> $next"
 
-node -e "
-  const fs = require('fs');
-  const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
-  app.expo.version = '$next';
-  fs.writeFileSync('app.json', JSON.stringify(app, null, 2) + '\n');
-"
+# Surgical, not a JSON round-trip: re-serialising app.json reformats the inline arrays, which
+# Biome's pre-commit hook then collapses again — the two fought on the first attempt. The version
+# is passed as an argument rather than interpolated, so the script survives quoting.
+node -e '
+  const fs = require("fs");
+  const next = process.argv[1];
+  const before = fs.readFileSync("app.json", "utf8");
+  const after = before.replace(/("version":\s*)"[^"]+"/, `$1"${next}"`);
+  if (before === after) {
+    console.error("release: could not find a version to bump in app.json");
+    process.exit(1);
+  }
+  fs.writeFileSync("app.json", after);
+' "$next"
+
 git add app.json
 
 npm version "$next" --message "chore(release): v%s" >/dev/null

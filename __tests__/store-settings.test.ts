@@ -10,6 +10,9 @@
 // must be registered before the store is required. Same jest.doMock + lazy
 // require pattern the db/* tests use.
 
+/** What the OS says about reduce-motion. Swapped per test. */
+let deviceReduceMotion: () => Promise<boolean> = () => Promise.resolve(false);
+
 const prefs = {
   getLanguage: jest.fn<Promise<string | null>, []>(),
   getTheme: jest.fn<Promise<string | null>, []>(),
@@ -17,7 +20,7 @@ const prefs = {
   getCustomAvatarUri: jest.fn<Promise<string | null>, []>(),
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
-  getReducedMotion: jest.fn<Promise<boolean>, []>(),
+  getReducedMotion: jest.fn<Promise<boolean | null>, []>(),
   getNotificationsEnabled: jest.fn<Promise<boolean>, []>(),
   getNotificationTime: jest.fn<Promise<{ hour: number; minute: number }>, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
@@ -41,6 +44,9 @@ beforeAll(() => {
   // "fr" so the device fallback is distinguishable from the "en" default.
   jest.doMock("@/src/i18n/deviceLanguage", () => ({
     getDevicePreferredAppLanguage: () => "fr",
+  }));
+  jest.doMock("react-native", () => ({
+    AccessibilityInfo: { isReduceMotionEnabled: () => deviceReduceMotion() },
   }));
 });
 
@@ -80,6 +86,7 @@ const DEFAULTS = {
 describe("useSettingsStore", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    deviceReduceMotion = () => Promise.resolve(false);
     settingsStore().setState({ ...DEFAULTS });
   });
 
@@ -142,6 +149,43 @@ describe("useSettingsStore", () => {
     const state = settingsStore().getState();
     expect(state.isLoaded).toBe(true);
     expect(state.theme).toBe("system");
+  });
+
+  /**
+   * Every animated component already honours `reducedMotion`, but it defaulted to false and is
+   * exposed in no screen — so it could never become true and all of that work was dead. The OS
+   * preference is where the hero actually expressed the intent.
+   */
+  test("reduced motion follows the device when it was never answered", async () => {
+    storedSettings();
+    prefs.getReducedMotion.mockResolvedValue(null);
+    deviceReduceMotion = () => Promise.resolve(true);
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+  });
+
+  test("an explicit answer beats the device, in both directions", async () => {
+    storedSettings();
+    prefs.getReducedMotion.mockResolvedValue(false);
+    deviceReduceMotion = () => Promise.resolve(true);
+
+    await settingsStore().getState().loadFromDatabase();
+
+    // Turned off on purpose: the device must not turn it back on.
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+  });
+
+  test("a device that will not answer leaves animations on", async () => {
+    storedSettings();
+    prefs.getReducedMotion.mockResolvedValue(null);
+    deviceReduceMotion = () => Promise.reject(new Error("no accessibility bridge"));
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+    expect(settingsStore().getState().isLoaded).toBe(true);
   });
 
   test("every setter updates the store and writes through to the database", async () => {

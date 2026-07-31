@@ -158,9 +158,14 @@ export const preferences = {
     await setPreference("hapticsEnabled", String(enabled));
   },
 
-  async getReducedMotion(): Promise<boolean> {
+  /**
+   * `null` means the hero has never answered, which is not the same as answering "no".
+   * The settings store fills that case from the OS accessibility preference — without the
+   * distinction, a device with reduce-motion turned on still got the full confetti.
+   */
+  async getReducedMotion(): Promise<boolean | null> {
     const value = await getPreference("reducedMotion");
-    // Default to false (animations enabled by default)
+    if (value === null) return null;
     return value === "true";
   },
 

@@ -1,3 +1,4 @@
+import { AccessibilityInfo } from "react-native";
 import { create } from "zustand";
 import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
@@ -117,9 +118,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         customAvatarUri,
         hapticsEnabled,
         soundEnabled,
-        reducedMotion,
+        storedReducedMotion,
         notificationsEnabled,
         notificationTime,
+        deviceReducedMotion,
       ] = await Promise.all([
         preferences.getLanguage(),
         preferences.getTheme(),
@@ -130,10 +132,18 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getReducedMotion(),
         preferences.getNotificationsEnabled(),
         preferences.getNotificationTime(),
+        AccessibilityInfo.isReduceMotionEnabled().catch(() => false),
       ]);
 
       const normalizedLanguage =
         language === null ? getDevicePreferredAppLanguage() : normalizeLanguage(language);
+
+      // Same shape as the language above: the hero's own answer wins, and the device speaks
+      // when they have not given one. Every animated component already honours this flag —
+      // it just had no way of ever becoming true, since it defaulted to false and is not
+      // exposed in Settings. PRODUCT.md asks for reduced-motion preferences to be respected,
+      // and the OS is where that preference actually lives.
+      const reducedMotion = storedReducedMotion ?? deviceReducedMotion;
 
       set({
         language: normalizedLanguage,

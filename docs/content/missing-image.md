@@ -3,7 +3,7 @@ title: Missing Images — inventory
 type: content
 status: active
 updated: 2026-07-30
-related: [missing-covers.md, ../planning/screen-redesign-proposals.md, ../planning/dev-execution-plan.md]
+related: [missing-covers.md, ../planning/roadmap.md]
 sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
 
@@ -433,5 +433,4 @@ magick montage assets/images/exercises/*.jpg -tile 4x4 -geometry 300x225+3+3 /tm
 ## Related
 
 - [missing-covers.md](missing-covers.md) — the prior (resolved) cover gap + generation pipeline
-- [../planning/dev-execution-plan.md](../planning/dev-execution-plan.md) — the plan this art unblocked, now fully shipped
-- [../planning/screen-redesign-proposals.md](../planning/screen-redesign-proposals.md) — §3 design intent
+- [../planning/roadmap.md](../planning/roadmap.md) — what is still open, art included

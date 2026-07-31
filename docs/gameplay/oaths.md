@@ -8,7 +8,6 @@ related:
     progression.md,
     coach-planning.md,
     statistics-progress.md,
-    ../planning/system-redesign-options.md,
     ../raw/bodyweight-app-research.md,
   ]
 sources: [db/oaths.ts, db/oathReminder.ts, app/oath.tsx, components/home/OathCard.tsx, src/notifications.ts]
@@ -26,9 +25,8 @@ recomputed on read exactly like [achievements](../../db/achievements.ts).
 ## Why not a coach goal
 
 [coach-planning.md](coach-planning.md) deliberately rejected typed goals with plan
-generation ([system-redesign-options.md](../planning/system-redesign-options.md) §7, Option
-C): auto-generated training advice needs validation by a sports professional before the app
-can safely tell someone what to do.
+generation: auto-generated training advice needs validation by a sports professional before
+the app can safely tell someone what to do.
 
 An Oath sidesteps that entirely — **the user chooses the target, Bati only counts.** The app
 never prescribes, so there is nothing to validate.

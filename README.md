@@ -36,7 +36,8 @@ carefully planned sprints. That is not an apology — it is context you need to 
   architecture knowledge that would otherwise live in someone's head. It is also what makes
   AI-assisted work reviewable — [`AGENTS.md`](AGENTS.md) and [`DESIGN.md`](DESIGN.md) are the
   rules an assistant is held to, and auditing the code *against its own written rules* is how
-  the bugs in [`audit.md`](audit.md) were found.
+  a whole class of bugs got found — the quality rules in `AGENTS.md` are what that audit left
+  behind.
 - **The conventions are opinionated and enforced by tooling**, not by discipline. Dark-mode
   only, tokens instead of hex, one source per value. Where a rule could be automated it was —
   including a custom lint plugin that rejects raw hex colours anywhere but one file.
@@ -44,9 +45,9 @@ carefully planned sprints. That is not an apology — it is context you need to 
   mark deliberate shortcuts with their ceiling and what would trigger the real fix, so the
   corners that were cut are at least labelled.
 
-It is a fun project first. If you are here to learn, the interesting parts are probably
-[`audit.md`](audit.md) — a full quality audit and what came of it — and the way `docs/` plus the
-lint rules try to keep an AI-assisted codebase honest.
+It is a fun project first. If you are here to learn, the interesting part is probably the way
+[`AGENTS.md`](AGENTS.md), `docs/` and the lint rules try to keep an AI-assisted codebase honest
+— every quality rule in `AGENTS.md` is a bug that shipped past a green test suite first.
 
 ## Where the art comes from
 
@@ -128,7 +129,7 @@ All of these run in CI; the first three also run on commit or push.
 - [`AGENTS.md`](AGENTS.md) — working rules, quality rules, known debt
 - [`DESIGN.md`](DESIGN.md) — design system and its non-negotiables
 - [`PRODUCT.md`](PRODUCT.md) — who it is for, and what it refuses to be
-- [`audit.md`](audit.md) — quality audit: 17 findings, what was fixed, what was deliberately not
+- [`road2release.md`](road2release.md) — the critical path to v1: what blocks what
 
 ## Licence
 

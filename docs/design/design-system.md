@@ -176,4 +176,4 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 - [ui-checklist.md](ui-checklist.md) — merge gate that checks these rules
 - [exercise-colors.md](exercise-colors.md) — muscle → color mapping
 - [../product/positioning.md](../product/positioning.md) — brand personality behind these rules
-- [../planning/ui-screen-audit-tracker.md](../planning/ui-screen-audit-tracker.md) — where drift gets logged
+- [../planning/roadmap.md](../planning/roadmap.md) — §2, the UI closing pass and its backlog

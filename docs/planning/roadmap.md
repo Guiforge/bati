@@ -6,7 +6,6 @@ updated: 2026-07-31
 related:
   [
     README.md,
-    ui-screen-audit-tracker.md,
     ../design/ui-checklist.md,
     ../product/vision.md,
     ../content/missing-image.md,
@@ -79,21 +78,20 @@ exist.
 - `runtimeVersion` was set **before** the first signed build, because changing it afterwards
   breaks OTA. It must not move now.
 - The Pages workflow publishes **only** `docs/legal/`. Pointing it at the folder root would put
-  this roadmap and the audit tracker on the open web in order to serve one policy.
+  this roadmap on the open web in order to serve one policy.
 
 ## 2. UI refonte — the closing pass
 
-Every screen scope in [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) reads
-"implementation done, re-audit on device pending". That re-audit is the open work, and the
-tracker's own 2026-07-18 correction is the reason to take it seriously: **per-screen checkmarks
-lied for weeks** because the shared `AppButton` primitive underneath still carried the
-anti-pattern, so every screen importing it had regressed. Trust a fresh grep over any checkmark
-in that file.
+Every screen scope was implemented; none was re-audited on a device. That re-audit is the open
+work, and the reason to take it seriously is what the audit tracker recorded on 2026-07-18
+before it was deleted: **per-screen checkmarks lied for weeks**, because the shared `AppButton`
+primitive underneath still carried the anti-pattern, so every screen importing it had regressed.
+Trust a fresh grep over any claim that a screen is done — including the ones below.
 
-- **Device re-audit, 9 scopes.** Scope 7 on the board was *Treasury*, a screen removed from the
-  product (§7), and is struck out. Simulator screenshots are not enough: the two bugs that
-  triggered the whole pass (English strings in a French UI, a "Treasur/y" wrap) were only ever
-  visible on a real screen.
+- **Device re-audit, 9 screen scopes** — Home · Quests + Quest Details · Session · Adventures ·
+  Journal + Session Details · Village · Goals + Schedule · Onboarding · Settings + Credits.
+  (A tenth, Treasury, was removed from the product — §7.) Simulator screenshots are not enough: the two bugs that triggered the whole pass (English
+  strings in a French UI, a "Treasur/y" wrap) were only ever visible on a real screen.
 - **Contrast has never been measured.** The primary button passes (6.45:1). First pair to test:
   `$textSecondary #909ACB` on `$surface #101322`.
 - **Touch targets ≥ 44×44** — 146 pressables in the repo (`grep -rEo "onPress=" app components src
@@ -195,8 +193,8 @@ regression risk, and the acceptance criteria are testable.
 Each of these was proposed, considered, and closed. They are here so they stop coming back.
 
 - **Economy loops, shops, manual building upgrades, a Treasury surface.** Rewards are XP plus a
-  derived village reaction. No resources, no Gold. The Treasury screen is gone from the code;
-  only the audit tracker's board still lists it (§2).
+  derived village reaction. No resources, no Gold. The Treasury screen is gone from the code —
+  `grep -rn treasur app components src` is empty.
 - **Per-set RIR capture.** The framing shipped ("stop with 1-2 reps left, not at failure"); the
   form did not. Twelve extra interactions a session, in an app that spent a whole roadmap
   removing friction. One optional field on an exercise's last set is the door if the data is
@@ -210,8 +208,8 @@ Each of these was proposed, considered, and closed. They are here so they stop c
 
 ## Related
 
-- [README.md](README.md) — what else lives in this folder, and which pages are history
-- [ui-screen-audit-tracker.md](ui-screen-audit-tracker.md) — per-screen audit log and UI backlog
+- [README.md](README.md) — how to use this folder, now that it holds one page
+- [../../road2release.md](../../road2release.md) — the critical path: what blocks what, in order
 - [../design/ui-checklist.md](../design/ui-checklist.md) — the UI merge gate
 - [../content/missing-image.md](../content/missing-image.md) — art inventory and the generation pipeline
 - [../product/vision.md](../product/vision.md) — the product this roadmap serves

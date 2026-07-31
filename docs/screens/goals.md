@@ -14,7 +14,7 @@ sources: [app/goals.tsx]
 > ([coach-planning.md](../gameplay/coach-planning.md)) replaces a dedicated goal-setting
 > flow (type + days/week + session length + generated plan preview) with a single weekly
 > session-count setting, shown as a card on Home. This full screen is not part of that
-> design — see [system-redesign-options.md](../planning/system-redesign-options.md) (§7).
+> design, and the decision is closed — see [roadmap.md](../planning/roadmap.md) §7.
 
 ## Purpose (legacy design, not built)
 

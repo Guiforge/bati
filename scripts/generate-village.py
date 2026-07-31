@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Generate the Village §3 art (docs/content/missing-image.md #1a/#1b): 5 tier illustrations
-+ 6 sport-focus sprites, blocking dev-execution-plan.md §3 layers 1-2. Same Mammouth API /
-model as scripts/generate-covers.py.
++ 6 sport-focus sprites. Same Mammouth API / model as scripts/generate-covers.py.
 
   MAMMOUTH_API_KEY=sk-... python3 scripts/generate-village.py [slug ...]
 

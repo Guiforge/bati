@@ -79,10 +79,10 @@ Don't silently resolve it. Either:
 - pick the version backed by the strongest source of truth (external product wiki >
   `planning/roadmap.md` > everything else) and add a `⚠️ Status & scope` note
   explaining the correction and what changed, or
-- if you're not sure which version is correct, flag it in the page and in
-  [meta/changelog.md](meta/changelog.md) instead of guessing.
+- if you're not sure which version is correct, flag it in the page with a `⚠️` note instead
+  of guessing.
 
 ## After any change
 
-Append an entry to [meta/changelog.md](meta/changelog.md): date, what changed, which pages
-were touched. This is what keeps the wiki auditable over time.
+Nothing to log. `git log -- docs/` is the record of what changed and when; a hand-written
+change log next to it only ever drifts.

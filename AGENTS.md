@@ -36,8 +36,10 @@ run the type/style check again.
 
 ## Quality rules
 
-Every rule below is a bug that shipped past a fully green `tsc` + `biome` + test suite.
-The full account is in [`audit.md`](audit.md); these are the habits that come out of it.
+Every rule below is a bug that shipped past a fully green `tsc` + `biome` + test suite. They
+come from a quality audit whose findings are all fixed; its page was deleted once that was true
+(`git log --diff-filter=D -- audit.md` if you want the full account). These are the habits that
+outlived it.
 
 - **Prefer a type over a test.** When a bug is "we forgot to update the other place", make the
   two places inseparable instead of testing that they agree — `SavedSessionState` is

@@ -115,7 +115,7 @@ durable knowledge (decisions, patterns, features, gotchas), follow the protocol 
 1. Update the right page (or create one in the correct topic folder).
 2. Fix cross-links; keep the catalog [`docs/README.md`](../docs/README.md) and the topic
    folder's `README.md` accurate.
-3. Append an entry to [`docs/meta/changelog.md`](../docs/meta/changelog.md).
+3. Don't log the change anywhere — `git log -- docs/` is the record.
 
 Read `docs/README.md` first to locate relevant pages; cite them with `[Text](path/to/file.md)`.
 Ground every claim in the codebase or `docs/raw/` — never invent.

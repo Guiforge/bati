@@ -14,6 +14,10 @@ expo-env.d.ts
 .kotlin/
 *.orig.*
 *.jks
+# Signing keys. The release keystore is the one file whose loss is unrecoverable: Android will
+# not install an update signed by a different key, so losing it ends updates to the published app
+# for good. Keep it backed up outside this repository, and never in it.
+*.keystore
 *.p8
 *.p12
 *.key

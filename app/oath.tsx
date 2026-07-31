@@ -10,6 +10,8 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { useOathText } from "@/components/oath/useOathText";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { type Exercise, listExercises } from "@/db/exercises";
 import {
   breakOath,
@@ -117,6 +119,73 @@ function PresetRow({
         </Text>
         <ChevronRight size={20} color="$text" opacity={0.5} />
       </XStack>
+    </Card>
+  );
+}
+
+const SWORN_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+};
+
+/**
+ * The oath in force, said in full.
+ *
+ * Split into its own component so `useOathText` is never called conditionally — the card only
+ * renders when there is an oath. Same reason `OathCard` splits out `OathBody`, and the same
+ * hook, so the swear screen and Home can never word the same oath differently.
+ */
+function CurrentOathCard({
+  progress,
+  onAbandon,
+}: {
+  progress: OathProgress;
+  onAbandon: () => void;
+}) {
+  const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
+  const label = useOathText(progress);
+
+  // `isOath` only checks that `swornAt` is a string, so an unparseable one would reach
+  // Intl and throw on format. No date is better than no screen.
+  const sworn = new Date(progress.oath.swornAt);
+  const swornLabel = Number.isNaN(sworn.getTime())
+    ? null
+    : getDateTimeFormat(language, SWORN_DATE_OPTIONS).format(sworn);
+
+  return (
+    <Card testID="oath-current" bg="$pastelPurple" gap="$2">
+      <Text fontWeight="700" fontSize={13} color="$text" opacity={0.8}>
+        {t("oath.current_title")}
+      </Text>
+
+      {/* The oath itself — the card showed a bar and two numbers without ever saying what
+          had been sworn. */}
+      <XStack items="center" gap="$2">
+        <GameIcon name="star" size={20} color="$text" />
+        <Text flex={1} fontWeight="700" fontSize={16} color="$text">
+          {label}
+        </Text>
+      </XStack>
+
+      <ProgressBar progress={progress.progress} />
+
+      <Text fontSize={13} color="$text" opacity={0.75}>
+        {progress.isFulfilled
+          ? t("oath.card_fulfilled")
+          : t("oath.card_progress", { current: progress.current, target: progress.target })}
+      </Text>
+
+      {swornLabel !== null && (
+        <Text fontSize={13} color="$text" opacity={0.6}>
+          {t("oath.sworn_on", { date: swornLabel })}
+        </Text>
+      )}
+
+      <AppButton variant="outline" size="$3" fontSize={15} onPress={onAbandon}>
+        {t("oath.abandon")}
+      </AppButton>
     </Card>
   );
 }
@@ -275,23 +344,7 @@ export default function OathScreen() {
       <RNScrollView contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}>
         <YStack px="$4" gap="$4">
           {/* Current oath — swearing a new one replaces it, so say so up front */}
-          {existing !== null && (
-            <Card testID="oath-current" bg="$pastelPurple" gap="$2">
-              <Text fontWeight="700" fontSize={13} color="$text" opacity={0.8}>
-                {t("oath.current_title")}
-              </Text>
-              <ProgressBar progress={existing.progress} />
-              <Text fontSize={13} color="$text" opacity={0.75}>
-                {t("oath.card_progress", {
-                  current: existing.current,
-                  target: existing.target,
-                })}
-              </Text>
-              <AppButton variant="outline" size="$3" fontSize={15} onPress={abandon}>
-                {t("oath.abandon")}
-              </AppButton>
-            </Card>
-          )}
+          {existing !== null && <CurrentOathCard progress={existing} onAbandon={abandon} />}
 
           {/* Ready-made oaths — a tap, no target to guess. The default path. */}
           {!showCustom && (

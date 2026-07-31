@@ -148,7 +148,9 @@ const AdventureStepRow = memo(function AdventureStepRow({
   );
 });
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex screen component, refactor planned
+// ponytail: 540-line screen — run state, step list, boss panel and narrative in one place.
+//           Ceiling: same as the quest screen. Lift the step list out when it needs its own state.
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above
 export default function AdventureDetailsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();

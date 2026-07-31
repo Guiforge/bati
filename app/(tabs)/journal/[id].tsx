@@ -47,7 +47,6 @@ export default function SessionDetailScreen() {
   const [error, setError] = useState("");
 
   const load = useCallback(
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex loading logic, refactor planned
     async (id: number) => {
       // Keep the already-rendered session visible while revalidating; only show the
       // loading card when there is nothing to show yet.
@@ -254,7 +253,9 @@ export default function SessionDetailScreen() {
                     </Text>
                   </XStack>
 
-                  {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex rendering logic, refactor planned */}
+                  {/* ponytail: per-exercise rendering with target/result/record branches; extract a row
+                      component when the record badge grows a second variant. */}
+                  {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above */}
                   {exercisesByRound[roundIndex].map((cex) => {
                     const exName = language === "fr" ? cex.exercise.frName : cex.exercise.enName;
                     const equipmentLabel =

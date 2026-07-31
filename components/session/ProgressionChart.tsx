@@ -43,7 +43,9 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   useEffect(() => {
     let mounted = true;
 
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Data loading with error handling and transformations
+    // ponytail: load + transform + error state in one effect. Ceiling: fine at one data
+    //           source; split the transform out if a second chart mode appears.
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above
     const loadData = async () => {
       setLoading(true);
       setError(null);

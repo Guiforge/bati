@@ -99,7 +99,10 @@ function LevelChip({
   );
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex screen component, refactor planned
+// ponytail: 630-line screen — quest detail, boss preview, narrative gate and session start in
+//           one component. Ceiling: every new branch is another path nobody can hold in their
+//           head. Split the narrative gate out first if it grows again.
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above
 export default function QuestDetails() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -494,7 +497,8 @@ export default function QuestDetails() {
                 {t("quests.exercises_list", "Exercises")}
               </Text>
 
-              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex rendering logic, refactor planned */}
+              {/* ponytail: nested conditional rendering; extract a subcomponent when a fourth branch lands. */}
+              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above */}
               {quest.exercises.map((qex, i) => {
                 const exName = language === "fr" ? qex.exercise.frName : qex.exercise.enName;
                 const exDesc =

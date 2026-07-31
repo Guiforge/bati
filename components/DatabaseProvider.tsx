@@ -58,7 +58,10 @@ async function runMigrationsAsync(
   }
 
   const entries = config.journal.entries;
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex migration logic, refactor planned
+  // ponytail: hand-rolled migration runner — drizzle's own could not be used on this driver.
+  //           Ceiling: it is the riskiest code in the app and the least covered. Worth its own
+  //           audit against a real upgraded database before it is touched again.
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above
   async function runEntry(txn: {
     execAsync: (source: string) => Promise<void>;
     runAsync?: SqliteMigrationClient["runAsync"];

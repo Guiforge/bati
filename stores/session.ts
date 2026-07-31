@@ -103,6 +103,12 @@ interface SessionState {
   // Results Accumulator
   results: CompletedExerciseInput[];
 
+  /**
+   * The row `saveSession` created, once it has. Held so a retry after a partial failure
+   * resumes that session instead of banking a second one.
+   */
+  savedSessionId: number | null;
+
   // Actions
   startSession: (
     quest: Quest,
@@ -183,6 +189,31 @@ export type SavedSessionState = Pick<
 > & { savedAt: number };
 
 /**
+ * The row for this save, created once however many times `saveSession` runs.
+ *
+ * `saveSession` is a dozen awaits long and is not one transaction, so a failure halfway through
+ * leaves the session row written and the rest undone — and the victory screen offers a retry
+ * button for exactly that case. Reusing the row the first attempt created is what stops the retry
+ * banking the workout twice. Everything after it either recomputes from database state (streak,
+ * records, achievements) or is a documented no-op once done (the oath bonus), so a second pass
+ * settles rather than double-counting.
+ *
+ * ponytail: idempotent, not atomic. A partial save still leaves progression half-applied until
+ *           the retry lands. Threading one transaction through ten db modules is the real fix,
+ *           and a much larger one — do it if a half-saved session is ever seen in the wild.
+ */
+async function ensureSessionRow(
+  input: Parameters<typeof createCompletedSession>[0],
+): Promise<number> {
+  const existing = useSessionStore.getState().savedSessionId;
+  if (existing !== null) return existing;
+
+  const sessionId = await createCompletedSession(input);
+  useSessionStore.setState({ savedSessionId: sessionId });
+  return sessionId;
+}
+
+/**
  * Write the hits a session banked, then drop them.
  *
  * Clearing is the point: the victory screen retries `saveSession` on failure, and hits that
@@ -220,6 +251,7 @@ export const useSessionStore = create<SessionState>()(
     timerStartTimestamp: null,
     timerDuration: 0,
     results: [],
+    savedSessionId: null,
 
     startSession: async (quest, userLevel, options) => {
       // Load boss fight if this is a boss adventure. Callers only ever hold the run step id —
@@ -264,6 +296,7 @@ export const useSessionStore = create<SessionState>()(
         timerStartTimestamp: Date.now(),
         timerDuration: warmupFirst ? warmupSequence[0].seconds : PRE_START_COUNTDOWN_SECONDS,
         results: [],
+        savedSessionId: null,
       });
     },
 
@@ -418,6 +451,7 @@ export const useSessionStore = create<SessionState>()(
         timerStartTimestamp: null,
         timerDuration: 0,
         results: [],
+        savedSessionId: null,
       });
     },
 
@@ -603,7 +637,7 @@ export const useSessionStore = create<SessionState>()(
       const oldTotalXp = await getTotalXp();
       const oldLevel = calculateLevelFromXp(oldTotalXp);
 
-      const sessionId = await createCompletedSession({
+      const sessionId = await ensureSessionRow({
         questId: quest.id,
         userLevel,
         durationSeconds,

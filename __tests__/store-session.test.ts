@@ -415,6 +415,7 @@ describe("useSessionStore", () => {
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
         results: [],
+        savedSessionId: null,
       });
     });
 
@@ -471,6 +472,30 @@ describe("useSessionStore", () => {
       expect(sessionId).toBe(1);
       // Emptied, so the victory screen's retry cannot land them a second time.
       expect(store.getState().pendingDamage).toEqual([]);
+    });
+
+    /**
+     * saveSession is a dozen awaits long and is not one transaction, so a failure halfway
+     * through leaves the session row written — and the victory screen offers a retry button for
+     * exactly that case. Without this, the retry banks the workout a second time.
+     */
+    test("a retry after a partial failure resumes the session, it does not bank a second one", async () => {
+      // biome-ignore lint/style/useNamingConvention: jest module mock handle
+      const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+      // biome-ignore lint/style/useNamingConvention: jest module mock handle
+      const records = require("@/db/personalRecords") as { checkForNewRecords: jest.Mock };
+      completed.createCompletedSession.mockClear();
+
+      // First attempt dies after the session row is in.
+      records.checkForNewRecords.mockRejectedValueOnce(new Error("db went away"));
+      await expect(store.getState().saveSession(null)).rejects.toThrow("db went away");
+      expect(completed.createCompletedSession).toHaveBeenCalledTimes(1);
+
+      const result = await store.getState().saveSession(null);
+
+      // Still one row: the retry reused it.
+      expect(completed.createCompletedSession).toHaveBeenCalledTimes(1);
+      expect(result.sessionId).toBe(1);
     });
 
     test("a boss already dead when the session opened takes no further hits", async () => {

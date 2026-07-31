@@ -28,7 +28,9 @@ export function useSmartAction() {
   const [isLoading, setIsLoading] = useState(true);
 
   const determineAction = useCallback(
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Priority waterfall, refactor planned
+    // ponytail: priority waterfall — order is the feature, so it reads better flat than split.
+    //           Ceiling: a table of {predicate, action} once a seventh case lands.
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above
     async (isCancelled: () => boolean) => {
       try {
         // 1. Check for Active Adventure

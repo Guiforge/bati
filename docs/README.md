@@ -45,7 +45,6 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | Doc | What it covers |
 | --- | --- |
 | [roadmap.md](planning/roadmap.md) | ⭐ The only planning page — guardrails, open work, parking lot, closed decisions |
-| [../road2release.md](../road2release.md) | The critical path to v1: what blocks what, and in which order |
 
 ## 🎮 Gameplay Systems — [gameplay/](gameplay/README.md)
 

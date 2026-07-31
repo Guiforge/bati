@@ -54,18 +54,21 @@ exist.
   testing for 14 continuous days** before production access can even be requested. Those two
   weeks are incompressible and cannot begin before a signed build sits on the test track. It is
   a five-minute check that decides a fortnight.
-- **Android signing keystore**, generated and backed up **outside the repository**. The only
-  irreversible item on this page: a lost keystore means the published app can never be updated
-  again.
-- **Enable GitHub Pages** — one command, because the Actions `GITHUB_TOKEN` may not create the
-  site: `gh api -X POST repos/Guiforge/bati/pages -f build_type=workflow`. **Store-blocking**:
-  both platforms require a working privacy-policy URL before review, and Google's Data Safety
-  form consumes it. The workflow and the bilingual policy have been ready since 2026-07-31; only
-  the site was never created.
+- ~~**Android signing keystore**~~ — generated 2026-07-31 and wired through
+  `plugins/withAndroidReleaseSigning.js`; a signed build was verified with `apksigner`. It stays
+  on this page as the one irreversible item: a lost keystore means the published app can never be
+  updated again, so its backup is not optional.
+- ~~**Enable GitHub Pages**~~ — done 2026-07-31. The bilingual policy is live at
+  <https://guiforge.github.io/bati/privacy/>, which unblocks both store reviews and Google's Data
+  Safety form. The same deployment serves the F-Droid repository index.
 - **`eas init` + `eas update:configure`**, to mint the project id and the `updates` block. Left
   undone deliberately — fabricating a project id would be worse than an empty field.
-- **Store listings, screenshots, Data Safety form, age rating.** Screenshots depend on §2: they
-  must show the UI that ships, not the one before the device pass.
+- **Screenshots, Data Safety form, age rating.** The listing copy itself is written, in both
+  locales, in `fastlane/metadata/android/` — Play and F-Droid read the same layout. Screenshots
+  depend on §2: they must show the UI that ships, not the one before the device pass.
+- **F-Droid repository** — initialised, `fdroid/config.yml` committed, secrets set. The
+  publishing half of `.github/workflows/pages.yml` has never run against a real index; see
+  [../fdroid.md](../fdroid.md).
 - **Bundle-size analysis and performance profiling** — startup, memory, frame rate under
   animation. On a **release** build, never in dev
   ([../architecture/performance.md](../architecture/performance.md), rule 1).
@@ -209,7 +212,6 @@ Each of these was proposed, considered, and closed. They are here so they stop c
 ## Related
 
 - [README.md](README.md) — how to use this folder, now that it holds one page
-- [../../road2release.md](../../road2release.md) — the critical path: what blocks what, in order
 - [../design/ui-checklist.md](../design/ui-checklist.md) — the UI merge gate
 - [../content/missing-image.md](../content/missing-image.md) — art inventory and the generation pipeline
 - [../product/vision.md](../product/vision.md) — the product this roadmap serves

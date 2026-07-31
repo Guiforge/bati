@@ -94,7 +94,8 @@ disagree, bumps `package.json` **and** `app.json` together, tags, and pushes. Th
 builds the APK, and publishes it as a GitHub Release.
 
 No store is involved yet. [`docs/fdroid.md`](docs/fdroid.md) covers the F-Droid repository that
-turns those APKs into something that updates itself, and `road2release.md` covers the stores.
+turns those APKs into something that updates itself, and `docs/planning/roadmap.md` §1 covers
+the stores.
 
 **One thing gates all of it: a real release keystore.** Release builds are still signed with
 Expo's debug key, which is fine for handing an APK to a friend and useless for anything that has

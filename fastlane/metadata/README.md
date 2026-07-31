@@ -42,4 +42,4 @@ missing file is not an error — the entry simply has no notes.
 
 - **F-Droid** — copied into the repository index by `.github/workflows/pages.yml`.
 - **Play** — read by `fastlane supply` or uploaded by hand in the Play Console. Nothing automates
-  it yet; see `road2release.md` phase 4.
+  it yet; see [`docs/planning/roadmap.md`](../../docs/planning/roadmap.md) §1.

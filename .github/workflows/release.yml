@@ -7,7 +7,7 @@
 # Signing: SIGNING_KEYSTORE_BASE64 + SIGNING_* secrets, when they exist. Without them the build
 # falls back to Expo's debug keystore, which is fine for passing an APK to friends but produces
 # an app that can never be updated in place by a properly signed one — and F-Droid needs a stable
-# key. See road2release.md phase 0.3.
+# key. See docs/fdroid.md.
 name: Release
 
 on:

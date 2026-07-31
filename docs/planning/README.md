@@ -34,4 +34,3 @@ command before trusting a line that looks stale.
 ## Related
 
 - [../product/README.md](../product/README.md) — vision and positioning behind the roadmap
-- [../../road2release.md](../../road2release.md) — the critical path to v1: what blocks what

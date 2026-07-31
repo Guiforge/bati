@@ -6,22 +6,40 @@
 
 **Train like a hero, build like a king.**
 
+A dark-fantasy fitness RPG. Your workouts are quests, your reps are damage,
+and the village you build is made of what you actually lifted.
+
+<a href="https://guiforge.github.io/bati/fdroid/repo"><img alt="Get it on F-Droid" src="assets/badges/get-it-on-fdroid.png" height="60" /></a>
+<a href="https://github.com/Guiforge/bati/releases/latest"><img alt="Get it on GitHub" src="assets/badges/get-it-on-github.png" height="60" /></a>
+
+<br />
+
 [![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=0D33F2)](https://github.com/Guiforge/bati/releases/latest)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-green)](LICENSE)
+![No tracking](https://img.shields.io/badge/tracking-none-success)
+![Offline first](https://img.shields.io/badge/offline-first-informational)
+
 ![Expo 57](https://img.shields.io/badge/Expo-57-000020?logo=expo&logoColor=white)
 ![React Native 0.86](https://img.shields.io/badge/React_Native-0.86-61DAFB?logo=react&logoColor=black)
 ![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![SQLite + Drizzle](https://img.shields.io/badge/SQLite-Drizzle-C5F74F?logo=sqlite&logoColor=black)
-![Status: pre-release](https://img.shields.io/badge/status-pre--release-orange)
-![Licence: MIT](https://img.shields.io/badge/licence-MIT-green)
 
 </div>
 
-Bati is a dark-fantasy fitness RPG built with **Expo + React Native + Tamagui**. Workouts drive
-progression: the app turns training into quests, adventures, boss fights, and a village that
-grows out of what you actually lifted.
+A workout is a quest. Your reps land as damage on a boss. The muscles you actually train raise
+the buildings of a village that grows out of what you lifted — not out of what you bought.
 
-**Status: pre-release.** Not on either store yet. See [`road2release.md`](road2release.md) for
-what is left, and why the remaining work is mostly paperwork rather than code.
+Sport first, RPG second: the training logic leads and the game amplifies it. Nothing decorative
+gets between you and your next set.
+
+**Nothing leaves your phone.** No account, no servers, no analytics, no ads. Bati makes no network
+requests at all — your history lives in a database on your device and nowhere else. That is the
+architecture, not a setting you have to find.
+
+> **Status: early.** The app works end to end and is in the hands of its first testers. It is not
+> on Google Play or the App Store yet, and the APKs below are signed by me rather than by a store.
+> Bugs and rough edges are expected — [tell me about them](#contributing), that is the point.
 
 ## This repo is heavily vibe coded, and says so
 
@@ -129,7 +147,6 @@ All of these run in CI; the first three also run on commit or push.
 - [`AGENTS.md`](AGENTS.md) — working rules, quality rules, known debt
 - [`DESIGN.md`](DESIGN.md) — design system and its non-negotiables
 - [`PRODUCT.md`](PRODUCT.md) — who it is for, and what it refuses to be
-- [`road2release.md`](road2release.md) — the critical path to v1: what blocks what
 
 ## Install it
 

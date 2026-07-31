@@ -3,7 +3,7 @@ title: Publishing through F-Droid
 type: technical
 status: active
 updated: 2026-07-31
-related: [../road2release.md, ../CONTRIBUTING.md]
+related: [planning/roadmap.md, ../CONTRIBUTING.md]
 ---
 
 # Publishing through F-Droid
@@ -27,7 +27,7 @@ arrives without anyone re-downloading anything by hand.
 ## What it needs that we do not have yet
 
 **A stable APK signing key.** This is the blocker, and it is the same one Play has
-(`road2release.md` phase 0.3). Android will only install an update over an existing app if both
+(see `docs/planning/roadmap.md` §1). Android will only install an update over an existing app if both
 are signed with the same key. Today `android/app/build.gradle` signs release builds with Expo's
 **debug** keystore, which is fine for handing someone a one-off APK and useless for a repository
 that exists to ship updates. Generate the real key once, keep it off the repo, and use it for

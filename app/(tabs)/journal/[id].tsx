@@ -15,6 +15,7 @@ import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getCached, setCached } from "@/db/queryCache";
 import { listQuestTemplates } from "@/db/quests";
+import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
 
 type Status = "loading" | "ready" | "error";
@@ -66,7 +67,7 @@ export default function SessionDetailScreen() {
           const quests = await listQuestTemplates();
           const quest = quests.find((q) => q.id === data.questId);
           if (quest) {
-            const title = language === "fr" ? quest.frTitle : quest.enTitle;
+            const title = localizedTitle(quest, language);
             setQuestTitle(title);
             setCached(`sessionTitle:${id}:${language}`, title);
           }

@@ -34,6 +34,7 @@ import { getCached } from "@/db/queryCache";
 import type { Quest, Target } from "@/db/quests";
 import type { DifficultyCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
+import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -237,7 +238,7 @@ export default function QuestDetails() {
     const estimatedSeconds = estimateQuestSeconds(quest);
     return {
       quest,
-      questTitle: language === "fr" ? quest.frTitle : quest.enTitle,
+      questTitle: localizedTitle(quest, language),
       questDesc: language === "fr" ? quest.frDescription : quest.enDescription,
       questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,

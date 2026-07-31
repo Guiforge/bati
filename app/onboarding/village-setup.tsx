@@ -9,6 +9,7 @@ import { H2, Paragraph, Text, useTheme, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ProgressDots } from "@/components/ProgressDots";
 import { getVillageTierAsset } from "@/constants/assetMap";
+import { rawColors } from "@/constants/rawColors";
 import { useUserStore } from "@/stores/user";
 
 const TOTAL_STEPS = 4;
@@ -58,11 +59,11 @@ export default function VillageSetup() {
         transition={200}
       />
       <LinearGradient
-        colors={["rgba(16, 19, 35, 0.85)", "transparent"]}
+        colors={["rgba(11, 15, 25, 0.85)", "transparent"]}
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(16, 19, 35, 0.92)", "#101323"]}
+        colors={["transparent", "rgba(11, 15, 25, 0.92)", rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
       />
 

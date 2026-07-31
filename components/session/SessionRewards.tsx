@@ -9,6 +9,7 @@ import { LevelPips } from "@/components/village/LevelPips";
 import { getBuildingIconAsset, getExerciseAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { getLevelTitle } from "@/db/userLevel";
 import { TIER_NAMES } from "@/db/village";
+import { localizedTitle } from "@/src/i18n/localized";
 import type { useSessionStore } from "@/stores/session";
 import { NewRecordsBadge } from "./NewRecordsBadge";
 
@@ -259,7 +260,7 @@ export function SessionRewards({
                 </YStack>
                 <YStack flex={1}>
                   <Text fontWeight="700" fontSize={15} color="$text">
-                    {isFr ? a.definition.frTitle : a.definition.enTitle}
+                    {localizedTitle(a.definition, isFr ? "fr" : "en")}
                   </Text>
                   <Text fontSize={12} color="$text" opacity={0.7}>
                     {isFr ? a.definition.frDescription : a.definition.enDescription}

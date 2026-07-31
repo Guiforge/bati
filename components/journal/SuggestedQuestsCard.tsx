@@ -7,6 +7,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { getSuggestedQuestsForWeakAreas, type SuggestedQuest } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
 
 const MUSCLE_COLORS: Record<string, ColorTokens> = {
@@ -64,7 +65,7 @@ export function SuggestedQuestsCard() {
 
         <YStack gap="$2">
           {quests.map((quest) => {
-            const title = language === "fr" ? quest.frTitle : quest.enTitle;
+            const title = localizedTitle(quest, language);
 
             return (
               <AppButton

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ProgressDots } from "@/components/ProgressDots";
+import { rawColors } from "@/constants/rawColors";
 import { preferences, type TrainingLevel } from "@/db";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useUserStore } from "@/stores/user";
@@ -61,7 +62,7 @@ export default function TrainingLevelStep() {
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(11, 15, 25, 0.95)", "#0B0F19"]}
+        colors={["transparent", "rgba(11, 15, 25, 0.95)", rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
       />
 

@@ -5,7 +5,8 @@ import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
-import { useSettingsStore } from "@/stores/settings";
+import { localizedTitle } from "@/src/i18n/localized";
+import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 type CategoryFilter = "all" | "sessions" | "streaks" | "xp" | "special";
 
@@ -195,11 +196,11 @@ function AchievementRow({
   language,
 }: {
   achievement: AchievementProgress;
-  language: string;
+  language: AppLanguage;
 }) {
   const { definition, isUnlocked, progress, currentValue, targetValue } = achievement;
 
-  const title = language === "fr" ? definition.frTitle : definition.enTitle;
+  const title = localizedTitle(definition, language);
   const description = language === "fr" ? definition.frDescription : definition.enDescription;
 
   return (

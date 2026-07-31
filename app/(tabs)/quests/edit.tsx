@@ -30,6 +30,7 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
+import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
 
 /** An exercise as picked in the editor: one target value, not the min/max range seed content uses. */
@@ -84,7 +85,7 @@ export default function QuestEditor() {
       setExercises(all);
       if (!template) return;
 
-      setTitle(language === "fr" ? template.frTitle : template.enTitle);
+      setTitle(localizedTitle(template, language));
       setDescription(language === "fr" ? template.frDescription : template.enDescription);
       setRounds(template.rounds);
       setRest(template.restSeconds);

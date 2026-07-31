@@ -39,6 +39,7 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
+import { localizedTitle } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 type LoadState =
@@ -150,7 +151,7 @@ function buildQuestMeta(
     durationSeconds,
     xp,
     cover: resolveCoverImage(q.imagePath),
-    title: language === "fr" ? q.frTitle : q.enTitle,
+    title: localizedTitle(q, language),
     description: language === "fr" ? q.frDescription : q.enDescription,
     glyphs: muscleList.map((m) => ({
       code: m,

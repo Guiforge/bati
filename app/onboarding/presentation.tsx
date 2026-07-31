@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
+import { rawColors } from "@/constants/rawColors";
 
 export default function Presentation() {
   const router = useRouter();
@@ -23,11 +24,11 @@ export default function Presentation() {
       />
 
       <LinearGradient
-        colors={["rgba(16, 19, 35, 0.9)", "transparent"]}
+        colors={["rgba(11, 15, 25, 0.9)", "transparent"]}
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "33%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(16, 19, 35, 0.8)", "#101323"]}
+        colors={["transparent", "rgba(11, 15, 25, 0.8)", rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "66%" }}
       />
 

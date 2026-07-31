@@ -6,6 +6,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { DIFFICULTY_COLORS, rawColors } from "@/constants/rawColors";
 import type { SessionSummary } from "@/db";
 import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
 import { useSettingsStore } from "@/stores/settings";
@@ -127,14 +128,10 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       new Date(session.performedAt),
     );
 
-    // Color based on difficulty level (matches tamagui.config.ts token hex values —
-    // gifted-charts can't consume Tamagui tokens, so these must be kept in sync by hand)
-    let barColor = "#0D33F2"; // $primary - medium
-    if (session.userLevel === "easy") {
-      barColor = "#16A34A"; // $success - easy
-    } else if (session.userLevel === "hard") {
-      barColor = "#FF1744"; // $error - hard
-    }
+    // gifted-charts cannot consume Tamagui tokens, so the difficulty palette lives in
+    // constants/rawColors.ts and is shared with the journal's stats — which used to draw the
+    // same three levels in a different green and a different red.
+    const barColor = DIFFICULTY_COLORS[session.userLevel];
 
     return {
       value: durationMinutes,
@@ -212,13 +209,13 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             maxValue={yAxisMax}
             yAxisThickness={0}
             xAxisThickness={1}
-            xAxisColor="#2A3360"
+            xAxisColor={rawColors.borderStrong}
             yAxisTextStyle={{
-              color: "#909ACB",
+              color: rawColors.textSecondary,
               fontSize: 10,
             }}
             xAxisLabelTextStyle={{
-              color: "#909ACB",
+              color: rawColors.textSecondary,
               fontSize: 9,
               transform: [{ rotate: "-45deg" }],
             }}

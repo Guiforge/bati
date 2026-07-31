@@ -23,6 +23,7 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
+import { localizedTitle } from "@/src/i18n/localized";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { ProgressionChart } from "./ProgressionChart";
@@ -104,7 +105,7 @@ export function VictoryView() {
 
   if (!quest || !startTime) return null;
 
-  const questTitle = language === "fr" ? quest.frTitle : quest.enTitle;
+  const questTitle = localizedTitle(quest, language);
   const { bg: questBg } = getQuestColorTokensFromQuest(quest);
 
   const handleShare = async () => {

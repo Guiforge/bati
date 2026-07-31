@@ -1,6 +1,7 @@
 import { createAnimations } from "@tamagui/animations-react-native";
 import { defaultConfig } from "@tamagui/config/v4";
 import { createFont, createTamagui, createTokens } from "tamagui";
+import { rawColors } from "@/constants/rawColors";
 
 // -------------------------------------------------------------------------
 // 1. TYPOGRAPHY (The Voice of the RPG)
@@ -92,21 +93,23 @@ const tokens = createTokens({
   ...defaultConfig.tokens,
   color: {
     // --- NEW_STYLE CORE ---
-    primary: "#0D33F2", // Electric Blue
+    // The shared ones come from constants/rawColors.ts, because gradients and charts cannot
+    // take a token and were copying these by hand. One value, two consumers.
+    primary: rawColors.primary, // Electric Blue
     primaryHover: "#2E5CFF",
     primaryPress: "#0A25B0",
 
     secondary: "#DB2777", // Magenta
-    success: "#16A34A",
+    success: rawColors.success,
     warning: "#F59E0B", // Amber (difficulty MEDIUM, cautions)
-    error: "#FF1744",
+    error: rawColors.error,
 
     // --- IMMERSIVE BACKGROUNDS ---
-    bgDark: "#0B0F19", // The Void
+    bgDark: rawColors.bgDark, // The Void
     bgOverlay: "rgba(11, 15, 25, 0.92)",
 
     // --- SURFACES (Glass & Tech) ---
-    surface: "#101322",
+    surface: rawColors.surface,
     surface2: "#151A2E",
 
     // --- GLASSMORPHISM SYSTEM ---
@@ -115,11 +118,11 @@ const tokens = createTokens({
 
     // --- TEXT ---
     text: "#E8ECFF", // Almost white
-    textSecondary: "#909ACB", // Muted Blue-Grey
+    textSecondary: rawColors.textSecondary, // Muted Blue-Grey
     muted: "#64748B",
 
     // --- EFFECTS ---
-    borderStrong: "#2A3360",
+    borderStrong: rawColors.borderStrong,
     shadowColor: "#060812",
     primaryGlow: "rgba(13, 51, 242, 0.45)",
 

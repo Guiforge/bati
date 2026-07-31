@@ -8,6 +8,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { TrendsCard } from "@/components/journal/TrendsCard";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
 import { dayKey } from "@/db/dates";
 import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { useSettingsStore } from "@/stores/settings";
@@ -190,7 +191,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       weekdayData.map((d) => ({
         value: d.count,
         label: d.day,
-        frontColor: d.count > 0 ? "#0D33F2" : "#2A3360",
+        frontColor: d.count > 0 ? rawColors.primary : rawColors.borderStrong,
       })),
     [weekdayData],
   );
@@ -347,8 +348,8 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               initialSpacing={20}
               endSpacing={20}
               thickness={3}
-              color="#0D33F2"
-              dataPointsColor="#0D33F2"
+              color={rawColors.primary}
+              dataPointsColor={rawColors.primary}
               dataPointsRadius={5}
               curved
               areaChart
@@ -360,9 +361,9 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               maxValue={Math.ceil(maxDailyMinutes / 10) * 10 + 10}
               yAxisThickness={0}
               xAxisThickness={1}
-              xAxisColor="#2A3360"
-              yAxisTextStyle={{ color: "#909ACB", fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: "#909ACB", fontSize: 9 }}
+              xAxisColor={rawColors.borderStrong}
+              yAxisTextStyle={{ color: rawColors.textSecondary, fontSize: 10 }}
+              xAxisLabelTextStyle={{ color: rawColors.textSecondary, fontSize: 9 }}
               hideRules
             />
           </YStack>
@@ -392,10 +393,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               maxValue={Math.ceil(maxWeekdayCount / 2) * 2 + 2}
               yAxisThickness={0}
               xAxisThickness={1}
-              xAxisColor="#2A3360"
-              yAxisTextStyle={{ color: "#909ACB", fontSize: 10 }}
+              xAxisColor={rawColors.borderStrong}
+              yAxisTextStyle={{ color: rawColors.textSecondary, fontSize: 10 }}
               xAxisLabelTextStyle={{
-                color: "#909ACB",
+                color: rawColors.textSecondary,
                 fontSize: 10,
                 fontWeight: "600",
               }}
@@ -428,13 +429,17 @@ export function JournalStats({ sessions }: JournalStatsProps) {
           {/* Visual bar */}
           <XStack height={12} rounded={6} overflow="hidden" bg="$bgLight">
             {stats.levels.easy > 0 && (
-              <YStack flex={stats.levels.easy} bg="#22C55E" height="100%" />
+              <YStack flex={stats.levels.easy} bg={DIFFICULTY_COLOR_TOKENS.easy} height="100%" />
             )}
             {stats.levels.medium > 0 && (
-              <YStack flex={stats.levels.medium} bg="#0D33F2" height="100%" />
+              <YStack
+                flex={stats.levels.medium}
+                bg={DIFFICULTY_COLOR_TOKENS.medium}
+                height="100%"
+              />
             )}
             {stats.levels.hard > 0 && (
-              <YStack flex={stats.levels.hard} bg="#EF4444" height="100%" />
+              <YStack flex={stats.levels.hard} bg={DIFFICULTY_COLOR_TOKENS.hard} height="100%" />
             )}
           </XStack>
         </YStack>

@@ -23,6 +23,7 @@ import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } from "@/db/village";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
+import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
@@ -331,7 +332,7 @@ export function VillageScene() {
                     onPress={() => openDetail({ kind: "trophy", trophy })}
                     pressStyle={{ opacity: 0.85 }}
                     accessibilityRole="button"
-                    accessibilityLabel={language === "fr" ? trophy.frTitle : trophy.enTitle}
+                    accessibilityLabel={localizedTitle(trophy, language)}
                   >
                     {/* One medal disc for both kinds; only the rim says which. A defeated
                         boss is the hardest trophy on the rack, so it alone keeps a glow. */}
@@ -361,7 +362,7 @@ export function VillageScene() {
                       numberOfLines={2}
                       style={{ textAlign: "center" }}
                     >
-                      {language === "fr" ? trophy.frTitle : trophy.enTitle}
+                      {localizedTitle(trophy, language)}
                     </Text>
                     <Text fontSize={10} color="$muted">
                       {getDateTimeFormat(language, TROPHY_DATE_OPTIONS).format(trophy.earnedAt)}

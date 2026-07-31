@@ -65,6 +65,12 @@ jobs:
             exit 0
           fi
           echo "$KEYSTORE_B64" | base64 -d > android/app/release.keystore
+          # The leading newline is not cosmetic. Expo generates gradle.properties without a
+          # trailing one, so a bare `>>` glues the first property onto the end of the last
+          # existing line — `expo.inlineModules.watchedDirectories=[]MYAPP_UPLOAD_STORE_FILE=...`
+          # — and the autolinking step then dies on a value it cannot parse, reporting only
+          # "Process 'command 'node'' finished with non-zero exit value 1".
+          printf '\n' >> android/gradle.properties
           # keytool's default store type is PKCS12, where the key password *is* the store
           # password — so SIGNING_KEY_PASSWORD is optional and falls back rather than failing the
           # build on a secret that had no reason to exist.

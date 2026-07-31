@@ -85,18 +85,30 @@ the config*: prebuild was run and the generated `android/app/build.gradle` was r
 is set. Without the plugin, Expo's template points release at the **debug** key and reads no
 upload properties at all, so CI would have produced a debug-signed APK and reported success.
 
-**A signed build has not been run end to end.** A local `./gradlew assembleRelease` fails on a
-`node` process during configuration, with no message beyond the exit code, on a machine that
-builds fine through `expo run:android`. It looks environmental rather than related to signing,
-but it was not chased to the bottom. Treat the first CI release as the real test, and check the
-signature of the APK it produces before handing it to anyone:
+**A signed build has now been run end to end**, with a throwaway key, and `apksigner` reports the
+throwaway certificate rather than the debug one. The wiring works.
+
+Check any APK before handing it out:
 
 ```bash
-keytool -printcert -jarfile bati-1.0.1.apk
+$ANDROID_HOME/build-tools/*/apksigner verify --print-certs bati-1.0.1.apk
 ```
 
-If it says `CN=Android Debug`, the signing did not take effect and the APK must not be published
-— an app shipped under the debug key cannot be updated by a properly signed one later.
+`CN=Android Debug` means the signing did not take effect and the APK must not be published — an
+app shipped under the debug key can never be updated by a properly signed one.
+
+**Do not use `keytool -printcert -jarfile` for this.** It reads v1/JAR signatures only, and
+modern Gradle signs with APK Signature Scheme v2/v3, so keytool answers "unsigned" for a
+perfectly signed APK. That answer is worth recognising as a false alarm.
+
+### The failure that hid all of this
+
+Both the local and the CI build died on `Process 'command 'node'' finished with non-zero exit
+value 1`, with nothing else to go on. The cause was appending the signing properties to
+`android/gradle.properties` with `>>`: Expo generates that file **without a trailing newline**, so
+the first property glued itself onto the last existing line —
+`expo.inlineModules.watchedDirectories=[]MYAPP_UPLOAD_STORE_FILE=...` — and autolinking then
+choked on a value it could not parse. The workflow writes a newline first.
 
 ## Automating it
 

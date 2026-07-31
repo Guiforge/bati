@@ -20,7 +20,7 @@ several of those defaults are already in place; this page tracks what's real for
 
 | Optimization | State |
 | --- | --- |
-| New Architecture (Fabric/TurboModules/JSI) | On (`newArchEnabled: true` in [app.json](../../app.json)) |
+| New Architecture (Fabric/TurboModules/JSI) | On — `newArchEnabled=true` in [android/gradle.properties](../../android/gradle.properties), which Expo generates by default from SDK 53 on. There is no key in `app.json`, and adding one would only restate the default. |
 | Hermes engine | On (`jsEngine: "hermes"`) |
 | React Compiler (auto-memoization) | On (`experiments.reactCompiler: true`) |
 | Virtualized lists | `@legendapp/list` used for quest/adventure galleries — do not regress to `FlatList`/`ScrollView.map` |

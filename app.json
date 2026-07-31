@@ -2,7 +2,7 @@
   "expo": {
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#101323",
+        "backgroundColor": "#0B0F19",
         "foregroundImage": "./assets/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -14,16 +14,16 @@
     },
     "icon": "./assets/icon.png",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.guiforge.bati"
     },
-    "name": "bati",
+    "name": "Bati",
     "orientation": "portrait",
     "plugins": [
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#101323",
+          "backgroundColor": "#0B0F19",
           "image": "./assets/adaptive-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain"

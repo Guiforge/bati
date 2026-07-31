@@ -18,6 +18,42 @@ redire ici les ferait diverger — le travers que l'audit a passé la journée �
 Ce document répond à une autre question : **dans quel ordre, et qu'est-ce qui bloque quoi.**
 C'est un chemin critique, pas une liste de tâches.
 
+## Où on en est — 2026-07-31
+
+| Phase | État |
+|---|---|
+| 0 — Comptes, keystore, `eas init`, URL policy | ❌ **non commencée** — le chemin critique |
+| 1 — Config store | ✔ `2f1f878` |
+| 2 — Bannière de reprise | ✔ `c485fa0` + `8f89121` |
+| 2 bis — Canal de feedback | ✔ `844f93f` |
+| 3 — Passe appareil | ◐ contraste et zones tactiles faits depuis le code ; la passe visuelle reste |
+| 4 — Assets store | ❌ dépend de la phase 3 |
+| 5 — Sortie | ❌ |
+
+**Tout ce qui pouvait être fait sans appareil ni compte est fait.** Ce qui reste demande soit
+tes yeux sur un écran, soit un compte qui mûrit.
+
+### Trouvé en chemin, absent de l'audit initial
+
+L'audit lisait le code. Construire et exécuter l'app a trouvé ce que la lecture ne pouvait pas :
+
+- **Aucun APK release ne pouvait être construit** — `expo.locales` écrivait des clés Info.plist
+  iOS dans les ressources Android, et `lintVitalRelease` refusait. Les builds debug sautent cette
+  tâche, donc tout était vert au-dessus d'un projet incapable de produire son artefact.
+- **La suite Maestro n'avait jamais rien dit à personne** — tous les flows pointaient sur
+  `com.anonymous.bati`, le défaut du template.
+- **`$primary` en texte échouait AA partout** (2.53:1) sur 15 écrans.
+- **`expo-system-ui` manquait**, donc `userInterfaceStyle: "dark"` était ignoré sur Android.
+
+### Une décision débloque deux choses
+
+`bati` est privé sur un plan gratuit, et **ça bloque à la fois l'URL de la politique de
+confidentialité (Pages) et la protection de branche**. Rendre le dépôt public — ou passer Pro —
+règle les deux d'un coup. L'historique a été scanné : aucun secret réel, les 7 alertes gitleaks
+sont des hachages SHA-256 et des données d'icônes.
+
+---
+
 ## L'essentiel en trois lignes
 
 Tout ce qui reste **de code** tient en une journée. Ce qui décide de la date de sortie, c'est

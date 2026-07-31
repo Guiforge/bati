@@ -98,6 +98,10 @@ jobs:
             echo "keystorepass: $KEYSTORE_PASSWORD"
             echo "keypass: $KEYSTORE_PASSWORD"
           } >> fdroid/config.yml
+          # The repository's own icon in the F-Droid client. Without it the client shows a grey
+          # placeholder, which is a poor first impression for the one screen that sells the repo.
+          mkdir -p fdroid/repo/icons
+          cp assets/icon.png fdroid/repo/icons/icon.png
           # The store copy lives once, in fastlane/metadata — Play and F-Droid read the same
           # layout, so neither ends up with a stale copy of the other's. F-Droid wants it under
           # metadata/<applicationId>/<locale>/, which is the only difference.
@@ -111,8 +115,11 @@ jobs:
           (cd fdroid && fdroid update -c --pretty)
           # The keys must never reach Pages — everything copied below is served publicly.
           rm -f fdroid/keystore.p12 fdroid/config.yml
-          mkdir -p _site/fdroid
-          cp -r fdroid/repo _site/fdroid/repo
+          # sudo, and then hand it back: jekyll-build-pages runs in a container as another user,
+          # so _site is not writable by the runner that has to add the repository beside it.
+          sudo mkdir -p _site/fdroid
+          sudo cp -r fdroid/repo _site/fdroid/repo
+          sudo chown -R "$(id -u):$(id -g)" _site
 
       - uses: actions/configure-pages@v5
         with:

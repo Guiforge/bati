@@ -74,7 +74,8 @@ long as the app collects nothing, changes here will be clarifications rather tha
 
 ## Contact
 
-Questions about this policy: **guillaume.pouyat@protonmail.com**
+Questions about this policy — and anything else: a bug, an idea, a feature you wish existed:
+**feedback.bati@proton.me**
 
 ---
 
@@ -149,4 +150,5 @@ de nouvelles pratiques.
 
 ## Contact
 
-Questions sur cette politique : **guillaume.pouyat@protonmail.com**
+Questions sur cette politique — et tout le reste : un bug, une idée, une fonctionnalité qui
+vous manque : **feedback.bati@proton.me**

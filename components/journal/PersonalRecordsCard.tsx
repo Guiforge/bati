@@ -7,6 +7,7 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { formatDuration } from "@/db/estimate";
 import { getPersonalRecordsSummary, type PersonalRecord } from "@/db/personalRecords";
 import { getStreakInfo } from "@/db/streaks";
+import { reportError } from "@/src/reportError";
 
 type RecordsSummary = {
   longestSession: PersonalRecord | null;
@@ -69,7 +70,9 @@ export function PersonalRecordsCard() {
           ...data,
           bestStreak: streakInfo.best,
         });
-      } catch (_e) {
+      } catch (error) {
+        // A card that failed to load looks exactly like a card with nothing to show.
+        reportError("journal.personalRecords", error);
       } finally {
         setIsLoading(false);
       }

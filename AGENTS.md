@@ -29,9 +29,47 @@ SQLite + Drizzle for offline-first persistence and Expo Router for navigation.
 - Formatting: `npm run format`
 - Tests: `npm test`
 - Watch tests: `npm run test:watch`
+- Dead code: `npm run knip`
 
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.
+
+## Quality rules
+
+Every rule below is a bug that shipped past a fully green `tsc` + `biome` + test suite.
+The full account is in [`audit.md`](audit.md); these are the habits that come out of it.
+
+- **Prefer a type over a test.** When a bug is "we forgot to update the other place", make the
+  two places inseparable instead of testing that they agree — `SavedSessionState` is
+  `Pick<SessionState, …>`, so persisting a new field is a compile error until both sides
+  match. A type costs nothing to run and cannot rot.
+- **Assert state, not navigation.** A test that taps through a flow and checks the next screen
+  appeared passes while the data underneath is wrong. `.maestro/session-interruptions.yaml`
+  performed two boss-damage bugs and passed, because it only asserted that the UI came back.
+- **Test the path the app actually calls.** Coverage counts dead code as covered:
+  `saveSessionState()` had five tests and no callers, which is exactly how its payload drifted
+  from the real writer's without anyone noticing. Run `npm run knip` before trusting a green bar.
+- **One writer per piece of state.** Two functions serialising the same thing will diverge.
+- **One source per value.** A `language === "fr" ? …` copied fourteen times gets forgotten the
+  fifteenth — use `localizedTitle()`. Colours live in `constants/rawColors.ts` and nowhere else;
+  a lint plugin rejects raw hex everywhere but that file.
+- **Never write game state before the thing that earned it exists.** Boss damage written during
+  a session survived quitting and was double-counted when a round restarted. Bank it in memory,
+  commit it in `saveSession`.
+- **A silent `catch` is a bug you find weeks late.** Use `reportError(context, error)`. If the
+  silence is deliberate — a dismissed share sheet is not a failure — write down why; an empty
+  block is a lint error.
+- **Coverage thresholds sit just under actual**, so they catch deletion. They are a ratchet,
+  not a target: raise them when coverage rises, never lower them to make a build pass.
+- **Mark a deliberate shortcut with a `ponytail:` comment** naming its ceiling and what would
+  trigger the real fix. "Refactor planned" tells the next reader nothing.
+
+### Known debt
+
+- `db/index.ts` is excluded from `knip` because it re-exports ~60 symbols of which a third are
+  used. Worth trimming to what callers actually import, then removing the exclusion.
+- `components/session/SessionRecoveryCard.tsx` is not mounted anywhere: crash recovery works
+  end to end but has no way into the UI.
 
 ## Git hooks
 

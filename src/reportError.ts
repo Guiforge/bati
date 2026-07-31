@@ -12,7 +12,6 @@
  */
 export function reportError(context: string, error: unknown): void {
   if (__DEV__) {
-    // biome-ignore lint/suspicious/noConsole: the only sink there is until telemetry exists
     console.error(`[${context}]`, error);
   }
 

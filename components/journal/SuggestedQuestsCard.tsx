@@ -8,6 +8,7 @@ import { Card } from "@/components/common/Card";
 import { getSuggestedQuestsForWeakAreas, type SuggestedQuest } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 const MUSCLE_COLORS: Record<string, ColorTokens> = {
@@ -31,7 +32,9 @@ export function SuggestedQuestsCard() {
       try {
         const data = await getSuggestedQuestsForWeakAreas(3);
         setQuests(data);
-      } catch (_e) {
+      } catch (error) {
+        // A card that failed to load looks exactly like a card with nothing to show.
+        reportError("journal.suggestedQuests", error);
       } finally {
         setIsLoading(false);
       }

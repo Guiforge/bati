@@ -14,8 +14,3 @@ type Bilingual<K extends string> = Record<`en${Capitalize<K>}` | `fr${Capitalize
 export function localizedTitle(row: Bilingual<"title">, language: AppLanguage): string {
   return language === "fr" ? row.frTitle : row.enTitle;
 }
-
-/** Same idea for rows whose label field is `name` rather than `title`. */
-export function localizedName(row: Bilingual<"name">, language: AppLanguage): string {
-  return language === "fr" ? row.frName : row.enName;
-}

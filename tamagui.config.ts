@@ -91,62 +91,10 @@ const animations = createAnimations({
 // -------------------------------------------------------------------------
 const tokens = createTokens({
   ...defaultConfig.tokens,
-  color: {
-    // --- NEW_STYLE CORE ---
-    // The shared ones come from constants/rawColors.ts, because gradients and charts cannot
-    // take a token and were copying these by hand. One value, two consumers.
-    primary: rawColors.primary, // Electric Blue
-    primaryHover: "#2E5CFF",
-    primaryPress: "#0A25B0",
-
-    secondary: "#DB2777", // Magenta
-    success: rawColors.success,
-    warning: "#F59E0B", // Amber (difficulty MEDIUM, cautions)
-    error: rawColors.error,
-
-    // --- IMMERSIVE BACKGROUNDS ---
-    bgDark: rawColors.bgDark, // The Void
-    bgOverlay: "rgba(11, 15, 25, 0.92)",
-
-    // --- SURFACES (Glass & Tech) ---
-    surface: rawColors.surface,
-    surface2: "#151A2E",
-
-    // --- GLASSMORPHISM SYSTEM ---
-    glassBg: "rgba(16, 19, 34, 0.65)",
-    glassBorder: "rgba(232, 236, 255, 0.14)",
-
-    // --- TEXT ---
-    text: "#E8ECFF", // Almost white
-    textSecondary: rawColors.textSecondary, // Muted Blue-Grey
-    muted: "#64748B",
-
-    // --- EFFECTS ---
-    borderStrong: rawColors.borderStrong,
-    shadowColor: "#060812",
-    primaryGlow: "rgba(13, 51, 242, 0.45)",
-
-    // --- LEGACY MAPPING (Safety Net) ---
-    bgLight: "#101322",
-    pastelBlue: "#1A2633", // Mapped to dark
-    pastelPink: "#331A22",
-    pastelGreen: "#1A3320",
-    pastelYellow: "#33301A",
-    pastelPurple: "#261A33",
-    pastelOrange: "#332618",
-
-    // --- RESOURCES ---
-    resourceGold: "#FFD700",
-    resourceWood: "#8B4513",
-    resourceStone: "#808080",
-    resourceFire: "#FF6B35",
-    resourceWater: "#4ECDC4",
-    resourceWind: "#C9B1FF",
-    resourceGrain: "#DAA520",
-
-    white: "#FFFFFF",
-    black: "#000000",
-  },
+  // Every value comes from constants/rawColors.ts. Nothing here is a literal: that file is the
+  // one place a colour is written down, which is what makes the no-raw-hex lint rule
+  // (.biome/plugins/noRawHexColor.grit) enforceable with no exceptions to remember.
+  color: { ...rawColors },
 });
 
 // -------------------------------------------------------------------------

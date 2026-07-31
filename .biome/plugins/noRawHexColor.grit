@@ -1,0 +1,23 @@
+// Raw hex colours drift.
+//
+// The onboarding faded to #101323 while the surface token read #101322, and the journal drew
+// "easy" in #22C55E while the progression chart drew it in $success (#16A34A) — the same word,
+// two greens, one tab apart. Nothing caught either, because a copied colour is valid code. The
+// migration failure screen was a cream #FFF5E6 panel in an app PRODUCT.md says is dark-only.
+//
+// Product UI uses Tamagui tokens. Gradients, charts, widgets and textShadowColor genuinely
+// cannot take a token: those import from constants/rawColors.ts, which is the only file allowed
+// to write a colour down — and the only exemption here, so there is nothing to remember.
+//
+// Scoped by $filename rather than a biome.json override: `overrides[].plugins: []` does not
+// suppress plugin diagnostics in Biome 2.5.6.
+language js
+
+string() as $color where {
+  $color <: r".*#[0-9a-fA-F]{6}.*",
+  // Three conditions rather than one alternation: a group in a GritQL regex is read as a
+  // metavariable binding, and the pattern fails with "matched 1 variables, but expected 0".
+  $filename <: not r".*rawColors.*",
+  $filename <: not r".*__tests__.*",
+  register_diagnostic(span=$color, message="Raw hex colour: use a Tamagui token, or import from constants/rawColors.ts when the library cannot take one.")
+}

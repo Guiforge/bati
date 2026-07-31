@@ -32,6 +32,7 @@
     },
     "globals": ["__DEV__"]
   },
+  "plugins": ["./.biome/plugins/noRawHexColor.grit"],
   "linter": {
     "enabled": true,
     "domains": {
@@ -84,7 +85,8 @@
         "noAssignInExpressions": "error",
         "noImplicitAnyLet": "error",
         "noRedeclare": "error",
-        "useAwait": "warn"
+        "useAwait": "warn",
+        "noEmptyBlockStatements": "error"
       }
     }
   },
@@ -126,7 +128,8 @@
         },
         "rules": {
           "suspicious": {
-            "noConsole": "off"
+            "noConsole": "off",
+            "noEmptyBlockStatements": "off"
           },
           "correctness": {
             "noUnusedVariables": "off"

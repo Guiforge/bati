@@ -1,0 +1,27 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "index.ts",
+    "app/**/*.{ts,tsx}",
+    "babel.config.js",
+    "metro.config.js",
+    "drizzle.config.ts",
+    "tamagui.config.ts",
+    "i18n.ts",
+    "__tests__/**/*.{test,spec}.{ts,tsx}"
+  ],
+  "project": ["**/*.{ts,tsx}"],
+  "ignore": ["db/index.ts"],
+  "ignoreDependencies": [
+    "@react-navigation/bottom-tabs",
+    "@react-navigation/elements",
+    "@react-navigation/native",
+    "expo-updates",
+    "expo-system-ui",
+    "@tamagui/babel-plugin",
+    "babel-plugin-inline-import",
+    "babel-plugin-transform-remove-console",
+    "babel-preset-expo"
+  ],
+  "ignoreExportsUsedInFile": true
+}

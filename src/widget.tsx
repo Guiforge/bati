@@ -7,17 +7,17 @@ import {
   TextWidget,
   type WidgetTaskHandlerProps,
 } from "react-native-android-widget";
-
+import { rawColors } from "@/constants/rawColors";
 import { getStreakInfo } from "@/db/streaks";
 import { type FlameLevel, getFlameLevel } from "@/db/village";
 
-// Same values as DESIGN.md `resource-fire`/`muted`/`surface`/`text`. Duplicated as literals
-// rather than importing the tamagui config (font loading, platform branches) into a headless
-// task for four hex strings.
-const FLAME_COLOR = "#FF6B35";
-const DIM_COLOR = "#64748B";
-const SURFACE_COLOR = "#101322";
-const TEXT_COLOR = "#E8ECFF";
+// These used to be literals, because importing tamagui.config into a headless task drags in
+// font loading and platform branches. constants/rawColors.ts is a plain object with type-only
+// imports, so it costs nothing at runtime and the widget shares the app's palette for real.
+const FLAME_COLOR = rawColors.resourceFire;
+const DIM_COLOR = rawColors.muted;
+const SURFACE_COLOR = rawColors.surface;
+const TEXT_COLOR = rawColors.text;
 
 // Drawn by a headless Android task, never mounted in the React tree, so Fast Refresh has
 // nothing to refresh here — the two render sites below are the only consumers.

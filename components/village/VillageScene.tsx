@@ -20,6 +20,7 @@ import {
   getVillageTierAsset,
 } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { rawColors } from "@/constants/rawColors";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } from "@/db/village";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
@@ -28,7 +29,7 @@ import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
 /** The unbuilt icons read as silhouettes, not greyed-out buttons: same shape, no detail. */
-const SILHOUETTE_TINT = "#2A3360";
+const SILHOUETTE_TINT = rawColors.borderStrong;
 
 /** The shelf is already newest-first; dating it turns the rack into the road travelled. */
 const TROPHY_DATE_OPTIONS: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
@@ -154,7 +155,7 @@ export function VillageScene() {
 
           {/* Bottom scrim dissolves the artwork into the page; the title sits inside it */}
           <LinearGradient
-            colors={["transparent", "rgba(11,15,25,0.75)", "#0B0F19"]}
+            colors={["transparent", "rgba(11,15,25,0.75)", rawColors.bgDark]}
             locations={[0, 0.55, 1]}
             style={{
               position: "absolute",

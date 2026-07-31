@@ -59,6 +59,7 @@
     "drizzle-kit": "^0.31.10",
     "jest": "~29.7.0",
     "jest-expo": "~57.0.3",
+    "knip": "^6.30.0",
     "typescript": "~6.0.3"
   },
   "jest": {
@@ -117,7 +118,8 @@
     "start": "expo start",
     "test": "jest",
     "test:watch": "jest --watch",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "knip": "knip"
   },
   "allowScripts": {
     "better-sqlite3@13.0.2": true,

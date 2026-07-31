@@ -11,6 +11,7 @@ import {
   type TrendAnalysis,
   type WeeklyTrend,
 } from "@/db/completed";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 type ViewMode = "weekly" | "monthly";
@@ -33,7 +34,9 @@ function TrendsCardComponent() {
       setMonthlyTrends(summary.monthlyTrends);
       setSessionsAnalysis(summary.sessionsAnalysis);
       setMinutesAnalysis(summary.minutesAnalysis);
-    } catch (_e) {
+    } catch (error) {
+      // A card that failed to load looks exactly like a card with nothing to show.
+      reportError("journal.trends", error);
     } finally {
       setIsLoading(false);
     }

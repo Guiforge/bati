@@ -74,11 +74,16 @@ export async function resetDatabase() {
     } else if (typeof maybeDb.closeAsync === "function") {
       await maybeDb.closeAsync();
     }
-  } catch (_e) {}
+  } catch (_e) {
+    // Best effort: this is a destructive reset, and a handle that will not close cleanly
+    // must not stop the file below from being deleted.
+  }
 
   try {
     deleteDatabaseSync(DB_NAME);
-  } catch (_e) {}
+  } catch (_e) {
+    // No database file to delete — the reset has nothing left to do.
+  }
 }
 
 // Create drizzle instance with schema
@@ -109,7 +114,9 @@ let asyncTransactions: boolean | null = null;
 async function supportsAsyncTransactions(): Promise<boolean> {
   if (asyncTransactions !== null) return asyncTransactions;
   try {
-    await db.transaction(async () => {});
+    await db.transaction(async () => {
+      // Deliberately empty: the probe must not write anything. See the note above.
+    });
     asyncTransactions = true;
   } catch (e) {
     if (!isAsyncTransactionUnsupported(e)) throw e;

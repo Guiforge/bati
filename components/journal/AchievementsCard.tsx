@@ -6,6 +6,7 @@ import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 type CategoryFilter = "all" | "sessions" | "streaks" | "xp" | "special";
@@ -36,7 +37,9 @@ export function AchievementsCard() {
         unlocked,
         percentage: total > 0 ? Math.round((unlocked / total) * 100) : 0,
       });
-    } catch (_e) {
+    } catch (error) {
+      // A card that failed to load looks exactly like a card with nothing to show.
+      reportError("journal.achievements", error);
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { useWindowDimensions } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { getBossAsset } from "@/constants/assetMap";
+import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { getHpPercent, getPhaseFromHp, getPhaseTint } from "./bossPhase";
@@ -113,7 +114,7 @@ export function BossArena({
         {/* Scrim: the name and HP sit on painted art, so they need their own ground to stay
             readable in gym lighting rather than relying on whatever the artwork happens to be. */}
         <LinearGradient
-          colors={["transparent", "rgba(11,15,25,0.55)", "#0B0F19"]}
+          colors={["transparent", "rgba(11,15,25,0.55)", rawColors.bgDark]}
           locations={[0, 0.55, 1]}
           style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: artHeight * 0.7 }}
           pointerEvents="none"

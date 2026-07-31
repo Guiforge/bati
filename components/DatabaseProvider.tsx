@@ -2,6 +2,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
+import { rawColors } from "@/constants/rawColors";
 import { db } from "@/db/client";
 import migrations from "../drizzle/migrations";
 
@@ -277,18 +278,19 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#FFF5E6",
+          // Dark-only app: a cream failure screen was the one white flash PRODUCT.md forbids.
+          backgroundColor: rawColors.bgDark,
           padding: 20,
         }}
       >
-        <Text style={{ color: "#1A1A2E", fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
+        <Text style={{ color: rawColors.text, fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
           {t("common.error")}:
         </Text>
-        <Text style={{ color: "#FF6B35", fontSize: 14, marginBottom: 20 }}>
+        <Text style={{ color: rawColors.error, fontSize: 14, marginBottom: 20 }}>
           {error.message.substring(0, 200)}
           {error.message.length > 200 ? "..." : ""}
         </Text>
-        <Text style={{ color: "#1A1A2E", fontSize: 12, opacity: 0.7 }}>
+        <Text style={{ color: rawColors.textSecondary, fontSize: 12, opacity: 0.7 }}>
           Check console for full details.
         </Text>
       </View>
@@ -302,11 +304,12 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#FFF5E6",
+          // Dark-only app: a cream failure screen was the one white flash PRODUCT.md forbids.
+          backgroundColor: rawColors.bgDark,
         }}
       >
-        <Text style={{ color: "#1A1A2E", fontSize: 18, fontWeight: "700" }}>🏰 Bati</Text>
-        <Text style={{ color: "#1A1A2E", opacity: 0.6, marginTop: 8 }}>
+        <Text style={{ color: rawColors.text, fontSize: 18, fontWeight: "700" }}>🏰 Bati</Text>
+        <Text style={{ color: rawColors.textSecondary, opacity: 0.6, marginTop: 8 }}>
           {t("splash.loading", "Building your village...")}
         </Text>
       </View>

@@ -2,25 +2,71 @@ import type { ColorTokens } from "tamagui";
 import type { DifficultyCode } from "@/db/schema";
 
 /**
- * The palette as plain strings.
+ * The palette, as plain strings. Every colour in the app is defined here exactly once.
  *
- * Tamagui tokens are the source of truth for anything Tamagui renders, and product UI should
- * keep using them. But three things in this app cannot take a token and need a real colour:
- * `expo-linear-gradient`, `react-native-gifted-charts`, and React Native's `textShadowColor`.
+ * `tamagui.config.ts` builds its tokens from this object, so product UI keeps using tokens
+ * (`bg="$primary"`) and never sees a hex. The reason the raw values need a home of their own is
+ * that three things cannot take a Tamagui token and need a real string: `expo-linear-gradient`,
+ * `react-native-gifted-charts`, and React Native's `textShadowColor`.
  *
- * Those call sites were each hand-copying hex, which drifts. The onboarding ended up fading to
- * `#101323` while the surface token said `#101322`, and the journal invented its own green and
- * red for difficulties the progression chart was already drawing from `$success` and `$error`.
- * `tamagui.config.ts` builds its tokens from these same constants, so a colour has one home.
+ * Those call sites used to hand-copy hex, and it drifted: the onboarding faded to `#101323`
+ * while the surface token read `#101322`, and the journal invented its own green and red for the
+ * difficulties the progression chart already drew from `$success` and `$error`. A lint rule
+ * (`.biome/plugins/noRawHexColor.grit`) now rejects raw hex everywhere but this file — which is
+ * only enforceable because there is nothing left outside it.
  */
 export const rawColors = {
-  primary: "#0D33F2",
+  // --- Core ---
+  primary: "#0D33F2", // Electric Blue
+  primaryHover: "#2E5CFF",
+  primaryPress: "#0A25B0",
+  secondary: "#DB2777", // Magenta
   success: "#16A34A",
+  warning: "#F59E0B", // Amber (difficulty MEDIUM, cautions)
   error: "#FF1744",
-  bgDark: "#0B0F19",
+
+  // --- Immersive backgrounds ---
+  bgDark: "#0B0F19", // The Void
+  bgOverlay: "rgba(11, 15, 25, 0.92)",
+
+  // --- Surfaces (glass & tech) ---
   surface: "#101322",
-  textSecondary: "#909ACB",
+  surface2: "#151A2E",
+
+  // --- Glassmorphism ---
+  glassBg: "rgba(16, 19, 34, 0.65)",
+  glassBorder: "rgba(232, 236, 255, 0.14)",
+
+  // --- Text ---
+  text: "#E8ECFF", // Almost white
+  textSecondary: "#909ACB", // Muted Blue-Grey
+  muted: "#64748B",
+
+  // --- Effects ---
   borderStrong: "#2A3360",
+  shadowColor: "#060812",
+  primaryGlow: "rgba(13, 51, 242, 0.45)",
+
+  // --- Legacy mapping (safety net) ---
+  bgLight: "#101322",
+  pastelBlue: "#1A2633", // Mapped to dark
+  pastelPink: "#331A22",
+  pastelGreen: "#1A3320",
+  pastelYellow: "#33301A",
+  pastelPurple: "#261A33",
+  pastelOrange: "#332618",
+
+  // --- Resources ---
+  resourceGold: "#FFD700",
+  resourceWood: "#8B4513",
+  resourceStone: "#808080",
+  resourceFire: "#FF6B35",
+  resourceWater: "#4ECDC4",
+  resourceWind: "#C9B1FF",
+  resourceGrain: "#DAA520",
+
+  white: "#FFFFFF",
+  black: "#000000",
 } as const;
 
 /**

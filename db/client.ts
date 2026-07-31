@@ -54,13 +54,7 @@ if (!globalAny[GLOBAL_KEY]) {
 }
 
 const singleton = globalAny[GLOBAL_KEY] as DbSingleton;
-let expoDb = singleton.expoDb;
-
-export function reopenDatabase() {
-  expoDb = openDatabaseSync(DB_NAME, {
-    enableChangeListener: true,
-  });
-}
+const expoDb = singleton.expoDb;
 
 /**
  * The raw expo-sqlite handle, for the one caller that cannot await.
@@ -74,6 +68,7 @@ export function getRawDb() {
   return expoDb;
 }
 
+/** @legacy Remise à zéro destructive, prévue pour l'écran dev, jamais branchée. */
 export async function resetDatabase() {
   try {
     const maybeDb = expoDb as unknown as {

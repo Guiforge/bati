@@ -104,6 +104,8 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset }: 
                 variant="outline"
                 fullWidth={false}
                 height={40}
+                // Same 44×44 floor as the difficulty chips; vertical only, it shares its row.
+                hitSlop={{ top: 4, bottom: 4 }}
                 fontSize={14}
                 icon={<RotateCcw size={14} />}
                 onPress={onReset}

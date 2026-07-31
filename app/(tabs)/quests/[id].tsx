@@ -84,6 +84,9 @@ function LevelChip({
       onPress={() => onSelect(value)}
       fullWidth={false}
       height={40}
+      // 40 is under the 44×44 floor. Vertical only: these sit in a row, and widening them
+      // sideways would make neighbouring chips fight over the same pixels.
+      hitSlop={{ top: 4, bottom: 4 }}
       px="$3"
       bg={active ? "$secondary" : "$surface"}
       borderColor={active ? "$secondary" : "$borderStrong"}

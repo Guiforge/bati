@@ -18,3 +18,7 @@ jobs:
       - run: npx biome check .
       - run: npx tsc --noEmit --project tsconfig.json
       - run: npm test
+      # Dead code is a correctness problem, not tidiness: saveSessionState() had five tests and
+      # no callers, which is how its payload drifted from the real writer's unnoticed. Knip is at
+      # zero; anything it reports is new.
+      - run: npm run knip

@@ -1,4 +1,4 @@
-import { type ColorTokens, XStack, YStack } from "tamagui";
+import { type ColorTokens, YStack } from "tamagui";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface SkeletonProps {
@@ -51,14 +51,3 @@ export function SkeletonCard({ children }: { children?: React.ReactNode }) {
 /**
  * A skeleton list item
  */
-export function SkeletonListItem() {
-  return (
-    <XStack gap="$3" items="center" p="$3">
-      <Skeleton width={48} height={48} radius={24} />
-      <YStack flex={1} gap="$2">
-        <Skeleton height={16} width="70%" />
-        <Skeleton height={12} width="50%" />
-      </YStack>
-    </XStack>
-  );
-}

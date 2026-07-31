@@ -456,7 +456,7 @@
     "balance_good": "Balanced!",
     "balance_needs_work": "Needs Work",
     "pull_deficit_title": "Your pulling is behind",
-    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first — rows under a table, towel rows, or a doorway bar.",
+    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first — towel rows or a doorway bar.",
     "suggested_quests": "Your weak spots",
     "suggested_quests_desc": "Quests to strengthen your weak areas",
     "personal_records": "Personal Records",

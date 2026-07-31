@@ -67,6 +67,11 @@ export function AppIconButton({ children, ...buttonProps }: AppIconButtonProps) 
     <Button
       width={44}
       height={44}
+      // 44×44 is the default, but callers spread over it — the quest gallery draws this at 36×36,
+      // and shrinking the button shrank the tap target with it, under the 44×44 floor DESIGN.md
+      // sets. hitSlop restores the hit area without touching the design, and sits before the
+      // spread so a caller can still widen or drop it deliberately.
+      hitSlop={8}
       p={0}
       rounded={22}
       bg="$bgLight"

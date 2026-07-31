@@ -10,5 +10,3 @@ export const SOUNDS = {
   rest: null,
   chestOpen: null,
 };
-
-export type SoundName = keyof typeof SOUNDS;

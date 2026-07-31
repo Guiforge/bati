@@ -47,3 +47,11 @@ repos:
         pass_filenames: false
         always_run: true
         stages: [pre-push]
+
+      - id: knip
+        name: knip (dead code)
+        entry: npm run knip
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

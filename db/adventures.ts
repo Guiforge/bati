@@ -543,16 +543,6 @@ export async function startAdventureRun(input: {
   return active;
 }
 
-export async function setAdventureRunDifficultyOverride(input: {
-  runId: number;
-  difficultyOverride: DifficultyCode | null;
-}): Promise<void> {
-  await db
-    .update(adventureRuns)
-    .set({ difficultyOverride: input.difficultyOverride })
-    .where(eq(adventureRuns.id, input.runId));
-}
-
 /**
  * Which adventure a run step belongs to. A session only ever carries its `runStepId` (the URL
  * an adventure step pushes, and the one the victory screen chains to), so this is how the

@@ -194,6 +194,8 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
  * Check if the user has worked out recently and might benefit from rest
  * This is a simpler check for display purposes
  */
+/** @legacy Variante légère de getRestSuggestion, branché sur l'accueil le 2026-07-31 ;
+ *  celui-ci ne l'a pas été. Déjà listé en dette dans AGENTS.md. */
 export async function getQuickRestCheck(): Promise<{
   workedOutToday: boolean;
   workedOutYesterday: boolean;

@@ -238,6 +238,8 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
 /**
  * Get boss fight by adventure ID.
  */
+/** @legacy Lecture sans création. Aucun écran ne l'appelle depuis que la session utilise
+ *  getOrCreateBossFight. */
 export async function getBossFightByAdventure(adventureId: number): Promise<BossFight | null> {
   const rows = await db
     .select({
@@ -333,6 +335,9 @@ async function calculateBossHp(adventureId: number): Promise<number> {
 /**
  * Deal damage to a boss after completing an exercise.
  */
+/** @legacy Primitive un-coup. La production passe par computeDamage + persistSessionDamage
+ *  depuis 2026-07-31 ; garde la couverture d'intégration du chemin d'écriture. Sortie : replier
+ *  ses tests sur ces deux-là, puis supprimer. */
 export function dealDamage(
   bossFightId: number,
   params: {
@@ -441,6 +446,7 @@ export async function persistSessionDamage(
 /**
  * Reset a boss fight (for replaying).
  */
+/** @legacy Rejouer un boss ; prévu pour l'écran dev, jamais branché. */
 export async function resetBossFight(bossFightId: number): Promise<void> {
   const fightRows = await db
     .select({ totalHp: bossFights.totalHp })
@@ -463,6 +469,8 @@ export async function resetBossFight(bossFightId: number): Promise<void> {
 /**
  * Get damage history for a boss fight.
  */
+/** @legacy L'historique des coups, maintenant qu'il porte enfin l'id de séance. Attend un
+ *  écran qui l'affiche. */
 export async function getBossDamageHistory(bossFightId: number): Promise<BossDamageEntry[]> {
   const rows = await db
     .select()

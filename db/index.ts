@@ -36,7 +36,6 @@ export {
   getFinishedRunCountsByAdventure,
   listAdventures,
   listFinishedRunSummaries,
-  setAdventureRunDifficultyOverride,
   startAdventureRun,
 } from "./adventures";
 export { db, schema } from "./client";

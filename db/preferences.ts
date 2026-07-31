@@ -44,6 +44,7 @@ export async function deletePreference(key: string): Promise<void> {
 }
 
 // Get all preferences as object
+/** @legacy Vidage complet des préférences, utile au débogage, sans appelant. */
 export async function getAllPreferences(): Promise<Record<string, string>> {
   const results = await db.select().from(userPreferences);
   return Object.fromEntries(results.map((r: { key: string; value: string }) => [r.key, r.value]));

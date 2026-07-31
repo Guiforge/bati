@@ -90,6 +90,7 @@ export async function getMostXpSession(): Promise<PersonalRecord | null> {
  * The unit is not optional: reps and seconds share the `resultValue` column, so pooling them
  * makes a 60 s hold outrank every rep set the hero has ever done on the same movement.
  */
+/** @legacy Meilleur résultat sur un exercice ; l'écran exercice calcule le sien. */
 export async function getExerciseMax(
   exerciseId: number,
   resultType: QuestTargetType = "reps",

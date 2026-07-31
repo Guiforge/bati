@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
-import { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
-import { isMuscleCode, MUSCLE_LABELS } from "./muscles";
+import { isEquipmentCode } from "./equipment";
+import { isMuscleCode } from "./muscles";
 import {
   type DifficultyCode,
   type EquipmentCode,
@@ -36,7 +36,7 @@ export type Exercise = {
   pattern: MovementPattern | null;
 };
 
-export { EQUIPMENT_LABELS, isEquipmentCode, isMuscleCode, MUSCLE_LABELS };
+export { isEquipmentCode, isMuscleCode };
 
 // Exercise definitions are static seed content (no in-app editing), so every screen that
 // mounts (quest/adventure galleries, adventure details) can share one fetch instead of each

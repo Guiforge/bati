@@ -114,6 +114,7 @@ const POTENTIATE_BY_FAMILY: Record<Family, string[]> = {
  * failing. `content-invariants` sweeps this list — which is why it is one export rather than a
  * test that has to guess which branches exist.
  */
+/** @legacy Pool de mouvements exporté pour ses tests ; `buildWarmup` est le seul lecteur. */
 export const WARMUP_MOVEMENTS: string[] = [
   ...new Set([
     ...RAISE,

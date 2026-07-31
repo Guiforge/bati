@@ -1,11 +1,8 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": [
-    "index.ts",
     "app/**/*.{ts,tsx}",
     "babel.config.js",
-    "metro.config.js",
-    "drizzle.config.ts",
     "tamagui.config.ts",
     "i18n.ts",
     "__tests__/**/*.{test,spec}.{ts,tsx}"
@@ -23,5 +20,6 @@
     "babel-plugin-transform-remove-console",
     "babel-preset-expo"
   ],
-  "ignoreExportsUsedInFile": true
+  "ignoreExportsUsedInFile": true,
+  "tags": ["-legacy"]
 }

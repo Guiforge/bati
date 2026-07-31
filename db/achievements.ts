@@ -625,6 +625,7 @@ export async function checkForNewAchievements(sessionInfo: {
 /**
  * Get summary stats for achievements
  */
+/** @legacy test */
 export async function getAchievementStats(): Promise<{
   total: number;
   unlocked: number;

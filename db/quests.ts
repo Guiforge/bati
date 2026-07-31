@@ -500,6 +500,7 @@ export async function setQuestExercises(
   invalidateQuestTemplates(questId);
 }
 
+/** @legacy Garde-fou de seed ; les invariants de contenu sont testés à la place. */
 export async function ensureQuestHasExercise(
   questId: number,
   exerciseId: number,
@@ -667,6 +668,7 @@ async function pickDailyTemplate(): Promise<QuestTemplate | null> {
   return candidates[Math.abs(hash) % candidates.length];
 }
 
+/** @legacy La quête du jour ; l'accueil décide autrement depuis useSmartAction. */
 export async function getDailyQuest(userLevel: UserLevel): Promise<Quest | null> {
   const template = await pickDailyTemplate();
   return template ? await getQuestById(template.id, userLevel) : null;

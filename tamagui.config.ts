@@ -100,7 +100,9 @@ const tokens = createTokens({
 // -------------------------------------------------------------------------
 // 4. CONFIG EXPORT
 // -------------------------------------------------------------------------
-export const config = createTamagui({
+// Default export only: app/_layout.tsx and tamagui.d.ts both take the default, and a named
+// twin of the same object is one more thing that can be imported inconsistently.
+const config = createTamagui({
   ...defaultConfig,
   animations,
   tokens,

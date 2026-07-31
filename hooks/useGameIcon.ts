@@ -54,13 +54,3 @@ export function useGameIcons<T extends GameIconName>(iconNames: T[]) {
 
   return result;
 }
-
-/**
- * Get icon source without hook (for static contexts)
- * @param iconName - The name of the icon
- */
-export function getGameIconSource(iconName: GameIconName) {
-  return ICONS[iconName];
-}
-
-export { ICONS as GAME_ICONS };

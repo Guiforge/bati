@@ -105,31 +105,8 @@ export function getQuestColorKeyFromQuest(quest: Pick<Quest, "exercises">): Exer
   return bestKey;
 }
 
-export function getQuestColorKeyFromTemplate(
-  quest: Pick<QuestTemplate, "exercises">,
-): ExerciseColorKey {
-  if (quest.exercises.length === 0) return "default";
-
-  // Quest templates don't include muscle info; fall back to target types.
-  let reps = 0;
-  let time = 0;
-  for (const qex of quest.exercises) {
-    if (qex.baseTarget.type === "time") time += 1;
-    else reps += 1;
-  }
-
-  if (reps === time) return "mixed";
-  return reps > time ? "reps" : "time";
-}
-
 export function getQuestColorTokensFromQuest(quest: Pick<Quest, "exercises">): ExerciseColorTokens {
   return getExerciseColorTokens(getQuestColorKeyFromQuest(quest));
-}
-
-export function getQuestColorTokensFromTemplate(
-  quest: Pick<QuestTemplate, "exercises">,
-): ExerciseColorTokens {
-  return getExerciseColorTokens(getQuestColorKeyFromTemplate(quest));
 }
 
 export function getQuestColorKeyFromTemplateWithExercises(input: {

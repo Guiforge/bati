@@ -330,8 +330,6 @@
     "seconds": "Seconds",
     "skip_rest": "I'm Ready!",
     "skip_rest_accessibility": "Skip rest and start next exercise",
-    "summary_empty_subtitle": "Session logged — keep your streak alive.",
-    "summary_empty_title": "Nice work!",
     "summary_saving": "Saving your workout…",
     "target_reached": "Target reached!",
     "time_progress": "TIME",
@@ -466,9 +464,6 @@
     "pr_best_streak": "Best Streak",
     "pr_badge": "PR",
     "rest_suggestion_title": "Rest Day Recommended",
-    "rest_suggestion_high_volume": "You've completed {{count}} workouts this week! Your body needs time to recover and grow stronger.",
-    "rest_suggestion_consecutive": "You've trained {{count}} days in a row! Take a rest day to prevent overtraining.",
-    "rest_suggestion_overtraining": "You've been training hard with {{count}} sessions this week. Consider a recovery day.",
     "user_level": "Level {{level}}",
     "xp_progress": "{{current}} / {{next}} XP",
     "total_xp": "Total XP",
@@ -484,8 +479,7 @@
     "trends_stable": "stable",
     "trends_no_data": "Train more to see trends",
     "prev_month": "Previous month",
-    "next_month": "Next month",
-    "rest_suggestion_deload": "Four hard weeks in a row. Take an easier one — less volume, not less training. Your next month starts here."
+    "next_month": "Next month"
   },
   "achievements": {
     "title": "Achievements",

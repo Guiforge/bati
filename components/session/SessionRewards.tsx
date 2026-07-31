@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -7,6 +8,7 @@ import { GameIcon } from "@/components/common/GameIcon";
 import { OathFulfilledCard } from "@/components/oath/OathFulfilledCard";
 import { LevelPips } from "@/components/village/LevelPips";
 import { getBuildingIconAsset, getExerciseAsset, getVillageTierAsset } from "@/constants/assetMap";
+import { pickSessionEmptyVariant } from "@/constants/sessionEmptyMessages";
 import { getLevelTitle } from "@/db/userLevel";
 import { TIER_NAMES } from "@/db/village";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -43,6 +45,9 @@ export function SessionRewards({
     result.newAchievements.length > 0 ||
     !!result.fulfilledOath ||
     result.villageGrowth.length > 0;
+
+  // Picked once for this mount of the reveal screen, not re-rolled on every re-render.
+  const emptyVariant = useMemo(() => pickSessionEmptyVariant(isFr ? "fr" : "en"), [isFr]);
 
   return (
     <>
@@ -285,10 +290,10 @@ export function SessionRewards({
         >
           <Text fontSize={32}>🎉</Text>
           <Text fontWeight="700" fontSize={16} color="$text" style={{ textAlign: "center" }}>
-            {t("session.summary_empty_title")}
+            {emptyVariant.title}
           </Text>
           <Text fontSize={13} color="$textSecondary" style={{ textAlign: "center" }}>
-            {t("session.summary_empty_subtitle")}
+            {emptyVariant.subtitle}
           </Text>
         </Card>
       )}

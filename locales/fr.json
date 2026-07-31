@@ -314,9 +314,6 @@
     "prev_month": "Mois précédent",
     "quest_completed": "Quête accomplie",
     "recent_activity": "Activité Récente",
-    "rest_suggestion_consecutive": "Tu t'es entraîné {{count}} jours d'affilée ! Prends un jour de repos pour éviter le surentraînement.",
-    "rest_suggestion_high_volume": "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",
-    "rest_suggestion_overtraining": "Tu t'es beaucoup entraîné avec {{count}} séances cette semaine. Pense à une journée de récupération.",
     "rest_suggestion_title": "Jour de Repos Recommandé",
     "result": "Résultat",
     "round": "Manche",
@@ -351,8 +348,7 @@
     "user_level": "Niveau {{level}}",
     "when_you_train": "Quand tu t'entraînes habituellement",
     "workout_days": "Jours d'Entraînement",
-    "xp_progress": "{{current}} / {{next}} XP",
-    "rest_suggestion_deload": "Quatre semaines chargées d'affilée. Prends-en une plus légère — moins de volume, pas moins d'entraînement. Ton prochain mois commence là."
+    "xp_progress": "{{current}} / {{next}} XP"
   },
   "language": "Langue",
   "light": "Clair",
@@ -557,8 +553,6 @@
     "seconds": "Secondes",
     "skip_rest": "Je suis prêt !",
     "skip_rest_accessibility": "Passer le repos et commencer le prochain exercice",
-    "summary_empty_subtitle": "Séance enregistrée — garde ta série en vie.",
-    "summary_empty_title": "Beau boulot !",
     "summary_saving": "Enregistrement de ta séance…",
     "target_reached": "Objectif atteint !",
     "time_progress": "TEMPS",

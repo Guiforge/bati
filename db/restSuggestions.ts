@@ -9,7 +9,6 @@ export type RestSuggestion = {
   reason: "overtraining" | "consecutive_days" | "high_volume" | "deload" | "none";
   daysInARow: number;
   recentSessionCount: number;
-  message: string;
   /** Only set by the `deload` reason: how many heavy weeks are behind this suggestion. */
   heavyWeeks?: number;
 };
@@ -85,7 +84,6 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
       reason: "none",
       daysInARow: 0,
       recentSessionCount: 0,
-      message: "",
     };
   }
 
@@ -141,7 +139,6 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
       reason: "high_volume",
       daysInARow: consecutiveDays,
       recentSessionCount: sessionCount,
-      message: "rest_suggestion_high_volume",
     };
   }
 
@@ -152,7 +149,6 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
       reason: "consecutive_days",
       daysInARow: consecutiveDays,
       recentSessionCount: sessionCount,
-      message: "rest_suggestion_consecutive",
     };
   }
 
@@ -163,7 +159,6 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
       reason: "overtraining",
       daysInARow: consecutiveDays,
       recentSessionCount: sessionCount,
-      message: "rest_suggestion_overtraining",
     };
   }
 
@@ -175,7 +170,6 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
       reason: "deload",
       daysInARow: consecutiveDays,
       recentSessionCount: sessionCount,
-      message: "rest_suggestion_deload",
       heavyWeeks,
     };
   }
@@ -186,7 +180,6 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
     reason: "none",
     daysInARow: consecutiveDays,
     recentSessionCount: sessionCount,
-    message: "",
   };
 }
 

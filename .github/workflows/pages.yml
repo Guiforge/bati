@@ -61,11 +61,19 @@ jobs:
             echo "No fdroid/config.yml or no signing key — publishing the legal pages only."
           fi
 
+      # From pip, not apt. Ubuntu ships fdroidserver 2.2.1, whose bundled androguard cannot parse
+      # a manifest built by current Android build-tools and dies with "res1 must be zero!".
+      # setuptools is pinned below 81 because fdroidserver still imports pkg_resources, which 81
+      # dropped.
+      - uses: actions/setup-python@v5
+        if: steps.fdroid.outputs.ready == 'true'
+        with:
+          python-version: "3.12"
+      - uses: android-actions/setup-android@v3
+        if: steps.fdroid.outputs.ready == 'true'
       - name: Install fdroidserver
         if: steps.fdroid.outputs.ready == 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fdroidserver
+        run: pip install "setuptools<81" fdroidserver
 
       - name: Take the APK from the release build
         if: steps.fdroid.outputs.ready == 'true'

@@ -31,6 +31,26 @@ describe("db/adventures", () => {
     expect(starter.stepsCount).toBeGreaterThanOrEqual(2);
   });
 
+  test("listAdventures reports what a campaign trains, from every step and not just the cover", async () => {
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+
+    const all = await adventures.listAdventures();
+    for (const a of all) {
+      // The whole point: a poster that says nothing is the bug this replaced.
+      expect(a.focus.muscles.length).toBeGreaterThan(0);
+      // A campaign touches all six groups somewhere; the ranking must drop the incidental ones.
+      expect(a.focus.muscles.length).toBeLessThanOrEqual(3);
+      expect(new Set(a.focus.muscles).size).toBe(a.focus.muscles.length);
+    }
+
+    const ironLord = all.find((a) => a.enTitle === "The Iron Lord's Conquest");
+    if (!ironLord) throw new Error("Expected seeded adventure 'The Iron Lord's Conquest'");
+
+    // Details must agree with the gallery — two screens, one rule.
+    const details = await adventures.getAdventureDetails(ironLord.id);
+    expect(details?.adventure.focus).toEqual(ironLord.focus);
+  });
+
   test("listAdventures and getAdventureDetails expose the seeded cover imagePath", async () => {
     const adventures = require("../db/adventures") as typeof import("../db/adventures");
 

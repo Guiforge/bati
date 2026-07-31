@@ -21,6 +21,7 @@ export type {
   ActiveAdventureRun,
   Adventure,
   AdventureDetails,
+  AdventureFocus,
   AdventureKind,
   AdventureRun,
   AdventureRunStep,

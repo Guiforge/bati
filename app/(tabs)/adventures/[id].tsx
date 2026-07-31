@@ -17,7 +17,12 @@ import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
-import type { ActiveAdventureRun, AdventureDetails, AdventureStepTemplate } from "@/db";
+import type {
+  ActiveAdventureRun,
+  AdventureDetails,
+  AdventureFocus,
+  AdventureStepTemplate,
+} from "@/db";
 import {
   adventureWeeks,
   Difficulty,
@@ -31,6 +36,7 @@ import {
   suggestDifficultyFromSessions,
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
+import { MUSCLE_LABELS } from "@/db/muscles";
 import { computeSessionXp } from "@/db/xp";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
@@ -66,6 +72,8 @@ type LoadState =
       suggestedDifficulty: "easy" | "medium" | "hard";
       message: string;
     };
+
+const EMPTY_FOCUS: AdventureFocus = { archetype: null, muscles: [] };
 
 function levelLabel(level: Difficulty, t: TFunction) {
   if (level === Difficulty.Easy) return t("quests.level_easy");
@@ -270,6 +278,7 @@ export default function AdventureDetailsScreen() {
     return byIndex;
   }, [run]);
   const isBoss = details?.adventure.kind === "boss";
+  const focus = details?.adventure.focus ?? EMPTY_FOCUS;
   const heroImage = resolveImage(details?.adventure.imagePath, getAdventureAsset);
 
   const activeTemplateStep = useMemo(() => {
@@ -436,9 +445,15 @@ export default function AdventureDetailsScreen() {
                   ) : null}
                 </XStack>
 
-                {isBoss ? (
+                {isBoss || focus.archetype || focus.muscles.length > 0 ? (
                   <XStack gap="$2" flexWrap="wrap">
-                    <Tag label={t("adventures.kind_boss")} tone="primary" />
+                    {isBoss ? <Tag label={t("adventures.kind_boss")} tone="primary" /> : null}
+                    {focus.archetype ? (
+                      <Tag label={t(`quests.archetype_${focus.archetype}`)} tone="secondary" />
+                    ) : null}
+                    {focus.muscles.map((m) => (
+                      <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
+                    ))}
                   </XStack>
                 ) : null}
 

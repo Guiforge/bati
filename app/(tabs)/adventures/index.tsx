@@ -30,6 +30,7 @@ import {
   listExercises,
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
+import { MUSCLE_LABELS } from "@/db/muscles";
 import { computeSessionXp } from "@/db/xp";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -61,6 +62,8 @@ type AdventureRow = {
   title: string;
   description: string;
   kindLabel: string;
+  /** "Force · Bras · Dos" — what the campaign trains, so the poster answers it before the tap. */
+  focusLabel: string;
   weeksLabel: string;
   stepsLabel: string;
   xpLabel: string;
@@ -107,6 +110,12 @@ function buildAdventureRow(
         : a.kind === "event"
           ? t("adventures.kind_event", "EVENT")
           : t("adventures.kind_route", "ROUTE"),
+    focusLabel: [
+      a.focus.archetype ? t(`quests.archetype_${a.focus.archetype}`) : null,
+      ...a.focus.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
+    ]
+      .filter(Boolean)
+      .join(" · "),
     weeksLabel: t("adventures.weeks", { count: weeks, defaultValue: `≈ ${weeks} weeks` }),
     stepsLabel: t("adventures.steps", {
       count: a.stepsCount,
@@ -220,6 +229,12 @@ function AdventureCard({
           <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
             {row.title}
           </Text>
+
+          {row.focusLabel ? (
+            <Text fontSize={12} fontWeight="700" color="$primary" numberOfLines={1}>
+              {row.focusLabel}
+            </Text>
+          ) : null}
 
           <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
             {row.description}

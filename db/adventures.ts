@@ -1,7 +1,8 @@
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { db, schema } from "./client";
+import { listExercises } from "./exercises";
 import { listQuestTemplates, type QuestTemplate } from "./quests";
-import type { DifficultyCode } from "./schema";
+import type { DifficultyCode, MuscleCode, QuestArchetype } from "./schema";
 
 const { adventureRuns, adventureRunSteps, adventures, adventureSteps, questExercises, quests } =
   schema;
@@ -49,6 +50,45 @@ export type AdventureRunStep = {
   completedAt: Date | null;
 };
 
+/** What a campaign trains — the answer to "is this arms or legs?" without opening four quests. */
+export type AdventureFocus = {
+  /** The archetype most of the campaign's steps declare, `null` when none of them do. */
+  archetype: QuestArchetype | null;
+  /** The muscles carrying the campaign's volume, heaviest first, at most three. */
+  muscles: MuscleCode[];
+};
+
+function focusOf(
+  stepQuests: QuestTemplate[],
+  musclesByExerciseId: Map<number, MuscleCode[]>,
+): AdventureFocus {
+  const archetypes = new Map<QuestArchetype, number>();
+  const muscles = new Map<MuscleCode, number>();
+
+  for (const q of stepQuests) {
+    if (q.archetype) archetypes.set(q.archetype, (archetypes.get(q.archetype) ?? 0) + 1);
+    for (const qex of q.exercises) {
+      for (const m of musclesByExerciseId.get(qex.exerciseId) ?? []) {
+        muscles.set(m, (muscles.get(m) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Maps iterate in insertion order and sort is stable, so ties break on the earliest step.
+  const rankedMuscles = [...muscles.entries()].sort((a, b) => b[1] - a[1]);
+  const leader = rankedMuscles[0]?.[1] ?? 0;
+
+  return {
+    archetype: [...archetypes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
+    // An eight-session campaign touches all six muscle groups somewhere; only the ones carrying
+    // half the leader's volume say what the route is actually *for*.
+    muscles: rankedMuscles
+      .filter(([, n]) => n * 2 >= leader)
+      .slice(0, 3)
+      .map(([m]) => m),
+  };
+}
+
 export type Adventure = {
   id: number;
   coverQuestId: number;
@@ -63,6 +103,7 @@ export type Adventure = {
   coverQuest: QuestTemplate;
   stepsCount: number;
   imagePath: string | null;
+  focus: AdventureFocus;
 };
 
 export type AdventureDetails = {
@@ -79,6 +120,7 @@ export type AdventureDetails = {
     | "frDescription"
     | "coverQuestId"
     | "imagePath"
+    | "focus"
   >;
   steps: AdventureStepTemplate[];
 };
@@ -141,23 +183,29 @@ async function fetchAdventures(): Promise<Adventure[]> {
     .orderBy(asc(adventures.sortOrder), asc(questExercises.sortOrder));
 
   const stepRows = await db
-    .select({ adventureId: adventureSteps.adventureId })
+    .select({ adventureId: adventureSteps.adventureId, questId: adventureSteps.questId })
     .from(adventureSteps)
     .innerJoin(adventures, eq(adventures.id, adventureSteps.adventureId))
     .where(eq(adventures.isActive, 1));
 
-  const stepsCountByAdventureId = new Map<number, number>();
+  const stepQuestIdsByAdventureId = new Map<number, number[]>();
   for (const r of stepRows) {
-    stepsCountByAdventureId.set(
-      r.adventureId,
-      (stepsCountByAdventureId.get(r.adventureId) ?? 0) + 1,
-    );
+    const ids = stepQuestIdsByAdventureId.get(r.adventureId);
+    if (ids) ids.push(r.questId);
+    else stepQuestIdsByAdventureId.set(r.adventureId, [r.questId]);
   }
+
+  // Both are cached module-wide (see listQuestTemplates / listExercises), so resolving what every
+  // step actually trains costs no extra round-trip.
+  const [templates, exercises] = await Promise.all([listQuestTemplates(), listExercises()]);
+  const templatesById = new Map(templates.map((q) => [q.id, q] as const));
+  const musclesByExerciseId = new Map(exercises.map((e) => [e.id, e.muscles] as const));
 
   const byAdventureId = new Map<number, Adventure>();
 
   for (const r of rows) {
     if (!byAdventureId.has(r.adventureId)) {
+      const stepQuestIds = stepQuestIdsByAdventureId.get(r.adventureId) ?? [];
       const quest: QuestTemplate = {
         id: r.coverQuestId,
         enTitle: r.enTitle,
@@ -185,8 +233,12 @@ async function fetchAdventures(): Promise<Adventure[]> {
         enDescription: r.advEnDescription,
         frDescription: r.advFrDescription,
         coverQuest: quest,
-        stepsCount: stepsCountByAdventureId.get(r.adventureId) ?? 0,
+        stepsCount: stepQuestIds.length,
         imagePath: r.advImagePath,
+        focus: focusOf(
+          stepQuestIds.flatMap((id) => templatesById.get(id) ?? []),
+          musclesByExerciseId,
+        ),
       });
     }
 
@@ -297,9 +349,9 @@ async function fetchAdventureDetails(adventureId: number): Promise<AdventureDeta
           },
         ];
 
-  // All quest templates are already cached in memory; resolve steps from that map instead of one
-  // sequential DB query per step (the old N+1). Zero extra round-trips.
-  const templates = await listQuestTemplates();
+  // All quest templates and exercises are already cached in memory; resolve steps from those maps
+  // instead of one sequential DB query per step (the old N+1). Zero extra round-trips.
+  const [templates, exercises] = await Promise.all([listQuestTemplates(), listExercises()]);
   const templatesById = new Map(templates.map((q) => [q.id, q] as const));
 
   const resolved: AdventureStepTemplate[] = [];
@@ -331,6 +383,10 @@ async function fetchAdventureDetails(adventureId: number): Promise<AdventureDeta
       enDescription: first.enDescription,
       frDescription: first.frDescription,
       imagePath: first.imagePath,
+      focus: focusOf(
+        resolved.map((s) => s.quest),
+        new Map(exercises.map((e) => [e.id, e.muscles] as const)),
+      ),
     },
     steps: resolved,
   };

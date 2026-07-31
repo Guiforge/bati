@@ -9,7 +9,7 @@
 A dark-fantasy fitness RPG. Your workouts are quests, your reps are damage,
 and the village you build is made of what you actually lifted.
 
-<a href="https://guiforge.github.io/bati/fdroid/repo"><img alt="Get it on F-Droid" src="assets/badges/get-it-on-fdroid.png" height="60" /></a>
+<a href="https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97"><img alt="Get it on F-Droid" src="assets/badges/get-it-on-fdroid.png" height="60" /></a>
 <a href="https://github.com/Guiforge/bati/releases/latest"><img alt="Get it on GitHub" src="assets/badges/get-it-on-github.png" height="60" /></a>
 
 <br />
@@ -191,17 +191,33 @@ All of these run in CI; the first three also run on commit or push.
 
 ## Install it
 
-Releases are published as APKs: [Releases](https://github.com/Guiforge/bati/releases). Android
-will ask you to allow installs from an unknown source the first time — these are not from a store.
+### F-Droid — the one that updates itself
 
-For updates without re-downloading anything by hand, add the F-Droid repository once:
+**Searching F-Droid for "Bati" will not find it.** The app is not in the main F-Droid catalogue;
+it lives in its own repository, and F-Droid only searches repositories you have added. Add this
+one once and Bati shows up in search, with updates arriving like any other app's:
+
+[**Add the repository to F-Droid**](https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
+
+By hand instead — *Settings → Repositories → +* — paste the address, and check that F-Droid shows
+this fingerprint before you accept it:
 
 ```
 https://guiforge.github.io/bati/fdroid/repo
+089D B128 38D6 60CA F285 BE85 5D8E 6D02 3407 A50D 9805 1B38 4309 5EA0 9BBA 2D97
 ```
 
-See [`docs/fdroid.md`](docs/fdroid.md) for how that is put together, and what is still missing
-before it works.
+That fingerprint is the whole security model of a self-hosted repository: it pins the key every
+future update must be signed with. Adding the address without checking it trusts whatever answers
+at that URL.
+
+### A plain APK
+
+[Releases](https://github.com/Guiforge/bati/releases) — Android will ask you to allow installs
+from an unknown source the first time. Nothing updates itself this way; you download the next one
+yourself.
+
+See [`docs/fdroid.md`](docs/fdroid.md) for how the repository is built and signed.
 
 ## Contributing
 

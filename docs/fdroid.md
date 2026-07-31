@@ -77,6 +77,34 @@ repo_description: >-
 Drop a signed APK into `fdroid/repo/`, run `fdroid update -c`, and the index appears beside it.
 Publish the `fdroid/` directory through Pages and the repository URL is live.
 
+## Why nobody can find it by searching
+
+A self-hosted repository is invisible to F-Droid's search until the user has added it — the client
+only ever searches repositories it already knows. This is not a misconfiguration and there is no
+setting that changes it; the main catalogue at f-droid.org is a separate repository with its own
+submission process (a merge request against `fdroiddata`, and builds F-Droid can reproduce from
+source). Until then, every install starts by adding the address.
+
+So the address is only half of it. The other half is the **repository fingerprint** — the SHA-256
+of the certificate the index is signed with, which pins the key every future update must carry:
+
+```
+089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97
+```
+
+Read it back off the published index rather than trusting a note in a file:
+
+```bash
+curl -sO https://guiforge.github.io/bati/fdroid/repo/index-v1.jar
+unzip -o -q index-v1.jar 'META-INF/*'
+keytool -J-Duser.language=en -printcert -file META-INF/*.RSA | grep SHA256
+```
+
+`keytool` here reads a JAR signature, which is exactly what `index-v1.jar` carries — unlike the
+APK case above, where v1-only parsing is a trap. It also needs the English locale forced: under a
+French one it dies with `MissingFormatArgumentException: Format specifier '%2$s'`, which looks
+like a broken file rather than a broken message catalogue.
+
 ## What is verified, and what is not
 
 `plugins/withAndroidReleaseSigning.js` is verified at the level that matters for *correctness of

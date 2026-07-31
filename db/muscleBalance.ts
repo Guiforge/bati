@@ -5,6 +5,7 @@ import { isMovementPattern, PATTERN_LABELS, PULL_PATTERNS, PUSH_PATTERNS } from 
 import { shortLivedQuery } from "./queryCache";
 import { getEligibleQuestIds } from "./quests";
 import { type MovementPattern, type MuscleCode, movementPatterns, muscleCodes } from "./schema";
+import { toRepEquivalent } from "./workUnits";
 
 const { completedQuest, completedExercises, exercises, exerciseMuscles, quests, questExercises } =
   schema;
@@ -26,7 +27,7 @@ function periodStart(period: BalancePeriod, now = new Date()): Date {
 export type MuscleVolume = {
   muscle: MuscleCode;
   label: { en: string; fr: string };
-  volume: number; // Total "work units" (reps + seconds)
+  volume: number; // Total work units — seconds converted to rep-equivalents (./workUnits)
   percentage: number; // Percentage of total training
   sessionCount: number; // Number of sessions that included this muscle
 };
@@ -65,6 +66,7 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
       sessionId: completedQuest.id,
       exerciseId: completedExercises.exerciseId,
       resultValue: completedExercises.resultValue,
+      resultType: completedExercises.resultType,
       muscle: exerciseMuscles.muscle,
       performedAt: completedQuest.performedAt,
     })
@@ -91,7 +93,7 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
     const muscle = row.muscle as MuscleCode;
     const data = muscleVolumes.get(muscle);
     if (data) {
-      data.volume += row.resultValue;
+      data.volume += toRepEquivalent(row.resultValue, row.resultType);
       data.sessions.add(row.sessionId);
     }
     allSessions.add(row.sessionId);
@@ -216,7 +218,7 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
 export type PatternVolume = {
   pattern: MovementPattern;
   label: { en: string; fr: string };
-  volume: number; // Same "work units" as MuscleVolume (reps + seconds)
+  volume: number; // Same work units as MuscleVolume
   percentage: number;
 };
 
@@ -256,6 +258,7 @@ async function computePatternBalance(period: BalancePeriod): Promise<PatternBala
     .select({
       pattern: exercises.pattern,
       resultValue: completedExercises.resultValue,
+      resultType: completedExercises.resultType,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
@@ -268,8 +271,9 @@ async function computePatternBalance(period: BalancePeriod): Promise<PatternBala
   let totalVolume = 0;
   for (const row of rows) {
     if (!isMovementPattern(row.pattern)) continue;
-    volumes.set(row.pattern, (volumes.get(row.pattern) ?? 0) + row.resultValue);
-    totalVolume += row.resultValue;
+    const units = toRepEquivalent(row.resultValue, row.resultType);
+    volumes.set(row.pattern, (volumes.get(row.pattern) ?? 0) + units);
+    totalVolume += units;
   }
 
   const sumOf = (family: readonly MovementPattern[]) =>

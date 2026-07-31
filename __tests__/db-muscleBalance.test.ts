@@ -235,7 +235,7 @@ describe("db/muscleBalance", () => {
   // ----------------------------------------------------------
 
   /** Seeds one session per (exercise, volume) pair. Patterns come from migration 0020. */
-  function seedByName(entries: { name: string; volume: number }[]): void {
+  function seedByName(entries: { name: string; volume: number; type?: "reps" | "time" }[]): void {
     const now = Math.floor(Date.now() / 1000);
     entries.forEach((e, i) => {
       const row = t.sqlite.prepare(`SELECT id FROM exercises WHERE enName = ?`).get(e.name) as
@@ -246,7 +246,7 @@ describe("db/muscleBalance", () => {
       t.sqlite.exec(`
         INSERT INTO completed_sessions (id, performedAt) VALUES (${sessionId}, ${now - i * 3600});
         INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder)
-        VALUES (${sessionId}, ${row.id}, 'reps', ${e.volume}, ${now - i * 3600}, 0);
+        VALUES (${sessionId}, ${row.id}, '${e.type ?? "reps"}', ${e.volume}, ${now - i * 3600}, 0);
       `);
     });
   }
@@ -319,5 +319,39 @@ describe("db/muscleBalance", () => {
     seedByName([{ name: "Push-ups", volume: 20 }]);
 
     expect(getPullDeficit(await getPatternBalance("30d"))).toBeNull();
+  });
+
+  // BUG-009. `resultValue` holds reps for some rows and seconds for others, and summing it raw
+  // made a 60 s plank outweigh a 20-rep set six to one — which then drove weak-area detection,
+  // the home screen's quest suggestion and the village's building levels off the same bad number.
+  test("a 60 s hold weighs the same as a 20-rep set, not six times more", async () => {
+    const { getMuscleBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    seedByName([
+      { name: "Push-ups", volume: 20 }, // chest + arms, reps
+      { name: "Plank", volume: 60, type: "time" }, // abs + back + shoulder, seconds
+    ]);
+
+    const balance = await getMuscleBalance("30d");
+    const volumeOf = (m: string) => balance.muscles.find((x) => x.muscle === m)?.volume;
+
+    expect(volumeOf("chest")).toBe(20);
+    expect(volumeOf("abs")).toBe(20); // 60 s / 3, not 60
+    expect(volumeOf("abs")).toBe(volumeOf("chest"));
+
+    // Equal work, so neither side is weak or strong against the other.
+    expect(balance.weakAreas).not.toContain("abs");
+    expect(balance.strongAreas).not.toContain("abs");
+  });
+
+  test("pattern balance converts holds too", async () => {
+    const { getPatternBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    seedByName([{ name: "Plank", volume: 60, type: "time" }]);
+
+    const balance = await getPatternBalance("30d");
+    expect(balance.totalVolume).toBe(20);
   });
 });

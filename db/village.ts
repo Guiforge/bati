@@ -14,6 +14,7 @@ import {
 } from "./schema";
 import { getStreakInfo } from "./streaks";
 import { getUserLevelInfo } from "./userLevel";
+import { repEquivalentSql } from "./workUnits";
 
 const { bossFights, adventures, exercises, completedExercises } = schema;
 
@@ -258,7 +259,7 @@ async function getStyleVolumes(): Promise<Partial<Record<ExerciseStyle, number>>
   const rows = await db
     .select({
       style: exercises.style,
-      volume: sql<number>`coalesce(sum(${completedExercises.resultValue}), 0)`,
+      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType)}), 0)`,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))

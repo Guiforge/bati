@@ -1,6 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
 import type { MuscleCode, QuestTargetType } from "./schema";
+import { toRepEquivalent } from "./workUnits";
 
 const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises, quests } = schema;
 
@@ -43,21 +44,14 @@ export type BossDamageEntry = {
 };
 
 /**
- * Damage is the result value, but reps and seconds are not the same unit: taken at face value a
- * 60 s plank hit five times harder than a 12-rep squat, so the app's hardest content (low-rep
- * strength work) dealt the least damage and every boss HP had to be tuned per campaign to
- * compensate. Seconds are converted to rep-equivalents at the catalogue's median
- * `secondsPerRep`, which puts a 60 s hold and a 20-rep set on the same footing.
+ * Damage is the result value in rep-equivalents: at face value a 60 s plank hit five times
+ * harder than a 12-rep squat, so the app's hardest content (low-rep strength work) dealt the
+ * least damage and every boss HP had to be tuned per campaign to compensate. The conversion
+ * itself now lives in ./workUnits, shared with every other aggregate that sums work.
  */
-const SECONDS_PER_REP_EQUIVALENT = 3;
 
 /** A crit doubles damage and fires 30 % of the time when the target is met. */
 const EXPECTED_CRIT_MULTIPLIER = 1.3;
-
-function toRepEquivalent(resultValue: number, targetType: QuestTargetType | undefined): number {
-  if (targetType !== "time") return resultValue;
-  return Math.max(1, Math.round(resultValue / SECONDS_PER_REP_EQUIVALENT));
-}
 
 export type DamageResult = {
   damage: number;

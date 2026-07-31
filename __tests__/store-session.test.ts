@@ -25,6 +25,9 @@ jest.mock("@/db/completed", () => ({
   createCompletedSession: jest.fn().mockResolvedValue(1),
   markSessionWithNewRecords: jest.fn().mockResolvedValue(undefined),
   addBonusXpToSession: jest.fn().mockResolvedValue(undefined),
+  // Only the warm-up reads this, to rotate which movement fills each phase. Pinned to 0 so the
+  // sequence these cases walk is stable.
+  getSessionAggregates: jest.fn().mockResolvedValue({ totalSessions: 0 }),
 }));
 // The rest of what saveSession touches on its way through. Stubbed so the store's own
 // behaviour — what it banks, commits and clears — is what these cases actually measure.

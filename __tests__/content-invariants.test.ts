@@ -322,43 +322,74 @@ describe("content invariants", () => {
 
     expect(offenders).toEqual([]);
   });
-  // `buildWarmup` names its movements as strings and resolves them against this catalogue at
-  // render time, so a rename or a merge (`0023` did both) silently degrades the warm-up to an
-  // English label with a placeholder image instead of failing. This is the check that notices.
+  // The warm-up names its movements as strings and resolves them against this catalogue at
+  // render time, so a rename or a merge (`0023` did both) silently degrades a step to an English
+  // label with a placeholder image instead of failing. This is the check that notices.
+  //
+  // Swept from the exported pool rather than from built warm-ups: enumerating quest shapes only
+  // ever covered the branches the test remembered to write, and a movement reachable by one rule
+  // alone is exactly the one a rename breaks unseen.
   test("every warm-up movement exists in the catalogue", async () => {
-    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
+    const { WARMUP_MOVEMENTS } =
+      require("../constants/warmup") as typeof import("../constants/warmup");
     const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
 
     const catalogue = new Set((await listExercises()).map((e) => e.enName));
 
-    // Every branch buildWarmup can take, so a movement reachable only by one rule still counts.
-    const shapes = [
-      { archetype: null, exercises: [{ exercise: { pattern: null } }] },
-      {
-        archetype: "skill" as const,
-        exercises: [{ exercise: { pattern: "push_vertical" as const } }],
-      },
-      {
-        archetype: "strength" as const,
-        exercises: [
-          { exercise: { pattern: "squat" as const } },
-          { exercise: { pattern: "hinge" as const } },
-        ],
-      },
-      {
-        archetype: "strength" as const,
-        exercises: [
-          { exercise: { pattern: "pull_vertical" as const } },
-          { exercise: { pattern: "pull_horizontal" as const } },
-        ],
-      },
-    ];
+    expect(WARMUP_MOVEMENTS.filter((name) => !catalogue.has(name))).toEqual([]);
+  });
 
-    const missing = shapes
-      .flatMap((shape) => buildWarmup(shape))
-      .map((step) => step.exerciseName)
-      .filter((name) => !catalogue.has(name));
+  // A warm-up prepares; it does not train. Anything hard enough to cost the session is not a
+  // warm-up movement, however well it fits the pattern the quest is about to load.
+  test("no warm-up movement is a hard exercise", async () => {
+    const { WARMUP_MOVEMENTS } =
+      require("../constants/warmup") as typeof import("../constants/warmup");
+    const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
 
-    expect([...new Set(missing)]).toEqual([]);
+    const byName = new Map((await listExercises()).map((e) => [e.enName, e]));
+    const tooHard = WARMUP_MOVEMENTS.filter((name) => byName.get(name)?.difficulty === "hard");
+
+    expect(tooHard).toEqual([]);
+  });
+
+  // The length rule is a proportion, so it can only be checked against real content: a quest
+  // seeded tomorrow at forty minutes, or at four, is what would push the warm-up somewhere silly.
+  // The literature asks for 5–10 min; the app buys specificity instead of length and keeps the
+  // warm-up a quarter of the session, which is the trade `workout-best-practices.md` documents.
+  test("every seeded quest gets a warm-up proportional to it", async () => {
+    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
+    const { estimateQuestSeconds } = require("../db/estimate") as typeof import("../db/estimate");
+    const all = await loadQuests();
+
+    const offenders = all.flatMap((quest) => {
+      const session = estimateQuestSeconds(quest);
+      const warmup = buildWarmup(quest).reduce((sum, s) => sum + s.seconds, 0);
+      const share = warmup / session;
+
+      // Never under two minutes — the shortest warm-up the app has ever shipped — and never over
+      // five and a half, nor more than a third of the session it precedes. The half minute above
+      // five is the wrist step, which sits outside the length budget on purpose: the longest
+      // quests that press vertically are exactly the ones that must not have it trimmed away.
+      const ok = warmup >= 120 && warmup <= 330 && share <= 0.34;
+      return ok ? [] : [`${quest.enTitle}: ${warmup}s warm-up on a ${session}s session`];
+    });
+
+    expect(offenders).toEqual([]);
+  });
+
+  // Rotation must not be able to change what the warm-up *is* — only which movements fill it.
+  test("the session count never changes a warm-up's length or its wrist step", async () => {
+    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
+    const all = await loadQuests();
+
+    const offenders = all.flatMap((quest) => {
+      const built = Array.from({ length: 12 }, (_, i) => buildWarmup(quest, i));
+      const lengths = new Set(built.map((steps) => steps.length));
+      const wrists = new Set(built.map((s) => s.some((x) => x.exerciseName === "Wrist Circles")));
+
+      return lengths.size === 1 && wrists.size === 1 ? [] : [quest.enTitle];
+    });
+
+    expect(offenders).toEqual([]);
   });
 });

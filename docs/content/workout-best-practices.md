@@ -291,12 +291,31 @@ pretend otherwise.
 ### Session structure (§1)
 
 - **Warm-up: dynamic, 5–10 min, and specific to what follows.** Real evidence for injury-risk
-  reduction (Fradkin 2006; FIFA 11+ trials). The app runs 2 min rather than 5–10 — a deliberate
-  trade: a five-minute warm-up in front of a twelve-minute quest is a warm-up nobody does twice.
-  It buys specificity instead of length (`buildWarmup` in `constants/warmup.ts`): four fixed
-  slots — pulse, hips, shoulders, spine — filled from the quest's own movement patterns, plus a
-  **non-optional wrist step** whenever the session presses vertically or is a skill quest. That
-  last one is §8.6.4, and it is a safety rule rather than a preference: connective tissue adapts
+  reduction (Fradkin 2006; FIFA 11+ trials). `buildWarmup` in `constants/warmup.ts` runs the
+  **RAMP** phases in order — raise the pulse, mobilise the joints through range, activate the
+  patterns the session will use, then one movement close to the real work — with intensity
+  climbing across the sequence.
+
+  **Length is proportional, not fixed.** The app ran a flat 2 min for a long time, on the
+  argument that a five-minute warm-up in front of a twelve-minute quest is a warm-up nobody does
+  twice. That argument is right about short quests and wrong about long ones, so the length is
+  now derived from the quest's own `estimateQuestSeconds`: about a quarter of the session,
+  clamped to 4–10 steps of 30 s. In practice that is 2:00 before the shortest quest — exactly
+  what it was — 3:30 before the median, and 5:00–5:30 before the longest, which is where the
+  literature's 5–10 min actually applies.
+
+  **Movements rotate** on the hero's session count (§3, Baz-Valle 2019: variety raises intrinsic
+  motivation without harming gains). Rotation only changes *which* movement fills a phase — never
+  the length, the order, or the wrist step.
+
+  **Only dynamic movements, ever.** §11 puts static stretching after training or in standalone
+  sessions, so `Pigeon Pose`, `Standing Forward Fold`, `Warrior Pose` and `Cobra Stretch` are
+  excluded from every warm-up pool. They are the *content* of the mobility quests, which is
+  where held stretching belongs. `Cat-Cow` does the spinal job `Cobra Stretch` used to.
+
+  **A non-optional wrist step** whenever the session presses vertically or is a skill quest, and
+  it sits outside the length budget: a short quest shortens some other phase before it drops
+  this one. That is §8.6.4, a safety rule rather than a preference — connective tissue adapts
   more slowly than muscle, and wrist/elbow overuse is the classic failure mode of hand-balancing.
 - **Cool-down: not built, on purpose.** Van Hooren & Peake 2018 find active cool-downs
   "largely ineffective" for soreness, recovery markers, range of motion, and they "do not

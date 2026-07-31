@@ -15,6 +15,7 @@ import {
   addBonusXpToSession,
   type CompletedExerciseInput,
   createCompletedSession,
+  getSessionAggregates,
   markSessionWithNewRecords,
 } from "@/db/completed";
 import { checkForNewRungs, type VariationStep } from "@/db/exercises";
@@ -272,7 +273,10 @@ export const useSessionStore = create<SessionState>()(
       // The warm-up runs first unless the hero switched it off; skipping it is always one tap
       // away, so the preference only exists to save that tap for people who never want it.
       const warmupEnabled = await preferences.getWarmupEnabled().catch(() => true);
-      const warmupSequence = buildWarmup(quest);
+      // Rotates which movement fills each phase, so the warm-up is not the same four every
+      // session. A failed read costs variety, never the warm-up itself.
+      const { totalSessions } = await getSessionAggregates().catch(() => ({ totalSessions: 0 }));
+      const warmupSequence = buildWarmup(quest, totalSessions);
       const warmupFirst = warmupEnabled && warmupSequence.length > 0;
 
       set({

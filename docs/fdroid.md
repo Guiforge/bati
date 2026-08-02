@@ -148,9 +148,23 @@ It lives in the Pages workflow rather than its own because **a GitHub Pages site
 deployment**: two workflows each uploading their own artefact do not merge, the second wipes the
 first. So the privacy policy and the F-Droid index are assembled together or not at all.
 
-> **Untested.** It is written from the documented procedure, not from a run — there is no signing
-> key and no Pages site yet, so nothing has exercised it end to end. Treat the first run as part
-> of the setup rather than as a regression if it fails.
+**It has run, and the repository is live.** The index is served and signed, and currently offers:
+
+```
+com.guiforge.bati   versionName 1.0.1   versionCode 1   160 MB
+```
+
+Read it back yourself rather than trusting this page — it is the only statement of what
+subscribers actually see:
+
+```bash
+curl -sO https://guiforge.github.io/bati/fdroid/repo/index-v1.jar
+unzip -p index-v1.jar index-v1.json | python3 -m json.tool | grep -A3 versionName
+```
+
+That `versionCode 1` is the bug `app.config.js` fixes, sitting in production: every build ever
+published claimed it, so F-Droid had no way to recognise a newer one. The next release carries
+`10002`, which is the first version code that can ever have been an update.
 
 ## The order that makes sense
 

@@ -102,9 +102,17 @@ jobs:
       - name: Name the artefact after the tag
         id: apk
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          # GITHUB_REF_NAME is the tag on a tag push and the *branch* on workflow_dispatch. A
+          # branch name may contain a slash, which turned the copy below into a path into a
+          # directory that does not exist — so a dispatch smoke-test failed after a perfectly good
+          # build. Only a real tag names the artefact; anything else is "dev".
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="dev"
+          fi
           src=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
-          dest="bati-${version:-dev}.apk"
+          dest="bati-${version}.apk"
           cp "$src" "$dest"
           echo "path=$dest" >> "$GITHUB_OUTPUT"
 

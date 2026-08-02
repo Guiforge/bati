@@ -9,6 +9,13 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 # Missing Images — inventory
 
+> **Superseded pipeline.** The generation instructions below describe the Mammouth API and
+> Gemini models, which are no longer used: everything is generated against Black Forest Labs
+> directly, because the FLUX output licence follows the API key and an aggregator's terms grant
+> nothing onward. See [image-style-prompt.md](image-style-prompt.md) and
+> [`scripts/lib/flux.py`](../../scripts/lib/flux.py). The *inventory* below is still accurate.
+
+
 > What art is still missing (nothing, as of this pass), what is covered, what exists but is
 > unused — and
 > [how to generate the gaps](#how-to-generate-missing-art).
@@ -65,7 +72,7 @@ direction — `scripts/README.md` documents an unrelated Mistral helper, not thi
 ### Prerequisites
 
 ```bash
-export MAMMOUTH_API_KEY=sk-...   # https://api.mammouth.ai, never hardcode it in a script
+export BFL_API_KEY=...            # https://bfl.ai — see .env.example, never hardcode it
 magick --version                 # ImageMagick — used for the resize/pad step
 ```
 
@@ -351,7 +358,7 @@ already has a file, now checked on **both** `.jpg` and `.png` since the folder i
 
 ```bash
 rm assets/images/exercises/lunge.jpg
-MAMMOUTH_API_KEY=sk-… python3 scripts/generate-exercises.py lunge
+python3 scripts/generate-exercises.py lunge
 magick montage assets/images/exercises/*.jpg -tile 4x4 -geometry 300x225+3+3 /tmp/sheet.jpg
 ```
 
@@ -423,8 +430,8 @@ and Metro resolves `require()` at bundle time, so that combination breaks the bu
 falling back. It is why `0024` shipped with no `assetMap` entries at all.
 
 ```bash
-MAMMOUTH_API_KEY=sk-… python3 scripts/generate-exercises.py   # fills only what is missing
-MAMMOUTH_API_KEY=sk-… python3 scripts/generate-covers.py
+python3 scripts/generate-exercises.py   # fills only what is missing
+python3 scripts/generate-covers.py
 magick montage assets/images/exercises/*.jpg -tile 4x4 -geometry 300x225+3+3 /tmp/sheet.jpg
 ```
 

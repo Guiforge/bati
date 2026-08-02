@@ -69,6 +69,13 @@ exist.
 - **F-Droid repository** — initialised, `fdroid/config.yml` committed, secrets set. The
   publishing half of `.github/workflows/pages.yml` has never run against a real index; see
   [../fdroid.md](../fdroid.md).
+- **f-droid.org, the official catalogue** — three of its four blockers are cleared: the artwork is
+  regenerated and CC BY-SA 4.0, Expo's 22 prebuilt AARs are switched to build-from-source, and
+  Firebase is stripped out of `expo-notifications` by a script that compiles. What remains is a
+  decision, not code: F-Droid signs with its own key, so either we do reproducible builds and set
+  `AllowedAPKSigningKeys` so existing installs survive, or we accept that f-droid.org is a fresh
+  install and say so. The recipe is written but never run through `fdroid build`; see
+  [../fdroid.md §Submitting to the official catalogue](../fdroid.md).
 - **Bundle-size analysis and performance profiling** — startup, memory, frame rate under
   animation. On a **release** build, never in dev
   ([../architecture/performance.md](../architecture/performance.md), rule 1).

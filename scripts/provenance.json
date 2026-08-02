@@ -1,4 +1,34 @@
 {
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-0.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487188,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-3.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487191,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-9.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487197,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
   "assets/avatar/archer.jpg": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -55,6 +85,16 @@
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
     "prompt": "A hooded assassin with a scarf drawn across the lower face, only sharp eyes and a strip of pale skin showing beneath the hood. Deep violet energy glows in the eyes and traces the seams of the dark leather hood; wisps of shadow curl off the shoulders. The expression is cold, still and watchful. Rendered as a dark-fantasy Franco-Belgian graphic-novel portrait: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. Tight head-and-shoulders framing, the face large and centred and clearly readable, shoulders cropped by the bottom edge. The background is a flat deep obsidian blue (#0B0F19) void with a soft vignette, and a crisp rim light separates the silhouette from it. Square 1:1 composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark anywhere in the frame.",
     "seed": 1970700845,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/icon.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487197,
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02"

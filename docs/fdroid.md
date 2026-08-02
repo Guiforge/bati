@@ -2,7 +2,7 @@
 title: Publishing through F-Droid
 type: technical
 status: active
-updated: 2026-07-31
+updated: 2026-08-02
 related: [planning/roadmap.md, ../CONTRIBUTING.md]
 ---
 
@@ -13,10 +13,9 @@ Two different things share the name, and only one of them is a realistic next st
 ## Which F-Droid
 
 **The official F-Droid catalogue** builds every app itself, from source, on its own
-infrastructure, and rejects anything that pulls in proprietary dependencies. An Expo app is a
-hard sell there: the build has to be reproducible from a clean checkout with no prebuilt
-binaries, and `expo-notifications` reaches for Firebase Cloud Messaging on Android. Possible, but
-it is a project of its own.
+infrastructure, and rejects anything that pulls in proprietary dependencies. That was written off
+here as "a project of its own"; most of it has since been done, and what remains is written down
+in [Submitting to the official catalogue](#submitting-to-the-official-catalogue) below.
 
 **Your own repository** is what [the tutorial](https://f-droid.org/en/tutorials/create-repo/)
 describes: you generate a signed index over your own APKs and host it anywhere. Users add the URL
@@ -163,3 +162,81 @@ first. So the privacy policy and the F-Droid index are assembled together or not
 
 Steps 1 and 2 are on the release path anyway. F-Droid is mostly a way of getting something back
 for work that has to happen regardless.
+
+## Submitting to the official catalogue
+
+Separate from everything above. The self-hosted repository distributes APKs *we* build; f-droid.org
+builds them itself, from source, and will not take a binary we hand it. Four things stood in the
+way, three of them now cleared.
+
+### The artwork had no licence we could grant — done
+
+`LICENSE` used to say the MIT grant "does not, and cannot" extend to `assets/`. A reviewer reads
+that and stops. The illustrations had been generated through Mammouth, an aggregator whose terms
+say nothing at all about generated outputs — section 7 covers Customer Data and usage data and
+stops there — and which is itself the upstream account holder, so whatever Midjourney or Google
+granted went to Mammouth and no further.
+
+Everything is regenerated against Black Forest Labs directly. The FLUX licence is explicit where
+Mammouth is silent: no ownership claim over outputs, any purpose including commercial, and outputs
+are not derivatives of the model. That grant follows the API key, which is now ours.
+`assets/` is CC BY-SA 4.0, and `scripts/provenance.json` records model, prompt and seed for each
+image so the claim can be checked rather than taken on trust.
+
+### Expo shipped 22 prebuilt AARs — done
+
+This was the real blocker, and it was hiding behind the Firebase one. Expo SDK 57 distributes its
+native modules as **precompiled `.aar` files** in a bundled `local-maven-repo` — 22 of them, 8 MB,
+with the Kotlin sources sitting unused beside them. F-Droid builds from source and rejects prebuilt
+binaries, so nothing else mattered while this was true. It also meant a source-level patch to
+`expo-notifications` changed nothing: the build consumed the AAR and ignored the file.
+
+The switch is one line in `package.json`:
+
+```json
+"expo": { "autolinking": { "buildFromSource": [".*"] } }
+```
+
+The value is a list of regexes, and `.*` takes everything. Gradle goes from ~20 subprojects to 42,
+`:expo-notifications` among them, and the AARs stop being used. Builds get slower; that is the
+price, and it buys a build F-Droid can reproduce.
+
+### expo-notifications pulled Firebase — done
+
+`com.google.firebase:firebase-messaging` is forbidden outright by the inclusion policy, and
+`expo-notifications` pulls it whether or not you use push. This app does not: `src/notifications.ts`
+schedules one local oath reminder and never requests a token.
+
+A Gradle `exclude` does not work — fourteen files reference FCM, one is a `<service>` in the
+library manifest, and three of the fourteen are also on the local path. So
+[`scripts/fdroid-strip-firebase.py`](../scripts/fdroid-strip-firebase.py) removes the push-only
+files and *edits* the three shared ones to drop their FCM branch. It is idempotent, it verifies
+afterwards that no `com.google.firebase` reference survives, and it is what the recipe calls in
+`prebuild:`.
+
+### The signing key — the one that is left
+
+F-Droid signs its own builds with its own key. Left as is, **nobody who installed from GitHub
+Releases or from our own repository can update to the f-droid.org build**: Android refuses an
+install whose signature differs, and uninstalling first takes the SQLite database — hero, streak,
+journal — with it. This is the same failure `plugins/withAndroidDebugAppId.js` already avoids in dev.
+
+Two ways out, and they want deciding before the merge request, not after:
+
+- **Reproducible builds plus `AllowedAPKSigningKeys`.** F-Droid rebuilds, compares against our
+  signed APK byte for byte, and ships *ours*. Nobody's install breaks. This is the larger job, and
+  `buildFromSource` above is a precondition for it — a build that consumes prebuilt AARs cannot be
+  reproduced from source in the first place.
+- **Accept the break.** Document that f-droid.org is a fresh install, and keep the self-hosted
+  repository alive for everyone already on it.
+
+### The recipe
+
+[`fdroid/fdroiddata-recipe.yml`](../fdroid/fdroiddata-recipe.yml) is our copy of the file that has
+to live in a fork of `fdroiddata` as `metadata/com.guiforge.bati.yml`. Submitting is a merge request
+titled `New App: com.guiforge.bati`; publication follows 24–48 h after it is accepted.
+
+**It has never been run through `fdroid build com.guiforge.bati`.** The Firebase strip compiles
+locally and the source-build switch is verified, but the recipe as a whole — the Node bootstrap in
+`sudo:`, the `scandelete:` of `node_modules` — is written from the documented procedure and not
+from a green run. Do that before opening the merge request.

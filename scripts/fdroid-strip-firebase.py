@@ -153,13 +153,19 @@ def main() -> int:
 
     edit(JAVA / "notifications" / "handling" / "NotificationsHandler.kt", strip_handler)
 
+    # Only sources count. `android/build/` is Gradle's own output, and on a second run it holds a
+    # cached copy of Google's Maven index — which mentions Firebase, has nothing to do with us, and
+    # would otherwise fail this check on every rebuild.
     residue = sorted(
         p.relative_to(ROOT).as_posix()
-        for p in (PKG / "android").rglob("*")
+        for p in (PKG / "android" / "src").rglob("*")
         if p.is_file()
-        and p.suffix in (".kt", ".java", ".xml", ".gradle")
+        and p.suffix in (".kt", ".java", ".xml")
         and re.search(r"com\.google\.firebase|FirebaseMessaging", p.read_text(encoding="utf-8", errors="ignore"))
     )
+    gradle = PKG / "android" / "build.gradle"
+    if re.search(r"com\.google\.firebase", gradle.read_text(encoding="utf-8")):
+        residue.append(gradle.relative_to(ROOT).as_posix())
 
     if not changed:
         print("already stripped, nothing to do")

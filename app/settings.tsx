@@ -38,8 +38,8 @@ import {
 } from "@/src/notifications";
 import { useSettingsStore } from "@/stores/settings";
 
-// Version comes from the embedded manifest: EAS owns the build number (appVersionSource: remote),
-// so it is only meaningful in a real build — in Expo Go / dev it can be missing.
+// Version comes from the embedded manifest. The Android build number is derived from the version
+// by app.config.js, so it is always present here; the iOS fallback is not, hence the guard.
 const buildNumber =
   Constants.expoConfig?.android?.versionCode ?? Constants.expoConfig?.ios?.buildNumber;
 const versionLabel = [

@@ -10,6 +10,7 @@
   "project": ["**/*.{ts,tsx}"],
   "ignore": ["db/index.ts"],
   "ignoreDependencies": [
+    "expo-dev-client",
     "@react-navigation/bottom-tabs",
     "@react-navigation/elements",
     "@react-navigation/native",

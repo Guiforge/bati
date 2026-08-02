@@ -78,7 +78,9 @@ SPRITES = [
     ("sport_shoulder",
      "A single stylized swirling wind-rune emblem, light cyan-white wind wisps spiraling "
      "around it."),
-    ("sport_calf",
+    # assetMap.ts keys this "legs" and requires sport_legs.png. Named sport_calf here, the
+    # script produced a file nothing loaded and never produced the one the village needs.
+    ("sport_legs",
      "A single stylized sheaf of golden wheat tied with twine, standing upright, glowing with "
      "warm golden-yellow energy."),
 ]

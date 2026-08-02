@@ -140,6 +140,75 @@ COVERS = [
      "A quiet night shot of a workbench under a shuttered window, a pair of chalk-dusted hand "
      "wraps unrolled beside a guttering candle, a bowl of water and a whetstone within reach, "
      "moonlight edging the sill. Careful preparation -- the room is unoccupied, no people."),
+    ("arcane_gauntlet", "quests",
+     "A wide shot of a circular wizard's trial chamber at night: a polished obsidian floor "
+     "inscribed with one great glowing arcane circle, tall runed pillars ringing the room, violet "
+     "mana light rising in slow ribbons from the sigils, the vaulted ceiling lost in darkness "
+     "above. The chamber stands empty and waiting, no people."),
+    ("build_stronghold", "quests",
+     "A wide shot of a hilltop stronghold under construction at dusk: half-raised stone curtain "
+     "walls with timber scaffolding lashed along them, a treadwheel crane silhouetted against a "
+     "deep blue sky, dressed blocks and mortar buckets waiting on the ground, torches burning "
+     "along the finished section. The site is deserted, the work paused, no people."),
+    ("climb_titan_tower", "quests",
+     "A vertigo-inducing low-angle wide shot looking up the flank of a colossal tower carved into "
+     "the likeness of a seated titan, worn stone handholds and broken stairs climbing its "
+     "shoulder, cloud banks drifting across its chest, cold moonlight raking the carved face far "
+     "above. The tower is unclimbed and empty, no people."),
+    ("druid_path", "quests",
+     "A wide shot of a soft mossy forest trail winding between ancient gnarled oaks at first "
+     "light, shafts of pale green light falling through the canopy, ferns and faintly glowing "
+     "mushrooms edging the path, a still dark pool reflecting the trees. The forest is peaceful "
+     "and empty, no people."),
+    ("escape_collapsing_mine", "quests",
+     "A dramatic wide shot down a collapsing mine tunnel: timber supports splintering, rock and "
+     "dust cascading from the ceiling, a single lantern swinging wildly from a beam, and far "
+     "ahead one small bright opening of daylight. Debris fills the air. The tunnel holds no "
+     "people, only the collapse."),
+    ("forge_dragon_blade", "quests",
+     "A tight dramatic shot of a smithy at night: a great blade half-forged and glowing white-hot "
+     "on a black anvil, the forge fire roaring orange behind it, hammer and tongs resting where "
+     "they were set down, sparks drifting up into the dark. The forge is unattended, no smith in "
+     "frame."),
+    ("guard_fortress_gate", "quests",
+     "A wide shot of a massive iron-banded fortress gate seen from within at night, its heavy "
+     "drawbar in place, braziers burning to either side, arrow slits throwing thin light across "
+     "wet flagstones, the shadow of something huge falling across the gate from outside. The "
+     "gatehouse is empty, no defenders in frame."),
+    ("iron_gauntlet_challenge", "quests",
+     "A wide shot of a stone challenge arena at dusk: a raised circular fighting floor scored with "
+     "old gouges, iron weapon racks and battered training apparatus around its rim, tiered stone "
+     "seating rising into shadow, one shaft of cold light falling on the centre. The arena is "
+     "deserted, no people."),
+    ("morning_champion", "quests",
+     "A wide shot of a high stone terrace above a sleeping valley at sunrise: warm gold light "
+     "spilling across worn flagstones, mist lying in the valley below, a folded cloak and a water "
+     "skin left on a low wall, banners stirring in the dawn wind. The terrace is empty, no "
+     "people."),
+    ("sprint_shadowlands", "quests",
+     "A wide shot of a cursed moor at night: a pale narrow track running away between black "
+     "twisted trees and drifting fog, cold blue witch-lights hovering off the path, the horizon "
+     "swallowed in darkness. The moor is empty of figures, no people."),
+    ("guardian_oath", "adventures",
+     "A wide shot of a solemn oath-hall at night: a great stone shield mounted on the far wall "
+     "beneath a shaft of moonlight, a kneeling-stone worn smooth on the floor before it, candles "
+     "guttering in iron stands down the aisle. The hall is silent and unoccupied, no people."),
+    ("iron_lord_conquest", "adventures",
+     "A wide shot of a conquered ridge at dusk: black iron banners planted along the churned "
+     "crest, a heavy siege engine silhouetted against a bruised orange sky, distant burning towers "
+     "on the plain below. The ridge is empty of figures, no people."),
+    ("monk_enlightenment", "adventures",
+     "A wide shot of a mountaintop monastery courtyard at dawn: a raked stone garden and a still "
+     "round reflecting pool, weathered prayer bells hanging under a tiled eave, a sea of cloud "
+     "below the parapet, first light touching the far peaks. The courtyard is empty, no people."),
+    ("ranger_journey", "adventures",
+     "A wide shot of a long road climbing over rolling wooded hills at golden hour, a weathered "
+     "waymarker stone standing at a fork, the track disappearing over ridge after ridge into blue "
+     "distance. The road is empty, no travellers and no people."),
+    ("scout_trial", "adventures",
+     "A wide shot of a windswept upland trail at dawn: a thin track running along a ridge line "
+     "between heather and bare rock, a wooden signal tower on the next hill, cold clear air and "
+     "long shadows. The ridge is deserted, no people."),
 ]
 
 

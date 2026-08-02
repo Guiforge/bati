@@ -59,6 +59,136 @@
     "height": 1024,
     "generated": "2026-08-02"
   },
+  "assets/images/adventures/guardian_oath.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a solemn oath-hall at night: a great stone shield mounted on the far wall beneath a shaft of moonlight, a kneeling-stone worn smooth on the floor before it, candles guttering in iron stands down the aisle. The hall is silent and unoccupied, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2591817433,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/iron_lord_conquest.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a conquered ridge at dusk: black iron banners planted along the churned crest, a heavy siege engine silhouetted against a bruised orange sky, distant burning towers on the plain below. The ridge is empty of figures, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2440041305,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/lumber_route.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a winding dirt path threading through a misty ancient pine forest at blue hour, leading to a small clearing where a half-built wooden lean-to shelter stands beside stacked fresh-cut logs and an axe buried in a tree stump; a single warm amber lantern glows on the shelter. The forest is quiet and deserted with no people or animals — the calm start of a long journey. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2194003243,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/monk_enlightenment.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a mountaintop monastery courtyard at dawn: a raked stone garden and a still round reflecting pool, weathered prayer bells hanging under a tiled eave, a sea of cloud below the parapet, first light touching the far peaks. The courtyard is empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1484433028,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/ranger_journey.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a long road climbing over rolling wooded hills at golden hour, a weathered waymarker stone standing at a fork, the track disappearing over ridge after ridge into blue distance. The road is empty, no travellers and no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1376953588,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/scout_trial.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a windswept upland trail at dawn: a thin track running along a ridge line between heather and bare rock, a wooden signal tower on the next hill, cold clear air and long shadows. The ridge is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2025383733,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/squire_path.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot at first light of a worn footpath leaving a sleeping village, climbing gently between low stone walls toward distant pine ridges; a plain wooden training shield and a straw practice dummy lean by the gate, dew on the grass, pale gold light just touching the hills. Quiet, humble, the very beginning of a road — no people in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2918969009,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/the_golem.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle wide shot inside a shattered mountain cavern: the colossal silhouette of a stone golem built from grey boulders looms far back in the drifting mist, red-orange magma light glowing from the cracks between its stones; broken pillars and rubble litter the foreground while cold god rays cut through the dust. The lair is empty, ominous and immense. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1743388424,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/fire_dragon.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal red-scaled dragon rearing up inside a volcanic cavern, wings half-spread and filling the width of the frame, molten orange light glowing between its scales and deep in its throat, embers streaming upward past broken basalt columns, seen from a low angle that makes it tower over the viewer. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 4224554728,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/forest_titan.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal humanoid titan built of living wood and moss standing among ancient trees, bark-plated shoulders and glowing emerald sap-light running in the seams of its body, roots trailing from its arms, drifting spores catching the light, seen from a low angle that makes it tower over the viewer. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 2476084461,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/shadow_serpent.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "An enormous serpent of coiling darkness rising out of a black mirror-still lake, its scales drinking the light around them, violet witch-fire burning where its eyes should be, tendrils of shadow peeling off its coils into the air, seen from a low angle. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 4144598679,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/stone_golem.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal golem of fitted grey boulders standing in a shattered quarry, red-orange magma glowing in every crack between its stones, one massive fist raised, grit and dust falling from its shoulders, seen from a low angle that makes it tower over the viewer. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 3004922155,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/wind_wraith.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A towering wraith of howling wind and torn grey burial cloth hanging above a storm-lashed moor, its lower body dissolving into spiralling air, pale cyan light burning where a face should be, debris and dead leaves caught spinning in its currents, seen from a low angle. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 3714191240,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
   "assets/images/exercises/bear_crawl.jpg": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -547,6 +677,606 @@
     "seed": 3091441704,
     "width": 1280,
     "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/arcane_gauntlet.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a circular wizard's trial chamber at night: a polished obsidian floor inscribed with one great glowing arcane circle, tall runed pillars ringing the room, violet mana light rising in slow ribbons from the sigils, the vaulted ceiling lost in darkness above. The chamber stands empty and waiting, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1243154874,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/bears_road.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a steep forest trail winding upward through dense pines, thick roots crossing the path like steps, deep bear tracks pressed into the mud, cold blue mist between the trunks and a shaft of low sun ahead. The trail is empty — no animals, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1940489258,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/build_stronghold.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a hilltop stronghold under construction at dusk: half-raised stone curtain walls with timber scaffolding lashed along them, a treadwheel crane silhouetted against a deep blue sky, dressed blocks and mortar buckets waiting on the ground, torches burning along the finished section. The site is deserted, the work paused, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1646001291,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/cellar_hauler.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle shot from inside a dim stone cellar looking up at a heavy timber hatch in the ceiling, a thick knotted rope hanging from it, storm light and rain spilling through the gap around its edge, crates and barrels in the shadows below. Tense and close — no people in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1238925653,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/chop_wood.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a woodcutter's clearing at the forest edge at dawn: a large tree stump with an axe buried in it centered in frame, split logs neatly stacked, wood chips scattered across the ground, soft golden morning light filtering through tall pines. The clearing is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3998385017,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/climb_titan_tower.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A vertigo-inducing low-angle wide shot looking up the flank of a colossal tower carved into the likeness of a seated titan, worn stone handholds and broken stairs climbing its shoulder, cloud banks drifting across its chest, cold moonlight raking the carved face far above. The tower is unclimbed and empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1320914321,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/colossus_trial.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle wide shot of a vast toppled stone colossus lying face down in a desert arena, one enormous carved hand thrust up out of the sand as if holding the sky, dust drifting in hard sunlight, cracked flagstones radiating from the impact. Immense and silent — no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3433012008,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/core_forge.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide interior shot of a blacksmith's forge focused on a glowing anvil and a roaring forge fire, steel bars heating red-hot, hammers and tongs resting nearby, bright sparks flying through the dim smoky air, intense orange heat glow against deep shadow. The forge is unattended, no smith present. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 310888137,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/crows_ascent.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle wide shot of a sheer fortress wall rising into low cloud, iron rungs and a weathered beam jutting from the stone far above, crows wheeling around the parapet against a bruised evening sky. Vertigo and height — no climbers, no people in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2883475866,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/dawn_ritual.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a bare stone terrace on a keep's roof at first light, a single woven mat unrolled at its centre, cold mist lying in the valley below and the sun just clearing the far ridge. Stillness before anything begins -- the terrace is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 486611950,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/druid_path.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a soft mossy forest trail winding between ancient gnarled oaks at first light, shafts of pale green light falling through the canopy, ferns and faintly glowing mushrooms edging the path, a still dark pool reflecting the trees. The forest is peaceful and empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2876854701,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/escape_collapsing_mine.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic wide shot down a collapsing mine tunnel: timber supports splintering, rock and dust cascading from the ceiling, a single lantern swinging wildly from a beam, and far ahead one small bright opening of daylight. Debris fills the air. The tunnel holds no people, only the collapse. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 721733010,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/forge_dragon_blade.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A tight dramatic shot of a smithy at night: a great blade half-forged and glowing white-hot on a black anvil, the forge fire roaring orange behind it, hammer and tongs resting where they were set down, sparks drifting up into the dark. The forge is unattended, no smith in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2572965231,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/gather_stones.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a rocky quarry at the foot of a grey cliff at dusk: heavy scattered boulders and a sturdy wooden cart half-loaded with stones, a freshly dug foundation trench in the earth, long cool shadows. The quarry is empty and still, no workers present. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1080278509,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/golem_core.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A tight dramatic shot of a massive cracked boulder formation; at its centre a glowing red-orange crystalline core is embedded deep in the grey stone, molten magma veins spreading out through the fractures, a dark cavern receding behind. It is a rock formation, not a body — no anatomy, no figure, no person. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 4265824372,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/golem_strike.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle wide shot of a battle-scarred stone arena floor where a colossal fractured stone fist has just slammed into the ground, glowing red cracks radiating outward from the impact, dust and shattered rubble thrown into the air, the huge shadow of a golem falling across the scene. No people in frame — pure impact and aftermath. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3352066925,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/guard_fortress_gate.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a massive iron-banded fortress gate seen from within at night, its heavy drawbar in place, braziers burning to either side, arrow slits throwing thin light across wet flagstones, the shadow of something huge falling across the gate from outside. The gatehouse is empty, no defenders in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3878174527,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/handlers_vigil.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A quiet night shot of a workbench under a shuttered window, a pair of chalk-dusted hand wraps unrolled beside a guttering candle, a bowl of water and a whetstone within reach, moonlight edging the sill. Careful preparation -- the room is unoccupied, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2323544533,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/hearthside_unbinding.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A warm interior wide shot of a great hearth burning low, travelling packs and muddy boots set down beside a thick rug, firelight pooling across worn flagstones and a cloak drying on a hook. The march is over -- the room is empty, no one in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2285108555,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/iron_gauntlet_challenge.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a stone challenge arena at dusk: a raised circular fighting floor scored with old gouges, iron weapon racks and battered training apparatus around its rim, tiered stone seating rising into shadow, one shaft of cold light falling on the centre. The arena is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 4250377703,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/knight_push.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a knight's stone training courtyard at first light: worn flagstones, weathered wooden training dummies and a rack of practice weapons, faded heraldic banners hanging on the castle wall behind, a cool disciplined martial atmosphere. The courtyard is empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1639456791,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/morning_champion.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a high stone terrace above a sleeping valley at sunrise: warm gold light spilling across worn flagstones, mist lying in the valley below, a folded cloak and a water skin left on a low wall, banners stirring in the dawn wind. The terrace is empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1265139628,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/ploughmans_vow.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a ploughed field at golden hour, deep furrows running to the horizon, a heavy wooden plough left standing in the earth with a yoke resting beside it, a stone farmhouse small in the distance. Honest, heavy, unromantic labour — the field is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 592217469,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/raise_the_shelter.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a timber-frame shelter under construction at dusk: wooden beams and lashed scaffolding rising into a raised roof frame, coils of rope and hand tools resting on the ground, warm torchlight illuminating the worksite against a deep blue sky. The site is deserted, a sense of progress left behind, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2439506847,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/serpents_coil.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A tight dramatic shot of the coils of an enormous stone serpent statue wound around a central pillar in a flooded temple chamber, violet mist pooling between the rings, faint light from a shaft above catching the carved scales. Pressure and constriction — a carving, not a creature; no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3506536928,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/shield_wall.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic wide shot along a fortress rampart at night: a long row of tall interlocked shields lines the stone battlement, torches flickering between them, an approaching storm gathering on the horizon beyond the walls. A resolute defensive mood, no soldiers visible — just the wall of shields. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2178985401,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/sprint_shadowlands.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a cursed moor at night: a pale narrow track running away between black twisted trees and drifting fog, cold blue witch-lights hovering off the path, the horizon swallowed in darkness. The moor is empty of figures, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 4246736405,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/squire_awakening.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a bare stone courtyard at dawn, a scuffed practice shield propped against a low wall beside a coil of rope and a wooden bucket, long soft shadows across worn flagstones, the keep still dark behind. Humble and unglamorous, the first morning of training — deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3550294253,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/storm_of_blades.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a windswept dune ridge at dusk, dozens of swords and spears driven point-down into the sand in a long broken line, tattered banners snapping in the gale, sand streaming off the crest against a violet storm sky. Movement everywhere, no combatants — the field is empty. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3495199331,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/tower_climb.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A vertigo-inducing low-angle wide shot looking straight up at an impossibly tall ancient stone tower spiralling into churning dark storm clouds, worn stone stairs winding up its crumbling exterior, flashes of electric-blue lightning behind it. The stormy sky fills the entire frame edge to edge with no white borders. No people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1679876794,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/armory.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized stone armory building with weapon racks flanking its doorway, a glowing forge-fire visible inside, radiating fiery orange-red energy — an upgraded, grander version of a simple forge. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3274011207,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/barn.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized large wooden barn with stacked golden hay bales beside its open doors, glowing with warm golden-yellow energy — an upgraded, grander version of a simple farm. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 4131713707,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/campfire.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized campfire ringed with stones, warm orange-yellow flames dancing upward, a few sparks drifting off, glowing with cozy warm-orange energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1439003758,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/castle_wall.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized fortified stone castle-wall section with crenellated battlements and a corner turret, glowing with cool stone-grey energy — an upgraded, grander version of a simple quarry. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 699884002,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/champion_arena.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized circular stone gladiator arena with tiered stone seating, torches lit around its rim, glowing with warm amber torchlight. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2601887239,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/dragon_lair.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized dark cave mouth carved into a mountainside, molten orange cracks glowing along the rock and deep claw-gouges in the stone, ember light spilling out. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3881361747,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/druid_grove.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized ring of ancient standing stones wreathed in glowing emerald-green vines and moss, a sacred grove clearing at its center. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2875135318,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/fountain.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized ornate stone fountain with tiered basins and cascading water, glowing with electric-blue energy — an upgraded, grander version of a simple well. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3081270524,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/heroes_hall.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized grand stone hall with banners flanking its entrance and a laurel-wreathed trophy pedestal out front, glowing with warm golden light. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2109381758,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/observatory.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized stone observatory tower with a telescope silhouette in its open dome, swirling cyan-white wind wisps around it — an upgraded, grander version of a simple windmill. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1972285698,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/tent.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized adventurer's canvas tent, entrance flap open, a warm lantern glowing just inside, guy-ropes staked into the ground. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2670392851,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/training_dummy.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized wooden training pell wrapped in worn straw padding, a few practice sword nicks visible, standing upright on a round base. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2782616103,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/watchtower.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized tall wooden watchtower with an archer's platform at the top, a bow and quiver resting against the rail, glowing with warm amber-brown energy — an upgraded, grander version of a simple archery range. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1331854362,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/wizard_tower.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized narrow spiraling stone wizard's tower, a glowing purple crystal orb hovering above its pointed roof, faint arcane runes on the stonework. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 607322636,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_abs.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized wave-shaped rune carved into a smooth stone tablet, a few water droplets suspended around it, glowing with electric-blue energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 4035787687,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_arms.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized woodcutter's axe standing upright with its blade buried in a tree stump, a couple of split logs resting beside it, glowing with warm amber-brown wood energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2603346132,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_back.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized pickaxe leaning against a small stack of quarried grey stone blocks, glowing with cool stone-grey energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 437383115,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_chest.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized blacksmith's anvil with a small glowing forge fire beside it, radiating fiery orange-red energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1329124014,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_legs.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized sheaf of golden wheat tied with twine, standing upright, glowing with warm golden-yellow energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2328325494,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_shoulder.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized swirling wind-rune emblem, light cyan-white wind wisps spiraling around it. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2570699431,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_1.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a single humble wooden cabin with a thatched roof and one warm-lit window, a thin trail of smoke rising from its stone chimney, a chopping stump and a few stacked logs beside it, standing alone in a quiet misty forest clearing at blue hour. The very first, humble beginning of a settlement. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 2183332326,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_2.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a small cluster of thatched-roof cottages gathered around a stone well and a low wooden fence, warm lantern light in several windows, smoke rising from a few chimneys, simple dirt paths connecting the homes, at blue hour. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 455757916,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_3.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a walled market town: cobbled streets, a stone well square, timber-framed buildings with tiled roofs, a modest bell tower, banners hanging from an open gate, more structures than before but still modest, at dusk. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 1814913226,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_4.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a fortified city: tall stone towers and a rising keep above tiered rooftops, an arched stone bridge, glowing lantern-lit windows across many buildings, banners on the ramparts, construction scaffolding on one growing tower, at night. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 4064933225,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_5.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a magnificent flourishing city skyline at night: tall spires and domes glowing with warm golden light, banners and pennants everywhere, bridges strung with lanterns, a grand central palace tower crowned in radiant light — the peak of prosperity. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 2236532223,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/onboardings/building.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot from a dark cliff edge looking down over a fantasy settlement under construction at blue hour: timber scaffolding and a wooden crane rising over half-built stone cottages, a few small warm amber windows glowing far below, deep obsidian sky above with faint stars, mist pooling between the buildings. The valley is quiet and deserted. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no bright focal point and no light source pointed at the viewer, the composition open and quiet through the middle with its detail gathered towards the edges, falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. No people anywhere in frame, no lettering and no watermark.",
+    "seed": 3782173140,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-02"
+  },
+  "assets/onboardings/new_city.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A very dark, very distant wide shot of a fantasy city skyline at night seen far off across a misty valley: faint silhouettes of towers and rooftops barely separated from the night sky, a scatter of tiny dim amber windows, heavy mist swallowing the lower half of the scene. Almost abstract, extremely subdued, quiet enough to sit behind text. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no bright focal point and no light source pointed at the viewer, the composition open and quiet through the middle with its detail gathered towards the edges, falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. No people anywhere in frame, no lettering and no watermark.",
+    "seed": 3652630249,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-02"
+  },
+  "assets/onboardings/splash-bg1.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of an empty misty forest clearing at deep blue hour, tall dark pines ringing it and fading into fog, a soft unlit ground of moss and scattered stone, the sky a deep obsidian blue with no moon. Still, cold and completely deserted. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no bright focal point and no light source pointed at the viewer, the composition open and quiet through the middle with its detail gathered towards the edges, falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. No people anywhere in frame, no lettering and no watermark.",
+    "seed": 3796873609,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-02"
+  },
+  "assets/placeholder.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylised emblem centred on a deep obsidian blue (#0B0F19) void: a plain circular stone medallion carved with a simple abstract figure at rest, lit by a soft electric-blue rim light, nothing else in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with confident black ink outlines and flat cel-shaded colour, square 1:1 composition, deliberately understated because it stands in for art that is missing. No lettering, no watermark.",
+    "seed": 4125531906,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/splash-bg3.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a dark mountain pass at night: two great rock walls falling away into shadow on either side, a narrow band of star-lit sky between them, drifting cloud low in the gap. Empty, vast and quiet. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no bright focal point and no light source pointed at the viewer, the composition open and quiet through the middle with its detail gathered towards the edges, falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. No people anywhere in frame, no lettering and no watermark.",
+    "seed": 205639845,
+    "width": 1280,
+    "height": 960,
     "generated": "2026-08-02"
   }
 }

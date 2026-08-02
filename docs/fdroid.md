@@ -245,9 +245,29 @@ Worth being precise, because "it works" and "it compiles" are different claims.
 `BUILD SUCCESSFUL`. The stripped module compiles, and the app compiles against it. The strip is
 idempotent and re-checks itself afterwards.
 
-**Not verified:** a full `assembleRelease` — it never ran to completion in the dev environment, so
-the APK's actual contents are unconfirmed and `apkanalyzer` has not been pointed at it. Nor has
-the oath reminder been fired on a device against a stripped build, which is the thing that would
-catch a runtime `NoClassDefFoundError` a compiler cannot. Nor has this recipe been through
-`fdroid build com.guiforge.bati`, which is the only thing that proves the recipe rather than the
-patch. Do all four before opening the merge request.
+A full `:app:packageRelease` also completes locally, producing an APK that reports
+`versionCode='10001' versionName='1.0.1'` — the derivation in `app.config.js`, proven in an
+artefact rather than in a config dump.
+
+And the strip is confirmed where it counts: the same APK built from a pristine tree contains five
+Firebase entries, and built from a stripped one contains **zero**.
+
+**Not verified:** the oath reminder has never been fired on a device against a stripped build,
+which is the failure a compiler cannot catch — a class removed at build time only explodes when
+something reaches for it at runtime. Nor has this recipe been through `fdroid build
+com.guiforge.bati`, which is the only thing that proves the recipe rather than the patch.
+
+### Two failures worth not repeating
+
+Both cost time because the log was not read.
+
+**`OutOfMemoryError: Metaspace`.** Building 42 modules from source instead of consuming 22 AARs
+means Gradle *lints* all of them too, and Expo's generated `-XX:MaxMetaspaceSize=512m` was sized
+for the prebuilt case. It surfaces as three unrelated `lintVitalAnalyzeRelease` task failures, and
+the real cause is one line further down — raising `-Xmx` would not have helped, because Metaspace
+holds class metadata rather than objects. Fixed by `plugins/withAndroidGradleMemory.js`.
+
+**It only appears on a cold cache.** A local `assembleRelease` had 1725 of 1857 tasks up to date,
+so lint never re-ran and the machine never hit the limit — the failure was CI-only, and looked
+like a CI-only problem. When checking a build-system change, `--rerun-tasks` or a `clean`, or the
+cache hides exactly what you are looking for.

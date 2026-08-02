@@ -18,9 +18,12 @@
 # know why they are present in the tree and unused. Removing them outright is not possible — npm
 # puts them there — and `scandelete: node_modules` clears them from the scanner's path anyway.
 #
-# STATUS: not yet submitted. The Firebase strip compiles from source and the whole release APK
-# builds locally, but this recipe has never been run through `fdroid build com.guiforge.bati`,
-# which is the only thing that proves *it*. Do that before opening the merge request — expect the
+# STATUS: not yet submitted. What is verified locally, with buildFromSource on and the strip
+# applied: `:expo-notifications:compileReleaseKotlin` and `:app:compileReleaseJavaWithJavac` both
+# reach BUILD SUCCESSFUL, so the stripped module compiles and the app compiles against it. What is
+# NOT verified: a full `assembleRelease` (never finished in the dev environment), the resulting
+# APK's contents, whether the oath reminder still fires on a device, and this recipe end to end
+# under `fdroid build com.guiforge.bati`. Do all four before opening the merge request — expect the
 # Node bootstrap and `scandelete` to need iteration.
 
 Categories:

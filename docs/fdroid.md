@@ -236,7 +236,18 @@ Two ways out, and they want deciding before the merge request, not after:
 to live in a fork of `fdroiddata` as `metadata/com.guiforge.bati.yml`. Submitting is a merge request
 titled `New App: com.guiforge.bati`; publication follows 24–48 h after it is accepted.
 
-**It has never been run through `fdroid build com.guiforge.bati`.** The Firebase strip compiles
-locally and the source-build switch is verified, but the recipe as a whole — the Node bootstrap in
-`sudo:`, the `scandelete:` of `node_modules` — is written from the documented procedure and not
-from a green run. Do that before opening the merge request.
+### What is actually verified
+
+Worth being precise, because "it works" and "it compiles" are different claims.
+
+**Verified locally**, with `buildFromSource` on and the strip applied:
+`:expo-notifications:compileReleaseKotlin` and `:app:compileReleaseJavaWithJavac` both reach
+`BUILD SUCCESSFUL`. The stripped module compiles, and the app compiles against it. The strip is
+idempotent and re-checks itself afterwards.
+
+**Not verified:** a full `assembleRelease` — it never ran to completion in the dev environment, so
+the APK's actual contents are unconfirmed and `apkanalyzer` has not been pointed at it. Nor has
+the oath reminder been fired on a device against a stripped build, which is the thing that would
+catch a runtime `NoClassDefFoundError` a compiler cannot. Nor has this recipe been through
+`fdroid build com.guiforge.bati`, which is the only thing that proves the recipe rather than the
+patch. Do all four before opening the merge request.

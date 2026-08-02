@@ -1,0 +1,5 @@
+Toutes les illustrations sont redessinées.
+
+Le vrai changement, ce sont les exercices : au format carré et non plus panoramique, les vignettes ne coupent plus les bras et les jambes qui montrent le mouvement. Les boss sont plus larges et n'ont plus la tête tronquée. Nouvelle icône.
+
+Corrige aussi les mises à jour qui refusaient de s'installer par-dessus une version plus ancienne.

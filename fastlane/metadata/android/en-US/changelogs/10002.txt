@@ -1,0 +1,5 @@
+Every illustration is redrawn.
+
+The exercise art is the big change: square instead of widescreen, so the thumbnails no longer crop off the arms and legs that show you the movement. Boss art is wider and no longer cuts off their heads. New app icon.
+
+Also fixes updates refusing to install over an older version.

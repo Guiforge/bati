@@ -70,7 +70,8 @@
         }
       ],
       "./plugins/withAndroidLintExtraTranslation",
-      "./plugins/withAndroidReleaseSigning"
+      "./plugins/withAndroidReleaseSigning",
+      "./plugins/withAndroidDebugAppId"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

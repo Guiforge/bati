@@ -23,6 +23,29 @@ SQLite + Drizzle for offline-first persistence and Expo Router for navigation.
 - iOS: `npm run ios`
 - Web: `npm run web`
 
+## Running a dev build next to the release
+
+**Expo Go cannot run this app.** [`index.ts`](index.ts) registers the widget task handler from
+`react-native-android-widget` at the entry point, and Expo Go does not ship that native module —
+it fails before the first screen. Same for the two config plugins under `plugins/`. Use a dev
+build (`expo-dev-client` is already installed).
+
+Debug builds carry an `applicationIdSuffix` of `.dev`
+([`plugins/withAndroidDebugAppId.js`](plugins/withAndroidDebugAppId.js)), so
+`com.guiforge.bati.dev` installs *beside* an existing release instead of colliding with it.
+Without it, Android rejects the install (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, the two variants
+are signed with different keys) and the usual workaround — uninstalling — takes the SQLite
+database with it.
+
+```bash
+npx expo run:android          # builds + installs com.guiforge.bati.dev, once
+npx expo start --dev-client   # afterwards, just this
+```
+
+The dev app has its own sandbox: empty database, so expect to redo onboarding. Both apps claim
+the `bati://` scheme, so Android asks which one to open for a deep link. The **release** id stays
+exactly `com.guiforge.bati` — suffixing it would orphan every installed copy.
+
 ## Checks
 
 - Type/style check: `npm run check`

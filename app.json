@@ -79,7 +79,7 @@
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"

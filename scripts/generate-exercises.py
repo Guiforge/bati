@@ -1,35 +1,56 @@
 #!/usr/bin/env python3
-"""Generate dedicated art for the 6 generic exercises (Squat, Push-ups, Pull-ups, Wall Sit,
-Plank, Crunch) that previously fell back to placeholder.jpg. Character-pose style matching the
-20 themed exercise images. Same Mammouth API / model as scripts/generate-covers.py.
+"""Generate the 49 exercise illustrations.
 
-  MAMMOUTH_API_KEY=sk-... python3 scripts/generate-exercises.py [slug ...]
+  python3 scripts/generate-exercises.py            # all of them
+  python3 scripts/generate-exercises.py squat plank
 
-Output: 1024x768 JPG (quality 82, ~100 KB against ~850 KB for the same frame as PNG) in
-assets/images/exercises/. Skips a slug that already has a .jpg *or* a .png.
+These images have a job the rest of the art does not: someone mid-session has to look at one and
+know what to do with their body. Everything below resolves ties towards legibility.
+
+**Square, not 4:3.** The art lands in six slots and five are square: 180x180 in WarmupView, 64x64
+in ProgressionCard, 56x56 in SessionRewards, 50x50 in RestView. The sixth, ActiveExerciseView, is
+`aspectRatio={16 / 10}` and crops the top and bottom off these.
+
+**No armour.** Plate hides the joint it covers. The hero trains in fitted cloth with bare arms and
+lower legs, because a bent elbow the reader cannot see is a rep they cannot copy.
+
+**One figure, nothing else.** Whole body, margin on all four sides, no scenery, no floor line, no
+second pose. At 50 pixels the silhouette is the entire message, so anything competing with it
+loses. Onion-skin ghosts of the start position and a varied fantasy-race cast were both tried here
+and both removed: they read as clutter at thumbnail size, which is where these are mostly seen.
+
+The per-exercise descriptions carry the anatomy — contact points, joint angles, camera side — and
+are kept verbatim from the version that generated the first set.
 """
-import base64
-import json
-import os
-import subprocess
+
+import pathlib
 import sys
-import time
-import urllib.error
-import urllib.request
 
-API = "https://api.mammouth.ai/v1/chat/completions"
-KEY = os.environ.get("MAMMOUTH_API_KEY") or os.environ.get("MAMMOUTH_KEY")
-MODEL = os.environ.get("MODEL", "gemini-3.1-flash-image-preview")
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BG = "#0B0F19"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from lib.flux import ROOT, run  # noqa: E402
 
+# Appended verbatim to every description below. Identical characters every time is what holds
+# forty-nine images to one look; the variation belongs in the pose, never here.
+#
+# The background sentence comes first and blunt because it is the one the model most often ignored:
+# roughly one image in seven of an earlier pass came back on white or grey paper instead of the
+# void, which is glaring in a dark-only app.
 STYLE = (
-    "Rendered as a dark-fantasy Franco-Belgian graphic-novel character illustration: one heroic "
-    "athlete, full body in frame, thick confident black ink outlines and flat cel-shaded color "
-    "fills with hard-edged shadows and glowing muscle definition. The figure is isolated on a "
-    "deep obsidian blue (#0B0F19) void background with an electric-blue rim light and a soft "
-    "vignette, no scenery and no text. High-contrast, dynamic and clean, a widescreen 4:3 "
-    "composition with the whole body comfortably inside the frame."
+    "The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a "
+    "night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp "
+    "rim light tracing the silhouette, holding no scenery, no floor line and no horizon. "
+    "Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and "
+    "flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the "
+    "styling a light finish over what is first and foremost an instructional diagram. "
+    "One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every "
+    "joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, "
+    "with nothing else in frame beyond the single surface the movement itself requires. "
+    "A single figure in one position, the complete body inside the frame with clear margin on all "
+    "four sides, nothing cropped at any edge, the pose large and centred and reading instantly and "
+    "unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of "
+    "the movement at the height of the body's centre, anatomically correct with textbook form. All "
+    "four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no "
+    "watermark and no artist's mark."
 )
 
 EXERCISES = [
@@ -42,13 +63,16 @@ EXERCISES = [
      "90-degree angle, body a straight line from head to heels; chest and arms glow with fiery "
      "orange-red energy."),
     ("pullups",
-     "A fantasy athlete hero hanging from a rugged stone bar and pulling their chin above it, "
-     "back and biceps flexed and glowing with metallic silver-blue energy, seen from a slight "
-     "low angle."),
+     "A fantasy athlete hero hanging from a rugged stone bar and pulling their chin above it, back "
+     "and biceps flexed and glowing with metallic silver-blue energy, seen from a slight low "
+     "angle."),
+    # "an invisible wall" is unrenderable, so the model kept drawing a free-standing squat. The
+    # wall has to be a real object in the scene for the pose to read as a wall-sit at all.
     ("wall_sit",
-     "A fantasy athlete hero holding a wall-sit against an invisible wall, thighs parallel to the "
-     "ground, back flat and upright, forearms resting on the knees; the leg muscles glow with "
-     "cool stone-grey energy and faint cracks spread under the feet."),
+     "A fantasy athlete hero holding a wall-sit with the back pressed flat against a solid stone "
+     "wall behind them, thighs parallel to the "
+     "ground, back flat and upright, forearms resting on the knees; the leg muscles glow with cool "
+     "stone-grey energy and faint cracks spread under the feet."),
     ("plank",
      "A fantasy athlete hero in a perfect forearm plank, body a straight horizontal line, forearms "
      "and toes planted; the core glows with golden-white energy, calm determined expression, seen "
@@ -57,24 +81,24 @@ EXERCISES = [
      "A fantasy athlete hero performing an abdominal crunch, lying on the back with knees bent and "
      "the torso curled up toward the knees, hands beside the head; the abs glow with electric-blue "
      "energy, seen from the side."),
-    # --- 20 bodyweight exercises from drizzle/0010 (missing-image.md §4) ---
-    # Glow color follows the exercise's seeded muscle, matching the sport-sprite palette:
-    # arms=amber, back=silver-blue, chest=orange-red, abs=electric-blue, shoulder=cyan, calf=gold.
+    # "rugged stone bar" kept rendering as a barbell with stone plates on the ends. A plain fixed
+    # bar is what a chin-up needs, and the underhand grip is the whole point of the movement.
     ("chin_up",
-     "A fantasy athlete hero hanging from a rugged stone bar with palms facing them, pulling up "
+     "A fantasy athlete hero hanging from a plain fixed horizontal pull-up bar with an underhand "
+     "grip, palms facing them, pulling up "
      "until the chin clears the bar; the back and biceps flex and glow with metallic silver-blue "
      "energy, seen from a slight low angle."),
     ("superman",
-     "A fantasy athlete hero lying face down with arms and legs extended and lifted off the "
-     "ground in a superman hold, the whole back arched; the back glows with metallic silver-blue "
-     "energy, seen from the side."),
+     "A fantasy athlete hero lying face down with arms and legs extended and lifted off the ground "
+     "in a superman hold, the whole back arched; the back glows with metallic silver-blue energy, "
+     "seen from the side."),
     ("bear_crawl",
      "A fantasy athlete hero mid bear-crawl, on hands and toes with knees hovering just above the "
      "ground and hips low, one hand and the opposite foot advancing; the core and shoulders glow "
      "with electric-blue energy, seen from the side."),
     ("russian_twist",
-     "A fantasy athlete hero seated with knees bent and feet lifted, leaning back and rotating "
-     "the torso to one side with hands together; the obliques glow with electric-blue energy."),
+     "A fantasy athlete hero seated with knees bent and feet lifted, leaning back and rotating the "
+     "torso to one side with hands together; the obliques glow with electric-blue energy."),
     ("side_plank",
      "A fantasy athlete hero holding a side plank propped on one forearm, hips lifted and body a "
      "straight diagonal line, top arm reaching to the sky; the side of the core glows with "
@@ -111,8 +135,8 @@ EXERCISES = [
      "from the side."),
     ("jump_squat",
      "A fantasy athlete hero exploding upward out of a squat into a powerful jump, feet just "
-     "leaving the ground with impact dust and motion streaks below; the legs glow with warm "
-     "golden energy."),
+     "leaving the ground with impact dust and motion streaks below; the legs glow with warm golden "
+     "energy."),
     ("reverse_crunch",
      "A fantasy athlete hero lying on their back curling the hips off the floor to bring bent "
      "knees toward the chest; the lower abs glow with electric-blue energy, seen from the side."),
@@ -125,8 +149,8 @@ EXERCISES = [
      "glows with metallic silver-blue energy."),
     ("l_sit",
      "A fantasy athlete hero supporting their whole body on straight arms with hands pressed to "
-     "the ground beside the hips, legs held straight out horizontally in a rigid L-shape; the "
-     "core and arms glow with electric-blue energy, seen from the side."),
+     "the ground beside the hips, legs held straight out horizontally in a rigid L-shape; the core "
+     "and arms glow with electric-blue energy, seen from the side."),
     ("star_jump",
      "A fantasy athlete hero at the peak of an explosive star jump, arms and legs flung wide into "
      "a star shape mid-air with motion streaks; the whole body glows with cyan-white energy."),
@@ -134,7 +158,6 @@ EXERCISES = [
      "A fantasy athlete hero lying on their back with arms stretched out to the sides and straight "
      "legs held together, rotated to one side in a sweeping arc with motion streaks; the obliques "
      "glow with electric-blue energy, seen from above."),
-    # --- Phase C batch: the equipment-free pulls (docs/content/missing-image.md §5) ---
     ("table_row",
      "A fantasy athlete hero lying face-up beneath a heavy wooden table, both hands gripping its "
      "edge, body held rigid in a straight line from heels to shoulders as they pull their chest up "
@@ -145,15 +168,11 @@ EXERCISES = [
      "thick cloth looped around a sturdy door handle, heels planted and body angled back, pulling "
      "themselves upright with elbows driving past the ribs; the back muscles glow with silver-blue "
      "energy, seen from the side."),
-    # --- 0023 rename batch: the old 0006 art staged a goblin, a dragon, a wizard. Same movements,
-    # --- official names now, so the same lone hero as every other pose above.
-    # The first pass handed this hero a war hammer and turned the lunge into a charge — hence the
-    # explicit empty hands. Static hold, not a stride.
     ("lunge",
      "A fantasy athlete hero holding a static forward lunge, front knee bent to a right angle "
      "directly over the ankle and the back knee hovering just above the ground, torso tall and "
-     "vertical, both hands empty and resting on the hips, carrying no weapon and no equipment; "
-     "the legs glow with warm golden energy, seen from the side."),
+     "vertical, both hands empty and resting on the hips, carrying no weapon and no equipment; the "
+     "legs glow with warm golden energy, seen from the side."),
     ("burpee",
      "A fantasy athlete hero at the top of a burpee, exploding into a jump with arms stretched "
      "overhead and feet just off the ground, impact dust and motion streaks below; the whole body "
@@ -206,8 +225,6 @@ EXERCISES = [
      "down, shoulders and straight legs lifted a few centimetres off the ground and arms extended "
      "overhead in a shallow banana shape; the abs glow with electric-blue energy, seen from the "
      "side."),
-    # Mobility branch (0024) -- §11 of the research dossier. Glow follows the muscle the
-    # movement opens, per the palette rule in docs/content/image-style-prompt.md.
     ("wrist_circles",
      "A fantasy athlete hero on hands and knees rocking gently forward over flat palms, fingers "
      "splayed wide on the ground and wrists visibly loaded, head neutral and gaze down; the "
@@ -218,14 +235,14 @@ EXERCISES = [
      "silver-blue energy, seen from the side."),
     ("thread_the_needle",
      "A fantasy athlete hero kneeling on all fours who has rotated their torso sideways: one "
-     "shoulder and the side of the head are pressed flat against the ground, and that same arm "
-     "is threaded straight through the gap under the chest so the hand sticks out past the "
-     "opposite knee, palm up. The other hand stays planted, the hips stay high and square over "
-     "the knees, and the chest faces the side wall rather than the floor. This is a spinal "
-     "rotation, not a forward reach: nothing extends in front of the head. The twisted upper "
-     "back and the grounded shoulder glow with silver-blue energy, seen from a low three-quarter "
-     "angle. The background must be dark navy-black filling the whole frame, with no coloured "
-     "border, halo or vignette of any kind."),
+     "shoulder and the side of the head are pressed flat against the ground, and that same arm is "
+     "threaded straight through the gap under the chest so the hand sticks out past the opposite "
+     "knee, palm up. The other hand stays planted, the hips stay high and square over the knees, "
+     "and the chest faces the side wall rather than the floor. This is a spinal rotation, not a "
+     "forward reach: nothing extends in front of the head. The twisted upper back and the grounded "
+     "shoulder glow with silver-blue energy, seen from a low three-quarter angle. The background "
+     "must be dark navy-black filling the whole frame, with no coloured border, halo or vignette "
+     "of any kind."),
     ("standing_forward_fold",
      "A fantasy athlete hero folded forward from the hips with the torso hanging heavy, knees "
      "softly bent and hands drifting toward the floor, hair falling free; the hamstrings and lower "
@@ -244,62 +261,12 @@ EXERCISES = [
      "hip and the twisting upper back glow with golden and silver-blue energy, seen from the side."),
 ]
 
-
-def generate(prompt):
-    body = json.dumps({"model": MODEL,
-                       "messages": [{"role": "user", "content": f"{prompt} {STYLE}"}]}).encode()
-    req = urllib.request.Request(API, data=body, headers={
-        "Authorization": f"Bearer {KEY}", "Content-Type": "application/json", "User-Agent": "curl/8.0"})
-    for attempt in range(6):  # backoff on 429 / transient 5xx
-        try:
-            with urllib.request.urlopen(req, timeout=200) as r:
-                d = json.load(r)
-            break
-        except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 524) and attempt < 5:
-                wait = 30 * (attempt + 1)
-                print(f"[{e.code}, retry in {wait}s] ", end="", flush=True)
-                time.sleep(wait)
-                continue
-            raise
-    if "error" in d:
-        raise RuntimeError(d["error"])
-    imgs = d["choices"][0]["message"].get("images") or []
-    if not imgs:
-        raise RuntimeError("no image: " + (d["choices"][0]["message"].get("content") or "")[:200])
-    return base64.b64decode(imgs[0]["image_url"]["url"].split(",", 1)[1])
-
-
-def magick(*args):
-    exe = "magick" if subprocess.run(["which", "magick"], capture_output=True).returncode == 0 else "convert"
-    subprocess.run([exe, *args], check=True)
-
-
-def main():
-    if not KEY:
-        sys.exit("Set MAMMOUTH_API_KEY")
-    only = set(sys.argv[1:])
-    for slug, scene in EXERCISES:
-        if only and slug not in only:
-            continue
-        d = os.path.join(ROOT, "assets", "images", "exercises")
-        out = os.path.join(d, f"{slug}.jpg")
-        # The catalogue is mid-migration from PNG to JPG: skip on either, or a re-run regenerates
-        # every exercise that still ships its original PNG.
-        if any(os.path.exists(os.path.join(d, f"{slug}.{ext}")) for ext in ("jpg", "png")):
-            print(f"skip  {slug} (exists)")
-            continue
-        print(f"gen   {slug} … ", end="", flush=True)
-        raw = os.path.join("/tmp", f"ex_{slug}.png")
-        try:
-            open(raw, "wb").write(generate(scene))
-            magick(raw, "-resize", "1024x768^", "-gravity", "center",
-                   "-background", BG, "-extent", "1024x768", "-quality", "82", out)
-            print("ok")
-        except Exception as e:
-            print(f"FAIL: {e}")
-        time.sleep(2)
-
-
 if __name__ == "__main__":
-    main()
+    failed = run(
+        [(slug, f"{pose} {STYLE}") for slug, pose in EXERCISES],
+        out_dir=ROOT / "assets" / "images" / "exercises",
+        width=1280,
+        height=1280,
+        suffix=".jpg",
+    )
+    sys.exit(1 if failed else 0)

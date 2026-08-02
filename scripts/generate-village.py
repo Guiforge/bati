@@ -1,28 +1,22 @@
 #!/usr/bin/env python3
-"""Generate the Village §3 art (docs/content/missing-image.md #1a/#1b): 5 tier illustrations
-+ 6 sport-focus sprites. Same Mammouth API / model as scripts/generate-covers.py.
+"""Generate the village art: 5 tier scenes, 6 sport emblems, 14 building icons.
 
-  MAMMOUTH_API_KEY=sk-... python3 scripts/generate-village.py [slug ...]
+  python3 scripts/generate-village.py               # all 25
+  python3 scripts/generate-village.py tier_3 campfire
 
-Output: 1024x1024 PNG in assets/images/village/ (square — the village badge slot in
-VillageScene.tsx is a 120x120 circle, so square source art crops cleanly). Skips existing
-files. Priority order = list order: tiers (layer 1, the base scene) before sprites (layer 2,
-a small corner overlay).
+Two styles, because two jobs. The tiers are wide establishing shots of the settlement as it
+grows, and carry the scene. The sprites and buildings are single objects on a void, cropped into
+small round or square slots in VillageScene.tsx, so they are square, centred and isolated.
+
+The scene descriptions below are unchanged from the version that generated the current set; only
+the provider changed. See scripts/lib/flux.py for why.
 """
-import base64
-import json
-import os
-import subprocess
-import sys
-import time
-import urllib.error
-import urllib.request
 
-API = "https://api.mammouth.ai/v1/chat/completions"
-KEY = os.environ.get("MAMMOUTH_API_KEY") or os.environ.get("MAMMOUTH_KEY")
-MODEL = os.environ.get("MODEL", "gemini-3.1-flash-image-preview")
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BG = "#0B0F19"
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from lib.flux import ROOT, run  # noqa: E402
 
 SCENE_STYLE = (
     "Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, "
@@ -149,66 +143,14 @@ BUILDINGS = [
 ]
 
 
-def generate(prompt, style):
-    body = json.dumps({"model": MODEL,
-                       "messages": [{"role": "user", "content": f"{prompt} {style}"}]}).encode()
-    req = urllib.request.Request(API, data=body, headers={
-        "Authorization": f"Bearer {KEY}", "Content-Type": "application/json", "User-Agent": "curl/8.0"})
-    for attempt in range(6):
-        try:
-            with urllib.request.urlopen(req, timeout=200) as r:
-                d = json.load(r)
-            break
-        except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 524) and attempt < 5:
-                wait = 30 * (attempt + 1)
-                print(f"[{e.code}, retry in {wait}s] ", end="", flush=True)
-                time.sleep(wait)
-                continue
-            raise
-    if "error" in d:
-        raise RuntimeError(d["error"])
-    imgs = d["choices"][0]["message"].get("images") or []
-    if not imgs:
-        raise RuntimeError("no image: " + (d["choices"][0]["message"].get("content") or "")[:200])
-    return base64.b64decode(imgs[0]["image_url"]["url"].split(",", 1)[1])
-
-
-def magick(*args):
-    exe = "magick" if subprocess.run(["which", "magick"], capture_output=True).returncode == 0 else "convert"
-    subprocess.run([exe, *args], check=True)
-
-
-def main():
-    if not KEY:
-        sys.exit("Set MAMMOUTH_API_KEY")
-    only = set(sys.argv[1:])
-    out_dir = os.path.join(ROOT, "assets", "images", "village")
-    os.makedirs(out_dir, exist_ok=True)
-    all_items = (
-        [(s, sc, SCENE_STYLE) for s, sc in TIERS]
-        + [(s, sc, EMBLEM_STYLE) for s, sc in SPRITES]
-        + [(s, sc, EMBLEM_STYLE) for s, sc in BUILDINGS]
-    )
-    for slug, scene, style in all_items:
-        if only and slug not in only and slug.split("/")[-1] not in only:
-            continue
-        out = os.path.join(out_dir, f"{slug}.png")
-        os.makedirs(os.path.dirname(out), exist_ok=True)
-        if os.path.exists(out):
-            print(f"skip  {slug} (exists)")
-            continue
-        print(f"gen   {slug} … ", end="", flush=True)
-        raw = os.path.join("/tmp", f"village_{slug.replace('/', '_')}.png")
-        try:
-            open(raw, "wb").write(generate(scene, style))
-            magick(raw, "-resize", "1024x1024^", "-gravity", "center",
-                   "-background", BG, "-extent", "1024x1024", out)
-            print("ok")
-        except Exception as e:
-            print(f"FAIL: {e}")
-        time.sleep(2)
-
-
 if __name__ == "__main__":
-    main()
+    failed = run(
+        [(slug, f"{scene} {SCENE_STYLE}") for slug, scene in TIERS]
+        + [(slug, f"{scene} {EMBLEM_STYLE}") for slug, scene in SPRITES]
+        + [(slug, f"{scene} {EMBLEM_STYLE}") for slug, scene in BUILDINGS],
+        out_dir=ROOT / "assets" / "images" / "village",
+        width=1024,
+        height=1024,
+        suffix=".png",
+    )
+    sys.exit(1 if failed else 0)

@@ -1,36 +1,23 @@
 #!/usr/bin/env python3
-"""Generate the missing BATI cover images via the Mammouth API, priority-ordered.
+"""Generate the quest and adventure cover art.
 
-Usage:
-  MAMMOUTH_API_KEY=sk-... python3 scripts/generate-covers.py            # all missing
-  MAMMOUTH_API_KEY=sk-... python3 scripts/generate-covers.py lumber_route chop_wood
-  MODEL=gemini-2.5-flash-image ... python3 scripts/generate-covers.py   # override model
+  python3 scripts/generate-covers.py                    # every cover
+  python3 scripts/generate-covers.py chop_wood the_golem
 
-Model choice (see docs/content/missing-covers.md#models): default
-`gemini-3.1-flash-image-preview` (Nano Banana 2) — best accessible on this key. Nano Banana
-Pro (gemini-3-pro-image-preview) is 403; gpt-image-2 gateway-times-out (524).
+Covers are landscape scenes, not figures: they sit behind a title on the quest and adventure
+cards, so they are 4:3, empty of people, and fall off into darkness at the edges to meet the app
+background. The emptiness is stated positively in each scene ("the clearing is deserted") rather
+than as a negative, which is what actually keeps figures out of them.
 
-Prompts follow Google's Nano Banana prompt guide: natural-language creative-director
-phrasing (not tag soup), explicit shot type + lighting + composition, and *semantic*
-negatives ("empty, deserted, no people") rather than "no characters".
-
-Saves 1024x768 JPGs to assets/images/{adventures,quests}/. Skips existing files (delete a
-file to regenerate). Needs `magick`/`convert` for the resize.
+The scene descriptions below are unchanged from the version that generated the current set; only
+the provider changed. See scripts/lib/flux.py for why.
 """
-import base64
-import json
-import os
-import subprocess
-import sys
-import time
-import urllib.error
-import urllib.request
 
-API = "https://api.mammouth.ai/v1/chat/completions"
-KEY = os.environ.get("MAMMOUTH_API_KEY") or os.environ.get("MAMMOUTH_KEY")
-MODEL = os.environ.get("MODEL", "gemini-3.1-flash-image-preview")
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BG = "#0B0F19"  # DA base; used for any letterbox padding so it never pads white.
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from lib.flux import ROOT, run  # noqa: E402
 
 STYLE = (
     "Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, "
@@ -156,67 +143,13 @@ COVERS = [
 ]
 
 
-def generate(prompt):
-    body = json.dumps({
-        "model": MODEL,
-        "messages": [{"role": "user", "content": f"{prompt} {STYLE}"}],
-    }).encode()
-    req = urllib.request.Request(
-        API, data=body,
-        headers={"Authorization": f"Bearer {KEY}", "Content-Type": "application/json",
-                 "User-Agent": "curl/8.0"},
-    )
-    # Backoff on 429 / transient 5xx, matching generate-exercises.py. Without it a long batch
-    # dies partway and has to be re-run by hand — documented as a known failure mode in
-    # docs/content/missing-image.md, and the phase-C/D/E batch below is nine covers long.
-    for attempt in range(6):
-        try:
-            with urllib.request.urlopen(req, timeout=200) as r:
-                d = json.load(r)
-            break
-        except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 524) and attempt < 5:
-                wait = 30 * (attempt + 1)
-                print(f"[{e.code}, retry in {wait}s] ", end="", flush=True)
-                time.sleep(wait)
-                continue
-            raise
-    if "error" in d:
-        raise RuntimeError(d["error"])
-    imgs = d["choices"][0]["message"].get("images") or []
-    if not imgs:
-        raise RuntimeError("no image: " + (d["choices"][0]["message"].get("content") or "")[:200])
-    return base64.b64decode(imgs[0]["image_url"]["url"].split(",", 1)[1])
-
-
-def magick(*args):
-    exe = "magick" if subprocess.run(["which", "magick"], capture_output=True).returncode == 0 else "convert"
-    subprocess.run([exe, *args], check=True)
-
-
-def main():
-    if not KEY:
-        sys.exit("Set MAMMOUTH_API_KEY")
-    only = set(sys.argv[1:])
-    for slug, subdir, scene in COVERS:
-        if only and slug not in only:
-            continue
-        out = os.path.join(ROOT, "assets", "images", subdir, f"{slug}.jpg")
-        if os.path.exists(out):
-            print(f"skip  {slug} (exists)")
-            continue
-        print(f"gen   {slug} … ", end="", flush=True)
-        raw = os.path.join("/tmp", f"cover_{slug}.png")
-        try:
-            open(raw, "wb").write(generate(scene))
-            # Normalize to exactly 1024x768; pad (if ever needed) with the DA base, not white.
-            magick(raw, "-resize", "1024x768^", "-gravity", "center",
-                   "-background", BG, "-extent", "1024x768", "-quality", "88", out)
-            print("ok")
-        except Exception as e:
-            print(f"FAIL: {e}")
-        time.sleep(2)  # ponytail: naive throttle, tune if rate-limited
-
-
 if __name__ == "__main__":
-    main()
+    failed = run(
+        [(f"{subdir}/{slug}", f"{scene} {STYLE}") for slug, subdir, scene in COVERS],
+        out_dir=ROOT / "assets" / "images",
+        width=1024,
+        height=768,
+        quality=88,
+        suffix=".jpg",
+    )
+    sys.exit(1 if failed else 0)

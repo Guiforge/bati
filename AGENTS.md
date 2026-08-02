@@ -97,9 +97,20 @@ No store is involved yet. [`docs/fdroid.md`](docs/fdroid.md) covers the F-Droid 
 turns those APKs into something that updates itself, and `docs/planning/roadmap.md` §1 covers
 the stores.
 
-**One thing gates all of it: a real release keystore.** Release builds are still signed with
-Expo's debug key, which is fine for handing an APK to a friend and useless for anything that has
-to ship an update over it.
+The release keystore exists since 2026-07-31 and is wired through
+[`plugins/withAndroidReleaseSigning.js`](plugins/withAndroidReleaseSigning.js); a signed build was
+verified with `apksigner`. It is the one irreversible asset here — lose it and the published app
+can never be updated again.
+
+Two things to know before tagging:
+
+- **Write the changelog first.** `fastlane/metadata/android/*/changelogs/<versionCode>.txt` is
+  named after the integer, not the version string, and a missing file fails silently — the entry
+  just has no notes. `npx expo config --type public | grep versionCode` tells you the number.
+- **Expo modules build from source** (`expo.autolinking.buildFromSource` in `package.json`), which
+  is what lets F-Droid reproduce the build and costs a much slower one. `release.yml` also accepts
+  `workflow_dispatch`, and its publish step is guarded by `startsWith(github.ref, 'refs/tags/')` —
+  so you can run it on a branch to build the APK as an artefact without publishing anything.
 
 ## Git hooks
 

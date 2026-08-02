@@ -1,0 +1,1345 @@
+{
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-0.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487188,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-3.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487191,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-9.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487197,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/adaptive-icon.png": {
+    "derived_from": "assets/icon.png",
+    "how": "resized to the 66% safe zone",
+    "licence": "same as the source render; see that entry"
+  },
+  "assets/avatar/archer.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A lean marksman with a topknot and a leather bracer visible on the raised forearm, the upper limb of a longbow crossing behind one shoulder, a feather fletching brushing the cheek. Crimson energy glows in the focused eyes and along the bowstring. One eye is narrowed in aim, absolutely still. Rendered as a dark-fantasy Franco-Belgian graphic-novel portrait: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. Tight head-and-shoulders framing, the face large and centred and clearly readable, shoulders cropped by the bottom edge. The background is a flat deep obsidian blue (#0B0F19) void with a soft vignette, and a crisp rim light separates the silhouette from it. Square 1:1 composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark anywhere in the frame.",
+    "seed": 950961012,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/avatar/archmage.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "An elder sorceress with long dark hair and a high-collared embroidered robe, a single arcane sigil hovering and glowing just above her brow. Arcane cyan light fills her eyes and runs through the embroidery of her collar. Her look is serene, knowing and slightly amused. Rendered as a dark-fantasy Franco-Belgian graphic-novel portrait: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. Tight head-and-shoulders framing, the face large and centred and clearly readable, shoulders cropped by the bottom edge. The background is a flat deep obsidian blue (#0B0F19) void with a soft vignette, and a crisp rim light separates the silhouette from it. Square 1:1 composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark anywhere in the frame.",
+    "seed": 2995460424,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/avatar/elder.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A very old sage with a long white beard, deep-lined face and a plain heavy woollen cowl. Pale gold light glows in his eyes and catches the edge of the cowl. His expression is patient and kind, the calm of someone who has already seen how this ends. Rendered as a dark-fantasy Franco-Belgian graphic-novel portrait: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. Tight head-and-shoulders framing, the face large and centred and clearly readable, shoulders cropped by the bottom edge. The background is a flat deep obsidian blue (#0B0F19) void with a soft vignette, and a crisp rim light separates the silhouette from it. Square 1:1 composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark anywhere in the frame.",
+    "seed": 257928085,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/avatar/guardian.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A heavy-set bearded warrior in battered plate armour, a hood over the helm, jaw set hard under a grey-streaked beard. Molten amber runes burn along the shoulder plates and the same amber light glows in his eyes. Stone-solid, immovable, faintly scarred. Rendered as a dark-fantasy Franco-Belgian graphic-novel portrait: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. Tight head-and-shoulders framing, the face large and centred and clearly readable, shoulders cropped by the bottom edge. The background is a flat deep obsidian blue (#0B0F19) void with a soft vignette, and a crisp rim light separates the silhouette from it. Square 1:1 composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark anywhere in the frame.",
+    "seed": 1682464853,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/avatar/scout.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A young woman ranger with short wind-blown hair and a light hood pushed back off her head, a leather pauldron on one shoulder and a spyglass strap across her chest. Spring green energy glows faintly in her eyes and along the stitching of her collar. Her chin is lifted and she looks off to one side, alert and quick. Rendered as a dark-fantasy Franco-Belgian graphic-novel portrait: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. Tight head-and-shoulders framing, the face large and centred and clearly readable, shoulders cropped by the bottom edge. The background is a flat deep obsidian blue (#0B0F19) void with a soft vignette, and a crisp rim light separates the silhouette from it. Square 1:1 composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark anywhere in the frame.",
+    "seed": 392724836,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/avatar/shadow.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A hooded assassin with a scarf drawn across the lower face, only sharp eyes and a strip of pale skin showing beneath the hood. Deep violet energy glows in the eyes and traces the seams of the dark leather hood; wisps of shadow curl off the shoulders. The expression is cold, still and watchful. Rendered as a dark-fantasy Franco-Belgian graphic-novel portrait: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. Tight head-and-shoulders framing, the face large and centred and clearly readable, shoulders cropped by the bottom edge. The background is a flat deep obsidian blue (#0B0F19) void with a soft vignette, and a crisp rim light separates the silhouette from it. Square 1:1 composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark anywhere in the frame.",
+    "seed": 1970700845,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/badges/get-it-on-fdroid.png": {
+    "source": "official F-Droid download badge, not generated",
+    "licence": "F-Droid's own brand terms; not covered by the CC BY-SA grant on assets/"
+  },
+  "assets/badges/get-it-on-github.png": {
+    "source": "official GitHub download badge, not generated",
+    "licence": "GitHub's own brand terms; not covered by the CC BY-SA grant on assets/"
+  },
+  "assets/favicon.png": {
+    "derived_from": "assets/icon.png",
+    "how": "resized to 48x48",
+    "licence": "same as the source render; see that entry"
+  },
+  "assets/icon.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487197,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/guardian_oath.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a solemn oath-hall at night: a great stone shield mounted on the far wall beneath a shaft of moonlight, a kneeling-stone worn smooth on the floor before it, candles guttering in iron stands down the aisle. The hall is silent and unoccupied, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2591817433,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/iron_lord_conquest.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a conquered ridge at dusk: black iron banners planted along the churned crest, a heavy siege engine silhouetted against a bruised orange sky, distant burning towers on the plain below. The ridge is empty of figures, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2440041305,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/lumber_route.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a winding dirt path threading through a misty ancient pine forest at blue hour, leading to a small clearing where a half-built wooden lean-to shelter stands beside stacked fresh-cut logs and an axe buried in a tree stump; a single warm amber lantern glows on the shelter. The forest is quiet and deserted with no people or animals — the calm start of a long journey. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2194003243,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/monk_enlightenment.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a mountaintop monastery courtyard at dawn: a raked stone garden and a still round reflecting pool, weathered prayer bells hanging under a tiled eave, a sea of cloud below the parapet, first light touching the far peaks. The courtyard is empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1484433028,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/ranger_journey.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a long road climbing over rolling wooded hills at golden hour, a weathered waymarker stone standing at a fork, the track disappearing over ridge after ridge into blue distance. The road is empty, no travellers and no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1376953588,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/scout_trial.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a windswept upland trail at dawn: a thin track running along a ridge line between heather and bare rock, a wooden signal tower on the next hill, cold clear air and long shadows. The ridge is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2025383733,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/squire_path.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot at first light of a worn footpath leaving a sleeping village, climbing gently between low stone walls toward distant pine ridges; a plain wooden training shield and a straw practice dummy lean by the gate, dew on the grass, pale gold light just touching the hills. Quiet, humble, the very beginning of a road — no people in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2918969009,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/adventures/the_golem.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle wide shot inside a shattered mountain cavern: the colossal silhouette of a stone golem built from grey boulders looms far back in the drifting mist, red-orange magma light glowing from the cracks between its stones; broken pillars and rubble litter the foreground while cold god rays cut through the dust. The lair is empty, ominous and immense. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1743388424,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/fire_dragon.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal red-scaled dragon rearing up inside a volcanic cavern, wings half-spread and filling the width of the frame, molten orange light glowing between its scales and deep in its throat, embers streaming upward past broken basalt columns, seen from a low angle that makes it tower over the viewer. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 4224554728,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/forest_titan.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal humanoid titan built of living wood and moss standing among ancient trees, bark-plated shoulders and glowing emerald sap-light running in the seams of its body, roots trailing from its arms, drifting spores catching the light, seen from a low angle that makes it tower over the viewer. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 2476084461,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/shadow_serpent.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "An enormous serpent of coiling darkness rising out of a black mirror-still lake, its scales drinking the light around them, violet witch-fire burning where its eyes should be, tendrils of shadow peeling off its coils into the air, seen from a low angle. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 4144598679,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/stone_golem.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal golem of fitted grey boulders standing in a shattered quarry, red-orange magma glowing in every crack between its stones, one massive fist raised, grit and dust falling from its shoulders, seen from a low angle that makes it tower over the viewer. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 3004922155,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/bosses/wind_wraith.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A towering wraith of howling wind and torn grey burial cloth hanging above a storm-lashed moor, its lower body dissolving into spiralling air, pale cyan light burning where a face should be, debris and dead leaves caught spinning in its currents, seen from a low angle. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A wide cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two thirds with the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 3714191240,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/bear_crawl.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero mid bear-crawl, on hands and toes with knees hovering just above the ground and hips low, one hand and the opposite foot advancing; the core and shoulders glow with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3368658186,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/bicycle_crunch.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying on their back, one elbow rotating toward the opposite bent knee while the other leg extends straight and low; the obliques glow with electric-blue energy, seen from above at a slight angle. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1019175912,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/burpee.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero at the top of a burpee, exploding into a jump with arms stretched overhead and feet just off the ground, impact dust and motion streaks below; the whole body glows with cyan-white energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1968794182,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/cat_cow.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero on hands and knees with the spine arched high toward the ceiling, head tucked and shoulder blades spread; the whole line of the spine glows with metallic silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 489941644,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/chin_up.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero hanging from a plain fixed horizontal pull-up bar with an underhand grip, palms facing them, pulling up until the chin clears the bar; the back and biceps flex and glow with metallic silver-blue energy, seen from a slight low angle. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3923969100,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/cobra_stretch.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying face down with hands under the shoulders, chest pressed up and the spine arched while the hips stay on the ground, head lifted; the chest and back glow with silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1191783879,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/crunch.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero performing an abdominal crunch, lying on the back with knees bent and the torso curled up toward the knees, hands beside the head; the abs glow with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2946566258,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/curtsy_squat.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero stepping one leg diagonally behind the other into a deep curtsy lunge, both knees bent; the legs glow with warm golden energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1177411693,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/dead_bug.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying on their back, one arm reaching overhead and the opposite leg extended low while the other limbs stay raised at 90 degrees; the core glows with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 515139306,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/diamond_pushup.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a push-up with the hands close together under the chest, thumbs and index fingers forming a diamond, elbows tucked to the ribs and body a straight line; the arms and chest glow with amber energy, seen from a low front angle. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3615058907,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/dip.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero supported on two rugged stone parallel bars, elbows bent to a right angle lowering the body between them, chest slightly forward; the arms and chest glow with amber energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1420106556,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/downward_dog.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a downward dog, hips pushed high into a sharp inverted V, arms and legs straight, heels reaching for the ground and head between the arms; the shoulders and hamstrings glow with silver-blue and golden energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1603693109,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/flutter_kicks.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying on their back with legs extended just above the ground, alternating small scissor kicks with motion streaks; the lower abs glow with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3806259131,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/glute_bridge.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying on their back with knees bent and hips driven up into a straight line from shoulders to knees; the glutes and legs glow with warm golden energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1439826607,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/handstand_pushup.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero inverted in a handstand against a stone wall, elbows bent lowering the head toward the floor; the shoulders and arms glow with cyan-white energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3852785406,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/hanging_leg_raise.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero hanging from a rugged stone bar with arms straight, raising straight legs in front until parallel with the ground; the abs glow with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 457884741,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/high_knees.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero running in place with one knee driven up to hip height and the other foot on the ball of the foot, torso upright, motion streaks below; the legs glow with warm golden energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3830741708,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/hollow_body_hold.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero holding a hollow body position on their back, lower back pressed down, shoulders and straight legs lifted a few centimetres off the ground and arms extended overhead in a shallow banana shape; the abs glow with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3954798149,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/inverted_row.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero hanging beneath a low stone bar with body straight and heels on the ground, pulling the chest up to the bar; the back and arms glow with metallic silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 199819632,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/jump_squat.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero exploding upward out of a squat into a powerful jump, feet just leaving the ground with impact dust and motion streaks below; the legs glow with warm golden energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3512778152,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/jumping_jack.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero mid jumping jack, feet apart and arms swept overhead, just off the ground with motion streaks tracing the arms; the whole body glows with cyan-white energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3504221622,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/l_sit.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero supporting their whole body on straight arms with hands pressed to the ground beside the hips, legs held straight out horizontally in a rigid L-shape; the core and arms glow with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3161375079,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/lunge.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero holding a static forward lunge, front knee bent to a right angle directly over the ankle and the back knee hovering just above the ground, torso tall and vertical, both hands empty and resting on the hips, carrying no weapon and no equipment; the legs glow with warm golden energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2469180258,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/mountain_climber.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a push-up position with hands under the shoulders, driving one knee toward the chest while the other leg stays extended, motion streaks behind the moving leg; the core glows with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2789760417,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/pigeon_pose.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a pigeon pose, one shin folded forward across the ground and the other leg extended straight behind, chest lifted and hips square; the front hip and glute glow with warm golden energy, seen from a three-quarter angle. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 4234352456,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/pike_pushup.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a pike position, hips high in an inverted V with straight legs and elbows bent to bring the top of the head toward the ground; the shoulders glow with cyan-white energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 753200966,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/plank.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a perfect forearm plank, body a straight horizontal line, forearms and toes planted; the core glows with golden-white energy, calm determined expression, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 638255239,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/pullups.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero hanging from a rugged stone bar and pulling their chin above it, back and biceps flexed and glowing with metallic silver-blue energy, seen from a slight low angle. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3016798747,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/pushups.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a push-up, chest hovering just above the ground, arms bent to a 90-degree angle, body a straight line from head to heels; chest and arms glow with fiery orange-red energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3724682527,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/reverse_crunch.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying on their back curling the hips off the floor to bring bent knees toward the chest; the lower abs glow with electric-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1274367465,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/russian_twist.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero seated with knees bent and feet lifted, leaning back and rotating the torso to one side with hands together; the obliques glow with electric-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 933091349,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/scapular_pullup.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero hanging from a rugged stone bar with arms completely straight, shoulder blades pulled down and together lifting the body only slightly; the upper back glows with metallic silver-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 4217372666,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/side_plank.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero holding a side plank propped on one forearm, hips lifted and body a straight diagonal line, top arm reaching to the sky; the side of the core glows with electric-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2666193321,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/single_leg_deadlift.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero balanced on one leg, hinged forward at the hip with a flat back, hands reaching toward the ground and the free leg extended straight behind; the hamstrings and back glow with warm golden energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 728334364,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/skater_hop.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero mid lateral bound, landing on one bent leg with the free leg crossing behind, arms swept across the body, motion streaks trailing sideways; the legs glow with warm golden energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2554704887,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/squat.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A powerful fantasy athlete hero holding a deep bodyweight squat, thighs parallel to the ground, back straight, arms extended forward for balance; the leg muscles glow with electric-blue energy veins, intense focused expression. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3530026883,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/standing_calf_raise.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero standing tall and risen high onto the balls of the feet, heels lifted, calves flexed hard; the calves glow with warm golden energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 452350116,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/standing_forward_fold.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero folded forward from the hips with the torso hanging heavy, knees softly bent and hands drifting toward the floor, hair falling free; the hamstrings and lower back glow with warm golden energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2952570148,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/star_jump.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero at the peak of an explosive star jump, arms and legs flung wide into a star shape mid-air with motion streaks; the whole body glows with cyan-white energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1352801887,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/superman.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying face down with arms and legs extended and lifted off the ground in a superman hold, the whole back arched; the back glows with metallic silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 4102579639,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/table_row.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying face-up beneath a heavy wooden table, both hands gripping its edge, body held rigid in a straight line from heels to shoulders as they pull their chest up toward the underside of the table; the back and arm muscles glow with silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2379578559,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/thread_the_needle.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero kneeling on all fours who has rotated their torso sideways: one shoulder and the side of the head are pressed flat against the ground, and that same arm is threaded straight through the gap under the chest so the hand sticks out past the opposite knee, palm up. The other hand stays planted, the hips stay high and square over the knees, and the chest faces the side wall rather than the floor. This is a spinal rotation, not a forward reach: nothing extends in front of the head. The twisted upper back and the grounded shoulder glow with silver-blue energy, seen from a low three-quarter angle. The background must be dark navy-black filling the whole frame, with no coloured border, halo or vignette of any kind. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2697432967,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/towel_door_row.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero leaning back with straight arms, both hands gripping the ends of a thick cloth looped around a sturdy door handle, heels planted and body angled back, pulling themselves upright with elbows driving past the ribs; the back muscles glow with silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2808798970,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/wall_pushup.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero standing an arm's length from a stone wall, hands at shoulder height and elbows bent bringing the chest toward the wall; the chest and arms glow with fiery orange-red energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1831259347,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/wall_sit.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero holding a wall-sit with the back pressed flat against a solid stone wall behind them, thighs parallel to the ground, back flat and upright, forearms resting on the knees; the leg muscles glow with cool stone-grey energy and faint cracks spread under the feet. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3943496177,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/warrior_pose.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a wide warrior stance, front knee bent over the ankle and back leg straight, both arms extended at shoulder height in opposite directions, gaze forward; the legs glow with warm golden energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3376003381,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/windshield_wipers.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying on their back with arms stretched out to the sides and straight legs held together, rotated to one side in a sweeping arc with motion streaks; the obliques glow with electric-blue energy, seen from above. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 783290121,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/worlds_greatest_stretch.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero in a deep lunge with one hand planted inside the front foot and the other arm reaching straight up in a full rotation, gaze following the raised hand; the front hip and the twisting upper back glow with golden and silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2528260184,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/exercises/wrist_circles.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero on hands and knees rocking gently forward over flat palms, fingers splayed wide on the ground and wrists visibly loaded, head neutral and gaze down; the forearms and wrists glow with fiery orange-red energy, seen from a low three-quarter angle. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3091441704,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/arcane_gauntlet.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a circular wizard's trial chamber at night: a polished obsidian floor inscribed with one great glowing arcane circle, tall runed pillars ringing the room, violet mana light rising in slow ribbons from the sigils, the vaulted ceiling lost in darkness above. The chamber stands empty and waiting, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1243154874,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/bears_road.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a steep forest trail winding upward through dense pines, thick roots crossing the path like steps, deep bear tracks pressed into the mud, cold blue mist between the trunks and a shaft of low sun ahead. The trail is empty — no animals, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1940489258,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/build_stronghold.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a hilltop stronghold under construction at dusk: half-raised stone curtain walls with timber scaffolding lashed along them, a treadwheel crane silhouetted against a deep blue sky, dressed blocks and mortar buckets waiting on the ground, torches burning along the finished section. The site is deserted, the work paused, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1646001291,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/cellar_hauler.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle shot from inside a dim stone cellar looking up at a heavy timber hatch in the ceiling, a thick knotted rope hanging from it, storm light and rain spilling through the gap around its edge, crates and barrels in the shadows below. Tense and close — no people in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1238925653,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/chop_wood.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a woodcutter's clearing at the forest edge at dawn: a large tree stump with an axe buried in it centered in frame, split logs neatly stacked, wood chips scattered across the ground, soft golden morning light filtering through tall pines. The clearing is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3998385017,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/climb_titan_tower.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A vertigo-inducing low-angle wide shot looking up the flank of a colossal tower carved into the likeness of a seated titan, worn stone handholds and broken stairs climbing its shoulder, cloud banks drifting across its chest, cold moonlight raking the carved face far above. The tower is unclimbed and empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1320914321,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/colossus_trial.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle wide shot of a vast toppled stone colossus lying face down in a desert arena, one enormous carved hand thrust up out of the sand as if holding the sky, dust drifting in hard sunlight, cracked flagstones radiating from the impact. Immense and silent — no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3433012008,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/core_forge.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide interior shot of a blacksmith's forge focused on a glowing anvil and a roaring forge fire, steel bars heating red-hot, hammers and tongs resting nearby, bright sparks flying through the dim smoky air, intense orange heat glow against deep shadow. The forge is unattended, no smith present. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 310888137,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/crows_ascent.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle wide shot of a sheer fortress wall rising into low cloud, iron rungs and a weathered beam jutting from the stone far above, crows wheeling around the parapet against a bruised evening sky. Vertigo and height — no climbers, no people in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2883475866,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/dawn_ritual.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a bare stone terrace on a keep's roof at first light, a single woven mat unrolled at its centre, cold mist lying in the valley below and the sun just clearing the far ridge. Stillness before anything begins -- the terrace is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 486611950,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/druid_path.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a soft mossy forest trail winding between ancient gnarled oaks at first light, shafts of pale green light falling through the canopy, ferns and faintly glowing mushrooms edging the path, a still dark pool reflecting the trees. The forest is peaceful and empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2876854701,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/escape_collapsing_mine.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic wide shot down a collapsing mine tunnel: timber supports splintering, rock and dust cascading from the ceiling, a single lantern swinging wildly from a beam, and far ahead one small bright opening of daylight. Debris fills the air. The tunnel holds no people, only the collapse. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 721733010,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/forge_dragon_blade.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A tight dramatic shot of a smithy at night: a great blade half-forged and glowing white-hot on a black anvil, the forge fire roaring orange behind it, hammer and tongs resting where they were set down, sparks drifting up into the dark. The forge is unattended, no smith in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2572965231,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/gather_stones.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a rocky quarry at the foot of a grey cliff at dusk: heavy scattered boulders and a sturdy wooden cart half-loaded with stones, a freshly dug foundation trench in the earth, long cool shadows. The quarry is empty and still, no workers present. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1080278509,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/golem_core.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A tight dramatic shot of a massive cracked boulder formation; at its centre a glowing red-orange crystalline core is embedded deep in the grey stone, molten magma veins spreading out through the fractures, a dark cavern receding behind. It is a rock formation, not a body — no anatomy, no figure, no person. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 4265824372,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/golem_strike.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic low-angle wide shot of a battle-scarred stone arena floor where a colossal fractured stone fist has just slammed into the ground, glowing red cracks radiating outward from the impact, dust and shattered rubble thrown into the air, the huge shadow of a golem falling across the scene. No people in frame — pure impact and aftermath. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3352066925,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/guard_fortress_gate.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a massive iron-banded fortress gate seen from within at night, its heavy drawbar in place, braziers burning to either side, arrow slits throwing thin light across wet flagstones, the shadow of something huge falling across the gate from outside. The gatehouse is empty, no defenders in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3878174527,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/handlers_vigil.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A quiet night shot of a workbench under a shuttered window, a pair of chalk-dusted hand wraps unrolled beside a guttering candle, a bowl of water and a whetstone within reach, moonlight edging the sill. Careful preparation -- the room is unoccupied, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2323544533,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/hearthside_unbinding.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A warm interior wide shot of a great hearth burning low, travelling packs and muddy boots set down beside a thick rug, firelight pooling across worn flagstones and a cloak drying on a hook. The march is over -- the room is empty, no one in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2285108555,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/iron_gauntlet_challenge.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a stone challenge arena at dusk: a raised circular fighting floor scored with old gouges, iron weapon racks and battered training apparatus around its rim, tiered stone seating rising into shadow, one shaft of cold light falling on the centre. The arena is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 4250377703,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/knight_push.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a knight's stone training courtyard at first light: worn flagstones, weathered wooden training dummies and a rack of practice weapons, faded heraldic banners hanging on the castle wall behind, a cool disciplined martial atmosphere. The courtyard is empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1639456791,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/morning_champion.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a high stone terrace above a sleeping valley at sunrise: warm gold light spilling across worn flagstones, mist lying in the valley below, a folded cloak and a water skin left on a low wall, banners stirring in the dawn wind. The terrace is empty, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1265139628,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/ploughmans_vow.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a ploughed field at golden hour, deep furrows running to the horizon, a heavy wooden plough left standing in the earth with a yoke resting beside it, a stone farmhouse small in the distance. Honest, heavy, unromantic labour — the field is deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 592217469,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/raise_the_shelter.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a timber-frame shelter under construction at dusk: wooden beams and lashed scaffolding rising into a raised roof frame, coils of rope and hand tools resting on the ground, warm torchlight illuminating the worksite against a deep blue sky. The site is deserted, a sense of progress left behind, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2439506847,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/serpents_coil.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A tight dramatic shot of the coils of an enormous stone serpent statue wound around a central pillar in a flooded temple chamber, violet mist pooling between the rings, faint light from a shaft above catching the carved scales. Pressure and constriction — a carving, not a creature; no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3506536928,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/shield_wall.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dramatic wide shot along a fortress rampart at night: a long row of tall interlocked shields lines the stone battlement, torches flickering between them, an approaching storm gathering on the horizon beyond the walls. A resolute defensive mood, no soldiers visible — just the wall of shields. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2178985401,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/sprint_shadowlands.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a cursed moor at night: a pale narrow track running away between black twisted trees and drifting fog, cold blue witch-lights hovering off the path, the horizon swallowed in darkness. The moor is empty of figures, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 4246736405,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/squire_awakening.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a bare stone courtyard at dawn, a scuffed practice shield propped against a low wall beside a coil of rope and a wooden bucket, long soft shadows across worn flagstones, the keep still dark behind. Humble and unglamorous, the first morning of training — deserted, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3550294253,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/storm_of_blades.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a windswept dune ridge at dusk, dozens of swords and spears driven point-down into the sand in a long broken line, tattered banners snapping in the gale, sand streaming off the crest against a violet storm sky. Movement everywhere, no combatants — the field is empty. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 3495199331,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/quests/tower_climb.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A vertigo-inducing low-angle wide shot looking straight up at an impossibly tall ancient stone tower spiralling into churning dark storm clouds, worn stone stairs winding up its crumbling exterior, flashes of electric-blue lightning behind it. The stormy sky fills the entire frame edge to edge with no white borders. No people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 1679876794,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/armory.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized stone armory building with weapon racks flanking its doorway, a glowing forge-fire visible inside, radiating fiery orange-red energy — an upgraded, grander version of a simple forge. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3274011207,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/barn.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized large wooden barn with stacked golden hay bales beside its open doors, glowing with warm golden-yellow energy — an upgraded, grander version of a simple farm. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 4131713707,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/campfire.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized campfire ringed with stones, warm orange-yellow flames dancing upward, a few sparks drifting off, glowing with cozy warm-orange energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1439003758,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/castle_wall.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized fortified stone castle-wall section with crenellated battlements and a corner turret, glowing with cool stone-grey energy — an upgraded, grander version of a simple quarry. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 699884002,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/champion_arena.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized circular stone gladiator arena with tiered stone seating, torches lit around its rim, glowing with warm amber torchlight. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2601887239,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/dragon_lair.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized dark cave mouth carved into a mountainside, molten orange cracks glowing along the rock and deep claw-gouges in the stone, ember light spilling out. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3881361747,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/druid_grove.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized ring of ancient standing stones wreathed in glowing emerald-green vines and moss, a sacred grove clearing at its center. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2875135318,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/fountain.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized ornate stone fountain with tiered basins and cascading water, glowing with electric-blue energy — an upgraded, grander version of a simple well. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3081270524,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/heroes_hall.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized grand stone hall with banners flanking its entrance and a laurel-wreathed trophy pedestal out front, glowing with warm golden light. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2109381758,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/observatory.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized stone observatory tower with a telescope silhouette in its open dome, swirling cyan-white wind wisps around it — an upgraded, grander version of a simple windmill. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1972285698,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/tent.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized adventurer's canvas tent, entrance flap open, a warm lantern glowing just inside, guy-ropes staked into the ground. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2670392851,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/training_dummy.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized wooden training pell wrapped in worn straw padding, a few practice sword nicks visible, standing upright on a round base. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2782616103,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/watchtower.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized tall wooden watchtower with an archer's platform at the top, a bow and quiver resting against the rail, glowing with warm amber-brown energy — an upgraded, grander version of a simple archery range. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1331854362,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/buildings/wizard_tower.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized narrow spiraling stone wizard's tower, a glowing purple crystal orb hovering above its pointed roof, faint arcane runes on the stonework. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 607322636,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_abs.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized wave-shaped rune carved into a smooth stone tablet, a few water droplets suspended around it, glowing with electric-blue energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 4035787687,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_arms.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized woodcutter's axe standing upright with its blade buried in a tree stump, a couple of split logs resting beside it, glowing with warm amber-brown wood energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2603346132,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_back.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized pickaxe leaning against a small stack of quarried grey stone blocks, glowing with cool stone-grey energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 437383115,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_chest.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized blacksmith's anvil with a small glowing forge fire beside it, radiating fiery orange-red energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1329124014,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_legs.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized sheaf of golden wheat tied with twine, standing upright, glowing with warm golden-yellow energy. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2328325494,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/sport_shoulder.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized swirling wind-rune emblem, light cyan-white wind wisps spiraling around it. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2570699431,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_1.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a single humble wooden cabin with a thatched roof and one warm-lit window, a thin trail of smoke rising from its stone chimney, a chopping stump and a few stacked logs beside it, standing alone in a quiet misty forest clearing at blue hour. The very first, humble beginning of a settlement. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 2183332326,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_2.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a small cluster of thatched-roof cottages gathered around a stone well and a low wooden fence, warm lantern light in several windows, smoke rising from a few chimneys, simple dirt paths connecting the homes, at blue hour. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 455757916,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_3.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a walled market town: cobbled streets, a stone well square, timber-framed buildings with tiled roofs, a modest bell tower, banners hanging from an open gate, more structures than before but still modest, at dusk. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 1814913226,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_4.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a fortified city: tall stone towers and a rising keep above tiered rooftops, an arched stone bridge, glowing lantern-lit windows across many buildings, banners on the ramparts, construction scaffolding on one growing tower, at night. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 4064933225,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/images/village/tier_5.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a magnificent flourishing city skyline at night: tall spires and domes glowing with warm golden light, banners and pennants everywhere, bridges strung with lanterns, a grand central palace tower crowned in radiant light — the peak of prosperity. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 2236532223,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02"
+  },
+  "assets/onboardings/building.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot from a dark cliff edge looking down over a fantasy settlement under construction at blue hour: timber scaffolding and a wooden crane rising over half-built stone cottages, a few small warm amber windows glowing far below, deep obsidian sky above with faint stars, mist pooling between the buildings. The valley is quiet and deserted. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no bright focal point and no light source pointed at the viewer, the composition open and quiet through the middle with its detail gathered towards the edges, falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. No people anywhere in frame, no lettering and no watermark.",
+    "seed": 3782173140,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-02"
+  },
+  "assets/onboardings/new_city.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A very dark, very distant wide shot of a fantasy city skyline at night seen far off across a misty valley: faint silhouettes of towers and rooftops barely separated from the night sky, a scatter of tiny dim amber windows, heavy mist swallowing the lower half of the scene. Almost abstract, extremely subdued, quiet enough to sit behind text. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no bright focal point and no light source pointed at the viewer, the composition open and quiet through the middle with its detail gathered towards the edges, falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. No people anywhere in frame, no lettering and no watermark.",
+    "seed": 3652630249,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-02"
+  },
+  "assets/onboardings/splash-bg1.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of an empty misty forest clearing at deep blue hour, tall dark pines ringing it and fading into fog, a soft unlit ground of moss and scattered stone, the sky a deep obsidian blue with no moon. Still, cold and completely deserted. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no bright focal point and no light source pointed at the viewer, the composition open and quiet through the middle with its detail gathered towards the edges, falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. No people anywhere in frame, no lettering and no watermark.",
+    "seed": 3796873609,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-02"
+  },
+  "assets/placeholder.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylised emblem centred on a deep obsidian blue (#0B0F19) void: a plain circular stone medallion carved with a simple abstract figure at rest, lit by a soft electric-blue rim light, nothing else in frame. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with confident black ink outlines and flat cel-shaded colour, square 1:1 composition, deliberately understated because it stands in for art that is missing. No lettering, no watermark.",
+    "seed": 4125531906,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02"
+  },
+  "assets/splash-bg1.jpg": {
+    "derived_from": "assets/onboardings/splash-bg1.jpg",
+    "how": "verbatim copy",
+    "licence": "same as the source render; see that entry"
+  },
+  "assets/splash-bg3.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a dark mountain pass at night: two great rock walls falling away into shadow on either side, a narrow band of star-lit sky between them, drifting cloud low in the gap. Empty, vast and quiet. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no bright focal point and no light source pointed at the viewer, the composition open and quiet through the middle with its detail gathered towards the edges, falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. No people anywhere in frame, no lettering and no watermark.",
+    "seed": 205639845,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-02"
+  }
+}

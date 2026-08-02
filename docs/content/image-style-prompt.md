@@ -1,40 +1,82 @@
-A vibrant, highly detailed comic book-style illustration set in a whimsical fantasy world.
-The art style is ultra-cartoonish, inspired by dynamic Franco-Belgian BD (Bande Dessinée) aesthetics, with thick, bold black outlines and expressive, exaggerated features.
-Characters have highly expressive faces (big sparkling eyes, wide smiles, comical reactions) and dynamic, energetic poses that convey movement and personality.
-The scene is filled with rich, colorful details—lush backgrounds featuring magical forests, medieval villages, or enchanted castles, all rendered with a playful and immersive atmosphere.
-Use vibrant, saturated colors and comic book-style shading (cél-shading with highlights and shadows) to enhance depth and visual appeal.
-The overall mood is fun, adventurous, and lighthearted, perfect for a fantasy RPG or mobile game.
-High resolution, crisp lines, and polished finish.
+---
+title: Image style
+status: active
+updated: 2026-08-02
+---
 
-1. Prompt pour le "Village / Home" (Comme ton image)
-Ce prompt sert à générer l'écran d'accueil ou l'évolution du village.
+# Image style
 
-Prompt : A lone fitness hero in a modern hoodie standing on a cliff edge, looking from behind at a sprawling fantasy village under construction below. The village is a mix of medieval gothic architecture and wooden scaffolding with a construction crane in the background. Night time, "Blue Hour" atmosphere. Deep obsidian blue sky with stars. Warm amber light glowing from small cottage windows. Style of a high-end digital graphic novel, clean lines, cel-shaded, atmospheric perspective, cinematic composition, immersive, dark fantasy aesthetic. --ar 9:16 --v 6.0
+The art direction, and the rules that were learned by getting it wrong.
 
-Pourquoi ça marche : On précise "Construction crane" et "Scaffolding" pour le côté BATI (bâtir). Le "Deep obsidian blue" assure que le fond collera avec ton UI #0B0F19.
+**The prompts themselves are not here.** Each family owns its own `STYLE` block inside its
+generator, appended verbatim to every prompt in that family — `scripts/generate-exercises.py`,
+`generate-covers.py`, `generate-village.py`, `generate-bosses.py`, `generate-avatars.py`,
+`generate-backgrounds.py`. That is deliberate: a style guide in prose and a style block in code
+drift apart, and only one of them is what actually gets sent. This page explains *why* those
+blocks say what they say.
 
-1. Prompt pour une "Quête / Aventure" (Action)
-Pour les cartes de quêtes (Forêt, Mine, Marais).
+## The look
 
-Prompt : First-person view or over-the-shoulder view of a fitness runner sprinting through a [INSERT BIOME: dark foggy swamp / crystal cave / misty pine forest]. The path is treacherous. In the distance, a magical blue objective marker glows. Dynamic action shot, motion blur. Dark fantasy atmosphere, ominous shadows, moonlight cutting through trees. Graphic novel art style, rich deep blues and teals, high contrast. --ar 4:5 --v 6.0
+Franco-Belgian BD: confident black ink outlines, flat cel-shaded colour, hard-edged shadows, no
+soft airbrushing. Anchored in deep obsidian blue `#0B0F19` — the app's own surface — with edges
+falling off into darkness so an image lands on the background without a visible seam.
 
-Variable à changer : Remplace [INSERT BIOME] par le lieu (ex: "snowy mountain peak").
+The app is dark-mode only. An image that arrives on white paper is not a stylistic variation, it
+is a bug, and it was the single most common failure: roughly one render in seven, until the
+background instruction was moved to the **first sentence** of the style block and stated
+positively ("one unbroken field of very dark navy-black, as dark as a night sky") rather than as
+a prohibition. Models follow descriptions far better than they follow negations.
 
-1. Prompt pour un "Boss Battle"
-Pour les ennemis majeurs.
+## Aspect ratio follows the slot, not the taste
 
-Prompt : A massive, intimidating [INSERT BOSS: Obsidian Golem / Giant Spider / Shadow Knight] looming in the dark. The boss has glowing red eyes and cracks in its armor. Low angle shot looking up at the boss to make it look huge. Dark background, volumetric lighting, particle effects (dust and sparks). Style of an epic RPG concept art, comic book style, sharp details, dark blue and vibrant danger-red color palette. --ar 4:5 --v 6.0
+Every family was once 4:3, because that is what the first generator defaulted to. Four of them
+were wrong:
 
-🎨 Les Mots-Clés Magiques (Style Bati)
-Si tu veux écrire tes propres prompts, assure-toi d'inclure ces mots-clés pour garder la cohérence avec ton image :
+| Family | Shape | Why |
+|---|---|---|
+| Exercises | 1:1 | Five of their six slots are square (180², 64², 56², 50²). A 4:3 source in a 50 px square crop loses the limbs that identify the movement. |
+| Avatars | 1:1 | Rendered circular at 48–64 px. A 4:3 source lost the sides of every one. |
+| Bosses | 2:1 | `BossArena` sizes art at `min(width * 0.5, height * 0.28)` — a letterbox. 4:3 art had its head and feet cropped. |
+| Covers, backgrounds | 4:3 | Correct as they were. |
 
-Style : Franco-Belgian comic style ou Moebius style (pour le côté trait fin et aplat), Digital Concept Art.
+Check the slot before choosing the frame. `contentFit="cover"` never warns you.
 
-Couleurs : Deep Midnight Blue, Teal and Orange (contraste classique cinéma), Bioluminescent (pour le côté magique/tech).
+## Exercise art is a diagram first
 
-Lumière : Volumetric lighting (pour la brume), Rim light (lumière qui détoure la silhouette), Chiaroscuro (clair-obscur fort).
+It is the only art with a job beyond atmosphere: someone mid-session has to look at it and know
+what to do with their body. Every tie is resolved towards legibility.
 
-Ambiance : Ethereal, Mysterious, Immersive, Solitary.
+- **No armour, no cape, no hood.** Plate hides the joint it covers. Fitted cloth, arms and lower
+  legs bare — a bent elbow the reader cannot see is a rep they cannot copy.
+- **One figure, one position, whole body, margin on all four sides.** At 50 px the silhouette is
+  the entire message.
+- **The glow marks the working muscle**, keyed to the muscle palette. It is the theme showing up
+  where it also does instructional work.
+- **The theme is a finish, not the subject.** The style block says so in as many words: *"a light
+  finish over what is first and foremost an instructional diagram."*
 
-💡 Conseil Intégration UI
-Puisque ton UI a un fond très sombre (#0B0F19 ou dark2), ajoute souvent le paramètre --vignette (sur Midjourney) ou demande "fade to dark edges" dans le prompt. Cela permet à l'image de se fondre naturellement dans le fond de ton application sans qu'on voie une coupure nette sur les bords.
+Two things were tried here and removed. **Onion-skin ghosts** of the start position, with a motion
+arc, read well at full size and as clutter at thumbnail size. **A varied fantasy-race cast** —
+elves, orcs, dwarves, one per exercise — made the set less clear, not more characterful.
+
+## Prompts that fail, and why
+
+Most bad images are bad prompts, not bad dice. Re-rolling a prompt that cannot work just costs
+money. The tell is whether the same error survives a change of seed.
+
+- **`wall_sit`** said *"against an invisible wall"*. An invisible wall cannot be drawn, so it kept
+  coming out a free-standing squat. Naming a solid stone wall fixed it on the first try.
+- **`chin_up`** said *"a rugged stone bar"*, which rendered as a barbell with stone plates. A
+  plain fixed bar, plus an explicit underhand grip, fixed it.
+- **Emptiness must be positive.** *"The clearing is deserted"* keeps people out of a scene;
+  *"no people"* invites them in.
+- **Signatures and captions** appear unbidden. Stating that all four corners are empty background
+  and the artwork is unsigned works better than forbidding a watermark.
+
+## Reproducibility
+
+Every image is seeded from its own slug, so editing a prompt changes the instruction and not the
+draw — you can see what the edit did. `FLUX_SEED_SALT=<n>` re-rolls the ones that need it, and the
+seed actually used lands in `scripts/provenance.json` alongside the model and the exact prompt.
+That file is also the evidence behind the CC BY-SA grant on `assets/`; see
+[`../fdroid.md`](../fdroid.md) for why that matters.

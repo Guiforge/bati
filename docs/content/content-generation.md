@@ -31,7 +31,7 @@
 }
 ```
 
-**Image Prompt (Midjourney v6)**:
+**Image Prompt**:
 
 ```
 A muscular fantasy warrior in a deep squat position, wearing minimal armor, legs glowing with electric blue energy veins. Dark obsidian blue background (#0B0F19). Comic book style with thick black outlines, cel-shaded rendering, glowing muscles. The hero's face shows intense focus. Isolated character on dark void background. High contrast lighting with blue rim light. Franco-Belgian BD aesthetic, dynamic pose, thick outlines, vibrant but dark palette.

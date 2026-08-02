@@ -1,36 +1,23 @@
 #!/usr/bin/env python3
-"""Generate the missing BATI cover images via the Mammouth API, priority-ordered.
+"""Generate the quest and adventure cover art.
 
-Usage:
-  MAMMOUTH_API_KEY=sk-... python3 scripts/generate-covers.py            # all missing
-  MAMMOUTH_API_KEY=sk-... python3 scripts/generate-covers.py lumber_route chop_wood
-  MODEL=gemini-2.5-flash-image ... python3 scripts/generate-covers.py   # override model
+  python3 scripts/generate-covers.py                    # every cover
+  python3 scripts/generate-covers.py chop_wood the_golem
 
-Model choice (see docs/content/missing-covers.md#models): default
-`gemini-3.1-flash-image-preview` (Nano Banana 2) — best accessible on this key. Nano Banana
-Pro (gemini-3-pro-image-preview) is 403; gpt-image-2 gateway-times-out (524).
+Covers are landscape scenes, not figures: they sit behind a title on the quest and adventure
+cards, so they are 4:3, empty of people, and fall off into darkness at the edges to meet the app
+background. The emptiness is stated positively in each scene ("the clearing is deserted") rather
+than as a negative, which is what actually keeps figures out of them.
 
-Prompts follow Google's Nano Banana prompt guide: natural-language creative-director
-phrasing (not tag soup), explicit shot type + lighting + composition, and *semantic*
-negatives ("empty, deserted, no people") rather than "no characters".
-
-Saves 1024x768 JPGs to assets/images/{adventures,quests}/. Skips existing files (delete a
-file to regenerate). Needs `magick`/`convert` for the resize.
+The scene descriptions below are unchanged from the version that generated the current set; only
+the provider changed. See scripts/lib/flux.py for why.
 """
-import base64
-import json
-import os
-import subprocess
-import sys
-import time
-import urllib.error
-import urllib.request
 
-API = "https://api.mammouth.ai/v1/chat/completions"
-KEY = os.environ.get("MAMMOUTH_API_KEY") or os.environ.get("MAMMOUTH_KEY")
-MODEL = os.environ.get("MODEL", "gemini-3.1-flash-image-preview")
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BG = "#0B0F19"  # DA base; used for any letterbox padding so it never pads white.
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from lib.flux import ROOT, run  # noqa: E402
 
 STYLE = (
     "Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, "
@@ -153,70 +140,85 @@ COVERS = [
      "A quiet night shot of a workbench under a shuttered window, a pair of chalk-dusted hand "
      "wraps unrolled beside a guttering candle, a bowl of water and a whetstone within reach, "
      "moonlight edging the sill. Careful preparation -- the room is unoccupied, no people."),
+    ("arcane_gauntlet", "quests",
+     "A wide shot of a circular wizard's trial chamber at night: a polished obsidian floor "
+     "inscribed with one great glowing arcane circle, tall runed pillars ringing the room, violet "
+     "mana light rising in slow ribbons from the sigils, the vaulted ceiling lost in darkness "
+     "above. The chamber stands empty and waiting, no people."),
+    ("build_stronghold", "quests",
+     "A wide shot of a hilltop stronghold under construction at dusk: half-raised stone curtain "
+     "walls with timber scaffolding lashed along them, a treadwheel crane silhouetted against a "
+     "deep blue sky, dressed blocks and mortar buckets waiting on the ground, torches burning "
+     "along the finished section. The site is deserted, the work paused, no people."),
+    ("climb_titan_tower", "quests",
+     "A vertigo-inducing low-angle wide shot looking up the flank of a colossal tower carved into "
+     "the likeness of a seated titan, worn stone handholds and broken stairs climbing its "
+     "shoulder, cloud banks drifting across its chest, cold moonlight raking the carved face far "
+     "above. The tower is unclimbed and empty, no people."),
+    ("druid_path", "quests",
+     "A wide shot of a soft mossy forest trail winding between ancient gnarled oaks at first "
+     "light, shafts of pale green light falling through the canopy, ferns and faintly glowing "
+     "mushrooms edging the path, a still dark pool reflecting the trees. The forest is peaceful "
+     "and empty, no people."),
+    ("escape_collapsing_mine", "quests",
+     "A dramatic wide shot down a collapsing mine tunnel: timber supports splintering, rock and "
+     "dust cascading from the ceiling, a single lantern swinging wildly from a beam, and far "
+     "ahead one small bright opening of daylight. Debris fills the air. The tunnel holds no "
+     "people, only the collapse."),
+    ("forge_dragon_blade", "quests",
+     "A tight dramatic shot of a smithy at night: a great blade half-forged and glowing white-hot "
+     "on a black anvil, the forge fire roaring orange behind it, hammer and tongs resting where "
+     "they were set down, sparks drifting up into the dark. The forge is unattended, no smith in "
+     "frame."),
+    ("guard_fortress_gate", "quests",
+     "A wide shot of a massive iron-banded fortress gate seen from within at night, its heavy "
+     "drawbar in place, braziers burning to either side, arrow slits throwing thin light across "
+     "wet flagstones, the shadow of something huge falling across the gate from outside. The "
+     "gatehouse is empty, no defenders in frame."),
+    ("iron_gauntlet_challenge", "quests",
+     "A wide shot of a stone challenge arena at dusk: a raised circular fighting floor scored with "
+     "old gouges, iron weapon racks and battered training apparatus around its rim, tiered stone "
+     "seating rising into shadow, one shaft of cold light falling on the centre. The arena is "
+     "deserted, no people."),
+    ("morning_champion", "quests",
+     "A wide shot of a high stone terrace above a sleeping valley at sunrise: warm gold light "
+     "spilling across worn flagstones, mist lying in the valley below, a folded cloak and a water "
+     "skin left on a low wall, banners stirring in the dawn wind. The terrace is empty, no "
+     "people."),
+    ("sprint_shadowlands", "quests",
+     "A wide shot of a cursed moor at night: a pale narrow track running away between black "
+     "twisted trees and drifting fog, cold blue witch-lights hovering off the path, the horizon "
+     "swallowed in darkness. The moor is empty of figures, no people."),
+    ("guardian_oath", "adventures",
+     "A wide shot of a solemn oath-hall at night: a great stone shield mounted on the far wall "
+     "beneath a shaft of moonlight, a kneeling-stone worn smooth on the floor before it, candles "
+     "guttering in iron stands down the aisle. The hall is silent and unoccupied, no people."),
+    ("iron_lord_conquest", "adventures",
+     "A wide shot of a conquered ridge at dusk: black iron banners planted along the churned "
+     "crest, a heavy siege engine silhouetted against a bruised orange sky, distant burning towers "
+     "on the plain below. The ridge is empty of figures, no people."),
+    ("monk_enlightenment", "adventures",
+     "A wide shot of a mountaintop monastery courtyard at dawn: a raked stone garden and a still "
+     "round reflecting pool, weathered prayer bells hanging under a tiled eave, a sea of cloud "
+     "below the parapet, first light touching the far peaks. The courtyard is empty, no people."),
+    ("ranger_journey", "adventures",
+     "A wide shot of a long road climbing over rolling wooded hills at golden hour, a weathered "
+     "waymarker stone standing at a fork, the track disappearing over ridge after ridge into blue "
+     "distance. The road is empty, no travellers and no people."),
+    ("scout_trial", "adventures",
+     "A wide shot of a windswept upland trail at dawn: a thin track running along a ridge line "
+     "between heather and bare rock, a wooden signal tower on the next hill, cold clear air and "
+     "long shadows. The ridge is deserted, no people."),
 ]
 
 
-def generate(prompt):
-    body = json.dumps({
-        "model": MODEL,
-        "messages": [{"role": "user", "content": f"{prompt} {STYLE}"}],
-    }).encode()
-    req = urllib.request.Request(
-        API, data=body,
-        headers={"Authorization": f"Bearer {KEY}", "Content-Type": "application/json",
-                 "User-Agent": "curl/8.0"},
-    )
-    # Backoff on 429 / transient 5xx, matching generate-exercises.py. Without it a long batch
-    # dies partway and has to be re-run by hand — documented as a known failure mode in
-    # docs/content/missing-image.md, and the phase-C/D/E batch below is nine covers long.
-    for attempt in range(6):
-        try:
-            with urllib.request.urlopen(req, timeout=200) as r:
-                d = json.load(r)
-            break
-        except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 524) and attempt < 5:
-                wait = 30 * (attempt + 1)
-                print(f"[{e.code}, retry in {wait}s] ", end="", flush=True)
-                time.sleep(wait)
-                continue
-            raise
-    if "error" in d:
-        raise RuntimeError(d["error"])
-    imgs = d["choices"][0]["message"].get("images") or []
-    if not imgs:
-        raise RuntimeError("no image: " + (d["choices"][0]["message"].get("content") or "")[:200])
-    return base64.b64decode(imgs[0]["image_url"]["url"].split(",", 1)[1])
-
-
-def magick(*args):
-    exe = "magick" if subprocess.run(["which", "magick"], capture_output=True).returncode == 0 else "convert"
-    subprocess.run([exe, *args], check=True)
-
-
-def main():
-    if not KEY:
-        sys.exit("Set MAMMOUTH_API_KEY")
-    only = set(sys.argv[1:])
-    for slug, subdir, scene in COVERS:
-        if only and slug not in only:
-            continue
-        out = os.path.join(ROOT, "assets", "images", subdir, f"{slug}.jpg")
-        if os.path.exists(out):
-            print(f"skip  {slug} (exists)")
-            continue
-        print(f"gen   {slug} … ", end="", flush=True)
-        raw = os.path.join("/tmp", f"cover_{slug}.png")
-        try:
-            open(raw, "wb").write(generate(scene))
-            # Normalize to exactly 1024x768; pad (if ever needed) with the DA base, not white.
-            magick(raw, "-resize", "1024x768^", "-gravity", "center",
-                   "-background", BG, "-extent", "1024x768", "-quality", "88", out)
-            print("ok")
-        except Exception as e:
-            print(f"FAIL: {e}")
-        time.sleep(2)  # ponytail: naive throttle, tune if rate-limited
-
-
 if __name__ == "__main__":
-    main()
+    failed = run(
+        [(f"{subdir}/{slug}", f"{scene} {STYLE}") for slug, subdir, scene in COVERS],
+        out_dir=ROOT / "assets" / "images",
+        width=1024,
+        height=768,
+        quality=88,
+        suffix=".jpg",
+    )
+    sys.exit(1 if failed else 0)

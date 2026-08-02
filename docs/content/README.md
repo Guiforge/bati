@@ -15,9 +15,8 @@ related: [../README.md]
 - [content-generation.md](content-generation.md) — Full content spec (exercises, quests, adventures)
 - [content-quick-reference.md](content-quick-reference.md) — Developer integration guide (asset map)
 - [workout-best-practices.md](workout-best-practices.md) — Workout design & balancing philosophy
-- [image-prompts.md](image-prompts.md) — Image generation prompts (Midjourney)
-- [image-style-prompt.md](image-style-prompt.md) — Base style prompt (used by scripts)
-- [missing-covers.md](missing-covers.md) — Prior adventure/quest cover gap (resolved) + generation pipeline
+- [image-style-prompt.md](image-style-prompt.md) — Art direction, and the prompt rules learned by getting them wrong
+- [missing-covers.md](missing-covers.md) — Prior adventure/quest cover gap (resolved, historical)
 - [missing-image.md](missing-image.md) — Current missing-image inventory (village tiers + sport sprites)
 
 ## Related

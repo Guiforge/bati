@@ -28,7 +28,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from lib.flux import ROOT, generate  # noqa: E402
+from lib.flux import ROOT, generate, record_derived  # noqa: E402
 
 ICON = (
     "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue "
@@ -57,9 +57,11 @@ if __name__ == "__main__":
          str(ROOT / "assets" / "adaptive-icon.png")],
         check=True,
     )
+    record_derived(ROOT / "assets" / "adaptive-icon.png", icon, "resized to the 66% safe zone")
     # Favicon: 48x48 is what the previous one was, and what app.json points the web build at.
     subprocess.run(
         ["magick", str(icon), "-resize", "48x48", str(ROOT / "assets" / "favicon.png")],
         check=True,
     )
+    record_derived(ROOT / "assets" / "favicon.png", icon, "resized to 48x48")
     print("  ✓ adaptive-icon.png and favicon.png derived from icon.png")

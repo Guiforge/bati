@@ -29,6 +29,11 @@
     "height": 1024,
     "generated": "2026-08-02"
   },
+  "assets/adaptive-icon.png": {
+    "derived_from": "assets/icon.png",
+    "how": "resized to the 66% safe zone",
+    "licence": "same as the source render; see that entry"
+  },
   "assets/avatar/archer.jpg": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -88,6 +93,19 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02"
+  },
+  "assets/badges/get-it-on-fdroid.png": {
+    "source": "official F-Droid download badge, not generated",
+    "licence": "F-Droid's own brand terms; not covered by the CC BY-SA grant on assets/"
+  },
+  "assets/badges/get-it-on-github.png": {
+    "source": "official GitHub download badge, not generated",
+    "licence": "GitHub's own brand terms; not covered by the CC BY-SA grant on assets/"
+  },
+  "assets/favicon.png": {
+    "derived_from": "assets/icon.png",
+    "how": "resized to 48x48",
+    "licence": "same as the source render; see that entry"
   },
   "assets/icon.png": {
     "model": "flux-2-pro-preview",
@@ -1308,6 +1326,11 @@
     "width": 1280,
     "height": 1280,
     "generated": "2026-08-02"
+  },
+  "assets/splash-bg1.jpg": {
+    "derived_from": "assets/onboardings/splash-bg1.jpg",
+    "how": "verbatim copy",
+    "licence": "same as the source render; see that entry"
   },
   "assets/splash-bg3.jpg": {
     "model": "flux-2-pro-preview",

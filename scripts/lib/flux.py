@@ -164,6 +164,23 @@ def _record(rel_path: str, entry: dict) -> None:
         )
 
 
+def record_derived(out: pathlib.Path, source: pathlib.Path, how: str) -> None:
+    """Note a file produced from another one rather than from a prompt.
+
+    Resized icons and copied backgrounds carry the licence of the render they came from, but a
+    reader checking `assets/` against the ledger should not have to deduce that from filenames —
+    an unlisted image looks like an unaccounted one.
+    """
+    _record(
+        str(out.relative_to(ROOT)),
+        {
+            "derived_from": str(source.relative_to(ROOT)),
+            "how": how,
+            "licence": "same as the source render; see that entry",
+        },
+    )
+
+
 def generate(
     *,
     slug: str,

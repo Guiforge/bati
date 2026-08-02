@@ -22,7 +22,7 @@ import shutil
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from lib.flux import CONCURRENCY, ROOT, generate  # noqa: E402
+from lib.flux import CONCURRENCY, ROOT, generate, record_derived  # noqa: E402
 
 STYLE = (
     "Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink "
@@ -98,6 +98,7 @@ if __name__ == "__main__":
     src = ROOT / "assets" / "onboardings" / "splash-bg1.jpg"
     if src.is_file() and any(s == "splash-bg1" for s, *_ in selected):
         shutil.copyfile(src, ROOT / "assets" / "splash-bg1.jpg")
+        record_derived(ROOT / "assets" / "splash-bg1.jpg", src, "verbatim copy")
 
     print(f"\n{len(selected) - failed}/{len(selected)} generated, {failed} failed.")
     sys.exit(1 if failed else 0)

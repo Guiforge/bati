@@ -1,8 +1,10 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
+import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, YStack } from "tamagui";
 
+import { VillageEmbers } from "@/components/village/VillageEmbers";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { VillageTier } from "@/db/village";
@@ -29,6 +31,7 @@ export function VillageSceneViewer({
 }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
   // Scales up as it fades in, so the picture reads as *opening* out of the tapped scene rather
   // than a new screen appearing over it. "bouncy" is the app's reveal spring (SessionRewards,
   // the village sections); a plain fade made the tap feel like it had missed.
@@ -58,6 +61,20 @@ export function VillageSceneViewer({
         contentFit="contain"
         transition={200}
       />
+
+      {/* The same motes as the scene, over the picture's own area rather than the whole screen:
+          `contain` letterboxes a square source on a tall phone, and embers drifting through the
+          bars would give away where the image stops. They mount with the viewer, so the tap that
+          opens it is answered by something moving, not just a still frame appearing. */}
+      <YStack
+        position="absolute"
+        width={width}
+        height={width}
+        pointerEvents="none"
+        style={{ top: (height - width) / 2 }}
+      >
+        <VillageEmbers heroHeight={width} heroWidth={width} tier={tier} />
+      </YStack>
 
       <YStack position="absolute" b={insets.bottom + 24} px="$4" gap="$1" items="center">
         <Text fontWeight="700" fontSize={22} color="$text">

@@ -48,9 +48,23 @@ function emberCount(tier: number): number {
 /** How far up the hero an ember climbs before it dies, as a fraction of the hero height. */
 const DRIFT = 0.42;
 
-type EmberProps = (typeof EMBERS)[number] & { heroHeight: number; heroWidth: number };
+/**
+ * How bright the motes burn, by tier. The count alone made a capital's sky busier than a
+ * hamlet's but no warmer; scaling the peak as well is what makes the difference read as *more
+ * fire* rather than *more dots*. Clamped so tier 1 is a suggestion and tier 12 still sits under
+ * the artwork rather than on top of it.
+ */
+function emberPeak(tier: number): number {
+  return Math.min(0.75, 0.42 + tier * 0.03);
+}
 
-function Ember({ left, start, size, duration, delay, heroHeight, heroWidth }: EmberProps) {
+type EmberProps = (typeof EMBERS)[number] & {
+  heroHeight: number;
+  heroWidth: number;
+  peak: number;
+};
+
+function Ember({ left, start, size, duration, delay, heroHeight, heroWidth, peak }: EmberProps) {
   const t = useSharedValue(0);
 
   useEffect(() => {
@@ -60,7 +74,7 @@ function Ember({ left, start, size, duration, delay, heroHeight, heroWidth }: Em
   }, [t, delay, duration]);
 
   const style = useAnimatedStyle(() => ({
-    opacity: interpolate(t.value, [0, 0.12, 0.65, 1], [0, 0.6, 0.3, 0]),
+    opacity: interpolate(t.value, [0, 0.12, 0.65, 1], [0, peak, peak * 0.5, 0]),
     transform: [
       { translateY: -t.value * heroHeight * DRIFT },
       // A lazy sideways sway, half a period per climb, so they don't rise like an elevator.
@@ -110,7 +124,13 @@ export function VillageEmbers({
   return (
     <>
       {EMBERS.slice(0, emberCount(tier)).map((ember) => (
-        <Ember key={ember.left} {...ember} heroHeight={heroHeight} heroWidth={heroWidth} />
+        <Ember
+          key={ember.left}
+          {...ember}
+          heroHeight={heroHeight}
+          heroWidth={heroWidth}
+          peak={emberPeak(tier)}
+        />
       ))}
     </>
   );

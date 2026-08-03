@@ -140,8 +140,12 @@ export function SessionRewards({
                 items="center"
                 gap="$3"
               >
+                {/* `newLevel`, not the default: this card celebrates a building that just rose,
+                    and omitting the level fell back to 0 — the roughest of its three paintings —
+                    so the screen announcing the growth showed the crudest form of the thing that
+                    had just grown. The pips beside it were already reading `newLevel`. */}
                 <Image
-                  source={getBuildingIconAsset(g.code, g.relatedMuscle)}
+                  source={getBuildingIconAsset(g.code, g.relatedMuscle, g.newLevel)}
                   style={{ width: 40, height: 40 }}
                   contentFit="contain"
                 />

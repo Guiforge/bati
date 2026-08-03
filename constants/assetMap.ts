@@ -360,10 +360,17 @@ export function getSportSpriteAsset(muscle: SportSpriteKey, stage: BuildingStage
  * don't paint", docs/content/missing-image.md §0), so callers pass the building's
  * `relatedMuscle` as fallback.
  */
+/**
+ * `level` is required, and deliberately has no default. It used to default to 0, which quietly
+ * means "rough" — and the victory screen's growth card forgot to pass it, so the one screen that
+ * exists to celebrate a building rising drew its crudest painting. A default that is also a
+ * meaningful value cannot be distinguished from an omission; making it required turns the same
+ * mistake into a compile error.
+ */
 export function getBuildingIconAsset(
   code: string,
-  relatedMuscle?: SportSpriteKey | null,
-  level = 0,
+  relatedMuscle: SportSpriteKey | null | undefined,
+  level: number,
 ) {
   const stage = buildingStage(level);
   const icon = BUILDING_ICON_ASSETS[code as BuildingIconKey];

@@ -217,19 +217,21 @@ describe("db/village", () => {
     expect(scene.level).toBe(1);
     expect(scene.flame).toBe(0);
     expect(scene.dominantSport).toBeNull();
-    expect(scene.bossBanners).toEqual([]);
     expect(scene.trophies).toEqual([]);
     expect(scene.buildings).toHaveLength(20);
   });
 
-  test("a defeated boss shows up in the scene as both a banner and a trophy", async () => {
+  // Used to assert the boss arrived "as both a banner and a trophy". The banner half was never
+  // rendered anywhere, so the scene stopped carrying it; the trophy is the one that reaches a
+  // screen, and the lair below proves the victory still counts where it is read.
+  test("a defeated boss reaches the scene as a trophy, and raises the lair", async () => {
     const { getVillageScene } = village();
 
     defeatBoss(2, new Date("2026-01-02T00:00:00Z"));
 
     const scene = await getVillageScene();
 
-    expect(scene.bossBanners).toHaveLength(1);
     expect(scene.trophies.map((x) => x.key)).toEqual(["boss:2"]);
+    expect(scene.buildings.find((b) => b.code === "dragon_lair")?.level).toBe(1);
   });
 });

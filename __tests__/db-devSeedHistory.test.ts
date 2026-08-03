@@ -96,17 +96,4 @@ describe("db/devSeedHistory", () => {
     expect(info.current).toBeGreaterThan(0);
     expect(info.lastWorkoutDate).not.toBeNull();
   });
-
-  it("maxes out the village", async () => {
-    const { maxVillage } = seed();
-    await maxVillage();
-
-    const row = t.sqlite
-      .prepare("SELECT COUNT(*) AS c FROM village_buildings WHERE isUnlocked = 1 AND level = 5")
-      .get() as { c: number };
-    const all = t.sqlite.prepare("SELECT COUNT(*) AS c FROM village_buildings").get() as {
-      c: number;
-    };
-    expect(row.c).toBe(all.c);
-  });
 });

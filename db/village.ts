@@ -531,8 +531,13 @@ export type VillageScene = {
   dominantSport: DominantSportOverlay;
   /** The muscle the village has always under-built, or null while nothing stands out. */
   neglected: MuscleCode | null;
-  bossBanners: BossBanner[];
   buildings: VillageBuilding[];
+  /**
+   * Achievements and defeated bosses on one rack. Bosses arrive here and nowhere else: the
+   * scene used to carry a `bossBanners` array as well, which no screen ever read — the same
+   * victories, reachable twice, one of them dead. `getBossBanners()` still runs, because the
+   * trophies and the dragon lair's level both need it.
+   */
   trophies: Trophy[];
 };
 
@@ -575,7 +580,6 @@ export async function getVillageScene(): Promise<VillageScene> {
     flame: getFlameLevel(streak.current),
     dominantSport,
     neglected,
-    bossBanners,
     buildings,
     trophies: await getTrophies(bossBanners),
   };

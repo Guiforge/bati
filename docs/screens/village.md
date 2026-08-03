@@ -69,6 +69,13 @@ tables are seeded but unused — there is no unlock/upgrade write path to keep c
 tile bar and the detail sheet bar both call it, so they cannot disagree about when a locked
 building has something honest to count.
 
-Open gap: `getVillageScene()` still returns a `bossBanners` field that nothing renders — the
-banners reach the screen only laundered through `trophies`, though the visual rules above ask for
-them on the scene.
+Ambient motion lives in `VillageEmbers.tsx` (six drifting motes, transform and opacity only) and
+in the scroll parallax on the hero image; both return to nothing under reduced motion. The line of
+weather under the village name is drawn from `constants/villageFlavour.ts` by the same
+`pickDailyVariant()` Home uses, seeded by day *and* tier.
+
+The emblems carry an alpha channel, cut by [`scripts/cutout-emblems.py`](../../scripts/cutout-emblems.py).
+They ship from FLUX as opaque squares, and without that cut `tintColor` has nothing to silhouette:
+the "to build" grid rendered as identical navy blocks. Any new emblem needs the same treatment.
+
+Open gap: the hero art is still 1024², where a building icon renders at 48.

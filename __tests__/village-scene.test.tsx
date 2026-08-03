@@ -59,7 +59,6 @@ function mockScene(buildings: village.VillageBuilding[]) {
     flame: 0,
     dominantSport: null,
     neglected: null,
-    bossBanners: [],
     buildings,
     trophies: [],
   });

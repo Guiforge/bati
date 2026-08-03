@@ -118,29 +118,3 @@ export async function seedHistory(years: number): Promise<{
 
   return { sessions: await countSeededSessions(), exercises: row?.c ?? 0 };
 }
-
-/**
- * A five-year village is a finished village. Separate from the history seed because the marker
- * cannot undo it: only EXPO_PUBLIC_FORCE_DB_RESET=1 puts the village back to its starting state.
- */
-export async function maxVillage(): Promise<void> {
-  await transactionOrFallback(async (tx) => {
-    await tx.run(
-      sql.raw(`
-        UPDATE village_buildings
-        SET isUnlocked = 1,
-            level = 5,
-            unlockedAt = COALESCE(unlockedAt, CAST(strftime('%s', 'now') AS INTEGER))
-      `),
-    );
-    await tx.run(
-      sql.raw(`
-        UPDATE village_stats
-        SET prestigeScore = 200 * (SELECT COUNT(*) FROM village_buildings),
-            totalBuildingsUnlocked = (SELECT COUNT(*) FROM village_buildings),
-            highestBuildingLevel = 5
-      `),
-    );
-    await tx.run(sql.raw("UPDATE resource_inventory SET amount = 5000"));
-  });
-}

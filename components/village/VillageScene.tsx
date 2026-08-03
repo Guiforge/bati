@@ -270,22 +270,9 @@ export function VillageScene() {
         </YStack>
 
         <YStack gap="$5" px="$4" pt="$4">
-          {/* Empty hamlet: the wall of silhouettes below needs one line saying why it's bare */}
-          {built.length === 0 && (
-            <YStack testID="village-empty" gap="$2" {...sectionAnim}>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("village.empty_title", "Nothing built yet")}
-              </Text>
-              <Text fontSize={13} color="$textSecondary">
-                {t(
-                  "village.empty_subtitle",
-                  "Your first quest will raise the first building here.",
-                )}
-              </Text>
-            </YStack>
-          )}
-
-          {/* Built: derived from training, nothing to unlock by hand */}
+          {/* No empty state: the three starter buildings take their level from the village tier,
+              which is never below 1 ("Starter buildings always stand", db/village.ts), so this
+              list cannot be empty. The branch that used to guard it was unreachable. */}
           {built.length > 0 && (
             <YStack testID="village-built" gap="$3" {...sectionAnim}>
               <Text fontWeight="700" fontSize={16} color="$text">

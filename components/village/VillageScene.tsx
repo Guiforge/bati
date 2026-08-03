@@ -3,7 +3,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, useWindowDimensions } from "react-native";
+import { useWindowDimensions } from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 
@@ -11,6 +16,7 @@ import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
 import { BuiltBuildingCard } from "@/components/village/BuiltBuildingCard";
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
+import { VillageEmbers } from "@/components/village/VillageEmbers";
 import {
   getAdventureAsset,
   getBuildingIconAsset,
@@ -19,10 +25,13 @@ import {
 } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
+import { pickDailyVariant } from "@/constants/restMessages";
+import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
+import { dayKey } from "@/db/dates";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } from "@/db/village";
 import { useHaptics } from "@/hooks/useHaptics";
-import { useAnimationProps } from "@/hooks/useReducedMotion";
+import { useAnimationProps, useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
@@ -46,6 +55,13 @@ const MEDAL_BOSS = {
 
 const MEDAL_PLAIN = { bg: "$surface2", borderColor: "$borderStrong" } as const;
 
+/**
+ * How much slower the painting scrolls than the page. Low on purpose: the tier art is the one
+ * thing on this screen that is supposed to feel like a place, and a strong parallax turns a
+ * place into a carousel.
+ */
+const PARALLAX_FACTOR = 0.35;
+
 export function VillageScene() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -54,6 +70,17 @@ export function VillageScene() {
   const villageName = useUserStore((s) => s.villageName);
   const sectionAnim = useAnimationProps("bouncy", { opacity: 0, y: 12 });
   const haptics = useHaptics();
+  const reducedMotion = useReducedMotion();
+
+  // The painting lags the page as it scrolls away. Written and read entirely on the UI thread:
+  // `scrollY` is never touched from JS (docs/architecture/performance.md).
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+  const parallax = useAnimatedStyle(() => ({
+    transform: [{ translateY: reducedMotion ? 0 : scrollY.value * PARALLAX_FACTOR }],
+  }));
 
   // Set once from the arrival params, never recomputed: a later tab-bar visit shouldn't
   // replay the "just grew" pulse for a building that grew several sessions ago.
@@ -107,21 +134,33 @@ export function VillageScene() {
   const tierName = TIER_NAMES[scene.tier][language === "fr" ? "fr" : "en"];
   const built = scene.buildings.filter((b) => b.level > 0);
   const unbuilt = scene.buildings.filter((b) => b.level === 0);
+  const flavour = pickDailyVariant(
+    VILLAGE_FLAVOUR[language === "fr" ? "fr" : "en"],
+    `${dayKey(new Date())}:${scene.tier}`,
+  );
 
   return (
     <YStack testID="village-screen" flex={1} bg="$background">
-      <ScrollView
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
-        {/* The scene is the screen: edge to edge, its own title, nothing framing it */}
-        <YStack width="100%" height={heroHeight} position="relative">
-          <Image
-            source={getVillageTierAsset(scene.tier)}
-            style={{ width: "100%", height: "100%" }}
-            contentFit="cover"
-            transition={300}
-          />
+        {/* The scene is the screen: edge to edge, its own title, nothing framing it.
+            `overflow="hidden"` is what keeps the parallaxed painting inside its own band
+            instead of riding down over the tiles. */}
+        <YStack width="100%" height={heroHeight} position="relative" overflow="hidden">
+          {/* Only the painting lags — the scrims and the title stay anchored, so the art
+              drifts behind the name rather than dragging it along. */}
+          <Animated.View style={[{ width: "100%", height: "100%" }, parallax]}>
+            <Image
+              source={getVillageTierAsset(scene.tier)}
+              style={{ width: "100%", height: "100%" }}
+              contentFit="cover"
+              transition={300}
+            />
+          </Animated.View>
 
           {/* Top scrim so the status bar stays readable over bright artwork */}
           <LinearGradient
@@ -204,8 +243,17 @@ export function VillageScene() {
                   })}
                 </Text>
               )}
+              {/* Weather, not a stat. Seeded by day *and* tier so it turns over at midnight and
+                  reads differently once the village has grown. */}
+              <Text fontSize={12} color="$muted" fontStyle="italic">
+                {flavour}
+              </Text>
             </YStack>
           </LinearGradient>
+
+          {/* Last child on purpose: the bottom scrim is near-opaque over the lower half of the
+              hero, so embers drawn before it would simply not be there. */}
+          <VillageEmbers heroHeight={heroHeight} heroWidth={width} />
         </YStack>
 
         <YStack gap="$5" px="$4" pt="$4">
@@ -350,7 +398,7 @@ export function VillageScene() {
             </YStack>
           )}
         </YStack>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {sheetMounted ? (
         <VillageDetailSheet

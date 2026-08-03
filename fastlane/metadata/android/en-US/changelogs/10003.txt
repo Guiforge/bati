@@ -1,0 +1,5 @@
+No more notifications, and no more permissions to go with them.
+
+The oath reminder is gone. It needed a Google push library that also wanted to read your launcher settings and check which ad led you here — for one message three days late. Removing it took the app from 33 Android permissions down to 11.
+
+The oath now waits on the home screen, which is where you look anyway.

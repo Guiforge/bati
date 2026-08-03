@@ -71,7 +71,8 @@
       "./plugins/withAndroidLintExtraTranslation",
       "./plugins/withAndroidReleaseSigning",
       "./plugins/withAndroidGradleMemory",
-      "./plugins/withAndroidTrimPermissions"
+      "./plugins/withAndroidTrimPermissions",
+      "./plugins/withAndroidDebugAppId"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

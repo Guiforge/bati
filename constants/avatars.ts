@@ -14,32 +14,32 @@ export const AVATARS: Avatar[] = [
   {
     id: "shadow",
     labelKey: "avatars.shadow",
-    source: require("../assets/avatar/shadow.jpg"),
+    source: require("../assets/avatar/shadow.webp"),
   },
   {
     id: "scout",
     labelKey: "avatars.scout",
-    source: require("../assets/avatar/scout.jpg"),
+    source: require("../assets/avatar/scout.webp"),
   },
   {
     id: "guardian",
     labelKey: "avatars.guardian",
-    source: require("../assets/avatar/guardian.jpg"),
+    source: require("../assets/avatar/guardian.webp"),
   },
   {
     id: "archmage",
     labelKey: "avatars.archmage",
-    source: require("../assets/avatar/archmage.jpg"),
+    source: require("../assets/avatar/archmage.webp"),
   },
   {
     id: "elder",
     labelKey: "avatars.elder",
-    source: require("../assets/avatar/elder.jpg"),
+    source: require("../assets/avatar/elder.webp"),
   },
   {
     id: "archer",
     labelKey: "avatars.archer",
-    source: require("../assets/avatar/archer.jpg"),
+    source: require("../assets/avatar/archer.webp"),
   },
 ];
 

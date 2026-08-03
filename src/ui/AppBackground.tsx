@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { StyleSheet } from "react-native";
 import { YStack } from "tamagui";
 
-const backgroundImage = require("../../assets/onboardings/new_city.jpg");
+const backgroundImage = require("../../assets/onboardings/new_city.webp");
 
 export type AppBackgroundProps = {
   /**

@@ -40,7 +40,7 @@ don't re-add it.
 | # | Rule | Effort | Impact | Status here |
 | --- | --- | --- | --- | --- |
 | 1 | **Profile on release builds only.** Dev builds are 2–5× slower (unminified, runtime checks) — never chase a jank number in dev. | trivial | high (diagnosis) | habit |
-| 2 | **Ship bundled art as WebP**, sized to display resolution. ~25–35% smaller than PNG/JPEG → less memory + smaller binary. | low | high | **not done** — `assets/` is 60 png + 43 jpg, 0 webp |
+| 2 | **Ship bundled art as WebP**, sized to display resolution. ~25–35% smaller than PNG/JPEG → less memory + smaller binary. | low | high | **done** — 131 files converted by [`scripts/to-webp.py`](../../scripts/to-webp.py), 51.5 MB → 15.0 MB (**−71%**). Not yet sized to display resolution: sources stay 1024². |
 | 3 | **Strip `console.*` in production** via `babel-plugin-transform-remove-console` (add to [babel.config.js](../../babel.config.js) prod env). Each call has bridge/JS overhead. | low | medium | **not done** — plugin not installed |
 | 4 | **Set `expo-image` `cachePolicy="memory-disk"`** (and a stable `recyclingKey` for images inside `@legendapp/list`) to kill flicker + redundant decodes. | low | medium | default policy today; none set explicitly |
 | 5 | **Debounce rapid inputs** (search/filter fields) so keystrokes don't fan out into renders/queries. | low | medium | no debounce in repo yet |

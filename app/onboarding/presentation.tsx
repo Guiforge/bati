@@ -17,7 +17,7 @@ export default function Presentation() {
   return (
     <YStack flex={1} bg="$background">
       <Image
-        source={require("../../assets/onboardings/building.jpg")}
+        source={require("../../assets/onboardings/building.webp")}
         style={{ position: "absolute", width: 600, height: "100%", left: -190 }}
         contentFit="cover"
         contentPosition="left"

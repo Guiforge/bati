@@ -1,280 +1,10 @@
 {
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-crest.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A heraldic shield of dark armour plating carrying a crenellated tower etched into it in glowing line-work above two crossed cybernetic augmented arms, the limbs built from segmented plates with light running along the seams. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 2155138241,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-glyph.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A minimal geometric rune of a fortress: three vertical bars of unequal height topped by crenellations, connected by one horizontal beam, drawn entirely as glowing hairline structure with a hollow dark core. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 4011990837,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-keep.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A monolithic crenellated tower of near-black machined metal seen straight on, its stone courses replaced by fine horizontal panel seams that glow from within, and one small heroic figure standing backlit in its arched gateway. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 1528149607,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-ring.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A crenellated tower monolith standing inside a thin neon progress ring marked with fine tick graduations, the ring broken by a gap and terminating in one bright cap. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 523832090,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-trace.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A crenellated tower reduced to a printed-circuit diagram: the silhouette drawn as glowing conductor traces on a near-black board, with small square solder pads at the corners and one trace running down to a single bright node. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 1976507692,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-visor.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A knight's helm rendered as a sealed cybernetic visor of dark metal, a narrow horizontal eye-slit glowing across it, and the silhouette of a crenellated tower etched faintly into the brow plate. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3100844807,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber2/crest-solid.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A solid heraldic shield filled edge to edge, with a crenellated tower knocked out of its centre as void and one magenta seam running across the shield's lower third. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG, built from solid filled masses and NOT from line art: the mark is one heavy opaque silhouette in electric blue (#0D33F2, #2E5CFF) standing on flat obsidian void (#0B0F19), cut by at most three narrow magenta (#DB2777) light seams and a few near-white (#E8ECFF) highlights. No outlines, no hairline traces, no wireframe, no thin circuitry, no engraving, no sketch. Strictly no cyan, no teal, no green, no orange, no gold, no grey metal. Massive simple geometry with generous empty margin on all four sides, high contrast against the void, so the mark reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 2770968217,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber2/keep-solid.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A massive crenellated tower silhouette filled solid, with a tall arched gateway cut clean through it as void, one small heroic figure standing dark inside that arch, and a single horizontal magenta seam glowing across the tower's midpoint. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG, built from solid filled masses and NOT from line art: the mark is one heavy opaque silhouette in electric blue (#0D33F2, #2E5CFF) standing on flat obsidian void (#0B0F19), cut by at most three narrow magenta (#DB2777) light seams and a few near-white (#E8ECFF) highlights. No outlines, no hairline traces, no wireframe, no thin circuitry, no engraving, no sketch. Strictly no cyan, no teal, no green, no orange, no gold, no grey metal. Massive simple geometry with generous empty margin on all four sides, high contrast against the void, so the mark reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 1899102631,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber2/monolith.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A single heavy rectangular monolith with a crenellated top, filled solid, split by two narrow horizontal magenta seams that glow across its full width. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG, built from solid filled masses and NOT from line art: the mark is one heavy opaque silhouette in electric blue (#0D33F2, #2E5CFF) standing on flat obsidian void (#0B0F19), cut by at most three narrow magenta (#DB2777) light seams and a few near-white (#E8ECFF) highlights. No outlines, no hairline traces, no wireframe, no thin circuitry, no engraving, no sketch. Strictly no cyan, no teal, no green, no orange, no gold, no grey metal. Massive simple geometry with generous empty margin on all four sides, high contrast against the void, so the mark reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 1147286837,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/banner.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A vertical guild banner hanging from a short crossbar, its cloth carrying a crenellated tower emblem and its bottom edge cut into a sharp swallowtail. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 1872607463,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/derived-crest.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A heraldic shield emblem carrying a crenellated stone castle tower across its upper half and two crossed muscular arms ending in clenched fists across its lower half, redrawn as clean flat geometry rather than anatomy. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 667463701,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/hud-ring.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A crenellated tower emblem centred inside a broken circular progress ring, the ring a thick arc sweeping three quarters of the way around with rounded caps and a gap at the top. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3704625016,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/keep-hero.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A heraldic emblem of a squat crenellated stone tower seen straight on, with one small heroic figure standing square-shouldered in its arched gateway. The tower fills the emblem and the figure is a simple bold silhouette cut into it. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 994283940,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/sigil.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "An arcane sigil that fuses a fortress with a barbell: one horizontal bar with a weight plate at each end, crossing a tall crenellated column, drawn as a single continuous bold geometric symbol of even stroke weight. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 2212361651,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/tower-mark.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A single geometric tower glyph built from a few rectangles: a crenellated top, a tall square body, and an arched doorway cut clean out of it as negative space. Nothing else in the frame. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3630338616,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/newicon/salt1.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold heraldic app icon crest, centred and symmetrical on a flat obsidian (#0B0F19) background: a heraldic shield filled solid in deep electric blue (#0D33F2) carrying one crenellated stone keep that fills most of its face, with a tall arched gateway cut clean through the tower as pure void and one small heroic figure standing square-shouldered inside that arch. Drawn as a flat modern vector emblem: large solid masses of colour with no interior texture, no line art, no engraving, no bevels, no drop shadows and no black ink outlines anywhere. Depth comes from flat contrast alone — the brighter tint (#2E5CFF) for the tower against the deeper blue of the shield, near-white (#E8ECFF) for the figure, and one narrow magenta (#DB2777) band across the base of the shield as the single accent. The shield is bounded by a clean magenta edge one stroke wide, so the crest keeps a bright contour against a dark background. Strictly no cyan, no teal, no grey stone, no skin tones, no glow haze, no rim lighting. Few large shapes and generous empty margin on all four sides with nothing touching any edge, so the mark still reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487189,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/newicon/salt2.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold heraldic app icon crest, centred and symmetrical on a flat obsidian (#0B0F19) background: a heraldic shield filled solid in deep electric blue (#0D33F2) carrying one crenellated stone keep that fills most of its face, with a tall arched gateway cut clean through the tower as pure void and one small heroic figure standing square-shouldered inside that arch. Drawn as a flat modern vector emblem: large solid masses of colour with no interior texture, no line art, no engraving, no bevels, no drop shadows and no black ink outlines anywhere. Depth comes from flat contrast alone — the brighter tint (#2E5CFF) for the tower against the deeper blue of the shield, near-white (#E8ECFF) for the figure, and one narrow magenta (#DB2777) band across the base of the shield as the single accent. The shield is bounded by a clean magenta edge one stroke wide, so the crest keeps a bright contour against a dark background. Strictly no cyan, no teal, no grey stone, no skin tones, no glow haze, no rim lighting. Few large shapes and generous empty margin on all four sides with nothing touching any edge, so the mark still reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487190,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/newicon/salt3.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold heraldic app icon crest, centred and symmetrical on a flat obsidian (#0B0F19) background: a heraldic shield filled solid in deep electric blue (#0D33F2) carrying one crenellated stone keep that fills most of its face, with a tall arched gateway cut clean through the tower as pure void and one small heroic figure standing square-shouldered inside that arch. Drawn as a flat modern vector emblem: large solid masses of colour with no interior texture, no line art, no engraving, no bevels, no drop shadows and no black ink outlines anywhere. Depth comes from flat contrast alone — the brighter tint (#2E5CFF) for the tower against the deeper blue of the shield, near-white (#E8ECFF) for the figure, and one narrow magenta (#DB2777) band across the base of the shield as the single accent. The shield is bounded by a clean magenta edge one stroke wide, so the crest keeps a bright contour against a dark background. Strictly no cyan, no teal, no grey stone, no skin tones, no glow haze, no rim lighting. Few large shapes and generous empty margin on all four sides with nothing touching any edge, so the mark still reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487191,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt11.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487199,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt12.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487200,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt13.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487201,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt14.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487202,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt15.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487203,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt16.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487204,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-03"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-0.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487188,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-02"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-3.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487191,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-02"
-  },
-  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-9.png": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487197,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-02"
-  },
   "assets/adaptive-icon.png": {
     "derived_from": "assets/icon.png",
     "how": "resized to the 66% safe zone",
     "licence": "same as the source render; see that entry"
   },
-  "assets/avatar/archer.jpg": {
+  "assets/avatar/archer.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -282,9 +12,10 @@
     "seed": 950961012,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from archer.jpg"
   },
-  "assets/avatar/archmage.jpg": {
+  "assets/avatar/archmage.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -292,9 +23,10 @@
     "seed": 2995460424,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from archmage.jpg"
   },
-  "assets/avatar/elder.jpg": {
+  "assets/avatar/elder.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -302,9 +34,10 @@
     "seed": 257928085,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from elder.jpg"
   },
-  "assets/avatar/guardian.jpg": {
+  "assets/avatar/guardian.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -312,9 +45,10 @@
     "seed": 1682464853,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from guardian.jpg"
   },
-  "assets/avatar/scout.jpg": {
+  "assets/avatar/scout.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -322,9 +56,10 @@
     "seed": 392724836,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from scout.jpg"
   },
-  "assets/avatar/shadow.jpg": {
+  "assets/avatar/shadow.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -332,7 +67,8 @@
     "seed": 1970700845,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from shadow.jpg"
   },
   "assets/badges/get-it-on-fdroid.png": {
     "source": "official F-Droid download badge, not generated",
@@ -357,7 +93,7 @@
     "height": 1024,
     "generated": "2026-08-02"
   },
-  "assets/images/adventures/guardian_oath.jpg": {
+  "assets/images/adventures/guardian_oath.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -365,9 +101,10 @@
     "seed": 2591817433,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from guardian_oath.jpg"
   },
-  "assets/images/adventures/iron_lord_conquest.jpg": {
+  "assets/images/adventures/iron_lord_conquest.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -375,9 +112,10 @@
     "seed": 2440041305,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from iron_lord_conquest.jpg"
   },
-  "assets/images/adventures/lumber_route.jpg": {
+  "assets/images/adventures/lumber_route.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -385,9 +123,10 @@
     "seed": 2194003243,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from lumber_route.jpg"
   },
-  "assets/images/adventures/monk_enlightenment.jpg": {
+  "assets/images/adventures/monk_enlightenment.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -395,9 +134,10 @@
     "seed": 1484433028,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from monk_enlightenment.jpg"
   },
-  "assets/images/adventures/ranger_journey.jpg": {
+  "assets/images/adventures/ranger_journey.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -405,9 +145,10 @@
     "seed": 1376953588,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from ranger_journey.jpg"
   },
-  "assets/images/adventures/scout_trial.jpg": {
+  "assets/images/adventures/scout_trial.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -415,9 +156,10 @@
     "seed": 2025383733,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from scout_trial.jpg"
   },
-  "assets/images/adventures/squire_path.jpg": {
+  "assets/images/adventures/squire_path.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -425,9 +167,10 @@
     "seed": 2918969009,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from squire_path.jpg"
   },
-  "assets/images/adventures/the_golem.jpg": {
+  "assets/images/adventures/the_golem.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -435,9 +178,10 @@
     "seed": 1743388424,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from the_golem.jpg"
   },
-  "assets/images/bosses/fire_dragon.jpg": {
+  "assets/images/bosses/fire_dragon.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -445,9 +189,10 @@
     "seed": 4224554728,
     "width": 1280,
     "height": 640,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from fire_dragon.jpg"
   },
-  "assets/images/bosses/forest_titan.jpg": {
+  "assets/images/bosses/forest_titan.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -455,9 +200,10 @@
     "seed": 2476084461,
     "width": 1280,
     "height": 640,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from forest_titan.jpg"
   },
-  "assets/images/bosses/shadow_serpent.jpg": {
+  "assets/images/bosses/shadow_serpent.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -465,9 +211,10 @@
     "seed": 4144598679,
     "width": 1280,
     "height": 640,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from shadow_serpent.jpg"
   },
-  "assets/images/bosses/stone_golem.jpg": {
+  "assets/images/bosses/stone_golem.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -475,9 +222,10 @@
     "seed": 3004922155,
     "width": 1280,
     "height": 640,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from stone_golem.jpg"
   },
-  "assets/images/bosses/wind_wraith.jpg": {
+  "assets/images/bosses/wind_wraith.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -485,9 +233,10 @@
     "seed": 3714191240,
     "width": 1280,
     "height": 640,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from wind_wraith.jpg"
   },
-  "assets/images/exercises/bear_crawl.jpg": {
+  "assets/images/exercises/bear_crawl.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -495,9 +244,10 @@
     "seed": 3368658186,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from bear_crawl.jpg"
   },
-  "assets/images/exercises/bicycle_crunch.jpg": {
+  "assets/images/exercises/bicycle_crunch.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -505,9 +255,10 @@
     "seed": 1019175912,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from bicycle_crunch.jpg"
   },
-  "assets/images/exercises/burpee.jpg": {
+  "assets/images/exercises/burpee.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -515,9 +266,10 @@
     "seed": 1968794182,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from burpee.jpg"
   },
-  "assets/images/exercises/cat_cow.jpg": {
+  "assets/images/exercises/cat_cow.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -525,9 +277,10 @@
     "seed": 489941644,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from cat_cow.jpg"
   },
-  "assets/images/exercises/chin_up.jpg": {
+  "assets/images/exercises/chin_up.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -535,9 +288,10 @@
     "seed": 3923969100,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from chin_up.jpg"
   },
-  "assets/images/exercises/cobra_stretch.jpg": {
+  "assets/images/exercises/cobra_stretch.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -545,9 +299,10 @@
     "seed": 1191783879,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from cobra_stretch.jpg"
   },
-  "assets/images/exercises/crunch.jpg": {
+  "assets/images/exercises/crunch.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -555,9 +310,10 @@
     "seed": 2946566258,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from crunch.jpg"
   },
-  "assets/images/exercises/curtsy_squat.jpg": {
+  "assets/images/exercises/curtsy_squat.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -565,9 +321,10 @@
     "seed": 1177411693,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from curtsy_squat.jpg"
   },
-  "assets/images/exercises/dead_bug.jpg": {
+  "assets/images/exercises/dead_bug.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -575,9 +332,10 @@
     "seed": 515139306,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from dead_bug.jpg"
   },
-  "assets/images/exercises/diamond_pushup.jpg": {
+  "assets/images/exercises/diamond_pushup.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -585,9 +343,10 @@
     "seed": 3615058907,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from diamond_pushup.jpg"
   },
-  "assets/images/exercises/dip.jpg": {
+  "assets/images/exercises/dip.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -595,9 +354,10 @@
     "seed": 1420106556,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from dip.jpg"
   },
-  "assets/images/exercises/downward_dog.jpg": {
+  "assets/images/exercises/downward_dog.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -605,9 +365,10 @@
     "seed": 1603693109,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from downward_dog.jpg"
   },
-  "assets/images/exercises/flutter_kicks.jpg": {
+  "assets/images/exercises/flutter_kicks.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -615,9 +376,10 @@
     "seed": 3806259131,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from flutter_kicks.jpg"
   },
-  "assets/images/exercises/glute_bridge.jpg": {
+  "assets/images/exercises/glute_bridge.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -625,9 +387,10 @@
     "seed": 1439826607,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from glute_bridge.jpg"
   },
-  "assets/images/exercises/handstand_pushup.jpg": {
+  "assets/images/exercises/handstand_pushup.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -635,9 +398,10 @@
     "seed": 3852785406,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from handstand_pushup.jpg"
   },
-  "assets/images/exercises/hanging_leg_raise.jpg": {
+  "assets/images/exercises/hanging_leg_raise.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -645,9 +409,10 @@
     "seed": 457884741,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from hanging_leg_raise.jpg"
   },
-  "assets/images/exercises/high_knees.jpg": {
+  "assets/images/exercises/high_knees.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -655,9 +420,10 @@
     "seed": 3830741708,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from high_knees.jpg"
   },
-  "assets/images/exercises/hollow_body_hold.jpg": {
+  "assets/images/exercises/hollow_body_hold.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -665,9 +431,10 @@
     "seed": 3954798149,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from hollow_body_hold.jpg"
   },
-  "assets/images/exercises/inverted_row.jpg": {
+  "assets/images/exercises/inverted_row.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -675,9 +442,10 @@
     "seed": 199819632,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from inverted_row.jpg"
   },
-  "assets/images/exercises/jump_squat.jpg": {
+  "assets/images/exercises/jump_squat.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -685,9 +453,10 @@
     "seed": 3512778152,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from jump_squat.jpg"
   },
-  "assets/images/exercises/jumping_jack.jpg": {
+  "assets/images/exercises/jumping_jack.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -695,9 +464,10 @@
     "seed": 3504221622,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from jumping_jack.jpg"
   },
-  "assets/images/exercises/l_sit.jpg": {
+  "assets/images/exercises/l_sit.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -705,9 +475,10 @@
     "seed": 3161375079,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from l_sit.jpg"
   },
-  "assets/images/exercises/lunge.jpg": {
+  "assets/images/exercises/lunge.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -715,9 +486,10 @@
     "seed": 2469180258,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from lunge.jpg"
   },
-  "assets/images/exercises/mountain_climber.jpg": {
+  "assets/images/exercises/mountain_climber.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -725,9 +497,10 @@
     "seed": 2789760417,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from mountain_climber.jpg"
   },
-  "assets/images/exercises/pigeon_pose.jpg": {
+  "assets/images/exercises/pigeon_pose.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -735,9 +508,10 @@
     "seed": 4234352456,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from pigeon_pose.jpg"
   },
-  "assets/images/exercises/pike_pushup.jpg": {
+  "assets/images/exercises/pike_pushup.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -745,9 +519,10 @@
     "seed": 753200966,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from pike_pushup.jpg"
   },
-  "assets/images/exercises/plank.jpg": {
+  "assets/images/exercises/plank.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -755,9 +530,10 @@
     "seed": 638255239,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from plank.jpg"
   },
-  "assets/images/exercises/pullups.jpg": {
+  "assets/images/exercises/pullups.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -765,9 +541,10 @@
     "seed": 3016798747,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from pullups.jpg"
   },
-  "assets/images/exercises/pushups.jpg": {
+  "assets/images/exercises/pushups.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -775,9 +552,10 @@
     "seed": 3724682527,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from pushups.jpg"
   },
-  "assets/images/exercises/reverse_crunch.jpg": {
+  "assets/images/exercises/reverse_crunch.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -785,9 +563,10 @@
     "seed": 1274367465,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from reverse_crunch.jpg"
   },
-  "assets/images/exercises/russian_twist.jpg": {
+  "assets/images/exercises/russian_twist.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -795,9 +574,10 @@
     "seed": 933091349,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from russian_twist.jpg"
   },
-  "assets/images/exercises/scapular_pullup.jpg": {
+  "assets/images/exercises/scapular_pullup.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -805,9 +585,10 @@
     "seed": 4217372666,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from scapular_pullup.jpg"
   },
-  "assets/images/exercises/side_plank.jpg": {
+  "assets/images/exercises/side_plank.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -815,9 +596,10 @@
     "seed": 2666193321,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from side_plank.jpg"
   },
-  "assets/images/exercises/single_leg_deadlift.jpg": {
+  "assets/images/exercises/single_leg_deadlift.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -825,9 +607,10 @@
     "seed": 728334364,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from single_leg_deadlift.jpg"
   },
-  "assets/images/exercises/skater_hop.jpg": {
+  "assets/images/exercises/skater_hop.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -835,9 +618,10 @@
     "seed": 2554704887,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from skater_hop.jpg"
   },
-  "assets/images/exercises/squat.jpg": {
+  "assets/images/exercises/squat.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -845,9 +629,10 @@
     "seed": 3530026883,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from squat.jpg"
   },
-  "assets/images/exercises/standing_calf_raise.jpg": {
+  "assets/images/exercises/standing_calf_raise.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -855,9 +640,10 @@
     "seed": 452350116,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from standing_calf_raise.jpg"
   },
-  "assets/images/exercises/standing_forward_fold.jpg": {
+  "assets/images/exercises/standing_forward_fold.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -865,9 +651,10 @@
     "seed": 2952570148,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from standing_forward_fold.jpg"
   },
-  "assets/images/exercises/star_jump.jpg": {
+  "assets/images/exercises/star_jump.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -875,9 +662,10 @@
     "seed": 1352801887,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from star_jump.jpg"
   },
-  "assets/images/exercises/superman.jpg": {
+  "assets/images/exercises/superman.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -885,9 +673,10 @@
     "seed": 4102579639,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from superman.jpg"
   },
-  "assets/images/exercises/table_row.jpg": {
+  "assets/images/exercises/table_row.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -895,9 +684,10 @@
     "seed": 2379578559,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from table_row.jpg"
   },
-  "assets/images/exercises/thread_the_needle.jpg": {
+  "assets/images/exercises/thread_the_needle.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -905,9 +695,10 @@
     "seed": 2697432967,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from thread_the_needle.jpg"
   },
-  "assets/images/exercises/towel_door_row.jpg": {
+  "assets/images/exercises/towel_door_row.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -915,9 +706,10 @@
     "seed": 2808798970,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from towel_door_row.jpg"
   },
-  "assets/images/exercises/wall_pushup.jpg": {
+  "assets/images/exercises/wall_pushup.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -925,9 +717,10 @@
     "seed": 1831259347,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from wall_pushup.jpg"
   },
-  "assets/images/exercises/wall_sit.jpg": {
+  "assets/images/exercises/wall_sit.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -935,9 +728,10 @@
     "seed": 3943496177,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from wall_sit.jpg"
   },
-  "assets/images/exercises/warrior_pose.jpg": {
+  "assets/images/exercises/warrior_pose.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -945,9 +739,10 @@
     "seed": 3376003381,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from warrior_pose.jpg"
   },
-  "assets/images/exercises/windshield_wipers.jpg": {
+  "assets/images/exercises/windshield_wipers.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -955,9 +750,10 @@
     "seed": 783290121,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from windshield_wipers.jpg"
   },
-  "assets/images/exercises/worlds_greatest_stretch.jpg": {
+  "assets/images/exercises/worlds_greatest_stretch.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -965,9 +761,10 @@
     "seed": 2528260184,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from worlds_greatest_stretch.jpg"
   },
-  "assets/images/exercises/wrist_circles.jpg": {
+  "assets/images/exercises/wrist_circles.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -975,9 +772,10 @@
     "seed": 3091441704,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from wrist_circles.jpg"
   },
-  "assets/images/quests/arcane_gauntlet.jpg": {
+  "assets/images/quests/arcane_gauntlet.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -985,9 +783,10 @@
     "seed": 1243154874,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from arcane_gauntlet.jpg"
   },
-  "assets/images/quests/bears_road.jpg": {
+  "assets/images/quests/bears_road.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -995,9 +794,10 @@
     "seed": 1940489258,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from bears_road.jpg"
   },
-  "assets/images/quests/build_stronghold.jpg": {
+  "assets/images/quests/build_stronghold.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1005,9 +805,10 @@
     "seed": 1646001291,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from build_stronghold.jpg"
   },
-  "assets/images/quests/cellar_hauler.jpg": {
+  "assets/images/quests/cellar_hauler.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1015,9 +816,10 @@
     "seed": 1238925653,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from cellar_hauler.jpg"
   },
-  "assets/images/quests/chop_wood.jpg": {
+  "assets/images/quests/chop_wood.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1025,9 +827,10 @@
     "seed": 3998385017,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from chop_wood.jpg"
   },
-  "assets/images/quests/climb_titan_tower.jpg": {
+  "assets/images/quests/climb_titan_tower.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1035,9 +838,10 @@
     "seed": 1320914321,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from climb_titan_tower.jpg"
   },
-  "assets/images/quests/colossus_trial.jpg": {
+  "assets/images/quests/colossus_trial.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1045,9 +849,10 @@
     "seed": 3433012008,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from colossus_trial.jpg"
   },
-  "assets/images/quests/core_forge.jpg": {
+  "assets/images/quests/core_forge.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1055,9 +860,10 @@
     "seed": 310888137,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from core_forge.jpg"
   },
-  "assets/images/quests/crows_ascent.jpg": {
+  "assets/images/quests/crows_ascent.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1065,9 +871,10 @@
     "seed": 2883475866,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from crows_ascent.jpg"
   },
-  "assets/images/quests/dawn_ritual.jpg": {
+  "assets/images/quests/dawn_ritual.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1075,9 +882,10 @@
     "seed": 486611950,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from dawn_ritual.jpg"
   },
-  "assets/images/quests/druid_path.jpg": {
+  "assets/images/quests/druid_path.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1085,9 +893,10 @@
     "seed": 2876854701,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from druid_path.jpg"
   },
-  "assets/images/quests/escape_collapsing_mine.jpg": {
+  "assets/images/quests/escape_collapsing_mine.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1095,9 +904,10 @@
     "seed": 721733010,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from escape_collapsing_mine.jpg"
   },
-  "assets/images/quests/forge_dragon_blade.jpg": {
+  "assets/images/quests/forge_dragon_blade.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1105,9 +915,10 @@
     "seed": 2572965231,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from forge_dragon_blade.jpg"
   },
-  "assets/images/quests/gather_stones.jpg": {
+  "assets/images/quests/gather_stones.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1115,9 +926,10 @@
     "seed": 1080278509,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from gather_stones.jpg"
   },
-  "assets/images/quests/golem_core.jpg": {
+  "assets/images/quests/golem_core.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1125,9 +937,10 @@
     "seed": 4265824372,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from golem_core.jpg"
   },
-  "assets/images/quests/golem_strike.jpg": {
+  "assets/images/quests/golem_strike.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1135,9 +948,10 @@
     "seed": 3352066925,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from golem_strike.jpg"
   },
-  "assets/images/quests/guard_fortress_gate.jpg": {
+  "assets/images/quests/guard_fortress_gate.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1145,9 +959,10 @@
     "seed": 3878174527,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from guard_fortress_gate.jpg"
   },
-  "assets/images/quests/handlers_vigil.jpg": {
+  "assets/images/quests/handlers_vigil.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1155,9 +970,10 @@
     "seed": 2323544533,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from handlers_vigil.jpg"
   },
-  "assets/images/quests/hearthside_unbinding.jpg": {
+  "assets/images/quests/hearthside_unbinding.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1165,9 +981,10 @@
     "seed": 2285108555,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from hearthside_unbinding.jpg"
   },
-  "assets/images/quests/iron_gauntlet_challenge.jpg": {
+  "assets/images/quests/iron_gauntlet_challenge.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1175,9 +992,10 @@
     "seed": 4250377703,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from iron_gauntlet_challenge.jpg"
   },
-  "assets/images/quests/knight_push.jpg": {
+  "assets/images/quests/knight_push.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1185,9 +1003,10 @@
     "seed": 1639456791,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from knight_push.jpg"
   },
-  "assets/images/quests/morning_champion.jpg": {
+  "assets/images/quests/morning_champion.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1195,9 +1014,10 @@
     "seed": 1265139628,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from morning_champion.jpg"
   },
-  "assets/images/quests/ploughmans_vow.jpg": {
+  "assets/images/quests/ploughmans_vow.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1205,9 +1025,10 @@
     "seed": 592217469,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from ploughmans_vow.jpg"
   },
-  "assets/images/quests/raise_the_shelter.jpg": {
+  "assets/images/quests/raise_the_shelter.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1215,9 +1036,10 @@
     "seed": 2439506847,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from raise_the_shelter.jpg"
   },
-  "assets/images/quests/serpents_coil.jpg": {
+  "assets/images/quests/serpents_coil.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1225,9 +1047,10 @@
     "seed": 3506536928,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from serpents_coil.jpg"
   },
-  "assets/images/quests/shield_wall.jpg": {
+  "assets/images/quests/shield_wall.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1235,9 +1058,10 @@
     "seed": 2178985401,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from shield_wall.jpg"
   },
-  "assets/images/quests/sprint_shadowlands.jpg": {
+  "assets/images/quests/sprint_shadowlands.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1245,9 +1069,10 @@
     "seed": 4246736405,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from sprint_shadowlands.jpg"
   },
-  "assets/images/quests/squire_awakening.jpg": {
+  "assets/images/quests/squire_awakening.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1255,9 +1080,10 @@
     "seed": 3550294253,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from squire_awakening.jpg"
   },
-  "assets/images/quests/storm_of_blades.jpg": {
+  "assets/images/quests/storm_of_blades.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1265,9 +1091,10 @@
     "seed": 3495199331,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from storm_of_blades.jpg"
   },
-  "assets/images/quests/tower_climb.jpg": {
+  "assets/images/quests/tower_climb.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1275,9 +1102,10 @@
     "seed": 1679876794,
     "width": 1024,
     "height": 768,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from tower_climb.jpg"
   },
-  "assets/images/village/buildings/armory.png": {
+  "assets/images/village/buildings/armory.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1285,9 +1113,10 @@
     "seed": 3274011207,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from armory.png"
   },
-  "assets/images/village/buildings/barn.png": {
+  "assets/images/village/buildings/barn.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1295,9 +1124,10 @@
     "seed": 4131713707,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from barn.png"
   },
-  "assets/images/village/buildings/campfire.png": {
+  "assets/images/village/buildings/campfire.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1305,9 +1135,10 @@
     "seed": 1439003758,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from campfire.png"
   },
-  "assets/images/village/buildings/castle_wall.png": {
+  "assets/images/village/buildings/castle_wall.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1315,9 +1146,10 @@
     "seed": 699884002,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from castle_wall.png"
   },
-  "assets/images/village/buildings/champion_arena.png": {
+  "assets/images/village/buildings/champion_arena.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1325,9 +1157,10 @@
     "seed": 2601887239,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from champion_arena.png"
   },
-  "assets/images/village/buildings/dragon_lair.png": {
+  "assets/images/village/buildings/dragon_lair.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1335,9 +1168,10 @@
     "seed": 3881361747,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from dragon_lair.png"
   },
-  "assets/images/village/buildings/druid_grove.png": {
+  "assets/images/village/buildings/druid_grove.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1345,9 +1179,10 @@
     "seed": 2875135318,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from druid_grove.png"
   },
-  "assets/images/village/buildings/fountain.png": {
+  "assets/images/village/buildings/fountain.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1355,9 +1190,10 @@
     "seed": 3081270524,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from fountain.png"
   },
-  "assets/images/village/buildings/heroes_hall.png": {
+  "assets/images/village/buildings/heroes_hall.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1365,9 +1201,10 @@
     "seed": 2109381758,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from heroes_hall.png"
   },
-  "assets/images/village/buildings/observatory.png": {
+  "assets/images/village/buildings/observatory.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1375,9 +1212,10 @@
     "seed": 1972285698,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from observatory.png"
   },
-  "assets/images/village/buildings/tent.png": {
+  "assets/images/village/buildings/tent.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1385,9 +1223,10 @@
     "seed": 2670392851,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tent.png"
   },
-  "assets/images/village/buildings/training_dummy.png": {
+  "assets/images/village/buildings/training_dummy.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1395,9 +1234,10 @@
     "seed": 2782616103,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from training_dummy.png"
   },
-  "assets/images/village/buildings/watchtower.png": {
+  "assets/images/village/buildings/watchtower.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1405,9 +1245,10 @@
     "seed": 1331854362,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from watchtower.png"
   },
-  "assets/images/village/buildings/wizard_tower.png": {
+  "assets/images/village/buildings/wizard_tower.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1415,9 +1256,10 @@
     "seed": 607322636,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from wizard_tower.png"
   },
-  "assets/images/village/sport_abs.png": {
+  "assets/images/village/sport_abs.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1425,9 +1267,10 @@
     "seed": 4035787687,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from sport_abs.png"
   },
-  "assets/images/village/sport_arms.png": {
+  "assets/images/village/sport_arms.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1435,9 +1278,10 @@
     "seed": 2603346132,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from sport_arms.png"
   },
-  "assets/images/village/sport_back.png": {
+  "assets/images/village/sport_back.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1445,9 +1289,10 @@
     "seed": 437383115,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from sport_back.png"
   },
-  "assets/images/village/sport_chest.png": {
+  "assets/images/village/sport_chest.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1455,9 +1300,10 @@
     "seed": 1329124014,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from sport_chest.png"
   },
-  "assets/images/village/sport_legs.png": {
+  "assets/images/village/sport_legs.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1465,9 +1311,10 @@
     "seed": 2328325494,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from sport_legs.png"
   },
-  "assets/images/village/sport_shoulder.png": {
+  "assets/images/village/sport_shoulder.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1475,9 +1322,10 @@
     "seed": 2570699431,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from sport_shoulder.png"
   },
-  "assets/images/village/tier_1.png": {
+  "assets/images/village/tier_1.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1485,9 +1333,10 @@
     "seed": 2183332326,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_1.png"
   },
-  "assets/images/village/tier_2.png": {
+  "assets/images/village/tier_2.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1495,9 +1344,10 @@
     "seed": 455757916,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_2.png"
   },
-  "assets/images/village/tier_3.png": {
+  "assets/images/village/tier_3.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1505,9 +1355,10 @@
     "seed": 1814913226,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_3.png"
   },
-  "assets/images/village/tier_4.png": {
+  "assets/images/village/tier_4.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1515,9 +1366,10 @@
     "seed": 4064933225,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_4.png"
   },
-  "assets/images/village/tier_5.png": {
+  "assets/images/village/tier_5.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1525,9 +1377,10 @@
     "seed": 2236532223,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_5.png"
   },
-  "assets/onboardings/building.jpg": {
+  "assets/onboardings/building.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1535,9 +1388,10 @@
     "seed": 3782173140,
     "width": 1280,
     "height": 960,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from building.jpg"
   },
-  "assets/onboardings/new_city.jpg": {
+  "assets/onboardings/new_city.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1545,9 +1399,10 @@
     "seed": 3652630249,
     "width": 1280,
     "height": 960,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from new_city.jpg"
   },
-  "assets/onboardings/splash-bg1.jpg": {
+  "assets/onboardings/splash-bg1.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1555,9 +1410,10 @@
     "seed": 3796873609,
     "width": 1280,
     "height": 960,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from splash-bg1.jpg"
   },
-  "assets/placeholder.jpg": {
+  "assets/placeholder.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1565,14 +1421,16 @@
     "seed": 4125531906,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from placeholder.jpg"
   },
-  "assets/splash-bg1.jpg": {
+  "assets/splash-bg1.webp": {
     "derived_from": "assets/onboardings/splash-bg1.jpg",
     "how": "verbatim copy",
-    "licence": "same as the source render; see that entry"
+    "licence": "same as the source render; see that entry",
+    "reencoded": "cwebp -q 85, from splash-bg1.jpg"
   },
-  "assets/splash-bg3.jpg": {
+  "assets/splash-bg3.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1580,6 +1438,7 @@
     "seed": 205639845,
     "width": 1280,
     "height": 960,
-    "generated": "2026-08-02"
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from splash-bg3.jpg"
   }
 }

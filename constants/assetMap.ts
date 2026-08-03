@@ -16,59 +16,59 @@
 export const EXERCISE_ASSETS = {
   // The 0006 batch, renamed to the movements' official names by 0023 — the five that duplicated
   // a 0001 exercise were merged into it and their art dropped.
-  lunge: require("@/assets/images/exercises/lunge.jpg"),
-  burpee: require("@/assets/images/exercises/burpee.jpg"),
-  mountain_climber: require("@/assets/images/exercises/mountain_climber.jpg"),
-  dip: require("@/assets/images/exercises/dip.jpg"),
-  pike_pushup: require("@/assets/images/exercises/pike_pushup.jpg"),
-  jumping_jack: require("@/assets/images/exercises/jumping_jack.jpg"),
-  high_knees: require("@/assets/images/exercises/high_knees.jpg"),
-  bicycle_crunch: require("@/assets/images/exercises/bicycle_crunch.jpg"),
-  diamond_pushup: require("@/assets/images/exercises/diamond_pushup.jpg"),
-  single_leg_deadlift: require("@/assets/images/exercises/single_leg_deadlift.jpg"),
-  cobra_stretch: require("@/assets/images/exercises/cobra_stretch.jpg"),
-  warrior_pose: require("@/assets/images/exercises/warrior_pose.jpg"),
-  skater_hop: require("@/assets/images/exercises/skater_hop.jpg"),
-  hollow_body_hold: require("@/assets/images/exercises/hollow_body_hold.jpg"),
+  lunge: require("@/assets/images/exercises/lunge.webp"),
+  burpee: require("@/assets/images/exercises/burpee.webp"),
+  mountain_climber: require("@/assets/images/exercises/mountain_climber.webp"),
+  dip: require("@/assets/images/exercises/dip.webp"),
+  pike_pushup: require("@/assets/images/exercises/pike_pushup.webp"),
+  jumping_jack: require("@/assets/images/exercises/jumping_jack.webp"),
+  high_knees: require("@/assets/images/exercises/high_knees.webp"),
+  bicycle_crunch: require("@/assets/images/exercises/bicycle_crunch.webp"),
+  diamond_pushup: require("@/assets/images/exercises/diamond_pushup.webp"),
+  single_leg_deadlift: require("@/assets/images/exercises/single_leg_deadlift.webp"),
+  cobra_stretch: require("@/assets/images/exercises/cobra_stretch.webp"),
+  warrior_pose: require("@/assets/images/exercises/warrior_pose.webp"),
+  skater_hop: require("@/assets/images/exercises/skater_hop.webp"),
+  hollow_body_hold: require("@/assets/images/exercises/hollow_body_hold.webp"),
   // Dedicated art for the generic exercises (0001) — see docs/content/missing-covers.md
-  squat: require("@/assets/images/exercises/squat.jpg"),
-  pushups: require("@/assets/images/exercises/pushups.jpg"),
-  pullups: require("@/assets/images/exercises/pullups.jpg"),
-  wall_sit: require("@/assets/images/exercises/wall_sit.jpg"),
-  plank: require("@/assets/images/exercises/plank.jpg"),
-  crunch: require("@/assets/images/exercises/crunch.jpg"),
+  squat: require("@/assets/images/exercises/squat.webp"),
+  pushups: require("@/assets/images/exercises/pushups.webp"),
+  pullups: require("@/assets/images/exercises/pullups.webp"),
+  wall_sit: require("@/assets/images/exercises/wall_sit.webp"),
+  plank: require("@/assets/images/exercises/plank.webp"),
+  crunch: require("@/assets/images/exercises/crunch.webp"),
   // Bodyweight exercises (0010, art assigned in 0011) — see docs/content/missing-image.md §4
-  chin_up: require("@/assets/images/exercises/chin_up.jpg"),
-  superman: require("@/assets/images/exercises/superman.jpg"),
-  bear_crawl: require("@/assets/images/exercises/bear_crawl.jpg"),
-  russian_twist: require("@/assets/images/exercises/russian_twist.jpg"),
-  side_plank: require("@/assets/images/exercises/side_plank.jpg"),
-  glute_bridge: require("@/assets/images/exercises/glute_bridge.jpg"),
-  standing_calf_raise: require("@/assets/images/exercises/standing_calf_raise.jpg"),
-  handstand_pushup: require("@/assets/images/exercises/handstand_pushup.jpg"),
-  wall_pushup: require("@/assets/images/exercises/wall_pushup.jpg"),
-  flutter_kicks: require("@/assets/images/exercises/flutter_kicks.jpg"),
-  inverted_row: require("@/assets/images/exercises/inverted_row.jpg"),
-  dead_bug: require("@/assets/images/exercises/dead_bug.jpg"),
-  hanging_leg_raise: require("@/assets/images/exercises/hanging_leg_raise.jpg"),
-  jump_squat: require("@/assets/images/exercises/jump_squat.jpg"),
-  reverse_crunch: require("@/assets/images/exercises/reverse_crunch.jpg"),
-  curtsy_squat: require("@/assets/images/exercises/curtsy_squat.jpg"),
-  scapular_pullup: require("@/assets/images/exercises/scapular_pullup.jpg"),
-  l_sit: require("@/assets/images/exercises/l_sit.jpg"),
-  star_jump: require("@/assets/images/exercises/star_jump.jpg"),
-  windshield_wipers: require("@/assets/images/exercises/windshield_wipers.jpg"),
+  chin_up: require("@/assets/images/exercises/chin_up.webp"),
+  superman: require("@/assets/images/exercises/superman.webp"),
+  bear_crawl: require("@/assets/images/exercises/bear_crawl.webp"),
+  russian_twist: require("@/assets/images/exercises/russian_twist.webp"),
+  side_plank: require("@/assets/images/exercises/side_plank.webp"),
+  glute_bridge: require("@/assets/images/exercises/glute_bridge.webp"),
+  standing_calf_raise: require("@/assets/images/exercises/standing_calf_raise.webp"),
+  handstand_pushup: require("@/assets/images/exercises/handstand_pushup.webp"),
+  wall_pushup: require("@/assets/images/exercises/wall_pushup.webp"),
+  flutter_kicks: require("@/assets/images/exercises/flutter_kicks.webp"),
+  inverted_row: require("@/assets/images/exercises/inverted_row.webp"),
+  dead_bug: require("@/assets/images/exercises/dead_bug.webp"),
+  hanging_leg_raise: require("@/assets/images/exercises/hanging_leg_raise.webp"),
+  jump_squat: require("@/assets/images/exercises/jump_squat.webp"),
+  reverse_crunch: require("@/assets/images/exercises/reverse_crunch.webp"),
+  curtsy_squat: require("@/assets/images/exercises/curtsy_squat.webp"),
+  scapular_pullup: require("@/assets/images/exercises/scapular_pullup.webp"),
+  l_sit: require("@/assets/images/exercises/l_sit.webp"),
+  star_jump: require("@/assets/images/exercises/star_jump.webp"),
+  windshield_wipers: require("@/assets/images/exercises/windshield_wipers.webp"),
   // The equipment-free pulls from 0015
-  table_row: require("@/assets/images/exercises/table_row.jpg"),
-  towel_door_row: require("@/assets/images/exercises/towel_door_row.jpg"),
+  table_row: require("@/assets/images/exercises/table_row.webp"),
+  towel_door_row: require("@/assets/images/exercises/towel_door_row.webp"),
   // The mobility branch from 0024 — see docs/content/missing-image.md §7
-  wrist_circles: require("@/assets/images/exercises/wrist_circles.jpg"),
-  cat_cow: require("@/assets/images/exercises/cat_cow.jpg"),
-  thread_the_needle: require("@/assets/images/exercises/thread_the_needle.jpg"),
-  standing_forward_fold: require("@/assets/images/exercises/standing_forward_fold.jpg"),
-  downward_dog: require("@/assets/images/exercises/downward_dog.jpg"),
-  pigeon_pose: require("@/assets/images/exercises/pigeon_pose.jpg"),
-  worlds_greatest_stretch: require("@/assets/images/exercises/worlds_greatest_stretch.jpg"),
+  wrist_circles: require("@/assets/images/exercises/wrist_circles.webp"),
+  cat_cow: require("@/assets/images/exercises/cat_cow.webp"),
+  thread_the_needle: require("@/assets/images/exercises/thread_the_needle.webp"),
+  standing_forward_fold: require("@/assets/images/exercises/standing_forward_fold.webp"),
+  downward_dog: require("@/assets/images/exercises/downward_dog.webp"),
+  pigeon_pose: require("@/assets/images/exercises/pigeon_pose.webp"),
+  worlds_greatest_stretch: require("@/assets/images/exercises/worlds_greatest_stretch.webp"),
 } as const;
 
 // ============================================================
@@ -76,40 +76,40 @@ export const EXERCISE_ASSETS = {
 // ============================================================
 
 export const QUEST_ASSETS = {
-  escape_collapsing_mine: require("@/assets/images/quests/escape_collapsing_mine.jpg"),
-  guard_fortress_gate: require("@/assets/images/quests/guard_fortress_gate.jpg"),
-  forge_dragon_blade: require("@/assets/images/quests/forge_dragon_blade.jpg"),
-  climb_titan_tower: require("@/assets/images/quests/climb_titan_tower.jpg"),
-  arcane_gauntlet: require("@/assets/images/quests/arcane_gauntlet.jpg"),
-  druid_path: require("@/assets/images/quests/druid_path.jpg"),
-  sprint_shadowlands: require("@/assets/images/quests/sprint_shadowlands.jpg"),
-  build_stronghold: require("@/assets/images/quests/build_stronghold.jpg"),
-  iron_gauntlet_challenge: require("@/assets/images/quests/iron_gauntlet_challenge.jpg"),
-  morning_champion: require("@/assets/images/quests/morning_champion.jpg"),
+  escape_collapsing_mine: require("@/assets/images/quests/escape_collapsing_mine.webp"),
+  guard_fortress_gate: require("@/assets/images/quests/guard_fortress_gate.webp"),
+  forge_dragon_blade: require("@/assets/images/quests/forge_dragon_blade.webp"),
+  climb_titan_tower: require("@/assets/images/quests/climb_titan_tower.webp"),
+  arcane_gauntlet: require("@/assets/images/quests/arcane_gauntlet.webp"),
+  druid_path: require("@/assets/images/quests/druid_path.webp"),
+  sprint_shadowlands: require("@/assets/images/quests/sprint_shadowlands.webp"),
+  build_stronghold: require("@/assets/images/quests/build_stronghold.webp"),
+  iron_gauntlet_challenge: require("@/assets/images/quests/iron_gauntlet_challenge.webp"),
+  morning_champion: require("@/assets/images/quests/morning_champion.webp"),
   // Covers for the hand-authored quests (0002) — see docs/content/missing-covers.md
-  chop_wood: require("@/assets/images/quests/chop_wood.jpg"),
-  gather_stones: require("@/assets/images/quests/gather_stones.jpg"),
-  raise_the_shelter: require("@/assets/images/quests/raise_the_shelter.jpg"),
-  golem_strike: require("@/assets/images/quests/golem_strike.jpg"),
-  golem_core: require("@/assets/images/quests/golem_core.jpg"),
-  tower_climb: require("@/assets/images/quests/tower_climb.jpg"),
-  knight_push: require("@/assets/images/quests/knight_push.jpg"),
-  shield_wall: require("@/assets/images/quests/shield_wall.jpg"),
-  core_forge: require("@/assets/images/quests/core_forge.jpg"),
+  chop_wood: require("@/assets/images/quests/chop_wood.webp"),
+  gather_stones: require("@/assets/images/quests/gather_stones.webp"),
+  raise_the_shelter: require("@/assets/images/quests/raise_the_shelter.webp"),
+  golem_strike: require("@/assets/images/quests/golem_strike.webp"),
+  golem_core: require("@/assets/images/quests/golem_core.webp"),
+  tower_climb: require("@/assets/images/quests/tower_climb.webp"),
+  knight_push: require("@/assets/images/quests/knight_push.webp"),
+  shield_wall: require("@/assets/images/quests/shield_wall.webp"),
+  core_forge: require("@/assets/images/quests/core_forge.webp"),
   // Phase C/D/E batch — see docs/content/missing-image.md §5
-  squire_awakening: require("@/assets/images/quests/squire_awakening.jpg"),
-  bears_road: require("@/assets/images/quests/bears_road.jpg"),
-  cellar_hauler: require("@/assets/images/quests/cellar_hauler.jpg"),
-  ploughmans_vow: require("@/assets/images/quests/ploughmans_vow.jpg"),
-  crows_ascent: require("@/assets/images/quests/crows_ascent.jpg"),
-  colossus_trial: require("@/assets/images/quests/colossus_trial.jpg"),
-  storm_of_blades: require("@/assets/images/quests/storm_of_blades.jpg"),
-  serpents_coil: require("@/assets/images/quests/serpents_coil.jpg"),
+  squire_awakening: require("@/assets/images/quests/squire_awakening.webp"),
+  bears_road: require("@/assets/images/quests/bears_road.webp"),
+  cellar_hauler: require("@/assets/images/quests/cellar_hauler.webp"),
+  ploughmans_vow: require("@/assets/images/quests/ploughmans_vow.webp"),
+  crows_ascent: require("@/assets/images/quests/crows_ascent.webp"),
+  colossus_trial: require("@/assets/images/quests/colossus_trial.webp"),
+  storm_of_blades: require("@/assets/images/quests/storm_of_blades.webp"),
+  serpents_coil: require("@/assets/images/quests/serpents_coil.webp"),
   // Mobility branch (0024) — see docs/content/missing-image.md §7. Calm and unpeopled by
   // design: these are rest-day sessions, and a cover that shouts undercuts what they are for.
-  dawn_ritual: require("@/assets/images/quests/dawn_ritual.jpg"),
-  hearthside_unbinding: require("@/assets/images/quests/hearthside_unbinding.jpg"),
-  handlers_vigil: require("@/assets/images/quests/handlers_vigil.jpg"),
+  dawn_ritual: require("@/assets/images/quests/dawn_ritual.webp"),
+  hearthside_unbinding: require("@/assets/images/quests/hearthside_unbinding.webp"),
+  handlers_vigil: require("@/assets/images/quests/handlers_vigil.webp"),
 } as const;
 
 // ============================================================
@@ -117,11 +117,11 @@ export const QUEST_ASSETS = {
 // ============================================================
 
 export const BOSS_ASSETS = {
-  wind_wraith: require("@/assets/images/bosses/wind_wraith.jpg"),
-  stone_golem: require("@/assets/images/bosses/stone_golem.jpg"),
-  shadow_serpent: require("@/assets/images/bosses/shadow_serpent.jpg"),
-  forest_titan: require("@/assets/images/bosses/forest_titan.jpg"),
-  fire_dragon: require("@/assets/images/bosses/fire_dragon.jpg"),
+  wind_wraith: require("@/assets/images/bosses/wind_wraith.webp"),
+  stone_golem: require("@/assets/images/bosses/stone_golem.webp"),
+  shadow_serpent: require("@/assets/images/bosses/shadow_serpent.webp"),
+  forest_titan: require("@/assets/images/bosses/forest_titan.webp"),
+  fire_dragon: require("@/assets/images/bosses/fire_dragon.webp"),
 } as const;
 
 // ============================================================
@@ -129,16 +129,16 @@ export const BOSS_ASSETS = {
 // ============================================================
 
 export const ADVENTURE_ASSETS = {
-  scout_trial: require("@/assets/images/adventures/scout_trial.jpg"),
-  guardian_oath: require("@/assets/images/adventures/guardian_oath.jpg"),
-  monk_enlightenment: require("@/assets/images/adventures/monk_enlightenment.jpg"),
-  ranger_journey: require("@/assets/images/adventures/ranger_journey.jpg"),
-  iron_lord_conquest: require("@/assets/images/adventures/iron_lord_conquest.jpg"),
+  scout_trial: require("@/assets/images/adventures/scout_trial.webp"),
+  guardian_oath: require("@/assets/images/adventures/guardian_oath.webp"),
+  monk_enlightenment: require("@/assets/images/adventures/monk_enlightenment.webp"),
+  ranger_journey: require("@/assets/images/adventures/ranger_journey.webp"),
+  iron_lord_conquest: require("@/assets/images/adventures/iron_lord_conquest.webp"),
   // Covers for the hand-authored adventures (0003) — see docs/content/missing-covers.md
-  lumber_route: require("@/assets/images/adventures/lumber_route.jpg"),
-  the_golem: require("@/assets/images/adventures/the_golem.jpg"),
+  lumber_route: require("@/assets/images/adventures/lumber_route.webp"),
+  the_golem: require("@/assets/images/adventures/the_golem.webp"),
   // The beginner on-ramp route the 8 covers above belong to
-  squire_path: require("@/assets/images/adventures/squire_path.jpg"),
+  squire_path: require("@/assets/images/adventures/squire_path.webp"),
 } as const;
 
 // ============================================================
@@ -146,11 +146,11 @@ export const ADVENTURE_ASSETS = {
 // ============================================================
 
 export const VILLAGE_TIER_ASSETS = {
-  1: require("@/assets/images/village/tier_1.png"),
-  2: require("@/assets/images/village/tier_2.png"),
-  3: require("@/assets/images/village/tier_3.png"),
-  4: require("@/assets/images/village/tier_4.png"),
-  5: require("@/assets/images/village/tier_5.png"),
+  1: require("@/assets/images/village/tier_1.webp"),
+  2: require("@/assets/images/village/tier_2.webp"),
+  3: require("@/assets/images/village/tier_3.webp"),
+  4: require("@/assets/images/village/tier_4.webp"),
+  5: require("@/assets/images/village/tier_5.webp"),
 } as const;
 
 // ============================================================
@@ -158,12 +158,12 @@ export const VILLAGE_TIER_ASSETS = {
 // ============================================================
 
 export const SPORT_SPRITE_ASSETS = {
-  arms: require("@/assets/images/village/sport_arms.png"),
-  back: require("@/assets/images/village/sport_back.png"),
-  chest: require("@/assets/images/village/sport_chest.png"),
-  abs: require("@/assets/images/village/sport_abs.png"),
-  shoulder: require("@/assets/images/village/sport_shoulder.png"),
-  legs: require("@/assets/images/village/sport_legs.png"),
+  arms: require("@/assets/images/village/sport_arms.webp"),
+  back: require("@/assets/images/village/sport_back.webp"),
+  chest: require("@/assets/images/village/sport_chest.webp"),
+  abs: require("@/assets/images/village/sport_abs.webp"),
+  shoulder: require("@/assets/images/village/sport_shoulder.webp"),
+  legs: require("@/assets/images/village/sport_legs.webp"),
 } as const;
 
 // ============================================================
@@ -173,20 +173,20 @@ export const SPORT_SPRITE_ASSETS = {
 // ============================================================
 
 export const BUILDING_ICON_ASSETS = {
-  campfire: require("@/assets/images/village/buildings/campfire.png"),
-  tent: require("@/assets/images/village/buildings/tent.png"),
-  training_dummy: require("@/assets/images/village/buildings/training_dummy.png"),
-  wizard_tower: require("@/assets/images/village/buildings/wizard_tower.png"),
-  druid_grove: require("@/assets/images/village/buildings/druid_grove.png"),
-  watchtower: require("@/assets/images/village/buildings/watchtower.png"),
-  castle_wall: require("@/assets/images/village/buildings/castle_wall.png"),
-  armory: require("@/assets/images/village/buildings/armory.png"),
-  fountain: require("@/assets/images/village/buildings/fountain.png"),
-  observatory: require("@/assets/images/village/buildings/observatory.png"),
-  barn: require("@/assets/images/village/buildings/barn.png"),
-  dragon_lair: require("@/assets/images/village/buildings/dragon_lair.png"),
-  heroes_hall: require("@/assets/images/village/buildings/heroes_hall.png"),
-  champion_arena: require("@/assets/images/village/buildings/champion_arena.png"),
+  campfire: require("@/assets/images/village/buildings/campfire.webp"),
+  tent: require("@/assets/images/village/buildings/tent.webp"),
+  training_dummy: require("@/assets/images/village/buildings/training_dummy.webp"),
+  wizard_tower: require("@/assets/images/village/buildings/wizard_tower.webp"),
+  druid_grove: require("@/assets/images/village/buildings/druid_grove.webp"),
+  watchtower: require("@/assets/images/village/buildings/watchtower.webp"),
+  castle_wall: require("@/assets/images/village/buildings/castle_wall.webp"),
+  armory: require("@/assets/images/village/buildings/armory.webp"),
+  fountain: require("@/assets/images/village/buildings/fountain.webp"),
+  observatory: require("@/assets/images/village/buildings/observatory.webp"),
+  barn: require("@/assets/images/village/buildings/barn.webp"),
+  dragon_lair: require("@/assets/images/village/buildings/dragon_lair.webp"),
+  heroes_hall: require("@/assets/images/village/buildings/heroes_hall.webp"),
+  champion_arena: require("@/assets/images/village/buildings/champion_arena.webp"),
 } as const;
 
 // ============================================================
@@ -224,7 +224,7 @@ function keyFromPath(id: string): string {
  */
 export function getExerciseAsset(id: string) {
   return (
-    EXERCISE_ASSETS[keyFromPath(id) as ExerciseAssetKey] ?? require("@/assets/placeholder.jpg")
+    EXERCISE_ASSETS[keyFromPath(id) as ExerciseAssetKey] ?? require("@/assets/placeholder.webp")
   );
 }
 
@@ -232,14 +232,14 @@ export function getExerciseAsset(id: string) {
  * Get quest cover asset by ID (with fallback to placeholder)
  */
 export function getQuestAsset(id: string) {
-  return QUEST_ASSETS[keyFromPath(id) as QuestAssetKey] ?? require("@/assets/placeholder.jpg");
+  return QUEST_ASSETS[keyFromPath(id) as QuestAssetKey] ?? require("@/assets/placeholder.webp");
 }
 
 /**
  * Get boss asset by ID (with fallback to placeholder)
  */
 export function getBossAsset(id: string) {
-  return BOSS_ASSETS[keyFromPath(id) as BossAssetKey] ?? require("@/assets/placeholder.jpg");
+  return BOSS_ASSETS[keyFromPath(id) as BossAssetKey] ?? require("@/assets/placeholder.webp");
 }
 
 /**
@@ -247,7 +247,7 @@ export function getBossAsset(id: string) {
  */
 export function getAdventureAsset(id: string) {
   return (
-    ADVENTURE_ASSETS[keyFromPath(id) as AdventureAssetKey] ?? require("@/assets/placeholder.jpg")
+    ADVENTURE_ASSETS[keyFromPath(id) as AdventureAssetKey] ?? require("@/assets/placeholder.webp")
   );
 }
 
@@ -275,5 +275,5 @@ export function getBuildingIconAsset(code: string, relatedMuscle?: SportSpriteKe
   const icon = BUILDING_ICON_ASSETS[code as BuildingIconKey];
   if (icon) return icon;
   if (relatedMuscle) return SPORT_SPRITE_ASSETS[relatedMuscle];
-  return require("@/assets/placeholder.jpg");
+  return require("@/assets/placeholder.webp");
 }

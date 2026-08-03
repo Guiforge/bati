@@ -53,7 +53,7 @@ export default function TrainingLevelStep() {
   return (
     <YStack flex={1} bg="$bgDark">
       <Image
-        source={require("../../assets/onboardings/splash-bg1.jpg")}
+        source={require("../../assets/onboardings/splash-bg1.webp")}
         style={{ position: "absolute", width: "100%", height: "100%" }}
         contentFit="cover"
       />

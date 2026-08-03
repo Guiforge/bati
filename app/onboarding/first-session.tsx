@@ -71,7 +71,7 @@ export default function FirstSessionStep() {
   return (
     <YStack flex={1} bg="$bgDark">
       <Image
-        source={require("../../assets/splash-bg3.jpg")}
+        source={require("../../assets/splash-bg3.webp")}
         style={{ position: "absolute", width: "100%", height: "100%" }}
         contentFit="cover"
       />

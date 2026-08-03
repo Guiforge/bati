@@ -529,10 +529,30 @@ export type VillageScene = {
   level: number;
   flame: FlameLevel;
   dominantSport: DominantSportOverlay;
+  /** The muscle the village has always under-built, or null while nothing stands out. */
+  neglected: MuscleCode | null;
   bossBanners: BossBanner[];
   buildings: VillageBuilding[];
   trophies: Trophy[];
 };
+
+/**
+ * The muscle the hero has trained least over their whole history, if any is far enough behind
+ * to be worth naming (`weakAreas` is "under half an even share", see db/muscleBalance.ts).
+ *
+ * Lifetime rather than the last seven days on purpose. It is the same window the muscle
+ * buildings level on, so the line names the reason a tile below has stopped rising instead of
+ * reporting an unrelated statistic — and one leg day inside a quiet week would otherwise mark
+ * every other muscle as neglected.
+ *
+ * Free: `getMuscleBalance` is memoised per period by `shortLivedQuery`, and
+ * `getVillageBuildings()` has already asked for this exact window in the same tick.
+ */
+async function getNeglectedMuscle(): Promise<MuscleCode | null> {
+  const balance = await getMuscleBalance("all");
+  if (balance.totalVolume === 0) return null;
+  return balance.weakAreas[0] ?? null;
+}
 
 /**
  * Everything the village scene needs, in one call. Pure aggregation over
@@ -540,12 +560,13 @@ export type VillageScene = {
  * no village-specific table.
  */
 export async function getVillageScene(): Promise<VillageScene> {
-  const [levelInfo, streak, dominantSport, bossBanners, buildings] = await Promise.all([
+  const [levelInfo, streak, dominantSport, bossBanners, buildings, neglected] = await Promise.all([
     getUserLevelInfo(),
     getStreakInfo(),
     getDominantSportOverlay(),
     getBossBanners(),
     getVillageBuildings(),
+    getNeglectedMuscle(),
   ]);
 
   return {
@@ -553,6 +574,7 @@ export async function getVillageScene(): Promise<VillageScene> {
     level: levelInfo.level,
     flame: getFlameLevel(streak.current),
     dominantSport,
+    neglected,
     bossBanners,
     buildings,
     trophies: await getTrophies(bossBanners),

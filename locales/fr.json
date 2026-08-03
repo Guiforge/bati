@@ -615,6 +615,7 @@
     "xp_to_next": "XP pour le prochain niveau",
     "level_line": "Niveau {{level}}",
     "dominant_sport": "Focus d'entraînement : {{muscle}}",
+    "neglected_muscle": "Le moins entraîné : {{muscle}} — son bâtiment ne monte plus.",
     "banners_title": "Bannières",
     "buildings_title": "Bâtiments",
     "built_title": "Bâti",

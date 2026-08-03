@@ -243,6 +243,19 @@ export function VillageScene() {
                   })}
                 </Text>
               )}
+              {/* The counterpart to the focus line above, and the only line here that asks for
+                  something: it names a tile below that has stopped moving, and why. */}
+              {!!scene.neglected && (
+                <Text fontSize={13} color="$textSecondary">
+                  {t("village.neglected_muscle", {
+                    muscle:
+                      MUSCLE_LABELS[scene.neglected]?.[
+                        language === "fr" ? "fr" : "en"
+                      ]?.toLowerCase() ?? scene.neglected,
+                    defaultValue: `Least trained: ${scene.neglected}`,
+                  })}
+                </Text>
+              )}
               {/* Weather, not a stat. Seeded by day *and* tier so it turns over at midnight and
                   reads differently once the village has grown. */}
               <Text fontSize={12} color="$muted" fontStyle="italic">

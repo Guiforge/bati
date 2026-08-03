@@ -560,6 +560,7 @@
     "current_bonus": "Current Bonus",
     "level_line": "Level {{level}}",
     "dominant_sport": "Training focus: {{muscle}}",
+    "neglected_muscle": "Least trained: {{muscle}} — its building has stopped rising.",
     "banners_title": "Banners",
     "buildings_title": "Buildings",
     "built_title": "Built",

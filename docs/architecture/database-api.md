@@ -203,7 +203,7 @@ The village is derived, so it is all reads. See [db/village.ts](../../db/village
 | `getVillageScene()` | Everything the screen needs, in one call |
 | `getVillageBuildings()` | All 20 buildings, levels computed from the session journal |
 | `getBuildingProgress(building)` | 0-100 toward the next level, or null when nothing counts |
-| `getVillageTier(level)` | Which of the 5 illustrated tiers the hero's level lands in |
+| `getVillageTier(level)` | Which of the 8 illustrated tiers the hero's level lands in |
 | `getTrophies(banners)` | Achievements and defeated bosses on one rack |
 
 ---

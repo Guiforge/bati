@@ -50,7 +50,7 @@ grows with your level and reacts to what you train most:
 
 | Signal | What it drives |
 | ------ | -------------- |
-| Level | Village tier (5 stages, hameau → cité florissante) |
+| Level | Village tier (8 stages, hameau → capitale éternelle) |
 | Streak | Flame intensity overlay |
 | Dominant muscle (last 7 days) | Dominant-sport visual overlay |
 | Boss defeated | Permanent banner |

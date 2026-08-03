@@ -59,6 +59,32 @@ TIERS = [
      "and domes glowing with warm golden light, banners and pennants everywhere, bridges strung "
      "with lanterns, a grand central palace tower crowned in radiant light — the peak of "
      "prosperity."),
+    # 6-8 exist because the hero does not stop at 20. The level curve runs on at +2000 XP a
+    # rung (db/userLevel.ts), so a committed player reached the old tier-5 ceiling in two or
+    # three months and then watched the largest thing on the screen never change again.
+    # Each of these has to read as *more* than "a bigger city": tier 5 already spent
+    # "magnificent" and "the peak of prosperity", so they escalate in kind, not in degree.
+    ("tier_6",
+     "A wide establishing shot of a mountain-crowning citadel: concentric fortified walls "
+     "climbing a peak in tiers, a cathedral-keep at the summit with buttresses and stained "
+     "glass lit from within, stone aqueducts carrying water across deep ravines, switchback "
+     "roads lined with braziers, storm clouds broken by moonlight below the summit."),
+    # The first draft of this one came back almost monochrome: composition right, but cold
+    # grey-blue throughout, with none of the warm lantern light every other tier carries. Between
+    # tier 6's braziers and tier 8's gold it read as a step *down*, which is the one thing a
+    # progression image must never do. The warmth is now stated rather than assumed.
+    ("tier_7",
+     "A wide establishing shot of a vast metropolis spanning a chasm: colossal arched bridges "
+     "at several heights linking two cliff-cities, towers piercing a layer of cloud, funiculars "
+     "climbing the rock face, districts receding into blue haze toward the horizon. Thousands of "
+     "windows burn with warm amber lantern light, rows of golden street lamps line every bridge "
+     "and terrace, and braziers glow at the bridgeheads — a warm, densely inhabited city ablaze "
+     "with light against the cold blue of the gorge."),
+    ("tier_8",
+     "A wide establishing shot of an eternal capital beneath a shimmering aurora: impossibly "
+     "tall spires of pale stone and gold, a ring of smaller islands floating in the sky around "
+     "the highest tower and tethered by chains of light, cascading waterfalls falling off the "
+     "city's edge into cloud, the whole skyline burning like a beacon over a dark world."),
 ]
 
 SPRITES = [

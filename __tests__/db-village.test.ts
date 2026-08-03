@@ -58,7 +58,15 @@ describe("db/village", () => {
       [15, 4],
       [19, 4],
       [20, 5],
-      [99, 5],
+      [24, 5],
+      // Past 20 the hero keeps levelling at a flat 2000 XP a rung, so the scene keeps changing
+      // instead of stopping at "Flourishing City" for the rest of the account's life.
+      [25, 6],
+      [31, 6],
+      [32, 7],
+      [39, 7],
+      [40, 8],
+      [99, 8],
     ];
 
     for (const [level, tier] of cases) {

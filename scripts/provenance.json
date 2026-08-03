@@ -1400,6 +1400,39 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from tier_5.png"
   },
+  "assets/images/village/tier_6.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a mountain-crowning citadel: concentric fortified walls climbing a peak in tiers, a cathedral-keep at the summit with buttresses and stained glass lit from within, stone aqueducts carrying water across deep ravines, switchback roads lined with braziers, storm clouds broken by moonlight below the summit. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 474453061,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tier_6.png"
+  },
+  "assets/images/village/tier_7.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a vast metropolis spanning a chasm: colossal arched bridges at several heights linking two cliff-cities, towers piercing a layer of cloud, funiculars climbing the rock face, districts receding into blue haze toward the horizon. Thousands of windows burn with warm amber lantern light, rows of golden street lamps line every bridge and terrace, and braziers glow at the bridgeheads — a warm, densely inhabited city ablaze with light against the cold blue of the gorge. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 1799398611,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tier_7.png"
+  },
+  "assets/images/village/tier_8.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of an eternal capital beneath a shimmering aurora: impossibly tall spires of pale stone and gold, a ring of smaller islands floating in the sky around the highest tower and tethered by chains of light, cascading waterfalls falling off the city's edge into cloud, the whole skyline burning like a beacon over a dark world. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 4227840322,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tier_8.png"
+  },
   "assets/onboardings/building.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",

@@ -22,16 +22,28 @@ const { bossFights, adventures, exercises, completedExercises } = schema;
 // `| null` for imagePath, resolve to the placeholder here so callers have one code path.
 const PLACEHOLDER_IMAGE_PATH = "assets/placeholder.jpg";
 
-export type VillageTier = 1 | 2 | 3 | 4 | 5;
+export type VillageTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-// Level buckets for the 5 illustrated tiers (hameau -> village -> bourg -> cité -> cité florissante).
-// Derived from the existing 20-level curve in db/userLevel.ts; no separate threshold table.
+// Level buckets for the 8 illustrated tiers. Derived from the curve in db/userLevel.ts; no
+// separate threshold table.
+//
+// 1-5 sit on the named 20-level curve. 6-8 exist because that curve does not end there: past 20
+// every rung costs a flat 2000 XP and the title becomes "Divine N", so the hero keeps climbing
+// while the largest thing on the village screen used to stop forever. At roughly 360 XP a
+// session that ceiling arrived in two or three months.
+//
+// The gaps widen (5, 7, 8 levels) on purpose. The XP per level is flat up here, so equal level
+// gaps would make each tier arrive *sooner* in felt effort than the one before it; widening them
+// keeps "every tier costs more than the last", which is what the early curve does by itself.
 const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
   1: 1,
   2: 5,
   3: 10,
   4: 15,
   5: 20,
+  6: 25,
+  7: 32,
+  8: 40,
 };
 
 // Shared by the village scene and the home teaser, so the two can never disagree.
@@ -41,6 +53,9 @@ export const TIER_NAMES: Record<VillageTier, { en: string; fr: string }> = {
   3: { en: "Town", fr: "Bourg" },
   4: { en: "City", fr: "Cité" },
   5: { en: "Flourishing City", fr: "Cité florissante" },
+  6: { en: "Citadel", fr: "Citadelle" },
+  7: { en: "Metropolis", fr: "Métropole" },
+  8: { en: "Eternal Capital", fr: "Capitale éternelle" },
 };
 
 export function getVillageTier(level: number): VillageTier {
@@ -188,6 +203,9 @@ export const BUILDING_LABELS: Record<BuildingCode, { en: string; fr: string }> =
   champion_arena: { en: "Champion Arena", fr: "Arène des champions" },
 };
 
+/** Every building tops out here, and LevelPips draws exactly this many dots. */
+export const MAX_BUILDING_LEVEL = 5;
+
 /** What raises a building, so the detail sheet can answer "why is it at this level". */
 export type BuildingDriver =
   | "tier"
@@ -285,12 +303,22 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
   const def = buildingDefinitions[code];
 
   // Starter buildings always stand; they grow with the village itself.
+  //
+  // Clamped at 5 since the scene gained tiers 6-8: a building level is 1..5 by contract and
+  // LevelPips draws exactly five dots, so an unclamped tier 8 handed the tile a level it had no
+  // way to show — five filled pips *and* a bar, reading as "maxed, still climbing". Past tier 5
+  // the campfire is simply finished; the hero's tier name in the scene above is what keeps
+  // moving, and the tile does not need to say it twice.
   if (def.tier === 1) {
+    const level = Math.min(inputs.villageTier, MAX_BUILDING_LEVEL);
     return {
-      level: inputs.villageTier,
+      level,
       driver: "tier",
       metricValue: inputs.heroLevel,
-      nextTarget: TIER_LEVEL_FLOORS[(inputs.villageTier + 1) as VillageTier] ?? null,
+      nextTarget:
+        level < MAX_BUILDING_LEVEL
+          ? (TIER_LEVEL_FLOORS[(inputs.villageTier + 1) as VillageTier] ?? null)
+          : null,
     };
   }
 

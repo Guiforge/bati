@@ -44,8 +44,13 @@ that drives the village's tier (below). Nothing else consumes or stores XP per-b
 
 The village is **one illustrated scene**, not a list of buildings to manage.
 
-1. **Tier** is a function of level: `hameau → village → bourg → cité → cité florissante`
-   (5 illustrated tiers). No build menu, nothing chosen or spent.
+1. **Tier** is a function of level: `hameau → village → bourg → cité → cité florissante →
+   citadelle → métropole → capitale éternelle`, at levels 1/5/10/15/20/25/32/40. The last three
+   exist because the level curve does not stop at 20 — it runs on at a flat 2000 XP a rung, and
+   without them the scene froze for the rest of the account's life after two or three months.
+   The gaps widen (5, 7, 8) so each tier still costs more than the one before it, which the flat
+   XP curve up there would otherwise undo
+   (8 illustrated tiers). No build menu, nothing chosen or spent.
 2. **Overlays** layer on top conditionally:
    - Flame intensity (0–3), from the current consistency streak
    - Dominant-sport visual (from the last 7 days of training)

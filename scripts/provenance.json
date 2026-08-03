@@ -1319,7 +1319,7 @@
     "height": 1024,
     "generated": "2026-08-03",
     "reencoded": "cwebp -q 90, from dragon_lair_rough.png",
-    "cutout": "background flood-filled to alpha, threshold 30"
+    "cutout": "background flood-filled to alpha, threshold 60"
   },
   "assets/images/village/buildings/druid_grove.webp": {
     "model": "flux-2-pro-preview",
@@ -1787,7 +1787,7 @@
     "height": 1024,
     "generated": "2026-08-03",
     "reencoded": "cwebp -q 90, from sport_legs_rough.png",
-    "cutout": "background flood-filled to alpha, threshold 30"
+    "cutout": "background flood-filled to alpha, threshold 60"
   },
   "assets/images/village/sport_shoulder.webp": {
     "model": "flux-2-pro-preview",
@@ -1823,7 +1823,7 @@
     "height": 1024,
     "generated": "2026-08-03",
     "reencoded": "cwebp -q 90, from sport_shoulder_rough.png",
-    "cutout": "background flood-filled to alpha, threshold 30"
+    "cutout": "background flood-filled to alpha, threshold 120"
   },
   "assets/images/village/tier_1.webp": {
     "model": "flux-2-pro-preview",

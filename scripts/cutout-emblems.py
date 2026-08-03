@@ -21,12 +21,11 @@ make it transparent.
 30 is the default because of the watchtower: its frame has dark gaps the flood escapes through,
 and at 60 it leaks inside and hollows the tower out. Eighteen emblems are clean at 30.
 
-The two exceptions below are not tuning-by-taste. Most emblems sit on a flat void, but
-`sport_legs` and `sport_shoulder` were rendered with a *radial* background that brightens toward
-the object, so a flood seeded in the dark corners stops partway and leaves a disc hugging the
-subject — visible on device as a patch behind the Farm and Shoulders tiles. Extra seeds do not
-help (they land in already-cleared pixels); the barrier is the gradient itself. Each was raised
-to the lowest value that clears its disc with the subject still whole: checked at 30/60/90/120.
+The exceptions below are not tuning-by-taste. Most emblems sit on a flat void, but a few came
+back on a *radial* background that brightens toward the object, so a flood seeded in the dark
+corners stops partway and leaves a disc hugging the subject. Extra seeds do not help (they land
+in already-cleared pixels); the barrier is the gradient itself. Each was raised to the lowest
+value that clears its disc with the subject still whole: checked at 30/60/90/120.
 
 Only the emblems. The tier scenes, covers and exercise art are full-bleed illustrations whose
 background *is* the picture.
@@ -46,8 +45,20 @@ PROVENANCE = ROOT / "scripts" / "provenance.json"
 # See the module docstring: bounded above by the watchtower, which leaks at 60.
 THRESHOLD = 30
 
-# The two emblems painted on a radial background rather than a flat void. Measured, not guessed.
-THRESHOLD_OVERRIDES = {"sport_legs": 60, "sport_shoulder": 120}
+# The emblems painted on a radial background rather than a flat void. Measured, not guessed.
+THRESHOLD_OVERRIDES = {"sport_legs": 60, "sport_shoulder": 120, "dragon_lair": 60}
+
+
+def threshold_for(stem: str) -> int:
+    """The override follows a building across its three states.
+
+    Keyed on the base name, because the stage suffix is not part of the identity: `sport_legs`
+    and `sport_legs_rough` are the same subject painted on the same radial background, and looking
+    the stem up directly meant every `_rough` and `_grand` silently fell back to the default. That
+    is exactly how three of the sixty shipped with a disc of background still hugging them.
+    """
+    base = stem.removesuffix("_rough").removesuffix("_grand")
+    return THRESHOLD_OVERRIDES.get(stem, THRESHOLD_OVERRIDES.get(base, THRESHOLD))
 
 
 def emblems() -> list[pathlib.Path]:
@@ -65,7 +76,7 @@ def cut_out(path: pathlib.Path) -> float | None:
 
     image = image.convert("RGBA")
     width, height = image.size
-    threshold = THRESHOLD_OVERRIDES.get(path.stem, THRESHOLD)
+    threshold = threshold_for(path.stem)
     for corner in ((0, 0), (width - 1, 0), (0, height - 1), (width - 1, height - 1)):
         if image.getpixel(corner)[3] == 0:
             continue
@@ -97,7 +108,7 @@ def note_in_ledger(paths: list[pathlib.Path]) -> None:
         if key not in ledger:
             print(f"  !! no provenance for {key}", file=sys.stderr)
             continue
-        threshold = THRESHOLD_OVERRIDES.get(path.stem, THRESHOLD)
+        threshold = threshold_for(path.stem)
         ledger[key]["cutout"] = f"background flood-filled to alpha, threshold {threshold}"
     PROVENANCE.write_text(
         json.dumps(dict(sorted(ledger.items())), indent=2, ensure_ascii=False) + "\n",

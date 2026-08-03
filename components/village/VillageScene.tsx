@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { BuiltBuildingCard } from "@/components/village/BuiltBuildingCard";
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import { VillageEmbers } from "@/components/village/VillageEmbers";
+import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
 import {
   getAdventureAsset,
   getBuildingIconAsset,
@@ -93,6 +94,7 @@ export function VillageScene() {
   // The sheet (portal, overlay, frame) is dead weight behind the scene until the first tap,
   // and has to outlive the selection afterwards or it would vanish instead of sliding shut.
   const [sheetMounted, setSheetMounted] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const openDetail = (selection: VillageSelection) => {
     // Every other tappable surface in the app answers (session, onboarding); the village was the
@@ -150,7 +152,18 @@ export function VillageScene() {
         {/* The scene is the screen: edge to edge, its own title, nothing framing it.
             `overflow="hidden"` is what keeps the parallaxed painting inside its own band
             instead of riding down over the tiles. */}
-        <YStack width="100%" height={heroHeight} position="relative" overflow="hidden">
+        <YStack
+          width="100%"
+          height={heroHeight}
+          position="relative"
+          overflow="hidden"
+          onPress={() => {
+            haptics.selection();
+            setViewerOpen(true);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={t("village.open_scene", "See the whole scene")}
+        >
           {/* Only the painting lags — the scrims and the title stay anchored, so the art
               drifts behind the name rather than dragging it along. */}
           <Animated.View style={[{ width: "100%", height: "100%" }, parallax]}>
@@ -243,6 +256,19 @@ export function VillageScene() {
                   })}
                 </Text>
               )}
+              {/* The counterpart to the focus line above, and the only line here that asks for
+                  something: it names a tile below that has stopped moving, and why. */}
+              {!!scene.neglected && (
+                <Text fontSize={13} color="$textSecondary">
+                  {t("village.neglected_muscle", {
+                    muscle:
+                      MUSCLE_LABELS[scene.neglected]?.[
+                        language === "fr" ? "fr" : "en"
+                      ]?.toLowerCase() ?? scene.neglected,
+                    defaultValue: `Least trained: ${scene.neglected}`,
+                  })}
+                </Text>
+              )}
               {/* Weather, not a stat. Seeded by day *and* tier so it turns over at midnight and
                   reads differently once the village has grown. */}
               <Text fontSize={12} color="$muted" fontStyle="italic">
@@ -253,26 +279,13 @@ export function VillageScene() {
 
           {/* Last child on purpose: the bottom scrim is near-opaque over the lower half of the
               hero, so embers drawn before it would simply not be there. */}
-          <VillageEmbers heroHeight={heroHeight} heroWidth={width} />
+          <VillageEmbers heroHeight={heroHeight} heroWidth={width} tier={scene.tier} />
         </YStack>
 
         <YStack gap="$5" px="$4" pt="$4">
-          {/* Empty hamlet: the wall of silhouettes below needs one line saying why it's bare */}
-          {built.length === 0 && (
-            <YStack testID="village-empty" gap="$2" {...sectionAnim}>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("village.empty_title", "Nothing built yet")}
-              </Text>
-              <Text fontSize={13} color="$textSecondary">
-                {t(
-                  "village.empty_subtitle",
-                  "Your first quest will raise the first building here.",
-                )}
-              </Text>
-            </YStack>
-          )}
-
-          {/* Built: derived from training, nothing to unlock by hand */}
+          {/* No empty state: the three starter buildings take their level from the village tier,
+              which is never below 1 ("Starter buildings always stand", db/village.ts), so this
+              list cannot be empty. The branch that used to guard it was unreachable. */}
           {built.length > 0 && (
             <YStack testID="village-built" gap="$3" {...sectionAnim}>
               <Text fontWeight="700" fontSize={16} color="$text">
@@ -318,8 +331,14 @@ export function VillageScene() {
                       items="center"
                       justify="center"
                     >
+                      {/* Level 0, so this is the rough shape — the silhouette promises the
+                          building you will actually get first, not its finished form. */}
                       <Image
-                        source={getBuildingIconAsset(building.code, building.relatedMuscle)}
+                        source={getBuildingIconAsset(
+                          building.code,
+                          building.relatedMuscle,
+                          building.level,
+                        )}
                         style={{ width: 30, height: 30 }}
                         contentFit="contain"
                         tintColor={SILHOUETTE_TINT}
@@ -399,6 +418,14 @@ export function VillageScene() {
           )}
         </YStack>
       </Animated.ScrollView>
+
+      {viewerOpen ? (
+        <VillageSceneViewer
+          tier={scene.tier}
+          title={villageName || tierName}
+          onClose={() => setViewerOpen(false)}
+        />
+      ) : null}
 
       {sheetMounted ? (
         <VillageDetailSheet

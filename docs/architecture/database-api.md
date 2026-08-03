@@ -190,15 +190,21 @@ interface VillageBuilding {
 
 ### Functions
 
+> **None of the write API this section used to list exists.** `addBuildingXp()`,
+> `unlockBuilding()`, `processSessionBuildings()` and `getVillageStats()` were removed with the
+> economy (roadmap §7, "decided — do not re-open"). The `village_buildings` and `village_stats`
+> tables survive in the schema but nothing reads them, which is why the dev screen's "max out
+> village" button was deleted: it wrote to both and changed nothing on screen.
+
+The village is derived, so it is all reads. See [db/village.ts](../../db/village.ts):
+
 | Function | Description |
 |----------|-------------|
-| `getAllBuildings()` | Get all buildings with status |
-| `getUnlockedBuildings()` | Get only unlocked buildings |
-| `getBuildingByType(type)` | Get specific building |
-| `addBuildingXp(type, xp)` | Add XP, returns level-up info |
-| `unlockBuilding(type)` | Unlock a building |
-| `processSessionBuildings(muscles)` | Process XP from session |
-| `getVillageStats()` | Get village summary stats |
+| `getVillageScene()` | Everything the screen needs, in one call |
+| `getVillageBuildings()` | All 20 buildings, levels computed from the session journal |
+| `getBuildingProgress(building)` | 0-100 toward the next level, or null when nothing counts |
+| `getVillageTier(level)` | Which of the 12 illustrated tiers the hero's level lands in |
+| `getTrophies(banners)` | Achievements and defeated bosses on one rack |
 
 ---
 

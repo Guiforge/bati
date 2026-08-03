@@ -183,10 +183,24 @@ structure), 3 legendary (`dragon_lair`, `heroes_hall`, `champion_arena`). Regist
 falls back to the matching `sport_*` sprite via `relatedMuscle`, per the "layer, don't paint"
 principle already used for §1c.
 
-**Remaining, still a dev task, not art**: wiring `VillageScene.tsx`'s grid to call
-`getBuildingIconAsset(building.code, def.relatedMuscle)` instead of rendering `emoji`, plus the
-per-level tint ramp (a level-5 forge should read differently from a level-1 forge — one tint
-ramp per icon, as `BossPhaseImage` already does per HP phase, not 5 assets per building).
+**Both done, and the second one landed differently than planned.** The grid calls
+`getBuildingIconAsset()`, and a level-5 forge does read differently from a level-1 one.
+
+The plan above said "one tint ramp per icon, not 5 assets per building", citing `BossPhaseImage`.
+Two corrections to that, for anyone following the trail:
+
+- `BossPhaseImage` no longer exists (deleted in `bb026b8a`). The mechanism survives as
+  `components/session/bossPhase.ts` — a table of rgba tints laid over one unmodified image by
+  `BossArena.tsx`.
+- What shipped is **three paintings per building, not one and not five**: `_rough`, the existing
+  art as `solid`, and `_grand`, chosen by `buildingStage()` in `constants/buildingLevels.ts`. The
+  opacity ramp in `BuiltBuildingCard` still fills the steps between them, so the two approaches
+  are stacked rather than one replacing the other.
+
+Sixty emblems instead of twenty, which is the cost this section was trying to avoid. It was
+re-opened deliberately: the tint ramp alone left every level the same shape, and shape is what
+reads at 48px. The two stage prompts are shared modifiers in `generate-village.py`, not forty
+bespoke descriptions, so the transformation is identical across all twenty buildings.
 
 ---
 

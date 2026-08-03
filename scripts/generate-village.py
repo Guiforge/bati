@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Generate the village art: 5 tier scenes, 6 sport emblems, 14 building icons.
+"""Generate the village art: 12 tier scenes, 6 sport emblems, 14 building icons.
 
-  python3 scripts/generate-village.py               # all 25
+  python3 scripts/generate-village.py               # all 32
   python3 scripts/generate-village.py tier_3 campfire
 
 Two styles, because two jobs. The tiers are wide establishing shots of the settlement as it
@@ -41,24 +41,86 @@ TIERS = [
      "warm-lit window, a thin trail of smoke rising from its stone chimney, a chopping stump "
      "and a few stacked logs beside it, standing alone in a quiet misty forest clearing at blue "
      "hour. The very first, humble beginning of a settlement."),
+    # The even numbers were slotted in later, to put steps where a real player actually spends
+    # their first two months: levels 1-20. Each has to read as clearly *between* its neighbours,
+    # which is why they are described as the previous scene plus one specific new thing, not as
+    # "a slightly bigger" anything.
+    # First draft put a cyan flame in the fire pit — the style block's "electric-blue accents"
+    # winning over common sense on the one warm object in the frame. Fire colour is now stated.
     ("tier_2",
+     "A wide establishing shot of two small wooden cabins facing each other across a shared "
+     "fire pit of warm orange flames, a drying rack hung with pelts between them, a footpath "
+     "worn into the grass, warm firelight spilling across both cabin walls, still surrounded "
+     "by the same quiet misty forest at blue hour — the lone cabin has company now, but this "
+     "is not yet a village."),
+    ("tier_3",
      "A wide establishing shot of a small cluster of thatched-roof cottages gathered around a "
      "stone well and a low wooden fence, warm lantern light in several windows, smoke rising "
      "from a few chimneys, simple dirt paths connecting the homes, at blue hour."),
-    ("tier_3",
+    ("tier_4",
+     "A wide establishing shot of a village grown around a crossroads: a timber watermill "
+     "turning beside a stream, cart tracks meeting at a signpost, a wooden palisade half built "
+     "along one side with fresh-cut stakes, laden carts at rest, at dusk."),
+    ("tier_5",
      "A wide establishing shot of a walled market town: cobbled streets, a stone well square, "
      "timber-framed buildings with tiled roofs, a modest bell tower, banners hanging from an "
      "open gate, more structures than before but still modest, at dusk."),
-    ("tier_4",
+    # First draft framed the town through a gate arch — a black stone vignette over a third of
+    # the frame, which no other tier has — and "lamplighters at work" put people in a series
+    # whose style block says environment only. Both were mine; the gatehouse is now a building
+    # in the view rather than the thing we look through.
+    ("tier_6",
+     "A wide establishing shot looking down over a free town: a stone gatehouse standing in "
+     "the middle distance, guild halls with carved signs around a paved square, a stone bell "
+     "tower, the first arched stone bridge across the river, tile roofs replacing thatch, rows "
+     "of warm amber street lamps along the streets, at dusk. Seen from open ground outside the "
+     "town, nothing framing or overhanging the view."),
+    ("tier_7",
      "A wide establishing shot of a fortified city: tall stone towers and a rising keep above "
      "tiered rooftops, an arched stone bridge, glowing lantern-lit windows across many "
      "buildings, banners on the ramparts, construction scaffolding on one growing tower, at "
      "night."),
-    ("tier_5",
+    # First draft came back with black cinema bars baked along the top and bottom. The style
+    # block already forbids letterboxing and was ignored, so this one says it again in its own
+    # words — and was re-rolled with FLUX_SEED_SALT=1, since the framing habit survived a
+    # prompt edit alone.
+    ("tier_8",
+     "A wide establishing shot of a merchant city on the water: a busy canal harbour lined "
+     "with tall warehouses, moored barges with furled sails, cranes on the quays, guild "
+     "banners along the waterfront, hundreds of warm-lit windows doubled in the reflection, "
+     "at night. The scene reaches the very top and bottom edges of the square frame — sky at "
+     "the top edge, water at the bottom edge, no black bars, no cinematic letterboxing."),
+    ("tier_9",
      "A wide establishing shot of a magnificent flourishing city skyline at night: tall spires "
      "and domes glowing with warm golden light, banners and pennants everywhere, bridges strung "
      "with lanterns, a grand central palace tower crowned in radiant light — the peak of "
      "prosperity."),
+    # 10-12 exist because the hero does not stop at level 20. The level curve runs on at +2000
+    # XP a rung (db/userLevel.ts), so a committed player reached the old ceiling in two or three
+    # months and then watched the largest thing on the screen never change again.
+    # Each of these has to read as *more* than "a bigger city": tier 9 already spent
+    # "magnificent" and "the peak of prosperity", so they escalate in kind, not in degree.
+    ("tier_10",
+     "A wide establishing shot of a mountain-crowning citadel: concentric fortified walls "
+     "climbing a peak in tiers, a cathedral-keep at the summit with buttresses and stained "
+     "glass lit from within, stone aqueducts carrying water across deep ravines, switchback "
+     "roads lined with braziers, storm clouds broken by moonlight below the summit."),
+    # The first draft of this one came back almost monochrome: composition right, but cold
+    # grey-blue throughout, with none of the warm lantern light every other tier carries. Between
+    # the citadel's braziers and the eternal capital's gold it read as a step *down*, which is
+    # the one thing a progression image must never do. The warmth is now stated, not assumed.
+    ("tier_11",
+     "A wide establishing shot of a vast metropolis spanning a chasm: colossal arched bridges "
+     "at several heights linking two cliff-cities, towers piercing a layer of cloud, funiculars "
+     "climbing the rock face, districts receding into blue haze toward the horizon. Thousands of "
+     "windows burn with warm amber lantern light, rows of golden street lamps line every bridge "
+     "and terrace, and braziers glow at the bridgeheads — a warm, densely inhabited city ablaze "
+     "with light against the cold blue of the gorge."),
+    ("tier_12",
+     "A wide establishing shot of an eternal capital beneath a shimmering aurora: impossibly "
+     "tall spires of pale stone and gold, a ring of smaller islands floating in the sky around "
+     "the highest tower and tethered by chains of light, cascading waterfalls falling off the "
+     "city's edge into cloud, the whole skyline burning like a beacon over a dark world."),
 ]
 
 SPRITES = [
@@ -145,11 +207,37 @@ BUILDINGS = [
 ]
 
 
+# Every emblem above describes a building at its middle, "solid" state. A building's level runs
+# 1..5, and until now all five drew the same picture — the opacity ramp in BuiltBuildingCard was
+# the only thing separating a level-1 forge from a level-5 one.
+#
+# Two modifiers rather than forty hand-written variants. Each composes with the emblem's own
+# description, so the *transformation* is identical across all twenty: whatever changes between a
+# rough campfire and a grand one changes the same way between a rough forge and a grand one.
+# Forty bespoke prompts would drift, and the drift would show as some buildings improving more
+# than others for the same amount of training.
+STAGE_ROUGH = (
+    "This is its earliest and roughest form: smaller and plainly made from unfinished "
+    "materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced "
+    "to a faint low ember."
+)
+STAGE_GRAND = (
+    "This is its final and most accomplished form: larger and richly detailed, with carved "
+    "ornament, banners and polished metal fittings, standing on a worked stone base, and its "
+    "glow strong, radiant and clearly brighter."
+)
+
+# The 20 emblems a building level can reach. The 6 sport sprites are here because the muscle
+# buildings borrow them (getBuildingIconAsset), so they need the same three states.
+STAGED = SPRITES + BUILDINGS
+
 if __name__ == "__main__":
     failed = run(
         [(slug, f"{scene} {SCENE_STYLE}") for slug, scene in TIERS]
         + [(slug, f"{scene} {EMBLEM_STYLE}") for slug, scene in SPRITES]
-        + [(slug, f"{scene} {EMBLEM_STYLE}") for slug, scene in BUILDINGS],
+        + [(slug, f"{scene} {EMBLEM_STYLE}") for slug, scene in BUILDINGS]
+        + [(f"{slug}_rough", f"{scene} {STAGE_ROUGH} {EMBLEM_STYLE}") for slug, scene in STAGED]
+        + [(f"{slug}_grand", f"{scene} {STAGE_GRAND} {EMBLEM_STYLE}") for slug, scene in STAGED],
         out_dir=ROOT / "assets" / "images" / "village",
         width=1024,
         height=1024,

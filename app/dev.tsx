@@ -18,12 +18,7 @@ import {
   startAdventureRun,
 } from "@/db";
 import { getOrCreateBossFight } from "@/db/bossFights";
-import {
-  clearSeededHistory,
-  countSeededSessions,
-  maxVillage,
-  seedHistory,
-} from "@/db/devSeedHistory";
+import { clearSeededHistory, countSeededSessions, seedHistory } from "@/db/devSeedHistory";
 import { useUserStore } from "@/stores/user";
 
 // Dev-only screen: no i18n, no polish. Reachable from Settings, and only under __DEV__.
@@ -114,12 +109,6 @@ export default function DevScreen() {
       })
       .catch(() => setStatus("Clear failed"));
   }, [refresh]);
-
-  const runMaxVillage = useCallback(() => {
-    maxVillage()
-      .then(() => setStatus("Village maxed out"))
-      .catch(() => setStatus("Village update failed"));
-  }, []);
 
   // Boss adventures are campaigns whose last step is the fight, so getting there normally means
   // playing every step before it. This completes them and drops straight into the final step.
@@ -249,12 +238,10 @@ export default function DevScreen() {
           <Text fontSize="$4" fontWeight="700" color="$text">
             Village
           </Text>
-          <AppButton variant="secondary" onPress={runMaxVillage}>
-            Max out village
-          </AppButton>
           <Paragraph fontSize="$2" color="$textSecondary">
-            Every building unlocked at level 5, resources filled. Not undone by Clear — only a DB
-            reset (EXPO_PUBLIC_FORCE_DB_RESET=1) puts the village back.
+            There is no "max out village" button any more: it wrote to village_buildings and
+            village_stats, which nothing reads. Every level on that screen is derived from the
+            session journal, so seeding history above is what actually grows the village.
           </Paragraph>
         </Card>
 

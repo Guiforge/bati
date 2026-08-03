@@ -14,12 +14,16 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 /**
  * Fixed, not random: a village that reshuffles its embers every time you open the tab reads as
- * a screensaver. The same six motes on every visit read as the same place, still burning.
+ * a screensaver. The same motes in the same places read as the same place, still burning.
  *
  * `left` is a fraction of the hero width, `start` a fraction of its height — the embers rise out
  * of the middle band, where every tier illustration puts its rooftops and its fires. They stop
  * short of the bottom on purpose: that is where the title sits, and a mote crossing a word is
  * a smudge, not atmosphere.
+ *
+ * The list is read from the front, so raising the count with the tier *adds* fires without moving
+ * the ones already there — a hamlet with one chimney does not suddenly rearrange itself into a
+ * capital, it gains lights.
  */
 const EMBERS = [
   { left: 0.13, start: 0.62, size: 3, duration: 5200, delay: 0 },
@@ -28,14 +32,39 @@ const EMBERS = [
   { left: 0.62, start: 0.68, size: 3, duration: 7200, delay: 2600 },
   { left: 0.77, start: 0.64, size: 2, duration: 6100, delay: 400 },
   { left: 0.89, start: 0.72, size: 2, duration: 6800, delay: 3300 },
+  { left: 0.2, start: 0.55, size: 2, duration: 7600, delay: 2000 },
+  { left: 0.37, start: 0.66, size: 3, duration: 6300, delay: 4100 },
+  { left: 0.7, start: 0.56, size: 2, duration: 7000, delay: 1200 },
 ] as const;
+
+/**
+ * How many of them burn, by village tier. One chimney at the hamlet, the whole skyline at the
+ * eternal capital — the motion itself carries the progression, not just the painting behind it.
+ */
+function emberCount(tier: number): number {
+  return Math.min(EMBERS.length, tier + 1);
+}
 
 /** How far up the hero an ember climbs before it dies, as a fraction of the hero height. */
 const DRIFT = 0.42;
 
-type EmberProps = (typeof EMBERS)[number] & { heroHeight: number; heroWidth: number };
+/**
+ * How bright the motes burn, by tier. The count alone made a capital's sky busier than a
+ * hamlet's but no warmer; scaling the peak as well is what makes the difference read as *more
+ * fire* rather than *more dots*. Clamped so tier 1 is a suggestion and tier 12 still sits under
+ * the artwork rather than on top of it.
+ */
+function emberPeak(tier: number): number {
+  return Math.min(0.75, 0.42 + tier * 0.03);
+}
 
-function Ember({ left, start, size, duration, delay, heroHeight, heroWidth }: EmberProps) {
+type EmberProps = (typeof EMBERS)[number] & {
+  heroHeight: number;
+  heroWidth: number;
+  peak: number;
+};
+
+function Ember({ left, start, size, duration, delay, heroHeight, heroWidth, peak }: EmberProps) {
   const t = useSharedValue(0);
 
   useEffect(() => {
@@ -45,7 +74,7 @@ function Ember({ left, start, size, duration, delay, heroHeight, heroWidth }: Em
   }, [t, delay, duration]);
 
   const style = useAnimatedStyle(() => ({
-    opacity: interpolate(t.value, [0, 0.12, 0.65, 1], [0, 0.6, 0.3, 0]),
+    opacity: interpolate(t.value, [0, 0.12, 0.65, 1], [0, peak, peak * 0.5, 0]),
     transform: [
       { translateY: -t.value * heroHeight * DRIFT },
       // A lazy sideways sway, half a period per climb, so they don't rise like an elevator.
@@ -83,17 +112,25 @@ function Ember({ left, start, size, duration, delay, heroHeight, heroWidth }: Em
 export function VillageEmbers({
   heroHeight,
   heroWidth,
+  tier,
 }: {
   heroHeight: number;
   heroWidth: number;
+  tier: number;
 }) {
   const reducedMotion = useReducedMotion();
   if (reducedMotion) return null;
 
   return (
     <>
-      {EMBERS.map((ember) => (
-        <Ember key={ember.left} {...ember} heroHeight={heroHeight} heroWidth={heroWidth} />
+      {EMBERS.slice(0, emberCount(tier)).map((ember) => (
+        <Ember
+          key={ember.left}
+          {...ember}
+          heroHeight={heroHeight}
+          heroWidth={heroWidth}
+          peak={emberPeak(tier)}
+        />
       ))}
     </>
   );

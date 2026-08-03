@@ -32,8 +32,11 @@ levels up because you trained the muscle it belongs to.
 - **Buildings with levels**: 20 buildings, each `level 0..5`. Starter buildings follow the
   village tier, muscle buildings follow that muscle's lifetime volume, tier-3 buildings are
   the upgrade of their tier-2 prerequisite, legendary buildings unlock on bosses defeated.
-  The level is legible three ways without tapping: pips, an opacity ramp over the icon
-  (level 0 is the flat silhouette, level 5 the full painting), and a bar toward the next rung.
+  The level is legible without tapping: pips, a bar toward the next rung, and the art itself —
+  each building has three paintings (`rough` / `solid` / `grand`, picked by `buildingStage()` in
+  [constants/buildingLevels.ts](../../constants/buildingLevels.ts)) with an opacity ramp filling
+  the steps between them. Tapping a tile opens it at 180px; tapping the scene opens it full
+  screen, uncropped.
 - **Trophy shelf**: unlocked achievements and defeated bosses on one rack, newest first.
 - **No micromanagement**: nothing is chosen, unlocked, or spent — your workouts drive
   everything.
@@ -69,6 +72,13 @@ tables are seeded but unused — there is no unlock/upgrade write path to keep c
 tile bar and the detail sheet bar both call it, so they cannot disagree about when a locked
 building has something honest to count.
 
-Open gap: `getVillageScene()` still returns a `bossBanners` field that nothing renders — the
-banners reach the screen only laundered through `trophies`, though the visual rules above ask for
-them on the scene.
+Ambient motion lives in `VillageEmbers.tsx` (six drifting motes, transform and opacity only) and
+in the scroll parallax on the hero image; both return to nothing under reduced motion. The line of
+weather under the village name is drawn from `constants/villageFlavour.ts` by the same
+`pickDailyVariant()` Home uses, seeded by day *and* tier.
+
+The emblems carry an alpha channel, cut by [`scripts/cutout-emblems.py`](../../scripts/cutout-emblems.py).
+They ship from FLUX as opaque squares, and without that cut `tintColor` has nothing to silhouette:
+the "to build" grid rendered as identical navy blocks. Any new emblem needs the same treatment.
+
+Open gap: the hero art is still 1024², where a building icon renders at 48.

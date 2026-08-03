@@ -50,15 +50,31 @@ describe("db/village", () => {
     const cases: [number, number][] = [
       [0, 1],
       [1, 1],
-      [4, 1],
-      [5, 2],
-      [9, 2],
-      [10, 3],
-      [14, 3],
-      [15, 4],
-      [19, 4],
-      [20, 5],
-      [99, 5],
+      [2, 1],
+      [3, 2],
+      [4, 2],
+      [5, 3],
+      [7, 3],
+      [8, 4],
+      [9, 4],
+      [10, 5],
+      [12, 5],
+      [13, 6],
+      [14, 6],
+      [15, 7],
+      [17, 7],
+      [18, 8],
+      [19, 8],
+      [20, 9],
+      [24, 9],
+      // Past 20 the hero keeps levelling at a flat 2000 XP a rung, so the scene keeps changing
+      // instead of stopping at "Flourishing City" for the rest of the account's life.
+      [25, 10],
+      [31, 10],
+      [32, 11],
+      [39, 11],
+      [40, 12],
+      [99, 12],
     ];
 
     for (const [level, tier] of cases) {
@@ -217,19 +233,21 @@ describe("db/village", () => {
     expect(scene.level).toBe(1);
     expect(scene.flame).toBe(0);
     expect(scene.dominantSport).toBeNull();
-    expect(scene.bossBanners).toEqual([]);
     expect(scene.trophies).toEqual([]);
     expect(scene.buildings).toHaveLength(20);
   });
 
-  test("a defeated boss shows up in the scene as both a banner and a trophy", async () => {
+  // Used to assert the boss arrived "as both a banner and a trophy". The banner half was never
+  // rendered anywhere, so the scene stopped carrying it; the trophy is the one that reaches a
+  // screen, and the lair below proves the victory still counts where it is read.
+  test("a defeated boss reaches the scene as a trophy, and raises the lair", async () => {
     const { getVillageScene } = village();
 
     defeatBoss(2, new Date("2026-01-02T00:00:00Z"));
 
     const scene = await getVillageScene();
 
-    expect(scene.bossBanners).toHaveLength(1);
     expect(scene.trophies.map((x) => x.key)).toEqual(["boss:2"]);
+    expect(scene.buildings.find((b) => b.code === "dragon_lair")?.level).toBe(1);
   });
 });

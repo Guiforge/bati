@@ -797,21 +797,6 @@ export const buildingLevelThresholds: Record<number, number> = {
   5: 1000, // Level 5 at 1000 XP
 };
 
-// Building level bonuses - what each level provides
-export type BuildingLevelBonus = {
-  xpPercent?: number; // Bonus XP percentage for related muscle
-  resourcePercent?: number; // Bonus resource gain percentage
-  prestigePoints?: number; // Prestige points for village score
-};
-
-export const buildingLevelBonuses: Record<number, BuildingLevelBonus> = {
-  1: { xpPercent: 0, resourcePercent: 0, prestigePoints: 10 },
-  2: { xpPercent: 5, resourcePercent: 5, prestigePoints: 25 },
-  3: { xpPercent: 10, resourcePercent: 10, prestigePoints: 50 },
-  4: { xpPercent: 15, resourcePercent: 15, prestigePoints: 100 },
-  5: { xpPercent: 25, resourcePercent: 25, prestigePoints: 200 },
-};
-
 // Village buildings table (player's building state)
 export const villageBuildings = sqliteTable(
   "village_buildings",

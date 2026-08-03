@@ -239,14 +239,17 @@ function BuildingDetail({
 
   return (
     <YStack gap="$4">
-      <XStack items="center" gap="$3">
+      {/* The tile shows this icon at 48px, which is the size of a label rather than a picture.
+          Opening the sheet is the one moment the hero asked to look at the building, so it gets
+          the room. 180 is what the 512px source supports on a 3x screen without going soft. */}
+      <YStack items="center" gap="$2">
         <Image
-          source={getBuildingIconAsset(building.code, building.relatedMuscle)}
-          style={{ width: 48, height: 48 }}
+          source={getBuildingIconAsset(building.code, building.relatedMuscle, building.level)}
+          style={{ width: 180, height: 180 }}
           contentFit="contain"
         />
-        <YStack flex={1} gap="$1">
-          <Text fontWeight="700" fontSize={18} color="$text">
+        <YStack items="center" gap="$1">
+          <Text fontWeight="700" fontSize={20} color="$text" style={{ textAlign: "center" }}>
             {name}
           </Text>
           {building.level > 0 ? (
@@ -257,7 +260,7 @@ function BuildingDetail({
             </Text>
           )}
         </YStack>
-      </XStack>
+      </YStack>
 
       <YStack gap="$2">
         <Text fontSize={14} color="$textSecondary">

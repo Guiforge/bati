@@ -1,4 +1,5 @@
 import { eq, isNotNull, sql } from "drizzle-orm";
+import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
 import { achievementDefinitions, getUnlockedAchievements } from "./achievements";
 import { listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
@@ -22,25 +23,51 @@ const { bossFights, adventures, exercises, completedExercises } = schema;
 // `| null` for imagePath, resolve to the placeholder here so callers have one code path.
 const PLACEHOLDER_IMAGE_PATH = "assets/placeholder.jpg";
 
-export type VillageTier = 1 | 2 | 3 | 4 | 5;
+export type VillageTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-// Level buckets for the 5 illustrated tiers (hameau -> village -> bourg -> cité -> cité florissante).
-// Derived from the existing 20-level curve in db/userLevel.ts; no separate threshold table.
+// Level buckets for the 12 illustrated tiers. Derived from the curve in db/userLevel.ts; no
+// separate threshold table.
+//
+// Tiers 10-12 exist because the level curve does not end at 20: past it every rung costs a flat
+// 2000 XP and the title becomes "Divine N", so the hero kept climbing while the largest thing on
+// this screen stopped forever. At roughly 360 XP a session that ceiling arrived in two or three
+// months. Their gaps widen (5, 7, 8 levels) because the XP per level is flat up there — equal
+// level gaps would make each tier arrive *sooner* in felt effort than the last, undoing what the
+// early curve does by itself.
+//
+// The even tiers below 9 were added afterwards, at 3/8/13/18. That is where a real player spends
+// their first two months, and four levels between scenes is a long time to watch nothing change.
+// The top half deliberately did not get the same treatment: the art there is already at the edge
+// of what can escalate convincingly, and an intermediate step would read as a duplicate.
 const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
   1: 1,
-  2: 5,
-  3: 10,
-  4: 15,
-  5: 20,
+  2: 3,
+  3: 5,
+  4: 8,
+  5: 10,
+  6: 13,
+  7: 15,
+  8: 18,
+  9: 20,
+  10: 25,
+  11: 32,
+  12: 40,
 };
 
 // Shared by the village scene and the home teaser, so the two can never disagree.
 export const TIER_NAMES: Record<VillageTier, { en: string; fr: string }> = {
   1: { en: "Hamlet", fr: "Hameau" },
-  2: { en: "Village", fr: "Village" },
-  3: { en: "Town", fr: "Bourg" },
-  4: { en: "City", fr: "Cité" },
-  5: { en: "Flourishing City", fr: "Cité florissante" },
+  2: { en: "Clearing", fr: "Clairière" },
+  3: { en: "Village", fr: "Village" },
+  4: { en: "Crossroads", fr: "Carrefour" },
+  5: { en: "Town", fr: "Bourg" },
+  6: { en: "Free Town", fr: "Ville franche" },
+  7: { en: "City", fr: "Cité" },
+  8: { en: "Merchant City", fr: "Cité marchande" },
+  9: { en: "Flourishing City", fr: "Cité florissante" },
+  10: { en: "Citadel", fr: "Citadelle" },
+  11: { en: "Metropolis", fr: "Métropole" },
+  12: { en: "Eternal Capital", fr: "Capitale éternelle" },
 };
 
 export function getVillageTier(level: number): VillageTier {
@@ -285,12 +312,22 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
   const def = buildingDefinitions[code];
 
   // Starter buildings always stand; they grow with the village itself.
+  //
+  // Clamped at 5 since the scene gained tiers 6-8: a building level is 1..5 by contract and
+  // LevelPips draws exactly five dots, so an unclamped tier 8 handed the tile a level it had no
+  // way to show — five filled pips *and* a bar, reading as "maxed, still climbing". Past tier 5
+  // the campfire is simply finished; the hero's tier name in the scene above is what keeps
+  // moving, and the tile does not need to say it twice.
   if (def.tier === 1) {
+    const level = Math.min(inputs.villageTier, MAX_BUILDING_LEVEL);
     return {
-      level: inputs.villageTier,
+      level,
       driver: "tier",
       metricValue: inputs.heroLevel,
-      nextTarget: TIER_LEVEL_FLOORS[(inputs.villageTier + 1) as VillageTier] ?? null,
+      nextTarget:
+        level < MAX_BUILDING_LEVEL
+          ? (TIER_LEVEL_FLOORS[(inputs.villageTier + 1) as VillageTier] ?? null)
+          : null,
     };
   }
 
@@ -529,10 +566,35 @@ export type VillageScene = {
   level: number;
   flame: FlameLevel;
   dominantSport: DominantSportOverlay;
-  bossBanners: BossBanner[];
+  /** The muscle the village has always under-built, or null while nothing stands out. */
+  neglected: MuscleCode | null;
   buildings: VillageBuilding[];
+  /**
+   * Achievements and defeated bosses on one rack. Bosses arrive here and nowhere else: the
+   * scene used to carry a `bossBanners` array as well, which no screen ever read — the same
+   * victories, reachable twice, one of them dead. `getBossBanners()` still runs, because the
+   * trophies and the dragon lair's level both need it.
+   */
   trophies: Trophy[];
 };
+
+/**
+ * The muscle the hero has trained least over their whole history, if any is far enough behind
+ * to be worth naming (`weakAreas` is "under half an even share", see db/muscleBalance.ts).
+ *
+ * Lifetime rather than the last seven days on purpose. It is the same window the muscle
+ * buildings level on, so the line names the reason a tile below has stopped rising instead of
+ * reporting an unrelated statistic — and one leg day inside a quiet week would otherwise mark
+ * every other muscle as neglected.
+ *
+ * Free: `getMuscleBalance` is memoised per period by `shortLivedQuery`, and
+ * `getVillageBuildings()` has already asked for this exact window in the same tick.
+ */
+async function getNeglectedMuscle(): Promise<MuscleCode | null> {
+  const balance = await getMuscleBalance("all");
+  if (balance.totalVolume === 0) return null;
+  return balance.weakAreas[0] ?? null;
+}
 
 /**
  * Everything the village scene needs, in one call. Pure aggregation over
@@ -540,12 +602,13 @@ export type VillageScene = {
  * no village-specific table.
  */
 export async function getVillageScene(): Promise<VillageScene> {
-  const [levelInfo, streak, dominantSport, bossBanners, buildings] = await Promise.all([
+  const [levelInfo, streak, dominantSport, bossBanners, buildings, neglected] = await Promise.all([
     getUserLevelInfo(),
     getStreakInfo(),
     getDominantSportOverlay(),
     getBossBanners(),
     getVillageBuildings(),
+    getNeglectedMuscle(),
   ]);
 
   return {
@@ -553,7 +616,7 @@ export async function getVillageScene(): Promise<VillageScene> {
     level: levelInfo.level,
     flame: getFlameLevel(streak.current),
     dominantSport,
-    bossBanners,
+    neglected,
     buildings,
     trophies: await getTrophies(bossBanners),
   };

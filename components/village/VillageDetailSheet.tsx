@@ -12,7 +12,12 @@ import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/ad
 import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { buildingDefinitions } from "@/db/schema";
-import { BUILDING_LABELS, type Trophy, type VillageBuilding } from "@/db/village";
+import {
+  BUILDING_LABELS,
+  getBuildingProgress,
+  type Trophy,
+  type VillageBuilding,
+} from "@/db/village";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -209,14 +214,10 @@ function BuildingDetail({
     }
   })();
 
-  // A locked building whose condition is qualitative ("train your back") has nothing to count
-  // yet, and "0/1" under it would be noise. Deed counters keep theirs: "1/3 boss victories"
-  // is the whole point of looking.
-  const countsWhileLocked =
-    building.driver === "bosses" ||
-    building.driver === "adventures" ||
-    building.driver === "boss_victories";
-  const showProgress = building.nextTarget !== null && (building.level > 0 || countsWhileLocked);
+  // Which buildings have something honest to count, and how far along: getBuildingProgress().
+  // The village card shows the same bar, from the same call, so they cannot disagree.
+  const progress = getBuildingProgress(building);
+  const showProgress = progress !== null;
 
   // Levels are not a quantity you accumulate, so the upgrade tiers name the rung instead.
   const nextLine = (() => {
@@ -263,13 +264,7 @@ function BuildingDetail({
           {driverLine}
         </Text>
 
-        {showProgress && building.nextTarget !== null ? (
-          <ProgressBar
-            progress={
-              building.nextTarget > 0 ? (building.metricValue / building.nextTarget) * 100 : 0
-            }
-          />
-        ) : null}
+        {progress !== null ? <ProgressBar progress={progress} /> : null}
 
         {nextLine ? (
           <XStack justify="space-between" items="center" gap="$2">

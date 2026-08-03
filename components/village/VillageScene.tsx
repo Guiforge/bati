@@ -7,11 +7,9 @@ import { ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 
-import { Card } from "@/components/common/Card";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
-import { GrowthPulse } from "@/components/village/GrowthPulse";
-import { LevelPips } from "@/components/village/LevelPips";
+import { BuiltBuildingCard } from "@/components/village/BuiltBuildingCard";
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import {
   getAdventureAsset,
@@ -23,6 +21,7 @@ import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } from "@/db/village";
+import { useHaptics } from "@/hooks/useHaptics";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
 import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
@@ -54,6 +53,7 @@ export function VillageScene() {
   const language = useSettingsStore((s) => s.language);
   const villageName = useUserStore((s) => s.villageName);
   const sectionAnim = useAnimationProps("bouncy", { opacity: 0, y: 12 });
+  const haptics = useHaptics();
 
   // Set once from the arrival params, never recomputed: a later tab-bar visit shouldn't
   // replay the "just grew" pulse for a building that grew several sessions ago.
@@ -68,6 +68,9 @@ export function VillageScene() {
   const [sheetMounted, setSheetMounted] = useState(false);
 
   const openDetail = (selection: VillageSelection) => {
+    // Every other tappable surface in the app answers (session, onboarding); the village was the
+    // one screen where taps were silent. `selection` is the lightest tick, not a reward buzz.
+    haptics.selection();
     setSheetMounted(true);
     setSelected(selection);
   };
@@ -84,8 +87,10 @@ export function VillageScene() {
     }, []),
   );
 
-  // The tier art is 4:3; matching it means the scene fills the width with nothing cropped.
-  const heroHeight = Math.round(width * 0.75);
+  // The tier art is square (1024x1024), and `cover` silently crops whatever the slot doesn't
+  // match: the 4:3 this used to be threw away a quarter of every illustration — including the
+  // beam crowning tier 5's palace. Matching the source puts the whole painting on screen.
+  const heroHeight = width;
 
   if (!scene) {
     return (
@@ -226,44 +231,15 @@ export function VillageScene() {
                 {t("village.built_title", "Built")}
               </Text>
               <XStack flexWrap="wrap" gap="$2">
-                {built.map((building) => {
-                  const justGrew = highlighted.has(building.code);
-                  return (
-                    <GrowthPulse key={building.code} active={justGrew}>
-                      <Card
-                        flat
-                        bg="$surface"
-                        width="31.5%"
-                        p="$3"
-                        gap="$2"
-                        items="center"
-                        onPress={() => openDetail({ kind: "building", building })}
-                        accessibilityLabel={language === "fr" ? building.frName : building.enName}
-                        borderWidth={justGrew ? 2 : undefined}
-                        borderColor={justGrew ? "$primary" : undefined}
-                        shadowColor={justGrew ? "$shadowColor" : undefined}
-                        shadowRadius={justGrew ? 8 : undefined}
-                        shadowOpacity={justGrew ? 0.4 : undefined}
-                      >
-                        <Image
-                          source={getBuildingIconAsset(building.code, building.relatedMuscle)}
-                          style={{ width: 48, height: 48 }}
-                          contentFit="contain"
-                        />
-                        <Text
-                          fontSize={12}
-                          fontWeight="700"
-                          color="$text"
-                          numberOfLines={1}
-                          style={{ textAlign: "center" }}
-                        >
-                          {language === "fr" ? building.frName : building.enName}
-                        </Text>
-                        <LevelPips level={building.level} />
-                      </Card>
-                    </GrowthPulse>
-                  );
-                })}
+                {built.map((building) => (
+                  <BuiltBuildingCard
+                    key={building.code}
+                    building={building}
+                    language={language}
+                    justGrew={highlighted.has(building.code)}
+                    onPress={() => openDetail({ kind: "building", building })}
+                  />
+                ))}
               </XStack>
             </YStack>
           )}

@@ -179,4 +179,52 @@ describe("db/village buildings", () => {
     expect(trophies.map((x) => x.kind)).toEqual(["boss"]);
     expect(trophies[0].imagePath).toBe("assets/x.jpg");
   });
+
+  // The village card and the detail sheet both draw their bar from this one call. The rule it
+  // encodes — a locked building only counts when its condition is a tally, never when it is
+  // "train your back" — is the part that would silently drift if either side recomputed it.
+  describe("getBuildingProgress", () => {
+    type Building = import("../db/village").VillageBuilding;
+
+    const building = (over: Partial<Building>): Building =>
+      ({
+        code: "forge",
+        emoji: "",
+        tier: 2,
+        level: 1,
+        enName: "Forge",
+        frName: "Forge",
+        unlockCondition: "",
+        relatedMuscle: "arms",
+        driver: "muscle",
+        metricValue: 50,
+        nextTarget: 100,
+        ...over,
+      }) as Building;
+
+    const progress = (over: Partial<Building>) => {
+      const { getBuildingProgress } = require("../db/village") as typeof import("../db/village");
+      return getBuildingProgress(building(over));
+    };
+
+    test("counts the way to the next level", () => {
+      expect(progress({})).toBe(50);
+    });
+
+    test("a maxed building has nothing left to count", () => {
+      expect(progress({ level: 5, nextTarget: null })).toBeNull();
+    });
+
+    test("a locked qualitative building shows no bar", () => {
+      expect(progress({ level: 0, driver: "muscle" })).toBeNull();
+    });
+
+    test("a locked deed counter keeps its tally", () => {
+      expect(progress({ level: 0, driver: "bosses", metricValue: 1, nextTarget: 2 })).toBe(50);
+    });
+
+    test("overshooting a target clamps instead of exceeding the bar", () => {
+      expect(progress({ metricValue: 999, nextTarget: 100 })).toBe(100);
+    });
+  });
 });

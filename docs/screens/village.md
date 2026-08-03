@@ -32,6 +32,8 @@ levels up because you trained the muscle it belongs to.
 - **Buildings with levels**: 20 buildings, each `level 0..5`. Starter buildings follow the
   village tier, muscle buildings follow that muscle's lifetime volume, tier-3 buildings are
   the upgrade of their tier-2 prerequisite, legendary buildings unlock on bosses defeated.
+  The level is legible three ways without tapping: pips, an opacity ramp over the icon
+  (level 0 is the flat silhouette, level 5 the full painting), and a bar toward the next rung.
 - **Trophy shelf**: unlocked achievements and defeated bosses on one rack, newest first.
 - **No micromanagement**: nothing is chosen, unlocked, or spent — your workouts drive
   everything.
@@ -50,6 +52,12 @@ bosses defeated)`. Full rules: [progression.md](../gameplay/progression.md).
 
 `VillageScene.tsx` renders the tier illustration (name + level, flame overlay via
 `FlameFlicker`, dominant-sport sprite), then the building grid, then the trophy shelf.
+Built tiles live in `BuiltBuildingCard.tsx`.
+
+**The hero is square, because the art is.** The tier PNGs are 1024×1024 and `contentFit="cover"`
+crops whatever the slot does not match — the 4:3 hero this screen used to have silently threw away
+a quarter of every illustration, including the beam crowning tier 5's palace. `heroHeight = width`.
+Aspect ratio follows the source, not the taste ([image-style-prompt.md](../content/image-style-prompt.md)).
 
 Buildings are **derived, never stored**: `getVillageBuildings()` in [db/village.ts](../../db/village.ts)
 computes every level from existing signals (lifetime muscle volume, exercise-style volume,
@@ -57,4 +65,10 @@ bosses defeated, village tier) using the `buildingDefinitions` / `buildingLevelT
 metadata already declared in `db/schema.ts`. The `village_buildings` and `village_stats`
 tables are seeded but unused — there is no unlock/upgrade write path to keep consistent.
 
-Open gap: buildings render as emoji, not art.
+`getBuildingProgress()` (db/village.ts) is the single source for "how far to the next level": the
+tile bar and the detail sheet bar both call it, so they cannot disagree about when a locked
+building has something honest to count.
+
+Open gap: `getVillageScene()` still returns a `bossBanners` field that nothing renders — the
+banners reach the screen only laundered through `trophies`, though the visual rules above ask for
+them on the scene.

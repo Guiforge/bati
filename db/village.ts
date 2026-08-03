@@ -402,6 +402,28 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
   });
 }
 
+/**
+ * Progress toward the next level, 0-100, or null when there is nothing honest to count:
+ * a maxed building, or a locked one whose condition is qualitative ("train your back")
+ * rather than a deed tally — "0/1" under those is noise, not information.
+ *
+ * Shared by the scene card and the detail sheet so the two can never disagree about what
+ * "almost there" means. The sheet used to compute it inline; the card needed the same
+ * answer, and two copies of a threshold rule is how they drift.
+ */
+export function getBuildingProgress(building: VillageBuilding): number | null {
+  if (building.nextTarget === null) return null;
+
+  const countsWhileLocked =
+    building.driver === "bosses" ||
+    building.driver === "adventures" ||
+    building.driver === "boss_victories";
+  if (building.level === 0 && !countsWhileLocked) return null;
+
+  if (building.nextTarget <= 0) return 0;
+  return Math.max(0, Math.min(100, (building.metricValue / building.nextTarget) * 100));
+}
+
 export type VillageGrowth = {
   code: BuildingCode;
   enName: string;

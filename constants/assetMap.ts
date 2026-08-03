@@ -154,6 +154,10 @@ export const VILLAGE_TIER_ASSETS = {
   6: require("@/assets/images/village/tier_6.webp"),
   7: require("@/assets/images/village/tier_7.webp"),
   8: require("@/assets/images/village/tier_8.webp"),
+  9: require("@/assets/images/village/tier_9.webp"),
+  10: require("@/assets/images/village/tier_10.webp"),
+  11: require("@/assets/images/village/tier_11.webp"),
+  12: require("@/assets/images/village/tier_12.webp"),
 } as const;
 
 // ============================================================

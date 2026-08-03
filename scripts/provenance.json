@@ -1356,51 +1356,7 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from tier_1.png"
   },
-  "assets/images/village/tier_2.webp": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A wide establishing shot of a small cluster of thatched-roof cottages gathered around a stone well and a low wooden fence, warm lantern light in several windows, smoke rising from a few chimneys, simple dirt paths connecting the homes, at blue hour. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
-    "seed": 455757916,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from tier_2.png"
-  },
-  "assets/images/village/tier_3.webp": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A wide establishing shot of a walled market town: cobbled streets, a stone well square, timber-framed buildings with tiled roofs, a modest bell tower, banners hanging from an open gate, more structures than before but still modest, at dusk. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
-    "seed": 1814913226,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from tier_3.png"
-  },
-  "assets/images/village/tier_4.webp": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A wide establishing shot of a fortified city: tall stone towers and a rising keep above tiered rooftops, an arched stone bridge, glowing lantern-lit windows across many buildings, banners on the ramparts, construction scaffolding on one growing tower, at night. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
-    "seed": 4064933225,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from tier_4.png"
-  },
-  "assets/images/village/tier_5.webp": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A wide establishing shot of a magnificent flourishing city skyline at night: tall spires and domes glowing with warm golden light, banners and pennants everywhere, bridges strung with lanterns, a grand central palace tower crowned in radiant light — the peak of prosperity. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
-    "seed": 2236532223,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from tier_5.png"
-  },
-  "assets/images/village/tier_6.webp": {
+  "assets/images/village/tier_10.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1411,7 +1367,7 @@
     "generated": "2026-08-03",
     "reencoded": "cwebp -q 90, from tier_6.png"
   },
-  "assets/images/village/tier_7.webp": {
+  "assets/images/village/tier_11.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1422,7 +1378,7 @@
     "generated": "2026-08-03",
     "reencoded": "cwebp -q 90, from tier_7.png"
   },
-  "assets/images/village/tier_8.webp": {
+  "assets/images/village/tier_12.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
@@ -1432,6 +1388,94 @@
     "height": 1024,
     "generated": "2026-08-03",
     "reencoded": "cwebp -q 90, from tier_8.png"
+  },
+  "assets/images/village/tier_2.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of two small wooden cabins facing each other across a shared fire pit of warm orange flames, a drying rack hung with pelts between them, a footpath worn into the grass, warm firelight spilling across both cabin walls, still surrounded by the same quiet misty forest at blue hour — the lone cabin has company now, but this is not yet a village. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 455757916,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tier_2.png"
+  },
+  "assets/images/village/tier_3.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a small cluster of thatched-roof cottages gathered around a stone well and a low wooden fence, warm lantern light in several windows, smoke rising from a few chimneys, simple dirt paths connecting the homes, at blue hour. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 455757916,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_2.png"
+  },
+  "assets/images/village/tier_4.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a village grown around a crossroads: a timber watermill turning beside a stream, cart tracks meeting at a signpost, a wooden palisade half built along one side with fresh-cut stakes, laden carts at rest, at dusk. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 4064933225,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tier_4.png"
+  },
+  "assets/images/village/tier_5.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a walled market town: cobbled streets, a stone well square, timber-framed buildings with tiled roofs, a modest bell tower, banners hanging from an open gate, more structures than before but still modest, at dusk. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 1814913226,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_3.png"
+  },
+  "assets/images/village/tier_6.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot looking down over a free town: a stone gatehouse standing in the middle distance, guild halls with carved signs around a paved square, a stone bell tower, the first arched stone bridge across the river, tile roofs replacing thatch, rows of warm amber street lamps along the streets, at dusk. Seen from open ground outside the town, nothing framing or overhanging the view. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 474453061,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tier_6.png"
+  },
+  "assets/images/village/tier_7.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a fortified city: tall stone towers and a rising keep above tiered rooftops, an arched stone bridge, glowing lantern-lit windows across many buildings, banners on the ramparts, construction scaffolding on one growing tower, at night. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 4064933225,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_4.png"
+  },
+  "assets/images/village/tier_8.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a merchant city on the water: a busy canal harbour lined with tall warehouses, moored barges with furled sails, cranes on the quays, guild banners along the waterfront, hundreds of warm-lit windows doubled in the reflection, at night. The scene reaches the very top and bottom edges of the square frame — sky at the top edge, water at the bottom edge, no black bars, no cinematic letterboxing. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 4227840323,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tier_8.png"
+  },
+  "assets/images/village/tier_9.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide establishing shot of a magnificent flourishing city skyline at night: tall spires and domes glowing with warm golden light, banners and pennants everywhere, bridges strung with lanterns, a grand central palace tower crowned in radiant light — the peak of prosperity. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue accents and high-contrast volumetric lighting; the frame edges fall off into darkness like a soft vignette. A full-bleed square 1:1 composition that fills the entire frame edge to edge with no white borders or letterboxing, cinematic, no characters, environment only.",
+    "seed": 2236532223,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 90, from tier_5.png"
   },
   "assets/onboardings/building.webp": {
     "model": "flux-2-pro-preview",

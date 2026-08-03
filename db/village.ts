@@ -22,40 +22,51 @@ const { bossFights, adventures, exercises, completedExercises } = schema;
 // `| null` for imagePath, resolve to the placeholder here so callers have one code path.
 const PLACEHOLDER_IMAGE_PATH = "assets/placeholder.jpg";
 
-export type VillageTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export type VillageTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-// Level buckets for the 8 illustrated tiers. Derived from the curve in db/userLevel.ts; no
+// Level buckets for the 12 illustrated tiers. Derived from the curve in db/userLevel.ts; no
 // separate threshold table.
 //
-// 1-5 sit on the named 20-level curve. 6-8 exist because that curve does not end there: past 20
-// every rung costs a flat 2000 XP and the title becomes "Divine N", so the hero keeps climbing
-// while the largest thing on the village screen used to stop forever. At roughly 360 XP a
-// session that ceiling arrived in two or three months.
+// Tiers 10-12 exist because the level curve does not end at 20: past it every rung costs a flat
+// 2000 XP and the title becomes "Divine N", so the hero kept climbing while the largest thing on
+// this screen stopped forever. At roughly 360 XP a session that ceiling arrived in two or three
+// months. Their gaps widen (5, 7, 8 levels) because the XP per level is flat up there — equal
+// level gaps would make each tier arrive *sooner* in felt effort than the last, undoing what the
+// early curve does by itself.
 //
-// The gaps widen (5, 7, 8 levels) on purpose. The XP per level is flat up here, so equal level
-// gaps would make each tier arrive *sooner* in felt effort than the one before it; widening them
-// keeps "every tier costs more than the last", which is what the early curve does by itself.
+// The even tiers below 9 were added afterwards, at 3/8/13/18. That is where a real player spends
+// their first two months, and four levels between scenes is a long time to watch nothing change.
+// The top half deliberately did not get the same treatment: the art there is already at the edge
+// of what can escalate convincingly, and an intermediate step would read as a duplicate.
 const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
   1: 1,
-  2: 5,
-  3: 10,
-  4: 15,
-  5: 20,
-  6: 25,
-  7: 32,
-  8: 40,
+  2: 3,
+  3: 5,
+  4: 8,
+  5: 10,
+  6: 13,
+  7: 15,
+  8: 18,
+  9: 20,
+  10: 25,
+  11: 32,
+  12: 40,
 };
 
 // Shared by the village scene and the home teaser, so the two can never disagree.
 export const TIER_NAMES: Record<VillageTier, { en: string; fr: string }> = {
   1: { en: "Hamlet", fr: "Hameau" },
-  2: { en: "Village", fr: "Village" },
-  3: { en: "Town", fr: "Bourg" },
-  4: { en: "City", fr: "Cité" },
-  5: { en: "Flourishing City", fr: "Cité florissante" },
-  6: { en: "Citadel", fr: "Citadelle" },
-  7: { en: "Metropolis", fr: "Métropole" },
-  8: { en: "Eternal Capital", fr: "Capitale éternelle" },
+  2: { en: "Clearing", fr: "Clairière" },
+  3: { en: "Village", fr: "Village" },
+  4: { en: "Crossroads", fr: "Carrefour" },
+  5: { en: "Town", fr: "Bourg" },
+  6: { en: "Free Town", fr: "Ville franche" },
+  7: { en: "City", fr: "Cité" },
+  8: { en: "Merchant City", fr: "Cité marchande" },
+  9: { en: "Flourishing City", fr: "Cité florissante" },
+  10: { en: "Citadel", fr: "Citadelle" },
+  11: { en: "Metropolis", fr: "Métropole" },
+  12: { en: "Eternal Capital", fr: "Capitale éternelle" },
 };
 
 export function getVillageTier(level: number): VillageTier {

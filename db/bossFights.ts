@@ -1,6 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
-import type { MuscleCode, QuestTargetType } from "./schema";
+import type { DifficultyCode, MuscleCode, QuestTargetType } from "./schema";
+import { USER_LEVEL_MULTIPLIER } from "./targets";
 import { toRepEquivalent } from "./workUnits";
 
 const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises, quests } = schema;
@@ -50,8 +51,36 @@ export type BossDamageEntry = {
  * itself now lives in ./workUnits, shared with every other aggregate that sums work.
  */
 
-/** A crit doubles damage and fires 30 % of the time when the target is met. */
-const EXPECTED_CRIT_MULTIPLIER = 1.3;
+/**
+ * How far into its campaign a boss dies for a hero who exactly meets every target: nine tenths.
+ * Crits, weakness and resistance are what move it earlier, and they are headroom rather than part
+ * of the promise — the floor has to kill on its own, or `easy` never sees a victory.
+ *
+ * This is the same rule `0026_boss_pacing.sql` applied to the six seeded pools; it lives here so
+ * the fallback below and the seeds cannot mean different things, and
+ * `__tests__/content-invariants.test.ts` re-checks both at all three difficulties.
+ *
+ * It replaced a `1.3` that meant "campaigns are 30 % longer than nominal because crit fires on
+ * every set" — true of the old crit rule, and the reason every boss outlived its own campaign
+ * once crit had to be earned.
+ */
+export const CAMPAIGN_HP_FRACTION = 0.9;
+
+/** The ceiling on crit odds, so a heroic set is an edge and never the whole fight. */
+export const MAX_CRIT_CHANCE = 0.5;
+
+/**
+ * The odds a set crits, 0-1, from how far past its target it goes.
+ *
+ * Exported because the session screen shows this number under the rep counter: the ± control is
+ * the one decision a fight offers, and it was a data-entry widget until the rule was said out
+ * loud. Two copies of this formula would drift the moment either side was tuned.
+ */
+export function critChance(resultValue: number, targetValue: number): number {
+  const overshoot = (resultValue - targetValue) / Math.max(1, targetValue);
+  if (overshoot <= 0) return 0;
+  return Math.min(MAX_CRIT_CHANCE, overshoot * 1.5);
+}
 
 export type DamageResult = {
   damage: number;
@@ -124,8 +153,14 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
     resistancePenalty = true;
   }
 
-  // Check for critical hit (exceeded target = 30% crit chance)
-  const isCritical = params.resultValue >= params.targetValue && Math.random() < 0.3;
+  // A crit is what the hero *decides*, and it is the only decision the session screen offers.
+  //
+  // The old rule asked that the target be met — but `adjustedReps` initialises to the target and a
+  // time result is the elapsed timer, which reaches it. The condition held on essentially every
+  // set, so crit was a flat 30 % coin flip that rewarded nothing and that nothing on screen
+  // explained. Now it has to be *exceeded*, and the odds scale with how far: one extra rep on a
+  // set of twelve is a real edge, capped so pushing hard never dominates the fight.
+  const isCritical = Math.random() < critChance(params.resultValue, params.targetValue);
   if (isCritical) {
     damage = damage * 2;
   }
@@ -152,8 +187,19 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
 /**
  * Get or create a boss fight for an adventure.
  * If the adventure is kind="boss" and no fight exists, create one.
+ *
+ * `userLevel` scales the HP pool by the same multiplier that scales every exercise target, because
+ * damage is the work you did: the seeded `bossTotalHp` was tuned once at `medium`, so at `easy` the
+ * campaign used to run out of steps before the boss ran out of HP — no `defeatedAt`, no victory, no
+ * village banner, ever — and at `hard` the boss died two thirds of the way through.
+ *
+ * ponytail: HP is fixed at fight creation, so switching difficulty mid-campaign keeps the pool the
+ *           first session bought. Re-scale on level change only if players actually do this.
  */
-export async function getOrCreateBossFight(adventureId: number): Promise<BossFight | null> {
+export async function getOrCreateBossFight(
+  adventureId: number,
+  userLevel: DifficultyCode,
+): Promise<BossFight | null> {
   // Check if adventure is a boss
   const adventureRows = await db
     .select({
@@ -201,8 +247,12 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
     };
   }
 
-  // Calculate total HP from adventure steps
-  const totalHp = adventure.bossTotalHp ?? (await calculateBossHp(adventureId));
+  // Both paths take the same multiplier, so the seeded pool and the computed fallback cannot
+  // disagree about what a difficulty level costs.
+  const totalHp =
+    adventure.bossTotalHp != null
+      ? scaleBossHp(adventure.bossTotalHp, userLevel)
+      : await calculateBossHp(adventureId, userLevel);
 
   // Create new boss fight
   const result = await db
@@ -236,10 +286,12 @@ export async function getOrCreateBossFight(adventureId: number): Promise<BossFig
 }
 
 /**
- * Get boss fight by adventure ID.
+ * Get boss fight by adventure ID — read without creating.
+ *
+ * The adventure screen's boss panel is the caller: browsing a campaign must not bring a fight into
+ * existence, and it must not have to guess a difficulty to scale a pool it is only reading. Null
+ * until the campaign's first session swings at it.
  */
-/** @legacy Lecture sans création. Aucun écran ne l'appelle depuis que la session utilise
- *  getOrCreateBossFight. */
 export async function getBossFightByAdventure(adventureId: number): Promise<BossFight | null> {
   const rows = await db
     .select({
@@ -282,22 +334,36 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
 }
 
 /**
+ * A boss's HP pool at a given difficulty. The seeded `bossTotalHp` values are expressed at
+ * `medium`; this is the one place they are read as anything else.
+ */
+export function scaleBossHp(baseHp: number, userLevel: DifficultyCode): number {
+  return Math.max(1, Math.round(baseHp * USER_LEVEL_MULTIPLIER[userLevel]));
+}
+
+/**
  * Fallback HP for a boss adventure that ships without an explicit `bossTotalHp`. Every seeded
  * boss sets one, so this only catches new content.
  *
- * It mirrors how the seeded values were tuned: a step deals `rounds × Σ target`, seconds count
- * as rep-equivalents like `dealDamage` treats them, and the whole campaign is scaled by the
- * expected crit rate. Weakness and resistance are ignored — they roughly cancel across a
- * campaign, and this is a fallback, not a balance pass.
+ * It mirrors how the seeded values are tuned: a step deals `rounds × Σ target`, seconds count as
+ * rep-equivalents like `dealDamage` treats them, and the campaign total is taken at
+ * `CAMPAIGN_HP_FRACTION` then scaled by the hero's difficulty. Weakness and resistance are ignored
+ * — they roughly cancel across a campaign, and this is a fallback, not a balance pass.
+ *
+ * It reads `targetMax` rather than the target the hero is actually given, so it runs a little hot;
+ * that is the right direction for a fallback, and the invariant test only guards the seeded pools.
  */
-async function calculateBossHp(adventureId: number): Promise<number> {
+export async function calculateBossHp(
+  adventureId: number,
+  userLevel: DifficultyCode,
+): Promise<number> {
   // Get all quests in adventure steps
   const steps = await db
     .select({ questId: adventureSteps.questId })
     .from(adventureSteps)
     .where(eq(adventureSteps.adventureId, adventureId));
 
-  if (steps.length === 0) return 100; // Default HP
+  if (steps.length === 0) return scaleBossHp(100, userLevel); // Default HP
 
   // A quest can appear in more than one step (e.g. repeated within a campaign); its
   // exercises must be counted once per occurrence, matching the original per-step loop.
@@ -324,8 +390,8 @@ async function calculateBossHp(adventureId: number): Promise<number> {
     return sum + perSet * ex.rounds * (stepCountByQuestId.get(ex.questId) ?? 0);
   }, 0);
 
-  // Minimum HP of 50, scaled by the expected crit rate (30 % chance of double damage).
-  return Math.max(50, Math.round(totalHp * EXPECTED_CRIT_MULTIPLIER));
+  // Minimum HP of 50, taken at the campaign fraction, then scaled by the hero's difficulty.
+  return scaleBossHp(Math.max(50, Math.round(totalHp * CAMPAIGN_HP_FRACTION)), userLevel);
 }
 
 // ------------------------------------------------------------
@@ -398,25 +464,30 @@ export function dealDamage(
  * HP is recomputed from the stored row rather than trusted from the caller: the fight the session
  * has been holding in memory can be minutes old, and the dev screen can reset a boss underneath it.
  * The hits are the durable fact; the resulting HP is derived here.
+ *
+ * @returns whether the hits were written. Two guards below drop them on purpose — a missing fight
+ *   row and an already-dead boss — and the caller has to know, or it clears its pending hits and
+ *   the work vanishes with no log row and no error. Empty input is `true`: nothing to write is not
+ *   a failure to write.
  */
 export async function persistSessionDamage(
   bossFightId: number,
   hits: PendingHit[],
   completedSessionId: number,
-): Promise<void> {
-  if (hits.length === 0) return;
+): Promise<boolean> {
+  if (hits.length === 0) return true;
 
-  await transactionOrFallback(async (tx) => {
+  return await transactionOrFallback(async (tx) => {
     const fightRows = await tx
       .select()
       .from(bossFights)
       .where(eq(bossFights.id, bossFightId))
       .limit(1);
 
-    if (fightRows.length === 0) return;
+    if (fightRows.length === 0) return false;
 
     const fight = fightRows[0];
-    if (fight.defeatedAt || fight.currentHp <= 0) return;
+    if (fight.defeatedAt || fight.currentHp <= 0) return false;
 
     const total = hits.reduce((sum, hit) => sum + hit.damage, 0);
     const newHp = Math.max(0, fight.currentHp - total);
@@ -440,6 +511,8 @@ export async function persistSessionDamage(
         muscle: hit.muscle,
       })),
     );
+
+    return true;
   });
 }
 

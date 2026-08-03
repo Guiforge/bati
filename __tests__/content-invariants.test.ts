@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import { movementPatterns, type QuestArchetype } from "../db/schema";
+import { type DifficultyCode, movementPatterns, type QuestArchetype } from "../db/schema";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
@@ -288,6 +288,95 @@ describe("content invariants", () => {
       .filter((a) => a.kind === "boss")
       .filter((a) => !a.hp || !a.weakness || !a.resistance)
       .map((a) => a.enTitle);
+
+    expect(offenders).toEqual([]);
+  });
+
+  /**
+   * The one thing `0017` computed by hand and nothing re-checked since: a boss has to die on its
+   * campaign's last step, at every difficulty.
+   *
+   * Damage is the work the hero did, and every target is scaled 0.75/1.0/1.25 by
+   * `USER_LEVEL_MULTIPLIER`, so a pool tuned once at `medium` was unreachable on `easy` — the
+   * campaign ran out of steps before the boss ran out of HP, `defeatedAt` was never written, and
+   * the village banner never appeared. `getOrCreateBossFight` now scales the pool by the same
+   * multiplier, which is what makes the three columns below agree.
+   *
+   * Nominal damage only: crits, weakness and resistance are the headroom the seeded ~92 % left,
+   * not part of the guarantee. The rule is that the *floor* still kills.
+   */
+  test("every boss falls on its campaign's last step, at every difficulty", async () => {
+    const schema = require("../db/schema") as typeof import("../db/schema");
+    const { generateTarget } = require("../db/targets") as typeof import("../db/targets");
+    const { scaleBossHp } = require("../db/bossFights") as typeof import("../db/bossFights");
+    const { toRepEquivalent } = require("../db/workUnits") as typeof import("../db/workUnits");
+
+    const steps = await t.db
+      .select({
+        title: schema.adventures.enTitle,
+        hp: schema.adventures.bossTotalHp,
+        stepIndex: schema.adventureSteps.stepIndex,
+        questId: schema.adventureSteps.questId,
+        rounds: schema.quests.rounds,
+      })
+      .from(schema.adventures)
+      .innerJoin(schema.adventureSteps, eq(schema.adventureSteps.adventureId, schema.adventures.id))
+      .innerJoin(schema.quests, eq(schema.quests.id, schema.adventureSteps.questId))
+      .where(eq(schema.adventures.kind, "boss"))
+      .orderBy(schema.adventures.id, schema.adventureSteps.stepIndex);
+
+    const exercises = await t.db
+      .select({
+        questId: schema.questExercises.questId,
+        targetType: schema.questExercises.targetType,
+        targetMin: schema.questExercises.targetMin,
+        targetMax: schema.questExercises.targetMax,
+      })
+      .from(schema.questExercises);
+
+    const byQuest = new Map<number, typeof exercises>();
+    for (const ex of exercises) {
+      byQuest.set(ex.questId, [...(byQuest.get(ex.questId) ?? []), ex]);
+    }
+
+    /** What one step of this quest takes off the boss, at the targets this level prescribes. */
+    const stepDamage = (questId: number, rounds: number, level: DifficultyCode) =>
+      rounds *
+      (byQuest.get(questId) ?? []).reduce((sum, ex) => {
+        const target = generateTarget(
+          { type: ex.targetType, min: ex.targetMin, max: ex.targetMax },
+          level as never,
+        );
+        return sum + toRepEquivalent(target.value, ex.targetType);
+      }, 0);
+
+    const byAdventure = new Map<string, { hp: number; steps: typeof steps }>();
+    for (const row of steps) {
+      if (row.hp == null) continue;
+      const entry = byAdventure.get(row.title) ?? { hp: row.hp, steps: [] };
+      entry.steps.push(row);
+      byAdventure.set(row.title, entry);
+    }
+
+    expect(byAdventure.size).toBeGreaterThan(0);
+
+    const levels: DifficultyCode[] = ["easy", "medium", "hard"];
+    const offenders = [...byAdventure].flatMap(([title, { hp, steps: campaign }]) =>
+      levels.flatMap((level) => {
+        const pool = scaleBossHp(hp, level);
+        const perStep = campaign.map((s) => stepDamage(s.questId, s.rounds, level));
+        const total = perStep.reduce((a, b) => a + b, 0);
+        const beforeLast = total - (perStep.at(-1) ?? 0);
+
+        // The window is printed either way: whoever lands here next needs the number to seed, not
+        // just the news that the old one is wrong.
+        const window = `wants ${beforeLast + 1}..${total}, has ${pool}`;
+        if (pool > total) return [`${title} @${level}: survives the campaign — ${window}`];
+        if (pool <= beforeLast)
+          return [`${title} @${level}: dies before the last step — ${window}`];
+        return [];
+      }),
+    );
 
     expect(offenders).toEqual([]);
   });

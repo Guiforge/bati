@@ -9,6 +9,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
+import { BossPanel } from "@/components/adventures/BossPanel";
 import { starsFor } from "@/components/adventures/replayStars";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
@@ -35,6 +36,7 @@ import {
   startAdventureRun,
   suggestDifficultyFromSessions,
 } from "@/db";
+import { type BossFight, getBossFightByAdventure } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { computeSessionXp } from "@/db/xp";
@@ -49,29 +51,19 @@ function resolveImage(
   return path.startsWith("http") ? { uri: path } : getAsset(path);
 }
 
+/** What every branch of LoadState carries, so a new field cannot be added to only one of three. */
+type LoadedData = {
+  activeRun: ActiveAdventureRun | null;
+  exercisesById: Record<number, Exercise>;
+  suggestedDifficulty: "easy" | "medium" | "hard";
+  /** Null until the campaign's first session creates the fight, and for every non-boss adventure. */
+  bossFight: BossFight | null;
+};
+
 type LoadState =
-  | {
-      status: "loading";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
-  | {
-      status: "ready";
-      details: AdventureDetails;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-    }
-  | {
-      status: "error";
-      details: AdventureDetails | null;
-      activeRun: ActiveAdventureRun | null;
-      exercisesById: Record<number, Exercise>;
-      suggestedDifficulty: "easy" | "medium" | "hard";
-      message: string;
-    };
+  | ({ status: "loading"; details: AdventureDetails | null } & LoadedData)
+  | ({ status: "ready"; details: AdventureDetails } & LoadedData)
+  | ({ status: "error"; details: AdventureDetails | null; message: string } & LoadedData);
 
 const EMPTY_FOCUS: TrainingFocus = { archetype: null, muscles: [] };
 
@@ -183,6 +175,7 @@ export default function AdventureDetailsScreen() {
     activeRun: null,
     exercisesById: {},
     suggestedDifficulty: "medium",
+    bossFight: null,
   });
 
   const load = useCallback(
@@ -190,13 +183,17 @@ export default function AdventureDetailsScreen() {
       setState((s) => ({ ...s, status: "loading" }));
 
       try {
-        const [details, activeRun, exercises, history, finishedCounts] = await Promise.all([
-          getAdventureDetails(id),
-          getActiveAdventureRun(id),
-          listExercises(),
-          getRecentSessionHistory(10),
-          getFinishedRunCountsByAdventure(),
-        ]);
+        const [details, activeRun, exercises, history, finishedCounts, bossFight] =
+          await Promise.all([
+            getAdventureDetails(id),
+            getActiveAdventureRun(id),
+            listExercises(),
+            getRecentSessionHistory(10),
+            getFinishedRunCountsByAdventure(),
+            // Read-only: the fight is created by the session that first swings at it, so a
+            // campaign never browsed and never started has nothing here and shows no panel.
+            getBossFightByAdventure(id),
+          ]);
 
         if (isStale()) return;
         setFinishedCount(finishedCounts.get(id) ?? 0);
@@ -208,6 +205,7 @@ export default function AdventureDetailsScreen() {
             activeRun: null,
             exercisesById: {},
             suggestedDifficulty: "medium",
+            bossFight: null,
             message: t("adventures.not_found"),
           });
           return;
@@ -225,6 +223,7 @@ export default function AdventureDetailsScreen() {
           activeRun,
           exercisesById,
           suggestedDifficulty,
+          bossFight,
         });
       } catch (e) {
         if (isStale()) return;
@@ -278,6 +277,7 @@ export default function AdventureDetailsScreen() {
     return byIndex;
   }, [run]);
   const isBoss = details?.adventure.kind === "boss";
+  const bossFight = state.bossFight;
   const focus = details?.adventure.focus ?? EMPTY_FOCUS;
   const heroImage = resolveImage(details?.adventure.imagePath, getAdventureAsset);
 
@@ -461,6 +461,14 @@ export default function AdventureDetailsScreen() {
                   <Paragraph color="$textSecondary" size="$4" lineHeight={22}>
                     {description}
                   </Paragraph>
+                ) : null}
+
+                {/* Who is actually at the end of this. The `BOSS` tag above says a fight exists;
+                    this says which monster, how far through it you are, and what it is weak to. */}
+                {bossFight ? (
+                  <YStack pt="$2">
+                    <BossPanel fight={bossFight} language={language} />
+                  </YStack>
                 ) : null}
 
                 <XStack gap="$2" flexWrap="wrap" pt="$2">

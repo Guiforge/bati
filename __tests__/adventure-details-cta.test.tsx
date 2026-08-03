@@ -44,6 +44,12 @@ function mockStep(stepIndex: number) {
   };
 }
 
+// The screen reads the fight to draw its boss panel. Mocked to null — this test is about which
+// CTA a *fresh* campaign shows, and a campaign nobody has started has no fight row yet.
+jest.mock("@/db/bossFights", () => ({
+  getBossFightByAdventure: jest.fn().mockResolvedValue(null),
+}));
+
 jest.mock("@/db", () => ({
   Difficulty: { Easy: "easy", Medium: "medium", Hard: "hard" },
   getAdventureDetails: jest.fn().mockResolvedValue({

@@ -144,7 +144,7 @@ export default function DevScreen() {
 
       // One session cannot normally take a boss from full HP to zero, so the victory screen is
       // otherwise a multi-session wait to look at.
-      const fight = await getOrCreateBossFight(boss.id);
+      const fight = await getOrCreateBossFight(boss.id, "medium");
       if (fight) {
         await db
           .update(bossFights)

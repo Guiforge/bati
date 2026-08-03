@@ -73,11 +73,12 @@ jest.mock("@/db/preferences", () => ({
 jest.mock("@/db/bossFights", () => ({
   ...jest.requireActual("@/db/bossFights"),
   getOrCreateBossFight: jest.fn().mockResolvedValue(null),
-  persistSessionDamage: jest.fn().mockResolvedValue(undefined),
+  persistSessionDamage: jest.fn().mockResolvedValue(true),
 }));
 jest.mock("@/db/personalRecords", () => ({
   checkForNewRecords: jest.fn().mockResolvedValue([]),
 }));
+jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
 jest.mock("@/db/streaks", () => ({
   updateStreakAfterSession: jest.fn().mockResolvedValue({
     current: 1,
@@ -268,7 +269,7 @@ describe("useSessionStore", () => {
       await store.getState().startSession(mockQuest, "medium", { adventureRunStepId: 5 });
 
       expect(dbMock.getAdventureIdForRunStep).toHaveBeenCalledWith(5);
-      expect(bossMock.getOrCreateBossFight).toHaveBeenCalledWith(42);
+      expect(bossMock.getOrCreateBossFight).toHaveBeenCalledWith(42, "medium");
       expect(store.getState().bossFight).toEqual(boss);
     });
 
@@ -276,7 +277,8 @@ describe("useSessionStore", () => {
       await store.getState().startSession(mockQuest, "medium", { adventureId: 42 });
 
       expect(dbMock.getAdventureIdForRunStep).not.toHaveBeenCalled();
-      expect(bossMock.getOrCreateBossFight).toHaveBeenCalledWith(42);
+      // The run's difficulty travels with it: the HP pool is scaled by it at creation.
+      expect(bossMock.getOrCreateBossFight).toHaveBeenCalledWith(42, "medium");
     });
 
     test("starts a plain quest with no boss and no lookup", async () => {
@@ -472,6 +474,27 @@ describe("useSessionStore", () => {
       expect(sessionId).toBe(1);
       // Emptied, so the victory screen's retry cannot land them a second time.
       expect(store.getState().pendingDamage).toEqual([]);
+    });
+
+    /**
+     * persistSessionDamage drops hits without throwing when the fight row is gone or the boss is
+     * already dead. Clearing on that answer is how a session's work disappears with no log row and
+     * no error to find weeks later — so the hits stay, and the drop is reported.
+     */
+    test("hits the database refused are kept, not silently dropped", async () => {
+      // biome-ignore lint/style/useNamingConvention: jest module mock handle
+      const reporter = require("@/src/reportError") as { reportError: jest.Mock };
+      reporter.reportError.mockClear();
+      bossMock.persistSessionDamage.mockResolvedValueOnce(false);
+
+      await store.getState().completeExercise(10);
+      await store.getState().saveSession(null);
+
+      expect(store.getState().pendingDamage).toHaveLength(1);
+      expect(reporter.reportError).toHaveBeenCalledWith(
+        "session.commitPendingDamage",
+        expect.any(Error),
+      );
     });
 
     /**

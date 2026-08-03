@@ -548,7 +548,8 @@
     "warmup_prev_accessibility": "Mouvement précédent",
     "warmup_next_accessibility": "Mouvement suivant",
     "countdown_subtitle": "C'est l'heure de bouger.",
-    "reserve_hint": "Garde 1 à 2 répétitions en réserve — ne va pas à l'échec."
+    "reserve_hint": "Garde 1 à 2 répétitions en réserve — ne va pas à l'échec.",
+    "crit_hint": "Chaque répétition au-delà de l'objectif est une chance de coup critique — {{percent}} % pour l'instant."
   },
   "settings": "Paramètres",
   "settings.haptics_off": "Désactivées",

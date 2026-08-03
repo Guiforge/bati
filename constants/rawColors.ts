@@ -57,6 +57,15 @@ export const rawColors = {
   shadowColor: "#060812",
   primaryGlow: "rgba(13, 51, 242, 0.45)",
 
+  // --- Boss phases ---
+  // The room the fight happens in, darkening and reddening as the boss loses. Phase 1 uses
+  // `bgDark`; these are its wounded, critical and enraged siblings. They live here rather than as
+  // rgba literals in bossPhase.ts because the `noRawHexColor` plugin only catches hex — the old
+  // tints re-typed `secondary` and `error` by hand and drifted with nothing to stop them.
+  bossPhase2: "#170F1D",
+  bossPhase3: "#1F0E18",
+  bossPhase4: "#280B12",
+
   // --- Legacy mapping (safety net) ---
   bgLight: "#101322",
   pastelBlue: "#1A2633", // Mapped to dark

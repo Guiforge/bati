@@ -1,81 +1,73 @@
-import { useEffect, useRef, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useState } from "react";
+import { useWindowDimensions } from "react-native";
 import { Paragraph, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { BOSS_LOW_HP_TAUNTS, BOSS_TAUNTS } from "@/constants/bossTaunts";
+import { sessionArtHeight } from "@/components/session/sessionArt";
+import { bossVoice } from "@/constants/bosses";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { getHpPercent, getPhaseFromHp } from "./bossPhase";
 
-/** Session top padding (16) + header row (~40) + gap (16) + the bounded HUD strip (~76). */
-const HUD_BOTTOM_OFFSET = 148;
+/** How long a line stays up before the boss goes quiet again. */
+const TAUNT_MS = 4000;
 
 export function BossTauntOverlay() {
   const bossFight = useSessionStore((s) => s.bossFight);
+  const lastDamage = useSessionStore((s) => s.lastDamageResult);
   const status = useSessionStore((s) => s.status);
   const language = useSettingsStore((s) => s.language);
-  const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
+  const { width, height } = useWindowDimensions();
   const [taunt, setTaunt] = useState<string | null>(null);
 
-  // Only show taunts during active parts of the session
-  const isActive = status === "running" || status === "countdown";
-  const bossFightId = bossFight?.id ?? null;
+  const isActive = status === "running" || status === "resting";
 
-  // HP changes every exercise (new bossFight object each hit); the taunt schedule must
-  // survive that, so live HP is read from a ref instead of the effect's closure.
-  const bossFightRef = useRef(bossFight);
-  bossFightRef.current = bossFight;
-
+  // The boss speaks when it is hit, not when a timer says so.
+  //
+  // It used to fire on a random 15-45 s schedule from one ten-line pool shared by all six bosses,
+  // which meant it talked over your set about nothing in particular. `lastDamageResult` already
+  // changes identity on exactly the moments worth reacting to, so the whole scheduler goes away
+  // and the pool is chosen by what just happened.
   useEffect(() => {
-    if (bossFightId === null || !isActive) {
-      setTaunt(null);
-      return;
-    }
+    if (!bossFight || !isActive || !lastDamage || lastDamage.damage <= 0) return;
 
-    let hideTimeoutId: ReturnType<typeof setTimeout> | undefined;
+    const voice = bossVoice(bossFight.imagePath);
+    const phase = getPhaseFromHp(getHpPercent(lastDamage.newHp, bossFight.totalHp));
 
-    // Randomly show a taunt every 15-45 seconds
-    const scheduleNextTaunt = () => {
-      const delay = Math.random() * 30000 + 15000;
-      return setTimeout(() => {
-        const currentFight = bossFightRef.current;
-        if (!currentFight) return;
-        const isLowHp = currentFight.currentHp / currentFight.totalHp < 0.3;
-        const pool = isLowHp ? BOSS_LOW_HP_TAUNTS : BOSS_TAUNTS;
-        const messages = pool[language as "en" | "fr"] || pool.en;
-        const message = messages[Math.floor(Math.random() * messages.length)];
+    // Order is deliberate: a cornered boss answers its own state before it answers your hit.
+    const pool =
+      phase === 4
+        ? voice.enrage
+        : lastDamage.isCritical
+          ? voice.crit
+          : lastDamage.resistancePenalty
+            ? voice.resist
+            : voice.idle;
 
-        setTaunt(message);
+    const lines = language === "fr" ? pool.fr : pool.en;
+    setTaunt(lines[Math.floor(Math.random() * lines.length)]);
 
-        // Hide after 4 seconds
-        hideTimeoutId = setTimeout(() => setTaunt(null), 4000);
+    const id = setTimeout(() => setTaunt(null), TAUNT_MS);
+    return () => clearTimeout(id);
+  }, [bossFight, lastDamage, isActive, language]);
 
-        // Schedule next
-        timeoutId = scheduleNextTaunt();
-      }, delay);
-    };
-
-    let timeoutId = scheduleNextTaunt();
-
-    return () => {
-      clearTimeout(timeoutId);
-      clearTimeout(hideTimeoutId);
-    };
-  }, [bossFightId, isActive, language]);
-
-  if (!taunt) return null;
+  if (!taunt || !isActive) return null;
 
   return (
-    // Anchored just under the boss HUD rather than at a magic `top: 120` that landed on top of
-    // it. Non-interactive: a decorative bubble must never swallow a tap aimed at the session.
+    // Anchored to the arena's bottom edge. It cannot measure the arena — this renders above every
+    // session view — but the arena starts at y=0 in both the running and the resting screen and is
+    // sized by one pure function of the window, so the edge is knowable from here.
+    // Non-interactive: a decorative bubble must never swallow a tap aimed at the session.
     <YStack
       position="absolute"
       pointerEvents="none"
-      transition="bouncy"
-      enterStyle={{ opacity: 0, scale: 0.5, y: -20 }}
-      exitStyle={{ opacity: 0, scale: 0.5, y: -20 }}
-      style={{ top: insets.top + HUD_BOTTOM_OFFSET, right: 20, zIndex: 1000 }}
+      transition={reducedMotion ? undefined : "bouncy"}
+      enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
+      exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
+      style={{ top: sessionArtHeight(width, height) - 8, right: 20, zIndex: 1000 }}
     >
-      {/* The HUD already shows the boss's real art — the bubble only needs its voice, and its
+      {/* The arena already shows the boss's real art — the bubble only needs its voice, and its
           tail points back up at the portrait. */}
       <Card
         bg="$surface"

@@ -1,16 +1,19 @@
-import { Swords, Target, Zap } from "@tamagui/lucide-icons";
+import { Shield, Swords, Target, Zap } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
-import { Text, XStack, YStack } from "tamagui";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AnimatePresence, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { getBossAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { getHpPercent, getPhaseFromHp, getPhaseTint } from "./bossPhase";
+import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
+import { sessionArtHeight } from "./sessionArt";
 
 type BossArenaProps = {
   currentHp: number;
@@ -19,27 +22,48 @@ type BossArenaProps = {
   /** The monster's own painting (BossFight.imagePath), resolved through getBossAsset. */
   bossImagePath: string;
   weaknessMuscle?: MuscleCode | null;
+  resistanceMuscle?: MuscleCode | null;
+  /**
+   * The store's `lastDamageResult`, passed by *reference*. Both call sites used to build a fresh
+   * object literal every render, which re-armed the burst timer on every tick of the session
+   * clock — invisible with a corner pill, a permanent twitch once the portrait flinches.
+   */
   lastDamage?: {
     damage: number;
     isCritical: boolean;
     weaknessBonus: boolean;
+    resistancePenalty?: boolean;
   } | null;
+  /** Painted on the scrim over the art's base: the exercise while running, nothing while resting. */
+  children?: ReactNode;
 };
 
-/** How long the trail holds at the old HP before draining, and the bar's own height. */
+/** How long the trail holds at the old HP before draining, and the HP hairline's own height. */
 const TRAIL_HOLD_MS = 700;
-const BAR_HEIGHT = 10;
+const BAR_HEIGHT = 3;
+/** How long the portrait recoils from a hit. Short enough to read as impact, not as a wobble. */
+const FLINCH_MS = 120;
+/** How long the damage numeral stays struck over the art. */
+const BURST_MS = 1800;
+/** Half the enrage rim's breath — a slow swell, not a strobe. */
+const PULSE_MS = 900;
 
 /**
- * The boss fight's stage: the monster at full width with its own health attached to it.
+ * The boss fight's arena — the monster owning the screen, with its health at the screen's edge.
  *
- * It replaces a 44px puck in a status strip. The boss was never actually visible — worse, the
- * puck showed the campaign cover, because nothing had ever pointed at the boss paintings that
- * ship in assets/images/bosses/. Here the painting is the surface everything else sits on.
+ * It was a rounded, bordered, shadowed card inset at `px="$4"`, with art capped at
+ * `min(width × 0.5, height × 0.28)` — 195 px next to the 354 px `ExerciseHero` on the other branch
+ * of the same screen. The subject of the screen was its second-largest image, and the two branches
+ * spoke two visual languages while `docs/design/design-system.md` §"Art heroes" documented one and
+ * named both components as its users.
  *
- * The portrait takes the exercise image's slot rather than stacking above it (the exercise art
- * drops to a thumbnail beside its name during a fight), so the session column is no taller than
- * before and the footer CTA stays reachable.
+ * This is that recipe: full width, no border, no inset, running under the status bar, with text
+ * held by gradient scrims rather than by a box. Same slot and same size as `ExerciseHero`
+ * (`sessionArtHeight`), so the session column is no taller than before and the footer CTA stays
+ * reachable — see the vertical budget in `docs/screens/session.md`.
+ *
+ * The exercise you are performing comes in as `children` and sits on the scrim over the art's
+ * base, so both images are on screen at once instead of the movement shrinking to a 52 px chip.
  */
 export function BossArena({
   currentHp,
@@ -47,16 +71,20 @@ export function BossArena({
   bossName,
   bossImagePath,
   weaknessMuscle,
+  resistanceMuscle,
   lastDamage,
+  children,
 }: BossArenaProps) {
   const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
   const [showDamage, setShowDamage] = useState(false);
+  const [hit, setHit] = useState(false);
 
   const hpPercent = getHpPercent(currentHp, totalHp);
   const phase = getPhaseFromHp(hpPercent);
-  const tint = getPhaseTint(phase);
+  const look = getPhaseLook(phase);
   const isEnraged = phase === 4;
   const hpColor = isEnraged ? "$error" : hpPercent < 50 ? "$secondary" : "$success";
 
@@ -80,129 +108,229 @@ export function BossArena({
   useEffect(() => {
     if (!lastDamage) return;
     setShowDamage(true);
-    const timer = setTimeout(() => setShowDamage(false), 1800);
-    return () => clearTimeout(timer);
+    setHit(true);
+    // The flinch is a jab, not a wobble: out on the hit, the spring carries it back.
+    const flinch = setTimeout(() => setHit(false), FLINCH_MS);
+    const clear = setTimeout(() => setShowDamage(false), BURST_MS);
+    return () => {
+      clearTimeout(flinch);
+      clearTimeout(clear);
+    };
   }, [lastDamage]);
 
-  // Tall enough to read as a painting, capped so a short screen still leaves the exercise and
-  // its CTA room to breathe.
-  const artHeight = Math.min(Math.round(width * 0.5), Math.round(height * 0.28));
+  // Enrage does something now. It used to be a colour and a label: phase 4 tinted the art redder
+  // and printed "ENRAGED!", and nothing about the fight changed. The rim breathes instead, which
+  // is the one thing a cornered monster can do that costs the hero nothing — deliberately not a
+  // change to the maths, because a fitness app should not make the last session of a campaign
+  // harder than the ones that earned it.
+  const [pulse, setPulse] = useState(false);
+  useEffect(() => {
+    if (!isEnraged || reducedMotion) {
+      setPulse(false);
+      return;
+    }
+    const id = setInterval(() => setPulse((p) => !p), PULSE_MS);
+    return () => clearInterval(id);
+  }, [isEnraged, reducedMotion]);
+
+  const artHeight = sessionArtHeight(width, height);
   const trailPercent = getHpPercent(trailHp, totalHp);
+  const flinching = hit && !reducedMotion;
+  const rimOpacity = pulse ? look.rim * 0.55 : look.rim;
 
   return (
-    <YStack
-      rounded="$6"
-      overflow="hidden"
-      borderWidth={1}
-      borderColor={isEnraged ? "$error" : "$borderStrong"}
-      bg="$surface"
-      shadowColor="$shadowColor"
-      shadowOpacity={0.5}
-      shadowRadius={12}
-      shadowOffset={{ width: 0, height: 4 }}
-      transition="quick"
-    >
-      <YStack height={artHeight} width="100%" position="relative">
+    <YStack height={artHeight} width="100%" position="relative" overflow="hidden" bg="$surface">
+      {/* The painting and its phase treatment move together. The scrims, the HP and the text stay
+          put — moving them too would judder the whole screen on every set. */}
+      <YStack
+        position="absolute"
+        fullscreen
+        scale={flinching ? 1.06 : 1}
+        x={flinching ? -6 : 0}
+        transition={reducedMotion ? undefined : "quick"}
+      >
         <Image
           source={getBossAsset(bossImagePath)}
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
           transition={200}
         />
-        {!!tint && <YStack position="absolute" fullscreen bg={tint} pointerEvents="none" />}
 
-        {/* Scrim: the name and HP sit on painted art, so they need their own ground to stay
-            readable in gym lighting rather than relying on whatever the artwork happens to be. */}
-        <LinearGradient
-          colors={["transparent", "rgba(11,15,25,0.55)", rawColors.bgDark]}
-          locations={[0, 0.55, 1]}
-          style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: artHeight * 0.7 }}
+        {/* Darken, do not repaint: the art keeps its own colours, the room loses its light. */}
+        <YStack
+          position="absolute"
+          fullscreen
+          bg="$bgDark"
+          opacity={look.dim}
+          transition="quick"
           pointerEvents="none"
         />
 
-        <YStack position="absolute" b="$3" l="$3" r="$3" gap="$1">
+        {/* The rim, and — at phase 4 — its breath. `bouncy` is the slowest spring the config has
+            and settles well inside the interval, so the swell reads as breathing rather than as a
+            strobe; the opacity lives on this wrapper because a LinearGradient's own style is not
+            animatable.
+            ponytail: the rim is horizontal only — it leans on the two scrims below to close the
+            vignette top and bottom. Add a second, vertical pass if those edges ever read flat. */}
+        <YStack
+          position="absolute"
+          fullscreen
+          opacity={rimOpacity}
+          transition={reducedMotion ? undefined : "bouncy"}
+          pointerEvents="none"
+        >
+          <LinearGradient
+            colors={[rawColors.error, "transparent", rawColors.error]}
+            locations={[0, 0.5, 1]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+          />
+        </YStack>
+      </YStack>
+
+      {/* The hit, as light. Outside the flinch wrapper, so it covers the frame the art moved out
+          of instead of moving with it. */}
+      <YStack
+        position="absolute"
+        fullscreen
+        bg="$error"
+        opacity={flinching ? 0.3 : 0}
+        transition={reducedMotion ? undefined : "quick"}
+        pointerEvents="none"
+      />
+
+      {/* Top scrim: the HUD sits on painted art with no card behind it, and some of these
+          paintings are bright. This is what holds its contrast, not decoration. */}
+      <LinearGradient
+        colors={[rawColors.bgOverlay, "transparent"]}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, height: insets.top + 64 }}
+        pointerEvents="none"
+      />
+
+      {/* Bottom scrim: ends on the phase colour the screen itself is painted, so the artwork has
+          no visible edge — which is the whole point of dropping the border. */}
+      <LinearGradient
+        colors={["transparent", look.bgRaw]}
+        locations={[0, 0.85]}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: Math.round(artHeight * 0.6),
+        }}
+        pointerEvents="none"
+      />
+
+      {/* HP as a hairline at the screen's own top edge, the way a game puts a boss bar at the top
+          of the world. It was a 10 px bar in a `$bgDark` strip under the picture with a
+          right-aligned `450 / 1070` beside it — a caption, not the boss's health. */}
+      <YStack position="absolute" t={0} l={0} r={0} height={BAR_HEIGHT} bg="$bgOverlay">
+        {/* Trail first, so the live bar paints over it and only the difference shows. */}
+        <YStack
+          testID="boss-hp-trail"
+          position="absolute"
+          t={0}
+          b={0}
+          l={0}
+          width={`${trailPercent}%`}
+          bg="$error"
+          opacity={0.45}
+          transition={reducedMotion ? undefined : "quick"}
+        />
+        <YStack
+          testID="boss-hp-fill"
+          position="absolute"
+          t={0}
+          b={0}
+          l={0}
+          width={`${hpPercent}%`}
+          bg={hpColor}
+          transition={reducedMotion ? undefined : "quick"}
+        />
+      </YStack>
+
+      <YStack position="absolute" b="$3" l="$4" r="$4" gap="$2">
+        <XStack items="flex-end" gap="$2">
           <Text
+            flex={1}
             fontFamily="$heading"
             fontWeight="700"
-            fontSize={22}
-            lineHeight={26}
+            fontSize={28}
+            lineHeight={32}
             color="$text"
-            numberOfLines={1}
+            numberOfLines={2}
           >
             {bossName}
           </Text>
-          <StatusLine isEnraged={isEnraged} weaknessMuscle={weaknessMuscle} />
-        </YStack>
-
-        {showDamage && !!lastDamage && (
-          <DamageBurst
-            damage={lastDamage.damage}
-            isCritical={lastDamage.isCritical}
-            weaknessBonus={lastDamage.weaknessBonus}
-            reducedMotion={reducedMotion}
-          />
-        )}
-      </YStack>
-
-      {/* HP reads as the boss's own health because it is attached to the portrait, not floating
-          in a separate card above the workout. */}
-      <YStack px="$3" py="$2" gap="$1" bg="$bgDark">
-        <YStack
-          height={BAR_HEIGHT}
-          rounded="$10"
-          bg="$surface2"
-          borderWidth={1}
-          borderColor="$borderStrong"
-          overflow="hidden"
-          position="relative"
-        >
-          {/* Trail first, so the live bar paints over it and only the difference shows. */}
-          <YStack
-            testID="boss-hp-trail"
-            position="absolute"
-            t={0}
-            b={0}
-            l={0}
-            width={`${trailPercent}%`}
-            bg="$error"
-            opacity={0.45}
-            transition={reducedMotion ? undefined : "quick"}
-          />
-          <YStack
-            testID="boss-hp-fill"
-            position="absolute"
-            t={0}
-            b={0}
-            l={0}
-            width={`${hpPercent}%`}
-            bg={hpColor}
-            transition={reducedMotion ? undefined : "quick"}
-          />
-        </YStack>
-
-        <XStack justify="flex-end" items="baseline" gap="$1">
-          <Text fontWeight="700" fontSize={15} color={hpColor} transition="quick">
-            {currentHp}
-          </Text>
-          <Text fontWeight="700" fontSize={12} color="$textSecondary">
-            / {totalHp} {t("boss.hp")}
-          </Text>
+          <XStack items="baseline" gap="$1">
+            <Text fontWeight="700" fontSize={15} color={hpColor} transition="quick">
+              {currentHp}
+            </Text>
+            <Text fontWeight="700" fontSize={12} color="$textSecondary">
+              / {totalHp} {t("boss.hp")}
+            </Text>
+          </XStack>
         </XStack>
+
+        <StatusLine
+          isEnraged={isEnraged}
+          weaknessMuscle={weaknessMuscle}
+          resistanceMuscle={resistanceMuscle}
+        />
+
+        {children}
       </YStack>
+
+      {/* AnimatePresence is what finally lets the burst's exitStyle run: it was conditionally
+          mounted with nothing above it, so it faded in and then vanished. Same wrapper as
+          components/common/Toast.tsx. */}
+      <AnimatePresence>
+        {showDamage && !!lastDamage && (
+          <YStack
+            key="burst"
+            position="absolute"
+            fullscreen
+            items="center"
+            justify="center"
+            pointerEvents="none"
+          >
+            <DamageBurst
+              damage={lastDamage.damage}
+              isCritical={lastDamage.isCritical}
+              weaknessBonus={lastDamage.weaknessBonus}
+              resistancePenalty={lastDamage.resistancePenalty ?? false}
+              reducedMotion={reducedMotion}
+            />
+          </YStack>
+        )}
+      </AnimatePresence>
     </YStack>
   );
 }
 
 /**
  * One status line that swaps content instead of adding a row: the arena must not change height
- * when the boss enrages, or the CTA below it starts moving mid-workout.
+ * when the boss enrages, or the CTA below it starts moving mid-workout. Every branch is pinned to
+ * the same height for that reason, including the empty one.
+ *
+ * Resistance shows here alongside weakness. It has always halved damage on the resisted muscle and
+ * has never once said so — `resistancePenalty` rode in `DamageResult` and `boss.resistance` sat
+ * unused in both locales while the hero lost half a set with no explanation.
+ *
+ * Icon and muscle name only: "Weakness · chest   Resistance · legs" does not fit at 11 px on a
+ * 360 dp screen. The words survive on the row's accessibility label, so nothing is lost to a
+ * screen reader.
  */
 function StatusLine({
   isEnraged,
   weaknessMuscle,
+  resistanceMuscle,
 }: {
   isEnraged: boolean;
   weaknessMuscle?: MuscleCode | null;
+  resistanceMuscle?: MuscleCode | null;
 }) {
   const { t } = useTranslation();
 
@@ -217,13 +345,32 @@ function StatusLine({
     );
   }
 
-  if (weaknessMuscle) {
+  if (weaknessMuscle || resistanceMuscle) {
+    const label = [
+      weaknessMuscle && `${t("boss.weakness")} ${t(`muscles.${weaknessMuscle}`)}`,
+      resistanceMuscle && `${t("boss.resistance")} ${t(`muscles.${resistanceMuscle}`)}`,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
     return (
-      <XStack items="center" gap="$1" height={16}>
-        <Target size={12} color="$secondary" />
-        <Text fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
-          {t("boss.weakness")} · {t(`muscles.${weaknessMuscle}`)}
-        </Text>
+      <XStack items="center" gap="$3" height={16} accessibilityLabel={label}>
+        {!!weaknessMuscle && (
+          <XStack items="center" gap="$1">
+            <Target size={12} color="$secondary" />
+            <Text fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+              {t(`muscles.${weaknessMuscle}`)}
+            </Text>
+          </XStack>
+        )}
+        {!!resistanceMuscle && (
+          <XStack items="center" gap="$1">
+            <Shield size={12} color="$textSecondary" />
+            <Text fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+              {t(`muscles.${resistanceMuscle}`)}
+            </Text>
+          </XStack>
+        )}
       </XStack>
     );
   }
@@ -232,47 +379,50 @@ function StatusLine({
   return <YStack height={16} />;
 }
 
-/** The hit, read at a glance: struck over the portrait, never in the layout flow. */
+/**
+ * The hit, read at a glance: struck over the middle of the portrait where the blow landed, rather
+ * than fading in a corner pill that had nothing to do with the art.
+ */
 function DamageBurst({
   damage,
   isCritical,
   weaknessBonus,
+  resistancePenalty,
   reducedMotion,
 }: {
   damage: number;
   isCritical: boolean;
   weaknessBonus: boolean;
+  resistancePenalty: boolean;
   reducedMotion: boolean;
 }) {
   const { t } = useTranslation();
 
   return (
     <XStack
-      position="absolute"
-      t="$3"
-      r="$3"
       items="center"
       gap="$1"
-      px="$2"
-      py="$1"
+      px="$3"
+      py="$2"
       rounded="$10"
       bg="$bgOverlay"
       borderWidth={1}
       borderColor={isCritical ? "$error" : "$borderStrong"}
       pointerEvents="none"
       transition={reducedMotion ? undefined : "bouncy"}
-      enterStyle={reducedMotion ? undefined : { opacity: 0, y: -12, scale: 0.8 }}
-      exitStyle={reducedMotion ? undefined : { opacity: 0, y: -12 }}
+      enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.4 }}
+      exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
     >
-      {isCritical ? <Zap size={16} color="$error" /> : <Swords size={14} color="$secondary" />}
+      {isCritical ? <Zap size={20} color="$error" /> : <Swords size={16} color="$secondary" />}
       <Text
         fontWeight="700"
-        fontSize={isCritical ? 20 : 16}
+        fontSize={isCritical ? 28 : 22}
         color={isCritical ? "$error" : "$text"}
       >
         {isCritical ? `${t("common.crit")} ` : ""}−{damage}
       </Text>
-      {!!weaknessBonus && <Target size={14} color="$secondary" />}
+      {!!weaknessBonus && <Target size={16} color="$secondary" />}
+      {!!resistancePenalty && <Shield size={16} color="$textSecondary" />}
     </XStack>
   );
 }

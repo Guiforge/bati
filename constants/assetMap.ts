@@ -332,6 +332,20 @@ export function getBossAsset(id: string) {
 }
 
 /**
+ * Which monster a `bossImagePath` points at, or null when it points at nothing this app ships.
+ *
+ * The painting is the only place a boss's identity is written down — there is no name column, and
+ * `BossFight.enName` is the *campaign's* title, so without this you fight a fire dragon called
+ * "The Iron Lord's Conquest". Callers resolve `bosses.<key>.name` and its taunt pool from it, and
+ * fall back to the campaign title when it is null.
+ */
+export function getBossKey(id: string | null | undefined): BossAssetKey | null {
+  if (!id) return null;
+  const key = keyFromPath(id);
+  return key in BOSS_ASSETS ? (key as BossAssetKey) : null;
+}
+
+/**
  * Get adventure cover asset by ID (with fallback to placeholder)
  */
 export function getAdventureAsset(id: string) {

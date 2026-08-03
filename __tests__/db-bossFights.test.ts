@@ -81,7 +81,7 @@ describe("db/bossFights", () => {
     return row.total;
   }
 
-  /** Crits roll Math.random() < 0.3; pin it so damage numbers are exact. */
+  /** Crit odds are capped at MAX_CRIT_CHANCE; roll above it so damage numbers are exact. */
   function noCrits() {
     jest.spyOn(Math, "random").mockReturnValue(0.99);
   }
@@ -90,8 +90,8 @@ describe("db/bossFights", () => {
     noCrits();
     const b = boss();
 
-    const first = await b.getOrCreateBossFight(BOSS_WITH_HP);
-    const second = await b.getOrCreateBossFight(BOSS_WITH_HP);
+    const first = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
+    const second = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
 
     expect(first?.id).toBe(second?.id);
     expect(first?.totalHp).toBe(100);
@@ -104,20 +104,20 @@ describe("db/bossFights", () => {
     noCrits();
     const b = boss();
 
-    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
     await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 30, targetValue: 100 });
 
     // Both read paths must agree — getOrCreate is the one the session uses on resume.
-    expect((await b.getOrCreateBossFight(BOSS_WITH_HP))?.currentHp).toBe(70);
+    expect((await b.getOrCreateBossFight(BOSS_WITH_HP, "medium"))?.currentHp).toBe(70);
     expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.currentHp).toBe(70);
   });
 
   test("only boss adventures get a fight; unknown ids get nothing", async () => {
     const b = boss();
 
-    expect(await b.getOrCreateBossFight(ROUTE_ADVENTURE)).toBeNull();
-    expect(await b.getOrCreateBossFight(999_999)).toBeNull();
+    expect(await b.getOrCreateBossFight(ROUTE_ADVENTURE, "medium")).toBeNull();
+    expect(await b.getOrCreateBossFight(999_999, "medium")).toBeNull();
     expect(await b.getBossFightByAdventure(999_999)).toBeNull();
   });
 
@@ -128,18 +128,30 @@ describe("db/bossFights", () => {
     expect(perStep).toBeGreaterThan(0);
 
     // Two steps of the same quest, scaled by the expected crit rate (30 % chance of double).
-    const fight = await b.getOrCreateBossFight(BOSS_DERIVED_HP);
-    expect(fight?.totalHp).toBe(Math.max(50, Math.round(perStep * 2 * 1.3)));
+    const fight = await b.getOrCreateBossFight(BOSS_DERIVED_HP, "medium");
+    expect(fight?.totalHp).toBe(Math.max(50, Math.round(perStep * 2 * b.CAMPAIGN_HP_FRACTION)));
+  });
+
+  test("the HP pool scales with the difficulty the run was started at", async () => {
+    const b = boss();
+
+    // Targets are scaled 0.75 / 1.0 / 1.25 by USER_LEVEL_MULTIPLIER and damage is the work you
+    // did, so a pool tuned at one level is the wrong fight at the other two: on easy the campaign
+    // used to run out of steps before the boss ran out of HP.
+    expect((await b.getOrCreateBossFight(BOSS_WITH_HP, "easy"))?.totalHp).toBe(75);
+    expect((await b.getOrCreateBossFight(BOSS_WITH_HP, "easy"))?.currentHp).toBe(75);
   });
 
   test("a boss with no steps falls back to the default pool", async () => {
     const b = boss();
-    expect((await b.getOrCreateBossFight(BOSS_NO_STEPS))?.totalHp).toBe(100);
+    expect((await b.getOrCreateBossFight(BOSS_NO_STEPS, "medium"))?.totalHp).toBe(100);
   });
 
   test("a missing cover resolves to the placeholder, never null", async () => {
     const b = boss();
-    expect((await b.getOrCreateBossFight(BOSS_NO_STEPS))?.imagePath).toBe("assets/placeholder.jpg");
+    expect((await b.getOrCreateBossFight(BOSS_NO_STEPS, "medium"))?.imagePath).toBe(
+      "assets/placeholder.jpg",
+    );
     expect((await b.getBossFightByAdventure(BOSS_NO_STEPS))?.imagePath).toBe(
       "assets/placeholder.jpg",
     );
@@ -149,7 +161,7 @@ describe("db/bossFights", () => {
     noCrits();
     const b = boss();
 
-    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
 
     const first = await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 20, targetValue: 25 });
@@ -166,7 +178,7 @@ describe("db/bossFights", () => {
     noCrits();
     const b = boss();
 
-    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
 
     const weak = await b.dealDamage(fight.id, {
@@ -195,20 +207,46 @@ describe("db/bossFights", () => {
     expect(chip.damage).toBe(1);
   });
 
-  test("hitting the target can crit for double", async () => {
+  /**
+   * Crit is the one thing the session screen lets the hero decide, so it has to be earned. Meeting
+   * the target is not a decision — `adjustedReps` starts there and a time result reaches it.
+   */
+  test("only exceeding the target can crit, and by more than you exceed it", async () => {
     jest.spyOn(Math, "random").mockReturnValue(0.1);
     const b = boss();
 
-    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
 
-    // Short of the target: no crit roll, even on a lucky number.
-    expect(
-      (await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 9, targetValue: 10 })).isCritical,
-    ).toBe(false);
+    const roll = (resultValue: number, targetValue: number) =>
+      b.computeDamage(fight, { resultValue, targetValue });
 
-    const crit = await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 10, targetValue: 10 });
-    expect(crit).toMatchObject({ isCritical: true, damage: 20 });
+    // Short of the target, and exactly on it: no crit roll, even on a lucky number.
+    expect(roll(9, 10).isCritical).toBe(false);
+    expect(roll(10, 10).isCritical).toBe(false);
+
+    // One rep over twelve is 8 % overshoot -> 12 % odds, which 0.1 clears. Double damage.
+    expect(roll(13, 12)).toMatchObject({ isCritical: true, damage: 26 });
+
+    // The odds scale with the overshoot: at 0.4 the same set does not crit, a bigger one does.
+    jest.spyOn(Math, "random").mockReturnValue(0.4);
+    expect(roll(13, 12).isCritical).toBe(false);
+    expect(roll(24, 12).isCritical).toBe(true);
+
+    // ...and never beyond the ceiling, however heroic the set.
+    jest.spyOn(Math, "random").mockReturnValue(b.MAX_CRIT_CHANCE);
+    expect(roll(500, 12).isCritical).toBe(false);
+  });
+
+  test("a crit is written to the log as one", async () => {
+    jest.spyOn(Math, "random").mockReturnValue(0.1);
+    const b = boss();
+
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
+    if (!fight) throw new Error("Expected a boss fight");
+
+    const crit = await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 13, targetValue: 12 });
+    expect(crit).toMatchObject({ isCritical: true, damage: 26 });
     expect((await b.getBossDamageHistory(fight.id)).at(-1)?.isCritical).toBe(true);
   });
 
@@ -216,7 +254,7 @@ describe("db/bossFights", () => {
     noCrits();
     const b = boss();
 
-    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
 
     const killing = await b.dealDamage(fight.id, {
@@ -241,7 +279,7 @@ describe("db/bossFights", () => {
     noCrits();
     const b = boss();
 
-    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
     await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 500, targetValue: 25 });
 
@@ -292,7 +330,7 @@ describe("db/bossFights", () => {
 
     test("commits every banked hit and takes their total off the boss", async () => {
       const b = boss();
-      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
       if (!fight) throw new Error("Expected a boss fight");
 
       await b.persistSessionDamage(fight.id, [hit(30), hit(20, 2)], seedSession(77));
@@ -307,7 +345,7 @@ describe("db/bossFights", () => {
 
     test("commits nothing when the session landed no hits", async () => {
       const b = boss();
-      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
       if (!fight) throw new Error("Expected a boss fight");
 
       await b.persistSessionDamage(fight.id, [], seedSession(78));
@@ -318,7 +356,7 @@ describe("db/bossFights", () => {
 
     test("overkill clamps to zero and marks the boss defeated", async () => {
       const b = boss();
-      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
       if (!fight) throw new Error("Expected a boss fight");
 
       await b.persistSessionDamage(fight.id, [hit(80), hit(90, 2)], seedSession(79));
@@ -330,21 +368,28 @@ describe("db/bossFights", () => {
 
     test("leaves an already-dead boss alone", async () => {
       const b = boss();
-      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP);
+      const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
       if (!fight) throw new Error("Expected a boss fight");
       await b.persistSessionDamage(fight.id, [hit(500)], seedSession(80));
 
-      await b.persistSessionDamage(fight.id, [hit(10)], seedSession(81));
+      const written = await b.persistSessionDamage(fight.id, [hit(10)], seedSession(81));
 
-      // The second commit found the fight already over and wrote nothing.
+      // The second commit found the fight already over and wrote nothing — and says so, or the
+      // caller drops its banked hits and the work vanishes with no log row.
+      expect(written).toBe(false);
       expect(await b.getBossDamageHistory(fight.id)).toHaveLength(1);
     });
 
-    test("committing against a missing fight is a no-op, not a throw", async () => {
+    test("committing against a missing fight is a reported refusal, not a throw", async () => {
       const b = boss();
-      await expect(
-        b.persistSessionDamage(999_999, [hit(10)], seedSession(82)),
-      ).resolves.toBeUndefined();
+      await expect(b.persistSessionDamage(999_999, [hit(10)], seedSession(82))).resolves.toBe(
+        false,
+      );
+    });
+
+    test("an empty commit reports success — nothing to write is not a failure to write", async () => {
+      const b = boss();
+      await expect(b.persistSessionDamage(999_999, [], seedSession(83))).resolves.toBe(true);
     });
   });
 });

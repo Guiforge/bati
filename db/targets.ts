@@ -13,7 +13,12 @@ export type Target = {
   value: number;
 };
 
-const USER_LEVEL_MULTIPLIER: Record<DifficultyCode, number> = {
+/**
+ * How much of a quest's prescribed range the hero actually gets. Also what a boss's HP pool is
+ * scaled by — damage *is* the work you did, so a pool tuned at one level is unreachable at
+ * another. One multiplier, both sides. See `db/bossFights.ts`.
+ */
+export const USER_LEVEL_MULTIPLIER: Record<DifficultyCode, number> = {
   easy: 0.75,
   medium: 1.0,
   hard: 1.25,

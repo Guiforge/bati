@@ -217,7 +217,10 @@ async function ensureSessionRow(
  * Write the hits a session banked, then drop them.
  *
  * Clearing is the point: the victory screen retries `saveSession` on failure, and hits that
- * survived a retry would land on the boss twice.
+ * survived a retry would land on the boss twice. But clear only what was actually written — a
+ * throw already keeps them for the retry, and `persistSessionDamage` also drops hits *without*
+ * throwing when the fight row is gone or the boss is already dead. Clearing on that is how a
+ * session's work disappears with no log row and nothing to find weeks later.
  */
 async function commitPendingDamage(
   bossFight: BossFight | null,
@@ -226,7 +229,17 @@ async function commitPendingDamage(
 ): Promise<void> {
   if (!bossFight || pendingDamage.length === 0) return;
 
-  await persistSessionDamage(bossFight.id, pendingDamage, sessionId);
+  const written = await persistSessionDamage(bossFight.id, pendingDamage, sessionId);
+  if (!written) {
+    reportError(
+      "session.commitPendingDamage",
+      new Error(
+        `Boss fight ${bossFight.id} refused ${pendingDamage.length} hit(s) from session ${sessionId}: missing or already defeated.`,
+      ),
+    );
+    return;
+  }
+
   useSessionStore.setState({ pendingDamage: [] });
 }
 
@@ -266,7 +279,7 @@ export const useSessionStore = create<SessionState>()(
 
       let bossFight: BossFight | null = null;
       if (adventureId) {
-        bossFight = await getOrCreateBossFight(adventureId);
+        bossFight = await getOrCreateBossFight(adventureId, userLevel);
       }
 
       // The warm-up runs first unless the hero switched it off; skipping it is always one tap

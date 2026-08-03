@@ -1,23 +1,27 @@
-import { ChevronDown, ChevronUp, Pause } from "@tamagui/lucide-icons";
+import { ChevronDown, ChevronUp, Crosshair, Pause } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H2, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { Button, H1, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { getExerciseAsset } from "@/constants/assetMap";
+import { bossDisplayName } from "@/constants/bosses";
 import {
   getExerciseBgForSessionStep,
   getExerciseBgRawForSessionStep,
 } from "@/constants/exerciseColors";
+import { critChance } from "@/db/bossFights";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
+import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { ExerciseHero } from "./ExerciseHero";
+import { sessionArtHeight } from "./sessionArt";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
 export function ActiveExerciseView() {
@@ -85,18 +89,29 @@ export function ActiveExerciseView() {
   // Calculate overtime seconds for display
   const overtimeSeconds = isOvertime ? Math.abs(remainingSeconds) : 0;
 
-  const screenBg = getExerciseBgForSessionStep({
-    exercise: currentEx.exercise,
-    targetType: currentEx.target.type,
-  });
-  const screenBgRaw = getExerciseBgRawForSessionStep({
-    exercise: currentEx.exercise,
-    targetType: currentEx.target.type,
-  });
+  // A fight owns the room's colour. Without this the fire dragon is fought on the "shoulders"
+  // pastel, because both branches read the exercise's muscle. Derived from the same pure function
+  // the arena uses on the same inputs, so the scrim and the screen it fades into cannot drift.
+  const phaseLook = bossFight
+    ? getPhaseLook(getPhaseFromHp(getHpPercent(bossFight.currentHp, bossFight.totalHp)))
+    : null;
+  const screenBg =
+    phaseLook?.bgToken ??
+    getExerciseBgForSessionStep({
+      exercise: currentEx.exercise,
+      targetType: currentEx.target.type,
+    });
+  const screenBgRaw =
+    phaseLook?.bgRaw ??
+    getExerciseBgRawForSessionStep({
+      exercise: currentEx.exercise,
+      targetType: currentEx.target.type,
+    });
 
   // Tall enough that the movement reads across a room, capped so the counter and the CTA below
-  // still have somewhere to live on a short screen — the same guard BossArena puts on its art.
-  const heroHeight = Math.min(Math.round(height * 0.42), Math.round(width * 1.1));
+  // still have somewhere to live on a short screen — the same slot, and the same size, as the arena.
+  const heroHeight = sessionArtHeight(width, height);
+  const targetMuscle = currentEx.exercise.muscles[0];
 
   return (
     <YStack
@@ -106,29 +121,51 @@ export function ActiveExerciseView() {
       transition={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
-      {/* The top of the screen is a picture, not a card. In a boss fight the arena owns that
-          slot and the exercise art drops to a thumbnail beside its name below — the screen swaps
-          one image for the other instead of stacking both, which is what keeps the column short
-          enough for the CTA. */}
+      {/* The top of the screen is a picture, not a card — the same full-bleed slot either way. In
+          a fight the arena owns it and the exercise rides on the arena's own scrim, so both images
+          are on screen at once and the column is no taller than the hero branch. */}
       {bossFight ? (
-        <YStack px="$4" pt={insets.top + 56}>
-          <BossArena
-            currentHp={bossFight.currentHp}
-            totalHp={bossFight.totalHp}
-            bossImagePath={bossFight.imagePath}
-            bossName={language === "fr" ? bossFight.frName : bossFight.enName}
-            weaknessMuscle={bossFight.weaknessMuscle}
-            lastDamage={
-              lastDamageResult
-                ? {
-                    damage: lastDamageResult.damage,
-                    isCritical: lastDamageResult.isCritical,
-                    weaknessBonus: lastDamageResult.weaknessBonus,
-                  }
-                : null
-            }
-          />
-        </YStack>
+        <BossArena
+          currentHp={bossFight.currentHp}
+          totalHp={bossFight.totalHp}
+          bossImagePath={bossFight.imagePath}
+          bossName={bossDisplayName(bossFight, language)}
+          weaknessMuscle={bossFight.weaknessMuscle}
+          resistanceMuscle={bossFight.resistanceMuscle}
+          lastDamage={lastDamageResult}
+        >
+          {/* The exercise is still what you are doing — it just does it on the boss's ground.
+              It used to shrink to a 52 px chip below the fold, so you could not see the movement
+              you were performing. */}
+          <XStack items="center" gap="$2">
+            <YStack
+              width={36}
+              height={36}
+              rounded={18}
+              overflow="hidden"
+              borderWidth={1}
+              borderColor="$borderStrong"
+            >
+              <Image
+                source={getExerciseAsset(currentEx.exercise.imagePath)}
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+                transition={150}
+              />
+            </YStack>
+            <Text flex={1} fontWeight="700" fontSize={16} color="$text" numberOfLines={1}>
+              {exerciseName}
+            </Text>
+            {!!targetMuscle && (
+              <XStack items="center" gap="$1">
+                <Crosshair size={12} color="$textSecondary" />
+                <Text fontSize={12} color="$textSecondary">
+                  {t(`muscles.${targetMuscle}`)}
+                </Text>
+              </XStack>
+            )}
+          </XStack>
+        </BossArena>
       ) : (
         <ExerciseHero
           source={getExerciseAsset(currentEx.exercise.imagePath)}
@@ -228,39 +265,9 @@ export function ActiveExerciseView() {
           showsVerticalScrollIndicator={false}
         >
           <YStack items="center" justify="center" gap="$5">
-            {/* Exercise Name + How to do it. Without a boss the hero above already carries the
-              name on the artwork, so only the fight branch repeats it here. */}
+            {/* The exercise's name is on the artwork either way now — the hero paints it, and in a
+              fight the arena carries it on its own scrim. Nothing repeats it here. */}
             <YStack items="center" gap="$2" width="100%">
-              {!!bossFight && (
-                <XStack items="center" justify="center" gap="$3" width="100%">
-                  <YStack
-                    width={52}
-                    height={52}
-                    bg="$surface"
-                    rounded="$4"
-                    overflow="hidden"
-                    borderWidth={1}
-                    borderColor="$borderStrong"
-                  >
-                    <Image
-                      source={getExerciseAsset(currentEx.exercise.imagePath)}
-                      style={{ width: "100%", height: "100%" }}
-                      contentFit="cover"
-                      transition={150}
-                    />
-                  </YStack>
-                  <H2
-                    fontWeight="700"
-                    fontSize={28}
-                    lineHeight={32}
-                    style={{ textAlign: "center", flexShrink: 1 }}
-                    color="$text"
-                  >
-                    {exerciseName}
-                  </H2>
-                </XStack>
-              )}
-
               {/* How to do it - expandable */}
               {exerciseDescription ? (
                 <YStack width="100%">
@@ -404,11 +411,17 @@ export function ActiveExerciseView() {
                       {t("session.adjust_reps_hint")}
                     </Text>
                   )}
-                  {/* Intensity as reps-in-reserve rather than "go to failure" — the safer and more
-                  teachable framing, and one the app can give as a cue instead of collecting as
-                  data. */}
+                  {/* In a fight the ± control *is* the decision, so say what it buys. Crit odds
+                  scale with how far past the target you go, and nothing on screen has ever
+                  admitted the rule exists. Outside a fight, intensity as reps-in-reserve rather
+                  than "go to failure" — the safer and more teachable framing, and one the app can
+                  give as a cue instead of collecting as data. */}
                   <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                    {t("session.reserve_hint")}
+                    {bossFight
+                      ? t("session.crit_hint", {
+                          percent: Math.round(critChance(adjustedReps, targetValue) * 100),
+                        })
+                      : t("session.reserve_hint")}
                   </Text>
                 </YStack>
               )}

@@ -3,7 +3,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { BossArena } from "@/components/session/BossArena";
-import { getHpPercent, getPhaseFromHp, getPhaseTint } from "@/components/session/bossPhase";
+import { getHpPercent, getPhaseFromHp, getPhaseLook } from "@/components/session/bossPhase";
+import { rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
 
 /**
@@ -23,7 +24,7 @@ jest.mock("@/hooks/useReducedMotion", () => ({
 
 const TOTAL_HP = 400;
 
-function arena(currentHp: number) {
+function arena(currentHp: number, extra?: Partial<React.ComponentProps<typeof BossArena>>) {
   return (
     <SafeAreaProvider
       initialMetrics={{
@@ -43,6 +44,7 @@ function arena(currentHp: number) {
               ? { damage: TOTAL_HP - currentHp, isCritical: false, weaknessBonus: false }
               : null
           }
+          {...extra}
         />
       </TamaguiProvider>
     </SafeAreaProvider>
@@ -74,10 +76,23 @@ describe("bossPhase", () => {
     expect(getPhaseFromHp(0)).toBe(4);
   });
 
-  it("leaves a boss at full power untinted and tints every wounded phase", () => {
-    expect(getPhaseTint(1)).toBeNull();
-    expect(getPhaseTint(2)).not.toBeNull();
-    expect(getPhaseTint(4)).not.toBeNull();
+  /**
+   * The phase table is four rows that only mean something in order: the room has to get darker and
+   * redder as the boss loses, and phase 1 has to leave the painting completely alone. Reordering a
+   * row or dropping one is the only way this module breaks, and both show up here.
+   */
+  it("leaves a boss at full power untreated, then darkens and reddens monotonically", () => {
+    const looks = ([1, 2, 3, 4] as const).map(getPhaseLook);
+
+    expect(looks[0]).toMatchObject({ dim: 0, rim: 0, bgRaw: rawColors.bgDark });
+
+    const dims = looks.map((l) => l.dim);
+    const rims = looks.map((l) => l.rim);
+    expect(dims).toEqual([...dims].sort((a, b) => a - b));
+    expect(rims).toEqual([...rims].sort((a, b) => a - b));
+
+    // Every phase paints the screen a different colour, or two of them are the same fight.
+    expect(new Set(looks.map((l) => l.bgRaw)).size).toBe(4);
   });
 
   it("clamps, and survives a fight seeded with no HP at all", () => {
@@ -129,5 +144,42 @@ describe("BossArena damage trail", () => {
 
     // No timer advanced: both bars are already at the new value.
     expect(barWidths(root)).toEqual(["25%", "25%"]);
+  });
+});
+
+/**
+ * The status row swaps content instead of adding a row, so the arena's height stays a pure
+ * function of the window and the CTA below it cannot move mid-workout. Showing a weakness *and* a
+ * resistance is the case most likely to be "fixed" later by someone adding a second line.
+ */
+describe("BossArena status line", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockReducedMotion = false;
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("shows weakness and resistance together on one fixed-height row", async () => {
+    const root = await render(
+      arena(TOTAL_HP, { weaknessMuscle: "legs", resistanceMuscle: "chest" }),
+    );
+
+    // Both are named. Resistance halves damage and had never once said so on screen.
+    // i18n is not initialised here, so `t()` echoes the key — which is exactly what we want to
+    // assert: that both keys are looked up, and that `boss.resistance` finally has a caller.
+    const row = root.getByLabelText(
+      /boss\.weakness muscles\.legs.*boss\.resistance muscles\.chest/,
+    );
+    expect(root.getByText("muscles.legs")).toBeTruthy();
+    expect(root.getByText("muscles.chest")).toBeTruthy();
+
+    const style = row.props.style;
+    const flat: Record<string, unknown> = Array.isArray(style)
+      ? Object.assign({}, ...style.filter(Boolean))
+      : ((style ?? {}) as Record<string, unknown>);
+    expect(flat.height).toBe(16);
   });
 });

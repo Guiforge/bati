@@ -2,301 +2,192 @@
 title: Boss Fights
 type: system
 status: active
-updated: 2026-07-20
-related: [adventures.md, session-flow.md, progression.md]
-sources: [db/bossFights.ts, components/session/BossHpBar.tsx, components/session/BossTauntOverlay.tsx]
+updated: 2026-08-03
+related: [adventures.md, session-flow.md, progression.md, ../screens/session.md]
+sources:
+  [
+    db/bossFights.ts,
+    components/session/BossArena.tsx,
+    components/session/bossPhase.ts,
+    components/session/BossTauntOverlay.tsx,
+    components/adventures/BossPanel.tsx,
+    constants/bosses.ts,
+  ]
 ---
 
 # Boss Adventures
 
-## Overview
+A **boss** is an adventure with `kind = "boss"`: a multi-session campaign whose steps are ordinary
+quests, and whose damage all lands on one monster. You do not fight it in a special screen. You
+fight it by doing the campaign, and the session screen turns into its arena while you do.
 
-A **Boss** is an adventure with `kind = "boss"`. Boss fights are the climactic ending of adventure campaigns — epic workout challenges that test everything you've trained for.
-
----
-
-## ⚔️ What Makes It a Boss?
-
-### Current Implementation
-
-- Different label/badge in the UI (skull icon, red accent)
-- Different wording: "⚔️ FIGHT BOSS" instead of "Start Quest"
-- Same underlying campaign/run system
-- Multiple steps (`adventure_steps`)
-- Creates a run (`adventure_runs` + `adventure_run_steps`)
-
-### Fantasy Concept
-
-**Boss = A powerful enemy that requires multiple workout sessions to defeat.**
-
-Think of it like a video game boss with phases:
-
-- Phase 1: Warm-up (easier exercises)
-- Phase 2: Main Battle (core workout)
-- Phase 3: Final Stand (intense finisher)
+> This page was rewritten on 2026-08-03. The version before it documented `BossHpBar` and
+> `BossPhaseImage` (both deleted), an intro screen, event and legendary bosses, and battle music —
+> none of which existed — plus pseudocode that never matched `computeDamage`. Everything below is
+> the shipped behaviour; where something is deliberately not built, it says so.
 
 ---
 
-## 🎮 Boss Fight Mechanics
+## Damage
 
-### HP System (Implemented)
+Damage is the work you did. One completed set is one hit.
 
 ```text
-BOSS: THE IRON GOLEM
-HP: ████████████░░░░░░░░ 60/100
-
-"The golem staggers! Keep attacking!"
+base        = toRepEquivalent(resultValue, targetType)   // seconds -> reps at 3s/rep
+× 1.5       if the exercise's first muscle is the boss's weakness
+× 0.5       if it is the boss's resistance
+× 2         on a critical hit
+floor of 1  a resisted chip still has to mean something
 ```
 
-**How HP Works:**
+`toRepEquivalent` ([`db/workUnits.ts`](../../db/workUnits.ts)) is why a 60 s plank does not hit
+five times harder than a 12-rep squat. Weakness and resistance read the exercise's **first** muscle
+only.
 
-- Boss starts with HP based on total exercise targets
-- Each completed rep/second reduces boss HP, shown live via `BossHpBar` during
-  `ActiveExerciseView`/`RestView`, with taunt copy via `BossTauntOverlay`
-- HP persists across sessions if multi-day fight
-- Boss defeated when HP reaches 0 → `VictoryView` shows the boss-defeat variant
-  (different title/subtitle, bigger confetti burst) and the village gains a permanent banner
+### Crit has to be earned
 
-### Damage Calculation
-
-```typescript
-function calculateDamage(exercise: CompletedExercise): number {
-  const baseDamage = exercise.resultValue; // reps or seconds
-  const critChance = exercise.resultValue >= exercise.targetMax ? 0.3 : 0;
-  const isCrit = Math.random() < critChance;
-
-  return isCrit ? baseDamage * 2 : baseDamage;
-}
+```ts
+overshoot = (resultValue − targetValue) / targetValue
+chance    = overshoot > 0 ? min(MAX_CRIT_CHANCE, overshoot × 1.5) : 0
 ```
 
-**Critical Hits**: Exceeding the target range = chance for critical damage!
+One rep past a target of twelve is ~12 % odds; ten seconds past a 40 s hold is ~37 %; the ceiling
+is `MAX_CRIT_CHANCE` (0.5) however heroic the set.
+
+This is **the fight's only decision**, and it is deliberately the ± control the screen already had.
+The old rule asked only that the target be *met* — but the rep counter initialises to the target
+and a time result is the elapsed timer, which reaches it. The condition held on essentially every
+set, so crit was a flat 30 % coin flip that rewarded nothing, explained nothing, and was worth
+~1.3× on every campaign whether the hero pushed or not. `session.crit_hint` under the counter now
+prints the live number, from [`critChance()`](../../db/bossFights.ts) — the same function
+`computeDamage` rolls against, because two copies would drift the first time either was tuned.
+
+### Banking
+
+Hits are held in memory (`pendingDamage`) and committed by `saveSession`, never before. Damage
+written mid-session survived quitting and was double-counted when a round restarted.
+`restartRound()` refunds exactly the hits of the round being redone, by `roundIndex`.
+
+`persistSessionDamage` returns a `boolean`. It drops hits without throwing in two cases — the fight
+row is missing, or the boss is already dead — and the store only clears `pendingDamage` when the
+write is confirmed, reporting the refusal through `reportError` otherwise. A silent drop is exactly
+the failure you find weeks later.
 
 ---
 
-## 📱 Boss UI Flow
+## HP, and why it is scaled
 
-### 1. Boss Introduction
+`adventures.bossTotalHp` is stated **at `medium`**. `getOrCreateBossFight(adventureId, userLevel)`
+multiplies it by `USER_LEVEL_MULTIPLIER` ([`db/targets.ts`](../../db/targets.ts)) — the same
+0.75 / 1.0 / 1.25 that scales every exercise target.
 
-```text
-┌─────────────────────────────────────────────┐
-│                                             │
-│           [🖼️ Boss Illustration]            │
-│                                             │
-│         👹 THE IRON GOLEM 👹                │
-│                                             │
-│   "A monstrous construct of pure iron       │
-│    blocks your path. Only strength          │
-│    can bring it down."                      │
-│                                             │
-│   HP: ████████████████████ 100              │
-│                                             │
-│   Weakness: �� Arm exercises                │
-│   Resistance: �� Leg exercises              │
-│                                             │
-├─────────────────────────────────────────────┤
-│   Phases: 3    Est. time: 45 min            │
-├─────────────────────────────────────────────┤
-│          [⚔️ FIGHT BOSS]                    │
-└─────────────────────────────────────────────┘
-```
+It has to, because damage is the work you did. A pool tuned once at `medium` meant that on `easy`
+the campaign ran out of steps before the boss ran out of HP: no `defeatedAt`, no victory variant,
+no village banner, ever. On `hard` the boss died two thirds of the way through.
 
-### 2. During Battle
+The seeded values are `round(0.9 × the campaign's nominal rep-equivalent total at medium)`
+(`0026_boss_pacing.sql`). A hero who exactly meets every target kills the boss nine tenths of the
+way through its final step; crits, weakness and resistance move it earlier. The floor kills on its
+own — that is the guarantee, and there is no failure state.
 
-```text
-┌─────────────────────────────────────────────┐
-│  PHASE 2/3         👹 IRON GOLEM            │
-│  HP: ████████░░░░░░░░░░ 45/100              │
-├─────────────────────────────────────────────┤
-│                                             │
-│           [🎬 Exercise Animation]           │
-│                                             │
-│              PUSH-UPS                       │
-│                 12 REPS                     │
-│                                             │
-│         💥 ATTACK POWER: +12               │
-│                                             │
-├─────────────────────────────────────────────┤
-│          [⚔️ ATTACK!]                       │
-└─────────────────────────────────────────────┘
-```
+**This is a ratchet.** `__tests__/content-invariants.test.ts` re-derives every campaign's total from
+the seeded quests at all three difficulties and fails if any boss survives its campaign or dies
+before the last step. `0017` computed those numbers by hand in 2026 and nothing re-checked them;
+by the time the invariant was written, all six were wrong. The test prints the window a failing
+adventure wants, so the fix is the number it hands you.
 
-### 3. Boss Defeated
+`CAMPAIGN_HP_FRACTION` (0.9) is the same rule applied by `calculateBossHp`, the fallback for new
+content that ships with no `bossTotalHp`.
 
-```text
-┌─────────────────────────────────────────────┐
-│                                             │
-│           🎆 VICTORY! 🎆                    │
-│                                             │
-│           [💀 Defeated Boss]                │
-│                                             │
-│   "The Iron Golem crumbles to dust.         │
-│    You have proven your strength          │
-│                                             │
-├─────────────────────────────────────────────┤
-│   BOSS REWARD:                              │
-│   ⭐ +500 XP                                │
-│   🏰 Village banner revealed                │
-│                                             │
-├─────────────────────────────────────────────┤
-│          [🏠 CLAIM REWARDS]                 │
-└─────────────────────────────────────────────┘
-```
-
-A boss victory is a fact of the session journal — it's not stored as a spendable token.
-It adds a permanent banner to the village scene. See
-[progression.md](progression.md#village).
+> **ponytail:** HP is fixed at fight creation, so switching difficulty mid-campaign keeps the pool
+> the first session bought. Re-scale on level change only if players actually do this.
 
 ---
 
-## 👹 Boss Types
+## Phases
 
-### Standard Bosses (At end of adventures)
+`components/session/bossPhase.ts`, by HP percentage:
 
-| Boss | Theme | Weakness | Reward |
-| ---- | ----- | -------- | ------ |
-| **Iron Golem** | Strength | Arms | Village banner |
-| **Storm Giant** | Endurance | Shoulders | Village banner |
-| **Shadow Dragon** | Balance | All muscles | Village banner |
-| **Frost Titan** | Core | Abs | Village banner |
+| Phase | HP | Screen | Dim | Rim |
+| ----- | -- | ------ | --- | --- |
+| 1 Full Power | ≥ 75 % | `bgDark` | 0 | 0 |
+| 2 Wounded | ≥ 50 % | `bossPhase2` | 0.10 | 0.20 |
+| 3 Critical | ≥ 25 % | `bossPhase3` | 0.20 | 0.35 |
+| 4 Enraged | < 25 % | `bossPhase4` | 0.32 | 0.55 |
 
-### Special Event Bosses
+A phase is a **treatment over the boss's own painting**, not four paintings per boss: the room
+darkens and reddens, the art keeps its colours. It used to be one flat fill ending at
+`rgba(255,23,68,0.5)` — 50 % red over a painting is not drama, it is a lost painting. The values
+are opacities over token-coloured layers, so nothing is written outside
+[`constants/rawColors.ts`](../../constants/rawColors.ts).
 
-| Boss | Event | Description |
-| ---- | ----- | ----------- |
-| **Pumpkin King** | Halloween | Limited-time spooky workout |
-| **Frost Lord** | Winter | Cold-themed challenges |
-| **Sun Champion** | Summer | High-intensity beach body |
-
-### Legendary Bosses (Endgame)
-
-Unlocked by level, not by collecting tokens:
-
-| Boss | Requirement | Difficulty |
-| ---- | ----------- | ---------- |
-| **The Titan** | High village tier | Extreme |
-| **Dragon God** | Highest village tier | Legendary |
-| **The Champion** | All adventures complete | Ultimate |
+At phase 4 the rim breathes and the taunt pool switches. **Enrage deliberately does not change the
+maths**: a fitness app should not make the last session of a campaign harder than the ones that
+earned it.
 
 ---
 
-## 💾 Database Schema
+## What you see
+
+### Before — the adventure screen
+
+[`BossPanel`](../../components/adventures/BossPanel.tsx) shows the portrait, the monster's name, its
+drain and its weakness/resistance, from `getBossFightByAdventure()` (read-only: browsing a campaign
+must not create a fight). Before this the screen said `BOSS` in a tag and nothing else.
+
+### During — the arena
+
+[`BossArena`](../../components/session/BossArena.tsx) is the session screen's top slot during a
+fight, at exactly the size of `ExerciseHero` (`sessionArtHeight`). See
+[screens/session.md](../screens/session.md) for the layout and its vertical budget. HP is a 3 px
+hairline at the screen's top edge with a damage trail: the bar holds at the old value for 700 ms so
+the chunk coming off is legible, then drains. The portrait flinches and flashes on a hit; the
+damage numeral is struck over the middle of the art.
+
+### The monster's identity
+
+There is no name column. `BossFight.enName` is the *campaign's* title, so the arena announced a fire
+dragon as "The Iron Lord's Conquest". `getBossKey()` reads the monster out of `bossImagePath` and
+[`constants/bosses.ts`](../../constants/bosses.ts) keys its name and its four taunt pools by that.
+A typed `Record<BossAssetKey, BossVoice>` makes shipping a painting without its copy a compile
+error. The campaign title survives as the fallback for content with no painting.
+
+### Taunts
+
+`BossTauntOverlay` subscribes to `lastDamageResult` and picks the pool from what just happened:
+phase 4 → `enrage`, crit → `crit`, resisted → `resist`, else `idle`. It used to fire on a random
+15–45 s timer from one ten-line pool shared by all six bosses, which meant it talked over your set
+about nothing.
+
+### After
+
+`VictoryView` shows the boss variant when `bossStartHp > 0 && currentHp <= 0` — defeated *today*,
+not defeated ever. `currentHp <= 0` alone was true for every remaining session of the campaign, so
+the sword and the 120-particle burst replayed on each one. The village gains a permanent banner;
+see [progression.md](progression.md#village).
+
+---
+
+## Schema
 
 ```sql
--- Boss-specific data (extends adventures)
-CREATE TABLE boss_fights (
-  id INTEGER PRIMARY KEY,
-  adventure_id INTEGER REFERENCES adventures(id),
-  total_hp INTEGER NOT NULL,
-  current_hp INTEGER NOT NULL,
-  weakness_muscle TEXT,           -- Bonus damage from this muscle
-  resistance_muscle TEXT,         -- Reduced damage from this muscle
-  defeated_at INTEGER,
-  updated_at INTEGER
-);
-
--- Boss fight log (tracks damage dealt per session)
-CREATE TABLE boss_damage_log (
-  id INTEGER PRIMARY KEY,
-  boss_fight_id INTEGER REFERENCES boss_fights(id),
-  completed_session_id INTEGER,
-  damage_dealt INTEGER NOT NULL,
-  is_critical INTEGER DEFAULT 0,
-  created_at INTEGER
-);
+boss_fights      (id, adventureId, totalHp, currentHp, weaknessMuscle,
+                  resistanceMuscle, defeatedAt, createdAt, updatedAt)
+boss_damage_log  (id, bossFightId, completedSessionId, exerciseId,
+                  damageDealt, isCritical, muscle, createdAt)
 ```
+
+The monster's portrait and its tuning live on `adventures`: `bossImagePath`, `bossTotalHp`,
+`bossWeaknessMuscle`, `bossResistanceMuscle`.
 
 ---
 
-## 🎨 Visual & Audio
+## Not built
 
-### Boss Themes
-
-Each boss has unique:
-
-- **Illustration**: Comic-style boss art
-- **Color palette**: Red/black for aggressive, blue for ice, etc.
-- **Battle music**: Intense workout beat
-- **Victory sound**: Epic fanfare
-
-### Animation States
-
-1. **Idle**: Boss breathing/moving slightly
-2. **Hit**: Boss recoils when damage dealt
-3. **Enraged**: Below 25% HP, visual change
-4. **Defeated**: Dramatic death animation
-
----
-
-## 🔗 Integration Points
-
-### Starting a Boss Fight
-
-```typescript
-async function startBossFight(adventureId: number) {
-  const adventure = await getAdventure(adventureId);
-
-  // Create boss fight record if doesn't exist
-  let bossFight = await getBossFight(adventureId);
-  if (!bossFight) {
-    bossFight = await createBossFight({
-      adventureId,
-      totalHp: calculateBossHp(adventure),
-      currentHp: calculateBossHp(adventure),
-      weakness: adventure.bossWeakness,
-      resistance: adventure.bossResistance,
-    });
-  }
-
-  // Start adventure run as normal
-  return startAdventureRun(adventureId);
-}
-```
-
-### Completing an Exercise (Damage)
-
-```typescript
-async function dealDamage(bossFightId: number, exercise: CompletedExercise) {
-  const bossFight = await getBossFight(bossFightId);
-
-  // Calculate damage with weakness/resistance
-  let damage = exercise.resultValue;
-  if (exercise.muscle === bossFight.weakness) damage *= 1.5;
-  if (exercise.muscle === bossFight.resistance) damage *= 0.5;
-
-  // Check for critical
-  const isCrit = exercise.resultValue >= exercise.targetMax && Math.random() < 0.3;
-  if (isCrit) damage *= 2;
-
-  // Apply damage
-  const newHp = Math.max(0, bossFight.currentHp - damage);
-  await updateBossHp(bossFightId, newHp);
-
-  // Log the damage
-  await logBossDamage(bossFightId, damage, isCrit);
-
-  // Check for victory
-  if (newHp === 0) {
-    await defeatBoss(bossFightId);
-  }
-
-  return { damage, isCrit, newHp, defeated: newHp === 0 };
-}
-```
-
----
-
-## 🎮 Design Philosophy
-
-### Why Boss Fights?
-
-1. **Climactic Goals**: Something to work toward
-2. **Visible Progress**: HP bar shows effort accumulating
-3. **Epic Rewards**: XP and a permanent village banner
-4. **Replayability**: Can refight bosses for better times
-
-### Difficulty Balance
-
-- Boss HP should require ~3-5 sessions to defeat
-- Weakness/resistance creates variety, not punishment
-- Critical hits reward pushing beyond minimums
-- Fleeing mid-fight preserves progress
+- **No failure state.** The kill is guaranteed; the pacing is the design.
+- **No boss intro screen.** `boss.fight_intro` is one line on the adventure screen's panel.
+- **No event, seasonal or legendary bosses.** Six campaigns, five paintings — The Golem shares
+  `stone_golem` with The Guardian's Oath and is the one most obviously owed its own.
+- **No boss-specific audio.**
+- **No desaturation at low HP.** RN has no image filter and `react-native-svg`'s `feColorMatrix` on
+  a full-bleed bitmap is not worth it. Add if darken alone reads flat.

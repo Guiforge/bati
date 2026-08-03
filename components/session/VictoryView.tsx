@@ -50,6 +50,7 @@ export function VictoryView() {
     quitSession,
     adventureRunStepId,
     bossFight,
+    bossStartHp,
   } = useSessionStore();
 
   const [result, setResult] = useState<SaveResult | null>(null);
@@ -60,16 +61,21 @@ export function VictoryView() {
   const savedRef = useRef(false);
   const feedbackTouched = useRef(false);
 
-  const isBossDefeat = Boolean(bossFight && bossFight.currentHp <= 0);
+  // Defeated *today*, not defeated ever. `currentHp <= 0` alone is true for every remaining
+  // session of the campaign, so the sword, the boss copy and the 120-particle burst replayed on
+  // each one. `bossStartHp` is what the session opened on: it is only positive on the session that
+  // did the killing.
+  const isBossDefeat = Boolean(
+    bossStartHp != null && bossStartHp > 0 && (bossFight?.currentHp ?? 1) <= 0,
+  );
 
   const durationSeconds = useMemo(() => {
     if (!startTime) return 0;
     return Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
   }, [startTime, totalPausedTime]);
 
-  // Save once on mount, then reveal the real results. No preview, no two-tap flow.
-  // ponytail: saveSession isn't idempotent — a retry after a partial failure can duplicate
-  //           the session row. Parity with the previous screen; make save idempotent if it bites.
+  // Save once on mount, then reveal the real results. No preview, no two-tap flow. The retry below
+  // is safe: `ensureSessionRow` makes `saveSession` idempotent.
   const runSave = useCallback(async () => {
     setSaveError(false);
     try {

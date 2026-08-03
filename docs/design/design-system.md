@@ -160,13 +160,24 @@ its edge of the screen instead of sitting in a card. Used by
 §2. The recipe:
 
 - Full width, no border, no inset. Height capped against *both* `width` and `height` from
-  `useWindowDimensions`, so a short screen still leaves the primary action room.
+  `useWindowDimensions` — one shared function, [`sessionArtHeight()`](../../components/session/sessionArt.ts),
+  not a per-component expression — so a short screen still leaves the primary action room and two
+  heroes in the same slot cannot end up different sizes.
 - Text goes **on** the art, held by a `LinearGradient` scrim ending on the colour behind the
   image — never by a box or a shadow. The scrim is what carries AA contrast in gym lighting; it
   is not decoration and is not optional because one particular painting happens to be dark.
 - Gradients cannot take a Tamagui token, so they read their endpoints from
   [`constants/rawColors.ts`](../../constants/rawColors.ts) — resolved from the same token the
   surrounding screen uses, so the fade cannot land on a near-miss colour.
+- **A treatment darkens the art; it never repaints it.** When state has to change how a hero
+  reads — a boss's phase, say — layer opacity over a token-coloured fill and let the painting keep
+  its own colours. `bossPhase.ts` used to end on a flat 50 % red, which is not drama, it is a lost
+  painting.
+
+> This section was written while only `ExerciseHero` followed it: `BossArena` was still a rounded,
+> bordered, shadowed card at `px="$4"` with art 45 % shorter than the hero on the other branch of
+> the same screen. Both comply as of 2026-08-03. A recipe documented here is a claim about the
+> code, and it is worth checking that the second user actually is one.
 
 ### Inputs
 

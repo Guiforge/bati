@@ -206,19 +206,25 @@ bespoke descriptions, so the transformation is identical across all twenty build
 
 ## 1. RESOLVED — was missing, now wired
 
-### 1c. Boss phase art — `BossPhaseImage` (was 100% emoji, now real art)
+### 1c. Boss phase art — the monster's own portrait, treated per phase
 
-`components/session/BossPhaseImage.tsx` renders live inside `BossHpBar` during every boss
-fight. Was emoji placeholders (👹😤😡🔥) for all 4 HP phases; now renders the boss's adventure
-cover (`getAdventureAsset`) with a color-tint treatment per phase (none → light → stronger →
-heaviest at Enraged), per the "layer, don't paint 4× per boss" principle — no new assets.
+**Superseded twice; this is the current state (2026-08-03).**
 
-**Schema note, still true:** `boss_fights` has no creature-name/image field of its own — a
-"boss" is an `adventures` row with `kind='boss'`; its art is the adventure's own cover, reused
-for both the phase art here and the village banner (§3 layer 3). The 5 standalone creature
-portraits in `assets/images/bosses/` (`fire_dragon`, `forest_titan`, `shadow_serpent`,
-`stone_golem`, `wind_wraith`) remain unlinked to any seeded boss — see §3 below, still a
-cleanup-or-wire-up call, not a missing-art gap.
+- `BossPhaseImage` and `BossHpBar` no longer exist (deleted in `bb026b8a`). The phase mechanism
+  survives as [`components/session/bossPhase.ts`](../../components/session/bossPhase.ts), applied
+  by [`BossArena`](../../components/session/BossArena.tsx).
+- It is no longer a flat rgba tint either. A phase is now a **dim + red rim + screen colour** — the
+  art keeps its own colours and the room loses its light, rather than the painting being repainted
+  50 % red at Enraged. Values are opacities over token-coloured layers, so nothing lands outside
+  `constants/rawColors.ts`.
+- **It no longer shows the adventure cover.** `0025_boss_art.sql` added `adventures.bossImagePath`
+  and pointed it at the standalone creature portraits, so the fight shows the thing you are hitting
+  and the gallery still shows a poster for the journey. The schema note this section used to carry
+  ("no per-boss identity field") is obsolete: `bossImagePath` *is* that field, and
+  `getBossKey()` + [`constants/bosses.ts`](../../constants/bosses.ts) key each monster's name and
+  taunt pools off it.
+
+Still true: no new art per phase. Four phases, one painting, layered — the original principle held.
 
 ---
 
@@ -242,8 +248,11 @@ All resolve to real art via `assetMap` (verified basename-key match):
   when a dominant sport exists. §3 layer 2 done. Set grows if running/cycling ship later.
 - **Building icons — 20/20 (14 generated, 6 reused — 2026-07-21).** See §0 above; content-side
   done via `getBuildingIconAsset`, rendering them in `VillageScene.tsx` is the open dev task.
-- **Boss phase art (2026-07-20).** `BossPhaseImage` now renders each boss's adventure cover
-  via `getAdventureAsset`, tinted per HP phase. §1c done (`2b06f3e`).
+- **Boss portraits — 5/5 linked, 6/6 campaigns covered (2026-08-03).** `0025` gave
+  `adventures.bossImagePath` to five paintings; `0026` fixed its split — The Lumber Route is
+  `kind='route'` and never creates a fight, so its titan was dead data, while The Golem (an actual
+  boss) had none and fell back to its campaign cover. The Golem now shares `stone_golem` with The
+  Guardian's Oath, the way The Ranger's Journey already shares `forest_titan`. See §3.
 - **Trophy shelf (2026-07-21).** Needs no new art: boss trophies reuse the adventure cover via
   `getAdventureAsset`, achievement trophies use the `icon` emoji already on
   `achievementDefinitions`. Deliberate — an emoji rack reads as a trophy shelf.
@@ -260,12 +269,17 @@ The inverse problem — art shipped without content to use it:
 - ~~**1 duplicate exercise file**: `ranger_single_leg_deadlift_1`~~ — deleted in the §6 pass,
   along with the 6 poses the merges and `0018` had orphaned.
 
-- **5 unlinked boss creature portraits**: `assets/images/bosses/` (`fire_dragon`,
-  `forest_titan`, `shadow_serpent`, `stone_golem`, `wind_wraith`) — `BossPhaseImage` now has a
-  real consumer wired (§1c above), but it uses the boss's *adventure* cover, not these separate
-  creature portraits (there's no per-boss identity field to key them from — see the schema note
-  in §1c). Genuinely a cleanup-or-wire-up call now: either add a boss-identity concept to attach
-  these to, or drop them.
+- ~~**5 unlinked boss creature portraits**~~ — **wired up, not cleaned up.** `0025` added
+  `adventures.bossImagePath` and `0026` corrected which campaigns it points at. All five are live
+  in `BossArena` and in the adventure screen's `BossPanel`, and each one is now also a *name*: the
+  painting is the only place a boss's identity is written down, so `getBossKey()` resolves the
+  monster from it and `constants/bosses.ts` keys its name and taunts by that. The campaign title is
+  only a fallback for content shipping without a painting.
+
+  **The one gap left**: six boss campaigns, five paintings. The Golem shares `stone_golem` with The
+  Guardian's Oath — the shared name reads as intentional for the two wilderness campaigns that
+  share `forest_titan`, and less so for a campaign literally called The Golem. One asset would
+  close it.
 
 ## 4. RESOLVED — 20 bodyweight exercises now have art (2026-07-27)
 

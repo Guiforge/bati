@@ -347,7 +347,8 @@
     "warmup_prev_accessibility": "Previous movement",
     "warmup_next_accessibility": "Next movement",
     "countdown_subtitle": "Time to move.",
-    "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure."
+    "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure.",
+    "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now."
   },
   "muscles": {
     "arms": "Arms",

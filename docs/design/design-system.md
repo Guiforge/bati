@@ -151,6 +151,23 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 - `$surface` or `$glassBg` depending on semantic layer; one card style family app-wide.
 - Group content, don't decorate with cards; avoid nesting unless IA truly requires it.
 
+### Art heroes
+
+When artwork *is* the content — the boss you are fighting, the movement you are doing — it owns
+its edge of the screen instead of sitting in a card. Used by
+[`BossArena`](../../components/session/BossArena.tsx) and
+[`ExerciseHero`](../../components/session/ExerciseHero.tsx); promoted here on its second use, per
+§2. The recipe:
+
+- Full width, no border, no inset. Height capped against *both* `width` and `height` from
+  `useWindowDimensions`, so a short screen still leaves the primary action room.
+- Text goes **on** the art, held by a `LinearGradient` scrim ending on the colour behind the
+  image — never by a box or a shadow. The scrim is what carries AA contrast in gym lighting; it
+  is not decoration and is not optional because one particular painting happens to be dark.
+- Gradients cannot take a Tamagui token, so they read their endpoints from
+  [`constants/rawColors.ts`](../../constants/rawColors.ts) — resolved from the same token the
+  surrounding screen uses, so the fade cannot land on a near-miss colour.
+
 ### Inputs
 
 - Legible text size (16px body-equivalent), clear labels, actionable validation copy.

@@ -1,9 +1,12 @@
 import {
+  getExerciseBgForSessionStep,
+  getExerciseBgRawForSessionStep,
   getExerciseColorKey,
   getExerciseColorTokens,
   getQuestColorKeyFromQuest,
   getQuestColorKeyFromTemplateWithExercises,
 } from "@/constants/exerciseColors";
+import { rawColors } from "@/constants/rawColors";
 import { estimateExerciseSeconds } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
 import type { Quest } from "@/db/quests";
@@ -23,6 +26,19 @@ describe("exerciseColors", () => {
     expect(getExerciseColorTokens("time").bg).toBe("$pastelBlue");
     expect(getExerciseColorTokens("reps").bg).toBe("$pastelYellow");
     expect(getExerciseColorTokens("back").bg).toBe("$pastelBlue");
+  });
+
+  // The session hero fades its artwork into the screen behind it with a gradient, which cannot
+  // take a token. If the raw string and the token ever name different colours, the fade ends on
+  // a visible seam — so they are checked against each other, not against a hardcoded hex.
+  test("getExerciseBgRawForSessionStep resolves the token it shares with the screen", () => {
+    const input = {
+      exercise: { muscles: ["back" as const], secondsPerRep: 2 },
+      targetType: "reps" as const,
+    };
+
+    expect(getExerciseBgForSessionStep(input)).toBe("$pastelBlue");
+    expect(getExerciseBgRawForSessionStep(input)).toBe(rawColors.pastelBlue);
   });
 
   test("getQuestColorKeyFromQuest is weighted by estimated seconds", () => {

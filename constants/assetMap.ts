@@ -1,3 +1,5 @@
+import { type BuildingStage, buildingStage } from "@/constants/buildingLevels";
+
 /**
  * BATI Asset Map
  *
@@ -165,12 +167,36 @@ export const VILLAGE_TIER_ASSETS = {
 // ============================================================
 
 export const SPORT_SPRITE_ASSETS = {
-  arms: require("@/assets/images/village/sport_arms.webp"),
-  back: require("@/assets/images/village/sport_back.webp"),
-  chest: require("@/assets/images/village/sport_chest.webp"),
-  abs: require("@/assets/images/village/sport_abs.webp"),
-  shoulder: require("@/assets/images/village/sport_shoulder.webp"),
-  legs: require("@/assets/images/village/sport_legs.webp"),
+  arms: {
+    rough: require("@/assets/images/village/sport_arms_rough.webp"),
+    solid: require("@/assets/images/village/sport_arms.webp"),
+    grand: require("@/assets/images/village/sport_arms_grand.webp"),
+  },
+  back: {
+    rough: require("@/assets/images/village/sport_back_rough.webp"),
+    solid: require("@/assets/images/village/sport_back.webp"),
+    grand: require("@/assets/images/village/sport_back_grand.webp"),
+  },
+  chest: {
+    rough: require("@/assets/images/village/sport_chest_rough.webp"),
+    solid: require("@/assets/images/village/sport_chest.webp"),
+    grand: require("@/assets/images/village/sport_chest_grand.webp"),
+  },
+  abs: {
+    rough: require("@/assets/images/village/sport_abs_rough.webp"),
+    solid: require("@/assets/images/village/sport_abs.webp"),
+    grand: require("@/assets/images/village/sport_abs_grand.webp"),
+  },
+  shoulder: {
+    rough: require("@/assets/images/village/sport_shoulder_rough.webp"),
+    solid: require("@/assets/images/village/sport_shoulder.webp"),
+    grand: require("@/assets/images/village/sport_shoulder_grand.webp"),
+  },
+  legs: {
+    rough: require("@/assets/images/village/sport_legs_rough.webp"),
+    solid: require("@/assets/images/village/sport_legs.webp"),
+    grand: require("@/assets/images/village/sport_legs_grand.webp"),
+  },
 } as const;
 
 // ============================================================
@@ -180,20 +206,76 @@ export const SPORT_SPRITE_ASSETS = {
 // ============================================================
 
 export const BUILDING_ICON_ASSETS = {
-  campfire: require("@/assets/images/village/buildings/campfire.webp"),
-  tent: require("@/assets/images/village/buildings/tent.webp"),
-  training_dummy: require("@/assets/images/village/buildings/training_dummy.webp"),
-  wizard_tower: require("@/assets/images/village/buildings/wizard_tower.webp"),
-  druid_grove: require("@/assets/images/village/buildings/druid_grove.webp"),
-  watchtower: require("@/assets/images/village/buildings/watchtower.webp"),
-  castle_wall: require("@/assets/images/village/buildings/castle_wall.webp"),
-  armory: require("@/assets/images/village/buildings/armory.webp"),
-  fountain: require("@/assets/images/village/buildings/fountain.webp"),
-  observatory: require("@/assets/images/village/buildings/observatory.webp"),
-  barn: require("@/assets/images/village/buildings/barn.webp"),
-  dragon_lair: require("@/assets/images/village/buildings/dragon_lair.webp"),
-  heroes_hall: require("@/assets/images/village/buildings/heroes_hall.webp"),
-  champion_arena: require("@/assets/images/village/buildings/champion_arena.webp"),
+  campfire: {
+    rough: require("@/assets/images/village/buildings/campfire_rough.webp"),
+    solid: require("@/assets/images/village/buildings/campfire.webp"),
+    grand: require("@/assets/images/village/buildings/campfire_grand.webp"),
+  },
+  tent: {
+    rough: require("@/assets/images/village/buildings/tent_rough.webp"),
+    solid: require("@/assets/images/village/buildings/tent.webp"),
+    grand: require("@/assets/images/village/buildings/tent_grand.webp"),
+  },
+  training_dummy: {
+    rough: require("@/assets/images/village/buildings/training_dummy_rough.webp"),
+    solid: require("@/assets/images/village/buildings/training_dummy.webp"),
+    grand: require("@/assets/images/village/buildings/training_dummy_grand.webp"),
+  },
+  wizard_tower: {
+    rough: require("@/assets/images/village/buildings/wizard_tower_rough.webp"),
+    solid: require("@/assets/images/village/buildings/wizard_tower.webp"),
+    grand: require("@/assets/images/village/buildings/wizard_tower_grand.webp"),
+  },
+  druid_grove: {
+    rough: require("@/assets/images/village/buildings/druid_grove_rough.webp"),
+    solid: require("@/assets/images/village/buildings/druid_grove.webp"),
+    grand: require("@/assets/images/village/buildings/druid_grove_grand.webp"),
+  },
+  watchtower: {
+    rough: require("@/assets/images/village/buildings/watchtower_rough.webp"),
+    solid: require("@/assets/images/village/buildings/watchtower.webp"),
+    grand: require("@/assets/images/village/buildings/watchtower_grand.webp"),
+  },
+  castle_wall: {
+    rough: require("@/assets/images/village/buildings/castle_wall_rough.webp"),
+    solid: require("@/assets/images/village/buildings/castle_wall.webp"),
+    grand: require("@/assets/images/village/buildings/castle_wall_grand.webp"),
+  },
+  armory: {
+    rough: require("@/assets/images/village/buildings/armory_rough.webp"),
+    solid: require("@/assets/images/village/buildings/armory.webp"),
+    grand: require("@/assets/images/village/buildings/armory_grand.webp"),
+  },
+  fountain: {
+    rough: require("@/assets/images/village/buildings/fountain_rough.webp"),
+    solid: require("@/assets/images/village/buildings/fountain.webp"),
+    grand: require("@/assets/images/village/buildings/fountain_grand.webp"),
+  },
+  observatory: {
+    rough: require("@/assets/images/village/buildings/observatory_rough.webp"),
+    solid: require("@/assets/images/village/buildings/observatory.webp"),
+    grand: require("@/assets/images/village/buildings/observatory_grand.webp"),
+  },
+  barn: {
+    rough: require("@/assets/images/village/buildings/barn_rough.webp"),
+    solid: require("@/assets/images/village/buildings/barn.webp"),
+    grand: require("@/assets/images/village/buildings/barn_grand.webp"),
+  },
+  dragon_lair: {
+    rough: require("@/assets/images/village/buildings/dragon_lair_rough.webp"),
+    solid: require("@/assets/images/village/buildings/dragon_lair.webp"),
+    grand: require("@/assets/images/village/buildings/dragon_lair_grand.webp"),
+  },
+  heroes_hall: {
+    rough: require("@/assets/images/village/buildings/heroes_hall_rough.webp"),
+    solid: require("@/assets/images/village/buildings/heroes_hall.webp"),
+    grand: require("@/assets/images/village/buildings/heroes_hall_grand.webp"),
+  },
+  champion_arena: {
+    rough: require("@/assets/images/village/buildings/champion_arena_rough.webp"),
+    solid: require("@/assets/images/village/buildings/champion_arena.webp"),
+    grand: require("@/assets/images/village/buildings/champion_arena_grand.webp"),
+  },
 } as const;
 
 // ============================================================
@@ -268,8 +350,8 @@ export function getVillageTierAsset(tier: VillageTierKey) {
 /**
  * Get the sport-focus overlay sprite for a muscle group (see db/schema.ts MuscleCode)
  */
-export function getSportSpriteAsset(muscle: SportSpriteKey) {
-  return SPORT_SPRITE_ASSETS[muscle];
+export function getSportSpriteAsset(muscle: SportSpriteKey, stage: BuildingStage = "solid") {
+  return SPORT_SPRITE_ASSETS[muscle][stage];
 }
 
 /**
@@ -278,9 +360,14 @@ export function getSportSpriteAsset(muscle: SportSpriteKey) {
  * don't paint", docs/content/missing-image.md §0), so callers pass the building's
  * `relatedMuscle` as fallback.
  */
-export function getBuildingIconAsset(code: string, relatedMuscle?: SportSpriteKey | null) {
+export function getBuildingIconAsset(
+  code: string,
+  relatedMuscle?: SportSpriteKey | null,
+  level = 0,
+) {
+  const stage = buildingStage(level);
   const icon = BUILDING_ICON_ASSETS[code as BuildingIconKey];
-  if (icon) return icon;
-  if (relatedMuscle) return SPORT_SPRITE_ASSETS[relatedMuscle];
+  if (icon) return icon[stage];
+  if (relatedMuscle) return SPORT_SPRITE_ASSETS[relatedMuscle][stage];
   return require("@/assets/placeholder.webp");
 }

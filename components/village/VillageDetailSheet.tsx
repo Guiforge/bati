@@ -244,7 +244,7 @@ function BuildingDetail({
           the room. 180 is what the 512px source supports on a 3x screen without going soft. */}
       <YStack items="center" gap="$2">
         <Image
-          source={getBuildingIconAsset(building.code, building.relatedMuscle)}
+          source={getBuildingIconAsset(building.code, building.relatedMuscle, building.level)}
           style={{ width: 180, height: 180 }}
           contentFit="contain"
         />

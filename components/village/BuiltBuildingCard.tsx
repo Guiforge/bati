@@ -52,7 +52,7 @@ export function BuiltBuildingCard({ building, language, justGrew, onPress }: Pro
         shadowOpacity={justGrew ? 0.4 : undefined}
       >
         <Image
-          source={getBuildingIconAsset(building.code, building.relatedMuscle)}
+          source={getBuildingIconAsset(building.code, building.relatedMuscle, building.level)}
           style={{ width: 48, height: 48, opacity: LEVEL_OPACITY[building.level] ?? 1 }}
           contentFit="contain"
         />

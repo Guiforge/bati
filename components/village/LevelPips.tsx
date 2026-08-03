@@ -1,6 +1,6 @@
 import { XStack, YStack } from "tamagui";
 
-import { MAX_BUILDING_LEVEL } from "@/db/village";
+import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
 
 // Derived from the cap the levels are clamped to, so the dots and the ceiling cannot drift:
 // adding a sixth level without a sixth dot is what let a tier-8 campfire render as "5/5 and

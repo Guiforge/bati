@@ -32,8 +32,11 @@ levels up because you trained the muscle it belongs to.
 - **Buildings with levels**: 20 buildings, each `level 0..5`. Starter buildings follow the
   village tier, muscle buildings follow that muscle's lifetime volume, tier-3 buildings are
   the upgrade of their tier-2 prerequisite, legendary buildings unlock on bosses defeated.
-  The level is legible three ways without tapping: pips, an opacity ramp over the icon
-  (level 0 is the flat silhouette, level 5 the full painting), and a bar toward the next rung.
+  The level is legible without tapping: pips, a bar toward the next rung, and the art itself —
+  each building has three paintings (`rough` / `solid` / `grand`, picked by `buildingStage()` in
+  [constants/buildingLevels.ts](../../constants/buildingLevels.ts)) with an opacity ramp filling
+  the steps between them. Tapping a tile opens it at 180px; tapping the scene opens it full
+  screen, uncropped.
 - **Trophy shelf**: unlocked achievements and defeated bosses on one rack, newest first.
 - **No micromanagement**: nothing is chosen, unlocked, or spent — your workouts drive
   everything.

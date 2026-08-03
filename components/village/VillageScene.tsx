@@ -331,8 +331,14 @@ export function VillageScene() {
                       items="center"
                       justify="center"
                     >
+                      {/* Level 0, so this is the rough shape — the silhouette promises the
+                          building you will actually get first, not its finished form. */}
                       <Image
-                        source={getBuildingIconAsset(building.code, building.relatedMuscle)}
+                        source={getBuildingIconAsset(
+                          building.code,
+                          building.relatedMuscle,
+                          building.level,
+                        )}
                         style={{ width: 30, height: 30 }}
                         contentFit="contain"
                         tintColor={SILHOUETTE_TINT}

@@ -207,11 +207,37 @@ BUILDINGS = [
 ]
 
 
+# Every emblem above describes a building at its middle, "solid" state. A building's level runs
+# 1..5, and until now all five drew the same picture — the opacity ramp in BuiltBuildingCard was
+# the only thing separating a level-1 forge from a level-5 one.
+#
+# Two modifiers rather than forty hand-written variants. Each composes with the emblem's own
+# description, so the *transformation* is identical across all twenty: whatever changes between a
+# rough campfire and a grand one changes the same way between a rough forge and a grand one.
+# Forty bespoke prompts would drift, and the drift would show as some buildings improving more
+# than others for the same amount of training.
+STAGE_ROUGH = (
+    "This is its earliest and roughest form: smaller and plainly made from unfinished "
+    "materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced "
+    "to a faint low ember."
+)
+STAGE_GRAND = (
+    "This is its final and most accomplished form: larger and richly detailed, with carved "
+    "ornament, banners and polished metal fittings, standing on a worked stone base, and its "
+    "glow strong, radiant and clearly brighter."
+)
+
+# The 20 emblems a building level can reach. The 6 sport sprites are here because the muscle
+# buildings borrow them (getBuildingIconAsset), so they need the same three states.
+STAGED = SPRITES + BUILDINGS
+
 if __name__ == "__main__":
     failed = run(
         [(slug, f"{scene} {SCENE_STYLE}") for slug, scene in TIERS]
         + [(slug, f"{scene} {EMBLEM_STYLE}") for slug, scene in SPRITES]
-        + [(slug, f"{scene} {EMBLEM_STYLE}") for slug, scene in BUILDINGS],
+        + [(slug, f"{scene} {EMBLEM_STYLE}") for slug, scene in BUILDINGS]
+        + [(f"{slug}_rough", f"{scene} {STAGE_ROUGH} {EMBLEM_STYLE}") for slug, scene in STAGED]
+        + [(f"{slug}_grand", f"{scene} {STAGE_GRAND} {EMBLEM_STYLE}") for slug, scene in STAGED],
         out_dir=ROOT / "assets" / "images" / "village",
         width=1024,
         height=1024,

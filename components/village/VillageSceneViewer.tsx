@@ -29,7 +29,10 @@ export function VillageSceneViewer({
 }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const anim = useAnimationProps("quick", { opacity: 0 });
+  // Scales up as it fades in, so the picture reads as *opening* out of the tapped scene rather
+  // than a new screen appearing over it. "bouncy" is the app's reveal spring (SessionRewards,
+  // the village sections); a plain fade made the tap feel like it had missed.
+  const anim = useAnimationProps("bouncy", { opacity: 0, scale: 0.92 });
 
   return (
     <YStack

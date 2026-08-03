@@ -1,4 +1,5 @@
 import { eq, isNotNull, sql } from "drizzle-orm";
+import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
 import { achievementDefinitions, getUnlockedAchievements } from "./achievements";
 import { listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
@@ -213,9 +214,6 @@ export const BUILDING_LABELS: Record<BuildingCode, { en: string; fr: string }> =
   heroes_hall: { en: "Hall of Heroes", fr: "Hall des héros" },
   champion_arena: { en: "Champion Arena", fr: "Arène des champions" },
 };
-
-/** Every building tops out here, and LevelPips draws exactly this many dots. */
-export const MAX_BUILDING_LEVEL = 5;
 
 /** What raises a building, so the detail sheet can answer "why is it at this level". */
 export type BuildingDriver =

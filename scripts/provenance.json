@@ -1117,6 +1117,30 @@
     "reencoded": "cwebp -q 90, from armory.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/buildings/armory_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized stone armory building with weapon racks flanking its doorway, a glowing forge-fire visible inside, radiating fiery orange-red energy — an upgraded, grander version of a simple forge. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3418383578,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from armory_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/armory_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized stone armory building with weapon racks flanking its doorway, a glowing forge-fire visible inside, radiating fiery orange-red energy — an upgraded, grander version of a simple forge. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 48762788,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from armory_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/buildings/barn.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1127,6 +1151,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from barn.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/barn_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized large wooden barn with stacked golden hay bales beside its open doors, glowing with warm golden-yellow energy — an upgraded, grander version of a simple farm. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3130701996,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from barn_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/barn_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized large wooden barn with stacked golden hay bales beside its open doors, glowing with warm golden-yellow energy — an upgraded, grander version of a simple farm. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1941099474,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from barn_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/campfire.webp": {
@@ -1141,6 +1189,30 @@
     "reencoded": "cwebp -q 90, from campfire.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/buildings/campfire_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized campfire ringed with stones, warm orange-yellow flames dancing upward, a few sparks drifting off, glowing with cozy warm-orange energy. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1271021822,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from campfire_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/campfire_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized campfire ringed with stones, warm orange-yellow flames dancing upward, a few sparks drifting off, glowing with cozy warm-orange energy. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2196384640,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from campfire_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/buildings/castle_wall.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1151,6 +1223,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from castle_wall.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/castle_wall_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized fortified stone castle-wall section with crenellated battlements and a corner turret, glowing with cool stone-grey energy — an upgraded, grander version of a simple quarry. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 376272268,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from castle_wall_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/castle_wall_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized fortified stone castle-wall section with crenellated battlements and a corner turret, glowing with cool stone-grey energy — an upgraded, grander version of a simple quarry. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3745849074,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from castle_wall_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/champion_arena.webp": {
@@ -1165,6 +1261,30 @@
     "reencoded": "cwebp -q 90, from champion_arena.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/buildings/champion_arena_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized circular stone gladiator arena with tiered stone seating, torches lit around its rim, glowing with warm amber torchlight. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 711536774,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from champion_arena_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/champion_arena_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized circular stone gladiator arena with tiered stone seating, torches lit around its rim, glowing with warm amber torchlight. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3812711416,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from champion_arena_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/buildings/dragon_lair.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1175,6 +1295,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from dragon_lair.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/dragon_lair_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized dark cave mouth carved into a mountainside, molten orange cracks glowing along the rock and deep claw-gouges in the stone, ember light spilling out. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1664151530,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from dragon_lair_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/dragon_lair_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized dark cave mouth carved into a mountainside, molten orange cracks glowing along the rock and deep claw-gouges in the stone, ember light spilling out. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2853733524,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from dragon_lair_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/druid_grove.webp": {
@@ -1189,6 +1333,30 @@
     "reencoded": "cwebp -q 90, from druid_grove.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/buildings/druid_grove_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized ring of ancient standing stones wreathed in glowing emerald-green vines and moss, a sacred grove clearing at its center. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1780401369,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from druid_grove_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/druid_grove_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized ring of ancient standing stones wreathed in glowing emerald-green vines and moss, a sacred grove clearing at its center. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2738270119,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from druid_grove_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/buildings/fountain.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1199,6 +1367,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from fountain.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/fountain_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized ornate stone fountain with tiered basins and cascading water, glowing with electric-blue energy — an upgraded, grander version of a simple well. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2017909926,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from fountain_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/fountain_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized ornate stone fountain with tiered basins and cascading water, glowing with electric-blue energy — an upgraded, grander version of a simple well. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2976823256,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from fountain_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/heroes_hall.webp": {
@@ -1213,6 +1405,30 @@
     "reencoded": "cwebp -q 90, from heroes_hall.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/buildings/heroes_hall_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized grand stone hall with banners flanking its entrance and a laurel-wreathed trophy pedestal out front, glowing with warm golden light. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1437755881,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from heroes_hall_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/heroes_hall_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized grand stone hall with banners flanking its entrance and a laurel-wreathed trophy pedestal out front, glowing with warm golden light. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2627338903,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from heroes_hall_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/buildings/observatory.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1223,6 +1439,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from observatory.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/observatory_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized stone observatory tower with a telescope silhouette in its open dome, swirling cyan-white wind wisps around it — an upgraded, grander version of a simple windmill. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1633251752,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from observatory_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/observatory_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized stone observatory tower with a telescope silhouette in its open dome, swirling cyan-white wind wisps around it — an upgraded, grander version of a simple windmill. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2825984726,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from observatory_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/tent.webp": {
@@ -1237,6 +1477,30 @@
     "reencoded": "cwebp -q 90, from tent.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/buildings/tent_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized adventurer's canvas tent, entrance flap open, a warm lantern glowing just inside, guy-ropes staked into the ground. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 628948971,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tent_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/tent_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized adventurer's canvas tent, entrance flap open, a warm lantern glowing just inside, guy-ropes staked into the ground. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3964966037,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from tent_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/buildings/training_dummy.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1247,6 +1511,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from training_dummy.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/training_dummy_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized wooden training pell wrapped in worn straw padding, a few practice sword nicks visible, standing upright on a round base. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 409393475,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from training_dummy_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/training_dummy_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized wooden training pell wrapped in worn straw padding, a few practice sword nicks visible, standing upright on a round base. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3511595581,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from training_dummy_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/watchtower.webp": {
@@ -1261,6 +1549,30 @@
     "reencoded": "cwebp -q 90, from watchtower.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/buildings/watchtower_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized tall wooden watchtower with an archer's platform at the top, a bow and quiver resting against the rail, glowing with warm amber-brown energy — an upgraded, grander version of a simple archery range. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 705446898,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from watchtower_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/watchtower_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized tall wooden watchtower with an archer's platform at the top, a bow and quiver resting against the rail, glowing with warm amber-brown energy — an upgraded, grander version of a simple archery range. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3810797708,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from watchtower_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/buildings/wizard_tower.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1271,6 +1583,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from wizard_tower.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/wizard_tower_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized narrow spiraling stone wizard's tower, a glowing purple crystal orb hovering above its pointed roof, faint arcane runes on the stonework. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2387783900,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from wizard_tower_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/wizard_tower_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized narrow spiraling stone wizard's tower, a glowing purple crystal orb hovering above its pointed roof, faint arcane runes on the stonework. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1199233954,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from wizard_tower_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/sport_abs.webp": {
@@ -1285,6 +1621,30 @@
     "reencoded": "cwebp -q 90, from sport_abs.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/sport_abs_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized wave-shaped rune carved into a smooth stone tablet, a few water droplets suspended around it, glowing with electric-blue energy. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 647311171,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_abs_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/sport_abs_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized wave-shaped rune carved into a smooth stone tablet, a few water droplets suspended around it, glowing with electric-blue energy. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 4022158397,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_abs_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/sport_arms.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1295,6 +1655,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from sport_arms.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/sport_arms_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized woodcutter's axe standing upright with its blade buried in a tree stump, a couple of split logs resting beside it, glowing with warm amber-brown wood energy. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1240741821,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_arms_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/sport_arms_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized woodcutter's axe standing upright with its blade buried in a tree stump, a couple of split logs resting beside it, glowing with warm amber-brown wood energy. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2161925315,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_arms_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/sport_back.webp": {
@@ -1309,6 +1693,30 @@
     "reencoded": "cwebp -q 90, from sport_back.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/village/sport_back_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized pickaxe leaning against a small stack of quarried grey stone blocks, glowing with cool stone-grey energy. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1983197841,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_back_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/sport_back_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized pickaxe leaning against a small stack of quarried grey stone blocks, glowing with cool stone-grey energy. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3206371823,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_back_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/sport_chest.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1319,6 +1727,30 @@
     "height": 1024,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from sport_chest.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/sport_chest_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized blacksmith's anvil with a small glowing forge fire beside it, radiating fiery orange-red energy. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3237010592,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_chest_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/sport_chest_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized blacksmith's anvil with a small glowing forge fire beside it, radiating fiery orange-red energy. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 165197790,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_chest_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/sport_legs.webp": {
@@ -1333,6 +1765,30 @@
     "reencoded": "cwebp -q 90, from sport_legs.png",
     "cutout": "background flood-filled to alpha, threshold 60"
   },
+  "assets/images/village/sport_legs_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized sheaf of golden wheat tied with twine, standing upright, glowing with warm golden-yellow energy. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3849031549,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_legs_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/sport_legs_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized sheaf of golden wheat tied with twine, standing upright, glowing with warm golden-yellow energy. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 742646787,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_legs_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/village/sport_shoulder.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1344,6 +1800,30 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 90, from sport_shoulder.png",
     "cutout": "background flood-filled to alpha, threshold 120"
+  },
+  "assets/images/village/sport_shoulder_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized swirling wind-rune emblem, light cyan-white wind wisps spiraling around it. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3064411149,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_shoulder_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/sport_shoulder_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized swirling wind-rune emblem, light cyan-white wind wisps spiraling around it. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 2140102515,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03",
+    "reencoded": "cwebp -q 90, from sport_shoulder_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/tier_1.webp": {
     "model": "flux-2-pro-preview",

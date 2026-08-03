@@ -51,9 +51,6 @@ jest.mock("@/db/village", () => ({
   diffVillageGrowth: jest.fn().mockReturnValue([]),
   diffVillageTier: jest.fn().mockReturnValue(null),
 }));
-jest.mock("@/src/notifications", () => ({
-  rescheduleOathReminder: jest.fn().mockResolvedValue(undefined),
-}));
 jest.mock("@/src/widget", () => ({
   requestFlameWidgetUpdate: jest.fn().mockResolvedValue(undefined),
 }));

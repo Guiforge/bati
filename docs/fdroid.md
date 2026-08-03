@@ -151,7 +151,7 @@ first. So the privacy policy and the F-Droid index are assembled together or not
 **It has run, and the repository is live.** The index is served and signed, and currently offers:
 
 ```
-com.guiforge.bati   versionName 1.0.1   versionCode 1   160 MB
+com.guiforge.bati   versionName 1.0.2   versionCode 10002   112 MB
 ```
 
 Read it back yourself rather than trusting this page — it is the only statement of what
@@ -162,9 +162,9 @@ curl -sO https://guiforge.github.io/bati/fdroid/repo/index-v1.jar
 unzip -p index-v1.jar index-v1.json | python3 -m json.tool | grep -A3 versionName
 ```
 
-That `versionCode 1` is the bug `app.config.js` fixes, sitting in production: every build ever
-published claimed it, so F-Droid had no way to recognise a newer one. The next release carries
-`10002`, which is the first version code that can ever have been an update.
+It used to read `versionCode 1`, and every build ever published claimed that same number — so no
+F-Droid client could recognise a newer one, and the update mechanism the repository exists for had
+never once been able to fire. `10002` is the first code that could.
 
 ## The order that makes sense
 
@@ -215,18 +215,25 @@ The value is a list of regexes, and `.*` takes everything. Gradle goes from ~20 
 `:expo-notifications` among them, and the AARs stop being used. Builds get slower; that is the
 price, and it buys a build F-Droid can reproduce.
 
-### expo-notifications pulled Firebase — done
+### expo-notifications pulled Firebase — solved by deletion
 
 `com.google.firebase:firebase-messaging` is forbidden outright by the inclusion policy, and
-`expo-notifications` pulls it whether or not you use push. This app does not: `src/notifications.ts`
-schedules one local oath reminder and never requests a token.
+`expo-notifications` pulled it whether or not you used push. This app never did: it scheduled one
+local oath reminder and never requested a token.
 
-A Gradle `exclude` does not work — fourteen files reference FCM, one is a `<service>` in the
-library manifest, and three of the fourteen are also on the local path. So
-[`scripts/fdroid-strip-firebase.py`](../scripts/fdroid-strip-firebase.py) removes the push-only
-files and *edits* the three shared ones to drop their FCM branch. It is idempotent, it verifies
-afterwards that no `com.google.firebase` reference survives, and it is what the recipe calls in
-`prebuild:`.
+The first answer was a patch script. A Gradle `exclude` cannot work — fourteen files reference FCM,
+one is a `<service>` in the library manifest, and four are also on the local-notification path — so
+the script deleted the push-only files and edited the shared ones to drop their FCM branch. It
+worked, and it was 200 lines that had to be re-verified against every Expo SDK bump.
+
+**The dependency went instead.** `expo-notifications` was carrying Firebase, ShortcutBadger *and*
+the Play install-referrer library, for one reminder three idle days late. Removing it deleted the
+patch script, the reminder, and twenty-two of the app's thirty-three Android permissions in one
+move. See [gameplay/oaths.md](gameplay/oaths.md) for what the product lost.
+
+What remains is `plugins/withAndroidTrimPermissions.js`, which drops three permissions that
+`expo-image-picker` and `expo-audio` declare and the app never exercises — a camera it never opens
+and a microphone it never records with.
 
 ### The signing key — decided: the break is accepted
 

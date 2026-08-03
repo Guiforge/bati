@@ -360,18 +360,6 @@
     "legs": "Jambes",
     "shoulders": "Épaules"
   },
-  "notifications": {
-    "boss_body": "Tu es à la dernière étape. Affronte le boss et remporte la victoire !",
-    "boss_title": "⚔️ Le Boss t'attend !",
-    "daily_body": "Ton village a besoin de toi. Accomplis une quête pour garder la flamme !",
-    "daily_title": "C'est l'heure ! ⚔️",
-    "inactivity_body": "Ça fait longtemps. Les monstres se rapprochent...",
-    "inactivity_title": "Ton village te manque 🏚️",
-    "streak_body": "Tu as une série de {{count}} jours. Ne laisse pas le feu s'éteindre !",
-    "streak_title": "🔥 Série en danger !",
-    "oath_title": "Ton serment t'attend ⚔️",
-    "oath_body": "{{oath}} — {{current}} / {{target}}. Trois jours depuis la dernière séance."
-  },
   "onboarding": {
     "chars_min": "car. min",
     "finish": "Commencer",
@@ -686,7 +674,7 @@
     "never_title": "Ce que Bati ne fait jamais",
     "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. L'application ne fait aucune requête réseau, à aucun moment.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar — elle reste sur votre appareil. Notifications : uniquement quand vous activez vous-même un rappel, et elles sont programmées localement par votre téléphone, jamais poussées depuis un serveur. Le widget Android lit votre flamme dans cette même base locale.",
+    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar — elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. L'application n'envoie aucune notification.",
     "crashes_title": "Rapports de crash",
     "crashes_body": "En cas de plantage, l'erreur est écrite uniquement sur votre appareil. Rien n'est envoyé automatiquement. « Signaler un bug » ouvre votre propre application e-mail avec le rapport pré-rempli : vous pouvez le lire, le modifier ou le supprimer avant envoi. Si vous ne l'envoyez jamais, il ne quitte jamais votre téléphone.",
     "children_title": "Enfants",
@@ -707,6 +695,5 @@
   "settings.report_bug_count_plural": "{{count}} plantages",
   "settings.report_bug_empty": "Rien d'enregistré",
   "settings.safety": "S'entraîner en sécurité",
-  "settings.warmup": "Échauffement",
-  "settings.notifications": "Rappel du serment"
+  "settings.warmup": "Échauffement"
 }

@@ -45,7 +45,6 @@
       ],
       "expo-router",
       "expo-audio",
-      "expo-notifications",
       [
         "expo-image-picker",
         {
@@ -71,7 +70,8 @@
       ],
       "./plugins/withAndroidLintExtraTranslation",
       "./plugins/withAndroidReleaseSigning",
-      "./plugins/withAndroidGradleMemory"
+      "./plugins/withAndroidGradleMemory",
+      "./plugins/withAndroidTrimPermissions"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

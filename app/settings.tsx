@@ -1,5 +1,4 @@
 import {
-  Bell,
   Bug,
   ChevronLeft,
   Dumbbell,
@@ -31,11 +30,6 @@ import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
 import { buildBugReportMailto, readCrashLog } from "@/src/crashLog";
-import {
-  ensureNotificationPermission,
-  hasNotificationPermission,
-  rescheduleOathReminder,
-} from "@/src/notifications";
 import { useSettingsStore } from "@/stores/settings";
 
 // Version comes from the embedded manifest. The Android build number is derived from the version
@@ -215,13 +209,11 @@ export default function SettingsScreen() {
     customAvatarUri,
     hapticsEnabled,
     soundEnabled,
-    notificationsEnabled,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
     setHapticsEnabled,
     setSoundEnabled,
-    setNotificationsEnabled,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -270,19 +262,9 @@ export default function SettingsScreen() {
   // Unanswered shows everything, so nobody loses content by never opening this screen.
   const [ownedEquipment, setOwnedEquipment] = useState<EquipmentCode[] | null>(null);
   const [warmupEnabled, setWarmupEnabledState] = useState(true);
-  // The stored preference defaults to on, but the OS has the last word: without permission the
-  // row would claim reminders are on while nothing can ever fire.
-  const [permissionGranted, setPermissionGranted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    hasNotificationPermission()
-      .then((granted) => {
-        if (!cancelled) setPermissionGranted(granted);
-      })
-      .catch(() => {
-        // Non-blocking: treated as "not granted", which is the honest default.
-      });
     preferences
       .getWarmupEnabled()
       .then((value) => {
@@ -328,19 +310,6 @@ export default function SettingsScreen() {
         : ownedEquipment.length === 1
           ? t("settings.equipment_bar", "Pull-up bar")
           : t("settings.equipment_bar_dip", "Bar + dip station");
-
-  const remindersOn = notificationsEnabled && permissionGranted;
-
-  const toggleNotifications = useCallback(async () => {
-    if (!remindersOn && !(await ensureNotificationPermission())) {
-      // Denied at the OS level: leave the preference alone so the row keeps telling the truth.
-      setPermissionGranted(false);
-      return;
-    }
-    setPermissionGranted(true);
-    await setNotificationsEnabled(!remindersOn);
-    await rescheduleOathReminder();
-  }, [remindersOn, setNotificationsEnabled]);
 
   const openOath = useCallback(() => {
     router.push("/oath" as never);
@@ -416,18 +385,6 @@ export default function SettingsScreen() {
             label={t("settings.sound", "Sound")}
             value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => setSoundEnabled(!soundEnabled)}
-          />
-
-          <SettingRow
-            testID="settings-notifications"
-            icon={<Bell size={22} color="$text" />}
-            label={t("settings.notifications", "Oath reminder")}
-            value={remindersOn ? t("common.on", "On") : t("common.off", "Off")}
-            onPress={() => {
-              toggleNotifications().catch(() => {
-                // Non-blocking: a failed permission prompt just leaves the row as it was.
-              });
-            }}
           />
 
           <SettingRow

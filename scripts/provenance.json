@@ -1,4 +1,244 @@
 {
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-crest.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A heraldic shield of dark armour plating carrying a crenellated tower etched into it in glowing line-work above two crossed cybernetic augmented arms, the limbs built from segmented plates with light running along the seams. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 2155138241,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-glyph.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal geometric rune of a fortress: three vertical bars of unequal height topped by crenellations, connected by one horizontal beam, drawn entirely as glowing hairline structure with a hollow dark core. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 4011990837,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-keep.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A monolithic crenellated tower of near-black machined metal seen straight on, its stone courses replaced by fine horizontal panel seams that glow from within, and one small heroic figure standing backlit in its arched gateway. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 1528149607,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-ring.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A crenellated tower monolith standing inside a thin neon progress ring marked with fine tick graduations, the ring broken by a gap and terminating in one bright cap. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 523832090,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-trace.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A crenellated tower reduced to a printed-circuit diagram: the silhouette drawn as glowing conductor traces on a near-black board, with small square solder pads at the corners and one trace running down to a single bright node. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 1976507692,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber/cyber-visor.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A knight's helm rendered as a sealed cybernetic visor of dark metal, a narrow horizontal eye-slit glowing across it, and the silhouette of a crenellated tower etched faintly into the brow plate. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG. The frame is overwhelmingly flat obsidian void (#0B0F19) and the emblem emerges out of that darkness, built from thin hard-edged light seams rather than filled shapes: glowing electric blue (#0D33F2 and #2E5CFF) structural lines and etched circuit traces over near-black brushed metal, with exactly one magenta (#DB2777) accent as the single point of heat, and sparse near-white (#E8ECFF) highlights. Strictly no cyan, no teal, no green, no orange, no gold, no purple. The glow is tight and controlled with no soft haze, no lens flare, no thick outlines, no bevels. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3100844807,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber2/crest-solid.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A solid heraldic shield filled edge to edge, with a crenellated tower knocked out of its centre as void and one magenta seam running across the shield's lower third. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG, built from solid filled masses and NOT from line art: the mark is one heavy opaque silhouette in electric blue (#0D33F2, #2E5CFF) standing on flat obsidian void (#0B0F19), cut by at most three narrow magenta (#DB2777) light seams and a few near-white (#E8ECFF) highlights. No outlines, no hairline traces, no wireframe, no thin circuitry, no engraving, no sketch. Strictly no cyan, no teal, no green, no orange, no gold, no grey metal. Massive simple geometry with generous empty margin on all four sides, high contrast against the void, so the mark reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 2770968217,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber2/keep-solid.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A massive crenellated tower silhouette filled solid, with a tall arched gateway cut clean through it as void, one small heroic figure standing dark inside that arch, and a single horizontal magenta seam glowing across the tower's midpoint. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG, built from solid filled masses and NOT from line art: the mark is one heavy opaque silhouette in electric blue (#0D33F2, #2E5CFF) standing on flat obsidian void (#0B0F19), cut by at most three narrow magenta (#DB2777) light seams and a few near-white (#E8ECFF) highlights. No outlines, no hairline traces, no wireframe, no thin circuitry, no engraving, no sketch. Strictly no cyan, no teal, no green, no orange, no gold, no grey metal. Massive simple geometry with generous empty margin on all four sides, high contrast against the void, so the mark reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 1899102631,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/cyber2/monolith.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single heavy rectangular monolith with a crenellated top, filled solid, split by two narrow horizontal magenta seams that glow across its full width. A dark cybernetic app-icon emblem for a dark-fantasy fitness RPG, built from solid filled masses and NOT from line art: the mark is one heavy opaque silhouette in electric blue (#0D33F2, #2E5CFF) standing on flat obsidian void (#0B0F19), cut by at most three narrow magenta (#DB2777) light seams and a few near-white (#E8ECFF) highlights. No outlines, no hairline traces, no wireframe, no thin circuitry, no engraving, no sketch. Strictly no cyan, no teal, no green, no orange, no gold, no grey metal. Massive simple geometry with generous empty margin on all four sides, high contrast against the void, so the mark reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 1147286837,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/banner.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A vertical guild banner hanging from a short crossbar, its cloth carrying a crenellated tower emblem and its bottom edge cut into a sharp swallowtail. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 1872607463,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/derived-crest.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A heraldic shield emblem carrying a crenellated stone castle tower across its upper half and two crossed muscular arms ending in clenched fists across its lower half, redrawn as clean flat geometry rather than anatomy. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 667463701,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/hud-ring.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A crenellated tower emblem centred inside a broken circular progress ring, the ring a thick arc sweeping three quarters of the way around with rounded caps and a gap at the top. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3704625016,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/keep-hero.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A heraldic emblem of a squat crenellated stone tower seen straight on, with one small heroic figure standing square-shouldered in its arched gateway. The tower fills the emblem and the figure is a simple bold silhouette cut into it. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 994283940,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/sigil.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "An arcane sigil that fuses a fortress with a barbell: one horizontal bar with a weight plate at each end, crossing a tall crenellated column, drawn as a single continuous bold geometric symbol of even stroke weight. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 2212361651,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/flux/tower-mark.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single geometric tower glyph built from a few rectangles: a crenellated top, a tall square body, and an arched doorway cut clean out of it as negative space. Nothing else in the frame. Drawn as a flat modern vector app-icon emblem for a minimal, ludic dark-fantasy fitness RPG. Few large confident shapes with generous empty margin on all four sides and nothing touching any edge, so the mark still reads as one silhouette at 48 pixels. Palette locked to electric blue (#0D33F2), its brighter tint (#2E5CFF), magenta (#DB2777) and near-white (#E8ECFF) on a flat obsidian (#0B0F19) background — no cyan, no teal, no gold, no skin tones. Depth comes from flat colour contrast and one restrained inner glow, never from thick black ink outlines, bevels, drop shadows, gradients meshes or noisy rim lighting. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3630338616,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/newicon/salt1.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold heraldic app icon crest, centred and symmetrical on a flat obsidian (#0B0F19) background: a heraldic shield filled solid in deep electric blue (#0D33F2) carrying one crenellated stone keep that fills most of its face, with a tall arched gateway cut clean through the tower as pure void and one small heroic figure standing square-shouldered inside that arch. Drawn as a flat modern vector emblem: large solid masses of colour with no interior texture, no line art, no engraving, no bevels, no drop shadows and no black ink outlines anywhere. Depth comes from flat contrast alone — the brighter tint (#2E5CFF) for the tower against the deeper blue of the shield, near-white (#E8ECFF) for the figure, and one narrow magenta (#DB2777) band across the base of the shield as the single accent. The shield is bounded by a clean magenta edge one stroke wide, so the crest keeps a bright contour against a dark background. Strictly no cyan, no teal, no grey stone, no skin tones, no glow haze, no rim lighting. Few large shapes and generous empty margin on all four sides with nothing touching any edge, so the mark still reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487189,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/newicon/salt2.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold heraldic app icon crest, centred and symmetrical on a flat obsidian (#0B0F19) background: a heraldic shield filled solid in deep electric blue (#0D33F2) carrying one crenellated stone keep that fills most of its face, with a tall arched gateway cut clean through the tower as pure void and one small heroic figure standing square-shouldered inside that arch. Drawn as a flat modern vector emblem: large solid masses of colour with no interior texture, no line art, no engraving, no bevels, no drop shadows and no black ink outlines anywhere. Depth comes from flat contrast alone — the brighter tint (#2E5CFF) for the tower against the deeper blue of the shield, near-white (#E8ECFF) for the figure, and one narrow magenta (#DB2777) band across the base of the shield as the single accent. The shield is bounded by a clean magenta edge one stroke wide, so the crest keeps a bright contour against a dark background. Strictly no cyan, no teal, no grey stone, no skin tones, no glow haze, no rim lighting. Few large shapes and generous empty margin on all four sides with nothing touching any edge, so the mark still reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487190,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/newicon/salt3.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold heraldic app icon crest, centred and symmetrical on a flat obsidian (#0B0F19) background: a heraldic shield filled solid in deep electric blue (#0D33F2) carrying one crenellated stone keep that fills most of its face, with a tall arched gateway cut clean through the tower as pure void and one small heroic figure standing square-shouldered inside that arch. Drawn as a flat modern vector emblem: large solid masses of colour with no interior texture, no line art, no engraving, no bevels, no drop shadows and no black ink outlines anywhere. Depth comes from flat contrast alone — the brighter tint (#2E5CFF) for the tower against the deeper blue of the shield, near-white (#E8ECFF) for the figure, and one narrow magenta (#DB2777) band across the base of the shield as the single accent. The shield is bounded by a clean magenta edge one stroke wide, so the crest keeps a bright contour against a dark background. Strictly no cyan, no teal, no grey stone, no skin tones, no glow haze, no rim lighting. Few large shapes and generous empty margin on all four sides with nothing touching any edge, so the mark still reads as one confident silhouette at 48 pixels. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487191,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt11.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487199,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt12.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487200,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt13.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487201,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt14.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487202,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt15.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487203,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/698279f3-3e2a-45ff-b102-72d58096d887/scratchpad/logos/reroll/salt16.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
+    "seed": 3819487204,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-03"
+  },
   "/tmp/claude-1000/-home-guiforge-Documents-code-bati/fe7970b8-e236-4242-a5f6-72c6d0a42e49/scratchpad/icon-0.png": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",

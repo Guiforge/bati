@@ -154,7 +154,7 @@ npm start          # Expo dev server
 ```
 
 Running on a device needs a dev build (`npm run android` / `npm run ios`), because the app uses
-native modules — SQLite, audio, notifications, an Android home-screen widget.
+native modules — SQLite, audio, an Android home-screen widget.
 
 ## Scripts
 

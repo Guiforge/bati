@@ -28,10 +28,16 @@ from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
-# (glob, longest edge). 256 against a 56px sprite and a 72px avatar — see the module docstring.
+# (glob, longest edge).
+#
+# Emblems are 512, not the 256 their grid slot would justify: tapping a building now opens a
+# detail sheet showing the same icon at ~180dp, which wants ~540px on a 3x screen. 256 was
+# visibly soft there. Still a sixteenth of the 1024 they are rendered at.
+#
+# Avatars stay at 256: their largest slot is the 72px header portrait.
 SETS = [
-    ("assets/images/village/buildings/*.webp", 256),
-    ("assets/images/village/sport_*.webp", 256),
+    ("assets/images/village/buildings/*.webp", 512),
+    ("assets/images/village/sport_*.webp", 512),
     ("assets/avatar/*.webp", 256),
 ]
 

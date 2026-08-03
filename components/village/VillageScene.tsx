@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { BuiltBuildingCard } from "@/components/village/BuiltBuildingCard";
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import { VillageEmbers } from "@/components/village/VillageEmbers";
+import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
 import {
   getAdventureAsset,
   getBuildingIconAsset,
@@ -93,6 +94,7 @@ export function VillageScene() {
   // The sheet (portal, overlay, frame) is dead weight behind the scene until the first tap,
   // and has to outlive the selection afterwards or it would vanish instead of sliding shut.
   const [sheetMounted, setSheetMounted] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const openDetail = (selection: VillageSelection) => {
     // Every other tappable surface in the app answers (session, onboarding); the village was the
@@ -150,7 +152,18 @@ export function VillageScene() {
         {/* The scene is the screen: edge to edge, its own title, nothing framing it.
             `overflow="hidden"` is what keeps the parallaxed painting inside its own band
             instead of riding down over the tiles. */}
-        <YStack width="100%" height={heroHeight} position="relative" overflow="hidden">
+        <YStack
+          width="100%"
+          height={heroHeight}
+          position="relative"
+          overflow="hidden"
+          onPress={() => {
+            haptics.selection();
+            setViewerOpen(true);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={t("village.open_scene", "See the whole scene")}
+        >
           {/* Only the painting lags — the scrims and the title stay anchored, so the art
               drifts behind the name rather than dragging it along. */}
           <Animated.View style={[{ width: "100%", height: "100%" }, parallax]}>
@@ -266,7 +279,7 @@ export function VillageScene() {
 
           {/* Last child on purpose: the bottom scrim is near-opaque over the lower half of the
               hero, so embers drawn before it would simply not be there. */}
-          <VillageEmbers heroHeight={heroHeight} heroWidth={width} />
+          <VillageEmbers heroHeight={heroHeight} heroWidth={width} tier={scene.tier} />
         </YStack>
 
         <YStack gap="$5" px="$4" pt="$4">
@@ -399,6 +412,14 @@ export function VillageScene() {
           )}
         </YStack>
       </Animated.ScrollView>
+
+      {viewerOpen ? (
+        <VillageSceneViewer
+          tier={scene.tier}
+          title={villageName || tierName}
+          onClose={() => setViewerOpen(false)}
+        />
+      ) : null}
 
       {sheetMounted ? (
         <VillageDetailSheet

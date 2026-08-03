@@ -574,7 +574,10 @@
     "style_strength": "strength",
     "style_calisthenics": "calisthenics",
     "style_yoga": "yoga",
-    "style_cardio": "cardio"
+    "style_cardio": "cardio",
+    "close_scene": "Close",
+    "tap_to_close": "Tap anywhere to close",
+    "open_scene": "See the whole scene"
   },
   "goals": {
     "title": "My Goal",

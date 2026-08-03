@@ -629,7 +629,10 @@
     "style_strength": "force",
     "style_calisthenics": "callisthénie",
     "style_yoga": "yoga",
-    "style_cardio": "cardio"
+    "style_cardio": "cardio",
+    "close_scene": "Fermer",
+    "tap_to_close": "Touche l'écran pour fermer",
+    "open_scene": "Voir la scène en entier"
   },
   "welcome": "Bienvenue sur Bati !",
   "safety": {

@@ -1114,7 +1114,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from armory.png"
+    "reencoded": "cwebp -q 90, from armory.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/barn.webp": {
     "model": "flux-2-pro-preview",
@@ -1125,7 +1126,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from barn.png"
+    "reencoded": "cwebp -q 90, from barn.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/campfire.webp": {
     "model": "flux-2-pro-preview",
@@ -1136,7 +1138,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from campfire.png"
+    "reencoded": "cwebp -q 90, from campfire.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/castle_wall.webp": {
     "model": "flux-2-pro-preview",
@@ -1147,7 +1150,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from castle_wall.png"
+    "reencoded": "cwebp -q 90, from castle_wall.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/champion_arena.webp": {
     "model": "flux-2-pro-preview",
@@ -1158,7 +1162,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from champion_arena.png"
+    "reencoded": "cwebp -q 90, from champion_arena.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/dragon_lair.webp": {
     "model": "flux-2-pro-preview",
@@ -1169,7 +1174,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from dragon_lair.png"
+    "reencoded": "cwebp -q 90, from dragon_lair.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/druid_grove.webp": {
     "model": "flux-2-pro-preview",
@@ -1180,7 +1186,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from druid_grove.png"
+    "reencoded": "cwebp -q 90, from druid_grove.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/fountain.webp": {
     "model": "flux-2-pro-preview",
@@ -1191,7 +1198,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from fountain.png"
+    "reencoded": "cwebp -q 90, from fountain.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/heroes_hall.webp": {
     "model": "flux-2-pro-preview",
@@ -1202,7 +1210,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from heroes_hall.png"
+    "reencoded": "cwebp -q 90, from heroes_hall.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/observatory.webp": {
     "model": "flux-2-pro-preview",
@@ -1213,7 +1222,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from observatory.png"
+    "reencoded": "cwebp -q 90, from observatory.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/tent.webp": {
     "model": "flux-2-pro-preview",
@@ -1224,7 +1234,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from tent.png"
+    "reencoded": "cwebp -q 90, from tent.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/training_dummy.webp": {
     "model": "flux-2-pro-preview",
@@ -1235,7 +1246,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from training_dummy.png"
+    "reencoded": "cwebp -q 90, from training_dummy.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/watchtower.webp": {
     "model": "flux-2-pro-preview",
@@ -1246,7 +1258,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from watchtower.png"
+    "reencoded": "cwebp -q 90, from watchtower.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/wizard_tower.webp": {
     "model": "flux-2-pro-preview",
@@ -1257,7 +1270,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from wizard_tower.png"
+    "reencoded": "cwebp -q 90, from wizard_tower.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/sport_abs.webp": {
     "model": "flux-2-pro-preview",
@@ -1268,7 +1282,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from sport_abs.png"
+    "reencoded": "cwebp -q 90, from sport_abs.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/sport_arms.webp": {
     "model": "flux-2-pro-preview",
@@ -1279,7 +1294,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from sport_arms.png"
+    "reencoded": "cwebp -q 90, from sport_arms.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/sport_back.webp": {
     "model": "flux-2-pro-preview",
@@ -1290,7 +1306,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from sport_back.png"
+    "reencoded": "cwebp -q 90, from sport_back.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/sport_chest.webp": {
     "model": "flux-2-pro-preview",
@@ -1301,7 +1318,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from sport_chest.png"
+    "reencoded": "cwebp -q 90, from sport_chest.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/sport_legs.webp": {
     "model": "flux-2-pro-preview",
@@ -1312,7 +1330,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from sport_legs.png"
+    "reencoded": "cwebp -q 90, from sport_legs.png",
+    "cutout": "background flood-filled to alpha, threshold 60"
   },
   "assets/images/village/sport_shoulder.webp": {
     "model": "flux-2-pro-preview",
@@ -1323,7 +1342,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-02",
-    "reencoded": "cwebp -q 90, from sport_shoulder.png"
+    "reencoded": "cwebp -q 90, from sport_shoulder.png",
+    "cutout": "background flood-filled to alpha, threshold 120"
   },
   "assets/images/village/tier_1.webp": {
     "model": "flux-2-pro-preview",

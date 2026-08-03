@@ -257,4 +257,3 @@ Technical stack details.
 | [ARCHITECTURE.md](../architecture/technical-architecture.md) | Technical architecture |
 | [roadmap.md](../planning/roadmap.md) | Roadmap — open work and the parking lot |
 | [QUEST_SESSION_SPEC.md](../gameplay/session-flow.md) | Technical session spec |
-| [IMAGE_PROMPTS.md](../content/image-prompts.md) | AI image generation prompts |

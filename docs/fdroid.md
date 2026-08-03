@@ -2,7 +2,7 @@
 title: Publishing through F-Droid
 type: technical
 status: active
-updated: 2026-07-31
+updated: 2026-08-02
 related: [planning/roadmap.md, ../CONTRIBUTING.md]
 ---
 
@@ -13,10 +13,9 @@ Two different things share the name, and only one of them is a realistic next st
 ## Which F-Droid
 
 **The official F-Droid catalogue** builds every app itself, from source, on its own
-infrastructure, and rejects anything that pulls in proprietary dependencies. An Expo app is a
-hard sell there: the build has to be reproducible from a clean checkout with no prebuilt
-binaries, and `expo-notifications` reaches for Firebase Cloud Messaging on Android. Possible, but
-it is a project of its own.
+infrastructure, and rejects anything that pulls in proprietary dependencies. That was written off
+here as "a project of its own"; most of it has since been done, and what remains is written down
+in [Submitting to the official catalogue](#submitting-to-the-official-catalogue) below.
 
 **Your own repository** is what [the tutorial](https://f-droid.org/en/tutorials/create-repo/)
 describes: you generate a signed index over your own APKs and host it anywhere. Users add the URL
@@ -149,9 +148,23 @@ It lives in the Pages workflow rather than its own because **a GitHub Pages site
 deployment**: two workflows each uploading their own artefact do not merge, the second wipes the
 first. So the privacy policy and the F-Droid index are assembled together or not at all.
 
-> **Untested.** It is written from the documented procedure, not from a run — there is no signing
-> key and no Pages site yet, so nothing has exercised it end to end. Treat the first run as part
-> of the setup rather than as a regression if it fails.
+**It has run, and the repository is live.** The index is served and signed, and currently offers:
+
+```
+com.guiforge.bati   versionName 1.0.2   versionCode 10002   112 MB
+```
+
+Read it back yourself rather than trusting this page — it is the only statement of what
+subscribers actually see:
+
+```bash
+curl -sO https://guiforge.github.io/bati/fdroid/repo/index-v1.jar
+unzip -p index-v1.jar index-v1.json | python3 -m json.tool | grep -A3 versionName
+```
+
+It used to read `versionCode 1`, and every build ever published claimed that same number — so no
+F-Droid client could recognise a newer one, and the update mechanism the repository exists for had
+never once been able to fire. `10002` is the first code that could.
 
 ## The order that makes sense
 
@@ -163,3 +176,152 @@ first. So the privacy policy and the F-Droid index are assembled together or not
 
 Steps 1 and 2 are on the release path anyway. F-Droid is mostly a way of getting something back
 for work that has to happen regardless.
+
+## Submitting to the official catalogue
+
+Separate from everything above. The self-hosted repository distributes APKs *we* build; f-droid.org
+builds them itself, from source, and will not take a binary we hand it. Four things stood in the
+way, three of them now cleared.
+
+### The artwork had no licence we could grant — done
+
+`LICENSE` used to say the MIT grant "does not, and cannot" extend to `assets/`. A reviewer reads
+that and stops. The illustrations had been generated through Mammouth, an aggregator whose terms
+say nothing at all about generated outputs — section 7 covers Customer Data and usage data and
+stops there — and which is itself the upstream account holder, so whatever Midjourney or Google
+granted went to Mammouth and no further.
+
+Everything is regenerated against Black Forest Labs directly. The FLUX licence is explicit where
+Mammouth is silent: no ownership claim over outputs, any purpose including commercial, and outputs
+are not derivatives of the model. That grant follows the API key, which is now ours.
+`assets/` is CC BY-SA 4.0, and `scripts/provenance.json` records model, prompt and seed for each
+image so the claim can be checked rather than taken on trust.
+
+### Expo shipped 22 prebuilt AARs — done
+
+This was the real blocker, and it was hiding behind the Firebase one. Expo SDK 57 distributes its
+native modules as **precompiled `.aar` files** in a bundled `local-maven-repo` — 22 of them, 8 MB,
+with the Kotlin sources sitting unused beside them. F-Droid builds from source and rejects prebuilt
+binaries, so nothing else mattered while this was true. It also meant a source-level patch to
+`expo-notifications` changed nothing: the build consumed the AAR and ignored the file.
+
+The switch is one line in `package.json`:
+
+```json
+"expo": { "autolinking": { "buildFromSource": [".*"] } }
+```
+
+The value is a list of regexes, and `.*` takes everything. Gradle goes from ~20 subprojects to 42,
+`:expo-notifications` among them, and the AARs stop being used. Builds get slower; that is the
+price, and it buys a build F-Droid can reproduce.
+
+### expo-notifications pulled Firebase — solved by deletion
+
+`com.google.firebase:firebase-messaging` is forbidden outright by the inclusion policy, and
+`expo-notifications` pulled it whether or not you used push. This app never did: it scheduled one
+local oath reminder and never requested a token.
+
+The first answer was a patch script. A Gradle `exclude` cannot work — fourteen files reference FCM,
+one is a `<service>` in the library manifest, and four are also on the local-notification path — so
+the script deleted the push-only files and edited the shared ones to drop their FCM branch. It
+worked, and it was 200 lines that had to be re-verified against every Expo SDK bump.
+
+**The dependency went instead.** `expo-notifications` was carrying Firebase, ShortcutBadger *and*
+the Play install-referrer library, for one reminder three idle days late. Removing it deleted the
+patch script, the reminder, and twenty-two of the app's thirty-three Android permissions in one
+move. See [gameplay/oaths.md](gameplay/oaths.md) for what the product lost.
+
+What remains is `plugins/withAndroidTrimPermissions.js`, which drops three permissions that
+`expo-image-picker` and `expo-audio` declare and the app never exercises — a camera it never opens
+and a microphone it never records with.
+
+### The signing key — decided: the break is accepted
+
+F-Droid signs its own builds with its own key, so **nobody who installed from GitHub Releases or
+from our own repository can update across to the f-droid.org listing**: Android refuses an install
+whose signature differs, and uninstalling first takes the SQLite database — hero, streak, journal —
+with it. This is the same failure `plugins/withAndroidDebugAppId.js` avoids in dev.
+
+The alternative was reproducible builds plus `AllowedAPKSigningKeys`, where F-Droid rebuilds,
+compares against our signed APK byte for byte, and ships *ours* so nothing breaks. **Not taken**,
+deliberately: it is a large job, and the reason to be in the catalogue is to be found by people who
+do **not** have the app yet. Everyone who already has it keeps the self-hosted repository, which
+keeps updating exactly as it does today.
+
+The cost is real and worth stating plainly: someone who moves from one to the other reinstalls, and
+starts a new hero. There is no migration path, and adding one later means adopting reproducible
+builds after all.
+
+### The recipe
+
+[`fdroid/fdroiddata-recipe.yml`](../fdroid/fdroiddata-recipe.yml) is our copy of the file that has
+to live in a fork of `fdroiddata` as `metadata/com.guiforge.bati.yml`.
+
+```bash
+# 1. Fork https://gitlab.com/fdroid/fdroiddata on GitLab, then:
+git clone https://gitlab.com/<your-gitlab-user>/fdroiddata.git
+cd fdroiddata
+
+# 2. Drop the recipe in, minus our explanatory comments (fdroiddata keeps its metadata terse).
+grep -v '^#' ../bati/fdroid/fdroiddata-recipe.yml | sed '/^$/d' \
+  > metadata/com.guiforge.bati.yml
+
+# 3. Check it against the real category and anti-feature lists, which live in this repo.
+fdroid lint com.guiforge.bati
+fdroid readmeta
+
+# 4. Build it exactly as F-Droid will. This is the step that matters, and the one nobody can skip:
+#    it is the only proof the recipe works rather than merely parses.
+fdroid build com.guiforge.bati:10002
+
+# 5. Submit.
+git checkout -b com.guiforge.bati
+git commit -am "New App: com.guiforge.bati"
+git push -u origin com.guiforge.bati
+```
+
+Then open the merge request against `fdroid/fdroiddata`. Review is done by people, so expect
+questions and a wait measured in weeks; publication follows 24–48 h after it is accepted.
+
+**Only then does the README badge change.** It currently points at `fdroid.link/#…` with our
+repository address and fingerprint, which is what works today. The official URL,
+`https://f-droid.org/packages/com.guiforge.bati/`, does not exist until the merge request lands —
+pointing at it earlier just ships a 404. Being in the catalogue is also the *only* thing that makes
+the app findable by searching in the F-Droid client, which never searches repositories a user has
+not added.
+
+### What is actually verified
+
+Worth being precise, because "it works" and "it compiles" are different claims.
+
+**Verified locally**, with `buildFromSource` on and the strip applied:
+`:expo-notifications:compileReleaseKotlin` and `:app:compileReleaseJavaWithJavac` both reach
+`BUILD SUCCESSFUL`. The stripped module compiles, and the app compiles against it. The strip is
+idempotent and re-checks itself afterwards.
+
+A full `:app:packageRelease` also completes locally, producing an APK that reports
+`versionCode='10001' versionName='1.0.1'` — the derivation in `app.config.js`, proven in an
+artefact rather than in a config dump.
+
+And the strip is confirmed where it counts: the same APK built from a pristine tree contains five
+Firebase entries, and built from a stripped one contains **zero**.
+
+**Not verified:** the oath reminder has never been fired on a device against a stripped build,
+which is the failure a compiler cannot catch — a class removed at build time only explodes when
+something reaches for it at runtime. Nor has this recipe been through `fdroid build
+com.guiforge.bati`, which is the only thing that proves the recipe rather than the patch.
+
+### Two failures worth not repeating
+
+Both cost time because the log was not read.
+
+**`OutOfMemoryError: Metaspace`.** Building 42 modules from source instead of consuming 22 AARs
+means Gradle *lints* all of them too, and Expo's generated `-XX:MaxMetaspaceSize=512m` was sized
+for the prebuilt case. It surfaces as three unrelated `lintVitalAnalyzeRelease` task failures, and
+the real cause is one line further down — raising `-Xmx` would not have helped, because Metaspace
+holds class metadata rather than objects. Fixed by `plugins/withAndroidGradleMemory.js`.
+
+**It only appears on a cold cache.** A local `assembleRelease` had 1725 of 1857 tasks up to date,
+so lint never re-ran and the machine never hit the limit — the failure was CI-only, and looked
+like a CI-only problem. When checking a build-system change, `--rerun-tasks` or a `clean`, or the
+cache hides exactly what you are looking for.

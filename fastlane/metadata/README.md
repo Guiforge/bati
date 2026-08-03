@@ -36,7 +36,16 @@ quest, the journal, the victory screen.
 
 `changelogs/<versionCode>.txt`, where the version code is the integer Android build number, not
 the `1.0.1` string. Play shows it as "What's new"; F-Droid shows it in the update prompt. A
-missing file is not an error — the entry simply has no notes.
+missing file is not an error — the entry simply has no notes, which is also how a misnamed file
+fails: silently.
+
+[`app.config.js`](../../app.config.js) derives that integer from the version, `major*10000 +
+minor*100 + patch`, so `1.0.1` is `10001.txt` and `1.1.0` would be `10100.txt`. Read it off the
+build rather than doing the arithmetic in your head:
+
+```bash
+npx expo config --type public | grep versionCode
+```
 
 ## Where these end up
 

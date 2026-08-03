@@ -35,7 +35,6 @@ import {
   type VillageTierUp,
 } from "@/db/village";
 import { computeSessionXp } from "@/db/xp";
-import { rescheduleOathReminder } from "@/src/notifications";
 import { reportError } from "@/src/reportError";
 import { requestFlameWidgetUpdate } from "@/src/widget";
 
@@ -129,7 +128,7 @@ interface SessionState {
   quitSession: () => void;
 
   // Progression
-  completeExercise: (resultValue: number) => Promise<void>;
+  completeExercise: (resultValue: number) => void;
   updateLastResult: (resultValue: number) => void;
   skipRest: () => void;
   addRestTime: (seconds: number) => void;
@@ -460,7 +459,7 @@ export const useSessionStore = create<SessionState>()(
     },
 
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex exercise completion logic, refactor planned
-    completeExercise: async (resultValue) => {
+    completeExercise: (resultValue) => {
       const { quest, currentRoundIndex, currentExerciseIndex, results, bossFight } = get();
       if (!quest) return;
 
@@ -704,11 +703,6 @@ export const useSessionStore = create<SessionState>()(
       const fulfilledOath = await checkOathFulfilled(async (tx) => {
         oathBonusXp = OATH_XP_BONUS;
         await addBonusXpToSession(sessionId, OATH_XP_BONUS, tx);
-      });
-
-      // The idle clock just reset, and a fulfilled oath has nothing left to nag about.
-      rescheduleOathReminder().catch(() => {
-        // Non-blocking: never fail a logged session over a notification.
       });
 
       // A fulfilled oath pays a mini-boss-sized bonus. Added to the tip-over session row so

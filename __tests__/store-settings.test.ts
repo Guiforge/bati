@@ -21,8 +21,6 @@ const prefs = {
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
   getReducedMotion: jest.fn<Promise<boolean | null>, []>(),
-  getNotificationsEnabled: jest.fn<Promise<boolean>, []>(),
-  getNotificationTime: jest.fn<Promise<{ hour: number; minute: number }>, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setTheme: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
@@ -30,8 +28,6 @@ const prefs = {
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
   setReducedMotion: jest.fn().mockResolvedValue(undefined),
-  setNotificationsEnabled: jest.fn().mockResolvedValue(undefined),
-  setNotificationTime: jest.fn().mockResolvedValue(undefined),
 };
 
 beforeAll(() => {
@@ -67,8 +63,6 @@ function storedSettings() {
   prefs.getHapticsEnabled.mockResolvedValue(false);
   prefs.getSoundEnabled.mockResolvedValue(false);
   prefs.getReducedMotion.mockResolvedValue(true);
-  prefs.getNotificationsEnabled.mockResolvedValue(false);
-  prefs.getNotificationTime.mockResolvedValue({ hour: 7, minute: 30 });
 }
 
 const DEFAULTS = {
@@ -78,8 +72,6 @@ const DEFAULTS = {
   hapticsEnabled: true,
   soundEnabled: true,
   reducedMotion: false,
-  notificationsEnabled: true,
-  notificationTime: { hour: 18, minute: 0 },
   isLoaded: false,
 };
 
@@ -102,8 +94,6 @@ describe("useSettingsStore", () => {
       hapticsEnabled: false,
       soundEnabled: false,
       reducedMotion: true,
-      notificationsEnabled: false,
-      notificationTime: { hour: 7, minute: 30 },
       isLoaded: true,
     });
   });
@@ -197,8 +187,6 @@ describe("useSettingsStore", () => {
     await s().setHapticsEnabled(false);
     await s().setSoundEnabled(false);
     await s().setReducedMotion(true);
-    await s().setNotificationsEnabled(false);
-    await s().setNotificationTime({ hour: 6, minute: 15 });
 
     expect(s()).toMatchObject({
       language: "fr",
@@ -207,8 +195,6 @@ describe("useSettingsStore", () => {
       hapticsEnabled: false,
       soundEnabled: false,
       reducedMotion: true,
-      notificationsEnabled: false,
-      notificationTime: { hour: 6, minute: 15 },
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
@@ -217,7 +203,5 @@ describe("useSettingsStore", () => {
     expect(prefs.setHapticsEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setReducedMotion).toHaveBeenCalledWith(true);
-    expect(prefs.setNotificationsEnabled).toHaveBeenCalledWith(false);
-    expect(prefs.setNotificationTime).toHaveBeenCalledWith({ hour: 6, minute: 15 });
   });
 });

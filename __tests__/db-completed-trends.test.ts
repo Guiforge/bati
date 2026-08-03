@@ -1,4 +1,4 @@
-import { subDays, subMonths, subWeeks } from "date-fns";
+import { startOfWeek, subDays, subMonths, subWeeks } from "date-fns";
 
 import { clientMock, createTestDb } from "./helpers/testDb";
 
@@ -148,13 +148,16 @@ describe("db/completed — history and trends", () => {
 
     it("puts sessions from the same week in one bucket", async () => {
       const now = new Date();
-      // Two sessions an hour apart cannot straddle a week boundary.
+      // Both instants are pinned inside the current week by construction, rather than by stepping
+      // back a fixed hour from now. "Two sessions an hour apart cannot straddle a week boundary"
+      // was the previous assumption and it is false for the first hour of every Monday, which is
+      // when this test spent one hour a week failing. The midpoint between the week's start and
+      // now is always in this week and never in the future, whatever time it is.
+      const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+      const midweek = new Date((weekStart.getTime() + now.getTime()) / 2);
+
       await bankSession({ performedAt: now, durationSeconds: 600, xpEarned: 10 });
-      await bankSession({
-        performedAt: new Date(now.getTime() - 3_600_000),
-        durationSeconds: 600,
-        xpEarned: 10,
-      });
+      await bankSession({ performedAt: midweek, durationSeconds: 600, xpEarned: 10 });
 
       const worked = (await completed().getWeeklyTrends(12)).filter((w) => w.sessionCount > 0);
 

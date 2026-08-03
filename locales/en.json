@@ -655,18 +655,6 @@
     "resume": "Resume",
     "discard": "Discard"
   },
-  "notifications": {
-    "daily_title": "Time to train! ⚔️",
-    "daily_body": "Your village needs you. Complete a quest to keep the flame alive!",
-    "streak_title": "🔥 Streak at Risk!",
-    "streak_body": "You have a {{count}}-day streak. Don't let the fire die out!",
-    "inactivity_title": "Your village misses you 🏚️",
-    "inactivity_body": "It's been a while. The monsters are getting closer...",
-    "boss_title": "⚔️ The Boss Awaits!",
-    "boss_body": "You're at the final step. Face the boss and claim victory!",
-    "oath_title": "Your oath is waiting ⚔️",
-    "oath_body": "{{oath}} — {{current}} / {{target}}. Three days since the last session."
-  },
   "safety": {
     "title": "Train safely",
     "before_title": "Before you start",
@@ -686,7 +674,7 @@
     "never_title": "What Bati never does",
     "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. The app makes no network requests at all, at any point.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos: only if you pick one as your avatar — it stays on your device. Notifications: only when you turn a reminder on yourself, and they are scheduled locally by your phone, never pushed from a server. The Android widget reads your streak from the same local database.",
+    "permissions_body": "Photos: only if you pick one as your avatar — it stays on your device. The Android widget reads your streak from the same local database. The app sends no notifications at all.",
     "crashes_title": "Crash reports",
     "crashes_body": "If the app crashes, the error is written to your device only. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
     "children_title": "Children",
@@ -707,6 +695,5 @@
   "settings.report_bug_count_plural": "{{count}} crashes",
   "settings.report_bug_empty": "Nothing recorded",
   "settings.safety": "Train safely",
-  "settings.warmup": "Warm-up",
-  "settings.notifications": "Oath reminder"
+  "settings.warmup": "Warm-up"
 }

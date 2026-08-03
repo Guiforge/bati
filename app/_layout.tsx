@@ -11,7 +11,6 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { installCrashHandler, recordCrash } from "@/src/crashLog";
-import { rescheduleOathReminder } from "@/src/notifications";
 import { AppBackground } from "@/src/ui/AppBackground";
 import { requestFlameWidgetUpdate } from "@/src/widget";
 import { useSettingsStore } from "@/stores/settings";
@@ -67,11 +66,6 @@ export default function RootLayout() {
   const handleDatabaseReady = useCallback(() => {
     loadUserFromDatabase();
     loadSettingsFromDatabase();
-    // The oath reminder is a single pending notification recomputed from current state, so a
-    // cold start is one of the two moments it needs to be refreshed (the other is a session).
-    rescheduleOathReminder().catch(() => {
-      // Non-blocking: a reminder that fails to schedule must never hold up the app.
-    });
     // The streak window can roll over while the app is closed (e.g. midnight passing),
     // so a cold start is the other moment the flame widget needs a redraw.
     requestFlameWidgetUpdate().catch(() => {

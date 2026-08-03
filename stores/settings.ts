@@ -28,8 +28,6 @@ interface SettingsState {
   hapticsEnabled: boolean;
   soundEnabled: boolean;
   reducedMotion: boolean;
-  notificationsEnabled: boolean;
-  notificationTime: { hour: number; minute: number };
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
@@ -39,8 +37,6 @@ interface SettingsState {
   setHapticsEnabled: (enabled: boolean) => Promise<void>;
   setSoundEnabled: (enabled: boolean) => Promise<void>;
   setReducedMotion: (enabled: boolean) => Promise<void>;
-  setNotificationsEnabled: (enabled: boolean) => Promise<void>;
-  setNotificationTime: (time: { hour: number; minute: number }) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
 }
@@ -75,8 +71,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   hapticsEnabled: true,
   soundEnabled: true,
   reducedMotion: false,
-  notificationsEnabled: true,
-  notificationTime: { hour: 18, minute: 0 },
   isLoaded: false,
 
   setLanguage: async (language) => {
@@ -118,16 +112,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setReducedMotion(enabled);
   },
 
-  setNotificationsEnabled: async (enabled) => {
-    set({ notificationsEnabled: enabled });
-    await preferences.setNotificationsEnabled(enabled);
-  },
-
-  setNotificationTime: async (time) => {
-    set({ notificationTime: time });
-    await preferences.setNotificationTime(time);
-  },
-
   loadFromDatabase: async () => {
     try {
       const [
@@ -138,8 +122,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         hapticsEnabled,
         soundEnabled,
         storedReducedMotion,
-        notificationsEnabled,
-        notificationTime,
         deviceReducedMotion,
       ] = await Promise.all([
         preferences.getLanguage(),
@@ -149,8 +131,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getHapticsEnabled(),
         preferences.getSoundEnabled(),
         preferences.getReducedMotion(),
-        preferences.getNotificationsEnabled(),
-        preferences.getNotificationTime(),
         deviceReducedMotionWithin(ACCESSIBILITY_PROBE_MS),
       ]);
 
@@ -172,8 +152,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         hapticsEnabled,
         soundEnabled,
         reducedMotion,
-        notificationsEnabled,
-        notificationTime,
         isLoaded: true,
       });
 

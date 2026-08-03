@@ -114,25 +114,34 @@ Every illustration in `assets/` — exercise art, quest and adventure covers, bo
 village buildings, avatars — is **AI-generated**. Nothing is stock, and nothing is traced from a
 specific artist's work.
 
-It happened in two waves, which is worth knowing if the styles ever look slightly off from each
-other:
+All of it comes from **FLUX.2 by Black Forest Labs**, through our own API account. That detail is
+the licence: the FLUX grant over outputs runs to whoever holds the key, so generating through an
+aggregator would have left us with art we could not license onward — which is why an earlier
+Midjourney-and-Gemini-via-Mammouth set was regenerated from scratch.
 
-- **The original ~40 assets: Midjourney v6.** Prompts and exact parameters are committed in
-  [`docs/content/image-prompts.md`](docs/content/image-prompts.md).
-- **Later additions — the generic exercises, extra covers, village buildings: Google Gemini
-  image models** (`gemini-3-pro-image-preview` and the flash variants), through the Mammouth
-  API. Those runs are scripts rather than prose: [`scripts/generate-covers.py`](scripts),
-  `generate-exercises.py`, `generate-village.py`. They need a `MAMMOUTH_API_KEY`.
+The prompts are code, not prose. One script per family, all sharing
+[`scripts/lib/flux.py`](scripts/lib/flux.py):
 
-The house style is written down rather than remembered, which is what keeps two different
-generators producing the same world:
-[`docs/content/image-style-prompt.md`](docs/content/image-style-prompt.md) — Franco-Belgian BD,
-thick outlines, saturated cel-shading, edges fading to dark so an image drops onto the app's
-`#0B0F19` background without a visible seam. What still has no art is tracked in
-[`docs/content/missing-image.md`](docs/content/missing-image.md).
+```bash
+python3 scripts/generate-exercises.py          # the 49 movement illustrations
+python3 scripts/generate-covers.py             # quest and adventure covers
+python3 scripts/generate-village.py            # village tiers, sprites, buildings
+python3 scripts/generate-bosses.py             # boss art
+python3 scripts/generate-avatars.py            # hero portraits
+python3 scripts/generate-backgrounds.py        # full-screen backgrounds, placeholder
+python3 scripts/generate-exercises.py squat    # or just one, by slug
+```
 
-`scripts/generate_image_mistral.py` is a red herring — Mistral has no image generation API, so
-it only helps *write* prompts for the generators above.
+They need a `BFL_API_KEY` (see `.env.example`), run six renders at a time, and seed each image
+from its own slug — so editing a prompt changes the instruction rather than the dice, and
+`FLUX_SEED_SALT=1` re-rolls anything that comes out wrong anyway.
+[`scripts/provenance.json`](scripts/provenance.json) records model, prompt and seed for every
+image, which is what makes the CC BY-SA grant checkable instead of merely asserted.
+
+The house style lives in each script's `STYLE` block, appended verbatim to every prompt in its
+family — Franco-Belgian BD, confident ink outlines, flat cel-shading, edges falling to dark so an
+image drops onto the app's `#0B0F19` background without a seam. What still has no art is tracked
+in [`docs/content/missing-image.md`](docs/content/missing-image.md).
 
 Icons are a separate system: game and fantasy icons go through the project's own icon hook,
 utility icons come from [`@tamagui/lucide-icons`](https://tamagui.dev).
@@ -145,7 +154,7 @@ npm start          # Expo dev server
 ```
 
 Running on a device needs a dev build (`npm run android` / `npm run ios`), because the app uses
-native modules — SQLite, audio, notifications, an Android home-screen widget.
+native modules — SQLite, audio, an Android home-screen widget.
 
 ## Scripts
 
@@ -194,8 +203,12 @@ All of these run in CI; the first three also run on commit or push.
 ### F-Droid — the one that updates itself
 
 **Searching F-Droid for "Bati" will not find it.** The app is not in the main F-Droid catalogue;
-it lives in its own repository, and F-Droid only searches repositories you have added. Add this
-one once and Bati shows up in search, with updates arriving like any other app's:
+it lives in its own repository, and F-Droid only searches repositories you have added. That is a
+property of how the client works, not something a setting fixes — submission to the main catalogue
+is tracked in [`docs/fdroid.md`](docs/fdroid.md), and the badge above switches to the official
+listing once it lands.
+
+Add this repository once and Bati shows up in search, with updates arriving like any other app's:
 
 [**Add the repository to F-Droid**](https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
 
@@ -227,8 +240,13 @@ Or just write to **feedback.bati@proton.me** — an idea is welcome in whatever 
 
 ## Licence
 
-[MIT](LICENSE) for the code.
+[MIT](LICENSE) for the code, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) for
+the artwork in `assets/`.
 
-**Not** for the artwork. The illustrations in `assets/` were generated with Midjourney and with
-Google Gemini image models, and each carries the terms of the service that produced it — the MIT
-grant above cannot and does not extend to them. If you fork this, bring your own art.
+The illustrations are generated with FLUX.2 by Black Forest Labs through our own API account,
+whose licence places no ownership claim on outputs and allows any use. `scripts/provenance.json`
+records the model, prompt and seed behind every one of them, so fork away — the art comes with
+you, and you can regenerate it yourself.
+
+Two exceptions keep their own terms: the [game-icons.net](https://game-icons.net) set
+(CC BY 3.0 / CC0) and the store badges.

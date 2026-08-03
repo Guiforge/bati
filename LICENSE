@@ -24,9 +24,22 @@ SOFTWARE.
 
 NOTE ON THE ARTWORK
 
-The MIT licence above covers the source code. It does not, and cannot, grant
-rights over the generated illustrations in `assets/`: those were produced with
-Midjourney and with Google Gemini image models, and each carries the terms of
-the service that produced it. See the "Where the art comes from" section of
-README.md. If you fork this project, replace the artwork or check those terms
-for yourself.
+The MIT licence above covers the source code. The illustrations under `assets/`
+are licensed separately, under Creative Commons Attribution-ShareAlike 4.0
+International (CC BY-SA 4.0): https://creativecommons.org/licenses/by-sa/4.0/
+
+They were generated with FLUX.2 by Black Forest Labs, through our own API
+account. The FLUX licence is explicit that outputs carry no ownership claim by
+the model's authors and may be used for any purpose, including commercially, and
+that outputs are not derivatives of the model. That grant runs to the holder of
+the API key, which is what makes the licence above ours to give.
+
+`scripts/provenance.json` records the model, the exact prompt and the seed for
+every generated image, so any of them can be reproduced or checked.
+
+Two sets of assets are not ours and keep their own terms:
+
+  * `assets/game-icons.net.svg-foreground-white/` — CC BY 3.0 or CC0, per the
+    `license.txt` in that directory.
+  * `assets/badges/` — the F-Droid and GitHub "get it on" badges, each under
+    its project's own brand terms.

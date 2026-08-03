@@ -1,10 +1,17 @@
 # 🎨 Missing Cover Images — Plan & Prompts
 
+> **Superseded pipeline.** The generation instructions below describe the Mammouth API and
+> Gemini models, which are no longer used: everything is generated against Black Forest Labs
+> directly, because the FLUX output licence follows the API key and an aggregator's terms grant
+> nothing onward. See [image-style-prompt.md](image-style-prompt.md) and
+> [`scripts/lib/flux.py`](../../scripts/lib/flux.py). The *inventory* below is still accurate.
+
+
 The app's `constants/assetMap.ts` is fully backed by files on disk, **but the actually
 seeded content** (the two hand-authored adventures in `0002`/`0003` — *The Lumber Route*
 and *The Golem* — plus their quests) was never given covers. Those rows resolve to
-`assets/placeholder.jpg`. `docs/content/image-prompts.md` describes a different, planned
-asset set that does not match the seeded content, so it doesn't fill this gap.
+`assets/placeholder.jpg`. A separate planned asset set existed on paper and did not match the
+seeded content, so it did not fill this gap.
 
 This doc lists the 11 missing covers, priority-ordered (most visible first), with a
 ready-to-generate prompt each. Generation is done by `scripts/generate-covers.py` via the

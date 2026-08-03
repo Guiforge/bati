@@ -45,7 +45,6 @@
       ],
       "expo-router",
       "expo-audio",
-      "expo-notifications",
       [
         "expo-image-picker",
         {
@@ -71,7 +70,8 @@
       ],
       "./plugins/withAndroidLintExtraTranslation",
       "./plugins/withAndroidReleaseSigning",
-      "./plugins/withAndroidDebugAppId"
+      "./plugins/withAndroidGradleMemory",
+      "./plugins/withAndroidTrimPermissions"
     ],
     "runtimeVersion": {
       "policy": "appVersion"
@@ -79,7 +79,7 @@
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"

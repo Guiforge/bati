@@ -82,7 +82,6 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [content-generation.md](content/content-generation.md) | Full content spec (exercises, quests, adventures) |
 | [content-quick-reference.md](content/content-quick-reference.md) | Developer integration guide (asset map) |
 | [workout-best-practices.md](content/workout-best-practices.md) | Workout design & balancing |
-| [image-prompts.md](content/image-prompts.md) | Image generation prompts (Midjourney) |
 | [image-style-prompt.md](content/image-style-prompt.md) | Base style prompt (used by scripts) |
 
 ## 📱 Screen Specs — [screens/](screens/README.md)

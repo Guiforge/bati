@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx } from "./client";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
@@ -187,16 +186,6 @@ export const preferences = {
     await deletePreference("savedSession");
   },
 
-  async getNotificationsEnabled(): Promise<boolean> {
-    const value = await getPreference("notificationsEnabled");
-    // Default to true if not set
-    return value !== "false";
-  },
-
-  async setNotificationsEnabled(enabled: boolean): Promise<void> {
-    await setPreference("notificationsEnabled", String(enabled));
-  },
-
   async getSoundEnabled(): Promise<boolean> {
     const value = await getPreference("soundEnabled");
     return value !== "false"; // Default true
@@ -204,27 +193,5 @@ export const preferences = {
 
   async setSoundEnabled(enabled: boolean): Promise<void> {
     await setPreference("soundEnabled", String(enabled));
-  },
-
-  async getNotificationTime(): Promise<{ hour: number; minute: number }> {
-    const value = await getPreference("notificationTime");
-    if (value) {
-      try {
-        const parsed = JSON.parse(value);
-        if (typeof parsed.hour === "number" && typeof parsed.minute === "number") {
-          return parsed;
-        }
-      } catch (error) {
-        // Falling back to 18:00 is correct, but a stored value that will not parse means
-        // the hero's chosen reminder time is being ignored every single day.
-        reportError("preferences.notificationTime", error);
-      }
-    }
-    // Default to 18:00 (6 PM)
-    return { hour: 18, minute: 0 };
-  },
-
-  async setNotificationTime(time: { hour: number; minute: number }): Promise<void> {
-    await setPreference("notificationTime", JSON.stringify(time));
   },
 };

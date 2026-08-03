@@ -203,8 +203,12 @@ All of these run in CI; the first three also run on commit or push.
 ### F-Droid — the one that updates itself
 
 **Searching F-Droid for "Bati" will not find it.** The app is not in the main F-Droid catalogue;
-it lives in its own repository, and F-Droid only searches repositories you have added. Add this
-one once and Bati shows up in search, with updates arriving like any other app's:
+it lives in its own repository, and F-Droid only searches repositories you have added. That is a
+property of how the client works, not something a setting fixes — submission to the main catalogue
+is tracked in [`docs/fdroid.md`](docs/fdroid.md), and the badge above switches to the official
+listing once it lands.
+
+Add this repository once and Bati shows up in search, with updates arriving like any other app's:
 
 [**Add the repository to F-Droid**](https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
 

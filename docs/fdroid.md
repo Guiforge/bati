@@ -228,27 +228,60 @@ files and *edits* the three shared ones to drop their FCM branch. It is idempote
 afterwards that no `com.google.firebase` reference survives, and it is what the recipe calls in
 `prebuild:`.
 
-### The signing key — the one that is left
+### The signing key — decided: the break is accepted
 
-F-Droid signs its own builds with its own key. Left as is, **nobody who installed from GitHub
-Releases or from our own repository can update to the f-droid.org build**: Android refuses an
-install whose signature differs, and uninstalling first takes the SQLite database — hero, streak,
-journal — with it. This is the same failure `plugins/withAndroidDebugAppId.js` already avoids in dev.
+F-Droid signs its own builds with its own key, so **nobody who installed from GitHub Releases or
+from our own repository can update across to the f-droid.org listing**: Android refuses an install
+whose signature differs, and uninstalling first takes the SQLite database — hero, streak, journal —
+with it. This is the same failure `plugins/withAndroidDebugAppId.js` avoids in dev.
 
-Two ways out, and they want deciding before the merge request, not after:
+The alternative was reproducible builds plus `AllowedAPKSigningKeys`, where F-Droid rebuilds,
+compares against our signed APK byte for byte, and ships *ours* so nothing breaks. **Not taken**,
+deliberately: it is a large job, and the reason to be in the catalogue is to be found by people who
+do **not** have the app yet. Everyone who already has it keeps the self-hosted repository, which
+keeps updating exactly as it does today.
 
-- **Reproducible builds plus `AllowedAPKSigningKeys`.** F-Droid rebuilds, compares against our
-  signed APK byte for byte, and ships *ours*. Nobody's install breaks. This is the larger job, and
-  `buildFromSource` above is a precondition for it — a build that consumes prebuilt AARs cannot be
-  reproduced from source in the first place.
-- **Accept the break.** Document that f-droid.org is a fresh install, and keep the self-hosted
-  repository alive for everyone already on it.
+The cost is real and worth stating plainly: someone who moves from one to the other reinstalls, and
+starts a new hero. There is no migration path, and adding one later means adopting reproducible
+builds after all.
 
 ### The recipe
 
 [`fdroid/fdroiddata-recipe.yml`](../fdroid/fdroiddata-recipe.yml) is our copy of the file that has
-to live in a fork of `fdroiddata` as `metadata/com.guiforge.bati.yml`. Submitting is a merge request
-titled `New App: com.guiforge.bati`; publication follows 24–48 h after it is accepted.
+to live in a fork of `fdroiddata` as `metadata/com.guiforge.bati.yml`.
+
+```bash
+# 1. Fork https://gitlab.com/fdroid/fdroiddata on GitLab, then:
+git clone https://gitlab.com/<your-gitlab-user>/fdroiddata.git
+cd fdroiddata
+
+# 2. Drop the recipe in, minus our explanatory comments (fdroiddata keeps its metadata terse).
+grep -v '^#' ../bati/fdroid/fdroiddata-recipe.yml | sed '/^$/d' \
+  > metadata/com.guiforge.bati.yml
+
+# 3. Check it against the real category and anti-feature lists, which live in this repo.
+fdroid lint com.guiforge.bati
+fdroid readmeta
+
+# 4. Build it exactly as F-Droid will. This is the step that matters, and the one nobody can skip:
+#    it is the only proof the recipe works rather than merely parses.
+fdroid build com.guiforge.bati:10002
+
+# 5. Submit.
+git checkout -b com.guiforge.bati
+git commit -am "New App: com.guiforge.bati"
+git push -u origin com.guiforge.bati
+```
+
+Then open the merge request against `fdroid/fdroiddata`. Review is done by people, so expect
+questions and a wait measured in weeks; publication follows 24–48 h after it is accepted.
+
+**Only then does the README badge change.** It currently points at `fdroid.link/#…` with our
+repository address and fingerprint, which is what works today. The official URL,
+`https://f-droid.org/packages/com.guiforge.bati/`, does not exist until the merge request lands —
+pointing at it earlier just ships a 404. Being in the catalogue is also the *only* thing that makes
+the app findable by searching in the F-Droid client, which never searches repositories a user has
+not added.
 
 ### What is actually verified
 

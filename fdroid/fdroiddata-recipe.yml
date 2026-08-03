@@ -26,8 +26,12 @@
 # compiler catches — and this recipe end to end under `fdroid build com.guiforge.bati`. Do both
 # before opening the merge request; expect the Node bootstrap and `scandelete` to need iteration.
 
+# Both are in fdroiddata's config/categories.yml, and both are literally true — being listed under
+# each is the difference between someone finding this and not. Discoverability is the whole reason
+# for submitting here rather than staying on the self-hosted repository.
 Categories:
   - Sports & Health
+  - Role-Playing Game
 License: MIT
 AuthorName: Guillaume Pouyat
 SourceCode: https://github.com/Guiforge/bati
@@ -78,8 +82,12 @@ CurrentVersionCode: 10002
 #   CC BY-SA 4.0 with scripts/provenance.json recording model, prompt and seed for every image, so
 #   NonFreeAssets does not apply either.
 #
-# AllowedAPKSigningKeys: not set, which means F-Droid signs its own build with its own key. The
-#   consequence is that nobody who installed from GitHub Releases or from our self-hosted
-#   repository can update to the f-droid.org build -- Android refuses the install, and
-#   uninstalling takes the SQLite database with it. Setting this requires reproducible builds
-#   first. See docs/fdroid.md.
+# AllowedAPKSigningKeys: deliberately not set. F-Droid therefore signs its own build with its own
+#   key, and nobody who installed from GitHub Releases or from the self-hosted repository can
+#   update across to the f-droid.org listing -- Android refuses an install whose signature
+#   differs, and uninstalling first takes the SQLite database with it.
+#
+#   That break is accepted. Setting this key would require reproducible builds, and the point of
+#   being in the catalogue is to be found by people who do not have the app yet -- the self-hosted
+#   repository keeps working for everyone who already does. Anyone who wants to switch has to
+#   reinstall and starts a new hero.

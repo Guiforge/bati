@@ -275,7 +275,7 @@ describe("db/bossFights", () => {
     expect(await b.getBossDamageHistory(fight.id)).toHaveLength(1);
   });
 
-  test("resetting restores full HP and revives the boss", async () => {
+  test("resetting revives the boss at the tier the rematch has earned", async () => {
     noCrits();
     const b = boss();
 
@@ -283,13 +283,73 @@ describe("db/bossFights", () => {
     if (!fight) throw new Error("Expected a boss fight");
     await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 500, targetValue: 25 });
 
-    await b.resetBossFight(fight.id);
+    // First rematch: the pool is re-derived from the adventure and grows by the tier multiplier.
+    await b.resetBossFight(fight.id, { userLevel: "medium", tier: 1 });
 
     const revived = await b.getBossFightByAdventure(BOSS_WITH_HP);
-    expect(revived?.currentHp).toBe(100);
+    expect(revived?.totalHp).toBe(Math.round(100 * b.tierHpMultiplier(1)));
+    expect(revived?.currentHp).toBe(revived?.totalHp);
     expect(revived?.defeatedAt).toBeNull();
     // The log is the fight's history, not its state — a reset keeps it.
     expect(await b.getBossDamageHistory(fight.id)).toHaveLength(1);
+  });
+
+  test("the tier multiplier grows by a quarter per defeat and stops at double", () => {
+    const b = boss();
+    expect(b.tierHpMultiplier(0)).toBe(1);
+    expect(b.tierHpMultiplier(1)).toBe(1.25);
+    expect(b.tierHpMultiplier(4)).toBe(2);
+    expect(b.tierHpMultiplier(9)).toBe(2);
+    expect(b.tierHpMultiplier(-1)).toBe(1);
+  });
+
+  /**
+   * The final blow: the campaign's last step just completed, so the boss falls. This is what
+   * makes "guaranteed kill" structural — the pacing decides whether the hero manages it early,
+   * never whether it happens.
+   */
+  test("the final blow fells a live boss and logs the remainder as one attributed hit", async () => {
+    noCrits();
+    const b = boss();
+
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
+    if (!fight) throw new Error("Expected a boss fight");
+    await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 30, targetValue: 100 });
+
+    t.sqlite
+      .prepare("INSERT OR IGNORE INTO completed_sessions (id, performedAt) VALUES (?, ?)")
+      .run(90, Math.floor(Date.now() / 1000));
+    await expect(b.finishBossFight(fight.id, 90)).resolves.toBe(true);
+
+    const dead = await b.getBossFightByAdventure(BOSS_WITH_HP);
+    expect(dead?.currentHp).toBe(0);
+    expect(dead?.defeatedAt).toBeInstanceOf(Date);
+
+    // The log's sum still equals the pool: 30 dealt, 70 as the blow that ended it.
+    const history = await b.getBossDamageHistory(fight.id);
+    expect(history.reduce((sum, e) => sum + e.damageDealt, 0)).toBe(100);
+    expect(history.at(-1)).toMatchObject({ damageDealt: 70, completedSessionId: 90 });
+
+    // The pacing already did the job → nothing to fell, and the caller is told so.
+    await expect(b.finishBossFight(fight.id, 90)).resolves.toBe(false);
+    expect(await b.getBossDamageHistory(fight.id)).toHaveLength(2);
+  });
+
+  test("the tier is the adventure's finished-run count, and shiny never rolls on the read path", async () => {
+    const b = boss();
+    // Shiny would roll true at 0.01 — the read path must not roll at all.
+    jest.spyOn(Math, "random").mockReturnValue(0.01);
+
+    expect((await b.getOrCreateBossFight(BOSS_WITH_HP, "medium"))?.tier).toBe(0);
+    expect((await b.getOrCreateBossFight(BOSS_WITH_HP, "medium"))?.shiny).toBe(true);
+
+    t.sqlite
+      .prepare("INSERT INTO adventure_runs (adventureId, status) VALUES (?, 'finished')")
+      .run(BOSS_WITH_HP);
+
+    expect((await b.getOrCreateBossFight(BOSS_WITH_HP, "medium"))?.tier).toBe(1);
+    expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.tier).toBe(1);
+    expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.shiny).toBe(false);
   });
 
   test("damaging a fight that does not exist throws instead of silently missing", async () => {
@@ -298,7 +358,9 @@ describe("db/bossFights", () => {
       b.dealDamage(999_999, { exerciseId: 1, resultValue: 10, targetValue: 10 }),
     ).rejects.toThrow();
     // Resetting a missing fight is a no-op, not an error.
-    await expect(b.resetBossFight(999_999)).resolves.toBeUndefined();
+    await expect(
+      b.resetBossFight(999_999, { userLevel: "medium", tier: 1 }),
+    ).resolves.toBeUndefined();
     expect(await b.getBossDamageHistory(999_999)).toEqual([]);
   });
 

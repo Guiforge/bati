@@ -141,4 +141,48 @@ describe("db/adventures campaign", () => {
       expect(await adventures.getActiveAdventureRun(adv.id)).toBeNull();
     }
   });
+
+  /**
+   * The rematch: replaying a beaten boss campaign resurrects the boss one tier up. This is the
+   * wiring getBossBanners has described since before it existed — the banner survives the reset
+   * because the finished run carries the victory.
+   */
+  test("replaying a beaten boss campaign resurrects the boss at tier 1", async () => {
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+    const bosses = require("../db/bossFights") as typeof import("../db/bossFights");
+
+    const all = await adventures.listAdventures();
+    const bossAdv = all.find((a) => a.kind === "boss");
+    if (!bossAdv) throw new Error("Expected a seeded boss adventure");
+
+    // A beaten campaign: the fight is dead, the run is finished.
+    const fight = await bosses.getOrCreateBossFight(bossAdv.id, "medium");
+    if (!fight) throw new Error("Expected a boss fight");
+    const baseTotal = fight.totalHp;
+    t.sqlite
+      .prepare("UPDATE boss_fights SET currentHp = 0, defeatedAt = ? WHERE id = ?")
+      .run(Date.now(), fight.id);
+    t.sqlite
+      .prepare("INSERT INTO adventure_runs (adventureId, status) VALUES (?, 'finished')")
+      .run(bossAdv.id);
+
+    await adventures.startAdventureRun({ adventureId: bossAdv.id, difficultyOverride: "medium" });
+
+    const revived = await bosses.getBossFightByAdventure(bossAdv.id);
+    expect(revived?.defeatedAt).toBeNull();
+    expect(revived?.tier).toBe(1);
+    expect(revived?.totalHp).toBe(Math.round(baseTotal * bosses.tierHpMultiplier(1)));
+    expect(revived?.currentHp).toBe(revived?.totalHp);
+
+    // A replay of a live fight must not touch it: quitting a campaign and starting again is not
+    // a rematch, and resetting here would refill a half-dead boss.
+    const runs = await adventures.getActiveAdventureRun(bossAdv.id);
+    if (!runs) throw new Error("Expected the new run");
+    t.sqlite.prepare("UPDATE boss_fights SET currentHp = 10 WHERE id = ?").run(fight.id);
+    t.sqlite.prepare("DELETE FROM adventure_run_steps WHERE runId = ?").run(runs.run.id);
+    t.sqlite.prepare("DELETE FROM adventure_runs WHERE id = ?").run(runs.run.id);
+
+    await adventures.startAdventureRun({ adventureId: bossAdv.id, difficultyOverride: "medium" });
+    expect((await bosses.getBossFightByAdventure(bossAdv.id))?.currentHp).toBe(10);
+  });
 });

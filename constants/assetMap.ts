@@ -124,7 +124,22 @@ export const BOSS_ASSETS = {
   shadow_serpent: require("@/assets/images/bosses/shadow_serpent.webp"),
   forest_titan: require("@/assets/images/bosses/forest_titan.webp"),
   fire_dragon: require("@/assets/images/bosses/fire_dragon.webp"),
+  iron_golem: require("@/assets/images/bosses/iron_golem.webp"),
 } as const;
+
+/**
+ * The legendary forms — the same monster, returned stronger for the rematch (BossFight.tier ≥ 1).
+ * Keyed by the *base* key on purpose: `getBossKey` and the voices in constants/bosses.ts stay on
+ * one identity per monster, and the legendary is a form of it, not a seventh boss.
+ */
+export const BOSS_LEGENDARY_ASSETS: Record<keyof typeof BOSS_ASSETS, number> = {
+  wind_wraith: require("@/assets/images/bosses/wind_wraith_legendary.webp"),
+  stone_golem: require("@/assets/images/bosses/stone_golem_legendary.webp"),
+  shadow_serpent: require("@/assets/images/bosses/shadow_serpent_legendary.webp"),
+  forest_titan: require("@/assets/images/bosses/forest_titan_legendary.webp"),
+  fire_dragon: require("@/assets/images/bosses/fire_dragon_legendary.webp"),
+  iron_golem: require("@/assets/images/bosses/iron_golem_legendary.webp"),
+};
 
 // ============================================================
 // ADVENTURE COVER ASSETS (5 campaigns)
@@ -325,10 +340,13 @@ export function getQuestAsset(id: string) {
 }
 
 /**
- * Get boss asset by ID (with fallback to placeholder)
+ * Get boss asset by ID (with fallback to placeholder). `tier` ≥ 1 serves the legendary form —
+ * every base painting has one, so the fallback chain is legendary → base → placeholder.
  */
-export function getBossAsset(id: string) {
-  return BOSS_ASSETS[keyFromPath(id) as BossAssetKey] ?? require("@/assets/placeholder.webp");
+export function getBossAsset(id: string, tier = 0) {
+  const key = keyFromPath(id) as BossAssetKey;
+  if (tier >= 1 && key in BOSS_LEGENDARY_ASSETS) return BOSS_LEGENDARY_ASSETS[key];
+  return BOSS_ASSETS[key] ?? require("@/assets/placeholder.webp");
 }
 
 /**

@@ -36,7 +36,6 @@ jest.mock("@/db/exercises", () => ({
 }));
 jest.mock("@/db/oaths", () => ({
   checkOathFulfilled: jest.fn().mockResolvedValue(null),
-  // biome-ignore lint/style/useNamingConvention: mirrors the module's exported constant
   OATH_XP_BONUS: 50,
 }));
 jest.mock("@/db/queryCache", () => ({
@@ -74,6 +73,7 @@ jest.mock("@/db/bossFights", () => ({
   ...jest.requireActual("@/db/bossFights"),
   getOrCreateBossFight: jest.fn().mockResolvedValue(null),
   persistSessionDamage: jest.fn().mockResolvedValue(true),
+  finishBossFight: jest.fn().mockResolvedValue(true),
 }));
 jest.mock("@/db/personalRecords", () => ({
   checkForNewRecords: jest.fn().mockResolvedValue([]),
@@ -392,7 +392,6 @@ describe("useSessionStore", () => {
    * once, in `saveSession`.
    */
   describe("boss damage is only owed until the session is saved", () => {
-    // biome-ignore lint/style/useNamingConvention: jest module mock handle
     const bossMock = require("@/db/bossFights") as { persistSessionDamage: jest.Mock };
 
     const boss = {
@@ -482,7 +481,6 @@ describe("useSessionStore", () => {
      * no error to find weeks later — so the hits stay, and the drop is reported.
      */
     test("hits the database refused are kept, not silently dropped", async () => {
-      // biome-ignore lint/style/useNamingConvention: jest module mock handle
       const reporter = require("@/src/reportError") as { reportError: jest.Mock };
       reporter.reportError.mockClear();
       bossMock.persistSessionDamage.mockResolvedValueOnce(false);
@@ -503,9 +501,7 @@ describe("useSessionStore", () => {
      * exactly that case. Without this, the retry banks the workout a second time.
      */
     test("a retry after a partial failure resumes the session, it does not bank a second one", async () => {
-      // biome-ignore lint/style/useNamingConvention: jest module mock handle
       const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
-      // biome-ignore lint/style/useNamingConvention: jest module mock handle
       const records = require("@/db/personalRecords") as { checkForNewRecords: jest.Mock };
       completed.createCompletedSession.mockClear();
 
@@ -529,6 +525,53 @@ describe("useSessionStore", () => {
       await store.getState().completeExercise(10);
 
       expect(store.getState().pendingDamage).toEqual([]);
+    });
+
+    /**
+     * The final blow: finishing the campaign IS the kill. Without this, a hero who trained under
+     * target finished every step to a victory screen and a live boss that no remaining step could
+     * ever kill — the exact bug the pacing was supposed to make impossible.
+     */
+    test("finishing the campaign's last step fells whatever is left of the boss", async () => {
+      const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };
+      const finishMock = require("@/db/bossFights") as { finishBossFight: jest.Mock };
+      finishMock.finishBossFight.mockClear();
+      dbMock.completeAdventureRunStep.mockResolvedValueOnce({
+        adventureId: 42,
+        runId: 9,
+        isFinished: true,
+        nextRunStepId: null,
+        nextQuestId: null,
+      });
+      store.setState({ adventureRunStepId: 5 });
+
+      await store.getState().completeExercise(10);
+      await store.getState().saveSession(null);
+
+      expect(finishMock.finishBossFight).toHaveBeenCalledWith(3, 1);
+      const state = store.getState();
+      expect(state.bossFight?.currentHp).toBe(0);
+      expect(state.bossFight?.defeatedAt).toBeInstanceOf(Date);
+    });
+
+    test("a mid-campaign step deals no final blow", async () => {
+      const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };
+      const finishMock = require("@/db/bossFights") as { finishBossFight: jest.Mock };
+      finishMock.finishBossFight.mockClear();
+      dbMock.completeAdventureRunStep.mockResolvedValueOnce({
+        adventureId: 42,
+        runId: 9,
+        isFinished: false,
+        nextRunStepId: 6,
+        nextQuestId: 2,
+      });
+      store.setState({ adventureRunStepId: 5 });
+
+      await store.getState().completeExercise(10);
+      await store.getState().saveSession(null);
+
+      expect(finishMock.finishBossFight).not.toHaveBeenCalled();
+      expect(store.getState().bossFight?.currentHp).toBeGreaterThan(0);
     });
   });
 });

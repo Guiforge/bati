@@ -18,6 +18,8 @@ import { type BossAssetKey, getBossKey } from "@/constants/assetMap";
  */
 export type BossVoice = {
   name: Localized;
+  /** What the monster is called at tier ≥ 1 — the rematch form. Same beast, a bigger title. */
+  legendaryName: Localized;
   /** Nothing notable happened; the boss fills the silence. */
   idle: LocalizedPool;
   /** The hero exceeded the target and rolled a crit. */
@@ -34,16 +36,22 @@ type LocalizedPool = { en: string[]; fr: string[] };
 /**
  * What to call the thing on screen.
  *
- * Falls back to the campaign title — which is what `BossFight.enName`/`frName` hold — for content
- * that ships without a painting. That is the only reason those fields still exist.
+ * Tier ≥ 1 gets the legendary title — the rematch is the same monster with a bigger name — and a
+ * shiny encounter gleams in front of whatever the name is. Falls back to the campaign title —
+ * which is what `BossFight.enName`/`frName` hold — for content that ships without a painting.
+ * That is the only reason those fields still exist.
  */
 export function bossDisplayName(
-  fight: { imagePath: string; enName: string; frName: string },
+  fight: { imagePath: string; enName: string; frName: string; tier?: number; shiny?: boolean },
   language: string,
 ): string {
   const key = getBossKey(fight.imagePath);
-  if (key) return language === "fr" ? BOSSES[key].name.fr : BOSSES[key].name.en;
-  return language === "fr" ? fight.frName : fight.enName;
+  const prefix = fight.shiny ? "✨ " : "";
+  if (key) {
+    const entry = (fight.tier ?? 0) >= 1 ? BOSSES[key].legendaryName : BOSSES[key].name;
+    return prefix + (language === "fr" ? entry.fr : entry.en);
+  }
+  return prefix + (language === "fr" ? fight.frName : fight.enName);
 }
 
 /** The boss's own voice, or the golem's as a stand-in for unpainted content. */
@@ -54,6 +62,7 @@ export function bossVoice(imagePath: string): BossVoice {
 export const BOSSES: Record<BossAssetKey, BossVoice> = {
   fire_dragon: {
     name: { en: "Cindermaw", fr: "Gueule-de-Cendre" },
+    legendaryName: { en: "Cindermaw the Crowned", fr: "Gueule-de-Cendre Couronnée" },
     idle: {
       en: ["The forge took longer to break me.", "You burn slowly, hero.", "Ash. All of it, ash."],
       fr: [
@@ -78,6 +87,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
 
   stone_golem: {
     name: { en: "The Quarry King", fr: "Le Roi des Carrières" },
+    legendaryName: { en: "The Quarry God", fr: "Le Dieu des Carrières" },
     idle: {
       en: ["I was here before your village.", "Mountains do not hurry.", "Wear me down, then."],
       fr: [
@@ -102,6 +112,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
 
   shadow_serpent: {
     name: { en: "Nightcoil", fr: "Ombre-Lovée" },
+    legendaryName: { en: "Nightcoil Eternal", fr: "Ombre-Lovée l'Éternelle" },
     idle: {
       en: ["I am already behind you.", "Breathe. I can wait.", "Your shadow is mine on loan."],
       fr: [
@@ -126,6 +137,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
 
   forest_titan: {
     name: { en: "Rootfather", fr: "Le Père des Racines" },
+    legendaryName: { en: "The Elder Root", fr: "L'Aïeul des Racines" },
     idle: {
       en: ["I have outlasted better.", "Seasons, hero. I count in seasons.", "Grow, or be soil."],
       fr: [
@@ -150,6 +162,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
 
   wind_wraith: {
     name: { en: "The Gale Wraith", fr: "Le Spectre des Bourrasques" },
+    legendaryName: { en: "The Storm Sovereign", fr: "Le Souverain des Tempêtes" },
     idle: {
       en: ["You are swinging at weather.", "Catch me, then.", "I am the space you breathe."],
       fr: [
@@ -169,6 +182,35 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
     enrage: {
       en: ["Then let the storm land!", "I will scatter your village!"],
       fr: ["Alors que la tempête touche terre !", "Je disperserai ton village !"],
+    },
+  },
+
+  iron_golem: {
+    name: { en: "The Rustlord", fr: "Le Seigneur de Rouille" },
+    legendaryName: { en: "The Rustlord Reforged", fr: "Le Seigneur de Rouille Reforgé" },
+    idle: {
+      en: [
+        "The foundry never sleeps. Neither do I.",
+        "They built me to outwork you.",
+        "Rust is patient, hero.",
+      ],
+      fr: [
+        "La fonderie ne dort jamais. Moi non plus.",
+        "On m'a construit pour travailler plus que toi.",
+        "La rouille est patiente, héros.",
+      ],
+    },
+    crit: {
+      en: ["A rivet gone. I felt it go.", "You strike like a hammer that means it."],
+      fr: ["Un rivet arraché. Je l'ai senti partir.", "Tu frappes comme un marteau décidé."],
+    },
+    resist: {
+      en: ["Iron does not bruise.", "You are ringing my plates, nothing more."],
+      fr: ["Le fer ne se meurtrit pas.", "Tu fais sonner mes plaques, rien de plus."],
+    },
+    enrage: {
+      en: ["The furnace takes over!", "I will melt before I kneel!"],
+      fr: ["La fournaise prend le dessus !", "Je fondrai avant de plier !"],
     },
   },
 };

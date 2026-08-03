@@ -65,7 +65,8 @@
     "victory_subtitle": "La bête est tombée !",
     "victory_title": "Boss vaincu !",
     "weakness": "Faiblesse",
-    "weakness_bonus": "Faiblesse !"
+    "weakness_bonus": "Faiblesse !",
+    "threat": "Niveau de menace {{rank}} sur 4"
   },
   "chart": {
     "all_history": "Durées des entraînements récents",

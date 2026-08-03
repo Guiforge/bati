@@ -130,6 +130,8 @@ export function ActiveExerciseView() {
           totalHp={bossFight.totalHp}
           bossImagePath={bossFight.imagePath}
           bossName={bossDisplayName(bossFight, language)}
+          tier={bossFight.tier}
+          shiny={bossFight.shiny}
           weaknessMuscle={bossFight.weaknessMuscle}
           resistanceMuscle={bossFight.resistanceMuscle}
           lastDamage={lastDamageResult}

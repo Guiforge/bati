@@ -1,4 +1,4 @@
-import { Shield, Target } from "@tamagui/lucide-icons";
+import { Shield, Skull, Target } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ReactNode } from "react";
@@ -9,9 +9,11 @@ import { getHpPercent, getPhaseFromHp } from "@/components/session/bossPhase";
 import { getBossAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rawColors } from "@/constants/rawColors";
-import type { BossFight } from "@/db/bossFights";
+import { type BossFight, threatRank } from "@/db/bossFights";
 
 const ART_HEIGHT = 140;
+/** threatRank is 1-4; identical glyphs still need stable keys. */
+const SKULL_KEYS = ["skull-1", "skull-2", "skull-3", "skull-4"] as const;
 
 /**
  * Who is waiting at the end of the campaign, and how far through it you already are.
@@ -43,7 +45,7 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: str
     >
       <YStack height={ART_HEIGHT} width="100%" position="relative">
         <Image
-          source={getBossAsset(fight.imagePath)}
+          source={getBossAsset(fight.imagePath, fight.tier)}
           // A defeated boss is a trophy, not a threat — the art dims instead of disappearing.
           style={{ width: "100%", height: "100%", opacity: isDefeated ? 0.45 : 1 }}
           contentFit="cover"
@@ -94,6 +96,18 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: str
           <Text flex={1} fontSize={12} color="$textSecondary">
             {isDefeated ? t("boss.victory_subtitle") : t("boss.fight_intro")}
           </Text>
+          {/* Threat, as skulls, from the pool the hero is actually facing — level scaling and
+              rematch tier included. The Golem's 278 and a legendary Ranger's 2230 are different
+              fights, and this is where the hero decides to walk in. */}
+          <XStack
+            items="center"
+            gap={2}
+            accessibilityLabel={t("boss.threat", { rank: threatRank(fight.totalHp) })}
+          >
+            {SKULL_KEYS.slice(0, threatRank(fight.totalHp)).map((k) => (
+              <Skull key={k} size={12} color={isDefeated ? "$textSecondary" : "$error"} />
+            ))}
+          </XStack>
           <XStack items="baseline" gap="$1">
             <Text fontWeight="700" fontSize={14} color={hpColor}>
               {fight.currentHp}

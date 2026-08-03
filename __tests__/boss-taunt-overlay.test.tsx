@@ -45,6 +45,8 @@ function makeBossFight(currentHp: number): BossFight {
     imagePath: "assets/images/bosses/stone_golem.jpg",
     enName: "The Warden",
     frName: "Le Gardien",
+    tier: 0,
+    shiny: false,
   };
 }
 

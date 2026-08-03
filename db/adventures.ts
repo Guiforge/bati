@@ -1,4 +1,5 @@
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { getBossFightByAdventure, resetBossFight } from "./bossFights";
 import { db, schema } from "./client";
 import { listExercises } from "./exercises";
 import {
@@ -559,6 +560,21 @@ export async function startAdventureRun(input: {
       completedAt: null,
     })),
   );
+
+  // A replay of a beaten boss campaign is a rematch: the boss comes back, one tier up. This is
+  // the moment getBossBanners has always described ("resetBossFight() nulls it the moment a
+  // replay starts") — the banner survives because the finished run carries the victory. The tier
+  // is the fight's own finished-run count, read after this run was inserted, so a still-active
+  // run never counts and the first rematch is tier 1.
+  if (details.adventure.kind === "boss") {
+    const fight = await getBossFightByAdventure(input.adventureId);
+    if (fight && (fight.defeatedAt || fight.currentHp <= 0)) {
+      await resetBossFight(fight.id, {
+        userLevel: input.difficultyOverride ?? "medium",
+        tier: fight.tier,
+      });
+    }
+  }
 
   const active = await getActiveAdventureRun(input.adventureId);
   if (!active) throw new Error("Failed to load newly created adventure run");

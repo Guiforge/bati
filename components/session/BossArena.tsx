@@ -21,6 +21,10 @@ type BossArenaProps = {
   bossName: string;
   /** The monster's own painting (BossFight.imagePath), resolved through getBossAsset. */
   bossImagePath: string;
+  /** Rematch tier (BossFight.tier). ≥ 1 serves the legendary painting. */
+  tier?: number;
+  /** The encounter's cosmetic roll (BossFight.shiny): the rim burns gold instead of red. */
+  shiny?: boolean;
   weaknessMuscle?: MuscleCode | null;
   resistanceMuscle?: MuscleCode | null;
   /**
@@ -49,6 +53,70 @@ const BURST_MS = 1800;
 const PULSE_MS = 900;
 
 /**
+ * The damage trail: the bar remembers where HP was, holds there so the hit is legible, then
+ * drains to the new value. Seeing the chunk come off is what makes progress readable mid-set —
+ * a bar that just teleports to its new width tells you nothing about what you did.
+ */
+function useDamageTrail(currentHp: number, reducedMotion: boolean): number {
+  const [trailHp, setTrailHp] = useState(currentHp);
+  useEffect(() => {
+    if (currentHp >= trailHp) {
+      setTrailHp(currentHp);
+      return;
+    }
+    if (reducedMotion) {
+      setTrailHp(currentHp);
+      return;
+    }
+    const id = setTimeout(() => setTrailHp(currentHp), TRAIL_HOLD_MS);
+    return () => clearTimeout(id);
+  }, [currentHp, trailHp, reducedMotion]);
+  return trailHp;
+}
+
+/** One hit → one flinch (FLINCH_MS) and one damage burst (BURST_MS), keyed on the hit's identity. */
+function useHitReaction(
+  lastDamage: BossArenaProps["lastDamage"],
+  reducedMotion: boolean,
+): { showDamage: boolean; flinching: boolean } {
+  const [showDamage, setShowDamage] = useState(false);
+  const [hit, setHit] = useState(false);
+  useEffect(() => {
+    if (!lastDamage) return;
+    setShowDamage(true);
+    setHit(true);
+    // The flinch is a jab, not a wobble: out on the hit, the spring carries it back.
+    const flinch = setTimeout(() => setHit(false), FLINCH_MS);
+    const clear = setTimeout(() => setShowDamage(false), BURST_MS);
+    return () => {
+      clearTimeout(flinch);
+      clearTimeout(clear);
+    };
+  }, [lastDamage]);
+  return { showDamage, flinching: hit && !reducedMotion };
+}
+
+/**
+ * Enrage does something now. It used to be a colour and a label: phase 4 tinted the art redder
+ * and printed "ENRAGED!", and nothing about the fight changed. The rim breathes instead, which
+ * is the one thing a cornered monster can do that costs the hero nothing — deliberately not a
+ * change to the maths, because a fitness app should not make the last session of a campaign
+ * harder than the ones that earned it.
+ */
+function useEnragePulse(isEnraged: boolean, reducedMotion: boolean): boolean {
+  const [pulse, setPulse] = useState(false);
+  useEffect(() => {
+    if (!isEnraged || reducedMotion) {
+      setPulse(false);
+      return;
+    }
+    const id = setInterval(() => setPulse((p) => !p), PULSE_MS);
+    return () => clearInterval(id);
+  }, [isEnraged, reducedMotion]);
+  return pulse;
+}
+
+/**
  * The boss fight's arena — the monster owning the screen, with its health at the screen's edge.
  *
  * It was a rounded, bordered, shadowed card inset at `px="$4"`, with art capped at
@@ -70,6 +138,8 @@ export function BossArena({
   totalHp,
   bossName,
   bossImagePath,
+  tier = 0,
+  shiny = false,
   weaknessMuscle,
   resistanceMuscle,
   lastDamage,
@@ -79,8 +149,6 @@ export function BossArena({
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
-  const [showDamage, setShowDamage] = useState(false);
-  const [hit, setHit] = useState(false);
 
   const hpPercent = getHpPercent(currentHp, totalHp);
   const phase = getPhaseFromHp(hpPercent);
@@ -88,55 +156,16 @@ export function BossArena({
   const isEnraged = phase === 4;
   const hpColor = isEnraged ? "$error" : hpPercent < 50 ? "$secondary" : "$success";
 
-  // The damage trail: the bar remembers where HP was, holds there so the hit is legible, then
-  // drains to the new value. Seeing the chunk come off is what makes progress readable mid-set —
-  // a bar that just teleports to its new width tells you nothing about what you did.
-  const [trailHp, setTrailHp] = useState(currentHp);
-  useEffect(() => {
-    if (currentHp >= trailHp) {
-      setTrailHp(currentHp);
-      return;
-    }
-    if (reducedMotion) {
-      setTrailHp(currentHp);
-      return;
-    }
-    const id = setTimeout(() => setTrailHp(currentHp), TRAIL_HOLD_MS);
-    return () => clearTimeout(id);
-  }, [currentHp, trailHp, reducedMotion]);
-
-  useEffect(() => {
-    if (!lastDamage) return;
-    setShowDamage(true);
-    setHit(true);
-    // The flinch is a jab, not a wobble: out on the hit, the spring carries it back.
-    const flinch = setTimeout(() => setHit(false), FLINCH_MS);
-    const clear = setTimeout(() => setShowDamage(false), BURST_MS);
-    return () => {
-      clearTimeout(flinch);
-      clearTimeout(clear);
-    };
-  }, [lastDamage]);
-
-  // Enrage does something now. It used to be a colour and a label: phase 4 tinted the art redder
-  // and printed "ENRAGED!", and nothing about the fight changed. The rim breathes instead, which
-  // is the one thing a cornered monster can do that costs the hero nothing — deliberately not a
-  // change to the maths, because a fitness app should not make the last session of a campaign
-  // harder than the ones that earned it.
-  const [pulse, setPulse] = useState(false);
-  useEffect(() => {
-    if (!isEnraged || reducedMotion) {
-      setPulse(false);
-      return;
-    }
-    const id = setInterval(() => setPulse((p) => !p), PULSE_MS);
-    return () => clearInterval(id);
-  }, [isEnraged, reducedMotion]);
+  const trailHp = useDamageTrail(currentHp, reducedMotion);
+  const { showDamage, flinching } = useHitReaction(lastDamage, reducedMotion);
+  const pulse = useEnragePulse(isEnraged, reducedMotion);
 
   const artHeight = sessionArtHeight(width, height);
   const trailPercent = getHpPercent(trailHp, totalHp);
-  const flinching = hit && !reducedMotion;
-  const rimOpacity = pulse ? look.rim * 0.55 : look.rim;
+  // The shiny floor keeps the gold visible even at phase 1, where the red rim would be off.
+  const rimOpacity = Math.max(pulse ? look.rim * 0.55 : look.rim, shiny ? 0.25 : 0);
+  const rimColor = shiny ? rawColors.resourceGold : rawColors.error;
+  const quick = reducedMotion ? undefined : ("quick" as const);
 
   return (
     <YStack height={artHeight} width="100%" position="relative" overflow="hidden" bg="$surface">
@@ -147,10 +176,10 @@ export function BossArena({
         fullscreen
         scale={flinching ? 1.06 : 1}
         x={flinching ? -6 : 0}
-        transition={reducedMotion ? undefined : "quick"}
+        transition={quick}
       >
         <Image
-          source={getBossAsset(bossImagePath)}
+          source={getBossAsset(bossImagePath, tier)}
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
           transition={200}
@@ -169,7 +198,7 @@ export function BossArena({
         {/* The rim, and — at phase 4 — its breath. `bouncy` is the slowest spring the config has
             and settles well inside the interval, so the swell reads as breathing rather than as a
             strobe; the opacity lives on this wrapper because a LinearGradient's own style is not
-            animatable.
+            animatable. A shiny encounter burns gold instead of red — same rim, rarer light.
             ponytail: the rim is horizontal only — it leans on the two scrims below to close the
             vignette top and bottom. Add a second, vertical pass if those edges ever read flat. */}
         <YStack
@@ -180,7 +209,7 @@ export function BossArena({
           pointerEvents="none"
         >
           <LinearGradient
-            colors={[rawColors.error, "transparent", rawColors.error]}
+            colors={[rimColor, "transparent", rimColor]}
             locations={[0, 0.5, 1]}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
@@ -196,7 +225,7 @@ export function BossArena({
         fullscreen
         bg="$error"
         opacity={flinching ? 0.3 : 0}
-        transition={reducedMotion ? undefined : "quick"}
+        transition={quick}
         pointerEvents="none"
       />
 
@@ -237,7 +266,7 @@ export function BossArena({
           width={`${trailPercent}%`}
           bg="$error"
           opacity={0.45}
-          transition={reducedMotion ? undefined : "quick"}
+          transition={quick}
         />
         <YStack
           testID="boss-hp-fill"
@@ -247,7 +276,7 @@ export function BossArena({
           l={0}
           width={`${hpPercent}%`}
           bg={hpColor}
-          transition={reducedMotion ? undefined : "quick"}
+          transition={quick}
         />
       </YStack>
 

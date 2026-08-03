@@ -87,8 +87,21 @@ no village banner, ever. On `hard` the boss died two thirds of the way through.
 
 The seeded values are `round(0.9 × the campaign's nominal rep-equivalent total at medium)`
 (`0026_boss_pacing.sql`). A hero who exactly meets every target kills the boss nine tenths of the
-way through its final step; crits, weakness and resistance move it earlier. The floor kills on its
-own — that is the guarantee, and there is no failure state.
+way through its final step; crits, weakness and resistance move it earlier.
+
+### The final blow
+
+The kill is **structural, not statistical**: when the campaign's last step completes and the boss
+still lives, `finishBossFight()` fells it — the remainder written to the damage log as one
+attributed hit, so the log's sum still equals the pool. `saveSession` calls it whenever
+`completeAdventureRunStep` reports `isFinished`.
+
+The pacing above only decides whether the hero manages the kill *early*. Without the final blow, a
+hero who trained under target finished every step to a victory screen and a live boss that no
+remaining step could ever kill — the exact "success of fight, boss not killed" hole the pacing was
+supposed to close, reachable through under-target sets, a run resumed across a rebalance, or the
+dev screen's jump into the last step at full HP. There is no failure state, so finishing the
+campaign IS the kill.
 
 **This is a ratchet.** `__tests__/content-invariants.test.ts` re-derives every campaign's total from
 the seeded quests at all three difficulties and fails if any boss survives its campaign or dies
@@ -168,6 +181,39 @@ see [progression.md](progression.md#village).
 
 ---
 
+## Rematches: tiers, legendary forms, shiny
+
+Replaying a beaten boss campaign is a **rematch**. `startAdventureRun` resurrects the defeated
+fight the moment the new run begins — the wiring `getBossBanners` described before it existed
+("resetBossFight() nulls it the moment a replay starts"); the banner survives because the finished
+run carries the victory.
+
+**Tier** = how many times the boss has fallen, derived from the adventure's finished runs — never
+stored, so it cannot disagree with the village's own count of the same victories. It is on
+`BossFight.tier`.
+
+| Tier | Form | Pool |
+| ---- | ---- | ---- |
+| 0 | The monster, its own painting and name | base × level |
+| 1+ | **Legendary** — its `*_legendary` painting, its legendary title (`constants/bosses.ts`) | × `tierHpMultiplier`: +25 % per tier, capped at ×2 |
+
+The cap exists because this is a fitness app: past double, "the boss grows" stops being drama and
+starts being a treadmill. A pool bigger than the campaign's damage is *safe* — the final blow is
+why bigger can never mean unwinnable; a high-tier legendary just goes to the wire. The rematch
+pool is re-derived from the adventure at reset, so it also picks up rebalances and the new run's
+difficulty.
+
+**Threat rank** (`threatRank`, 1–4 skulls on the adventure screen's boss panel) reads the pool the
+hero is actually facing — level scaling and tier included — so The Golem's 278 and a legendary
+Ranger's 2230 announce themselves as different fights before the hero walks in.
+
+**Shiny**: one encounter in twenty (`SHINY_CHANCE`), rolled when the session loads the fight,
+per-encounter like the creatures it is stolen from. The rim burns gold instead of red, the name
+wears a ✨. Carried in the session snapshot so recovery keeps it; never persisted, never gameplay.
+The adventure screen's read path never rolls it — browsing must not flicker the gleam.
+
+---
+
 ## Schema
 
 ```sql
@@ -184,10 +230,10 @@ The monster's portrait and its tuning live on `adventures`: `bossImagePath`, `bo
 
 ## Not built
 
-- **No failure state.** The kill is guaranteed; the pacing is the design.
+- **No failure state.** The kill is guaranteed — structurally, by the final blow.
 - **No boss intro screen.** `boss.fight_intro` is one line on the adventure screen's panel.
-- **No event, seasonal or legendary bosses.** Six campaigns, five paintings — The Golem shares
-  `stone_golem` with The Guardian's Oath and is the one most obviously owed its own.
+- **No event or seasonal bosses.** Legendary is the rematch form of the six that exist, not a
+  seventh monster.
 - **No boss-specific audio.**
 - **No desaturation at low HP.** RN has no image filter and `react-native-svg`'s `feColorMatrix` on
   a full-bleed bitmap is not worth it. Add if darken alone reads flat.

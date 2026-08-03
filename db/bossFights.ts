@@ -1,10 +1,18 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
 import type { DifficultyCode, MuscleCode, QuestTargetType } from "./schema";
 import { USER_LEVEL_MULTIPLIER } from "./targets";
 import { toRepEquivalent } from "./workUnits";
 
-const { bossFights, bossDamageLog, adventures, adventureSteps, questExercises, quests } = schema;
+const {
+  bossFights,
+  bossDamageLog,
+  adventures,
+  adventureRuns,
+  adventureSteps,
+  questExercises,
+  quests,
+} = schema;
 
 // Same fallback used by every getXAsset() helper in constants/assetMap.ts — never expose
 // `| null` for imagePath, resolve to the placeholder here so callers have one code path.
@@ -31,6 +39,19 @@ export type BossFight = {
   // without a second query — the session store holds the fight, not the adventure.
   enName: string;
   frName: string;
+  /**
+   * How many times this boss has already been beaten — 0 on the first encounter. Derived from
+   * finished runs of the adventure rather than stored: a finished boss campaign IS the victory
+   * (getBossBanners counts it exactly this way), so the two cannot disagree. Tier ≥ 1 is the
+   * legendary form — its own painting, its own name, a bigger pool at the rematch reset.
+   */
+  tier: number;
+  /**
+   * A rare cosmetic roll (SHINY_CHANCE), per encounter like the creatures it is stolen from:
+   * rolled when the session loads the fight, carried in the session snapshot so recovery keeps
+   * it, forgotten when the session ends. Never persisted, never gameplay.
+   */
+  shiny: boolean;
 };
 
 export type BossDamageEntry = {
@@ -68,6 +89,34 @@ export const CAMPAIGN_HP_FRACTION = 0.9;
 
 /** The ceiling on crit odds, so a heroic set is an edge and never the whole fight. */
 export const MAX_CRIT_CHANCE = 0.5;
+
+/** One boss in twenty gleams. Purely cosmetic, rolled per encounter — see BossFight.shiny. */
+export const SHINY_CHANCE = 0.05;
+
+/**
+ * How much bigger the pool gets at each rematch: +25 % per tier, capped at double.
+ *
+ * Safe to exceed the campaign's damage because the kill is structural — `finishBossFight` fells
+ * whatever survives the last step — so a high-tier legendary only moves the fight closer to the
+ * wire, it can never strand the hero. Capped because this is a fitness app: past double, "the
+ * boss grows" stops being drama and starts being a treadmill.
+ */
+export function tierHpMultiplier(tier: number): number {
+  return Math.min(2, 1 + 0.25 * Math.max(0, tier));
+}
+
+/**
+ * How the pool the hero is actually facing reads as a threat, 1-4 skulls. The Golem's 278 and
+ * the Ranger's 1115 are different fights, and a browsing screen should say so before the hero
+ * commits — this is display, computed from whatever the fight's real pool is (level scaling and
+ * tier included, deliberately: the number on the screen is the fight in front of you).
+ */
+export function threatRank(totalHp: number): 1 | 2 | 3 | 4 {
+  if (totalHp < 350) return 1;
+  if (totalHp < 650) return 2;
+  if (totalHp < 950) return 3;
+  return 4;
+}
 
 /**
  * The odds a set crits, 0-1, from how far past its target it goes.
@@ -222,6 +271,12 @@ export async function getOrCreateBossFight(
   const adventure = adventureRows[0];
   if (adventure.kind !== "boss") return null;
 
+  // The rematch tier, and the encounter's one cosmetic roll. Rolled here — the session is the
+  // encounter — and nowhere else: the adventure screen's read path keeps shiny false so browsing
+  // a campaign cannot flicker the gleam on and off.
+  const tier = await finishedRunCount(adventureId);
+  const shiny = Math.random() < SHINY_CHANCE;
+
   // Check if fight already exists
   const existingRows = await db
     .select()
@@ -244,6 +299,8 @@ export async function getOrCreateBossFight(
       imagePath: adventure.bossImagePath ?? adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       enName: adventure.enTitle,
       frName: adventure.frTitle,
+      tier,
+      shiny,
     };
   }
 
@@ -282,6 +339,8 @@ export async function getOrCreateBossFight(
     imagePath: adventure.bossImagePath ?? adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
     enName: adventure.enTitle,
     frName: adventure.frTitle,
+    tier,
+    shiny,
   };
 }
 
@@ -330,6 +389,9 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     imagePath: row.bossImagePath ?? row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
     enName: row.enTitle,
     frName: row.frTitle,
+    tier: await finishedRunCount(adventureId),
+    // Browsing must not roll the dice: the gleam belongs to the encounter, not the gallery.
+    shiny: false,
   };
 }
 
@@ -339,6 +401,19 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
  */
 export function scaleBossHp(baseHp: number, userLevel: DifficultyCode): number {
   return Math.max(1, Math.round(baseHp * USER_LEVEL_MULTIPLIER[userLevel]));
+}
+
+/**
+ * How many times the hero has finished this adventure — which for a boss campaign is how many
+ * times the boss has fallen, now that `finishBossFight` guarantees the two coincide. This is the
+ * fight's tier.
+ */
+async function finishedRunCount(adventureId: number): Promise<number> {
+  const rows = await db
+    .select({ finished: count() })
+    .from(adventureRuns)
+    .where(and(eq(adventureRuns.adventureId, adventureId), eq(adventureRuns.status, "finished")));
+  return Number(rows[0]?.finished ?? 0);
 }
 
 /**
@@ -517,22 +592,95 @@ export async function persistSessionDamage(
 }
 
 /**
- * Reset a boss fight (for replaying).
+ * The final blow: the campaign's last step just completed, so the boss falls — whatever was left
+ * of its pool.
+ *
+ * This is what makes "guaranteed kill, no failure state" *structural* instead of statistical. The
+ * HP pacing is tuned so a hero who meets every target fells the boss ~90 % through the last step,
+ * but tuning cannot cover a hero who trains under target, a run resumed across a rebalance, or a
+ * dev jump into the last step at full HP — and in all of those the campaign used to end with a
+ * victory screen and a live boss that no remaining step could ever kill. Finishing the campaign IS
+ * the kill; the pool only decides whether you managed it early.
+ *
+ * The remainder is written to the damage log as one attributed hit, so the log's sum still equals
+ * the pool and the journal shows the blow that ended it.
+ *
+ * @returns whether a final blow was actually dealt — `false` when the boss was already down
+ *   (the common case: the pacing worked) or the fight is missing.
  */
-/** @legacy Rejouer un boss ; prévu pour l'écran dev, jamais branché. */
-export async function resetBossFight(bossFightId: number): Promise<void> {
+export async function finishBossFight(
+  bossFightId: number,
+  completedSessionId: number,
+): Promise<boolean> {
+  return await transactionOrFallback(async (tx) => {
+    const fightRows = await tx
+      .select()
+      .from(bossFights)
+      .where(eq(bossFights.id, bossFightId))
+      .limit(1);
+
+    const fight = fightRows[0];
+    if (!fight || fight.defeatedAt || fight.currentHp <= 0) return false;
+
+    await tx
+      .update(bossFights)
+      .set({ currentHp: 0, defeatedAt: new Date(), updatedAt: new Date() })
+      .where(eq(bossFights.id, bossFightId));
+
+    await tx.insert(bossDamageLog).values({
+      bossFightId,
+      completedSessionId,
+      exerciseId: null,
+      damageDealt: fight.currentHp,
+      isCritical: 0,
+      muscle: null,
+    });
+
+    return true;
+  });
+}
+
+/**
+ * Resurrect a defeated boss for a rematch, at the tier the rematch has earned.
+ *
+ * This is what `startAdventureRun` calls when a new run of a beaten boss campaign begins —
+ * `getBossBanners` has documented that wiring since before it existed ("resetBossFight() nulls it
+ * the moment a replay starts") and counts the victory from the finished run precisely so the
+ * banner survives this reset. The pool is re-derived from the adventure rather than the stale row,
+ * so a rematch also picks up any rebalance and the new run's difficulty, then grows by
+ * `tierHpMultiplier`: the legendary form is a bigger fight, and `finishBossFight` is why bigger
+ * can never mean unwinnable.
+ */
+export async function resetBossFight(
+  bossFightId: number,
+  options: { userLevel: DifficultyCode; tier: number },
+): Promise<void> {
   const fightRows = await db
-    .select({ totalHp: bossFights.totalHp })
+    .select({ adventureId: bossFights.adventureId })
     .from(bossFights)
     .where(eq(bossFights.id, bossFightId))
     .limit(1);
 
   if (fightRows.length === 0) return;
+  const { adventureId } = fightRows[0];
+
+  const adventureRows = await db
+    .select({ bossTotalHp: adventures.bossTotalHp })
+    .from(adventures)
+    .where(eq(adventures.id, adventureId))
+    .limit(1);
+
+  const base =
+    adventureRows[0]?.bossTotalHp != null
+      ? scaleBossHp(adventureRows[0].bossTotalHp, options.userLevel)
+      : await calculateBossHp(adventureId, options.userLevel);
+  const totalHp = Math.max(1, Math.round(base * tierHpMultiplier(options.tier)));
 
   await db
     .update(bossFights)
     .set({
-      currentHp: fightRows[0].totalHp,
+      totalHp,
+      currentHp: totalHp,
       defeatedAt: null,
       updatedAt: new Date(),
     })

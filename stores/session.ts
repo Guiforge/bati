@@ -7,6 +7,7 @@ import {
   type BossFight,
   computeDamage,
   type DamageResult,
+  finishBossFight,
   getOrCreateBossFight,
   type PendingHit,
   persistSessionDamage,
@@ -241,6 +242,30 @@ async function commitPendingDamage(
   }
 
   useSessionStore.setState({ pendingDamage: [] });
+}
+
+/**
+ * The campaign is over, so the boss is: the final blow.
+ *
+ * The pacing is tuned to fell it ~90 % through the last step for a hero who meets every target,
+ * but a hero who trains under target must not finish the whole campaign to a victory screen and a
+ * monster that no remaining step can ever kill. finishBossFight decides against the stored row
+ * (false when the pacing already did the job); the in-memory fight follows so the victory screen
+ * shows the kill it just guaranteed.
+ */
+async function dealFinalBlow(
+  campaign: { isFinished: boolean } | null,
+  bossFight: BossFight | null,
+  sessionId: number,
+): Promise<void> {
+  if (!campaign?.isFinished || !bossFight) return;
+
+  const felled = await finishBossFight(bossFight.id, sessionId);
+  if (felled) {
+    useSessionStore.setState({
+      bossFight: { ...bossFight, currentHp: 0, defeatedAt: new Date() },
+    });
+  }
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -675,6 +700,8 @@ export const useSessionStore = create<SessionState>()(
               completedSessionId: sessionId,
             })
           : null;
+
+      await dealFinalBlow(campaign, bossFight, sessionId);
 
       // Check for personal records
       const newRecords = await checkForNewRecords(sessionId);

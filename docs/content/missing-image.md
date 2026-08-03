@@ -248,11 +248,13 @@ All resolve to real art via `assetMap` (verified basename-key match):
   when a dominant sport exists. §3 layer 2 done. Set grows if running/cycling ship later.
 - **Building icons — 20/20 (14 generated, 6 reused — 2026-07-21).** See §0 above; content-side
   done via `getBuildingIconAsset`, rendering them in `VillageScene.tsx` is the open dev task.
-- **Boss portraits — 5/5 linked, 6/6 campaigns covered (2026-08-03).** `0025` gave
-  `adventures.bossImagePath` to five paintings; `0026` fixed its split — The Lumber Route is
-  `kind='route'` and never creates a fight, so its titan was dead data, while The Golem (an actual
-  boss) had none and fell back to its campaign cover. The Golem now shares `stone_golem` with The
-  Guardian's Oath, the way The Ranger's Journey already shares `forest_titan`. See §3.
+- **Boss portraits — 12 paintings, 6/6 campaigns each with its own monster (2026-08-04).** The
+  whole set was regenerated square (1024×1024): the first batch was 2:1 for the old letterboxed
+  arena, and the art-hero arena (`sessionArtHeight`, ~1:1 on a phone) was cropping almost half of
+  every painting's width. Six base monsters — including `iron_golem`, so The Golem finally stopped
+  sharing `stone_golem` with The Guardian's Oath (`0027`) — plus six `*_legendary` forms for the
+  rematch tier (`BOSS_LEGENDARY_ASSETS`). `scripts/generate-bosses.py` carries all twelve prompts;
+  provenance is in `scripts/provenance.json` as always.
 - **Trophy shelf (2026-07-21).** Needs no new art: boss trophies reuse the adventure cover via
   `getAdventureAsset`, achievement trophies use the `icon` emoji already on
   `achievementDefinitions`. Deliberate — an emoji rack reads as a trophy shelf.
@@ -276,10 +278,9 @@ The inverse problem — art shipped without content to use it:
   monster from it and `constants/bosses.ts` keys its name and taunts by that. The campaign title is
   only a fallback for content shipping without a painting.
 
-  **The one gap left**: six boss campaigns, five paintings. The Golem shares `stone_golem` with The
-  Guardian's Oath — the shared name reads as intentional for the two wilderness campaigns that
-  share `forest_titan`, and less so for a campaign literally called The Golem. One asset would
-  close it.
+  ~~The one gap left: six boss campaigns, five paintings.~~ Closed 2026-08-04: `iron_golem` (the
+  Rustlord) was generated with the square rebatch and `0027` pointed The Golem at it. Every boss
+  campaign now has its own monster, and every monster has a `*_legendary` form for the rematch.
 
 ## 4. RESOLVED — 20 bodyweight exercises now have art (2026-07-27)
 

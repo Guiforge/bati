@@ -267,7 +267,8 @@
     "resistance_penalty": "Resisted...",
     "fight_intro": "A powerful foe blocks your path.",
     "weakness": "Weakness",
-    "resistance": "Resistance"
+    "resistance": "Resistance",
+    "threat": "Threat level {{rank}} of 4"
   },
   "exercises": {
     "details_title": "Exercise",

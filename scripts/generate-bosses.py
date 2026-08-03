@@ -1,17 +1,24 @@
 #!/usr/bin/env python3
-"""Generate the 5 boss illustrations.
+"""Generate the boss illustrations: six monsters, and each one's legendary form.
 
-  python3 scripts/generate-bosses.py                 # all five
-  python3 scripts/generate-bosses.py fire_dragon
+  python3 scripts/generate-bosses.py                 # all twelve
+  python3 scripts/generate-bosses.py fire_dragon     # one base painting
+  python3 scripts/generate-bosses.py fire_dragon_legendary
 
-**Wide, not 4:3.** BossArena sizes its art `min(width * 0.5, height * 0.28)` across the full
-screen width, which is a 2:1 letterbox on any phone. The previous art was 4:3, so `contentFit:
-"cover"` was cutting the top and bottom off every boss — exactly where the head and the raised
-limbs are. These are rendered 2:1 so the creature arrives whole.
+**Square, not 2:1.** The first batch was rendered 1280x640 for the old letterboxed BossArena
+(`min(width * 0.5, height * 0.28)`). The arena is now the full art-hero slot —
+`sessionArtHeight = min(height * 0.42, width * 1.1)`, roughly square on a phone — so `contentFit:
+"cover"` was throwing away almost half of every painting's width, wings and raised fists first.
+These are 1024x1024 so the creature arrives whole.
 
-The arena paints its own gradient scrim over the lower 70% of the art and lays the HP bar and
-damage numbers on top, so the bottom of the frame must stay quiet: the drama belongs in the upper
-two thirds, where nothing covers it.
+The arena paints its own scrims: the top ~64px carries the session HUD, and a gradient covers the
+lower 60% where the boss's name, the status line and the exercise chip sit. So the drama belongs in
+the middle and upper half of the frame, and the lower third must stay dark and quiet.
+
+Legendary forms are the same creature after the hero has beaten it once — the rematch spawn. Same
+anatomy and silhouette so it reads as *that* monster, but ascended: burning gold, crowned in its
+own element, visibly more than it was. The shared modifier keeps the transformation identical
+across all six, the way generate-village.py's stage prompts do for buildings.
 """
 
 import pathlib
@@ -24,10 +31,18 @@ STYLE = (
     "Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink "
     "outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric "
     "light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from "
-    "below and rimmed in its own energy colour so it separates cleanly from the dark. A wide "
-    "cinematic 2:1 composition filling the frame edge to edge, the creature large in the upper two "
-    "thirds with the lower third kept dark and quiet, the edges falling off into darkness. No "
-    "human figures anywhere in frame, no lettering, no watermark."
+    "below and rimmed in its own energy colour so it separates cleanly from the dark. A square "
+    "composition filling the frame edge to edge, the creature large in the middle and upper half, "
+    "the lower third kept dark and quiet, the edges falling off into darkness. No human figures "
+    "anywhere in frame, no lettering, no watermark."
+)
+
+LEGENDARY = (
+    "This is the creature's legendary form, returned stronger after a defeat: the same anatomy "
+    "and silhouette, unmistakably the same monster, but ascended — wreathed in burning gold "
+    "energy, cracks of radiant gold light running through its body, a faint crown or halo of its "
+    "own element above its head, its eyes blazing white-gold, visibly more massive and more "
+    "regal than before."
 )
 
 BOSSES = [
@@ -53,14 +68,24 @@ BOSSES = [
      "A towering wraith of howling wind and torn grey burial cloth hanging above a storm-lashed "
      "moor, its lower body dissolving into spiralling air, pale cyan light burning where a face "
      "should be, debris and dead leaves caught spinning in its currents, seen from a low angle."),
+    # The Golem finally gets its own monster — it shared stone_golem with The Guardian's Oath
+    # since 0026, which read as intentional for the two wilderness campaigns sharing forest_titan
+    # and not at all for a campaign literally named The Golem.
+    ("iron_golem",
+     "A colossal golem of riveted, rust-streaked iron plates standing in a collapsed foundry, "
+     "white-hot furnace light blazing through the seams of its chest and out of its single "
+     "rectangular eye slit, heavy chains hanging broken from its wrists, steam venting from its "
+     "shoulder joints, seen from a low angle that makes it tower over the viewer."),
 ]
 
 if __name__ == "__main__":
+    items = [(slug, f"{scene} {STYLE}") for slug, scene in BOSSES]
+    items += [(f"{slug}_legendary", f"{scene} {LEGENDARY} {STYLE}") for slug, scene in BOSSES]
     failed = run(
-        [(slug, f"{scene} {STYLE}") for slug, scene in BOSSES],
+        items,
         out_dir=ROOT / "assets" / "images" / "bosses",
-        width=1280,
-        height=640,
+        width=1024,
+        height=1024,
         quality=88,
         suffix=".jpg",
     )

@@ -27,6 +27,7 @@ import m0023 from "./0023_official_exercise_names.sql";
 import m0024 from "./0024_mobility_branch.sql";
 import m0025 from "./0025_boss_art.sql";
 import m0026 from "./0026_boss_pacing.sql";
+import m0027 from "./0027_iron_golem.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -59,5 +60,6 @@ export default {
     m0024,
     m0025,
     m0026,
+    m0027,
   },
 };

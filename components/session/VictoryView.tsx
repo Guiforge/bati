@@ -13,7 +13,8 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { useToast } from "@/components/common/Toast";
-import { getQuestAsset } from "@/constants/assetMap";
+import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
+import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { SOUNDS } from "@/constants/sounds";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
@@ -68,6 +69,8 @@ export function VictoryView() {
   const isBossDefeat = Boolean(
     bossStartHp != null && bossStartHp > 0 && (bossFight?.currentHp ?? 1) <= 0,
   );
+  /** The monster this session felled, when it did — what the hero card shows instead of the quest. */
+  const felledBoss = isBossDefeat ? bossFight : null;
 
   const durationSeconds = useMemo(() => {
     if (!startTime) return 0;
@@ -124,6 +127,7 @@ export function VictoryView() {
   if (!quest || !startTime) return null;
 
   const questTitle = localizedTitle(quest, language);
+  const heroTitle = felledBoss != null ? bossDisplayName(felledBoss, language) : questTitle;
   const { bg: questBg } = getQuestColorTokensFromQuest(quest);
 
   const handleShare = async () => {
@@ -183,11 +187,25 @@ export function VictoryView() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero: quest cover with the title laid over it */}
-        <Card bg={questBg} width="100%" maxW={520} mt="$4" p={0} overflow="hidden">
+        {/* Hero: the moment's own image with the title laid over it. A boss kill is the app's
+            climax, so its card is the *monster* — named, felled, gold-rimmed — not the poster of
+            the quest that happened to land the blow. */}
+        <Card
+          bg={questBg}
+          width="100%"
+          maxW={520}
+          mt="$4"
+          p={0}
+          overflow="hidden"
+          {...(isBossDefeat ? { borderWidth: 2, borderColor: "$resourceGold" } : null)}
+        >
           <YStack width="100%" aspectRatio={16 / 9} bg="$surface2">
             <Image
-              source={getQuestAsset(quest.imagePath)}
+              source={
+                felledBoss
+                  ? getBossAsset(felledBoss.imagePath, felledBoss.tier)
+                  : getQuestAsset(quest.imagePath)
+              }
               style={{ width: "100%", height: "100%" }}
               contentFit="cover"
               transition={200}
@@ -204,7 +222,7 @@ export function VictoryView() {
               <Text
                 fontFamily="$body"
                 fontWeight="700"
-                color="$textSecondary"
+                color={isBossDefeat ? "$resourceGold" : "$textSecondary"}
                 fontSize={13}
                 letterSpacing={1.2}
               >
@@ -214,7 +232,7 @@ export function VictoryView() {
                 ).toUpperCase()}
               </Text>
               <H1 fontFamily="$body" fontWeight="700" color="$text" fontSize={26} lineHeight={31}>
-                {questTitle}
+                {heroTitle}
               </H1>
               {isBossDefeat && (
                 <Text fontFamily="$body" fontSize={14} color="$textSecondary">

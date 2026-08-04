@@ -281,6 +281,24 @@ describe("useSessionStore", () => {
       expect(bossMock.getOrCreateBossFight).toHaveBeenCalledWith(42, "medium");
     });
 
+    /**
+     * A boss killed on an earlier step stays killed: the remaining sessions of the campaign are
+     * ordinary training. Carrying the dead fight in put a 0-HP arena (taunts included) on every
+     * one of those screens.
+     */
+    test("a session against an already-dead boss carries no fight at all", async () => {
+      bossMock.getOrCreateBossFight.mockResolvedValue({
+        ...boss,
+        currentHp: 0,
+        defeatedAt: new Date(),
+      });
+
+      await store.getState().startSession(mockQuest, "medium", { adventureId: 42 });
+
+      expect(store.getState().bossFight).toBeNull();
+      expect(store.getState().bossStartHp).toBeNull();
+    });
+
     test("starts a plain quest with no boss and no lookup", async () => {
       await store.getState().startSession(mockQuest, "medium");
 

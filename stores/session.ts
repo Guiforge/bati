@@ -245,6 +245,24 @@ async function commitPendingDamage(
 }
 
 /**
+ * The fight this session is actually in, or null.
+ *
+ * A boss killed on an earlier step stays killed — the remaining sessions of the campaign are
+ * ordinary training, not a fight against a corpse. Carrying the dead fight in put a 0-HP arena on
+ * every one of those screens, taunts included; with no fight in state, the arena, the crit hint,
+ * the screen colour and the victory variant all revert on their own.
+ */
+async function loadLiveBossFight(
+  adventureId: number | null,
+  userLevel: DifficultyCode,
+): Promise<BossFight | null> {
+  if (!adventureId) return null;
+  const fight = await getOrCreateBossFight(adventureId, userLevel);
+  if (!fight || fight.defeatedAt || fight.currentHp <= 0) return null;
+  return fight;
+}
+
+/**
  * The campaign is over, so the boss is: the final blow.
  *
  * The pacing is tuned to fell it ~90 % through the last step for a hero who meets every target,
@@ -302,10 +320,7 @@ export const useSessionStore = create<SessionState>()(
           ? await getAdventureIdForRunStep(options.adventureRunStepId).catch(() => null)
           : null);
 
-      let bossFight: BossFight | null = null;
-      if (adventureId) {
-        bossFight = await getOrCreateBossFight(adventureId, userLevel);
-      }
+      const bossFight = await loadLiveBossFight(adventureId, userLevel);
 
       // The warm-up runs first unless the hero switched it off; skipping it is always one tap
       // away, so the preference only exists to save that tap for people who never want it.

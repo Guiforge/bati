@@ -11,11 +11,14 @@ import { rawColors } from "@/constants/rawColors";
  * layers instead, so the art keeps its own colours, the values animate through Tamagui's
  * `transition`, and no colour is invented outside `constants/rawColors.ts`.
  */
+// Dims are gentle on purpose: the paintings are already anchored in near-black and sit under a
+// scrim and a HUD — at the original 0.32 an enraged boss was mostly a rumour. The *screen* colour
+// and the rim carry the phase; the dim only seconds them.
 const PHASE_THRESHOLDS = [
   { minPercent: 75, phase: 1, label: "Full Power", bg: "bgDark", dim: 0, rim: 0 },
-  { minPercent: 50, phase: 2, label: "Wounded", bg: "bossPhase2", dim: 0.1, rim: 0.2 },
-  { minPercent: 25, phase: 3, label: "Critical", bg: "bossPhase3", dim: 0.2, rim: 0.35 },
-  { minPercent: 0, phase: 4, label: "Enraged", bg: "bossPhase4", dim: 0.32, rim: 0.55 },
+  { minPercent: 50, phase: 2, label: "Wounded", bg: "bossPhase2", dim: 0.05, rim: 0.2 },
+  { minPercent: 25, phase: 3, label: "Critical", bg: "bossPhase3", dim: 0.1, rim: 0.35 },
+  { minPercent: 0, phase: 4, label: "Enraged", bg: "bossPhase4", dim: 0.16, rim: 0.55 },
 ] as const;
 
 export type BossPhase = 1 | 2 | 3 | 4;

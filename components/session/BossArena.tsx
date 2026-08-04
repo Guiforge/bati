@@ -238,7 +238,10 @@ export function BossArena({
       />
 
       {/* Bottom scrim: ends on the phase colour the screen itself is painted, so the artwork has
-          no visible edge — which is the whole point of dropping the border. */}
+          no visible edge — which is the whole point of dropping the border. Kept to the lower
+          45 %: at 60 % it climbed past the monster's chest, and between the scrim, the phase dim
+          and a palette anchored in near-black, the boss was genuinely hard to see. The name and
+          status sit in the bottom ~90px, where the gradient is at full strength anyway. */}
       <LinearGradient
         colors={["transparent", look.bgRaw]}
         locations={[0, 0.85]}
@@ -247,7 +250,7 @@ export function BossArena({
           left: 0,
           right: 0,
           bottom: 0,
-          height: Math.round(artHeight * 0.6),
+          height: Math.round(artHeight * 0.45),
         }}
         pointerEvents="none"
       />

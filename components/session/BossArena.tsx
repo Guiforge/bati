@@ -12,6 +12,7 @@ import { getBossAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { BossImageViewer } from "./BossImageViewer";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { sessionArtHeight } from "./sessionArt";
 
@@ -85,8 +86,12 @@ function useHitReaction(
     if (!lastDamage) return;
     setShowDamage(true);
     setHit(true);
-    // The flinch is a jab, not a wobble: out on the hit, the spring carries it back.
-    const flinch = setTimeout(() => setHit(false), FLINCH_MS);
+    // The flinch is a jab, not a wobble: out on the hit, the spring carries it back. A crit
+    // holds the recoil a beat longer — the monster genuinely staggers.
+    const flinch = setTimeout(
+      () => setHit(false),
+      lastDamage.isCritical ? FLINCH_MS * 2 : FLINCH_MS,
+    );
     const clear = setTimeout(() => setShowDamage(false), BURST_MS);
     return () => {
       clearTimeout(flinch);
@@ -94,6 +99,18 @@ function useHitReaction(
     };
   }, [lastDamage]);
   return { showDamage, flinching: hit && !reducedMotion };
+}
+
+/**
+ * The painting's pose, one state at a time: down beats staggered beats flinching beats standing.
+ * A crit recoils harder than an ordinary hit; a felled boss sinks and dims instead of standing
+ * at zero as if nothing happened.
+ */
+function artPose(flinching: boolean, crit: boolean, isDown: boolean) {
+  if (isDown) return { scale: 1, x: 0, y: 14, opacity: 0.45 };
+  if (flinching && crit) return { scale: 1.1, x: -10, y: 0, opacity: 1 };
+  if (flinching) return { scale: 1.06, x: -6, y: 0, opacity: 1 };
+  return { scale: 1, x: 0, y: 0, opacity: 1 };
 }
 
 /**
@@ -154,32 +171,55 @@ export function BossArena({
   const phase = getPhaseFromHp(hpPercent);
   const look = getPhaseLook(phase);
   const isEnraged = phase === 4;
-  const hpColor = isEnraged ? "$error" : hpPercent < 50 ? "$secondary" : "$success";
+  // Felled mid-session (the last set landed the kill): the fight is over but the arena is still
+  // on screen — the monster goes down instead of standing at 0 HP as if nothing happened.
+  const isDown = currentHp <= 0;
+  const hpColor = isEnraged || isDown ? "$error" : hpPercent < 50 ? "$secondary" : "$success";
 
   const trailHp = useDamageTrail(currentHp, reducedMotion);
   const { showDamage, flinching } = useHitReaction(lastDamage, reducedMotion);
-  const pulse = useEnragePulse(isEnraged, reducedMotion);
+  const pulse = useEnragePulse(isEnraged && !isDown, reducedMotion);
+  const [expanded, setExpanded] = useState(false);
 
-  const artHeight = sessionArtHeight(width, height);
+  const artHeight = sessionArtHeight(width, height, "boss");
   const trailPercent = getHpPercent(trailHp, totalHp);
   // The shiny floor keeps the gold visible even at phase 1, where the red rim would be off.
   const rimOpacity = Math.max(pulse ? look.rim * 0.55 : look.rim, shiny ? 0.25 : 0);
   const rimColor = shiny ? rawColors.resourceGold : rawColors.error;
   const quick = reducedMotion ? undefined : ("quick" as const);
+  // The monster wears the fight: its battle-worn painting below 50 %, its legendary form at
+  // tier ≥ 1 (which wins the tie — no wounded legendaries exist, by design).
+  const artSource = getBossAsset(bossImagePath, tier, phase >= 3);
+  const pose = artPose(flinching, !!lastDamage?.isCritical, isDown);
 
   return (
-    <YStack height={artHeight} width="100%" position="relative" overflow="hidden" bg="$surface">
+    <YStack
+      height={artHeight}
+      width="100%"
+      position="relative"
+      overflow="hidden"
+      bg="$surface"
+      onPress={() => setExpanded(true)}
+      pressStyle={{ opacity: 0.96 }}
+      accessibilityRole="imagebutton"
+      accessibilityLabel={bossName}
+    >
       {/* The painting and its phase treatment move together. The scrims, the HP and the text stay
-          put — moving them too would judder the whole screen on every set. */}
+          put — moving them too would judder the whole screen on every set. The wrapper also plays
+          the entrance: the monster arrives with weight instead of just being there, and goes down
+          when the killing set lands instead of standing at zero. */}
       <YStack
         position="absolute"
         fullscreen
-        scale={flinching ? 1.06 : 1}
-        x={flinching ? -6 : 0}
-        transition={quick}
+        scale={pose.scale}
+        x={pose.x}
+        y={pose.y}
+        opacity={pose.opacity}
+        transition={reducedMotion ? undefined : ("bouncy" as const)}
+        enterStyle={reducedMotion ? undefined : { scale: 1.12, opacity: 0 }}
       >
         <Image
-          source={getBossAsset(bossImagePath, tier)}
+          source={artSource}
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
           transition={200}
@@ -308,6 +348,7 @@ export function BossArena({
 
         <StatusLine
           isEnraged={isEnraged}
+          isDown={isDown}
           weaknessMuscle={weaknessMuscle}
           resistanceMuscle={resistanceMuscle}
         />
@@ -338,6 +379,13 @@ export function BossArena({
           </YStack>
         )}
       </AnimatePresence>
+
+      <BossImageViewer
+        source={artSource}
+        name={bossName}
+        visible={expanded}
+        onClose={() => setExpanded(false)}
+      />
     </YStack>
   );
 }
@@ -357,14 +405,27 @@ export function BossArena({
  */
 function StatusLine({
   isEnraged,
+  isDown,
   weaknessMuscle,
   resistanceMuscle,
 }: {
   isEnraged: boolean;
+  isDown?: boolean;
   weaknessMuscle?: MuscleCode | null;
   resistanceMuscle?: MuscleCode | null;
 }) {
   const { t } = useTranslation();
+
+  if (isDown) {
+    return (
+      <XStack items="center" gap="$1" height={16}>
+        <Swords size={13} color="$resourceGold" />
+        <Text fontSize={11} fontWeight="700" color="$resourceGold" textTransform="uppercase">
+          {t("boss.defeated")}
+        </Text>
+      </XStack>
+    );
+  }
 
   if (isEnraged) {
     return (

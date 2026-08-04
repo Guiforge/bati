@@ -141,6 +141,20 @@ export const BOSS_LEGENDARY_ASSETS: Record<keyof typeof BOSS_ASSETS, number> = {
   iron_golem: require("@/assets/images/bosses/iron_golem_legendary.webp"),
 };
 
+/**
+ * The same monster late in the fight — cracked, leaking light, angrier. Served below 50 % HP so
+ * the fight visibly costs the boss something. Base forms only: a wounded legendary would double
+ * the matrix again (see the ponytail note in scripts/generate-bosses.py).
+ */
+export const BOSS_WOUNDED_ASSETS: Record<keyof typeof BOSS_ASSETS, number> = {
+  wind_wraith: require("@/assets/images/bosses/wind_wraith_wounded.webp"),
+  stone_golem: require("@/assets/images/bosses/stone_golem_wounded.webp"),
+  shadow_serpent: require("@/assets/images/bosses/shadow_serpent_wounded.webp"),
+  forest_titan: require("@/assets/images/bosses/forest_titan_wounded.webp"),
+  fire_dragon: require("@/assets/images/bosses/fire_dragon_wounded.webp"),
+  iron_golem: require("@/assets/images/bosses/iron_golem_wounded.webp"),
+};
+
 // ============================================================
 // ADVENTURE COVER ASSETS (5 campaigns)
 // ============================================================
@@ -340,12 +354,14 @@ export function getQuestAsset(id: string) {
 }
 
 /**
- * Get boss asset by ID (with fallback to placeholder). `tier` ≥ 1 serves the legendary form —
- * every base painting has one, so the fallback chain is legendary → base → placeholder.
+ * Get boss asset by ID (with fallback to placeholder). `tier` ≥ 1 serves the legendary form,
+ * `wounded` the battle-worn one — legendary wins the tie (no wounded legendaries exist), and
+ * every chain ends base → placeholder.
  */
-export function getBossAsset(id: string, tier = 0) {
+export function getBossAsset(id: string, tier = 0, wounded = false) {
   const key = keyFromPath(id) as BossAssetKey;
   if (tier >= 1 && key in BOSS_LEGENDARY_ASSETS) return BOSS_LEGENDARY_ASSETS[key];
+  if (wounded && key in BOSS_WOUNDED_ASSETS) return BOSS_WOUNDED_ASSETS[key];
   return BOSS_ASSETS[key] ?? require("@/assets/placeholder.webp");
 }
 

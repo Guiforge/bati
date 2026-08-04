@@ -13,6 +13,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { useToast } from "@/components/common/Toast";
+import { BossImageViewer } from "@/components/session/BossImageViewer";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
@@ -52,7 +53,9 @@ export function VictoryView() {
     adventureRunStepId,
     bossFight,
     bossStartHp,
+    felledByFinalBlow,
   } = useSessionStore();
+  const [bossExpanded, setBossExpanded] = useState(false);
 
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saveError, setSaveError] = useState(false);
@@ -198,6 +201,13 @@ export function VictoryView() {
           p={0}
           overflow="hidden"
           {...(isBossDefeat ? { borderWidth: 2, borderColor: "$resourceGold" } : null)}
+          {...(felledBoss != null
+            ? {
+                onPress: () => setBossExpanded(true),
+                accessibilityRole: "imagebutton" as const,
+                accessibilityLabel: heroTitle,
+              }
+            : null)}
         >
           <YStack width="100%" aspectRatio={16 / 9} bg="$surface2">
             <Image
@@ -236,12 +246,21 @@ export function VictoryView() {
               </H1>
               {isBossDefeat && (
                 <Text fontFamily="$body" fontSize={14} color="$textSecondary">
-                  {t("boss.victory_subtitle")}
+                  {felledByFinalBlow ? t("boss.final_blow") : t("boss.victory_subtitle")}
                 </Text>
               )}
             </YStack>
           </YStack>
         </Card>
+
+        {felledBoss != null && (
+          <BossImageViewer
+            source={getBossAsset(felledBoss.imagePath, felledBoss.tier)}
+            name={heroTitle}
+            visible={bossExpanded}
+            onClose={() => setBossExpanded(false)}
+          />
+        )}
 
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
         <XStack width="100%" maxW={520} gap="$3">

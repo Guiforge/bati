@@ -77,6 +77,13 @@ interface SessionState {
    * measures today's damage against.
    */
   bossStartHp: number | null;
+  /**
+   * Whether *this* save felled the boss with the final blow — the campaign ended and whatever HP
+   * survived the last step fell with it — rather than the pacing draining it to zero. The victory
+   * screen narrates the difference: "defeated at 300 HP" is the design, and it should read as the
+   * killing stroke it is, not as a bug.
+   */
+  felledByFinalBlow: boolean;
 
   // Dynamic State
   status: SessionStatus;
@@ -282,6 +289,7 @@ async function dealFinalBlow(
   if (felled) {
     useSessionStore.setState({
       bossFight: { ...bossFight, currentHp: 0, defeatedAt: new Date() },
+      felledByFinalBlow: true,
     });
   }
 }
@@ -293,6 +301,7 @@ export const useSessionStore = create<SessionState>()(
     adventureRunStepId: null,
     bossFight: null,
     bossStartHp: null,
+    felledByFinalBlow: false,
     pendingDamage: [],
     lastDamageResult: null,
     status: "idle",
@@ -337,6 +346,7 @@ export const useSessionStore = create<SessionState>()(
         adventureRunStepId: options?.adventureRunStepId ?? null,
         bossFight,
         bossStartHp: bossFight?.currentHp ?? null,
+        felledByFinalBlow: false,
         pendingDamage: [],
         lastDamageResult: null,
         status: warmupFirst ? "warmup" : "countdown",
@@ -493,6 +503,7 @@ export const useSessionStore = create<SessionState>()(
         adventureRunStepId: null,
         bossFight: null,
         bossStartHp: null,
+        felledByFinalBlow: false,
         // Abandoning a session takes its damage with it — none of it was ever written.
         pendingDamage: [],
         lastDamageResult: null,

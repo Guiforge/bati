@@ -65,7 +65,7 @@ export function BossTauntOverlay() {
       transition={reducedMotion ? undefined : "bouncy"}
       enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
       exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
-      style={{ top: sessionArtHeight(width, height) - 8, right: 20, zIndex: 1000 }}
+      style={{ top: sessionArtHeight(width, height, "boss") - 8, right: 20, zIndex: 1000 }}
     >
       {/* The arena already shows the boss's real art — the bubble only needs its voice, and its
           tail points back up at the portrait. */}

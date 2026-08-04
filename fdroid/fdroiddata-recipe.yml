@@ -102,6 +102,19 @@ Builds:
     scanignore:
       - node_modules
 
+# Reproducible builds. F-Droid rebuilds from source, compares against our signed APK, and on a
+# match publishes *ours* rather than re-signing with theirs — so an install from the self-hosted
+# repository or from GitHub Releases can update across to the catalogue listing instead of having
+# to be uninstalled, which would take the SQLite database with it.
+#
+# This is the SHA-256 of the certificate in bati-release.keystore. Read it back off a published
+# APK rather than trusting this line:
+#
+#   apksigner verify --print-certs bati-1.2.0.apk
+# A certificate fingerprint is public by design: anyone can read it off a published APK, and
+# pinning it here is the whole point of the setting.
+AllowedAPKSigningKeys: f5d8676eae57661a9a47d32c30fc72a48b4b6e6fa2947c26f5473e10fcf79982 # gitleaks:allow
+
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
 CurrentVersion: 1.2.0
@@ -113,12 +126,4 @@ CurrentVersionCode: 10200
 #   CC BY-SA 4.0 with scripts/provenance.json recording model, prompt and seed for every image, so
 #   NonFreeAssets does not apply either.
 #
-# AllowedAPKSigningKeys: deliberately not set. F-Droid therefore signs its own build with its own
-#   key, and nobody who installed from GitHub Releases or from the self-hosted repository can
-#   update across to the f-droid.org listing -- Android refuses an install whose signature
-#   differs, and uninstalling first takes the SQLite database with it.
-#
-#   That break is accepted. Setting this key would require reproducible builds, and the point of
-#   being in the catalogue is to be found by people who do not have the app yet -- the self-hosted
-#   repository keeps working for everyone who already does. Anyone who wants to switch has to
-#   reinstall and starts a new hero.
+# AntiFeatures and the signing key are handled above and below respectively.

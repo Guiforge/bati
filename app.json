@@ -72,6 +72,7 @@
       "./plugins/withAndroidReleaseSigning",
       "./plugins/withAndroidGradleMemory",
       "./plugins/withAndroidTrimPermissions",
+      "./plugins/withAndroidReproducibleNative",
       "./plugins/withAndroidDebugAppId"
     ],
     "runtimeVersion": {

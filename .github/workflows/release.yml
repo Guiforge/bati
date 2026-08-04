@@ -56,6 +56,18 @@ jobs:
           build-root-directory: android
           cache-read-only: false
 
+      # expo-dev-client is a devDependency, but `npm ci` installs devDependencies and autolinking
+      # then compiles it into the release APK — 26 dev-launcher classes, a `exp+bati` deep-link
+      # scheme and a SYSTEM_ALERT_WINDOW request, all shipped to users. `npm ci --omit=dev` is not
+      # the fix: babel-preset-expo lives there too and Metro needs it to bundle.
+      #
+      # The F-Droid recipe deletes exactly these four, so doing it here keeps both builds compiling
+      # the same tree — which is what makes a reproducible build possible at all.
+      - name: Drop the dev-client tooling from the release build
+        run: |
+          rm -rf node_modules/expo-dev-client node_modules/expo-dev-launcher \
+                 node_modules/expo-dev-menu node_modules/expo-dev-menu-interface
+
       - name: Generate the native project
         run: npx expo prebuild --clean --platform android
 

@@ -1,0 +1,5 @@
+La version publiée n'embarque plus d'outillage de développement.
+
+Le client de dev d'Expo était compilé dans chaque APK publié — 26 classes de debug, un schéma de deep-link de développement et une demande d'affichage par-dessus les autres applis. Rien de tout ça ne te servait. C'est retiré.
+
+Préparation des builds reproductibles : F-Droid pourra vérifier notre APK octet par octet et publier le nôtre, pour qu'une installation venue de n'importe où puisse se mettre à jour vers n'importe quelle autre.

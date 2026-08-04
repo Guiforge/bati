@@ -1,0 +1,5 @@
+The release build no longer ships developer tooling.
+
+Expo's dev client was being compiled into every published APK — 26 debug classes, a development deep-link scheme, and a request to draw over other apps. None of it did anything for you. It is gone.
+
+Groundwork for reproducible builds: F-Droid will be able to verify our APK byte for byte and publish ours, so an install from anywhere can update to any other.

@@ -6,7 +6,7 @@ import { Sheet, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { LevelPips } from "@/components/village/LevelPips";
-import { getAdventureAsset, getBuildingIconAsset } from "@/constants/assetMap";
+import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/adventures";
 import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
@@ -352,22 +352,29 @@ function TrophyDetail({ trophy, extra, language, formatDate }: DetailProps & { t
 
   return (
     <YStack gap="$3">
-      <XStack items="center" gap="$3">
-        {trophy.imagePath ? (
-          <YStack width={56} height={56} rounded={28} overflow="hidden">
+      {/* A beaten boss deserves better than a 56px disc: the monster itself, wide, the way the
+          arena showed it — a trophy with an image is always a boss, achievements are emoji. */}
+      {trophy.imagePath ? (
+        <YStack gap="$3">
+          <YStack height={140} rounded="$6" overflow="hidden">
             <Image
-              source={getAdventureAsset(trophy.imagePath)}
+              source={getBossAsset(trophy.imagePath)}
               style={{ width: "100%", height: "100%" }}
               contentFit="cover"
             />
           </YStack>
-        ) : (
+          <Text fontWeight="700" fontSize={20} color="$text">
+            {fr ? trophy.frTitle : trophy.enTitle}
+          </Text>
+        </YStack>
+      ) : (
+        <XStack items="center" gap="$3">
           <Text fontSize={40}>{trophy.emoji}</Text>
-        )}
-        <Text fontWeight="700" fontSize={18} color="$text" flex={1}>
-          {fr ? trophy.frTitle : trophy.enTitle}
-        </Text>
-      </XStack>
+          <Text fontWeight="700" fontSize={18} color="$text" flex={1}>
+            {fr ? trophy.frTitle : trophy.enTitle}
+          </Text>
+        </XStack>
+      )}
 
       {!!description && (
         <Text fontSize={14} color="$textSecondary">
@@ -375,7 +382,9 @@ function TrophyDetail({ trophy, extra, language, formatDate }: DetailProps & { t
         </Text>
       )}
 
-      <Text fontSize={13} color="$muted">
+      {/* The date is the trophy's story — when you did the thing — so it carries real weight
+          instead of trailing off as a muted footnote. */}
+      <Text fontSize={16} fontWeight="600" color="$textSecondary">
         {trophy.kind === "boss"
           ? t("village.trophy_defeated", { date: formatDate(trophy.earnedAt) })
           : t("village.trophy_earned", { date: formatDate(trophy.earnedAt) })}

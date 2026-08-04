@@ -115,8 +115,14 @@ describe("db/village", () => {
     const banners = await getBossBanners();
     expect(banners).toHaveLength(1);
     expect(banners[0].adventureId).toBe(2);
-    expect(banners[0].imagePath).toBeTruthy();
     expect(banners[0].defeatedAt).toEqual(new Date("2026-01-02T00:00:00Z"));
+
+    // The banner is the monster you beat, not the poster for its journey: when the adventure has
+    // a boss portrait, that is what the trophy shows.
+    const adventure = t.sqlite
+      .prepare("SELECT imagePath, bossImagePath FROM adventures WHERE id = 2")
+      .get() as { imagePath: string | null; bossImagePath: string | null };
+    expect(banners[0].imagePath).toBe(adventure.bossImagePath ?? adventure.imagePath);
   });
 
   test("no training means no dominant sport overlay", async () => {

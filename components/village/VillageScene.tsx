@@ -19,7 +19,7 @@ import { VillageDetailSheet, type VillageSelection } from "@/components/village/
 import { VillageEmbers } from "@/components/village/VillageEmbers";
 import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
 import {
-  getAdventureAsset,
+  getBossAsset,
   getBuildingIconAsset,
   getSportSpriteAsset,
   getVillageTierAsset,
@@ -390,9 +390,11 @@ export function VillageScene() {
                       borderWidth={2}
                       {...(trophy.kind === "boss" ? MEDAL_BOSS : MEDAL_PLAIN)}
                     >
+                      {/* A trophy with an image is a boss — achievements are emoji — and the
+                          medal shows the monster you beat, not the poster for its journey. */}
                       {trophy.imagePath ? (
                         <Image
-                          source={getAdventureAsset(trophy.imagePath)}
+                          source={getBossAsset(trophy.imagePath)}
                           style={{ width: "100%", height: "100%" }}
                           contentFit="cover"
                         />
@@ -408,7 +410,9 @@ export function VillageScene() {
                     >
                       {localizedTitle(trophy, language)}
                     </Text>
-                    <Text fontSize={10} color="$muted">
+                    {/* The date is the trophy's story — when you did the thing — so it reads as
+                        a value, not a footnote. */}
+                    <Text fontSize={12} fontWeight="600" color="$textSecondary">
                       {getDateTimeFormat(language, TROPHY_DATE_OPTIONS).format(trophy.earnedAt)}
                     </Text>
                   </YStack>

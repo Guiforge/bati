@@ -458,6 +458,8 @@ export type FinishedAdventureSummary = {
   enTitle: string;
   frTitle: string;
   imagePath: string | null;
+  /** The monster's own painting for a boss campaign — a trophy shows what you beat, not the poster. */
+  bossImagePath: string | null;
   timesFinished: number;
   firstFinishedAt: Date | null;
   lastFinishedAt: Date | null;
@@ -478,6 +480,7 @@ export async function listFinishedRunSummaries(): Promise<FinishedAdventureSumma
       enTitle: adventures.enTitle,
       frTitle: adventures.frTitle,
       imagePath: adventures.imagePath,
+      bossImagePath: adventures.bossImagePath,
       timesFinished: count(),
       firstFinishedAt: sql<number | null>`min(${adventureRuns.finishedAt})`,
       lastFinishedAt: sql<number | null>`max(${adventureRuns.finishedAt})`,
@@ -496,6 +499,7 @@ export async function listFinishedRunSummaries(): Promise<FinishedAdventureSumma
       enTitle: r.enTitle,
       frTitle: r.frTitle,
       imagePath: r.imagePath,
+      bossImagePath: r.bossImagePath,
       timesFinished: Number(r.timesFinished),
       firstFinishedAt: toDate(r.firstFinishedAt),
       lastFinishedAt: toDate(r.lastFinishedAt),

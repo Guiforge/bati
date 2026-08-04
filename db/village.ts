@@ -95,6 +95,11 @@ export type BossBanner = {
   adventureId: number;
   enTitle: string;
   frTitle: string;
+  /**
+   * The *monster's* painting when the campaign has one, else the campaign cover. A trophy shows
+   * the thing you beat, not the poster for the journey — resolve with getBossAsset(), whose
+   * fallback chain also catches the cover path.
+   */
   imagePath: string;
   defeatedAt: Date;
 };
@@ -115,6 +120,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
         enTitle: adventures.enTitle,
         frTitle: adventures.frTitle,
         imagePath: adventures.imagePath,
+        bossImagePath: adventures.bossImagePath,
         defeatedAt: bossFights.defeatedAt,
       })
       .from(bossFights)
@@ -131,7 +137,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       adventureId: s.adventureId,
       enTitle: s.enTitle,
       frTitle: s.frTitle,
-      imagePath: s.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+      imagePath: s.bossImagePath ?? s.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       defeatedAt: s.lastFinishedAt,
     });
   }
@@ -143,7 +149,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       adventureId: row.adventureId,
       enTitle: row.enTitle,
       frTitle: row.frTitle,
-      imagePath: row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+      imagePath: row.bossImagePath ?? row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       defeatedAt: row.defeatedAt,
     });
   }

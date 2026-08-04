@@ -12,7 +12,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
  * the only place the whole composition is ever visible. One tap anywhere closes it — it is a
  * look, not a screen, and it must never trap the session behind a hidden dismiss gesture.
  */
-export function BossImageViewer({
+export function ImageViewer({
   source,
   name,
   visible,

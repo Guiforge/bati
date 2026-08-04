@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
+import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { LevelPips } from "@/components/village/LevelPips";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
@@ -345,6 +346,7 @@ function TrophyDetail({ trophy, extra, language, formatDate }: DetailProps & { t
   const { t } = useTranslation();
   const fr = language === "fr";
   const description = fr ? trophy.frDescription : trophy.enDescription;
+  const [expanded, setExpanded] = useState(false);
   const victories =
     extra?.kind === "adventures"
       ? extra.adventures.find((a) => a.adventureId === trophy.adventureId)?.timesFinished
@@ -352,13 +354,22 @@ function TrophyDetail({ trophy, extra, language, formatDate }: DetailProps & { t
 
   return (
     <YStack gap="$3">
-      {/* A beaten boss deserves better than a 56px disc: the monster itself, wide, the way the
-          arena showed it — a trophy with an image is always a boss, achievements are emoji. */}
+      {/* A beaten boss deserves better than a 56px disc: the monster itself — its *fallen*
+          painting, because a trophy is proof of the defeat — wide, and tappable to full screen.
+          A trophy with an image is always a boss, achievements are emoji. */}
       {trophy.imagePath ? (
         <YStack gap="$3">
-          <YStack height={140} rounded="$6" overflow="hidden">
+          <YStack
+            height={140}
+            rounded="$6"
+            overflow="hidden"
+            onPress={() => setExpanded(true)}
+            pressStyle={{ opacity: 0.9 }}
+            accessibilityRole="imagebutton"
+            accessibilityLabel={fr ? trophy.frTitle : trophy.enTitle}
+          >
             <Image
-              source={getBossAsset(trophy.imagePath)}
+              source={getBossAsset(trophy.imagePath, 0, "defeated")}
               style={{ width: "100%", height: "100%" }}
               contentFit="cover"
             />
@@ -366,6 +377,12 @@ function TrophyDetail({ trophy, extra, language, formatDate }: DetailProps & { t
           <Text fontWeight="700" fontSize={20} color="$text">
             {fr ? trophy.frTitle : trophy.enTitle}
           </Text>
+          <ImageViewer
+            source={getBossAsset(trophy.imagePath, 0, "defeated")}
+            name={fr ? trophy.frTitle : trophy.enTitle}
+            visible={expanded}
+            onClose={() => setExpanded(false)}
+          />
         </YStack>
       ) : (
         <XStack items="center" gap="$3">

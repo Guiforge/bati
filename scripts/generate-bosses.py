@@ -52,6 +52,14 @@ WOUNDED = (
     "smoke, its stance lower and more desperate, its eyes burning brighter with fury."
 )
 
+DEFEATED = (
+    "This is the creature defeated, the fight over: the same anatomy and silhouette, "
+    "unmistakably the same monster, but fallen — collapsed or slumped to the ground, its inner "
+    "light gone dark to faint embers, dust and smoke settling around it, its eyes extinguished, "
+    "the scene quiet and monumental like a felled statue. No gore, no wounds shown in detail — "
+    "a beaten colossus at rest."
+)
+
 BOSSES = [
     ("fire_dragon",
      "A colossal red-scaled dragon rearing up inside a volcanic cavern, wings half-spread and "
@@ -88,9 +96,10 @@ BOSSES = [
 if __name__ == "__main__":
     items = [(slug, f"{scene} {STYLE}") for slug, scene in BOSSES]
     items += [(f"{slug}_legendary", f"{scene} {LEGENDARY} {STYLE}") for slug, scene in BOSSES]
-    # ponytail: wounded forms exist for the base monsters only — a wounded legendary would double
-    # the matrix again. Add them if the tier-1 fight reads flat below 50 %.
+    # ponytail: wounded and defeated forms exist for the base monsters only — per-tier variants
+    # would double the matrix each time. Add them if the tier-1 fight reads flat.
     items += [(f"{slug}_wounded", f"{scene} {WOUNDED} {STYLE}") for slug, scene in BOSSES]
+    items += [(f"{slug}_defeated", f"{scene} {DEFEATED} {STYLE}") for slug, scene in BOSSES]
     failed = run(
         items,
         out_dir=ROOT / "assets" / "images" / "bosses",

@@ -45,9 +45,9 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: str
     >
       <YStack height={ART_HEIGHT} width="100%" position="relative">
         <Image
-          source={getBossAsset(fight.imagePath, fight.tier)}
-          // A defeated boss is a trophy, not a threat — the art dims instead of disappearing.
-          style={{ width: "100%", height: "100%", opacity: isDefeated ? 0.45 : 1 }}
+          // A defeated boss shows its fallen painting — the panel becomes proof, not threat.
+          source={getBossAsset(fight.imagePath, fight.tier, isDefeated ? "defeated" : undefined)}
+          style={{ width: "100%", height: "100%" }}
           contentFit="cover"
           transition={150}
         />

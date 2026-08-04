@@ -269,7 +269,8 @@
     "weakness": "Weakness",
     "resistance": "Resistance",
     "threat": "Threat level {{rank}} of 4",
-    "final_blow": "Felled by your final blow!"
+    "final_blow": "Felled by your final blow!",
+    "triumph_subtitle": "Triumph! Felled by your own blows — +{{xp}} XP"
   },
   "exercises": {
     "details_title": "Exercise",

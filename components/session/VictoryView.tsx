@@ -12,13 +12,14 @@ import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
+import { ImageViewer } from "@/components/common/ImageViewer";
 import { useToast } from "@/components/common/Toast";
-import { BossImageViewer } from "@/components/session/BossImageViewer";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { SOUNDS } from "@/constants/sounds";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
+import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
 import type { FeedbackCode } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -213,7 +214,7 @@ export function VictoryView() {
             <Image
               source={
                 felledBoss
-                  ? getBossAsset(felledBoss.imagePath, felledBoss.tier)
+                  ? getBossAsset(felledBoss.imagePath, felledBoss.tier, "defeated")
                   : getQuestAsset(quest.imagePath)
               }
               style={{ width: "100%", height: "100%" }}
@@ -245,8 +246,17 @@ export function VictoryView() {
                 {heroTitle}
               </H1>
               {isBossDefeat && (
-                <Text fontFamily="$body" fontSize={14} color="$textSecondary">
-                  {felledByFinalBlow ? t("boss.final_blow") : t("boss.victory_subtitle")}
+                <Text
+                  fontFamily="$body"
+                  fontSize={14}
+                  fontWeight={felledByFinalBlow ? "400" : "700"}
+                  color={felledByFinalBlow ? "$textSecondary" : "$resourceGold"}
+                >
+                  {/* The Triumph is the pool emptied by your own damage — what HP are for; the
+                      final blow is the guarantee that finishing the campaign always kills. */}
+                  {felledByFinalBlow
+                    ? t("boss.final_blow")
+                    : t("boss.triumph_subtitle", { xp: TRIUMPH_XP_BONUS })}
                 </Text>
               )}
             </YStack>
@@ -254,8 +264,8 @@ export function VictoryView() {
         </Card>
 
         {felledBoss != null && (
-          <BossImageViewer
-            source={getBossAsset(felledBoss.imagePath, felledBoss.tier)}
+          <ImageViewer
+            source={getBossAsset(felledBoss.imagePath, felledBoss.tier, "defeated")}
             name={heroTitle}
             visible={bossExpanded}
             onClose={() => setBossExpanded(false)}

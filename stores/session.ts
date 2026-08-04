@@ -11,6 +11,7 @@ import {
   getOrCreateBossFight,
   type PendingHit,
   persistSessionDamage,
+  TRIUMPH_XP_BONUS,
 } from "@/db/bossFights";
 import {
   addBonusXpToSession,
@@ -270,6 +271,23 @@ async function loadLiveBossFight(
 }
 
 /**
+ * The Triumph: the hero's own damage emptied the pool — the final blow had nothing left to do.
+ * This is what HP are *for*: meet targets, push past them for crits, land the weakness, and the
+ * killing session pays TRIUMPH_XP_BONUS. `bossFight` non-null already means the boss was alive
+ * when the session began (a corpse is dropped at load), so a zero here is a kill this session
+ * earned. Returns the bonus paid, so the caller can fold it into the session's XP.
+ */
+async function payTriumphBonus(
+  bossFight: BossFight | null,
+  finalBlow: boolean,
+  sessionId: number,
+): Promise<number> {
+  if (!bossFight || bossFight.currentHp > 0 || finalBlow) return 0;
+  await addBonusXpToSession(sessionId, TRIUMPH_XP_BONUS);
+  return TRIUMPH_XP_BONUS;
+}
+
+/**
  * The campaign is over, so the boss is: the final blow.
  *
  * The pacing is tuned to fell it ~90 % through the last step for a hero who meets every target,
@@ -282,8 +300,8 @@ async function dealFinalBlow(
   campaign: { isFinished: boolean } | null,
   bossFight: BossFight | null,
   sessionId: number,
-): Promise<void> {
-  if (!campaign?.isFinished || !bossFight) return;
+): Promise<boolean> {
+  if (!campaign?.isFinished || !bossFight) return false;
 
   const felled = await finishBossFight(bossFight.id, sessionId);
   if (felled) {
@@ -292,6 +310,7 @@ async function dealFinalBlow(
       felledByFinalBlow: true,
     });
   }
+  return felled;
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -727,7 +746,7 @@ export const useSessionStore = create<SessionState>()(
             })
           : null;
 
-      await dealFinalBlow(campaign, bossFight, sessionId);
+      const finalBlow = await dealFinalBlow(campaign, bossFight, sessionId);
 
       // Check for personal records
       const newRecords = await checkForNewRecords(sessionId);
@@ -776,6 +795,10 @@ export const useSessionStore = create<SessionState>()(
       if (oathBonusXp > 0) {
         xpEarned += oathBonusXp;
       }
+
+      // The Triumph pays the same way the oath does: onto the killing session's row, so total XP
+      // and the level pick it up with no extra state.
+      xpEarned += await payTriumphBonus(bossFight, finalBlow, sessionId);
 
       // Level after all XP (base + any oath bonus) is settled.
       const newTotalXp = oldTotalXp + xpEarned;

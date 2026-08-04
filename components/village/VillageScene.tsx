@@ -394,7 +394,7 @@ export function VillageScene() {
                           medal shows the monster you beat, not the poster for its journey. */}
                       {trophy.imagePath ? (
                         <Image
-                          source={getBossAsset(trophy.imagePath)}
+                          source={getBossAsset(trophy.imagePath, 0, "defeated")}
                           style={{ width: "100%", height: "100%" }}
                           contentFit="cover"
                         />

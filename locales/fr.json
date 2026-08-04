@@ -67,7 +67,8 @@
     "weakness": "Faiblesse",
     "weakness_bonus": "Faiblesse !",
     "threat": "Niveau de menace {{rank}} sur 4",
-    "final_blow": "Abattu par ton coup final !"
+    "final_blow": "Abattu par ton coup final !",
+    "triumph_subtitle": "Triomphe ! Tombé sous tes propres coups — +{{xp}} XP"
   },
   "chart": {
     "all_history": "Durées des entraînements récents",

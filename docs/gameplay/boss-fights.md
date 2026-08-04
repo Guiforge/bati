@@ -103,6 +103,22 @@ supposed to close, reachable through under-target sets, a run resumed across a r
 dev screen's jump into the last step at full HP. There is no failure state, so finishing the
 campaign IS the kill.
 
+### The Triumph — what HP are for
+
+If the kill is guaranteed either way, the fair question is what the pool still decides. This:
+
+- **Empty it with your own damage** — meet targets, push past them for crits, land the weakness —
+  and the kill is a **Triumph**: `TRIUMPH_XP_BONUS` (100 XP, twice the oath's bonus) lands on the
+  session that dealt the killing hit, whenever in the campaign that is, and the victory card says
+  so in gold.
+- **Fall short** and the final blow still fells it at the campaign's end — normal rewards, and the
+  card narrates the killing stroke (`boss.final_blow`) so "defeated at 300 HP" reads as the design
+  it is, not a bug.
+
+Reward for pushing, never punishment for training under target. Detection is in-memory in
+`saveSession` (`payTriumphBonus`): the fight was alive at session start (a corpse is dropped at
+load), its pool hit zero, and `dealFinalBlow` had nothing left to do.
+
 **This is a ratchet.** `__tests__/content-invariants.test.ts` re-derives every campaign's total from
 the seeded quests at all three difficulties and fails if any boss survives its campaign or dies
 before the last step. `0017` computed those numbers by hand in 2026 and nothing re-checked them;

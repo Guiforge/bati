@@ -155,6 +155,20 @@ export const BOSS_WOUNDED_ASSETS: Record<keyof typeof BOSS_ASSETS, number> = {
   iron_golem: require("@/assets/images/bosses/iron_golem_wounded.webp"),
 };
 
+/**
+ * The monster fallen — lights out, dust settling, a beaten colossus at rest. What the arena shows
+ * when the killing set lands, and what every trophy of the kill shows after: a trophy is proof of
+ * the defeat, not a poster of the threat.
+ */
+export const BOSS_DEFEATED_ASSETS: Record<keyof typeof BOSS_ASSETS, number> = {
+  wind_wraith: require("@/assets/images/bosses/wind_wraith_defeated.webp"),
+  stone_golem: require("@/assets/images/bosses/stone_golem_defeated.webp"),
+  shadow_serpent: require("@/assets/images/bosses/shadow_serpent_defeated.webp"),
+  forest_titan: require("@/assets/images/bosses/forest_titan_defeated.webp"),
+  fire_dragon: require("@/assets/images/bosses/fire_dragon_defeated.webp"),
+  iron_golem: require("@/assets/images/bosses/iron_golem_defeated.webp"),
+};
+
 // ============================================================
 // ADVENTURE COVER ASSETS (5 campaigns)
 // ============================================================
@@ -354,14 +368,17 @@ export function getQuestAsset(id: string) {
 }
 
 /**
- * Get boss asset by ID (with fallback to placeholder). `tier` ≥ 1 serves the legendary form,
- * `wounded` the battle-worn one — legendary wins the tie (no wounded legendaries exist), and
- * every chain ends base → placeholder.
+ * Get boss asset by ID (with fallback to placeholder). `state` picks the form the moment calls
+ * for: "defeated" wins over everything — a dead monster is dead whatever its tier — then the
+ * legendary form at tier ≥ 1, then "wounded" (base fights below 50 % HP), then the base painting.
+ * Wounded and defeated exist for base monsters only (see scripts/generate-bosses.py); every
+ * chain ends base → placeholder.
  */
-export function getBossAsset(id: string, tier = 0, wounded = false) {
+export function getBossAsset(id: string, tier = 0, state?: "wounded" | "defeated") {
   const key = keyFromPath(id) as BossAssetKey;
+  if (state === "defeated" && key in BOSS_DEFEATED_ASSETS) return BOSS_DEFEATED_ASSETS[key];
   if (tier >= 1 && key in BOSS_LEGENDARY_ASSETS) return BOSS_LEGENDARY_ASSETS[key];
-  if (wounded && key in BOSS_WOUNDED_ASSETS) return BOSS_WOUNDED_ASSETS[key];
+  if (state === "wounded" && key in BOSS_WOUNDED_ASSETS) return BOSS_WOUNDED_ASSETS[key];
   return BOSS_ASSETS[key] ?? require("@/assets/placeholder.webp");
 }
 

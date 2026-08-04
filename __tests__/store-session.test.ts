@@ -430,6 +430,7 @@ describe("useSessionStore", () => {
         startTime: 1000,
         bossFight: { ...boss } as never,
         bossStartHp: 1000,
+        felledByFinalBlow: false,
         pendingDamage: [],
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
@@ -570,6 +571,66 @@ describe("useSessionStore", () => {
       const state = store.getState();
       expect(state.bossFight?.currentHp).toBe(0);
       expect(state.bossFight?.defeatedAt).toBeInstanceOf(Date);
+    });
+
+    /**
+     * The Triumph is what HP are for: empty the pool with your own damage and the killing session
+     * pays a bonus. The final blow still guarantees the kill for everyone else — reward for
+     * pushing, never punishment for training under target.
+     */
+    test("emptying the pool yourself is a Triumph and pays its bonus", async () => {
+      const completed = require("@/db/completed") as { addBonusXpToSession: jest.Mock };
+      const bossFights = require("@/db/bossFights") as {
+        finishBossFight: jest.Mock;
+        TRIUMPH_XP_BONUS: number;
+      };
+      const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };
+      completed.addBonusXpToSession.mockClear();
+      bossFights.finishBossFight.mockClear();
+      // The store's own damage brings the boss to zero: 10 HP left, one 10-rep set.
+      store.setState({
+        adventureRunStepId: 5,
+        bossFight: { ...boss, currentHp: 10 } as never,
+        bossStartHp: 10,
+      });
+      dbMock.completeAdventureRunStep.mockResolvedValueOnce({
+        adventureId: 42,
+        runId: 9,
+        isFinished: true,
+        nextRunStepId: null,
+        nextQuestId: null,
+      });
+      // The stored row is already dead when the final blow checks it — nothing left to fell.
+      bossFights.finishBossFight.mockResolvedValueOnce(false);
+
+      await store.getState().completeExercise(10);
+      expect(store.getState().bossFight?.currentHp).toBe(0);
+
+      const result = await store.getState().saveSession(null);
+
+      expect(completed.addBonusXpToSession).toHaveBeenCalledWith(1, bossFights.TRIUMPH_XP_BONUS);
+      expect(result.xpEarned).toBeGreaterThanOrEqual(bossFights.TRIUMPH_XP_BONUS);
+      expect(store.getState().felledByFinalBlow).toBe(false);
+    });
+
+    test("a final-blow kill is not a Triumph and pays no bonus", async () => {
+      const completed = require("@/db/completed") as { addBonusXpToSession: jest.Mock };
+      const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };
+      completed.addBonusXpToSession.mockClear();
+      store.setState({ adventureRunStepId: 5 });
+      dbMock.completeAdventureRunStep.mockResolvedValueOnce({
+        adventureId: 42,
+        runId: 9,
+        isFinished: true,
+        nextRunStepId: null,
+        nextQuestId: null,
+      });
+
+      await store.getState().completeExercise(10);
+      await store.getState().saveSession(null);
+
+      expect(completed.addBonusXpToSession).not.toHaveBeenCalled();
+      expect(store.getState().felledByFinalBlow).toBe(true);
     });
 
     test("a mid-campaign step deals no final blow", async () => {

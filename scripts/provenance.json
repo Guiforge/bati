@@ -192,6 +192,17 @@
     "generated": "2026-08-04",
     "reencoded": "cwebp -q 85, from fire_dragon.jpg"
   },
+  "assets/images/bosses/fire_dragon_defeated.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal red-scaled dragon rearing up inside a volcanic cavern, wings half-spread and filling the width of the frame, molten orange light glowing between its scales and deep in its throat, embers streaming upward past broken basalt columns, seen from a low angle that makes it tower over the viewer. This is the creature defeated, the fight over: the same anatomy and silhouette, unmistakably the same monster, but fallen — collapsed or slumped to the ground, its inner light gone dark to faint embers, dust and smoke settling around it, its eyes extinguished, the scene quiet and monumental like a felled statue. No gore, no wounds shown in detail — a beaten colossus at rest. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A square composition filling the frame edge to edge, the creature large in the middle and upper half, the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 1897635885,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-04",
+    "reencoded": "cwebp -q 85, from fire_dragon_defeated.jpg"
+  },
   "assets/images/bosses/fire_dragon_legendary.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -224,6 +235,17 @@
     "height": 1024,
     "generated": "2026-08-04",
     "reencoded": "cwebp -q 85, from forest_titan.jpg"
+  },
+  "assets/images/bosses/forest_titan_defeated.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal humanoid titan built of living wood and moss standing among ancient trees, bark-plated shoulders and glowing emerald sap-light running in the seams of its body, roots trailing from its arms, drifting spores catching the light, seen from a low angle that makes it tower over the viewer. This is the creature defeated, the fight over: the same anatomy and silhouette, unmistakably the same monster, but fallen — collapsed or slumped to the ground, its inner light gone dark to faint embers, dust and smoke settling around it, its eyes extinguished, the scene quiet and monumental like a felled statue. No gore, no wounds shown in detail — a beaten colossus at rest. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A square composition filling the frame edge to edge, the creature large in the middle and upper half, the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 1085898017,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-04",
+    "reencoded": "cwebp -q 85, from forest_titan_defeated.jpg"
   },
   "assets/images/bosses/forest_titan_legendary.webp": {
     "model": "flux-2-pro-preview",
@@ -258,6 +280,17 @@
     "generated": "2026-08-04",
     "reencoded": "cwebp -q 85, from iron_golem.jpg"
   },
+  "assets/images/bosses/iron_golem_defeated.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal golem of riveted, rust-streaked iron plates standing in a collapsed foundry, white-hot furnace light blazing through the seams of its chest and out of its single rectangular eye slit, heavy chains hanging broken from its wrists, steam venting from its shoulder joints, seen from a low angle that makes it tower over the viewer. This is the creature defeated, the fight over: the same anatomy and silhouette, unmistakably the same monster, but fallen — collapsed or slumped to the ground, its inner light gone dark to faint embers, dust and smoke settling around it, its eyes extinguished, the scene quiet and monumental like a felled statue. No gore, no wounds shown in detail — a beaten colossus at rest. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A square composition filling the frame edge to edge, the creature large in the middle and upper half, the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 269716027,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-04",
+    "reencoded": "cwebp -q 85, from iron_golem_defeated.jpg"
+  },
   "assets/images/bosses/iron_golem_legendary.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -290,6 +323,17 @@
     "height": 1024,
     "generated": "2026-08-04",
     "reencoded": "cwebp -q 85, from shadow_serpent.jpg"
+  },
+  "assets/images/bosses/shadow_serpent_defeated.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "An enormous serpent of coiling darkness rising out of a black mirror-still lake, its scales drinking the light around them, violet witch-fire burning where its eyes should be, tendrils of shadow peeling off its coils into the air, seen from a low angle. This is the creature defeated, the fight over: the same anatomy and silhouette, unmistakably the same monster, but fallen — collapsed or slumped to the ground, its inner light gone dark to faint embers, dust and smoke settling around it, its eyes extinguished, the scene quiet and monumental like a felled statue. No gore, no wounds shown in detail — a beaten colossus at rest. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A square composition filling the frame edge to edge, the creature large in the middle and upper half, the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 3201301844,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-04",
+    "reencoded": "cwebp -q 85, from shadow_serpent_defeated.jpg"
   },
   "assets/images/bosses/shadow_serpent_legendary.webp": {
     "model": "flux-2-pro-preview",
@@ -324,6 +368,17 @@
     "generated": "2026-08-04",
     "reencoded": "cwebp -q 85, from stone_golem.jpg"
   },
+  "assets/images/bosses/stone_golem_defeated.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A colossal golem of fitted grey boulders standing in a shattered quarry, red-orange magma glowing in every crack between its stones, one massive fist raised, grit and dust falling from its shoulders, seen from a low angle that makes it tower over the viewer. This is the creature defeated, the fight over: the same anatomy and silhouette, unmistakably the same monster, but fallen — collapsed or slumped to the ground, its inner light gone dark to faint embers, dust and smoke settling around it, its eyes extinguished, the scene quiet and monumental like a felled statue. No gore, no wounds shown in detail — a beaten colossus at rest. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A square composition filling the frame edge to edge, the creature large in the middle and upper half, the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 2176390675,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-04",
+    "reencoded": "cwebp -q 85, from stone_golem_defeated.jpg"
+  },
   "assets/images/bosses/stone_golem_legendary.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -356,6 +411,17 @@
     "height": 1024,
     "generated": "2026-08-04",
     "reencoded": "cwebp -q 85, from wind_wraith.jpg"
+  },
+  "assets/images/bosses/wind_wraith_defeated.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A towering wraith of howling wind and torn grey burial cloth hanging above a storm-lashed moor, its lower body dissolving into spiralling air, pale cyan light burning where a face should be, debris and dead leaves caught spinning in its currents, seen from a low angle. This is the creature defeated, the fight over: the same anatomy and silhouette, unmistakably the same monster, but fallen — collapsed or slumped to the ground, its inner light gone dark to faint embers, dust and smoke settling around it, its eyes extinguished, the scene quiet and monumental like a felled statue. No gore, no wounds shown in detail — a beaten colossus at rest. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows and high-contrast volumetric light. The palette is anchored in deep obsidian blue (#0B0F19); the creature is lit from below and rimmed in its own energy colour so it separates cleanly from the dark. A square composition filling the frame edge to edge, the creature large in the middle and upper half, the lower third kept dark and quiet, the edges falling off into darkness. No human figures anywhere in frame, no lettering, no watermark.",
+    "seed": 2107755519,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-04",
+    "reencoded": "cwebp -q 85, from wind_wraith_defeated.jpg"
   },
   "assets/images/bosses/wind_wraith_legendary.webp": {
     "model": "flux-2-pro-preview",

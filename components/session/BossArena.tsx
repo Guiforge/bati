@@ -8,11 +8,11 @@ import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
+import { ImageViewer } from "@/components/common/ImageViewer";
 import { getBossAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { BossImageViewer } from "./BossImageViewer";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { sessionArtHeight } from "./sessionArt";
 
@@ -106,6 +106,13 @@ function useHitReaction(
  * A crit recoils harder than an ordinary hit; a felled boss sinks and dims instead of standing
  * at zero as if nothing happened.
  */
+/** Which painting the fight calls for; the pose helper below decides how it stands. */
+function artState(isDown: boolean, phase: number): "wounded" | "defeated" | undefined {
+  if (isDown) return "defeated";
+  if (phase >= 3) return "wounded";
+  return undefined;
+}
+
 function artPose(flinching: boolean, crit: boolean, isDown: boolean) {
   if (isDown) return { scale: 1, x: 0, y: 14, opacity: 0.45 };
   if (flinching && crit) return { scale: 1.1, x: -10, y: 0, opacity: 1 };
@@ -187,9 +194,9 @@ export function BossArena({
   const rimOpacity = Math.max(pulse ? look.rim * 0.55 : look.rim, shiny ? 0.25 : 0);
   const rimColor = shiny ? rawColors.resourceGold : rawColors.error;
   const quick = reducedMotion ? undefined : ("quick" as const);
-  // The monster wears the fight: its battle-worn painting below 50 %, its legendary form at
-  // tier ≥ 1 (which wins the tie — no wounded legendaries exist, by design).
-  const artSource = getBossAsset(bossImagePath, tier, phase >= 3);
+  // The monster wears the fight: its fallen painting once the killing set lands, its battle-worn
+  // one below 50 %, its legendary form at tier ≥ 1.
+  const artSource = getBossAsset(bossImagePath, tier, artState(isDown, phase));
   const pose = artPose(flinching, !!lastDamage?.isCritical, isDown);
 
   return (
@@ -380,7 +387,7 @@ export function BossArena({
         )}
       </AnimatePresence>
 
-      <BossImageViewer
+      <ImageViewer
         source={artSource}
         name={bossName}
         visible={expanded}

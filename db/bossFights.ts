@@ -94,6 +94,18 @@ export const MAX_CRIT_CHANCE = 0.5;
 export const SHINY_CHANCE = 0.05;
 
 /**
+ * The Triumph: what HP are *for*.
+ *
+ * The final blow guarantees the kill, which raised the fair question of what the pool still
+ * decides. This: empty it with your own damage — meet targets, push past them for crits, land the
+ * weakness — and the kill is a Triumph, worth this bonus on the session that dealt the killing
+ * hit. Fall short and the final blow still fells it, at no cost but the bonus. Reward for
+ * pushing, never punishment for training under target. Twice the oath's bonus, because a boss is
+ * not a mini-boss.
+ */
+export const TRIUMPH_XP_BONUS = 100;
+
+/**
  * How much bigger the pool gets at each rematch: +25 % per tier, capped at double.
  *
  * Safe to exceed the campaign's damage because the kill is structural — `finishBossFight` fells

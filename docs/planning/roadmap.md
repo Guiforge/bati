@@ -54,6 +54,22 @@ exist.
   testing for 14 continuous days** before production access can even be requested. Those two
   weeks are incompressible and cannot begin before a signed build sits on the test track. It is
   a five-minute check that decides a fortnight.
+- **Play App Signing — export `bati-release.keystore`, do not let Google generate a key.** This
+  is a one-time choice at enrolment and it decides whether Play is a third signature island.
+  Exported, Play's APKs carry the same certificate as GitHub Releases and the self-hosted
+  F-Droid repository, so an install from any of those three can update from any other. Google
+  generates its own key by default; taking that default is as permanent as the f-droid.org
+  situation, where the catalogue signs with F-Droid's key (reproducible builds were attempted,
+  measured to 11 differing files, and declined over an AAPT2 ordering wall — see
+  [../fdroid.md](../fdroid.md)).
+- **Play wants an AAB, not an APK.** `release.yml` runs `assembleRelease`; a Play upload needs a
+  `bundleRelease` step. Not built yet on purpose — write it when the account exists.
+- **`featureGraphic.png` (1024×500) is required by Play and does not exist.** The fastlane README
+  lists it; `fastlane/metadata/android/*/images/` holds only screenshots. en-US also has fewer
+  screenshots than fr-FR.
+- **The Data Safety form should be trivial and say so:** the app makes no network requests at
+  all, so every answer is "no data collected, no data shared". A form that claims anything else
+  contradicts the store listing and the privacy policy.
 - ~~**Android signing keystore**~~ — generated 2026-07-31 and wired through
   `plugins/withAndroidReleaseSigning.js`; a signed build was verified with `apksigner`. It stays
   on this page as the one irreversible item: a lost keystore means the published app can never be

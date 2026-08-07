@@ -29,6 +29,10 @@
 # * Node is pinned in `sudo:` (their build image ships one too old for Expo SDK 57) so a rebuild
 #   years from now resolves the same toolchain. `sudo:` is skipped when `fdroid build` runs
 #   without a dedicated build server, which is why a local test needs Node preinstalled.
+# * `make g++` in `sudo:` because better-sqlite3 (a Jest-only devDependency, but `npm ci`
+#   installs it) compiles its native module with node-gyp during install, and the buildserver
+#   image ships no C toolchain — MR pipeline died on "not found: make". Local runs never saw it
+#   because a dev machine has make.
 # * `npm ci`, not `npm ci --omit=dev`: babel-preset-expo lives in devDependencies and Metro needs
 #   it to bundle. The expo-dev-* family is deleted by hand instead — dev tooling with no business
 #   in a release, and the scanner strips enough of its innards that autolinking then fails on a
@@ -89,7 +93,7 @@ Builds:
     commit: v1.2.1
     sudo:
       - apt-get update || true
-      - apt-get install -y --no-install-recommends curl ca-certificates python3
+      - apt-get install -y --no-install-recommends curl ca-certificates python3 make g++
       - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
       - apt-get install -y --no-install-recommends nodejs
     init:
@@ -118,7 +122,17 @@ MaintainerNotes: |-
     maven { url } line, and the build then fails with "No variants exist".
     No Firebase and no network code anywhere in the app.
 
-AutoUpdateMode: Version
-UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
+# UPDATE CHECKING: `Tags` alone cannot work here — checkupdates parses the checkout for a
+# versionCode, and `android/` (the only place one would appear) is generated, not committed. Its
+# UpdateCheckData regex captures a single group, so it cannot compute 10201 from "1.2.1" either;
+# the literal number has to exist in a file. app.json carries it (scripts/release.sh writes it,
+# app.config.js throws if it drifts from the derived value), and HTTP mode greps it from the raw
+# main branch — release.sh commits version, versionCode and tag atomically, so main never runs
+# ahead of the latest tag. `Version v%v` turns the found version into the tag name for the
+# auto-generated build entry.
+
+AutoUpdateMode: Version v%v
+UpdateCheckMode: HTTP
+UpdateCheckData: https://raw.githubusercontent.com/Guiforge/bati/main/app.json|"versionCode":\s*(\d+)|https://raw.githubusercontent.com/Guiforge/bati/main/app.json|"version":\s*"([\d.]+)"
 CurrentVersion: 1.2.1
 CurrentVersionCode: 10201

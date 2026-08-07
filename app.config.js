@@ -6,6 +6,11 @@
 // v1.0.0 as an update (an update must raise the integer), and `fdroid update` never saw a new
 // version to offer. A `1.0.1` in app.json that a human also has to mirror as `10001` somewhere else
 // is the same bug waiting to happen again; one source, computed, cannot drift.
+//
+// app.json nevertheless *also* carries the number, for one reader that cannot run JavaScript:
+// F-Droid's `checkupdates`, which greps a file for a literal versionCode (its regex captures a
+// single group — it cannot compute 10201 from "1.2.1"). `scripts/release.sh` writes it on every
+// bump, and the guard below makes a drifted copy a build error rather than a wrong release.
 
 /**
  * `1.0.1` -> `10001`. Monotonic with semver as long as minor and patch stay below 100.
@@ -42,8 +47,17 @@ const appJson = require("./app.json");
 
 module.exports = ({ config } = {}) => {
   const base = { ...appJson.expo, ...config };
+  const versionCode = versionCodeFrom(base.version);
+  // Consistency of app.json itself, not of a caller-supplied override: the declared copy exists
+  // only for F-Droid's checkupdates to grep, and must always match what its own version derives.
+  const declared = appJson.expo?.android?.versionCode;
+  if (declared !== undefined && declared !== versionCodeFrom(appJson.expo.version)) {
+    throw new Error(
+      `app.config.js: app.json declares versionCode ${declared} but its version "${appJson.expo.version}" derives ${versionCodeFrom(appJson.expo.version)} — run scripts/release.sh, don't edit either by hand`,
+    );
+  }
   return {
     ...base,
-    android: { ...base.android, versionCode: versionCodeFrom(base.version) },
+    android: { ...base.android, versionCode },
   };
 };

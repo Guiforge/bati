@@ -6,7 +6,8 @@
         "foregroundImage": "./assets/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.guiforge.bati"
+      "package": "com.guiforge.bati",
+      "versionCode": 10201
     },
     "backgroundColor": "#0B0F19",
     "experiments": {

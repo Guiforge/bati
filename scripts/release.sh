@@ -42,17 +42,29 @@ echo "  $current -> $next"
 # Surgical, not a JSON round-trip: re-serialising app.json reformats the inline arrays, which
 # Biome's pre-commit hook then collapses again — the two fought on the first attempt. The version
 # is passed as an argument rather than interpolated, so the script survives quoting.
+#
+# versionCode rides along: app.config.js derives it from the version, but F-Droid's checkupdates
+# greps app.json for the literal number, so the same commit has to carry both. app.config.js
+# throws if the two ever disagree.
 node -e '
   const fs = require("fs");
   const next = process.argv[1];
+  const [maj, min, pat] = next.split(".").map(Number);
+  const code = maj * 10000 + min * 100 + pat;
   const before = fs.readFileSync("app.json", "utf8");
-  const after = before.replace(/("version":\s*)"[^"]+"/, `$1"${next}"`);
-  if (before === after) {
-    console.error("release: could not find a version to bump in app.json");
+  const after = before
+    .replace(/("version":\s*)"[^"]+"/, `$1"${next}"`)
+    .replace(/("versionCode":\s*)\d+/, `$1${code}`);
+  if (!/("version":\s*)"[^"]+"/.test(before) || !/("versionCode":\s*)\d+/.test(before)) {
+    console.error("release: could not find version/versionCode to bump in app.json");
     process.exit(1);
   }
   fs.writeFileSync("app.json", after);
 ' "$next"
+
+# app.config.js re-derives the versionCode and throws if app.json disagrees — so a drift between
+# this script's formula and the real one fails here, not in a shipped build.
+node -e 'require("./app.config.js")()' >/dev/null
 
 # `npm version` on its own refuses to run with anything staged, and app.json has to be staged
 # to ride along in the same commit — so it only writes package.json here, and the commit and tag

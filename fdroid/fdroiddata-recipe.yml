@@ -11,6 +11,13 @@
 #   grep -v '^#' fdroid/fdroiddata-recipe.yml | sed '/^$/d' > metadata/com.guiforge.bati.yml
 #   fdroid rewritemeta com.guiforge.bati   # then canonicalise: field order, spacing, sorted lists
 #
+# CAUTION on rewritemeta versions: their CI runs fdroidserver *master* with ruamel.yaml 0.18,
+# which folds the long UpdateCheckData line onto its own indented line (with a trailing space
+# after the colon — theirs, not a typo; .yamllint only warns). A local fdroidserver 2.4.2 with
+# ruamel 0.17 leaves it on one line, and the CI rewritemeta check then fails the MR. Sync with
+# their master (download the tarball, PYTHONPATH-shadow ruamel 0.18) or hand-keep the folded
+# form; never trust a 2.4.2 rewritemeta as the last word.
+#
 # fdroiddata's own templates open with "PLEASE REMOVE ALL COMMENTS BEFORE SUBMITTING", so the
 # submitted file must carry none. What a reviewer does need travels in `MaintainerNotes` below,
 # which is YAML content and survives the sync. Blank lines inside that block would not (the sed),

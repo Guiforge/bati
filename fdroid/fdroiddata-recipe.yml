@@ -102,18 +102,15 @@ Builds:
     scanignore:
       - node_modules
 
-# Reproducible builds. F-Droid rebuilds from source, compares against our signed APK, and on a
-# match publishes *ours* rather than re-signing with theirs — so an install from the self-hosted
-# repository or from GitHub Releases can update across to the catalogue listing instead of having
-# to be uninstalled, which would take the SQLite database with it.
-#
-# This is the SHA-256 of the certificate in bati-release.keystore. Read it back off a published
-# APK rather than trusting this line:
-#
-#   apksigner verify --print-certs bati-1.2.0.apk
-# A certificate fingerprint is public by design: anyone can read it off a published APK, and
-# pinning it here is the whole point of the setting.
-AllowedAPKSigningKeys: f5d8676eae57661a9a47d32c30fc72a48b4b6e6fa2947c26f5473e10fcf79982  # gitleaks:allow
+# Reproducible builds: attempted, measured, and deliberately not enabled. Comparing our released
+# APK against a local `fdroid build` went from 26 differing files to 11 (the dev client had been
+# shipping in releases — that fix mattered regardless — and the GNU build-id is stripped from
+# native libraries). What remains is resources.arsc, 51% different through AAPT2 string-pool
+# ordering, plus a handful of codegen libraries. Pinning AllowedAPKSigningKeys against a build
+# with a known diff would make F-Droid's verification fail and nothing publish, with a weeks-long
+# round trip per attempt. So F-Droid signs with its own key, permanently — the catalogue listing
+# is a fresh install, and the self-hosted repository keeps updating everyone who already has the
+# app.
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$

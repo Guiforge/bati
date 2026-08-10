@@ -114,7 +114,9 @@ npm run release -- minor   # 1.0.0 -> 1.1.0
 It refuses a dirty tree, refuses a branch other than main, refuses to run when main and origin
 disagree, bumps `package.json` **and** `app.json` together, tags, and pushes. The tag is what
 [`.github/workflows/release.yml`](.github/workflows/release.yml) watches: it re-runs every gate,
-builds the APK, and publishes it as a GitHub Release.
+builds the APK (arm64-only, R8-minified — flags live on the gradlew command line in the
+workflow and in `fdroid/fdroiddata-recipe.yml`, kept in sync), and publishes it as a GitHub
+Release.
 
 No store is involved yet. [`docs/fdroid.md`](docs/fdroid.md) covers the F-Droid repository that
 turns those APKs into something that updates itself, and `docs/planning/roadmap.md` §1 covers

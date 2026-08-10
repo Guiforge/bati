@@ -1,0 +1,3 @@
+L'appli pèse 40 % de moins : 57 Mo au lieu de 94.
+
+Trois choses étaient embarquées sans jamais te servir : une seconde copie de chaque bibliothèque native pour les téléphones 32 bits de 2015, du code que le compilateur savait mort mais qu'on ne lui demandait pas de retirer, et des illustrations enregistrées plus lourdes que ce que ton écran peut afficher. L'APK est désormais arm64 uniquement, minifié par R8, et les images sont recompressées — même jeu, 37 Mo de moins à télécharger.

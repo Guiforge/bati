@@ -102,13 +102,19 @@ jobs:
             echo "MYAPP_UPLOAD_KEY_PASSWORD=${KEY_PASSWORD:-$STORE_PASSWORD}"
           } >> android/gradle.properties
 
-      # ARM only. The generated default builds four architectures, and the two x86 ones exist for
-      # emulators — no phone ships them, so half the native compilation and a large share of the
-      # APK was being produced for nothing. Passed here rather than written into
-      # gradle.properties so a local `expo run:android` keeps building x86 and still installs on
-      # an emulator; only the published artefact narrows.
+      # arm64 only. The generated default builds four architectures: the two x86 ones exist for
+      # emulators (no phone ships them) and armeabi-v7a covers 32-bit phones from ~2015 — dropping
+      # it saves 17 MB of duplicated native libs. R8 minify + resource shrinking cut the dex from
+      # ~18 MB to a fraction. All passed here rather than written into gradle.properties so a
+      # local `expo run:android` keeps building fat and fast, and android/ stays drift-free;
+      # only the published artefact narrows. fdroid/fdroiddata-recipe.yml runs the same command —
+      # keep the two in sync.
       - name: Build
-        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=armeabi-v7a,arm64-v8a
+        run: >-
+          ./gradlew assembleRelease --no-daemon
+          -PreactNativeArchitectures=arm64-v8a
+          -Pandroid.enableMinifyInReleaseBuilds=true
+          -Pandroid.enableShrinkResourcesInReleaseBuilds=true
         working-directory: android
 
       - name: Name the artefact after the tag

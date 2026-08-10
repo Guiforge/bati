@@ -50,8 +50,11 @@
 #   (~20 subprojects become 42); `init:` deletes every local-maven-repo explicitly rather than
 #   leaving prebuilt binaries in the tree for the scanner to worry about. This mirrors
 #   fdroiddata's templates/build-react-native.yml, which recommends exactly this switch.
-# * ARM only: the generated default builds four ABIs and the two x86 ones exist for emulators —
-#   162 MB against 112 MB, measured.
+# * arm64 only, minified: the generated default builds four ABIs — the two x86 ones exist for
+#   emulators, and armeabi-v7a duplicates every native lib for 32-bit phones (~2015 era).
+#   R8 minify + resource shrinking are off in the Expo template; the -P flags turn them on at
+#   build time without touching the generated gradle.properties. Same flags as
+#   .github/workflows/release.yml — keep the two invocations in sync.
 # * `scanignore`, emphatically not `scandelete`: with scandelete the scanner *deleted the
 #   offending file*, and what offended it was a legitimate `maven { url "$rootDir/../…" }` line
 #   inside react-native-safe-area-context and masked-view — taking their whole build.gradle with
@@ -111,7 +114,9 @@ Builds:
     build:
       - npx expo prebuild --clean --platform android --no-install
       - cd android && ./gradlew assembleRelease --no-daemon
-          -PreactNativeArchitectures=armeabi-v7a,arm64-v8a
+          -PreactNativeArchitectures=arm64-v8a
+          -Pandroid.enableMinifyInReleaseBuilds=true
+          -Pandroid.enableShrinkResourcesInReleaseBuilds=true
     output: android/app/build/outputs/apk/release/app-release.apk
     scanignore:
       - node_modules

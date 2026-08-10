@@ -9,8 +9,11 @@ export function getDevicePreferredAppLanguage(): AppLanguage {
       .map((l) => l.languageCode ?? l.languageTag?.split("-")[0] ?? null)
       .filter((c): c is string => typeof c === "string" && c.length > 0);
 
-    if (codes.includes("fr")) return "fr";
-    if (codes.includes("en")) return "en";
+    // In preference order: Android prepends a per-app locale to the system list, so
+    // [en, fr-FR] means the user asked for English — matching "fr" anywhere would flip it.
+    for (const code of codes) {
+      if (code === "fr" || code === "en") return code;
+    }
 
     return "en";
   } catch {

@@ -22,3 +22,10 @@ jobs:
       # no callers, which is how its payload drifted from the real writer's unnoticed. Knip is at
       # zero; anything it reports is new.
       - run: npm run knip
+      # android/ is committed only so F-Droid's subdir check passes; prebuild regenerates it at
+      # build time. That makes drift invisible until someone reads a stale file — so regenerate
+      # and fail if the tree disagrees with app.json/plugins.
+      - run: |
+          npx expo prebuild -p android --clean
+          git add -A android
+          git diff --cached --exit-code --stat -- android

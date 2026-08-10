@@ -136,7 +136,7 @@
       "@tamagui/helpers-icon": "2.6.0"
     }
   },
-  "version": "1.2.1",
+  "version": "1.2.2",
   "expo": {
     "autolinking": {
       "buildFromSource": [

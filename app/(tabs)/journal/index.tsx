@@ -1,12 +1,13 @@
 import { LegendList } from "@legendapp/list/react-native";
 import { BarChart2, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { RefreshControl, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
 import { JournalStats } from "@/components/journal/JournalStats";
 import { MonthlyCalendarCard } from "@/components/journal/MonthlyCalendarCard";
@@ -16,8 +17,10 @@ import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
+import { rawColors } from "@/constants/rawColors";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
+import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -26,6 +29,21 @@ type TabType = "history" | "stats";
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 const journalKey = (entry: JournalEntry) => String(entry.id);
 const ListGap = () => <YStack height={12} />;
+
+// Mirrors the first cards' reserved heights so the swap to real content doesn't shuffle.
+const StatsSkeleton = () => (
+  <>
+    <SkeletonCard>
+      <Skeleton height={104} />
+    </SkeletonCard>
+    <SkeletonCard>
+      <Skeleton height={104} />
+    </SkeletonCard>
+    <SkeletonCard>
+      <Skeleton height={296} />
+    </SkeletonCard>
+  </>
+);
 
 function TabButton({
   tab,
@@ -46,7 +64,7 @@ function TabButton({
       testID={`journal-tab-${tab}`}
       fullWidth={false}
       flex={1}
-      height={44}
+      height={48}
       bg={isActive ? "$surface2" : "$surface"}
       borderColor={isActive ? "$primary" : "$borderStrong"}
       borderWidth={1}
@@ -104,9 +122,7 @@ export default function JournalScreen() {
       const entries: JournalEntry[] = sessions.map((s) => {
         const quest = s.questId ? questMap.get(s.questId) : null;
         const title = quest
-          ? language === "fr"
-            ? quest.frTitle
-            : quest.enTitle
+          ? localizedTitle(quest, language)
           : t("quests.not_found", "Unknown Quest");
 
         return {
@@ -133,6 +149,27 @@ export default function JournalScreen() {
     useCallback(() => {
       loadHistory();
     }, [loadHistory]),
+  );
+
+  const [refreshing, setRefreshing] = useState(false);
+  // The stats cards each own their fetch; bumping this key remounts them so a pull refreshes
+  // everything, not just the session list.
+  const [refreshKey, setRefreshKey] = useState(0);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setRefreshKey((k) => k + 1);
+    await loadHistory();
+    setRefreshing(false);
+  }, [loadHistory]);
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      tintColor={rawColors.textSecondary}
+      colors={[rawColors.primary]}
+      progressBackgroundColor={rawColors.surface2}
+    />
   );
 
   const openSession = useCallback((id: number) => router.push(`/journal/${id}` as never), [router]);
@@ -183,6 +220,7 @@ export default function JournalScreen() {
           ItemSeparatorComponent={ListGap}
           recycleItems
           estimatedItemSize={100}
+          refreshControl={refreshControl}
           style={{ flex: 1 }}
           contentContainerStyle={{
             paddingHorizontal: 16,
@@ -198,11 +236,10 @@ export default function JournalScreen() {
             gap: 12,
           }}
           showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
         >
           {loading && history.length === 0 ? (
-            <Text style={{ textAlign: "center" }} mt="$10" color="$textSecondary">
-              {t("common.loading", "Loading...")}
-            </Text>
+            <StatsSkeleton />
           ) : history.length === 0 ? (
             <YStack items="center" justify="center" mt="$10" gap="$4">
               <Text fontSize={40}>📜</Text>
@@ -212,22 +249,29 @@ export default function JournalScreen() {
               <Paragraph style={{ textAlign: "center" }} color="$textSecondary">
                 {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
               </Paragraph>
+              <AppButton
+                testID="journal-empty-cta"
+                fullWidth={false}
+                onPress={() => router.push("/(tabs)/quests" as never)}
+              >
+                {t("journal.empty_cta", "Browse quests")}
+              </AppButton>
             </YStack>
           ) : !statsReady ? (
-            <Text style={{ textAlign: "center" }} mt="$10" color="$textSecondary">
-              {t("common.loading", "Loading...")}
-            </Text>
+            <StatsSkeleton />
           ) : (
-            <>
-              <UserLevelCard />
-              <ProgressionCard />
-              <PersonalRecordsCard />
-              <AchievementsCard />
+            // Ordered by the journal's three questions: am I consistent (streak, calendar),
+            // am I progressing (level, records, achievements), what next (balance, quests).
+            <Fragment key={refreshKey}>
               <JournalStats sessions={history} />
               <MonthlyCalendarCard />
+              <UserLevelCard />
+              <PersonalRecordsCard />
+              <AchievementsCard />
+              <ProgressionCard />
               <MuscleBalanceCard />
               <SuggestedQuestsCard />
-            </>
+            </Fragment>
           )}
         </ScrollView>
       )}

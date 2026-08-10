@@ -3,6 +3,11 @@
 // row — costs scroll frames. Formatters are immutable, so cache them per language+options.
 const formatters = new Map<string, Intl.DateTimeFormat>();
 
+/** First day of the week for the locale's calendars: Monday in French, Sunday in English. */
+export function getWeekStart(language: string): 0 | 1 {
+  return language === "fr" ? 1 : 0;
+}
+
 export function getDateTimeFormat(
   language: string,
   options: Intl.DateTimeFormatOptions,

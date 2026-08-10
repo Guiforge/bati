@@ -5,16 +5,28 @@ import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 export function UserLevelCard() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    getUserLevelInfo().then(setLevelInfo);
+    getUserLevelInfo()
+      .then(setLevelInfo)
+      .catch((error) => {
+        // Without this the card is an eternal skeleton and the failure is invisible.
+        reportError("journal.userLevel", error);
+        setFailed(true);
+      });
   }, []);
+
+  if (failed) {
+    return null;
+  }
 
   // Reserve the card's real height while loading — 8 stats cards each popping in from nothing
   // made the journal shuffle under the user's finger.
@@ -29,7 +41,7 @@ export function UserLevelCard() {
   const title = language === "fr" ? levelInfo.title.fr : levelInfo.title.en;
 
   return (
-    <Card bg="$pastelPurple" p="$4">
+    <Card bg="$surface2" p="$4">
       <YStack gap="$3">
         {/* Header with level and title */}
         <XStack items="center" justify="space-between">
@@ -38,11 +50,11 @@ export function UserLevelCard() {
               width={50}
               height={50}
               rounded={25}
-              bg="rgba(255,255,255,0.3)"
+              bg="$bgLight"
               items="center"
               justify="center"
             >
-              <Star size={28} color="$text" fill="$text" />
+              <Star size={28} color="$resourceGold" fill="$resourceGold" />
             </YStack>
             <YStack>
               <Text fontWeight="700" fontSize={24} color="$text">
@@ -77,8 +89,8 @@ export function UserLevelCard() {
               {Math.round(levelInfo.xpProgress)}%
             </Text>
           </XStack>
-          <Progress value={levelInfo.xpProgress} bg="rgba(255,255,255,0.3)">
-            <Progress.Indicator transition="quick" bg="$text" />
+          <Progress value={levelInfo.xpProgress} bg="$bgLight">
+            <Progress.Indicator transition="quick" bg="$primary" />
           </Progress>
         </YStack>
       </YStack>

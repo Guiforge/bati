@@ -46,28 +46,21 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
     ? formatDuration(entry.durationSeconds, language)
     : "--";
 
-  const sessionBg =
-    entry.userLevel === "easy"
-      ? "$pastelGreen"
-      : entry.userLevel === "hard"
-        ? "$pastelPink"
-        : "$pastelBlue";
-
   return (
-    <Card flat testID="journal-session-card" onPress={onPress} bg={sessionBg}>
+    <Card flat testID="journal-session-card" onPress={onPress}>
       <XStack gap="$3" items="center">
         {/* Icon */}
         <YStack
           width={50}
           height={50}
-          bg="$pastelYellow"
+          bg="$surface2"
           rounded="$4"
           borderWidth={1}
           borderColor="$borderStrong"
           items="center"
           justify="center"
         >
-          <Trophy size={24} color="$text" />
+          <Trophy size={24} color="$resourceGold" />
         </YStack>
 
         <YStack flex={1} gap="$1">

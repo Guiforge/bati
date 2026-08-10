@@ -1,10 +1,10 @@
 import { TrendingDown, TrendingUp } from "@tamagui/lucide-icons";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
   getTrendSummary,
   type MonthlyTrend,
@@ -59,38 +59,35 @@ function TrendsCardComponent() {
     const formatPeriodLabel = (item: WeeklyTrend | MonthlyTrend) => {
       if ("weekKey" in item) {
         // Weekly - show short date range
-        return format(item.weekStart, "d MMM", { locale: language === "fr" ? fr : undefined });
+        return getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
+          item.weekStart,
+        );
       }
       // Monthly
-      return format(item.monthStart, "MMM", { locale: language === "fr" ? fr : undefined });
+      return getDateTimeFormat(language, { month: "short" }).format(item.monthStart);
     };
     const maxSessions = Math.max(1, ...currentData.map((d) => d.sessionCount));
     const maxMinutes = Math.max(1, ...currentData.map((d) => d.totalMinutes));
     return currentData.slice(-8).map((item) => ({
       key: "weekKey" in item ? item.weekKey : item.monthKey,
       label: formatPeriodLabel(item),
+      sessionCount: item.sessionCount,
+      totalMinutes: item.totalMinutes,
       sessionHeight: (item.sessionCount / maxSessions) * 100,
       minutesHeight: (item.totalMinutes / maxMinutes) * 100,
     }));
   }, [currentData, language]);
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Trend badge requires multiple conditional renderings
   const renderTrendBadge = (analysis: TrendAnalysis | null) => {
     if (!analysis) return null;
 
-    const color =
-      analysis.trend === "up"
-        ? "$pastelGreen"
-        : analysis.trend === "down"
-          ? "$pastelPink"
-          : "$bgLight";
     const textColor =
-      analysis.trend === "up" ? "green" : analysis.trend === "down" ? "red" : "$text";
+      analysis.trend === "up" ? "$success" : analysis.trend === "down" ? "$error" : "$text";
     const Icon = analysis.trend === "up" ? TrendingUp : TrendingDown;
 
     return (
       <XStack
-        bg={color}
+        bg="$surface2"
         px="$2"
         py="$1"
         rounded="$3"
@@ -112,14 +109,11 @@ function TrendsCardComponent() {
   };
 
   if (isLoading) {
+    // Header + two 60-high charts: reserve the height, like the sibling cards do.
     return (
-      <Card bg="$bgLight" width="100%">
-        <YStack items="center" py="$4">
-          <Text color="$text" opacity={0.6}>
-            {t("common.loading")}
-          </Text>
-        </YStack>
-      </Card>
+      <SkeletonCard>
+        <Skeleton height={180} />
+      </SkeletonCard>
     );
   }
 
@@ -145,7 +139,7 @@ function TrendsCardComponent() {
               <Text
                 fontWeight="700"
                 fontSize={12}
-                color={viewMode === "weekly" ? "white" : "$text"}
+                color={viewMode === "weekly" ? "$white" : "$text"}
               >
                 {t("journal.trends_weekly")}
               </Text>
@@ -163,7 +157,7 @@ function TrendsCardComponent() {
               <Text
                 fontWeight="700"
                 fontSize={12}
-                color={viewMode === "monthly" ? "white" : "$text"}
+                color={viewMode === "monthly" ? "$white" : "$text"}
               >
                 {t("journal.trends_monthly")}
               </Text>
@@ -206,7 +200,15 @@ function TrendsCardComponent() {
               <Text fontSize={12} fontWeight="700" color="$text" opacity={0.7}>
                 {t("journal.trends_sessions")}
               </Text>
-              <XStack gap="$1" items="flex-end" height={60}>
+              <XStack
+                gap="$1"
+                items="flex-end"
+                height={60}
+                accessible
+                accessibilityLabel={`${t("journal.trends_sessions")}: ${bars
+                  .map((b) => `${b.label} ${b.sessionCount}`)
+                  .join(", ")}`}
+              >
                 {bars.map((bar) => (
                   <YStack key={bar.key} flex={1} items="center" gap="$1">
                     <YStack
@@ -230,7 +232,15 @@ function TrendsCardComponent() {
               <Text fontSize={12} fontWeight="700" color="$text" opacity={0.7}>
                 {t("journal.trends_minutes")}
               </Text>
-              <XStack gap="$1" items="flex-end" height={60}>
+              <XStack
+                gap="$1"
+                items="flex-end"
+                height={60}
+                accessible
+                accessibilityLabel={`${t("journal.trends_minutes")}: ${bars
+                  .map((b) => `${b.label} ${b.totalMinutes}`)
+                  .join(", ")}`}
+              >
                 {bars.map((bar) => (
                   <YStack key={bar.key} flex={1} items="center" gap="$1">
                     <YStack

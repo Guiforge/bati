@@ -2,10 +2,12 @@ import { ChevronLeft, ChevronRight } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
-import { Text, XStack, YStack } from "tamagui";
+import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
 import { listWorkoutDayKeys } from "@/db/completed";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 type DayData = {
@@ -24,49 +26,24 @@ type MonthData = {
   streakDays: number;
 };
 
-const DAYS_EN = ["S", "M", "T", "W", "T", "F", "S"];
-const DAYS_FR = ["D", "L", "M", "M", "J", "V", "S"];
-const MONTHS_EN = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-const MONTHS_FR = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
+// 2023-01-01 was a Sunday: day 1 + i lands on getDay() === i, which lets Intl name any weekday.
+const weekdayReference = (dayOfWeek: number) => new Date(2023, 0, 1 + dayOfWeek);
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 function getMonthData(
   year: number,
   month: number,
   workoutDates: Set<string>,
   streakDates: Set<string>,
+  weekStartsOn: 0 | 1,
 ): MonthData {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  const startDayOfWeek = firstDay.getDay();
+  const startDayOfWeek = (firstDay.getDay() - weekStartsOn + 7) % 7;
 
   const days: DayData[] = [];
 
@@ -163,9 +140,28 @@ function calculateStreakDates(workoutDates: Set<string>): Set<string> {
   return streakDates;
 }
 
+function LegendDot({ color, label }: { color: ColorTokens; label: string }) {
+  return (
+    <XStack items="center" gap="$1.5">
+      <YStack
+        width={10}
+        height={10}
+        rounded={5}
+        bg={color}
+        borderWidth={1}
+        borderColor="$borderStrong"
+      />
+      <Text fontSize={11} color="$text" opacity={0.6}>
+        {label}
+      </Text>
+    </XStack>
+  );
+}
+
 export function MonthlyCalendarCard() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const weekStartsOn = getWeekStart(language);
 
   const [monthData, setMonthData] = useState<MonthData | null>(null);
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -175,14 +171,26 @@ export function MonthlyCalendarCard() {
 
   useEffect(() => {
     async function loadData() {
-      const workoutDates = await listWorkoutDayKeys();
+      // An empty grid beats the eternal skeleton a failed read used to leave behind.
+      let workoutDates = new Set<string>();
+      try {
+        workoutDates = await listWorkoutDayKeys();
+      } catch (error) {
+        reportError("journal.calendar", error);
+      }
       const streakDates = calculateStreakDates(workoutDates);
-      const data = getMonthData(currentMonth.year, currentMonth.month, workoutDates, streakDates);
+      const data = getMonthData(
+        currentMonth.year,
+        currentMonth.month,
+        workoutDates,
+        streakDates,
+        weekStartsOn,
+      );
       setMonthData(data);
     }
 
     loadData();
-  }, [currentMonth]);
+  }, [currentMonth, weekStartsOn]);
 
   const goToPrevMonth = () => {
     setCurrentMonth((prev) => ({
@@ -207,8 +215,15 @@ export function MonthlyCalendarCard() {
     );
   }
 
-  const dayLabels = language === "fr" ? DAYS_FR : DAYS_EN;
-  const monthName = language === "fr" ? MONTHS_FR[monthData.month] : MONTHS_EN[monthData.month];
+  const narrowWeekday = getDateTimeFormat(language, { weekday: "narrow" });
+  const dayLabels = Array.from({ length: 7 }, (_, i) =>
+    narrowWeekday.format(weekdayReference((weekStartsOn + i) % 7)),
+  );
+  const monthName = capitalize(
+    getDateTimeFormat(language, { month: "long" }).format(
+      new Date(monthData.year, monthData.month, 1),
+    ),
+  );
 
   return (
     <Card p="$3">
@@ -219,7 +234,7 @@ export function MonthlyCalendarCard() {
             onPress={goToPrevMonth}
             accessibilityRole="button"
             accessibilityLabel={t("journal.prev_month", "Previous month")}
-            hitSlop={8}
+            hitSlop={12}
           >
             <ChevronLeft size={24} color="$text" />
           </Pressable>
@@ -230,7 +245,7 @@ export function MonthlyCalendarCard() {
             onPress={goToNextMonth}
             accessibilityRole="button"
             accessibilityLabel={t("journal.next_month", "Next month")}
-            hitSlop={8}
+            hitSlop={12}
           >
             <ChevronRight size={24} color="$text" />
           </Pressable>
@@ -283,7 +298,7 @@ export function MonthlyCalendarCard() {
                   <Text
                     fontSize={13}
                     fontWeight={day.hasWorkout || day.isToday ? "700" : "400"}
-                    color={day.isToday ? "white" : "$text"}
+                    color={day.isToday ? "$white" : "$text"}
                     opacity={day.isCurrentMonth ? 1 : 0.3}
                   >
                     {day.date}
@@ -294,14 +309,16 @@ export function MonthlyCalendarCard() {
           ))}
         </YStack>
 
+        {/* Legend */}
+        <XStack justify="center" gap="$4" pt="$1">
+          <LegendDot color="$pastelGreen" label={t("journal.legend_workout", "Workout")} />
+          <LegendDot color="$success" label={t("journal.legend_streak", "Streak")} />
+          <LegendDot color="$primary" label={t("journal.legend_today", "Today")} />
+        </XStack>
+
         {/* Stats row */}
-        <XStack
-          justify="space-around"
-          pt="$2"
-          borderTopWidth={1}
-          borderColor="$borderStrong"
-          opacity={0.2}
-        >
+        <YStack height={1} bg="$text" opacity={0.1} mt="$1" />
+        <XStack justify="space-around" pt="$1">
           <YStack items="center">
             <Text fontWeight="700" fontSize={18} color="$text">
               {monthData.workoutCount}
@@ -315,7 +332,7 @@ export function MonthlyCalendarCard() {
               {monthData.streakDays}
             </Text>
             <Text fontSize={11} color="$text" opacity={0.6}>
-              {t("journal.streak_active", "Streak days").replace(" 🔥", "")}
+              {t("journal.streak_days", "Streak days")}
             </Text>
           </YStack>
         </XStack>

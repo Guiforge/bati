@@ -2,14 +2,13 @@ import { Flame, Target, Timer, TrendingUp, Trophy, Zap } from "@tamagui/lucide-i
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
-import { BarChart, LineChart } from "react-native-gifted-charts";
+import { BarChart } from "react-native-gifted-charts";
 import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { TrendsCard } from "@/components/journal/TrendsCard";
-import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
 import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
-import { dayKey } from "@/db/dates";
 import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -28,8 +27,6 @@ type WeekdayData = {
 };
 
 function getWeekdayStats(sessions: JournalStatsProps["sessions"], language: string): WeekdayData[] {
-  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const weekdaysFr = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
   const counts = [0, 0, 0, 0, 0, 0, 0];
 
   sessions.forEach((s) => {
@@ -37,33 +34,15 @@ function getWeekdayStats(sessions: JournalStatsProps["sessions"], language: stri
     counts[day]++;
   });
 
-  const labels = language === "fr" ? weekdaysFr : weekdays;
-  return labels.map((day, i) => ({ day, count: counts[i] }));
-}
-
-function getLast7DaysData(sessions: JournalStatsProps["sessions"], language: string) {
-  const days: { date: string; label: string; minutes: number }[] = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    const dateStr = dayKey(date);
-    const label = getDateTimeFormat(language, { weekday: "short" }).format(date);
-
-    days.push({ date: dateStr, label, minutes: 0 });
-  }
-
-  sessions.forEach((s) => {
-    const dateStr = dayKey(new Date(s.performedAt));
-    const dayData = days.find((d) => d.date === dateStr);
-    if (dayData && s.durationSeconds) {
-      dayData.minutes += Math.round(s.durationSeconds / 60);
-    }
+  // 2023-01-01 was a Sunday: day 1 + i lands on getDay() === i, which lets Intl name any
+  // weekday. Ordered from the locale's first day of the week (Monday in French).
+  const weekStartsOn = getWeekStart(language);
+  const shortWeekday = getDateTimeFormat(language, { weekday: "short" });
+  return Array.from({ length: 7 }, (_, i) => {
+    const day = (weekStartsOn + i) % 7;
+    const label = shortWeekday.format(new Date(2023, 0, 1 + day)).replace(/\.$/, "");
+    return { day: label.charAt(0).toUpperCase() + label.slice(1), count: counts[day] };
   });
-
-  return days;
 }
 
 function StatCard({
@@ -71,18 +50,16 @@ function StatCard({
   value,
   label,
   color = "$primary",
-  bgColor = "$bgLight",
 }: {
   icon: React.ReactNode;
   value: string | number;
   label: string;
   color?: ColorTokens;
-  bgColor?: ColorTokens;
 }) {
   return (
     <YStack
       flex={1}
-      bg={bgColor}
+      bg="$surface2"
       p="$3"
       rounded="$6"
       borderWidth={1}
@@ -140,10 +117,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       else levels.medium++;
     });
 
-    // This week stats
+    // This week stats, from the locale's first day of the week
     const today = new Date();
     const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
+    startOfWeek.setDate(today.getDate() - ((today.getDay() - getWeekStart(language) + 7) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
 
     const thisWeekSessions = sessions.filter((s) => new Date(s.performedAt) >= startOfWeek);
@@ -165,7 +142,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       thisWeekMinutes,
       thisMonthCount: thisMonthSessions.length,
     };
-  }, [sessions]);
+  }, [sessions, language]);
 
   const [streak, setStreak] = useState<StreakInfo>({
     current: 0,
@@ -182,9 +159,8 @@ export function JournalStats({ sessions }: JournalStatsProps) {
   }, []);
 
   const weekdayData = useMemo(() => getWeekdayStats(sessions, language), [sessions, language]);
-  const last7Days = useMemo(() => getLast7DaysData(sessions, language), [sessions, language]);
 
-  // Memoized like weekdayData/last7Days above: gifted-charts rebuilds (and re-animates)
+  // Memoized like weekdayData above: gifted-charts rebuilds (and re-animates)
   // its whole SVG tree whenever the data array identity changes.
   const weekdayChartData = useMemo(
     () =>
@@ -196,48 +172,36 @@ export function JournalStats({ sessions }: JournalStatsProps) {
     [weekdayData],
   );
 
-  const lineChartData = useMemo(
-    () =>
-      last7Days.map((d) => ({
-        value: d.minutes,
-        label: d.label,
-        dataPointText: d.minutes > 0 ? String(d.minutes) : "",
-      })),
-    [last7Days],
-  );
-
   if (!stats || sessions.length === 0) {
     return null;
   }
 
   const chartWidth = Math.min(width - 80, 300);
   const maxWeekdayCount = Math.max(...weekdayData.map((d) => d.count), 1);
-  const maxDailyMinutes = Math.max(...last7Days.map((d) => d.minutes), 1);
 
   return (
     <YStack gap="$4">
       {/* Streak Card */}
-      <Card bg={streak.isActive ? "$success" : "$pastelYellow"}>
+      <Card bg="$surface2">
         <XStack items="center" justify="space-between">
           <XStack items="center" gap="$3">
             <YStack
               width={50}
               height={50}
               rounded={25}
-              bg={streak.isActive ? "rgba(255,255,255,0.2)" : "$bgLight"}
+              bg="$bgLight"
               items="center"
               justify="center"
             >
-              <Flame size={28} color={streak.isActive ? "white" : "$secondary"} />
+              <Flame size={28} color={streak.isActive ? "$success" : "$textSecondary"} />
             </YStack>
             <YStack>
-              <Text fontWeight="700" fontSize={28} color={streak.isActive ? "white" : "$text"}>
+              <Text fontWeight="700" fontSize={28} color="$text">
                 {streak.current} {t("journal.days", "days")}
               </Text>
               <Text
                 fontSize={14}
-                color={streak.isActive ? "white" : "$text"}
-                opacity={streak.isActive ? 0.9 : 0.6}
+                color={streak.isActive ? "$success" : "$textSecondary"}
                 fontWeight="700"
               >
                 {streak.isActive
@@ -247,10 +211,10 @@ export function JournalStats({ sessions }: JournalStatsProps) {
             </YStack>
           </XStack>
           <YStack items="center">
-            <Text fontSize={12} color={streak.isActive ? "white" : "$text"} opacity={0.7}>
+            <Text fontSize={12} color="$textSecondary">
               {t("journal.best_streak", "Best")}
             </Text>
-            <Text fontWeight="700" fontSize={20} color={streak.isActive ? "white" : "$secondary"}>
+            <Text fontWeight="700" fontSize={20} color="$secondary">
               {streak.best}
             </Text>
           </YStack>
@@ -260,27 +224,24 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       {/* Quick Stats Grid */}
       <XStack gap="$3">
         <StatCard
-          icon={<Trophy size={18} color="white" />}
+          icon={<Trophy size={18} color="$white" />}
           value={stats.totalWorkouts}
           label={t("journal.total_workouts", "Total Workouts")}
           // StatCard's `color` fills the icon disc (`bg={color}`) — it is a background, so it
           // stays $primary while foreground uses moved to $primaryText.
           color="$primary"
-          bgColor="$pastelBlue"
         />
         <StatCard
-          icon={<Timer size={18} color="white" />}
+          icon={<Timer size={18} color="$white" />}
           value={stats.totalMinutes}
           label={t("journal.total_minutes", "Total Minutes")}
           color="$success"
-          bgColor="$pastelGreen"
         />
         <StatCard
-          icon={<Zap size={18} color="white" />}
+          icon={<Zap size={18} color="$white" />}
           value={stats.avgMinutes}
           label={t("journal.avg_duration", "Avg Duration")}
           color="$secondary"
-          bgColor="$pastelPurple"
         />
       </XStack>
 
@@ -330,48 +291,6 @@ export function JournalStats({ sessions }: JournalStatsProps) {
         </YStack>
       </Card>
 
-      {/* Last 7 Days Chart */}
-      <Card>
-        <YStack gap="$3">
-          <YStack gap="$1">
-            <Text fontWeight="700" fontSize={16} color="$text">
-              {t("journal.last_7_days", "Last 7 Days")}
-            </Text>
-            <Paragraph color="$text" opacity={0.6} size="$2">
-              {t("journal.minutes_per_day", "Minutes trained each day")}
-            </Paragraph>
-          </YStack>
-          <YStack items="center" py="$2">
-            <LineChart
-              data={lineChartData}
-              width={chartWidth}
-              height={120}
-              spacing={chartWidth / 8}
-              initialSpacing={20}
-              endSpacing={20}
-              thickness={3}
-              color={rawColors.primary}
-              dataPointsColor={rawColors.primary}
-              dataPointsRadius={5}
-              curved
-              areaChart
-              startFillColor="rgba(13, 51, 242, 0.35)"
-              endFillColor="rgba(13, 51, 242, 0.02)"
-              startOpacity={0.8}
-              endOpacity={0.1}
-              noOfSections={3}
-              maxValue={Math.ceil(maxDailyMinutes / 10) * 10 + 10}
-              yAxisThickness={0}
-              xAxisThickness={1}
-              xAxisColor={rawColors.borderStrong}
-              yAxisTextStyle={{ color: rawColors.textSecondary, fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: rawColors.textSecondary, fontSize: 9 }}
-              hideRules
-            />
-          </YStack>
-        </YStack>
-      </Card>
-
       {/* Favorite Workout Days */}
       <Card>
         <YStack gap="$3">
@@ -383,7 +302,14 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               {t("journal.when_you_train", "When you usually train")}
             </Paragraph>
           </YStack>
-          <YStack items="center" py="$2">
+          <YStack
+            items="center"
+            py="$2"
+            accessible
+            accessibilityLabel={`${t("journal.when_you_train", "When you usually train")}: ${weekdayData
+              .map((d) => `${d.day} ${d.count}`)
+              .join(", ")}`}
+          >
             <BarChart
               data={weekdayChartData}
               width={chartWidth}

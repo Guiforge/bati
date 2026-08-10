@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type ColorTokens, Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import {
   getBalanceRecommendation,
   getMuscleBalance,
@@ -55,12 +56,11 @@ export function MuscleBalanceCard() {
   }, []);
 
   if (isLoading) {
+    // Six muscle rows plus header: reserve roughly that height, like the sibling cards do.
     return (
-      <Card bg="$bgLight">
-        <Text color="$text" opacity={0.6}>
-          {t("common.loading")}
-        </Text>
-      </Card>
+      <SkeletonCard>
+        <Skeleton height={180} />
+      </SkeletonCard>
     );
   }
 

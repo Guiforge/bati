@@ -11,6 +11,7 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { Stepper } from "@/components/common/Stepper";
+import { useToast } from "@/components/common/Toast";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { getExerciseAsset } from "@/constants/assetMap";
 import {
@@ -30,6 +31,7 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
+import { useHaptics } from "@/hooks/useHaptics";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -67,6 +69,8 @@ export default function QuestEditor() {
   const [rest, setRest] = useState(DEFAULT_REST);
   const [picked, setPicked] = useState<PickedExercise[]>([]);
   const [busy, setBusy] = useState(false);
+  const { showSuccess } = useToast();
+  const { success } = useHaptics();
 
   // Dirty-form guard: the delete path had a confirmation, the accidental back had none —
   // a name and five picked exercises vanished on one tap. `baseline` is what the form looked
@@ -215,6 +219,9 @@ export default function QuestEditor() {
           restSeconds: rest,
           exercises: payload,
         });
+        // The edit used to vanish with no confirmation it persisted.
+        success();
+        showSuccess(t("quests.editor_saved", "Quest saved"));
         router.replace(`/quests/${id}` as never);
         return;
       }
@@ -236,6 +243,8 @@ export default function QuestEditor() {
       const saved = await getQuestConfig(questId);
       if (saved) await saveQuestConfig(questId, { level: saved.level });
 
+      success();
+      showSuccess(t("quests.editor_saved", "Quest saved"));
       router.back();
     } catch (e) {
       skipGuardRef.current = false;

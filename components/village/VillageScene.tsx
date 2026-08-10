@@ -344,6 +344,15 @@ export function VillageScene() {
               <Text fontWeight="700" fontSize={16} color="$textSecondary">
                 {t("village.to_build_title", "To build")}
               </Text>
+              {/* The loop, stated once where the empty slots raise the question. "I never
+                  understood the village" is real user feedback; the explanation lived only
+                  inside a sheet behind a tap nothing suggested. */}
+              <Text fontSize={12} color="$textSecondary" opacity={0.8}>
+                {t(
+                  "village.loop_hint",
+                  "Every muscle you train raises a building — tap one to see what feeds it.",
+                )}
+              </Text>
               <XStack flexWrap="wrap" gap="$3">
                 {unbuilt.map((building) => (
                   <YStack

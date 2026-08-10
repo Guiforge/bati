@@ -15,6 +15,7 @@ import {
   Wrench,
 } from "@tamagui/lucide-icons";
 import Constants from "expo-constants";
+import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import * as Linking from "expo-linking";
@@ -30,6 +31,7 @@ import { useToast } from "@/components/common/Toast";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
+import { useHaptics } from "@/hooks/useHaptics";
 import { buildBugReportMailto, readCrashLog } from "@/src/crashLog";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -221,6 +223,7 @@ export default function SettingsScreen() {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [crashCount, setCrashCount] = useState(0);
   const { showError } = useToast();
+  const haptics = useHaptics();
 
   useEffect(() => {
     readCrashLog()
@@ -403,14 +406,28 @@ export default function SettingsScreen() {
             icon={<Vibrate size={22} color="$text" />}
             label={t("settings.haptics", "Haptics")}
             value={hapticsEnabled ? t("common.on", "On") : t("common.off", "Off")}
-            onPress={() => setHapticsEnabled(!hapticsEnabled)}
+            onPress={() => {
+              const next = !hapticsEnabled;
+              setHapticsEnabled(next);
+              // Direct call, not useHaptics: the hook still reads the old (off) value in
+              // this render, and turning haptics ON should answer with the very thing
+              // the hero just enabled.
+              if (next) {
+                Haptics.selectionAsync().catch(() => {
+                  // Haptics errors are non-critical
+                });
+              }
+            }}
           />
 
           <SettingRow
             icon={<Volume2 size={22} color="$text" />}
             label={t("settings.sound", "Sound")}
             value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
-            onPress={() => setSoundEnabled(!soundEnabled)}
+            onPress={() => {
+              haptics.selection();
+              setSoundEnabled(!soundEnabled);
+            }}
           />
 
           <SettingRow
@@ -418,6 +435,7 @@ export default function SettingsScreen() {
             label={t("settings.warmup", "Warm-up")}
             value={warmupEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => {
+              haptics.selection();
               const next = !warmupEnabled;
               setWarmupEnabledState(next);
               preferences.setWarmupEnabled(next).catch((error) => {
@@ -431,7 +449,10 @@ export default function SettingsScreen() {
             icon={<Dumbbell size={22} color="$text" />}
             label={t("settings.equipment", "Equipment")}
             value={equipmentLabel}
-            onPress={cycleEquipment}
+            onPress={() => {
+              haptics.selection();
+              cycleEquipment();
+            }}
           />
 
           <SettingRow

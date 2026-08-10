@@ -69,7 +69,8 @@
     "weakness_bonus": "Faiblesse !",
     "threat": "Niveau de menace {{rank}} sur 4",
     "final_blow": "Abattu par ton coup final !",
-    "triumph_subtitle": "Triomphe ! Tombé sous tes propres coups — +{{xp}} XP"
+    "triumph_subtitle": "Triomphe ! Tombé sous tes propres coups — +{{xp}} XP",
+    "matchup_hint": "Frappe sa faiblesse : dégâts ×1,5 — sa résistance les divise par deux."
   },
   "chart": {
     "all_history": "Durées des entraînements récents",
@@ -124,10 +125,10 @@
     "metric_weekly_sessions": "{{weekly}} séances par semaine, pendant {{count}} semaines",
     "pick_weekly": "SÉANCES PAR SEMAINE",
     "weekly_chip": "{{count}}× / semaine",
-    "streak_hint": "Les jours de repos comptent — la flamme mesure la régularité, pas l'assiduité."
+    "streak_hint": "Les jours de repos comptent — la flamme mesure la régularité, pas l'assiduité.",
+    "sworn_toast": "Serment prêté"
   },
   "common": {
-    "awesome": "Génial !",
     "begin_adventure": "Commencer l'aventure",
     "by": "Par {{author}}",
     "cancel": "Annuler",
@@ -137,7 +138,7 @@
     "done": "Terminé",
     "daily_xp_bonus": "+50% XP",
     "decrease": "Diminuer {{label}}",
-    "error": "Oups !",
+    "error": "Un problème est survenu",
     "exercises_short": "ex",
     "increase": "Augmenter {{label}}",
     "go_back": "Retour",
@@ -345,7 +346,7 @@
     "this_month": "Ce Mois",
     "this_week": "Cette Semaine",
     "title": "Journal de quête",
-    "total_minutes": "Total Minutes",
+    "total_minutes": "Minutes totales",
     "total_workouts": "Total Entraînements",
     "total_xp": "XP Total",
     "trends_down": "↓ {{change}}%",
@@ -389,7 +390,7 @@
     "presentation_description": "Chaque entraînement construit ton village. Commence ton aventure aujourd'hui.",
     "presentation_title": "Ta forme physique est\nta forteresse.",
     "skip": "Passer",
-    "valid": "Parfait !",
+    "valid": "Un nom digne",
     "village_name_placeholder": "Ton nom de village",
     "village_name_subtitle": "Chaque légende a un nom. Quel sera le tien ?",
     "village_name_hint": "Chaque muscle entraîné fait monter un bâtiment ici.",
@@ -403,7 +404,7 @@
     "chain_position": "Marche {{position}}/{{total}} · {{name}}",
     "decrease_message": "Ça semble dur ces derniers temps. Baisser la difficulté peut t'aider à rester régulier.",
     "decrease_title": "Récupération Recommandée",
-    "increase_message": "Tu assures grave ces derniers temps. Essaie d'augmenter la difficulté pour de meilleures récompenses !",
+    "increase_message": "Tes dernières séances ont prouvé ta valeur. Monte la difficulté pour de meilleures récompenses.",
     "increase_title": "Monte d'un cran",
     "new_rung": "Nouvelle marche débloquée",
     "new_rung_from": "Tu as maîtrisé {{name}}",
@@ -448,7 +449,7 @@
     "editor_target": "Objectif",
     "empty_filters_subtitle": "Essaie d'enlever des filtres.",
     "empty_filters_title": "Aucune quête ne correspond",
-    "empty_subtitle": "Reviens bientôt — le village prépare des aventures.",
+    "empty_subtitle": "Reviens bientôt — de nouvelles quêtes se forgent.",
     "empty_title": "Aucune quête pour l'instant",
     "estimate": "≈ {{duration}}",
     "exercises": "{{count}} exercices",
@@ -489,7 +490,8 @@
     "archetype_circuit": "Circuit",
     "archetype_metabolic": "Cardio",
     "archetype_core": "Gainage",
-    "archetype_mobility": "Mobilité"
+    "archetype_mobility": "Mobilité",
+    "editor_saved": "Quête enregistrée"
   },
   "recovery": {
     "description": "Tu as une séance laissée en chemin.",
@@ -516,9 +518,9 @@
     "bonus_time": "TEMPS BONUS",
     "building_level": "Niveau {{level}}",
     "building_unlocked": "Débloqué",
-    "complete_button": "TERMINÉ !",
+    "complete_button": "Terminé",
     "complete_exercise_accessibility": "Terminer l’exercice",
-    "complete_overtime": "TERMINÉ ! 🎉",
+    "complete_overtime": "Terminer",
     "continue": "Continuer",
     "countdown_letsgo": "C'est parti !",
     "decrease_reps_accessibility": "Diminuer les répétitions",
@@ -555,7 +557,7 @@
     "resume_button": "Reprendre",
     "round_label": "MANCHE {{count}} / {{total}}",
     "seconds": "Secondes",
-    "skip_rest": "Je suis prêt !",
+    "skip_rest": "Je suis prêt",
     "skip_rest_accessibility": "Passer le repos et commencer le prochain exercice",
     "summary_saving": "Enregistrement de ta séance…",
     "target_reached": "Objectif atteint !",
@@ -621,7 +623,7 @@
     "building_details": "Détails du bâtiment",
     "close": "Fermer",
     "load_error": "Le village est hors d’atteinte",
-    "home_card_subtitle": "Construis ton empire",
+    "home_card_subtitle": "Chaque muscle entraîné l'élève",
     "home_card_title": "Ton Village",
     "level": "Niv.",
     "locked": "Verrouillé",
@@ -671,7 +673,8 @@
     "style_cardio": "cardio",
     "close_scene": "Fermer",
     "tap_to_close": "Touche l'écran pour fermer",
-    "open_scene": "Voir la scène en entier"
+    "open_scene": "Voir la scène en entier",
+    "loop_hint": "Chaque muscle entraîné élève un bâtiment — touche-en un pour voir ce qui le nourrit."
   },
   "welcome": "Bienvenue sur Bati !",
   "safety": {

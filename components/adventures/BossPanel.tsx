@@ -135,23 +135,35 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
   if (!(fight.weaknessMuscle || fight.resistanceMuscle || isEnraged)) return null;
 
   return (
-    <XStack items="center" gap="$3" flexWrap="wrap">
-      {isEnraged ? (
-        <Trait icon={<GameIcon name="flame" size={13} color="$error" />} color="$error">
-          {t("boss.enraged")}
-        </Trait>
+    <YStack gap="$1.5">
+      <XStack items="center" gap="$3" flexWrap="wrap">
+        {isEnraged ? (
+          <Trait icon={<GameIcon name="flame" size={13} color="$error" />} color="$error">
+            {t("boss.enraged")}
+          </Trait>
+        ) : null}
+        {fight.weaknessMuscle ? (
+          <Trait icon={<Target size={12} color="$secondary" />}>
+            {t("boss.weakness")} · {t(`muscles.${fight.weaknessMuscle}`)}
+          </Trait>
+        ) : null}
+        {fight.resistanceMuscle ? (
+          <Trait icon={<Shield size={12} color="$textSecondary" />}>
+            {t("boss.resistance")} · {t(`muscles.${fight.resistanceMuscle}`)}
+          </Trait>
+        ) : null}
+      </XStack>
+      {/* The causal rule the labels never stated: muscle choice drives damage. Said here,
+          on the pre-fight panel, where the hero still has time to pick accordingly. */}
+      {fight.weaknessMuscle || fight.resistanceMuscle ? (
+        <Text fontSize={11} color="$textSecondary" opacity={0.8}>
+          {t(
+            "boss.matchup_hint",
+            "Strike its weakness for 1.5× damage — its resistance halves yours.",
+          )}
+        </Text>
       ) : null}
-      {fight.weaknessMuscle ? (
-        <Trait icon={<Target size={12} color="$secondary" />}>
-          {t("boss.weakness")} · {t(`muscles.${fight.weaknessMuscle}`)}
-        </Trait>
-      ) : null}
-      {fight.resistanceMuscle ? (
-        <Trait icon={<Shield size={12} color="$textSecondary" />}>
-          {t("boss.resistance")} · {t(`muscles.${fight.resistanceMuscle}`)}
-        </Trait>
-      ) : null}
-    </XStack>
+    </YStack>
   );
 }
 

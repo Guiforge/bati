@@ -28,6 +28,7 @@ import {
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
+import { useHaptics } from "@/hooks/useHaptics";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -218,7 +219,8 @@ export default function OathScreen() {
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showCustom, setShowCustom] = useState(false);
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
+  const { success } = useHaptics();
 
   useEffect(() => {
     getOathProgress()
@@ -308,9 +310,12 @@ export default function OathScreen() {
         showError(t("oath.save_error", "Could not save the oath"));
         return;
       }
+      // The app's most ceremonial commitment used to end in a silent router.back().
+      success();
+      showSuccess(t("oath.sworn_toast", "Oath sworn"));
       router.back();
     },
-    [router, showError, t],
+    [router, showError, showSuccess, success, t],
   );
 
   // Swearing overwrites the single stored oath. The screen's own footnote says so; the tap

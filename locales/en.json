@@ -53,7 +53,7 @@
     "presentation_description": "Every workout builds your village. Start your adventure today.",
     "presentation_title": "Your fitness is\nyour fortress.",
     "skip": "Skip",
-    "valid": "Valid!",
+    "valid": "A worthy name",
     "village_name_placeholder": "Your village name",
     "village_name_subtitle": "Every legend needs a name. What will yours be?",
     "village_name_hint": "Every muscle you train raises a building here.",
@@ -112,7 +112,8 @@
     "metric_weekly_sessions": "{{weekly}} sessions a week, for {{count}} weeks",
     "pick_weekly": "SESSIONS PER WEEK",
     "weekly_chip": "{{count}}× / week",
-    "streak_hint": "Rest days count — the flame tracks consistency, not attendance."
+    "streak_hint": "Rest days count — the flame tracks consistency, not attendance.",
+    "sworn_toast": "Oath sworn"
   },
   "settings": {
     "title": "Settings",
@@ -165,7 +166,7 @@
   "welcome": "Welcome to Bati!",
   "progression": {
     "increase_title": "Step it up",
-    "increase_message": "You've been crushing it lately. Try increasing the difficulty for better rewards!",
+    "increase_message": "Your recent sessions have earned more. Raise the difficulty for greater rewards.",
     "decrease_title": "Recovery Recommended",
     "decrease_message": "It seems tough lately. Lowering difficulty can help you maintain consistency.",
     "chain_position": "Rung {{position}}/{{total}} · {{name}}",
@@ -189,7 +190,7 @@
     "start_error": "Could not start the quest",
     "starting": "Starting…",
     "empty_title": "No quests yet",
-    "empty_subtitle": "Come back soon — the village is preparing adventures.",
+    "empty_subtitle": "Come back soon — new quests are being forged.",
     "empty_filters_title": "No quests match",
     "empty_filters_subtitle": "Try removing filters.",
     "rounds": "{{count}} rounds",
@@ -253,7 +254,8 @@
     "editor_discard": "Discard",
     "editor_discard_body": "Your edits will be lost.",
     "editor_discard_title": "Discard changes?",
-    "editor_delete_body": "This cannot be undone."
+    "editor_delete_body": "This cannot be undone.",
+    "editor_saved": "Quest saved"
   },
   "adventures": {
     "gallery_title": "Adventures",
@@ -299,7 +301,8 @@
     "resistance": "Resistance",
     "threat": "Threat level {{rank}} of 4",
     "final_blow": "Felled by your final blow!",
-    "triumph_subtitle": "Triumph! Felled by your own blows — +{{xp}} XP"
+    "triumph_subtitle": "Triumph! Felled by your own blows — +{{xp}} XP",
+    "matchup_hint": "Strike its weakness for 1.5× damage — its resistance halves yours."
   },
   "exercises": {
     "details_title": "Exercise",
@@ -323,9 +326,9 @@
     "bonus_time": "BONUS TIME",
     "building_level": "Level {{level}}",
     "building_unlocked": "Unlocked",
-    "complete_button": "DONE!",
+    "complete_button": "Done",
     "complete_exercise_accessibility": "Complete exercise",
-    "complete_overtime": "FINISH! 🎉",
+    "complete_overtime": "Finish",
     "continue": "Continue",
     "countdown_letsgo": "Let's go!",
     "decrease_reps_accessibility": "Decrease reps by one",
@@ -362,7 +365,7 @@
     "resume_button": "Resume",
     "round_label": "ROUND {{count}} / {{total}}",
     "seconds": "Seconds",
-    "skip_rest": "I'm Ready!",
+    "skip_rest": "I'm ready",
     "skip_rest_accessibility": "Skip rest and start next exercise",
     "summary_saving": "Saving your workout…",
     "target_reached": "Target reached!",
@@ -536,7 +539,6 @@
     "avg_mins": "Avg mins"
   },
   "common": {
-    "awesome": "Awesome!",
     "begin_adventure": "Begin Adventure",
     "by": "By {{author}}",
     "cancel": "Cancel",
@@ -549,7 +551,7 @@
     "language_fr": "French",
     "saving": "Saving...",
     "loading": "Loading...",
-    "error": "Oops!",
+    "error": "Something went wrong",
     "retry": "Retry",
     "go_back": "Go back",
     "not_now": "Not now",
@@ -569,7 +571,7 @@
     "max_level": "Max Level",
     "locked": "Locked",
     "home_card_title": "Your Village",
-    "home_card_subtitle": "Build your empire",
+    "home_card_subtitle": "Every muscle you train raises it",
     "view_village": "View Village",
     "building_details": "Building Details",
     "tier": "Tier {{tier}}",
@@ -616,7 +618,8 @@
     "style_cardio": "cardio",
     "close_scene": "Close",
     "tap_to_close": "Tap anywhere to close",
-    "open_scene": "See the whole scene"
+    "open_scene": "See the whole scene",
+    "loop_hint": "Every muscle you train raises a building — tap one to see what feeds it."
   },
   "goals": {
     "title": "My Goal",

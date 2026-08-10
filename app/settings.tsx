@@ -30,6 +30,7 @@ import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
 import { buildBugReportMailto, readCrashLog } from "@/src/crashLog";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 // Version comes from the embedded manifest. The Android build number is derived from the version
@@ -220,7 +221,12 @@ export default function SettingsScreen() {
   const [crashCount, setCrashCount] = useState(0);
 
   useEffect(() => {
-    readCrashLog().then((reports) => setCrashCount(reports.length));
+    readCrashLog()
+      .then((reports) => setCrashCount(reports.length))
+      .catch((error) => {
+        // The row falls back to "0 reports"; the failure itself must not be one more silence.
+        reportError("settings.crashLog", error);
+      });
   }, []);
 
   // Reads the log at press time rather than holding it in state: the draft should carry what

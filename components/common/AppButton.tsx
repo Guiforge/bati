@@ -32,7 +32,7 @@ export function AppButton({
 
   const getColor = () => {
     if (variant === "outline") return "$text";
-    if (variant === "secondary") return "white";
+    if (variant === "secondary") return "$white";
     return "$text";
   };
 

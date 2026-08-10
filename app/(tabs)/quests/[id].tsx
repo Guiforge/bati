@@ -13,6 +13,7 @@ import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { useToast } from "@/components/common/Toast";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
 import { getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
@@ -109,6 +110,7 @@ function LevelChip({
 export default function QuestDetails() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { showError } = useToast();
   const params = useLocalSearchParams<{
     id?: string | string[];
     level?: string;
@@ -146,6 +148,15 @@ export default function QuestDetails() {
   });
   const [narrative, setNarrative] = useState<string | null>(null);
   const [showNarrative, setShowNarrative] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+
+  // The screen stays mounted under the session; without this, coming back would leave
+  // the start button stuck on "Starting…" forever.
+  useFocusEffect(
+    useCallback(() => {
+      setIsStarting(false);
+    }, []),
+  );
 
   const load = useCallback(
     async (id: number, nextLevel: Difficulty) => {
@@ -297,12 +308,21 @@ export default function QuestDetails() {
   const xpReward = derived?.xpReward ?? null;
 
   const proceedToSession = async () => {
-    if (!quest) return;
+    // The isStarting guard is what stops a double-tap from starting two sessions while the
+    // boss fight loads; it resets on the next focus (coming back from the session).
+    if (!quest || isStarting) return;
+    setIsStarting(true);
 
-    // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
-    // populates the store, and the session screen redirects home if it mounts on an empty one.
-    await startSession(quest, level, { adventureRunStepId: runStepId });
-    router.push("/session" as never);
+    try {
+      // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
+      // populates the store, and the session screen redirects home if it mounts on an empty one.
+      await startSession(quest, level, { adventureRunStepId: runStepId });
+      router.push("/session" as never);
+    } catch (error) {
+      setIsStarting(false);
+      reportError("quest.startSession", error);
+      showError(t("quests.start_error", "Could not start the quest"));
+    }
   };
 
   const handleStart = async () => {
@@ -614,11 +634,19 @@ export default function QuestDetails() {
             height={60}
             variant="primary"
             pressStyle={{ opacity: 0.9 }}
-            onPress={handleStart}
+            onPress={() => {
+              handleStart().catch(() => {
+                // Errors already surfaced via showError inside proceedToSession
+              });
+            }}
+            disabled={isStarting}
+            opacity={isStarting ? 0.6 : 1}
             rounded="$6"
           >
             <Text color="$text" fontSize={22} fontWeight="700">
-              {t("quests.start_button", "Start Quest")}
+              {isStarting
+                ? t("quests.starting", "Starting…")
+                : t("quests.start_button", "Start Quest")}
             </Text>
           </AppButton>
         </YStack>

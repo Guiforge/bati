@@ -13,7 +13,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.primary?.val,
+        tabBarActiveTintColor: theme.primaryText?.val,
         tabBarInactiveTintColor: theme.color?.val,
         tabBarLabelStyle: {
           fontWeight: "700",
@@ -36,8 +36,8 @@ export default function TabsLayout() {
           title: t("tabs.home", "Home"),
           tabBarIcon: ({ focused, size }) => (
             <Home
-              color={focused ? "$primary" : "$text"}
-              fill={focused ? theme.primary?.val : "none"}
+              color={focused ? "$primaryText" : "$text"}
+              fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -52,8 +52,8 @@ export default function TabsLayout() {
           title: t("tabs.adventures", "Adventures"),
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
-              color={focused ? "$primary" : "$text"}
-              fill={focused ? theme.primary?.val : "none"}
+              color={focused ? "$primaryText" : "$text"}
+              fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -74,8 +74,8 @@ export default function TabsLayout() {
           popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
-              color={focused ? "$primary" : "$text"}
-              fill={focused ? theme.primary?.val : "none"}
+              color={focused ? "$primaryText" : "$text"}
+              fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -91,8 +91,8 @@ export default function TabsLayout() {
           title: t("tabs.village", "Village"),
           tabBarIcon: ({ focused, size }) => (
             <Castle
-              color={focused ? "$primary" : "$text"}
-              fill={focused ? theme.primary?.val : "none"}
+              color={focused ? "$primaryText" : "$text"}
+              fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}
@@ -108,8 +108,8 @@ export default function TabsLayout() {
           title: t("tabs.journal", "Journal"),
           tabBarIcon: ({ focused, size }) => (
             <Scroll
-              color={focused ? "$primary" : "$text"}
-              fill={focused ? theme.primary?.val : "none"}
+              color={focused ? "$primaryText" : "$text"}
+              fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
               strokeWidth={2.5}

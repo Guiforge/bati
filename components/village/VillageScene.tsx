@@ -12,6 +12,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 
+import { AppButton } from "@/components/common/AppButton";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
 import { BuiltBuildingCard } from "@/components/village/BuiltBuildingCard";
@@ -34,6 +35,7 @@ import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } fr
 import { useHaptics } from "@/hooks/useHaptics";
 import { useAnimationProps, useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
@@ -89,6 +91,7 @@ export function VillageScene() {
   const [highlighted] = useState(() => new Set((grown ?? "").split(",").filter(Boolean)));
 
   const [scene, setScene] = useState<VillageSceneData | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   // Read-only: a tap explains what earned the building, it never unlocks anything.
   const [selected, setSelected] = useState<VillageSelection | null>(null);
   // The sheet (portal, overlay, frame) is dead weight behind the scene until the first tap,
@@ -106,14 +109,24 @@ export function VillageScene() {
 
   // Refetch on focus: the whole point of this screen is "what changed since I trained",
   // and a tab screen stays mounted, so a mount-only effect would show yesterday forever.
+  const loadScene = useCallback(() => {
+    getVillageScene()
+      .then((data) => {
+        setScene(data);
+        setLoadFailed(false);
+      })
+      .catch((error) => {
+        // This is the tab's only fetch: without the failed flag, a first-load failure
+        // left the skeleton on screen forever. Later failures keep yesterday's scene.
+        reportError("village.scene", error);
+        setLoadFailed(true);
+      });
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      getVillageScene()
-        .then(setScene)
-        .catch(() => {
-          // Keep whatever is on screen; the skeleton covers the first load
-        });
-    }, []),
+      loadScene();
+    }, [loadScene]),
   );
 
   // The tier art is square (1024x1024), and `cover` silently crops whatever the slot doesn't
@@ -122,6 +135,26 @@ export function VillageScene() {
   const heroHeight = width;
 
   if (!scene) {
+    if (loadFailed) {
+      return (
+        <YStack
+          testID="village-screen"
+          flex={1}
+          bg="$background"
+          items="center"
+          justify="center"
+          gap="$4"
+          p="$4"
+        >
+          <Text fontSize={16} fontWeight="700" color="$text" style={{ textAlign: "center" }}>
+            {t("village.load_error", "The village is out of reach")}
+          </Text>
+          <AppButton fullWidth={false} onPress={loadScene}>
+            {t("common.retry", "Retry")}
+          </AppButton>
+        </YStack>
+      );
+    }
     return (
       <YStack testID="village-screen" flex={1} bg="$background">
         <Skeleton width="100%" height={heroHeight} radius={0} />

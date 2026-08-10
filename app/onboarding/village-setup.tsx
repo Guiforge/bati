@@ -7,9 +7,11 @@ import { KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-nat
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, useTheme, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
+import { reportError } from "@/src/reportError";
 import { useUserStore } from "@/stores/user";
 
 const TOTAL_STEPS = 4;
@@ -25,6 +27,7 @@ export default function VillageSetup() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const setVillageName = useUserStore((s) => s.setVillageName);
+  const { showError } = useToast();
 
   const [name, setName] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -38,7 +41,14 @@ export default function VillageSetup() {
 
   const handleContinue = async () => {
     if (!isValidName) return;
-    await setVillageName(trimmedName);
+    try {
+      await setVillageName(trimmedName);
+    } catch (error) {
+      // Without this, a failed write left the hero stuck on step 2 with a mute button.
+      reportError("onboarding.villageName", error);
+      showError(t("onboarding.save_error", "Could not save — try again"));
+      return;
+    }
     router.push("/onboarding/training-level");
   };
 
@@ -153,7 +163,11 @@ export default function VillageSetup() {
 
             <AppButton
               testID="onboarding-village-continue"
-              onPress={handleContinue}
+              onPress={() => {
+                handleContinue().catch(() => {
+                  // Errors already surfaced via showError above
+                });
+              }}
               disabled={!isValidName}
               bg={isValidName ? "$primary" : "$surface"}
               borderColor={isValidName ? "$primary" : "$borderStrong"}
@@ -162,7 +176,7 @@ export default function VillageSetup() {
               opacity={isValidName ? 1 : 0.5}
             >
               <Paragraph
-                color={isValidName ? "white" : "$textSecondary"}
+                color={isValidName ? "$white" : "$textSecondary"}
                 fontWeight="700"
                 fontSize={18}
               >

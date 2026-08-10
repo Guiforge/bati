@@ -30,6 +30,7 @@
     "load_error": "Échec du chargement de l’aventure",
     "not_found": "Aventure introuvable",
     "start": "Commencer l’aventure",
+    "start_error": "Impossible de lancer l’aventure",
     "step_active": "Active",
     "step_completed": "Terminée",
     "step_label": "Étape {{count}}",
@@ -369,6 +370,7 @@
   "onboarding": {
     "chars_min": "car. min",
     "finish": "Commencer",
+    "save_error": "Impossible d’enregistrer — réessaie",
     "kingdom_founded": "ROYAUME FONDÉ",
     "language_selection": "Choisis ta langue",
     "level_advanced": "Confirmé",
@@ -465,6 +467,8 @@
     "seconds_per_rep": "{{count}}s/reps",
     "see_all": "Voir tout",
     "start_button": "Commencer la quête",
+    "start_error": "Impossible de lancer la quête",
+    "starting": "Lancement…",
     "archetype_strength": "Force",
     "archetype_skill": "Technique",
     "archetype_hypertrophy": "Muscle",
@@ -589,6 +593,7 @@
   "village": {
     "building_details": "Détails du bâtiment",
     "close": "Fermer",
+    "load_error": "Le village est hors d’atteinte",
     "home_card_subtitle": "Construis ton empire",
     "home_card_title": "Ton Village",
     "level": "Niv.",

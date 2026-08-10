@@ -39,6 +39,7 @@
   },
   "onboarding": {
     "chars_min": "chars min",
+    "save_error": "Could not save — try again",
     "finish": "Start my training journey",
     "kingdom_founded": "KINGDOM FOUNDED",
     "language_selection": "Pick your language",
@@ -167,6 +168,8 @@
     "loading": "Loading...",
     "load_error": "Failed to load",
     "retry": "Retry",
+    "start_error": "Could not start the quest",
+    "starting": "Starting…",
     "empty_title": "No quests yet",
     "empty_subtitle": "Come back soon — the village is preparing adventures.",
     "empty_filters_title": "No quests match",
@@ -234,6 +237,7 @@
     "not_found": "Adventure not found",
     "invalid_id": "Invalid adventure",
     "load_error": "Failed to load adventure",
+    "start_error": "Could not start the adventure",
     "steps": "{{count}} steps",
     "weeks_one": "≈ {{count}} week",
     "weeks_other": "≈ {{count}} weeks",
@@ -533,6 +537,7 @@
   },
   "village": {
     "title": "My Village",
+    "load_error": "The village is out of reach",
     "level": "Lv.",
     "max_level": "Max Level",
     "locked": "Locked",

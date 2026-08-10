@@ -1,0 +1,11 @@
+- The app's real typography finally renders: SpaceGrotesk headings, NotoSans body.
+- Full UI/UX audit pass: every failure now shows an error with a retry instead of
+  loading forever, destructive taps ask first (quit session, replace an oath,
+  discard quest edits), and saving answers with a confirmation.
+- The rest screen gains a pause button; correcting reps now also corrects the
+  boss damage dealt.
+- Quest filters grouped by dimension, skeleton loading everywhere, larger touch
+  targets, reduced-motion respected in more places.
+- The village now explains how buildings are earned; the boss panel states the
+  weakness/resistance rule.
+- French: the Settings screen and the bug-report email are properly translated.

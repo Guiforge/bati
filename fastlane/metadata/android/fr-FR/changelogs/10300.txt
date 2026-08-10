@@ -1,0 +1,14 @@
+- La vraie typographie de l'app s'affiche enfin : titres en SpaceGrotesk, texte
+  en NotoSans.
+- Grande passe UI/UX : chaque échec affiche une erreur avec un bouton réessayer
+  au lieu de charger indéfiniment, les actions destructrices demandent d'abord
+  (quitter une séance, remplacer un serment, abandonner une édition de quête),
+  et les sauvegardes se confirment.
+- L'écran de repos gagne un bouton pause ; corriger ses reps corrige aussi les
+  dégâts infligés au boss.
+- Filtres de quêtes groupés par dimension, squelettes de chargement partout,
+  cibles tactiles élargies, animations réduites mieux respectées.
+- Le village explique comment les bâtiments s'élèvent ; le panneau du boss
+  énonce la règle faiblesse/résistance.
+- Français : l'écran Réglages et l'e-mail de rapport de bug sont vraiment
+  traduits.

@@ -1,0 +1,44 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+  repositories {
+    google()
+    mavenCentral()
+  }
+  dependencies {
+    classpath('com.android.tools.build:gradle')
+    classpath('com.facebook.react:react-native-gradle-plugin')
+    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+  }
+}
+
+allprojects {
+  repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://www.jitpack.io' }
+  }
+}
+
+apply plugin: "expo-root-project"
+apply plugin: "com.facebook.react.rootproject"
+
+// See plugins/withAndroidReproducibleNative.js — makes .so files byte-identical across builds.
+subprojects { subproject ->
+  ["com.android.library", "com.android.application"].each { pluginId ->
+    subproject.plugins.withId(pluginId) {
+      subproject.android {
+        defaultConfig {
+          externalNativeBuild {
+            cmake {
+              arguments += "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id=none"
+            }
+            ndkBuild {
+              arguments += "APP_LDFLAGS=-Wl,--build-id=none"
+            }
+          }
+        }
+      }
+    }
+  }
+}

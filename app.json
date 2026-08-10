@@ -7,7 +7,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.guiforge.bati",
-      "versionCode": 10201
+      "versionCode": 10202
     },
     "backgroundColor": "#0B0F19",
     "experiments": {
@@ -82,7 +82,7 @@
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"

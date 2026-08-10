@@ -1,0 +1,3 @@
+<resources>
+  <string name="NSPhotoLibraryUsageDescription">"Utilisée pour choisir une photo comme avatar de votre héros. L'image reste sur votre appareil et n'est jamais envoyée."</string>
+</resources>

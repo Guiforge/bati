@@ -6,10 +6,12 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { rawColors } from "@/constants/rawColors";
 import { preferences, type TrainingLevel } from "@/db";
 import { useHaptics } from "@/hooks/useHaptics";
+import { reportError } from "@/src/reportError";
 import { useUserStore } from "@/stores/user";
 
 const TOTAL_STEPS = 4;
@@ -32,22 +34,29 @@ export default function TrainingLevelStep() {
   const setHasFinishedOnboarding = useUserStore((s) => s.setHasFinishedOnboarding);
 
   const [selected, setSelected] = useState<TrainingLevel | null>(null);
+  const { showError } = useToast();
 
   const complete = useCallback(
-    async (level: TrainingLevel | null) => {
+    (level: TrainingLevel | null) => {
       if (level) {
-        preferences.setTrainingLevel(level).catch(() => {
+        preferences.setTrainingLevel(level).catch((error) => {
           // Non-blocking: level is a soft signal, onboarding still completes
+          reportError("onboarding.trainingLevel", error);
         });
       }
       success();
       // Onboarding is done here, before the first-session offer: skipping it, backing out of it
       // or crashing during it must never drop the hero back into onboarding. Awaited so the
-      // flag is durably persisted before we navigate, not just set in memory.
-      await setHasFinishedOnboarding(true);
-      router.replace("/onboarding/first-session" as never);
+      // flag is durably persisted before we navigate, not just set in memory — and a failed
+      // write must say so, or the hero replays onboarding on the next launch.
+      setHasFinishedOnboarding(true)
+        .then(() => router.replace("/onboarding/first-session" as never))
+        .catch((error) => {
+          reportError("onboarding.finish", error);
+          showError(t("onboarding.save_error", "Could not save — try again"));
+        });
     },
-    [success, setHasFinishedOnboarding, router],
+    [success, setHasFinishedOnboarding, router, showError, t],
   );
 
   return (
@@ -145,7 +154,11 @@ export default function TrainingLevelStep() {
             rounded="$10"
             opacity={selected ? 1 : 0.5}
           >
-            <Paragraph color={selected ? "white" : "$textSecondary"} fontWeight="700" fontSize={18}>
+            <Paragraph
+              color={selected ? "$white" : "$textSecondary"}
+              fontWeight="700"
+              fontSize={18}
+            >
               {t("onboarding.finish", "Start my training journey")}
             </Paragraph>
           </AppButton>
@@ -156,10 +169,11 @@ export default function TrainingLevelStep() {
             color="$textSecondary"
             fontSize={15}
             fontWeight="700"
-            py="$2"
+            py="$3"
             pressStyle={{ opacity: 0.6 }}
             onPress={() => complete(null)}
             accessibilityRole="button"
+            hitSlop={8}
           >
             {t("onboarding.skip", "Skip")}
           </Text>

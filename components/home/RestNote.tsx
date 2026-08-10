@@ -5,6 +5,7 @@ import { GameIcon } from "@/components/common/GameIcon";
 import { pickDailyVariant, REST_SUGGESTION_MESSAGES } from "@/constants/restMessages";
 import { dayKey } from "@/db/dates";
 import { getRestSuggestion, type RestSuggestion } from "@/db/restSuggestions";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -26,8 +27,9 @@ export function RestNote() {
         .then((result) => {
           if (!cancelled) setSuggestion(result.shouldRest ? result : null);
         })
-        .catch(() => {
+        .catch((error) => {
           // The line simply does not appear; nothing else on Home depends on it.
+          reportError("home.restNote", error);
         });
 
       return () => {

@@ -7,6 +7,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { getUserLevelInfo } from "@/db/userLevel";
 import { getVillageTier, TIER_NAMES, type VillageTier } from "@/db/village";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 const BAND_HEIGHT = 64;
@@ -31,8 +32,9 @@ export function VillageTeaser() {
           setTier(getVillageTier(info.level));
           setLevel(info.level);
         })
-        .catch(() => {
+        .catch((error) => {
           // Nothing to show; the band stays empty but keeps its height
+          reportError("home.villageTeaser", error);
         });
     }, []),
   );

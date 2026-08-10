@@ -32,6 +32,7 @@ import {
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { computeSessionXp } from "@/db/xp";
+import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
@@ -362,6 +363,7 @@ export default function AdventuresGallery() {
       const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
       setState({ status: "ready", adventures, exercisesById });
     } catch (e) {
+      reportError("adventures.gallery", e);
       const message = e instanceof Error ? e.message : "Unknown error";
       setState((s) => ({
         status: "error",

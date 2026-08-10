@@ -6,16 +6,23 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { rawColors } from "@/constants/rawColors";
 import { Difficulty, getQuestById, listQuestTemplates, type Quest } from "@/db/quests";
 import { useHaptics } from "@/hooks/useHaptics";
+import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 4;
 
-/** The on-ramp quest authored for exactly this moment: 8 minutes, four movements, no equipment. */
+/**
+ * The on-ramp quest authored for exactly this moment: 8 minutes, four movements, no equipment.
+ * The title is the identifier on purpose: the quest is seeded by an immutable migration
+ * (drizzle/0016_seed_new_quests.sql) that keys on this exact string. If it ever goes missing,
+ * the load below reports it instead of silently killing the offer.
+ */
 const FIRST_QUEST_TITLE = "The Squire's Awakening";
 
 /**
@@ -35,6 +42,10 @@ export default function FirstSessionStep() {
   const startSession = useSessionStore((s) => s.startSession);
 
   const [quest, setQuest] = useState<Quest | null>(null);
+  // The offer's quest failed to load (or the seed is gone). The primary CTA becomes the way
+  // home instead of sitting disabled forever on the last screen of the funnel.
+  const [offerDead, setOfferDead] = useState(false);
+  const { showError } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -42,13 +53,22 @@ export default function FirstSessionStep() {
     listQuestTemplates()
       .then((templates) => {
         const match = templates.find((tpl) => tpl.enTitle === FIRST_QUEST_TITLE);
+        if (!match) {
+          reportError(
+            "onboarding.firstQuest",
+            new Error(`seed quest "${FIRST_QUEST_TITLE}" not found`),
+          );
+        }
         return match ? getQuestById(match.id, Difficulty.Easy) : null;
       })
       .then((loaded) => {
-        if (!cancelled) setQuest(loaded);
+        if (cancelled) return;
+        setQuest(loaded);
+        if (!loaded) setOfferDead(true);
       })
-      .catch(() => {
-        // The offer simply does not appear; the skip button still gets the hero home.
+      .catch((error) => {
+        reportError("onboarding.firstQuest", error);
+        if (!cancelled) setOfferDead(true);
       });
 
     return () => {
@@ -62,11 +82,18 @@ export default function FirstSessionStep() {
     if (!quest) return skip();
 
     success();
-    // Awaited: the store is only populated once the boss fight and warm-up preference resolve,
-    // and the session screen redirects home if it mounts before that.
-    await startSession(quest, Difficulty.Easy);
+    try {
+      // Awaited: the store is only populated once the boss fight and warm-up preference resolve,
+      // and the session screen redirects home if it mounts before that.
+      await startSession(quest, Difficulty.Easy);
+    } catch (error) {
+      // The single highest-value tap of the funnel must not fail into silence.
+      reportError("onboarding.firstSession", error);
+      showError(t("onboarding.save_error", "Could not save — try again"));
+      return;
+    }
     router.replace("/session" as never);
-  }, [quest, skip, startSession, success, router]);
+  }, [quest, skip, startSession, success, router, showError, t]);
 
   return (
     <YStack flex={1} bg="$bgDark">
@@ -114,22 +141,40 @@ export default function FirstSessionStep() {
         <YStack gap="$3">
           <AppButton
             testID="onboarding-first-session-start"
-            onPress={start}
-            disabled={!quest}
+            onPress={() => {
+              if (offerDead) {
+                skip();
+                return;
+              }
+              start().catch(() => {
+                // Errors already surfaced via showError above
+              });
+            }}
+            disabled={!quest && !offerDead}
             bg="$primary"
             borderWidth={0}
             rounded="$10"
           >
             <Text color="$text" fontSize={17} fontWeight="700">
-              {t("onboarding.first_session_start", "Start now")}
+              {offerDead
+                ? t("onboarding.finish", "Start my training journey")
+                : t("onboarding.first_session_start", "Start now")}
             </Text>
           </AppButton>
 
-          <Button testID="onboarding-first-session-skip" chromeless size="$3" onPress={skip}>
-            <Text color="$textSecondary" fontSize={15}>
-              {t("onboarding.first_session_later", "Later")}
-            </Text>
-          </Button>
+          {!offerDead && (
+            <Button
+              testID="onboarding-first-session-skip"
+              chromeless
+              size="$3"
+              onPress={skip}
+              hitSlop={8}
+            >
+              <Text color="$textSecondary" fontSize={15}>
+                {t("onboarding.first_session_later", "Later")}
+              </Text>
+            </Button>
+          )}
         </YStack>
       </YStack>
     </YStack>

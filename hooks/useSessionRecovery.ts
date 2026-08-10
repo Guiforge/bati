@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { preferences } from "@/db/preferences";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { type SavedSessionState, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -68,7 +69,9 @@ export function useSessionRecovery() {
           (saved.savedAt - (saved.startTime ?? saved.savedAt) - saved.totalPausedTime) / 1000,
         ),
       });
-    } catch (_error) {
+    } catch (error) {
+      // A corrupt snapshot means no recovery offer; the corruption itself must be visible.
+      reportError("session.recoveryCheck", error);
       setRecoverableSession(null);
     } finally {
       setIsChecking(false);
@@ -122,7 +125,9 @@ export function useSessionRecovery() {
       setRecoverableSession(null);
 
       return true;
-    } catch (_error) {
+    } catch (error) {
+      // "Resume did nothing" is this failing silently — report it so it stops being invisible.
+      reportError("session.recover", error);
       return false;
     }
   }, []);

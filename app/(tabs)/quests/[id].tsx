@@ -173,6 +173,7 @@ export default function QuestDetails() {
         }
         setState({ status: "ready", quest });
       } catch (e) {
+        reportError("quest.load", e);
         const message = e instanceof Error ? e.message : "Unknown error";
         setState((s) => ({ status: "error", quest: s.quest, message }));
       }
@@ -204,8 +205,10 @@ export default function QuestDetails() {
           const next = saved ?? { level: initialLevel };
           setConfig(params.level ? { ...next, level: initialLevel } : next);
         })
-        .catch(() => {
-          // A missing or corrupt config just means "run the quest as written".
+        .catch((error) => {
+          // A missing or corrupt config just means "run the quest as written" — but a corrupt
+          // one silently discards the hero's saved rounds/rest/targets, so report it.
+          reportError("quest.config", error);
         });
 
       return () => {
@@ -227,8 +230,11 @@ export default function QuestDetails() {
     (next: QuestConfig) => {
       setConfig(next);
       if (questId == null) return;
-      saveQuestConfig(questId, next).catch(() => {
-        // Persisting is best-effort: the session still runs with what is on screen.
+      saveQuestConfig(questId, next).catch((error) => {
+        // Persisting is best-effort: the session still runs with what is on screen. But the
+        // config card promises "it comes back next time" — a failed write breaks that promise,
+        // so it must at least be reported.
+        reportError("quest.saveConfig", error);
       });
     },
     [questId],

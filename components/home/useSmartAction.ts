@@ -10,6 +10,7 @@ import { getOathProgress, oathNeedsExercise } from "@/db/oaths";
 import { loadConfiguredQuest } from "@/db/questConfig";
 import { findQuestWithExercise } from "@/db/quests";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 /** What the stage shows: a scene to walk into, whether it is an adventure or tonight's quest. */
@@ -197,8 +198,9 @@ export function useSmartAction() {
             onPress: () => router.push("/(tabs)/quests" as never),
           });
         }
-      } catch {
-        // Error handled silently: the widget's own default config covers this case
+      } catch (error) {
+        // The widget's own default config covers the UI; the failure itself must be visible.
+        reportError("home.smartAction", error);
       } finally {
         if (!isCancelled()) setIsLoading(false);
       }

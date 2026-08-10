@@ -26,6 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
+import { useToast } from "@/components/common/Toast";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
@@ -219,6 +220,7 @@ export default function SettingsScreen() {
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [crashCount, setCrashCount] = useState(0);
+  const { showError } = useToast();
 
   useEffect(() => {
     readCrashLog()
@@ -232,37 +234,51 @@ export default function SettingsScreen() {
   // Reads the log at press time rather than holding it in state: the draft should carry what
   // is on disk now, and the row only ever needed the count.
   const openBugReport = useCallback(async () => {
-    const reports = await readCrashLog();
-    const url = buildBugReportMailto(reports, versionLabel, {
-      subject: t("feedback.subject", { version: versionLabel }),
-      prompt: t("feedback.prompt"),
-      technicalHeader: t("feedback.technical_header"),
-      noCrash: t("feedback.no_crash"),
-    });
     try {
-      if (!(await Linking.canOpenURL(url))) return;
+      const reports = await readCrashLog();
+      const url = buildBugReportMailto(reports, versionLabel, {
+        subject: t("feedback.subject", { version: versionLabel }),
+        prompt: t("feedback.prompt"),
+        technicalHeader: t("feedback.technical_header"),
+        noCrash: t("feedback.no_crash"),
+      });
+      if (!(await Linking.canOpenURL(url))) {
+        // Tapping the row and having nothing ever happen reads as broken, not as "no mail app".
+        showError(t("settings.no_mail_client", "No email app found on this device"));
+        return;
+      }
       await Linking.openURL(url);
-    } catch {
-      // No mail client configured, or a restricted simulator. Nothing was sent, which is the
-      // safe direction to fail in.
+    } catch (error) {
+      // Nothing was sent, which is the safe direction to fail in — but say so.
+      reportError("settings.bugReport", error);
+      showError(t("settings.no_mail_client", "No email app found on this device"));
     }
-  }, [t]);
+  }, [t, showError]);
 
   const pickCustomAvatar = useCallback(async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        // A silently-declined permission used to make this row do nothing, forever.
+        showError(t("settings.photos_denied", "Photo access is off — allow it in system settings"));
+        return;
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-    if (result.canceled) return;
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      if (result.canceled) return;
 
-    await setCustomAvatarUri(result.assets[0].uri);
-    setShowAvatarPicker(false);
-  }, [setCustomAvatarUri]);
+      await setCustomAvatarUri(result.assets[0].uri);
+      setShowAvatarPicker(false);
+    } catch (error) {
+      reportError("settings.avatar", error);
+      showError(t("common.error", "Something went wrong"));
+    }
+  }, [setCustomAvatarUri, showError, t]);
 
   // What the hero owns, cycled through in one row: unanswered -> nothing -> bar -> bar + dips.
   // Unanswered shows everything, so nobody loses content by never opening this screen.
@@ -276,16 +292,18 @@ export default function SettingsScreen() {
       .then((value) => {
         if (!cancelled) setWarmupEnabledState(value);
       })
-      .catch(() => {
+      .catch((error) => {
         // Non-blocking: the warm-up defaults to on.
+        reportError("settings.warmupRead", error);
       });
     preferences
       .getOwnedEquipment()
       .then((value) => {
         if (!cancelled) setOwnedEquipment(value);
       })
-      .catch(() => {
+      .catch((error) => {
         // Non-blocking: an unreadable preference just means "show everything".
+        reportError("settings.equipmentRead", error);
       });
     return () => {
       cancelled = true;
@@ -303,8 +321,10 @@ export default function SettingsScreen() {
             : null;
 
     setOwnedEquipment(next);
-    preferences.setOwnedEquipment(next).catch(() => {
-      // Non-blocking: the filter is a preference, not a gate.
+    preferences.setOwnedEquipment(next).catch((error) => {
+      // Non-blocking: the filter is a preference, not a gate — but a write that stops
+      // working is exactly the failure nobody notices for weeks.
+      reportError("settings.equipmentWrite", error);
     });
   }, [ownedEquipment]);
 
@@ -400,8 +420,9 @@ export default function SettingsScreen() {
             onPress={() => {
               const next = !warmupEnabled;
               setWarmupEnabledState(next);
-              preferences.setWarmupEnabled(next).catch(() => {
+              preferences.setWarmupEnabled(next).catch((error) => {
                 // Non-blocking: it can be skipped in-session either way.
+                reportError("settings.warmupWrite", error);
               });
             }}
           />

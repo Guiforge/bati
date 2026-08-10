@@ -1,7 +1,7 @@
 import { ChevronLeft, Trash2, X } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,6 +31,7 @@ import {
 import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 /** An exercise as picked in the editor: one target value, not the min/max range seed content uses. */
@@ -67,6 +68,45 @@ export default function QuestEditor() {
   const [picked, setPicked] = useState<PickedExercise[]>([]);
   const [busy, setBusy] = useState(false);
 
+  // Dirty-form guard: the delete path had a confirmation, the accidental back had none —
+  // a name and five picked exercises vanished on one tap. `baseline` is what the form looked
+  // like when it was last clean; `skipGuardRef` lets a successful save leave without asking.
+  const [baseline, setBaseline] = useState(() =>
+    JSON.stringify({
+      title: "",
+      description: "",
+      rounds: DEFAULT_ROUNDS,
+      rest: DEFAULT_REST,
+      picked: [] as PickedExercise[],
+    }),
+  );
+  const skipGuardRef = useRef(false);
+  const isDirty =
+    !skipGuardRef.current &&
+    JSON.stringify({ title, description, rounds, rest, picked }) !== baseline;
+  const isDirtyRef = useRef(isDirty);
+  isDirtyRef.current = isDirty;
+
+  const navigation = useNavigation();
+  useEffect(() => {
+    return navigation.addListener("beforeRemove", (e) => {
+      if (!isDirtyRef.current) return;
+      e.preventDefault();
+      Alert.alert(
+        t("quests.editor_discard_title", "Discard changes?"),
+        t("quests.editor_discard_body", "Your edits will be lost."),
+        [
+          { text: t("common.cancel", "Cancel"), style: "cancel" },
+          {
+            text: t("quests.editor_discard", "Discard"),
+            style: "destructive",
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ],
+      );
+    });
+  }, [navigation, t]);
+
   const exerciseName = useCallback(
     (exercise: Exercise) => (language === "fr" ? exercise.frName : exercise.enName),
     [language],
@@ -85,23 +125,35 @@ export default function QuestEditor() {
       setExercises(all);
       if (!template) return;
 
-      setTitle(localizedTitle(template, language));
-      setDescription(language === "fr" ? template.frDescription : template.enDescription);
+      const nextTitle = localizedTitle(template, language);
+      const nextDescription = language === "fr" ? template.frDescription : template.enDescription;
+      const nextPicked = template.exercises.map((qex) => ({
+        exerciseId: qex.exerciseId,
+        type: qex.baseTarget.type,
+        value: Math.max(
+          TARGET_RANGE.min,
+          Math.round((qex.baseTarget.min + qex.baseTarget.max) / 2),
+        ),
+      }));
+
+      setTitle(nextTitle);
+      setDescription(nextDescription);
       setRounds(template.rounds);
       setRest(template.restSeconds);
-      setPicked(
-        template.exercises.map((qex) => ({
-          exerciseId: qex.exerciseId,
-          type: qex.baseTarget.type,
-          value: Math.max(
-            TARGET_RANGE.min,
-            Math.round((qex.baseTarget.min + qex.baseTarget.max) / 2),
-          ),
-        })),
+      setPicked(nextPicked);
+      setBaseline(
+        JSON.stringify({
+          title: nextTitle,
+          description: nextDescription,
+          rounds: template.rounds,
+          rest: template.restSeconds,
+          picked: nextPicked,
+        }),
       );
     };
 
-    load().catch(() => {
+    load().catch((error) => {
+      reportError("quest.editorLoad", error);
       Alert.alert(t("common.error", "Oops!"), t("quests.load_error", "Failed to load quest"));
     });
 
@@ -150,6 +202,7 @@ export default function QuestEditor() {
 
     setBusy(true);
     try {
+      skipGuardRef.current = true;
       if (questId == null) {
         const id = await createQuestTemplate({
           enTitle: trimmed,
@@ -185,6 +238,8 @@ export default function QuestEditor() {
 
       router.back();
     } catch (e) {
+      skipGuardRef.current = false;
+      reportError("quest.editorSave", e);
       const message = e instanceof Error ? e.message : "Unknown error";
       Alert.alert(t("common.error", "Oops!"), message);
     } finally {
@@ -205,12 +260,15 @@ export default function QuestEditor() {
           style: "destructive",
           onPress: () => {
             setBusy(true);
+            skipGuardRef.current = true;
             // The per-quest settings outlive the quest row otherwise: same key space, no FK.
             deleteQuest(questId)
               .then(() => clearQuestConfig(questId))
               .then(() => router.replace("/quests" as never))
               .catch((e: unknown) => {
                 setBusy(false);
+                skipGuardRef.current = false;
+                reportError("quest.editorDelete", e);
                 const message = e instanceof Error ? e.message : "Unknown error";
                 Alert.alert(t("common.error", "Oops!"), message);
               });

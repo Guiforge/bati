@@ -15,6 +15,7 @@ import { getExerciseById } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
@@ -237,8 +238,9 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
         setProgression(next);
         setChain(path);
       })
-      .catch(() => {
+      .catch((error) => {
         // The ladder is a hint; its absence changes nothing about the screen.
+        reportError("exercise.ladder", error);
       });
     return () => {
       cancelled = true;
@@ -345,7 +347,10 @@ export default function ExerciseDetails() {
         setExercise(data);
         setStatus("ready");
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Unknown error");
+        // The raw message goes to the report; the hero gets a translated sentence, not
+        // SQLite prose.
+        reportError("exercise.load", e);
+        setError(t("exercises.load_error", "Failed to load exercise"));
         setStatus("error");
       }
     },

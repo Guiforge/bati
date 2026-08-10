@@ -10,6 +10,7 @@ import { getAvatarSource } from "@/constants/avatars";
 import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { getFlameLevel } from "@/db/village";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 // The flame grows with the streak (db/village.ts thresholds) so the header reads at a glance.
@@ -30,8 +31,12 @@ export function HomeHeader() {
   // Refetch on focus: a session just logged must show up here, not on the next cold start.
   useFocusEffect(
     useCallback(() => {
-      getUserLevelInfo().then(setLevelInfo);
-      getStreakInfo().then(setStreak);
+      getUserLevelInfo()
+        .then(setLevelInfo)
+        .catch((e) => reportError("home.levelInfo", e));
+      getStreakInfo()
+        .then(setStreak)
+        .catch((e) => reportError("home.streak", e));
     }, []),
   );
 

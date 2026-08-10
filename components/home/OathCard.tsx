@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { useOathText } from "@/components/oath/useOathText";
 import { type Chain, getChainTo } from "@/db/exercises";
 import { getOathProgress, type OathProgress, oathNeedsExercise } from "@/db/oaths";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 // Card padding + icon row + bar + progress line: the sworn state, which is the taller of the two.
@@ -41,8 +42,9 @@ function ChainLine({ oath }: { oath: OathProgress }) {
       .then((result) => {
         if (!cancelled) setChain(result);
       })
-      .catch(() => {
+      .catch((error) => {
         // The line simply does not appear; the oath itself is unaffected.
+        reportError("home.oathChain", error);
       });
 
     return () => {
@@ -106,7 +108,10 @@ export function OathCard() {
   const load = useCallback(async () => {
     try {
       setOath(await getOathProgress());
-    } catch {
+    } catch (error) {
+      // On error the card falls back to the "swear an oath" CTA — wrong for a hero who has
+      // one, so the failure must at least be reported.
+      reportError("home.oath", error);
       setOath(null);
     } finally {
       setIsLoading(false);

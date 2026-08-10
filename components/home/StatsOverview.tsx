@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Text, useTheme, XStack } from "tamagui";
 import { getTotalStats } from "@/db/userLevel";
 import { useGameIcons } from "@/hooks/useGameIcon";
+import { reportError } from "@/src/reportError";
 
 /**
  * Lifetime legend as a single quiet line, not a stat-card grid: the numbers
@@ -22,11 +23,19 @@ export function StatsOverview() {
 
   useFocusEffect(
     useCallback(() => {
-      getTotalStats().then(setTotalStats);
+      getTotalStats()
+        .then(setTotalStats)
+        .catch((e) => reportError("home.totalStats", e));
     }, []),
   );
 
-  const xp = totalStats?.totalXp ?? 0;
+  // Before the read lands (or if it fails) the row shows nothing rather than
+  // presenting "0 Quests / 0 XP" as a fact about the hero.
+  if (!totalStats) {
+    return <XStack minH={44} py="$2" />;
+  }
+
+  const xp = totalStats.totalXp;
   const xpLabel = xp >= 1000 ? `${(xp / 1000).toFixed(1)}k` : `${xp}`;
 
   return (
@@ -39,6 +48,12 @@ export function StatsOverview() {
       onPress={() => router.push("/(tabs)/journal")}
       pressStyle={{ opacity: 0.7 }}
       accessibilityRole="button"
+      accessibilityLabel={t("home.stats_a11y", {
+        count: totalStats.totalSessions,
+        xp: xpLabel,
+        defaultValue: "{{count}} quests done, {{xp}} XP — open the journal",
+      })}
+      hitSlop={4}
     >
       <XStack items="center" gap="$2">
         <Image source={icons.sword} style={{ width: 18, height: 18 }} contentFit="contain" />

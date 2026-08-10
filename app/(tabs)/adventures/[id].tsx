@@ -1,8 +1,8 @@
 import { ChevronLeft, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
@@ -41,6 +41,7 @@ import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { computeSessionXp } from "@/db/xp";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 function resolveImage(
@@ -227,6 +228,7 @@ export default function AdventureDetailsScreen() {
         });
       } catch (e) {
         if (isStale()) return;
+        reportError("adventure.load", e);
         const message = e instanceof Error ? e.message : "Unknown error";
         setState((s) => ({ ...s, status: "error", message }));
       }
@@ -234,17 +236,23 @@ export default function AdventureDetailsScreen() {
     [t],
   );
 
-  useEffect(() => {
-    if (!adventureId) return;
-    let ignore = false;
-    // Guard against fast screen-switching: only the latest load commits state.
-    load(adventureId, () => ignore).catch(() => {
-      // Error already handled in load function
-    });
-    return () => {
-      ignore = true;
-    };
-  }, [adventureId, load]);
+  // On focus, not on mount: this screen stays on the stack under the quest and the session,
+  // so a mount-only load showed stale step statuses, boss HP and CTA on the way back. Focus
+  // is also what un-sticks `isStarting` after a successful start.
+  useFocusEffect(
+    useCallback(() => {
+      if (!adventureId) return;
+      let ignore = false;
+      setIsStarting(false);
+      // Guard against fast screen-switching: only the latest load commits state.
+      load(adventureId, () => ignore).catch(() => {
+        // Error already handled in load function
+      });
+      return () => {
+        ignore = true;
+      };
+    }, [adventureId, load]),
+  );
 
   const details = state.details;
   const run = state.activeRun;
@@ -343,8 +351,8 @@ export default function AdventureDetailsScreen() {
       );
     } catch (e) {
       setIsStarting(false);
-      const message = e instanceof Error ? e.message : t("adventures.start_error");
-      showError(message);
+      reportError("adventure.start", e);
+      showError(t("adventures.start_error", "Could not start the adventure"));
     }
   }, [adventureId, details, isStarting, router, run, showError, suggestedDifficulty, t]);
 

@@ -20,6 +20,7 @@ import {
   type VillageBuilding,
 } from "@/db/village";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { reportError } from "@/src/reportError";
 import type { AppLanguage } from "@/stores/settings";
 
 export type VillageSelection =
@@ -95,8 +96,9 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
       .then((value) => {
         if (!cancelled) setExtra(value);
       })
-      .catch(() => {
+      .catch((error) => {
         // The headline already answers "why this level"; the deed list is a bonus.
+        reportError("village.detailSheet", error);
       });
 
     return () => {

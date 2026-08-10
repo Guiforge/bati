@@ -40,6 +40,7 @@ import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 type LoadState =
@@ -228,18 +229,22 @@ const DURATION_FALLBACKS: Record<DurationBucket, string> = {
 };
 
 type RailChip = { key: string; label: string; active: boolean; onPress: () => void };
+type RailGroup = { key: string; label: string; chips: RailChip[] };
 
 /**
  * Filters live in the page, not behind a modal: the sheet showed one dimension at a time,
  * cost three taps to apply what already updated live behind it, and reserved 94px of list
- * padding for its floating trigger. Active chips sort to the front so what's applied never
- * scrolls out of sight.
+ * padding for its floating trigger. The rail is grouped by dimension with a muted label per
+ * group — twenty undifferentiated chips gave no way to tell that "Chest" and "Barbell" answer
+ * different questions, or that duration is single-select while the rest are not. Active chips
+ * hoist to the front of their own group, so what's applied stays visible without shuffling
+ * chips across dimensions.
  */
-function FilterRail({ chips, onClearAll }: { chips: RailChip[]; onClearAll: () => void }) {
+function FilterRail({ groups, onClearAll }: { groups: RailGroup[]; onClearAll: () => void }) {
   const { t } = useTranslation();
 
-  if (chips.length === 0) return null;
-  const anyActive = chips.some((c) => c.active);
+  if (groups.length === 0) return null;
+  const anyActive = groups.some((g) => g.chips.some((c) => c.active));
 
   return (
     <ScrollView
@@ -256,15 +261,22 @@ function FilterRail({ chips, onClearAll }: { chips: RailChip[]; onClearAll: () =
           accessibilityRole="button"
         />
       ) : null}
-      {chips.map((c) => (
-        <Chip
-          key={c.key}
-          label={c.label}
-          tone={c.active ? "primary" : "default"}
-          onPress={c.onPress}
-          accessibilityRole="button"
-          accessibilityState={{ selected: c.active }}
-        />
+      {groups.map((g) => (
+        <XStack key={g.key} items="center" gap="$2">
+          <Text fontSize={10} fontWeight="700" color="$textSecondary" opacity={0.7}>
+            {g.label.toUpperCase()}
+          </Text>
+          {g.chips.map((c) => (
+            <Chip
+              key={c.key}
+              label={c.label}
+              tone={c.active ? "primary" : "default"}
+              onPress={c.onPress}
+              accessibilityRole="button"
+              accessibilityState={{ selected: c.active }}
+            />
+          ))}
+        </XStack>
       ))}
     </ScrollView>
   );
@@ -421,6 +433,7 @@ export default function QuestsGallery() {
         return { status: "ready", quests, exercisesById };
       });
     } catch (e) {
+      reportError("quests.gallery", e);
       const message = e instanceof Error ? e.message : "Unknown error";
       setState((s) => ({
         status: "error",
@@ -472,35 +485,57 @@ export default function QuestsGallery() {
   );
 
   // Duration first (the "how long have I got" question), then the kind of training, then muscles,
-  // then equipment — with the active ones hoisted to the front. Array.sort is stable, so ties keep
-  // this order. The archetype was already printed on every row and could not be searched by: a
-  // hero training for strength had no way to ask for it.
-  const railChips: RailChip[] = [
-    ...DURATION_BUCKETS.map((b) => ({
-      key: `d-${b}`,
-      label: t(`quests.filter_duration_${b}`, DURATION_FALLBACKS[b]),
-      active: filters.duration === b,
-      onPress: () => toggleDuration(b),
-    })),
-    ...availableArchetypes.map((a) => ({
-      key: `a-${a}`,
-      label: t(`quests.archetype_${a}`),
-      active: filters.archetypes.has(a),
-      onPress: () => toggleArchetype(a),
-    })),
-    ...availableMuscles.map((m) => ({
-      key: `m-${m}`,
-      label: MUSCLE_LABELS[m]?.[language] ?? m,
-      active: filters.muscles.has(m),
-      onPress: () => toggleMuscle(m),
-    })),
-    ...availableEquipment.map((e) => ({
-      key: `e-${e}`,
-      label: EQUIPMENT_LABELS[e]?.[language] ?? e,
-      active: filters.equipment.has(e),
-      onPress: () => toggleEquipment(e),
-    })),
-  ].sort((a, b) => Number(b.active) - Number(a.active));
+  // then equipment — one labeled group per dimension. Active chips hoist to the front of their
+  // own group only (Array.sort is stable), never across dimensions.
+  const byActive = (a: RailChip, b: RailChip) => Number(b.active) - Number(a.active);
+  const railGroups: RailGroup[] = [
+    {
+      key: "duration",
+      label: t("quests.filter_group_duration", "Duration"),
+      chips: DURATION_BUCKETS.map((b) => ({
+        key: `d-${b}`,
+        label: t(`quests.filter_duration_${b}`, DURATION_FALLBACKS[b]),
+        active: filters.duration === b,
+        onPress: () => toggleDuration(b),
+      })).sort(byActive),
+    },
+    {
+      key: "type",
+      label: t("quests.filter_group_type", "Type"),
+      chips: availableArchetypes
+        .map((a) => ({
+          key: `a-${a}`,
+          label: t(`quests.archetype_${a}`),
+          active: filters.archetypes.has(a),
+          onPress: () => toggleArchetype(a),
+        }))
+        .sort(byActive),
+    },
+    {
+      key: "muscle",
+      label: t("quests.filter_group_muscle", "Muscles"),
+      chips: availableMuscles
+        .map((m) => ({
+          key: `m-${m}`,
+          label: MUSCLE_LABELS[m]?.[language] ?? m,
+          active: filters.muscles.has(m),
+          onPress: () => toggleMuscle(m),
+        }))
+        .sort(byActive),
+    },
+    {
+      key: "equipment",
+      label: t("quests.filter_group_equipment", "Equipment"),
+      chips: availableEquipment
+        .map((e) => ({
+          key: `e-${e}`,
+          label: EQUIPMENT_LABELS[e]?.[language] ?? e,
+          active: filters.equipment.has(e),
+          onPress: () => toggleEquipment(e),
+        }))
+        .sort(byActive),
+    },
+  ].filter((g) => g.chips.length > 0);
 
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const canLoadMore = visible.length < filtered.length;
@@ -561,7 +596,7 @@ export default function QuestsGallery() {
 
       {/* Filters, in the page rather than behind a modal. Above StatusMessage on purpose:
           when a filter empties the list, the way out stays right under the message. */}
-      {quests.length > 0 ? <FilterRail chips={railChips} onClearAll={clearFilters} /> : null}
+      {quests.length > 0 ? <FilterRail groups={railGroups} onClearAll={clearFilters} /> : null}
 
       {/* Status Messages */}
       <StatusMessage

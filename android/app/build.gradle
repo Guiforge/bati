@@ -92,8 +92,8 @@ android {
         applicationId 'com.guiforge.bati'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10202
-        versionName "1.2.2"
+        versionCode 10204
+        versionName "1.2.4"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
         resourceConfigurations += ["b+en", "b+fr"]

@@ -1,7 +1,7 @@
 <resources>
   <string name="app_name">Bati</string>
   <string name="expo_system_ui_user_interface_style" translatable="false">dark</string>
-  <string name="expo_runtime_version">1.2.2</string>
+  <string name="expo_runtime_version">1.2.4</string>
   <string name="widget_flame_description" translatable="false">Your current training streak.</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
 </resources>

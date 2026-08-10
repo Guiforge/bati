@@ -1,0 +1,2 @@
+- Removed unused INTERNET, ACCESS_NETWORK_STATE and RECEIVE_BOOT_COMPLETED
+  permissions: the app is fully offline, now verifiable in the manifest.

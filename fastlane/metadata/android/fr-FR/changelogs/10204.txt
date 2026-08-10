@@ -1,0 +1,2 @@
+- Suppression des permissions inutilisées INTERNET, ACCESS_NETWORK_STATE et
+  RECEIVE_BOOT_COMPLETED : l'app est 100 % hors-ligne, vérifiable dans le manifest.

@@ -7,7 +7,12 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.guiforge.bati",
-      "versionCode": 10203
+      "versionCode": 10204,
+      "blockedPermissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "backgroundColor": "#0B0F19",
     "experiments": {
@@ -82,7 +87,7 @@
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"

@@ -79,7 +79,8 @@
       "./plugins/withAndroidGradleMemory",
       "./plugins/withAndroidTrimPermissions",
       "./plugins/withAndroidReproducibleNative",
-      "./plugins/withAndroidDebugAppId"
+      "./plugins/withAndroidDebugAppId",
+      "./plugins/withAndroidDebugNetworkPermissions"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

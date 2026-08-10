@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@expo-google-fonts/noto-sans": "^0.4.2",
+    "@expo-google-fonts/space-grotesk": "^0.4.1",
     "@legendapp/list": "^3.3.3",
     "@react-navigation/bottom-tabs": "^7.18.14",
     "@react-navigation/elements": "^2.9.36",
@@ -13,6 +15,7 @@
     "expo-audio": "~57.0.3",
     "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.8",
+    "expo-font": "~57.0.1",
     "expo-haptics": "~57.0.1",
     "expo-image": "~57.0.1",
     "expo-image-picker": "~57.0.7",

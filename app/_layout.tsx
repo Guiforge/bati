@@ -1,3 +1,10 @@
+import { NotoSans_400Regular, NotoSans_700Bold } from "@expo-google-fonts/noto-sans";
+import {
+  SpaceGrotesk_300Light,
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_700Bold,
+} from "@expo-google-fonts/space-grotesk";
+import { useFonts } from "expo-font";
 import { DefaultTheme, Slot, ThemeProvider, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -62,6 +69,19 @@ export default function RootLayout() {
 
   const [isNavigationReady, setIsNavigationReady] = useState(false);
 
+  // The families tamagui.config.ts has always declared, loaded for the first time. The keys
+  // match its `face` maps exactly; the bare family names cover unspecified weights. On a load
+  // error the app ships system fonts rather than hanging on the splash.
+  const [fontsLoaded, fontError] = useFonts({
+    SpaceGrotesk: SpaceGrotesk_400Regular,
+    SpaceGrotesk_300Light,
+    SpaceGrotesk_700Bold,
+    NotoSans: NotoSans_400Regular,
+    NotoSans_400Regular,
+    NotoSans_700Bold,
+  });
+  const fontsReady = fontsLoaded || fontError != null;
+
   // Called when database migrations are complete
   const handleDatabaseReady = useCallback(() => {
     loadUserFromDatabase();
@@ -79,7 +99,7 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (!(isNavigationReady && userLoaded && settingsLoaded)) return;
+    if (!(isNavigationReady && userLoaded && settingsLoaded && fontsReady)) return;
 
     const inOnboardingGroup = segments[0] === "onboarding";
     // Onboarding is marked finished one step before this offer screen on purpose (see
@@ -95,7 +115,15 @@ export default function RootLayout() {
     }
 
     SplashScreen.hideAsync();
-  }, [hasFinishedOnboarding, isNavigationReady, router, segments, settingsLoaded, userLoaded]);
+  }, [
+    hasFinishedOnboarding,
+    isNavigationReady,
+    router,
+    segments,
+    settingsLoaded,
+    userLoaded,
+    fontsReady,
+  ]);
 
   if (!isNavigationReady) {
     return null;

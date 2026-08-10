@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
-
 import OathScreen from "@/app/oath";
+import { ToastProvider } from "@/components/common/Toast";
 import "@/i18n";
 import config from "@/tamagui.config";
 
@@ -75,7 +75,9 @@ function oathProgress(overrides: Record<string, unknown> = {}) {
 async function renderScreen() {
   return await render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <OathScreen />
+      <ToastProvider>
+        <OathScreen />
+      </ToastProvider>
     </TamaguiProvider>,
   );
 }

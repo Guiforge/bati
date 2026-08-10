@@ -27,6 +27,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSound } from "@/hooks/useSound";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { ProgressionChart } from "./ProgressionChart";
@@ -119,12 +120,17 @@ export function VictoryView() {
 
   useEffect(() => {
     if (adventureRunStepId) {
-      getAdventureStepOutroNarrative(adventureRunStepId, language).then((text) => {
-        if (text) {
-          setOutroNarrative(text);
-          setShowOutroNarrative(true);
-        }
-      });
+      getAdventureStepOutroNarrative(adventureRunStepId, language)
+        .then((text) => {
+          if (text) {
+            setOutroNarrative(text);
+            setShowOutroNarrative(true);
+          }
+        })
+        .catch((error) => {
+          // No outro is a fine victory; an unhandled rejection mid-save is not.
+          reportError("session.outroNarrative", error);
+        });
     }
   }, [adventureRunStepId, language]);
 

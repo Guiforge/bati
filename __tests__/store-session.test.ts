@@ -299,6 +299,26 @@ describe("useSessionStore", () => {
       expect(store.getState().bossStartHp).toBeNull();
     });
 
+    // The journal records the corrected reps; the boss must take damage for the same number.
+    test("correcting the last result re-lands the banked hit", async () => {
+      const rand = jest.spyOn(Math, "random").mockReturnValue(0.99); // never a crit
+      await store.getState().startSession(mockQuest, "medium", { adventureId: 42 });
+
+      store.getState().completeExercise(8);
+      expect(store.getState().pendingDamage).toHaveLength(1);
+      expect(store.getState().pendingDamage[0].damage).toBe(8);
+      expect(store.getState().bossFight?.currentHp).toBe(92);
+
+      store.getState().updateLastResult(15);
+      const state = store.getState();
+      expect(state.results.at(-1)?.result.value).toBe(15);
+      expect(state.pendingDamage).toHaveLength(1);
+      expect(state.pendingDamage[0].damage).toBe(15);
+      expect(state.bossFight?.currentHp).toBe(85);
+
+      rand.mockRestore();
+    });
+
     test("starts a plain quest with no boss and no lookup", async () => {
       await store.getState().startSession(mockQuest, "medium");
 

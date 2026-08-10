@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView as RNScrollView } from "react-native";
+import { Alert, ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -10,6 +10,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { useToast } from "@/components/common/Toast";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { type Exercise, listExercises } from "@/db/exercises";
@@ -27,6 +28,7 @@ import {
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 const METRICS: OathMetric[] = [
@@ -216,18 +218,28 @@ export default function OathScreen() {
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showCustom, setShowCustom] = useState(false);
+  const { showError } = useToast();
 
   useEffect(() => {
     getOathProgress()
       .then(setExisting)
-      .catch(() => setExisting(null));
+      .catch((e) => {
+        reportError("oath.progress", e);
+        setExisting(null);
+      });
     preferences
       .getOwnedEquipment()
       .then(setOwnedEquipment)
-      .catch(() => setOwnedEquipment(null));
+      .catch((e) => {
+        reportError("oath.equipment", e);
+        setOwnedEquipment(null);
+      });
     listExercises()
       .then(setExercises)
-      .catch(() => setExercises([]));
+      .catch((e) => {
+        reportError("oath.exercises", e);
+        setExercises([]);
+      });
   }, []);
 
   const pickMetric = useCallback((next: OathMetric) => {
@@ -285,26 +297,71 @@ export default function OathScreen() {
     return rows;
   }, [exercises, exerciseLabel, ownedEquipment, t]);
 
+  const performSwear = useCallback(
+    async (input: Parameters<typeof swearOath>[0]) => {
+      try {
+        await swearOath(input);
+      } catch (e) {
+        // swearOath throws on invalid input; without this the tap looked like it worked
+        // while the promise rejected unhandled and the screen never closed.
+        reportError("oath.swear", e);
+        showError(t("oath.save_error", "Could not save the oath"));
+        return;
+      }
+      router.back();
+    },
+    [router, showError, t],
+  );
+
+  // Swearing overwrites the single stored oath. The screen's own footnote says so; the tap
+  // that destroys an oath in force — and its accumulated progress — must say it louder.
+  const confirmThenSwear = useCallback(
+    (input: Parameters<typeof swearOath>[0]) => {
+      if (existing && !existing.isFulfilled) {
+        Alert.alert(
+          t("oath.replace_title", "Replace your current oath?"),
+          t("oath.replace_body", "The oath in force and its progress will be abandoned."),
+          [
+            { text: t("common.cancel", "Cancel"), style: "cancel" },
+            {
+              text: t("oath.replace_confirm", "Swear the new oath"),
+              style: "destructive",
+              onPress: () => {
+                performSwear(input).catch(() => {
+                  // Errors already surfaced via showError above
+                });
+              },
+            },
+          ],
+        );
+        return;
+      }
+      performSwear(input).catch(() => {
+        // Errors already surfaced via showError above
+      });
+    },
+    [existing, performSwear, t],
+  );
+
   const swearPreset = useCallback(
-    async (preset: OathPreset) => {
+    (preset: OathPreset) => {
       let id: number | null = null;
       if (oathNeedsExercise(preset.metric)) {
         const ex = exercises.find((e) => e.enName === preset.exerciseName);
         if (!ex) return; // filtered out of the list, shouldn't reach here
         id = ex.id;
       }
-      await swearOath({
+      confirmThenSwear({
         metric: preset.metric,
         target: preset.target,
         exerciseId: id,
         weeklyTarget: preset.weeklyTarget,
       });
-      router.back();
     },
-    [exercises, router],
+    [exercises, confirmThenSwear],
   );
 
-  const submit = useCallback(async () => {
+  const submit = useCallback(() => {
     const parsed = Number.parseInt(target, 10);
     if (!Number.isFinite(parsed) || parsed <= 0) {
       setError(t("oath.error_target"));
@@ -315,14 +372,30 @@ export default function OathScreen() {
       return;
     }
 
-    await swearOath({ metric, target: parsed, exerciseId, weeklyTarget });
-    router.back();
-  }, [metric, target, exerciseId, weeklyTarget, router, t]);
+    confirmThenSwear({ metric, target: parsed, exerciseId, weeklyTarget });
+  }, [metric, target, exerciseId, weeklyTarget, confirmThenSwear, t]);
 
-  const abandon = useCallback(async () => {
-    await breakOath();
-    router.back();
-  }, [router]);
+  const abandon = useCallback(() => {
+    Alert.alert(
+      t("oath.abandon_title", "Abandon this oath?"),
+      t("oath.abandon_body", "Its progress will be lost."),
+      [
+        { text: t("common.cancel", "Cancel"), style: "cancel" },
+        {
+          text: t("oath.abandon", "Abandon"),
+          style: "destructive",
+          onPress: () => {
+            breakOath()
+              .then(() => router.back())
+              .catch((e) => {
+                reportError("oath.abandon", e);
+                showError(t("oath.save_error", "Could not save the oath"));
+              });
+          },
+        },
+      ],
+    );
+  }, [router, showError, t]);
 
   return (
     <YStack testID="oath-screen" flex={1} bg="$background" pt={insets.top}>

@@ -675,7 +675,7 @@ export const useSessionStore = create<SessionState>()(
     },
 
     updateLastResult: (resultValue) => {
-      const { results } = get();
+      const { results, bossFight, pendingDamage } = get();
       if (results.length === 0) return;
 
       const last = results[results.length - 1];
@@ -692,6 +692,44 @@ export const useSessionStore = create<SessionState>()(
       set({
         results: [...results.slice(0, -1), updated],
       });
+
+      // The hit banked for this set was computed from the pre-correction value; without this,
+      // the journal recorded the corrected reps while the boss took damage for the original
+      // ones. Rewind the HP the old hit removed, re-land it at the new value — same crit, so
+      // the outcome the screen already celebrated only changes magnitude.
+      const lastHit = pendingDamage[pendingDamage.length - 1];
+      if (
+        bossFight &&
+        lastHit &&
+        last.target &&
+        lastHit.exerciseId === last.exerciseId &&
+        lastHit.roundIndex === last.roundIndex
+      ) {
+        const rewound = {
+          ...bossFight,
+          currentHp: Math.min(bossFight.totalHp, bossFight.currentHp + lastHit.damage),
+          defeatedAt: null,
+        };
+        const damageResult = computeDamage(rewound, {
+          resultValue: safeResultValue,
+          targetValue: last.target.value,
+          muscle: lastHit.muscle ?? undefined,
+          targetType: last.target.type,
+          forcedCritical: lastHit.isCritical,
+        });
+        set({
+          bossFight: {
+            ...rewound,
+            currentHp: damageResult.newHp,
+            defeatedAt: damageResult.defeated ? new Date() : null,
+          },
+          lastDamageResult: damageResult,
+          pendingDamage: [
+            ...pendingDamage.slice(0, -1),
+            { ...lastHit, damage: damageResult.damage, isCritical: damageResult.isCritical },
+          ],
+        });
+      }
     },
 
     saveSession: async (feedback) => {

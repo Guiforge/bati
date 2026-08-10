@@ -176,6 +176,12 @@ export type DamageParams = {
   muscle?: MuscleCode;
   /** Omitted means reps. Time results are normalised before they become damage. */
   targetType?: QuestTargetType;
+  /**
+   * Skip the crit roll and use this outcome. For re-landing an already-shown hit (the hero
+   * corrected the rep count afterwards): the crit the screen celebrated must not be re-rolled,
+   * only the magnitude recomputed.
+   */
+  forcedCritical?: boolean;
 };
 
 /**
@@ -221,7 +227,8 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
   // set, so crit was a flat 30 % coin flip that rewarded nothing and that nothing on screen
   // explained. Now it has to be *exceeded*, and the odds scale with how far: one extra rep on a
   // set of twelve is a real edge, capped so pushing hard never dominates the fight.
-  const isCritical = Math.random() < critChance(params.resultValue, params.targetValue);
+  const isCritical =
+    params.forcedCritical ?? Math.random() < critChance(params.resultValue, params.targetValue);
   if (isCritical) {
     damage = damage * 2;
   }

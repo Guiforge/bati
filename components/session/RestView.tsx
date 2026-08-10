@@ -1,4 +1,4 @@
-import { Minus, Plus } from "@tamagui/lucide-icons";
+import { Minus, Pause, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,6 +33,7 @@ export function RestView() {
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
   const status = useSessionStore((s) => s.status);
+  const pauseSession = useSessionStore((s) => s.pauseSession);
   const { remainingSeconds, progress } = useSessionTimer();
 
   // The rest timer runs out on its own and nothing consumed the zero: useSessionTimer floors
@@ -90,6 +91,23 @@ export function RestView() {
       transition={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
+      {/* The one view of the flow that had no pause: on iOS there is no hardware back, so
+          mid-rest the session could not be paused at all. Same floating control as the
+          running screen. */}
+      <XStack position="absolute" t={insets.top + 8} r="$4" z={10}>
+        <Button
+          testID="session-pause"
+          size="$3"
+          circular
+          icon={<Pause size={20} color="$text" />}
+          onPress={pauseSession}
+          chromeless
+          pressStyle={{ opacity: 0.7 }}
+          accessibilityLabel={t("session.pause_accessibility")}
+          accessibilityRole="button"
+        />
+      </XStack>
+
       {/* The boss finally does own the top of the screen during a boss adventure — it used to say
           so in a comment while rendering below the flame header. The header goes away during a
           fight: the boss is the screen's title, and printing both costs ~88 px of a screen that is

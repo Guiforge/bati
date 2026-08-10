@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { Alert } from "react-native";
 import { Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
@@ -32,8 +33,7 @@ export function PausedOverlay() {
     restartRound();
   };
 
-  const handleQuit = () => {
-    warning();
+  const confirmQuit = () => {
     quitSession();
     if (router.canGoBack()) {
       router.back();
@@ -42,10 +42,24 @@ export function PausedOverlay() {
     }
   };
 
+  const handleQuit = () => {
+    warning();
+    // Quitting wipes the session and its saved recovery slot; one mis-tap on a button that
+    // sits right under "restart round" must not cost the workout.
+    Alert.alert(
+      t("session.quit_confirm_title", "Abandon this session?"),
+      t("session.quit_confirm_body", "This session's progress will be lost."),
+      [
+        { text: t("common.cancel", "Cancel"), style: "cancel" },
+        { text: t("session.quit_button"), style: "destructive", onPress: confirmQuit },
+      ],
+    );
+  };
+
   return (
     <YStack
       fullscreen
-      bg="rgba(0,0,0,0.72)"
+      bg="$bgOverlay"
       style={{ zIndex: 1000 }}
       items="center"
       justify="center"

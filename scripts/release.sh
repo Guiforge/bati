@@ -72,7 +72,13 @@ node -e 'require("./app.config.js")()' >/dev/null
 # not in app.json is an app that reports a number it is not.
 npm version "$next" --no-git-tag-version --allow-same-version >/dev/null
 
-git add app.json package.json package-lock.json
+# android/ is committed (F-Droid's subdir check needs it) and CI regenerates it with
+# `prebuild --clean` and diffs — so the bumped versionCode has to land in the generated
+# files in this same commit, or every release turns CI red until someone re-commits them.
+echo "  Regenerating android/ at $next"
+npx expo prebuild -p android --clean >/dev/null
+
+git add app.json package.json package-lock.json android
 git commit -q -m "chore(release): v$next"
 git tag -a "v$next" -m "v$next"
 

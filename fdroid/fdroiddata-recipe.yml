@@ -22,9 +22,9 @@ RepoType: git
 Repo: https://github.com/Guiforge/bati.git
 
 Builds:
-  - versionName: 1.2.4
-    versionCode: 10204
-    commit: 54a9d19595bf6b44bbb1849a1ace199eb50c1bf4
+  - versionName: 1.3.0
+    versionCode: 10300
+    commit: 0081f8a23c91ee33f16e14b8e01af5b6b636731f
     subdir: android/app
     sudo:
       - apt-get update
@@ -65,10 +65,12 @@ MaintainerNotes: |-
   the bundled prebuilt local-maven-repo AARs and the expo-dev-* dev tooling instead
   of sed-editing package.json, which would break `npm ci`. scanignore lists only the
   scanner's false positives (legitimate local `maven { url }` lines); everything else
-  under node_modules is scandelete'd. No Firebase and no network code in the app.
+  under node_modules is scandelete'd. No Firebase and no network code in the app;
+  since 1.2.4 the INTERNET permission itself is stripped via blockedPermissions,
+  so the manifest carries no network permissions at all.
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
 UpdateCheckData: app.json|"versionCode":\s*(\d+)|.|"version":\s*"([\d.]+)"
-CurrentVersion: 1.2.4
-CurrentVersionCode: 10204
+CurrentVersion: 1.3.0
+CurrentVersionCode: 10300

@@ -29,6 +29,7 @@ import {
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
+import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -207,7 +208,6 @@ export default function OathScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
-  const isFr = language === "fr";
 
   const [existing, setExisting] = useState<OathProgress | null>(null);
   const [metric, setMetric] = useState<OathMetric>("exercise_pr");
@@ -255,7 +255,7 @@ export default function OathScreen() {
     setError(null);
   }, []);
 
-  const exerciseLabel = useCallback((e: Exercise) => (isFr ? e.frName : e.enName), [isFr]);
+  const exerciseLabel = useCallback((e: Exercise) => localizedName(e, language), [language]);
 
   const visibleExercises = useMemo(() => {
     const needle = filter.trim().toLowerCase();
@@ -407,6 +407,7 @@ export default function OathScreen() {
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Button
           size="$3"
+          hitSlop={8}
           circular
           chromeless
           onPress={router.back}

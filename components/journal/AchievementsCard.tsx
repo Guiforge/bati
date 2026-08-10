@@ -5,6 +5,7 @@ import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -202,6 +203,7 @@ function AchievementRow({
   language: AppLanguage;
 }) {
   const { definition, isUnlocked, progress, currentValue, targetValue } = achievement;
+  const reducedMotion = useReducedMotion();
 
   const title = localizedTitle(definition, language);
   const description = language === "fr" ? definition.frDescription : definition.enDescription;
@@ -216,8 +218,8 @@ function AchievementRow({
       borderWidth={1}
       borderColor={isUnlocked ? "$success" : "$text"}
       opacity={isUnlocked ? 1 : 0.7}
-      transition="quick"
-      enterStyle={{ opacity: 0, x: 20 }}
+      transition={reducedMotion ? undefined : "quick"}
+      enterStyle={reducedMotion ? undefined : { opacity: 0, x: 20 }}
     >
       {/* Icon */}
       <YStack

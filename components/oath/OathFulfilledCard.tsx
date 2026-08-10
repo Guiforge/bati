@@ -3,6 +3,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import type { OathProgress } from "@/db/oaths";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useOathText } from "./useOathText";
 
 /**
@@ -12,11 +13,12 @@ import { useOathText } from "./useOathText";
 export function OathFulfilledCard({ oath, bonusXp }: { oath: OathProgress; bonusXp: number }) {
   const { t } = useTranslation();
   const label = useOathText(oath);
+  const reducedMotion = useReducedMotion();
 
   return (
     <Card
-      transition="bouncy"
-      enterStyle={{ opacity: 0, scale: 0.92, y: 14 }}
+      transition={reducedMotion ? undefined : "bouncy"}
+      enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.92, y: 14 }}
       width="100%"
       maxW={520}
       bg="$pastelPurple"

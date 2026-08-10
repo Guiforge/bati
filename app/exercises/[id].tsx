@@ -9,12 +9,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { getExerciseById } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -60,9 +62,8 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
   return (
     <Card>
       <YStack gap="$3" items="center" py="$2">
-        <Text fontSize={32}>😵</Text>
         <Text fontWeight="700" fontSize={16} color="$text">
-          {t("exercises.load_error", "Oops!")}
+          {t("exercises.load_error", "Failed to load")}
         </Text>
         <Paragraph color="$text" opacity={0.6} size="$3">
           {message}
@@ -76,16 +77,17 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
 }
 
 function LoadingCard() {
-  const { t } = useTranslation();
+  // Reserve the 16:9 hero and the title card so the screen doesn't jump by the full
+  // image height when data lands.
   return (
-    <Card>
-      <XStack items="center" justify="center" gap="$3" py="$4">
-        <Text fontSize={28}>💪</Text>
-        <Text fontWeight="700" fontSize={16} color="$text">
-          {t("exercises.loading", "Loading...")}
-        </Text>
-      </XStack>
-    </Card>
+    <YStack gap="$4">
+      <Skeleton height={200} radius={16} />
+      <SkeletonCard>
+        <Skeleton height={24} width="60%" />
+        <Skeleton height={16} width="80%" />
+        <Skeleton height={16} width="40%" />
+      </SkeletonCard>
+    </YStack>
   );
 }
 
@@ -132,7 +134,7 @@ function LadderStrip({ chain }: { chain: Chain }) {
         {t("progression.chain_position", {
           position: chain.position,
           total: chain.rungs.length,
-          name: language === "fr" ? current.frName : current.enName,
+          name: localizedName(current, language),
         })}
       </Text>
       <XStack gap="$1">
@@ -170,7 +172,7 @@ function NextStepCard({
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
 
-  const name = language === "fr" ? progression.next.frName : progression.next.enName;
+  const name = localizedName(progression.next, language);
   const remaining = Math.max(0, progression.required - progression.metTarget);
 
   return (
@@ -222,7 +224,7 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
 
-  const title = language === "fr" ? exercise.frName : exercise.enName;
+  const title = localizedName(exercise, language);
   const desc = language === "fr" ? exercise.frDescription : exercise.enDescription;
   const equipmentLabel = EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment;
   const img = resolveAsset(exercise.imagePath);

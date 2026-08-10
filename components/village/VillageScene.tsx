@@ -400,7 +400,21 @@ export function VillageScene() {
             </YStack>
           )}
 
-          {/* Trophy shelf: achievements + defeated bosses on one rack, newest first */}
+          {/* Trophy shelf: achievements + defeated bosses on one rack, newest first.
+              An empty shelf still shows — a new player otherwise never learns trophies exist. */}
+          {scene.trophies.length === 0 && (
+            <YStack gap="$2" {...sectionAnim}>
+              <Text fontWeight="700" fontSize={16} color="$text">
+                {t("village.trophies_title", "Trophies")}
+              </Text>
+              <Text fontSize={12} color="$textSecondary" opacity={0.8}>
+                {t(
+                  "village.trophies_empty",
+                  "Achievements and defeated bosses land on this shelf.",
+                )}
+              </Text>
+            </YStack>
+          )}
           {scene.trophies.length > 0 && (
             <YStack gap="$3" {...sectionAnim}>
               <Text fontWeight="700" fontSize={16} color="$text">

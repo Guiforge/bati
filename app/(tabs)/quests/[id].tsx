@@ -12,6 +12,7 @@ import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
@@ -437,14 +438,18 @@ export default function QuestDetails() {
           ) : null}
 
           {state.status === "loading" && !quest ? (
-            <Card bg="$surface">
-              <XStack items="center" justify="space-between">
-                <Text fontWeight="700" fontSize={16} color="$text">
-                  {t("quests.loading", "Loading quest...")}
-                </Text>
-                <Text fontSize={24}>🧠</Text>
-              </XStack>
-            </Card>
+            // Hero image + title card + config card, held at height instead of popping in.
+            <YStack gap="$4">
+              <Skeleton height={200} radius={16} />
+              <SkeletonCard>
+                <Skeleton height={24} width="60%" />
+                <Skeleton height={16} width="80%" />
+                <Skeleton height={16} width="40%" />
+              </SkeletonCard>
+              <SkeletonCard>
+                <Skeleton height={120} />
+              </SkeletonCard>
+            </YStack>
           ) : null}
 
           {quest ? (

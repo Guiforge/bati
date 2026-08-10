@@ -619,7 +619,8 @@
     "close_scene": "Close",
     "tap_to_close": "Tap anywhere to close",
     "open_scene": "See the whole scene",
-    "loop_hint": "Every muscle you train raises a building — tap one to see what feeds it."
+    "loop_hint": "Every muscle you train raises a building — tap one to see what feeds it.",
+    "trophies_empty": "Achievements and defeated bosses land on this shelf."
   },
   "goals": {
     "title": "My Goal",

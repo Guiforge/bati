@@ -12,6 +12,7 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import { localizedName } from "@/src/i18n/localized";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
@@ -49,7 +50,7 @@ export function RestView() {
 
   // In 'resting' state, currentExerciseIndex points to the UPCOMING exercise
   const nextEx = quest.exercises[currentExerciseIndex];
-  const nextExName = language === "fr" ? nextEx.exercise.frName : nextEx.exercise.enName;
+  const nextExName = localizedName(nextEx.exercise, language);
 
   const lastResult = results[results.length - 1];
   // Time-based sets record whatever the timer read when you tapped "done" — often a few seconds
@@ -98,6 +99,7 @@ export function RestView() {
         <Button
           testID="session-pause"
           size="$3"
+          hitSlop={8}
           circular
           icon={<Pause size={20} color="$text" />}
           onPress={pauseSession}
@@ -168,6 +170,7 @@ export function RestView() {
             <XStack gap="$3">
               <Button
                 size="$3"
+                hitSlop={8}
                 bg="$surface"
                 borderWidth={1}
                 borderColor="$borderStrong"
@@ -179,6 +182,7 @@ export function RestView() {
               </Button>
               <Button
                 size="$3"
+                hitSlop={8}
                 bg="$surface"
                 borderWidth={1}
                 borderColor="$borderStrong"
@@ -218,6 +222,7 @@ export function RestView() {
                 <XStack items="center" gap="$3">
                   <Button
                     size="$3"
+                    hitSlop={8}
                     circular
                     icon={<Minus size={16} />}
                     accessibilityLabel={t(
@@ -238,6 +243,7 @@ export function RestView() {
                   </Text>
                   <Button
                     size="$3"
+                    hitSlop={8}
                     circular
                     icon={<Plus size={16} />}
                     accessibilityLabel={t(

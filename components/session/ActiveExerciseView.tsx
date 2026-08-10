@@ -16,6 +16,7 @@ import { critChance } from "@/db/bossFights";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import { localizedName } from "@/src/i18n/localized";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
@@ -52,7 +53,7 @@ export function ActiveExerciseView() {
 
   const isTimeBased = currentEx.target.type === "time";
 
-  const exerciseName = language === "fr" ? currentEx.exercise.frName : currentEx.exercise.enName;
+  const exerciseName = localizedName(currentEx.exercise, language);
   const exerciseDescription =
     language === "fr" ? currentEx.exercise.frDescription : currentEx.exercise.enDescription;
 
@@ -204,6 +205,7 @@ export function ActiveExerciseView() {
             <Button
               testID="session-pause"
               size="$3"
+              hitSlop={8}
               circular
               icon={<Pause size={20} color="$text" />}
               onPress={pauseSession}

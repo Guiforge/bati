@@ -14,3 +14,12 @@ type Bilingual<K extends string> = Record<`en${Capitalize<K>}` | `fr${Capitalize
 export function localizedTitle(row: Bilingual<"title">, language: AppLanguage): string {
   return language === "fr" ? row.frTitle : row.enTitle;
 }
+
+/**
+ * Same rule for `enName`/`frName` rows — exercises, mostly. The title helper existed and the
+ * name ternary still got copy-pasted nine times across session, oath and exercise screens,
+ * which is the exact drift the docblock above describes.
+ */
+export function localizedName(row: Bilingual<"name">, language: AppLanguage): string {
+  return language === "fr" ? row.frName : row.enName;
+}

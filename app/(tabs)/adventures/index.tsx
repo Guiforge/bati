@@ -15,6 +15,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { getAdventureAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
@@ -260,7 +261,15 @@ function AdventureCard({
 const adventureKey = (a: AdventureRow) => String(a.adventure.id);
 const ListGap = () => <YStack height={12} />;
 
-function StatusMessage({ state, onRetry }: { state: LoadState; onRetry: () => void }) {
+function StatusMessage({
+  state,
+  onRetry,
+  onBrowseQuests,
+}: {
+  state: LoadState;
+  onRetry: () => void;
+  onBrowseQuests: () => void;
+}) {
   const { t } = useTranslation();
 
   if (state.status === "error") {
@@ -285,16 +294,12 @@ function StatusMessage({ state, onRetry }: { state: LoadState; onRetry: () => vo
   }
 
   if (state.status === "loading" && state.adventures.length === 0) {
+    // Reserve a poster's height instead of a small "Loading…" card the list jumps from.
     return (
-      <YStack px="$5">
-        <Card bg="$surface">
-          <XStack items="center" justify="center" gap="$3" py="$4">
-            <Text fontSize={28}>🏗️</Text>
-            <Text fontWeight="700" fontSize={16} color="$text">
-              {t("quests.loading", "Loading...")}
-            </Text>
-          </XStack>
-        </Card>
+      <YStack px="$5" gap="$3">
+        <SkeletonCard>
+          <Skeleton height={280} />
+        </SkeletonCard>
       </YStack>
     );
   }
@@ -304,13 +309,16 @@ function StatusMessage({ state, onRetry }: { state: LoadState; onRetry: () => vo
       <YStack px="$5">
         <Card bg="$surface">
           <YStack gap="$3" items="center" py="$2">
-            <Text fontSize={32}>🏚️</Text>
             <Text fontWeight="700" fontSize={16} color="$text">
               {t("adventures.empty_title", "No adventures yet")}
             </Text>
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
               {t("adventures.empty_subtitle", "Come back soon!")}
             </Paragraph>
+            {/* Campaigns can't be authored; single quests are the way to train meanwhile. */}
+            <AppButton fullWidth={false} onPress={onBrowseQuests}>
+              {t("quests.gallery_title", "Quest gallery")}
+            </AppButton>
           </YStack>
         </Card>
       </YStack>
@@ -430,6 +438,7 @@ export default function AdventuresGallery() {
             // Error already handled
           });
         }}
+        onBrowseQuests={() => router.push("/quests" as never)}
       />
 
       {adventures.length > 0 && (

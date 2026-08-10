@@ -32,7 +32,7 @@ import {
 import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -112,7 +112,7 @@ export default function QuestEditor() {
   }, [navigation, t]);
 
   const exerciseName = useCallback(
-    (exercise: Exercise) => (language === "fr" ? exercise.frName : exercise.enName),
+    (exercise: Exercise) => localizedName(exercise, language),
     [language],
   );
 
@@ -396,7 +396,9 @@ export default function QuestEditor() {
                     <Button
                       size="$2"
                       circular
+                      hitSlop={12}
                       icon={<X size={14} />}
+                      accessibilityRole="button"
                       accessibilityLabel={t("quests.editor_remove", "Remove")}
                       onPress={() => removeExercise(p.exerciseId)}
                     />

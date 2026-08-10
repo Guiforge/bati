@@ -13,6 +13,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
@@ -290,11 +291,13 @@ function StatusMessage({
   filteredCount,
   onRetry,
   onClearFilters,
+  onCreate,
 }: {
   state: LoadState;
   filteredCount: number;
   onRetry: () => void;
   onClearFilters: () => void;
+  onCreate: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -320,16 +323,15 @@ function StatusMessage({
   }
 
   if (state.status === "loading" && state.quests.length === 0) {
+    // Reserve two poster-row heights instead of a ~80dp "Loading…" card the list jumps from.
     return (
-      <YStack px="$5">
-        <Card>
-          <XStack items="center" justify="center" gap="$3" py="$4">
-            <Text fontSize={28}>🏗️</Text>
-            <Text fontWeight="700" fontSize={16} color="$text">
-              {t("quests.loading", "Loading...")}
-            </Text>
-          </XStack>
-        </Card>
+      <YStack px="$5" gap="$3">
+        <SkeletonCard>
+          <Skeleton height={200} />
+        </SkeletonCard>
+        <SkeletonCard>
+          <Skeleton height={200} />
+        </SkeletonCard>
       </YStack>
     );
   }
@@ -339,13 +341,16 @@ function StatusMessage({
       <YStack px="$5">
         <Card>
           <YStack gap="$3" items="center" py="$2">
-            <Text fontSize={32}>🏚️</Text>
             <Text fontWeight="700" fontSize={16} color="$text">
               {t("quests.empty_title", "No quests yet")}
             </Text>
             <Paragraph color="$textSecondary" size="$3">
               {t("quests.empty_subtitle", "Come back soon!")}
             </Paragraph>
+            {/* The header's 36dp "+" was the only way in; an empty gallery should offer it. */}
+            <AppButton fullWidth={false} onPress={onCreate}>
+              {t("quests.editor_new_title", "New quest")}
+            </AppButton>
           </YStack>
         </Card>
       </YStack>
@@ -608,6 +613,7 @@ export default function QuestsGallery() {
           });
         }}
         onClearFilters={clearFilters}
+        onCreate={() => router.push("/quests/edit" as never)}
       />
 
       {/* Scrollable Quest List */}

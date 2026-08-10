@@ -4,16 +4,9 @@ import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { type RecoverableSession, useSessionRecovery } from "@/hooks/useSessionRecovery";
-
-/**
- * Format seconds as mm:ss
- */
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-}
+import { formatTime } from "@/hooks/useSessionTimer";
 
 interface SessionRecoveryCardProps {
   session: RecoverableSession;
@@ -28,6 +21,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
   const { t } = useTranslation();
   const router = useRouter();
   const haptics = useHaptics();
+  const reducedMotion = useReducedMotion();
 
   const handleResume = async () => {
     haptics.mediumImpact();
@@ -44,7 +38,12 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
   };
 
   return (
-    <Card bg="$pastelOrange" rounded="$6" transition="quick" enterStyle={{ opacity: 0, y: -10 }}>
+    <Card
+      bg="$pastelOrange"
+      rounded="$6"
+      transition={reducedMotion ? undefined : "quick"}
+      enterStyle={reducedMotion ? undefined : { opacity: 0, y: -10 }}
+    >
       <YStack gap="$3">
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primaryText" />
@@ -72,6 +71,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
         <XStack gap="$3" justify="flex-end">
           <Button
             size="$3"
+            hitSlop={8}
             bg="$bgLight"
             borderWidth={1}
             borderColor="$borderStrong"
@@ -84,6 +84,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
           </Button>
           <Button
             size="$3"
+            hitSlop={8}
             bg="$primary"
             borderWidth={1}
             borderColor="$borderStrong"

@@ -8,6 +8,7 @@ import { getExerciseAsset } from "@/constants/assetMap";
 import { type Exercise, listExercises } from "@/db/exercises";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import { localizedName } from "@/src/i18n/localized";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -70,7 +71,7 @@ export function WarmupView() {
   const nameOf = (enName: string) => {
     const found = catalogue.find((e) => e.enName === enName);
     if (!found) return enName;
-    return language === "fr" ? found.frName : found.enName;
+    return localizedName(found, language);
   };
 
   const exercise = catalogue.find((e) => e.enName === step.exerciseName);
@@ -94,6 +95,7 @@ export function WarmupView() {
         <Button
           testID="session-pause"
           size="$3"
+          hitSlop={8}
           circular
           icon={<Pause size={20} color="$text" />}
           onPress={pauseSession}
@@ -234,6 +236,7 @@ export function WarmupView() {
         testID="session-skip-warmup"
         chromeless
         size="$3"
+        hitSlop={8}
         onPress={() => {
           selection();
           skipWarmup();

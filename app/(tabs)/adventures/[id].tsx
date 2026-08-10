@@ -14,6 +14,7 @@ import { starsFor } from "@/components/adventures/replayStars";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
@@ -418,13 +419,28 @@ export default function AdventureDetailsScreen() {
             </Card>
           ) : null}
 
+          {state.status === "loading" && !details ? (
+            // This screen used to render a back button on an empty background while loading —
+            // the worst loading state in the audit. Reserve the hero card and the step list.
+            <YStack gap="$4">
+              <SkeletonCard>
+                <Skeleton height={180} />
+                <Skeleton height={24} width="60%" />
+                <Skeleton height={16} width="80%" />
+              </SkeletonCard>
+              <SkeletonCard>
+                <Skeleton height={160} />
+              </SkeletonCard>
+            </YStack>
+          ) : null}
+
           {details ? (
             <Card
               bg={tokens?.bg ?? "$surface"}
               p="$0"
               overflow="hidden"
               transition={reducedMotion ? undefined : "bouncy"}
-              enterStyle={{ opacity: 0, scale: 0.96, y: 10 }}
+              enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.96, y: 10 }}
             >
               {heroImage ? (
                 <Image

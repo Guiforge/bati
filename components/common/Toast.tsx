@@ -1,7 +1,9 @@
+import { AlertCircle, Check, Info } from "@tamagui/lucide-icons";
 import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Text, XStack, YStack } from "tamagui";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 type ToastType = "success" | "error" | "info";
 
@@ -25,6 +27,7 @@ let toastId = 0;
 export function ToastProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const reducedMotion = useReducedMotion();
 
   const showToast = useCallback((message: string, type: ToastType = "info") => {
     const id = ++toastId;
@@ -40,25 +43,27 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const showError = useCallback((message: string) => showToast(message, "error"), [showToast]);
   const showInfo = useCallback((message: string) => showToast(message, "info"), [showToast]);
 
-  const getToastColor = (type: ToastType) => {
+  // Dark HUD surfaces, drawn icons: the pastel tints and ✅/❌ emoji read as another app —
+  // and a screen reader spelled the emoji out loud before every message.
+  const getToastBorder = (type: ToastType) => {
     switch (type) {
       case "success":
-        return "$pastelGreen";
+        return "$success" as const;
       case "error":
-        return "$pastelPink";
+        return "$error" as const;
       default:
-        return "$pastelBlue";
+        return "$borderStrong" as const;
     }
   };
 
   const getToastIcon = (type: ToastType) => {
     switch (type) {
       case "success":
-        return "✅";
+        return <Check size={16} color="$success" />;
       case "error":
-        return "❌";
+        return <AlertCircle size={16} color="$error" />;
       default:
-        return "ℹ️";
+        return <Info size={16} color="$primaryText" />;
     }
   };
 
@@ -81,27 +86,29 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         z={9999}
         pointerEvents="none"
         gap="$2"
+        accessibilityLiveRegion="polite"
       >
         <AnimatePresence>
           {toasts.map((toast) => (
             <XStack
               key={toast.id}
-              bg={getToastColor(toast.type)}
+              bg="$surface2"
               p="$3"
               rounded="$4"
               borderWidth={1}
-              borderColor="$borderStrong"
+              borderColor={getToastBorder(toast.type)}
               items="center"
               gap="$2"
-              transition="quick"
-              enterStyle={{ opacity: 0, y: 20 }}
-              exitStyle={{ opacity: 0, y: 20 }}
-              shadowColor="$text"
-              shadowOpacity={0.1}
-              shadowRadius={4}
-              shadowOffset={{ width: 0, height: 2 }}
+              transition={reducedMotion ? undefined : "quick"}
+              enterStyle={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+              exitStyle={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+              shadowColor="$shadowColor"
+              shadowOpacity={0.3}
+              shadowRadius={6}
+              shadowOffset={{ width: 0, height: 3 }}
+              accessibilityRole="alert"
             >
-              <Text fontSize={16}>{getToastIcon(toast.type)}</Text>
+              {getToastIcon(toast.type)}
               <Text flex={1} fontWeight="700" color="$text" fontSize={14}>
                 {toast.message}
               </Text>

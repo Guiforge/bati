@@ -674,7 +674,8 @@
     "close_scene": "Fermer",
     "tap_to_close": "Touche l'écran pour fermer",
     "open_scene": "Voir la scène en entier",
-    "loop_hint": "Chaque muscle entraîné élève un bâtiment — touche-en un pour voir ce qui le nourrit."
+    "loop_hint": "Chaque muscle entraîné élève un bâtiment — touche-en un pour voir ce qui le nourrit.",
+    "trophies_empty": "Les succès et les boss vaincus finissent sur cette étagère."
   },
   "welcome": "Bienvenue sur Bati !",
   "safety": {

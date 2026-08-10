@@ -13,7 +13,7 @@
 # behind __DEV__ — so run `npx expo run:android --variant debug` before this.
 #
 # The device language decides the language of the shots.
-appId: com.guiforge.bati
+appId: com.guiforge.bati.dev
 tags:
   - screenshots
 ---
@@ -75,11 +75,7 @@ tags:
       text: "3y"
     direction: DOWN
 - tapOn: "3y"           # ~550 sessions: streaks, records, achievements, muscle balance
-- scrollUntilVisible:
-    element:
-      text: "Max out village"
-    direction: DOWN
-- tapOn: "Max out village"
+# No "Max out village" step: the button is gone, the village derives from the seeded history.
 - scrollUntilVisible:
     element:
       text: "+5"

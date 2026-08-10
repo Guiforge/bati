@@ -1,7 +1,7 @@
 # Reusable: walk through onboarding and land on the home tab.
 # Assumes the app was just launched with clearState (so onboarding is shown).
 # Selects by testID only, so it is locale-agnostic (en/fr).
-appId: com.guiforge.bati
+appId: com.guiforge.bati.dev
 ---
 - assertVisible:
     id: "onboarding-presentation-continue"

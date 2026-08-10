@@ -4,7 +4,7 @@
 # Quests vary in rounds and exercises, so the session is walked generically rather than
 # step-counted: complete an exercise, skip the rest that follows, until victory shows up.
 # Selects by testID only, so it is locale-agnostic (en/fr).
-appId: com.guiforge.bati
+appId: com.guiforge.bati.dev
 ---
 - assertVisible:
     id: "quest-start"

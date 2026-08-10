@@ -49,12 +49,12 @@ adb shell svc power stayon usb >/dev/null 2>&1 || true
 # Start from a blank app every time, so the seeded hero below is the only history in the shots.
 # Done here rather than with Maestro's `clearState`, which on a debug build also erases the
 # dev-client's saved server URL and boots the app into the "Development servers" menu.
-adb shell pm clear com.guiforge.bati >/dev/null 2>&1 || true
+adb shell pm clear com.guiforge.bati.dev >/dev/null 2>&1 || true
 
 # Per-app language, so both listings can be shot without touching the phone's own settings.
 # After `pm clear`, which resets it. Android 13+; an older device falls back to the system
 # language and the caller has to switch that instead.
-adb shell cmd locale set-app-locales com.guiforge.bati --locales "${locale%%-*}" >/dev/null 2>&1 || true
+adb shell cmd locale set-app-locales com.guiforge.bati.dev --locales "${locale%%-*}" >/dev/null 2>&1 || true
 # Point the dev-client back at Metro. `pm clear` wipes the saved server URL, and without this
 # the app opens its "Development servers" menu instead of itself — the documented debug-build
 # caveat in .maestro/README.md. Unconditional: on a release build the deep link is simply
@@ -68,7 +68,7 @@ for scheme in "exp+bati" "bati"; do
   sleep 6
 done
 sleep 8
-adb shell am force-stop com.guiforge.bati >/dev/null 2>&1 || true
+adb shell am force-stop com.guiforge.bati.dev >/dev/null 2>&1 || true
 
 rm -rf "$raw"
 mkdir -p "$raw"

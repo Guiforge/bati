@@ -18,6 +18,6 @@ flows:
 # subflows/ holds reusable fragments (e.g. complete-onboarding.yaml) pulled in
 # via `runFlow:` — they are not standalone entries here.
 
-appId: com.guiforge.bati
+appId: com.guiforge.bati.dev
 
 screenshotsDir: ./screenshots

@@ -2,6 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <!-- Blocked in app.json for release, but the dev-client dies at startup without them:
+         NsdService throws a SecurityException from MainApplication.onCreate before the first
+         screen. Debug-only, same mechanism as SYSTEM_ALERT_WINDOW above. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application android:usesCleartextTraffic="true" tools:targetApi="28" tools:ignore="GoogleAppIndexingWarning" tools:replace="android:usesCleartextTraffic" />
 </manifest>

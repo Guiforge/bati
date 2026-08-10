@@ -257,6 +257,13 @@ builds after all.
 [`fdroid/fdroiddata-recipe.yml`](../fdroid/fdroiddata-recipe.yml) is our copy of the file that has
 to live in a fork of `fdroiddata` as `metadata/com.guiforge.bati.yml`.
 
+> **Since [MR 45076](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/45076) is open, the
+> flow below has already run and the direction reversed**: review reshaped the recipe (it gained
+> `subdir: android/app` — possible since `android/` is committed — `gradleprops`, `scandelete`,
+> and a Java 21 shim), so the fork's `com.guiforge.bati` branch is now authoritative and our copy
+> mirrors it verbatim. Edit there, `fdroid lint`, push to update the MR, copy back here. The
+> original recipe this section describes is in the file's git history.
+
 ```bash
 # 1. Fork https://gitlab.com/fdroid/fdroiddata on GitLab, then:
 git clone https://gitlab.com/<your-gitlab-user>/fdroiddata.git

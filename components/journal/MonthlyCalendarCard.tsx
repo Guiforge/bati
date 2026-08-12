@@ -7,6 +7,7 @@ import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
 import { listWorkoutDayKeys } from "@/db/completed";
+import { getStreakInfo } from "@/db/streaks";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -15,7 +16,6 @@ type DayData = {
   hasWorkout: boolean;
   isToday: boolean;
   isCurrentMonth: boolean;
-  isStreakDay: boolean;
 };
 
 type MonthData = {
@@ -23,7 +23,6 @@ type MonthData = {
   month: number; // 0-11
   days: DayData[];
   workoutCount: number;
-  streakDays: number;
 };
 
 // 2023-01-01 was a Sunday: day 1 + i lands on getDay() === i, which lets Intl name any weekday.
@@ -35,7 +34,6 @@ function getMonthData(
   year: number,
   month: number,
   workoutDates: Set<string>,
-  streakDates: Set<string>,
   weekStartsOn: 0 | 1,
 ): MonthData {
   const today = new Date();
@@ -60,13 +58,11 @@ function getMonthData(
       hasWorkout: workoutDates.has(dateStr),
       isToday: false,
       isCurrentMonth: false,
-      isStreakDay: streakDates.has(dateStr),
     });
   }
 
   // Add current month days
   let workoutCount = 0;
-  let streakDays = 0;
 
   for (let date = 1; date <= lastDay.getDate(); date++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(date).padStart(2, "0")}`;
@@ -74,17 +70,14 @@ function getMonthData(
     dayDate.setHours(0, 0, 0, 0);
 
     const hasWorkout = workoutDates.has(dateStr);
-    const isStreakDay = streakDates.has(dateStr);
 
     if (hasWorkout) workoutCount++;
-    if (isStreakDay) streakDays++;
 
     days.push({
       date,
       hasWorkout,
       isToday: dayDate.getTime() === today.getTime(),
       isCurrentMonth: true,
-      isStreakDay,
     });
   }
 
@@ -100,44 +93,10 @@ function getMonthData(
       hasWorkout: workoutDates.has(dateStr),
       isToday: false,
       isCurrentMonth: false,
-      isStreakDay: streakDates.has(dateStr),
     });
   }
 
-  return { year, month, days, workoutCount, streakDays };
-}
-
-function calculateStreakDates(workoutDates: Set<string>): Set<string> {
-  const streakDates = new Set<string>();
-  const sortedDates = Array.from(workoutDates).sort();
-
-  if (sortedDates.length === 0) return streakDates;
-
-  // Find consecutive sequences
-  let currentStreak: string[] = [sortedDates[0]];
-
-  for (let i = 1; i < sortedDates.length; i++) {
-    const prevDate = new Date(sortedDates[i - 1]);
-    const currDate = new Date(sortedDates[i]);
-    const diffDays = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
-
-    if (diffDays === 1) {
-      currentStreak.push(sortedDates[i]);
-    } else {
-      // End of streak - add to streakDates if 2+ days
-      if (currentStreak.length >= 2) {
-        for (const d of currentStreak) streakDates.add(d);
-      }
-      currentStreak = [sortedDates[i]];
-    }
-  }
-
-  // Handle last streak
-  if (currentStreak.length >= 2) {
-    for (const d of currentStreak) streakDates.add(d);
-  }
-
-  return streakDates;
+  return { year, month, days, workoutCount };
 }
 
 function LegendDot({ color, label }: { color: ColorTokens; label: string }) {
@@ -164,10 +123,20 @@ export function MonthlyCalendarCard() {
   const weekStartsOn = getWeekStart(language);
 
   const [monthData, setMonthData] = useState<MonthData | null>(null);
+  // The card's streak cell shows the same flame as the home header (db/streaks.ts), not a
+  // second consecutive-days count: two "streak" numbers with different definitions on screen
+  // at once read as a bug.
+  const [flameDays, setFlameDays] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
   });
+
+  useEffect(() => {
+    getStreakInfo()
+      .then((info) => setFlameDays(info.current))
+      .catch((error) => reportError("journal.calendar", error));
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -178,14 +147,7 @@ export function MonthlyCalendarCard() {
       } catch (error) {
         reportError("journal.calendar", error);
       }
-      const streakDates = calculateStreakDates(workoutDates);
-      const data = getMonthData(
-        currentMonth.year,
-        currentMonth.month,
-        workoutDates,
-        streakDates,
-        weekStartsOn,
-      );
+      const data = getMonthData(currentMonth.year, currentMonth.month, workoutDates, weekStartsOn);
       setMonthData(data);
     }
 
@@ -287,9 +249,7 @@ export function MonthlyCalendarCard() {
                     day.isToday
                       ? "$primary"
                       : day.hasWorkout && day.isCurrentMonth
-                        ? day.isStreakDay
-                          ? "$success"
-                          : "$pastelGreen"
+                        ? "$pastelGreen"
                         : undefined
                   }
                   borderWidth={day.isToday ? 2 : 0}
@@ -312,7 +272,6 @@ export function MonthlyCalendarCard() {
         {/* Legend */}
         <XStack justify="center" gap="$4" pt="$1">
           <LegendDot color="$pastelGreen" label={t("journal.legend_workout", "Workout")} />
-          <LegendDot color="$success" label={t("journal.legend_streak", "Streak")} />
           <LegendDot color="$primary" label={t("journal.legend_today", "Today")} />
         </XStack>
 
@@ -324,15 +283,15 @@ export function MonthlyCalendarCard() {
               {monthData.workoutCount}
             </Text>
             <Text fontSize={11} color="$text" opacity={0.6}>
-              {t("journal.workout_days")}
+              {t("journal.workout_days", { count: monthData.workoutCount })}
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="700" fontSize={18} color="$success">
-              {monthData.streakDays}
+            <Text fontWeight="700" fontSize={18} color="$resourceFire">
+              {flameDays}
             </Text>
             <Text fontSize={11} color="$text" opacity={0.6}>
-              {t("journal.streak_days", "Streak days")}
+              {t("journal.streak_days", { count: flameDays, defaultValue: "Flame days" })}
             </Text>
           </YStack>
         </XStack>

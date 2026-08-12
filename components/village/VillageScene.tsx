@@ -386,10 +386,14 @@ export function VillageScene() {
                         tintColor={SILHOUETTE_TINT}
                       />
                     </YStack>
+                    {/* Two reserved lines: "Bosquet druidique" must not ellipsize, and the
+                        fixed height keeps every row of the grid aligned. */}
                     <Text
                       fontSize={11}
+                      lineHeight={14}
+                      minH={28}
                       color="$muted"
-                      numberOfLines={1}
+                      numberOfLines={2}
                       style={{ textAlign: "center" }}
                     >
                       {language === "fr" ? building.frName : building.enName}

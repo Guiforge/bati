@@ -188,7 +188,9 @@ export async function getDominantSportOverlay(): Promise<DominantSportOverlay> {
 export const BUILDING_LABELS: Record<BuildingCode, { en: string; fr: string }> = {
   campfire: { en: "Campfire", fr: "Feu de camp" },
   tent: { en: "Tent", fr: "Tente" },
-  training_dummy: { en: "Training Dummy", fr: "Mannequin d'entraînement" },
+  // fr deliberately not "Mannequin d'entraînement": « d'entraînement » is wider than a
+  // building card, and an unbreakable word that long wraps mid-word at large font scales.
+  training_dummy: { en: "Training Dummy", fr: "Mannequin de bois" },
   archery_range: { en: "Archery Range", fr: "Champ de tir" },
   quarry: { en: "Quarry", fr: "Carrière" },
   forge: { en: "Forge", fr: "Forge" },

@@ -56,11 +56,15 @@ export function BuiltBuildingCard({ building, language, justGrew, onPress }: Pro
           style={{ width: 48, height: 48, opacity: LEVEL_OPACITY[building.level] ?? 1 }}
           contentFit="contain"
         />
+        {/* Two reserved lines: "Mannequin d'entraînement" must not ellipsize, and the fixed
+            height keeps the card grid rows aligned. */}
         <Text
           fontSize={12}
           fontWeight="700"
+          lineHeight={15}
+          minH={30}
           color="$text"
-          numberOfLines={1}
+          numberOfLines={2}
           style={{ textAlign: "center" }}
         >
           {name}

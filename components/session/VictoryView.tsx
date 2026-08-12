@@ -6,6 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Share, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
@@ -22,6 +28,7 @@ import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
 import type { FeedbackCode } from "@/db/schema";
+import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -34,6 +41,69 @@ import { ProgressionChart } from "./ProgressionChart";
 import { SessionRewards } from "./SessionRewards";
 
 type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
+
+/**
+ * The hero's own gauge, filling with what this session earned — the one number that makes
+ * "come back tomorrow" legible, and it only ever moved on Home, outside the celebration
+ * (2026-08 audit, §06-B). Same visual language as the home header: gold on a dark track.
+ */
+function HeroLevelBar({
+  before,
+  after,
+  language,
+  reducedMotion,
+}: {
+  before: number;
+  after: number;
+  language: string;
+  reducedMotion: boolean;
+}) {
+  const { t } = useTranslation();
+  const level = calculateLevelFromXp(after);
+  const base = getXpForLevel(level);
+  const span = Math.max(1, getXpForLevel(level + 1) - base);
+  const target = Math.min(100, ((after - base) / span) * 100);
+  // Where the bar starts filling from: the hero's progress before the session, or the bottom
+  // of the level when the session crossed it — the sweep from zero *is* the level-up.
+  const from = before >= base ? Math.min(target, ((before - base) / span) * 100) : 0;
+  const title = getLevelTitle(level)[language === "fr" ? "fr" : "en"];
+
+  const width = useSharedValue(reducedMotion ? target : from);
+  useEffect(() => {
+    if (reducedMotion) {
+      width.value = target;
+      return;
+    }
+    width.value = withDelay(500, withTiming(target, { duration: 900 }));
+  }, [reducedMotion, target, width]);
+  const fill = useAnimatedStyle(() => ({ width: `${width.value}%` }));
+
+  return (
+    <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$2" py="$3">
+      <XStack items="center" justify="space-between">
+        <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$text">
+          {t("home.level_line", {
+            level,
+            title,
+            defaultValue: `Level ${level} • ${title}`,
+          })}
+        </Text>
+        <Text fontFamily="$body" fontWeight="700" fontSize={12} color="$resourceGold">
+          {t("journal.xp_progress", {
+            current: after - base,
+            next: span,
+            defaultValue: `${after - base} / ${span} XP`,
+          })}
+        </Text>
+      </XStack>
+      <XStack height={8} bg="$surface2" rounded={4} overflow="hidden" width="100%">
+        <Animated.View style={[{ height: "100%", borderRadius: 4 }, fill]}>
+          <YStack flex={1} bg="$resourceGold" rounded={4} />
+        </Animated.View>
+      </XStack>
+    </Card>
+  );
+}
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Post-workout summary screen (save, reveal, feedback, actions)
 export function VictoryView() {
@@ -303,34 +373,18 @@ export function VictoryView() {
           </Card>
         </XStack>
 
-        {/* Saving / error / rewards */}
-        {!result && !saveError && (
-          <YStack items="center" gap="$3" py="$6">
-            <ActivityIndicator />
-            <Text color="$textSecondary" fontSize={14}>
-              {t("session.summary_saving")}
-            </Text>
-          </YStack>
-        )}
-
-        {!!saveError && (
-          <YStack width="100%" maxW={520} items="center" gap="$3">
-            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
-              {t("errors.save_session_failed")}
-            </Text>
-            <AppButton backgroundColor="$surface2" onPress={runSave}>
-              <Text color="$text" fontSize={16} fontWeight="700">
-                {t("common.retry")}
-              </Text>
-            </AppButton>
-          </YStack>
-        )}
-
+        {/* The hero's level bar, filling with this session's XP */}
         {!!result && (
-          <SessionRewards result={result} language={language} onViewVillage={handleViewVillage} />
+          <HeroLevelBar
+            before={result.heroXp.before}
+            after={result.heroXp.after}
+            language={language}
+            reducedMotion={reducedMotion}
+          />
         )}
 
-        {/* Feedback */}
+        {/* Feedback — above the fold and above the rewards: this answer is what steers the next
+            session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
         <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
           <Text
             fontFamily="$body"
@@ -378,6 +432,33 @@ export function VictoryView() {
             ))}
           </XStack>
         </Card>
+
+        {/* Saving / error / rewards */}
+        {!result && !saveError && (
+          <YStack items="center" gap="$3" py="$6">
+            <ActivityIndicator />
+            <Text color="$textSecondary" fontSize={14}>
+              {t("session.summary_saving")}
+            </Text>
+          </YStack>
+        )}
+
+        {!!saveError && (
+          <YStack width="100%" maxW={520} items="center" gap="$3">
+            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+              {t("errors.save_session_failed")}
+            </Text>
+            <AppButton backgroundColor="$surface2" onPress={runSave}>
+              <Text color="$text" fontSize={16} fontWeight="700">
+                {t("common.retry")}
+              </Text>
+            </AppButton>
+          </YStack>
+        )}
+
+        {!!result && (
+          <SessionRewards result={result} language={language} onViewVillage={handleViewVillage} />
+        )}
 
         {/* Progression chart (lower priority; also available in the journal) */}
         <YStack width="100%" maxW={520}>

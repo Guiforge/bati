@@ -160,6 +160,8 @@ interface SessionState {
       nextQuestId: number | null;
     } | null;
     levelUp: { oldLevel: number; newLevel: number } | null;
+    /** Total XP around the save, so the victory screen can animate the hero's level bar. */
+    heroXp: { before: number; after: number };
     tierUp: VillageTierUp | null;
     villageGrowth: VillageGrowth[];
   }>;
@@ -869,6 +871,7 @@ export const useSessionStore = create<SessionState>()(
         oathBonusXp,
         campaign,
         levelUp,
+        heroXp: { before: oldTotalXp, after: newTotalXp },
         tierUp,
         villageGrowth,
       };

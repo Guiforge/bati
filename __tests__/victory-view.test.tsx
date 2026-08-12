@@ -53,6 +53,7 @@ const saveResult = {
   xpEarned: 100,
   levelUp: false,
   dailyBonusApplied: false,
+  heroXp: { before: 50, after: 150 },
   villageGrowth: [],
   campaign: null,
   fulfilledOath: null,

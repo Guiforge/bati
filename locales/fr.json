@@ -275,8 +275,10 @@
     "weekly_progress": "Cette semaine"
   },
   "home": {
-    "stats_a11y": "{{count}} quêtes accomplies, {{xp}} XP — ouvrir le journal",
-    "quests_done": "Quêtes",
+    "stats_a11y_one": "{{count}} quête accomplie, {{xp}} XP — ouvrir le journal",
+    "stats_a11y_other": "{{count}} quêtes accomplies, {{xp}} XP — ouvrir le journal",
+    "quests_done_one": "Quête",
+    "quests_done_other": "Quêtes",
     "continue_adventure_label": "Continuer l'aventure",
     "resume_journey": "Reprends ton chemin",
     "pick_quest_label": "Choisir une quête",
@@ -386,7 +388,7 @@
     "level_regular": "Régulier",
     "level_subtitle": "Pour te proposer les bons entraînements. Modifiable plus tard.",
     "level_title": "Quel est ton niveau ?",
-    "next": "Commencer mon aventure sportive",
+    "next": "Commencer l'aventure",
     "presentation_description": "Chaque entraînement construit ton village. Commence ton aventure aujourd'hui.",
     "presentation_title": "Ta forme physique est\nta forteresse.",
     "skip": "Passer",

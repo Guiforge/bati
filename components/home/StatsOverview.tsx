@@ -61,7 +61,7 @@ export function StatsOverview() {
           {totalStats?.totalSessions ?? 0}
         </Text>
         <Text fontSize={14} fontWeight="700" color="$textSecondary">
-          {t("home.quests_done", "Quests")}
+          {t("home.quests_done", { count: totalStats.totalSessions, defaultValue: "Quests" })}
         </Text>
       </XStack>
 

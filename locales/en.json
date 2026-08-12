@@ -4,8 +4,10 @@
   "home_continue_adventure_title": "Continue your adventure",
   "home_continue_adventure_subtitle": "Pick up where you left off.",
   "home": {
-    "stats_a11y": "{{count}} quests done, {{xp}} XP — open the journal",
-    "quests_done": "Quests",
+    "stats_a11y_one": "{{count}} quest done, {{xp}} XP — open the journal",
+    "stats_a11y_other": "{{count}} quests done, {{xp}} XP — open the journal",
+    "quests_done_one": "Quest",
+    "quests_done_other": "Quests",
     "continue_adventure_label": "Continue Adventure",
     "resume_journey": "Resume your journey",
     "pick_quest_label": "Pick a quest",

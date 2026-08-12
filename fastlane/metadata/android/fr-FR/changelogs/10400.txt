@@ -1,0 +1,18 @@
+- L'écran de victoire célèbre : la barre de niveau se remplit avec l'XP que
+  tu viens de gagner, et « C'était comment ? » passe au-dessus des
+  récompenses pour que la réponse qui ajuste ta prochaine séance soit vue.
+- Le sélecteur de difficulté dit ce que chaque niveau fait : objectifs
+  ×0,75/1/1,25, XP ×0,9/1/1,2 — fini de choisir à l'aveugle.
+- Les boutons principaux passent à l'indigo profond, en accord avec
+  l'univers nocturne au lieu de le transpercer.
+- Les widgets s'adaptent à la cellule que le lanceur leur donne, la semaine
+  a son propre widget, et leurs données survivent aux mises à jour.
+- Des chiffres honnêtes : les aperçus d'XP disent « jusqu'à », les
+  estimations de durée sont réalistes, et la bannière d'accueil explique que
+  la quête suggérée renforce tes points faibles.
+- Polissage du français : le récit des quêtes te tutoie enfin, les exercices
+  perdent leurs majuscules anglaises, le tempo se lit.
+- Corrections visuelles : les filtres ne se cachent plus sous l'en-tête, les
+  barres d'action deviennent opaques, les noms de bâtiments passent sur deux
+  lignes, le village se rouvre en haut, la case de série du journal montre
+  la flamme.

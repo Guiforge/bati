@@ -1,0 +1,17 @@
+- The victory screen celebrates: the level bar fills with the XP you just
+  earned, and "How was it?" moves above the rewards so the answer that tunes
+  your next session is actually seen.
+- The difficulty selector says what each level does: targets ×0.75/1/1.25,
+  XP ×0.9/1/1.2 — no more choosing blind.
+- Primary buttons go deep indigo, at home in the nocturnal art instead of
+  punching through it.
+- Widgets scale to the cell your launcher gives them, the week gets its own
+  widget, and widget data survives app updates.
+- Honest numbers: XP previews say "up to", session estimates got realistic,
+  and the home banner explains the suggested quest targets your lagging
+  muscles.
+- French polish: the quest narrative finally says "tu", exercise names lose
+  their English casing, tempo is readable.
+- Visual fixes: filter chips no longer hide under the header, sticky bars go
+  opaque, building labels wrap instead of truncating, the village reopens at
+  the top, the journal streak cell shows the flame.

@@ -1,6 +1,7 @@
 import { LegendList } from "@legendapp/list/react-native";
 import { Map as MapIcon, Plus, X } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useMemo, useState } from "react";
@@ -27,6 +28,7 @@ import {
   type QuestFilters,
   toggleInSet,
 } from "@/constants/questFilters";
+import { rawColors } from "@/constants/rawColors";
 import {
   estimateQuestTemplateSeconds,
   formatDuration,
@@ -254,38 +256,49 @@ function FilterRail({ groups, onClearAll }: { groups: RailGroup[]; onClearAll: (
   const anyActive = groups.some((g) => g.chips.some((c) => c.active));
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={RAIL_CONTENT_STYLE}
-      style={RAIL_STYLE}
-    >
-      {anyActive ? (
-        <Chip
-          label={t("quests.filter_clear_all", "Clear")}
-          icon={<X size={14} color="$text" />}
-          onPress={onClearAll}
-          accessibilityRole="button"
-        />
-      ) : null}
-      {groups.map((g) => (
-        <XStack key={g.key} items="center" gap="$2">
-          <Text fontSize={10} fontWeight="700" color="$textSecondary" opacity={0.7}>
-            {g.label.toUpperCase()}
-          </Text>
-          {g.chips.map((c) => (
-            <Chip
-              key={c.key}
-              label={c.label}
-              tone={c.active ? "primary" : "default"}
-              onPress={c.onPress}
-              accessibilityRole="button"
-              accessibilityState={{ selected: c.active }}
-            />
-          ))}
-        </XStack>
-      ))}
-    </ScrollView>
+    <YStack position="relative" style={RAIL_STYLE}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={RAIL_CONTENT_STYLE}
+        style={RAIL_STYLE}
+      >
+        {anyActive ? (
+          <Chip
+            label={t("quests.filter_clear_all", "Clear")}
+            icon={<X size={14} color="$text" />}
+            onPress={onClearAll}
+            accessibilityRole="button"
+          />
+        ) : null}
+        {groups.map((g) => (
+          <XStack key={g.key} items="center" gap="$2">
+            <Text fontSize={10} fontWeight="700" color="$textSecondary" opacity={0.7}>
+              {g.label.toUpperCase()}
+            </Text>
+            {g.chips.map((c) => (
+              <Chip
+                key={c.key}
+                label={c.label}
+                tone={c.active ? "primary" : "default"}
+                onPress={c.onPress}
+                accessibilityRole="button"
+                accessibilityState={{ selected: c.active }}
+              />
+            ))}
+          </XStack>
+        ))}
+      </ScrollView>
+      {/* Right-edge fade: whatever the width, a chip or group label lands on the cut and looks
+          amputated rather than scrollable. The fade turns the cut into an affordance. */}
+      <LinearGradient
+        colors={["transparent", rawColors.bgDark]}
+        start={{ x: 0, y: 0.5 }}
+        end={{ x: 1, y: 0.5 }}
+        style={{ position: "absolute", top: 0, bottom: 0, right: 0, width: 36 }}
+        pointerEvents="none"
+      />
+    </YStack>
   );
 }
 

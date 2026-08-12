@@ -51,7 +51,7 @@ jest.mock("@/db/village", () => ({
   diffVillageTier: jest.fn().mockReturnValue(null),
 }));
 jest.mock("@/src/widget", () => ({
-  requestFlameWidgetUpdate: jest.fn().mockResolvedValue(undefined),
+  requestWidgetsUpdate: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("@/db/xp", () => ({
   computeSessionXp: jest.fn().mockReturnValue(100),

@@ -13,7 +13,7 @@ import {
   type ExerciseStyle,
   type MuscleCode,
 } from "./schema";
-import { getStreakInfo } from "./streaks";
+import { type FlameLevel, getFlameLevel, getStreakInfo } from "./streaks";
 import { getUserLevelInfo } from "./userLevel";
 import { repEquivalentSql } from "./workUnits";
 
@@ -76,19 +76,6 @@ export function getVillageTier(level: number): VillageTier {
     if (level >= floor) tier = Number(tierStr) as VillageTier;
   }
   return tier;
-}
-
-export type FlameLevel = 0 | 1 | 2 | 3 | 4 | 5;
-
-// Matches the flame table in docs/gameplay/progression.md. The unit is days the flame stayed
-// lit (see db/streaks.ts), not days trained in a row — rest days count.
-export function getFlameLevel(streakDays: number): FlameLevel {
-  if (streakDays >= 100) return 5;
-  if (streakDays >= 30) return 4;
-  if (streakDays >= 14) return 3;
-  if (streakDays >= 7) return 2;
-  if (streakDays >= 3) return 1;
-  return 0;
 }
 
 export type BossBanner = {

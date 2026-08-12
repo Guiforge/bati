@@ -173,4 +173,12 @@ describe("db/streaks", () => {
     expect(updated.isActive).toBe(true);
     expect((await streaks().getStreakInfo()).current).toBe(updated.current);
   });
+
+  test("weekly progress counts the flame's own trailing window against the sworn quota", async () => {
+    // Three sessions inside the trailing 7 days, one safely outside it.
+    for (const daysAgo of [1, 3, 5, 9]) await addSessionOnDate(daysAgo);
+    swearWeekly(4);
+
+    expect(await streaks().getWeeklyProgress()).toEqual({ done: 3, quota: 4 });
+  });
 });

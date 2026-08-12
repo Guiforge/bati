@@ -31,6 +31,7 @@ import type { EquipmentCode } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
+import { requestWidgetsUpdate } from "@/src/widget";
 import { useSettingsStore } from "@/stores/settings";
 
 const METRICS: OathMetric[] = [
@@ -310,6 +311,9 @@ export default function OathScreen() {
         showError(t("oath.save_error", "Could not save the oath"));
         return;
       }
+      // The oath is the bar the flame and the weekly count are measured against — both
+      // widgets can jump the moment it changes. Best-effort, never blocks the ceremony.
+      requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
       // The app's most ceremonial commitment used to end in a silent router.back().
       success();
       showSuccess(t("oath.sworn_toast", "Oath sworn"));
@@ -391,7 +395,12 @@ export default function OathScreen() {
           style: "destructive",
           onPress: () => {
             breakOath()
-              .then(() => router.back())
+              .then(() => {
+                // Breaking the oath drops the quota back to the baseline — same redraw
+                // contract as swearing one.
+                requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
+                router.back();
+              })
               .catch((e) => {
                 reportError("oath.abandon", e);
                 showError(t("oath.save_error", "Could not save the oath"));

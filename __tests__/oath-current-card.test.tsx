@@ -51,6 +51,12 @@ jest.mock("@/db/preferences", () => ({
   preferences: { getOwnedEquipment: jest.fn().mockResolvedValue([]) },
 }));
 
+// The screen pokes the home-screen widgets after swearing/breaking an oath; the real module
+// opens the SQLite database at import time, which jest's environment cannot do.
+jest.mock("@/src/widget", () => ({
+  requestWidgetsUpdate: jest.fn().mockResolvedValue(undefined),
+}));
+
 /** Noon UTC so the formatted day is the same one in every timezone the suite might run in. */
 const SWORN_AT = "2026-01-15T12:00:00.000Z";
 

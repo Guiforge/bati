@@ -40,6 +40,21 @@ export type StreakInfo = {
   lastWorkoutDate: string | null;
 };
 
+export type FlameLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
+// Matches the flame table in docs/gameplay/progression.md. The unit is days the flame stayed
+// lit (see the docstring above), not days trained in a row — rest days count. Lives here rather
+// than in db/village.ts so the headless widget task doesn't drag that 600-line module in for a
+// six-line pure function.
+export function getFlameLevel(streakDays: number): FlameLevel {
+  if (streakDays >= 100) return 5;
+  if (streakDays >= 30) return 4;
+  if (streakDays >= 14) return 3;
+  if (streakDays >= 7) return 2;
+  if (streakDays >= 3) return 1;
+  return 0;
+}
+
 function shiftDays(date: Date, days: number): Date {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
@@ -236,6 +251,21 @@ export function getStreakInfo(): Promise<StreakInfo> {
     streakMemo = { day: today, promise };
   }
   return streakMemo.promise;
+}
+
+/**
+ * Sessions in the flame's own trailing 7-day window, against the hero's quota — the weekly
+ * widget's whole data source. Deliberately the same window `isLit` measures (not the calendar
+ * week), so the two widgets can never disagree about what "this week" means.
+ */
+export async function getWeeklyProgress(): Promise<{ done: number; quota: number }> {
+  const [quota, rows] = await Promise.all([
+    getWeeklyQuota(),
+    db.select({ performedAt: completedQuest.performedAt }).from(completedQuest),
+  ]);
+
+  const byDay = groupByDay(rows.map((r) => r.performedAt));
+  return { done: countInWindow(byDay, startOfDay(new Date()), WINDOW_DAYS), quota };
 }
 
 /**

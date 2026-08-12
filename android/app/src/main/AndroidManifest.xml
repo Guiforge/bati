@@ -43,12 +43,19 @@
         <data android:scheme="exp+bati"/>
       </intent-filter>
     </activity>
-    <receiver android:name=".widget.Flame" android:exported="false" android:label="Bati — Flame">
+    <receiver android:name=".widget.Flame" android:exported="false" android:label="Bati — Flamme">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
         <action android:name="com.guiforge.bati.WIDGET_CLICK"/>
       </intent-filter>
       <meta-data android:name="android.appwidget.provider" android:resource="@xml/widgetprovider_flame"/>
+    </receiver>
+    <receiver android:name=".widget.Weekly" android:exported="false" android:label="Bati — Semaine">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+        <action android:name="com.guiforge.bati.WIDGET_CLICK"/>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/widgetprovider_weekly"/>
     </receiver>
   </application>
 </manifest>

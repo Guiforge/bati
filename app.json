@@ -63,13 +63,27 @@
           "widgets": [
             {
               "name": "Flame",
-              "label": "Bati — Flame",
-              "description": "Your current training streak.",
+              "label": "Bati — Flamme",
+              "description": "Votre flamme d'entraînement.",
               "minWidth": "110dp",
               "minHeight": "110dp",
               "targetCellWidth": 2,
               "targetCellHeight": 2,
-              "updatePeriodMillis": 1800000
+              "updatePeriodMillis": 1800000,
+              "resizeMode": "horizontal|vertical",
+              "previewImage": "./assets/widget-preview/flame.png"
+            },
+            {
+              "name": "Weekly",
+              "label": "Bati — Semaine",
+              "description": "Séances cette semaine face à votre serment.",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "updatePeriodMillis": 1800000,
+              "resizeMode": "horizontal|vertical",
+              "previewImage": "./assets/widget-preview/weekly.png"
             }
           ]
         }

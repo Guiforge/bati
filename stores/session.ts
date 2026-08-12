@@ -38,7 +38,7 @@ import {
 } from "@/db/village";
 import { computeSessionXp } from "@/db/xp";
 import { reportError } from "@/src/reportError";
-import { requestFlameWidgetUpdate } from "@/src/widget";
+import { requestWidgetsUpdate } from "@/src/widget";
 
 export type SessionStatus =
   | "idle"
@@ -801,11 +801,10 @@ export const useSessionStore = create<SessionState>()(
       // Update streak cache
       await updateStreakAfterSession();
 
-      // The flame widget reads the streak straight from the DB, but only on an OS-driven
-      // tick or a poke — a finished session is one of the two moments the number can move.
-      requestFlameWidgetUpdate().catch(() => {
-        // Non-blocking: never fail a logged session over a widget redraw.
-      });
+      // The widgets read straight from the DB, but only on an OS-driven tick or a poke —
+      // a finished session is one of the moments their numbers can move.
+      // Non-blocking: never fail a logged session over a widget redraw.
+      requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
 
       // Check for new achievements (on the base session XP, before the oath bonus).
       // `startTime`, not `new Date()`: the session row is written with the start too, and the

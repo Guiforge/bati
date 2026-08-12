@@ -18,8 +18,9 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { installCrashHandler, recordCrash } from "@/src/crashLog";
+import { reportError } from "@/src/reportError";
 import { AppBackground } from "@/src/ui/AppBackground";
-import { requestFlameWidgetUpdate } from "@/src/widget";
+import { requestWidgetsUpdate } from "@/src/widget";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
@@ -87,10 +88,9 @@ export default function RootLayout() {
     loadUserFromDatabase();
     loadSettingsFromDatabase();
     // The streak window can roll over while the app is closed (e.g. midnight passing),
-    // so a cold start is the other moment the flame widget needs a redraw.
-    requestFlameWidgetUpdate().catch(() => {
-      // Non-blocking: never hold up the app over a widget redraw.
-    });
+    // so a cold start is another moment the widgets need a redraw.
+    // Non-blocking: never hold up the app over a widget redraw.
+    requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
   }, [loadUserFromDatabase, loadSettingsFromDatabase]);
 
   useEffect(() => {

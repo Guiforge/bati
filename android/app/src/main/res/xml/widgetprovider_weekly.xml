@@ -9,10 +9,10 @@
 
     android:resizeMode="horizontal|vertical"
 
-    android:description="@string/widget_flame_description"
+    android:description="@string/widget_weekly_description"
 
     android:initialLayout="@layout/rn_widget"
-    android:previewImage="@drawable/flame_preview"
+    android:previewImage="@drawable/weekly_preview"
 
 
 

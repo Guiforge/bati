@@ -7,9 +7,8 @@ import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
 import { getAvatarSource } from "@/constants/avatars";
-import { getStreakInfo, type StreakInfo } from "@/db/streaks";
+import { getFlameLevel, getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
-import { getFlameLevel } from "@/db/village";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 

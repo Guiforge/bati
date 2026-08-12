@@ -83,7 +83,9 @@ describe("db/village", () => {
   });
 
   test("the flame follows the streak table exactly", () => {
-    const { getFlameLevel } = village();
+    // Lives in db/streaks.ts now (the widget's headless task must not drag village.ts in),
+    // but the table is still the village scene's contract, so the case stays here.
+    const { getFlameLevel } = require("../db/streaks") as typeof import("../db/streaks");
 
     const cases: [number, number][] = [
       [0, 0],

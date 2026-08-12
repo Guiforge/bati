@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import Animated, {
+  useAnimatedRef,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
@@ -123,10 +124,19 @@ export function VillageScene() {
       });
   }, []);
 
+  // Tab screens stay mounted, so a revisit inherited whatever offset the last visit left —
+  // the scene opened mid-page, hero painting off-screen, tiles under the status bar (2026-08
+  // audit, §06-D; reproduced: scroll, switch tab, come back). The scene *is* the screen, so a
+  // fresh visit starts at the top. Safe: the detail sheet and viewer are modals, not routes —
+  // focus only changes when actually leaving the tab.
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+
   useFocusEffect(
     useCallback(() => {
       loadScene();
-    }, [loadScene]),
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+      scrollY.value = 0;
+    }, [loadScene, scrollRef, scrollY]),
   );
 
   // The tier art is square (1024x1024), and `cover` silently crops whatever the slot doesn't
@@ -177,6 +187,7 @@ export function VillageScene() {
   return (
     <YStack testID="village-screen" flex={1} bg="$background">
       <Animated.ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
         onScroll={onScroll}

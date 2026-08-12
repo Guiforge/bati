@@ -6,8 +6,8 @@
     "colorMeta": {
       "primary": {
         "role": "primary",
-        "displayName": "Electric Blue",
-        "canonical": "#0D33F2",
+        "displayName": "Deep Indigo",
+        "canonical": "#4A3FD6",
         "tonalRamp": [
           "#040a2e",
           "#071451",
@@ -116,7 +116,7 @@
       },
       {
         "name": "primary-glow",
-        "value": "0 0 24px rgba(13, 51, 242, 0.45)",
+        "value": "0 0 24px rgba(74, 63, 214, 0.45)",
         "purpose": "Powered-on halo under the single hero action."
       }
     ],
@@ -151,7 +151,7 @@
       "refersTo": "button-primary",
       "description": "The single hero action per screen: electric-blue, heavy off-white border, hard stamp.",
       "html": "<button class=\"ds-btn-primary\">START QUEST</button>",
-      "css": ".ds-btn-primary { background: #0D33F2; color: #0B0F19; border: 3px solid #E8ECFF; border-radius: 22px; padding: 0 16px; height: 48px; font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 900; font-size: 20px; box-shadow: 0 6px 0 #060812; transition: transform 0.15s, opacity 0.15s; } .ds-btn-primary:active { transform: scale(0.98); opacity: 0.9; }"
+      "css": ".ds-btn-primary { background: #4A3FD6; color: #0B0F19; border: 3px solid #E8ECFF; border-radius: 22px; padding: 0 16px; height: 48px; font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 900; font-size: 20px; box-shadow: 0 6px 0 #060812; transition: transform 0.15s, opacity 0.15s; } .ds-btn-primary:active { transform: scale(0.98); opacity: 0.9; }"
     },
     {
       "name": "Secondary Button",
@@ -207,7 +207,7 @@
     "rules": [
       {
         "name": "The One Signal Rule",
-        "body": "Electric Blue marks a single primary action per screen. If two things are blue, the user can't tell which to press. Everything else is neutral, secondary, or a resource hue.",
+        "body": "Deep Indigo marks a single primary action per screen. If two things are indigo, the user can't tell which to press. Everything else is neutral, secondary, or a resource hue.",
         "section": "colors"
       },
       {
@@ -227,7 +227,7 @@
       }
     ],
     "dos": [
-      "Do reserve Electric Blue (#0D33F2) for a single primary action per screen; back it with Primary Glow when it's the hero action.",
+      "Do reserve Deep Indigo (#4A3FD6) for a single primary action per screen; back it with Primary Glow when it's the hero action.",
       "Do keep everything dark: The Void (#0B0F19) is the only body background. Assume dark mode always.",
       "Do use Tamagui tokens (p=\"$4\", bg=\"$bgDark\", color=\"$text\") instead of hex codes or inline styles.",
       "Do route every icon through @/hooks/useGameIcon / GameIcon.",

@@ -17,19 +17,21 @@ import type { DifficultyCode } from "@/db/schema";
  */
 export const rawColors = {
   // --- Core ---
-  primary: "#0D33F2", // Electric Blue
+  // Deep nocturnal indigo, not electric blue: the whole world is desaturated night with gold
+  // and ember accents, and the old #0D33F2 read as imported from another app (2026-08 audit).
+  primary: "#4A3FD6", // Deep Indigo
   /**
-   * The same blue, light enough to read as text on a dark background.
+   * The same indigo, light enough to read as text on a dark background.
    *
-   * `primary` is a fill colour: white on it clears AA comfortably (6.44:1 on the primary
-   * button). As *text* on any of our dark surfaces it lands at 2.53:1 — under AA even at large
+   * `primary` is a fill colour: white on it clears AA comfortably (6.01:1 on the primary
+   * button). As *text* on any of our dark surfaces it lands under AA even at large
    * sizes, and under the 3:1 that WCAG asks of meaningful icons. Same hue, same saturation,
-   * raised in lightness until it clears AA body on bgDark, surface and surface2 (5.26 / 5.07 /
-   * 4.73). Use this for text and icons; keep `primary` for anything you fill.
+   * raised in lightness until it clears AA body on bgDark, surface and surface2 (5.39 / 5.20 /
+   * 4.85). Use this for text and icons; keep `primary` for anything you fill.
    */
-  primaryText: "#647CF7",
-  primaryHover: "#2E5CFF",
-  primaryPress: "#0A25B0",
+  primaryText: "#8177F7",
+  primaryHover: "#5D53E8",
+  primaryPress: "#372FA6",
   secondary: "#DB2777", // Magenta
   success: "#16A34A",
   warning: "#F59E0B", // Amber (difficulty MEDIUM, cautions)
@@ -55,7 +57,7 @@ export const rawColors = {
   // --- Effects ---
   borderStrong: "#2A3360",
   shadowColor: "#060812",
-  primaryGlow: "rgba(13, 51, 242, 0.45)",
+  primaryGlow: "rgba(74, 63, 214, 0.45)",
 
   // --- Boss phases ---
   // The room the fight happens in, darkening and reddening as the boss loses. Phase 1 uses

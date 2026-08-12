@@ -1,0 +1,3 @@
+- Maintenance under the hood: the UI engine, Expo modules and the widget
+  library move to their latest releases. Nothing changes on the surface —
+  the village just stands on fresher stone.

@@ -1,0 +1,3 @@
+- Entretien des fondations : le moteur d'interface, les modules Expo et la
+  bibliothèque de widgets passent à leurs dernières versions. Rien ne change
+  en surface — le village repose juste sur une pierre plus fraîche.

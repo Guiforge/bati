@@ -221,7 +221,13 @@ const PAGE_SIZE = 10;
 const questKey = (m: QuestMeta) => String(m.quest.id);
 const ListGap = () => <YStack height={12} />;
 
-const RAIL_CONTENT_STYLE = { gap: 8, paddingHorizontal: 24, paddingBottom: 12 } as const;
+// Fixed height, chips centered: the 44pt chips always sit fully inside the 60pt rail.
+const RAIL_CONTENT_STYLE = {
+  gap: 8,
+  paddingHorizontal: 24,
+  height: 60,
+  alignItems: "center",
+} as const;
 
 const DURATION_FALLBACKS: Record<DurationBucket, string> = {
   short: "≤ 15 min",
@@ -283,8 +289,10 @@ function FilterRail({ groups, onClearAll }: { groups: RailGroup[]; onClearAll: (
   );
 }
 
-// A horizontal ScrollView in a flex column would otherwise stretch to fill the leftover height.
-const RAIL_STYLE = { flexGrow: 0 } as const;
+// flexGrow 0: don't stretch into the leftover column height. flexShrink 0: RN ScrollViews
+// default to flexShrink 1, so the overflowing column squeezed the rail below the chips'
+// 44pt height and Android clipped their tops — the "chips cut off by the header" bug.
+const RAIL_STYLE = { flexGrow: 0, flexShrink: 0 } as const;
 
 function StatusMessage({
   state,

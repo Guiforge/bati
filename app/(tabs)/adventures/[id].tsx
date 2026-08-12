@@ -550,7 +550,7 @@ export default function AdventureDetailsScreen() {
         <YStack
           p="$4"
           pb={insets.bottom + 16}
-          bg="$background"
+          bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}

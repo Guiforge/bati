@@ -310,6 +310,8 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               .map((d) => `${d.day} ${d.count}`)
               .join(", ")}`}
           >
+            {/* 2 sections, not 3: maxValue is always even, so halves stay integers —
+                thirds gave the session-count axis labels like 2.7 */}
             <BarChart
               data={weekdayChartData}
               width={chartWidth}
@@ -317,8 +319,9 @@ export function JournalStats({ sessions }: JournalStatsProps) {
               barWidth={28}
               spacing={12}
               barBorderRadius={6}
-              noOfSections={3}
+              noOfSections={2}
               maxValue={Math.ceil(maxWeekdayCount / 2) * 2 + 2}
+              formatYLabel={(label) => String(Number.parseFloat(label))}
               yAxisThickness={0}
               xAxisThickness={1}
               xAxisColor={rawColors.borderStrong}

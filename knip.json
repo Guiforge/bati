@@ -2,13 +2,11 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": [
     "app/**/*.{ts,tsx}",
-    "babel.config.js",
     "tamagui.config.ts",
     "i18n.ts",
     "__tests__/**/*.{test,spec}.{ts,tsx}"
   ],
   "project": ["**/*.{ts,tsx}"],
-  "ignore": ["db/index.ts"],
   "ignoreDependencies": [
     "expo-dev-client",
     "@react-navigation/bottom-tabs",
@@ -16,9 +14,7 @@
     "@react-navigation/native",
     "expo-updates",
     "@tamagui/babel-plugin",
-    "babel-plugin-inline-import",
-    "babel-plugin-transform-remove-console",
-    "babel-preset-expo"
+    "babel-plugin-transform-remove-console"
   ],
   "ignoreExportsUsedInFile": true,
   "tags": ["-legacy"]

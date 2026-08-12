@@ -97,19 +97,6 @@ describe("db/restSuggestions", () => {
     expect(result.reason).toBe("high_volume");
   });
 
-  test("getQuickRestCheck returns correct values", async () => {
-    const { getQuickRestCheck } =
-      require("../db/restSuggestions") as typeof import("../db/restSuggestions");
-
-    await addSessionOnDate(0); // Today
-    await addSessionOnDate(2); // 2 days ago
-
-    const result = await getQuickRestCheck();
-    expect(result.workedOutToday).toBe(true);
-    expect(result.workedOutYesterday).toBe(false);
-    expect(result.weeklySessionCount).toBe(2);
-  });
-
   test("does not suggest rest for old consecutive days", async () => {
     const { getRestSuggestion } =
       require("../db/restSuggestions") as typeof import("../db/restSuggestions");

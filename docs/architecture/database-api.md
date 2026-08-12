@@ -500,7 +500,6 @@ interface RestSuggestion {
 | Function | Description |
 |----------|-------------|
 | `getRestSuggestion()` | Get detailed rest analysis |
-| `getQuickRestCheck()` | Quick boolean check |
 
 ---
 

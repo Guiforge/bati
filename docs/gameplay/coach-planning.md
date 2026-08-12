@@ -80,8 +80,6 @@ on offer underneath it.
 It does not contradict the [flame](progression.md#flame-consistency-streak): taking the day off
 costs nothing, so the app can advise rest without punishing it.
 
-`getQuickRestCheck()` remains exported with no caller.
-
 ### Pattern balance, not just muscle balance
 
 The weak-area rule reads the muscle taxonomy. [§10.4](../raw/bodyweight-app-research.md) asks

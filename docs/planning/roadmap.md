@@ -140,13 +140,9 @@ Severity order P0 → P1 → P2 → P3; never polish before P0/P1 are gone.
 Not tidiness. Each line below is a gate that does not close, or a risk with a date on it.
 
 - **The knip gate does not gate.** `npm run knip` runs in CI and `ci.yml` claims "Knip is at
-  zero; anything it reports is new" — it reports **21 unused exports and 1 unused type**, and
-  exits 0. Either clean them and make the failure blocking, or the comment is false and the step
-  is decoration. Deciding is the work; postponing it is what made the claim rot.
-- **`db/index.ts` is excluded from knip** — a barrel of ~60 re-exports of which a third are used.
-  Trim it to what callers import, then drop the exclusion.
-- **`getQuickRestCheck()`** (`db/restSuggestions.ts`) has no caller. Its sibling
-  `getRestSuggestion()` was wired into Home on 2026-07-31; this one was not.
+  zero; anything it reports is new" — since 2026-08-12 the report actually is at zero (the
+  `db/index.ts` barrel was trimmed and its exclusion dropped), but the step still exits 0
+  regardless of findings. What remains is verifying it goes red when a finding appears.
 - **The 7 Maestro flows never run in CI, and they do not assert state.**
   `session-interruptions.yaml` performed two boss-damage bugs and passed, because it only checked
   that the UI came back. They are worth "the app does not crash on this path", nothing more.

@@ -1,31 +1,11 @@
-// Database exports
+// Barrel for the symbols actually imported via "@/db" — most callers import their
+// submodule directly; add here only when a screen genuinely needs the shorthand.
 
-export type {
-  AchievementCode,
-  AchievementDefinition,
-  AchievementProgress,
-  NewAchievementResult,
-  UnlockedAchievement,
-} from "./achievements";
-export {
-  achievementCodes,
-  achievementDefinitions,
-  checkForNewAchievements,
-  getAchievementDefinition,
-  getAchievementStats,
-  getAllAchievementsWithProgress,
-  getUnlockedAchievements,
-  unlockAchievement,
-} from "./achievements";
 export type {
   ActiveAdventureRun,
   Adventure,
   AdventureDetails,
-  AdventureKind,
-  AdventureRun,
-  AdventureRunStep,
   AdventureStepTemplate,
-  FinishedAdventureSummary,
 } from "./adventures";
 export {
   completeAdventureRunStep,
@@ -35,62 +15,24 @@ export {
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
   listAdventures,
-  listFinishedRunSummaries,
   startAdventureRun,
 } from "./adventures";
 export { db, schema } from "./client";
-export type {
-  CompletedSessionListItem,
-  MonthlyTrend,
-  SessionSummary,
-  TrendAnalysis,
-  WeeklyTrend,
-} from "./completed";
+export type { SessionSummary } from "./completed";
 export {
-  analyzeTrend,
-  createCompletedSession,
   getCompletedSessionById,
-  getMonthlyTrends,
   getQuestSessionHistory,
   getRecentSessionHistory,
-  getTrendSummary,
-  getWeeklyTrends,
-  listCompletedSessions,
-  markSessionWithNewRecords,
 } from "./completed";
 export { suggestDifficultyFromSessions } from "./difficultySuggestion";
-export { EQUIPMENT_LABELS, isEquipmentCode } from "./equipment";
 export {
   adventureWeeks,
-  estimateExerciseSeconds,
   estimateQuestSeconds,
   formatDuration,
   formatDurationEstimate,
 } from "./estimate";
-export type { Chain, ChainRung, VariationStep } from "./exercises";
-export {
-  checkForNewRungs,
-  getChainTo,
-  getExerciseById,
-  getReadyStep,
-  listExercises,
-} from "./exercises";
-export type { Oath, OathMetric, OathProgress } from "./oaths";
-export {
-  breakOath,
-  checkOathFulfilled,
-  getOath,
-  getOathProgress,
-  oathNeedsExercise,
-  swearOath,
-} from "./oaths";
-export {
-  getAllPreferences,
-  getPreference,
-  preferences,
-  setPreference,
-  type TrainingLevel,
-} from "./preferences";
+export { getExerciseById, listExercises } from "./exercises";
+export { preferences, type TrainingLevel } from "./preferences";
 export { estimateQuestTemplateSeconds } from "./preview";
 export type { QuestConfig } from "./questConfig";
 export {
@@ -108,7 +50,6 @@ export {
   createQuestTemplate,
   Difficulty,
   deleteQuest,
-  generateTarget,
   getQuestById,
   getQuestTemplateById,
   isUserQuest,
@@ -118,21 +59,8 @@ export {
   USER_QUEST_AUTHOR,
   updateQuestMeta,
 } from "./quests";
-export type { RestSuggestion } from "./restSuggestions";
-export { getQuickRestCheck, getRestSuggestion } from "./restSuggestions";
-export type { StreakInfo } from "./streaks";
-export {
-  calculateAndCacheStreak,
-  getCachedStreak,
-  getStreakInfo,
-  updateStreakAfterSession,
-} from "./streaks";
-export type { UserLevelInfo } from "./userLevel";
 export {
   calculateLevelFromXp as calculateUserLevelFromXp,
-  getLevelTitle,
-  getTotalStats,
   getTotalXp,
-  getUserLevelInfo,
   getXpForLevel,
 } from "./userLevel";

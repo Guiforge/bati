@@ -91,10 +91,6 @@ outlived it.
 
 ### Known debt
 
-- `db/index.ts` is excluded from `knip` because it re-exports ~60 symbols of which a third are
-  used. Worth trimming to what callers actually import, then removing the exclusion.
-- `db/restSuggestions.ts` still exports `getQuickRestCheck()` with no caller. Its sibling
-  `getRestSuggestion()` was wired into Home on 2026-07-31; this one was not.
 - `app/(tabs)/quests/[id].tsx` composes `getQuestById` + `getQuestConfig` + `applyQuestConfig`
   in React state, which is what `loadConfiguredQuest()` does in one call. The screen needs the
   config in state so the hero can edit it before starting, so the two are not trivially merged —

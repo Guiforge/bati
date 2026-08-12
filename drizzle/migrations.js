@@ -30,6 +30,7 @@ import m0026 from "./0026_boss_pacing.sql";
 import m0027 from "./0027_iron_golem.sql";
 import m0028 from "./0028_retroactive_final_blow.sql";
 import m0029 from "./0029_fr_tutoiement.sql";
+import m0030 from "./0030_fr_exercise_casing.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -65,5 +66,6 @@ export default {
     m0027,
     m0028,
     m0029,
+    m0030,
   },
 };

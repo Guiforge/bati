@@ -219,7 +219,7 @@
     "save_session_failed": "Impossible de sauvegarder l'entraînement. Veuillez réessayer.",
     "something_went_wrong": "Une erreur s'est produite",
     "try_again": "Réessayer",
-    "try_again_message": "Pas de panique, vous pouvez réessayer."
+    "try_again_message": "Pas de panique, tu peux réessayer."
   },
   "exercises": {
     "details_title": "Exercice",
@@ -229,7 +229,7 @@
     "loading": "Chargement...",
     "not_found": "Exercice introuvable",
     "retry": "Réessayer",
-    "seconds_per_rep": "{{count}}s/reps",
+    "seconds_per_rep": "tempo {{count}} s/rép",
     "next_step": "Prochaine marche",
     "next_step_earned": "Tu l'as mérité — tente-le.",
     "next_step_progress": "Atteins ta cible encore {{count}} fois pour le débloquer.",
@@ -484,7 +484,7 @@
     "reward_xp": "+{{count}} XP",
     "reward_xp_estimate": "jusqu'à +{{count}} XP",
     "rounds": "{{count}} manches",
-    "seconds_per_rep": "{{count}}s/reps",
+    "seconds_per_rep": "tempo {{count}} s/rép",
     "see_all": "Voir tout",
     "start_button": "Commencer la quête",
     "start_error": "Impossible de lancer la quête",
@@ -558,7 +558,7 @@
     "quit_confirm_title": "Abandonner cette séance ?",
     "reps": "Reps",
     "rest_title": "Repos & Récup",
-    "restart_round_button": "Recommencer la manche",
+    "restart_round_button": "Refaire la manche",
     "resume_button": "Reprendre",
     "round_label": "MANCHE {{count}} / {{total}}",
     "seconds": "Secondes",

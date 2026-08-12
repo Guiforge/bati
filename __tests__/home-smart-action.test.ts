@@ -85,7 +85,7 @@ jest.mock("@/db/quests", () => ({
 
 jest.mock("@/db/estimate", () => ({
   estimateQuestSeconds: () => 20 * 60,
-  formatDuration: () => "20 min",
+  formatDurationEstimate: () => "20 min",
 }));
 
 jest.mock("@/db/questConfig", () => ({

@@ -2,7 +2,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db/adventures";
-import { estimateQuestSeconds, formatDuration } from "@/db/estimate";
+import { estimateQuestSeconds, formatDurationEstimate } from "@/db/estimate";
 import { getChainTo } from "@/db/exercises";
 import { getSuggestedQuestsForWeakAreas } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
@@ -77,8 +77,8 @@ export function useSmartAction() {
               }),
               quest.archetype ? t(`quests.archetype_${quest.archetype}`) : null,
               t("quests.estimate", {
-                duration: formatDuration(seconds, language),
-                defaultValue: `≈ ${formatDuration(seconds, language)}`,
+                duration: formatDurationEstimate(seconds, language),
+                defaultValue: `≈ ${formatDurationEstimate(seconds, language)}`,
               }),
             ]
               .filter(Boolean)

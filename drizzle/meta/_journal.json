@@ -211,6 +211,13 @@
       "when": 1786536402562,
       "tag": "0029_fr_tutoiement",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1786540734642,
+      "tag": "0030_fr_exercise_casing",
+      "breakpoints": true
     }
   ]
 }

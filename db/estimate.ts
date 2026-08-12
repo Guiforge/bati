@@ -40,6 +40,16 @@ export function adventureWeeks(stepsCount: number, sessionsPerWeek = 3) {
   return Math.max(1, Math.ceil(Math.max(0, stepsCount) / Math.max(1, sessionsPerWeek)));
 }
 
+/**
+ * For *estimates* only: "≈ 11 min 6s" wears second-level precision the number doesn't have
+ * (the real duration depends on actual rest taken). Journal durations are measured, so they
+ * keep formatDuration's exact form.
+ */
+export function formatDurationEstimate(seconds: number, lang: "en" | "fr" = "en") {
+  const m = Math.max(1, Math.round(Math.max(0, seconds) / 60));
+  return lang === "fr" ? `${m} min` : `${m} min`;
+}
+
 export function formatDuration(seconds: number, lang: "en" | "fr" = "en") {
   const s = Math.max(0, Math.round(seconds));
   const m = Math.floor(s / 60);

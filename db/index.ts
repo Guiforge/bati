@@ -65,6 +65,7 @@ export {
   estimateExerciseSeconds,
   estimateQuestSeconds,
   formatDuration,
+  formatDurationEstimate,
 } from "./estimate";
 export type { Chain, ChainRung, VariationStep } from "./exercises";
 export {

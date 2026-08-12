@@ -1,5 +1,10 @@
 import type { EstimateQuestInput } from "@/db/estimate";
-import { adventureWeeks, estimateExerciseSeconds, estimateQuestSeconds } from "@/db/estimate";
+import {
+  adventureWeeks,
+  estimateExerciseSeconds,
+  estimateQuestSeconds,
+  formatDurationEstimate,
+} from "@/db/estimate";
 
 describe("db/estimate", () => {
   it("estimates rep-based exercises using secondsPerRep", () => {
@@ -27,6 +32,12 @@ describe("db/estimate", () => {
     // sets = 2 rounds * 2 exercises = 4; rest intervals = 3
     // rest = 3 * 30 = 90
     expect(estimateQuestSeconds(quest)).toBe(190);
+  });
+
+  it("rounds estimates to the minute, never below one", () => {
+    expect(formatDurationEstimate(666)).toBe("11 min"); // 11 min 6s
+    expect(formatDurationEstimate(690)).toBe("12 min"); // rounds half up
+    expect(formatDurationEstimate(20)).toBe("1 min");
   });
 
   it("rounds adventure steps up to whole weeks, never below one", () => {

@@ -9,6 +9,7 @@ import {
 } from "react-native-android-widget";
 import { rawColors } from "@/constants/rawColors";
 import { ensureMigrations } from "@/db/migrate";
+import { preferences } from "@/db/preferences";
 import { type FlameLevel, getFlameLevel, getStreakInfo, getWeeklyProgress } from "@/db/streaks";
 import { reportError } from "./reportError";
 
@@ -16,20 +17,59 @@ import { reportError } from "./reportError";
 // font loading and platform branches. constants/rawColors.ts is a plain object with type-only
 // imports, so it costs nothing at runtime and the widget shares the app's palette for real.
 const FLAME_COLOR = rawColors.resourceFire;
+const GOLD_COLOR = rawColors.resourceGold;
 const DIM_COLOR = rawColors.muted;
-const SURFACE_COLOR = rawColors.surface;
 const TEXT_COLOR = rawColors.text;
+const SUBTLE_COLOR = rawColors.textSecondary;
 
+// Same frame the app draws around its screens: a surface fading into the void, held by the
+// hairline border — not a flat dark slab.
 const ROOT_STYLE = {
   height: "match_parent",
   width: "match_parent",
   alignItems: "center",
   justifyContent: "center",
-  backgroundColor: SURFACE_COLOR,
+  backgroundGradient: {
+    from: rawColors.surface2,
+    to: rawColors.bgDark,
+    orientation: "TOP_BOTTOM",
+  },
+  borderWidth: 1,
+  borderColor: rawColors.borderStrong,
   borderRadius: 16,
 } as const;
 
-const NUMBER_STYLE = { fontSize: 24, fontWeight: "700", color: TEXT_COLOR } as const;
+/**
+ * The launcher decides the cell, not us: a 2×2 grid hands ~110dp, while Bliss on /e/OS gives
+ * its widget panel the full screen width and a tall cell — fixed sizes drown in one and would
+ * overflow the other. Everything below scales from the cell's short side instead.
+ */
+type CellSize = { width: number; height: number };
+
+function scaleFor(size: CellSize): number {
+  const ref = Math.min(size.width, size.height);
+  return Math.min(Math.max(ref / 110, 1), 2.4);
+}
+
+const titleStyle = (k: number) =>
+  ({ fontSize: 11 * k, letterSpacing: 2, color: SUBTLE_COLOR }) as const;
+const unitStyle = (k: number) => ({ fontSize: 11 * k, color: SUBTLE_COLOR }) as const;
+const numberStyle = (k: number) =>
+  ({ fontSize: 26 * k, fontWeight: "700", color: TEXT_COLOR, marginTop: 2 * k }) as const;
+
+// ponytail: two labels per widget, hardcoded next to their one consumer instead of wired
+// through i18next (whose init drags the whole app's locale files into the headless task).
+// Ceiling: a third language, or these strings appearing anywhere else — move them to locales/.
+const STRINGS = {
+  fr: { flame: "FLAMME", days: "jours", week: "SEMAINE", sessions: "séances" },
+  en: { flame: "FLAME", days: "days", week: "WEEK", sessions: "sessions" },
+} as const;
+type Lang = keyof typeof STRINGS;
+
+/** The app's own stored language, read from the same preference the settings screen writes. */
+async function getLang(): Promise<Lang> {
+  return (await preferences.getLanguage()) === "en" ? "en" : "fr";
+}
 
 // A `null` value is the error fallback: the branded surface with an em dash beats the blank
 // rn_widget placeholder the OS shows when the task handler's promise rejects, and the next
@@ -38,45 +78,76 @@ const NUMBER_STYLE = { fontSize: 24, fontWeight: "700", color: TEXT_COLOR } as c
 // Drawn by a headless Android task, never mounted in the React tree, so Fast Refresh has
 // nothing to refresh here — the render sites below are the only consumers.
 // biome-ignore lint/style/useComponentExportOnlyModules: headless widget task, not a screen
-function FlameWidget({ streak, flameLevel }: { streak: number | null; flameLevel: FlameLevel }) {
+function FlameWidget({
+  streak,
+  flameLevel,
+  lang,
+  size,
+}: {
+  streak: number | null;
+  flameLevel: FlameLevel;
+  lang: Lang;
+  size: CellSize;
+}) {
+  const s = STRINGS[lang];
+  const k = scaleFor(size);
   return (
     <FlexWidget clickAction="OPEN_APP" style={ROOT_STYLE}>
-      <FlexWidget style={{ flexDirection: "row", flexGap: 4, marginBottom: 8 }}>
+      <TextWidget text={s.flame} style={titleStyle(k)} />
+      <TextWidget text={`🔥 ${streak === null ? "–" : streak}`} style={numberStyle(k)} />
+      <TextWidget text={s.days} style={unitStyle(k)} />
+      <FlexWidget style={{ flexDirection: "row", flexGap: 4 * k, marginTop: 8 * k }}>
         {([0, 1, 2, 3, 4] as const).map((i) => (
           <FlexWidget
             key={i}
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
+              width: 8 * k,
+              height: 8 * k,
+              borderRadius: 4 * k,
               backgroundColor: i < flameLevel ? FLAME_COLOR : DIM_COLOR,
             }}
           />
         ))}
       </FlexWidget>
-      <TextWidget text={streak === null ? "–" : String(streak)} style={NUMBER_STYLE} />
     </FlexWidget>
   );
 }
 
 // biome-ignore lint/style/useComponentExportOnlyModules: headless widget task, not a screen
-function WeeklyWidget({ done, quota }: { done: number | null; quota: number | null }) {
+function WeeklyWidget({
+  done,
+  quota,
+  lang,
+  size,
+}: {
+  done: number | null;
+  quota: number | null;
+  lang: Lang;
+  size: CellSize;
+}) {
+  const s = STRINGS[lang];
+  const k = scaleFor(size);
   const filled = done === null || quota === null ? 0 : Math.min(done, quota);
   const rest = done === null || quota === null ? 1 : Math.max(quota - done, 0);
+  // The sworn quota reached is the week's small victory — it pays out in gold.
+  const doneColor = filled > 0 && rest === 0 ? GOLD_COLOR : FLAME_COLOR;
+  // A bar spanning a full-width panel cell reads as a divider, not a gauge — cap it.
+  const barWidth = Math.round(Math.min(size.width - 48, 140 * k));
   return (
     <FlexWidget clickAction="OPEN_APP" style={ROOT_STYLE}>
+      <TextWidget text={s.week} style={titleStyle(k)} />
       <TextWidget
-        text={done === null || quota === null ? "–/–" : `${done}/${quota}`}
-        style={NUMBER_STYLE}
+        text={done === null || quota === null ? "–/–" : `⚔️ ${done}/${quota}`}
+        style={numberStyle(k)}
       />
+      <TextWidget text={s.sessions} style={unitStyle(k)} />
       <FlexWidget
         style={{
           flexDirection: "row",
-          width: "match_parent",
-          height: 8,
-          borderRadius: 4,
-          marginTop: 8,
-          marginHorizontal: 24,
+          width: barWidth,
+          height: 8 * k,
+          borderRadius: 4 * k,
+          marginTop: 8 * k,
           backgroundColor: DIM_COLOR,
         }}
       >
@@ -84,8 +155,8 @@ function WeeklyWidget({ done, quota }: { done: number | null; quota: number | nu
           style={{
             flex: filled,
             height: "match_parent",
-            borderRadius: 4,
-            backgroundColor: FLAME_COLOR,
+            borderRadius: 4 * k,
+            backgroundColor: doneColor,
           }}
         />
         <FlexWidget style={{ flex: rest, height: "match_parent" }} />
@@ -94,14 +165,16 @@ function WeeklyWidget({ done, quota }: { done: number | null; quota: number | nu
   );
 }
 
-async function renderFlame(renderWidget: WidgetTaskHandlerProps["renderWidget"]) {
-  const { current } = await getStreakInfo();
-  renderWidget(<FlameWidget streak={current} flameLevel={getFlameLevel(current)} />);
+async function renderFlame(renderWidget: WidgetTaskHandlerProps["renderWidget"], size: CellSize) {
+  const [{ current }, lang] = await Promise.all([getStreakInfo(), getLang()]);
+  renderWidget(
+    <FlameWidget streak={current} flameLevel={getFlameLevel(current)} lang={lang} size={size} />,
+  );
 }
 
-async function renderWeekly(renderWidget: WidgetTaskHandlerProps["renderWidget"]) {
-  const { done, quota } = await getWeeklyProgress();
-  renderWidget(<WeeklyWidget done={done} quota={quota} />);
+async function renderWeekly(renderWidget: WidgetTaskHandlerProps["renderWidget"], size: CellSize) {
+  const [{ done, quota }, lang] = await Promise.all([getWeeklyProgress(), getLang()]);
+  renderWidget(<WeeklyWidget done={done} quota={quota} lang={lang} size={size} />);
 }
 
 /** Registered once from the custom entry point (index.ts). Handles every widget lifecycle event. */
@@ -122,17 +195,19 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
     // stays on the blank placeholder forever.
     await ensureMigrations();
     if (widgetInfo.widgetName === "Weekly") {
-      await renderWeekly(renderWidget);
+      await renderWeekly(renderWidget, widgetInfo);
     } else {
-      await renderFlame(renderWidget);
+      await renderFlame(renderWidget, widgetInfo);
     }
   } catch (e) {
     reportError("widget.task", e);
+    // French-first fallback: if the DB is broken enough to land here, it can't be asked
+    // for the stored language either.
     renderWidget(
       widgetInfo.widgetName === "Weekly" ? (
-        <WeeklyWidget done={null} quota={null} />
+        <WeeklyWidget done={null} quota={null} lang="fr" size={widgetInfo} />
       ) : (
-        <FlameWidget streak={null} flameLevel={0} />
+        <FlameWidget streak={null} flameLevel={0} lang="fr" size={widgetInfo} />
       ),
     );
   }
@@ -146,15 +221,23 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
  */
 export async function requestWidgetsUpdate(): Promise<void> {
   if (Platform.OS !== "android") return;
-  const [{ current }, weekly] = await Promise.all([getStreakInfo(), getWeeklyProgress()]);
+  const [{ current }, weekly, lang] = await Promise.all([
+    getStreakInfo(),
+    getWeeklyProgress(),
+    getLang(),
+  ]);
   await Promise.all([
     requestWidgetUpdate({
       widgetName: "Flame",
-      renderWidget: () => <FlameWidget streak={current} flameLevel={getFlameLevel(current)} />,
+      renderWidget: (info) => (
+        <FlameWidget streak={current} flameLevel={getFlameLevel(current)} lang={lang} size={info} />
+      ),
     }),
     requestWidgetUpdate({
       widgetName: "Weekly",
-      renderWidget: () => <WeeklyWidget done={weekly.done} quota={weekly.quota} />,
+      renderWidget: (info) => (
+        <WeeklyWidget done={weekly.done} quota={weekly.quota} lang={lang} size={info} />
+      ),
     }),
   ]);
 }

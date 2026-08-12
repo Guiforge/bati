@@ -108,7 +108,9 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
       <Image
         source={source}
         style={{ width: "100%", height: "100%" }}
-        contentFit="cover"
+        // contain, not cover: the movement art is a full figure on a dark ground, and the 16:9
+        // crop was taking the head and feet with it. The card's own bg letterboxes invisibly.
+        contentFit="contain"
         transition={200}
       />
     </YStack>

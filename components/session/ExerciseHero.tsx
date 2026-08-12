@@ -40,10 +40,13 @@ export function ExerciseHero({ source, name, height, fadeTo, topInset }: Exercis
       />
 
       {/* Top scrim: the HUD sits on painted art with no card behind it, and some of these
-          paintings are bright. This is what holds its contrast, not decoration. */}
+          paintings are bright. This is what holds its contrast, not decoration. Fully opaque at
+          the very top: the character art reaches the asset's own edge, and without it the figure
+          hard-clips against the status bar instead of fading out under the HUD. */}
       <LinearGradient
-        colors={[rawColors.bgOverlay, "transparent"]}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, height: topInset + 64 }}
+        colors={[rawColors.bgDark, rawColors.bgOverlay, "transparent"]}
+        locations={[0, 0.4, 1]}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, height: topInset + 80 }}
         pointerEvents="none"
       />
 

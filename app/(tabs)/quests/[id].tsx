@@ -511,6 +511,16 @@ export default function QuestDetails() {
                   <LevelChip value={Difficulty.Medium} level={level} onSelect={selectLevel} />
                   <LevelChip value={Difficulty.Hard} level={level} onSelect={selectLevel} />
                 </XStack>
+                {/* What the selected level actually does — the chips above already re-derive
+                    every number, but nothing said so (2026-08 audit, §06-C). The multipliers are
+                    USER_LEVEL_MULTIPLIER (targets) and computeSessionXp (payout). */}
+                <Text fontSize={13} color="$textSecondary" pt="$1">
+                  {level === Difficulty.Easy
+                    ? t("quests.level_effect_easy", "Targets −25% · XP ×0.9")
+                    : level === Difficulty.Hard
+                      ? t("quests.level_effect_hard", "Targets +25% · XP ×1.2")
+                      : t("quests.level_effect_medium", "Baseline targets · XP ×1")}
+                </Text>
               </YStack>
             </Card>
           ) : null}

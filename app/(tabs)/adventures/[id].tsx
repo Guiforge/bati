@@ -510,7 +510,7 @@ export default function AdventureDetailsScreen() {
 
                   {preview ? (
                     <Chip
-                      label={t("quests.reward_xp", {
+                      label={t("quests.reward_xp_estimate", {
                         count: preview.xp,
                       })}
                       tone="secondary"

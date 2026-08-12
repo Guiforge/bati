@@ -494,9 +494,9 @@ export default function QuestDetails() {
                   ) : null}
                   {xpReward != null ? (
                     <Tag
-                      label={t("quests.reward_xp", {
+                      label={t("quests.reward_xp_estimate", {
                         count: xpReward,
-                        defaultValue: `+${xpReward} XP`,
+                        defaultValue: `up to +${xpReward} XP`,
                       })}
                       tone="secondary"
                     />

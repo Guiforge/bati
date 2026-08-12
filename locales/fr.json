@@ -480,6 +480,7 @@
     "rest": "Repos {{count}}s",
     "retry": "Réessayer",
     "reward_xp": "+{{count}} XP",
+    "reward_xp_estimate": "jusqu'à +{{count}} XP",
     "rounds": "{{count}} manches",
     "seconds_per_rep": "{{count}}s/reps",
     "see_all": "Voir tout",

@@ -144,7 +144,7 @@ function buildQuestMeta(
       count: q.exercises.length,
       defaultValue: `${q.exercises.length} exercises`,
     }),
-    xpLabel: t("quests.reward_xp", { count: xp, defaultValue: `+${xp} XP` }),
+    xpLabel: t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
   };
 }
 

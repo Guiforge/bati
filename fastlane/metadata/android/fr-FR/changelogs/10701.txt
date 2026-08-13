@@ -1,0 +1,5 @@
+- La caravane atteint une nouvelle place forte : chaque version part
+  désormais aussi vers l'échoppe de Google, bannière, enseigne et
+  parchemins de présentation chargés dans le même chariot que l'app.
+- Rien ne change dans les murs : cette version prépare le terrain,
+  le contenu du donjon est celui de la 1.7.0.

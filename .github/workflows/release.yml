@@ -172,21 +172,34 @@ jobs:
 
   # Gated behind the `play-internal` environment: set it up once in Settings → Environments
   # with yourself as a required reviewer, so a bad tag can't reach real testers unattended.
-  # Needs PLAY_SERVICE_ACCOUNT_JSON — a Play Console service account (Setup → API access) with
-  # Release Manager access, added as a repository secret. See docs/planning/roadmap.md §1.
+  # Needs PLAY_SERVICE_ACCOUNT_JSON on that environment — a Play Console service account with
+  # "release to testing tracks" permission. See docs/planning/roadmap.md §1.
   play:
     needs: apk
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     environment: play-internal
     steps:
+      # Only for the store listing (fastlane/metadata/android below) — the AAB itself comes
+      # from the apk job's artifact, not this checkout.
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: aab
 
-      - uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.guiforge.bati
-          releaseFiles: bati-*.aab
-          track: internal
+      # fastlane supply, not a wrapper action: fastlane/metadata/android *is* supply's native
+      # layout (that is why the repo keeps it in that shape — F-Droid reads the same files), so
+      # the whole listing — descriptions, changelogs, icon, featureGraphic, screenshots — rides
+      # along with the binary. SUPPLY_JSON_KEY_DATA is supply's own env var for the key, which
+      # keeps the JSON out of argv and off the filesystem.
+      - name: Upload the AAB and store listing to Play
+        env:
+          SUPPLY_JSON_KEY_DATA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          gem install fastlane --no-document
+          fastlane supply \
+            --package_name com.guiforge.bati \
+            --track internal \
+            --aab bati-*.aab \
+            --metadata_path fastlane/metadata/android

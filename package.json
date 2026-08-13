@@ -146,6 +146,7 @@
       "@tamagui/core": "2.7.4",
       "@tamagui/helpers-icon": "2.7.4"
     },
+    "@tamagui/web": "2.7.6",
     "react-dom": "19.2.3"
   },
   "version": "1.6.0",

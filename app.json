@@ -94,6 +94,7 @@
       "./plugins/withAndroidTrimPermissions",
       "./plugins/withAndroidReproducibleNative",
       "./plugins/withAndroidDebugAppId",
+      "./plugins/withAndroidDebugIcon",
       "./plugins/withAndroidDebugNetworkPermissions"
     ],
     "runtimeVersion": {

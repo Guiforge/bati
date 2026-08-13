@@ -1,0 +1,4 @@
+<resources>
+  <!-- See plugins/withAndroidDebugIcon.js — marks the dev build's launcher icon. -->
+  <color name="iconBackground">#F59E0B</color>
+</resources>

@@ -1,0 +1,6 @@
+- Un nouveau blason sur la porte : l'ancien écu cède la place à un
+  monogramme en tour de pierre. Lanceur, widget et boutique portent
+  désormais le même sceau.
+- Les murailles sont colmatées : trois dépendances vulnérables
+  remplacées par leurs versions réparées avant que quiconque ne s'y
+  glisse.

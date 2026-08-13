@@ -1,0 +1,4 @@
+- A new mark on the gate: the old crest gives way to a stone-tower
+  monogram. Launcher, widget and store now all bear the same sigil.
+- The walls are patched: three vulnerable dependencies replaced with
+  their mended versions before anyone could slip through.

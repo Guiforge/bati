@@ -1,7 +1,337 @@
 {
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/bicep/arm-flat.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal flat vector app icon: the geometric silhouette of a flexed arm in profile forming a triangular peak, cut as one single bold medium-blue shape with no outlines and no shading, and on the bicep's summit a tiny crenellated tower cut from the same shape, with one small amber window. The complete emblem, including every part of the arm, is fully inside the frame, centred, with a generous empty margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, a restrained electric-cyan rim light, one warm amber accent. Square 1:1 app icon, flat side view, no scenery, no text, no lettering, no watermark.",
+    "seed": 4221647911,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/bicep/arm-peak.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A poetic app icon emblem: one strong flexed human arm in profile, bent at the elbow so upper arm and forearm form a compact mountain-like triangle, drawn as one bold dark cel-shaded silhouette with thick black ink outlines — and standing on the summit of the raised bicep a small crenellated stone castle tower with one warm amber glowing window, as if the muscle were the hill it is built on. The complete emblem, including every part of the arm, is fully inside the frame, centred, with a generous empty margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, a restrained electric-cyan rim light, one warm amber accent. Square 1:1 app icon, flat side view, no scenery, no text, no lettering, no watermark.",
+    "seed": 201982494,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/bicep/fist-tower.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A poetic app icon emblem: a single strong forearm rising vertically from the bottom centre, its clenched fist holding aloft a small crenellated stone castle tower with one warm amber glowing window, like a torch. One bold dark cel-shaded silhouette with thick black ink outlines, the tower's cyan rim light the brightest note. The complete emblem, including every part of the arm, is fully inside the frame, centred, with a generous empty margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, a restrained electric-cyan rim light, one warm amber accent. Square 1:1 app icon, flat side view, no scenery, no text, no lettering, no watermark.",
+    "seed": 3595636576,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/bicep/rune-b2.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal monogram app icon: a bold capital letter B drawn as if built from castle stone, its left stem a crenellated tower, glowing electric cyan like a carved rune, one small amber window near its base. Pure flat geometric design, massive and simple, drawn with large stone blocks only. The complete emblem, including every part of the arm, is fully inside the frame, centred, with a generous empty margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, a restrained electric-cyan rim light, one warm amber accent. Square 1:1 app icon, flat side view, no scenery, no text, no lettering, no watermark.",
+    "seed": 940032261,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/candidates/bg-citadel.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A night training ground before a vast obsidian citadel: standing braziers with amber flames lining a misty stone terrace on the right, the citadel's towers rising into a starred deep-blue sky, banners stirring. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines, flat cel-shaded colour with hard-edged shadows, palette anchored in deep obsidian blue (#0B0F19) with electric-cyan and warm amber accents. Wide 2:1 cinematic composition filling the frame edge to edge. The left third of the frame is quiet, dark and empty enough to carry overlaid text; the visual interest gathers toward the right and the edges. Overall mid-dark, atmospheric and inviting, not murky. No people, no lettering, no watermark.",
+    "seed": 1708402751,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/candidates/bg-forge.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dark-fantasy castle forge at night seen from inside its open courtyard: a great anvil and glowing brazier to the right throwing warm ember light up the stone walls, sparks drifting, deep blue night sky above the battlements, mist on the flagstones. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines, flat cel-shaded colour with hard-edged shadows, palette anchored in deep obsidian blue (#0B0F19) with electric-cyan and warm amber accents. Wide 2:1 cinematic composition filling the frame edge to edge. The left third of the frame is quiet, dark and empty enough to carry overlaid text; the visual interest gathers toward the right and the edges. Overall mid-dark, atmospheric and inviting, not murky. No people, no lettering, no watermark.",
+    "seed": 938061085,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/candidates/bg-moonforest.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A misty pine forest clearing at night under a full moon: silver moon rays slanting through tall dark pines on the right, drifting fireflies glowing warm amber, mossy stones on the ground, cold blue fog rolling low. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines, flat cel-shaded colour with hard-edged shadows, palette anchored in deep obsidian blue (#0B0F19) with electric-cyan and warm amber accents. Wide 2:1 cinematic composition filling the frame edge to edge. The left third of the frame is quiet, dark and empty enough to carry overlaid text; the visual interest gathers toward the right and the edges. Overall mid-dark, atmospheric and inviting, not murky. No people, no lettering, no watermark.",
+    "seed": 470276301,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/candidates/logo-gold.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield bearing a crenellated castle tower in its upper half and two heavily muscled arms crossed below it, fists clenched. Clean readable anatomy: each arm a single confident tapered shape, the two fists clearly separated. The tower drawn with a few large stone blocks, not fine brick texture. Very thick black ink outlines, flat cel-shaded fills in deep blue, brilliant electric-cyan edge highlights. High contrast, few large shapes, one confident silhouette readable at 48 pixels. Generous empty margin, nothing touching any edge. Square 1:1, flat straight-on view, no perspective, no scenery, no text, no watermark. One small warm gold accent: the tower's arched doorway glows amber, and a thin gold keyline runs just inside the shield's border. The cyan rim light stays dominant.",
+    "seed": 3180999189,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/candidates/logo-heraldic.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield bearing a crenellated castle tower in its upper half and two heavily muscled arms crossed below it, fists clenched. Clean readable anatomy: each arm a single confident tapered shape, the two fists clearly separated. The tower drawn with a few large stone blocks, not fine brick texture. Very thick black ink outlines, flat cel-shaded fills in deep blue, brilliant electric-cyan edge highlights. High contrast, few large shapes, one confident silhouette readable at 48 pixels. Generous empty margin, nothing touching any edge. Square 1:1, flat straight-on view, no perspective, no scenery, no text, no watermark. Flatter and more heraldic than esports: pure flat shapes, no gradient shading inside the fills, the cyan used only as sharp geometric edge accents.",
+    "seed": 2379517660,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/candidates/logo-integrated.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield whose crenellated castle tower rises from between two heavily muscled arms that emerge from the shield's sides and cross in front of its base, fists clenched, so tower and arms read as one interlocked emblem. Clean readable anatomy: each arm a single confident tapered shape, the two fists clearly separated. The tower drawn with a few large stone blocks, not fine brick texture. Very thick black ink outlines, flat cel-shaded fills in deep blue, brilliant electric-cyan edge highlights. High contrast, few large shapes, one confident silhouette readable at 48 pixels. Generous empty margin, nothing touching any edge. Square 1:1, flat straight-on view, no perspective, no scenery, no text, no watermark. ",
+    "seed": 839669296,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/candidates/logo-refined.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield bearing a crenellated castle tower in its upper half and two heavily muscled arms crossed below it, fists clenched. Clean readable anatomy: each arm a single confident tapered shape, the two fists clearly separated. The tower drawn with a few large stone blocks, not fine brick texture. Very thick black ink outlines, flat cel-shaded fills in deep blue, brilliant electric-cyan edge highlights. High contrast, few large shapes, one confident silhouette readable at 48 pixels. Generous empty margin, nothing touching any edge. Square 1:1, flat straight-on view, no perspective, no scenery, no text, no watermark. A restrained cyan rim light traces only the outer edge of the shield.",
+    "seed": 616372965,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/kettlebell/kb-classic.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dual-image app icon emblem: a heavy kettlebell whose body is drawn as a round stone castle keep — the thick handle is a great stone archway, the bell is the tower with battlements ringing its shoulder, and one warm amber glowing arched door sits at its base. Dark-fantasy game emblem style: very thick black ink outlines, flat cel-shaded fills in deep night blues, a restrained electric-cyan rim light tracing only the outer silhouette. The emblem floats centred on a flat, uniform, solid deep obsidian blue (#0B0F19) background that fills the entire square edge to edge — absolutely no rounded-rectangle tile, no frame, no border, no drop shadow, no ground surface, no vignette. Large simple stone blocks only, no fine cracks or micro texture. One confident silhouette readable at 48 pixels. Generous empty margin on all sides, nothing touching any edge. Square 1:1, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 4108892039,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/kettlebell/kb-ember.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dual-image app icon emblem: a heavy kettlebell whose body is drawn as a round stone castle keep — the thick handle is a great stone archway, the bell is the tower with battlements ringing its shoulder, and one warm amber glowing arched door sits at its base. Dark-fantasy game emblem style: very thick black ink outlines, flat cel-shaded night blues; warm amber ember light spills from the doorway onto the stones around it, and two tiny amber windows glow near the battlements. A faint cyan edge highlight on the handle only. The emblem floats centred on a flat, uniform, solid deep obsidian blue (#0B0F19) background that fills the entire square edge to edge — absolutely no rounded-rectangle tile, no frame, no border, no drop shadow, no ground surface, no vignette. Large simple stone blocks only, no fine cracks or micro texture. One confident silhouette readable at 48 pixels. Generous empty margin on all sides, nothing touching any edge. Square 1:1, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 989097983,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/kettlebell/kb-flat.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dual-image app icon emblem: a heavy kettlebell whose body is drawn as a round stone castle keep — the thick handle is a great stone archway, the bell is the tower with battlements ringing its shoulder, and one warm amber glowing arched door sits at its base. Pure flat vector style: no outlines, no shading, no gradients — the whole emblem is a single bold medium-blue silhouette shape with the battlements and archway cut cleanly out of it, the door a single amber shape. The emblem floats centred on a flat, uniform, solid deep obsidian blue (#0B0F19) background that fills the entire square edge to edge — absolutely no rounded-rectangle tile, no frame, no border, no drop shadow, no ground surface, no vignette. Large simple stone blocks only, no fine cracks or micro texture. One confident silhouette readable at 48 pixels. Generous empty margin on all sides, nothing touching any edge. Square 1:1, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 482277341,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/kettlebell/kb-glow.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dual-image app icon emblem: a heavy kettlebell whose body is drawn as a round stone castle keep — the thick handle is a great stone archway, the bell is the tower with battlements ringing its shoulder, and one warm amber glowing arched door sits at its base. Neon heraldic style: the emblem drawn almost entirely in glowing electric-cyan line work over dark stone fills, like a rune lit from within, the amber door the only warm note. The emblem floats centred on a flat, uniform, solid deep obsidian blue (#0B0F19) background that fills the entire square edge to edge — absolutely no rounded-rectangle tile, no frame, no border, no drop shadow, no ground surface, no vignette. Large simple stone blocks only, no fine cracks or micro texture. One confident silhouette readable at 48 pixels. Generous empty margin on all sides, nothing touching any edge. Square 1:1, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 2743659660,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/logos2/bicep-tower.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A poetic app icon emblem: a strong flexed human arm seen in profile, drawn as one bold dark silhouette, and standing on the peak of the raised bicep a small crenellated castle tower with one warm amber glowing window — the body as the land the castle is built on. Very thick black ink outlines, flat cel-shaded night blues, thin cyan rim light along the arm. Centred and symmetrical on a flat deep obsidian blue (#0B0F19) background. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, one brilliant electric-cyan accent and one small warm amber-gold accent. Generous empty margin on all sides, nothing touching any edge. Square 1:1 app icon, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 2086286511,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/logos2/gauntlet.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold app icon emblem: a single armoured gauntlet clenched into a fist, seen straight on, drawn with a few large plate shapes in dark night blue with electric-cyan edge light, one small glowing amber gem set in the knuckle plate. Dark-fantasy game emblem, very thick black ink outlines, flat cel-shaded fills. Centred and symmetrical on a flat deep obsidian blue (#0B0F19) background. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, one brilliant electric-cyan accent and one small warm amber-gold accent. Generous empty margin on all sides, nothing touching any edge. Square 1:1 app icon, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 89279372,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/logos2/kettlebell-keep.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dual-image app icon emblem: a heavy kettlebell whose body is drawn as a round stone castle keep — the handle is a great stone archway, the bell is the tower with battlements around its top and one warm amber glowing arched door at its base. Dark-fantasy game emblem, very thick black ink outlines, flat cel-shaded night blues, restrained cyan rim light. Centred and symmetrical on a flat deep obsidian blue (#0B0F19) background. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, one brilliant electric-cyan accent and one small warm amber-gold accent. Generous empty margin on all sides, nothing touching any edge. Square 1:1 app icon, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 2034103299,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/logos2/rune-b.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal monogram app icon: a bold capital letter B drawn as if built from castle stone, its left stem a tower with crenellations at the top, glowing electric cyan like a carved rune, with one small amber window near its base. Pure flat geometric design, no outlines, massive and simple. Centred and symmetrical on a flat deep obsidian blue (#0B0F19) background. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, one brilliant electric-cyan accent and one small warm amber-gold accent. Generous empty margin on all sides, nothing touching any edge. Square 1:1 app icon, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 3496587702,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/logos2/tower-dumbbell-crest.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A clever dual-image app icon emblem: a heavy dumbbell standing upright, whose two end plates are drawn as round crenellated castle tower tops with battlements, so the mark reads at once as a dumbbell and as twin fortress towers joined by one thick bar. A tiny warm amber window glows in one tower. Drawn as a dark-fantasy game emblem with very thick black ink outlines and flat cel-shaded fills, a restrained cyan rim light on the outer edge. Centred and symmetrical on a flat deep obsidian blue (#0B0F19) background. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, one brilliant electric-cyan accent and one small warm amber-gold accent. Generous empty margin on all sides, nothing touching any edge. Square 1:1 app icon, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 406991768,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/logos2/tower-dumbbell-flat.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal flat vector app icon: the geometric silhouette of an upright dumbbell whose two end plates are round crenellated castle tower tops, one single bold shape in luminous electric cyan on the dark background, with one tiny amber square window cut out of one tower. Pure flat design, no outlines, no shading, no gradients, crisp geometry. Centred and symmetrical on a flat deep obsidian blue (#0B0F19) background. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, one brilliant electric-cyan accent and one small warm amber-gold accent. Generous empty margin on all sides, nothing touching any edge. Square 1:1 app icon, flat straight-on view, no perspective, no scenery, no people, no text, no lettering, no watermark.",
+    "seed": 561033578,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/modern/modern-b.png": {
+    "model": "flux-2-max",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold modern geometric capital letter B in soft light indigo #8177F7 over a deep indigo #4A3FD6 gradient, its top edge finished with three subtle square crenellation notches like a castle wall, and its lower counter holding one small warm gold #FFD700 arched doorway, centred on a flat deep obsidian #0B0F19 background. Modern minimal app icon design, premium flat vector style: clean geometry, crisp edges, smooth subtle gradients, no cartoon style, no thick ink outlines, no cel shading, no neon glow, no texture noise. Brand palette only: deep obsidian night #0B0F19, deep indigo #4A3FD6, soft light indigo #8177F7, warm gold #FFD700. The mark is fully inside the frame, centred, generous even margins, nothing touching any edge, no rounded-rectangle tile, no frame, no drop shadow under the icon, flat solid background filling the square edge to edge. One silhouette readable at 48 pixels. Square 1:1, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 2439788504,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/modern/modern-glyph.png": {
+    "model": "flux-2-max",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single minimal castle-tower glyph built from three stacked rounded geometric shapes with a subtly crenellated cap, rendered in soft light indigo #8177F7 with a gentle vertical gradient toward deep indigo #4A3FD6, one small round warm gold #FFD700 window, centred on a flat deep obsidian #0B0F19 background. Modern minimal app icon design, premium flat vector style: clean geometry, crisp edges, smooth subtle gradients, no cartoon style, no thick ink outlines, no cel shading, no neon glow, no texture noise. Brand palette only: deep obsidian night #0B0F19, deep indigo #4A3FD6, soft light indigo #8177F7, warm gold #FFD700. The mark is fully inside the frame, centred, generous even margins, nothing touching any edge, no rounded-rectangle tile, no frame, no drop shadow under the icon, flat solid background filling the square edge to edge. One silhouette readable at 48 pixels. Square 1:1, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 598097550,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/modern/modern-goldline.png": {
+    "model": "flux-2-max",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "An elegant continuous-line castle tower drawn as a single refined warm gold #FFD700 stroke of even width, minimal and abstract like a luxury monogram, with one solid gold dot as a window, centred on a flat deep obsidian #0B0F19 background with a faint deep indigo #4A3FD6 radial sheen behind the mark. Modern minimal app icon design, premium flat vector style: clean geometry, crisp edges, smooth subtle gradients, no cartoon style, no thick ink outlines, no cel shading, no neon glow, no texture noise. Brand palette only: deep obsidian night #0B0F19, deep indigo #4A3FD6, soft light indigo #8177F7, warm gold #FFD700. The mark is fully inside the frame, centred, generous even margins, nothing touching any edge, no rounded-rectangle tile, no frame, no drop shadow under the icon, flat solid background filling the square edge to edge. One silhouette readable at 48 pixels. Square 1:1, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 2479619818,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/modern/modern-negative.png": {
+    "model": "flux-2-max",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A rounded geometric badge shape filled with a smooth deep-indigo gradient from #4A3FD6 to #0B0F19, with a minimal castle tower cut out of it as crisp negative space so the dark background shows through the cutout, and one tiny warm gold #FFD700 arched window inside the cutout tower. Modern minimal app icon design, premium flat vector style: clean geometry, crisp edges, smooth subtle gradients, no cartoon style, no thick ink outlines, no cel shading, no neon glow, no texture noise. Brand palette only: deep obsidian night #0B0F19, deep indigo #4A3FD6, soft light indigo #8177F7, warm gold #FFD700. The mark is fully inside the frame, centred, generous even margins, nothing touching any edge, no rounded-rectangle tile, no frame, no drop shadow under the icon, flat solid background filling the square edge to edge. One silhouette readable at 48 pixels. Square 1:1, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 2640650773,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/runeb-final/b3-hearth.png": {
+    "model": "flux-2-max",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold monogram app icon: a massive capital letter B built from large cut castle stones — its left stem is a crenellated stone tower with three square merlons on top, and at the tower's base a warm amber (#FFD700 toned) arched doorway glows like a hearth fire, casting a faint warm light on the stones beside it. Few very large stone blocks with clean joints, no fine cracks, no micro texture. The letter's lower enclosed counter is the mouth of a hearth: inside it a small warm fire glows amber-orange, the only bright note. A very subtle cyan edge highlight on the tower's crenellations only. Flat cel-shaded night-blue stone fills, crisp edges, modern game-brand finish. The complete emblem is fully inside the frame, centred, with a generous even margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. One confident silhouette readable at 48 pixels. Square 1:1 app icon, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 1477754244,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/runeb-final/b3-indigo.png": {
+    "model": "flux-2-max",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold monogram app icon: a massive capital letter B built from large cut castle stones — its left stem is a crenellated stone tower with three square merlons on top, and at the tower's base a warm amber (#FFD700 toned) arched doorway glows like a hearth fire, casting a faint warm light on the stones beside it. Few very large stone blocks with clean joints, no fine cracks, no micro texture. A restrained soft light-indigo (#8177F7) rim light traces the outer silhouette of the letter, thin and even. Stone fills in deep desaturated indigo-blues (#4A3FD6 shadowed toward #0B0F19), crisp clean edges, modern game-brand finish. The complete emblem is fully inside the frame, centred, with a generous even margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. One confident silhouette readable at 48 pixels. Square 1:1 app icon, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 1019099042,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/runeb-final/b3-modern.png": {
+    "model": "flux-2-max",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold monogram app icon: a massive capital letter B built from large cut castle stones — its left stem is a crenellated stone tower with three square merlons on top, and at the tower's base a warm amber (#FFD700 toned) arched doorway glows like a hearth fire, casting a faint warm light on the stones beside it. Few very large stone blocks with clean joints, no fine cracks, no micro texture. Rendered halfway between stone emblem and modern flat vector: the stone blocks simplified to subtle flat tonal panels inside one crisp B silhouette with a gentle vertical gradient from soft light indigo #8177F7 at the top to deep indigo #4A3FD6 at the base, no outlines, no glow, premium minimal finish. The complete emblem is fully inside the frame, centred, with a generous even margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. One confident silhouette readable at 48 pixels. Square 1:1 app icon, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 3555161058,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/runeb-final/b3-refined.png": {
+    "model": "flux-2-max",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A bold monogram app icon: a massive capital letter B built from large cut castle stones — its left stem is a crenellated stone tower with three square merlons on top, and at the tower's base a warm amber (#FFD700 toned) arched doorway glows like a hearth fire, casting a faint warm light on the stones beside it. Few very large stone blocks with clean joints, no fine cracks, no micro texture. A restrained electric-cyan rim light traces the outer silhouette of the letter, thin and even, like a carved rune faintly lit. Flat cel-shaded night-blue stone fills, crisp clean edges, modern game-brand finish, not cartoonish. The complete emblem is fully inside the frame, centred, with a generous even margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. One confident silhouette readable at 48 pixels. Square 1:1 app icon, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 551128749,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/runeb/rune-b3.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal monogram app icon: a bold capital letter B drawn as if built from castle stone, its left stem a crenellated tower, glowing electric cyan like a carved rune, one small amber window near its base. Pure flat geometric design, massive and simple, drawn with large stone blocks only. The complete emblem is fully inside the frame, centred, with a generous empty margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, a restrained electric-cyan rim light, one warm amber accent. Square 1:1 app icon, flat straight-on view, no scenery, no watermark.",
+    "seed": 1325461907,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/runeb/rune-b4.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal monogram app icon: a bold capital letter B drawn as if built from castle stone, its left stem a crenellated tower, glowing electric cyan like a carved rune, one small amber window near its base. Pure flat geometric design, massive and simple, drawn with large stone blocks only. The complete emblem is fully inside the frame, centred, with a generous empty margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, a restrained electric-cyan rim light, one warm amber accent. Square 1:1 app icon, flat straight-on view, no scenery, no watermark.",
+    "seed": 3513017392,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/runeb/rune-b5.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal monogram app icon: a bold capital letter B drawn as if built from castle stone, its left stem a crenellated tower, glowing electric cyan like a carved rune, the letter's two enclosed counters cut as tall arched windows glowing warm ember amber from within, like a keep lit at night. Pure flat geometric design, massive and simple, drawn with large stone blocks only. The complete emblem is fully inside the frame, centred, with a generous empty margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, a restrained electric-cyan rim light, one warm amber accent. Square 1:1 app icon, flat straight-on view, no scenery, no watermark.",
+    "seed": 2791527590,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
+  "/tmp/claude-1000/-home-guiforge-Documents-code-bati/e811ef8d-a9d6-4ee3-b188-f6ca97b86d64/scratchpad/runeb/rune-b6.png": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A minimal monogram app icon: a bold capital letter B drawn as if built from castle stone, its left stem a crenellated tower, with battlements crowning the letter's whole top edge, a warm amber arched doorway at the base of its left stem, and a thin electric-cyan rim light on its left side only. Pure flat geometric design, massive and simple, drawn with large stone blocks only. The complete emblem is fully inside the frame, centred, with a generous empty margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. Very few large shapes, one confident silhouette readable at 48 pixels, no fine texture. Palette: deep night blues, a restrained electric-cyan rim light, one warm amber accent. Square 1:1 app icon, flat straight-on view, no scenery, no watermark.",
+    "seed": 1063912732,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-13"
+  },
   "assets/adaptive-icon.png": {
     "derived_from": "assets/icon.png",
-    "how": "resized to the 66% safe zone",
+    "how": "emblem cut out by corner floodfill (fuzz 3%) with a feathered alpha edge — a colour-distance cutout is impossible, the stone fills match the background — then resized to the 66% safe zone on transparency. Transparency is load-bearing: withAndroidDebugIcon swaps the colour behind this foreground to amber for dev builds, and the splash screen renders the same file as a glyph",
     "licence": "same as the source render; see that entry"
   },
   "assets/avatar/archer.webp": {
@@ -84,14 +414,15 @@
     "licence": "same as the source render; see that entry"
   },
   "assets/icon.png": {
-    "model": "flux-2-pro-preview",
+    "model": "flux-2-max",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A bold esports-style app icon crest, centred and symmetrical on a flat deep obsidian blue (#0B0F19) background: a heraldic shield carrying a crenellated stone castle tower across its upper half, and across its lower half two heavily muscled human arms crossed over one another, each ending in a tightly clenched fist. The arms are thick, powerful and clearly anatomical, with defined biceps and forearms. Drawn as a modern dark-fantasy game crest: very thick black ink outlines, bold flat cel-shaded fills in deep blue with brilliant electric-cyan highlights, and a strong glowing cyan rim light around the whole crest. High contrast and graphic, few large shapes, so that it still reads as one confident silhouette at 48 pixels. Generous empty margin on all four sides with nothing touching any edge. Square 1:1, flat straight-on symmetrical view, no perspective, no scenery, no text, no lettering, no watermark.",
-    "seed": 3819487197,
+    "prompt": "A bold monogram app icon: a massive capital letter B built from large cut castle stones — its left stem is a crenellated stone tower with three square merlons on top, and at the tower's base a warm amber (#FFD700 toned) arched doorway glows like a hearth fire, casting a faint warm light on the stones beside it. Few very large stone blocks with clean joints, no fine cracks, no micro texture. A restrained electric-cyan rim light traces the outer silhouette of the letter, thin and even, like a carved rune faintly lit. Flat cel-shaded night-blue stone fills, crisp clean edges, modern game-brand finish, not cartoonish. The complete emblem is fully inside the frame, centred, with a generous even margin on all four sides — nothing touches or is cropped by any edge. Flat, uniform, solid deep obsidian blue (#0B0F19) background filling the entire square edge to edge: no rounded-rectangle tile, no frame, no drop shadow, no ground, no vignette. One confident silhouette readable at 48 pixels. Square 1:1 app icon, flat straight-on view, no scenery, no people, no watermark.",
+    "seed": 551128749,
     "width": 1024,
     "height": 1024,
-    "generated": "2026-08-02"
+    "generated": "2026-08-13",
+    "post": "flat FLUX background (#1D2940) soft-mask-blended onto a radial gradient #1A2440->#0B0F19 so the edges land exactly on the app's bgDark; the emblem's stone fills are chromatically identical to the background, so a transparency cutout is impossible by design"
   },
   "assets/images/adventures/guardian_oath.webp": {
     "model": "flux-2-pro-preview",
@@ -2226,5 +2557,35 @@
     "height": 960,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from splash-bg3.jpg"
+  },
+  "fastlane/featureGraphic-bg.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A dark-fantasy castle forge at night seen from inside its open courtyard: a great anvil and glowing brazier to the right throwing warm ember light up the stone walls, sparks drifting, deep blue night sky above the battlements, mist on the flagstones. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines, flat cel-shaded colour with hard-edged shadows, palette anchored in deep obsidian blue (#0B0F19) with electric-cyan and warm amber accents. Wide 2:1 cinematic composition filling the frame edge to edge. The left third of the frame is quiet, dark and empty enough to carry overlaid text; the visual interest gathers toward the right and the edges. Overall mid-dark, atmospheric and inviting, not murky. No people, no lettering, no watermark.",
+    "seed": 938061085,
+    "width": 1280,
+    "height": 640,
+    "generated": "2026-08-13"
+  },
+  "fastlane/metadata/android/en-US/images/featureGraphic.png": {
+    "derived_from": "fastlane/featureGraphic-bg.jpg",
+    "how": "cover-crop + left scrim + gradient-gold tagline",
+    "licence": "same as the source render; see that entry"
+  },
+  "fastlane/metadata/android/en-US/images/icon.png": {
+    "derived_from": "assets/icon.png",
+    "how": "resized to 512x512 for the store listing",
+    "licence": "same as the source render; see that entry"
+  },
+  "fastlane/metadata/android/fr-FR/images/featureGraphic.png": {
+    "derived_from": "fastlane/featureGraphic-bg.jpg",
+    "how": "cover-crop + left scrim + gradient-gold tagline",
+    "licence": "same as the source render; see that entry"
+  },
+  "fastlane/metadata/android/fr-FR/images/icon.png": {
+    "derived_from": "assets/icon.png",
+    "how": "resized to 512x512 for the store listing",
+    "licence": "same as the source render; see that entry"
   }
 }

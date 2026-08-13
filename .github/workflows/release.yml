@@ -197,7 +197,8 @@ jobs:
         env:
           SUPPLY_JSON_KEY_DATA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
-          gem install fastlane --no-document
+          # sudo: the runner's system Ruby owns /var/lib/gems.
+          sudo gem install fastlane --no-document
           fastlane supply \
             --package_name com.guiforge.bati \
             --track internal \

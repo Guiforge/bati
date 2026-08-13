@@ -1,13 +1,16 @@
-# Build a signed APK on a version tag and publish it as a GitHub Release.
+# Build a signed APK and AAB on a version tag, and publish them.
 #
-# No store involved. `npm run release` bumps the version, tags it and pushes; this picks the tag
-# up, runs every gate, builds, and attaches the APK to a Release that the F-Droid job downstream
-# can also serve.
+# `npm run release` bumps the version, tags it and pushes; this picks the tag up, runs every
+# gate, builds, attaches the APK to a GitHub Release that the F-Droid job downstream also
+# serves, and uploads the AAB to Play's internal testing track behind a manual approval gate
+# (the `play-internal` environment — see the `play` job below).
 #
 # Signing: SIGNING_KEYSTORE_BASE64 + SIGNING_* secrets, when they exist. Without them the build
 # falls back to Expo's debug keystore, which is fine for passing an APK to friends but produces
-# an app that can never be updated in place by a properly signed one — and F-Droid needs a stable
-# key. See docs/fdroid.md.
+# an app that can never be updated in place by a properly signed one — and F-Droid and Play both
+# need a stable key. See docs/fdroid.md.
+#
+# Plain Gradle throughout, no EAS/Expo build service — see docs/planning/roadmap.md §1 for why.
 name: Release
 
 on:
@@ -109,16 +112,19 @@ jobs:
       # local `expo run:android` keeps building fat and fast, and android/ stays drift-free;
       # only the published artefact narrows. fdroid/fdroiddata-recipe.yml runs the same command —
       # keep the two in sync.
+      # bundleRelease alongside assembleRelease: GitHub Releases and F-Droid want the APK,
+      # Play refuses anything else and only takes the AAB. Same signing config, same flags,
+      # one Gradle invocation — the two artefacts are guaranteed to match the same commit.
       - name: Build
         run: >-
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease bundleRelease --no-daemon
           -PreactNativeArchitectures=arm64-v8a
           -Pandroid.enableMinifyInReleaseBuilds=true
           -Pandroid.enableShrinkResourcesInReleaseBuilds=true
         working-directory: android
 
-      - name: Name the artefact after the tag
-        id: apk
+      - name: Name the artefacts after the tag
+        id: artefacts
         run: |
           # GITHUB_REF_NAME is the tag on a tag push and the *branch* on workflow_dispatch. A
           # branch name may contain a slash, which turned the copy below into a path into a
@@ -129,15 +135,20 @@ jobs:
           else
             version="dev"
           fi
-          src=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
-          dest="bati-${version}.apk"
-          cp "$src" "$dest"
-          echo "path=$dest" >> "$GITHUB_OUTPUT"
+          apk_src=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          apk_dest="bati-${version}.apk"
+          cp "$apk_src" "$apk_dest"
+          echo "apk_path=$apk_dest" >> "$GITHUB_OUTPUT"
+
+          aab_src=$(find android/app/build/outputs/bundle/release -name "*.aab" | head -1)
+          aab_dest="bati-${version}.aab"
+          cp "$aab_src" "$aab_dest"
+          echo "aab_path=$aab_dest" >> "$GITHUB_OUTPUT"
 
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ${{ steps.apk.outputs.path }}
+          files: ${{ steps.artefacts.outputs.apk_path }}
           generate_release_notes: true
           body: |
             Install directly, or add the F-Droid repository for automatic updates:
@@ -149,4 +160,33 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: ${{ steps.apk.outputs.path }}
+          path: ${{ steps.artefacts.outputs.apk_path }}
+
+      # Only the play job needs this one, and only on a tagged build — no point keeping it
+      # around otherwise.
+      - uses: actions/upload-artifact@v4
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: aab
+          path: ${{ steps.artefacts.outputs.aab_path }}
+
+  # Gated behind the `play-internal` environment: set it up once in Settings → Environments
+  # with yourself as a required reviewer, so a bad tag can't reach real testers unattended.
+  # Needs PLAY_SERVICE_ACCOUNT_JSON — a Play Console service account (Setup → API access) with
+  # Release Manager access, added as a repository secret. See docs/planning/roadmap.md §1.
+  play:
+    needs: apk
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    environment: play-internal
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: aab
+
+      - uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.guiforge.bati
+          releaseFiles: bati-*.aab
+          track: internal

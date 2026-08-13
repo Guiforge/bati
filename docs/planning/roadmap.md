@@ -62,11 +62,16 @@ exist.
   situation, where the catalogue signs with F-Droid's key (reproducible builds were attempted,
   measured to 11 differing files, and declined over an AAPT2 ordering wall — see
   [../fdroid.md](../fdroid.md)).
-- **Play wants an AAB, not an APK.** `release.yml` runs `assembleRelease`; a Play upload needs a
-  `bundleRelease` step. Not built yet on purpose — write it when the account exists.
-- **`featureGraphic.png` (1024×500) is required by Play and does not exist.** The fastlane README
-  lists it; `fastlane/metadata/android/*/images/` holds only screenshots. en-US also has fewer
-  screenshots than fr-FR.
+- ~~**Play wants an AAB, not an APK.**~~ — done. `release.yml`'s `apk` job runs
+  `assembleRelease bundleRelease` in one Gradle invocation — same signing key, same tree, no
+  separate build path — and a `play` job uploads the AAB to Play's internal testing track,
+  gated behind the `play-internal` GitHub Environment (Settings → Environments → add yourself
+  as a required reviewer, once, so a bad tag can't reach testers unattended). Needs
+  `PLAY_SERVICE_ACCOUNT_JSON`: a Play Console service account (Setup → API access → create one,
+  grant Release Manager) added as a repository secret.
+- ~~**`featureGraphic.png` (1024×500) is required by Play**~~ — done, alongside the 512×512
+  store icon. `scripts/generate-feature-graphic.py` composes it from the forge render and the
+  app's own type; both live under `fastlane/metadata/android/*/images/` for both locales.
 - **The Data Safety form should be trivial and say so:** the app makes no network requests at
   all, so every answer is "no data collected, no data shared". A form that claims anything else
   contradicts the store listing and the privacy policy.
@@ -77,8 +82,10 @@ exist.
 - ~~**Enable GitHub Pages**~~ — done 2026-07-31. The bilingual policy is live at
   <https://guiforge.github.io/bati/privacy/>, which unblocks both store reviews and Google's Data
   Safety form. The same deployment serves the F-Droid repository index.
-- **`eas init` + `eas update:configure`**, to mint the project id and the `updates` block. Left
-  undone deliberately — fabricating a project id would be worse than an empty field.
+- ~~**`eas init` + `eas update:configure`**~~ — tried, reverted. The Play upload path doesn't
+  need a remote EAS project; plain Gradle already produces the signed AAB CI submits. No OTA
+  update mechanism exists today — reopen this line only if `eas update` is deliberately wanted
+  later, independent of build/submit.
 - **Screenshots, Data Safety form, age rating.** The listing copy itself is written, in both
   locales, in `fastlane/metadata/android/` — Play and F-Droid read the same layout. Screenshots
   depend on §2: they must show the UI that ships, not the one before the device pass.

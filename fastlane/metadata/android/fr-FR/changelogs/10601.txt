@@ -1,0 +1,8 @@
+- La forge F-Droid perdait une clef de voûte : une de ses règles de
+  construction retirait en silence l'ossature des écrans et l'app
+  s'effondrait au portail. La règle est réparée, et un test sentinelle
+  monte désormais la garde pour qu'aucune dépendance ne disparaisse
+  des murailles sans alerte.
+- Les vivres en double sont purgés du chariot : une seconde copie du
+  moteur d'interface et une dépendance égarée ont disparu, et la
+  caravane vers la boutique voyage désormais par simple CI.

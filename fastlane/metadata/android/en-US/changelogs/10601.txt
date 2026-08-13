@@ -1,0 +1,7 @@
+- The F-Droid forge dropped a keystone: one of its build rules quietly
+  removed the screen framework and the app collapsed at the gate. The
+  rule is mended, and a sentry test now stands watch so no dependency
+  can vanish from the walls unnoticed again.
+- Duplicate supplies purged from the cart: a second copy of the UI
+  engine and a stray peer dependency are gone, and the caravan to the
+  store now travels by plain CI.

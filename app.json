@@ -54,6 +54,7 @@
       ],
       "expo-router",
       "expo-audio",
+      "expo-asset",
       [
         "expo-image-picker",
         {

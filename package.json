@@ -12,6 +12,7 @@
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.2",
     "expo": "~57.0.12",
+    "expo-asset": "~57.0.10",
     "expo-audio": "~57.0.3",
     "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.10",
@@ -145,7 +146,8 @@
     "@tamagui/lucide-icons": {
       "@tamagui/core": "2.7.4",
       "@tamagui/helpers-icon": "2.7.4"
-    }
+    },
+    "react-dom": "19.2.3"
   },
   "version": "1.6.0",
   "expo": {

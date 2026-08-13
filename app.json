@@ -111,16 +111,6 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "8adc3b2b-2cec-41fd-bf7b-d7b55a4905c2"
-      }
-    },
-    "owner": "guiforge",
-    "updates": {
-      "url": "https://u.expo.dev/8adc3b2b-2cec-41fd-bf7b-d7b55a4905c2"
     }
   }
 }

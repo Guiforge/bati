@@ -135,6 +135,13 @@
     "esbuild@0.28.2": true
   },
   "overrides": {
+    "brace-expansion@^5.0.8": "5.0.9",
+    "xcode": {
+      "uuid": "^11.1.1"
+    },
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.0"
+    },
     "@tamagui/lucide-icons": {
       "@tamagui/core": "2.7.4",
       "@tamagui/helpers-icon": "2.7.4"

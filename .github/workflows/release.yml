@@ -203,9 +203,4 @@ jobs:
             --package_name com.guiforge.bati \
             --track internal \
             --aab bati-*.aab \
-            --metadata_path fastlane/metadata/android \
-            --changes_not_sent_for_review true
-          # changes_not_sent_for_review: while the app has never passed review (store
-          # declarations incomplete), a commit that implies "send for review" is refused —
-          # as a misleading "caller does not have permission". Harmless once published:
-          # changes then wait in the console until sent for review by hand.
+            --metadata_path fastlane/metadata/android

@@ -5,7 +5,7 @@
 # second wipes the first — so the legal pages and the F-Droid repository are assembled together
 # or not at all.
 #
-#   /privacy/      the policy both app stores require a URL for
+#   /              the landing page, and /privacy/ the policy both app stores require a URL for
 #   /fdroid/repo   a self-hosted F-Droid repository, so the app can update itself
 #
 # Only `docs/legal/` is published from the wiki, never `docs/` as a whole: it holds planning notes

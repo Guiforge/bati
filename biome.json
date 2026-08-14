@@ -12,7 +12,8 @@
       "!**/metro.config.js",
       "!assets",
       "!.claude",
-      "!.github"
+      "!.github",
+      "!docs/legal/**/*.html"
     ]
   },
   "formatter": {

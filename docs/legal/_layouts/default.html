@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ page.head_title | default: page.title }}</title>
+    <meta name="description" content="{{ page.description | default: site.description }}" />
+    <meta name="theme-color" content="#0B0F19" />
+    <link rel="icon" href="/bati/assets/img/favicon.png" />
+    <link rel="stylesheet" href="/bati/assets/style.css" />
+    <link rel="canonical" href="{{ site.url }}{{ page.url }}" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{ page.head_title | default: page.title }}" />
+    <meta property="og:description" content="{{ page.description | default: site.description }}" />
+    <meta property="og:image" content="{{ site.url }}/assets/img/og.jpg" />
+    <meta property="og:url" content="{{ site.url }}{{ page.url }}" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- The switch is a button, so without JS there is nothing to switch with: show both
+         languages instead of hiding half the privacy policy behind a dead control. -->
+    <noscript>
+      <style>
+        [lang] {
+          display: revert !important;
+        }
+      </style>
+    </noscript>
+
+    <!-- Before first paint, so a French visitor never sees the English flash first. -->
+    <script>
+      (function () {
+        var l = localStorage.getItem("bati-lang");
+        if (l !== "fr" && l !== "en") l = navigator.language.slice(0, 2) === "fr" ? "fr" : "en";
+        document.documentElement.dataset.lang = l;
+        document.documentElement.lang = l;
+      })();
+    </script>
+  </head>
+
+  <body>
+    <header class="site-head">
+      <div class="wrap site-head__in">
+        <a class="brand" href="/bati/">
+          <img src="/bati/assets/img/icon.webp" alt="" width="28" height="28" />
+          Bati
+        </a>
+        <a class="head-link" href="https://github.com/Guiforge/bati">GitHub</a>
+        <div class="langs" role="group" aria-label="Language / Langue">
+          <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+          <button type="button" data-set-lang="fr" aria-pressed="false">FR</button>
+        </div>
+      </div>
+    </header>
+
+    {% if page.prose %}
+    <main class="prose">{{ content }}</main>
+    {% else %}
+    <main>{{ content }}</main>
+    {% endif %}
+
+    <footer class="site-foot">
+      <div class="wrap">
+        <nav>
+          <a href="/bati/privacy/"
+            ><span lang="en">Privacy policy</span
+            ><span lang="fr">Politique de confidentialité</span></a
+          >
+          <a href="https://github.com/Guiforge/bati"
+            ><span lang="en">Source code</span><span lang="fr">Code source</span></a
+          >
+          <a href="https://github.com/Guiforge/bati/releases"
+            ><span lang="en">Releases</span><span lang="fr">Versions</span></a
+          >
+          <a href="mailto:feedback.bati@proton.me">feedback.bati@proton.me</a>
+        </nav>
+        <p class="colophon">
+          <span lang="en"
+            >Bati is free software: MIT for the code, CC BY-SA 4.0 for the artwork. Icons by
+            <a href="https://lucide.dev">Lucide</a> (ISC). This site is part of the repository — it
+            loads no third-party script, font or tracker.</span
+          >
+          <span lang="fr"
+            >Bati est un logiciel libre : MIT pour le code, CC BY-SA 4.0 pour les illustrations.
+            Icônes <a href="https://lucide.dev">Lucide</a> (ISC). Ce site fait partie du dépôt : il
+            ne charge ni script, ni police, ni traqueur tiers.</span
+          >
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var buttons = document.querySelectorAll("[data-set-lang]");
+        function apply(lang) {
+          document.documentElement.dataset.lang = lang;
+          document.documentElement.lang = lang;
+          localStorage.setItem("bati-lang", lang);
+          buttons.forEach(function (b) {
+            b.setAttribute("aria-pressed", String(b.dataset.setLang === lang));
+          });
+          document.querySelectorAll("img[data-shot]").forEach(function (img) {
+            img.src = "/bati/assets/shots/" + lang + "/" + img.dataset.shot + ".webp";
+          });
+        }
+        buttons.forEach(function (b) {
+          b.addEventListener("click", function () {
+            apply(b.dataset.setLang);
+          });
+        });
+        apply(document.documentElement.dataset.lang);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,652 @@
+/* Bati — the public site.
+   Palette copied from constants/rawColors.ts, type from DESIGN.md. Two rules only:
+   dark world, one accent per surface. Nothing here is loaded from a third party — an app
+   that makes no network requests should not have a homepage that phones Google for a font. */
+
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("fonts/space-grotesk-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --void: #0b0f19;
+  --surface: #101322;
+  --surface-2: #151a2e;
+  --border: #2a3360;
+  --glass-border: rgba(232, 236, 255, 0.14);
+  --indigo: #4a3fd6;
+  --indigo-lift: #5d53e8;
+  --indigo-text: #8177f7;
+  --magenta: #db2777;
+  --gold: #ffd700;
+  --text: #e8ecff;
+  --muted: #909acb;
+
+  --display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --body:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --wrap: 1080px;
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--indigo-text);
+  text-decoration-color: rgba(129, 119, 247, 0.4);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--indigo-text);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+code,
+pre {
+  font-family: var(--mono);
+}
+
+/* --- Language switch -------------------------------------------------------------------
+   Both languages ship in the markup; one is hidden. No build step, no second URL to keep
+   in sync, and a visitor with JS off still reads a complete page. */
+
+html[data-lang="en"] [lang="fr"],
+html[data-lang="fr"] [lang="en"] {
+  display: none;
+}
+
+.wrap {
+  width: min(100% - 2.5rem, var(--wrap));
+  margin-inline: auto;
+}
+
+.eyebrow {
+  font-family: var(--display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--indigo-text);
+  margin: 0 0 1rem;
+}
+
+/* --- Header ---------------------------------------------------------------------------- */
+
+.site-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(11, 15, 25, 0.82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.site-head__in {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 60px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.head-link {
+  font-size: 0.92rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.head-link:hover {
+  color: var(--text);
+}
+
+.langs {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.langs button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: 700 0.72rem / 1 var(--display);
+  letter-spacing: 0.12em;
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+}
+
+.langs button[aria-pressed="true"] {
+  background: var(--indigo);
+  color: #fff;
+}
+
+/* --- Hero ------------------------------------------------------------------------------ */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3.5rem, 9vw, 6.5rem) 0 0;
+  overflow: hidden;
+}
+
+.hero__art {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 120%;
+  background:
+    linear-gradient(180deg, rgba(11, 15, 25, 0.42) 0%, rgba(11, 15, 25, 0.86) 55%, var(--void) 88%),
+    url("img/hero.webp") center top / cover no-repeat;
+  z-index: -1;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 7vw, 4.25rem);
+  max-width: 16ch;
+  text-wrap: balance;
+}
+
+.lead {
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  color: var(--muted);
+  max-width: 54ch;
+  margin: 1.25rem 0 2rem;
+}
+
+.lead strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cta img {
+  height: 56px;
+  width: auto;
+  display: block;
+}
+
+.cta a {
+  border-radius: 10px;
+  transition: transform 0.15s ease;
+}
+
+.cta a:hover {
+  transform: translateY(-2px);
+}
+
+.note {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 1.25rem 0 0;
+  max-width: 52ch;
+}
+
+/* --- The loop: reps in, village out ---------------------------------------------------- */
+
+.loop {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+  padding: 0;
+}
+
+.loop li {
+  flex: 1 1 160px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loop li::after {
+  content: "→";
+  font-size: 1.1rem;
+  color: var(--indigo-text);
+  opacity: 0.7;
+}
+
+.loop li:last-child::after {
+  content: none;
+}
+
+.loop__step {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.95rem 1.1rem;
+}
+
+.loop__k {
+  display: block;
+  font-family: var(--display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.loop__v {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+
+.loop li:last-child .loop__step {
+  border-color: rgba(255, 215, 0, 0.35);
+}
+
+.loop li:last-child .loop__v {
+  color: var(--gold);
+}
+
+.loop-caption {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 0.9rem 0 0;
+}
+
+/* --- Bands ----------------------------------------------------------------------------- */
+
+.band {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+
+.band h2 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  max-width: 20ch;
+}
+
+.band__intro {
+  color: var(--muted);
+  max-width: 58ch;
+  margin: 1rem 0 0;
+}
+
+.band--rule {
+  border-top: 1px solid var(--border);
+}
+
+/* --- Screens --------------------------------------------------------------------------- */
+
+.shots {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 1fr);
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 1rem;
+}
+
+.shots figure {
+  margin: 0;
+  scroll-snap-align: center;
+}
+
+.shots img {
+  width: 100%;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 24px 60px -30px #060812;
+  display: block;
+}
+
+.shots figcaption {
+  margin-top: 0.9rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+/* --- Features -------------------------------------------------------------------------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.card svg {
+  width: 26px;
+  height: 26px;
+  stroke: var(--indigo-text);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.card h3 {
+  font-size: 1.15rem;
+  margin: 0.9rem 0 0.5rem;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.96rem;
+}
+
+/* --- Privacy --------------------------------------------------------------------------- */
+
+.privacy {
+  background:
+    radial-gradient(80% 120% at 20% 0%, rgba(74, 63, 214, 0.18), transparent 70%), var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.zeros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.zeros li {
+  font-family: var(--display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  color: var(--text);
+}
+
+.zeros b {
+  color: var(--gold);
+}
+
+/* --- Install --------------------------------------------------------------------------- */
+
+.install {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 2.5rem;
+  align-items: start;
+}
+
+.install h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.install p {
+  color: var(--muted);
+  font-size: 0.96rem;
+}
+
+.btn {
+  display: inline-block;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  background: var(--indigo);
+  color: #fff;
+  text-decoration: none;
+  padding: 0.85rem 1.4rem;
+  border-radius: 12px;
+  transition: background 0.15s ease;
+}
+
+.btn:hover {
+  background: var(--indigo-lift);
+  color: #fff;
+}
+
+.repo {
+  display: block;
+  background: var(--void);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin: 1.25rem 0 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+/* Breaks at the spaces of the fingerprint, never inside a group: a hex block split mid-token
+   is a fingerprint nobody can check against the one F-Droid shows. */
+.repo span {
+  display: block;
+  overflow-wrap: break-word;
+}
+
+.warn {
+  border-left: 2px solid var(--gold);
+  padding-left: 0.9rem;
+  font-size: 0.9rem;
+}
+
+/* --- Footer ---------------------------------------------------------------------------- */
+
+.site-foot {
+  padding: 3rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.site-foot nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.colophon {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0;
+  max-width: 70ch;
+}
+
+/* --- Prose (the privacy policy) --------------------------------------------------------- */
+
+.prose {
+  width: min(100% - 2.5rem, 68ch);
+  margin: 0 auto;
+  padding: 3.5rem 0 4rem;
+}
+
+.prose h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  margin-bottom: 1.5rem;
+}
+
+.prose h2 {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.prose h3 {
+  font-size: 1.1rem;
+  margin: 1.75rem 0 0.5rem;
+}
+
+.prose blockquote {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border-left: 2px solid var(--indigo);
+  border-radius: 0 12px 12px 0;
+  color: var(--text);
+}
+
+.prose code {
+  background: var(--surface-2);
+  border-radius: 5px;
+  padding: 0.1em 0.4em;
+  font-size: 0.9em;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.prose th,
+.prose td {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* --- Small screens ---------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .loop {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .loop li {
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .loop li::after {
+    content: "↓";
+    text-align: center;
+  }
+
+  .cta img {
+    height: 48px;
+  }
+}
+
+/* --- Motion ------------------------------------------------------------------------------
+   One orchestrated entrance, on the loop only: the four steps arrive in the order the app
+   produces them. Everything else is still. */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* `backwards`, not `forwards`: the hidden state lives in the keyframe, so a browser that
+     never runs the animation still shows four visible steps. */
+  .loop li {
+    animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+  }
+
+  .loop li:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .loop li:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .loop li:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .loop li:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

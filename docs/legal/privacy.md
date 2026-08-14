@@ -1,5 +1,9 @@
 ---
+layout: default
+prose: true
 title: Privacy Policy
+head_title: "Privacy policy — Bati"
+description: Bati collects nothing. No account, no server, no analytics, no network requests at all.
 type: legal
 status: active
 updated: 2026-07-31
@@ -7,7 +11,7 @@ permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
 
-<p align="right"><strong>English</strong> · <a href="#politique-de-confidentialité--bati">Français</a></p>
+<div lang="en" markdown="1">
 
 # Privacy Policy — Bati
 
@@ -79,9 +83,9 @@ long as the app collects nothing, changes here will be clarifications rather tha
 Questions about this policy — and anything else: a bug, an idea, a feature you wish existed:
 **feedback.bati@proton.me**
 
----
+</div>
 
-<p align="right"><a href="#privacy-policy--bati">English</a> · <strong>Français</strong></p>
+<div lang="fr" markdown="1">
 
 # Politique de confidentialité — Bati
 
@@ -156,3 +160,5 @@ de nouvelles pratiques.
 
 Questions sur cette politique — et tout le reste : un bug, une idée, une fonctionnalité qui
 vous manque : **feedback.bati@proton.me**
+
+</div>

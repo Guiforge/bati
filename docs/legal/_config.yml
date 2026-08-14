@@ -1,0 +1,12 @@
+# The public site, built from this folder only (see .github/workflows/pages.yml).
+#
+# No theme on purpose: `_layouts/default.html` is the whole shell. Without this file the
+# build action injects a config of its own and the pages come back wearing jekyll-theme-primer.
+#
+# Paths are written as /bati/… rather than through `baseurl`, because the build action owns
+# the baseurl it passes and a mismatch would silently 404 every asset.
+title: Bati
+description: >-
+  A dark-fantasy fitness RPG for Android. Workouts become quests, reps become damage, and the
+  village you build is made of what you actually lifted. Offline, no account, no tracking.
+url: https://guiforge.github.io/bati

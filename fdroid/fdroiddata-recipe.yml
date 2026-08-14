@@ -22,9 +22,9 @@ RepoType: git
 Repo: https://github.com/Guiforge/bati.git
 
 Builds:
-  - versionName: 1.6.1
-    versionCode: 10601
-    commit: 996e75f8f0bc88dd7b257c854dbe789544d033bb
+  - versionName: 1.7.4
+    versionCode: 10704
+    commit: 9f520014e068145c2e4a65a755af1a002f61053e
     subdir: android/app
     sudo:
       - apt-get update
@@ -74,5 +74,5 @@ MaintainerNotes: |-
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
 UpdateCheckData: app.json|"versionCode":\s*(\d+)|.|"version":\s*"([\d.]+)"
-CurrentVersion: 1.6.1
-CurrentVersionCode: 10601
+CurrentVersion: 1.7.4
+CurrentVersionCode: 10704

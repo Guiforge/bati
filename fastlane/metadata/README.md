@@ -17,6 +17,11 @@ fastlane/metadata/android/
       phoneScreenshots/     1080×1920 or thereabouts, 2 to 8 of them
 ```
 
+**8 is a hard Play limit, not advice.** A 9th screenshot makes the Play API reject the entire
+listing commit — and unless the caller is account admin, the error reads as a bare
+`PERMISSION_DENIED` with no mention of screenshots, which cost a day of permission archaeology
+on 2026-08-14. F-Droid has no such cap, but this directory feeds both stores, so 8 is the law.
+
 ## Screenshots
 
 **Take them after the device pass, not before** — they are the one asset that has to show the

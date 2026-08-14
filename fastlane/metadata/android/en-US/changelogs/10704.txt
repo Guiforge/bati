@@ -1,0 +1,3 @@
+- The storefront is mended: Google's marketplace listing finally
+  shows its banner, sign and scrolls. Nothing changes inside the
+  keep itself.

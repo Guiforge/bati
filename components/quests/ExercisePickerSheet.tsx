@@ -1,12 +1,12 @@
-import { Plus, Search, X } from "@tamagui/lucide-icons";
+import { Check, Plus, Search, X } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, Pressable } from "react-native";
 import { Input, Sheet, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { getExerciseThumb } from "@/constants/assetMap";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
@@ -15,7 +15,11 @@ import type { AppLanguage } from "@/stores/settings";
 
 type Props = {
   exercises: Exercise[];
-  /** Already in the quest — hidden from the list, since adding twice does nothing. */
+  /**
+   * Already in the quest, one entry per pick. Shown as a count on the row, never filtered out:
+   * removing the tapped row made every row below jump up under the finger, so a second tap
+   * landed on whatever slid into place. A circuit may also repeat a movement on purpose.
+   */
   pickedIds: number[];
   language: AppLanguage;
   onAdd: (exercise: Exercise) => void;
@@ -32,15 +36,33 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
   // Android reports a 0 bottom inset even where the system gesture area eats taps.
   const bottomPad = Math.max(bottomInset, Platform.OS === "android" ? 24 : 0) + 10;
 
+  // Closing resets the search: it used to survive, so reopening showed a list still filtered by
+  // a word the hero had long forgotten typing, with no visible cue why most exercises were gone.
+  const close = useCallback(() => {
+    setOpen(false);
+    setSearch("");
+  }, []);
+
   const results = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    const chosen = new Set(pickedIds);
-    return exercises.filter(
-      (e) =>
-        !chosen.has(e.id) &&
-        (language === "fr" ? e.frName : e.enName).toLowerCase().includes(needle),
+    return exercises.filter((e) =>
+      (language === "fr" ? e.frName : e.enName).toLowerCase().includes(needle),
     );
-  }, [exercises, language, pickedIds, search]);
+  }, [exercises, language, search]);
+
+  const countByExerciseId = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const id of pickedIds) counts.set(id, (counts.get(id) ?? 0) + 1);
+    return counts;
+  }, [pickedIds]);
+
+  // `exercises` (the full catalog) only changes on mount, unlike `results`, which is
+  // recomputed on every keystroke — keying the memo on the stable list keeps the
+  // split+regex asset lookup from re-running per row on every search character.
+  const assetByExerciseId = useMemo(
+    () => new Map(exercises.map((e) => [e.id, getExerciseThumb(e.imagePath)] as const)),
+    [exercises],
+  );
 
   return (
     <>
@@ -56,7 +78,7 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
       <Sheet
         modal
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={(next: boolean) => (next ? setOpen(true) : close())}
         snapPoints={[85]}
         dismissOnSnapToBottom
         transition={reducedMotion ? undefined : "quick"}
@@ -69,7 +91,10 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
           exitStyle={{ opacity: 0 }}
         />
         <Sheet.Handle bg="$borderStrong" />
-        <Sheet.Frame bg="$surface" flex={1}>
+        {/* No flex={1}: the snap point already sets the frame's height, and letting it also grow
+            left the frame stranded mid-screen after a close — visible, but with open already
+            false, so nothing in it answered. VillageDetailSheet, which works, has no flex here. */}
+        <Sheet.Frame bg="$surface">
           <YStack px="$4" pt="$4" pb="$3" gap="$3">
             <XStack items="center" justify="space-between">
               <Text fontWeight="700" fontSize={18} color="$text">
@@ -79,7 +104,7 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
                 hitSlop={12}
                 accessibilityRole="button"
                 accessibilityLabel={t("common.close", "Close")}
-                onPress={() => setOpen(false)}
+                onPress={close}
               >
                 <X size={20} color="$textSecondary" />
               </Pressable>
@@ -101,45 +126,72 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
 
           <Sheet.ScrollView flex={1} px="$4" keyboardShouldPersistTaps="handled">
             <YStack gap="$2" pb="$3">
-              {results.map((exercise) => (
-                <XStack
-                  key={exercise.id}
-                  items="center"
-                  gap="$3"
-                  p="$2"
-                  rounded="$6"
-                  bg="$background"
-                  borderWidth={1}
-                  borderColor="$borderStrong"
-                  pressStyle={{ opacity: 0.92, scale: 0.99 }}
-                  accessibilityRole="button"
-                  accessibilityLabel={language === "fr" ? exercise.frName : exercise.enName}
-                  onPress={() => onAdd(exercise)}
-                >
-                  <YStack width={56} height={56} rounded="$4" overflow="hidden" bg="$surface">
-                    <Image
-                      source={getExerciseAsset(exercise.imagePath)}
-                      style={{ width: "100%", height: "100%" }}
-                      contentFit="cover"
-                      transition={0}
-                    />
-                  </YStack>
+              {results.map((exercise) => {
+                const picked = countByExerciseId.get(exercise.id) ?? 0;
+                const name = language === "fr" ? exercise.frName : exercise.enName;
 
-                  <YStack flex={1} gap="$1">
-                    <Text fontWeight="700" fontSize={15} color="$text">
-                      {language === "fr" ? exercise.frName : exercise.enName}
-                    </Text>
-                    <Text fontSize={12} color="$textSecondary">
-                      {[
-                        ...exercise.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
-                        EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment,
-                      ].join(" · ")}
-                    </Text>
-                  </YStack>
+                return (
+                  <XStack
+                    key={exercise.id}
+                    items="center"
+                    gap="$3"
+                    p="$2"
+                    rounded="$6"
+                    bg="$background"
+                    borderWidth={1}
+                    borderColor={picked > 0 ? "$primaryText" : "$borderStrong"}
+                    pressStyle={{ opacity: 0.92, scale: 0.99 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      picked > 0
+                        ? `${name}, ${t("quests.editor_added_count", { count: picked })}`
+                        : name
+                    }
+                    onPress={() => onAdd(exercise)}
+                  >
+                    <YStack width={56} height={56} rounded="$4" overflow="hidden" bg="$surface">
+                      <Image
+                        source={assetByExerciseId.get(exercise.id)}
+                        style={{ width: "100%", height: "100%" }}
+                        contentFit="cover"
+                        transition={0}
+                      />
+                    </YStack>
 
-                  <Plus size={20} color="$primaryText" strokeWidth={2.5} />
-                </XStack>
-              ))}
+                    <YStack flex={1} gap="$1">
+                      <Text fontWeight="700" fontSize={15} color="$text">
+                        {name}
+                      </Text>
+                      <Text fontSize={12} color="$textSecondary">
+                        {[
+                          ...exercise.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
+                          EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment,
+                        ].join(" · ")}
+                      </Text>
+                    </YStack>
+
+                    {picked > 0 ? (
+                      <XStack
+                        items="center"
+                        gap="$1"
+                        px="$2"
+                        py="$1"
+                        rounded="$10"
+                        bg="$surface"
+                        borderWidth={1}
+                        borderColor="$primaryText"
+                      >
+                        <Check size={14} color="$primaryText" strokeWidth={3} />
+                        <Text fontSize={12} fontWeight="700" color="$primaryText">
+                          {picked}
+                        </Text>
+                      </XStack>
+                    ) : null}
+
+                    <Plus size={20} color="$primaryText" strokeWidth={2.5} />
+                  </XStack>
+                );
+              })}
 
               {results.length === 0 ? (
                 <Text fontSize={14} color="$textSecondary" p="$3">
@@ -150,7 +202,7 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
           </Sheet.ScrollView>
 
           <XStack p="$4" pb={bottomPad} borderTopWidth={1} borderColor="$borderStrong">
-            <AppButton onPress={() => setOpen(false)}>{t("common.done", "Done")}</AppButton>
+            <AppButton onPress={close}>{t("common.done", "Done")}</AppButton>
           </XStack>
         </Sheet.Frame>
       </Sheet>

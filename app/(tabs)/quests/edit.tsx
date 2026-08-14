@@ -13,7 +13,7 @@ import { Chip } from "@/components/common/Chip";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { getExerciseThumb } from "@/constants/assetMap";
 import {
   clearQuestConfig,
   createQuestTemplate,
@@ -38,10 +38,34 @@ import { useSettingsStore } from "@/stores/settings";
 
 /** An exercise as picked in the editor: one target value, not the min/max range seed content uses. */
 type PickedExercise = {
+  /**
+   * Identifies the row, not the exercise. A circuit may hold the same movement twice, and
+   * keying on `exerciseId` made those two rows one: React saw duplicate keys, and removing or
+   * retargeting either hit both. Editor-only — the row id is never persisted.
+   */
+  uid: number;
   exerciseId: number;
   type: QuestTargetType;
   value: number;
 };
+
+/**
+ * What still stands between this form and a saved quest, or null when nothing does. Names the one
+ * thing that is missing: the old copy listed both, so it read as wrong whenever only one was.
+ */
+function missingPiece(
+  trimmedTitle: string,
+  exerciseCount: number,
+  t: (key: string, fallback: string) => string,
+): string | null {
+  if (trimmedTitle.length === 0) {
+    return t("quests.editor_incomplete_name", "Your quest needs a name.");
+  }
+  if (exerciseCount === 0) {
+    return t("quests.editor_incomplete_exercises", "Add at least one exercise.");
+  }
+  return null;
+}
 
 const DEFAULT_ROUNDS = 3;
 const DEFAULT_REST = 30;
@@ -69,6 +93,10 @@ export default function QuestEditor() {
   const [rest, setRest] = useState(DEFAULT_REST);
   const [picked, setPicked] = useState<PickedExercise[]>([]);
   const [busy, setBusy] = useState(false);
+  const nextUid = useRef(0);
+  // The absolute save bar overlapped the "add an exercise" button by ~75px, so taps meant for
+  // it fired the save instead. Measured, not guessed: the bar's height moves with the inset.
+  const [saveBarHeight, setSaveBarHeight] = useState(0);
   const { showSuccess } = useToast();
   const { success } = useHaptics();
 
@@ -131,7 +159,8 @@ export default function QuestEditor() {
 
       const nextTitle = localizedTitle(template, language);
       const nextDescription = language === "fr" ? template.frDescription : template.enDescription;
-      const nextPicked = template.exercises.map((qex) => ({
+      const nextPicked = template.exercises.map((qex, index) => ({
+        uid: index,
         exerciseId: qex.exerciseId,
         type: qex.baseTarget.type,
         value: Math.max(
@@ -139,6 +168,7 @@ export default function QuestEditor() {
           Math.round((qex.baseTarget.min + qex.baseTarget.max) / 2),
         ),
       }));
+      nextUid.current = nextPicked.length;
 
       setTitle(nextTitle);
       setDescription(nextDescription);
@@ -170,28 +200,35 @@ export default function QuestEditor() {
     () => Object.fromEntries(exercises.map((e) => [e.id, e] as const)),
     [exercises],
   );
+  const assetByExerciseId = useMemo(
+    () => new Map(exercises.map((e) => [e.id, getExerciseThumb(e.imagePath)] as const)),
+    [exercises],
+  );
 
   const pickedIds = useMemo(() => picked.map((p) => p.exerciseId), [picked]);
 
   const addExercise = useCallback((exercise: Exercise) => {
-    setPicked((prev) => [...prev, { exerciseId: exercise.id, type: "reps", value: DEFAULT_REPS }]);
+    nextUid.current += 1;
+    const uid = nextUid.current;
+    setPicked((prev) => [
+      ...prev,
+      { uid, exerciseId: exercise.id, type: "reps", value: DEFAULT_REPS },
+    ]);
   }, []);
 
-  const removeExercise = useCallback((exerciseId: number) => {
-    setPicked((prev) => prev.filter((p) => p.exerciseId !== exerciseId));
+  const removeExercise = useCallback((uid: number) => {
+    setPicked((prev) => prev.filter((p) => p.uid !== uid));
   }, []);
 
-  const patchExercise = useCallback((exerciseId: number, patch: Partial<PickedExercise>) => {
-    setPicked((prev) => prev.map((p) => (p.exerciseId === exerciseId ? { ...p, ...patch } : p)));
+  const patchExercise = useCallback((uid: number, patch: Partial<PickedExercise>) => {
+    setPicked((prev) => prev.map((p) => (p.uid === uid ? { ...p, ...patch } : p)));
   }, []);
 
   const save = async () => {
     const trimmed = title.trim();
-    if (trimmed.length === 0 || picked.length === 0) {
-      Alert.alert(
-        t("quests.editor_incomplete_title", "Almost there"),
-        t("quests.editor_incomplete_body", "A quest needs a name and at least one exercise."),
-      );
+    const missing = missingPiece(trimmed, picked.length, t);
+    if (missing) {
+      Alert.alert(t("quests.editor_incomplete_title", "Almost there"), missing);
       return;
     }
 
@@ -289,7 +326,7 @@ export default function QuestEditor() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: saveBarHeight + 24 }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3" flex={1}>
@@ -379,12 +416,12 @@ export default function QuestEditor() {
             if (!exercise) return null;
 
             return (
-              <Card key={p.exerciseId}>
+              <Card key={p.uid}>
                 <YStack gap="$3">
                   <XStack items="center" gap="$3">
                     <YStack width={48} height={48} rounded="$4" overflow="hidden" bg="$background">
                       <Image
-                        source={getExerciseAsset(exercise.imagePath)}
+                        source={assetByExerciseId.get(exercise.id)}
                         style={{ width: "100%", height: "100%" }}
                         contentFit="cover"
                         transition={0}
@@ -400,7 +437,7 @@ export default function QuestEditor() {
                       icon={<X size={14} />}
                       accessibilityRole="button"
                       accessibilityLabel={t("quests.editor_remove", "Remove")}
-                      onPress={() => removeExercise(p.exerciseId)}
+                      onPress={() => removeExercise(p.uid)}
                     />
                   </XStack>
 
@@ -408,16 +445,12 @@ export default function QuestEditor() {
                     <Chip
                       label={t("quests.config_reps", "Reps")}
                       tone={p.type === "reps" ? "primary" : "default"}
-                      onPress={() =>
-                        patchExercise(p.exerciseId, { type: "reps", value: DEFAULT_REPS })
-                      }
+                      onPress={() => patchExercise(p.uid, { type: "reps", value: DEFAULT_REPS })}
                     />
                     <Chip
                       label={t("quests.config_seconds", "Seconds")}
                       tone={p.type === "time" ? "primary" : "default"}
-                      onPress={() =>
-                        patchExercise(p.exerciseId, { type: "time", value: DEFAULT_SECONDS })
-                      }
+                      onPress={() => patchExercise(p.uid, { type: "time", value: DEFAULT_SECONDS })}
                     />
                   </XStack>
 
@@ -428,7 +461,7 @@ export default function QuestEditor() {
                     max={TARGET_RANGE.max}
                     step={p.type === "time" ? REST_STEP : 1}
                     suffix={p.type === "time" ? "s" : ""}
-                    onChange={(value) => patchExercise(p.exerciseId, { value })}
+                    onChange={(value) => patchExercise(p.uid, { value })}
                   />
                 </YStack>
               </Card>
@@ -452,6 +485,7 @@ export default function QuestEditor() {
         borderTopWidth={1}
         borderColor="$borderStrong"
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+        onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
       >
         <AppButton testID="quest-save" height={56} disabled={busy} onPress={save} rounded="$6">
           <Text color="$text" fontSize={20} fontWeight="700">

@@ -2,7 +2,7 @@
 title: Planning & Roadmap
 type: category
 status: active
-updated: 2026-07-31
+updated: 2026-08-14
 related: [../README.md]
 ---
 
@@ -15,10 +15,14 @@ related: [../README.md]
 
 ## The roadmap
 
-[roadmap.md](roadmap.md) — north star, guardrails, open work (release & distribution, the UI
-closing pass, the debt that has a deadline, village motion), the post-MVP parking lot, and the
-decisions that are closed for good. Every number on it is reproducible by a command — run the
-command before trusting a line that looks stale.
+[roadmap.md](roadmap.md) — north star, guardrails, the critical path (§1 release & distribution,
+§2 the UI closing pass, §3 the debt that has a deadline), the ranked product backlog (§4, with
+impact/effort/priority per item), the open questions, the post-MVP parking lot, and the decisions
+that are closed for good. Every number on it is reproducible by a command — run the command
+before trusting a line that looks stale.
+
+§1–§3 outrank §4 by construction: nothing in the backlog matters if the app cannot reach a user
+or loses their history.
 
 ## How to use this folder
 

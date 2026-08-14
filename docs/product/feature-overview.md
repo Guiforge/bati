@@ -2,7 +2,7 @@
 title: Features Overview
 type: product
 status: active
-updated: 2026-07-28
+updated: 2026-08-14
 related: [vision.md, user-guide.md, ../planning/roadmap.md, ../gameplay/progression.md]
 sources: [app, db, components]
 ---
@@ -214,29 +214,10 @@ Technical stack details.
 
 ## 🚀 Roadmap
 
-### Phase 1: Core Loop ✅ (Current)
-
-- Quests, Sessions, Adventures, Bosses
-- XP system, Exercise colors
-- Localization (EN/FR)
-
-### Phase 2: Coach
-
-- Oath + weak-area + rest rules (see [coach-planning.md](../gameplay/coach-planning.md))
-- Weekly suggested-quest list, if user feedback asks for more direction
-
-### Phase 3: Statistics polish
-
-- Muscle balance, personal records, sessions/week, calendar (all derived — see [statistics-progress.md](../gameplay/statistics-progress.md))
-
-### Phase 5: Future
-
-- Social features
-- GPS/outdoor quests
-- Smartwatch integration
-- Cloud sync
-
-**Full roadmap**: [roadmap.md](../planning/roadmap.md)
+There is one, and it is not here: **[roadmap.md](../planning/roadmap.md)**. This section used to
+carry a phase list that outlived every phase in it — Phase 1 shipped, Phase 4 never existed, and
+"Phase 5: Future" said less than the parking lot it duplicated. A second ranked list is a second
+thing to forget to update.
 
 ---
 

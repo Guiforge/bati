@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { H3, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { getExerciseThumb } from "@/constants/assetMap";
 import { getRecentSessionHistory } from "@/db/completed";
 import {
   analyzeDifficultyProgression,
@@ -47,7 +47,7 @@ function LadderStep({ step }: { step: VariationStep }) {
         <XStack gap="$3" items="center">
           <YStack width={64} height={64} rounded="$4" overflow="hidden" bg="$surface">
             <Image
-              source={getExerciseAsset(step.next.imagePath)}
+              source={getExerciseThumb(step.next.imagePath)}
               style={{ width: "100%", height: "100%" }}
               contentFit="cover"
               transition={200}

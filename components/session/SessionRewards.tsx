@@ -7,7 +7,7 @@ import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { OathFulfilledCard } from "@/components/oath/OathFulfilledCard";
 import { LevelPips } from "@/components/village/LevelPips";
-import { getBuildingIconAsset, getExerciseAsset, getVillageTierAsset } from "@/constants/assetMap";
+import { getBuildingIconAsset, getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
 import { pickSessionEmptyVariant } from "@/constants/sessionEmptyMessages";
 import { getLevelTitle } from "@/db/userLevel";
 import { TIER_NAMES } from "@/db/village";
@@ -212,7 +212,7 @@ export function SessionRewards({
               >
                 <YStack width={56} height={56} rounded="$4" overflow="hidden" bg="$surface">
                   <Image
-                    source={getExerciseAsset(step.next.imagePath)}
+                    source={getExerciseThumb(step.next.imagePath)}
                     style={{ width: "100%", height: "100%" }}
                     contentFit="cover"
                   />

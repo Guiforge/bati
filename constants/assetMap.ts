@@ -325,6 +325,65 @@ export const BUILDING_ICON_ASSETS = {
 // TYPE EXPORTS
 // ============================================================
 
+/**
+ * List-sized copies of EXERCISE_ASSETS, derived by scripts/thumb-exercises.py.
+ *
+ * The full art stays 1280px because the session hero renders it full-bleed. Everywhere else
+ * shows it at 36-56px, where decoding 1280x1280 costs ~6.5 MB of bitmap per row — the picker
+ * sheet showed ten at once and janked every frame on it.
+ */
+export const EXERCISE_THUMB_ASSETS = {
+  lunge: require("@/assets/images/exercises/thumbs/lunge.webp"),
+  burpee: require("@/assets/images/exercises/thumbs/burpee.webp"),
+  mountain_climber: require("@/assets/images/exercises/thumbs/mountain_climber.webp"),
+  dip: require("@/assets/images/exercises/thumbs/dip.webp"),
+  pike_pushup: require("@/assets/images/exercises/thumbs/pike_pushup.webp"),
+  jumping_jack: require("@/assets/images/exercises/thumbs/jumping_jack.webp"),
+  high_knees: require("@/assets/images/exercises/thumbs/high_knees.webp"),
+  bicycle_crunch: require("@/assets/images/exercises/thumbs/bicycle_crunch.webp"),
+  diamond_pushup: require("@/assets/images/exercises/thumbs/diamond_pushup.webp"),
+  single_leg_deadlift: require("@/assets/images/exercises/thumbs/single_leg_deadlift.webp"),
+  cobra_stretch: require("@/assets/images/exercises/thumbs/cobra_stretch.webp"),
+  warrior_pose: require("@/assets/images/exercises/thumbs/warrior_pose.webp"),
+  skater_hop: require("@/assets/images/exercises/thumbs/skater_hop.webp"),
+  hollow_body_hold: require("@/assets/images/exercises/thumbs/hollow_body_hold.webp"),
+  squat: require("@/assets/images/exercises/thumbs/squat.webp"),
+  pushups: require("@/assets/images/exercises/thumbs/pushups.webp"),
+  pullups: require("@/assets/images/exercises/thumbs/pullups.webp"),
+  wall_sit: require("@/assets/images/exercises/thumbs/wall_sit.webp"),
+  plank: require("@/assets/images/exercises/thumbs/plank.webp"),
+  crunch: require("@/assets/images/exercises/thumbs/crunch.webp"),
+  chin_up: require("@/assets/images/exercises/thumbs/chin_up.webp"),
+  superman: require("@/assets/images/exercises/thumbs/superman.webp"),
+  bear_crawl: require("@/assets/images/exercises/thumbs/bear_crawl.webp"),
+  russian_twist: require("@/assets/images/exercises/thumbs/russian_twist.webp"),
+  side_plank: require("@/assets/images/exercises/thumbs/side_plank.webp"),
+  glute_bridge: require("@/assets/images/exercises/thumbs/glute_bridge.webp"),
+  standing_calf_raise: require("@/assets/images/exercises/thumbs/standing_calf_raise.webp"),
+  handstand_pushup: require("@/assets/images/exercises/thumbs/handstand_pushup.webp"),
+  wall_pushup: require("@/assets/images/exercises/thumbs/wall_pushup.webp"),
+  flutter_kicks: require("@/assets/images/exercises/thumbs/flutter_kicks.webp"),
+  inverted_row: require("@/assets/images/exercises/thumbs/inverted_row.webp"),
+  dead_bug: require("@/assets/images/exercises/thumbs/dead_bug.webp"),
+  hanging_leg_raise: require("@/assets/images/exercises/thumbs/hanging_leg_raise.webp"),
+  jump_squat: require("@/assets/images/exercises/thumbs/jump_squat.webp"),
+  reverse_crunch: require("@/assets/images/exercises/thumbs/reverse_crunch.webp"),
+  curtsy_squat: require("@/assets/images/exercises/thumbs/curtsy_squat.webp"),
+  scapular_pullup: require("@/assets/images/exercises/thumbs/scapular_pullup.webp"),
+  l_sit: require("@/assets/images/exercises/thumbs/l_sit.webp"),
+  star_jump: require("@/assets/images/exercises/thumbs/star_jump.webp"),
+  windshield_wipers: require("@/assets/images/exercises/thumbs/windshield_wipers.webp"),
+  table_row: require("@/assets/images/exercises/thumbs/table_row.webp"),
+  towel_door_row: require("@/assets/images/exercises/thumbs/towel_door_row.webp"),
+  wrist_circles: require("@/assets/images/exercises/thumbs/wrist_circles.webp"),
+  cat_cow: require("@/assets/images/exercises/thumbs/cat_cow.webp"),
+  thread_the_needle: require("@/assets/images/exercises/thumbs/thread_the_needle.webp"),
+  standing_forward_fold: require("@/assets/images/exercises/thumbs/standing_forward_fold.webp"),
+  downward_dog: require("@/assets/images/exercises/thumbs/downward_dog.webp"),
+  pigeon_pose: require("@/assets/images/exercises/thumbs/pigeon_pose.webp"),
+  worlds_greatest_stretch: require("@/assets/images/exercises/thumbs/worlds_greatest_stretch.webp"),
+} as const;
+
 export type ExerciseAssetKey = keyof typeof EXERCISE_ASSETS;
 export type QuestAssetKey = keyof typeof QUEST_ASSETS;
 export type BossAssetKey = keyof typeof BOSS_ASSETS;
@@ -357,6 +416,19 @@ function keyFromPath(id: string): string {
 export function getExerciseAsset(id: string) {
   return (
     EXERCISE_ASSETS[keyFromPath(id) as ExerciseAssetKey] ?? require("@/assets/placeholder.webp")
+  );
+}
+
+/**
+ * Get the list-sized exercise thumbnail by ID (with fallback to placeholder).
+ *
+ * Use this anywhere the art renders small — lists, rows, headers. `getExerciseAsset` is for the
+ * session hero, the one slot that actually fills the screen width.
+ */
+export function getExerciseThumb(id: string) {
+  return (
+    EXERCISE_THUMB_ASSETS[keyFromPath(id) as ExerciseAssetKey] ??
+    require("@/assets/placeholder.webp")
   );
 }
 

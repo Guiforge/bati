@@ -6,7 +6,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -284,7 +284,7 @@ export function RestView() {
                 borderColor="$borderStrong"
               >
                 <Image
-                  source={getExerciseAsset(nextEx.exercise.imagePath)}
+                  source={getExerciseThumb(nextEx.exercise.imagePath)}
                   style={{ width: "100%", height: "100%" }}
                   contentFit="cover"
                   transition={150}

@@ -16,7 +16,7 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
-import { getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
+import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import {
   applyQuestConfig,
@@ -53,7 +53,7 @@ function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
 
 function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
-  return path.startsWith("http") ? { uri: path } : getExerciseAsset(path);
+  return path.startsWith("http") ? { uri: path } : getExerciseThumb(path);
 }
 
 // "reps" reads fine in French too — see the "reps"/"config_reps" locale keys, which are

@@ -40,7 +40,7 @@ don't re-add it.
 | # | Rule | Effort | Impact | Status here |
 | --- | --- | --- | --- | --- |
 | 1 | **Profile on release builds only.** Dev builds are 2–5× slower (unminified, runtime checks) — never chase a jank number in dev. | trivial | high (diagnosis) | habit |
-| 2 | **Ship bundled art as WebP**, sized to display resolution. ~25–35% smaller than PNG/JPEG → less memory + smaller binary. | low | high | **done** — 131 files converted by [`scripts/to-webp.py`](../../scripts/to-webp.py), 51.5 MB → 15.0 MB (**−71%**). Not yet sized to display resolution: sources stay 1024². |
+| 2 | **Ship bundled art as WebP**, sized to display resolution. ~25–35% smaller than PNG/JPEG → less memory + smaller binary. | low | high | **done** — 131 files converted by [`scripts/to-webp.py`](../../scripts/to-webp.py), 51.5 MB → 15.0 MB (**−71%**). Sizing done in two passes: [`scripts/fit-small-art.py`](../../scripts/fit-small-art.py) shrinks small-slot art in place, [`scripts/thumb-exercises.py`](../../scripts/thumb-exercises.py) derives 128px thumbnails for the exercise art (which stays 1280 for the session hero). |
 | 3 | **Strip `console.*` in production** via `babel-plugin-transform-remove-console` (add to [babel.config.js](../../babel.config.js) prod env). Each call has bridge/JS overhead. | low | medium | **not done** — plugin not installed |
 | 4 | **Set `expo-image` `cachePolicy="memory-disk"`** (and a stable `recyclingKey` for images inside `@legendapp/list`) to kill flicker + redundant decodes. | low | medium | default policy today; none set explicitly |
 | 5 | **Debounce rapid inputs** (search/filter fields) so keystrokes don't fan out into renders/queries. | low | medium | no debounce in repo yet |
@@ -99,6 +99,13 @@ Generic guides push these; the stack already gives them, so skip:
 - **`Image` from `react-native` instead of `expo-image`.** No disk cache on Android,
   synchronous decode on the UI thread, causes flicker. Not present in this codebase today —
   keep new image usage on `expo-image`.
+- **A big image in a small slot.** An image's memory cost is its *source* resolution, not the
+  size it renders at: a 1280² WebP decodes to ~6.5 MB of bitmap whether it fills the screen or a
+  56px tile. The exercise picker sheet showed ten of them at once and janked every single frame
+  — 450 ms median, `Slow bitmap uploads` on 100% of frames — while the Journal tab, measured the
+  same way, sat at 27 ms with zero. Pointing those rows at 128px thumbnails
+  (`getExerciseThumb`, not `getExerciseAsset`) took it to 34 ms and 0 slow uploads. When art is
+  shared between a hero slot and a list, derive a second copy; do not shrink the original.
 - **Reanimated worklets closing over large objects.** Capture the one property you need,
   not the whole record — shipping a big closure to the UI thread costs a serialization pass.
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if

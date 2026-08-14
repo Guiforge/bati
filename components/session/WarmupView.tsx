@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { type Exercise, listExercises } from "@/db/exercises";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
@@ -211,7 +211,7 @@ export function WarmupView() {
           >
             {nextExercise ? (
               <Image
-                source={getExerciseAsset(nextExercise.imagePath)}
+                source={getExerciseThumb(nextExercise.imagePath)}
                 style={{ width: "100%", height: "100%" }}
                 contentFit="cover"
                 transition={150}

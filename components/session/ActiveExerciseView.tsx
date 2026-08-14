@@ -6,7 +6,7 @@ import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import {
   getExerciseBgForSessionStep,
@@ -150,7 +150,7 @@ export function ActiveExerciseView() {
               borderColor="$borderStrong"
             >
               <Image
-                source={getExerciseAsset(currentEx.exercise.imagePath)}
+                source={getExerciseThumb(currentEx.exercise.imagePath)}
                 style={{ width: "100%", height: "100%" }}
                 contentFit="cover"
                 transition={150}

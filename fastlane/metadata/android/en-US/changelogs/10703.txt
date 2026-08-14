@@ -1,0 +1,3 @@
+- The exercise picker no longer shifts under your finger, and
+  exercise art now arrives sized for its thumbnail — the scroll
+  is smooth as a well-oiled scroll case.

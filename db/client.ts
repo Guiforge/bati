@@ -1,16 +1,14 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { deleteDatabaseSync, openDatabaseSync } from "expo-sqlite";
 import * as schema from "./schema";
+import { SCHEMA_VERSION } from "./schemaVersion";
 
-// Increment this for a breaking schema/content change that needs a fresh start.
-// No retro-compat: the DB filename is version-suffixed, so a bump simply opens a new
-// empty file and re-runs every migration from scratch — the old file is just orphaned.
-export const SCHEMA_VERSION = 3;
+export { SCHEMA_VERSION };
 
 // Version the filename so a SCHEMA_VERSION bump auto-rebuilds without any read/delete
 // dance (native handle deletion is unreliable in Expo Go anyway). __drizzle_migrations
 // then tracks per-file which migrations have run. This is the *only* rebuild mechanism.
-const DB_NAME = `bati.v${SCHEMA_VERSION}.db`;
+export const DB_NAME = `bati.v${SCHEMA_VERSION}.db`;
 
 // Dev-only escape hatch to wipe & re-seed the current version without bumping.
 // EXPO_PUBLIC_* env vars are inlined by Expo at build time.
@@ -68,8 +66,15 @@ export function getRawDb() {
   return expoDb;
 }
 
-/** @legacy Remise à zéro destructive, prévue pour l'écran dev, jamais branchée. */
-export async function resetDatabase() {
+/**
+ * Closes the native handle, best effort.
+ *
+ * Every query after this throws, so the only callers are the ones about to replace the file
+ * underneath: the legacy reset below, and the restore in src/backupFiles.ts. A handle that will
+ * not close cleanly must not stop the file operation that follows — a half-closed database is
+ * still less bad than a half-restored one.
+ */
+export async function closeDatabase() {
   try {
     const maybeDb = expoDb as unknown as {
       closeSync?: () => void;
@@ -82,9 +87,13 @@ export async function resetDatabase() {
       await maybeDb.closeAsync();
     }
   } catch (_e) {
-    // Best effort: this is a destructive reset, and a handle that will not close cleanly
-    // must not stop the file below from being deleted.
+    // Best effort — see the docstring.
   }
+}
+
+/** @legacy Remise à zéro destructive, prévue pour l'écran dev, jamais branchée. */
+export async function resetDatabase() {
+  await closeDatabase();
 
   try {
     deleteDatabaseSync(DB_NAME);

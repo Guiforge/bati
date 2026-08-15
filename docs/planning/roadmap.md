@@ -100,9 +100,10 @@ calendar, not a keyboard.
   Electron, Flathub) is effort L and buys an icon in a launcher.
 
   It stays P3 for a reason that no amount of code fixes: **a desktop install is a second, empty
-  database.** Until §4.1 ships, a hero who opens Bati on a laptop is a new hero. And nobody does
-  push-ups in front of a desktop — the realistic use is reviewing history and planning the week,
-  which is the least urgent half of the app. Do it after 4.1, or not yet.
+  database.** §4.1 has shipped, so a hero can now carry their history across by hand — but that is
+  transport, not sync: two devices used in the same week still diverge, and the last export wins.
+  And nobody does push-ups in front of a desktop — the realistic use is reviewing history and
+  planning the week, which is the least urgent half of the app.
 
 **Decisions that outlive the work**, kept because no commit message says them:
 
@@ -204,7 +205,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 
 | # | Item | Impact | Effort | Prio | From |
 | --- | --- | --- | --- | --- | --- |
-| 4.1 | Export / import of the history | High | M | **P0** | |
+| 4.1 | ~~Export / import of the history~~ — **shipped** | High | M | ✅ | |
 | 4.2 | Local training reminders, no Firebase | High | M | **P1** | |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.4 | **The variation ladder becomes visible** | High | S | **P1** | calisthenics review |
@@ -227,21 +228,26 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 
 Desktop is a distribution question, not a feature — it lives in §1.
 
-### 4.1 Export / import — P0, and the reason it outranks the rest
+### 4.1 Export / import — shipped
 
-There are testers with a real database and no way to get it off the phone. No account, no cloud,
-no backup: a lost phone is a lost year. The app's own value proposition — history is the
-permanent source of truth — is currently one broken screen away from being false.
+Design and what it cost: [`docs/superpowers/specs/2026-08-15-data-import-export-design.md`](../superpowers/specs/2026-08-15-data-import-export-design.md).
 
-**The lazy version is the whole feature.** The database is a single SQLite file: copy it out,
-share it, and on import replace it and let `db/migrate.ts` run. No serialiser, no schema mapping,
-no format to version — the migration chain *is* the format's version. Costs one dependency
-(`expo-sharing`; `expo-file-system` if the copy needs a path RN's `Share` cannot take). A JSON
-export is a nicer artefact and a much larger surface; it can come later if anyone asks to read
-their data outside the app.
+The lazy version was indeed the whole feature, and the estimate above held: the database is one
+SQLite file, so `VACUUM INTO` writes a snapshot, the share sheet moves it, and `ATTACH` validates
+it on the way back in — the migration chain is the format's version, exactly as predicted. Two
+dependencies rather than the one guessed here (`expo-file-system` turned out to carry the file
+picker too, so `expo-document-picker` was installed and removed).
 
-It is also the prerequisite for 4.18 *and* for desktop (§1): a file the user can move is 80% of
-sync, without a server.
+Two things this page did not anticipate, both worth remembering:
+
+- **A zero-byte file is a valid SQLite database.** It attaches, and `integrity_check` returns
+  "ok". Identity had to move to `PRAGMA application_id`, which also settled the `SCHEMA_VERSION`
+  question that "no format to version" had quietly left open.
+- **Restore is offered in onboarding**, not just Settings — a new phone is the case that matters
+  — and it cost nothing, because `hasFinishedOnboarding` lives inside the database being restored.
+
+It remains the prerequisite for 4.18 *and* for desktop (§1): a file the user can move is 80% of
+sync, without a server. What is still missing for those is reconciliation, not transport.
 
 ### 4.2 Local reminders — the highest-return feature on this page
 

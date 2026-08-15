@@ -1,213 +1,217 @@
 ---
 title: Backup & Restore — design
 type: technical
-status: draft
+status: active
 updated: 2026-08-15
-related: [../../planning/roadmap.md, ../../architecture/performance.md, ../../meta/wiki-protocol.md]
-sources: [db/client.ts, db/migrate.ts, db/preferences.ts, components/DatabaseProvider.tsx, app/_layout.tsx, app/settings.tsx, app/onboarding/presentation.tsx]
+related: [../../planning/roadmap.md, ../../legal/privacy.md, ../../meta/wiki-protocol.md]
+sources: [db/backup.ts, db/client.ts, db/migrate.ts, db/schemaVersion.ts, src/backupFiles.ts, hooks/useBackup.ts, stores/restore.ts, components/DatabaseProvider.tsx, app/settings.tsx, app/onboarding/presentation.tsx, __tests__/db-backup.test.ts]
 ---
 
 # Backup & Restore — design
 
-Implements roadmap §4.1, the only P0 in §4. There are testers with a real database and no way
-to get it off the phone: no account, no cloud, no backup. A lost phone is a lost year, which
-makes the app's own claim — history is the permanent source of truth — one broken screen away
-from being false.
+Implements roadmap §4.1, the only P0 in §4. There were testers with a real database and no way to
+get it off the phone: no account, no cloud, no backup. A lost phone was a lost year, which made
+the app's own claim — history is the permanent source of truth — one broken screen away from
+being false.
+
+This document describes what shipped. Where the built system differs from the design that was
+approved, the difference is called out, because each one came from something a probe or the test
+suite proved wrong.
 
 ## The decision that shapes everything else
 
 **The artefact is the SQLite file itself, not a serialisation of it.**
 
-The roadmap already argued this and the code confirms it. The database is a single file
-(`bati.v3.db`, [`db/client.ts`](../../../db/client.ts)), and `__drizzle_migrations` already
-records which migrations produced it. So the migration chain *is* the format version: there is
-no schema to map, no `version` field to invent, and therefore no `version` field to forget to
-bump. Restoring an older backup is a nominal case, because
-[`db/migrate.ts`](../../../db/migrate.ts) catches it up on the next launch.
+The database is a single file (`bati.v3.db`), and `__drizzle_migrations` already records which
+migrations produced it. So the migration chain *is* the format version: no schema to map, no
+`version` field to invent, and therefore no `version` field to forget to bump. Restoring an older
+backup is a nominal case, because [`db/migrate.ts`](../../../db/migrate.ts) catches it up on the
+next launch.
 
-A JSON export was considered and rejected for now. It is a nicer artefact for a human, but it
-costs enumerating ~14 user tables, ordering foreign keys on insert, and — the real objection —
-history rows reference exercise and quest ids that come from seeded content. If that content
-shifts between versions, a JSON import can land on references that no longer resolve. The `.db`
-file cannot have that problem by construction. Revisit only when someone asks to read their data
-outside the app.
+A JSON export was weighed and deferred. It is a nicer artefact for a human, but it costs
+enumerating ~14 user tables, ordering foreign keys on insert, and — the real objection — history
+rows reference exercise and quest ids that come from seeded content. If that content shifts
+between versions, a JSON import can land on references that no longer resolve. A `.db` file
+cannot have that problem by construction.
 
 ## Non-goals
 
-- **No encryption.** A `.db` dropped on Drive is in the clear. Adding a passphrase costs a heavy
-  crypto dependency to protect a secret nobody will still have in a year. This belongs in the
-  privacy policy, not in the code.
-- **No merge.** Restore replaces; it does not reconcile two histories. Merging rows keyed by
-  autoincrement ids across two devices is §4.18's problem, not this one.
-- **No automatic or scheduled backup.** The user exports when they choose to.
-- **No network.** This is the first feature that *could* leave the device and it does not:
-  `Sharing.shareAsync` hands off to the OS and the app opens no socket.
+- **No encryption.** A `.db` on someone's cloud drive is in the clear. This is stated in
+  [`docs/legal/privacy.md`](../../legal/privacy.md) and on the in-app privacy screen instead of
+  being solved with a passphrase nobody will still have in a year.
+- **No merge.** Restore replaces; it does not reconcile two histories. That is §4.18's problem.
+- **No automatic or scheduled backup.** Both actions are user-initiated.
+- **No network.** `Sharing.shareAsync` hands off to the OS and the app opens no socket.
 
-## Format
+## How a backup identifies itself
 
-| Concern | Resolution |
-| --- | --- |
-| Consistent snapshot | `VACUUM INTO '<path>'` — one atomic SQL statement, compacted output. |
-| Schema version | `__drizzle_migrations`, already present. |
-| Encoding | Binary. Only the filename is text: ASCII, dated — `bati-v3-2026-08-15.db`. |
-| Readability | SQLite is a standard format any tool opens. |
+Two SQLite header fields, written by `stampDatabaseIdentity()` and **verified to survive
+`VACUUM INTO`**, which is what makes them usable on the way back in:
 
-`VACUUM INTO` rather than a file copy is not a detail. The database is opened with
-`enableChangeListener: true` and runs in WAL mode; copying the file byte-for-byte under a live
-handle can miss writes that have not been checkpointed. `VACUUM INTO` produces a consistent,
-self-contained snapshot with no checkpoint dance, and `better-sqlite3` supports it too — so the
-Node test suite exercises the real export path rather than a stand-in.
+| Field | Value | Answers |
+| --- | --- | --- |
+| `application_id` | `0x42415449` ("BATI") | is this file ours? |
+| `user_version` | `SCHEMA_VERSION` | is it from a schema generation we can adopt? |
 
-The filename carries `SCHEMA_VERSION` for the human reading their file manager. Validation never
-trusts it; it reads the file's contents.
+> **Changed from the approved design.** That design proposed sniffing for table names, and
+> resolved `SCHEMA_VERSION` as an open question. Both are settled by these two pragmas — and the
+> table-sniffing would have been *wrong*: a zero-byte file is a valid SQLite database that
+> attaches cleanly and whose `integrity_check` returns "ok". Only `application_id` separates it
+> from a real backup.
+
+They are stamped on every launch from `DatabaseProvider`, not from a SQL migration, so
+`SCHEMA_VERSION` keeps one source — [`db/schemaVersion.ts`](../../../db/schemaVersion.ts), split
+out of `db/client.ts` precisely so that code which must not load `expo-sqlite` can still read it.
 
 ## Validation
 
-Cheapest check first, stop at the first failure. All four run against the temporary copy, never
-the picker's own URI — checks 2 through 4 need to open the file, and opening a document-provider
-URI directly is not portable. `validateBackup` returns a discriminated union and never throws —
-the caller translates a `reason`, it does not compose a message.
+Everything runs through `ATTACH DATABASE` on the connection that is already open. That is the
+single decision this feature turns on: no second database handle, no per-platform file opener, no
+injected adapter — and therefore `db/backup.ts` is plain SQL that the Node test suite exercises
+for real, through the existing `clientMock` seam.
 
 ```ts
-type BackupCheck =
-  | { ok: true; migratedAt: number }
-  | { ok: false; reason: "notSqlite" | "corrupt" | "notBati" | "tooNew" };
+type BackupCheck = { ok: true } | { ok: false; reason: BackupRejection };
+type BackupRejection = "notSqlite" | "corrupt" | "notBati" | "incompatibleVersion" | "unreadable";
 ```
 
-1. **`notSqlite`** — the first 16 bytes are not `SQLite format 3\0`. Catches "the user picked a
-   photo".
-2. **`corrupt`** — `PRAGMA integrity_check` fails. Catches a truncated download or a bad copy.
-3. **`notBati`** — Bati's tables (`completed_quest`, `__drizzle_migrations`) are absent. It is a
-   real SQLite database, just somebody else's.
-4. **`tooNew`** — the last applied migration postdates every migration this build knows about.
-   The backup came from a newer version of the app; refuse rather than guess.
+Order matters, cheapest first, and each step is pinned by a test:
 
-A backup taken under a different `SCHEMA_VERSION` is refused, consistent with the doctrine
-already written at [`db/client.ts:5`](../../../db/client.ts) — a version bump means the old file
-is deliberately orphaned, so silently adopting it would contradict the one rule that mechanism
-has.
+1. `integrity_check` — damaged file → `corrupt`
+2. `application_id` — not ours, **including the empty-file case** → `notBati`
+3. `user_version` — another schema generation → `incompatibleVersion`
+4. newest `created_at` in `__drizzle_migrations` must be a timestamp this build ships →
+   `incompatibleVersion`
+
+Step 4 checks *membership*, not "less than the maximum". A divergent history whose timestamps
+merely happen to be lower is rejected too. It deliberately stops there rather than comparing
+hashes: the runner that will process the file afterwards works by timestamp
+([`db/migrate.ts`](../../../db/migrate.ts)), and validation that is stricter than the thing it
+feeds would reject files the runner handles correctly.
+
+**Errors are classified in one place**, not per step, because SQLite opens an attached file
+lazily: a text file is rejected at `ATTACH` sometimes and only at the first page read other
+times. The full test suite caught this — the four rejection tests passed in isolation and failed
+when run with everything else. Classifying once makes the verdict independent of that timing.
 
 ## Import sequence
 
-Ordering is the substance of this section. Nothing destructive happens until validation has
-passed.
-
 ```text
-picker → copy to  bati-import-tmp.db        nothing destructive yet
-       → open + validate                    on failure: delete tmp, app untouched
-       → close the main handle
-       → rename  bati.v3.db → bati.v3.db.bak   the safety net
-       → rename  bati-import-tmp.db → bati.v3.db
-       → blocking restart screen
+pick        → File.pickFileAsync                    nothing touched
+stage       → copy next to the database             a new file, our name
+validate    → ATTACH + 4 checks                     on failure: delete staged, app untouched
+safety copy → VACUUM INTO bati.v3.db.bak            the original is still in place
+──────────── store flips to "restoring"; React unmounts the app ────────────
+commit      → close handle → drop sidecars → move staged over the database
 ```
 
-A rejected file leaves the app perfectly usable — not even a restart. The `.bak` is what makes
-the destructive half reversible: a user who restores the wrong file has not lost the right one.
+Nothing destructive happens before validation passes. Then:
 
-**The `.bak` is never deleted automatically** — the next import overwrites it, and that is its
-whole lifecycle. It costs one database's worth of disk permanently, which is the correct price
-for the one file standing between a mis-tap and a lost year. No UI restores it in this scope:
-recovery means pulling it off the device. Worth a `ponytail:` comment at the rename, with
-"expose a one-tap undo" as the upgrade if anyone ever needs it.
+> **Changed from the approved design.** That design renamed the live database to `.bak` and *then*
+> moved the staged file into place, which leaves a window where the database path points at
+> nothing. Here the safety copy is taken with `VACUUM INTO` — a copy, not a rename — so the
+> original never leaves its path, and the final `move(…, { overwrite: true })` replaces a complete
+> file with a complete file. This removes the need for phase markers and a recovery protocol: the
+> only failure window the original design had is simply not created.
 
-**Why a restart.** The SQLite handle is opened at module load
-([`db/client.ts`](../../../db/client.ts)) and replacing a file under a live handle is undefined
-behaviour, so the handle must close first — after which every query throws. A `reopenDatabase()`
-is name-dropped in a comment at `db/client.ts:65` but does not exist, and writing it means
-reassigning the singleton, remounting the tree, and purging Zustand stores holding state derived
-from the old database, with `getRawDb()` still handed out to the crash logger. A stale native
-handle retained anywhere is a native crash, which is the least pleasant class of bug to diagnose
-on a device. Five seconds of friction on an operation performed once a year is the cheaper trade.
+**Sidecars are part of the database.** `expo-sqlite`'s own `deleteDatabase` removes the `.db` and
+nothing else (verified in `SQLiteModule.kt`), so `-journal`/`-wal`/`-shm` are dropped explicitly
+before the swap. A stale journal beside a replaced database gets rolled back into it on the next
+launch, which corrupts it. (The app runs in SQLite's default DELETE journal mode — `expo-sqlite`
+never sets `journal_mode`, contrary to what the first draft of this document asserted.)
 
-**The blocking screen lives in `DatabaseProvider`**, not in the screen that triggered the import.
-That component already renders a full-screen "the database is unusable" state for migration
-failure ([`components/DatabaseProvider.tsx`](../../../components/DatabaseProvider.tsx)); this is
-the same need, and it wraps the whole tree, so a back gesture cannot escape it. A modal mounted
-inside Settings can.
+**The `.bak` is never deleted automatically**; the next restore overwrites it. It costs one
+database's worth of disk, which is the right price for the file standing between a mis-tap and a
+lost year. No UI restores it in this scope.
+
+## Why a restart, and how the ordering is guaranteed
+
+The SQLite handle is opened at module load, and replacing a file under a live handle is undefined
+behaviour, so the handle closes first — after which every query throws. Writing the
+`reopenDatabase()` that `db/client.ts` name-drops would mean reassigning the singleton, remounting
+the tree, and purging Zustand stores holding state derived from the old database, with
+`getRawDb()` still handed to the crash logger. A stale native handle retained anywhere is a native
+crash. Five seconds of friction on a once-a-year operation is the cheaper trade.
+
+The ordering problem — a component querying the database between "start restoring" and "handle
+closed" — is solved structurally rather than with a maintenance flag. `stores/restore.ts` holds
+the phase; `DatabaseProvider` returns a full-screen notice instead of `children` as soon as it
+leaves `idle`, and **the commit runs in that component's effect**. React commits the unmount
+before the effect fires, so by the time the file is touched there is nothing left that could
+query it. Ordering by construction, not by timing.
 
 ## Entry points
 
-Two, sharing one writer.
-
 ```text
-hooks/useImportBackup.ts   → pickAndImport(), busy
+hooks/useBackup.ts   → runExport(), runImport(), busy
    ├── app/settings.tsx                 destructive-confirm Alert, then the hook
    └── app/onboarding/presentation.tsx  the hook directly
 ```
 
-**Settings** gets a new section with two rows (`SettingRow` already exists in that file). Export
-ends in a `Toast`, already imported there.
+Onboarding is where restore matters most — a new phone, a fresh install — and it costs no extra
+code: `hasFinishedOnboarding` lives in `user_preferences`, *inside the database*, so a restored
+backup carries it and the routing guard in `app/_layout.tsx` sends the user straight home on the
+next launch. No flag to reconcile, no special case.
 
-**Onboarding** is where restore matters most — a new phone, a fresh install — and it costs no
-extra code. `hasFinishedOnboarding` is stored *in the database*
-([`db/preferences.ts:63`](../../../db/preferences.ts), table `user_preferences`), so a restored
-backup carries `hasFinishedOnboarding=true` and the routing guard at
-[`app/_layout.tsx:110`](../../../app/_layout.tsx) sends the user straight home on the next
-launch. No flag to reconcile, no special case.
-
-The offer belongs on `presentation.tsx`, as a quiet secondary link under the primary CTA — the
-familiar "I already have an account" placement. It goes at the *start* of onboarding: offering it
-at the end would mean making the user pick a village name that is overwritten ten seconds later.
-
-There is no confirmation dialog on the onboarding path because there is nothing to overwrite.
-That is less code, not an exception: validation, the `.bak`, and the restart screen all live in
-the hook and are identical on both paths.
+It sits at the *start* of onboarding, as a quiet secondary link under the primary CTA. Offering it
+later would mean asking for a village name that a restore overwrites ten seconds afterwards. There
+is no confirmation dialog on that path because no user history exists yet to lose — less code, not
+an exception: validation, the `.bak` and the restart screen are all in the shared hook.
 
 ## Dependencies
 
-Three, all first-party Expo, all FOSS, none pulling Play Services — which matters for the F-Droid
-build.
+Two, both first-party Expo, both FOSS, neither pulling Play Services:
 
-- `expo-file-system@~57` — copy the picked file, rename over the database
-- `expo-sharing@~57` — hand the snapshot to the OS share sheet
-- `expo-document-picker@~57` — pick the backup to restore
+- `expo-file-system@~57` — staging copy, the swap, **and the picker**
+- `expo-sharing@~57` — hands the snapshot to the OS share sheet
 
-These are native modules, so **a fresh dev build is required** (`npx expo run:android`); a JS
-reload will not pick them up.
+> **Changed from the approved design.** `expo-document-picker` was installed and then removed:
+> `File.pickFileAsync({ mimeTypes })` in `expo-file-system` already returns
+> `{ result, canceled }`, so the third native module had nothing left to do.
+
+`expo-file-system` declares `INTERNET` and two storage permissions in its manifest. The repo's
+checked-in `AndroidManifest.xml` already strips `INTERNET` with `tools:node="remove"` and bounds
+the storage pair to `maxSdkVersion=32`, so **the built app gains no permission** — which is what
+keeps `plugins/withAndroidTrimPermissions.js` and the Exodus report honest.
+
+These are native modules: a fresh dev build is required (`npx expo run:android`).
 
 ## Module boundary
 
-`db/backup.ts` holds the logic and imports nothing from Expo except `expo-sqlite`, which keeps it
-runnable in the Node test suite:
+| File | Contains | Tested |
+| --- | --- | --- |
+| `db/backup.ts` | identity, snapshot, validation — SQL only | 100% lines/functions |
+| `src/backupFiles.ts` | pick, share, stage, swap — the native edge | by reading |
+| `hooks/useBackup.ts` | orchestration + user-facing errors | — |
+| `stores/restore.ts` | the phase the provider watches | — |
 
-```ts
-exportDatabase(): Promise<string>            // VACUUM INTO → snapshot path
-validateBackup(path): Promise<BackupCheck>   // never throws
-importDatabase(path): Promise<void>          // validate → close → .bak → replace
-```
-
-`Sharing` and `DocumentPicker` stay in the hook and the screens. The native boundary needs no
-mocking because the logic never crosses it.
+`Sharing` and the picker never appear in `db/backup.ts`, which is why the native boundary needs no
+mocking: the logic does not cross it.
 
 ## Testing
 
-`__tests__/db-backup.test.ts`, on `better-sqlite3` via the existing
-[`__tests__/helpers/testDb.ts`](../../../__tests__/helpers/testDb.ts):
+`__tests__/db-backup.test.ts`, 17 cases on better-sqlite3 — which supports `VACUUM INTO` and
+`ATTACH`, so the real export and validation paths run rather than stand-ins.
 
-- export produces a file that opens and carries the same row counts
-- a valid backup validates `ok: true`
-- a truncated file, and a plain text file → `notSqlite`
-- bytes overwritten mid-file → `corrupt`
-- a valid SQLite database that is not Bati's → `notBati`
-- a migration timestamp ahead of this build → `tooNew`
-- a successful import leaves the `.bak` in place
-- a restored backup yields `hasFinishedOnboarding = "true"` — the guarantee that a new phone does
-  not walk back through onboarding
-- a rejected import leaves the original database byte-identical
+Every rejection was probed against a real damaged file before being written down, and two results
+changed the design:
 
-Per AGENTS.md: these assert state, not navigation. The onboarding test reads the restored
-preference rather than checking that a screen appeared.
+- **an empty file passes `integrity_check`** — hence the `application_id` check
+- **zeroing bytes in the header's unused area is not "corrupt" to SQLite** — damage has to land on
+  a b-tree page, so the corruption case writes over page 4. A naive corruption test would have
+  been green while asserting nothing.
+
+The fixture was also wrong and had to be fixed rather than worked around:
+`__tests__/helpers/testDb.ts` applied the `.sql` files but never created `__drizzle_migrations`,
+which the app's runner always does — so the test database differed from a real one in exactly the
+place validation reads.
 
 ## Risk accepted
 
-Import replays the migration runner against a foreign database, and
-[`db/migrate.ts:63`](../../../db/migrate.ts) calls itself "the riskiest code in the app and the
-least covered". This feature is the first thing to exercise that path deliberately, which is both
-the risk and the reason it finally gets tested.
+Import replays the migration runner against a foreign database, and `db/migrate.ts` calls itself
+"the riskiest code in the app and the least covered". This feature is the first thing to exercise
+that path deliberately.
 
-## Follow-ups
-
-- Roadmap §4.1 marked shipped; §4.18 (multi-device sync) and §1 (desktop) both list this as their
-  prerequisite.
-- `docs/legal/` privacy policy: state that the export is unencrypted and that the app does not
-  transmit it.
+Recovery from an interrupted process is bounded rather than solved: the safety copy exists and the
+database path always holds a complete file, but there is no startup reconciliation and no in-app
+undo. Both are cheap to add on top of what is here if a real report ever needs them.

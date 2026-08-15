@@ -705,6 +705,8 @@
     "summary": "Bati collects nothing. Nothing you do in this app leaves your phone unless you send it yourself, deliberately, by email.",
     "storage_title": "Where your training lives",
     "storage_body": "Every session, set, quest, adventure, achievement and setting is written to a database inside this app's private storage on your device. It is never uploaded and never synced. There is no server to upload it to, and no account to attach it to. Deleting the app deletes all of it.",
+    "backups_title": "Backups you make",
+    "backups_body": "Export my data writes your database to a file and hands it to your system's share sheet — where it goes next is your choice alone, and the app sends it nowhere. That file is not encrypted: anyone who opens it can read your training history, so keep it the way you would keep a personal photo. Restoring replaces everything; the database you had is kept on the device as a recovery copy.",
     "never_title": "What Bati never does",
     "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. The app makes no network requests at all, at any point.",
     "permissions_title": "Permissions",
@@ -722,5 +724,33 @@
     "prompt": "Tell me anything — there are no wrong answers. If you are stuck, these help:\n\n1. What made you open the app today?\n2. What annoyed you?\n3. What did you almost look for and not find?\n",
     "technical_header": "Technical details (edit or delete anything below)",
     "no_crash": "No crash was recorded on this device."
+  },
+  "backup": {
+    "section": "BACKUP",
+    "export": "Export my data",
+    "exportHint": "A file you keep",
+    "import": "Restore a backup",
+    "importHint": "Replaces everything",
+    "exportDone": "Backup ready — choose where to keep it",
+    "exportFailed": "The backup could not be created",
+    "importFailed": "That file could not be read",
+    "confirmTitle": "Restore this backup?",
+    "confirmMessage": "Everything on this device — history, village, oaths — is replaced by the backup. Your current data is kept as a recovery copy, but only the backup will be visible.",
+    "confirmCta": "Restore",
+    "onboardingCta": "I already have a backup",
+    "restoreTitle": "Restoring",
+    "restoreFailedTitle": "Restore stopped",
+    "phase": {
+      "restoring": "Putting your data in place. Do not close Bati.",
+      "restartRequired": "Done. Close Bati and open it again to continue.",
+      "failed": "Nothing was replaced — your data is untouched. Try again, or pick another file."
+    },
+    "rejected": {
+      "notSqlite": "That file is not a Bati backup.",
+      "corrupt": "That backup is damaged and cannot be read.",
+      "notBati": "That file is a database, but not one Bati wrote.",
+      "incompatibleVersion": "That backup comes from a version of Bati this one cannot read.",
+      "unreadable": "That file could not be opened."
+    }
   }
 }

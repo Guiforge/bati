@@ -20,7 +20,8 @@ type SqliteMigrationClient = {
   getAllAsync?: <T = unknown>(source: string, params?: readonly unknown[]) => Promise<T[]>;
 };
 
-function sqlString(value: string) {
+/** SQLite string literal. Exported because db/backup.ts interpolates file paths into SQL too. */
+export function sqlString(value: string) {
   return `'${value.replaceAll("'", "''")}'`;
 }
 

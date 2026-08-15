@@ -14,7 +14,15 @@ import { Card } from "@/components/common/Card";
  *
  * Sections are listed rather than hand-written so adding one is a locale change, not a JSX one.
  */
-const SECTIONS = ["storage", "never", "permissions", "crashes", "children", "contact"] as const;
+const SECTIONS = [
+  "storage",
+  "backups",
+  "never",
+  "permissions",
+  "crashes",
+  "children",
+  "contact",
+] as const;
 
 export default function PrivacyScreen() {
   const router = useRouter();

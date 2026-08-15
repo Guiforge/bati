@@ -13,7 +13,8 @@ import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
 
 /**
- * The two buttons' worth of orchestration, shared by Settings and onboarding.
+ * The backup rows' worth of orchestration — share, save, restore — shared by Settings and
+ * onboarding.
  *
  * Nothing destructive happens here. The staged file is validated, and only then does this hand
  * over to DatabaseProvider by moving the store to `restoring` — so the swap always happens

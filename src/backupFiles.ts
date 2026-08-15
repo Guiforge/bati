@@ -3,7 +3,8 @@ import * as Sharing from "expo-sharing";
 import { defaultDatabaseDirectory } from "expo-sqlite";
 
 import { snapshotDatabaseTo } from "@/db/backup";
-import { closeDatabase, DB_NAME } from "@/db/client";
+import { closeDatabase, DB_NAME, serializeOnDatabase } from "@/db/client";
+import { dayKey } from "@/db/dates";
 import { SCHEMA_VERSION } from "@/db/schemaVersion";
 
 /**
@@ -42,9 +43,12 @@ function deleteIfPresent(name: string) {
   if (file.exists) file.delete();
 }
 
-/** `bati-export-v3-2026-08-15.db` — dated, for the human scrolling their files app. */
+/**
+ * `bati-export-v3-2026-08-15.db` — dated, for the human scrolling their files app. The hero's
+ * own day, not UTC's: a backup taken at half past midnight in Paris is today's, not yesterday's.
+ */
 function exportFileName(now: Date) {
-  return `${EXPORT_PREFIX}v${SCHEMA_VERSION}-${now.toISOString().slice(0, 10)}.db`;
+  return `${EXPORT_PREFIX}v${SCHEMA_VERSION}-${dayKey(now)}.db`;
 }
 
 /**
@@ -164,25 +168,31 @@ export function discardStagedImport(): void {
  * with `overwrite` deletes the destination *before* it attempts the rename, so a failure there
  * would leave no database at all — while this screen tells the hero nothing was replaced. With
  * the old file parked under another name, a failed step 6 can put it straight back.
+ *
+ * It queues on the database like every write does, so a transaction still in flight when the
+ * hero confirmed — a session being saved, a widget refresh — finishes before the handle closes,
+ * instead of having its journal deleted out from under it in step 4.
  */
-export async function commitRestore(): Promise<void> {
-  await closeDatabase();
+export function commitRestore(): Promise<void> {
+  return serializeOnDatabase(async () => {
+    await closeDatabase();
 
-  for (const suffix of ["-journal", "-wal", "-shm"]) {
-    deleteIfPresent(`${DB_NAME}${suffix}`);
-  }
+    for (const suffix of ["-journal", "-wal", "-shm"]) {
+      deleteIfPresent(`${DB_NAME}${suffix}`);
+    }
 
-  // Only the previous restore's `.bak` is expendable here; the live database never is.
-  deleteIfPresent(SAFETY_NAME);
-  const parkedAside = fileIn(DB_NAME).exists;
-  if (parkedAside) await fileIn(DB_NAME).move(fileIn(SAFETY_NAME));
+    // Only the previous restore's `.bak` is expendable here; the live database never is.
+    deleteIfPresent(SAFETY_NAME);
+    const parkedAside = fileIn(DB_NAME).exists;
+    if (parkedAside) await fileIn(DB_NAME).move(fileIn(SAFETY_NAME));
 
-  try {
-    await fileIn(IMPORT_NAME).move(fileIn(DB_NAME));
-  } catch (error) {
-    // `overwrite` here because a half-finished move may have left a partial file under the
-    // real name, and a partial import is exactly what must not survive this.
-    if (parkedAside) await fileIn(SAFETY_NAME).move(fileIn(DB_NAME), { overwrite: true });
-    throw error;
-  }
+    try {
+      await fileIn(IMPORT_NAME).move(fileIn(DB_NAME));
+    } catch (error) {
+      // `overwrite` here because a half-finished move may have left a partial file under the
+      // real name, and a partial import is exactly what must not survive this.
+      if (parkedAside) await fileIn(SAFETY_NAME).move(fileIn(DB_NAME), { overwrite: true });
+      throw error;
+    }
+  });
 }

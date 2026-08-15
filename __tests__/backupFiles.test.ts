@@ -132,6 +132,8 @@ jest.mock("@/db/client", () => ({
     (require("expo-file-system") as FakeFs).__ops.push("close");
     return Promise.resolve();
   },
+  // The real one queues behind in-flight transactions; there are none here.
+  serializeOnDatabase: <T>(fn: () => Promise<T>) => fn(),
 }));
 
 jest.mock("@/db/backup", () => ({

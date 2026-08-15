@@ -70,9 +70,8 @@ export async function stampDatabaseIdentity(): Promise<void> {
 /**
  * Writes a consistent snapshot of the live database to `destinationPath`.
  *
- * One statement, and the same one for both callers: the file the user shares, and the `.bak`
- * taken just before a restore. `VACUUM INTO` refuses a destination that already exists, so the
- * caller deletes it first.
+ * One statement, whichever way the hero then carries the file — share sheet or folder.
+ * `VACUUM INTO` refuses a destination that already exists, so the caller deletes it first.
  */
 export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
   return serializeOnDatabase(async () => {
@@ -206,10 +205,10 @@ async function tableDefinitions(prefix: string): Promise<Map<string, string>> {
 
 /** True when the attached candidate's tables are not the ones this build is running on. */
 async function tablesDivergeFromLive(): Promise<boolean> {
-  const [live, candidate] = await Promise.all([
-    tableDefinitions("main"),
-    tableDefinitions(CANDIDATE),
-  ]);
+  // Sequential on purpose: one connection, and nothing here is slow enough to be worth proving
+  // that two concurrent reads on it are safe under expo-sqlite.
+  const live = await tableDefinitions("main");
+  const candidate = await tableDefinitions(CANDIDATE);
 
   if (live.size !== candidate.size) return true;
   for (const [name, definition] of live) {

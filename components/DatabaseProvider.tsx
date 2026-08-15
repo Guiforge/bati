@@ -59,6 +59,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const error = migrationState.error;
   const hasInitialized = useRef(false);
   const hasStartedMigrations = useRef(false);
+  const hasStartedRestore = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,8 +104,13 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   // The destructive half of a restore runs here, and only here, because rendering the notice
   // below unmounts `children` first: by the time this effect fires there is nothing left that
   // could query the database the swap is about to close. Ordering by construction, not by luck.
+  //
+  // At most once per process, like the migrations above: a second run would find the restored
+  // database in place, park *it* as `.bak` over the hero's original, and fail looking for a
+  // staged file that was already consumed. StrictMode's double effects are the way that happens.
   useEffect(() => {
-    if (restorePhase !== "restoring") return;
+    if (restorePhase !== "restoring" || hasStartedRestore.current) return;
+    hasStartedRestore.current = true;
 
     commitRestore()
       .then(() => finishRestore("restartRequired"))

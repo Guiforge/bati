@@ -3,7 +3,11 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { rawColors } from "@/constants/rawColors";
+import { stampDatabaseIdentity } from "@/db/backup";
 import { ensureMigrations } from "@/db/migrate";
+import { commitRestore } from "@/src/backupFiles";
+import { reportError } from "@/src/reportError";
+import { useRestoreStore } from "@/stores/restore";
 
 type MigrationState = { success: false; error?: Error } | { success: true; error?: undefined };
 
@@ -12,8 +16,41 @@ interface DatabaseProviderProps {
   onReady?: () => void;
 }
 
+/** The shell every full-screen state here shares: dark, centred, no navigation out of it. */
+function FullScreenNotice({ title, message }: { title: string; message: string }) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        // Dark-only app: a cream failure screen was the one white flash PRODUCT.md forbids.
+        backgroundColor: rawColors.bgDark,
+        padding: 24,
+      }}
+    >
+      <Text style={{ color: rawColors.text, fontSize: 18, fontWeight: "700", textAlign: "center" }}>
+        {title}
+      </Text>
+      <Text
+        style={{
+          color: rawColors.textSecondary,
+          fontSize: 14,
+          marginTop: 12,
+          textAlign: "center",
+          lineHeight: 20,
+        }}
+      >
+        {message}
+      </Text>
+    </View>
+  );
+}
+
 export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const { t } = useTranslation();
+  const restorePhase = useRestoreStore((state) => state.phase);
+  const finishRestore = useRestoreStore((state) => state.finishRestore);
 
   const [migrationState, setMigrationState] = useState<MigrationState>({
     success: false,
@@ -22,6 +59,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const error = migrationState.error;
   const hasInitialized = useRef(false);
   const hasStartedMigrations = useRef(false);
+  const hasStartedRestore = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +72,10 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         setMigrationState({ success: false });
         // The runner itself lives in db/migrate.ts, shared with the headless widget task.
         await ensureMigrations();
+        // Idempotent, and cheap: it is what makes an exported snapshot recognisable as Bati's
+        // on the way back in. Kept out of the migration chain so SCHEMA_VERSION stays declared
+        // once, in TypeScript.
+        await stampDatabaseIdentity();
         if (!cancelled) setMigrationState({ success: true });
       } catch (e) {
         if (cancelled) return;
@@ -58,6 +100,36 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
       SplashScreen.hideAsync();
     }
   }, [error]);
+
+  // The destructive half of a restore runs here, and only here, because rendering the notice
+  // below unmounts `children` first: by the time this effect fires there is nothing left that
+  // could query the database the swap is about to close. Ordering by construction, not by luck.
+  //
+  // At most once per process, like the migrations above: a second run would find the restored
+  // database in place, park *it* as `.bak` over the hero's original, and fail looking for a
+  // staged file that was already consumed. StrictMode's double effects are the way that happens.
+  useEffect(() => {
+    if (restorePhase !== "restoring" || hasStartedRestore.current) return;
+    hasStartedRestore.current = true;
+
+    commitRestore()
+      .then(() => finishRestore("restartRequired"))
+      .catch((e) => {
+        reportError("backup.commitRestore", e);
+        finishRestore("failed");
+      });
+  }, [restorePhase, finishRestore]);
+
+  if (restorePhase !== "idle") {
+    return (
+      <FullScreenNotice
+        title={
+          restorePhase === "failed" ? t("backup.restoreFailedTitle") : t("backup.restoreTitle")
+        }
+        message={t(`backup.phase.${restorePhase}`)}
+      />
+    );
+  }
 
   if (error) {
     return (

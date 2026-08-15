@@ -16,6 +16,7 @@
     "expo-audio": "~57.0.3",
     "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.10",
+    "expo-file-system": "~57.0.4",
     "expo-font": "~57.0.1",
     "expo-haptics": "~57.0.1",
     "expo-image": "~57.0.2",
@@ -25,6 +26,7 @@
     "expo-linking": "~57.0.5",
     "expo-localization": "~57.0.1",
     "expo-router": "~57.0.12",
+    "expo-sharing": "~57.0.12",
     "expo-splash-screen": "~57.0.6",
     "expo-sqlite": "~57.0.1",
     "expo-status-bar": "~57.0.1",
@@ -99,10 +101,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 39,
-        "functions": 38,
-        "lines": 48,
-        "statements": 47
+        "branches": 43,
+        "functions": 42,
+        "lines": 53,
+        "statements": 52
       }
     },
     "collectCoverage": true

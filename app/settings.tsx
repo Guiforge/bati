@@ -1,8 +1,11 @@
 import {
+  Archive,
+  ArchiveRestore,
   Bug,
   ChevronLeft,
   Dumbbell,
   Flame,
+  FolderDown,
   HeartPulse,
   ImagePlus,
   Languages,
@@ -22,7 +25,7 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView as RNScrollView } from "react-native";
+import { Alert, ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 
@@ -31,6 +34,7 @@ import { useToast } from "@/components/common/Toast";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
+import { useBackup } from "@/hooks/useBackup";
 import { useHaptics } from "@/hooks/useHaptics";
 import { buildBugReportMailto, readCrashLog } from "@/src/crashLog";
 import { reportError } from "@/src/reportError";
@@ -224,6 +228,16 @@ export default function SettingsScreen() {
   const [crashCount, setCrashCount] = useState(0);
   const { showError } = useToast();
   const haptics = useHaptics();
+  const { busy: backupBusy, runExport, runImport, runSaveToFolder } = useBackup();
+
+  // The confirmation lives here rather than in the hook: onboarding calls the same import with
+  // no dialog, because at that point there is no history to lose. One writer, two entrances.
+  const confirmImport = useCallback(() => {
+    Alert.alert(t("backup.confirmTitle"), t("backup.confirmMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("backup.confirmCta"), style: "destructive", onPress: runImport },
+    ]);
+  }, [runImport, t]);
 
   useEffect(() => {
     readCrashLog()
@@ -459,6 +473,40 @@ export default function SettingsScreen() {
             icon={<Swords size={22} color="$text" />}
             label={t("oath.screen_title", "Swear an Oath")}
             onPress={openOath}
+          />
+
+          <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1" mt="$2">
+            {t("backup.section")}
+          </Text>
+
+          <SettingRow
+            testID="settings-export-backup"
+            icon={<Archive size={22} color="$text" />}
+            label={t("backup.export")}
+            value={t("backup.exportHint")}
+            disabled={backupBusy}
+            onPress={runExport}
+          />
+
+          {/* Separate from the share sheet rather than an option inside it: on a device with
+              nothing installed that accepts a `.db`, the sheet is a dead end, and this is the
+              row that still produces a file. Doing both is a hero's right. */}
+          <SettingRow
+            testID="settings-save-backup"
+            icon={<FolderDown size={22} color="$text" />}
+            label={t("backup.save")}
+            value={t("backup.saveHint")}
+            disabled={backupBusy}
+            onPress={runSaveToFolder}
+          />
+
+          <SettingRow
+            testID="settings-import-backup"
+            icon={<ArchiveRestore size={22} color="$text" />}
+            label={t("backup.import")}
+            value={t("backup.importHint")}
+            disabled={backupBusy}
+            onPress={confirmImport}
           />
 
           {/* Not gated on the crash log any more. The reports worth having come from people

@@ -705,6 +705,8 @@
     "summary": "Bati ne collecte rien. Rien de ce que vous faites ici ne quitte votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail.",
     "storage_title": "Où vivent vos entraînements",
     "storage_body": "Chaque séance, série, quête, aventure, haut fait et réglage est écrit dans une base de données située dans le stockage privé de l'application, sur votre appareil. Rien n'est envoyé, rien n'est synchronisé. Il n'existe aucun serveur où l'envoyer, ni aucun compte auquel le rattacher. Désinstaller l'application supprime l'ensemble.",
+    "backups_title": "Les sauvegardes que vous faites",
+    "backups_body": "Deux lignes écrivent votre base dans un fichier : « Partager ma sauvegarde » la remet au partage de votre système, « Enregistrer un fichier » l'écrit dans un dossier que vous choisissez sur l'appareil. Dans les deux cas l'application ne l'envoie nulle part. Ce fichier n'est pas chiffré : quiconque l'ouvre lit votre historique d'entraînement, alors rangez-le comme une photo personnelle. Restaurer remplace tout ; la base que vous aviez est conservée sur l'appareil comme copie de secours.",
     "never_title": "Ce que Bati ne fait jamais",
     "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. L'application ne fait aucune requête réseau, à aucun moment.",
     "permissions_title": "Permissions",
@@ -722,5 +724,37 @@
     "prompt": "Dis-moi tout — il n'y a pas de mauvaise réponse. Si tu sèches, ces trois-là aident :\n\n1. Qu'est-ce qui t'a fait ouvrir l'app aujourd'hui ?\n2. Qu'est-ce qui t'a agacé ?\n3. Qu'est-ce que tu as failli chercher sans le trouver ?\n",
     "subject": "Bati {{version}} — retour",
     "technical_header": "Détails techniques (modifie ou supprime ce qui suit)"
+  },
+  "backup": {
+    "section": "SAUVEGARDE",
+    "export": "Partager ma sauvegarde",
+    "exportHint": "Vers une autre app",
+    "save": "Enregistrer un fichier",
+    "saveHint": "Tu choisis le dossier",
+    "import": "Restaurer une sauvegarde",
+    "importHint": "Remplace tout",
+    "exportDone": "Sauvegarde prête — choisis où la ranger",
+    "exportFailed": "La sauvegarde n'a pas pu être créée",
+    "importFailed": "Ce fichier n'a pas pu être lu",
+    "confirmTitle": "Restaurer cette sauvegarde ?",
+    "confirmMessage": "Tout ce qui est sur cet appareil — historique, village, serments — est remplacé par la sauvegarde. Tes données actuelles sont conservées sur l'appareil en copie de secours, mais seule la sauvegarde sera visible.",
+    "confirmCta": "Restaurer",
+    "onboardingCta": "J'ai déjà une sauvegarde",
+    "restoreTitle": "Restauration",
+    "restoreFailedTitle": "Restauration interrompue",
+    "phase": {
+      "restoring": "Mise en place de tes données. Ne ferme pas Bati.",
+      "restartRequired": "C'est fait. Ferme Bati et rouvre-le pour continuer.",
+      "failed": "Rien n'a été remplacé — tes données sont intactes. Ferme Bati et rouvre-le, puis essaie un autre fichier."
+    },
+    "rejected": {
+      "notSqlite": "Ce fichier n'est pas une sauvegarde Bati.",
+      "corrupt": "Cette sauvegarde est endommagée et illisible.",
+      "notBati": "Ce fichier est une base de données, mais pas une base écrite par Bati.",
+      "incompatibleVersion": "Cette sauvegarde vient d'une version de Bati que celle-ci ne sait pas lire.",
+      "schemaMismatch": "Cette sauvegarde se dit à jour, mais ses tables ne le sont pas. Elle a pu être modifiée, ou écrite pendant une mise à jour interrompue.",
+      "unreadable": "Ce fichier n'a pas pu être ouvert."
+    },
+    "saveDone": "Sauvegarde enregistrée"
   }
 }

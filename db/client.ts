@@ -1,16 +1,14 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { deleteDatabaseSync, openDatabaseSync } from "expo-sqlite";
 import * as schema from "./schema";
+import { SCHEMA_VERSION } from "./schemaVersion";
 
-// Increment this for a breaking schema/content change that needs a fresh start.
-// No retro-compat: the DB filename is version-suffixed, so a bump simply opens a new
-// empty file and re-runs every migration from scratch — the old file is just orphaned.
-export const SCHEMA_VERSION = 3;
+export { SCHEMA_VERSION };
 
 // Version the filename so a SCHEMA_VERSION bump auto-rebuilds without any read/delete
 // dance (native handle deletion is unreliable in Expo Go anyway). __drizzle_migrations
 // then tracks per-file which migrations have run. This is the *only* rebuild mechanism.
-const DB_NAME = `bati.v${SCHEMA_VERSION}.db`;
+export const DB_NAME = `bati.v${SCHEMA_VERSION}.db`;
 
 // Dev-only escape hatch to wipe & re-seed the current version without bumping.
 // EXPO_PUBLIC_* env vars are inlined by Expo at build time.
@@ -62,14 +60,21 @@ const expoDb = singleton.expoDb;
  * A fatal JS error gives the app a single tick before the runtime tears it down, which is not
  * enough for an awaited insert to flush — and a crash log that loses exactly the crashes that
  * killed the app is worse than none. `src/crashLog.ts` uses `runSync` on this handle for that
- * path only. A function rather than the binding itself because `reopenDatabase` reassigns it.
+ * path only. A function rather than the binding itself so callers never capture a stale handle.
  */
 export function getRawDb() {
   return expoDb;
 }
 
-/** @legacy Remise à zéro destructive, prévue pour l'écran dev, jamais branchée. */
-export async function resetDatabase() {
+/**
+ * Closes the native handle, best effort.
+ *
+ * Every query after this throws, so the only callers are the ones about to replace the file
+ * underneath: the legacy reset below, and the restore in src/backupFiles.ts. A handle that will
+ * not close cleanly must not stop the file operation that follows — a half-closed database is
+ * still less bad than a half-restored one.
+ */
+export async function closeDatabase() {
   try {
     const maybeDb = expoDb as unknown as {
       closeSync?: () => void;
@@ -82,9 +87,13 @@ export async function resetDatabase() {
       await maybeDb.closeAsync();
     }
   } catch (_e) {
-    // Best effort: this is a destructive reset, and a handle that will not close cleanly
-    // must not stop the file below from being deleted.
+    // Best effort — see the docstring.
   }
+}
+
+/** @legacy Remise à zéro destructive, prévue pour l'écran dev, jamais branchée. */
+export async function resetDatabase() {
+  await closeDatabase();
 
   try {
     deleteDatabaseSync(DB_NAME);
@@ -132,10 +141,40 @@ async function supportsAsyncTransactions(): Promise<boolean> {
   return asyncTransactions;
 }
 
+/**
+ * The one queue every statement that cannot share the connection has to pass through.
+ *
+ * SQLite refuses `ATTACH` and `VACUUM INTO` *inside* a transaction, and an async transaction on
+ * one JS thread is not a critical section: the runtime is free to run the export button's
+ * handler between two of its statements. Without this queue, a widget write in flight turns a
+ * perfectly good backup into "that file could not be opened" — and the failed `DETACH` that
+ * follows leaves the alias bound until the next relaunch.
+ *
+ * ponytail: one lock for the whole database, so a slow transaction blocks a backup and vice
+ * versa. Worth splitting only if a write ever gets long enough for the delay to be felt.
+ */
+let pending: Promise<unknown> = Promise.resolve();
+
+/**
+ * Runs `fn` once everything queued before it has settled. Never nest — the inner call would
+ * wait on the outer one, which is waiting on it.
+ */
+export function serializeOnDatabase<T>(fn: () => Promise<T>): Promise<T> {
+  const run = pending.then(fn, fn);
+  // The queue must survive a rejected caller, or one failed backup wedges every later write.
+  pending = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 /** Runs `fn` atomically, falling back to a plain call on runtimes without async transactions. */
-export async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
-  if (!(await supportsAsyncTransactions())) {
-    return await fn(db as unknown as TransactionTx);
-  }
-  return await db.transaction(fn);
+export function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
+  return serializeOnDatabase(async () => {
+    if (!(await supportsAsyncTransactions())) {
+      return await fn(db as unknown as TransactionTx);
+    }
+    return await db.transaction(fn);
+  });
 }

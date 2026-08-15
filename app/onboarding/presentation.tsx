@@ -8,11 +8,13 @@ import { H1, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
 import { rawColors } from "@/constants/rawColors";
+import { useBackup } from "@/hooks/useBackup";
 
 export default function Presentation() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { busy, runImport } = useBackup();
 
   return (
     <YStack flex={1} bg="$background">
@@ -92,6 +94,23 @@ export default function Presentation() {
               <ArrowRight size={20} color="$text" strokeWidth={3} />
             </XStack>
           </AppButton>
+
+          {/* Offered at the *start* of onboarding: a restore replaces the village name and
+              training level the next screens are about to ask for, so asking first would be
+              asking twice. No confirmation dialog either — there is no history to lose yet. */}
+          <Text
+            testID="onboarding-restore-backup"
+            color="$textSecondary"
+            fontSize={15}
+            textDecorationLine="underline"
+            style={{ textAlign: "center" }}
+            opacity={busy ? 0.5 : 1}
+            // `disabled` on a Text is an accessibility flag and does not stop `onPress` — the
+            // handler has to be the thing that goes away. useBackup guards re-entry too.
+            onPress={busy ? undefined : runImport}
+          >
+            {t("backup.onboardingCta")}
+          </Text>
         </YStack>
       </YStack>
     </YStack>

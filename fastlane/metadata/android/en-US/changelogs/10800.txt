@@ -1,0 +1,8 @@
+- Your chronicle can travel at last: Settings → Backup. "Share my
+  backup" hands your database to the system share sheet, "Save a file"
+  writes it into a folder you choose. One file, your whole year inside,
+  sent nowhere.
+- "Restore a backup" replaces everything with that file — offered at the
+  village gate too, for a new phone. The old database stays on the device
+  as a recovery copy.
+- A foreign, damaged, or other-version file is refused, with the reason.

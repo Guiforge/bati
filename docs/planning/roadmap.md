@@ -243,7 +243,8 @@ Four things this page did not anticipate, all worth remembering:
   question that "no format to version" had quietly left open.
 - **`ATTACH` creates the file it cannot find**, so a staged copy that vanished is indistinguishable
   from one that was empty — both attach as a database SQLite invented on the spot. `page_count`
-  runs ahead of every other check for that reason alone.
+  catches both, but only *after* `integrity_check`: on a garbage file it answers 0 on some SQLite
+  builds and throws on others, which made four rejection tests pass locally and fail on CI.
 - **`File.move(…, { overwrite: true })` is not atomic**, and the first implementation shipped
   believing it was. `expo-file-system` deletes the destination *before* attempting the rename, so
   overwriting the live database removes it first and leaves nothing if the rename fails. The swap

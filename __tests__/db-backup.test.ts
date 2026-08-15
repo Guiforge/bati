@@ -13,7 +13,9 @@ import { clientMock, createTestDb } from "./helpers/testDb";
  * - a zero-byte file is a *valid* SQLite database: it attaches, and `integrity_check` says "ok".
  *   Worse, `ATTACH` *creates* one when the path is free, so a candidate that vanished looks
  *   exactly like a candidate that was empty. `page_count` is the only thing that catches either,
- *   which is why it is checked before anything that would describe the file as somebody else's.
+ *   and it has to be read *after* `integrity_check`: on a garbage file it answers 0 on some
+ *   SQLite builds and throws on others, so reading it first made four of the cases below depend
+ *   on the driver — green here, red on CI.
  * - zeroing bytes in the header's unused area does not make a file "corrupt" to SQLite. Damage
  *   has to land on a b-tree page for `integrity_check` to notice, which is why the corruption
  *   case below writes over page 4 rather than over an arbitrary offset.

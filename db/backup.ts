@@ -110,16 +110,21 @@ async function readPragma(name: string): Promise<number | null> {
 }
 
 async function inspectAttachedCandidate(): Promise<BackupCheck> {
-  // `ATTACH` creates the file when it is missing, so a candidate that vanished between the copy
-  // and here attaches happily as an empty database — and every check below would then pass it
-  // off as "a database, but not Bati's". Zero pages is the only trace left of that, and no real
-  // backup has any: `VACUUM INTO` always writes at least the schema.
-  if ((await readPragma("page_count")) === 0) return { ok: false, reason: "unreadable" };
-
   const integrity = await db.get<Record<string, unknown>>(
     sql.raw(`PRAGMA ${CANDIDATE}.integrity_check`),
   );
   if (Object.values(integrity ?? {})[0] !== "ok") return { ok: false, reason: "corrupt" };
+
+  // `ATTACH` creates the file when it is missing, so a candidate that vanished between the copy
+  // and here attaches happily as an empty database — and the checks below would then pass it off
+  // as "a database, but not Bati's". Zero pages is the only trace left of that, and no real
+  // backup has any: `VACUUM INTO` always writes at least the schema.
+  //
+  // It runs *after* `integrity_check` on purpose, and moving it earlier broke four tests on CI
+  // while passing locally. `page_count` answers 0 for a garbage file on some SQLite builds and
+  // throws on others — the same lazy-open timing `rejectionForError` exists to neutralise. Only
+  // once integrity has confirmed a readable database does 0 mean "empty" and nothing else.
+  if ((await readPragma("page_count")) === 0) return { ok: false, reason: "unreadable" };
 
   if ((await readPragma("application_id")) !== BATI_APPLICATION_ID) {
     return { ok: false, reason: "notBati" };

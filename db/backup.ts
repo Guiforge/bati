@@ -52,8 +52,9 @@ export type BackupCheck = { ok: true } | { ok: false; reason: BackupRejection };
  * migration that would have to be remembered on the next bump. Both pragmas are idempotent
  * writes and survive `VACUUM INTO`, which is what lets a snapshot identify itself later.
  *
- * The widget's headless task runs `ensureMigrations` without this, which is fine only because
- * a database that reached a widget has already been through the provider at least once.
+ * The widget's headless task runs `ensureMigrations` without this, so a database the widget
+ * created first carries no stamp until the app opens. That is harmless because the stamp only
+ * has to be there when a snapshot is *taken*, and `exportBackup` is reachable from the UI alone.
  */
 export async function stampDatabaseIdentity(): Promise<void> {
   await db.run(sql.raw(`PRAGMA application_id = ${BATI_APPLICATION_ID}`));

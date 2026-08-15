@@ -752,6 +752,7 @@
       "corrupt": "Cette sauvegarde est endommagée et illisible.",
       "notBati": "Ce fichier est une base de données, mais pas une base écrite par Bati.",
       "incompatibleVersion": "Cette sauvegarde vient d'une version de Bati que celle-ci ne sait pas lire.",
+      "schemaMismatch": "Cette sauvegarde se dit à jour, mais ses tables ne le sont pas. Elle a pu être modifiée, ou écrite pendant une mise à jour interrompue.",
       "unreadable": "Ce fichier n'a pas pu être ouvert."
     },
     "saveDone": "Sauvegarde enregistrée"

@@ -752,6 +752,7 @@
       "corrupt": "That backup is damaged and cannot be read.",
       "notBati": "That file is a database, but not one Bati wrote.",
       "incompatibleVersion": "That backup comes from a version of Bati this one cannot read.",
+      "schemaMismatch": "That backup says it is up to date, but its tables are not. It may have been edited, or written while an update was interrupted.",
       "unreadable": "That file could not be opened."
     },
     "saveDone": "Backup saved"

@@ -39,6 +39,12 @@ export type BackupRejection =
   | "notBati"
   /** Bati's, but from a version of the app this build cannot safely adopt. */
   | "incompatibleVersion"
+  /**
+   * Bati's, claiming this build's migration history, but the tables do not match it — a column
+   * missing, a table absent. A migration that failed halfway leaves exactly this: the row saying
+   * it ran, without the change it was supposed to make.
+   */
+  | "schemaMismatch"
   /** Could not be read at all: permissions, a vanished temporary file, a full disk. */
   | "unreadable";
 
@@ -160,12 +166,56 @@ async function inspectAttachedCandidate(): Promise<BackupCheck> {
   const latest = await db.get<{ when: number | string | null }>(
     sql.raw(`SELECT max(created_at) AS "when" FROM ${CANDIDATE}.__drizzle_migrations`),
   );
+  const known = knownMigrationTimes();
   const when = latest?.when === null || latest?.when === undefined ? null : Number(latest.when);
-  if (when === null || !knownMigrationTimes().has(when)) {
+  if (when === null || !known.has(when)) {
     return { ok: false, reason: "incompatibleVersion" };
   }
 
+  // A backup that claims *this* build's migration history has to look like it. An older one is
+  // exempt on purpose: its tables are meant to differ, and the runner catches them up on the next
+  // launch — that is the whole reason the migration chain is the format version.
+  //
+  // What this catches is the file whose bookkeeping says a migration ran while the change it was
+  // supposed to make is absent. `db/migrate.ts` calls itself the riskiest code in the app, and a
+  // half-applied migration produces exactly that. Without this the import succeeds and the app
+  // crashes later on "no such column", nowhere near the screen that caused it.
+  if (when === Math.max(...known) && (await tablesDivergeFromLive())) {
+    return { ok: false, reason: "schemaMismatch" };
+  }
+
   return { ok: true };
+}
+
+/**
+ * Table name → its `CREATE TABLE` text, whitespace-flattened so formatting is not a difference.
+ *
+ * `__drizzle_migrations` is excluded: it is bookkeeping, it is already the subject of the check
+ * above, and the app's runner and the test fixture spell its `CREATE` differently.
+ */
+async function tableDefinitions(prefix: string): Promise<Map<string, string>> {
+  const rows = await db.all<{ name: string; sql: string | null }>(
+    sql.raw(
+      `SELECT name, sql FROM ${prefix}.sqlite_master
+       WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name <> '__drizzle_migrations'`,
+    ),
+  );
+
+  return new Map(rows.map((row) => [row.name, (row.sql ?? "").replace(/\s+/g, " ").trim()]));
+}
+
+/** True when the attached candidate's tables are not the ones this build is running on. */
+async function tablesDivergeFromLive(): Promise<boolean> {
+  const [live, candidate] = await Promise.all([
+    tableDefinitions("main"),
+    tableDefinitions(CANDIDATE),
+  ]);
+
+  if (live.size !== candidate.size) return true;
+  for (const [name, definition] of live) {
+    if (candidate.get(name) !== definition) return true;
+  }
+  return false;
 }
 
 /**

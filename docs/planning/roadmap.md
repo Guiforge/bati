@@ -244,6 +244,11 @@ Four things this page did not anticipate, all worth remembering:
 - **`ATTACH` creates the file it cannot find**, so a staged copy that vanished is indistinguishable
   from one that was empty — both attach as a database SQLite invented on the spot. `page_count`
   catches both, read after `integrity_check` so that 0 can only mean "empty".
+- **The migration chain says a migration *ran*, not that it *worked*.** A half-applied migration
+  leaves the bookkeeping row without the change, so a backup can claim this build's history and
+  still be missing a column. When the newest migration matches ours the tables are compared
+  against the live database (`schemaMismatch`); when it is older they are exempt, because the
+  runner is about to catch them up — that exemption is what the format-version choice buys.
 - **`instanceof Error` is not a safe way to read an error.** Drizzle wraps the driver error and
   puts the only useful text on `cause`, and the classifier reached it through `instanceof` — which
   is false whenever the object was built in another realm. Four rejection tests were green locally

@@ -131,6 +131,9 @@ describe("db/backup — validation accepts", () => {
     older.exec(
       "DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)",
     );
+    // Its tables are *meant* to differ from this build's — that is what the runner is for. The
+    // schema check has to stay out of the way here, or every old backup becomes unrestorable.
+    older.exec("DROP TABLE IF EXISTS user_preferences");
     older.close();
 
     expect(await validateBackup(target)).toEqual({ ok: true });
@@ -223,6 +226,36 @@ describe("db/backup — validation rejects", () => {
         ahead.close();
       }),
     ).toBe("incompatibleVersion");
+  });
+
+  /**
+   * The case the migration check cannot see: the bookkeeping says every migration ran, and the
+   * change one of them was supposed to make is not there. A half-applied migration writes exactly
+   * this, and without the schema comparison the import succeeds and the app crashes later on "no
+   * such column", nowhere near the screen that caused it.
+   */
+  test("a backup at this build's migration point whose table lost a column", async () => {
+    expect(
+      await rejectionFor("dropped-column.db", async (p) => {
+        const source = await makeValidBackup("dropped-column-source.db");
+        fs.copyFileSync(source, p);
+        const edited = new Database(p);
+        edited.exec("ALTER TABLE user_preferences DROP COLUMN `updatedAt`");
+        edited.close();
+      }),
+    ).toBe("schemaMismatch");
+  });
+
+  test("a backup at this build's migration point missing a table entirely", async () => {
+    expect(
+      await rejectionFor("dropped-table.db", async (p) => {
+        const source = await makeValidBackup("dropped-table-source.db");
+        fs.copyFileSync(source, p);
+        const edited = new Database(p);
+        edited.exec("DROP TABLE user_preferences");
+        edited.close();
+      }),
+    ).toBe("schemaMismatch");
   });
 
   /**

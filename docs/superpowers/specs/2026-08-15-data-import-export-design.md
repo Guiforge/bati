@@ -209,7 +209,7 @@ mocking: the logic does not cross it.
 
 ## Testing
 
-`__tests__/db-backup.test.ts`, 20 cases on better-sqlite3 — which supports `VACUUM INTO` and
+`__tests__/db-backup.test.ts`, 19 cases on better-sqlite3 — which supports `VACUUM INTO` and
 `ATTACH`, so the real export and validation paths run rather than stand-ins.
 
 Every rejection was probed against a real damaged file before being written down, and three

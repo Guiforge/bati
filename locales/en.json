@@ -706,7 +706,7 @@
     "storage_title": "Where your training lives",
     "storage_body": "Every session, set, quest, adventure, achievement and setting is written to a database inside this app's private storage on your device. It is never uploaded and never synced. There is no server to upload it to, and no account to attach it to. Deleting the app deletes all of it.",
     "backups_title": "Backups you make",
-    "backups_body": "Export my data writes your database to a file and hands it to your system's share sheet — where it goes next is your choice alone, and the app sends it nowhere. That file is not encrypted: anyone who opens it can read your training history, so keep it the way you would keep a personal photo. Restoring replaces everything; the database you had is kept on the device as a recovery copy.",
+    "backups_body": "Two rows write your database to a file: Share my backup hands it to your system's share sheet, Save to a folder writes it where you choose on the device. Either way the app sends it nowhere. That file is not encrypted: anyone who opens it can read your training history, so keep it the way you would keep a personal photo. Restoring replaces everything; the database you had is kept on the device as a recovery copy.",
     "never_title": "What Bati never does",
     "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. The app makes no network requests at all, at any point.",
     "permissions_title": "Permissions",
@@ -727,8 +727,10 @@
   },
   "backup": {
     "section": "BACKUP",
-    "export": "Export my data",
-    "exportHint": "A file you keep",
+    "export": "Share my backup",
+    "exportHint": "To another app",
+    "save": "Save to a folder",
+    "saveHint": "A file on this device",
     "import": "Restore a backup",
     "importHint": "Replaces everything",
     "exportDone": "Backup ready — choose where to keep it",
@@ -751,6 +753,7 @@
       "notBati": "That file is a database, but not one Bati wrote.",
       "incompatibleVersion": "That backup comes from a version of Bati this one cannot read.",
       "unreadable": "That file could not be opened."
-    }
+    },
+    "saveDone": "Backup saved"
   }
 }

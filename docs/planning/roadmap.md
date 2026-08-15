@@ -230,21 +230,36 @@ Desktop is a distribution question, not a feature — it lives in §1.
 
 ### 4.1 Export / import — shipped
 
-Design and what it cost: [`docs/superpowers/specs/2026-08-15-data-import-export-design.md`](../superpowers/specs/2026-08-15-data-import-export-design.md).
-
 The lazy version was indeed the whole feature, and the estimate above held: the database is one
 SQLite file, so `VACUUM INTO` writes a snapshot, the share sheet moves it, and `ATTACH` validates
 it on the way back in — the migration chain is the format's version, exactly as predicted. Two
 dependencies rather than the one guessed here (`expo-file-system` turned out to carry the file
 picker too, so `expo-document-picker` was installed and removed).
 
-Two things this page did not anticipate, both worth remembering:
+Four things this page did not anticipate, all worth remembering:
 
 - **A zero-byte file is a valid SQLite database.** It attaches, and `integrity_check` returns
   "ok". Identity had to move to `PRAGMA application_id`, which also settled the `SCHEMA_VERSION`
   question that "no format to version" had quietly left open.
+- **`ATTACH` creates the file it cannot find**, so a staged copy that vanished is indistinguishable
+  from one that was empty — both attach as a database SQLite invented on the spot. `page_count`
+  runs ahead of every other check for that reason alone.
+- **`File.move(…, { overwrite: true })` is not atomic**, and the first implementation shipped
+  believing it was. `expo-file-system` deletes the destination *before* attempting the rename, so
+  overwriting the live database removes it first and leaves nothing if the rename fails. The swap
+  renames the old file aside instead, which makes that rename the safety copy and the rollback
+  source at once.
+- **The share sheet alone is not a backup.** On a device with nothing installed that accepts a
+  `.db`, it is a dead end, so Settings also offers a folder picker
+  (`Directory.pickDirectoryAsync`) writing the same snapshot to storage. That picker reports "the
+  user backed out" by *throwing*, which is the one thing the file layer has to translate.
 - **Restore is offered in onboarding**, not just Settings — a new phone is the case that matters
   — and it cost nothing, because `hasFinishedOnboarding` lives inside the database being restored.
+
+What is deliberately not solved: a process killed *between* the two renames leaves the database
+absent and the data in a `.bak` no code reads. Closing that means reconciling at module load in
+`db/client.ts`, before `openDatabaseSync` recreates an empty file — cheap, and worth doing only if
+a real report ever needs it.
 
 It remains the prerequisite for 4.18 *and* for desktop (§1): a file the user can move is 80% of
 sync, without a server. What is still missing for those is reconciliation, not transport.

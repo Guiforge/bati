@@ -18,6 +18,7 @@ let mockValidation: { ok: true } | { ok: false; reason: string } = { ok: true };
 let mockExportBehaviour: () => void = () => {};
 let mockValidateBehaviour: () => void = () => {};
 let mockStageGate: Promise<void> | null = null;
+let mockSaveOutcome: () => boolean = () => true;
 
 jest.mock("@/db/backup", () => ({
   validateBackup: jest.fn(async () => {
@@ -41,6 +42,11 @@ jest.mock("@/src/backupFiles", () => ({
     return mockStagedPath;
   }),
   discardStagedImport: jest.fn(() => mockCalls.push("discard")),
+  // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
+  saveBackupToFolder: jest.fn(async () => {
+    mockCalls.push("save");
+    return mockSaveOutcome();
+  }),
 }));
 
 const mockShownErrors: string[] = [];
@@ -71,6 +77,7 @@ beforeEach(() => {
   mockExportBehaviour = () => {};
   mockValidateBehaviour = () => {};
   mockStageGate = null;
+  mockSaveOutcome = () => true;
   useRestoreStore.setState({ phase: "idle" });
 });
 
@@ -159,6 +166,45 @@ describe("useBackup — import", () => {
     await act(async () => result.current.runImport());
 
     await waitFor(() => expect(result.current.busy).toBe(false));
+  });
+});
+
+describe("useBackup — save to a folder", () => {
+  test("reports success once the file is written", async () => {
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runSaveToFolder());
+
+    expect(mockCalls).toEqual(["save"]);
+    expect(mockShownSuccesses).toEqual(["backup.saveDone"]);
+  });
+
+  /**
+   * The folder picker throws when the hero backs out, so the file layer translates that into
+   * `false`. Toasting either outcome here would announce a failure that did not happen, or a
+   * success for a file that was never written.
+   */
+  test("says nothing when the hero backs out of the picker", async () => {
+    mockSaveOutcome = () => false;
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runSaveToFolder());
+
+    expect(mockShownSuccesses).toEqual([]);
+    expect(mockShownErrors).toEqual([]);
+    expect(mockReportedErrors).toEqual([]);
+  });
+
+  test("a real failure is surfaced and recorded, never swallowed", async () => {
+    mockSaveOutcome = () => {
+      throw new Error("no space left on device");
+    };
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runSaveToFolder());
+
+    expect(mockShownErrors).toEqual(["backup.exportFailed"]);
+    expect(mockReportedErrors).toEqual(["backup.save"]);
   });
 });
 

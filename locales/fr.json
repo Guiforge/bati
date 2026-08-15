@@ -706,7 +706,7 @@
     "storage_title": "Où vivent vos entraînements",
     "storage_body": "Chaque séance, série, quête, aventure, haut fait et réglage est écrit dans une base de données située dans le stockage privé de l'application, sur votre appareil. Rien n'est envoyé, rien n'est synchronisé. Il n'existe aucun serveur où l'envoyer, ni aucun compte auquel le rattacher. Désinstaller l'application supprime l'ensemble.",
     "backups_title": "Les sauvegardes que vous faites",
-    "backups_body": "« Exporter mes données » écrit votre base dans un fichier et le remet au partage de votre système — ce qu'il devient ensuite ne dépend que de vous, et l'application ne l'envoie nulle part. Ce fichier n'est pas chiffré : quiconque l'ouvre lit votre historique d'entraînement, alors rangez-le comme une photo personnelle. Restaurer remplace tout ; la base que vous aviez est conservée sur l'appareil comme copie de secours.",
+    "backups_body": "Deux lignes écrivent votre base dans un fichier : « Partager ma sauvegarde » la remet au partage de votre système, « Enregistrer dans un dossier » l'écrit où vous voulez sur l'appareil. Dans les deux cas l'application ne l'envoie nulle part. Ce fichier n'est pas chiffré : quiconque l'ouvre lit votre historique d'entraînement, alors rangez-le comme une photo personnelle. Restaurer remplace tout ; la base que vous aviez est conservée sur l'appareil comme copie de secours.",
     "never_title": "Ce que Bati ne fait jamais",
     "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. L'application ne fait aucune requête réseau, à aucun moment.",
     "permissions_title": "Permissions",
@@ -727,8 +727,10 @@
   },
   "backup": {
     "section": "SAUVEGARDE",
-    "export": "Exporter mes données",
-    "exportHint": "Un fichier que tu gardes",
+    "export": "Partager ma sauvegarde",
+    "exportHint": "Vers une autre app",
+    "save": "Enregistrer dans un dossier",
+    "saveHint": "Un fichier sur l'appareil",
     "import": "Restaurer une sauvegarde",
     "importHint": "Remplace tout",
     "exportDone": "Sauvegarde prête — choisis où la ranger",
@@ -751,6 +753,7 @@
       "notBati": "Ce fichier est une base de données, mais pas une base écrite par Bati.",
       "incompatibleVersion": "Cette sauvegarde vient d'une version de Bati que celle-ci ne sait pas lire.",
       "unreadable": "Ce fichier n'a pas pu être ouvert."
-    }
+    },
+    "saveDone": "Sauvegarde enregistrée"
   }
 }

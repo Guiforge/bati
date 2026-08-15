@@ -3,7 +3,12 @@ import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
 import { validateBackup } from "@/db/backup";
-import { discardStagedImport, exportBackup, stageBackupForImport } from "@/src/backupFiles";
+import {
+  discardStagedImport,
+  exportBackup,
+  saveBackupToFolder,
+  stageBackupForImport,
+} from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
 
@@ -34,6 +39,23 @@ export function useBackup() {
       showSuccess(t("backup.exportDone"));
     } catch (error) {
       reportError("backup.export", error);
+      showError(t("backup.exportFailed"));
+    } finally {
+      running.current = false;
+      setBusy(false);
+    }
+  }, [showError, showSuccess, t]);
+
+  const runSaveToFolder = useCallback(async () => {
+    if (running.current) return;
+    running.current = true;
+    setBusy(true);
+    try {
+      // Silence on `false` is deliberate: the hero closed the folder picker themselves, and
+      // telling them so is one toast for something they already know.
+      if (await saveBackupToFolder()) showSuccess(t("backup.saveDone"));
+    } catch (error) {
+      reportError("backup.save", error);
       showError(t("backup.exportFailed"));
     } finally {
       running.current = false;
@@ -74,6 +96,9 @@ export function useBackup() {
     runExport: useCallback(() => {
       runExport();
     }, [runExport]),
+    runSaveToFolder: useCallback(() => {
+      runSaveToFolder();
+    }, [runSaveToFolder]),
     runImport: useCallback(() => {
       runImport();
     }, [runImport]),

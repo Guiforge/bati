@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   Dumbbell,
   Flame,
+  FolderDown,
   HeartPulse,
   ImagePlus,
   Languages,
@@ -227,7 +228,7 @@ export default function SettingsScreen() {
   const [crashCount, setCrashCount] = useState(0);
   const { showError } = useToast();
   const haptics = useHaptics();
-  const { busy: backupBusy, runExport, runImport } = useBackup();
+  const { busy: backupBusy, runExport, runImport, runSaveToFolder } = useBackup();
 
   // The confirmation lives here rather than in the hook: onboarding calls the same import with
   // no dialog, because at that point there is no history to lose. One writer, two entrances.
@@ -485,6 +486,18 @@ export default function SettingsScreen() {
             value={t("backup.exportHint")}
             disabled={backupBusy}
             onPress={runExport}
+          />
+
+          {/* Separate from the share sheet rather than an option inside it: on a device with
+              nothing installed that accepts a `.db`, the sheet is a dead end, and this is the
+              row that still produces a file. Doing both is a hero's right. */}
+          <SettingRow
+            testID="settings-save-backup"
+            icon={<FolderDown size={22} color="$text" />}
+            label={t("backup.save")}
+            value={t("backup.saveHint")}
+            disabled={backupBusy}
+            onPress={runSaveToFolder}
           />
 
           <SettingRow

@@ -48,17 +48,25 @@ function exportFileName(now: Date) {
 }
 
 /**
- * Writes a snapshot and hands it to the OS share sheet.
+ * Writes a fresh dated snapshot in the app's own directory and returns it.
  *
- * Stale snapshots are cleared before writing rather than after sharing: when `shareAsync`
- * resolves, the receiving app may still be reading ours, and deleting it out from under a lazy
- * reader would hand the user a truncated backup. This way at most one stale snapshot exists.
+ * Stale snapshots are cleared before writing rather than after the file has been handed on: when
+ * `shareAsync` resolves, the receiving app may still be reading ours, and deleting it out from
+ * under a lazy reader would hand the user a truncated backup. This way at most one stale
+ * snapshot exists, and it costs one database's worth of disk.
  */
-export async function exportBackup(): Promise<void> {
+async function writeSnapshot(): Promise<File> {
   for (const entry of new Directory(`file://${DB_DIR}`).list()) {
     if (entry.name.startsWith(EXPORT_PREFIX)) entry.delete();
   }
 
+  const name = exportFileName(new Date());
+  await snapshotDatabaseTo(pathIn(name));
+  return fileIn(name);
+}
+
+/** Writes a snapshot and hands it to the OS share sheet. */
+export async function exportBackup(): Promise<void> {
   // Checked before the snapshot is written: without a share sheet the file would land in
   // app-private storage the user has no way to reach, and reporting "backup ready" for a file
   // nobody can open is worse than reporting the failure.
@@ -66,13 +74,48 @@ export async function exportBackup(): Promise<void> {
     throw new Error("No share sheet available — the backup would be unreachable");
   }
 
-  const name = exportFileName(new Date());
-  await snapshotDatabaseTo(pathIn(name));
+  const snapshot = await writeSnapshot();
 
-  await Sharing.shareAsync(`file://${pathIn(name)}`, {
+  await Sharing.shareAsync(snapshot.uri, {
     mimeType: "application/octet-stream",
-    dialogTitle: name,
+    dialogTitle: snapshot.name,
   });
+}
+
+/**
+ * Writes a snapshot straight into a folder the hero picks. Returns `false` if they backed out.
+ *
+ * The share sheet hands the file to another app, which is not the same thing as having a copy:
+ * on a device with nothing installed that accepts a `.db`, the sheet is a dead end. This is the
+ * other half of the same snapshot — the folder picker returns a Storage Access Framework tree,
+ * so the file is written locally first (`VACUUM INTO` needs a real path) and copied in after.
+ *
+ * The snapshot is written *after* the picker resolves, so backing out leaves nothing behind.
+ */
+export async function saveBackupToFolder(): Promise<boolean> {
+  let folder: Directory;
+  try {
+    folder = await Directory.pickDirectoryAsync();
+  } catch (error) {
+    // The picker signals "the user backed out" by throwing, so this is the one place that has to
+    // tell a cancellation apart from a failure. Everything else here treats a throw as a failure.
+    if (!isPickerCancelled(error)) throw error;
+    return false;
+  }
+
+  const snapshot = await writeSnapshot();
+  await snapshot.copy(folder);
+  return true;
+}
+
+function isPickerCancelled(error: unknown): boolean {
+  const coded = error as { code?: unknown; message?: unknown } | null;
+  return (
+    coded?.code === "ERR_PICKER_CANCELLED" ||
+    // The code is derived from the native exception's class name, so a rename upstream would
+    // turn every cancellation into "the backup could not be created". The message is the belt.
+    /cancel/i.test(String(coded?.message ?? ""))
+  );
 }
 
 /**

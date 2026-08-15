@@ -37,9 +37,9 @@ app's private storage on your device**.
 
 ## Backups you make
 
-Settings offers **Export my data**, which writes that database to a file and hands it to your
-system's share sheet. Where it goes from there is entirely your choice: the app sends it nowhere
-and has no way to.
+Settings offers two ways to write that database to a file: **Share my backup** hands it to your
+system's share sheet, and **Save to a folder** writes it wherever you choose on the device. Where
+it goes from there is entirely your choice: the app sends it nowhere and has no way to.
 
 - **The file is not encrypted.** Anyone who opens it can read your training history. Keep it the
   way you would keep a personal photo — and think about it before putting it somewhere shared.
@@ -126,9 +126,10 @@ aventures, village, hauts faits, flamme, serment, avatar et réglages — est é
 
 ## Les sauvegardes que vous faites
 
-Les réglages proposent **Exporter mes données**, qui écrit cette base dans un fichier et le remet
-au partage de votre système. Ce qu'il devient ensuite ne dépend que de vous : l'application ne
-l'envoie nulle part, et n'en a aucun moyen.
+Les réglages proposent deux façons d'écrire cette base dans un fichier : **Partager ma sauvegarde**
+la remet au partage de votre système, **Enregistrer dans un dossier** l'écrit où vous voulez sur
+l'appareil. Ce qu'il devient ensuite ne dépend que de vous : l'application ne l'envoie nulle part,
+et n'en a aucun moyen.
 
 - **Ce fichier n'est pas chiffré.** Quiconque l'ouvre lit votre historique d'entraînement.
   Rangez-le comme vous rangeriez une photo personnelle — et réfléchissez-y à deux fois avant de

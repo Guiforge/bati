@@ -267,6 +267,15 @@ Four things this page did not anticipate, all worth remembering:
 - **Restore is offered in onboarding**, not just Settings — a new phone is the case that matters
   — and it cost nothing, because `hasFinishedOnboarding` lives inside the database being restored.
 
+**No "close the app" button on the restart screen, and the reason is measured.** React Native's
+`BackHandler.exitApp()` is a `finish()` on the activity, not a process kill — verified on a
+Fairphone 6, the pid is unchanged after the activity ends. Reopening would therefore resume the
+same JS context with the SQLite handle already closed, which is worse than a force-quit. A button
+that works needs either `expo-updates` (`reloadAsync()` rebuilds the module graph in-process, and
+would remove the restart entirely) or a native `System.exit(0)`. Neither is worth a dependency or
+a native module for an operation performed twice in an app's life, so the screen keeps its
+instruction. Revisit if a user ever reports being stuck on it.
+
 What is deliberately not solved: a process killed *between* the two renames leaves the database
 absent and the data in a `.bak` no code reads. Closing that means reconciling at module load in
 `db/client.ts`, before `openDatabaseSync` recreates an empty file — cheap, and worth doing only if

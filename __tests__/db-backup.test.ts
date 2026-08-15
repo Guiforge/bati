@@ -13,9 +13,8 @@ import { clientMock, createTestDb } from "./helpers/testDb";
  * - a zero-byte file is a *valid* SQLite database: it attaches, and `integrity_check` says "ok".
  *   Worse, `ATTACH` *creates* one when the path is free, so a candidate that vanished looks
  *   exactly like a candidate that was empty. `page_count` is the only thing that catches either,
- *   and it has to be read *after* `integrity_check`: on a garbage file it answers 0 on some
- *   SQLite builds and throws on others, so reading it first made four of the cases below depend
- *   on the driver — green here, red on CI.
+ *   and it is read *after* `integrity_check`, where a database is already known to be readable
+ *   and 0 pages can only mean "empty".
  * - zeroing bytes in the header's unused area does not make a file "corrupt" to SQLite. Damage
  *   has to land on a b-tree page for `integrity_check` to notice, which is why the corruption
  *   case below writes over page 4 rather than over an arbitrary offset.
@@ -239,6 +238,44 @@ describe("db/backup — validation rejects", () => {
 
     expect(await validateBackup(target)).toEqual({ ok: true });
     expect(await validateBackup(target)).toEqual({ ok: true });
+  });
+
+  /**
+   * The four cases above passed here and came back `unreadable` on CI, on the same driver and
+   * the same SQLite: the classifier reached the driver's message through `instanceof Error`, and
+   * jest gives the test realm its own `Error` constructor, so `cause` was silently dropped.
+   *
+   * A real driver cannot reproduce that — it depends on which realm built the object — so this
+   * feeds the classifier what a foreign realm looks like: the right shape, the wrong prototype.
+   * Reverting to `instanceof` fails this and nothing else.
+   */
+  test("a driver error from another realm classifies like a native one", async () => {
+    jest.resetModules();
+    jest.doMock("../db/client", () => ({
+      ...clientMock(t),
+      db: {
+        run: () => {
+          throw Object.assign(Object.create(null), {
+            message: "Failed to run the query 'ATTACH DATABASE ...'",
+            cause: Object.assign(Object.create(null), {
+              message: "file is not a database",
+              code: "SQLITE_NOTADB",
+            }),
+          });
+        },
+      },
+    }));
+
+    try {
+      const { validateBackup } = backupModule();
+      expect(await validateBackup(scratch("realm.db"))).toEqual({ ok: false, reason: "notSqlite" });
+    } finally {
+      // In a `finally` because a failed expectation throws: without it, the throwing stub above
+      // stays installed and takes the next test down with it, which is how a one-test regression
+      // reads as two.
+      jest.resetModules();
+      jest.doMock("../db/client", () => clientMock(t));
+    }
   });
 
   test("a path containing a quote, without breaking the SQL around it", async () => {

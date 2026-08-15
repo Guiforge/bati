@@ -243,8 +243,13 @@ Four things this page did not anticipate, all worth remembering:
   question that "no format to version" had quietly left open.
 - **`ATTACH` creates the file it cannot find**, so a staged copy that vanished is indistinguishable
   from one that was empty — both attach as a database SQLite invented on the spot. `page_count`
-  catches both, but only *after* `integrity_check`: on a garbage file it answers 0 on some SQLite
-  builds and throws on others, which made four rejection tests pass locally and fail on CI.
+  catches both, read after `integrity_check` so that 0 can only mean "empty".
+- **`instanceof Error` is not a safe way to read an error.** Drizzle wraps the driver error and
+  puts the only useful text on `cause`, and the classifier reached it through `instanceof` — which
+  is false whenever the object was built in another realm. Four rejection tests were green locally
+  and red on CI, on the same driver, the same SQLite and the same Node modules, because jest gives
+  the test realm its own `Error`. Duck-type the shape and walk the `cause` chain; match the driver
+  code (`SQLITE_NOTADB`) as well as the prose, which has changed before.
 - **`File.move(…, { overwrite: true })` is not atomic**, and the first implementation shipped
   believing it was. `expo-file-system` deletes the destination *before* attempting the rename, so
   overwriting the live database removes it first and leaves nothing if the rename fails. The swap

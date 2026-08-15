@@ -81,25 +81,46 @@ function knownMigrationTimes(): Set<number> {
 }
 
 /**
+ * Every message and driver code down the `cause` chain, lowercased into one string.
+ *
+ * Duck-typed rather than `instanceof Error`, which is the bug this replaced. Drizzle wraps the
+ * driver error, so the useful text ("file is not a database") sits on `cause` while the outer
+ * message only repeats the SQL — and an `instanceof` that answers false there discards the only
+ * half worth reading. It answers false more often than it looks: jest's sandbox gives the test
+ * realm its own `Error`, so four rejection tests classified correctly on one machine and
+ * degraded to `unreadable` on CI, on the same driver and the same SQLite. Expo's native bridge
+ * is the same hazard at runtime.
+ *
+ * The depth cap is for a `cause` that points back at its own error.
+ */
+function errorTrail(error: unknown): string {
+  const parts: string[] = [];
+  let current = error as { message?: unknown; code?: unknown; cause?: unknown } | null | undefined;
+
+  for (let depth = 0; current && depth < 5; depth++) {
+    if (typeof current.message === "string") parts.push(current.message);
+    // `SQLITE_NOTADB` and friends outlive the prose: SQLite's wording has changed before.
+    if (typeof current.code === "string") parts.push(current.code);
+    current = current.cause as typeof current;
+  }
+
+  return parts.join(" ").toLowerCase();
+}
+
+/**
  * Turns whatever SQLite threw into one of the five answers.
  *
  * It has to cope with the error arriving from *either* the ATTACH or the first read that follows:
  * SQLite opens an attached file lazily, so a text file is sometimes rejected on attach and
  * sometimes only when a page is actually needed. Classifying in one place rather than one per
  * step is what makes the outcome independent of that timing.
- *
- * Drizzle also wraps driver errors — the useful text ("file is not a database") sits on `cause`
- * while the outer message only repeats the SQL — so both levels are read.
  */
 function rejectionForError(error: unknown): BackupRejection {
-  const cause = error instanceof Error ? error.cause : undefined;
-  const message = [error, cause]
-    .map((candidate) => (candidate instanceof Error ? candidate.message : ""))
-    .join(" ")
-    .toLowerCase();
+  const trail = errorTrail(error);
 
-  if (message.includes("not a database")) return "notSqlite";
-  if (message.includes("malformed") || message.includes("corrupt")) return "corrupt";
+  if (trail.includes("not a database") || trail.includes("sqlite_notadb")) return "notSqlite";
+  // `sqlite_corrupt` matches on the second test, so it needs no clause of its own.
+  if (trail.includes("malformed") || trail.includes("corrupt")) return "corrupt";
   return "unreadable";
 }
 
@@ -120,10 +141,8 @@ async function inspectAttachedCandidate(): Promise<BackupCheck> {
   // as "a database, but not Bati's". Zero pages is the only trace left of that, and no real
   // backup has any: `VACUUM INTO` always writes at least the schema.
   //
-  // It runs *after* `integrity_check` on purpose, and moving it earlier broke four tests on CI
-  // while passing locally. `page_count` answers 0 for a garbage file on some SQLite builds and
-  // throws on others — the same lazy-open timing `rejectionForError` exists to neutralise. Only
-  // once integrity has confirmed a readable database does 0 mean "empty" and nothing else.
+  // It runs *after* `integrity_check` on purpose: a file SQLite cannot read has no meaningful
+  // page count, so 0 only means "empty" once integrity has confirmed a readable database.
   if ((await readPragma("page_count")) === 0) return { ok: false, reason: "unreadable" };
 
   if ((await readPragma("application_id")) !== BATI_APPLICATION_ID) {

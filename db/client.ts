@@ -60,7 +60,7 @@ const expoDb = singleton.expoDb;
  * A fatal JS error gives the app a single tick before the runtime tears it down, which is not
  * enough for an awaited insert to flush — and a crash log that loses exactly the crashes that
  * killed the app is worse than none. `src/crashLog.ts` uses `runSync` on this handle for that
- * path only. A function rather than the binding itself because `reopenDatabase` reassigns it.
+ * path only. A function rather than the binding itself so callers never capture a stale handle.
  */
 export function getRawDb() {
   return expoDb;
@@ -141,10 +141,40 @@ async function supportsAsyncTransactions(): Promise<boolean> {
   return asyncTransactions;
 }
 
+/**
+ * The one queue every statement that cannot share the connection has to pass through.
+ *
+ * SQLite refuses `ATTACH` and `VACUUM INTO` *inside* a transaction, and an async transaction on
+ * one JS thread is not a critical section: the runtime is free to run the export button's
+ * handler between two of its statements. Without this queue, a widget write in flight turns a
+ * perfectly good backup into "that file could not be opened" — and the failed `DETACH` that
+ * follows leaves the alias bound until the next relaunch.
+ *
+ * ponytail: one lock for the whole database, so a slow transaction blocks a backup and vice
+ * versa. Worth splitting only if a write ever gets long enough for the delay to be felt.
+ */
+let pending: Promise<unknown> = Promise.resolve();
+
+/**
+ * Runs `fn` once everything queued before it has settled. Never nest — the inner call would
+ * wait on the outer one, which is waiting on it.
+ */
+export function serializeOnDatabase<T>(fn: () => Promise<T>): Promise<T> {
+  const run = pending.then(fn, fn);
+  // The queue must survive a rejected caller, or one failed backup wedges every later write.
+  pending = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 /** Runs `fn` atomically, falling back to a plain call on runtimes without async transactions. */
-export async function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
-  if (!(await supportsAsyncTransactions())) {
-    return await fn(db as unknown as TransactionTx);
-  }
-  return await db.transaction(fn);
+export function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
+  return serializeOnDatabase(async () => {
+    if (!(await supportsAsyncTransactions())) {
+      return await fn(db as unknown as TransactionTx);
+    }
+    return await db.transaction(fn);
+  });
 }

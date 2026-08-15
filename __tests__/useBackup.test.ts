@@ -5,9 +5,8 @@ import { useRestoreStore } from "@/stores/restore";
 
 /**
  * The hook is where the safety promise lives, and the promise is about *order*: a backup is
- * validated before anything is copied, and the app only hands itself over to the swap once both
- * have succeeded. Nothing in the type system stops a future edit from taking the safety copy
- * first, or from starting a restore on a file that was rejected — so it is pinned here.
+ * validated before the app hands itself over to the swap. Nothing in the type system stops a
+ * future edit from starting a restore on a file that was rejected — so it is pinned here.
  *
  * Calls are recorded in one shared list rather than asserted per-mock, because the ordering
  * *between* them is the whole point; asserting each was called would pass on the broken version.
@@ -17,12 +16,14 @@ const mockCalls: string[] = [];
 let mockStagedPath: string | null = "/tmp/staged.db";
 let mockValidation: { ok: true } | { ok: false; reason: string } = { ok: true };
 let mockExportBehaviour: () => void = () => {};
-let mockSafetyCopyBehaviour: () => void = () => {};
+let mockValidateBehaviour: () => void = () => {};
+let mockStageGate: Promise<void> | null = null;
 
 jest.mock("@/db/backup", () => ({
-  // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
   validateBackup: jest.fn(async () => {
     mockCalls.push("validate");
+    await Promise.resolve();
+    mockValidateBehaviour();
     return mockValidation;
   }),
 }));
@@ -33,17 +34,13 @@ jest.mock("@/src/backupFiles", () => ({
     mockCalls.push("export");
     mockExportBehaviour();
   }),
-  // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
   stageBackupForImport: jest.fn(async () => {
     mockCalls.push("stage");
+    // The picker is the one await long enough for a second press to land inside it.
+    if (mockStageGate) await mockStageGate;
     return mockStagedPath;
   }),
   discardStagedImport: jest.fn(() => mockCalls.push("discard")),
-  // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
-  takeSafetyCopy: jest.fn(async () => {
-    mockCalls.push("safetyCopy");
-    mockSafetyCopyBehaviour();
-  }),
 }));
 
 const mockShownErrors: string[] = [];
@@ -72,17 +69,18 @@ beforeEach(() => {
   mockStagedPath = "/tmp/staged.db";
   mockValidation = { ok: true };
   mockExportBehaviour = () => {};
-  mockSafetyCopyBehaviour = () => {};
+  mockValidateBehaviour = () => {};
+  mockStageGate = null;
   useRestoreStore.setState({ phase: "idle" });
 });
 
 describe("useBackup — import", () => {
-  test("validates before copying anything, then hands over to the swap", async () => {
+  test("validates before handing over to the swap", async () => {
     const { result } = await renderHook(() => useBackup());
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "validate", "safetyCopy"]);
+    expect(mockCalls).toEqual(["stage", "validate"]);
     expect(useRestoreStore.getState().phase).toBe("restoring");
   });
 
@@ -93,9 +91,31 @@ describe("useBackup — import", () => {
     await act(async () => result.current.runImport());
 
     expect(mockCalls).toEqual(["stage", "validate", "discard"]);
-    expect(mockCalls).not.toContain("safetyCopy");
     expect(useRestoreStore.getState().phase).toBe("idle");
     expect(mockShownErrors).toEqual(["backup.rejected.notBati"]);
+  });
+
+  /**
+   * Both imports share one staged filename, so a second run started while the first is still in
+   * the picker replaces the file the first has already validated — and the swap then commits a
+   * database nothing checked. `busy` alone cannot stop it: two presses in the same frame both
+   * read the state as it was before either render.
+   */
+  test("a second press while the picker is open is ignored, not staged twice", async () => {
+    let openPicker: () => void = () => {};
+    mockStageGate = new Promise<void>((resolve) => {
+      openPicker = resolve;
+    });
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => {
+      result.current.runImport();
+      result.current.runImport();
+      openPicker();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(mockCalls).toEqual(["stage", "validate"]);
   });
 
   test("the rejection reason reaches the user rather than a generic failure", async () => {
@@ -119,14 +139,14 @@ describe("useBackup — import", () => {
   });
 
   test("an unexpected failure discards the staged file instead of leaving it behind", async () => {
-    mockSafetyCopyBehaviour = () => {
+    mockValidateBehaviour = () => {
       throw new Error("no space left on device");
     };
     const { result } = await renderHook(() => useBackup());
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "validate", "safetyCopy", "discard"]);
+    expect(mockCalls).toEqual(["stage", "validate", "discard"]);
     expect(useRestoreStore.getState().phase).toBe("idle");
     expect(mockShownErrors).toEqual(["backup.importFailed"]);
     expect(mockReportedErrors).toEqual(["backup.import"]);

@@ -56,8 +56,8 @@ Two SQLite header fields, written by `stampDatabaseIdentity()` and **verified to
 > **Changed from the approved design.** That design proposed sniffing for table names, and
 > resolved `SCHEMA_VERSION` as an open question. Both are settled by these two pragmas — and the
 > table-sniffing would have been *wrong*: a zero-byte file is a valid SQLite database that
-> attaches cleanly and whose `integrity_check` returns "ok". Only `application_id` separates it
-> from a real backup.
+> attaches cleanly and whose `integrity_check` returns "ok". `page_count` and `application_id`
+> are what separate it from a real backup.
 
 They are stamped on every launch from `DatabaseProvider`, not from a SQL migration, so
 `SCHEMA_VERSION` keeps one source — [`db/schemaVersion.ts`](../../../db/schemaVersion.ts), split
@@ -77,13 +77,19 @@ type BackupRejection = "notSqlite" | "corrupt" | "notBati" | "incompatibleVersio
 
 Order matters, cheapest first, and each step is pinned by a test:
 
-1. `integrity_check` — damaged file → `corrupt`
-2. `application_id` — not ours, **including the empty-file case** → `notBati`
-3. `user_version` — another schema generation → `incompatibleVersion`
-4. newest `created_at` in `__drizzle_migrations` must be a timestamp this build ships →
+1. `page_count` — **an empty or vanished candidate** → `unreadable`
+2. `integrity_check` — damaged file → `corrupt`
+3. `application_id` — not ours → `notBati`
+4. `user_version` — another schema generation → `incompatibleVersion`
+5. newest `created_at` in `__drizzle_migrations` must be a timestamp this build ships →
    `incompatibleVersion`
 
-Step 4 checks *membership*, not "less than the maximum". A divergent history whose timestamps
+Step 1 exists because `ATTACH` *creates* the file when the path is free: a staged copy that
+disappeared attaches as a brand-new empty database, and every later check would then describe a
+file SQLite invented a moment ago — reporting "a database, but not one Bati wrote" for a file
+that is not there. No real backup has zero pages; `VACUUM INTO` always writes at least the schema.
+
+Step 5 checks *membership*, not "less than the maximum". A divergent history whose timestamps
 merely happen to be lower is rejected too. It deliberately stops there rather than comparing
 hashes: the runner that will process the file afterwards works by timestamp
 ([`db/migrate.ts`](../../../db/migrate.ts)), and validation that is stricter than the thing it
@@ -99,20 +105,28 @@ when run with everything else. Classifying once makes the verdict independent of
 ```text
 pick        → File.pickFileAsync                    nothing touched
 stage       → copy next to the database             a new file, our name
-validate    → ATTACH + 4 checks                     on failure: delete staged, app untouched
-safety copy → VACUUM INTO bati.v3.db.bak            the original is still in place
+validate    → ATTACH + 5 checks                     on failure: delete staged, app untouched
 ──────────── store flips to "restoring"; React unmounts the app ────────────
-commit      → close handle → drop sidecars → move staged over the database
+commit      → close handle → drop sidecars → rename live db to .bak → move staged in
 ```
 
 Nothing destructive happens before validation passes. Then:
 
-> **Changed from the approved design.** That design renamed the live database to `.bak` and *then*
-> moved the staged file into place, which leaves a window where the database path points at
-> nothing. Here the safety copy is taken with `VACUUM INTO` — a copy, not a rename — so the
-> original never leaves its path, and the final `move(…, { overwrite: true })` replaces a complete
-> file with a complete file. This removes the need for phase markers and a recovery protocol: the
-> only failure window the original design had is simply not created.
+> **Changed twice, and back to the approved design.** The first implementation replaced the
+> rename-then-move with a `VACUUM INTO` safety copy plus `move(…, { overwrite: true })`, on the
+> reasoning that a copy leaves the original at its path and so opens no failure window. The
+> reasoning was wrong about what `overwrite` does: expo-file-system's
+> `CopyMoveStrategy.LocalFile.prepareAsDestination` calls `deleteRecursively()` on the destination
+> *before* it attempts the rename. The live database is therefore already gone when the rename is
+> tried, and if it and its NIO fallback both fail there is nothing left — while the blocking
+> screen says nothing was replaced.
+>
+> So the rename is back, and it is what closes the window rather than what opens it: the old file
+> is moved aside to `.bak` under a free name, the staged file is moved into the now-free real
+> name, and a failure there moves `.bak` straight back. The window the original design worried
+> about is real but recoverable in-process, which is why it still needs no phase markers on disk.
+> The rename also *is* the safety copy, so `VACUUM INTO` is left with one caller (export) and the
+> `.bak` stops being a file no code ever reads.
 
 **Sidecars are part of the database.** `expo-sqlite`'s own `deleteDatabase` removes the `.db` and
 nothing else (verified in `SQLiteModule.kt`), so `-journal`/`-wal`/`-shm` are dropped explicitly
@@ -127,11 +141,16 @@ lost year. No UI restores it in this scope.
 ## Why a restart, and how the ordering is guaranteed
 
 The SQLite handle is opened at module load, and replacing a file under a live handle is undefined
-behaviour, so the handle closes first — after which every query throws. Writing the
-`reopenDatabase()` that `db/client.ts` name-drops would mean reassigning the singleton, remounting
-the tree, and purging Zustand stores holding state derived from the old database, with
-`getRawDb()` still handed to the crash logger. A stale native handle retained anywhere is a native
-crash. Five seconds of friction on a once-a-year operation is the cheaper trade.
+behaviour, so the handle closes first — after which every query throws. Writing a
+`reopenDatabase()` would mean reassigning the singleton, remounting the tree, and purging Zustand
+stores holding state derived from the old database, with `getRawDb()` still handed to the crash
+logger. A stale native handle retained anywhere is a native crash. Five seconds of friction on a
+once-a-year operation is the cheaper trade.
+
+That trade is also why **`failed` is a terminal phase with no way back to `idle`**. The handle is
+closed by then whether the swap succeeded or rolled back, so returning to the app would render a
+tree whose every query throws. The copy for that phase asks for a relaunch rather than offering a
+retry the code cannot honour.
 
 The ordering problem — a component querying the database between "start restoring" and "handle
 closed" — is solved structurally rather than with a maintenance flag. `stores/restore.ts` holds
@@ -182,7 +201,7 @@ These are native modules: a fresh dev build is required (`npx expo run:android`)
 | --- | --- | --- |
 | `db/backup.ts` | identity, snapshot, validation — SQL only | 100% lines/functions |
 | `src/backupFiles.ts` | pick, share, stage, swap — the native edge | by reading |
-| `hooks/useBackup.ts` | orchestration + user-facing errors | — |
+| `hooks/useBackup.ts` | orchestration + user-facing errors | ordering, re-entry, errors |
 | `stores/restore.ts` | the phase the provider watches | — |
 
 `Sharing` and the picker never appear in `db/backup.ts`, which is why the native boundary needs no
@@ -190,13 +209,16 @@ mocking: the logic does not cross it.
 
 ## Testing
 
-`__tests__/db-backup.test.ts`, 17 cases on better-sqlite3 — which supports `VACUUM INTO` and
+`__tests__/db-backup.test.ts`, 20 cases on better-sqlite3 — which supports `VACUUM INTO` and
 `ATTACH`, so the real export and validation paths run rather than stand-ins.
 
-Every rejection was probed against a real damaged file before being written down, and two results
-changed the design:
+Every rejection was probed against a real damaged file before being written down, and three
+results changed the design:
 
-- **an empty file passes `integrity_check`** — hence the `application_id` check
+- **an empty file passes `integrity_check`** — hence the identity checks
+- **`ATTACH` creates the file it cannot find**, so "the candidate vanished" and "the candidate was
+  empty" are the same observation — hence `page_count` ahead of both. The original test only
+  covered a missing *parent directory*, which fails at the OS layer and so hid this entirely.
 - **zeroing bytes in the header's unused area is not "corrupt" to SQLite** — damage has to land on
   a b-tree page, so the corruption case writes over page 4. A naive corruption test would have
   been green while asserting nothing.
@@ -212,6 +234,13 @@ Import replays the migration runner against a foreign database, and `db/migrate.
 "the riskiest code in the app and the least covered". This feature is the first thing to exercise
 that path deliberately.
 
-Recovery from an interrupted process is bounded rather than solved: the safety copy exists and the
-database path always holds a complete file, but there is no startup reconciliation and no in-app
-undo. Both are cheap to add on top of what is here if a real report ever needs them.
+Recovery from an interrupted process is bounded rather than solved: a failed swap rolls back
+in-process and the `.bak` survives it, but there is no startup reconciliation for a process killed
+*during* those two renames, and no in-app undo afterwards. Both are cheap to add on top of what is
+here if a real report ever needs them.
+
+**One lock covers the whole database.** `ATTACH` and `VACUUM INTO` are illegal inside a
+transaction, and an async transaction on a single JS thread is not a critical section — the export
+button's handler can run between two of its statements. `serializeOnDatabase()` in `db/client.ts`
+queues transactions and backup operations behind one another, which is coarser than it needs to be
+and cheap enough to stay that way until a write is slow enough to be felt.

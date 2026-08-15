@@ -735,7 +735,7 @@
     "exportFailed": "The backup could not be created",
     "importFailed": "That file could not be read",
     "confirmTitle": "Restore this backup?",
-    "confirmMessage": "Everything on this device — history, village, oaths — is replaced by the backup. Your current data is kept as a recovery copy, but only the backup will be visible.",
+    "confirmMessage": "Everything on this device — history, village, oaths — is replaced by the backup. Your current data is kept on the device as a recovery copy, but only the backup will be visible.",
     "confirmCta": "Restore",
     "onboardingCta": "I already have a backup",
     "restoreTitle": "Restoring",
@@ -743,7 +743,7 @@
     "phase": {
       "restoring": "Putting your data in place. Do not close Bati.",
       "restartRequired": "Done. Close Bati and open it again to continue.",
-      "failed": "Nothing was replaced — your data is untouched. Try again, or pick another file."
+      "failed": "Nothing was replaced — your data is untouched. Close Bati and open it again, then try another file."
     },
     "rejected": {
       "notSqlite": "That file is not a Bati backup.",

@@ -1,31 +1,33 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
 import { validateBackup } from "@/db/backup";
-import {
-  discardStagedImport,
-  exportBackup,
-  stageBackupForImport,
-  takeSafetyCopy,
-} from "@/src/backupFiles";
+import { discardStagedImport, exportBackup, stageBackupForImport } from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
 
 /**
  * The two buttons' worth of orchestration, shared by Settings and onboarding.
  *
- * Nothing destructive happens here. The staged file is validated and the safety copy is taken,
- * and only then does this hand over to DatabaseProvider by moving the store to `restoring` —
- * so the swap always happens after the tree is gone. See src/backupFiles.ts `commitRestore`.
+ * Nothing destructive happens here. The staged file is validated, and only then does this hand
+ * over to DatabaseProvider by moving the store to `restoring` — so the swap always happens
+ * after the tree is gone. See src/backupFiles.ts `commitRestore`, which takes the safety copy
+ * as part of the swap rather than ahead of it.
  */
 export function useBackup() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const beginRestore = useRestoreStore((state) => state.beginRestore);
   const [busy, setBusy] = useState(false);
+  // `busy` cannot guard re-entry: two presses in the same frame both read the state as it was
+  // before either render. Two imports racing share one staged filename, so the second overwrites
+  // the file the first has already validated — and the swap commits something nobody checked.
+  const running = useRef(false);
 
   const runExport = useCallback(async () => {
+    if (running.current) return;
+    running.current = true;
     setBusy(true);
     try {
       await exportBackup();
@@ -34,11 +36,14 @@ export function useBackup() {
       reportError("backup.export", error);
       showError(t("backup.exportFailed"));
     } finally {
+      running.current = false;
       setBusy(false);
     }
   }, [showError, showSuccess, t]);
 
   const runImport = useCallback(async () => {
+    if (running.current) return;
+    running.current = true;
     setBusy(true);
     try {
       const staged = await stageBackupForImport();
@@ -51,13 +56,13 @@ export function useBackup() {
         return;
       }
 
-      await takeSafetyCopy();
       beginRestore();
     } catch (error) {
       reportError("backup.import", error);
       discardStagedImport();
       showError(t("backup.importFailed"));
     } finally {
+      running.current = false;
       setBusy(false);
     }
   }, [beginRestore, showError, t]);

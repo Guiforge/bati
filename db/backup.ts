@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 
 import migrations from "../drizzle/migrations";
-import { db } from "./client";
+import { db, serializeOnDatabase } from "./client";
 import { sqlString } from "./migrate";
 import { SCHEMA_VERSION } from "./schemaVersion";
 
@@ -10,7 +10,11 @@ import { SCHEMA_VERSION } from "./schemaVersion";
  *
  * Everything here runs on the connection that is already open, which is what keeps it testable
  * on better-sqlite3: no second database handle, no per-platform file opener. The disk half — the
- * picker, the copy, the swap — lives in src/restoreFiles.ts.
+ * picker, the copy, the swap — lives in src/backupFiles.ts.
+ *
+ * Sharing the connection has one cost, and `serializeOnDatabase` is what pays it: `ATTACH` and
+ * `VACUUM INTO` are both illegal inside a transaction, so neither may start while a write is in
+ * flight. Both entry points below queue behind every transaction, and vice versa.
  */
 
 /**
@@ -43,10 +47,13 @@ export type BackupCheck = { ok: true } | { ok: false; reason: BackupRejection };
 /**
  * Stamps the identity pragmas onto the live database.
  *
- * Called on every launch from `ensureMigrations`, not from a SQL migration, so that
- * `SCHEMA_VERSION` keeps a single source in TypeScript instead of being copied into a migration
- * that would have to be remembered on the next bump. Both pragmas are idempotent writes and
- * survive `VACUUM INTO`, which is what lets a snapshot identify itself later.
+ * Called from `DatabaseProvider` right after `ensureMigrations`, not from a SQL migration, so
+ * that `SCHEMA_VERSION` keeps a single source in TypeScript instead of being copied into a
+ * migration that would have to be remembered on the next bump. Both pragmas are idempotent
+ * writes and survive `VACUUM INTO`, which is what lets a snapshot identify itself later.
+ *
+ * The widget's headless task runs `ensureMigrations` without this, which is fine only because
+ * a database that reached a widget has already been through the provider at least once.
  */
 export async function stampDatabaseIdentity(): Promise<void> {
   await db.run(sql.raw(`PRAGMA application_id = ${BATI_APPLICATION_ID}`));
@@ -60,8 +67,10 @@ export async function stampDatabaseIdentity(): Promise<void> {
  * taken just before a restore. `VACUUM INTO` refuses a destination that already exists, so the
  * caller deletes it first.
  */
-export async function snapshotDatabaseTo(destinationPath: string): Promise<void> {
-  await db.run(sql.raw(`VACUUM INTO ${sqlString(destinationPath)}`));
+export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
+  return serializeOnDatabase(async () => {
+    await db.run(sql.raw(`VACUUM INTO ${sqlString(destinationPath)}`));
+  });
 }
 
 /** Timestamps of every migration this build ships, for the compatibility check below. */
@@ -100,6 +109,12 @@ async function readPragma(name: string): Promise<number | null> {
 }
 
 async function inspectAttachedCandidate(): Promise<BackupCheck> {
+  // `ATTACH` creates the file when it is missing, so a candidate that vanished between the copy
+  // and here attaches happily as an empty database — and every check below would then pass it
+  // off as "a database, but not Bati's". Zero pages is the only trace left of that, and no real
+  // backup has any: `VACUUM INTO` always writes at least the schema.
+  if ((await readPragma("page_count")) === 0) return { ok: false, reason: "unreadable" };
+
   const integrity = await db.get<Record<string, unknown>>(
     sql.raw(`PRAGMA ${CANDIDATE}.integrity_check`),
   );
@@ -132,26 +147,36 @@ async function inspectAttachedCandidate(): Promise<BackupCheck> {
  * Decides whether `path` is a backup this build can adopt. Never throws for a bad file — an
  * unusable backup is an answer, not an exception. Programming errors still surface normally.
  */
-export async function validateBackup(path: string): Promise<BackupCheck> {
-  let attached = false;
+export function validateBackup(path: string): Promise<BackupCheck> {
+  return serializeOnDatabase(async () => {
+    let attached = false;
 
-  try {
-    await db.run(sql.raw(`ATTACH DATABASE ${sqlString(path)} AS ${CANDIDATE}`));
-    attached = true;
-    return await inspectAttachedCandidate();
-  } catch (error) {
-    return { ok: false, reason: rejectionForError(error) };
-  } finally {
-    if (attached) {
-      try {
-        // Leaving the alias bound would make the next validation fail on a name collision.
-        await db.run(sql.raw(`DETACH DATABASE ${CANDIDATE}`));
-      } catch {
-        // Deliberate: a failed detach must not overwrite the verdict we already have. The next
-        // validation would surface it anyway, as a collision on this alias.
-      }
-      // `try`/`catch` rather than `.catch()`: db.run is a promise on expo-sqlite but returns its
-      // result directly on better-sqlite3, so the method does not exist under the test driver.
+    // An alias left bound by an earlier run — the detach below is allowed to fail — would make
+    // every later validation fail on a collision, and stay that way until the app relaunched.
+    // Clearing it first is what keeps that from being permanent.
+    await detachCandidate();
+
+    try {
+      await db.run(sql.raw(`ATTACH DATABASE ${sqlString(path)} AS ${CANDIDATE}`));
+      attached = true;
+      return await inspectAttachedCandidate();
+    } catch (error) {
+      return { ok: false, reason: rejectionForError(error) };
+    } finally {
+      if (attached) await detachCandidate();
     }
+  });
+}
+
+/** Unbinds the alias, tolerating both "was never bound" and a refusal we cannot act on here. */
+async function detachCandidate(): Promise<void> {
+  try {
+    await db.run(sql.raw(`DETACH DATABASE ${CANDIDATE}`));
+  } catch {
+    // Deliberate: a failed detach must not overwrite the verdict the caller already has, and
+    // "no such database" is the normal answer on the pre-emptive call above. The next
+    // validation clears it either way.
   }
+  // `try`/`catch` rather than `.catch()`: db.run is a promise on expo-sqlite but returns its
+  // result directly on better-sqlite3, so the method does not exist under the test driver.
 }

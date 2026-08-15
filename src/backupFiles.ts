@@ -19,7 +19,10 @@ const DB_DIR = defaultDatabaseDirectory as string;
 /** The picked file, copied next to the database so it lands on the same filesystem. */
 const IMPORT_NAME = "bati-import.tmp.db";
 
-/** The database as it was just before the last restore. Overwritten by the next one. */
+/**
+ * The database as it was just before the last restore, and the rollback source if the swap
+ * fails. It *is* the previous file, renamed rather than copied — see `commitRestore`.
+ */
 const SAFETY_NAME = `${DB_NAME}.bak`;
 
 /** The snapshot handed to the share sheet. One at a time, replaced on the next export. */
@@ -56,15 +59,20 @@ export async function exportBackup(): Promise<void> {
     if (entry.name.startsWith(EXPORT_PREFIX)) entry.delete();
   }
 
+  // Checked before the snapshot is written: without a share sheet the file would land in
+  // app-private storage the user has no way to reach, and reporting "backup ready" for a file
+  // nobody can open is worse than reporting the failure.
+  if (!(await Sharing.isAvailableAsync())) {
+    throw new Error("No share sheet available — the backup would be unreachable");
+  }
+
   const name = exportFileName(new Date());
   await snapshotDatabaseTo(pathIn(name));
 
-  if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(`file://${pathIn(name)}`, {
-      mimeType: "application/octet-stream",
-      dialogTitle: name,
-    });
-  }
+  await Sharing.shareAsync(`file://${pathIn(name)}`, {
+    mimeType: "application/octet-stream",
+    dialogTitle: name,
+  });
 }
 
 /**
@@ -90,33 +98,24 @@ export function discardStagedImport(): void {
 }
 
 /**
- * Takes the safety copy, from the live connection, before anything is replaced.
- *
- * `VACUUM INTO` rather than a file copy: one consistent statement that does not care what state
- * the journal is in. It also has to run while the database is still open, which is why it is a
- * step of its own rather than part of the swap.
- */
-export async function takeSafetyCopy(): Promise<void> {
-  deleteIfPresent(SAFETY_NAME);
-  await snapshotDatabaseTo(pathIn(SAFETY_NAME));
-}
-
-/**
  * Replaces the database with the staged import. Destructive, and last for a reason.
  *
  * The order matters more than anything else in this file:
  *
- * 1. the caller has already validated the staged file and taken the safety copy;
+ * 1. the caller has already validated the staged file;
  * 2. the caller has already shown the blocking screen, so React has unmounted every consumer
  *    and nothing is left to query a database that is about to close;
  * 3. the handle closes;
  * 4. the journal sidecars go, because they describe the *old* file — leaving one behind lets
  *    SQLite roll it back into the new database on the next launch, which corrupts it;
- * 5. the staged file moves into place, overwriting in one step, so the database path never
- *    stops pointing at a complete file.
+ * 5. the old database is renamed aside to `.bak` — that rename *is* the safety copy, so the
+ *    file the hero had is never deleted, only moved;
+ * 6. the staged file takes the now-free name.
  *
- * If the move fails, the original is still in place and the app restarts unchanged. If it
- * succeeds, the previous database is still there as `.bak`.
+ * Renaming aside rather than overwriting in place is the whole reason for step 5. `File.move`
+ * with `overwrite` deletes the destination *before* it attempts the rename, so a failure there
+ * would leave no database at all — while this screen tells the hero nothing was replaced. With
+ * the old file parked under another name, a failed step 6 can put it straight back.
  */
 export async function commitRestore(): Promise<void> {
   await closeDatabase();
@@ -125,5 +124,17 @@ export async function commitRestore(): Promise<void> {
     deleteIfPresent(`${DB_NAME}${suffix}`);
   }
 
-  await fileIn(IMPORT_NAME).move(fileIn(DB_NAME), { overwrite: true });
+  // Only the previous restore's `.bak` is expendable here; the live database never is.
+  deleteIfPresent(SAFETY_NAME);
+  const parkedAside = fileIn(DB_NAME).exists;
+  if (parkedAside) await fileIn(DB_NAME).move(fileIn(SAFETY_NAME));
+
+  try {
+    await fileIn(IMPORT_NAME).move(fileIn(DB_NAME));
+  } catch (error) {
+    // `overwrite` here because a half-finished move may have left a partial file under the
+    // real name, and a partial import is exactly what must not survive this.
+    if (parkedAside) await fileIn(SAFETY_NAME).move(fileIn(DB_NAME), { overwrite: true });
+    throw error;
+  }
 }

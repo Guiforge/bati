@@ -63,6 +63,9 @@ export function clientMock(t: { db: unknown }) {
     db: t.db,
     schema: require("../../db/schema"),
     transactionOrFallback: <T>(fn: (tx: never) => Promise<T>) => fn(t.db as never),
+    // The real one queues; here there is nothing to queue behind, and a stub keeps a test
+    // failure inside the assertion that caused it rather than one tick later.
+    serializeOnDatabase: <T>(fn: () => Promise<T>) => fn(),
   };
 }
 

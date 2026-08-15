@@ -11,7 +11,9 @@ import { clientMock, createTestDb } from "./helpers/testDb";
  * Two of them are counter-intuitive and are the reason the checks run in this order:
  *
  * - a zero-byte file is a *valid* SQLite database: it attaches, and `integrity_check` says "ok".
- *   Only `application_id` tells it apart from a real backup.
+ *   Worse, `ATTACH` *creates* one when the path is free, so a candidate that vanished looks
+ *   exactly like a candidate that was empty. `page_count` is the only thing that catches either,
+ *   which is why it is checked before anything that would describe the file as somebody else's.
  * - zeroing bytes in the header's unused area does not make a file "corrupt" to SQLite. Damage
  *   has to land on a b-tree page for `integrity_check` to notice, which is why the corruption
  *   case below writes over page 4 rather than over an arbitrary offset.
@@ -160,8 +162,8 @@ describe("db/backup — validation rejects", () => {
     ).toBe("corrupt");
   });
 
-  test("an empty file — valid SQLite, and the reason application_id is checked at all", async () => {
-    expect(await rejectionFor("empty.db", (p) => fs.writeFileSync(p, ""))).toBe("notBati");
+  test("an empty file — valid SQLite, and the reason page_count is checked at all", async () => {
+    expect(await rejectionFor("empty.db", (p) => fs.writeFileSync(p, ""))).toBe("unreadable");
   });
 
   test("somebody else's database", async () => {
@@ -216,6 +218,25 @@ describe("db/backup — validation rejects", () => {
     const { validateBackup } = backupModule();
     const result = await validateBackup(path.join(dir, "nested", "missing.db"));
     expect(result).toEqual({ ok: false, reason: "unreadable" });
+  });
+
+  /**
+   * The case above only fails because the *parent directory* is missing. In a writable one —
+   * which is where the staged import lives — `ATTACH` happily creates the file it was asked to
+   * open, and every later check then describes a database SQLite invented a moment ago.
+   */
+  test("a candidate that vanished from a writable directory, rather than 'not Bati's'", async () => {
+    const { validateBackup } = backupModule();
+    const result = await validateBackup(scratch("vanished.db"));
+    expect(result).toEqual({ ok: false, reason: "unreadable" });
+  });
+
+  test("two validations in a row, so a bound alias never outlives the first", async () => {
+    const { validateBackup } = backupModule();
+    const target = await makeValidBackup("twice.db");
+
+    expect(await validateBackup(target)).toEqual({ ok: true });
+    expect(await validateBackup(target)).toEqual({ ok: true });
   });
 
   test("a path containing a quote, without breaking the SQL around it", async () => {

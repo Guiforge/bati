@@ -105,8 +105,9 @@ export default function Presentation() {
             textDecorationLine="underline"
             style={{ textAlign: "center" }}
             opacity={busy ? 0.5 : 1}
-            disabled={busy}
-            onPress={runImport}
+            // `disabled` on a Text is an accessibility flag and does not stop `onPress` — the
+            // handler has to be the thing that goes away. useBackup guards re-entry too.
+            onPress={busy ? undefined : runImport}
           >
             {t("backup.onboardingCta")}
           </Text>

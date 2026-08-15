@@ -735,7 +735,7 @@
     "exportFailed": "La sauvegarde n'a pas pu être créée",
     "importFailed": "Ce fichier n'a pas pu être lu",
     "confirmTitle": "Restaurer cette sauvegarde ?",
-    "confirmMessage": "Tout ce qui est sur cet appareil — historique, village, serments — est remplacé par la sauvegarde. Tes données actuelles sont conservées en copie de secours, mais seule la sauvegarde sera visible.",
+    "confirmMessage": "Tout ce qui est sur cet appareil — historique, village, serments — est remplacé par la sauvegarde. Tes données actuelles sont conservées sur l'appareil en copie de secours, mais seule la sauvegarde sera visible.",
     "confirmCta": "Restaurer",
     "onboardingCta": "J'ai déjà une sauvegarde",
     "restoreTitle": "Restauration",
@@ -743,7 +743,7 @@
     "phase": {
       "restoring": "Mise en place de tes données. Ne ferme pas Bati.",
       "restartRequired": "C'est fait. Ferme Bati et rouvre-le pour continuer.",
-      "failed": "Rien n'a été remplacé — tes données sont intactes. Réessaie, ou choisis un autre fichier."
+      "failed": "Rien n'a été remplacé — tes données sont intactes. Ferme Bati et rouvre-le, puis essaie un autre fichier."
     },
     "rejected": {
       "notSqlite": "Ce fichier n'est pas une sauvegarde Bati.",

@@ -113,6 +113,28 @@ describe("db/backup — validation accepts", () => {
     expect(await validateBackup(first)).toEqual({ ok: true });
     expect(await validateBackup(second)).toEqual({ ok: true });
   });
+
+  /**
+   * A backup from an *earlier* release of the same schema generation — fewer migrations than this
+   * build ships. It is the whole point of using the migration chain as the format version: the
+   * runner catches the file up on the next launch, so an old backup is nominal, not an error.
+   *
+   * The mirror of "a backup whose newest migration this build has never heard of", and the case
+   * that silently disappears if membership is ever tightened to "equals the maximum" — every
+   * backup older than the current release would start being rejected, with nothing to say so.
+   */
+  test("a backup from an earlier release, missing migrations this build ships", async () => {
+    const { validateBackup } = backupModule();
+    const target = await makeValidBackup("earlier-release.db");
+
+    const older = new Database(target);
+    older.exec(
+      "DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)",
+    );
+    older.close();
+
+    expect(await validateBackup(target)).toEqual({ ok: true });
+  });
 });
 
 describe("db/backup — validation rejects", () => {
@@ -201,6 +223,23 @@ describe("db/backup — validation rejects", () => {
         ahead.close();
       }),
     ).toBe("incompatibleVersion");
+  });
+
+  /**
+   * The bookkeeping table gone rather than empty. A hand-edited or half-restored file reaches the
+   * same read, and the answer has to be a verdict rather than a crash — `validateBackup` promises
+   * never to throw for a bad file.
+   */
+  test("a Bati backup whose migrations table has been dropped", async () => {
+    expect(
+      await rejectionFor("no-table.db", async (p) => {
+        const source = await makeValidBackup("no-table-source.db");
+        fs.copyFileSync(source, p);
+        const stripped = new Database(p);
+        stripped.exec("DROP TABLE __drizzle_migrations");
+        stripped.close();
+      }),
+    ).toBe("unreadable");
   });
 
   test("a backup with no migration history at all", async () => {

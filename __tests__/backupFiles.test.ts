@@ -48,7 +48,7 @@ jest.mock("expo-file-system", () => {
     }
 
     // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
-    async copy(destination: File | Directory) {
+    async copy(destination: File | Directory, options?: { overwrite?: boolean }) {
       // Copying into a *directory* keeps this file's name, which is the whole reason
       // `saveBackupToFolder` can hand the picked folder straight to `copy`.
       const target =
@@ -56,6 +56,14 @@ jest.mock("expo-file-system", () => {
           ? `${strip(destination.uri)}/${this.name}`
           : destination.path;
       ops.push(`copy ${this.name} -> ${target}`);
+
+      // The real one rejects with "Destination already exists" rather than overwriting. This
+      // mock used to overwrite silently, which is exactly why the second save into the same
+      // folder on the same day reached a device before it reached a test.
+      if (disk.has(target) && !options?.overwrite) {
+        throw new Error(`Destination already exists: ${target}`);
+      }
+
       disk.set(target, disk.get(this.path) ?? "");
     }
 
@@ -345,6 +353,25 @@ describe("saveBackupToFolder", () => {
     await saveBackupToFolder();
 
     expect(fs.__disk.get(at(mockDbName))).toBe("the hero's year");
+  });
+
+  /**
+   * Snapshots are named by the day, so saving twice into the same folder aims at a name that is
+   * already taken — and the destination refuses rather than overwriting. It reached a device
+   * before it reached a test, because this file's `copy` used to overwrite in silence.
+   *
+   * Replacing is the right answer: the file being replaced is this app's own backup, from the
+   * same day, under a name only this app writes.
+   */
+  test("saving twice into the same folder replaces the day's file", async () => {
+    const folder = new fs.Directory("file:///sdcard/Documents");
+    fs.Directory.pickDirectoryAsync.mockResolvedValue(folder);
+
+    expect(await saveBackupToFolder()).toBe(true);
+    expect(await saveBackupToFolder()).toBe(true);
+
+    const saved = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/"));
+    expect(saved).toHaveLength(1);
   });
 });
 

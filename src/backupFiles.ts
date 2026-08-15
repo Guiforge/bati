@@ -104,7 +104,12 @@ export async function saveBackupToFolder(): Promise<boolean> {
   }
 
   const snapshot = await writeSnapshot();
-  await snapshot.copy(folder);
+  // Snapshots are named by the day, so a second save into the same folder aims at a name that is
+  // already taken and the copy refuses. Replacing is what the hero means by saving again: the
+  // file under that name is this app's own backup, from the same day, under a name only this app
+  // writes. Without the flag they get "the backup could not be created" for a folder they picked
+  // precisely because last time worked.
+  await snapshot.copy(folder, { overwrite: true });
   return true;
 }
 

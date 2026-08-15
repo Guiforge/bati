@@ -1,0 +1,9 @@
+- Ta chronique voyage enfin : Réglages → Sauvegarde. « Partager ma
+  sauvegarde » remet ta base au partage du système, « Enregistrer un
+  fichier » l'écrit dans le dossier de ton choix. Un seul fichier, ton
+  année entière dedans, chiffré nulle part et envoyé nulle part.
+- « Restaurer une sauvegarde » remplace tout par ce fichier — proposé
+  aussi à l'entrée du village, pour un nouveau téléphone. La base que tu
+  avais est gardée sur l'appareil en copie de secours.
+- Un fichier qui n'est pas de Bati, endommagé, ou d'une version que
+  celle-ci ne sait pas lire, est refusé avec la raison — jamais importé.

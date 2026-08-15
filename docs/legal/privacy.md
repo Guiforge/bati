@@ -38,7 +38,7 @@ app's private storage on your device**.
 ## Backups you make
 
 Settings offers two ways to write that database to a file: **Share my backup** hands it to your
-system's share sheet, and **Save to a folder** writes it wherever you choose on the device. Where
+system's share sheet, and **Save a file** writes it into a folder you choose on the device. Where
 it goes from there is entirely your choice: the app sends it nowhere and has no way to.
 
 - **The file is not encrypted.** Anyone who opens it can read your training history. Keep it the
@@ -85,7 +85,7 @@ personal data from anyone, of any age.
 ## Your rights
 
 Because Bati holds no data about you, there is nothing for us to export, correct or delete on
-your behalf. You hold all of it: **Export my data** in Settings hands you the whole database as a
+your behalf. You hold all of it: either backup row in Settings hands you the whole database as a
 file, and uninstalling the app erases every record it ever made.
 
 ## Changes
@@ -127,9 +127,9 @@ aventures, village, hauts faits, flamme, serment, avatar et réglages — est é
 ## Les sauvegardes que vous faites
 
 Les réglages proposent deux façons d'écrire cette base dans un fichier : **Partager ma sauvegarde**
-la remet au partage de votre système, **Enregistrer dans un dossier** l'écrit où vous voulez sur
-l'appareil. Ce qu'il devient ensuite ne dépend que de vous : l'application ne l'envoie nulle part,
-et n'en a aucun moyen.
+la remet au partage de votre système, **Enregistrer un fichier** l'écrit dans un dossier que vous
+choisissez sur l'appareil. Ce qu'il devient ensuite ne dépend que de vous : l'application ne
+l'envoie nulle part, et n'en a aucun moyen.
 
 - **Ce fichier n'est pas chiffré.** Quiconque l'ouvre lit votre historique d'entraînement.
   Rangez-le comme vous rangeriez une photo personnelle — et réfléchissez-y à deux fois avant de
@@ -179,9 +179,9 @@ Elle ne collecte aucune donnée personnelle, quel que soit l'âge.
 ## Vos droits
 
 Comme Bati ne détient aucune donnée vous concernant, nous n'avons rien à exporter, corriger ou
-supprimer pour vous. Vous détenez l'intégralité : **Exporter mes données**, dans les réglages,
-vous remet la base entière sous forme de fichier, et désinstaller l'application efface chaque
-enregistrement qu'elle a produit.
+supprimer pour vous. Vous détenez l'intégralité : l'une ou l'autre ligne de sauvegarde, dans les
+réglages, vous remet la base entière sous forme de fichier, et désinstaller l'application efface
+chaque enregistrement qu'elle a produit.
 
 ## Modifications
 

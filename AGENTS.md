@@ -85,6 +85,18 @@ outlived it.
   mocked `@/src/i18n/deviceLanguage` wholesale, so the store's language resolution was verified
   against a fake and the widget's real disagreement was invisible. Mock the *device*
   (`expo-localization`), not the function under test.
+- **A control wired to nothing is invisible to every tool you own.** "Sound Effects" toggled a
+  `SOUNDS` map whose every entry was `null`; the Theme row was `disabled` with a comment for a
+  handler and no consumer of `s.theme` anywhere; `setReducedMotion` had no caller but its own
+  test. All three were *covered* — by tests asserting the plumbing writes to the database, which
+  is true and says nothing about whether anything reads it. knip cannot see them (the module is
+  imported), coverage cannot (the mock counts as a hit). The only question that finds them is
+  "who consumes this value?", and it has to be asked by a person. Ask it before adding the
+  fourth layer, not after a reviewer does.
+- **A ternary whose arms are identical is a dead parameter in disguise.**
+  `lang === "fr" ? \`${m} min\` : \`${m} min\`` shipped for months with six call sites feeding it
+  the live language. `.biome/plugins/noIdenticalTernaryArms.grit` rejects it now; Biome's own
+  `noUselessTernary` does not, it only covers boolean arms.
 - **Every dependency arrives with permissions you did not ask for.** They land through manifest
   merging, announce nothing, and surface months later in someone else's privacy report —
   `expo-audio` held a microphone, a foreground media service and three permissions for a sound

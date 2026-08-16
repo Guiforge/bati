@@ -76,14 +76,6 @@ export const preferences = {
     await setPreference("language", lang);
   },
 
-  async getTheme(): Promise<string | null> {
-    return await getPreference("theme");
-  },
-
-  async setTheme(theme: string): Promise<void> {
-    await setPreference("theme", theme);
-  },
-
   async getAvatarId(): Promise<string | null> {
     return await getPreference("avatarId");
   },
@@ -163,15 +155,6 @@ export const preferences = {
    * The settings store fills that case from the OS accessibility preference — without the
    * distinction, a device with reduce-motion turned on still got the full confetti.
    */
-  async getReducedMotion(): Promise<boolean | null> {
-    const value = await getPreference("reducedMotion");
-    if (value === null) return null;
-    return value === "true";
-  },
-
-  async setReducedMotion(enabled: boolean): Promise<void> {
-    await setPreference("reducedMotion", String(enabled));
-  },
 
   // Session recovery - store serialized session state for crash recovery
   async getSavedSession(): Promise<string | null> {

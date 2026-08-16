@@ -266,7 +266,7 @@ export default function QuestDetails() {
       questDesc: language === "fr" ? quest.frDescription : quest.enDescription,
       questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
-      estimate: formatDurationEstimate(estimatedSeconds, language),
+      estimate: formatDurationEstimate(estimatedSeconds),
       xpReward: computeSessionXp({
         durationSeconds: estimatedSeconds,
         userLevel: level as unknown as DifficultyCode,

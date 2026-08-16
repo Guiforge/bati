@@ -528,7 +528,7 @@
     "description": "Tu as une séance laissée en chemin.",
     "discard": "Abandonner",
     "elapsed": "Temps : {{time}}",
-    "progress": "Progression : {{progress}}",
+    "progress": "Progression : manche {{round}}/{{roundTotal}}, exercice {{exercise}}/{{exerciseTotal}}",
     "resume": "Reprendre",
     "title": "Reprendre ta séance ?"
   },
@@ -613,7 +613,6 @@
   "settings": {
     "avatar": "AVATAR",
     "avatar_custom": "Photo perso",
-    "dark": "Sombre",
     "equipment": "Matériel",
     "equipment_any": "Tout afficher",
     "equipment_bar": "Barre de traction",
@@ -633,7 +632,6 @@
     "report_bug_empty": "Rien d'enregistré",
     "safety": "S'entraîner en sécurité",
     "tap_change": "Touche pour changer",
-    "theme": "Thème",
     "title": "Paramètres",
     "warmup": "Échauffement"
   },

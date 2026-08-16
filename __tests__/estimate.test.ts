@@ -3,6 +3,7 @@ import {
   adventureWeeks,
   estimateExerciseSeconds,
   estimateQuestSeconds,
+  formatDuration,
   formatDurationEstimate,
 } from "@/db/estimate";
 
@@ -38,6 +39,17 @@ describe("db/estimate", () => {
     expect(formatDurationEstimate(666)).toBe("11 min"); // 11 min 6s
     expect(formatDurationEstimate(690)).toBe("12 min"); // rounds half up
     expect(formatDurationEstimate(20)).toBe("1 min");
+  });
+
+  // Measured durations, unlike estimates, keep their seconds. Untested until now, and the
+  // function it sits next to had a dead `lang` parameter for exactly as long.
+  it("keeps seconds on measured durations and drops empty halves", () => {
+    expect(formatDuration(45)).toBe("45s");
+    expect(formatDuration(600)).toBe("10 min");
+    expect(formatDuration(666)).toBe("11 min 6s");
+    expect(formatDuration(0)).toBe("0s");
+    expect(formatDuration(-5)).toBe("0s");
+    expect(formatDuration(59.6)).toBe("1 min");
   });
 
   it("rounds adventure steps up to whole weeks, never below one", () => {

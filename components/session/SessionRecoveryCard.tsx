@@ -61,7 +61,12 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
             {session.questTitle}
           </Text>
           <Text fontSize="$3" color="$text" opacity={0.7}>
-            {t("recovery.progress", { progress: session.progress })}
+            {t("recovery.progress", {
+              round: session.round,
+              roundTotal: session.roundTotal,
+              exercise: session.exercise,
+              exerciseTotal: session.exerciseTotal,
+            })}
           </Text>
           <Text fontSize="$3" color="$text" opacity={0.7}>
             {t("recovery.elapsed", { time: formatTime(session.elapsedTime) })}

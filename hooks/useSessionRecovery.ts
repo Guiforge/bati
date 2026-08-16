@@ -11,7 +11,17 @@ import { useSettingsStore } from "@/stores/settings";
 export interface RecoverableSession {
   questTitle: string;
   questId: number;
-  progress: string; // e.g., "Round 2/3, Exercise 3/5"
+  /**
+   * Where the hero stopped, as numbers. This used to be a pre-formatted
+   * `"Round 2/3, Exercise 3/5"` built right here — in English, unconditionally, inside a hook
+   * that already receives `language` and uses it correctly one line below for the quest title.
+   * The card then wrapped that English in `t()`, so half the sentence was translated and half
+   * was not. A hook returns data; the screen does the words.
+   */
+  round: number;
+  roundTotal: number;
+  exercise: number;
+  exerciseTotal: number;
   savedAt: Date;
   elapsedTime: number; // Seconds since session started
 }
@@ -54,16 +64,13 @@ export function useSessionRecovery() {
       }
 
       // Session is valid and recoverable
-      const rounds = saved.quest.rounds;
-      const exercises = saved.quest.exercises.length;
-      const progress = `Round ${
-        saved.currentRoundIndex + 1
-      }/${rounds}, Exercise ${saved.currentExerciseIndex + 1}/${exercises}`;
-
       setRecoverableSession({
         questTitle: localizedTitle(saved.quest, language),
         questId: saved.quest.id,
-        progress,
+        round: saved.currentRoundIndex + 1,
+        roundTotal: saved.quest.rounds,
+        exercise: saved.currentExerciseIndex + 1,
+        exerciseTotal: saved.quest.exercises.length,
         savedAt: new Date(saved.savedAt),
         elapsedTime: Math.floor(
           (saved.savedAt - (saved.startTime ?? saved.savedAt) - saved.totalPausedTime) / 1000,

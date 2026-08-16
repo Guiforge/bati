@@ -164,8 +164,10 @@ describe("useSessionRecovery", () => {
     const offer = result.current.recoverableSession;
     expect(offer?.questTitle).toBe("Ash Ridge");
     expect(offer?.questId).toBe(7);
-    // 0-based indices become human counts.
-    expect(offer?.progress).toBe("Round 2/3, Exercise 3/5");
+    // 0-based indices become human counts — as numbers, not as a sentence. The hook used to
+    // build "Round 2/3, Exercise 3/5" in English here whatever the hero's language, and this
+    // assertion is what held it in place.
+    expect(offer).toMatchObject({ round: 2, roundTotal: 3, exercise: 3, exerciseTotal: 5 });
     expect(offer?.elapsedTime).toBe(600);
   });
 

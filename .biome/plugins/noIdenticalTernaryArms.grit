@@ -1,0 +1,30 @@
+// A ternary whose two arms are the same expression is a decision that does not decide.
+//
+// `db/estimate.ts` carried four of them for months:
+//
+//   return lang === "fr" ? `${m} min` : `${m} min`;
+//
+// Six call sites threaded the hero's live language into that function. It read like
+// localisation, it type-checked, it was covered by a test that never passed a language, and it
+// could not have changed a single character on screen. The `lang` parameter was dead and nobody
+// could see it — not tsc, not biome's recommended set, not knip, because the function *was*
+// called and the parameter *was* referenced.
+//
+// Biome's `noUselessTernary` does not cover this: it only catches ternaries that pick between
+// booleans (`x ? true : false`). Identical arms of any other shape pass it.
+//
+// The rule is deliberately syntactic — it compares the two arms structurally. That misses arms
+// which differ only in whitespace or in a comment, and it cannot see a ternary whose arms call
+// the same function with the same arguments through different aliases. Both are fine: the point
+// is to catch the copy-paste, which is what actually happens.
+//
+// Scoped by $filename rather than a biome.json override, same reason as noRawHexColor.grit:
+// `overrides[].plugins: []` does not suppress plugin diagnostics in Biome 2.5.x.
+language js
+
+`$cond ? $left : $right` where {
+  $left <: $right,
+  $filename <: not r".*__tests__.*",
+  // No backslash escapes in this message: GritQL eats them and the diagnostic comes out mangled.
+  register_diagnostic(span=$left, message="Both arms of this ternary are identical, so the condition decides nothing. Drop the condition, or make the arms differ. A language ternary with two identical arms is a dead parameter wearing localisation's clothes.")
+}

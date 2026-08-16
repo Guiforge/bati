@@ -9,7 +9,6 @@ import {
   HeartPulse,
   ImagePlus,
   Languages,
-  Moon,
   ScrollText,
   ShieldCheck,
   Swords,
@@ -401,16 +400,6 @@ export default function SettingsScreen() {
             label={t("settings.language", "Language")}
             value={language === "en" ? "English" : "Français"}
             onPress={toggleLanguage}
-          />
-
-          <SettingRow
-            icon={<Moon size={22} color="$text" />}
-            label={t("settings.theme", "Theme")}
-            value={t("settings.dark", "Dark")}
-            disabled
-            onPress={() => {
-              // NEW_STYLE: dark-only (forced globally)
-            }}
           />
 
           <SettingRow

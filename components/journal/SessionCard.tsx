@@ -42,9 +42,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
     new Date(entry.performedAt),
   );
 
-  const durationLabel = entry.durationSeconds
-    ? formatDuration(entry.durationSeconds, language)
-    : "--";
+  const durationLabel = entry.durationSeconds ? formatDuration(entry.durationSeconds) : "--";
 
   return (
     <Card flat testID="journal-session-card" onPress={onPress}>

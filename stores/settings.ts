@@ -10,11 +10,6 @@ import {
 } from "@/src/i18n/deviceLanguage";
 
 export type { AppLanguage };
-export type ThemePreference = "light" | "dark" | "system";
-
-function normalizeTheme(value: string | null | undefined): ThemePreference {
-  return value === "dark" || value === "light" || value === "system" ? value : "system";
-}
 
 function normalizeAvatarId(value: string | null | undefined): AvatarId {
   return isAvatarId(value) ? value : avatarIds[0];
@@ -22,7 +17,6 @@ function normalizeAvatarId(value: string | null | undefined): AvatarId {
 
 interface SettingsState {
   language: AppLanguage;
-  theme: ThemePreference;
   avatarId: AvatarId;
   customAvatarUri: string | null;
   hapticsEnabled: boolean;
@@ -30,11 +24,9 @@ interface SettingsState {
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
-  setTheme: (theme: ThemePreference) => Promise<void>;
   setAvatarId: (avatarId: AvatarId) => Promise<void>;
   setCustomAvatarUri: (uri: string | null) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => Promise<void>;
-  setReducedMotion: (enabled: boolean) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
 }
@@ -60,7 +52,6 @@ function deviceReducedMotionWithin(ms: number): Promise<boolean> {
 
 export const useSettingsStore = create<SettingsState>((set) => ({
   language: getDevicePreferredAppLanguage(),
-  theme: "system",
   // Same default the DB read normalises to (normalizeAvatarId). It used to say "guardian"
   // here and fall back to avatarIds[0] there, so a hero who never picked one watched their
   // avatar change from guardian to shadow a beat after every cold start.
@@ -76,11 +67,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     i18n.changeLanguage(language).catch(() => {
       // Ignore i18n errors
     });
-  },
-
-  setTheme: async (theme) => {
-    set({ theme });
-    await preferences.setTheme(theme);
   },
 
   setAvatarId: async (avatarId) => {
@@ -99,43 +85,28 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setHapticsEnabled(enabled);
   },
 
-  setReducedMotion: async (enabled) => {
-    set({ reducedMotion: enabled });
-    await preferences.setReducedMotion(enabled);
-  },
-
   loadFromDatabase: async () => {
     try {
-      const [
-        language,
-        theme,
-        avatarId,
-        customAvatarUri,
-        hapticsEnabled,
-        storedReducedMotion,
-        deviceReducedMotion,
-      ] = await Promise.all([
-        preferences.getLanguage(),
-        preferences.getTheme(),
-        preferences.getAvatarId(),
-        preferences.getCustomAvatarUri(),
-        preferences.getHapticsEnabled(),
-        preferences.getReducedMotion(),
-        deviceReducedMotionWithin(ACCESSIBILITY_PROBE_MS),
-      ]);
+      const [language, avatarId, customAvatarUri, hapticsEnabled, reducedMotion] =
+        await Promise.all([
+          preferences.getLanguage(),
+          preferences.getAvatarId(),
+          preferences.getCustomAvatarUri(),
+          preferences.getHapticsEnabled(),
+          deviceReducedMotionWithin(ACCESSIBILITY_PROBE_MS),
+        ]);
 
       const normalizedLanguage = resolveAppLanguage(language);
 
-      // Same shape as the language above: the hero's own answer wins, and the device speaks
-      // when they have not given one. Every animated component already honours this flag —
-      // it just had no way of ever becoming true, since it defaulted to false and is not
-      // exposed in Settings. PRODUCT.md asks for reduced-motion preferences to be respected,
-      // and the OS is where that preference actually lives.
-      const reducedMotion = storedReducedMotion ?? deviceReducedMotion;
+      // The OS is the only source. There used to be a stored override read here and preferred
+      // over the device — but no screen ever exposed a way to write it, so it was permanently
+      // null and the `??` never chose the left side. PRODUCT.md asks for reduced-motion to be
+      // respected; the place the hero actually expresses it is Android's own accessibility
+      // settings. If Bati ever wants its own toggle, it comes back with a Settings row, not
+      // before.
 
       set({
         language: normalizedLanguage,
-        theme: normalizeTheme(theme),
         avatarId: normalizeAvatarId(avatarId),
         customAvatarUri,
         hapticsEnabled,

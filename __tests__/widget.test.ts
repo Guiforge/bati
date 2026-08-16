@@ -122,5 +122,19 @@ describe("src/widget", () => {
     // The failure is reported, and the OS still gets a frame — never the blank placeholder.
     expect(reportError).toHaveBeenCalledWith("widget.task", expect.any(Error));
     expect(renderWidget).toHaveBeenCalledTimes(1);
+    // And it speaks the device's language. The error path hardcoded "fr" long after the happy
+    // path was fixed, precisely because this test asserted that a frame appeared and not what
+    // was in it.
+    expect(renderedLang(renderWidget)).toBe("en");
+  });
+
+  test("the fallback follows the device too, not a hardcoded locale", async () => {
+    deviceLocales = [{ languageCode: "fr", languageTag: "fr-FR" }];
+    ensureMigrations.mockRejectedValueOnce(new Error("database is on fire"));
+    const { props, renderWidget } = taskProps("Weekly");
+
+    await widget().widgetTaskHandler(props);
+
+    expect(renderedLang(renderWidget)).toBe("fr");
   });
 });

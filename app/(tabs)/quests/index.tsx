@@ -115,7 +115,7 @@ function buildQuestMeta(
     userLevel: "medium",
   });
   const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
-  const estimate = formatDurationEstimate(durationSeconds, language);
+  const estimate = formatDurationEstimate(durationSeconds);
   const muscleList = [...muscles];
   // Ranked, not the full set above: a five-exercise quest brushes five muscle groups, and the
   // two it brushes once say nothing. Same rule as the adventure posters.

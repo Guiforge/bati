@@ -15,17 +15,13 @@ let deviceReduceMotion: () => Promise<boolean> = () => Promise.resolve(false);
 
 const prefs = {
   getLanguage: jest.fn<Promise<string | null>, []>(),
-  getTheme: jest.fn<Promise<string | null>, []>(),
   getAvatarId: jest.fn<Promise<string | null>, []>(),
   getCustomAvatarUri: jest.fn<Promise<string | null>, []>(),
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
-  getReducedMotion: jest.fn<Promise<boolean | null>, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
-  setTheme: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
-  setReducedMotion: jest.fn().mockResolvedValue(undefined),
 };
 
 beforeAll(() => {
@@ -58,16 +54,13 @@ function settingsStore() {
 /** Every read succeeds, returning something different from the store default. */
 function storedSettings() {
   prefs.getLanguage.mockResolvedValue("fr");
-  prefs.getTheme.mockResolvedValue("dark");
   prefs.getAvatarId.mockResolvedValue("archmage");
   prefs.getCustomAvatarUri.mockResolvedValue("file:///stored-avatar.jpg");
   prefs.getHapticsEnabled.mockResolvedValue(false);
-  prefs.getReducedMotion.mockResolvedValue(true);
 }
 
 const DEFAULTS = {
   language: "fr" as const, // from the mocked device language
-  theme: "system" as const,
   avatarId: "guardian" as const,
   hapticsEnabled: true,
   reducedMotion: false,
@@ -88,10 +81,8 @@ describe("useSettingsStore", () => {
 
     expect(settingsStore().getState()).toMatchObject({
       language: "fr",
-      theme: "dark",
       avatarId: "archmage",
       hapticsEnabled: false,
-      reducedMotion: true,
       isLoaded: true,
     });
   });
@@ -115,14 +106,12 @@ describe("useSettingsStore", () => {
     expect(settingsStore().getState().language).toBe("en");
   });
 
-  test("junk in the theme or avatar column normalizes instead of leaking through", async () => {
+  test("junk in the avatar column normalizes instead of leaking through", async () => {
     storedSettings();
-    prefs.getTheme.mockResolvedValue("chartreuse");
     prefs.getAvatarId.mockResolvedValue("not-an-avatar");
 
     await settingsStore().getState().loadFromDatabase();
 
-    expect(settingsStore().getState().theme).toBe("system");
     // normalizeAvatarId falls back to avatarIds[0] ("shadow"), not the store's
     // initial "guardian" default — an unknown id snaps to the first valid avatar.
     expect(settingsStore().getState().avatarId).toBe("shadow");
@@ -130,23 +119,24 @@ describe("useSettingsStore", () => {
 
   test("a failed read still marks the store loaded so the app does not hang", async () => {
     storedSettings();
-    prefs.getTheme.mockRejectedValue(new Error("db is gone"));
+    prefs.getAvatarId.mockRejectedValue(new Error("db is gone"));
 
     await settingsStore().getState().loadFromDatabase();
 
     const state = settingsStore().getState();
     expect(state.isLoaded).toBe(true);
-    expect(state.theme).toBe("system");
+    // The catch sets only isLoaded, so every other field keeps its initial default.
+    expect(state.avatarId).toBe("guardian");
   });
 
   /**
-   * Every animated component already honours `reducedMotion`, but it defaulted to false and is
-   * exposed in no screen — so it could never become true and all of that work was dead. The OS
-   * preference is where the hero actually expressed the intent.
+   * Every animated component honours `reducedMotion`, and the OS is the only thing that sets it.
+   * A stored override used to be read here and preferred over the device, but no screen ever
+   * wrote it — so it was permanently null and the app ignored a hero who had asked Android for
+   * fewer animations.
    */
-  test("reduced motion follows the device when it was never answered", async () => {
+  test("reduced motion follows the device", async () => {
     storedSettings();
-    prefs.getReducedMotion.mockResolvedValue(null);
     deviceReduceMotion = () => Promise.resolve(true);
 
     await settingsStore().getState().loadFromDatabase();
@@ -154,20 +144,8 @@ describe("useSettingsStore", () => {
     expect(settingsStore().getState().reducedMotion).toBe(true);
   });
 
-  test("an explicit answer beats the device, in both directions", async () => {
-    storedSettings();
-    prefs.getReducedMotion.mockResolvedValue(false);
-    deviceReduceMotion = () => Promise.resolve(true);
-
-    await settingsStore().getState().loadFromDatabase();
-
-    // Turned off on purpose: the device must not turn it back on.
-    expect(settingsStore().getState().reducedMotion).toBe(false);
-  });
-
   test("a device that will not answer leaves animations on", async () => {
     storedSettings();
-    prefs.getReducedMotion.mockResolvedValue(null);
     deviceReduceMotion = () => Promise.reject(new Error("no accessibility bridge"));
 
     await settingsStore().getState().loadFromDatabase();
@@ -180,23 +158,17 @@ describe("useSettingsStore", () => {
     const s = () => settingsStore().getState();
 
     await s().setLanguage("fr");
-    await s().setTheme("dark");
     await s().setAvatarId("scout");
     await s().setHapticsEnabled(false);
-    await s().setReducedMotion(true);
 
     expect(s()).toMatchObject({
       language: "fr",
-      theme: "dark",
       avatarId: "scout",
       hapticsEnabled: false,
-      reducedMotion: true,
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
-    expect(prefs.setTheme).toHaveBeenCalledWith("dark");
     expect(prefs.setAvatarId).toHaveBeenCalledWith("scout");
     expect(prefs.setHapticsEnabled).toHaveBeenCalledWith(false);
-    expect(prefs.setReducedMotion).toHaveBeenCalledWith(true);
   });
 });

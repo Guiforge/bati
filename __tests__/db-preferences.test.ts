@@ -42,9 +42,6 @@ describe("db/preferences", () => {
     await preferences.setLanguage("fr");
     expect(await preferences.getLanguage()).toBe("fr");
 
-    await preferences.setTheme("dark");
-    expect(await preferences.getTheme()).toBe("dark");
-
     await preferences.setAvatarId("avatar_1");
     expect(await preferences.getAvatarId()).toBe("avatar_1");
   });

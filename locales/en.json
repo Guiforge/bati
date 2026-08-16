@@ -121,8 +121,6 @@
     "title": "Settings",
     "preferences": "PREFERENCES",
     "language": "Language",
-    "theme": "Theme",
-    "dark": "Dark",
     "avatar": "AVATAR",
     "avatar_custom": "Custom photo",
     "tap_change": "Tap to change",
@@ -703,7 +701,7 @@
   "recovery": {
     "title": "Resume workout?",
     "description": "You have an unfinished session",
-    "progress": "Progress: {{progress}}",
+    "progress": "Progress: Round {{round}}/{{roundTotal}}, Exercise {{exercise}}/{{exerciseTotal}}",
     "elapsed": "Time: {{time}}",
     "resume": "Resume",
     "discard": "Discard"

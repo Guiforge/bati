@@ -77,8 +77,8 @@ export function useSmartAction() {
               }),
               quest.archetype ? t(`quests.archetype_${quest.archetype}`) : null,
               t("quests.estimate", {
-                duration: formatDurationEstimate(seconds, language),
-                defaultValue: `≈ ${formatDurationEstimate(seconds, language)}`,
+                duration: formatDurationEstimate(seconds),
+                defaultValue: `≈ ${formatDurationEstimate(seconds)}`,
               }),
             ]
               .filter(Boolean)

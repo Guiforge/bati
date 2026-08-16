@@ -33,7 +33,10 @@
     },
     "globals": ["__DEV__"]
   },
-  "plugins": ["./.biome/plugins/noRawHexColor.grit"],
+  "plugins": [
+    "./.biome/plugins/noRawHexColor.grit",
+    "./.biome/plugins/noIdenticalTernaryArms.grit"
+  ],
   "linter": {
     "enabled": true,
     "domains": {

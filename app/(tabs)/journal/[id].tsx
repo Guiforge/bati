@@ -112,9 +112,7 @@ export default function SessionDetailScreen() {
       }).format(new Date(session.performedAt))
     : "";
 
-  const durationLabel = session?.durationSeconds
-    ? formatDuration(session.durationSeconds, language)
-    : "--";
+  const durationLabel = session?.durationSeconds ? formatDuration(session.durationSeconds) : "--";
 
   // Group exercises by round
   const exercisesByRound = session

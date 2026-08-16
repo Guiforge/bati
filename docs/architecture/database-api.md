@@ -370,12 +370,10 @@ User settings persistence.
 | `villageName` | `string` | `""` | Onboarding village/profile name |
 | `hasFinishedOnboarding` | `boolean` | `false` | Onboarding completion flag |
 | `language` | `"en" \| "fr"` | device language, fallback `"en"` | UI language |
-| `theme` | `"light" \| "dark" \| "system"` | `"system"` | Persisted compatibility/dev preference; product UI is forced dark |
 | `avatarId` | `string` | first configured avatar (`guardian`) | Selected avatar |
 | `notificationsEnabled` | `boolean` | `true` in current code | Reminder preference; notification implementation remains product-scoped separately |
 | `notificationTime` | JSON `{ hour, minute }` | `{ "hour": 18, "minute": 0 }` | Daily reminder time preference |
 | `hapticsEnabled` | `boolean` | `true` | Haptic feedback |
-| `reducedMotion` | `boolean` | `false` | Reduce animations |
 | `savedSession` | serialized JSON | `null` | Crash/session recovery payload |
 
 ### Functions

@@ -11,7 +11,7 @@ import { rawColors } from "@/constants/rawColors";
 import { ensureMigrations } from "@/db/migrate";
 import { preferences } from "@/db/preferences";
 import { type FlameLevel, getFlameLevel, getStreakInfo, getWeeklyProgress } from "@/db/streaks";
-import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
+import { getDevicePreferredAppLanguage, resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "./reportError";
 
 // These used to be literals, because importing tamagui.config into a headless task drags in
@@ -202,13 +202,16 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
     }
   } catch (e) {
     reportError("widget.task", e);
-    // French-first fallback: if the DB is broken enough to land here, it can't be asked
-    // for the stored language either.
+    // The database is broken enough that the *stored* language is unreachable — but the device's
+    // is not: `getDevicePreferredAppLanguage()` reads expo-localization, not SQLite. This used to
+    // hardcode "fr" on that reasoning, which drew FLAMME on an English phone every time the widget
+    // errored. Same rule as the happy path, minus the half that needs the DB.
+    const lang = getDevicePreferredAppLanguage();
     renderWidget(
       widgetInfo.widgetName === "Weekly" ? (
-        <WeeklyWidget done={null} quota={null} lang="fr" size={widgetInfo} />
+        <WeeklyWidget done={null} quota={null} lang={lang} size={widgetInfo} />
       ) : (
-        <FlameWidget streak={null} flameLevel={0} lang="fr" size={widgetInfo} />
+        <FlameWidget streak={null} flameLevel={0} lang={lang} size={widgetInfo} />
       ),
     );
   }

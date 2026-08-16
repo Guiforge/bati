@@ -46,15 +46,16 @@ export async function getLongestSession(): Promise<PersonalRecord | null> {
     .orderBy(desc(completedQuest.durationSeconds))
     .limit(1);
 
-  if (rows.length === 0 || rows[0].durationSeconds == null) {
+  const best = rows[0];
+  if (best?.durationSeconds == null) {
     return null;
   }
 
   return {
     type: "longest_session",
-    value: rows[0].durationSeconds,
-    achievedAt: rows[0].performedAt,
-    sessionId: rows[0].id,
+    value: best.durationSeconds,
+    achievedAt: best.performedAt,
+    sessionId: best.id,
   };
 }
 
@@ -72,15 +73,16 @@ export async function getMostXpSession(): Promise<PersonalRecord | null> {
     .orderBy(desc(completedQuest.xpEarned))
     .limit(1);
 
-  if (rows.length === 0 || rows[0].xpEarned == null) {
+  const best = rows[0];
+  if (best?.xpEarned == null) {
     return null;
   }
 
   return {
     type: "most_xp",
-    value: rows[0].xpEarned,
-    achievedAt: rows[0].performedAt,
-    sessionId: rows[0].id,
+    value: best.xpEarned,
+    achievedAt: best.performedAt,
+    sessionId: best.id,
   };
 }
 
@@ -114,17 +116,18 @@ export async function getExerciseMax(
     .orderBy(desc(completedExercises.resultValue))
     .limit(1);
 
-  if (rows.length === 0) {
+  const best = rows[0];
+  if (!best) {
     return null;
   }
 
   return {
     type: resultType === "time" ? "exercise_max_time" : "exercise_max_reps",
-    value: rows[0].resultValue,
-    achievedAt: rows[0].performedAt,
+    value: best.resultValue,
+    achievedAt: best.performedAt,
     exerciseId,
-    exerciseName: { en: rows[0].enName, fr: rows[0].frName },
-    sessionId: rows[0].sessionId,
+    exerciseName: { en: best.enName, fr: best.frName },
+    sessionId: best.sessionId,
   };
 }
 
@@ -202,11 +205,10 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
     .where(eq(completedQuest.id, sessionId))
     .limit(1);
 
-  if (sessionRows.length === 0) {
+  const session = sessionRows[0];
+  if (!session) {
     return newRecords;
   }
-
-  const session = sessionRows[0];
 
   // Check longest session
   if (session.durationSeconds != null) {

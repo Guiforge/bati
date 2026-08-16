@@ -159,6 +159,32 @@ describe("useSessionStore", () => {
     expect(state.results[0].result.value).toBe(10);
   });
 
+  // Both guards below were added when noUncheckedIndexedAccess showed the store indexing
+  // `quest.exercises` and `results` without checking. They are reachable: a saved session
+  // restored against a quest that has since been edited lands exactly here. Doing nothing is
+  // the right answer — banking a result against an exercise that no longer exists would write
+  // a row pointing at nothing — but "does nothing" has to be asserted or it is indistinguishable
+  // from a crash that was swallowed.
+  test("completeExercise does nothing when the index is past the quest's exercises", async () => {
+    await store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    store.setState({ currentExerciseIndex: 99 });
+
+    await store.getState().completeExercise(10);
+
+    expect(store.getState().results).toHaveLength(0);
+    expect(store.getState().currentExerciseIndex).toBe(99);
+  });
+
+  test("updateLastResult does nothing when there is no last result", async () => {
+    await store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+
+    store.getState().updateLastResult(42);
+
+    expect(store.getState().results).toHaveLength(0);
+  });
+
   test("completeExercise triggers rest between rounds", async () => {
     await store.getState().startSession(mockQuest, "medium");
     store.getState().finishCountdown();

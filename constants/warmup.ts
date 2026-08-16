@@ -43,8 +43,19 @@ const step = (exerciseName: string): WarmupStep => ({ exerciseName, seconds: STE
  * the real work. Intensity climbs across the sequence — that ordering is the protocol, not a
  * preference, and no budget below is allowed to reorder it.
  */
-const RAISE = ["Jumping Jack", "High Knees", "Star Jump", "Skater Hop", "Mountain Climber"];
-const MOBILISE = ["Cat-Cow", "Thread the Needle", "World's Greatest Stretch", "Downward Dog"];
+const RAISE = [
+  "Jumping Jack",
+  "High Knees",
+  "Star Jump",
+  "Skater Hop",
+  "Mountain Climber",
+] as const;
+const MOBILISE = [
+  "Cat-Cow",
+  "Thread the Needle",
+  "World's Greatest Stretch",
+  "Downward Dog",
+] as const;
 const ACTIVATE = [
   "Glute Bridge",
   "Dead Bug",
@@ -52,14 +63,14 @@ const ACTIVATE = [
   "Scapular Pull-Up",
   "Wall Push-Up",
   "Bear Crawl",
-];
+] as const;
 
 /**
  * `Jump Squat` leads and appears in no other phase, which is what guarantees the last phase can
  * always fill: `RAISE` takes at most two of its five, so at least one name here survives the
  * no-repeat rule even for a quest whose patterns say nothing.
  */
-const POTENTIATE = ["Jump Squat", "High Knees", "Mountain Climber", "Star Jump"];
+const POTENTIATE = ["Jump Squat", "High Knees", "Mountain Climber", "Star Jump"] as const;
 
 /**
  * Wrist and forearm preparation. Non-optional on the branches that need it: hand-balancing and
@@ -71,6 +82,7 @@ const WRISTS = step("Wrist Circles");
 
 /** What a quest gets when nothing is known about it — and what every quest got before `0024`. */
 export const WARMUP_SEQUENCE: WarmupStep[] = [
+  // `as const` above makes these tuples, so index 0 is known to exist: no fallback branch.
   step(RAISE[0]),
   step(MOBILISE[0]),
   step(ACTIVATE[0]),
@@ -168,11 +180,19 @@ const EMPHASIS = 2;
  * and potentiation pools for a pressing quest, and doing it twice in four minutes prepares
  * nothing it did not already prepare.
  */
-function take(pool: string[], count: number, offset: number, used: Set<string>): WarmupStep[] {
+function take(
+  pool: readonly string[],
+  count: number,
+  offset: number,
+  used: Set<string>,
+): WarmupStep[] {
   const picked: WarmupStep[] = [];
 
-  for (let i = 0; i < pool.length && picked.length < count; i++) {
-    const name = pool[(offset + i) % pool.length];
+  // Rotate first, then iterate: indexing with `(offset + i) % length` is always in range, but
+  // saying so to the type checker costs a branch no test can reach.
+  const start = pool.length > 0 ? offset % pool.length : 0;
+  for (const name of [...pool.slice(start), ...pool.slice(0, start)]) {
+    if (picked.length >= count) break;
     if (used.has(name)) continue;
     used.add(name);
     picked.push(step(name));
@@ -241,7 +261,8 @@ export function buildWarmup(quest: WarmupQuest, sessionCount = 0): WarmupStep[] 
     ...POTENTIATE,
   ]);
 
-  const [raise, mobilise, activate, potentiate] = PHASE_BUDGET[stepCount(quest)];
+  // stepCount() only ever returns a key of PHASE_BUDGET; the index signature does not know it.
+  const [raise, mobilise, activate, potentiate] = PHASE_BUDGET[stepCount(quest)] ?? [1, 1, 1, 1];
   const offset = Math.max(0, Math.trunc(sessionCount));
   const used = new Set<string>();
 

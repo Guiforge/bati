@@ -381,7 +381,9 @@ export const useSessionStore = create<SessionState>()(
         lastPauseTimestamp: null,
         // Warm-up step, or the full-screen 3..2..1. Exercise timers start after the countdown.
         timerStartTimestamp: Date.now(),
-        timerDuration: warmupFirst ? warmupSequence[0].seconds : PRE_START_COUNTDOWN_SECONDS,
+        timerDuration: warmupFirst
+          ? (warmupSequence[0]?.seconds ?? PRE_START_COUNTDOWN_SECONDS)
+          : PRE_START_COUNTDOWN_SECONDS,
         results: [],
         savedSessionId: null,
       });
@@ -400,7 +402,7 @@ export const useSessionStore = create<SessionState>()(
       set({
         warmupIndex: next,
         timerStartTimestamp: Date.now(),
-        timerDuration: warmupSequence[next].seconds,
+        timerDuration: warmupSequence[next]?.seconds ?? 0,
       });
     },
 
@@ -413,7 +415,7 @@ export const useSessionStore = create<SessionState>()(
       set({
         warmupIndex: prev,
         timerStartTimestamp: Date.now(),
-        timerDuration: warmupSequence[prev].seconds,
+        timerDuration: warmupSequence[prev]?.seconds ?? 0,
       });
     },
 
@@ -555,6 +557,7 @@ export const useSessionStore = create<SessionState>()(
         : 1;
 
       const currentEx = quest.exercises[currentExerciseIndex];
+      if (!currentEx) return;
 
       // Land the hit on the fight we hold, and bank it. Nothing reaches the database until
       // saveSession: see `pendingDamage`. This is pure maths now, so there is no failure to
@@ -643,7 +646,7 @@ export const useSessionStore = create<SessionState>()(
       } else {
         // No rest, jump straight to next
         const nextExDef = quest.exercises[nextExercise];
-        const isNextTimeBased = nextExDef.target.type === "time";
+        const isNextTimeBased = nextExDef?.target.type === "time";
 
         set({
           status: "running",
@@ -661,7 +664,7 @@ export const useSessionStore = create<SessionState>()(
       if (status !== "resting" || !quest) return;
 
       const nextExDef = quest.exercises[currentExerciseIndex];
-      const isNextTimeBased = nextExDef.target.type === "time";
+      const isNextTimeBased = nextExDef?.target.type === "time";
 
       set({
         status: "running",
@@ -678,9 +681,8 @@ export const useSessionStore = create<SessionState>()(
 
     updateLastResult: (resultValue) => {
       const { results, bossFight, pendingDamage } = get();
-      if (results.length === 0) return;
-
       const last = results[results.length - 1];
+      if (!last) return;
 
       // DB constraints require resultValue > 0.
       const safeResultValue = Number.isFinite(resultValue)

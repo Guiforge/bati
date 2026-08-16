@@ -69,5 +69,6 @@ export function pickDailyVariant(pool: string[], seed: string): string {
   for (let i = 0; i < seed.length; i++) {
     hash = (hash * 31 + seed.charCodeAt(i)) | 0;
   }
-  return pool[Math.abs(hash) % pool.length];
+  // Modulo the pool's own length, so always in range; the type does not know that.
+  return pool[Math.abs(hash) % pool.length] ?? "";
 }

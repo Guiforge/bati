@@ -321,9 +321,9 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
     .where(eq(quests.id, id))
     .orderBy(questExercises.sortOrder);
 
-  if (rows.length === 0) return null;
-
   const first = rows[0];
+  if (!first) return null;
+
   const quest: QuestTemplate = {
     id: first.questId,
     enTitle: first.enTitle,
@@ -409,7 +409,8 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     .where(eq(quests.id, id))
     .orderBy(questExercises.sortOrder);
 
-  if (rows.length === 0) return null;
+  const first = rows[0];
+  if (!first) return null;
 
   // Holds are prescribed from the hero's own longest hold (60-75% of max), so read the records
   // for this quest's time-based movements before building any target. One grouped query, and
@@ -418,7 +419,6 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     ...new Set(rows.filter((r) => r.targetType === "time").map((r) => r.exId)),
   ]);
 
-  const first = rows[0];
   const quest: Quest = {
     id: first.questId,
     enTitle: first.enTitle,
@@ -597,7 +597,10 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
   if (difficulties.length === 0) return "regular";
 
   const ranks = difficulties.map((d) => DIFFICULTY_RANK[d]).sort((a, b) => a - b);
-  return LEVEL_BY_RANK[ranks[Math.ceil(ranks.length / 2) - 1]];
+  const median = ranks[Math.ceil(ranks.length / 2) - 1];
+  // In range by construction — the index comes from the array's own length — but the type
+  // cannot see it. Falls back to the same value the empty case returns.
+  return median === undefined ? "regular" : (LEVEL_BY_RANK[median] ?? "regular");
 }
 
 /**
@@ -686,7 +689,8 @@ export async function findQuestWithExercise(exerciseId: number): Promise<number 
       idA - idB,
   );
 
-  return pool[0][0];
+  // `pool` is non-empty (guarded above), but the type does not say so.
+  return pool[0]?.[0] ?? null;
 }
 
 /**
@@ -710,7 +714,8 @@ async function pickDailyTemplate(): Promise<QuestTemplate | null> {
     hash |= 0; // Convert to 32bit integer
   }
 
-  return candidates[Math.abs(hash) % candidates.length];
+  // Modulo the array's own length, so always in range; the type does not know that.
+  return candidates[Math.abs(hash) % candidates.length] ?? null;
 }
 
 /** @legacy La quête du jour ; l'accueil décide autrement depuis useSmartAction. */

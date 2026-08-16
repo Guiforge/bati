@@ -69,7 +69,8 @@ export type UserLevelInfo = {
 export function calculateLevelFromXp(totalXp: number): number {
   // Check if beyond max threshold level
   const maxLevel = LEVEL_THRESHOLDS.length;
-  const maxXp = LEVEL_THRESHOLDS[maxLevel - 1];
+  // Last element of a non-empty module constant; `?? 0` keeps the maths total either way.
+  const maxXp = LEVEL_THRESHOLDS[maxLevel - 1] ?? 0;
 
   if (totalXp >= maxXp) {
     // Beyond level 20, each additional level requires 2000 XP
@@ -80,7 +81,7 @@ export function calculateLevelFromXp(totalXp: number): number {
 
   // Within threshold array
   for (let i = maxLevel - 1; i >= 0; i--) {
-    if (totalXp >= LEVEL_THRESHOLDS[i]) {
+    if (totalXp >= (LEVEL_THRESHOLDS[i] ?? 0)) {
       return i + 1;
     }
   }
@@ -94,10 +95,10 @@ export function calculateLevelFromXp(totalXp: number): number {
 export function getXpForLevel(level: number): number {
   if (level <= 0) return 0;
   if (level <= LEVEL_THRESHOLDS.length) {
-    return LEVEL_THRESHOLDS[level - 1];
+    return LEVEL_THRESHOLDS[level - 1] ?? 0;
   }
   // Beyond threshold array
-  const maxXp = LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1];
+  const maxXp = LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1] ?? 0;
   const extraLevels = level - LEVEL_THRESHOLDS.length;
   return maxXp + extraLevels * 2000;
 }
@@ -106,8 +107,11 @@ export function getXpForLevel(level: number): number {
  * Get title for a given level
  */
 export function getLevelTitle(level: number): { en: string; fr: string } {
-  if (level <= 0) return LEVEL_TITLES[1];
-  if (level <= 20) return LEVEL_TITLES[level];
+  // LEVEL_TITLES is keyed 1..20 and both branches stay inside it; the index signature does not
+  // know that, so both fall back to the same level-1 title the guard above returns.
+  const first = LEVEL_TITLES[1] ?? { en: "Novice", fr: "Novice" };
+  if (level <= 0) return first;
+  if (level <= 20) return LEVEL_TITLES[level] ?? first;
   // Beyond 20, use "Divine" with level number
   return { en: `Divine ${level}`, fr: `Divin ${level}` };
 }

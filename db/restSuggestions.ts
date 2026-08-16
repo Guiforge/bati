@@ -101,8 +101,9 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
   const sortedDays = Array.from(trainingDays).sort().reverse();
   let consecutiveDays = 0;
 
-  if (sortedDays.length > 0) {
-    const lastWorkout = new Date(sortedDays[0]);
+  const mostRecentDay = sortedDays[0];
+  if (mostRecentDay) {
+    const lastWorkout = new Date(mostRecentDay);
     lastWorkout.setHours(0, 0, 0, 0);
 
     const yesterday = new Date(today);

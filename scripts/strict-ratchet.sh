@@ -13,12 +13,12 @@
 # and it is supposed to disappear.
 #
 # Order to work through, cheapest-risk first (each of these has real tests behind it):
-#   db/quests.ts 23 · stores/session.ts 23 · db/personalRecords.ts 19 (bossFights: done)
-#   · db/exercises.ts 17 · the rest of db/ and constants/ · components/ and app/ · __tests__/ last
+#   db/ and constants/ and stores/: done. Remaining: components/ + app/ (22), __tests__/ (70).
+#   components/ and app/ come after those screens have tests of their own.
 set -euo pipefail
 
 # Measured on 2026-08-16. Lower it every time you fix a file; never raise it.
-BASELINE=206
+BASELINE=92
 
 cd "$(dirname "$0")/.."
 

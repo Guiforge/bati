@@ -295,10 +295,11 @@ export async function getUnlockedAchievements(): Promise<UnlockedAchievement[]> 
     .from(userPreferences)
     .where(eq(userPreferences.key, ACHIEVEMENTS_KEY));
 
-  if (rows.length === 0) return [];
+  const row = rows[0];
+  if (!row) return [];
 
   try {
-    return JSON.parse(rows[0].value) as UnlockedAchievement[];
+    return JSON.parse(row.value) as UnlockedAchievement[];
   } catch {
     return [];
   }
@@ -316,9 +317,10 @@ export function unlockAchievement(code: AchievementCode): Promise<boolean> {
       .where(eq(userPreferences.key, ACHIEVEMENTS_KEY));
 
     let unlocked: UnlockedAchievement[] = [];
-    if (rows.length > 0) {
+    const stored = rows[0];
+    if (stored) {
       try {
-        unlocked = JSON.parse(rows[0].value) as UnlockedAchievement[];
+        unlocked = JSON.parse(stored.value) as UnlockedAchievement[];
       } catch {
         unlocked = [];
       }

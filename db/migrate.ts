@@ -90,8 +90,7 @@ async function runMigrationsAsync(
         );
       }
 
-      for (let i = 0; i < statements.length; i++) {
-        const stmt = statements[i];
+      for (const [i, stmt] of statements.entries()) {
         if (opts.debug) {
           // biome-ignore lint/suspicious/noConsole: Debug logging
           console.log(

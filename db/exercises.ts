@@ -135,9 +135,8 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
     .leftJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
     .where(eq(exercises.id, id));
 
-  if (rows.length === 0) return null;
-
   const first = rows[0];
+  if (!first) return null;
   const ex: Exercise = {
     id: first.id,
     enName: first.enName,
@@ -323,7 +322,7 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
   // Contiguous from the bottom: mastering a hard variation out of order does not skip the ones
   // below it, and the count would otherwise read as progress the hero has not made.
   let climbed = 0;
-  while (climbed < rungs.length && rungs[climbed].isEarned) climbed++;
+  while (rungs[climbed]?.isEarned) climbed++;
 
   return { rungs, position: Math.min(climbed + 1, rungs.length) };
 }

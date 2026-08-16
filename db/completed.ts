@@ -302,9 +302,8 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
     .where(eq(completedQuest.id, id))
     .orderBy(completedExercises.roundIndex, completedExercises.sortOrder, completedExercises.id);
 
-  if (rows.length === 0) return null;
-
   const first = rows[0];
+  if (!first) return null;
   const session: CompletedSession = {
     id: first.sessionId,
     questId: first.questId ?? null,

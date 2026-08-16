@@ -33,7 +33,8 @@ export function getExerciseColorKey(input: {
   targetType?: QuestTargetType;
 }): ExerciseColorKey {
   const muscles = input.muscles ?? [];
-  if (muscles.length > 0) return muscles[0];
+  const primary = muscles[0];
+  if (primary) return primary;
   if (input.targetType) return input.targetType;
   return "default";
 }

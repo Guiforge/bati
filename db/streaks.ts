@@ -73,10 +73,11 @@ async function getWeeklyQuota(): Promise<number> {
     .where(sql`${userPreferences.key} = 'oath'`)
     .limit(1);
 
-  if (rows.length === 0) return DEFAULT_WEEKLY_QUOTA;
+  const row = rows[0];
+  if (!row) return DEFAULT_WEEKLY_QUOTA;
 
   try {
-    const parsed: unknown = JSON.parse(rows[0].value);
+    const parsed: unknown = JSON.parse(row.value);
     if (typeof parsed !== "object" || parsed === null) return DEFAULT_WEEKLY_QUOTA;
 
     const { metric, weeklyTarget } = parsed as { metric?: string; weeklyTarget?: number };

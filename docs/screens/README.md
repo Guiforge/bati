@@ -21,6 +21,7 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 **Quests (quick workout)**
 - [quests.md](quests.md) — browse workouts → Quest Details
 - [quest-details.md](quest-details.md) — review + choose difficulty → Session
+- [exercises.md](exercises.md) — the catalogue: every movement, filtered → Exercise Details
 - [exercise-details.md](exercise-details.md) — read exercise instructions/details
 - [session.md](session.md) — do the workout → rewards
 - [journal.md](journal.md) — training history + stats

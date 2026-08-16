@@ -1,17 +1,20 @@
 import { Check, Plus, Search, X } from "@tamagui/lucide-icons";
-import { Image } from "expo-image";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, Pressable } from "react-native";
 import { Input, Sheet, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
+import { ExerciseRow } from "@/components/exercises/ExerciseRow";
 import { getExerciseThumb } from "@/constants/assetMap";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { filterExercises, NO_EXERCISE_FILTERS } from "@/constants/exerciseFilters";
 import type { Exercise } from "@/db/exercises";
-import { MUSCLE_LABELS } from "@/db/muscles";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
+
+/** The picker never filters on the ladder, so it has nothing to look one up in. */
+const EMPTY_LADDER: ReadonlyMap<number, unknown> = new Map();
 
 type Props = {
   exercises: Exercise[];
@@ -43,12 +46,12 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
     setSearch("");
   }, []);
 
-  const results = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    return exercises.filter((e) =>
-      (language === "fr" ? e.frName : e.enName).toLowerCase().includes(needle),
-    );
-  }, [exercises, language, search]);
+  // The catalogue's filter, with only the search facet set: one name-matching rule for both
+  // screens, and it goes through `localizedName` rather than a fifteenth inline ternary.
+  const results = useMemo(
+    () => filterExercises(exercises, { ...NO_EXERCISE_FILTERS, search }, language, EMPTY_LADDER),
+    [exercises, language, search],
+  );
 
   const countByExerciseId = useMemo(() => {
     const counts = new Map<number, number>();
@@ -128,68 +131,44 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
             <YStack gap="$2" pb="$3">
               {results.map((exercise) => {
                 const picked = countByExerciseId.get(exercise.id) ?? 0;
-                const name = language === "fr" ? exercise.frName : exercise.enName;
+                const name = localizedName(exercise, language);
 
                 return (
-                  <XStack
+                  <ExerciseRow
                     key={exercise.id}
-                    items="center"
-                    gap="$3"
-                    p="$2"
-                    rounded="$6"
-                    bg="$background"
-                    borderWidth={1}
+                    exercise={exercise}
+                    language={language}
+                    thumb={assetByExerciseId.get(exercise.id)}
                     borderColor={picked > 0 ? "$primaryText" : "$borderStrong"}
-                    pressStyle={{ opacity: 0.92, scale: 0.99 }}
-                    accessibilityRole="button"
                     accessibilityLabel={
                       picked > 0
                         ? `${name}, ${t("quests.editor_added_count", { count: picked })}`
                         : name
                     }
                     onPress={() => onAdd(exercise)}
-                  >
-                    <YStack width={56} height={56} rounded="$4" overflow="hidden" bg="$surface">
-                      <Image
-                        source={assetByExerciseId.get(exercise.id)}
-                        style={{ width: "100%", height: "100%" }}
-                        contentFit="cover"
-                        transition={0}
-                      />
-                    </YStack>
-
-                    <YStack flex={1} gap="$1">
-                      <Text fontWeight="700" fontSize={15} color="$text">
-                        {name}
-                      </Text>
-                      <Text fontSize={12} color="$textSecondary">
-                        {[
-                          ...exercise.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
-                          EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment,
-                        ].join(" · ")}
-                      </Text>
-                    </YStack>
-
-                    {picked > 0 ? (
-                      <XStack
-                        items="center"
-                        gap="$1"
-                        px="$2"
-                        py="$1"
-                        rounded="$10"
-                        bg="$surface"
-                        borderWidth={1}
-                        borderColor="$primaryText"
-                      >
-                        <Check size={14} color="$primaryText" strokeWidth={3} />
-                        <Text fontSize={12} fontWeight="700" color="$primaryText">
-                          {picked}
-                        </Text>
-                      </XStack>
-                    ) : null}
-
-                    <Plus size={20} color="$primaryText" strokeWidth={2.5} />
-                  </XStack>
+                    trailing={
+                      <>
+                        {picked > 0 ? (
+                          <XStack
+                            items="center"
+                            gap="$1"
+                            px="$2"
+                            py="$1"
+                            rounded="$10"
+                            bg="$surface"
+                            borderWidth={1}
+                            borderColor="$primaryText"
+                          >
+                            <Check size={14} color="$primaryText" strokeWidth={3} />
+                            <Text fontSize={12} fontWeight="700" color="$primaryText">
+                              {picked}
+                            </Text>
+                          </XStack>
+                        ) : null}
+                        <Plus size={20} color="$primaryText" strokeWidth={2.5} />
+                      </>
+                    }
+                  />
                 );
               })}
 

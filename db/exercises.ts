@@ -34,6 +34,12 @@ export type Exercise = {
   muscles: MuscleCode[];
   /** Movement family — what the exercise *is*, as opposed to what it works. */
   pattern: MovementPattern | null;
+  /**
+   * The easier variation this one is built on (`0022`). Carried on the list row so the
+   * catalogue can derive the whole ladder from the cached list instead of one query per row —
+   * inverted, `prerequisite → this` is "what does this movement lead to".
+   */
+  prerequisiteExerciseId: number | null;
 };
 
 export { isEquipmentCode, isMuscleCode };
@@ -59,6 +65,7 @@ async function fetchExercises(): Promise<Exercise[]> {
       style: exercises.style,
       secondsPerRep: exercises.secondsPerRep,
       pattern: exercises.pattern,
+      prerequisiteExerciseId: exercises.prerequisiteExerciseId,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -82,6 +89,7 @@ async function fetchExercises(): Promise<Exercise[]> {
         style: isExerciseStyle(r.style) ? r.style : "strength",
         secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
         pattern: r.pattern ?? null,
+        prerequisiteExerciseId: r.prerequisiteExerciseId,
         muscles: [],
       });
     }
@@ -120,6 +128,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
       style: exercises.style,
       secondsPerRep: exercises.secondsPerRep,
       pattern: exercises.pattern,
+      prerequisiteExerciseId: exercises.prerequisiteExerciseId,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -142,6 +151,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
     style: isExerciseStyle(first.style) ? first.style : "strength",
     secondsPerRep: typeof first.secondsPerRep === "number" ? first.secondsPerRep : 3,
     pattern: first.pattern ?? null,
+    prerequisiteExerciseId: first.prerequisiteExerciseId,
     muscles: [],
   };
 

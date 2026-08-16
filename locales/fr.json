@@ -233,7 +233,26 @@
     "next_step": "Prochaine marche",
     "next_step_earned": "Tu l'as mérité — tente-le.",
     "next_step_progress": "Atteins ta cible encore {{count}} fois pour le débloquer.",
-    "next_step_progress_plural": "Atteins ta cible encore {{count}} fois pour le débloquer."
+    "next_step_progress_plural": "Atteins ta cible encore {{count}} fois pour le débloquer.",
+    "catalogue_title": "Exercices",
+    "count_one": "{{count}} mouvement",
+    "count_other": "{{count}} mouvements",
+    "search": "Chercher un mouvement",
+    "filter_group_ladder": "Progression",
+    "filter_ladder": "Progression",
+    "filter_group_pattern": "Mouvement",
+    "leads_to": "mène à {{name}}",
+    "empty_filters_title": "Aucun résultat",
+    "empty_filters_subtitle": "Retire un filtre ou vide la recherche.",
+    "pattern_push_horizontal": "Poussée (horizontale)",
+    "pattern_push_vertical": "Poussée (verticale)",
+    "pattern_pull_horizontal": "Tirage (horizontal)",
+    "pattern_pull_vertical": "Tirage (vertical)",
+    "pattern_squat": "Squat",
+    "pattern_hinge": "Charnière",
+    "pattern_core": "Gainage",
+    "pattern_locomotion": "Déplacement",
+    "pattern_mobility": "Mobilité"
   },
   "explore": "Explorer",
   "goals": {
@@ -471,7 +490,7 @@
     "filter_duration_short": "≤ 15 min",
     "filters_clear": "Effacer les filtres",
     "gallery_subtitle": "Séances uniques — choisis-en une et pars",
-    "gallery_title": "Galerie des quêtes",
+    "gallery_title": "Quêtes",
     "go_back": "Retour",
     "home_overview_title": "Choisir une quête",
     "invalid_id": "Quête invalide",
@@ -502,7 +521,8 @@
     "archetype_metabolic": "Cardio",
     "archetype_core": "Gainage",
     "archetype_mobility": "Mobilité",
-    "editor_saved": "Quête enregistrée"
+    "editor_saved": "Quête enregistrée",
+    "filter_remove": "Retirer {{label}}"
   },
   "recovery": {
     "description": "Tu as une séance laissée en chemin.",

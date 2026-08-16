@@ -26,6 +26,7 @@ function makeQuest(): Quest {
     style: "strength" as const,
     secondsPerRep: 3,
     pattern: null,
+    prerequisiteExerciseId: null,
     muscles: [],
   };
 

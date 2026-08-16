@@ -1,7 +1,9 @@
 import { act, render, screen, waitFor } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
+import { AchievementsCard } from "@/components/journal/AchievementsCard";
 import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
+import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
 import config from "@/tamagui.config";
@@ -25,6 +27,11 @@ const mockGetUserLevelInfo = jest.fn();
 const mockGetPersonalRecordsSummary = jest.fn();
 const mockGetStreakInfo = jest.fn();
 const mockGetSuggestedQuestsForWeakAreas = jest.fn();
+const mockGetAllAchievementsWithProgress = jest.fn();
+const mockGetMuscleBalance = jest.fn();
+const mockGetPatternBalance = jest.fn();
+const mockGetRecentSessionHistory = jest.fn();
+const mockGetReadyStep = jest.fn();
 
 jest.mock("@/db/userLevel", () => ({
   getUserLevelInfo: () => mockGetUserLevelInfo(),
@@ -38,7 +45,18 @@ jest.mock("@/db/personalRecords", () => ({
 jest.mock("@/db/streaks", () => ({ getStreakInfo: () => mockGetStreakInfo() }));
 jest.mock("@/db/muscleBalance", () => ({
   getSuggestedQuestsForWeakAreas: () => mockGetSuggestedQuestsForWeakAreas(),
+  getMuscleBalance: () => mockGetMuscleBalance(),
+  getPatternBalance: () => mockGetPatternBalance(),
+  getPullDeficit: () => null,
+  getBalanceRecommendation: () => null,
 }));
+jest.mock("@/db/achievements", () => ({
+  getAllAchievementsWithProgress: () => mockGetAllAchievementsWithProgress(),
+}));
+jest.mock("@/db/completed", () => ({
+  getRecentSessionHistory: () => mockGetRecentSessionHistory(),
+}));
+jest.mock("@/db/exercises", () => ({ getReadyStep: () => mockGetReadyStep() }));
 
 async function mount(ui: React.ReactElement) {
   let result!: ReturnType<typeof render>;
@@ -77,6 +95,11 @@ beforeEach(() => {
   });
   mockGetStreakInfo.mockResolvedValue({ current: 0, longest: 0, isLit: false });
   mockGetSuggestedQuestsForWeakAreas.mockResolvedValue([]);
+  mockGetAllAchievementsWithProgress.mockResolvedValue([]);
+  mockGetMuscleBalance.mockResolvedValue([]);
+  mockGetPatternBalance.mockResolvedValue([]);
+  mockGetRecentSessionHistory.mockResolvedValue([]);
+  mockGetReadyStep.mockResolvedValue(null);
 });
 
 describe("UserLevelCard", () => {
@@ -124,5 +147,29 @@ describe("SuggestedQuestsCard", () => {
     mockGetSuggestedQuestsForWeakAreas.mockRejectedValue(new Error("db is gone"));
 
     await expect(mount(<SuggestedQuestsCard />)).resolves.toBeDefined();
+  });
+});
+
+// The same two arms for the three remaining cards. Each swallows its own failure, so the one
+// thing that must hold is that a broken query costs a card and never the screen around it.
+describe.each([
+  ["AchievementsCard", AchievementsCard, mockGetAllAchievementsWithProgress],
+  ["ProgressionCard", ProgressionCard, mockGetRecentSessionHistory],
+] as const)("%s", (_name, Component, query) => {
+  // MuscleBalanceCard is deliberately absent: it reads two views of the same 30 days and expects
+  // a shape this harness would have to guess at. Guessing produces a test that passes against a
+  // fiction. It needs its own fixture, not a place in this loop.
+  it("mounts on an empty database, which is what a new hero has", async () => {
+    await mount(<Component />);
+
+    await waitFor(() => expect(query).toHaveBeenCalled());
+    expect(screen.toJSON()).not.toBeUndefined();
+  });
+
+  it("swallows a failing query instead of taking the journal down", async () => {
+    query.mockRejectedValue(new Error("db is gone"));
+
+    await expect(mount(<Component />)).resolves.toBeDefined();
+    await waitFor(() => expect(query).toHaveBeenCalled());
   });
 });

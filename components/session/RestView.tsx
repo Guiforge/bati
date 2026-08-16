@@ -287,7 +287,7 @@ export function RestView() {
                 borderColor="$borderStrong"
               >
                 <Image
-                  source={getExerciseThumb(nextEx?.exercise.imagePath)}
+                  source={getExerciseThumb(nextEx?.exercise.imagePath ?? "")}
                   style={{ width: "100%", height: "100%" }}
                   contentFit="cover"
                   transition={150}

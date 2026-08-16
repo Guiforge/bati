@@ -117,7 +117,8 @@ export function FilterRail({
         style={RAIL_STYLE}
       >
         {groups.map((g) =>
-          g.chips.length === 1 ? (
+          // A single-chip group renders as a bare chip, not a pill with one option.
+          g.chips.length === 1 && g.chips[0] ? (
             <Chip
               key={g.key}
               label={g.chips[0].label}

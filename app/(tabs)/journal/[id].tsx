@@ -255,7 +255,7 @@ export default function SessionDetailScreen() {
                   {/* ponytail: per-exercise rendering with target/result/record branches; extract a row
                       component when the record badge grows a second variant. */}
                   {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above */}
-                  {exercisesByRound[roundIndex].map((cex) => {
+                  {(exercisesByRound[roundIndex] ?? []).map((cex) => {
                     const exName = language === "fr" ? cex.exercise.frName : cex.exercise.enName;
                     const equipmentLabel =
                       EQUIPMENT_LABELS[cex.exercise.equipment]?.[language] ??

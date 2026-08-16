@@ -54,7 +54,8 @@ function ChainLine({ oath }: { oath: OathProgress }) {
 
   if (!chain) return null;
 
-  const current = chain.rungs[chain.position - 1].exercise;
+  const current = chain.rungs[chain.position - 1]?.exercise;
+  if (!current) return null;
 
   return (
     <Text fontSize={13} color="$textSecondary" opacity={0.85}>

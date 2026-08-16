@@ -10,7 +10,7 @@ export type Avatar = {
   source: ImageSourcePropType;
 };
 
-export const AVATARS: Avatar[] = [
+export const AVATARS = [
   {
     id: "shadow",
     labelKey: "avatars.shadow",
@@ -41,7 +41,7 @@ export const AVATARS: Avatar[] = [
     labelKey: "avatars.archer",
     source: require("../assets/avatar/archer.webp"),
   },
-];
+] as const satisfies readonly [Avatar, ...Avatar[]];
 
 export function isAvatarId(value: unknown): value is AvatarId {
   return typeof value === "string" && (avatarIds as readonly string[]).includes(value);

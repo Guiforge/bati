@@ -285,7 +285,9 @@ export default function SettingsScreen() {
       });
       if (result.canceled) return;
 
-      await setCustomAvatarUri(result.assets[0].uri);
+      const picked = result.assets[0];
+      if (!picked) return;
+      await setCustomAvatarUri(picked.uri);
       setShowAvatarPicker(false);
     } catch (error) {
       reportError("settings.avatar", error);

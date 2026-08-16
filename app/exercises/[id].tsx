@@ -128,7 +128,8 @@ function LadderStrip({ chain }: { chain: Chain }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
 
-  const current = chain.rungs[chain.position - 1].exercise;
+  const current = chain.rungs[chain.position - 1]?.exercise;
+  if (!current) return null;
 
   return (
     <YStack gap="$2">

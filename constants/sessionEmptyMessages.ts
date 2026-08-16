@@ -3,6 +3,9 @@
  * up). Title and subtitle are paired by index, not drawn independently, so the tone never
  * mismatches (an upbeat title next to a flat subtitle).
  */
+type EmptyVariant = { title: string; subtitle: string };
+
+/** Non-empty by contract: `pickSessionEmptyVariant` promises a variant, never `undefined`. */
 export const SESSION_EMPTY_VARIANTS = {
   en: [
     { title: "Nice work!", subtitle: "Session logged — keep your streak alive." },
@@ -22,7 +25,9 @@ export const SESSION_EMPTY_VARIANTS = {
   ],
 };
 
-export function pickSessionEmptyVariant(language: "en" | "fr") {
+export function pickSessionEmptyVariant(language: "en" | "fr"): EmptyVariant {
   const pool = SESSION_EMPTY_VARIANTS[language];
-  return pool[Math.floor(Math.random() * pool.length)];
+  // The pools are non-empty by the tuple type below, and the index is modulo their own length,
+  // so the assertion the return type makes is one the compiler could not derive on its own.
+  return pool[Math.floor(Math.random() * pool.length)] as EmptyVariant;
 }

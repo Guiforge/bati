@@ -1,49 +1,32 @@
 #!/usr/bin/env bash
-# A ratchet on `noUncheckedIndexedAccess`, the biggest type-level guarantee this project does not
-# have yet: without it every `arr[0]`, `codes[i]` and `result[0].value` is typed as if the element
-# were always there, and TypeScript agrees with you right up to the crash.
+# `noUncheckedIndexedAccess` over everything the app actually ships.
 #
-# Turning it on costs 255 fixes, which is a project, not an evening. So instead of a flag that is
-# either off or blocking, the error count is a number that may only go **down** — the same shape
-# as the jest coverage thresholds, and for the same reason: it catches backsliding without
-# demanding the whole debt be paid at once.
+# Without it every `arr[0]`, `codes[i]` and `rows[0].value` is typed as if the element were
+# always there, and TypeScript agrees with you right up to the crash. Turning it on cost 255
+# fixes, done in batches behind a ratchet (the error count could only go down). The count
+# reached zero on 2026-08-16, so this is no longer a ratchet: **any** error fails.
 #
-# When BASELINE reaches 0: move `noUncheckedIndexedAccess` into tsconfig.json, delete
-# tsconfig.strict.json, delete this script, and delete its CI step. The ratchet is scaffolding
-# and it is supposed to disappear.
+# Nearly every one of those 255 was the same shape — guard with `rows.length === 0`, then index
+# `rows[0]`, which does not narrow — and the fix was to check the value instead of the length.
+# Where the index was in range by construction, the answer was to remove the indexing rather
+# than guard it: `for...of` over `entries()`, a rotated array instead of modulo arithmetic, and
+# `as const` on fixed catalogues so index 0 has a known type. Guards that cannot be reached are
+# branches no test can cover, and the coverage thresholds say so loudly.
 #
-# Order to work through, cheapest-risk first (each of these has real tests behind it):
-# db/, stores/ and constants/ are done. What is left is 15 errors in components/ and app/, all
-# in files that have no tests: FilterRail, SessionRewards, OathCard, settings.tsx,
-# exercises/[id].tsx. They wait on purpose — fixing an indexed access in code nothing watches is
-# editing blind. Cover the screen first (see the coverage track), then come back here.
-#
-# `__tests__` is excluded in tsconfig.strict.json, not fixed. The flag exists to protect shipped
-# code; a test that indexes past the end of an array fails immediately and loudly when it runs,
-# which is the whole job. If that ever stops being true, drop the exclude and expect ~70 errors.
+# `__tests__` is excluded in tsconfig.strict.json, deliberately: the flag exists to protect
+# shipped code, and a test that reads past the end of an array fails immediately and loudly the
+# moment it runs. Including them would mean ~70 non-null assertions and turning off
+# noNonNullAssertion for tests, weakening a rule that currently holds everywhere. To reverse
+# that trade, delete the `exclude` line and expect the 70 back.
 set -euo pipefail
-
-# Measured on 2026-08-16. Lower it every time you fix a file; never raise it.
-BASELINE=13
 
 cd "$(dirname "$0")/.."
 
-# `|| true`: tsc exits non-zero whenever there is at least one error, which is the normal state
-# here until the baseline reaches zero. The count is the signal, not the exit code.
-output=$(npx tsc -p tsconfig.strict.json --noEmit 2>&1 || true)
-count=$(printf '%s\n' "$output" | grep -cE "error TS" || true)
-
-if [ "$count" -gt "$BASELINE" ]; then
-  echo "noUncheckedIndexedAccess: $count errors, baseline is $BASELINE."
-  echo "New unchecked indexed accesses were introduced. The new ones:"
-  printf '%s\n' "$output" | grep -E "error TS" | head -20
+if ! npx tsc -p tsconfig.strict.json --noEmit; then
+  echo
+  echo "noUncheckedIndexedAccess: an indexed access is no longer guarded."
+  echo "Check the value rather than the length, or remove the indexing entirely."
   exit 1
 fi
 
-if [ "$count" -lt "$BASELINE" ]; then
-  echo "noUncheckedIndexedAccess: $count errors, down from $BASELINE. Good."
-  echo "Set BASELINE=$count in scripts/strict-ratchet.sh so the gain cannot be given back."
-  exit 1
-fi
-
-echo "noUncheckedIndexedAccess: $count errors, holding at the baseline."
+echo "noUncheckedIndexedAccess: clean."

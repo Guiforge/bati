@@ -82,7 +82,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         const err = e instanceof Error ? e : new Error(String(e));
         setMigrationState({ success: false, error: err });
       }
-    })();
+    })().catch((e) => reportError("db.migrate.effect", e));
 
     return () => {
       cancelled = true;
@@ -97,7 +97,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
 
   useEffect(() => {
     if (error) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch((e) => reportError("splash.hide", e));
     }
   }, [error]);
 

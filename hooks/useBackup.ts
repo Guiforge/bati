@@ -95,13 +95,13 @@ export function useBackup() {
   return {
     busy,
     runExport: useCallback(() => {
-      runExport();
+      runExport().catch((e) => reportError("backup.export", e));
     }, [runExport]),
     runSaveToFolder: useCallback(() => {
-      runSaveToFolder();
+      runSaveToFolder().catch((e) => reportError("backup.saveToFolder", e));
     }, [runSaveToFolder]),
     runImport: useCallback(() => {
-      runImport();
+      runImport().catch((e) => reportError("backup.import", e));
     }, [runImport]),
   };
 }

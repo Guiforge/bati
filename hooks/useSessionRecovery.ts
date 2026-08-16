@@ -87,7 +87,7 @@ export function useSessionRecovery() {
 
   // Check for saved session on mount
   useEffect(() => {
-    checkForRecoverableSession();
+    checkForRecoverableSession().catch((e) => reportError("session.recoveryCheck", e));
   }, [checkForRecoverableSession]);
 
   const recoverSession = useCallback(async (): Promise<boolean> => {

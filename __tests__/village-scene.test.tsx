@@ -109,7 +109,7 @@ describe("VillageScene", () => {
     const { getByTestId, getByLabelText, findByText } = await renderScene();
 
     await waitFor(() => expect(getByTestId("village-built")).toBeTruthy());
-    fireEvent.press(getByLabelText("forge-en"));
+    await fireEvent.press(getByLabelText("forge-en"));
 
     // The driver, where it stands, and what the next level costs.
     expect(await findByText("350 work units of chest training")).toBeTruthy();
@@ -122,7 +122,7 @@ describe("VillageScene", () => {
     const { getByTestId, getByLabelText, findByText } = await renderScene();
 
     await waitFor(() => expect(getByTestId("village-to-build")).toBeTruthy());
-    fireEvent.press(getByLabelText("quarry-en"));
+    await fireEvent.press(getByLabelText("quarry-en"));
 
     expect(await findByText("Train your back to raise this building")).toBeTruthy();
   });

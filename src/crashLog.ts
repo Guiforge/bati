@@ -213,7 +213,11 @@ export function installCrashHandler(): void {
 
   const previous = utils.getGlobalHandler();
   utils.setGlobalHandler((error, isFatal) => {
-    recordCrash("fatal", error, isFatal !== false);
+    recordCrash("fatal", error, isFatal !== false).catch(() => {
+      // Deliberate silence, and the only one here: this runs *inside* the global error handler,
+      // so reporting a failure to record a crash would re-enter the same path. Losing one crash
+      // row is better than a loop while the app is already dying.
+    });
     previous(error, isFatal);
   });
 }

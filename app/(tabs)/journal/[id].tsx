@@ -16,6 +16,7 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import { getCached, setCached } from "@/db/queryCache";
 import { listQuestTemplates } from "@/db/quests";
 import { localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 type Status = "loading" | "ready" | "error";
@@ -82,7 +83,7 @@ export default function SessionDetailScreen() {
   );
 
   useEffect(() => {
-    if (sessionId) load(sessionId);
+    if (sessionId) load(sessionId).catch((e) => reportError("journal.detail", e));
   }, [sessionId, load]);
 
   const goBack = () => router.back();

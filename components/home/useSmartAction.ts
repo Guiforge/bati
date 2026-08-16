@@ -212,7 +212,7 @@ export function useSmartAction() {
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      determineAction(() => cancelled);
+      determineAction(() => cancelled).catch((e) => reportError("home.smartAction", e));
       return () => {
         cancelled = true;
       };

@@ -47,7 +47,7 @@ export function AchievementsCard() {
   }, []);
 
   useEffect(() => {
-    loadAchievements();
+    loadAchievements().catch((e) => reportError("journal.achievements", e));
   }, [loadAchievements]);
 
   // Sort: unlocked first, then by progress

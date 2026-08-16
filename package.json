@@ -113,7 +113,7 @@
   "private": true,
   "scripts": {
     "android": "expo run:android",
-    "check": "biome check --write . && npx tsc -p tsconfig.json --noEmit",
+    "check": "biome check --write --error-on-warnings . && npx tsc -p tsconfig.json --noEmit",
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
     "format": "biome check --write .",

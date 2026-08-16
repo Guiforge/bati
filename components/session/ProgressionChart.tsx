@@ -9,6 +9,7 @@ import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { DIFFICULTY_COLORS, rawColors } from "@/constants/rawColors";
 import type { SessionSummary } from "@/db";
 import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 type ChartMode = "quest" | "all";
@@ -65,7 +66,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       }
     };
 
-    loadData();
+    loadData().catch((e) => reportError("session.progressionChart", e));
 
     return () => {
       mounted = false;

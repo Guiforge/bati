@@ -32,7 +32,7 @@ LogBox.ignoreLogs(["Expo AV has been deprecated"]);
 // the one most worth having a trace of. Writes to the local database only; see src/crashLog.ts.
 installCrashHandler();
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch((e) => reportError("splash.preventAutoHide", e));
 
 // Custom Navigation Theme to force Cream background. Module scope: built from static tokens,
 // and a fresh object per render would invalidate the ThemeProvider context for the whole
@@ -114,7 +114,9 @@ export default function RootLayout() {
       router.replace("/");
     }
 
-    SplashScreen.hideAsync();
+    // A rejection here leaves the splash up forever, which reads as a frozen app. It must be
+    // reported, not swallowed.
+    SplashScreen.hideAsync().catch((e) => reportError("splash.hide", e));
   }, [
     hasFinishedOnboarding,
     isNavigationReady,

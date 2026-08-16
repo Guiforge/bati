@@ -151,7 +151,7 @@ export function MonthlyCalendarCard() {
       setMonthData(data);
     }
 
-    loadData();
+    loadData().catch((e) => reportError("journal.calendar", e));
   }, [currentMonth, weekStartsOn]);
 
   const goToPrevMonth = () => {

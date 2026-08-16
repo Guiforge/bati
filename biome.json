@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.6/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.8/schema.json",
   "files": {
     "ignoreUnknown": false,
     "includes": [
@@ -41,7 +41,8 @@
     "enabled": true,
     "domains": {
       "react": "all",
-      "reactNative": "all"
+      "reactNative": "all",
+      "types": "recommended"
     },
     "rules": {
       "preset": "recommended",
@@ -59,7 +60,7 @@
         "noUnusedImports": "error",
         "noUnusedVariables": "error",
         "noUnusedFunctionParameters": "error",
-        "useExhaustiveDependencies": "warn",
+        "useExhaustiveDependencies": "error",
         "useHookAtTopLevel": "error",
         "noConstantCondition": "error",
         "noSwitchDeclarations": "error",
@@ -69,15 +70,15 @@
       },
       "style": {
         "useImportType": "off",
-        "noNonNullAssertion": "warn",
+        "noNonNullAssertion": "error",
         "useConst": "error",
-        "useTemplate": "warn",
+        "useTemplate": "error",
         "noParameterAssign": "error",
         "useSingleVarDeclarator": "error"
       },
       "suspicious": {
         "noConsole": {
-          "level": "warn",
+          "level": "error",
           "options": {
             "allow": ["warn", "error"]
           }
@@ -91,16 +92,29 @@
         "noRedeclare": "error",
         "useAwait": "warn",
         "noEmptyBlockStatements": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "error"
       }
     }
   },
   "overrides": [
     {
-      "includes": ["components/HomeSettingsMenu.tsx", "hooks/useSound.ts"],
+      "includes": ["components/HomeSettingsMenu.tsx"],
       "linter": {
         "rules": {
           "suspicious": {
             "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["components/village/VillageScene.tsx", "db/village.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off"
           }
         }
       }

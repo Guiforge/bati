@@ -120,7 +120,7 @@ describe("BossArena damage trail", () => {
 
     // A set lands: HP drops to half.
     await act(() => {
-      root.rerender(arena(200));
+      return root.rerender(arena(200));
     });
 
     // The live bar moved immediately; the trail still shows where HP was.
@@ -139,7 +139,7 @@ describe("BossArena damage trail", () => {
     const root = await render(arena(TOTAL_HP));
 
     await act(() => {
-      root.rerender(arena(100));
+      return root.rerender(arena(100));
     });
 
     // No timer advanced: both bars are already at the new value.

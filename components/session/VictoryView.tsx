@@ -166,7 +166,7 @@ export function VictoryView() {
   useEffect(() => {
     if (savedRef.current) return;
     savedRef.current = true;
-    runSave();
+    runSave().catch((e) => reportError("session.save", e));
   }, [runSave]);
 
   // The feeling can be tapped while the save is still in flight, but persisting it needs a

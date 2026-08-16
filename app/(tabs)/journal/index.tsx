@@ -147,7 +147,7 @@ export default function JournalScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
+      loadHistory().catch((e) => reportError("journal.history", e));
     }, [loadHistory]),
   );
 

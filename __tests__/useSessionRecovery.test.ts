@@ -78,7 +78,7 @@ function liveSession(overrides: Record<string, unknown> = {}) {
  */
 async function bankLiveSession(overrides: Record<string, unknown> = {}) {
   liveSession(overrides);
-  await act(async () => {
+  await act(() => {
     useSessionStore.setState((s) => ({ results: [...s.results, aResult] }));
   });
   await waitFor(() => expect(mockSavedSlot).not.toBeNull());

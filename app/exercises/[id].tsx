@@ -362,7 +362,7 @@ export default function ExerciseDetails() {
   );
 
   useEffect(() => {
-    if (exerciseId) load(exerciseId);
+    if (exerciseId) load(exerciseId).catch((e) => reportError("exercise.detail", e));
   }, [exerciseId, load]);
 
   const goBack = () => router.back();

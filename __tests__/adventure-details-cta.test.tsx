@@ -13,7 +13,7 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
   useLocalSearchParams: () => ({ id: "1" }),
   // The screen loads on focus; in tests "focused" is simply "mounted".
-  useFocusEffect: (effect: () => void | (() => void)) => {
+  useFocusEffect: (effect: () => undefined | (() => void)) => {
     const { useEffect } = require("react");
     useEffect(effect, [effect]);
   },

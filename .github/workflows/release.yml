@@ -176,14 +176,14 @@ jobs:
             This APK is not from an app store. Android will ask you to allow installs from an
             unknown source the first time.
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: apk
           path: ${{ steps.artefacts.outputs.apk_path }}
 
       # Only the play job needs this one, and only on a tagged build — no point keeping it
       # around otherwise.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: aab

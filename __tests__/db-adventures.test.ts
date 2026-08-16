@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/adventures", () => {
@@ -85,8 +87,7 @@ describe("db/adventures", () => {
 
     const all = await adventures.listAdventures();
     const [first, second] = all;
-    expect(first).toBeTruthy();
-    expect(second).toBeTruthy();
+    assert(first && second);
 
     expect((await adventures.getFinishedRunCountsByAdventure()).size).toBe(0);
 

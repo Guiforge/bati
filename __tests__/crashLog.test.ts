@@ -4,6 +4,8 @@
  * `mailto:` the hero opens, reads and sends themselves.
  */
 
+import assert from "node:assert/strict";
+
 const mockStore = new Map<string, string>();
 
 jest.mock("@/db/client", () => ({ getRawDb: () => ({}) }));
@@ -35,6 +37,7 @@ describe("crashLog", () => {
     await recordCrash("render", new Error("boom"));
 
     const [report] = await readCrashLog();
+    assert(report);
     expect(report.context).toBe("render");
     expect(report.message).toBe("boom");
     expect(report.stack).toContain("boom");
@@ -44,7 +47,7 @@ describe("crashLog", () => {
   test("a thrown non-Error still records something usable", async () => {
     await recordCrash("fatal", "just a string");
 
-    expect((await readCrashLog())[0].message).toBe("just a string");
+    expect((await readCrashLog())[0]?.message).toBe("just a string");
   });
 
   test("keeps the newest crashes first and caps the log", async () => {
@@ -54,7 +57,7 @@ describe("crashLog", () => {
 
     const reports = await readCrashLog();
     expect(reports).toHaveLength(5);
-    expect(reports[0].message).toBe("crash 7");
+    expect(reports[0]?.message).toBe("crash 7");
     expect(reports.at(-1)?.message).toBe("crash 3");
   });
 
@@ -64,7 +67,7 @@ describe("crashLog", () => {
 
     await recordCrash("fatal", err);
 
-    expect((await readCrashLog())[0].stack?.length).toBeLessThanOrEqual(4000);
+    expect((await readCrashLog())[0]?.stack?.length).toBeLessThanOrEqual(4000);
   });
 
   test("a corrupt log is replaced rather than throwing", async () => {
@@ -74,7 +77,7 @@ describe("crashLog", () => {
 
     const reports = await readCrashLog();
     expect(reports).toHaveLength(1);
-    expect(reports[0].message).toBe("after corruption");
+    expect(reports[0]?.message).toBe("after corruption");
   });
 
   test("clearing empties the log", async () => {

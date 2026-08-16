@@ -14,7 +14,7 @@ import config from "@/tamagui.config";
  */
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
-jest.mock("@/i18n", () => ({ __esModule: true, default: { changeLanguage: jest.fn() } }));
+jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 
 let mockReducedMotion = false;

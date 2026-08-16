@@ -4,7 +4,8 @@
     "app/**/*.{ts,tsx}",
     "tamagui.config.ts",
     "i18n.ts",
-    "__tests__/**/*.{test,spec}.{ts,tsx}"
+    "__tests__/**/*.{test,spec}.{ts,tsx}",
+    "plugins/*.js"
   ],
   "project": ["**/*.{ts,tsx}"],
   "ignoreDependencies": [

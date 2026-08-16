@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import appJson from "../app.json";
@@ -30,9 +31,9 @@ const TRIM_PLUGIN = path.join(ROOT, "plugins", "withAndroidTrimPermissions.js");
  */
 function strippedByPlugin(): Set<string> {
   const source = fs.readFileSync(TRIM_PLUGIN, "utf8");
-  const block = /const REMOVE = \[([\s\S]*?)\];/.exec(source);
-  if (!block) throw new Error("withAndroidTrimPermissions no longer declares a REMOVE array");
-  return new Set(block[1].match(/android\.permission\.[A-Z_]+/g) ?? []);
+  const [, removeList] = /const REMOVE = \[([\s\S]*?)\];/.exec(source) ?? [];
+  if (!removeList) throw new Error("withAndroidTrimPermissions no longer declares a REMOVE array");
+  return new Set(removeList.match(/android\.permission\.[A-Z_]+/g) ?? []);
 }
 
 /**
@@ -73,6 +74,7 @@ function declaredPermissions(): Map<string, string[]> {
     if (!fs.existsSync(manifest)) continue;
     const xml = fs.readFileSync(manifest, "utf8");
     for (const [, name] of xml.matchAll(USES_PERMISSION)) {
+      assert(name);
       const askers = found.get(name) ?? [];
       askers.push(path.relative(NODE_MODULES, pkgDir));
       found.set(name, askers);

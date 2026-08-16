@@ -1,0 +1,4 @@
+- Nothing new to see: this release is a pass over the checks the app
+  goes through before it ships. Every file, tests included, is now held
+  to the strictest type rules, and a few more mistakes are caught at
+  build time instead of on your phone.

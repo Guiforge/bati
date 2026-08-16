@@ -31,7 +31,8 @@ export type BossVoice = {
 };
 
 type Localized = { en: string; fr: string };
-type LocalizedPool = { en: string[]; fr: string[] };
+/** Non-empty by type: a boss with nothing to say would return `undefined` from every pick. */
+type LocalizedPool = { en: [string, ...string[]]; fr: [string, ...string[]] };
 
 /**
  * What to call the thing on screen.

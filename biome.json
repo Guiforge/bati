@@ -13,7 +13,8 @@
       "!assets",
       "!.claude",
       "!.github",
-      "!docs/legal/**/*.html"
+      "!docs/legal/**/*.html",
+      "!drizzle"
     ]
   },
   "formatter": {
@@ -35,7 +36,8 @@
   },
   "plugins": [
     "./.biome/plugins/noRawHexColor.grit",
-    "./.biome/plugins/noIdenticalTernaryArms.grit"
+    "./.biome/plugins/noIdenticalTernaryArms.grit",
+    "./.biome/plugins/noDynamicEnvAccess.grit"
   ],
   "linter": {
     "enabled": true,
@@ -66,15 +68,22 @@
         "noSwitchDeclarations": "error",
         "noUndeclaredVariables": "error",
         "noSelfAssign": "error",
-        "noVoidTypeReturn": "error"
+        "noVoidTypeReturn": "error",
+        "noUndeclaredDependencies": "error"
       },
       "style": {
-        "useImportType": "off",
         "noNonNullAssertion": "error",
         "useConst": "error",
         "useTemplate": "error",
         "noParameterAssign": "error",
-        "useSingleVarDeclarator": "error"
+        "useSingleVarDeclarator": "error",
+        "noDefaultExport": "error",
+        "useConsistentArrayType": {
+          "level": "error",
+          "options": {
+            "syntax": "shorthand"
+          }
+        }
       },
       "suspicious": {
         "noConsole": {
@@ -94,11 +103,44 @@
         "noEmptyBlockStatements": "error"
       },
       "nursery": {
-        "noFloatingPromises": "error"
+        "noFloatingPromises": "error",
+        "noReactNativeRawText": {
+          "level": "error",
+          "options": {
+            "skip": [
+              "AppButton",
+              "Button",
+              "H1",
+              "H2",
+              "H3",
+              "H4",
+              "H5",
+              "H6",
+              "Heading",
+              "Label",
+              "Paragraph",
+              "SizableText",
+              "Trait"
+            ]
+          }
+        },
+        "noReactNativeDeepImports": "error",
+        "useReactNativePlatformComponents": "error",
+        "noReactNativeLiteralColors": "error"
       }
     }
   },
   "overrides": [
+    {
+      "includes": ["app/**", "*.config.ts", "*.config.js"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
     {
       "includes": ["components/HomeSettingsMenu.tsx"],
       "linter": {
@@ -159,6 +201,7 @@
   "vcs": {
     "clientKind": "git",
     "enabled": true,
-    "useIgnoreFile": true
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
   }
 }

@@ -2,7 +2,7 @@ import { AccessibilityInfo } from "react-native";
 import { create } from "zustand";
 import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
-import i18n from "@/i18n";
+import { i18n } from "@/i18n";
 import {
   type AppLanguage,
   getDevicePreferredAppLanguage,

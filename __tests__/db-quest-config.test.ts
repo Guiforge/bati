@@ -89,11 +89,11 @@ describe("db/questConfig", () => {
     expect(configured.rounds).toBe(5);
     expect(configured.restSeconds).toBe(45);
     // Untouched exercise keeps its generated target; the stale id 999 is ignored.
-    expect(configured.exercises[0].target).toEqual({ type: "reps", value: 10 });
-    expect(configured.exercises[1].target).toEqual({ type: "time", value: 60 });
+    expect(configured.exercises[0]?.target).toEqual({ type: "reps", value: 10 });
+    expect(configured.exercises[1]?.target).toEqual({ type: "time", value: 60 });
 
     // The template the rest of the app shares must not be mutated.
     expect(quest.rounds).toBe(3);
-    expect(quest.exercises[1].target.value).toBe(30);
+    expect(quest.exercises[1]?.target.value).toBe(30);
   });
 });

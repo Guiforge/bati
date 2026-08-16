@@ -1,0 +1,18 @@
+// `process.env.EXPO_PUBLIC_*` is not read at runtime — Babel inlines each literal access at
+// build time. A dynamic key (`process.env[name]`) or a destructuring (`const { X } = process.env`)
+// looks up nothing at build time and reads `undefined` in production, while working in dev where
+// the real `process.env` still exists. ESLint's `expo/no-dynamic-env-var` and
+// `expo/no-env-var-destructuring` caught this; Biome ships no equivalent, so this does.
+//
+// Tests are exempt: they *set* `process.env.X` on the real Node object and may enumerate it.
+language js
+
+or {
+  `process.env[$key]`,
+  `const { $vars } = process.env`,
+  `let { $vars } = process.env`,
+  `var { $vars } = process.env`
+} as $access where {
+  $filename <: not r".*__tests__.*",
+  register_diagnostic(span=$access, message="Read env vars as `process.env.EXPO_PUBLIC_NAME` literally: Babel inlines that at build time, and a dynamic key or a destructuring becomes undefined in a production build.")
+}

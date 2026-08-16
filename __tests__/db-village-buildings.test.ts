@@ -177,7 +177,7 @@ describe("db/village buildings", () => {
     ]);
 
     expect(trophies.map((x) => x.kind)).toEqual(["boss"]);
-    expect(trophies[0].imagePath).toBe("assets/x.jpg");
+    expect(trophies[0]?.imagePath).toBe("assets/x.jpg");
   });
 
   // The village card and the detail sheet both draw their bar from this one call. The rule it

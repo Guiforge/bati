@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
@@ -10,6 +12,12 @@ import config from "@/tamagui.config";
 // RNTL 14: `render` is async, so every case awaits it before touching `screen`.
 
 const noop = () => {};
+
+function chip(g: RailGroup[], groupIndex: number, chipIndex: number) {
+  const found = g[groupIndex]?.chips[chipIndex];
+  assert(found, `no chip at ${groupIndex}/${chipIndex}`);
+  return found;
+}
 
 function groups(over: { durationActive?: string; muscles?: string[] } = {}): RailGroup[] {
   const active = new Set(over.muscles ?? []);
@@ -83,8 +91,8 @@ describe("FilterRail", () => {
     const g = groups();
     const onShort = jest.fn();
     const onBack = jest.fn();
-    g[0].chips[0].onPress = onShort;
-    g[1].chips[0].onPress = onBack;
+    chip(g, 0, 0).onPress = onShort;
+    chip(g, 1, 0).onPress = onBack;
     await renderRail(g);
 
     await press("Duration");
@@ -116,7 +124,7 @@ describe("FilterRail", () => {
     const g = groups({ muscles: ["Back"] });
     const onBack = jest.fn();
     const onClearAll = jest.fn();
-    g[1].chips[0].onPress = onBack;
+    chip(g, 1, 0).onPress = onBack;
     await renderRail(g, onClearAll);
 
     await act(async () => fireEvent.press(screen.getByLabelText("Remove Back")));

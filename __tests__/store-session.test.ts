@@ -156,7 +156,7 @@ describe("useSessionStore", () => {
     const state = store.getState();
     expect(state.currentExerciseIndex).toBe(1);
     expect(state.results.length).toBe(1);
-    expect(state.results[0].result.value).toBe(10);
+    expect(state.results[0]?.result.value).toBe(10);
   });
 
   // Both guards below were added when noUncheckedIndexedAccess showed the store indexing
@@ -332,14 +332,14 @@ describe("useSessionStore", () => {
 
       store.getState().completeExercise(8);
       expect(store.getState().pendingDamage).toHaveLength(1);
-      expect(store.getState().pendingDamage[0].damage).toBe(8);
+      expect(store.getState().pendingDamage[0]?.damage).toBe(8);
       expect(store.getState().bossFight?.currentHp).toBe(92);
 
       store.getState().updateLastResult(15);
       const state = store.getState();
       expect(state.results.at(-1)?.result.value).toBe(15);
       expect(state.pendingDamage).toHaveLength(1);
-      expect(state.pendingDamage[0].damage).toBe(15);
+      expect(state.pendingDamage[0]?.damage).toBe(15);
       expect(state.bossFight?.currentHp).toBe(85);
 
       rand.mockRestore();

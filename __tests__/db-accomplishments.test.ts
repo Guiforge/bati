@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 // The two queries behind the village detail sheet: what the hero finished (adventures) and
@@ -42,6 +44,7 @@ describe("accomplishment queries", () => {
   test("listFinishedRunSummaries groups replays and keeps both dates", async () => {
     const adventures = require("../db/adventures") as typeof import("../db/adventures");
     const [first, second, third] = adventureIds();
+    assert(first !== undefined && second !== undefined && third !== undefined);
 
     expect(await adventures.listFinishedRunSummaries()).toEqual([]);
 
@@ -57,11 +60,11 @@ describe("accomplishment queries", () => {
 
     // Most recently finished first, so the replayed one leads.
     expect(summaries.map((s) => s.adventureId)).toEqual([first, second]);
-    expect(summaries[0].timesFinished).toBe(2);
-    expect(summaries[0].firstFinishedAt).toEqual(new Date("2026-01-05T00:00:00Z"));
-    expect(summaries[0].lastFinishedAt).toEqual(new Date("2026-03-05T00:00:00Z"));
-    expect(summaries[0].enTitle).toBeTruthy();
-    expect(summaries[1].timesFinished).toBe(1);
+    expect(summaries[0]?.timesFinished).toBe(2);
+    expect(summaries[0]?.firstFinishedAt).toEqual(new Date("2026-01-05T00:00:00Z"));
+    expect(summaries[0]?.lastFinishedAt).toEqual(new Date("2026-03-05T00:00:00Z"));
+    expect(summaries[0]?.enTitle).toBeTruthy();
+    expect(summaries[1]?.timesFinished).toBe(1);
   });
 
   test("getRecentContributingSessions sums work units per session, newest first", async () => {
@@ -87,9 +90,9 @@ describe("accomplishment queries", () => {
 
     expect(chest.map((s) => s.sessionId)).toEqual([2, 1]);
     // Both rounds of session 2 count once each — the muscle join must not multiply them.
-    expect(chest[0].volume).toBe(42);
-    expect(chest[0].performedAt).toEqual(new Date("2026-02-01T00:00:00Z"));
-    expect(chest[1].volume).toBe(20);
+    expect(chest[0]?.volume).toBe(42);
+    expect(chest[0]?.performedAt).toEqual(new Date("2026-02-01T00:00:00Z"));
+    expect(chest[1]?.volume).toBe(20);
 
     // A muscle push-ups never train has no contributing session.
     expect(await completed.getRecentContributingSessions({ muscle: "legs" })).toEqual([]);

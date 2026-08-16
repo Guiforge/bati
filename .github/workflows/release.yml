@@ -39,7 +39,7 @@ jobs:
 
       # The same gates CI runs. A release should never be the first time they are checked, and it
       # must never be possible to ship past a red one.
-      - run: npx biome check --error-on-warnings .
+      - run: npx biome ci --error-on-warnings --reporter=github .
       - run: npx tsc --noEmit --project tsconfig.json
       - run: npm test
       - run: npm run knip

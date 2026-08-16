@@ -227,7 +227,7 @@ describe("db/personalRecords", () => {
       (r) => r.recordType === "exercise_max_reps" && r.exerciseId === exerciseId,
     );
     expect(exercisePrs).toHaveLength(1);
-    expect(exercisePrs[0].newValue).toBe(12);
+    expect(exercisePrs[0]?.newValue).toBe(12);
   });
 
   test("checkForNewRecords returns empty for non-PR session", async () => {

@@ -33,7 +33,7 @@ jest.mock("@/db/preferences", () => ({
   },
 }));
 jest.mock("@/db", () => ({ preferences: {} }));
-jest.mock("@/i18n", () => ({ __esModule: true, default: { changeLanguage: jest.fn() } }));
+jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 jest.mock("@/hooks/useHaptics", () => ({
   useHaptics: () => ({ success: jest.fn(), selection: jest.fn() }),

@@ -18,7 +18,7 @@ jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn(), back: jes
 // reportError writes to the crash log, which needs the real database; the cards under test are
 // about what the *screen* does when a query fails, not about how the failure is recorded.
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
-jest.mock("@/i18n", () => ({ __esModule: true, default: { changeLanguage: jest.fn() } }));
+jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("expo-localization", () => ({
   getLocales: () => [{ languageCode: "en", languageTag: "en-US" }],
 }));

@@ -1,10 +1,15 @@
 import type { DifficultyCode, QuestTargetType } from "./schema";
 
-export enum Difficulty {
-  Easy = "easy",
-  Medium = "medium",
-  Hard = "hard",
-}
+// A plain object rather than an `enum`: `erasableSyntaxOnly` keeps every TS construct strippable
+// by tools that only erase types (Metro's Babel handles enums, oxc/Node type-stripping do not).
+// The values are the very codes the schema stores, so `Difficulty` the type *is* `DifficultyCode`
+// — no `toDifficultyEnum()` conversion at the DB boundary.
+export const Difficulty = {
+  Easy: "easy",
+  Medium: "medium",
+  Hard: "hard",
+} as const satisfies Record<string, DifficultyCode>;
+export type Difficulty = DifficultyCode;
 
 export type UserLevel = Difficulty;
 

@@ -24,4 +24,4 @@ i18n
     // Initialization errors are handled by i18next internally
   });
 
-export default i18n;
+export { i18n };

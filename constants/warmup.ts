@@ -81,7 +81,7 @@ const POTENTIATE = ["Jump Squat", "High Knees", "Mountain Climber", "Star Jump"]
 const WRISTS = step("Wrist Circles");
 
 /** What a quest gets when nothing is known about it — and what every quest got before `0024`. */
-export const WARMUP_SEQUENCE: WarmupStep[] = [
+export const WARMUP_SEQUENCE: [WarmupStep, ...WarmupStep[]] = [
   // `as const` above makes these tuples, so index 0 is known to exist: no fallback branch.
   step(RAISE[0]),
   step(MOBILISE[0]),

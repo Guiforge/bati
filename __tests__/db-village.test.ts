@@ -116,15 +116,15 @@ describe("db/village", () => {
 
     const banners = await getBossBanners();
     expect(banners).toHaveLength(1);
-    expect(banners[0].adventureId).toBe(2);
-    expect(banners[0].defeatedAt).toEqual(new Date("2026-01-02T00:00:00Z"));
+    expect(banners[0]?.adventureId).toBe(2);
+    expect(banners[0]?.defeatedAt).toEqual(new Date("2026-01-02T00:00:00Z"));
 
     // The banner is the monster you beat, not the poster for its journey: when the adventure has
     // a boss portrait, that is what the trophy shows.
     const adventure = t.sqlite
       .prepare("SELECT imagePath, bossImagePath FROM adventures WHERE id = 2")
       .get() as { imagePath: string | null; bossImagePath: string | null };
-    expect(banners[0].imagePath).toBe(adventure.bossImagePath ?? adventure.imagePath);
+    expect(banners[0]?.imagePath).toBe(adventure.bossImagePath ?? adventure.imagePath);
   });
 
   test("no training means no dominant sport overlay", async () => {
@@ -144,11 +144,11 @@ describe("db/village", () => {
     expect(trophies).toHaveLength(2);
     // The 2020 boss is the older of the two, so it sorts last.
     expect(trophies.map((x) => x.kind)).toEqual(["achievement", "boss"]);
-    expect(trophies[0].key).toBe("achievement:first_workout");
-    expect(trophies[0].emoji).toBeTruthy();
-    expect(trophies[0].imagePath).toBeNull();
-    expect(trophies[1].emoji).toBeNull();
-    expect(trophies[1].imagePath).toBeTruthy();
+    expect(trophies[0]?.key).toBe("achievement:first_workout");
+    expect(trophies[0]?.emoji).toBeTruthy();
+    expect(trophies[0]?.imagePath).toBeNull();
+    expect(trophies[1]?.emoji).toBeNull();
+    expect(trophies[1]?.imagePath).toBeTruthy();
   });
 
   /** A finished campaign run, at a fixed instant. */
@@ -228,7 +228,7 @@ describe("db/village", () => {
     const banners = await getBossBanners();
 
     expect(banners.map((b) => b.adventureId)).toEqual([boss]);
-    expect(banners[0].defeatedAt).toEqual(new Date("2026-01-02T00:00:00Z"));
+    expect(banners[0]?.defeatedAt).toEqual(new Date("2026-01-02T00:00:00Z"));
     expect((await getVillageBuildings()).find((b) => b.code === "dragon_lair")?.level).toBe(1);
   });
 

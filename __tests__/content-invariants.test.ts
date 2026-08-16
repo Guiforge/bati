@@ -121,7 +121,10 @@ describe("content invariants", () => {
     const misordered = all
       .filter((q) => {
         const ranks = q.exercises.map((qex) => DIFFICULTY_RANK[qex.exercise.difficulty]);
-        return ranks.some((rank, i) => i > 0 && ranks[i - 1] > rank);
+        return ranks.some((rank, i) => {
+          const prev = ranks[i - 1];
+          return prev !== undefined && prev > rank;
+        });
       })
       .map((q) => `${q.enTitle}: ${q.exercises.map((e) => e.exercise.difficulty).join(" → ")}`);
 
@@ -144,9 +147,9 @@ describe("content invariants", () => {
     const offenders = all
       .filter((quest) => !STACKING_ALLOWED.has(archetypeOf(quest)))
       .flatMap((quest) =>
-        quest.exercises.slice(1).flatMap((qex, index) => {
-          const prev = quest.exercises[index].exercise;
-          return qex.exercise.pattern === prev.pattern
+        quest.exercises.flatMap((qex, index) => {
+          const prev = quest.exercises[index - 1]?.exercise;
+          return prev && qex.exercise.pattern === prev.pattern
             ? [`${quest.enTitle}: ${prev.enName} → ${qex.exercise.enName} (${prev.pattern})`]
             : [];
         }),
@@ -188,7 +191,7 @@ describe("content invariants", () => {
       const archetype = archetypeOf(quest);
       if (archetype !== "strength" && archetype !== "skill") continue;
 
-      const lead = quest.exercises[0].exercise.pattern;
+      const lead = quest.exercises[0]?.exercise.pattern;
       const balanced = quest.exercises.slice(1).some((qex) => qex.exercise.pattern !== lead);
 
       if (!balanced) offenders.push(`${quest.enTitle}: every exercise is ${lead}`);

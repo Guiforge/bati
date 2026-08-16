@@ -108,7 +108,7 @@ describe("db/exercises — variation ladder", () => {
 
       const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
       expect(chain?.position).toBe(3);
-      expect(chain?.rungs[2].exercise.enName).toBe("Inverted Row");
+      expect(chain?.rungs[2]?.exercise.enName).toBe("Inverted Row");
     });
 
     test("mastering a rung out of order does not count as the ones below it", async () => {
@@ -117,7 +117,7 @@ describe("db/exercises — variation ladder", () => {
       // Contiguous from the bottom: the hero still owes every rung under the one they skipped to.
       const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
       expect(chain?.position).toBe(1);
-      expect(chain?.rungs[4].isEarned).toBe(true);
+      expect(chain?.rungs[4]?.isEarned).toBe(true);
     });
   });
 
@@ -130,7 +130,7 @@ describe("db/exercises — variation ladder", () => {
 
       const unlocked = await exercisesApi().checkForNewRungs(sessionId);
       expect(unlocked.map((s) => s.next.enName)).toEqual(["Push-ups"]);
-      expect(unlocked[0].from.enName).toBe("Wall Push-Up");
+      expect(unlocked[0]?.from.enName).toBe("Wall Push-Up");
     });
 
     test("a rung already earned before tonight is not announced again", async () => {

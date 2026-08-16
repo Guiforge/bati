@@ -15,18 +15,17 @@ jobs:
           node-version: lts/*
           cache: npm
       - run: npm ci
-      # --error-on-warnings: a warning that cannot fail anything is a comment with syntax
-      # highlighting. Six rules sat at "warn" and blocked nothing until 2026-08-16.
-      - run: npx biome check --error-on-warnings .
+      # `biome ci` refuses --write, so a stray autofix cannot slip in here; --reporter=github turns
+      # each diagnostic into a PR annotation. --error-on-warnings: a warning that cannot fail
+      # anything is a comment with syntax highlighting. Six rules sat at "warn" and blocked
+      # nothing until 2026-08-16.
+      - run: npx biome ci --error-on-warnings --reporter=github .
       - run: npx tsc --noEmit --project tsconfig.json
       - run: npm test
       # Dead code is a correctness problem, not tidiness: saveSessionState() had five tests and
       # no callers, which is how its payload drifted from the real writer's unnoticed. Knip is at
       # zero; anything it reports is new.
       - run: npm run knip
-      # A ratchet, not a gate: the error count for noUncheckedIndexedAccess may only go down.
-      # See scripts/strict-ratchet.sh for why it is a number and not a flag.
-      - run: npm run check:strict
       # Dependency versions the installed Expo SDK does not expect compile here and fail on
       # somebody else's machine — F-Droid rebuilds everything from source, so a mismatch is
       # their build error, not ours. Every build log printed the drift for weeks.

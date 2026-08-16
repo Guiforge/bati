@@ -75,12 +75,6 @@ function levelLabel(level: Difficulty, t: TFunction) {
   return t("quests.level_medium");
 }
 
-function toDifficultyEnum(code: "easy" | "medium" | "hard"): Difficulty {
-  if (code === "easy") return Difficulty.Easy;
-  if (code === "hard") return Difficulty.Hard;
-  return Difficulty.Medium;
-}
-
 function StepStatusTag({ status }: { status: "locked" | "active" | "completed" }) {
   const { t } = useTranslation();
   const label =
@@ -392,7 +386,7 @@ export default function AdventureDetailsScreen() {
               </XStack>
             </XStack>
 
-            <Tag label={levelLabel(toDifficultyEnum(effectiveDifficulty), t)} tone="secondary" />
+            <Tag label={levelLabel(effectiveDifficulty, t)} tone="secondary" />
           </XStack>
 
           {state.status === "error" ? (

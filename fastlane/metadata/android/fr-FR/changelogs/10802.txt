@@ -1,0 +1,4 @@
+- Rien de neuf à l'écran : cette version resserre les contrôles que
+  l'appli passe avant de partir. Chaque fichier, tests compris, obéit
+  désormais aux règles de typage les plus strictes, et quelques erreurs
+  de plus sont attrapées à la construction plutôt que sur ton téléphone.

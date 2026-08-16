@@ -28,8 +28,7 @@ beforeAll(() => {
   jest.resetModules();
   jest.doMock("@/db", () => ({ preferences: prefs }));
   jest.doMock("@/i18n", () => ({
-    __esModule: true,
-    default: { changeLanguage: jest.fn().mockResolvedValue(undefined) },
+    i18n: { changeLanguage: jest.fn().mockResolvedValue(undefined) },
   }));
   // The *device* is mocked, not the module that reads it: the store and the home screen
   // widget must both resolve the language through the real `resolveAppLanguage`, and a test

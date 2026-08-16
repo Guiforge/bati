@@ -111,3 +111,21 @@ test("a completed adventure offers a replay and wears its stars", async () => {
 
   expect(queryByText("Start Adventure")).toBeNull();
 });
+
+// The difficulty tag is the suggestion made visible: `Difficulty` is now the same type as the
+// stored code, so nothing converts between the two — the label has to come straight from it.
+test.each([
+  ["easy", "Easy"],
+  ["hard", "Hard"],
+])("the tag wears the suggested difficulty (%s)", async (suggested, label) => {
+  const db = require("@/db") as { suggestDifficultyFromSessions: jest.Mock };
+  db.suggestDifficultyFromSessions.mockReturnValue(suggested);
+
+  const { findByText } = await render(
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <AdventureDetailsScreen />
+    </TamaguiProvider>,
+  );
+
+  expect(await findByText(label)).toBeTruthy();
+});

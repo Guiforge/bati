@@ -2,6 +2,7 @@
   "dependencies": {
     "@expo-google-fonts/noto-sans": "^0.4.2",
     "@expo-google-fonts/space-grotesk": "^0.4.1",
+    "@expo/metro-runtime": "~57.0.10",
     "@legendapp/list": "^3.3.5",
     "@react-navigation/bottom-tabs": "^7.18.16",
     "@react-navigation/elements": "^2.9.38",
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
+    "@expo/config-plugins": "~57.0.8",
     "@j178/prek": "^0.4.13",
     "@tamagui/babel-plugin": "^2.7.4",
     "@testing-library/react-native": "^14.0.1",
@@ -149,7 +151,6 @@
   "scripts": {
     "android": "expo run:android",
     "check": "biome check --write --error-on-warnings . && npx tsc -p tsconfig.json --noEmit",
-    "check:strict": "bash scripts/strict-ratchet.sh",
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
     "format": "biome check --write .",

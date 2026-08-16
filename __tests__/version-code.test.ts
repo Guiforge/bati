@@ -22,8 +22,9 @@ describe("android versionCode", () => {
     const ordered = ["0.9.9", "1.0.0", "1.0.1", "1.0.2", "1.0.99", "1.1.0", "1.99.99", "2.0.0"];
     const codes = ordered.map(versionCodeFor);
 
-    for (let i = 1; i < codes.length; i++) {
-      expect(codes[i]).toBeGreaterThan(codes[i - 1]);
+    for (const [i, code] of codes.entries()) {
+      const previous = codes[i - 1];
+      if (previous !== undefined) expect(code).toBeGreaterThan(previous);
     }
   });
 

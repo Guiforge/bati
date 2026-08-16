@@ -54,7 +54,7 @@ jobs:
       # nothing, every single run — which is most of the 29 minutes a release used to take. The
       # cache is keyed on the Gradle files, so it survives a code change and is only rebuilt when
       # the build definition itself moves.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
         with:
           build-root-directory: android
           cache-read-only: false

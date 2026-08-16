@@ -285,9 +285,8 @@ export async function getOrCreateBossFight(
     .where(eq(adventures.id, adventureId))
     .limit(1);
 
-  if (adventureRows.length === 0) return null;
-
   const adventure = adventureRows[0];
+  if (!adventure) return null;
   if (adventure.kind !== "boss") return null;
 
   // The rematch tier, and the encounter's one cosmetic roll. Rolled here — the session is the
@@ -303,8 +302,9 @@ export async function getOrCreateBossFight(
     .where(eq(bossFights.adventureId, adventureId))
     .limit(1);
 
-  if (existingRows.length > 0) {
-    const row = existingRows[0];
+  const existing = existingRows[0];
+  if (existing) {
+    const row = existing;
     return {
       id: row.id,
       adventureId: row.adventureId,
@@ -342,9 +342,8 @@ export async function getOrCreateBossFight(
     })
     .returning();
 
-  if (result.length === 0) return null;
-
   const row = result[0];
+  if (!row) return null;
   return {
     id: row.id,
     adventureId: row.adventureId,
@@ -392,9 +391,8 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     .where(eq(bossFights.adventureId, adventureId))
     .limit(1);
 
-  if (rows.length === 0) return null;
-
   const row = rows[0];
+  if (!row) return null;
   return {
     id: row.id,
     adventureId: row.adventureId,
@@ -521,11 +519,12 @@ export function dealDamage(
       .where(eq(bossFights.id, bossFightId))
       .limit(1);
 
-    if (fightRows.length === 0) {
+    const currentFight = fightRows[0];
+    if (!currentFight) {
       throw new Error(`Boss fight ${bossFightId} not found`);
     }
 
-    const result = computeDamage(fightRows[0], params);
+    const result = computeDamage(currentFight, params);
 
     // Already defeated: computeDamage reports zero damage and there is nothing to write.
     if (result.damage === 0) return result;
@@ -578,10 +577,8 @@ export async function persistSessionDamage(
       .where(eq(bossFights.id, bossFightId))
       .limit(1);
 
-    if (fightRows.length === 0) return false;
-
     const fight = fightRows[0];
-    if (fight.defeatedAt || fight.currentHp <= 0) return false;
+    if (!fight || fight.defeatedAt || fight.currentHp <= 0) return false;
 
     const total = hits.reduce((sum, hit) => sum + hit.damage, 0);
     const newHp = Math.max(0, fight.currentHp - total);
@@ -680,8 +677,9 @@ export async function resetBossFight(
     .where(eq(bossFights.id, bossFightId))
     .limit(1);
 
-  if (fightRows.length === 0) return;
-  const { adventureId } = fightRows[0];
+  const fightRow = fightRows[0];
+  if (!fightRow) return;
+  const { adventureId } = fightRow;
 
   const adventureRows = await db
     .select({ bossTotalHp: adventures.bossTotalHp })

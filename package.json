@@ -100,10 +100,45 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 44,
-        "functions": 44,
-        "lines": 54,
-        "statements": 53
+        "lines": 100,
+        "statements": 100,
+        "branches": 0,
+        "functions": 0
+      },
+      "./app/": {
+        "lines": 15,
+        "branches": 13,
+        "functions": 10
+      },
+      "./components/": {
+        "lines": 36,
+        "branches": 31,
+        "functions": 32
+      },
+      "./src/": {
+        "lines": 81,
+        "branches": 61,
+        "functions": 73
+      },
+      "./db/": {
+        "lines": 85,
+        "branches": 72,
+        "functions": 84
+      },
+      "./hooks/": {
+        "lines": 86,
+        "branches": 73,
+        "functions": 69
+      },
+      "./stores/": {
+        "lines": 91,
+        "branches": 78,
+        "functions": 80
+      },
+      "./constants/": {
+        "lines": 93,
+        "branches": 75,
+        "functions": 88
       }
     },
     "collectCoverage": true
@@ -114,6 +149,7 @@
   "scripts": {
     "android": "expo run:android",
     "check": "biome check --write --error-on-warnings . && npx tsc -p tsconfig.json --noEmit",
+    "check:strict": "bash scripts/strict-ratchet.sh",
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
     "format": "biome check --write .",

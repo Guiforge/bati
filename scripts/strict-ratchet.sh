@@ -14,7 +14,7 @@
 #
 # Order to work through, cheapest-risk first (each of these has real tests behind it):
 # db/, stores/ and constants/ are done. What is left is 15 errors in components/ and app/, all
-# in files that have no tests: FilterRail, SessionRewards, JournalStats, OathCard, settings.tsx,
+# in files that have no tests: FilterRail, SessionRewards, OathCard, settings.tsx,
 # exercises/[id].tsx. They wait on purpose — fixing an indexed access in code nothing watches is
 # editing blind. Cover the screen first (see the coverage track), then come back here.
 #
@@ -24,7 +24,7 @@
 set -euo pipefail
 
 # Measured on 2026-08-16. Lower it every time you fix a file; never raise it.
-BASELINE=15
+BASELINE=13
 
 cd "$(dirname "$0")/.."
 

@@ -7,10 +7,11 @@ import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { TrendsCard } from "@/components/journal/TrendsCard";
-import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
+import { getWeekStart } from "@/constants/dateFormatters";
 import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
 import { getStreakInfo, type StreakInfo } from "@/db/streaks";
 import { useSettingsStore } from "@/stores/settings";
+import { buildWeekdayBars } from "./journalGrids";
 
 interface JournalStatsProps {
   sessions: {
@@ -19,30 +20,6 @@ interface JournalStatsProps {
     durationSeconds: number | null;
     userLevel: string;
   }[];
-}
-
-type WeekdayData = {
-  day: string;
-  count: number;
-};
-
-function getWeekdayStats(sessions: JournalStatsProps["sessions"], language: string): WeekdayData[] {
-  const counts = [0, 0, 0, 0, 0, 0, 0];
-
-  sessions.forEach((s) => {
-    const day = new Date(s.performedAt).getDay();
-    counts[day]++;
-  });
-
-  // 2023-01-01 was a Sunday: day 1 + i lands on getDay() === i, which lets Intl name any
-  // weekday. Ordered from the locale's first day of the week (Monday in French).
-  const weekStartsOn = getWeekStart(language);
-  const shortWeekday = getDateTimeFormat(language, { weekday: "short" });
-  return Array.from({ length: 7 }, (_, i) => {
-    const day = (weekStartsOn + i) % 7;
-    const label = shortWeekday.format(new Date(2023, 0, 1 + day)).replace(/\.$/, "");
-    return { day: label.charAt(0).toUpperCase() + label.slice(1), count: counts[day] };
-  });
 }
 
 function StatCard({
@@ -158,7 +135,14 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       });
   }, []);
 
-  const weekdayData = useMemo(() => getWeekdayStats(sessions, language), [sessions, language]);
+  const weekdayData = useMemo(
+    () =>
+      buildWeekdayBars(
+        sessions.map((s) => s.performedAt),
+        language,
+      ),
+    [sessions, language],
+  );
 
   // Memoized like weekdayData above: gifted-charts rebuilds (and re-animates)
   // its whole SVG tree whenever the data array identity changes.

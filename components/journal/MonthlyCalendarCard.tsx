@@ -10,94 +10,7 @@ import { listWorkoutDayKeys } from "@/db/completed";
 import { getStreakInfo } from "@/db/streaks";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
-
-type DayData = {
-  date: number;
-  hasWorkout: boolean;
-  isToday: boolean;
-  isCurrentMonth: boolean;
-};
-
-type MonthData = {
-  year: number;
-  month: number; // 0-11
-  days: DayData[];
-  workoutCount: number;
-};
-
-// 2023-01-01 was a Sunday: day 1 + i lands on getDay() === i, which lets Intl name any weekday.
-const weekdayReference = (dayOfWeek: number) => new Date(2023, 0, 1 + dayOfWeek);
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-function getMonthData(
-  year: number,
-  month: number,
-  workoutDates: Set<string>,
-  weekStartsOn: 0 | 1,
-): MonthData {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startDayOfWeek = (firstDay.getDay() - weekStartsOn + 7) % 7;
-
-  const days: DayData[] = [];
-
-  // Add previous month padding days
-  const prevMonth = month === 0 ? 11 : month - 1;
-  const prevYear = month === 0 ? year - 1 : year;
-  const prevMonthLastDay = new Date(prevYear, prevMonth + 1, 0).getDate();
-
-  for (let i = startDayOfWeek - 1; i >= 0; i--) {
-    const date = prevMonthLastDay - i;
-    const dateStr = `${prevYear}-${String(prevMonth + 1).padStart(2, "0")}-${String(date).padStart(2, "0")}`;
-    days.push({
-      date,
-      hasWorkout: workoutDates.has(dateStr),
-      isToday: false,
-      isCurrentMonth: false,
-    });
-  }
-
-  // Add current month days
-  let workoutCount = 0;
-
-  for (let date = 1; date <= lastDay.getDate(); date++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(date).padStart(2, "0")}`;
-    const dayDate = new Date(year, month, date);
-    dayDate.setHours(0, 0, 0, 0);
-
-    const hasWorkout = workoutDates.has(dateStr);
-
-    if (hasWorkout) workoutCount++;
-
-    days.push({
-      date,
-      hasWorkout,
-      isToday: dayDate.getTime() === today.getTime(),
-      isCurrentMonth: true,
-    });
-  }
-
-  // Add next month padding days to complete the grid (6 rows x 7 days = 42)
-  const remainingDays = 42 - days.length;
-  const nextMonth = month === 11 ? 0 : month + 1;
-  const nextYear = month === 11 ? year + 1 : year;
-
-  for (let date = 1; date <= remainingDays; date++) {
-    const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(2, "0")}-${String(date).padStart(2, "0")}`;
-    days.push({
-      date,
-      hasWorkout: workoutDates.has(dateStr),
-      isToday: false,
-      isCurrentMonth: false,
-    });
-  }
-
-  return { year, month, days, workoutCount };
-}
+import { buildMonthGrid, type MonthGrid, weekdayReference } from "./journalGrids";
 
 function LegendDot({ color, label }: { color: ColorTokens; label: string }) {
   return (
@@ -122,7 +35,7 @@ export function MonthlyCalendarCard() {
   const language = useSettingsStore((s) => s.language);
   const weekStartsOn = getWeekStart(language);
 
-  const [monthData, setMonthData] = useState<MonthData | null>(null);
+  const [monthData, setMonthData] = useState<MonthGrid | null>(null);
   // The card's streak cell shows the same flame as the home header (db/streaks.ts), not a
   // second consecutive-days count: two "streak" numbers with different definitions on screen
   // at once read as a bug.
@@ -147,7 +60,12 @@ export function MonthlyCalendarCard() {
       } catch (error) {
         reportError("journal.calendar", error);
       }
-      const data = getMonthData(currentMonth.year, currentMonth.month, workoutDates, weekStartsOn);
+      const data = buildMonthGrid(
+        currentMonth.year,
+        currentMonth.month,
+        workoutDates,
+        weekStartsOn,
+      );
       setMonthData(data);
     }
 
@@ -181,6 +99,7 @@ export function MonthlyCalendarCard() {
   const dayLabels = Array.from({ length: 7 }, (_, i) =>
     narrowWeekday.format(weekdayReference((weekStartsOn + i) % 7)),
   );
+  const capitalize = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
   const monthName = capitalize(
     getDateTimeFormat(language, { month: "long" }).format(
       new Date(monthData.year, monthData.month, 1),

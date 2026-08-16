@@ -181,7 +181,7 @@
     "new_rung_from": "You have mastered {{name}}"
   },
   "quests": {
-    "gallery_title": "Quest gallery",
+    "gallery_title": "Quests",
     "gallery_subtitle": "Single workouts — pick one and go",
     "details_title": "Quest",
     "count": "{{count}} quests",
@@ -263,7 +263,8 @@
     "editor_discard_body": "Your edits will be lost.",
     "editor_discard_title": "Discard changes?",
     "editor_delete_body": "This cannot be undone.",
-    "editor_saved": "Quest saved"
+    "editor_saved": "Quest saved",
+    "filter_remove": "Remove {{label}}"
   },
   "adventures": {
     "gallery_title": "Adventures",
@@ -330,7 +331,7 @@
     "count_other": "{{count}} movements",
     "search": "Search a movement",
     "filter_group_ladder": "Ladder",
-    "filter_ladder": "Leads somewhere",
+    "filter_ladder": "Ladder",
     "filter_group_pattern": "Movement",
     "leads_to": "leads to {{name}}",
     "empty_filters_title": "No matches",

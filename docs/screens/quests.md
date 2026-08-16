@@ -3,9 +3,9 @@ title: Quests Gallery
 type: screen
 route: /quests
 status: active
-updated: 2026-07-14
+updated: 2026-08-16
 related: [quest-details.md, ../gameplay/quests.md]
-sources: [app/(tabs)/quests/index.tsx]
+sources: [app/(tabs)/quests/index.tsx, components/common/FilterRail.tsx]
 ---
 
 # Quests Gallery (`/quests`)
@@ -27,6 +27,12 @@ A **Quest** is a workout template (one quest = one session when you run it).
 - Quest cards should feel dense but calm: subtle borders, readable metadata, no thick outline frames.
 - Thumbnail strips are support content, not the main story.
 - The header count/filter area should stay lightweight so the quest cards remain the focus.
+- **Filters are two lines, never three, and never shift sideways.** Line one is a pill per
+  dimension (Duration · Type · Muscles · Equipment) whose label never changes. Line two has one
+  job at a time: the open dimension's options in a wrap, or — nothing open — the applied filters
+  as removable chips plus "Clear". No filters, no second line. Duration is single-select and
+  folds on pick. This replaced one horizontal strip of ~22 chips, where the hero saw three and
+  could not know the other dimensions existed.
 
 ## Typical user actions
 

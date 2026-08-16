@@ -238,23 +238,11 @@ export default function ExerciseCatalogue() {
     return [...s];
   }, [exercises]);
 
-  // Ladder first — it is the reason this screen exists — then what the movement *is*, then
-  // what it works, then what it needs. One labeled group per dimension.
+  // What the movement *is*, what it works, what it needs — three pills that fit the row — then
+  // the ladder toggle, one chip that peeks past the edge and doubles as the scroll cue. Last,
+  // not first: drawn as a pill it read as a fourth dimension, and the tap filtered instead of
+  // opening.
   const railGroups: RailGroup[] = [
-    {
-      key: "ladder",
-      label: t("exercises.filter_group_ladder", "Ladder"),
-      chips: leadsTo.size
-        ? [
-            {
-              key: "ladder-only",
-              label: t("exercises.filter_ladder", "Leads somewhere"),
-              active: filters.ladderOnly,
-              onPress: toggleLadder,
-            },
-          ]
-        : [],
-    },
     {
       key: "pattern",
       label: t("exercises.filter_group_pattern", "Movement"),
@@ -284,6 +272,21 @@ export default function ExerciseCatalogue() {
         active: filters.equipment.has(e),
         onPress: () => toggleEquipment(e),
       })),
+    },
+    {
+      key: "ladder",
+      label: t("exercises.filter_group_ladder", "Ladder"),
+      chips: leadsTo.size
+        ? [
+            {
+              key: "ladder-only",
+              label: t("exercises.filter_ladder", "Ladder"),
+              icon: <Link2 size={14} color={filters.ladderOnly ? "$bgDark" : "$primaryText"} />,
+              active: filters.ladderOnly,
+              onPress: toggleLadder,
+            },
+          ]
+        : [],
     },
   ].filter((g) => g.chips.length > 0);
 

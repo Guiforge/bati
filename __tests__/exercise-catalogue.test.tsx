@@ -97,7 +97,7 @@ beforeEach(() => {
 
 describe("exercise catalogue", () => {
   it("lists every movement, sorted by name", async () => {
-    renderScreen();
+    await renderScreen();
 
     await waitFor(() => expect(screen.getByText("Inverted Row")).toBeTruthy());
     expect(screen.getByText("Table Row")).toBeTruthy();
@@ -106,7 +106,7 @@ describe("exercise catalogue", () => {
 
   // 4.4: the ladder was in the database since `0022` and nowhere on screen.
   it("names what a movement leads to, and only where it leads somewhere", async () => {
-    renderScreen();
+    await renderScreen();
 
     await waitFor(() => expect(screen.getByText("leads to Inverted Row")).toBeTruthy());
     expect(screen.queryByText("leads to Table Row")).toBeNull();
@@ -114,10 +114,10 @@ describe("exercise catalogue", () => {
   });
 
   it("keeps only the movements that lead somewhere when the ladder chip is on", async () => {
-    renderScreen();
+    await renderScreen();
     await waitFor(() => expect(screen.getByText("Push-up")).toBeTruthy());
 
-    await act(async () => fireEvent.press(screen.getByText("Leads somewhere")));
+    await act(async () => fireEvent.press(screen.getByText("Ladder")));
 
     expect(screen.getByText("Table Row")).toBeTruthy();
     expect(screen.queryByText("Inverted Row")).toBeNull();
@@ -125,7 +125,7 @@ describe("exercise catalogue", () => {
   });
 
   it("narrows to the searched movement", async () => {
-    renderScreen();
+    await renderScreen();
     await waitFor(() => expect(screen.getByText("Push-up")).toBeTruthy());
 
     await act(async () =>
@@ -137,7 +137,7 @@ describe("exercise catalogue", () => {
   });
 
   it("offers a way out when the filters empty the list", async () => {
-    renderScreen();
+    await renderScreen();
     await waitFor(() => expect(screen.getByText("Push-up")).toBeTruthy());
 
     await act(async () =>
@@ -150,7 +150,7 @@ describe("exercise catalogue", () => {
   });
 
   it("opens the detail screen — the route that did not exist before", async () => {
-    renderScreen();
+    await renderScreen();
     await waitFor(() => expect(screen.getByText("Table Row")).toBeTruthy());
 
     await act(async () =>

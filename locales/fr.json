@@ -239,7 +239,7 @@
     "count_other": "{{count}} mouvements",
     "search": "Chercher un mouvement",
     "filter_group_ladder": "Progression",
-    "filter_ladder": "Mène plus loin",
+    "filter_ladder": "Progression",
     "filter_group_pattern": "Mouvement",
     "leads_to": "mène à {{name}}",
     "empty_filters_title": "Aucun résultat",
@@ -490,7 +490,7 @@
     "filter_duration_short": "≤ 15 min",
     "filters_clear": "Effacer les filtres",
     "gallery_subtitle": "Séances uniques — choisis-en une et pars",
-    "gallery_title": "Galerie des quêtes",
+    "gallery_title": "Quêtes",
     "go_back": "Retour",
     "home_overview_title": "Choisir une quête",
     "invalid_id": "Quête invalide",
@@ -521,7 +521,8 @@
     "archetype_metabolic": "Cardio",
     "archetype_core": "Gainage",
     "archetype_mobility": "Mobilité",
-    "editor_saved": "Quête enregistrée"
+    "editor_saved": "Quête enregistrée",
+    "filter_remove": "Retirer {{label}}"
   },
   "recovery": {
     "description": "Tu as une séance laissée en chemin.",

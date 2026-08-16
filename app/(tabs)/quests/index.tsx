@@ -432,12 +432,12 @@ export default function QuestsGallery() {
   );
 
   // Duration first (the "how long have I got" question), then the kind of training, then muscles,
-  // then equipment — one labeled group per dimension. Hoisting the active chips to the front of
-  // their own group is the rail's job, not this screen's.
+  // then equipment — one pill per dimension; the rail owns how they open and summarise.
   const railGroups: RailGroup[] = [
     {
       key: "duration",
       label: t("quests.filter_group_duration", "Duration"),
+      single: true,
       chips: DURATION_BUCKETS.map((b) => ({
         key: `d-${b}`,
         label: t(`quests.filter_duration_${b}`, DURATION_FALLBACKS[b]),

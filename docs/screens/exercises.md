@@ -31,10 +31,11 @@ place you live.
 - **Every movement, A–Z** by localized name — seed order was insertion order across six
   migrations and read as random.
 - **Search** on the localized name, so a French hero typing "tirage" finds "Tirage australien".
-- **Filter rail**, the same one the quests gallery uses, grouped by dimension:
-  - **Ladder** — only movements that lead to a harder variation.
+- **Filter rail**, the same one the quests gallery uses: one pill per dimension, tap to unfold
+  its options underneath, applied filters summarised as removable chips.
   - **Movement** — the pattern (`push_vertical`, `hinge`, …).
   - **Muscles**, **Equipment**.
+  - **Ladder** — a toggle, not a pill: only movements that lead to a harder variation.
 - **"Leads to X"** on every row that sits on a ladder. The row says *that* the movement goes
   somewhere and where; how close you are stays on the detail screen.
 - **Loading / error / no-match states**, each with the way out under the sentence.
@@ -69,8 +70,8 @@ Tapping a row opens **[Exercise Details](exercise-details.md)**, which carries t
 - Filtering is `filterExercises()` in [`constants/exerciseFilters.ts`](../../constants/exerciseFilters.ts),
   a pure function shared with the quest editor's picker sheet: OR inside a dimension, AND across
   them, exactly like `matchesFilters` does for quests.
-- The rail is [`components/common/FilterRail.tsx`](../../components/common/FilterRail.tsx), lifted
-  out of the quests gallery so both screens hoist active chips the same way.
+- The rail is [`components/common/FilterRail.tsx`](../../components/common/FilterRail.tsx), shared
+  with the quests gallery — see [quests.md](quests.md) for the two-line rule.
 - The list is `LegendList` with `recycleItems`, per
   [performance.md](../architecture/performance.md). No pagination: ~66 rows of seed content is
   not a list that grows.

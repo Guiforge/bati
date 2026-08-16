@@ -1,0 +1,28 @@
+# Three vulnerability alerts sat open with nothing proposing a fix, because alerts are not
+# updates. Weekly and grouped: a solo maintainer reviews one PR a week, not thirty.
+#
+# Every dependency is also a bundle of Android permissions arriving through manifest merging —
+# __tests__/android-permissions.test.ts fails the build when a new one appears, so a Dependabot
+# PR that quietly adds a microphone cannot merge green.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      expo:
+        patterns:
+          - expo
+          - expo-*
+          - react-native
+          - react-native-*
+          - "@expo/*"
+      dev-tooling:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

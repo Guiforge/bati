@@ -46,6 +46,7 @@ echo "  $current -> $next"
 # versionCode rides along: app.config.js derives it from the version, but F-Droid's checkupdates
 # greps app.json for the literal number, so the same commit has to carry both. app.config.js
 # throws if the two ever disagree.
+# shellcheck disable=SC2016  # single quotes are the point: this is a node script, not shell.
 node -e '
   const fs = require("fs");
   const next = process.argv[1];

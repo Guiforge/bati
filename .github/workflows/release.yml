@@ -74,6 +74,16 @@ jobs:
       - name: Generate the native project
         run: npx expo prebuild --clean --platform android
 
+      # The same drift check ci.yml runs, and it belongs here too: scripts/release.sh regenerates
+      # android/ before tagging, but a tag pushed by hand bypasses that script entirely and
+      # nothing downstream re-checked it. Runs before the keystore step, which writes into
+      # android/ itself.
+      - name: The committed android/ matches app.json and plugins
+        run: |
+          git add -A android
+          git diff --cached --exit-code --stat -- android
+          git reset
+
       # No `if:` on the secret. The secrets context is not available in step conditions — using
       # it there makes the whole workflow file invalid, which shows up as a run with no jobs and
       # no error, exactly as it did on v1.0.1. The check moves into the shell instead.
@@ -83,9 +93,18 @@ jobs:
           STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          IS_TAG: ${{ startsWith(github.ref, 'refs/tags/') }}
         run: |
           if [ -z "$KEYSTORE_B64" ]; then
-            echo "::warning::No signing key configured — this APK will carry the debug signature."
+            # On a tag this is fatal. `::warning::` does not fail a job, so the old `exit 0` here
+            # meant a missing or mis-rotated secret produced a green run that *published* a
+            # debug-signed APK — an app that can never be updated in place by a properly signed
+            # one. A release that cannot be signed is not a degraded release, it is a poisoned one.
+            if [ "$IS_TAG" = "true" ]; then
+              echo "::error::No signing key configured, refusing to publish an unsignable release."
+              exit 1
+            fi
+            echo "::warning::No signing key — debug signature. Fine here: workflow_dispatch does not publish."
             exit 0
           fi
           echo "$KEYSTORE_B64" | base64 -d > android/app/release.keystore

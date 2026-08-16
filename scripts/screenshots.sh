@@ -83,7 +83,7 @@ if [ -z "$shots_dir" ]; then
   exit 1
 fi
 find "$shots_dir" -name '[0-9]-*.png' -exec cp {} "$raw"/ \;
-echo "  Collected $(ls -1 "$raw" | wc -l) shots from $shots_dir"
+echo "  Collected $(find "$raw" -type f | wc -l) shots from $shots_dir"
 
 python3 scripts/frame-screenshots.py --locale "$locale" --src "$raw"
 

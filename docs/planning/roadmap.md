@@ -69,17 +69,8 @@ first cost is not the code.
 **Play is live on the internal track** (v1.7.4, versionCode 10704), uploaded by the `play` job of
 `release.yml` behind the `play-internal` GitHub Environment. The listing, both locales, the
 feature graphic, the privacy policy and the signing story are all done. What is left is a
-calendar, not a keyboard.
+calendar, not a keyboard — the 14-day closed test is running.
 
-- **P0 — Start the 14-day closed test. This is the longest pole in the project.** A *personal*
-  Play account owes Google **12 testers enrolled in closed testing for 14 continuous days**
-  before production access can be requested. The chrono does not start until a release is
-  promoted to the Tests fermés track *with testers enrolled*. Two weeks that cannot be
-  compressed, and every day not started is a day added to the end.
-- **P0 — Demote the Play service account.** `…@bati-505415.iam.gserviceaccount.com` was raised to
-  admin on 2026-08-14 to debug a screenshot upload and must come back down to "test channels +
-  store presence". Its JSON key also sits in `~/Téléchargements/bati-505415-*.json`, a duplicate
-  of the GitHub environment secret — delete it.
 - **P1 — Screenshots must be regenerated after §2.** They must show the UI that ships, not the
   one before the device pass. Play caps them at **8 per device type** and rejects the ninth with
   a generic `PERMISSION_DENIED`; see `fastlane/metadata/README.md`.
@@ -157,12 +148,6 @@ Severity order P0 → P1 → P2 → P3; never polish before P0/P1 are gone.
 
 Not tidiness. Each line is a gate that does not close, or a risk with a date on it.
 
-- **P0 — Migrations have never been tested against a real upgraded database.** The runner exists
-  and is shared by both entry points (`db/migrate.ts`), and 31 migrations have shipped
-  (`ls drizzle/*.sql | wc -l`) — four of them, `0027`–`0030`, *after* the first install existed.
-  Every test still starts from a fresh database. Now that testers carry real history, the failure
-  mode moved from theoretical to "a stranger loses a year of workouts on update". Capture a
-  device database, replay the upgrade against it, keep the fixture.
 - **P1 — The knip gate does not gate.** `npm run knip` runs in CI and the report is at zero since
   2026-08-12, but the step exits 0 regardless of findings. Verify it goes red when a finding
   appears, or it is decoration.
@@ -376,8 +361,9 @@ The art half was the original scope. The audio half comes from *Zombies, Run!*, 
 product is one idea worth stealing: **the story arrives during the effort, not around it.** Bati
 has the fiction (`db/adventures-narrative.ts`), and it delivers it in
 `components/adventures/NarrativeModal.tsx` — a modal, i.e. exactly the moment the hero is not
-training. The audio plumbing already exists too (`hooks/useSound.ts`, `expo-audio`, a
-`soundEnabled` setting that is already respected).
+training. The audio plumbing does *not* exist: `expo-audio`, `hooks/useSound.ts` and the
+Sound Effects setting were removed in 1.8.1, because the sound map was entirely `null` and the
+switch drove a foreground media service for silence (F-Droid MR !45076, finding 5).
 
 **The lazy version costs no assets:** `expo-speech` is on-device TTS, both locales for free, zero
 bytes in the APK, and it reads the narrative that is already written. Recorded voice-over is the

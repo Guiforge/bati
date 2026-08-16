@@ -1,19 +1,19 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { Map as MapIcon, Plus, X } from "@tamagui/lucide-icons";
+import { Dumbbell, Map as MapIcon, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Platform, ScrollView } from "react-native";
+import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
@@ -28,7 +28,6 @@ import {
   type QuestFilters,
   toggleInSet,
 } from "@/constants/questFilters";
-import { rawColors } from "@/constants/rawColors";
 import {
   estimateQuestTemplateSeconds,
   formatDurationEstimate,
@@ -223,89 +222,11 @@ const PAGE_SIZE = 10;
 const questKey = (m: QuestMeta) => String(m.quest.id);
 const ListGap = () => <YStack height={12} />;
 
-// Fixed height, chips centered: the 44pt chips always sit fully inside the 60pt rail.
-const RAIL_CONTENT_STYLE = {
-  gap: 8,
-  paddingHorizontal: 24,
-  height: 60,
-  alignItems: "center",
-} as const;
-
 const DURATION_FALLBACKS: Record<DurationBucket, string> = {
   short: "≤ 15 min",
   medium: "≤ 30 min",
   long: "30 min+",
 };
-
-type RailChip = { key: string; label: string; active: boolean; onPress: () => void };
-type RailGroup = { key: string; label: string; chips: RailChip[] };
-
-/**
- * Filters live in the page, not behind a modal: the sheet showed one dimension at a time,
- * cost three taps to apply what already updated live behind it, and reserved 94px of list
- * padding for its floating trigger. The rail is grouped by dimension with a muted label per
- * group — twenty undifferentiated chips gave no way to tell that "Chest" and "Barbell" answer
- * different questions, or that duration is single-select while the rest are not. Active chips
- * hoist to the front of their own group, so what's applied stays visible without shuffling
- * chips across dimensions.
- */
-function FilterRail({ groups, onClearAll }: { groups: RailGroup[]; onClearAll: () => void }) {
-  const { t } = useTranslation();
-
-  if (groups.length === 0) return null;
-  const anyActive = groups.some((g) => g.chips.some((c) => c.active));
-
-  return (
-    <YStack position="relative" style={RAIL_STYLE}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={RAIL_CONTENT_STYLE}
-        style={RAIL_STYLE}
-      >
-        {anyActive ? (
-          <Chip
-            label={t("quests.filter_clear_all", "Clear")}
-            icon={<X size={14} color="$text" />}
-            onPress={onClearAll}
-            accessibilityRole="button"
-          />
-        ) : null}
-        {groups.map((g) => (
-          <XStack key={g.key} items="center" gap="$2">
-            <Text fontSize={10} fontWeight="700" color="$textSecondary" opacity={0.7}>
-              {g.label.toUpperCase()}
-            </Text>
-            {g.chips.map((c) => (
-              <Chip
-                key={c.key}
-                label={c.label}
-                tone={c.active ? "primary" : "default"}
-                onPress={c.onPress}
-                accessibilityRole="button"
-                accessibilityState={{ selected: c.active }}
-              />
-            ))}
-          </XStack>
-        ))}
-      </ScrollView>
-      {/* Right-edge fade: whatever the width, a chip or group label lands on the cut and looks
-          amputated rather than scrollable. The fade turns the cut into an affordance. */}
-      <LinearGradient
-        colors={["transparent", rawColors.bgDark]}
-        start={{ x: 0, y: 0.5 }}
-        end={{ x: 1, y: 0.5 }}
-        style={{ position: "absolute", top: 0, bottom: 0, right: 0, width: 36 }}
-        pointerEvents="none"
-      />
-    </YStack>
-  );
-}
-
-// flexGrow 0: don't stretch into the leftover column height. flexShrink 0: RN ScrollViews
-// default to flexShrink 1, so the overflowing column squeezed the rail below the chips'
-// 44pt height and Android clipped their tops — the "chips cut off by the header" bug.
-const RAIL_STYLE = { flexGrow: 0, flexShrink: 0 } as const;
 
 function StatusMessage({
   state,
@@ -511,9 +432,8 @@ export default function QuestsGallery() {
   );
 
   // Duration first (the "how long have I got" question), then the kind of training, then muscles,
-  // then equipment — one labeled group per dimension. Active chips hoist to the front of their
-  // own group only (Array.sort is stable), never across dimensions.
-  const byActive = (a: RailChip, b: RailChip) => Number(b.active) - Number(a.active);
+  // then equipment — one labeled group per dimension. Hoisting the active chips to the front of
+  // their own group is the rail's job, not this screen's.
   const railGroups: RailGroup[] = [
     {
       key: "duration",
@@ -523,43 +443,37 @@ export default function QuestsGallery() {
         label: t(`quests.filter_duration_${b}`, DURATION_FALLBACKS[b]),
         active: filters.duration === b,
         onPress: () => toggleDuration(b),
-      })).sort(byActive),
+      })),
     },
     {
       key: "type",
       label: t("quests.filter_group_type", "Type"),
-      chips: availableArchetypes
-        .map((a) => ({
-          key: `a-${a}`,
-          label: t(`quests.archetype_${a}`),
-          active: filters.archetypes.has(a),
-          onPress: () => toggleArchetype(a),
-        }))
-        .sort(byActive),
+      chips: availableArchetypes.map((a) => ({
+        key: `a-${a}`,
+        label: t(`quests.archetype_${a}`),
+        active: filters.archetypes.has(a),
+        onPress: () => toggleArchetype(a),
+      })),
     },
     {
       key: "muscle",
       label: t("quests.filter_group_muscle", "Muscles"),
-      chips: availableMuscles
-        .map((m) => ({
-          key: `m-${m}`,
-          label: MUSCLE_LABELS[m]?.[language] ?? m,
-          active: filters.muscles.has(m),
-          onPress: () => toggleMuscle(m),
-        }))
-        .sort(byActive),
+      chips: availableMuscles.map((m) => ({
+        key: `m-${m}`,
+        label: MUSCLE_LABELS[m]?.[language] ?? m,
+        active: filters.muscles.has(m),
+        onPress: () => toggleMuscle(m),
+      })),
     },
     {
       key: "equipment",
       label: t("quests.filter_group_equipment", "Equipment"),
-      chips: availableEquipment
-        .map((e) => ({
-          key: `e-${e}`,
-          label: EQUIPMENT_LABELS[e]?.[language] ?? e,
-          active: filters.equipment.has(e),
-          onPress: () => toggleEquipment(e),
-        }))
-        .sort(byActive),
+      chips: availableEquipment.map((e) => ({
+        key: `e-${e}`,
+        label: EQUIPMENT_LABELS[e]?.[language] ?? e,
+        active: filters.equipment.has(e),
+        onPress: () => toggleEquipment(e),
+      })),
     },
   ].filter((g) => g.chips.length > 0);
 
@@ -603,6 +517,18 @@ export default function QuestsGallery() {
               })}
               tone="secondary"
             />
+            {/* The catalogue: the only way to ask "what does Bati know about rows?" without
+                first finding a quest that happens to contain one (roadmap 4.22). */}
+            <AppIconButton
+              width={36}
+              height={36}
+              rounded={18}
+              onPress={() => router.push("/exercises" as never)}
+              accessibilityRole="button"
+              accessibilityLabel={t("exercises.catalogue_title", "Exercises")}
+            >
+              <Dumbbell size={18} color="$text" strokeWidth={2.5} />
+            </AppIconButton>
             <AppIconButton
               width={36}
               height={36}

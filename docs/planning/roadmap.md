@@ -217,7 +217,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.21 | Backups that write themselves to a chosen folder | High | S | **P1** | Streak |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.4 | **The variation ladder becomes visible** | High | S | **P1** | calisthenics review |
-| 4.22 | An exercise catalogue — the screen 4.4 needs | High | S–M | **P1** | GymMane |
+| 4.22 | ~~An exercise catalogue — the screen 4.4 needs~~ — **shipped** | High | S–M | ✅ | GymMane |
 | 4.5 | The feeling feeds the prescription | Med-high | S | **P1** | Freeletics |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |
 | 4.7 | FR review of the exercise content | Med-high | S | **P1** | |
@@ -406,6 +406,21 @@ route, one query and the filter chips that `app/(tabs)/quests/index.tsx` already
 
 Ranked immediately after 4.4 because the two are one piece of work seen twice: the ladder is
 invisible partly because the screen that would show it is only reachable by accident.
+
+**Shipped** as `app/exercises/index.tsx`, reached from the Dumbbell icon in the Quests header —
+no sixth tab. Search on the localized name, and a filter rail grouped by ladder / pattern /
+muscle / equipment, lifted verbatim out of `app/(tabs)/quests/index.tsx` into
+`components/common/FilterRail.tsx` so both galleries hoist active chips the same way. Rows on a
+ladder carry a "leads to X" caption, which is 4.4 seen from the list: `prerequisiteExerciseId`
+now rides on `listExercises()`, so the whole ladder is one pass over a promise-cached list and
+the screen costs zero queries on a warm cache. The row itself is
+`components/exercises/ExerciseRow.tsx`, shared with the quest editor's picker sheet, and the
+facets are `constants/exerciseFilters.ts` — a pure function both screens filter through, which
+is what finally killed the picker's private `language === "fr"` ternary.
+
+What was refused: a difficulty badge and a per-row progress bar. The row's job is *find the
+movement*; where the hero stands on it belongs to the detail screen, and a wall of unlit bars is
+exactly what the dedicated skill-tree screen was dropped for.
 
 ### 4.5 The feeling feeds the prescription — the last link of a loop that is otherwise built
 

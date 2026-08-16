@@ -150,7 +150,7 @@
     "@tamagui/web": "2.7.6",
     "react-dom": "19.2.3"
   },
-  "version": "1.8.0",
+  "version": "1.8.1",
   "expo": {
     "autolinking": {
       "buildFromSource": [

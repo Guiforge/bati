@@ -46,7 +46,8 @@ export function BossTauntOverlay() {
             : voice.idle;
 
     const lines = language === "fr" ? pool.fr : pool.en;
-    setTaunt(lines[Math.floor(Math.random() * lines.length)]);
+    // Modulo a non-empty pool, so always in range; the type does not know that.
+    setTaunt(lines[Math.floor(Math.random() * lines.length)] ?? null);
 
     const id = setTimeout(() => setTaunt(null), TAUNT_MS);
     return () => clearTimeout(id);

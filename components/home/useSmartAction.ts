@@ -171,8 +171,8 @@ export function useSmartAction() {
 
         // 3. No oath to serve: fall back to what the last 30 days say is lagging.
         const suggestions = await getSuggestedQuestsForWeakAreas(1);
-        if (suggestions.length > 0 && !isCancelled()) {
-          const suggestion = suggestions[0];
+        const suggestion = suggestions[0];
+        if (suggestion && !isCancelled()) {
           const muscles = suggestion.matchingMuscles
             .map((m) => MUSCLE_LABELS[m]?.[language] ?? m)
             .join(", ");

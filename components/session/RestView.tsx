@@ -49,8 +49,11 @@ export function RestView() {
   if (!quest) return null;
 
   // In 'resting' state, currentExerciseIndex points to the UPCOMING exercise
+  // Rest is shown *before* an exercise, so the index always points at one — unless a saved
+  // session is restored against a quest that has since been edited, in which case there is
+  // nothing to rest before and the screen has nothing to say.
   const nextEx = quest.exercises[currentExerciseIndex];
-  const nextExName = localizedName(nextEx.exercise, language);
+  const nextExName = nextEx ? localizedName(nextEx.exercise, language) : "";
 
   const lastResult = results[results.length - 1];
   // Time-based sets record whatever the timer read when you tapped "done" — often a few seconds
@@ -284,7 +287,7 @@ export function RestView() {
                 borderColor="$borderStrong"
               >
                 <Image
-                  source={getExerciseThumb(nextEx.exercise.imagePath)}
+                  source={getExerciseThumb(nextEx?.exercise.imagePath)}
                   style={{ width: "100%", height: "100%" }}
                   contentFit="cover"
                   transition={150}
@@ -295,9 +298,9 @@ export function RestView() {
                   {nextExName}
                 </Text>
                 <Text color="$textSecondary">
-                  {nextEx.target.type === "time"
+                  {nextEx?.target.type === "time"
                     ? `${nextEx.target.value}s`
-                    : `${nextEx.target.value} reps`}
+                    : `${nextEx?.target.value ?? 0} reps`}
                 </Text>
               </YStack>
             </XStack>

@@ -2,5 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noUncheckedIndexedAccess": true
-  }
+  },
+  "exclude": ["__tests__"]
 }

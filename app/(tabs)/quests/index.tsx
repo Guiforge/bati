@@ -502,10 +502,12 @@ export default function QuestsGallery() {
       {/* Fixed Header - stays in place */}
       <YStack bg="$bgDark" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
         {/* Title Row */}
-        <XStack items="center" justify="space-between">
-          <XStack items="center" gap="$2">
+        {/* The title gives way, never the actions: nothing in this row could shrink, so the
+            count chip plus two 36dp buttons pushed the "+" off the right edge. */}
+        <XStack items="center" justify="space-between" gap="$2">
+          <XStack items="center" gap="$2" flex={1} minW={0}>
             <MapIcon size={18} color="$text" strokeWidth={2.5} />
-            <Text fontWeight="700" fontSize={20} color="$text">
+            <Text flex={1} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
               {title}
             </Text>
           </XStack>

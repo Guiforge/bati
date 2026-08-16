@@ -317,7 +317,9 @@ export default function ExerciseCatalogue() {
     <YStack flex={1} bg="$bgDark">
       <YStack bg="$bgDark" pt={insets.top + 12} px="$5" pb="$3" gap="$3">
         <XStack items="center" justify="space-between" gap="$2">
-          <XStack items="center" gap="$3" flex={1}>
+          {/* Same rule as the quests header: only the title gives way. Yoga's flexShrink
+              defaults to 0, so the back button and the count keep their box on their own. */}
+          <XStack items="center" gap="$3" flex={1} minW={0}>
             <AppIconButton
               onPress={() => router.back()}
               accessibilityRole="button"
@@ -325,9 +327,9 @@ export default function ExerciseCatalogue() {
             >
               <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
-            <XStack items="center" gap="$2" flex={1}>
+            <XStack items="center" gap="$2" flex={1} minW={0}>
               <Dumbbell size={18} color="$text" strokeWidth={2.5} />
-              <Text fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
+              <Text flex={1} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
                 {t("exercises.catalogue_title", "Exercises")}
               </Text>
             </XStack>

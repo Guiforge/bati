@@ -48,7 +48,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
 
       # Without this the runner compiles React Native, every Expo module and the NDK output from
       # nothing, every single run — which is most of the 29 minutes a release used to take. The

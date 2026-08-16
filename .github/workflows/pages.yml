@@ -73,7 +73,7 @@ jobs:
         if: steps.fdroid.outputs.ready == 'true'
         with:
           python-version: "3.12"
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         if: steps.fdroid.outputs.ready == 'true'
       - name: Install fdroidserver
         if: steps.fdroid.outputs.ready == 'true'

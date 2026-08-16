@@ -2,7 +2,7 @@
 title: Roadmap
 type: planning
 status: active
-updated: 2026-08-14
+updated: 2026-08-16
 related:
   [
     README.md,
@@ -37,9 +37,13 @@ mini-game. If a reward surface competes with starting or continuing a workout, d
   is loaded — anything above it renders wrong, silently).
 - i18n for every user-facing string. A raw English literal in a component is a bug, not a TODO.
 - The dark-fantasy voice stays. Best practice changes the numbers, never the fiction.
-- **No network requests.** The Data Safety form says "no data collected, no data shared", and
-  every feature below is scoped so that stays true. A feature that needs a server needs this
-  guardrail lifted first, deliberately, on this page.
+- **No network requests**, and this one is enforced rather than promised: `app.json` lists
+  `android.permission.INTERNET` and `ACCESS_NETWORK_STATE` under `blockedPermissions`, so the
+  release manifest ships without them and a stray `fetch` fails at runtime rather than at review.
+  The Data Safety form says "no data collected, no data shared", and every feature below is scoped
+  so that stays true. Lifting the guardrail therefore costs a manifest change as well as a
+  paragraph on this page — which is the correct price, and why every network item in §4 and §5 is
+  ranked where it is.
 - [../design/ui-checklist.md](../design/ui-checklist.md) is the merge gate for UI work.
 
 ---
@@ -162,6 +166,17 @@ Not tidiness. Each line is a gate that does not close, or a risk with a date on 
 - **P1 — The knip gate does not gate.** `npm run knip` runs in CI and the report is at zero since
   2026-08-12, but the step exits 0 regardless of findings. Verify it goes red when a finding
   appears, or it is decoration.
+- **P1 — The suite tests `db/` and leaves the screens bare.** 64 test files
+  (`ls __tests__/*.test.*`) against 137 sources (`find app components src db hooks -name "*.ts*"`)
+  reads healthy; the distribution does not. **9** of them render anything
+  (`ls __tests__/*.tsx`), against 29 files under `app/` and 57 components
+  (`find components src -name "*.tsx"`). So the pure functions — streaks, boss
+  damage, muscle balance, oaths — are covered several times over, and the screens the hero actually
+  touches are covered by a global percentage that AGENTS.md already warns cannot be trusted: dead
+  code counts as covered, and a flow test that checks the next screen appeared passes while the
+  data underneath is wrong. The deliverable is the shape `audit.md` used and then earned its own
+  deletion: a dated page listing where a regression would ship green today, the missing tests
+  written against *state*, and the page removed once its findings are gone.
 - **P2 — The 7 Maestro flows never run in CI, and they do not assert state.**
   `session-interruptions.yaml` performed two boss-damage bugs and passed, because it only checked
   that the UI came back. They are worth "the app does not crash on this path", nothing more.
@@ -200,6 +215,13 @@ tracking, [Caliber](https://askvora.com/blog/best-strength-training-apps-2026) f
 for reward design — and added one mechanic (4.15's arrival roll), one confirmation of doctrine,
 and three refusals.
 
+A fifth pass, on 2026-08-16, read two apps that share Bati's constraints instead of competing with
+its genre: [Streak](https://github.com/InlitX/streak) (habit tracker) and
+[GymMane](https://github.com/InlitX/GymMane) (gym logger), both Flutter, both GPLv3 on F-Droid,
+both offline-first with no account. They arrived at the same guardrails from a different starting
+point, which is what makes their *refusals* worth as much as their features — and one of their
+loudest selling points, "no INTERNET permission", turned out to be something Bati already ships.
+
 What the scans refused, and what they found already shipped, are at the end of this section. Both
 cost as much thought as the takes, and by the third pass they outnumbered the features.
 
@@ -207,8 +229,10 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | --- | --- | --- | --- | --- | --- |
 | 4.1 | ~~Export / import of the history~~ — **shipped** | High | M | ✅ | |
 | 4.2 | Local training reminders, no Firebase | High | M | **P1** | |
+| 4.21 | Backups that write themselves to a chosen folder | High | S | **P1** | Streak |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.4 | **The variation ladder becomes visible** | High | S | **P1** | calisthenics review |
+| 4.22 | An exercise catalogue — the screen 4.4 needs | High | S–M | **P1** | GymMane |
 | 4.5 | The feeling feeds the prescription | Med-high | S | **P1** | Freeletics |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |
 | 4.7 | FR review of the exercise content | Med-high | S | **P1** | |
@@ -218,15 +242,22 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.11 | Widget refonte | Medium | M | P2 | |
 | 4.12 | Health Connect, read and write — *incl. Withings & Garmin* | Med-high | M | P2 | Spix |
 | 4.13 | Building tiers, and tiers per building | Medium | M | P2 | |
+| 4.23 | Rename the village from Settings | Medium | S | P2 | |
 | 4.14 | Exercise art review | Medium | M | P2 | |
+| 4.24 | Translations open to contributors | Medium | S | P2 | Streak |
 | 4.15 | Villagers arrive from the journal (collection) | Medium | M | P2 | Pokémon Sleep |
 | 4.16 | Swapping one exercise inside a quest | Med-high | S–M | P2 | Madbarz |
 | 4.17 | Micro-animations, incl. resource gain | Low | S each | P3 | |
-| 4.18 | Multi-device sync | Medium | XL | P3 | |
+| 4.25 | A result card that can be shared as an image | Low | S–M | P3 | Streak |
+| 4.18 | Multi-device sync — reconciliation only | Medium | XL | P3 | |
 | 4.19 | GPS / outdoor quests | Low | L | P3 | |
 | 4.20 | `fallow` in the toolchain | Dev-only | S | P3 | |
 
 Desktop is a distribution question, not a feature — it lives in §1.
+
+The rows are sorted by rank, not by number: **the number is an identifier, the Prio column is the
+rank.** 4.21–4.25 arrived after the first twenty and sit where they belong, because renumbering
+twenty rows would break every reference to them in §1, §5 and §6 and buy nothing.
 
 ### 4.1 Export / import — shipped
 
@@ -282,7 +313,8 @@ absent and the data in a `.bak` no code reads. Closing that means reconciling at
 a real report ever needs it.
 
 It remains the prerequisite for 4.18 *and* for desktop (§1): a file the user can move is 80% of
-sync, without a server. What is still missing for those is reconciliation, not transport.
+sync, without a server. 4.21 takes the last of the transport — the same snapshot, written without
+being asked — so what is still missing for those two is reconciliation, and only that.
 
 ### 4.2 Local reminders — the highest-return feature on this page
 
@@ -309,6 +341,31 @@ API, and it is the only item here that acts on a user who has *stopped* opening 
   insufficient, it must be **opt-in, off by default, and amend the guardrail wording on this
   page** before it ships — a version check leaks an IP and a version string, which is exactly the
   kind of "nothing" that still has to be written down in a privacy policy.
+
+### 4.21 Backups that write themselves — and the whole answer to "sync with Drive / Dropbox / …"
+
+4.1 shipped a backup the hero has to remember. This is the same snapshot on a trigger instead of a
+tap, and after 4.1's folder picker landed it is nearly nothing: `saveBackupToFolder()`
+(`src/backupFiles.ts:99`) already writes `writeSnapshot()` into a Storage Access Framework tree.
+What it does not do is **remember the tree** — it calls `Directory.pickDirectoryAsync()` every
+time, so there is no folder to write to unattended.
+
+So the work is: keep the picked URI in preferences, write on a trigger, prune old snapshots.
+The one thing to check before estimating is whether the `Directory` API takes a *persistable* URI
+permission on Android — if it does not, the fallback is `StorageAccessFramework`'s
+`requestDirectoryPermissionsAsync`, which does, and the rest is unchanged.
+
+**P1, above several older items, for a reason that lives in §3.** Migrations have never been
+replayed against a real upgraded database, testers are carrying real history right now, and a
+snapshot written automatically before a migration runs is the cheapest insurance this codebase can
+buy. It is a backup feature paying for a debt item.
+
+**It is also the complete answer to "sync via Google Drive, Dropbox, GitHub or WebDAV".** Drive,
+Dropbox, Nextcloud, OneDrive and Syncthing all publish an Android `DocumentsProvider`, so they
+appear *inside the folder picker the app already opens*. One SAF integration covers every one of
+them: no OAuth, no SDK per vendor, no credentials at rest, no network request, no guardrail spent —
+and the app never learns which provider was chosen, which is the point. This is Obsidian's model,
+and it is why the backends that do not work this way are refused rather than ranked (see 4.18).
 
 ### 4.3 The session becomes a mission — art, and the narrative out loud
 
@@ -348,6 +405,22 @@ One line on the exercise screen — what this movement leads to, what it came fr
 journal says you are. Effort S because the data, the personal records and the ordering all exist.
 **This is the single highest ratio on the page.**
 
+### 4.22 An exercise catalogue — 4.4 has nowhere to land
+
+4.4 says "one line on the exercise screen". There is an exercise screen — `app/exercises/[id].tsx`
+— and **nothing in front of it**: no `app/exercises/index.tsx`, so the only route to a movement is
+through a quest that happens to contain it. A hero who wants to know what Bati knows about rows
+cannot ask.
+
+*GymMane* answers this with a tappable body map over 360 exercises. The map is the expensive half
+and it goes to §6; the list is the cheap half and it is what 4.4 and 4.10 both need. Every field
+the screen would filter on already exists: `exercises.pattern` (`0020`), `muscleToResource`,
+`prerequisiteExerciseId` (`0022`), and the personal records that say how close a rung is. It is one
+route, one query and the filter chips that `app/(tabs)/quests/index.tsx` already demonstrates.
+
+Ranked immediately after 4.4 because the two are one piece of work seen twice: the ladder is
+invisible partly because the screen that would show it is only reachable by accident.
+
 ### 4.5 The feeling feeds the prescription — the last link of a loop that is otherwise built
 
 *Freeletics* sells an adaptive coach and the mechanism under the marketing is mundane: the plan
@@ -384,7 +457,12 @@ one Ring Fit idea genuinely missing is *cooldowns forcing variety* — and the m
 
 **Stats** (4.8) is the sport half of "sport app first": `react-native-gifted-charts` is already
 installed, so the effort is design, not integration — and *Spix*'s weekly progress rings are the
-cheap shape worth copying, because they answer "am I on track this week" without a chart.
+cheap shape worth copying, because they answer "am I on track this week" without a chart. The
+second shape, and the only thing both offline apps of the fifth scan agree on, is the **GitHub-style
+year grid**: Streak and GymMane each lead with one, and Bati already renders the month
+(`components/journal/MonthlyCalendarCard.tsx`). Widening that component to a year is the cheapest
+thing in this refonte and the one that makes a rest day look like part of a pattern rather than a
+hole.
 
 **The FR review (4.7) is the cheapest P1 on the page.** 726 keys per locale
 (`wc -l locales/*.json`) plus the exercise strings that live in the database and are corrected by
@@ -453,6 +531,47 @@ a weighted roll, and the roster is a collection screen. Same derived-from-histor
 everything in the village, plus the one thing the village lacks: a reason to look at it the
 morning after training. That version is worth building; villagers as static scenery are not.
 
+### 4.23 Rename the village — the shortest item on this page
+
+`grep -rn setVillageName app components src hooks` returns exactly one caller:
+`app/onboarding/village-setup.tsx:45`. The name is typed in the first two minutes of the app's life
+and is then permanent for the life of the install, while the avatar chosen on the same screen *is*
+editable in Settings — the asymmetry is an oversight, not a decision.
+
+Everything needed exists and is reused as-is: the store action, the persistence
+(`db/preferences.ts:55-59`, which already reads *and* writes), the length bounds, and the i18n keys
+under `onboarding.village_name_*`. What is missing is a field in `app/settings.tsx` next to the
+avatar picker. It buys no training, which is why it is P2 and not higher; it costs an afternoon,
+which is why it should not sit here for a year.
+
+### 4.24 Translations — the door is closed and the lock is already fitted
+
+Two locales ship. A third costs one file, and the gate for it already exists:
+`__tests__/i18n-keys.test.ts` fails on a missing key and on an empty string, in both directions.
+What is missing is a page saying so — where the strings live, that `npm test` is the review, and the
+one thing a translator cannot discover on their own:
+
+**Exercise labels are not in `locales/`.** They sit in the database and are corrected by migration
+(`0029_fr_tutoiement`, `0030_fr_exercise_casing` are the precedent), so a new locale ships with a
+fully translated interface wrapped around English exercise content until a migration follows. That
+is a real ceiling on what a contributor can deliver alone, and pretending otherwise wastes their
+evening — 4.7's FR pass runs into the same wall from the other side.
+
+**No translation platform yet.** [Weblate](https://weblate.org/) is the named upgrade — hosted free
+for libre projects, which is how Streak runs its ten languages — and its trigger is a second
+contributor or a third locale. Standing up a translation service for two locales and one translator
+is infrastructure looking for a user.
+
+### 4.25 A shareable result card
+
+`components/session/VictoryView.tsx:220` shares `Share.share({ message })` — text. Streak renders
+the same information as an image card, which is the only acquisition mechanic available to an app
+with no feed, no account and no server.
+
+It stays P3 because the north star demotes it honestly: **a share card makes nobody train more.** It
+also costs a dependency (`react-native-view-shot`, nothing installed captures a view today), which
+is the difference between this and everything else in the P3 band.
+
 ### 4.16 Swapping an exercise — most of "custom workout" already ships
 
 The scan's obvious gap was "every rival lets you build a workout, Bati doesn't". Half wrong:
@@ -480,13 +599,26 @@ Two of the village's three missing animations shipped — `FlameFlicker`
 (`components/village/VillageScene.tsx:184`) and `GrowthPulse` (`:232`). The **resource-gain
 animation** is what is left, and it stays low by design.
 
-### 4.18 Multi-device sync — P3, and a guardrail question first
+### 4.18 Multi-device sync — what is left once 4.21 takes the transport
 
-Sync needs either a server (breaks "no network requests", breaks the Data Safety form, needs a
-privacy policy rewrite and an infrastructure bill) or a user-supplied cloud file via Android's
-Storage Access Framework (does not break anything, and is 4.1 plus a conflict rule). Only the
-second is compatible with the app as it is documented today. Do 4.1, watch whether anyone
-actually asks, and treat "last write wins on a file the user chose" as the ceiling.
+4.1 moved the file by hand and 4.21 moves it unattended, into a folder that may well be a cloud
+provider's. What neither does is **reconcile**: two devices trained on in the same week produce two
+snapshots, and the newer one silently wins. That — a conflict rule, not a transport — is all 4.18
+has ever been, and it is XL because "merge two SQLite histories" is a real problem: sessions can
+be unioned by id, but the village, the streak, the boss's remaining HP and the oath's progress are
+all *derived*, so the honest merge is "union the history, recompute everything downstream".
+
+Stays P3 until someone reports the divergence. The ceiling remains **last write wins on a file the
+hero chose**, which is what desktop (§1) and 4.21 both already assume.
+
+**The backends that are refused, and why they are refusals rather than low-priority rows** — every
+one of them buys the same file 4.21 already writes, for a cost 4.21 does not pay:
+
+| Asked for | What it actually costs |
+| --- | --- |
+| Google Drive, Dropbox, OneDrive, Nextcloud | Nothing to build. They publish an Android `DocumentsProvider` and appear inside 4.21's folder picker. A per-vendor SDK would buy an OAuth flow, a client secret in the APK, and a Firebase-shaped F-Droid problem, in exchange for a file the picker already hands over. |
+| WebDAV, or the GitHub API as a store | The app's **first network request**, plus credentials at rest, plus `INTERNET` back in the manifest, plus a Data Safety form and a privacy policy that stop saying "no". A self-hosted Nextcloud reached through its Android client costs none of that — same server, through the picker. |
+| Wifi / Bluetooth device-to-device, "like Joplin or Obsidian" | Worth naming precisely, because the comparison points the other way: Obsidian's default is a synced *folder*, and Syncthing — the LAN tool people actually mean — is a separate app that syncs the folder 4.21 writes to, for free. A discovery protocol inside Bati is a native RN module, the same bill §5 prices for "live session", to reimplement something already installed on the devices that want it. |
 
 ### 4.19–4.20 The rest
 
@@ -534,6 +666,11 @@ doesn't.
 | Weekly leagues with demotion (Duolingo, Strava) | Duolingo's own numbers are real — leagues drive its retention — and every part is wrong here: a server, matchmaking, and ranking heroes against strangers when the thesis is competing with last month. The boss's HP bar is the league. |
 | Streak wager / paid streak freeze (Duolingo) | Monetised loss aversion. Bati's streak already forgives rest by design (`db/streaks.ts`); selling protection against a punishment the app chose not to inflict would be incoherent. |
 | Social feed, kudos, communal validation (Strava, Hevy) | The engine of both apps, and it is a server, accounts, and moderation. §5 holds the one async, file-based variant worth examining. |
+| Importing from Hevy, Strong, FitNotes, Loop Habit, Habitica (GymMane, Streak) | Both apps import from their rivals cheaply because a rival's row *is* their row: a loaded set, or a ticked box. Bati's row is a session attached to a quest, and the XP, the boss damage, the village and the streak are all derived from it. An imported line arrives with no quest, so nothing downstream can read it — the importer's real job would be inventing the quest it came from. Import from *Bati* is 4.1 and works. |
+| BMI, body-fat and macro calculators (GymMane) | The §6 body-image guardrail, unchanged, and §4's calorie row already argues it. 1RM and plate-loading are simply not bodyweight questions. |
+| Icon packs, light and custom themes (Streak) | Dark-only is a guardrail, not an unset default — the whole art direction assumes it. |
+| PIN / fingerprint app lock (Streak) | **Parked, not refused.** `expo-local-authentication` is cheap and the pattern is standard, but the app holds no secret and no identity: a training journal is not a vault, and a lock in front of it mostly costs the hero four seconds before every session. Reopen if someone asks — a habit tracker with day notes and photos has a better case for it than Bati does. |
+| Hero-authored exercises (GymMane, 360+ built in, plus custom with photo and video) | **Parked**, and it is 4.16's refused quest editor one level down: a home-made exercise has no art, no muscle mapping, no pattern and no XP weight, so it breaks the village, the boss and the estimate at once, and looks broken beside the authored ones. What the request usually wants is substitution, which is 4.16. |
 
 **Confirmations, which are also findings.** *Zombies, Run!* collects supplies on a run and spends
 them upgrading a base, which is Bati's village with the serial numbers filed off — the design
@@ -543,6 +680,14 @@ programme) are adventures — the gap there is content, not mechanics, which is 
 §5 reached from a different direction. *Ring Fit Adventure*'s elemental weaknesses are
 `weaknessMuscle`/`resistanceMuscle`, shipped and displayed (see 4.6). And *The Walk* advances its
 story on daily consistency rather than performance, which is what adventures already do.
+
+The fifth scan added three more, all of which look like gaps in a comparison table and are not.
+Streak's **vacation mode** — pause a habit without losing the streak — is `db/streaks.ts` keeping
+the flame lit on recent training, so there is nothing to pause. Its **focus timer with Pomodoro and
+ambient sound** is `hooks/useSessionTimer.ts` plus `hooks/useSound.ts` and the rest screens between
+sets. And GymMane's headline claim, **"no internet permission"**, is `app.json`'s
+`blockedPermissions` — now stated in the guardrails at the top of this page, where it should have
+been all along.
 
 The one place Bati is ahead of the reference: **streak repair.** Duolingo sells a "freeze" and
 Habitica kills your character; `db/streaks.ts` keeps the flame lit on what the hero trained
@@ -635,6 +780,11 @@ section until it does.
   Parked rather than refused: it removes a real friction (counting out loud mid-set) but it is a
   signal-processing project with a per-movement calibration, and a miscount is worse than no
   count. See the camera row in §4's refusals for the variant that is refused outright.
+- **A tappable body map** — GymMane's front/back silhouette, where touching a muscle lists the
+  movements that train it. Bati has the data half (`muscleToResource`, and every exercise carries
+  its muscle); what it lacks is the artwork and the hit regions, which is an illustration project
+  with the same 64 MB APK watching (§3). Depends on 4.22 shipping first: a map with no catalogue
+  behind it navigates to nothing.
 - **Progression depth** — cosmetic customisation, seasonal events, extended RPG meta systems.
 - **Coaching intelligence** — adaptive planning, recovery/load guidance, personalisation from
   training history.

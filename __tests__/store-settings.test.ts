@@ -1,6 +1,6 @@
-// loadFromDatabase merges nine preferences at once. The bug class it guards
+// loadFromDatabase merges every stored preference at once. The bug class it guards
 // against is "settings look right, then snap back to defaults": stored values
-// losing to the initial state, or one failed read wiping the other eight.
+// losing to the initial state, or one failed read wiping all the others.
 //
 // Every read the store makes must be mocked here, including new ones: a missing
 // mock throws while the Promise.all array is being built, which orphans the
@@ -19,14 +19,12 @@ const prefs = {
   getAvatarId: jest.fn<Promise<string | null>, []>(),
   getCustomAvatarUri: jest.fn<Promise<string | null>, []>(),
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
-  getSoundEnabled: jest.fn<Promise<boolean>, []>(),
   getReducedMotion: jest.fn<Promise<boolean | null>, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setTheme: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
-  setSoundEnabled: jest.fn().mockResolvedValue(undefined),
   setReducedMotion: jest.fn().mockResolvedValue(undefined),
 };
 
@@ -37,9 +35,12 @@ beforeAll(() => {
     __esModule: true,
     default: { changeLanguage: jest.fn().mockResolvedValue(undefined) },
   }));
-  // "fr" so the device fallback is distinguishable from the "en" default.
-  jest.doMock("@/src/i18n/deviceLanguage", () => ({
-    getDevicePreferredAppLanguage: () => "fr",
+  // The *device* is mocked, not the module that reads it: the store and the home screen
+  // widget must both resolve the language through the real `resolveAppLanguage`, and a test
+  // that stubs that function out is a test that cannot see them disagree. "fr" so the device
+  // fallback stays distinguishable from the "en" narrowing.
+  jest.doMock("expo-localization", () => ({
+    getLocales: () => [{ languageCode: "fr", languageTag: "fr-FR" }],
   }));
   jest.doMock("react-native", () => ({
     AccessibilityInfo: { isReduceMotionEnabled: () => deviceReduceMotion() },
@@ -61,7 +62,6 @@ function storedSettings() {
   prefs.getAvatarId.mockResolvedValue("archmage");
   prefs.getCustomAvatarUri.mockResolvedValue("file:///stored-avatar.jpg");
   prefs.getHapticsEnabled.mockResolvedValue(false);
-  prefs.getSoundEnabled.mockResolvedValue(false);
   prefs.getReducedMotion.mockResolvedValue(true);
 }
 
@@ -70,7 +70,6 @@ const DEFAULTS = {
   theme: "system" as const,
   avatarId: "guardian" as const,
   hapticsEnabled: true,
-  soundEnabled: true,
   reducedMotion: false,
   isLoaded: false,
 };
@@ -82,7 +81,7 @@ describe("useSettingsStore", () => {
     settingsStore().setState({ ...DEFAULTS });
   });
 
-  test("stored values win over the defaults, all eight of them", async () => {
+  test("stored values win over the defaults, every one of them", async () => {
     storedSettings();
 
     await settingsStore().getState().loadFromDatabase();
@@ -92,7 +91,6 @@ describe("useSettingsStore", () => {
       theme: "dark",
       avatarId: "archmage",
       hapticsEnabled: false,
-      soundEnabled: false,
       reducedMotion: true,
       isLoaded: true,
     });
@@ -185,7 +183,6 @@ describe("useSettingsStore", () => {
     await s().setTheme("dark");
     await s().setAvatarId("scout");
     await s().setHapticsEnabled(false);
-    await s().setSoundEnabled(false);
     await s().setReducedMotion(true);
 
     expect(s()).toMatchObject({
@@ -193,7 +190,6 @@ describe("useSettingsStore", () => {
       theme: "dark",
       avatarId: "scout",
       hapticsEnabled: false,
-      soundEnabled: false,
       reducedMotion: true,
     });
 
@@ -201,7 +197,6 @@ describe("useSettingsStore", () => {
     expect(prefs.setTheme).toHaveBeenCalledWith("dark");
     expect(prefs.setAvatarId).toHaveBeenCalledWith("scout");
     expect(prefs.setHapticsEnabled).toHaveBeenCalledWith(false);
-    expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setReducedMotion).toHaveBeenCalledWith(true);
   });
 });

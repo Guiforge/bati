@@ -53,7 +53,6 @@
         }
       ],
       "expo-router",
-      "expo-audio",
       "expo-asset",
       "expo-sharing",
       [
@@ -68,8 +67,8 @@
           "widgets": [
             {
               "name": "Flame",
-              "label": "Bati — Flamme",
-              "description": "Votre flamme d'entraînement.",
+              "label": "Bati — Flame",
+              "description": "Your training flame.",
               "minWidth": "110dp",
               "minHeight": "110dp",
               "targetCellWidth": 2,
@@ -80,8 +79,8 @@
             },
             {
               "name": "Weekly",
-              "label": "Bati — Semaine",
-              "description": "Séances cette semaine face à votre serment.",
+              "label": "Bati — Week",
+              "description": "Sessions this week against your oath.",
               "minWidth": "110dp",
               "minHeight": "110dp",
               "targetCellWidth": 2,

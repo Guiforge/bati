@@ -185,13 +185,4 @@ export const preferences = {
   async clearSavedSession(): Promise<void> {
     await deletePreference("savedSession");
   },
-
-  async getSoundEnabled(): Promise<boolean> {
-    const value = await getPreference("soundEnabled");
-    return value !== "false"; // Default true
-  },
-
-  async setSoundEnabled(enabled: boolean): Promise<void> {
-    await setPreference("soundEnabled", String(enabled));
-  },
 };

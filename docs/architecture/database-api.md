@@ -375,7 +375,6 @@ User settings persistence.
 | `notificationsEnabled` | `boolean` | `true` in current code | Reminder preference; notification implementation remains product-scoped separately |
 | `notificationTime` | JSON `{ hour, minute }` | `{ "hour": 18, "minute": 0 }` | Daily reminder time preference |
 | `hapticsEnabled` | `boolean` | `true` | Haptic feedback |
-| `soundEnabled` | `boolean` | `true` | Sound effects |
 | `reducedMotion` | `boolean` | `false` | Reduce animations |
 | `savedSession` | serialized JSON | `null` | Crash/session recovery payload |
 

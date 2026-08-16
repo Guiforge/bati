@@ -11,6 +11,7 @@ import { rawColors } from "@/constants/rawColors";
 import { ensureMigrations } from "@/db/migrate";
 import { preferences } from "@/db/preferences";
 import { type FlameLevel, getFlameLevel, getStreakInfo, getWeeklyProgress } from "@/db/streaks";
+import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "./reportError";
 
 // These used to be literals, because importing tamagui.config into a headless task drags in
@@ -66,9 +67,9 @@ const STRINGS = {
 } as const;
 type Lang = keyof typeof STRINGS;
 
-/** The app's own stored language, read from the same preference the settings screen writes. */
+/** The app's own stored language, resolved by the same rule the app itself uses. */
 async function getLang(): Promise<Lang> {
-  return (await preferences.getLanguage()) === "en" ? "en" : "fr";
+  return resolveAppLanguage(await preferences.getLanguage());
 }
 
 // A `null` value is the error fallback: the branded surface with an em dash beats the blank

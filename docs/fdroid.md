@@ -232,8 +232,12 @@ patch script, the reminder, and twenty-two of the app's thirty-three Android per
 move. See [gameplay/oaths.md](gameplay/oaths.md) for what the product lost.
 
 What remains is `plugins/withAndroidTrimPermissions.js`, which drops three permissions that
-`expo-image-picker` and `expo-audio` declare and the app never exercises — a camera it never opens
-and a microphone it never records with.
+`expo-image-picker` declares and the app never exercises — a camera it never opens, and the
+microphone `expo-audio` used to bring before 1.8.1 removed it entirely.
+
+`__tests__/android-permissions.test.ts` is the guard: it scans every dependency's manifest and
+fails the suite on a permission that is neither justified there, blocked in `app.json`, nor
+stripped by the plugin. The list stopped being something you have to remember to look at.
 
 ### The signing key — decided: the break is accepted
 

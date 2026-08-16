@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   Swords,
   Vibrate,
-  Volume2,
   Wrench,
 } from "@tamagui/lucide-icons";
 import Constants from "expo-constants";
@@ -216,12 +215,10 @@ export default function SettingsScreen() {
     avatarId,
     customAvatarUri,
     hapticsEnabled,
-    soundEnabled,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
     setHapticsEnabled,
-    setSoundEnabled,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -431,16 +428,6 @@ export default function SettingsScreen() {
                   // Haptics errors are non-critical
                 });
               }
-            }}
-          />
-
-          <SettingRow
-            icon={<Volume2 size={22} color="$text" />}
-            label={t("settings.sound", "Sound")}
-            value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
-            onPress={() => {
-              haptics.selection();
-              setSoundEnabled(!soundEnabled);
             }}
           />
 

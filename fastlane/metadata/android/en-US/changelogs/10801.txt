@@ -1,0 +1,7 @@
+- The home screen widgets now speak your phone's language from the very
+  first day. They used to open in French on an English device until you
+  went to Settings and picked a language once.
+- Sound Effects is gone from Settings. It had never played anything: no
+  sound file was ever shipped behind it. Removing it also takes a
+  microphone permission, a media service and two more permissions out of
+  the app — for silence it was never going to break.

@@ -77,7 +77,20 @@ outlived it.
 - **One writer per piece of state.** Two functions serialising the same thing will diverge.
 - **One source per value.** A `language === "fr" ? …` copied fourteen times gets forgotten the
   fifteenth — use `localizedTitle()`. Colours live in `constants/rawColors.ts` and nowhere else;
-  a lint plugin rejects raw hex everywhere but that file.
+  a lint plugin rejects raw hex everywhere but that file. The home screen widget had its own
+  copy of "which language does this speak", defaulting a never-chosen language to `fr` while the
+  app asked the device — so a fresh install spoke French on an English phone until Settings was
+  opened once. Both now call `resolveAppLanguage()`.
+- **A test that stubs the rule cannot see the rule drift.** `__tests__/store-settings.test.ts`
+  mocked `@/src/i18n/deviceLanguage` wholesale, so the store's language resolution was verified
+  against a fake and the widget's real disagreement was invisible. Mock the *device*
+  (`expo-localization`), not the function under test.
+- **Every dependency arrives with permissions you did not ask for.** They land through manifest
+  merging, announce nothing, and surface months later in someone else's privacy report —
+  `expo-audio` held a microphone, a foreground media service and three permissions for a sound
+  map whose every entry was `null`. `__tests__/android-permissions.test.ts` fails on any
+  permission not justified, blocked, or stripped. It is a ratchet: write the justification, never
+  widen the list to make a build pass.
 - **Never write game state before the thing that earned it exists.** Boss damage written during
   a session survived quitting and was double-counted when a round restarted. Bank it in memory,
   commit it in `saveSession`.

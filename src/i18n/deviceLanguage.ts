@@ -2,6 +2,18 @@ import { getLocales } from "expo-localization";
 
 export type AppLanguage = "en" | "fr";
 
+/**
+ * The one rule for "which language does this surface speak": an explicit stored choice is
+ * honoured then narrowed, and the device answers only when the hero never chose. Every
+ * surface must resolve it here — while the app read the device and the home screen widget
+ * had its own ternary defaulting to `fr`, a fresh install spoke French on an English phone
+ * (F-Droid MR !45076, finding 4).
+ */
+export function resolveAppLanguage(stored: string | null | undefined): AppLanguage {
+  if (stored == null) return getDevicePreferredAppLanguage();
+  return stored === "fr" ? "fr" : "en";
+}
+
 export function getDevicePreferredAppLanguage(): AppLanguage {
   try {
     const locales = getLocales();

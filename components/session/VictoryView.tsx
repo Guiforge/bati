@@ -23,7 +23,6 @@ import { useToast } from "@/components/common/Toast";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
-import { SOUNDS } from "@/constants/sounds";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
@@ -32,7 +31,6 @@ import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLev
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
-import { useSound } from "@/hooks/useSound";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -114,7 +112,6 @@ export function VictoryView() {
   const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
   const { success, selection } = useHaptics();
-  const { playSound } = useSound();
   const { showError } = useToast();
   const {
     quest,
@@ -160,16 +157,11 @@ export function VictoryView() {
       const r = await saveSession(null);
       setResult(r);
       success();
-      if (r.levelUp) playSound(SOUNDS.levelUp);
     } catch {
       setSaveError(true);
       showError(t("errors.save_session_failed"));
     }
-  }, [saveSession, success, playSound, showError, t]);
-
-  useEffect(() => {
-    playSound(SOUNDS.victory);
-  }, [playSound]);
+  }, [saveSession, success, showError, t]);
 
   useEffect(() => {
     if (savedRef.current) return;

@@ -23,8 +23,10 @@ const { withAndroidManifest } = require("@expo/config-plugins");
  *
  * - **CAMERA** — `app/settings.tsx` calls `launchImageLibraryAsync`, never `launchCameraAsync`.
  *   Picking an existing photo does not need a camera.
- * - **RECORD_AUDIO** — `hooks/useSound.ts` only ever calls `createAudioPlayer`. Playback, never
- *   capture.
+ * - **RECORD_AUDIO** — came from `expo-audio`, which is gone since 1.8.1: the Sound Effects
+ *   setting toggled a `SOUNDS` map whose every entry was `null`, so it drove a foreground media
+ *   service and three permissions for silence. The marker stays because it costs nothing and
+ *   the day audio comes back it must not come back with a microphone.
  * - **SYSTEM_ALERT_WINDOW** — drawing over other apps, from the dev-client tooling. Nothing in a
  *   release build has any business with it.
  *

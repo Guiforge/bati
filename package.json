@@ -13,7 +13,6 @@
     "drizzle-orm": "^0.45.2",
     "expo": "~57.0.12",
     "expo-asset": "~57.0.10",
-    "expo-audio": "~57.0.3",
     "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.10",
     "expo-file-system": "~57.0.4",

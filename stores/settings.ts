@@ -3,14 +3,14 @@ import { create } from "zustand";
 import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
 import i18n from "@/i18n";
-import { getDevicePreferredAppLanguage } from "@/src/i18n/deviceLanguage";
+import {
+  type AppLanguage,
+  getDevicePreferredAppLanguage,
+  resolveAppLanguage,
+} from "@/src/i18n/deviceLanguage";
 
-export type AppLanguage = "en" | "fr";
+export type { AppLanguage };
 export type ThemePreference = "light" | "dark" | "system";
-
-function normalizeLanguage(value: string | null | undefined): AppLanguage {
-  return value === "fr" ? "fr" : "en";
-}
 
 function normalizeTheme(value: string | null | undefined): ThemePreference {
   return value === "dark" || value === "light" || value === "system" ? value : "system";
@@ -26,7 +26,6 @@ interface SettingsState {
   avatarId: AvatarId;
   customAvatarUri: string | null;
   hapticsEnabled: boolean;
-  soundEnabled: boolean;
   reducedMotion: boolean;
   isLoaded: boolean;
 
@@ -35,7 +34,6 @@ interface SettingsState {
   setAvatarId: (avatarId: AvatarId) => Promise<void>;
   setCustomAvatarUri: (uri: string | null) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => Promise<void>;
-  setSoundEnabled: (enabled: boolean) => Promise<void>;
   setReducedMotion: (enabled: boolean) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
@@ -69,7 +67,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   avatarId: avatarIds[0],
   customAvatarUri: null,
   hapticsEnabled: true,
-  soundEnabled: true,
   reducedMotion: false,
   isLoaded: false,
 
@@ -102,11 +99,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setHapticsEnabled(enabled);
   },
 
-  setSoundEnabled: async (enabled) => {
-    set({ soundEnabled: enabled });
-    await preferences.setSoundEnabled(enabled);
-  },
-
   setReducedMotion: async (enabled) => {
     set({ reducedMotion: enabled });
     await preferences.setReducedMotion(enabled);
@@ -120,7 +112,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         avatarId,
         customAvatarUri,
         hapticsEnabled,
-        soundEnabled,
         storedReducedMotion,
         deviceReducedMotion,
       ] = await Promise.all([
@@ -129,13 +120,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getAvatarId(),
         preferences.getCustomAvatarUri(),
         preferences.getHapticsEnabled(),
-        preferences.getSoundEnabled(),
         preferences.getReducedMotion(),
         deviceReducedMotionWithin(ACCESSIBILITY_PROBE_MS),
       ]);
 
-      const normalizedLanguage =
-        language === null ? getDevicePreferredAppLanguage() : normalizeLanguage(language);
+      const normalizedLanguage = resolveAppLanguage(language);
 
       // Same shape as the language above: the hero's own answer wins, and the device speaks
       // when they have not given one. Every animated component already honours this flag —
@@ -150,7 +139,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         avatarId: normalizeAvatarId(avatarId),
         customAvatarUri,
         hapticsEnabled,
-        soundEnabled,
         reducedMotion,
         isLoaded: true,
       });

@@ -1,14 +1,10 @@
-- Un catalogue d'exercices. Touche l'haltère dans l'en-tête des Quêtes
-  pour parcourir tous les mouvements : recherche par nom, filtres par
-  échelle, schéma, muscle ou matériel, et pour chacun la variation plus
-  dure vers laquelle il mène. Jusqu'ici, on n'atteignait un mouvement
-  qu'à travers une quête qui le contenait par hasard.
-- Les pilules de filtres ne bougent plus quand tu les touches ; l'état
-  actif s'affiche sur la ligne du dessous au lieu de réordonner la
-  rangée.
-- Le « + » de l'écran Quêtes ne déborde plus à droite.
-- Trois contrôles des Réglages qui n'étaient branchés sur rien ont
-  disparu.
-- Sous le capot : chaque fichier, tests compris, obéit désormais aux
-  règles de typage les plus strictes, et quelques erreurs de plus sont
-  attrapées à la construction plutôt que sur ton téléphone.
+- Un catalogue d'exercices : touche l'haltère dans l'en-tête des
+  Quêtes pour parcourir tous les mouvements, chercher par nom, filtrer
+  par échelle, schéma, muscle ou matériel, et voir vers quelle
+  variation plus dure chacun mène.
+- Les pilules de filtres ne bougent plus ; l'état actif s'affiche
+  dessous.
+- Le « + » des Quêtes ne déborde plus à droite.
+- Trois réglages branchés sur rien ont disparu.
+- Sous le capot : typage plus strict, plus d'erreurs attrapées à la
+  construction.

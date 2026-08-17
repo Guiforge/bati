@@ -187,7 +187,7 @@
     "@tamagui/web": "2.7.6",
     "react-dom": "19.2.3"
   },
-  "version": "1.8.1",
+  "version": "1.9.0",
   "license": "MIT",
   "expo": {
     "autolinking": {

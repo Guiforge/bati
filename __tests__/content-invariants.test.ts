@@ -469,6 +469,24 @@ describe("content invariants", () => {
     expect(offenders).toEqual([]);
   });
 
+  // Every route up the ladder is named after the movement it ends on. A summit with no name still
+  // renders — `pathName` returns null and the UI falls back to the movement — but the fallback is
+  // there so a ladder edge added mid-flight leaves no hole on screen, not so naming can be
+  // skipped. A path that speaks in coordinates is the thing this feature exists to end.
+  test("every ladder summit has a path name", () => {
+    const { PATH_NAMES } = require("../db/paths") as typeof import("../db/paths");
+
+    const rows = t.sqlite
+      .prepare("SELECT enName, prerequisiteExerciseId AS prereq, id FROM exercises")
+      .all() as { enName: string; prereq: number | null; id: number }[];
+
+    const isPrerequisite = new Set(rows.map((r) => r.prereq).filter(Boolean));
+    const summits = rows.filter((r) => r.prereq !== null && !isPrerequisite.has(r.id));
+
+    expect(summits.length).toBeGreaterThan(0);
+    expect(summits.filter((s) => !PATH_NAMES[s.enName]).map((s) => s.enName)).toEqual([]);
+  });
+
   // Rotation must not be able to change what the warm-up *is* — only which movements fill it.
   test("the session count never changes a warm-up's length or its wrist step", async () => {
     const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");

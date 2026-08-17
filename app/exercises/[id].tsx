@@ -1,4 +1,4 @@
-import { ChevronLeft, Dumbbell, Timer } from "@tamagui/lucide-icons";
+import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -11,11 +11,12 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { getExerciseById } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { pathName } from "@/db/paths";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -25,6 +26,14 @@ type Status = "loading" | "ready" | "error";
 
 const resolveAsset = (path?: string | null): ImageSourcePropType =>
   path?.startsWith("http") ? { uri: path } : getExerciseAsset(path ?? "");
+
+/**
+ * The 1280 px art belongs to the 16:9 hero and nowhere else — an image costs its *source*
+ * resolution in memory, not its slot (docs/architecture/performance.md). Every small slot reads
+ * the 128 px thumbnail, which is what `ProgressionCard` and `SessionRewards` already do.
+ */
+const resolveThumb = (path?: string | null): ImageSourcePropType =>
+  path?.startsWith("http") ? { uri: path } : getExerciseThumb(path ?? "");
 
 const parseId = (raw?: string | string[]): number | null => {
   const val = Array.isArray(raw) ? raw[0] : raw;
@@ -118,46 +127,93 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
 }
 
 /**
- * The whole path in one line and one bar: how far the hero has climbed, where they stand.
+ * The path this movement sits on: its name, how far the hero has climbed, and where they stand.
+ *
+ * Named, not numbered. Everything else in Bati carries a name — quests, village tiers, the flame —
+ * and the ladder alone spoke in coordinates ("rung 3 of 6"), which nobody can want or tell anyone
+ * about. `db/paths.ts` supplies the noun; a summit with none falls back to the movement's own name.
  *
  * Segments, not a list of named nodes. A dedicated "my path" screen was designed and dropped for
  * showing a wall of unlit movements; the same wall would be no kinder here. The rung the hero is
- * on is named in the text above, so the colours reinforce it rather than carry it alone.
+ * on is named in the line below, so the colours reinforce it rather than carry it alone.
+ *
+ * Tapping opens the rung the hero actually stands on — which is also the honest answer to "this is
+ * too hard, what do I train instead?". Not the direct prerequisite: on the Pull-ups page that is
+ * Chin-Up, which someone who cannot do a pull-up cannot do either.
  */
-function LadderStrip({ chain }: { chain: Chain }) {
+function PathCard({ chain }: { chain: Chain }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
+  const router = useRouter();
 
-  const current = chain.rungs[chain.position - 1]?.exercise;
-  if (!current) return null;
+  const total = chain.rungs.length;
+  const summit = chain.rungs[total - 1]?.exercise;
+  const here = chain.rungs[chain.position - 1]?.exercise;
+  if (!summit || !here) return null;
+
+  // Both halves are required. `isEarned` alone is not the summit: a hero can master a high rung
+  // out of order while still standing on the first one, and the page would congratulate them for
+  // a path they have barely started.
+  const isClimbed = chain.position === total && chain.rungs[total - 1]?.isEarned === true;
+  const name = pathName(summit.enName, language) ?? localizedName(summit, language);
+
+  // Standing on this page's own movement: tapping would reload the page the hero is reading.
+  const target = chain.position < total ? here.id : null;
+
+  const eyebrow = isClimbed
+    ? t("exercises.path_climbed", { path: name, defaultValue: `${name} · Climbed` })
+    : t("exercises.path_rung", {
+        path: name,
+        position: chain.position,
+        total,
+        defaultValue: `${name} · Rung ${chain.position}/${total}`,
+      });
 
   return (
-    <YStack gap="$2">
-      <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
-        {t("progression.chain_position", {
-          position: chain.position,
-          total: chain.rungs.length,
-          name: localizedName(current, language),
-        })}
-      </Text>
-      <XStack gap="$1">
-        {chain.rungs.map((rung, index) => (
-          <YStack
-            key={rung.exercise.id}
-            flex={1}
-            height={4}
-            rounded="$1"
-            bg={
-              index < chain.position - 1
-                ? "$resourceGold"
-                : index === chain.position - 1
-                  ? "$primary"
-                  : "$borderStrong"
-            }
-          />
-        ))}
-      </XStack>
-    </YStack>
+    <Card
+      onPress={target === null ? undefined : () => router.push(`/exercises/${target}` as never)}
+      accessibilityLabel={
+        target === null ? eyebrow : `${eyebrow} — ${localizedName(here, language)}`
+      }
+    >
+      <YStack gap="$2">
+        <XStack items="center" gap="$2">
+          <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5} flex={1}>
+            {eyebrow.toUpperCase()}
+          </Text>
+          {target === null ? null : <ChevronRight size={16} color="$textSecondary" />}
+        </XStack>
+
+        <XStack gap="$1">
+          {chain.rungs.map((rung, index) => (
+            <YStack
+              key={rung.exercise.id}
+              flex={1}
+              height={4}
+              rounded="$1"
+              bg={
+                isClimbed || index < chain.position - 1
+                  ? "$resourceGold"
+                  : index === chain.position - 1
+                    ? "$primary"
+                    : "$borderStrong"
+              }
+            />
+          ))}
+        </XStack>
+
+        {isClimbed ? null : (
+          <Paragraph color="$text" opacity={0.7} size="$3">
+            {target === null
+              ? t("exercises.path_you_are_here", "You are here.")
+              : t("exercises.path_you_are_on", {
+                  name: localizedName(here, language),
+                  defaultValue: `You are on ${localizedName(here, language)}.`,
+                })}
+          </Paragraph>
+        )}
+      </YStack>
+    </Card>
   );
 }
 
@@ -165,26 +221,22 @@ function LadderStrip({ chain }: { chain: Chain }) {
  * What comes after this movement. A hint, never a gate — nothing in the app is locked behind it,
  * and a hero who wants to try the next step tonight can (roadmap §15, the progression ladder).
  */
-function NextStepCard({
-  progression,
-  chain,
-}: {
-  progression: NextProgression;
-  chain: Chain | null;
-}) {
+function NextStepCard({ progression }: { progression: NextProgression }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
+  const router = useRouter();
 
   const name = localizedName(progression.next, language);
   const remaining = Math.max(0, progression.required - progression.metTarget);
 
   return (
-    <Card>
-      {chain ? <LadderStrip chain={chain} /> : null}
-
+    <Card
+      onPress={() => router.push(`/exercises/${progression.next.id}` as never)}
+      accessibilityLabel={`${t("exercises.next_step", "Next rung")} — ${name}`}
+    >
       {/* The pose was always in the payload and never rendered — a named step you cannot see is
           a to-do list item, an illustrated one is a movement you want to try. */}
-      <XStack gap="$3" items="center" mt={chain ? "$3" : undefined}>
+      <XStack gap="$3" items="center">
         <YStack
           width={80}
           height={80}
@@ -195,7 +247,7 @@ function NextStepCard({
           overflow="hidden"
         >
           <Image
-            source={resolveAsset(progression.next.imagePath)}
+            source={resolveThumb(progression.next.imagePath)}
             style={{ width: "100%", height: "100%" }}
             contentFit="cover"
             transition={200}
@@ -218,6 +270,8 @@ function NextStepCard({
                 })}
           </Paragraph>
         </YStack>
+
+        <ChevronRight size={20} color="$textSecondary" />
       </XStack>
     </Card>
   );
@@ -302,7 +356,11 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
         </YStack>
       </Card>
 
-      {progression ? <NextStepCard progression={progression} chain={chain} /> : null}
+      {/* Two cards, rendered independently. They used to be one, with the path nested inside the
+          next-step card — so on the twelve summits, where there *is* no next step, the whole
+          ladder vanished. The movement a hero opens out of ambition showed the least. */}
+      {chain ? <PathCard chain={chain} /> : null}
+      {progression ? <NextStepCard progression={progression} /> : null}
     </YStack>
   );
 }

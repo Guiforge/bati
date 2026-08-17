@@ -19,8 +19,6 @@ and the village you build is made of what you actually lifted.
 [![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=0D33F2)](https://github.com/Guiforge/bati/releases/latest)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-green)](LICENSE)
-![No tracking](https://img.shields.io/badge/tracking-none-success)
-![Offline first](https://img.shields.io/badge/offline-first-informational)
 
 ![Expo 57](https://img.shields.io/badge/Expo-57-000020?logo=expo&logoColor=white)
 ![React Native 0.86](https://img.shields.io/badge/React_Native-0.86-61DAFB?logo=react&logoColor=black)
@@ -38,6 +36,9 @@ gets between you and your next set.
 **Nothing leaves your phone.** No account, no servers, no analytics, no ads. Bati makes no network
 requests at all — your history lives in a database on your device and nowhere else. That is the
 architecture, not a setting you have to find.
+
+> **Early days.** The app works end to end and is in the hands of its first testers. It is on no
+> store yet: the builds below are signed by its author rather than by a shop.
 
 ## See it
 
@@ -79,13 +80,50 @@ finished — read from a database on your phone, with nothing to log in to.
 **No account, no network.** Bati makes no requests at all. There is no server to leak, no analytics
 to opt out of, and no cloud copy of your training. [Privacy policy](https://guiforge.github.io/bati/privacy/).
 
-## A note on this repo
+## Install it
 
-This project is largely written with AI assistance. Saying it up front so you read the code with
-that in mind.
+All of this is also on [the site](https://guiforge.github.io/bati/#install), in English and French.
 
-This is a fun project. I build it because I enjoy building it, and I lean heavily on AI to write
-it.
+### F-Droid — the one that updates itself
+
+**Searching F-Droid for "Bati" will not find it.** The app is not in the main F-Droid catalogue;
+it lives in its own repository, and F-Droid only searches repositories you have added. That is a
+property of how the client works, not something a setting fixes — submission to the main catalogue
+is tracked in [`docs/fdroid.md`](docs/fdroid.md), and the badge above switches to the official
+listing once it lands.
+
+Add this repository once and Bati shows up in search, with updates arriving like any other app's:
+
+[**Add the repository to F-Droid**](https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
+
+By hand instead — *Settings → Repositories → +* — paste the address, and check that F-Droid shows
+this fingerprint before you accept it:
+
+```text
+https://guiforge.github.io/bati/fdroid/repo
+089D B128 38D6 60CA F285 BE85 5D8E 6D02 3407 A50D 9805 1B38 4309 5EA0 9BBA 2D97
+```
+
+That fingerprint is the whole security model of a self-hosted repository: it pins the key every
+future update must be signed with. Adding the address without checking it trusts whatever answers
+at that URL.
+
+### A plain APK
+
+[Releases](https://github.com/Guiforge/bati/releases) — Android will ask you to allow installs
+from an unknown source the first time. Nothing updates itself this way; you download the next one
+yourself.
+
+See [`docs/fdroid.md`](docs/fdroid.md) for how the repository is built and signed.
+
+---
+
+*Everything below is for reading or building the code.*
+
+## Written with AI
+
+This project is largely written with AI assistance — saying it up front so you read the code with
+that in mind. It is a fun project: I build it because I enjoy building it.
 
 ## Where the art comes from
 
@@ -113,7 +151,7 @@ native modules — SQLite, audio, an Android home-screen widget.
 
 ## Scripts
 
-| | |
+| Command | What it runs |
 | --- | --- |
 | `npm start` | Expo dev server |
 | `npm run android` / `ios` / `web` | run on a target |
@@ -130,7 +168,7 @@ All of these run in CI; the first three also run on commit or push.
 - **Biome** — formatting and lint, including a GritQL plugin that rejects raw hex colours
   outside [`constants/rawColors.ts`](constants/rawColors.ts).
 - **TypeScript**, strict.
-- **Jest** — ~430 tests, with coverage thresholds set just under actual so they catch deletion
+- **Jest** — ~600 tests, with coverage thresholds set just under actual so they catch deletion
   rather than reward padding.
 - **Knip** — dead code. At zero; anything it reports is new.
 - **Maestro** — end-to-end flows against a real device.
@@ -145,42 +183,6 @@ All of these run in CI; the first three also run on commit or push.
 - `docs/` — the wiki: product, design, gameplay, architecture, planning
 - `.maestro/` — E2E flows
 - `plugins/` — local Expo config plugins
-
-## Install it
-
-Everything below is also on [the site](https://guiforge.github.io/bati/#install), in English and French.
-
-### F-Droid — the one that updates itself
-
-**Searching F-Droid for "Bati" will not find it.** The app is not in the main F-Droid catalogue;
-it lives in its own repository, and F-Droid only searches repositories you have added. That is a
-property of how the client works, not something a setting fixes — submission to the main catalogue
-is tracked in [`docs/fdroid.md`](docs/fdroid.md), and the badge above switches to the official
-listing once it lands.
-
-Add this repository once and Bati shows up in search, with updates arriving like any other app's:
-
-[**Add the repository to F-Droid**](https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
-
-By hand instead — *Settings → Repositories → +* — paste the address, and check that F-Droid shows
-this fingerprint before you accept it:
-
-```
-https://guiforge.github.io/bati/fdroid/repo
-089D B128 38D6 60CA F285 BE85 5D8E 6D02 3407 A50D 9805 1B38 4309 5EA0 9BBA 2D97
-```
-
-That fingerprint is the whole security model of a self-hosted repository: it pins the key every
-future update must be signed with. Adding the address without checking it trusts whatever answers
-at that URL.
-
-### A plain APK
-
-[Releases](https://github.com/Guiforge/bati/releases) — Android will ask you to allow installs
-from an unknown source the first time. Nothing updates itself this way; you download the next one
-yourself.
-
-See [`docs/fdroid.md`](docs/fdroid.md) for how the repository is built and signed.
 
 ## Contributing
 

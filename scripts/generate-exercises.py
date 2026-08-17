@@ -326,27 +326,29 @@ EXERCISES = [
      "A fantasy athlete hero lying face-up on the floor, seen from the side, head and shoulders "
      "flat on the ground, both arms lying flat along the floor at the sides with the palms down — "
      "the hands are beside the hips, NOT behind the body, and they carry no weight. "
-     "The near leg is bent sharply at the knee and its foot is planted flat and solidly on the "
-     "floor with the shin vertical; this planted leg is drawn in full and is clearly the one "
-     "holding the athlete up. The hips are pushed up so high that a clear triangular window of "
-     "empty dark space opens between the lower back and the ground, large enough to pass an arm "
-     "through, and shoulders, hips and the bent knee line up straight. "
-     "The far leg is lifted right off the floor and held perfectly straight, continuing the line of "
-     "the torso up into the air. Both legs are visible. The glutes and hamstrings glow with warm "
+     "From the shoulders the body rises in one straight diagonal ramp: shoulder blades pressed to "
+     "the floor, hips at the top of the slope, and the line running on down to the knee. "
+     "The near leg is bent at the knee and its foot is planted flat and solidly on the floor with "
+     "the shin vertical; this planted leg is drawn in full and is what holds the ramp up. "
+     "The far leg is lifted right off the floor and held straight, continuing the line of the "
+     "thigh out into the air. Both legs are visible. The glutes and hamstrings glow with warm "
      "golden energy."),
     # Came back sitting astride the bench: "rear foot resting on a bench" leaves the rest of the
     # body unaccounted for, and an unoccupied surface is one this model will happily sit on (see
     # `l_sit`). So the bench gets exactly one permitted contact, and the stance is pinned by the
     # countable fact that worked on `pistol_squat` — how many feet are on the floor.
     ("bulgarian_split_squat",
-     "A fantasy athlete hero standing in a deep split squat, seen from the side. Exactly one foot "
-     "is on the ground: the front foot, planted flat a long stride out in front of a low stone "
-     "bench, its knee bent to a right angle with the thigh parallel to the floor. The other leg "
-     "trails back and only the laces of that rear shoe rest on top of the bench, toes pointing "
-     "down behind it. The athlete is STANDING, not sitting — the seat and both thighs are high "
-     "above the bench and never touch it, and the single point of contact with the bench is the "
-     "top of that back foot. The torso is tall and upright. The front thigh and glute glow with "
-     "electric-blue energy."),
+     "A fantasy athlete hero standing in a deep split squat, seen from a three-quarter front angle "
+     "with a low stone bench behind them at ankle height. Exactly one foot is on the ground: the "
+     "front foot, planted flat a long stride out in front of the bench, its knee bent to a right "
+     "angle. The other leg trails away backwards, its knee dropped low and almost touching the "
+     "floor behind the athlete. That rear foot is turned over so the SOLE of its shoe faces up at "
+     "the sky and only the laces and the top of the foot rest on the near edge of the bench — the "
+     "rear foot is never flat on the bench and the athlete never stands up on it, which would be a "
+     "step-up and not this movement. The torso is completely upright and vertical, chest tall. The "
+     "athlete stands well in front of the bench and never sits on it or straddles it: the one and "
+     "only contact with the bench is the top of that trailing foot. The front thigh and glute glow "
+     "with electric-blue energy."),
     # The `0033` batch: six summits. The opposite instruction to the one above — each of these ends
     # a route, so the pose should read as the hardest thing on it. The risk here is legibility, not
     # modesty: a tuck planche drawn ambiguously is indistinguishable from a crouch.
@@ -365,10 +367,21 @@ EXERCISES = [
      "A fantasy athlete hero hanging from a rugged stone bar with both legs raised straight "
      "overhead and the toes touching the bar between the hands, body folded sharply at the hips; "
      "the abdominals glow with electric-blue energy, seen from the side."),
+    # Came back symmetric, as a crouch on two straight arms. The half that was missing is *where*
+    # the straight arm goes: not merely straight, but stretched out sideways almost flat along the
+    # floor, with the hands far wider than a push-up. Named as a distance, the asymmetry survives.
     ("archer_pushup",
-     "A fantasy athlete hero in a wide-set push-up lowered towards one hand, that elbow deeply "
-     "bent while the opposite arm stays completely straight along the ground; the working chest "
-     "and arm glow with fiery orange-red energy, seen from the front at a low angle."),
+     "A fantasy athlete hero holding the bottom of an archer push-up, seen from the front at a low "
+     "angle. The legs are stretched straight out behind, knees locked and feet together up on the "
+     "toes, so that head, hips and heels form one rigid straight plank close to the ground — the "
+     "knees are never bent and the hips are never piled up under the body; this is not a crouch. "
+     "The two hands are planted very far "
+     "apart, much wider than the shoulders. One elbow is bent deeply so that the chest is lowered "
+     "right down beside that hand, almost touching the floor. The other arm is stretched straight "
+     "out sideways away from the body, elbow locked and palm flat on the ground, nearly horizontal "
+     "— that arm is doing no work and is simply extended along the floor. The two arms are doing "
+     "completely different things. The bent arm and the chest above it glow with fiery orange-red "
+     "energy."),
     # Asked for "one-legged" and got a two-legged squat: the model resolves an unusual pose towards
     # the symmetric one it knows. So the asymmetry is stated as a count of feet on the floor, which
     # is checkable, rather than as an adjective it can quietly drop.

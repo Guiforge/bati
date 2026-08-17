@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the 56 exercise illustrations.
+"""Generate the 62 exercise illustrations.
 
   python3 scripts/generate-exercises.py            # all of them
   python3 scripts/generate-exercises.py squat plank
@@ -292,6 +292,35 @@ EXERCISES = [
      "A fantasy athlete hero in a split squat with the top of the rear foot resting on a low stone "
      "bench behind them, front thigh parallel to the ground and torso tall; the front thigh and "
      "glute glow with electric-blue energy, seen from the side."),
+    # The `0033` batch: six summits. The opposite instruction to the one above — each of these ends
+    # a route, so the pose should read as the hardest thing on it. The risk here is legibility, not
+    # modesty: a tuck planche drawn ambiguously is indistinguishable from a crouch.
+    ("muscle_up",
+     "A fantasy athlete hero at the transition of a muscle-up on a rugged stone bar, chest above "
+     "the bar and shoulders rolling over it as the elbows drive back, feet clear of the ground; "
+     "the back and arms glow with metallic silver-blue energy, seen from the side."),
+    ("toes_to_bar",
+     "A fantasy athlete hero hanging from a rugged stone bar with both legs raised straight "
+     "overhead and the toes touching the bar between the hands, body folded sharply at the hips; "
+     "the abdominals glow with electric-blue energy, seen from the side."),
+    ("archer_pushup",
+     "A fantasy athlete hero in a wide-set push-up lowered towards one hand, that elbow deeply "
+     "bent while the opposite arm stays completely straight along the ground; the working chest "
+     "and arm glow with fiery orange-red energy, seen from the front at a low angle."),
+    ("pistol_squat",
+     "A fantasy athlete hero at the bottom of a one-legged squat, standing thigh folded fully "
+     "onto the calf and the free leg held straight out in front clear of the ground, arms "
+     "extended forward for balance; the working leg glows with electric-blue energy, seen from "
+     "the side."),
+    ("dragon_flag",
+     "A fantasy athlete hero lying back on a low stone bench gripping its edge behind their head, "
+     "the entire body raised in one rigid straight line balanced on the upper back and shoulders, "
+     "feet high in the air; the abdominals glow with electric-blue energy, seen from the side."),
+    ("tuck_planche",
+     "A fantasy athlete hero balanced on two flat hands on the ground with the elbows locked "
+     "perfectly straight and the shoulders leaning well forward past the wrists, both knees tucked "
+     "tight to the chest and the whole body floating clear of the floor; the shoulders and locked "
+     "arms glow with silver-blue energy, seen from the side."),
 ]
 
 if __name__ == "__main__":

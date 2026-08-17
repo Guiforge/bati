@@ -6,9 +6,10 @@ import "@/i18n";
 import config from "@/tamagui.config";
 
 // The path block used to live *inside* the next-step card, which only renders when a harder
-// variation exists. So on the twelve summits — L-Sit, Handstand Push-Up, Pull-ups, the movements
-// a hero opens out of ambition — the whole ladder was absent. These assertions are on the tree's
-// contents, not on "the screen rendered": a screen missing its best block still renders.
+// variation exists. So on the thirteen summits — Dragon Flag, Handstand Push-Up, Muscle-Up, the
+// movements a hero opens out of ambition — the whole ladder was absent. These assertions are on
+// the tree's contents, not on "the screen rendered": a screen missing its best block still
+// renders.
 
 const mockPush = jest.fn();
 
@@ -48,11 +49,11 @@ const rung = (id: number, enName: string, isEarned: boolean) => ({
   isEarned,
 });
 
-/** L-Sit — the top of the core path, so `getNextProgression` has nothing to return. */
-const L_SIT = {
+/** Dragon Flag — the top of the core lever path, so `getNextProgression` has nothing to return. */
+const DRAGON_FLAG = {
   id: 30,
-  enName: "L-Sit",
-  frName: "L-Sit",
+  enName: "Dragon Flag",
+  frName: "Dragon flag",
   enDescription: "",
   frDescription: "",
   imagePath: "",
@@ -66,9 +67,9 @@ const L_SIT = {
   prerequisiteExerciseId: 20,
 };
 
-const CORE_PATH = ["Dead Bug", "Hollow Body Hold", "L-Sit"];
+const CORE_PATH = ["Dead Bug", "Hollow Body Hold", "Dragon Flag"];
 
-/** Mount the L-Sit page with the hero standing on `position`, and `earned` rungs marked. */
+/** Mount the Dragon Flag page with the hero standing on `position`, and `earned` rungs marked. */
 async function mountSummit(position: number, earned: boolean[]) {
   mockGetChainTo.mockResolvedValue({
     rungs: CORE_PATH.map((name, i) => rung((i + 1) * 10, name, earned[i] === true)),
@@ -91,7 +92,7 @@ async function mountSummit(position: number, earned: boolean[]) {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockGetExerciseById.mockResolvedValue(L_SIT);
+  mockGetExerciseById.mockResolvedValue(DRAGON_FLAG);
   mockGetNextProgression.mockResolvedValue(null);
 });
 
@@ -100,13 +101,13 @@ describe("the path on the exercise screen", () => {
     await mountSummit(1, [false, false, false]);
 
     // Named, not numbered: "rung 1 of 3" is a coordinate nobody can want or tell anyone about.
-    expect(screen.getByText(/PATH OF THE L-SIT/i)).toBeTruthy();
+    expect(screen.getByText(/PATH OF THE DRAGON/i)).toBeTruthy();
   });
 
   it("names the rung the hero stands on, never the page's own movement", async () => {
     await mountSummit(1, [false, false, false]);
 
-    // A beginner opening L-Sit is pointed at Dead Bug — the honest answer to "this is too hard".
+    // A beginner opening Dragon Flag is pointed at Dead Bug — the honest answer to "this is too hard".
     expect(screen.getByText(/You are on Dead Bug/i)).toBeTruthy();
   });
 
@@ -123,7 +124,7 @@ describe("the path on the exercise screen", () => {
   it("declares the path climbed only once the hero has reached its top", async () => {
     await mountSummit(3, [true, true, true]);
 
-    expect(screen.getByText(/PATH OF THE L-SIT · CLIMBED/i)).toBeTruthy();
+    expect(screen.getByText(/PATH OF THE DRAGON · CLIMBED/i)).toBeTruthy();
     // Nothing left to point at: a climbed path is not a to-do list.
     expect(screen.queryByText(/You are on/i)).toBeNull();
   });
@@ -133,7 +134,7 @@ describe("the path on the exercise screen", () => {
     // contiguously from the bottom, so `position` stays 1.
     await mountSummit(1, [false, false, true]);
 
-    expect(screen.getByText(/PATH OF THE L-SIT · RUNG 1\/3/i)).toBeTruthy();
+    expect(screen.getByText(/PATH OF THE DRAGON · RUNG 1\/3/i)).toBeTruthy();
     expect(screen.queryByText(/CLIMBED/i)).toBeNull();
   });
 });

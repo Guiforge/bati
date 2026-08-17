@@ -200,9 +200,9 @@ describe("db/exercises — variation ladder", () => {
   });
 
   describe("paths climbed for keeps", () => {
-    /** Dead Bug -> Hollow Body Hold -> Tuck L-Sit -> L-Sit, the route to the equerre. */
+    /** Dead Bug -> Hollow Body Hold -> Dragon Flag, the shortest complete route in the catalogue. */
     function climbCorePath() {
-      for (const name of ["Dead Bug", "Hollow Body Hold", "Tuck L-Sit", "L-Sit"]) {
+      for (const name of ["Dead Bug", "Hollow Body Hold", "Dragon Flag"]) {
         for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12);
       }
     }
@@ -221,10 +221,10 @@ describe("db/exercises — variation ladder", () => {
       climbCorePath();
 
       // Detraining, and then a bad session. The *current* rung falls — a trophy must not.
-      for (let i = 0; i < 3; i++) logSet(idOf("L-Sit"), 4, 12);
+      for (let i = 0; i < 3; i++) logSet(idOf("Dragon Flag"), 4, 12);
 
-      const chain = await exercisesApi().getChainTo(idOf("L-Sit"));
-      expect(chain?.position).toBe(4);
+      const chain = await exercisesApi().getChainTo(idOf("Dragon Flag"));
+      expect(chain?.position).toBe(3);
       expect(await exercisesApi().countClimbedPaths()).toBe(1);
     });
 
@@ -246,12 +246,12 @@ describe("db/exercises — variation ladder", () => {
     });
 
     test("time passing does not take it back either", async () => {
-      for (const name of ["Dead Bug", "Hollow Body Hold", "Tuck L-Sit", "L-Sit"]) {
+      for (const name of ["Dead Bug", "Hollow Body Hold", "Dragon Flag"]) {
         for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12, 400 + i);
       }
 
       // Every session is far outside the recency window, so nothing reads as earned today...
-      const chain = await exercisesApi().getChainTo(idOf("L-Sit"));
+      const chain = await exercisesApi().getChainTo(idOf("Dragon Flag"));
       expect(chain?.position).toBe(1);
       // ...and the shelf still holds it.
       expect(await exercisesApi().countClimbedPaths()).toBe(1);

@@ -232,6 +232,13 @@
       "when": 1787101200000,
       "tag": "0032_calisthenics_rungs",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1787104800000,
+      "tag": "0033_calisthenics_summits",
+      "breakpoints": true
     }
   ]
 }

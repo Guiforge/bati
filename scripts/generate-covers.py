@@ -151,6 +151,15 @@ COVERS = [
      "A low wide shot of a half-dug foundation trench beside a rising village wall at dusk, "
      "squared stones set into the earth, a plumb line hanging still from a timber frame and a "
      "mason's tools laid down on the lip. The work nobody sees -- the site is empty, no people."),
+    # The two skill quests of 0033. Both are summits, so both scenes are the place a route ends.
+    ("summit_trial", "quests",
+     "A wide shot from a high stone ledge at the very top of a keep's tower, a single iron bar "
+     "spanning the open archway with the whole valley falling away beyond it, first light on the "
+     "far peaks. The end of every route -- the ledge is deserted, no people."),
+    ("straight_arm_vigil", "quests",
+     "A wide shot of a bare training hall at night, a single square of polished floor lit by one "
+     "high window, two shallow chalk handprints on the boards and nothing else in the room. Only "
+     "the floor and the patience it asks for -- the hall is empty, no people."),
     ("arcane_gauntlet", "quests",
      "A wide shot of a circular wizard's trial chamber at night: a polished obsidian floor "
      "inscribed with one great glowing arcane circle, tall runed pillars ringing the room, violet "

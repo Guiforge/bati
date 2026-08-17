@@ -487,6 +487,26 @@ Add the entries in the same commit as the files, never before.
 | `patient_ascent` | quest cover | The Patient Ascent |
 | `masons_footing` | quest cover | The Mason's Footing |
 
+## 9. The calisthenics summits (`0033`) — 8 assets, open
+
+The six skills the ladder was climbing towards. Same fallback, same rule about `assetMap`.
+
+| Slug | Kind | Row |
+| --- | --- | --- |
+| `muscle_up` | exercise | Muscle-Up — summit of « Voie de la Traction » |
+| `toes_to_bar` | exercise | Toes to Bar — summit of « Voie de la Suspension » |
+| `archer_pushup` | exercise | Archer Push-Up — summit of « Voie de l'Archer » |
+| `pistol_squat` | exercise | Pistol Squat — summit of « Voie du Pistolet » |
+| `dragon_flag` | exercise | Dragon Flag — summit of « Voie du Dragon » |
+| `tuck_planche` | exercise | Tuck Planche — summit of « Voie de la Planche » |
+| `summit_trial` | quest cover | The Summit Trial |
+| `straight_arm_vigil` | quest cover | The Straight-Arm Vigil |
+
+The instruction here is the inverse of §8's: each of these ends a route, so the pose should read
+as the hardest thing on it. The risk is legibility rather than modesty — a tuck planche drawn
+ambiguously is indistinguishable from a crouch, and these are the six most likely to need a
+second pass.
+
 Prompts are staged in `scripts/generate-exercises.py` and `scripts/generate-covers.py`. The seven
 exercise poses carry one extra instruction the earlier batches did not need: each sits *below* a
 movement already drawn, so it has to read as visibly easier than the art above it on the ladder.

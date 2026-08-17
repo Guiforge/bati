@@ -22,24 +22,30 @@ Progressive overload without weights is a **harder variation**, not a bigger mul
 authors that as data — `exercises.prerequisiteExerciseId`, migration `0022` — and surfaces it as a
 **path**: a named route from an easy movement to a hard one.
 
-> *The Path of the Pull*: Towel Door Row → Table Row → Inverted Row → Scapular Pull-Up →
-> Chin-Up → **Pull-ups**
+> *The Path of the Pull*: Towel Door Row → Table Row → Inverted Row → Dead Hang →
+> Scapular Pull-Up → Negative Pull-Up → Chin-Up → Pull-ups → **Muscle-Up**
 
-Twelve paths, each named after the movement it ends on. Like everything else here, position on a
+Thirteen paths, each named after the movement it ends on. Like everything else here, position on a
 path is **derived from the session journal** on read — nothing is stored.
 
 ## Why the name matters
 
 Every other system in Bati carries a name: a quest is *The Squire's Awakening*, the village climbs
 from *hameau* to *capitale éternelle*, the flame runs *Spark → Eternal*. The ladder alone spoke in
-coordinates — "rung 3 of 6" — and a coordinate cannot be wanted, or told to anyone. It was the one
+coordinates — "rung 3 of 9" — and a coordinate cannot be wanted, or told to anyone. It was the one
 system that was a measurement instead of a place.
 
 Names live in [`db/paths.ts`](../../db/paths.ts), keyed by the summit's `enName` (the same
 convention `OATH_PRESETS` uses: ids are seeding order, names are content). **A path is identified
 by its summit** because walking a chain *down* is unambiguous — one prerequisite per movement — and
 branching only ever happens going up. A summit with no name falls back to the movement's own, so
-content never blocks code; a content invariant keeps the twelve honest.
+content never blocks code; a content invariant keeps the thirteen honest.
+
+That key is where the cost of new content lands. `0033` added six summits, and five paths moved
+key in the same commit: two kept their name (the pull route still ends in a pull, it just ends
+higher), three retired theirs for the movement that replaced them — *of the Diamond* → *of the
+Archer*, *of the Curtsy* → *of the Pistol*, *of the L-Sit* → *of the Planche*. Adding a movement
+above a summit is therefore never only a content change: it renames the route underneath it.
 
 ## Owning a rung
 

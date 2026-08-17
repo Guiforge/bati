@@ -148,7 +148,7 @@ Severity order P0 → P1 → P2 → P3; never polish before P0/P1 are gone.
 
 Not tidiness. Each line is a gate that does not close, or a risk with a date on it.
 
-- **P1 — The knip gate does not gate.** `npm run knip` runs in CI and the report is at zero since
+- **P1 — The knip gate does not gate.** `npm run deadcode` runs in CI and the report is at zero since
   2026-08-12, but the step exits 0 regardless of findings. Verify it goes red when a finding
   appears, or it is decoration.
 - **P1 — The suite tests `db/` and leaves the screens bare.** 64 test files
@@ -626,7 +626,7 @@ one of them buys the same file 4.21 already writes, for a cost 4.21 does not pay
 GPS (4.19) means a runtime location permission and a Data Safety answer that stops being "no",
 for outdoor quests nobody has asked for — the cost is not the code. `fallow`
 (<https://github.com/fallow-rs/fallow>, 4.20) is already leaving caches in `.fallow/`; the open
-question is whether it replaces `npm run knip` in CI or merely runs beside it, and a second dead
+question is whether it replaces `npm run deadcode` in CI or merely runs beside it, and a second dead
 code gate that nothing gates on is worth less than the one in §3 being made to fail.
 
 ### Scanned and refused

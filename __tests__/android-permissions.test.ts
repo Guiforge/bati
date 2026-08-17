@@ -23,11 +23,11 @@ const TRIM_PLUGIN = path.join(ROOT, "plugins", "withAndroidTrimPermissions.js");
 
 /**
  * The plugin's own removal list, read out of its source rather than imported: `require`ing it
- * pulls in `@expo/config-plugins`, which is ESM that jest will not parse. Same text-scan trade
+ * pulls in `expo/config-plugins`, which is ESM that jest will not parse. Same text-scan trade
  * the scanignore test makes on the recipe yml — the list still has exactly one home.
  *
  * ponytail: regex over the source, fine while REMOVE is a flat array of literals. If the plugin
- * ever computes that list, export it and mock `@expo/config-plugins` instead.
+ * ever computes that list, export it and mock `expo/config-plugins` instead.
  */
 function strippedByPlugin(): Set<string> {
   const source = fs.readFileSync(TRIM_PLUGIN, "utf8");

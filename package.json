@@ -51,7 +51,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
-    "@expo/config-plugins": "~57.0.8",
     "@j178/prek": "^0.4.13",
     "@tamagui/babel-plugin": "^2.7.4",
     "@testing-library/react-native": "^14.0.1",
@@ -153,9 +152,9 @@
     "check": "biome check --write --error-on-warnings . && npx tsc -p tsconfig.json --noEmit",
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
+    "deadcode": "knip",
     "format": "biome check --write .",
     "ios": "expo run:ios",
-    "knip": "knip",
     "maestro": "bash scripts/maestro.sh",
     "prepare": "prek install",
     "release": "bash scripts/release.sh",
@@ -194,6 +193,11 @@
       "buildFromSource": [
         ".*"
       ]
+    },
+    "doctor": {
+      "appConfigFieldsNotSyncedCheck": {
+        "enabled": false
+      }
     }
   }
 }

@@ -157,7 +157,7 @@ native modules — SQLite, audio, an Android home-screen widget.
 | `npm run android` / `ios` / `web` | run on a target |
 | `npm run check` | Biome + TypeScript |
 | `npm test` | Jest |
-| `npm run knip` | dead-code check |
+| `npm run deadcode` | dead-code check |
 | `npm run maestro` | Maestro E2E flows (needs a device) |
 | `npm run db:generate` / `db:push` | Drizzle migrations |
 
@@ -171,6 +171,8 @@ All of these run in CI; the first three also run on commit or push.
 - **Jest** — ~600 tests, with coverage thresholds set just under actual so they catch deletion
   rather than reward padding.
 - **Knip** — dead code. At zero; anything it reports is new.
+- **expo-doctor** — 20 checks on dependency versions and project shape, all green. A version the
+  installed SDK does not expect builds fine here and fails for whoever rebuilds from source.
 - **Maestro** — end-to-end flows against a real device.
 
 ## Project layout

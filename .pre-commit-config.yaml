@@ -48,9 +48,9 @@ repos:
         always_run: true
         stages: [pre-push]
 
-      - id: knip
-        name: knip (dead code)
-        entry: npm run knip
+      - id: deadcode
+        name: deadcode (knip)
+        entry: npm run deadcode
         language: system
         pass_filenames: false
         always_run: true

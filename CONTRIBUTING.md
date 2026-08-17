@@ -23,7 +23,7 @@ audio, notifications and an Android home-screen widget, none of which work in Ex
 ```bash
 npm run check        # Biome + TypeScript
 npm test             # Jest
-npm run knip         # dead code
+npm run deadcode         # dead code
 ```
 
 All three run in CI, and the hooks run them on commit and push, so a surprise there means

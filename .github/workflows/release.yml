@@ -42,7 +42,7 @@ jobs:
       - run: npx biome ci --error-on-warnings --reporter=github .
       - run: npx tsc --noEmit --project tsconfig.json
       - run: npm test
-      - run: npm run knip
+      - run: npm run deadcode
 
       - uses: actions/setup-java@v5
         with:

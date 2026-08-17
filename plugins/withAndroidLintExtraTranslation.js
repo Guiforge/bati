@@ -1,4 +1,4 @@
-const { withAppBuildGradle } = require("@expo/config-plugins");
+const { withAppBuildGradle } = require("expo/config-plugins");
 
 /**
  * Let a release APK assemble despite Expo copying iOS-only strings into Android resources.

@@ -1,6 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { withDangerousMod } = require("@expo/config-plugins");
+const { withDangerousMod } = require("expo/config-plugins");
 
 /**
  * Give debug builds back the network permissions the release blocks.

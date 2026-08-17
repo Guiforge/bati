@@ -147,10 +147,24 @@ EXERCISES = [
      "A fantasy athlete hero hanging from a rugged stone bar with arms completely straight, "
      "shoulder blades pulled down and together lifting the body only slightly; the upper back "
      "glows with metallic silver-blue energy."),
+    # A block under the hands, same reason as `tuck_l_sit` — flat-palmed on the floor came back
+    # with the hips resting on it, which is a seated pike stretch and not this movement.
+    #
+    # ONE block, though, not two. Two blocks "shoulder-width apart" is unambiguous from the front
+    # and meaningless from the side, where the model laid them out front-to-back instead and
+    # promptly rested the calves on the spare one — re-grounding the body the blocks were there to
+    # lift. Any unoccupied surface in frame becomes a support. From the side the two parallettes
+    # overlap into one silhouette anyway, so one block is both correct and un-abusable.
     ("l_sit",
-     "A fantasy athlete hero supporting their whole body on straight arms with hands pressed to "
-     "the ground beside the hips, legs held straight out horizontally in a rigid L-shape; the core "
-     "and arms glow with electric-blue energy, seen from the side."),
+     "A fantasy athlete hero holding an L-sit on a single low stone block, seen from the side. Both "
+     "hands press flat on top of that one block, one directly behind the other so only the near "
+     "hand shows, arms locked dead straight and vertical. The trunk is held UPRIGHT and vertical, "
+     "chest tall, the hips hanging in mid-air level with the top of the block, while both legs "
+     "stick straight out forwards and horizontal at hip height — trunk and legs meet at a sharp "
+     "right angle and the silhouette reads as a capital letter L. There is exactly ONE stone block "
+     "in the entire picture and nothing whatsoever beneath the legs or the hips: only empty dark "
+     "space, with the floor far below. The core and arms glow with electric-blue energy. No white "
+     "outline, border or frame around the figure."),
     ("star_jump",
      "A fantasy athlete hero at the peak of an explosive star jump, arms and legs flung wide into "
      "a star shape mid-air with motion streaks; the whole body glows with cyan-white energy."),
@@ -279,26 +293,74 @@ EXERCISES = [
      "just below bar height and elbows bending open under control, the descent slow and "
      "deliberate; the back and biceps glow with metallic silver-blue energy, seen from a slight "
      "low angle."),
+    # Three failures taught the rule this batch runs on. "Seated ... lifted clear of the floor" is a
+    # contradiction the model settles by drawing the seated half; forbidding contact ("the hands are
+    # the only part touching") produced a bear crawl, because a negative says what to avoid without
+    # saying what to draw; and "arms like two pillars" put a literal pillar in the frame.
+    #
+    # What the whole batch has in common is the real rule: this model cannot draw a body held up by
+    # nothing. Every off-the-ground pose it got right — handstand push-up, table row, inverted row,
+    # scapular pull-up, dead hang — has a visible object doing the holding, and every one it got
+    # wrong had only the floor. So the hands go on two low stone blocks: the gap under the hips
+    # stops being an instruction the model can ignore and becomes a thing with a height.
+    #
+    # Not a cheat on the movement either — parallettes are the standard prop for exactly these
+    # three, and raising the hands is how the tuck L-sit is taught before anyone has the compression
+    # to clear the floor flat-palmed.
     ("tuck_l_sit",
-     "A fantasy athlete hero seated on the ground with the hands planted flat beside the hips, "
-     "arms locked straight and the whole body lifted clear of the floor with both knees pulled "
-     "tight to the chest; the abdominals and triceps glow with electric-blue energy, seen from "
-     "the side."),
+     "A fantasy athlete hero holding a tuck L-sit on two low stone blocks set shoulder-width apart "
+     "on the ground. One hand grips the top of the left block and the other hand grips the top of "
+     "the right block — both arms are down at the athlete's sides, locked dead straight and "
+     "vertical, and neither hand goes anywhere near the head. The trunk is upright between them "
+     "and lifted off the floor, both knees drawn up tight against the chest, the toes hanging in "
+     "the air below the knees. Clear dark empty space is visible between the athlete's seat and "
+     "the floor. The abdominals and triceps glow with electric-blue energy, seen from the side."),
+    # Three failures, three different lessons. Told only that the hips go up, this model put the
+    # hands behind the body and pushed, giving a reverse plank — so the arms are pinned to the floor
+    # first. Told the raised leg in a main clause and the planted leg in a subordinate one, it drew
+    # the raised leg and simply left the other off the body: whatever is not the grammatical subject
+    # of a sentence can go missing, so the planted leg now gets a sentence of its own, up front.
+    # And "hips driven high" is another lift the model will not render — named instead as a gap
+    # with a shape, the trick `l_sit` needed.
     ("single_leg_glute_bridge",
-     "A fantasy athlete hero lying on their back with one foot planted and the hips driven high, "
-     "the other leg extended straight in line with the torso, hips level and square; the glutes "
-     "and hamstrings glow with warm golden energy, seen from the side."),
+     "A fantasy athlete hero lying face-up on the floor, seen from the side, head and shoulders "
+     "flat on the ground, both arms lying flat along the floor at the sides with the palms down — "
+     "the hands are beside the hips, NOT behind the body, and they carry no weight. "
+     "The near leg is bent sharply at the knee and its foot is planted flat and solidly on the "
+     "floor with the shin vertical; this planted leg is drawn in full and is clearly the one "
+     "holding the athlete up. The hips are pushed up so high that a clear triangular window of "
+     "empty dark space opens between the lower back and the ground, large enough to pass an arm "
+     "through, and shoulders, hips and the bent knee line up straight. "
+     "The far leg is lifted right off the floor and held perfectly straight, continuing the line of "
+     "the torso up into the air. Both legs are visible. The glutes and hamstrings glow with warm "
+     "golden energy."),
+    # Came back sitting astride the bench: "rear foot resting on a bench" leaves the rest of the
+    # body unaccounted for, and an unoccupied surface is one this model will happily sit on (see
+    # `l_sit`). So the bench gets exactly one permitted contact, and the stance is pinned by the
+    # countable fact that worked on `pistol_squat` — how many feet are on the floor.
     ("bulgarian_split_squat",
-     "A fantasy athlete hero in a split squat with the top of the rear foot resting on a low stone "
-     "bench behind them, front thigh parallel to the ground and torso tall; the front thigh and "
-     "glute glow with electric-blue energy, seen from the side."),
+     "A fantasy athlete hero standing in a deep split squat, seen from the side. Exactly one foot "
+     "is on the ground: the front foot, planted flat a long stride out in front of a low stone "
+     "bench, its knee bent to a right angle with the thigh parallel to the floor. The other leg "
+     "trails back and only the laces of that rear shoe rest on top of the bench, toes pointing "
+     "down behind it. The athlete is STANDING, not sitting — the seat and both thighs are high "
+     "above the bench and never touch it, and the single point of contact with the bench is the "
+     "top of that back foot. The torso is tall and upright. The front thigh and glute glow with "
+     "electric-blue energy."),
     # The `0033` batch: six summits. The opposite instruction to the one above — each of these ends
     # a route, so the pose should read as the hardest thing on it. The risk here is legibility, not
     # modesty: a tuck planche drawn ambiguously is indistinguishable from a crouch.
+    # A named transition means nothing to the model — twice it drew a plain hang, once from behind.
+    # So the drawn instant moves to the *lockout* instead: arms straight, body above the bar,
+    # bar at hip level. Nothing but a muscle-up ends in a straight-arm support on a high bar, and
+    # unlike the transition it cannot collapse into a pull-up, which is what kept happening.
     ("muscle_up",
-     "A fantasy athlete hero at the transition of a muscle-up on a rugged stone bar, chest above "
-     "the bar and shoulders rolling over it as the elbows drive back, feet clear of the ground; "
-     "the back and arms glow with metallic silver-blue energy, seen from the side."),
+     "A fantasy athlete hero at the finish of a muscle-up, locked out in a straight-arm support on "
+     "top of a rugged stone bar, seen from the side. Both arms are completely straight and press "
+     "down onto the bar, the bar sits at the level of the hips and passes UNDER the body, the "
+     "chest and head are high above it, and the legs hang straight down beneath the bar with the "
+     "feet far above the ground. The athlete is on top of the bar, not below it. The back, chest "
+     "and arms glow with metallic silver-blue energy."),
     ("toes_to_bar",
      "A fantasy athlete hero hanging from a rugged stone bar with both legs raised straight "
      "overhead and the toes touching the bar between the hands, body folded sharply at the hips; "
@@ -307,20 +369,38 @@ EXERCISES = [
      "A fantasy athlete hero in a wide-set push-up lowered towards one hand, that elbow deeply "
      "bent while the opposite arm stays completely straight along the ground; the working chest "
      "and arm glow with fiery orange-red energy, seen from the front at a low angle."),
+    # Asked for "one-legged" and got a two-legged squat: the model resolves an unusual pose towards
+    # the symmetric one it knows. So the asymmetry is stated as a count of feet on the floor, which
+    # is checkable, rather than as an adjective it can quietly drop.
     ("pistol_squat",
-     "A fantasy athlete hero at the bottom of a one-legged squat, standing thigh folded fully "
-     "onto the calf and the free leg held straight out in front clear of the ground, arms "
-     "extended forward for balance; the working leg glows with electric-blue energy, seen from "
-     "the side."),
+     "A fantasy athlete hero balanced at the bottom of a pistol squat. Exactly one foot is planted "
+     "on the ground, that thigh folded completely down onto its own calf; the other leg is held "
+     "out in front of the body perfectly straight and horizontal at hip height, its heel a long "
+     "way clear of the floor, and both arms reach forward as a counterweight. One foot only "
+     "touches the ground anywhere in this image — the free leg never touches it at any point. The "
+     "working leg glows with electric-blue energy, seen from the side."),
     ("dragon_flag",
      "A fantasy athlete hero lying back on a low stone bench gripping its edge behind their head, "
      "the entire body raised in one rigid straight line balanced on the upper back and shoulders, "
      "feet high in the air; the abdominals glow with electric-blue energy, seen from the side."),
+    # A block under the hands, same reason as `tuck_l_sit`. The flat-palmed version came back as a
+    # crouch: what separates a tuck planche from squatting on your hands is the forward shoulder
+    # lean and the knees being *behind* the hands, so both are stated as positions, not qualities.
+    #
+    # ONE block, for the reason spelled out on `l_sit`: given a spare block in a side view this one
+    # stood a foot on it, which is a crouch on a step and not a balance at all.
     ("tuck_planche",
-     "A fantasy athlete hero balanced on two flat hands on the ground with the elbows locked "
-     "perfectly straight and the shoulders leaning well forward past the wrists, both knees tucked "
-     "tight to the chest and the whole body floating clear of the floor; the shoulders and locked "
-     "arms glow with silver-blue energy, seen from the side."),
+     "A fantasy athlete hero holding a tuck planche on a single low stone block, seen from the "
+     "side, with the torso held HORIZONTAL like a plank in the air. Both hands press flat on top of "
+     "that one block, one directly behind the other so only the near hand shows, and the elbows are "
+     "locked perfectly straight — the arms are the only thing holding the athlete up. The shoulders "
+     "are pushed forward past the wrists, and the back is roughly parallel with the ground, hips "
+     "floating out behind the block in empty air at the same height as the shoulders. The knees are "
+     "drawn up towards the chest but touch NOTHING — they do not rest on the arms, the elbows or "
+     "the block, and this is not a crouch and not a crow pose. There is exactly ONE stone block in "
+     "the entire picture — no second block, no step, no ledge — and nothing under the body but "
+     "empty dark space with the floor far below. The shoulders and locked arms glow with "
+     "silver-blue energy. No white outline, border or frame around the figure."),
 ]
 
 if __name__ == "__main__":

@@ -21,22 +21,26 @@ import type { Chain } from "./exercises";
  * content never blocks code and a ladder edge added later leaves no hole on screen.
  */
 export const PATH_NAMES: Record<string, { en: string; fr: string }> = {
-  // Pull — the deepest route in the catalogue, and the canonical "get me a first pull-up".
-  "Pull-ups": { en: "Path of the Pull", fr: "Voie de la Traction" },
-  "Hanging Leg Raise": { en: "Path of the Hang", fr: "Voie de la Suspension" },
+  // Pull — the deepest route in the catalogue, and the canonical "get me a first pull-up". The
+  // pull-up is no longer its top (`0033` put the muscle-up above it), but it is the same route and
+  // it keeps the same name: what moved is the key, not the identity.
+  "Muscle-Up": { en: "Path of the Pull", fr: "Voie de la Traction" },
+  "Toes to Bar": { en: "Path of the Hang", fr: "Voie de la Suspension" },
 
   // Push
   "Handstand Push-Up": { en: "Path of Balance", fr: "Voie de l'Équilibre" },
   Dip: { en: "Path of the Support", fr: "Voie de l'Appui" },
-  "Diamond Push-Up": { en: "Path of the Diamond", fr: "Voie du Diamant" },
+  "Archer Push-Up": { en: "Path of the Archer", fr: "Voie de l'Archer" },
+  // The word the floor hold was occupying until `0031` renamed it « Gainage ventral ».
+  "Tuck Planche": { en: "Path of the Planche", fr: "Voie de la Planche" },
 
   // Legs
   "Jump Squat": { en: "Path of the Leap", fr: "Voie de l'Élan" },
-  "Curtsy Squat": { en: "Path of the Curtsy", fr: "Voie de la Révérence" },
+  "Pistol Squat": { en: "Path of the Pistol", fr: "Voie du Pistolet" },
   "Single-Leg Deadlift": { en: "Path of the Hinge", fr: "Voie de la Charnière" },
 
-  // Core. "Équerre" is the French gymnastics term for the L-sit, which is what the route is for.
-  "L-Sit": { en: "Path of the L-Sit", fr: "Voie de l'Équerre" },
+  // Core
+  "Dragon Flag": { en: "Path of the Dragon", fr: "Voie du Dragon" },
   "Side Plank": { en: "Path of the Flank", fr: "Voie du Flanc" },
   "Windshield Wipers": { en: "Path of Rotation", fr: "Voie de la Rotation" },
   "Flutter Kicks": { en: "Path of the Flutter", fr: "Voie du Battement" },

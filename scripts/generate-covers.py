@@ -140,6 +140,26 @@ COVERS = [
      "A quiet night shot of a workbench under a shuttered window, a pair of chalk-dusted hand "
      "wraps unrolled beside a guttering candle, a bowl of water and a whetstone within reach, "
      "moonlight edging the sill. Careful preparation -- the room is unoccupied, no people."),
+    # The two quests that hold the 0032 rungs. Both are about patience rather than triumph, and
+    # the scenes say so: the work below the wall, and the bar nobody is on yet.
+    ("patient_ascent", "quests",
+     "A tall narrow shot looking up the inside of a stone tower shaft at dawn, a single iron bar "
+     "fixed across it just within reach, chalk dust hanging in a shaft of light and the climb "
+     "disappearing into shadow above. Patience before the ascent -- the shaft is deserted, no "
+     "people."),
+    ("masons_footing", "quests",
+     "A low wide shot of a half-dug foundation trench beside a rising village wall at dusk, "
+     "squared stones set into the earth, a plumb line hanging still from a timber frame and a "
+     "mason's tools laid down on the lip. The work nobody sees -- the site is empty, no people."),
+    # The two skill quests of 0033. Both are summits, so both scenes are the place a route ends.
+    ("summit_trial", "quests",
+     "A wide shot from a high stone ledge at the very top of a keep's tower, a single iron bar "
+     "spanning the open archway with the whole valley falling away beyond it, first light on the "
+     "far peaks. The end of every route -- the ledge is deserted, no people."),
+    ("straight_arm_vigil", "quests",
+     "A wide shot of a bare training hall at night, a single square of polished floor lit by one "
+     "high window, two shallow chalk handprints on the boards and nothing else in the room. Only "
+     "the floor and the patience it asks for -- the hall is empty, no people."),
     ("arcane_gauntlet", "quests",
      "A wide shot of a circular wizard's trial chamber at night: a polished obsidian floor "
      "inscribed with one great glowing arcane circle, tall runed pillars ringing the room, violet "

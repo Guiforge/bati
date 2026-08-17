@@ -71,6 +71,20 @@ export const EXERCISE_ASSETS = {
   downward_dog: require("@/assets/images/exercises/downward_dog.webp"),
   pigeon_pose: require("@/assets/images/exercises/pigeon_pose.webp"),
   worlds_greatest_stretch: require("@/assets/images/exercises/worlds_greatest_stretch.webp"),
+  // The calisthenics rungs and summits from 0032/0033. Two of the thirteen are absent on
+  // purpose — bulgarian_split_squat and muscle_up have no usable art yet, and a wrong
+  // illustration in a training app is worse than the placeholder they fall back to.
+  knee_pushup: require("@/assets/images/exercises/knee_pushup.webp"),
+  wall_handstand: require("@/assets/images/exercises/wall_handstand.webp"),
+  dead_hang: require("@/assets/images/exercises/dead_hang.webp"),
+  negative_pullup: require("@/assets/images/exercises/negative_pullup.webp"),
+  tuck_l_sit: require("@/assets/images/exercises/tuck_l_sit.webp"),
+  single_leg_glute_bridge: require("@/assets/images/exercises/single_leg_glute_bridge.webp"),
+  toes_to_bar: require("@/assets/images/exercises/toes_to_bar.webp"),
+  archer_pushup: require("@/assets/images/exercises/archer_pushup.webp"),
+  pistol_squat: require("@/assets/images/exercises/pistol_squat.webp"),
+  dragon_flag: require("@/assets/images/exercises/dragon_flag.webp"),
+  tuck_planche: require("@/assets/images/exercises/tuck_planche.webp"),
 } as const;
 
 // ============================================================
@@ -112,6 +126,11 @@ export const QUEST_ASSETS = {
   dawn_ritual: require("@/assets/images/quests/dawn_ritual.webp"),
   hearthside_unbinding: require("@/assets/images/quests/hearthside_unbinding.webp"),
   handlers_vigil: require("@/assets/images/quests/handlers_vigil.webp"),
+  // The four quests that hold the 0032/0033 calisthenics movements.
+  patient_ascent: require("@/assets/images/quests/patient_ascent.webp"),
+  masons_footing: require("@/assets/images/quests/masons_footing.webp"),
+  summit_trial: require("@/assets/images/quests/summit_trial.webp"),
+  straight_arm_vigil: require("@/assets/images/quests/straight_arm_vigil.webp"),
 } as const;
 
 // ============================================================
@@ -382,6 +401,17 @@ export const EXERCISE_THUMB_ASSETS = {
   downward_dog: require("@/assets/images/exercises/thumbs/downward_dog.webp"),
   pigeon_pose: require("@/assets/images/exercises/thumbs/pigeon_pose.webp"),
   worlds_greatest_stretch: require("@/assets/images/exercises/thumbs/worlds_greatest_stretch.webp"),
+  knee_pushup: require("@/assets/images/exercises/thumbs/knee_pushup.webp"),
+  wall_handstand: require("@/assets/images/exercises/thumbs/wall_handstand.webp"),
+  dead_hang: require("@/assets/images/exercises/thumbs/dead_hang.webp"),
+  negative_pullup: require("@/assets/images/exercises/thumbs/negative_pullup.webp"),
+  tuck_l_sit: require("@/assets/images/exercises/thumbs/tuck_l_sit.webp"),
+  single_leg_glute_bridge: require("@/assets/images/exercises/thumbs/single_leg_glute_bridge.webp"),
+  toes_to_bar: require("@/assets/images/exercises/thumbs/toes_to_bar.webp"),
+  archer_pushup: require("@/assets/images/exercises/thumbs/archer_pushup.webp"),
+  pistol_squat: require("@/assets/images/exercises/thumbs/pistol_squat.webp"),
+  dragon_flag: require("@/assets/images/exercises/thumbs/dragon_flag.webp"),
+  tuck_planche: require("@/assets/images/exercises/thumbs/tuck_planche.webp"),
 } as const;
 
 export type ExerciseAssetKey = keyof typeof EXERCISE_ASSETS;

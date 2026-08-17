@@ -68,11 +68,19 @@ EXERCISES = [
      "angle."),
     # "an invisible wall" is unrenderable, so the model kept drawing a free-standing squat. The
     # wall has to be a real object in the scene for the pose to read as a wall-sit at all.
+    # The wall had to become a real object before the pose read at all — but that only got the
+    # model half way: it then invented a stone block to sit on, because a seated shape with nothing
+    # under it is the same lift it refuses everywhere else. So the gap gets named as a thing with a
+    # size, the way `l_sit` needed, and the seat is given the one place it is allowed to be.
     ("wall_sit",
-     "A fantasy athlete hero holding a wall-sit with the back pressed flat against a solid stone "
-     "wall behind them, thighs parallel to the "
-     "ground, back flat and upright, forearms resting on the knees; the leg muscles glow with cool "
-     "stone-grey energy and faint cracks spread under the feet."),
+     "A fantasy athlete hero holding a wall-sit against a solid stone wall, seen from the side. "
+     "The back is pressed flat against the wall, the thighs are horizontal and parallel to the "
+     "ground, the shins are vertical and both feet are flat on the floor, so that hips and knees "
+     "each make a right angle. Behind and below the athlete the stone wall is drawn carrying "
+     "straight on down, course after course of masonry, all the way to where it meets the floor, "
+     "and that unbroken wall is fully visible in the open space beneath the seat and between the "
+     "backside and the ground. The athlete is held up by their own legs alone. The leg muscles "
+     "glow with cool stone-grey energy and faint cracks spread under the feet."),
     ("plank",
      "A fantasy athlete hero in a perfect forearm plank, body a straight horizontal line, forearms "
      "and toes planted; the core glows with golden-white energy, calm determined expression, seen "
@@ -88,10 +96,17 @@ EXERCISES = [
      "grip, palms facing them, pulling up "
      "until the chin clears the bar; the back and biceps flex and glow with metallic silver-blue "
      "energy, seen from a slight low angle."),
+    # Same failure and same fix as `hollow_body_hold`, its mirror image: told the limbs were
+    # "lifted", the model drew a figure lying flat, tiny and adrift in the frame. The lift becomes
+    # renderable once the belly is named as the single point of contact and the shape as an arc.
     ("superman",
-     "A fantasy athlete hero lying face down with arms and legs extended and lifted off the ground "
-     "in a superman hold, the whole back arched; the back glows with metallic silver-blue energy, "
-     "seen from the side."),
+     "A fantasy athlete hero lying face down on the floor and holding a superman hold, seen from "
+     "the side, filling the frame. Only the belly and hips touch the ground. The chest and head "
+     "are lifted clear of the floor with both arms stretched straight out in front and raised into "
+     "the air, and the straight legs are lifted behind as well with the toes pointed and well off "
+     "the ground, so the arched back makes the body a shallow bowl rocking on the stomach. Dark "
+     "empty space is clearly visible under the hands and under the feet. The back glows with "
+     "metallic silver-blue energy."),
     ("bear_crawl",
      "A fantasy athlete hero mid bear-crawl, on hands and toes with knees hovering just above the "
      "ground and hips low, one hand and the opposite foot advancing; the core and shoulders glow "
@@ -234,11 +249,17 @@ EXERCISES = [
      "A fantasy athlete hero mid lateral bound, landing on one bent leg with the free leg crossing "
      "behind, arms swept across the body, motion streaks trailing sideways; the legs glow with "
      "warm golden energy."),
+    # Came back as a body lying flat: "lifted a few centimetres" is exactly the kind of lift this
+    # model will not draw. Named as a shape instead — a shallow curve whose two ends are up and
+    # whose single contact point is the small of the back — it has something to render.
     ("hollow_body_hold",
-     "A fantasy athlete hero holding a hollow body position on their back, lower back pressed "
-     "down, shoulders and straight legs lifted a few centimetres off the ground and arms extended "
-     "overhead in a shallow banana shape; the abs glow with electric-blue energy, seen from the "
-     "side."),
+     "A fantasy athlete hero holding a hollow body position, seen from the side. The only part of "
+     "the body touching the floor is the small of the lower back, pressed hard into it. Both ends "
+     "of the body are raised: the head, shoulder blades and the arms stretched straight overhead "
+     "are all off the ground, and the straight legs together with the pointed toes are off the "
+     "ground too, so the whole silhouette curves gently upward at each end like a shallow banana "
+     "balanced on its middle. A thin strip of dark empty space is visible under the shoulders and "
+     "under the heels. The abs glow with electric-blue energy."),
     ("wrist_circles",
      "A fantasy athlete hero on hands and knees rocking gently forward over flat palms, fingers "
      "splayed wide on the ground and wrists visibly loaded, head neutral and gaze down; the "

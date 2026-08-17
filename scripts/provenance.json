@@ -1003,6 +1003,16 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from high_knees.jpg"
   },
+  "assets/images/exercises/hollow_body_hold.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero holding a hollow body position, seen from the side. The only part of the body touching the floor is the small of the lower back, pressed hard into it. Both ends of the body are raised: the head, shoulder blades and the arms stretched straight overhead are all off the ground, and the straight legs together with the pointed toes are off the ground too, so the whole silhouette curves gently upward at each end like a shallow banana balanced on its middle. A thin strip of dark empty space is visible under the shoulders and under the heels. The abs glow with electric-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3954798159,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-17"
+  },
   "assets/images/exercises/hollow_body_hold.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1305,6 +1315,16 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from star_jump.jpg"
   },
+  "assets/images/exercises/superman.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying face down on the floor and holding a superman hold, seen from the side, filling the frame. Only the belly and hips touch the ground. The chest and head are lifted clear of the floor with both arms stretched straight out in front and raised into the air, and the straight legs are lifted behind as well with the toes pointed and well off the ground, so the arched back makes the body a shallow bowl rocking on the stomach. Dark empty space is clearly visible under the hands and under the feet. The back glows with metallic silver-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 4102579649,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-17"
+  },
   "assets/images/exercises/superman.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1399,6 +1419,16 @@
     "height": 1280,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from wall_pushup.jpg"
+  },
+  "assets/images/exercises/wall_sit.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero holding a wall-sit against a solid stone wall, seen from the side. The back is pressed flat against the wall, the thighs are horizontal and parallel to the ground, the shins are vertical and both feet are flat on the floor, so that hips and knees each make a right angle. Behind and below the athlete the stone wall is drawn carrying straight on down, course after course of masonry, all the way to where it meets the floor, and that unbroken wall is fully visible in the open space beneath the seat and between the backside and the ground. The athlete is held up by their own legs alone. The leg muscles glow with cool stone-grey energy and faint cracks spread under the feet. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3943496181,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-17"
   },
   "assets/images/exercises/wall_sit.webp": {
     "model": "flux-2-pro-preview",

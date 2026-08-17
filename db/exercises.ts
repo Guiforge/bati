@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
@@ -204,28 +204,57 @@ async function fetchLadderRows(): Promise<LadderRow[]> {
 }
 
 /**
- * The last `limit` logged sets on one movement, most recent first, as "did it meet its target?".
+ * How recent a session has to be to still count towards a rung. Ability is current, not
+ * historical — three clean sets from last spring say nothing about today. Eight weeks is wide
+ * enough that a rest week or a deload costs nothing (the research asks for >=2 sessions a week
+ * per movement, so three of them span about a fortnight of normal training).
+ */
+const PROGRESSION_WINDOW_DAYS = 56;
+
+/**
+ * The last `limit` *sessions* on one movement, most recent first, as "did it meet its target?".
  *
- * Rows, not sessions: a three-round quest logs three of them, and that is the semantic the ladder
- * has always had. `id` breaks the tie because rows written in the same session share a timestamp
- * to the second — without it "the last three" is not a stable set.
+ * Sessions, not rows. A three-round quest writes three rows in a single evening, so counting rows
+ * handed a hero the next variation after **one workout** — the "program hopping before
+ * progressing" the research names as beginner mistake number one. A session counts only when
+ * *every* set logged for the movement met its target: the dossier asks for "3x12 clean reps", not
+ * one good set out of three.
+ *
+ * `sessionId` breaks the tie because sessions written in the same second share a timestamp —
+ * without it "the last three" is not a stable set.
+ *
+ * ponytail: strict on purpose — one short round sinks the whole session. Loosen it to a majority
+ * of rounds if real logs show good sessions being refused.
  *
  * ponytail: one indexed seek per movement (`completed_exercises_exercise_idx`), called with a
  * handful of ids at a time. If a caller ever needs the whole ladder at once, replace it with a
  * single ROW_NUMBER() window query.
  */
 async function recentMetFlags(exerciseId: number, limit: number): Promise<boolean[]> {
+  const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+  // ponytail: the bar is the target the hero was handed, and `QuestConfig` lets them lower it to
+  // 1 — so a self-lowered target earns rungs faster. Reading the quest template's own value
+  // instead means joining `quest_exercises` into every ladder read; do it if anyone reports it.
+  const met = sql<number>`min(case when ${schema.completedExercises.targetValue} is not null
+      and ${schema.completedExercises.resultValue} >= ${schema.completedExercises.targetValue}
+    then 1 else 0 end)`;
+  const at = sql<number>`max(${schema.completedExercises.performedAt})`;
+
   const rows = await db
-    .select({
-      resultValue: schema.completedExercises.resultValue,
-      targetValue: schema.completedExercises.targetValue,
-    })
+    .select({ met })
     .from(schema.completedExercises)
-    .where(eq(schema.completedExercises.exerciseId, exerciseId))
-    .orderBy(desc(schema.completedExercises.performedAt), desc(schema.completedExercises.id))
+    .where(
+      and(
+        eq(schema.completedExercises.exerciseId, exerciseId),
+        gte(schema.completedExercises.performedAt, since),
+      ),
+    )
+    .groupBy(schema.completedExercises.sessionId)
+    .orderBy(desc(at), desc(schema.completedExercises.sessionId))
     .limit(limit);
 
-  return rows.map((r) => r.targetValue !== null && r.resultValue >= r.targetValue);
+  return rows.map((r) => r.met === 1);
 }
 
 const stripPrerequisite = ({ id, enName, frName, imagePath }: LadderRow): MovementRef => ({

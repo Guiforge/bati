@@ -150,6 +150,50 @@ describe("SuggestedQuestsCard", () => {
   });
 });
 
+describe("ProgressionCard priority", () => {
+  /** Five sessions all reporting the same thing — enough for `analyzeDifficultyProgression`. */
+  const sessionsFeeling = (feedback: "easy" | "hard") =>
+    Array.from({ length: 5 }, (_, i) => ({
+      id: i + 1,
+      questId: 1,
+      userLevel: "medium" as const,
+      durationSeconds: 600,
+      performedAt: new Date(2026, 0, i + 1),
+      feedback,
+    }));
+
+  /** A rung in progress: enough to render the ladder branch. */
+  const readyStep = {
+    from: { id: 1, enName: "Table Row", frName: "Rowing sur table", imagePath: "" },
+    next: { id: 2, enName: "Inverted Row", frName: "Rowing inversé", imagePath: "" },
+    metTarget: 2,
+    required: 3,
+    isEarned: false,
+  };
+
+  it("puts recovery ahead of the ladder when the hero reports it is too hard", async () => {
+    // The ladder used to sit in front of this branch, so a hero reporting five hard sessions
+    // running was answered with "here is your next rung" as long as any tracked movement had one
+    // on-target set. Pushing up on someone asking to come down is the bug this pins.
+    mockGetRecentSessionHistory.mockResolvedValue(sessionsFeeling("hard"));
+    mockGetReadyStep.mockResolvedValue(readyStep);
+
+    await mount(<ProgressionCard />);
+
+    expect(await screen.findByText(/Recovery|Récupération/i)).toBeTruthy();
+    expect(screen.queryByText(/next rung|prochaine marche/i)).toBeNull();
+  });
+
+  it("keeps the ladder ahead of 'too easy' — a harder variation beats a bigger multiplier", async () => {
+    mockGetRecentSessionHistory.mockResolvedValue(sessionsFeeling("easy"));
+    mockGetReadyStep.mockResolvedValue(readyStep);
+
+    await mount(<ProgressionCard />);
+
+    expect(await screen.findByText(/next rung|prochaine marche/i)).toBeTruthy();
+  });
+});
+
 // The same two arms for the three remaining cards. Each swallows its own failure, so the one
 // thing that must hold is that a broken query costs a card and never the screen around it.
 describe.each([

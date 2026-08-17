@@ -156,8 +156,18 @@ export function ProgressionCard() {
     };
   }, []);
 
+  // A hero asking to come down is heard before being pointed up. The ladder used to sit in front
+  // of this branch, so "Recovery Recommended" never reached anyone with a single on-target set on
+  // a tracked movement — the app answered "here is your next rung" to someone reporting five hard
+  // sessions running.
+  if (recommendation?.action === "decrease") {
+    return <DifficultyNudge recommendation={recommendation} />;
+  }
+
   // A movement with no logged progress yet has nothing to report: showing "0 of 3" for every
-  // exercise ever touched would turn an occasional nudge into permanent furniture.
+  // exercise ever touched would turn an occasional nudge into permanent furniture. `increase`
+  // stays behind the ladder on purpose — a harder variation is a truer answer to "too easy" than
+  // a bigger multiplier.
   if (step && step.metTarget > 0) return <LadderStep step={step} />;
 
   if (!recommendation || recommendation.action === "maintain") return null;

@@ -306,7 +306,7 @@
     "resume_journey": "Reprends ton chemin",
     "pick_quest_label": "Choisir une quête",
     "see_quest": "Voir la quête",
-    "oath_focus_chain": "Vers ton serment : {{goal}} — étape {{position}} sur {{total}}, ce soir : {{name}}",
+    "oath_focus_chain": "Vers ton serment : {{goal}} — marche {{position}} sur {{total}}, ce soir : {{name}}",
     "oath_focus_simple": "Vers ton serment : {{goal}}",
     "focus_on": "Renforce tes points faibles : {{muscles}}",
     "quick_workout": "Séance rapide",

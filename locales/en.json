@@ -12,7 +12,7 @@
     "resume_journey": "Resume your journey",
     "pick_quest_label": "Pick a quest",
     "see_quest": "See the quest",
-    "oath_focus_chain": "Toward your oath: {{goal}} — step {{position}} of {{total}}, tonight: {{name}}",
+    "oath_focus_chain": "Toward your oath: {{goal}} — rung {{position}} of {{total}}, tonight: {{name}}",
     "oath_focus_simple": "Toward your oath: {{goal}}",
     "focus_on": "Strengthens your weak points: {{muscles}}",
     "quick_workout": "Quick Workout",

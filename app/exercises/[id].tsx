@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { PathStrip } from "@/components/common/PathStrip";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
@@ -16,7 +17,7 @@ import { getExerciseById } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { pathName } from "@/db/paths";
+import { readPath } from "@/db/paths";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -146,60 +147,24 @@ function PathCard({ chain }: { chain: Chain }) {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const total = chain.rungs.length;
-  const summit = chain.rungs[total - 1]?.exercise;
-  const here = chain.rungs[chain.position - 1]?.exercise;
-  if (!summit || !here) return null;
-
-  // Both halves are required. `isEarned` alone is not the summit: a hero can master a high rung
-  // out of order while still standing on the first one, and the page would congratulate them for
-  // a path they have barely started.
-  const isClimbed = chain.position === total && chain.rungs[total - 1]?.isEarned === true;
-  const name = pathName(summit.enName, language) ?? localizedName(summit, language);
+  const { here, isClimbed } = readPath(chain, language);
+  if (!here) return null;
 
   // Standing on this page's own movement: tapping would reload the page the hero is reading.
-  const target = chain.position < total ? here.id : null;
-
-  const eyebrow = isClimbed
-    ? t("exercises.path_climbed", { path: name, defaultValue: `${name} · Climbed` })
-    : t("exercises.path_rung", {
-        path: name,
-        position: chain.position,
-        total,
-        defaultValue: `${name} · Rung ${chain.position}/${total}`,
-      });
+  const target = chain.position < chain.rungs.length ? here.id : null;
+  const hereName = localizedName(here, language);
 
   return (
     <Card
       onPress={target === null ? undefined : () => router.push(`/exercises/${target}` as never)}
-      accessibilityLabel={
-        target === null ? eyebrow : `${eyebrow} — ${localizedName(here, language)}`
-      }
+      accessibilityLabel={target === null ? undefined : hereName}
     >
       <YStack gap="$2">
-        <XStack items="center" gap="$2">
-          <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5} flex={1}>
-            {eyebrow.toUpperCase()}
-          </Text>
-          {target === null ? null : <ChevronRight size={16} color="$textSecondary" />}
-        </XStack>
-
-        <XStack gap="$1">
-          {chain.rungs.map((rung, index) => (
-            <YStack
-              key={rung.exercise.id}
-              flex={1}
-              height={4}
-              rounded="$1"
-              bg={
-                isClimbed || index < chain.position - 1
-                  ? "$resourceGold"
-                  : index === chain.position - 1
-                    ? "$primary"
-                    : "$borderStrong"
-              }
-            />
-          ))}
+        <XStack items="flex-start" gap="$2">
+          <YStack flex={1}>
+            <PathStrip chain={chain} />
+          </YStack>
+          {target === null ? null : <ChevronRight size={16} color="$textSecondary" mt="$1" />}
         </XStack>
 
         {isClimbed ? null : (
@@ -207,8 +172,8 @@ function PathCard({ chain }: { chain: Chain }) {
             {target === null
               ? t("exercises.path_you_are_here", "You are here.")
               : t("exercises.path_you_are_on", {
-                  name: localizedName(here, language),
-                  defaultValue: `You are on ${localizedName(here, language)}.`,
+                  name: hereName,
+                  defaultValue: `You are on ${hereName}.`,
                 })}
           </Paragraph>
         )}

@@ -1,4 +1,6 @@
+import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
+import type { Chain } from "./exercises";
 
 /**
  * The named routes up the variation ladder — a *path*, keyed by the movement it ends on.
@@ -43,4 +45,27 @@ export const PATH_NAMES: Record<string, { en: string; fr: string }> = {
 /** The path's name, or null when its summit has none — the caller falls back to the movement. */
 export function pathName(summitEnName: string, language: AppLanguage): string | null {
   return PATH_NAMES[summitEnName]?.[language] ?? null;
+}
+
+/**
+ * What a chain says about the hero, read once so no two screens can disagree about it.
+ *
+ * `getChainTo` always ends its chain on the movement asked for, so the last rung is the summit —
+ * and the summit is what names the path.
+ */
+export function readPath(chain: Chain, language: AppLanguage) {
+  const total = chain.rungs.length;
+  const summit = chain.rungs[total - 1]?.exercise;
+  const here = chain.rungs[chain.position - 1]?.exercise;
+
+  // Both halves are required. `isEarned` alone is not the summit: a hero can master a high rung
+  // out of order while still standing on the first one, and "climbed" would then be a lie.
+  const isClimbed = chain.position === total && chain.rungs[total - 1]?.isEarned === true;
+
+  return {
+    total,
+    here,
+    isClimbed,
+    name: summit ? (pathName(summit.enName, language) ?? localizedName(summit, language)) : null,
+  };
 }

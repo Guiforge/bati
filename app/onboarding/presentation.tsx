@@ -20,9 +20,13 @@ export default function Presentation() {
     <YStack flex={1} bg="$background">
       <Image
         source={require("../../assets/onboardings/building.webp")}
-        style={{ position: "absolute", width: 600, height: "100%", left: -190 }}
+        style={{ position: "absolute", width: "100%", height: "100%" }}
         contentFit="cover"
-        contentPosition="left"
+        // Same full-bleed shape as village-setup.tsx. The old `width: 600, left: -190` was a
+        // hand-cropped frame for one phone width: it left bare background on anything wider
+        // than 410dp (tablet, landscape, split screen). The offset kept the framing left of
+        // centre, so that part survives as a percentage.
+        contentPosition={{ left: "33%", top: "50%" }}
       />
 
       <LinearGradient

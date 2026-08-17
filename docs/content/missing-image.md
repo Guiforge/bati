@@ -2,7 +2,7 @@
 title: Missing Images — inventory
 type: content
 status: active
-updated: 2026-07-30
+updated: 2026-08-17
 related: [missing-covers.md, ../planning/roadmap.md]
 sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
@@ -16,7 +16,7 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 > [`scripts/lib/flux.py`](../../scripts/lib/flux.py). The *inventory* below is still accurate.
 
 
-> What art is still missing (nothing, as of this pass), what is covered, what exists but is
+> What art is still missing (three poses, see §8), what is covered, what exists but is
 > unused — and
 > [how to generate the gaps](#how-to-generate-missing-art).
 > Re-verified 2026-07-30 (through migration `0024`) by diffing seed `imagePath` basenames
@@ -31,9 +31,15 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 ## TL;DR
 
+- **§8 OPEN (2026-08-17)**: the calisthenics batch (`0032`/`0033`) added 13 movements and got
+  11 of them drawn; `bulgarian_split_squat` and `muscle_up` ship on the placeholder because no
+  attempt produced a usable pose. The same pass repaired **17 of the original 49**, whose art had
+  been showing the wrong movement since it was first generated, and `windshield_wipers` joins the
+  open list. §8 also records what this model will and will not draw — read it before writing a
+  prompt.
 - **§7 RESOLVED (2026-07-30)**: the mobility branch (`0024`) shipped 7 exercises and 3 quest
   covers with no art; all 10 are now generated, reviewed and wired. One pose was rejected and
-  regenerated — see §7 below. **Every gap in this doc is closed.**
+  regenerated — see §7 below.
 - **§6 RESOLVED (2026-07-28)**: `0023` renamed the `0006` batch to the movements' official names
   and merged five duplicates away; the 14 poses that staged a goblin, a dragon or a wizard were
   regenerated as the same lone hero as the rest of the set.
@@ -50,8 +56,9 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
   sprites via the same helper's fallback, zero new assets, as recommended. Wiring
   `VillageScene.tsx`'s building grid to render these instead of the `emoji` field — and the
   per-level tint ramp — remains a separate dev task, same boundary as §1a/§1b before it.
-- **Content art: 49/49 exercises, 30/30 quests, 8/8 adventures.** Nothing seeded renders the
-  placeholder. (49, not 55: `0018` deleted Barbarian's Overhead Press, the catalogue's only
+- **Content art: 60/62 exercises, 34/34 quests, 8/8 adventures.** Two exercises render the
+  placeholder, both named in §8. A third, `windshield_wipers`, has art that resolves but shows
+  the wrong movement — the inventory counts files, so only a person reading §8 will know. (62, not 68: `0018` deleted Barbarian's Overhead Press, the catalogue's only
   dumbbell movement — see the work roadmap §15 — and `0023` merged five `0006` exercises into
   the `0001` originals they duplicated.)
 - **§1a/§1b RESOLVED (2026-07-20)**: 5 village tier illustrations + 6 sport sprites, generated
@@ -466,51 +473,66 @@ magick montage assets/images/exercises/*.jpg -tile 4x4 -geometry 300x225+3+3 /tm
 
 ---
 
-## 8. The calisthenics rungs (`0032`) — 9 assets, open
+## 8. The calisthenics batch (`0032`/`0033`) — 11 of 13 delivered
 
-Same trade as §7, and for the same reason: the ladder gaps were teaching a hero to jump from a
-wall push-up to a floor push-up, and the content that closes them is worth more than the art that
-illustrates them. `getExerciseAsset()` falls back to `placeholder.webp`, so the app is correct
-meanwhile — and **no `assetMap` entries were added**, because Metro resolves `require()` at bundle
-time and a key pointing at a file that does not exist breaks the build instead of falling back.
-Add the entries in the same commit as the files, never before.
+The thirteen new movements are drawn, converted, thumbed and wired into `assetMap`, minus two.
+**`bulgarian_split_squat` and `muscle_up` ship on the placeholder**: neither reached a usable pose
+in seven and five attempts, and a wrong illustration in a training app is worse than no
+illustration. Their files are deliberately absent rather than present-and-unreferenced, so the
+tree holds nothing dead.
 
-| Slug | Kind | Row |
+The same pass fixed **seventeen of the original forty-nine**, whose poses had been wrong since
+their first draw — a wall sit sitting on an invented stone block, a dip standing on the floor
+between the bars, a chin-up standing upright holding a bar at chest height, a pull-up with no
+face at all.
+
+### What the model will and will not draw
+
+Roughly sixty generations went into this, and the failures were not random. Four rules came out
+of them, and each prompt in `scripts/generate-exercises.py` carries the note of which one it
+needed:
+
+1. **A contact point and a shape, never a distance.** "Lifted a few centimetres off the ground"
+   is never drawn; "the only thing touching the floor is the small of the back, and the body
+   curves up at both ends like a banana" always is. This unlocked the hollow body, the superman,
+   the cobra and the calf raise.
+2. **Final positions, never the path.** "Thread the arm under the chest" gave a plain quadruped
+   every time; "the shoulder and ear rest on the floor and that arm lies flat pointing sideways
+   past the opposite knee" was right on the first try. Same for the curtsy squat's crossing.
+3. **Add, never forbid.** Banning "stool, bench, block, step or ledge" under the wall sit
+   produced a chair — the model finds whatever the list forgot. Give the empty space something to
+   draw instead: the stone wall carrying on down to the floor, visible under the seat.
+4. **A countable fact beats an adjective.** "One-legged squat" drew two legs on the ground;
+   "exactly one foot touches the ground" drew a pistol squat.
+
+Two further traps. A movement whose name is made of common nouns gets the nouns drawn — the
+dragon flag came back as an athlete waving a dragon banner, and only a prompt that never names it
+produced the lever. And an anchor ("it is exactly a dead hang, but the elbows are bent") works
+when the delta *adds* and fails when it *replaces*: "a push-up, but on the knees instead of the
+toes" reliably draws a push-up on the toes.
+
+### Still open
+
+| Slug | Attempts | Failure it keeps returning to |
 | --- | --- | --- |
-| `knee_pushup` | exercise | Knee Push-Up |
-| `wall_handstand` | exercise | Wall Handstand |
-| `dead_hang` | exercise | Dead Hang |
-| `negative_pullup` | exercise | Negative Pull-Up |
-| `tuck_l_sit` | exercise | Tuck L-Sit |
-| `single_leg_glute_bridge` | exercise | Single-Leg Glute Bridge |
-| `bulgarian_split_squat` | exercise | Bulgarian Split Squat |
-| `patient_ascent` | quest cover | The Patient Ascent |
-| `masons_footing` | quest cover | The Mason's Footing |
+| `bulgarian_split_squat` | 7 | sits on the bench, straddles it, or stands on top of it |
+| `muscle_up` | 5 | hangs below the bar, or leans on it from the side |
+| `windshield_wipers` | 4 | no rotation; the last draw fused two bodies together |
 
-## 9. The calisthenics summits (`0033`) — 8 assets, open
+All three share a shape whose difference from the pose the model prefers is gradual rather than
+structural, which is exactly what none of the four rules can express. The remaining lever is a
+reference image (`image_prompt`, which `scripts/lib/flux.py` does not currently send). Note that
+the Gym visual dataset is not usable for that — its media is licensed to that repository alone,
+and this app's art pipeline exists to stay redistributable for F-Droid.
 
-The six skills the ladder was climbing towards. Same fallback, same rule about `assetMap`.
+```bash
+python3 scripts/generate-exercises.py <slug>   # one at a time; the whole list re-rolls everything
+FLUX_SEED_SALT=1 python3 scripts/generate-exercises.py <slug>   # same prompt, different dice
+python3 scripts/to-webp.py && python3 scripts/thumb-exercises.py
+```
 
-| Slug | Kind | Row |
-| --- | --- | --- |
-| `muscle_up` | exercise | Muscle-Up — summit of « Voie de la Traction » |
-| `toes_to_bar` | exercise | Toes to Bar — summit of « Voie de la Suspension » |
-| `archer_pushup` | exercise | Archer Push-Up — summit of « Voie de l'Archer » |
-| `pistol_squat` | exercise | Pistol Squat — summit of « Voie du Pistolet » |
-| `dragon_flag` | exercise | Dragon Flag — summit of « Voie du Dragon » |
-| `tuck_planche` | exercise | Tuck Planche — summit of « Voie de la Planche » |
-| `summit_trial` | quest cover | The Summit Trial |
-| `straight_arm_vigil` | quest cover | The Straight-Arm Vigil |
-
-The instruction here is the inverse of §8's: each of these ends a route, so the pose should read
-as the hardest thing on it. The risk is legibility rather than modesty — a tuck planche drawn
-ambiguously is indistinguishable from a crouch, and these are the six most likely to need a
-second pass.
-
-Prompts are staged in `scripts/generate-exercises.py` and `scripts/generate-covers.py`. The seven
-exercise poses carry one extra instruction the earlier batches did not need: each sits *below* a
-movement already drawn, so it has to read as visibly easier than the art above it on the ladder.
-A knee push-up drawn as heroically as a diamond push-up teaches the reader nothing.
+Add the `assetMap` entry in the same commit as the file, never before: Metro resolves `require()`
+at bundle time, so a key pointing at a missing file breaks the build instead of falling back.
 
 ---
 

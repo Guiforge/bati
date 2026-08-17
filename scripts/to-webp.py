@@ -44,6 +44,10 @@ KEEP_AS_IS = {
     "assets/favicon.png",
     "assets/badges/get-it-on-fdroid.png",
     "assets/badges/get-it-on-github.png",
+    # Named by extension in `app.json` (`previewImage`), and this script deletes the original it
+    # converts — so a run that touched these would leave two dangling paths in the manifest.
+    "assets/widget-preview/flame.png",
+    "assets/widget-preview/weekly.png",
 }
 
 

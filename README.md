@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/icon.png" alt="" width="128" />
+<a href="https://guiforge.github.io/bati/"><img src="docs/legal/assets/img/og.jpg" alt="Build your body. Build your village." width="100%" /></a>
 
 # Bati
 
@@ -13,6 +13,8 @@ and the village you build is made of what you actually lifted.
 <a href="https://github.com/Guiforge/bati/releases/latest"><img alt="Get it on GitHub" src="assets/badges/get-it-on-github.png" height="60" /></a>
 
 <br />
+
+**[guiforge.github.io/bati](https://guiforge.github.io/bati/)** — the site, in English and French
 
 [![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=0D33F2)](https://github.com/Guiforge/bati/releases/latest)
@@ -37,28 +39,23 @@ gets between you and your next set.
 requests at all — your history lives in a database on your device and nowhere else. That is the
 architecture, not a setting you have to find.
 
-> **Status: early.** The app works end to end and is in the hands of its first testers. It is not
-> on Google Play or the App Store yet, and the APKs below are signed by me rather than by a store.
-> Bugs and rough edges are expected — [tell me about them](#contributing), that is the point.
-
 ## See it
 
 <div align="center">
 <table border="0">
 <tr>
-<td width="33%"><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/1-home.png" alt="Home: your next session, one tap away" /></td>
-<td width="33%"><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/2-quests.png" alt="Quests: every workout is a quest" /></td>
-<td width="33%"><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/4-session.png" alt="Mid-session: every rep does damage" /></td>
+<td width="25%"><img src="docs/legal/assets/shots/en/1-home.webp" alt="Home: your next session, one tap away" /></td>
+<td width="25%"><img src="docs/legal/assets/shots/en/4-session.webp" alt="Mid-session: one exercise, a rep counter and a done button" /></td>
+<td width="25%"><img src="docs/legal/assets/shots/en/5-boss.webp" alt="Boss fight: the boss above a health bar and the rep counter" /></td>
+<td width="25%"><img src="docs/legal/assets/shots/en/7-village.webp" alt="Village: buildings raised by past sessions" /></td>
 </tr>
-<tr>
-<td><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/5-boss.png" alt="Boss fights: some sessions fight back" /></td>
-<td><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/6-victory.png" alt="Victory: the loot drops when the work is done" /></td>
-<td><img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/7-village.png" alt="Village: your reps built all of this" /></td>
+<tr align="center">
+<td><sub>Your next session, one tap away.</sub></td>
+<td><sub>One exercise at a time.</sub></td>
+<td><sub>Some sessions fight back.</sub></td>
+<td><sub>Your reps built all of this.</sub></td>
 </tr>
 </table>
-
-<sub>Real screenshots from a real device, shown here in French — nothing is a mockup.
-The app ships in English and French; <code>npm run screenshots</code> captures either.</sub>
 
 </div>
 
@@ -82,31 +79,13 @@ finished — read from a database on your phone, with nothing to log in to.
 **No account, no network.** Bati makes no requests at all. There is no server to leak, no analytics
 to opt out of, and no cloud copy of your training. [Privacy policy](https://guiforge.github.io/bati/privacy/).
 
-## This repo is heavily vibe coded, and says so
+## A note on this repo
 
-Most of this codebase was written with AI assistance, in long conversations rather than
-carefully planned sprints. That is not an apology — it is context you need to read it fairly:
+This project is largely written with AI assistance. Saying it up front so you read the code with
+that in mind.
 
-- **The comments are unusually dense**, and they explain *why*, not *what*. Many of them are
-  small post-mortems: a comment saying "this used to be X, and here is the bug that caused" is
-  doing the job a commit message would in a repo with a slower pulse. Read them; they carry most
-  of the reasoning.
-- **The docs are large for a project this size.** `docs/` holds product, design, gameplay and
-  architecture knowledge that would otherwise live in someone's head. It is also what makes
-  AI-assisted work reviewable — [`AGENTS.md`](AGENTS.md) and [`DESIGN.md`](DESIGN.md) are the
-  rules an assistant is held to, and auditing the code *against its own written rules* is how
-  a whole class of bugs got found — the quality rules in `AGENTS.md` are what that audit left
-  behind.
-- **The conventions are opinionated and enforced by tooling**, not by discipline. Dark-mode
-  only, tokens instead of hex, one source per value. Where a rule could be automated it was —
-  including a custom lint plugin that rejects raw hex colours anywhere but one file.
-- **Expect the seams.** Some of it is over-thought, some under-thought. The `ponytail:` comments
-  mark deliberate shortcuts with their ceiling and what would trigger the real fix, so the
-  corners that were cut are at least labelled.
-
-It is a fun project first. If you are here to learn, the interesting part is probably the way
-[`AGENTS.md`](AGENTS.md), `docs/` and the lint rules try to keep an AI-assisted codebase honest
-— every quality rule in `AGENTS.md` is a bug that shipped past a green test suite first.
+This is a fun project. I build it because I enjoy building it, and I lean heavily on AI to write
+it.
 
 ## Where the art comes from
 
@@ -118,30 +97,6 @@ All of it comes from **FLUX.2 by Black Forest Labs**, through our own API accoun
 the licence: the FLUX grant over outputs runs to whoever holds the key, so generating through an
 aggregator would have left us with art we could not license onward — which is why an earlier
 Midjourney-and-Gemini-via-Mammouth set was regenerated from scratch.
-
-The prompts are code, not prose. One script per family, all sharing
-[`scripts/lib/flux.py`](scripts/lib/flux.py):
-
-```bash
-python3 scripts/generate-exercises.py          # the 49 movement illustrations
-python3 scripts/generate-covers.py             # quest and adventure covers
-python3 scripts/generate-village.py            # village tiers, sprites, buildings
-python3 scripts/generate-bosses.py             # boss art
-python3 scripts/generate-avatars.py            # hero portraits
-python3 scripts/generate-backgrounds.py        # full-screen backgrounds, placeholder
-python3 scripts/generate-exercises.py squat    # or just one, by slug
-```
-
-They need a `BFL_API_KEY` (see `.env.example`), run six renders at a time, and seed each image
-from its own slug — so editing a prompt changes the instruction rather than the dice, and
-`FLUX_SEED_SALT=1` re-rolls anything that comes out wrong anyway.
-[`scripts/provenance.json`](scripts/provenance.json) records model, prompt and seed for every
-image, which is what makes the CC BY-SA grant checkable instead of merely asserted.
-
-The house style lives in each script's `STYLE` block, appended verbatim to every prompt in its
-family — Franco-Belgian BD, confident ink outlines, flat cel-shading, edges falling to dark so an
-image drops onto the app's `#0B0F19` background without a seam. What still has no art is tracked
-in [`docs/content/missing-image.md`](docs/content/missing-image.md).
 
 Icons are a separate system: game and fantasy icons go through the project's own icon hook,
 utility icons come from [`@tamagui/lucide-icons`](https://tamagui.dev).
@@ -159,7 +114,7 @@ native modules — SQLite, audio, an Android home-screen widget.
 ## Scripts
 
 | | |
-|---|---|
+| --- | --- |
 | `npm start` | Expo dev server |
 | `npm run android` / `ios` / `web` | run on a target |
 | `npm run check` | Biome + TypeScript |
@@ -191,14 +146,9 @@ All of these run in CI; the first three also run on commit or push.
 - `.maestro/` — E2E flows
 - `plugins/` — local Expo config plugins
 
-## Documentation
-
-- [`docs/README.md`](docs/README.md) — entry point
-- [`AGENTS.md`](AGENTS.md) — working rules, quality rules, known debt
-- [`DESIGN.md`](DESIGN.md) — design system and its non-negotiables
-- [`PRODUCT.md`](PRODUCT.md) — who it is for, and what it refuses to be
-
 ## Install it
+
+Everything below is also on [the site](https://guiforge.github.io/bati/#install), in English and French.
 
 ### F-Droid — the one that updates itself
 
@@ -236,7 +186,7 @@ See [`docs/fdroid.md`](docs/fdroid.md) for how the repository is built and signe
 
 [`CONTRIBUTING.md`](CONTRIBUTING.md) for code, [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for
 the wiki, [`SECURITY.md`](SECURITY.md) to report something that should not be a public issue.
-Or just write to **feedback.bati@proton.me** — an idea is welcome in whatever form it arrives.
+Or just write to **<feedback.bati@proton.me>** — an idea is welcome in whatever form it arrives.
 
 ## Licence
 

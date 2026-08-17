@@ -33,7 +33,7 @@
     "expo-system-ui": "~57.0.2",
     "i18next": "^26.3.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react-dom": "19.2.8",
     "react-i18next": "^17.0.11",
     "react-native": "0.86.2",
     "react-native-android-widget": "^0.22.0",
@@ -185,7 +185,7 @@
       "@tamagui/helpers-icon": "2.7.4"
     },
     "@tamagui/web": "2.7.7",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.8"
   },
   "version": "1.9.0",
   "license": "MIT",

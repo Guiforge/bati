@@ -6,6 +6,8 @@ type Props = {
   height?: number;
   color?: ColorTokens | string;
   trackColor?: ColorTokens | string;
+  /** For screens where the bar's *absence* is the rule — a card must never show two gauges. */
+  testID?: string;
 };
 
 export function ProgressBar({
@@ -13,11 +15,13 @@ export function ProgressBar({
   height = 8,
   color = "$primary",
   trackColor = "$surface2",
+  testID,
 }: Props) {
   const clamped = Math.min(100, Math.max(0, progress));
 
   return (
     <XStack
+      testID={testID}
       height={height}
       bg={trackColor as ColorTokens}
       rounded={height / 2}

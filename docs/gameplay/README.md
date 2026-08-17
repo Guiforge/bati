@@ -19,6 +19,7 @@ related: [../README.md, ../planning/roadmap.md]
 - [boss-fights.md](boss-fights.md) — Boss fight mechanics
 - [session-flow.md](session-flow.md) — Active workout screens + technical spec
 - [progression.md](progression.md) — XP, derived village, flame — the loot loop
+- [paths.md](paths.md) — the variation ladder as named routes: how a rung is owned and kept
 - [statistics-progress.md](statistics-progress.md) — Statistics & progress (4 derived views)
 - [coach-planning.md](coach-planning.md) — what Home offers next: oath, weak-area & rest rules
 - [oaths.md](oaths.md) — Oaths: the user's own target, derived from the journal

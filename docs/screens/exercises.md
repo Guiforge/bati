@@ -35,7 +35,9 @@ place you live.
   its options underneath, applied filters summarised as removable chips.
   - **Movement** — the pattern (`push_vertical`, `hinge`, …).
   - **Muscles**, **Equipment**.
-  - **Ladder** — a toggle, not a pill: only movements that lead to a harder variation.
+  - **Ladder** — a toggle, not a pill: only movements that lead to a harder variation. Where a
+    movement sits on a named **path**, and how close its next rung is, belongs to the detail
+    screen — see [../gameplay/paths.md](../gameplay/paths.md).
 - **"Leads to X"** on every row that sits on a ladder. The row says *that* the movement goes
   somewhere and where; how close you are stays on the detail screen.
 - **Loading / error / no-match states**, each with the way out under the sentence.
@@ -58,8 +60,9 @@ place you live.
 
 ## What happens next
 
-Tapping a row opens **[Exercise Details](exercise-details.md)**, which carries the full ladder
-(`LadderStrip`) and the next rung (`NextStepCard`). The catalogue never starts a session.
+Tapping a row opens **[Exercise Details](exercise-details.md)**, which carries the whole named
+path (`PathCard`, drawn with the shared `PathStrip`) and the next rung (`NextStepCard`), both
+tappable. The catalogue never starts a session.
 
 ## Implementation note
 

@@ -31,25 +31,42 @@ describe("db/exercises — variation ladder", () => {
     ).id;
   }
 
-  /** Log one set of `exerciseId`, hitting or missing its target. Returns the session id. */
-  function logSet(exerciseId: number, resultValue: number, targetValue: number): number {
-    const at = Math.floor(Date.now() / 1000);
+  /**
+   * Log one session of `exerciseId`, one row per entry in `results` — a three-round quest writes
+   * three of them. Returns the session id.
+   */
+  function logSession(
+    exerciseId: number,
+    results: number[],
+    targetValue: number,
+    daysAgo = 0,
+  ): number {
+    const at = Math.floor(Date.now() / 1000) - daysAgo * 24 * 60 * 60;
     const info = t.sqlite
       .prepare(
         "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, ?)",
       )
       .run(at);
     const sessionId = Number(info.lastInsertRowid);
-    t.sqlite
-      .prepare(
-        `INSERT INTO completed_exercises
-           (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetType,
-            targetValue, performedAt)
-         VALUES (?, ?, 0, 0, 'reps', ?, 'reps', ?, ?)`,
-      )
-      .run(sessionId, exerciseId, resultValue, targetValue, at);
+    const insert = t.sqlite.prepare(
+      `INSERT INTO completed_exercises
+         (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetType,
+          targetValue, performedAt)
+       VALUES (?, ?, ?, 0, 'reps', ?, 'reps', ?, ?)`,
+    );
+    results.forEach((value, roundIndex) => {
+      insert.run(sessionId, exerciseId, roundIndex, value, targetValue, at);
+    });
     return sessionId;
   }
+
+  /** One session, one round — the common case. */
+  const logSet = (
+    exerciseId: number,
+    resultValue: number,
+    targetValue: number,
+    daysAgo = 0,
+  ): number => logSession(exerciseId, [resultValue], targetValue, daysAgo);
 
   test("the ladder points at the harder variation, not the easier one", async () => {
     const progression = await exercisesApi().getNextProgression(idOf("Wall Push-Up"));
@@ -69,6 +86,35 @@ describe("db/exercises — variation ladder", () => {
     const progression = await exercisesApi().getNextProgression(wallPushUp);
     expect(progression?.metTarget).toBe(3);
     expect(progression?.isEarned).toBe(true);
+  });
+
+  test("three rounds of one evening are one session, not three", async () => {
+    const wallPushUp = idOf("Wall Push-Up");
+    logSession(wallPushUp, [12, 12, 12], 12);
+
+    // A three-round quest writes three rows in a single night. Counting rows promoted a hero
+    // after one workout, which is the "program hopping" the research names as mistake number one.
+    const progression = await exercisesApi().getNextProgression(wallPushUp);
+    expect(progression?.metTarget).toBe(1);
+    expect(progression?.isEarned).toBe(false);
+  });
+
+  test("one short round costs the whole session", async () => {
+    const wallPushUp = idOf("Wall Push-Up");
+    logSession(wallPushUp, [12, 12, 8], 12);
+
+    // "3x12 clean reps", not "one good set out of three".
+    expect((await exercisesApi().getNextProgression(wallPushUp))?.metTarget).toBe(0);
+  });
+
+  test("sessions older than the window stop counting", async () => {
+    const wallPushUp = idOf("Wall Push-Up");
+    for (let i = 0; i < 3; i++) logSet(wallPushUp, 12, 12, 200 + i);
+
+    // Ability is current, not historical: a streak from last spring is not evidence today.
+    const progression = await exercisesApi().getNextProgression(wallPushUp);
+    expect(progression?.metTarget).toBe(0);
+    expect(progression?.isEarned).toBe(false);
   });
 
   test("falling short of the target does not count towards it", async () => {
@@ -148,6 +194,65 @@ describe("db/exercises — variation ladder", () => {
       const sessionId = logSet(wallPushUp, 12, 12);
 
       expect(await exercisesApi().checkForNewRungs(sessionId)).toEqual([]);
+    });
+  });
+
+  describe("paths climbed for keeps", () => {
+    /** Dead Bug -> Hollow Body Hold -> L-Sit, the shortest complete route in the catalogue. */
+    function climbCorePath() {
+      for (const name of ["Dead Bug", "Hollow Body Hold", "L-Sit"]) {
+        for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12);
+      }
+    }
+
+    test("a path counts only once every rung of it has been owned", async () => {
+      expect(await exercisesApi().countClimbedPaths()).toBe(0);
+
+      for (let i = 0; i < 3; i++) logSet(idOf("Dead Bug"), 12, 12);
+      expect(await exercisesApi().countClimbedPaths()).toBe(0);
+
+      climbCorePath();
+      expect(await exercisesApi().countClimbedPaths()).toBe(1);
+    });
+
+    test("a climbed path is never taken back", async () => {
+      climbCorePath();
+
+      // Detraining, and then a bad session. The *current* rung falls — a trophy must not.
+      for (let i = 0; i < 3; i++) logSet(idOf("L-Sit"), 4, 12);
+
+      const chain = await exercisesApi().getChainTo(idOf("L-Sit"));
+      expect(chain?.position).toBe(3);
+      expect(await exercisesApi().countClimbedPaths()).toBe(1);
+    });
+
+    test("climbing one reaches the trophy shelf", async () => {
+      // A count nothing reads is a control wired to nothing. This is the wire: the same shelf the
+      // village shows defeated bosses on, which until now recorded volume and never skill.
+      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      t.sqlite.exec("DELETE FROM user_preferences WHERE key = 'unlocked_achievements'");
+
+      climbCorePath();
+      const earned = await achievements.checkForNewAchievements({
+        durationSeconds: 600,
+        xpEarned: 50,
+        performedAt: new Date(new Date().setHours(12, 0, 0, 0)),
+        questId: null,
+      });
+
+      expect(earned.map((a) => a.code)).toContain("path_climbed");
+    });
+
+    test("time passing does not take it back either", async () => {
+      for (const name of ["Dead Bug", "Hollow Body Hold", "L-Sit"]) {
+        for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12, 400 + i);
+      }
+
+      // Every session is far outside the recency window, so nothing reads as earned today...
+      const chain = await exercisesApi().getChainTo(idOf("L-Sit"));
+      expect(chain?.position).toBe(1);
+      // ...and the shelf still holds it.
+      expect(await exercisesApi().countClimbedPaths()).toBe(1);
     });
   });
 

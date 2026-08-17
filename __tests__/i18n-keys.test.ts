@@ -48,6 +48,20 @@ describe("i18n locale parity", () => {
     expect(missingInEn).toEqual([]);
   });
 
+  test("no key uses the i18next v3 plural suffix", () => {
+    // `_plural` is JSON v3; this repo runs i18next v4 semantics, which wants `_one`/`_other`.
+    // A `_plural` key is simply never resolved, so the singular renders for every count and the
+    // English reads "2 more time". Both offenders shipped green — nothing else can see this.
+    const stale = [
+      ...collectLeafKeys(en as unknown as JsonObject).keys(),
+      ...collectLeafKeys(fr as unknown as JsonObject).keys(),
+    ]
+      .filter((k) => k.endsWith("_plural"))
+      .sort();
+
+    expect(stale).toEqual([]);
+  });
+
   test("no empty strings in translations", () => {
     const enKeys = collectLeafKeys(en as unknown as JsonObject);
     const frKeys = collectLeafKeys(fr as unknown as JsonObject);

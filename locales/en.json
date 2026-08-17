@@ -12,7 +12,7 @@
     "resume_journey": "Resume your journey",
     "pick_quest_label": "Pick a quest",
     "see_quest": "See the quest",
-    "oath_focus_chain": "Toward your oath: {{goal}} — step {{position}} of {{total}}, tonight: {{name}}",
+    "oath_focus_chain": "Toward your oath: {{goal}} — rung {{position}} of {{total}}, tonight: {{name}}",
     "oath_focus_simple": "Toward your oath: {{goal}}",
     "focus_on": "Strengthens your weak points: {{muscles}}",
     "quick_workout": "Quick Workout",
@@ -137,8 +137,8 @@
     "privacy": "Privacy",
     "safety": "Train safely",
     "report_bug": "Report a bug",
-    "report_bug_count": "{{count}} crash",
-    "report_bug_count_plural": "{{count}} crashes",
+    "report_bug_count_one": "{{count}} crash",
+    "report_bug_count_other": "{{count}} crashes",
     "report_bug_empty": "Nothing recorded",
     "no_mail_client": "No email app found on this device",
     "photos_denied": "Photo access is off — allow it in system settings"
@@ -323,8 +323,8 @@
     "seconds_per_rep": "tempo {{count}}s/rep",
     "next_step": "Next rung",
     "next_step_earned": "You have earned it — give it a try.",
-    "next_step_progress": "Hit your target {{count}} more time to earn it.",
-    "next_step_progress_plural": "Hit your target {{count}} more times to earn it.",
+    "next_step_progress_one": "Hit your target {{count}} more time to earn it.",
+    "next_step_progress_other": "Hit your target {{count}} more times to earn it.",
     "catalogue_title": "Exercises",
     "count_one": "{{count}} movement",
     "count_other": "{{count}} movements",
@@ -343,7 +343,11 @@
     "pattern_hinge": "Hinge",
     "pattern_core": "Core",
     "pattern_locomotion": "Locomotion",
-    "pattern_mobility": "Mobility"
+    "pattern_mobility": "Mobility",
+    "path_rung": "{{path}} · Rung {{position}}/{{total}}",
+    "path_climbed": "{{path}} · Climbed",
+    "path_you_are_on": "You are on {{name}}.",
+    "path_you_are_here": "You are here."
   },
   "session": {
     "adjust_reps_hint": "Did you do more or less?",

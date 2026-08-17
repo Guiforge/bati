@@ -17,6 +17,9 @@
   --surface-2: #151a2e;
   --border: #2a3360;
   --glass-border: rgba(232, 236, 255, 0.14);
+  /* Internal rules between rows of the same list: quieter than a card edge, or a table of
+     five systems reads as five separate objects. */
+  --hair: rgba(232, 236, 255, 0.09);
   --indigo: #4a3fd6;
   --indigo-lift: #5d53e8;
   --indigo-text: #8177f7;
@@ -24,14 +27,19 @@
   --gold: #ffd700;
   --text: #e8ecff;
   --muted: #909acb;
+  --shadow: #060812;
 
   --display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --body:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  --wrap: 1080px;
+  --wrap: 1120px;
+  /* Screenshots and village art run wider than the reading column: they are the evidence, and
+     at 1120px four phones are thumbnails. */
+  --wrap-wide: 1320px;
   --radius: 16px;
+  --head-h: 60px;
 }
 
 * {
@@ -78,14 +86,19 @@ h2,
 h3 {
   font-family: var(--display);
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
   margin: 0;
 }
 
 code,
 pre {
   font-family: var(--mono);
+}
+
+/* Every anchor target clears the sticky header instead of landing under it. */
+section[id] {
+  scroll-margin-top: calc(var(--head-h) + 1rem);
 }
 
 /* --- Language switch -------------------------------------------------------------------
@@ -102,14 +115,13 @@ html[data-lang="fr"] [lang="en"] {
   margin-inline: auto;
 }
 
-.eyebrow {
-  font-family: var(--display);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--indigo-text);
-  margin: 0 0 1rem;
+/* Evidence — screenshots, village art — runs wider than the reading column while its caption
+   stays in it. At 1120px four phones are thumbnails. */
+.bleed {
+  width: min(100vw - 2.5rem, var(--wrap-wide));
+  max-width: calc(100vw - 2.5rem);
+  margin-left: 50%;
+  transform: translateX(-50%);
 }
 
 /* --- Header ---------------------------------------------------------------------------- */
@@ -126,8 +138,8 @@ html[data-lang="fr"] [lang="en"] {
 .site-head__in {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  min-height: 60px;
+  gap: 1.5rem;
+  min-height: var(--head-h);
 }
 
 .brand {
@@ -149,14 +161,29 @@ html[data-lang="fr"] [lang="en"] {
   border-radius: 8px;
 }
 
+/* A five-section page under a sticky bar that links nowhere wastes the bar. Anchors only —
+   below 900px the sections are a short scroll apart and the row would crowd the switch. */
+.site-nav {
+  display: none;
+  gap: 1.5rem;
+}
+
+.site-nav a,
 .head-link {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   color: var(--muted);
   text-decoration: none;
 }
 
+.site-nav a:hover,
 .head-link:hover {
   color: var(--text);
+}
+
+@media (min-width: 900px) {
+  .site-nav {
+    display: flex;
+  }
 }
 
 .langs {
@@ -187,63 +214,44 @@ html[data-lang="fr"] [lang="en"] {
 .hero {
   position: relative;
   isolation: isolate;
-  padding: clamp(3.5rem, 9vw, 6.5rem) 0 0;
+  padding: clamp(3.5rem, 8vw, 6rem) 0 clamp(3rem, 6vw, 4.5rem);
   overflow: hidden;
 }
 
+/* The scrims, in paint order: a horizontal one so the copy always has its own dark ground, a
+   vignette that closes the frame, then the fade into the page. The forest has to stay legible
+   as a place — the previous stack washed it to a flat grey. */
 .hero__art {
   position: absolute;
   inset: 0 0 auto;
-  height: 120%;
+  height: 128%;
   background:
-    linear-gradient(180deg, rgba(11, 15, 25, 0.42) 0%, rgba(11, 15, 25, 0.86) 55%, var(--void) 88%),
+    linear-gradient(
+      90deg,
+      rgba(11, 15, 25, 0.94) 0%,
+      rgba(11, 15, 25, 0.72) 42%,
+      rgba(11, 15, 25, 0.34) 76%,
+      rgba(11, 15, 25, 0.5) 100%
+    ),
+    radial-gradient(120% 80% at 50% 4%, transparent 0%, rgba(11, 15, 25, 0.5) 66%, var(--void) 100%),
+    linear-gradient(180deg, rgba(11, 15, 25, 0.1) 0%, rgba(11, 15, 25, 0.45) 52%, var(--void) 93%),
     url("img/hero.webp") center top / cover no-repeat;
   z-index: -1;
 }
 
-/* The phone only exists on a wide screen: at 1280px the copy stops at 54ch and the right half
-   of the hero was empty. Below 900px the copy takes the width and the phone would push the CTA
-   below the fold. */
-.hero__phone {
-  display: none;
-}
-
-@media (min-width: 900px) {
-  .hero__grid {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    column-gap: 4rem;
-    align-items: center;
-  }
-
-  .hero__phone {
-    display: block;
-    width: 280px;
-    height: auto;
-    border-radius: 22px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    box-shadow: 0 40px 90px -30px #060812;
-    transform: rotate(3deg);
-  }
-
-  .loop,
-  .loop-caption {
-    grid-column: 1 / -1;
-  }
-}
-
+/* 5.6vw, not more: the copy column is only ~610px at 1024 and the headline carries a hard
+   <br>, so a steeper ramp overflows the second line before the phone breakpoint lets go. */
 .hero h1 {
-  font-size: clamp(2.5rem, 7vw, 4.25rem);
-  max-width: 16ch;
+  font-size: clamp(2rem, 5.6vw, 4.75rem);
+  max-width: 15ch;
   text-wrap: balance;
 }
 
 .lead {
-  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  font-size: clamp(1.05rem, 2vw, 1.28rem);
   color: var(--muted);
-  max-width: 54ch;
-  margin: 1.25rem 0 2rem;
+  max-width: 52ch;
+  margin: 1.5rem 0 2.25rem;
 }
 
 .lead strong {
@@ -262,10 +270,12 @@ html[data-lang="fr"] [lang="en"] {
   height: 56px;
   width: auto;
   display: block;
+  border-radius: 10px;
 }
 
 .cta a {
   border-radius: 10px;
+  box-shadow: 0 14px 30px -18px var(--shadow);
   transition: transform 0.15s ease;
 }
 
@@ -273,71 +283,166 @@ html[data-lang="fr"] [lang="en"] {
   transform: translateY(-2px);
 }
 
+/* Was an eyebrow above the headline. The three facts are worth keeping and worth nothing as a
+   label: they belong under the buttons, where someone deciding to install actually asks them. */
+.spec {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-family: var(--display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1.5rem 0 0;
+}
+
 .note {
   font-size: 0.9rem;
   color: var(--muted);
   margin: 1.25rem 0 0;
-  max-width: 52ch;
+  max-width: 54ch;
 }
 
-/* --- The loop: reps in, village out ---------------------------------------------------- */
+/* The phone only exists on a wide screen: at 1280px the copy stops at 52ch and the right half
+   of the hero was empty. Below 960px the copy takes the width and the phone would push the CTA
+   below the fold. */
+.hero__device {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .hero__grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    column-gap: 4.5rem;
+    align-items: center;
+  }
+
+  .hero__device {
+    display: block;
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* The bloom the boss art throws — the screenshot in the frame is a boss fight, and its own
+     magenta is the only warm thing in the hero. */
+  .hero__device::before {
+    content: "";
+    position: absolute;
+    inset: -12% -22%;
+    background: radial-gradient(
+      50% 42% at 50% 46%,
+      rgba(219, 39, 119, 0.28),
+      rgba(74, 63, 214, 0.22) 45%,
+      transparent 72%
+    );
+    z-index: -1;
+  }
+
+  .hero__phone {
+    display: block;
+    width: 300px;
+    height: auto;
+    transform: rotate(3deg);
+  }
+}
+
+/* One device treatment, hero and gallery alike: a hairline screen edge inside a bezel ring,
+   over a shadow with a real offset. */
+.device {
+  border-radius: 26px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  box-shadow:
+    0 0 0 6px rgba(16, 19, 34, 0.72),
+    0 36px 70px -28px var(--shadow),
+    0 8px 20px -12px var(--shadow);
+}
+
+/* --- The loop: reps in, village out -----------------------------------------------------
+   The one claim the whole product rests on, so it gets the one drawn structure on the page:
+   a rail that runs indigo at the rep and gold at the village. */
+
+/* margin-top alone: the shorthand would overwrite `.wrap`'s margin-inline and un-centre the row. */
+.loop-rail {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+}
 
 .loop {
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 0.5rem;
-  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  position: relative;
+  margin: 0;
   padding: 0;
 }
 
+/* Starts and ends on a node — the nodes sit at the left edge of their column, so the line stops
+   a quarter-width short of the right edge rather than running off into nothing. */
+.loop::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: calc(25% - 6px);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--indigo-text) 0%,
+    rgba(129, 119, 247, 0.55) 38%,
+    rgba(255, 215, 0, 0.5) 78%,
+    var(--gold) 100%
+  );
+  transform-origin: left center;
+}
+
+/* The padding is on the row, not on the list: the node hangs in it, level with the rail. */
 .loop li {
-  flex: 1 1 160px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  position: relative;
+  padding: 1.9rem 1.5rem 0 0;
 }
 
-.loop li::after {
-  content: "→";
-  font-size: 1.1rem;
-  color: var(--indigo-text);
-  opacity: 0.7;
+.loop li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: var(--void);
+  border: 1px solid var(--indigo-text);
+  box-shadow: 0 0 0 4px var(--void);
 }
 
-.loop li:last-child::after {
-  content: none;
-}
-
-.loop__step {
-  flex: 1;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.95rem 1.1rem;
+.loop li:last-child::before {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 4px var(--void),
+    0 0 18px 1px rgba(255, 215, 0, 0.55);
 }
 
 .loop__k {
   display: block;
   font-family: var(--display);
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--muted);
+  margin-bottom: 0.35rem;
 }
 
 .loop__v {
   display: block;
   font-family: var(--display);
-  font-size: 1.05rem;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
   font-weight: 700;
-  margin-top: 0.2rem;
-}
-
-.loop li:last-child .loop__step {
-  border-color: rgba(255, 215, 0, 0.35);
+  line-height: 1.2;
+  text-wrap: balance;
 }
 
 .loop li:last-child .loop__v {
@@ -346,39 +451,41 @@ html[data-lang="fr"] [lang="en"] {
 
 .loop-caption {
   color: var(--muted);
-  font-size: 0.92rem;
-  margin: 0.9rem 0 0;
+  font-size: 0.95rem;
+  margin: 1.5rem 0 0;
+  max-width: 54ch;
 }
 
 /* --- Bands ----------------------------------------------------------------------------- */
 
 .band {
-  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  padding: clamp(4rem, 8vw, 6.5rem) 0;
+  border-top: 1px solid var(--hair);
 }
 
 .band h2 {
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  max-width: 20ch;
+  font-size: clamp(1.95rem, 4.4vw, 3rem);
+  max-width: 18ch;
+  text-wrap: balance;
 }
 
 .band__intro {
   color: var(--muted);
-  max-width: 58ch;
-  margin: 1rem 0 0;
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
+  max-width: 56ch;
+  margin: 1.25rem 0 0;
 }
 
-.band--rule {
-  border-top: 1px solid var(--border);
-}
-
-/* --- Screens --------------------------------------------------------------------------- */
+/* --- Screens ----------------------------------------------------------------------------
+   Four phones, staggered: a straight row of identical rectangles reads as a spec sheet, and
+   these are the product. */
 
 .shots {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(220px, 1fr);
-  gap: 1.5rem;
-  margin-top: 2.5rem;
+  grid-auto-columns: minmax(230px, 1fr);
+  gap: 1.75rem;
+  margin-top: 3rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding-bottom: 1rem;
@@ -391,82 +498,151 @@ html[data-lang="fr"] [lang="en"] {
 
 .shots img {
   width: 100%;
-  border-radius: 22px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 24px 60px -30px #060812;
   display: block;
 }
 
 .shots figcaption {
-  margin-top: 0.9rem;
-  font-size: 0.92rem;
+  margin-top: 1.1rem;
+  font-size: 0.95rem;
   color: var(--muted);
+  max-width: 30ch;
 }
 
-/* --- Features -------------------------------------------------------------------------- */
+@media (min-width: 960px) {
+  .shots {
+    overflow: visible;
+    padding-bottom: 3.5rem;
+    align-items: start;
+  }
 
-.cards {
+  .shots figure:nth-child(even) {
+    transform: translateY(3rem);
+  }
+}
+
+/* --- Systems ----------------------------------------------------------------------------
+   Five rows and one piece of evidence, not six identical cards: the village is the payoff and
+   the other five are the machinery, so they are not the same size. */
+
+.systems {
+  list-style: none;
+  margin: 2.75rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--hair);
+}
+
+.systems li {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-  gap: 1rem;
-  margin-top: 2.5rem;
+  grid-template-columns: 26px 1fr;
+  gap: 0.35rem 1.25rem;
+  align-items: start;
+  padding: 1.35rem 0.75rem 1.35rem 0;
+  border-bottom: 1px solid var(--hair);
+  transition: background-color 0.15s ease;
 }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
+.systems li:hover {
+  background-color: rgba(129, 119, 247, 0.05);
 }
 
-.card svg {
-  width: 26px;
-  height: 26px;
+.systems svg {
+  width: 24px;
+  height: 24px;
+  margin-top: 0.15rem;
   stroke: var(--indigo-text);
-  stroke-width: 2;
+  stroke-width: 1.75;
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.card h3 {
-  font-size: 1.15rem;
-  margin: 0.9rem 0 0.5rem;
+.systems h3 {
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
 }
 
-.card p {
+.systems p {
+  grid-column: 2;
   margin: 0;
   color: var(--muted);
-  font-size: 0.96rem;
+  font-size: 0.98rem;
 }
 
-/* The village, four tiers apart: the one place the site shows the app's own art. */
+@media (min-width: 860px) {
+  .systems li {
+    grid-template-columns: 26px minmax(190px, 15rem) 1fr;
+    align-items: baseline;
+    gap: 1.5rem;
+  }
+
+  .systems p {
+    grid-column: 3;
+    max-width: 52ch;
+  }
+}
+
+/* The village, four tiers apart: the one place the site shows the app's own art, at a size
+   where the citadel is legible as a citadel. */
 .village {
-  margin: 2.5rem 0 2.5rem;
+  margin: clamp(3rem, 6vw, 4.5rem) 0 0;
 }
 
 .village__strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .village__strip img {
   width: 100%;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border);
+  box-shadow: 0 24px 50px -30px var(--shadow);
   display: block;
 }
 
-.village figcaption {
-  margin-top: 0.9rem;
-  font-size: 0.92rem;
+/* The last tier carries the same gold as the last node of the loop: same claim, two places. */
+.village__strip figure:last-child img {
+  border-color: rgba(255, 215, 0, 0.4);
+}
+
+.village__strip figure {
+  margin: 0;
+}
+
+.village__strip figcaption {
+  margin-top: 0.7rem;
+  font-family: var(--display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.village__strip figure:last-child figcaption {
+  color: var(--gold);
+}
+
+.village > figcaption {
+  margin-top: 1.5rem;
+  font-size: 1rem;
   color: var(--muted);
   max-width: 62ch;
 }
 
-/* --- Privacy --------------------------------------------------------------------------- */
+.village > figcaption strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Two muted paragraphs of the same measure read as one block otherwise. */
+.village + .note {
+  margin-top: 2.5rem;
+}
+
+/* --- Privacy ----------------------------------------------------------------------------
+   Four zeros are the section, not a chip row under it. */
 
 .privacy {
   background:
@@ -476,48 +652,106 @@ html[data-lang="fr"] [lang="en"] {
 }
 
 .zeros {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin: 2rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--glass-border);
 }
 
 .zeros li {
-  font-family: var(--display);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 1px solid var(--glass-border);
-  border-radius: 999px;
-  padding: 0.5rem 0.9rem;
-  color: var(--text);
+  padding: 1.5rem 1.25rem 0 0;
+}
+
+.zeros li + li {
+  border-left: 1px solid var(--glass-border);
+  padding-left: 1.5rem;
 }
 
 .zeros b {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(2.75rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
   color: var(--gold);
 }
 
-/* --- Install --------------------------------------------------------------------------- */
+.zeros span {
+  display: block;
+  margin-top: 0.6rem;
+  font-family: var(--display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.link-arrow {
+  display: inline-block;
+  margin-top: 2.5rem;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* --- Install ----------------------------------------------------------------------------
+   Two ways in, not two equal ways in: the repository updates itself and the APK does not. */
 
 .install {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-top: 2.5rem;
+  gap: 1.5rem;
+  margin-top: 3rem;
   align-items: start;
 }
 
+@media (min-width: 860px) {
+  .install {
+    grid-template-columns: 1.45fr 1fr;
+    gap: 2rem;
+  }
+}
+
+.install__card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+}
+
+.install__card--alt {
+  background: transparent;
+  border-color: var(--hair);
+}
+
 .install h3 {
-  font-size: 1.25rem;
-  margin-bottom: 0.6rem;
+  font-size: 1.3rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.tag {
+  font-family: var(--display);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 999px;
+  padding: 0.3rem 0.6rem;
 }
 
 .install p {
   color: var(--muted);
-  font-size: 0.96rem;
+  font-size: 0.97rem;
+  max-width: 54ch;
 }
 
 .btn {
@@ -538,13 +772,25 @@ html[data-lang="fr"] [lang="en"] {
   color: #fff;
 }
 
+.btn--ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn--ghost:hover {
+  background: var(--surface-2);
+  border-color: var(--indigo-text);
+  color: var(--text);
+}
+
 .repo {
   display: block;
   background: var(--void);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.9rem 1rem;
-  margin: 1.25rem 0 0.75rem;
+  margin: 1.5rem 0 0.75rem;
   font-size: 0.8rem;
   line-height: 1.7;
   color: var(--text);
@@ -557,16 +803,21 @@ html[data-lang="fr"] [lang="en"] {
   overflow-wrap: break-word;
 }
 
+.repo span + span {
+  margin-top: 0.5rem;
+  color: var(--muted);
+}
+
 .warn {
-  border-left: 2px solid var(--gold);
-  padding-left: 0.9rem;
+  border-left: 1px solid var(--gold);
+  padding-left: 1rem;
   font-size: 0.9rem;
 }
 
 /* --- Footer ---------------------------------------------------------------------------- */
 
 .site-foot {
-  padding: 3rem 0;
+  padding: 3.5rem 0;
   border-top: 1px solid var(--border);
   font-size: 0.92rem;
   color: var(--muted);
@@ -575,8 +826,8 @@ html[data-lang="fr"] [lang="en"] {
 .site-foot nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  margin-bottom: 1.25rem;
+  gap: 0.5rem 1.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .colophon {
@@ -616,7 +867,7 @@ html[data-lang="fr"] [lang="en"] {
   margin: 1.5rem 0;
   padding: 1rem 1.25rem;
   background: var(--surface);
-  border-left: 2px solid var(--indigo);
+  border-left: 1px solid var(--indigo);
   border-radius: 0 12px 12px 0;
   color: var(--text);
 }
@@ -649,22 +900,53 @@ html[data-lang="fr"] [lang="en"] {
 
 /* --- Small screens ---------------------------------------------------------------------- */
 
-@media (max-width: 700px) {
+@media (max-width: 760px) {
+  /* The break is composed for the two-line desktop headline; on a phone it strands "roi." on a
+     line of its own. Let `balance` do the wrapping instead. */
+  .hero h1 br {
+    display: none;
+  }
+
+  /* The rail turns vertical rather than disappearing: the sequence is the point. One segment
+     per step, node to node, so it ends on the village instead of trailing past it. */
   .loop {
-    flex-direction: column;
-    gap: 0.35rem;
+    grid-template-columns: 1fr;
+    padding-left: 1.75rem;
+  }
+
+  .loop::before {
+    content: none;
   }
 
   .loop li {
-    flex: 0 0 auto;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.35rem;
+    padding: 0 0 1.5rem;
   }
 
-  .loop li::after {
-    content: "↓";
-    text-align: center;
+  .loop li::before {
+    left: -1.75rem;
+    top: 2px;
+  }
+
+  .loop li:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: calc(-1.75rem + 6px);
+    top: 15px;
+    bottom: 0;
+    width: 1px;
+    background: var(--seg, var(--indigo-text));
+  }
+
+  .loop li:nth-child(2)::after {
+    --seg: rgba(129, 119, 247, 0.6);
+  }
+
+  .loop li:nth-child(3)::after {
+    --seg: rgba(255, 215, 0, 0.55);
+  }
+
+  .loop li:last-child {
+    padding-bottom: 0;
   }
 
   .cta img {
@@ -673,31 +955,59 @@ html[data-lang="fr"] [lang="en"] {
 
   .village__strip {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .zeros {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* A vertical rule against the top edge of the grid is a rule against nothing on row two. */
+  .zeros li:nth-child(odd) {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .zeros li:nth-child(n + 3) {
+    border-top: 1px solid var(--glass-border);
   }
 }
 
 /* --- Motion ------------------------------------------------------------------------------
-   One orchestrated entrance, on the loop only: the four steps arrive in the order the app
-   produces them. Everything else is still. */
+   One authored moment, on the loop only: the rail draws from the rep to the village, and the
+   four steps arrive in the order the app produces them. Everything else is still. */
 
 @media (prefers-reduced-motion: no-preference) {
+  .loop::before {
+    animation: draw 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+  }
+
   /* `backwards`, not `forwards`: the hidden state lives in the keyframe, so a browser that
      never runs the animation still shows four visible steps. */
   .loop li {
-    animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+    animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
   }
 
   .loop li:nth-child(1) {
-    animation-delay: 0.1s;
+    animation-delay: 0.15s;
   }
   .loop li:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-  .loop li:nth-child(3) {
     animation-delay: 0.3s;
   }
+  .loop li:nth-child(3) {
+    animation-delay: 0.45s;
+  }
   .loop li:nth-child(4) {
-    animation-delay: 0.4s;
+    animation-delay: 0.6s;
+  }
+
+  @keyframes draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: none;
+    }
   }
 
   @keyframes rise {
@@ -709,5 +1019,11 @@ html[data-lang="fr"] [lang="en"] {
       opacity: 1;
       transform: none;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

@@ -282,14 +282,13 @@ EXERCISES = [
     # KNEES are down — the shins are up in the air behind, which is what separates this from
     # kneeling on all fours.
     ("knee_pushup",
-     "A fantasy athlete hero at the very bottom of a push-up done from the knees, seen from the "
-     "side, almost lying on the floor. The elbows are folded to a sharp angle and point backwards "
-     "past the ribs, the shoulders have dropped down level with them, and the chest and chin hang "
-     "barely a fist above the ground — the head is lower than the hips. Only the two knees rest on "
-     "the ground: the shins and feet are raised up in the air behind, ankles crossed, so the knees "
-     "are the single point of contact below the hands. From the head down to the knees the body "
-     "holds one straight line. There is nothing else on the floor in front of the athlete. The "
-     "chest and arms glow with soft fiery orange energy."),
+     "A fantasy athlete hero at the very bottom of a PUSH-UP, seen from the side: hands flat on "
+     "the floor under the shoulders, elbows folded sharply back along the ribs, chest and chin "
+     "hanging a fist above the ground, body one straight line, head lower than the hips. It is an "
+     "ordinary push-up in every respect but one — instead of pivoting on the toes, the body pivots "
+     "on the two knees, which rest together on the floor while the shins slope up into the air "
+     "behind and the feet are raised clear of the ground. Everything above the knees is exactly a "
+     "push-up. The chest and arms glow with soft fiery orange energy."),
     # First draw came back with the head detached from the torso and the legs a separate black
     # shape: an inverted body is where this model's anatomy breaks down, so the figure is described
     # bottom-up along one vertical axis — hands, then shoulders, then hips, then feet — rather than
@@ -307,11 +306,17 @@ EXERCISES = [
      "A fantasy athlete hero hanging at full stretch from a rugged stone bar, arms completely "
      "straight, shoulders relaxed away from the ears and feet clear of the ground; the forearms "
      "and hands glow with metallic silver-blue energy, seen from the front."),
+    # First draw put the feet flat on the floor and the camera behind the athlete, which hides the
+    # only thing the picture has to say. Both are pinned: side view, and the ground named as being
+    # far below rather than merely absent — an unmentioned floor is one this model brings up to
+    # meet the feet.
     ("negative_pullup",
-     "A fantasy athlete hero part-way down from the top of a pull-up on a rugged stone bar, chin "
-     "just below bar height and elbows bending open under control, the descent slow and "
-     "deliberate; the back and biceps glow with metallic silver-blue energy, seen from a slight "
-     "low angle."),
+     "A fantasy athlete hero hanging from a rugged stone bar, seen from the side, legs together "
+     "and ankles crossed, feet swinging free a long way above the floor with nothing anywhere in "
+     "the picture for them to stand on. It is exactly a dead hang but for one thing: the arms are "
+     "not straight. Both elbows are folded to a sharp angle, the shoulders are drawn up close to "
+     "the hands and the chin has risen level with the top of the bar, caught part-way through a "
+     "slow descent. The back and biceps glow with metallic silver-blue energy."),
     # Three failures taught the rule this batch runs on. "Seated ... lifted clear of the floor" is a
     # contradiction the model settles by drawing the seated half; forbidding contact ("the hands are
     # the only part touching") produced a bear crawl, because a negative says what to avoid without
@@ -375,13 +380,19 @@ EXERCISES = [
     # So the drawn instant moves to the *lockout* instead: arms straight, body above the bar,
     # bar at hip level. Nothing but a muscle-up ends in a straight-arm support on a high bar, and
     # unlike the transition it cannot collapse into a pull-up, which is what kept happening.
+    # Four draws, four hangs below the bar — twice from behind. Two lessons applied here. The name
+    # goes (see `dragon_flag`): every sentence that contained it produced the pulling half of the
+    # movement instead of the finish. And the instant drawn is the lockout, where the geometry is
+    # decidable — nothing but this ends in a straight-arm support on a high bar, whereas a
+    # transition can always collapse back into a chin-up.
     ("muscle_up",
-     "A fantasy athlete hero at the finish of a muscle-up, locked out in a straight-arm support on "
-     "top of a rugged stone bar, seen from the side. Both arms are completely straight and press "
-     "down onto the bar, the bar sits at the level of the hips and passes UNDER the body, the "
-     "chest and head are high above it, and the legs hang straight down beneath the bar with the "
-     "feet far above the ground. The athlete is on top of the bar, not below it. The back, chest "
-     "and arms glow with metallic silver-blue energy."),
+     "A fantasy athlete hero supporting their whole body on top of a high rugged stone bar, seen "
+     "from the side, at the moment the ascent is finished. Both arms are locked completely "
+     "straight and press down onto the bar, which passes UNDER the body at the level of the hips. "
+     "The chest, shoulders and head are all well ABOVE the bar, and the legs hang straight down "
+     "beneath it with the feet a long way above the ground. The athlete is perched on top of the "
+     "bar and is not hanging underneath it at any point. The back, chest and arms glow with "
+     "metallic silver-blue energy."),
     ("toes_to_bar",
      "A fantasy athlete hero hanging from a rugged stone bar with both legs raised straight "
      "overhead and the toes touching the bar between the hands, body folded sharply at the hips; "
@@ -435,17 +446,16 @@ EXERCISES = [
     # ONE block, for the reason spelled out on `l_sit`: given a spare block in a side view this one
     # stood a foot on it, which is a crouch on a step and not a balance at all.
     ("tuck_planche",
-     "A fantasy athlete hero holding a tuck planche on a single low stone block, seen from the "
-     "side, with the torso held HORIZONTAL like a plank in the air. Both hands press flat on top of "
-     "that one block, one directly behind the other so only the near hand shows, and the elbows are "
-     "locked perfectly straight — the arms are the only thing holding the athlete up. The shoulders "
-     "are pushed forward past the wrists, and the back is roughly parallel with the ground, hips "
-     "floating out behind the block in empty air at the same height as the shoulders. The knees are "
-     "drawn up towards the chest but touch NOTHING — they do not rest on the arms, the elbows or "
-     "the block, and this is not a crouch and not a crow pose. There is exactly ONE stone block in "
-     "the entire picture — no second block, no step, no ledge — and nothing under the body but "
-     "empty dark space with the floor far below. The shoulders and locked arms glow with "
-     "silver-blue energy. No white outline, border or frame around the figure."),
+     "A fantasy athlete hero at the top of a PUSH-UP position on a single low stone block, seen "
+     "from the side, arms locked dead straight — and from that starting point two things change. "
+     "First the weight has shifted forward until the shoulders sit well ahead of the hands. Second "
+     "the feet have left the ground completely and both knees have come up tight against the "
+     "chest, so the body now floats behind the arms with the hips at about shoulder height and the "
+     "toes hanging in mid-air, touching nothing. Both hands press flat on top of that one block, "
+     "one directly behind the other so only the near hand shows. There is exactly ONE stone block "
+     "in the entire picture — no second block, no step, no ledge — and nothing under the body but "
+     "empty dark space. The shoulders and locked arms glow with silver-blue energy. No white "
+     "outline, border or frame around the figure."),
 ]
 
 if __name__ == "__main__":

@@ -1,0 +1,12 @@
+- An exercise catalogue. Tap the dumbbell in the Quests header to
+  browse every movement: search by name, filter by ladder, pattern,
+  muscle or equipment, and see which harder variation each one leads
+  to. Until now the only way to reach a movement was through a quest
+  that happened to contain it.
+- Filter pills stay put when you tap them; the active state now shows
+  on the line below instead of shuffling the row.
+- The "+" on the Quests screen no longer runs off the right edge.
+- Three Settings controls that were wired to nothing are gone.
+- Under the hood: every file, tests included, is now held to the
+  strictest type rules, and a few more mistakes are caught at build
+  time instead of on your phone.

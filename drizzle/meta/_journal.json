@@ -225,6 +225,13 @@
       "when": 1787097600000,
       "tag": "0031_fr_exercise_names",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1787101200000,
+      "tag": "0032_calisthenics_rungs",
+      "breakpoints": true
     }
   ]
 }

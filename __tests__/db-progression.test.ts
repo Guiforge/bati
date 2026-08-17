@@ -71,7 +71,7 @@ describe("db/exercises — variation ladder", () => {
   test("the ladder points at the harder variation, not the easier one", async () => {
     const progression = await exercisesApi().getNextProgression(idOf("Wall Push-Up"));
 
-    expect(progression?.next.enName).toBe("Push-ups");
+    expect(progression?.next.enName).toBe("Knee Push-Up");
     expect(progression?.isEarned).toBe(false);
   });
 
@@ -136,7 +136,9 @@ describe("db/exercises — variation ladder", () => {
         "Towel Door Row",
         "Table Row",
         "Inverted Row",
+        "Dead Hang",
         "Scapular Pull-Up",
+        "Negative Pull-Up",
         "Chin-Up",
         "Pull-ups",
       ]);
@@ -163,7 +165,7 @@ describe("db/exercises — variation ladder", () => {
       // Contiguous from the bottom: the hero still owes every rung under the one they skipped to.
       const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
       expect(chain?.position).toBe(1);
-      expect(chain?.rungs[4]?.isEarned).toBe(true);
+      expect(chain?.rungs[6]?.isEarned).toBe(true);
     });
   });
 
@@ -175,7 +177,7 @@ describe("db/exercises — variation ladder", () => {
       const sessionId = logSet(wallPushUp, 12, 12);
 
       const unlocked = await exercisesApi().checkForNewRungs(sessionId);
-      expect(unlocked.map((s) => s.next.enName)).toEqual(["Push-ups"]);
+      expect(unlocked.map((s) => s.next.enName)).toEqual(["Knee Push-Up"]);
       expect(unlocked[0]?.from.enName).toBe("Wall Push-Up");
     });
 
@@ -198,9 +200,9 @@ describe("db/exercises — variation ladder", () => {
   });
 
   describe("paths climbed for keeps", () => {
-    /** Dead Bug -> Hollow Body Hold -> L-Sit, the shortest complete route in the catalogue. */
+    /** Dead Bug -> Hollow Body Hold -> Tuck L-Sit -> L-Sit, the route to the equerre. */
     function climbCorePath() {
-      for (const name of ["Dead Bug", "Hollow Body Hold", "L-Sit"]) {
+      for (const name of ["Dead Bug", "Hollow Body Hold", "Tuck L-Sit", "L-Sit"]) {
         for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12);
       }
     }
@@ -222,7 +224,7 @@ describe("db/exercises — variation ladder", () => {
       for (let i = 0; i < 3; i++) logSet(idOf("L-Sit"), 4, 12);
 
       const chain = await exercisesApi().getChainTo(idOf("L-Sit"));
-      expect(chain?.position).toBe(3);
+      expect(chain?.position).toBe(4);
       expect(await exercisesApi().countClimbedPaths()).toBe(1);
     });
 
@@ -244,7 +246,7 @@ describe("db/exercises — variation ladder", () => {
     });
 
     test("time passing does not take it back either", async () => {
-      for (const name of ["Dead Bug", "Hollow Body Hold", "L-Sit"]) {
+      for (const name of ["Dead Bug", "Hollow Body Hold", "Tuck L-Sit", "L-Sit"]) {
         for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12, 400 + i);
       }
 

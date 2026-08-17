@@ -466,6 +466,34 @@ magick montage assets/images/exercises/*.jpg -tile 4x4 -geometry 300x225+3+3 /tm
 
 ---
 
+## 8. The calisthenics rungs (`0032`) — 9 assets, open
+
+Same trade as §7, and for the same reason: the ladder gaps were teaching a hero to jump from a
+wall push-up to a floor push-up, and the content that closes them is worth more than the art that
+illustrates them. `getExerciseAsset()` falls back to `placeholder.webp`, so the app is correct
+meanwhile — and **no `assetMap` entries were added**, because Metro resolves `require()` at bundle
+time and a key pointing at a file that does not exist breaks the build instead of falling back.
+Add the entries in the same commit as the files, never before.
+
+| Slug | Kind | Row |
+| --- | --- | --- |
+| `knee_pushup` | exercise | Knee Push-Up |
+| `wall_handstand` | exercise | Wall Handstand |
+| `dead_hang` | exercise | Dead Hang |
+| `negative_pullup` | exercise | Negative Pull-Up |
+| `tuck_l_sit` | exercise | Tuck L-Sit |
+| `single_leg_glute_bridge` | exercise | Single-Leg Glute Bridge |
+| `bulgarian_split_squat` | exercise | Bulgarian Split Squat |
+| `patient_ascent` | quest cover | The Patient Ascent |
+| `masons_footing` | quest cover | The Mason's Footing |
+
+Prompts are staged in `scripts/generate-exercises.py` and `scripts/generate-covers.py`. The seven
+exercise poses carry one extra instruction the earlier batches did not need: each sits *below* a
+movement already drawn, so it has to read as visibly easier than the art above it on the ladder.
+A knee push-up drawn as heroically as a diamond push-up teaches the reader nothing.
+
+---
+
 ## Related
 
 - [missing-covers.md](missing-covers.md) — the prior (resolved) cover gap + generation pipeline

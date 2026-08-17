@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the 49 exercise illustrations.
+"""Generate the 56 exercise illustrations.
 
   python3 scripts/generate-exercises.py            # all of them
   python3 scripts/generate-exercises.py squat plank
@@ -259,6 +259,39 @@ EXERCISES = [
      "A fantasy athlete hero in a deep lunge with one hand planted inside the front foot and the "
      "other arm reaching straight up in a full rotation, gaze following the raised hand; the front "
      "hip and the twisting upper back glow with golden and silver-blue energy, seen from the side."),
+    # The `0032` batch: seven rungs inserted between movements that were already here, so each of
+    # these has to read as *clearly easier* than the art directly above it on the ladder. That is
+    # the whole job — a knee push-up drawn as heroically as a diamond push-up teaches nothing.
+    ("knee_pushup",
+     "A fantasy athlete hero in a push-up with the knees resting on the ground, ankles crossed "
+     "behind, chest lowered to a fist above the floor and the body a straight line from head to "
+     "knee; the chest and arms glow with soft fiery orange energy, seen from the side."),
+    ("wall_handstand",
+     "A fantasy athlete hero holding a handstand with the feet resting against a solid stone wall "
+     "behind them, arms locked straight, body stacked vertically and ribs closed; the shoulders "
+     "and arms glow with silver-blue energy, seen from the side."),
+    ("dead_hang",
+     "A fantasy athlete hero hanging at full stretch from a rugged stone bar, arms completely "
+     "straight, shoulders relaxed away from the ears and feet clear of the ground; the forearms "
+     "and hands glow with metallic silver-blue energy, seen from the front."),
+    ("negative_pullup",
+     "A fantasy athlete hero part-way down from the top of a pull-up on a rugged stone bar, chin "
+     "just below bar height and elbows bending open under control, the descent slow and "
+     "deliberate; the back and biceps glow with metallic silver-blue energy, seen from a slight "
+     "low angle."),
+    ("tuck_l_sit",
+     "A fantasy athlete hero seated on the ground with the hands planted flat beside the hips, "
+     "arms locked straight and the whole body lifted clear of the floor with both knees pulled "
+     "tight to the chest; the abdominals and triceps glow with electric-blue energy, seen from "
+     "the side."),
+    ("single_leg_glute_bridge",
+     "A fantasy athlete hero lying on their back with one foot planted and the hips driven high, "
+     "the other leg extended straight in line with the torso, hips level and square; the glutes "
+     "and hamstrings glow with warm golden energy, seen from the side."),
+    ("bulgarian_split_squat",
+     "A fantasy athlete hero in a split squat with the top of the rear foot resting on a low stone "
+     "bench behind them, front thigh parallel to the ground and torso tall; the front thigh and "
+     "glute glow with electric-blue energy, seen from the side."),
 ]
 
 if __name__ == "__main__":

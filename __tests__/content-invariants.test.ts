@@ -21,6 +21,7 @@ const EQUIPMENT_QUESTS = new Set([
   "Build the Stronghold",
   "The Iron Gauntlet Challenge",
   "The Crow's Ascent",
+  "The Patient Ascent",
 ]);
 
 /** Archetypes whose identity IS repeating one pattern: a push day is a push day, core is core. */

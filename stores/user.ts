@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { preferences } from "@/db";
 
+// One rule for both writers: onboarding and Settings.
+export const VILLAGE_NAME_MIN_LENGTH = 3;
+export const VILLAGE_NAME_MAX_LENGTH = 20;
+
 interface UserState {
   hasFinishedOnboarding: boolean;
   villageName: string;

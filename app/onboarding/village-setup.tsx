@@ -12,12 +12,14 @@ import { ProgressDots } from "@/components/ProgressDots";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import { reportError } from "@/src/reportError";
-import { useUserStore } from "@/stores/user";
+import {
+  VILLAGE_NAME_MAX_LENGTH as MAX_NAME_LENGTH,
+  VILLAGE_NAME_MIN_LENGTH as MIN_NAME_LENGTH,
+  useUserStore,
+} from "@/stores/user";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 2;
-const MIN_NAME_LENGTH = 3;
-const MAX_NAME_LENGTH = 20;
 
 // Name-your-village step. The avatar picker used to live here too, but the avatar has no
 // gameplay and is editable in Settings — the only onboarding choice left is the name.

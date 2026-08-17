@@ -29,6 +29,7 @@ import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
 import { useToast } from "@/components/common/Toast";
+import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
@@ -396,6 +397,8 @@ export default function SettingsScreen() {
           <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1">
             {t("settings.preferences", "PREFERENCES")}
           </Text>
+
+          <VillageNameRow />
 
           <SettingRow
             icon={<Languages size={22} color="$text" />}

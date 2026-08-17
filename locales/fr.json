@@ -612,6 +612,7 @@
   },
   "settings": {
     "avatar": "AVATAR",
+    "village_name": "Nom du village",
     "avatar_custom": "Photo perso",
     "equipment": "Matériel",
     "equipment_any": "Tout afficher",

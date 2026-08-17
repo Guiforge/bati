@@ -137,8 +137,17 @@ machine on top of the journal — with nothing to actually spend any of it on. M
 feedback now lives in [statistics-progress.md](statistics-progress.md) (muscle balance);
 boss victories now live directly as village banners instead of a spendable token.
 
+## Skill, alongside volume
+
+XP, the village and the flame all measure **how much** and **how often**. [paths.md](paths.md) is
+the fourth thing derived from the same journal, and the only one that measures **what the hero can
+now do**: a named route up the variation ladder, its rungs owned three clean sessions at a time.
+Climbing a whole one puts a trophy on the village shelf beside the defeated bosses — until it
+existed, the village recorded volume and never skill.
+
 ## Related
 
+- [paths.md](paths.md) — the variation ladder: skill progression, derived the same way
 - [statistics-progress.md](statistics-progress.md) — muscle balance, PRs, sessions/week, calendar
 - [coach-planning.md](coach-planning.md) — what Home offers next: oath, weak-area, rest
 - [session-flow.md](session-flow.md) — flame, victory screen, "no session is wasted" rule

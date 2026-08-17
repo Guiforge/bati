@@ -216,7 +216,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.2 | Local training reminders, no Firebase | High | M | **P1** | |
 | 4.21 | Backups that write themselves to a chosen folder | High | S | **P1** | Streak |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
-| 4.4 | **The variation ladder becomes visible** | High | S | **P1** | calisthenics review |
+| 4.4 | ~~The variation ladder becomes visible~~ — **shipped as *paths*** | High | S | ✅ | calisthenics review |
 | 4.22 | ~~An exercise catalogue — the screen 4.4 needs~~ — **shipped** | High | S–M | ✅ | GymMane |
 | 4.5 | The feeling feeds the prescription | Med-high | S | **P1** | Freeletics |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |
@@ -372,24 +372,66 @@ version first and find out whether narration during a set is welcome or annoying
 for it. Same for ambience between sets. What must not be copied is the chase mechanic: it exists
 to make you run faster, and telling a hero to rush a push-up is an injury.
 
-### 4.4 The ladder becomes visible — the best thing in the database, and nobody can see it
+### 4.4 The ladder becomes visible — shipped, as *paths*
 
 `drizzle/0022_progression_ladder.sql` wired the variation ladder as data, and it is genuinely
 good content: Towel Door Row → Table Row → Inverted Row → Scapular Pull-Up → Chin-Up → **Pull-ups**
-→ Iron Grip Pull-up is the canonical route to a first pull-up with no rung missing. Push runs Wall
-Push-Up → Push-ups → {Dragon, Diamond, Titan's Dip, Archer's Pike → **Handstand Push-Up**}; core
-runs Dead Bug → Hollow Body Hold → **L-Sit**.
+is the canonical route to a first pull-up with no rung missing. Push runs Wall Push-Up → Push-ups
+→ {Diamond, Dip, Pike Push-Up → **Handstand Push-Up**}; core runs Dead Bug → Hollow Body Hold →
+**L-Sit**. (This entry used to name *Iron Grip Pull-up* and *Dragon Push-up*, which `0023` deleted.)
 
-That migration's own comment says what was meant to happen: *"the exercise screen simply shows
-what comes next and how close you are."* **It doesn't.** `grep -rn prerequisite app components`
-returns one village building and nothing else. The column has been carrying a progression system
-since `0022` and the hero has never been told it exists — so Bati reads as a bag of workouts when
-it is in fact a ladder, and the person who wants to get better at calisthenics never finds out
-that Table Row leads somewhere.
+**Shipped**, and the diagnosis moved twice on the way. The full account is
+[`docs/gameplay/paths.md`](../gameplay/paths.md); what the roadmap needs to remember:
 
-One line on the exercise screen — what this movement leads to, what it came from, how close the
-journal says you are. Effort S because the data, the personal records and the ordering all exist.
-**This is the single highest ratio on the page.**
+**The defect was not visibility.** The ladder was already on four surfaces — the exercise screen,
+the oath card, the journal nudge, the victory screen. What it lacked was a **name**. Every other
+system here carries one (a quest title, *hameau → capitale éternelle*, *Spark → Eternal*); the
+ladder alone spoke in coordinates, and "rung 3 of 6" is not something a hero can want or tell
+anyone about. It is now a **path**, named after the movement it ends on — twelve of them, in
+`db/paths.ts`, keyed by summit. That is content, not machinery: no new system, which matters
+because §5 of the dossier warns that *more* gamification stops helping past a point.
+
+**Three defects made it worse than silent, and they went in first.** The threshold counted *rows*,
+and a three-round quest writes three in one evening — so a single workout handed over the next
+variation, which is the "program hopping before progressing" the research calls beginner mistake
+number one. There was no recency window at all, so three clean sets from last spring still read as
+owned. And `ProgressionCard` tested the ladder branch ahead of the difficulty nudge, so a hero
+self-reporting "too hard" five sessions running was answered with "here is your next rung" —
+**the app pushed up on someone asking to come down.** Amplifying that signal on Home before fixing
+it would have been worse than leaving it quiet.
+
+**What the twelve summits showed was nothing.** The path strip was nested inside the next-rung
+card, which only renders when a harder variation exists — so L-Sit, Pull-ups, Handstand Push-Up
+and nine others, the movements a hero opens out of *ambition*, displayed no ladder at all.
+
+**"What it came from" ships as a tap, not a row.** The rung named is the one the journal says the
+hero stands on, which is a better answer than the direct prerequisite: on the Pull-ups page that
+would be Chin-Up, which someone who cannot do a pull-up cannot do either.
+
+**Home leads with the climb.** `exercise_pr` measures a rep record, so a beginner swearing
+"Pull-ups × 15" read **0/15 for months** on the most visible card in the app while the climb
+underneath moved every three sessions. The strip replaces the gold bar — one card, one gauge — and
+hands back to the counter the day the first rep lands.
+
+**Climbing a whole path reaches the village trophy shelf**, beside the defeated bosses, for no XP
+and no points: §5 warns that extrinsic rewards erode the intrinsic kind unless the reward *is* the
+progress. It uses a monotonic measure — *did this ever happen* — so the current rung can fall
+while the trophy cannot, which is the rule the research demands about never punishing an absence.
+
+**What was refused.** A "Your paths" card on the Journal: Home carries the one being climbed and
+the shelf keeps the ones finished, so a passive report adds a fourth telling of the same thing and
+walks straight back into the wall of unlit movements this roadmap has now declined twice.
+
+**What the re-audit turned up and this work did *not* fix** — worth their own entries: rep targets
+take no history at all (template midpoint × {0.75, 1, 1.25}); hold targets use an all-time max
+clamped back inside the template's window, so the 60–75 % rule stops applying to exactly the
+strong heroes it is for; there is no per-movement frequency notion anywhere, so nothing notices a
+movement going untrained; and regression-on-form-breakdown has no input channel, since the only
+self-report is the three-value session feedback. Above all, §5 is blunt that the first predictor
+of D30 retention is **a completed first action on day one**, and a day-one hero here still lands
+on an undifferentiated quest gallery — `trainingLevel` from onboarding has exactly one effect,
+hiding `advanced` quests from a `beginner`. That is the next large piece, not another ladder
+surface.
 
 ### 4.22 An exercise catalogue — 4.4 has nowhere to land
 

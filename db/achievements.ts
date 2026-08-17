@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
 import { getSessionAggregates } from "./completed";
+import { countClimbedPaths } from "./exercises";
 import { getStreakInfo } from "./streaks";
 
 const { userPreferences } = schema;
@@ -37,6 +38,9 @@ export const achievementCodes = [
   // Variety
   "variety_3_quests", // Complete 3 different quests
   "variety_5_quests", // Complete 5 different quests
+  // Skill. Thirty-four achievements counted sessions, flames, XP, hours and quest variety — the
+  // most worked-on progression system in the app was the only one its reward system ignored.
+  "path_climbed", // Own every rung of one path on the variation ladder
 ] as const;
 
 export type AchievementCode = (typeof achievementCodes)[number];
@@ -258,6 +262,18 @@ export const achievementDefinitions: AchievementDefinition[] = [
     category: "special",
   },
   {
+    // Worth no XP and no points, deliberately. The research warns that extrinsic rewards can erode
+    // the intrinsic kind and must "stay secondary to real progress", while endorsing badges that
+    // *materialize* mastery. The trophy has to **be** the progress, never a currency laid on top.
+    code: "path_climbed",
+    icon: "⛰️",
+    enTitle: "Path Climbed",
+    frTitle: "Voie gravie",
+    enDescription: "Own every rung of one path",
+    frDescription: "Maîtrise chaque marche d'une voie",
+    category: "special",
+  },
+  {
     code: "variety_3_quests",
     icon: "🎭",
     enTitle: "Variety Seeker",
@@ -373,6 +389,8 @@ export async function getAllAchievementsWithProgress(): Promise<AchievementProgr
   const streakInfo = await getStreakInfo();
   const bestStreak = streakInfo.best;
 
+  const climbedPaths = await countClimbedPaths();
+
   // Calculate progress for each achievement
   return achievementDefinitions.map((def) => {
     const unlockedInfo = unlockedMap.get(def.code);
@@ -461,6 +479,12 @@ export async function getAllAchievementsWithProgress(): Promise<AchievementProgr
       case "variety_5_quests":
         currentValue = Math.min(5, uniqueQuests);
         targetValue = 5;
+        break;
+      // Derived from the journal rather than from the unlock, so the row shows real progress
+      // before it is won — and keeps showing 1/1 afterwards even if the hero detrains.
+      case "path_climbed":
+        currentValue = Math.min(1, climbedPaths);
+        targetValue = 1;
         break;
       // Special achievements - binary (either done or not)
       case "long_session_30min":
@@ -618,6 +642,15 @@ export async function checkForNewAchievements(sessionInfo: {
     const def = getAchievementDefinition("night_owl");
     if (def && (await unlockAchievement("night_owl"))) {
       newlyUnlocked.push({ code: "night_owl", definition: def });
+    }
+  }
+
+  // A whole route owned, summit included. Measured over the whole journal rather than the ladder's
+  // recency window: what the shelf records is that it happened, and that cannot un-happen.
+  if (!unlockedCodes.has("path_climbed") && (await countClimbedPaths()) > 0) {
+    const def = getAchievementDefinition("path_climbed");
+    if (def && (await unlockAchievement("path_climbed"))) {
+      newlyUnlocked.push({ code: "path_climbed", definition: def });
     }
   }
 

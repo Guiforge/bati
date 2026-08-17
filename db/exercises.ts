@@ -357,6 +357,93 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
 }
 
 /**
+ * Every ladder movement's sessions, oldest first, in one pass over the journal.
+ *
+ * The per-movement read above is deliberately windowed — `isEarned` is a *current* state, and a
+ * conversation about what to train tonight should forget last spring. A trophy cannot work that
+ * way: one that unlocks and then vanishes because the hero took a summer off is a bug, and the
+ * research is blunt that punishing an absence pushes people to abandon rather than restart.
+ *
+ * So mastery-for-keeps asks a different question — "did three consecutive on-target sessions
+ * *ever* happen?" — which is monotonic, and therefore irreversible. The current state may fall;
+ * the shelf never gives anything back.
+ *
+ * One grouped query rather than a seek per movement: this is the caller `recentMetFlags` predicted.
+ */
+async function allSessionMetFlags(): Promise<Map<number, boolean[]>> {
+  const met = sql<number>`min(case when ${schema.completedExercises.targetValue} is not null
+      and ${schema.completedExercises.resultValue} >= ${schema.completedExercises.targetValue}
+    then 1 else 0 end)`;
+
+  const rows = await db
+    .select({ exerciseId: schema.completedExercises.exerciseId, met })
+    .from(schema.completedExercises)
+    .groupBy(schema.completedExercises.exerciseId, schema.completedExercises.sessionId)
+    .orderBy(
+      schema.completedExercises.exerciseId,
+      sql`min(${schema.completedExercises.performedAt})`,
+      schema.completedExercises.sessionId,
+    );
+
+  const byExercise = new Map<number, boolean[]>();
+  for (const row of rows) {
+    const flags = byExercise.get(row.exerciseId) ?? [];
+    flags.push(row.met === 1);
+    byExercise.set(row.exerciseId, flags);
+  }
+  return byExercise;
+}
+
+/** Whether a run of `PROGRESSION_SESSIONS_REQUIRED` on-target sessions ever happened. */
+function everEarned(flags: boolean[] | undefined): boolean {
+  let run = 0;
+  for (const met of flags ?? []) {
+    run = met ? run + 1 : 0;
+    if (run >= PROGRESSION_SESSIONS_REQUIRED) return true;
+  }
+  return false;
+}
+
+/**
+ * How many complete paths the hero has ever climbed — every rung of a route, summit included.
+ *
+ * A path is identified by its summit: walking a chain *down* is unambiguous (one prerequisite per
+ * movement) and branching only happens going up, so a movement nobody else builds on ends exactly
+ * one route. Derived from the journal on read, like everything else here; nothing is stored.
+ */
+export async function countClimbedPaths(): Promise<number> {
+  const [rows, flags] = await Promise.all([fetchLadderRows(), allSessionMetFlags()]);
+
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const isPrerequisite = new Set(rows.map((r) => r.prerequisiteExerciseId).filter(Boolean));
+  const summits = rows.filter(
+    (r) => r.prerequisiteExerciseId !== null && !isPrerequisite.has(r.id),
+  );
+
+  let climbed = 0;
+
+  for (const summit of summits) {
+    const seen = new Set<number>();
+    let cursor: LadderRow | undefined = summit;
+    let whole = true;
+
+    // `seen` guards a cycle in the seed data, which would otherwise hang rather than fail.
+    while (cursor && !seen.has(cursor.id)) {
+      seen.add(cursor.id);
+      if (!everEarned(flags.get(cursor.id))) {
+        whole = false;
+        break;
+      }
+      cursor = cursor.prerequisiteExerciseId ? byId.get(cursor.prerequisiteExerciseId) : undefined;
+    }
+
+    if (whole) climbed++;
+  }
+
+  return climbed;
+}
+
+/**
  * The variations this session just unlocked.
  *
  * Same shape as `checkForNewRecords(sessionId)`: it answers "what did *this* session change?", so

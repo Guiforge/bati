@@ -197,6 +197,65 @@ describe("db/exercises — variation ladder", () => {
     });
   });
 
+  describe("paths climbed for keeps", () => {
+    /** Dead Bug -> Hollow Body Hold -> L-Sit, the shortest complete route in the catalogue. */
+    function climbCorePath() {
+      for (const name of ["Dead Bug", "Hollow Body Hold", "L-Sit"]) {
+        for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12);
+      }
+    }
+
+    test("a path counts only once every rung of it has been owned", async () => {
+      expect(await exercisesApi().countClimbedPaths()).toBe(0);
+
+      for (let i = 0; i < 3; i++) logSet(idOf("Dead Bug"), 12, 12);
+      expect(await exercisesApi().countClimbedPaths()).toBe(0);
+
+      climbCorePath();
+      expect(await exercisesApi().countClimbedPaths()).toBe(1);
+    });
+
+    test("a climbed path is never taken back", async () => {
+      climbCorePath();
+
+      // Detraining, and then a bad session. The *current* rung falls — a trophy must not.
+      for (let i = 0; i < 3; i++) logSet(idOf("L-Sit"), 4, 12);
+
+      const chain = await exercisesApi().getChainTo(idOf("L-Sit"));
+      expect(chain?.position).toBe(3);
+      expect(await exercisesApi().countClimbedPaths()).toBe(1);
+    });
+
+    test("climbing one reaches the trophy shelf", async () => {
+      // A count nothing reads is a control wired to nothing. This is the wire: the same shelf the
+      // village shows defeated bosses on, which until now recorded volume and never skill.
+      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      t.sqlite.exec("DELETE FROM user_preferences WHERE key = 'unlocked_achievements'");
+
+      climbCorePath();
+      const earned = await achievements.checkForNewAchievements({
+        durationSeconds: 600,
+        xpEarned: 50,
+        performedAt: new Date(new Date().setHours(12, 0, 0, 0)),
+        questId: null,
+      });
+
+      expect(earned.map((a) => a.code)).toContain("path_climbed");
+    });
+
+    test("time passing does not take it back either", async () => {
+      for (const name of ["Dead Bug", "Hollow Body Hold", "L-Sit"]) {
+        for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12, 400 + i);
+      }
+
+      // Every session is far outside the recency window, so nothing reads as earned today...
+      const chain = await exercisesApi().getChainTo(idOf("L-Sit"));
+      expect(chain?.position).toBe(1);
+      // ...and the shelf still holds it.
+      expect(await exercisesApi().countClimbedPaths()).toBe(1);
+    });
+  });
+
   describe("the step worth naming right now", () => {
     test("an earned step beats one still in progress", async () => {
       // Trained more recently, but not earned — the earned one still wins.

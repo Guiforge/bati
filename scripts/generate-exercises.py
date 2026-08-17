@@ -276,14 +276,33 @@ EXERCISES = [
     # The `0032` batch: seven rungs inserted between movements that were already here, so each of
     # these has to read as *clearly easier* than the art directly above it on the ladder. That is
     # the whole job — a knee push-up drawn as heroically as a diamond push-up teaches nothing.
+    # Came back as a straight-armed tabletop, indistinguishable from cat-cow at thumbnail size,
+    # because nothing in the text forced the bottom of the rep. Two facts fix it, both read off an
+    # anatomy plate: the elbows are bent and the chest is nearly touching the floor, and only the
+    # KNEES are down — the shins are up in the air behind, which is what separates this from
+    # kneeling on all fours.
     ("knee_pushup",
-     "A fantasy athlete hero in a push-up with the knees resting on the ground, ankles crossed "
-     "behind, chest lowered to a fist above the floor and the body a straight line from head to "
-     "knee; the chest and arms glow with soft fiery orange energy, seen from the side."),
+     "A fantasy athlete hero at the very bottom of a push-up done from the knees, seen from the "
+     "side, almost lying on the floor. The elbows are folded to a sharp angle and point backwards "
+     "past the ribs, the shoulders have dropped down level with them, and the chest and chin hang "
+     "barely a fist above the ground — the head is lower than the hips. Only the two knees rest on "
+     "the ground: the shins and feet are raised up in the air behind, ankles crossed, so the knees "
+     "are the single point of contact below the hands. From the head down to the knees the body "
+     "holds one straight line. There is nothing else on the floor in front of the athlete. The "
+     "chest and arms glow with soft fiery orange energy."),
+    # First draw came back with the head detached from the torso and the legs a separate black
+    # shape: an inverted body is where this model's anatomy breaks down, so the figure is described
+    # bottom-up along one vertical axis — hands, then shoulders, then hips, then feet — rather than
+    # as a named pose it has to reconstruct.
     ("wall_handstand",
-     "A fantasy athlete hero holding a handstand with the feet resting against a solid stone wall "
-     "behind them, arms locked straight, body stacked vertically and ribs closed; the shoulders "
-     "and arms glow with silver-blue energy, seen from the side."),
+     "A fantasy athlete hero upside down in a handstand against a stone wall, seen from the side. "
+     "Both palms are flat on the floor a short step out from the wall, the arms are locked "
+     "completely straight and vertical, the shoulders sit directly above the hands, the hips "
+     "directly above the shoulders and the legs run straight up from there, so that the whole "
+     "body is one single unbroken vertical column from hands to toes. The feet at the very top "
+     "rest lightly against the wall. The head hangs down between the two upper arms and stays "
+     "clearly joined to the neck and shoulders, facing the floor. The shoulders and arms glow with "
+     "silver-blue energy."),
     ("dead_hang",
      "A fantasy athlete hero hanging at full stretch from a rugged stone bar, arms completely "
      "straight, shoulders relaxed away from the ears and feet clear of the ground; the forearms "
@@ -392,10 +411,23 @@ EXERCISES = [
      "way clear of the floor, and both arms reach forward as a counterweight. One foot only "
      "touches the ground anywhere in this image — the free leg never touches it at any point. The "
      "working leg glows with electric-blue energy, seen from the side."),
+    # Came back as a lying leg raise, which is what a dragon flag collapses into the moment the
+    # hips are allowed to stay down. Same lever that rescued `single_leg_glute_bridge`: name the
+    # geometry rather than the effort. Here the body is one rigid pole pivoting on the shoulders,
+    # and the fact that decides it is which parts of the bench are still touched.
+    # ... and the second draw put a literal dragon banner in the athlete's fist, because the move's
+    # name is two nouns this model would much rather render than a posture. So the name appears
+    # nowhere below: the prompt describes only the shape, and the slug carries the identity.
     ("dragon_flag",
-     "A fantasy athlete hero lying back on a low stone bench gripping its edge behind their head, "
-     "the entire body raised in one rigid straight line balanced on the upper back and shoulders, "
-     "feet high in the air; the abdominals glow with electric-blue energy, seen from the side."),
+     "A fantasy athlete hero holding a whole-body lever on a low stone bench, seen from the side. "
+     "There is no banner, no flag, no cloth and no pole anywhere in the picture. Only "
+     "the shoulders and the very top of the back still rest on the bench; both hands reach back "
+     "over the head to grip its far edge. From the shoulders upward the entire body — back, hips, "
+     "legs and feet — is one single rigid straight pole tilted steeply into the air, with the hips "
+     "and the whole lower back lifted well clear of the bench and nothing but empty dark space "
+     "beneath them. The body does not bend at the waist and the hips never touch the bench: the "
+     "whole pole pivots on the shoulders, and it is not a leg raise. The abdominals glow with "
+     "electric-blue energy."),
     # A block under the hands, same reason as `tuck_l_sit`. The flat-palmed version came back as a
     # crouch: what separates a tuck planche from squatting on your hands is the forward shoulder
     # lean and the knees being *behind* the hands, so both are stated as positions, not qualities.

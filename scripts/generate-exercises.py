@@ -89,10 +89,16 @@ EXERCISES = [
      "and that unbroken wall is fully visible in the open space beneath the seat and between the "
      "backside and the ground. The athlete is held up by their own legs alone. The leg muscles "
      "glow with cool stone-grey energy and faint cracks spread under the feet."),
+    # "Forearms planted" left the model free to put them anywhere, and it stretched both arms far
+    # out past the head, which is a different exercise. The elbows get a position relative to the
+    # shoulders instead, and the contact points are counted.
     ("plank",
-     "A fantasy athlete hero in a perfect forearm plank, body a straight horizontal line, forearms "
-     "and toes planted; the core glows with golden-white energy, calm determined expression, seen "
-     "from the side."),
+     "A fantasy athlete hero in a forearm plank, seen from the side. The elbows are planted "
+     "directly underneath the shoulders, so the upper arms stand vertical, and the forearms lie "
+     "flat on the ground pointing forwards with the fists loosely closed just in front of the "
+     "face. From the head to the heels the body holds one straight horizontal line, hips neither "
+     "sagging nor lifted. The only things touching the floor are the two forearms and the toes. "
+     "The core glows with golden-white energy, calm determined expression."),
     ("crunch",
      "A fantasy athlete hero performing an abdominal crunch, lying on the back with knees bent and "
      "the torso curled up toward the knees, hands beside the head; the abs glow with electric-blue "
@@ -123,13 +129,26 @@ EXERCISES = [
      "the ground, so the arched back makes the body a shallow bowl rocking on the stomach. Dark "
      "empty space is clearly visible under the hands and under the feet. The back glows with "
      "metallic silver-blue energy."),
+    # "Knees hovering just above the ground" put them straight down on it — the same lift refused
+    # everywhere else. Contact points counted, and the gap given a size.
     ("bear_crawl",
-     "A fantasy athlete hero mid bear-crawl, on hands and toes with knees hovering just above the "
-     "ground and hips low, one hand and the opposite foot advancing; the core and shoulders glow "
-     "with electric-blue energy, seen from the side."),
+     "A fantasy athlete hero mid bear-crawl, seen from the side, back flat and hips low. Only four "
+     "points touch the ground: the two hands, flat and spread, and the two sets of toes. Both "
+     "knees are bent to a right angle and float a hand's width ABOVE the floor, with a clear strip "
+     "of dark empty space visible under each kneecap. One hand and the opposite foot are lifted "
+     "and reaching forward mid-step. The core and shoulders glow with electric-blue energy."),
+    # Came back with both feet flat on the floor and no rotation at all. The lift gets the usual
+    # treatment — a named contact point and a gap — and the twist is given as where the hands end
+    # up rather than as a rotation, which is a motion.
     ("russian_twist",
-     "A fantasy athlete hero seated with knees bent and feet lifted, leaning back and rotating the "
-     "torso to one side with hands together; the obliques glow with electric-blue energy."),
+     "A fantasy athlete hero seated on the floor, seen from a three-quarter front angle, leaning "
+     "back so the torso makes a wide V with the thighs. The knees are bent and BOTH feet are "
+     "raised until both heels hover at the same height as the knees, high in the air, with a wide "
+     "band of dark floor visible underneath the calves and the heels — the seat is the only part "
+     "of the body touching the floor and neither shoe is anywhere near it. The two hands are clasped together and "
+     "carried right across to one side, held low beside the right hip and outside the line of the "
+     "body, and the shoulders and chest have turned to follow them so the torso faces off to that "
+     "side while the knees still point forward. The obliques glow with electric-blue energy."),
     ("side_plank",
      "A fantasy athlete hero holding a side plank propped on one forearm, hips lifted and body a "
      "straight diagonal line, top arm reaching to the sky; the side of the core glows with "
@@ -138,9 +157,15 @@ EXERCISES = [
      "A fantasy athlete hero lying on their back with knees bent and hips driven up into a "
      "straight line from shoulders to knees; the glutes and legs glow with warm golden energy, "
      "seen from the side."),
+    # Came back standing flat-footed: "risen onto the balls of the feet" is a lift, and lifts need
+    # a contact point and a gap before this model draws them.
     ("standing_calf_raise",
-     "A fantasy athlete hero standing tall and risen high onto the balls of the feet, heels "
-     "lifted, calves flexed hard; the calves glow with warm golden energy, seen from the side."),
+     "A fantasy athlete hero standing tall and perfectly upright, seen from the side, at the very "
+     "top of a calf raise. The only part of either foot touching the ground is the ball of the "
+     "foot and the toes; both heels are pushed high into the air behind, and a clear wedge of dark "
+     "empty space is visible under each heel between it and the floor. The ankles are extended "
+     "hard so the feet point almost straight down, the legs are locked straight and the calves "
+     "bunch tight. The calves glow with warm golden energy."),
     ("handstand_pushup",
      "A fantasy athlete hero inverted in a handstand against a stone wall, elbows bent lowering "
      "the head toward the floor; the shoulders and arms glow with cyan-white energy."),
@@ -170,10 +195,15 @@ EXERCISES = [
      "above the floor without landing on it. The opposite leg is stretched out long and low and "
      "hovers a hand above the floor as well, heel never touching down. Only the back, shoulders "
      "and head rest on the ground. The core glows with electric-blue energy."),
+    # The legs came back apart and only part-way up. Given as a shape with an angle — a capital L
+    # made by torso and legs — rather than as a raise, which is a motion.
     ("hanging_leg_raise",
-     "A fantasy athlete hero hanging from a rugged stone bar with arms straight, raising straight "
-     "legs in front until parallel with the ground; the abs glow with electric-blue energy, seen "
-     "from the side."),
+     "A fantasy athlete hero hanging from a rugged stone bar overhead, seen from the side, arms "
+     "completely straight and the body long beneath the bar. Both legs are clamped tightly "
+     "together, knees locked, and they have come up to exactly horizontal at hip height: the feet "
+     "are level with the hips and point straight out in front, so the torso and the legs meet at a "
+     "sharp right angle and the whole silhouette reads as a capital letter L hanging from the bar. "
+     "The feet are a long way above the ground. The abs glow with electric-blue energy."),
     ("jump_squat",
      "A fantasy athlete hero exploding upward out of a squat into a powerful jump, feet just "
      "leaving the ground with impact dust and motion streaks below; the legs glow with warm golden "
@@ -181,9 +211,20 @@ EXERCISES = [
     ("reverse_crunch",
      "A fantasy athlete hero lying on their back curling the hips off the floor to bring bent "
      "knees toward the chest; the lower abs glow with electric-blue energy, seen from the side."),
+    # Came back as a plain forward lunge, then as a side lunge: "steps diagonally behind" is the
+    # path the foot takes, and this model draws end positions. Restated as where the rear foot
+    # finishes — on the far side of the front foot, its knee behind and outside the other knee —
+    # and as a crossing the silhouette actually shows.
     ("curtsy_squat",
-     "A fantasy athlete hero stepping one leg diagonally behind the other into a deep curtsy "
-     "lunge, both knees bent; the legs glow with warm golden energy."),
+     "A fantasy athlete hero in the bottom of a curtsy squat, seen from a three-quarter front "
+     "angle. The RIGHT foot is planted flat on the ground facing forward, that knee bent. The LEFT "
+     "leg has been carried across behind it, so the left foot has ended up on the ground over on "
+     "the RIGHT-hand side, well past the right foot, with only its toes down and the heel raised "
+     "high. The left knee is bent and dropped low towards the floor, sitting behind the right calf "
+     "and pointing down and to the right, so the two legs visibly cross over one another in the "
+     "silhouette. The stance is narrow and twisted, never wide and open. The torso stays upright "
+     "and square to the front. The legs "
+     "glow with warm golden energy."),
     ("scapular_pullup",
      "A fantasy athlete hero hanging from a rugged stone bar with arms completely straight, "
      "shoulder blades pulled down and together lifting the body only slightly; the upper back "
@@ -209,10 +250,18 @@ EXERCISES = [
     ("star_jump",
      "A fantasy athlete hero at the peak of an explosive star jump, arms and legs flung wide into "
      "a star shape mid-air with motion streaks; the whole body glows with cyan-white energy."),
+    # Came back as a body floating flat in the void with nothing anchoring it, because "seen from
+    # above" removed the floor and "rotated in a sweeping arc" described a motion rather than a
+    # position. Both replaced: a side-on camera, the floor as a surface the back is pressed to, and
+    # the rotation given as where the legs point rather than as an arc they travel.
     ("windshield_wipers",
-     "A fantasy athlete hero lying on their back with arms stretched out to the sides and straight "
-     "legs held together, rotated to one side in a sweeping arc with motion streaks; the obliques "
-     "glow with electric-blue energy, seen from above."),
+     "A bird's-eye view looking straight down at a fantasy athlete hero lying on their back on a "
+     "stone floor. Both arms are stretched out sideways in a wide T, palms flat and pressed to the "
+     "floor on either side, and the shoulder blades stay flat on the ground. The legs are clamped "
+     "together and completely straight, and from the hips they swing off at a sharp diagonal "
+     "across the body to the athlete's left, so the two feet end up beside the left elbow — the "
+     "silhouette reads as a T with both legs thrown over to one arm. The obliques glow with "
+     "electric-blue energy."),
     ("table_row",
      "A fantasy athlete hero lying face-up beneath a heavy wooden table, both hands gripping its "
      "edge, body held rigid in a straight line from heels to shoulders as they pull their chest up "
@@ -259,10 +308,17 @@ EXERCISES = [
      "A fantasy athlete hero running in place with one knee driven up to hip height and the other "
      "foot on the ball of the foot, torso upright, motion streaks below; the legs glow with warm "
      "golden energy."),
+    # Neither elbow met a knee and the hands were nowhere near the head: the pose was described as
+    # an alternating motion, which this model resolves by drawing neither half of it. One frozen
+    # instant instead, with each of the four limbs placed.
     ("bicycle_crunch",
-     "A fantasy athlete hero lying on their back, one elbow rotating toward the opposite bent knee "
-     "while the other leg extends straight and low; the obliques glow with electric-blue energy, "
-     "seen from above at a slight angle."),
+     "A fantasy athlete hero lying on their back mid bicycle crunch, seen from the side, caught at "
+     "one frozen instant. Both hands are laced behind the head with the elbows out wide. The LEFT "
+     "knee is pulled up hard towards the chest and the RIGHT elbow has come across to meet it, the "
+     "two of them touching in the middle above the stomach as the shoulders twist off the floor. "
+     "At the same time the RIGHT leg is stretched out straight and low, hovering just above the "
+     "ground without touching it, and the left elbow points back down at the floor behind. The abs "
+     "glow with electric-blue energy."),
     ("diamond_pushup",
      "A fantasy athlete hero in a push-up with the hands close together under the chest, thumbs "
      "and index fingers forming a diamond, elbows tucked to the ribs and body a straight line; the "
@@ -282,10 +338,19 @@ EXERCISES = [
      "nothing moves: the pelvis, thighs and the tops of the feet stay pressed flat to the ground, "
      "and the hips are the lowest point of the arc. Open dark space is visible between the chest "
      "and the floor. The chest and back glow with silver-blue energy."),
+    # Came back with a single arm pointing forward: "both arms extended in opposite directions" is
+    # one clause covering two limbs, and this model drops whatever is not the subject of its own
+    # sentence. Each arm now gets one.
     ("warrior_pose",
-     "A fantasy athlete hero in a wide warrior stance, front knee bent over the ankle and back leg "
-     "straight, both arms extended at shoulder height in opposite directions, gaze forward; the "
-     "legs glow with warm golden energy, seen from the side."),
+     "A fantasy athlete hero in warrior II, seen from the side, feet wide apart. The legs are held "
+     "in exactly a deep lunge: the front thigh has sunk until it is horizontal and parallel to the "
+     "ground with the shin standing vertical above the ankle, so that hip and knee each fold to a "
+     "right angle and the athlete is low, while the back leg stretches out long and straight with "
+     "the foot turned out flat. The FRONT arm is stretched out horizontally forward at shoulder height, "
+     "fingers reaching past the front knee. The BACK arm is stretched out horizontally backwards "
+     "at exactly the same shoulder height, fingers reaching away behind. The two arms make one "
+     "long straight line through the shoulders, and both are clearly drawn. The gaze follows the "
+     "front hand. The legs glow with warm golden energy."),
     ("skater_hop",
      "A fantasy athlete hero mid lateral bound, landing on one bent leg with the free leg crossing "
      "behind, arms swept across the body, motion streaks trailing sideways; the legs glow with "

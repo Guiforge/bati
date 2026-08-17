@@ -851,6 +851,16 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from chin_up.jpg"
   },
+  "assets/images/exercises/cobra_stretch.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero face down on the floor in a cobra stretch, seen from the side. Both hands are flat on the ground beside the ribs and the arms are pushing COMPLETELY STRAIGHT, elbows locked, which has lifted the whole chest and stomach high off the floor. The spine curves back in a deep arc and the head is tipped up to look forward. From the hips down nothing moves: the pelvis, thighs and the tops of the feet stay pressed flat to the ground, and the hips are the lowest point of the arc. Open dark space is visible between the chest and the floor. The chest and back glow with silver-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1191783891,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-17"
+  },
   "assets/images/exercises/cobra_stretch.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -883,6 +893,16 @@
     "height": 1280,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from curtsy_squat.jpg"
+  },
+  "assets/images/exercises/dead_bug.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero lying flat on their back on the floor, seen from the side, with all four limbs held up in the air and no foot or hand anywhere touching the floor. One arm points straight up at the ceiling above the shoulder, fingers to the sky. The leg on that same side is lifted into a tabletop: the thigh stands vertical above the hip and the knee is folded to a clean right angle so the shin floats horizontal, the foot high in the air and well clear of the ground. The opposite arm is stretched back past the head and hovers a hand above the floor without landing on it. The opposite leg is stretched out long and low and hovers a hand above the floor as well, heel never touching down. Only the back, shoulders and head rest on the ground. The core glows with electric-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 515139319,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-17"
   },
   "assets/images/exercises/dead_bug.webp": {
     "model": "flux-2-pro-preview",
@@ -1346,6 +1366,16 @@
     "height": 1280,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from table_row.jpg"
+  },
+  "assets/images/exercises/thread_the_needle.jpg": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero kneeling on hands and knees who has rolled the upper body over to one side. That shoulder and the ear on the same side are resting flat on the ground, cheek turned up. That whole arm lies flat along the floor too, stretched straight out sideways away from the body, palm turned up towards the ceiling, and the hand comes to rest on the far side of the athlete beyond the opposite knee. The other hand stays planted on the floor by the head, and the hips stay high over the knees. The twisted upper back and the grounded shoulder glow with silver-blue energy, seen from a low three-quarter angle. The background is dark navy-black filling the whole frame, with no coloured border, halo or vignette. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2697432979,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-17"
   },
   "assets/images/exercises/thread_the_needle.webp": {
     "model": "flux-2-pro-preview",

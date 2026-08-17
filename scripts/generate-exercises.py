@@ -140,10 +140,20 @@ EXERCISES = [
      "A fantasy athlete hero hanging beneath a low stone bar with body straight and heels on the "
      "ground, pulling the chest up to the bar; the back and arms glow with metallic silver-blue "
      "energy, seen from the side."),
+    # Came back as a body lying flat with the legs straight out, because "the other limbs stay
+    # raised at 90 degrees" describes the half of the pose the model was happy to drop. Each of the
+    # four limbs now gets its own clause: two point at the ceiling, two reach away low, and the
+    # right angles are given as angles rather than as a shared afterthought.
     ("dead_bug",
-     "A fantasy athlete hero lying on their back, one arm reaching overhead and the opposite leg "
-     "extended low while the other limbs stay raised at 90 degrees; the core glows with "
-     "electric-blue energy, seen from the side."),
+     "A fantasy athlete hero lying flat on their back on the floor, seen from the side, with all "
+     "four limbs held up in the air and no foot or hand anywhere touching the floor. One arm "
+     "points straight up at the ceiling above the shoulder, fingers to the sky. The leg on that "
+     "same side is lifted into a tabletop: the thigh stands vertical above the hip and the knee is "
+     "folded to a clean right angle so the shin floats horizontal, the foot high in the air and "
+     "well clear of the ground. The opposite arm is stretched back past the head and hovers a hand "
+     "above the floor without landing on it. The opposite leg is stretched out long and low and "
+     "hovers a hand above the floor as well, heel never touching down. Only the back, shoulders "
+     "and head rest on the ground. The core glows with electric-blue energy."),
     ("hanging_leg_raise",
      "A fantasy athlete hero hanging from a rugged stone bar with arms straight, raising straight "
      "legs in front until parallel with the ground; the abs glow with electric-blue energy, seen "
@@ -237,10 +247,17 @@ EXERCISES = [
      "A fantasy athlete hero balanced on one leg, hinged forward at the hip with a flat back, "
      "hands reaching toward the ground and the free leg extended straight behind; the hamstrings "
      "and back glow with warm golden energy, seen from the side."),
+    # Came back as a sphinx: forearms down, chest still on the floor. "Pressed up" is an effort;
+    # what decides the pose is that the arms are straight, which lifts the whole front of the body
+    # and leaves a gap under the ribs — the same contact-point-plus-shape recipe as `superman`.
     ("cobra_stretch",
-     "A fantasy athlete hero lying face down with hands under the shoulders, chest pressed up and "
-     "the spine arched while the hips stay on the ground, head lifted; the chest and back glow "
-     "with silver-blue energy, seen from the side."),
+     "A fantasy athlete hero face down on the floor in a cobra stretch, seen from the side. Both "
+     "hands are flat on the ground beside the ribs and the arms are pushing COMPLETELY STRAIGHT, "
+     "elbows locked, which has lifted the whole chest and stomach high off the floor. The spine "
+     "curves back in a deep arc and the head is tipped up to look forward. From the hips down "
+     "nothing moves: the pelvis, thighs and the tops of the feet stay pressed flat to the ground, "
+     "and the hips are the lowest point of the arc. Open dark space is visible between the chest "
+     "and the floor. The chest and back glow with silver-blue energy."),
     ("warrior_pose",
      "A fantasy athlete hero in a wide warrior stance, front knee bent over the ankle and back leg "
      "straight, both arms extended at shoulder height in opposite directions, gaze forward; the "
@@ -268,16 +285,19 @@ EXERCISES = [
      "A fantasy athlete hero on hands and knees with the spine arched high toward the ceiling, "
      "head tucked and shoulder blades spread; the whole line of the spine glows with metallic "
      "silver-blue energy, seen from the side."),
+    # "Threaded through the gap under the chest" kept producing a plain quadruped, because it names
+    # the path the arm travels rather than where it ends up. Restated as final positions, part by
+    # part: the shoulder and ear are ON the floor, and the arm lies flat ON the floor pointing
+    # sideways out past the far knee. Nothing about how it got there.
     ("thread_the_needle",
-     "A fantasy athlete hero kneeling on all fours who has rotated their torso sideways: one "
-     "shoulder and the side of the head are pressed flat against the ground, and that same arm is "
-     "threaded straight through the gap under the chest so the hand sticks out past the opposite "
-     "knee, palm up. The other hand stays planted, the hips stay high and square over the knees, "
-     "and the chest faces the side wall rather than the floor. This is a spinal rotation, not a "
-     "forward reach: nothing extends in front of the head. The twisted upper back and the grounded "
+     "A fantasy athlete hero kneeling on hands and knees who has rolled the upper body over to one "
+     "side. That shoulder and the ear on the same side are resting flat on the ground, cheek "
+     "turned up. That whole arm lies flat along the floor too, stretched straight out sideways "
+     "away from the body, palm turned up towards the ceiling, and the hand comes to rest on the "
+     "far side of the athlete beyond the opposite knee. The other hand stays planted on the floor "
+     "by the head, and the hips stay high over the knees. The twisted upper back and the grounded "
      "shoulder glow with silver-blue energy, seen from a low three-quarter angle. The background "
-     "must be dark navy-black filling the whole frame, with no coloured border, halo or vignette "
-     "of any kind."),
+     "is dark navy-black filling the whole frame, with no coloured border, halo or vignette."),
     ("standing_forward_fold",
      "A fantasy athlete hero folded forward from the hips with the torso hanging heavy, knees "
      "softly bent and hands drifting toward the floor, hair falling free; the hamstrings and lower "

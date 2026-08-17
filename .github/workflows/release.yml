@@ -59,6 +59,20 @@ jobs:
           build-root-directory: android
           cache-read-only: false
 
+      # The same drift check ci.yml runs, and it belongs here too: scripts/release.sh regenerates
+      # android/ before tagging, but a tag pushed by hand bypasses that script entirely and
+      # nothing downstream re-checked it. It runs with the full node_modules, because that is
+      # what release.sh prebuilds with — dev-client's config plugin adds an `exp+bati` scheme to
+      # the manifest, so a prebuild after the drop below differs by exactly that line and the
+      # check would fail on every release (v1.9.0 did). Runs before the keystore step, which
+      # writes into android/ itself.
+      - name: The committed android/ matches app.json and plugins
+        run: |
+          npx expo prebuild --clean --platform android
+          git add -A android
+          git diff --cached --exit-code --stat -- android
+          git reset
+
       # expo-dev-client is a devDependency, but `npm ci` installs devDependencies and autolinking
       # then compiles it into the release APK — 26 dev-launcher classes, a `exp+bati` deep-link
       # scheme and a SYSTEM_ALERT_WINDOW request, all shipped to users. `npm ci --omit=dev` is not
@@ -71,18 +85,10 @@ jobs:
           rm -rf node_modules/expo-dev-client node_modules/expo-dev-launcher \
                  node_modules/expo-dev-menu node_modules/expo-dev-menu-interface
 
+      # Regenerated a second time, now without dev-client, so the manifest and the autolinked
+      # classes both come from the same tree F-Droid builds.
       - name: Generate the native project
         run: npx expo prebuild --clean --platform android
-
-      # The same drift check ci.yml runs, and it belongs here too: scripts/release.sh regenerates
-      # android/ before tagging, but a tag pushed by hand bypasses that script entirely and
-      # nothing downstream re-checked it. Runs before the keystore step, which writes into
-      # android/ itself.
-      - name: The committed android/ matches app.json and plugins
-        run: |
-          git add -A android
-          git diff --cached --exit-code --stat -- android
-          git reset
 
       # No `if:` on the secret. The secrets context is not available in step conditions — using
       # it there makes the whole workflow file invalid, which shows up as a run with no jobs and

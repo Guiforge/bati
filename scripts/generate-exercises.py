@@ -62,10 +62,18 @@ EXERCISES = [
      "A fantasy athlete hero in a push-up, chest hovering just above the ground, arms bent to a "
      "90-degree angle, body a straight line from head to heels; chest and arms glow with fiery "
      "orange-red energy."),
+    # The old draw had a blank black void where the face should be, and read as a hang rather than
+    # a pull. Both are named: the face is described as a thing to draw, and the pose is anchored on
+    # `dead_hang` with the pull given as an addition to it.
     ("pullups",
-     "A fantasy athlete hero hanging from a rugged stone bar and pulling their chin above it, back "
-     "and biceps flexed and glowing with metallic silver-blue energy, seen from a slight low "
-     "angle."),
+     "A fantasy athlete hero hanging from a rugged stone bar high overhead, seen from a slight low "
+     "angle, legs together and feet swinging free a long way above the ground. It is a dead hang "
+     "but for the arms: both elbows are folded hard, the hands grip the bar overhand with the "
+     "knuckles towards the viewer, and they have been pulled down so far that both fists now sit "
+     "level with the shoulders, which puts the head up beside them and the chin clearly above the "
+     "top of the bar. The face is turned towards the camera and fully drawn, with eyes, nose and mouth "
+     "plainly visible and a determined expression. The back and biceps flex and glow with "
+     "metallic silver-blue energy."),
     # "an invisible wall" is unrenderable, so the model kept drawing a free-standing squat. The
     # wall has to be a real object in the scene for the pose to read as a wall-sit at all.
     # The wall had to become a real object before the pose read at all — but that only got the
@@ -91,11 +99,19 @@ EXERCISES = [
      "energy, seen from the side."),
     # "rugged stone bar" kept rendering as a barbell with stone plates on the ends. A plain fixed
     # bar is what a chin-up needs, and the underhand grip is the whole point of the movement.
+    # Came back standing on the ground holding a bar at chest height. Anchored on `dead_hang`, the
+    # one bar pose this model draws right, with the delta stated as an addition: same hang, bent
+    # arms. The floor is named as being far below rather than left unmentioned — an unmentioned
+    # floor is one it raises to meet the feet.
     ("chin_up",
-     "A fantasy athlete hero hanging from a plain fixed horizontal pull-up bar with an underhand "
-     "grip, palms facing them, pulling up "
-     "until the chin clears the bar; the back and biceps flex and glow with metallic silver-blue "
-     "energy, seen from a slight low angle."),
+     "A fantasy athlete hero hanging from a plain fixed horizontal bar high overhead, seen from a "
+     "slight low angle, legs together and ankles crossed with the feet swinging free a long way "
+     "above the ground. It is a dead hang but for the arms: both elbows are folded hard, the "
+     "hands grip the bar underhand with the palms facing the athlete's own face, and they have "
+     "been pulled down so far that both fists now sit level with the shoulders, which puts the "
+     "head up beside them and the chin clearly above the top of the bar. The face is turned "
+     "towards the camera and fully drawn, with eyes, nose and mouth plainly visible. The back and biceps flex and glow "
+     "with metallic silver-blue energy."),
     # Same failure and same fix as `hollow_body_hold`, its mirror image: told the limbs were
     # "lifted", the model drew a figure lying flat, tiny and adrift in the frame. The lift becomes
     # renderable once the belly is named as the single point of contact and the shape as an arc.
@@ -220,10 +236,18 @@ EXERCISES = [
      "A fantasy athlete hero in a push-up position with hands under the shoulders, driving one "
      "knee toward the chest while the other leg stays extended, motion streaks behind the moving "
      "leg; the core glows with electric-blue energy, seen from the side."),
+    # Came back standing on the ground between the bars, leaning over one of them — the same
+    # refusal to hold a body up on its arms alone that `l_sit` and `wall_sit` showed. Given the
+    # empty space below something to draw (the floor, seen far down between the posts) and the
+    # feet a shape of their own (crossed, knees bent), the support reads.
     ("dip",
-     "A fantasy athlete hero supported on two rugged stone parallel bars, elbows bent to a right "
-     "angle lowering the body between them, chest slightly forward; the arms and chest glow with "
-     "amber energy, seen from the side."),
+     "A fantasy athlete hero supporting their whole body high on two rugged stone parallel bars, "
+     "seen from the side, a hand gripping the top of each bar. The torso hangs vertically between "
+     "the bars, the elbows are bent to a right angle and point straight back behind the ribs, and "
+     "the shoulders have sunk down level with the hands. The knees are bent and the ankles crossed "
+     "so the feet tuck up behind, hanging in mid-air. Below the athlete the stone floor is visible "
+     "far down between the bars' posts, well beneath the dangling feet, and the arms are the only "
+     "thing holding the body up. The arms and chest glow with amber energy."),
     ("pike_pushup",
      "A fantasy athlete hero in a pike position, hips high in an inverted V with straight legs and "
      "elbows bent to bring the top of the head toward the ground; the shoulders glow with "

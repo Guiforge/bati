@@ -3,7 +3,7 @@
     "@expo-google-fonts/noto-sans": "^0.4.2",
     "@expo-google-fonts/space-grotesk": "^0.4.1",
     "@expo/metro-runtime": "~57.0.11",
-    "@legendapp/list": "^3.3.5",
+    "@legendapp/list": "^3.3.7",
     "@react-navigation/bottom-tabs": "^7.18.16",
     "@react-navigation/elements": "^2.9.38",
     "@react-navigation/native": "^7.3.16",
@@ -50,7 +50,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.8",
+    "@biomejs/biome": "^2.5.9",
     "@j178/prek": "^0.4.13",
     "@tamagui/babel-plugin": "^2.7.4",
     "@testing-library/react-native": "^14.0.1",
@@ -184,7 +184,8 @@
       "@tamagui/helpers-icon": "2.7.4"
     },
     "@tamagui/web": "2.7.7",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "esbuild": "^0.28.2"
   },
   "version": "1.9.0",
   "license": "MIT",

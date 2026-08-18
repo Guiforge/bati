@@ -1,0 +1,18 @@
+- La Voie : l'échelle des variations porte enfin un nom. Chaque
+  chaîne devient une voie baptisée d'après son sommet, et la fiche
+  d'un mouvement affiche la voie même quand il n'y a plus rien
+  au-dessus.
+- La carte du serment mène avec la montée plutôt qu'avec un compteur
+  qui ne bougeait pas avant la première répétition.
+- Gravir une voie entière rejoint l'étagère aux trophées, à côté des
+  boss vaincus.
+- L'échelle compte désormais des séances complètes (toutes les séries
+  à l'objectif) sur les huit dernières semaines, et répond d'abord à
+  « trop dur » avant de proposer le barreau suivant.
+- Treize mouvements de plus et deux quêtes pour les porter : les trous
+  les plus raides de l'échelle sont comblés.
+- Les illustrations d'exercices s'affichent enfin : 62 dessins et
+  leurs vignettes.
+- Les exercices prennent le nom qu'un pratiquant dit vraiment ; cinq
+  traductions fausses corrigées.
+- Le village peut être renommé depuis les Réglages.

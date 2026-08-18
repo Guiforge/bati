@@ -51,12 +51,13 @@ jobs:
       - uses: android-actions/setup-android@v4
 
       # Without this the runner compiles React Native, every Expo module and the NDK output from
-      # nothing, every single run — which is most of the 29 minutes a release used to take. The
-      # cache is keyed on the Gradle files, so it survives a code change and is only rebuilt when
-      # the build definition itself moves.
+      # nothing, every single run — which is most of the 29 minutes a release used to take. What
+      # is cached is the Gradle user home, not a directory under the workspace, which is why no
+      # input points this at android/: `build-root-directory` was dropped by the action and had
+      # been warning "Unexpected input" on every release since at least v1.9.0 while the cache
+      # worked anyway.
       - uses: gradle/actions/setup-gradle@v5
         with:
-          build-root-directory: android
           cache-read-only: false
 
       # The same drift check ci.yml runs, and it belongs here too: scripts/release.sh regenerates

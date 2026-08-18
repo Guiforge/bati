@@ -7,7 +7,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.guiforge.bati",
-      "versionCode": 10900,
+      "versionCode": 11000,
       "blockedPermissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
@@ -107,7 +107,7 @@
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",
-    "version": "1.9.0",
+    "version": "1.10.0",
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"

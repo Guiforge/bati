@@ -1,17 +1,9 @@
-- The Path: the variation ladder finally has a name. Every chain is
-  now a path named after the movement it ends on, and a movement's
-  page shows its path even when nothing sits above it.
-- The oath card leads with the climb instead of a counter that could
-  not move before your first rep.
-- Climbing a whole path lands on the trophy shelf, beside the bosses
-  you have felled.
-- The ladder now counts complete sessions (every set on target) over
-  the last eight weeks, and answers "too hard" before offering the
-  next rung.
-- Thirteen more movements and two quests to carry them: the steepest
-  gaps in the ladder are filled.
-- Exercise illustrations finally show up: 62 drawings and their
-  thumbnails.
-- Exercises take the names a practitioner actually says; five wrong
-  translations fixed.
+- The Path: every variation chain is now a path named after the
+  movement it ends on, shown even when nothing sits above it.
+- The oath card leads with the climb, not with a frozen counter.
+- Climbing a whole path lands on the trophy shelf.
+- The ladder counts complete sessions over eight weeks, and answers
+  "too hard" before offering the next rung.
+- Thirteen more movements, and two quests to carry them.
+- Exercise illustrations finally show up.
 - The village can be renamed from Settings.

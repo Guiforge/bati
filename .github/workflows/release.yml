@@ -209,7 +209,7 @@ jobs:
       # from the apk job's artifact, not this checkout.
       - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: aab
 

@@ -1,0 +1,5 @@
+- The home screen widgets follow the language you pick, the moment
+  you pick it, instead of waiting half an hour for the next tick.
+- The weekly bar no longer disappears when a launcher places the
+  widget before it has measured the cell.
+- The widget picker shows English previews on an English phone.

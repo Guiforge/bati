@@ -1,0 +1,6 @@
+- Les widgets de l'écran d'accueil suivent la langue choisie dès
+  qu'elle est choisie, au lieu d'attendre la prochaine mise à jour.
+- La barre hebdomadaire ne disparaît plus quand le lanceur pose le
+  widget avant d'en avoir mesuré la case.
+- Les aperçus du sélecteur de widgets parlent anglais sur un
+  téléphone anglais.

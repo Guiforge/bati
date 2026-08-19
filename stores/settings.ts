@@ -8,6 +8,8 @@ import {
   getDevicePreferredAppLanguage,
   resolveAppLanguage,
 } from "@/src/i18n/deviceLanguage";
+import { reportError } from "@/src/reportError";
+import { requestWidgetsUpdate } from "@/src/widget";
 
 export type { AppLanguage };
 
@@ -67,6 +69,12 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     i18n.changeLanguage(language).catch(() => {
       // Ignore i18n errors
     });
+    // The widgets resolve the language themselves, but only when they redraw — and nothing
+    // redraws them for up to 30 minutes. Without this poke a hero who switches to English
+    // watches FLAMME sit on the home screen until the next OS tick or cold start, which is
+    // the tail of F-Droid MR !45076 finding 4: re-adding the widget was the only cure.
+    // Non-blocking: never fail a settings write over a widget redraw.
+    requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
   },
 
   setAvatarId: async (avatarId) => {

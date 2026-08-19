@@ -114,6 +114,17 @@ function FlameWidget({
   );
 }
 
+/**
+ * A bar spanning a full-width panel cell reads as a divider, not a gauge — cap it. The floor
+ * matters more: a launcher that has not filled the widget's options bundle yet reports a size of
+ * 0 (`getAppWidgetOptions().getInt(key, 0)` in the library's RNWidgetUtil), which made this
+ * `-48`, and a negative is neither MATCH_PARENT nor WRAP_CONTENT — the bar vanished. Exported for
+ * the test; the widget declares `minWidth: 110dp`, so a real cell never lands under the floor.
+ */
+export function weeklyBarWidth(size: CellSize, k: number): number {
+  return Math.round(Math.max(Math.min(size.width - 48, 140 * k), 60));
+}
+
 // biome-ignore lint/style/useComponentExportOnlyModules: headless widget task, not a screen
 function WeeklyWidget({
   done,
@@ -132,8 +143,7 @@ function WeeklyWidget({
   const rest = done === null || quota === null ? 1 : Math.max(quota - done, 0);
   // The sworn quota reached is the week's small victory — it pays out in gold.
   const doneColor = filled > 0 && rest === 0 ? GOLD_COLOR : FLAME_COLOR;
-  // A bar spanning a full-width panel cell reads as a divider, not a gauge — cap it.
-  const barWidth = Math.round(Math.min(size.width - 48, 140 * k));
+  const barWidth = weeklyBarWidth(size, k);
   return (
     <FlexWidget clickAction="OPEN_APP" style={ROOT_STYLE}>
       <TextWidget text={s.week} style={titleStyle(k)} />

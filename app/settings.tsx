@@ -207,7 +207,7 @@ function DevFooter() {
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   const {
@@ -357,10 +357,10 @@ export default function SettingsScreen() {
     router.push("/oath" as never);
   }, [router]);
 
+  // One writer: the store already swaps i18n and pokes the widgets. Calling
+  // `i18n.changeLanguage` here too was a second one, silently racing the first.
   const toggleLanguage = () => {
-    const newLang = language === "en" ? "fr" : "en";
-    setLanguage(newLang);
-    i18n.changeLanguage(newLang);
+    setLanguage(language === "en" ? "fr" : "en").catch((e) => reportError("settings.language", e));
   };
 
   return (

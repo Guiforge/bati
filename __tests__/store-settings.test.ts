@@ -13,6 +13,9 @@
 /** What the OS says about reduce-motion. Swapped per test. */
 let deviceReduceMotion: () => Promise<boolean> = () => Promise.resolve(false);
 
+const requestWidgetsUpdate = jest.fn<Promise<void>, []>();
+const reportError = jest.fn();
+
 const prefs = {
   getLanguage: jest.fn<Promise<string | null>, []>(),
   getAvatarId: jest.fn<Promise<string | null>, []>(),
@@ -30,6 +33,8 @@ beforeAll(() => {
   jest.doMock("@/i18n", () => ({
     i18n: { changeLanguage: jest.fn().mockResolvedValue(undefined) },
   }));
+  jest.doMock("@/src/widget", () => ({ requestWidgetsUpdate }));
+  jest.doMock("@/src/reportError", () => ({ reportError }));
   // The *device* is mocked, not the module that reads it: the store and the home screen
   // widget must both resolve the language through the real `resolveAppLanguage`, and a test
   // that stubs that function out is a test that cannot see them disagree. "fr" so the device
@@ -70,6 +75,7 @@ describe("useSettingsStore", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     deviceReduceMotion = () => Promise.resolve(false);
+    requestWidgetsUpdate.mockResolvedValue(undefined);
     settingsStore().setState({ ...DEFAULTS });
   });
 
@@ -169,5 +175,27 @@ describe("useSettingsStore", () => {
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
     expect(prefs.setAvatarId).toHaveBeenCalledWith("scout");
     expect(prefs.setHapticsEnabled).toHaveBeenCalledWith(false);
+  });
+
+  /**
+   * The widgets resolve the language themselves, but only when something redraws them, and the
+   * OS tick is 30 minutes away. Storing the choice without poking them left FLAMME on the home
+   * screen of a hero who had just switched to English — the tail of F-Droid MR !45076 finding 4,
+   * where re-adding the widget was the only cure. Asserts the poke, not the stored string.
+   */
+  test("switching the language redraws the home screen widgets", async () => {
+    await settingsStore().getState().setLanguage("en");
+
+    expect(requestWidgetsUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  test("a widget that refuses to redraw does not fail the language change", async () => {
+    requestWidgetsUpdate.mockRejectedValue(new Error("no launcher"));
+
+    await expect(settingsStore().getState().setLanguage("en")).resolves.toBeUndefined();
+    expect(prefs.setLanguage).toHaveBeenCalledWith("en");
+    // And it is not swallowed: a widget that stops redrawing has to leave a trace somewhere.
+    await Promise.resolve();
+    expect(reportError).toHaveBeenCalledWith("widget.update", expect.any(Error));
   });
 });

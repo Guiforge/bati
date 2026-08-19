@@ -113,6 +113,19 @@ describe("src/widget", () => {
     expect(renderedLang(renderWidget)).toBe("fr");
   });
 
+  /**
+   * A launcher that has not filled the widget's options bundle yet reports 0 for both sides —
+   * `RNWidgetUtil.getWidgetSizeInDp` reads it with `getInt(key, 0)`. The weekly bar was
+   * `size.width - 48` with no floor, so that cell handed Android a negative LayoutParams width,
+   * which is neither MATCH_PARENT nor WRAP_CONTENT: the progress bar simply disappeared.
+   */
+  test("the weekly bar keeps a positive width on a cell the launcher has not measured", () => {
+    expect(widget().weeklyBarWidth({ width: 0, height: 0 }, 1)).toBeGreaterThan(0);
+    // And a real cell is still driven by the cell, not by the floor.
+    expect(widget().weeklyBarWidth({ width: 110, height: 110 }, 1)).toBe(62);
+    expect(widget().weeklyBarWidth({ width: 400, height: 200 }, 2)).toBe(280);
+  });
+
   test("a failing migration still resolves and still draws a fallback", async () => {
     ensureMigrations.mockRejectedValueOnce(new Error("database is on fire"));
     const { props, renderWidget } = taskProps("Flame");

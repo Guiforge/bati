@@ -202,4 +202,44 @@ export const preferences = {
   async setRecentCameoLines(keys: string[]): Promise<void> {
     await setPreference("recentCameoLines", JSON.stringify(keys));
   },
+
+  /**
+   * Which first-visit guides the hero has already met.
+   *
+   * One key holding the whole set, for the same reason as the cameo ring: it is read once per
+   * screen mount and there are five of them for the lifetime of an install. "Review the guides"
+   * in Settings clears it, which is why it is a set rather than five booleans — forgetting to
+   * clear one of five is exactly the bug that would leave a hero with four guides back.
+   */
+  async getGuidesSeen(): Promise<string[]> {
+    const raw = await getPreference("guidesSeen");
+    if (raw === null) return [];
+
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setGuidesSeen(moments: string[]): Promise<void> {
+    await setPreference("guidesSeen", JSON.stringify(moments));
+  },
+
+  /**
+   * The last workout date the hero has already been welcomed back after.
+   *
+   * Keyed on *that* date rather than on "when did we last greet", so the greeting fires exactly
+   * once per absence. Storing a greeting timestamp instead would re-greet every day the app was
+   * opened without training — which is the one thing this moment must never do, because a hero
+   * being reminded daily that they are away is the shame loop the whole pool is written against.
+   */
+  async getComebackGreetedAfter(): Promise<string | null> {
+    return await getPreference("comebackGreetedAfter");
+  },
+
+  async setComebackGreetedAfter(lastWorkoutDate: string): Promise<void> {
+    await setPreference("comebackGreetedAfter", lastWorkoutDate);
+  },
 };

@@ -91,6 +91,41 @@ long one can earn a second because it outlives the window. That is the shape a c
 should have: a bit of life, not a presence. `__tests__/chorus-store.test.ts` pins it with a
 twenty-rest session that must still produce exactly one.
 
+## Where they speak
+
+| moment | trigger | who | priority |
+|---|---|---|---|
+| `rest` | `RestView` mounting | the five ordinary villagers | ambient |
+| `village_visit` | the Village screen | farmer, minstrel, herbalist | ambient |
+| `personal_record` | a record with nothing to compare it to | smith, champion | event |
+| `personal_record_beat` | a record that beat a previous mark | smith, champion | event |
+| `boss_defeated` | `isBossDefeat` on the victory screen | watcher, champion | event |
+| `comeback` | Home, after 7+ days away | sage, minstrel | event |
+| `guide_*` | first visit to each of the five tabs | one owner each | guide |
+
+Two of these carry a rule that is not obvious from the trigger:
+
+**`village_visit` shares the ambient window with `rest`.** The promise is *one villager per
+half-hour wherever you are*, not one per surface — otherwise browsing between sessions would
+quietly double the rate the session was tuned for.
+
+**`comeback` is keyed on the last workout date, not on when it was last shown.** Storing "when did
+we greet" would re-greet on every app open during a long absence, reminding someone daily that
+they have stopped — which is the exact shame loop the pool is written against. None of the lines
+mention the absence either.
+
+## The guides
+
+Five, one per tab, one villager and one sentence each, seen once ever. **No tap-to-advance and no
+second bubble**: that keeps the whole layer non-interactive — `pointerEvents="none"` everywhere,
+no exception carved out for a guide — and makes "short and skippable" true by construction rather
+than by a Skip button. A screen you are looking at needs one sentence; if it needs three, the
+screen is the problem.
+
+Settings → **Review the guides** clears the whole `guidesSeen` set at once. One key rather than
+five booleans, because forgetting one of five is exactly how a hero ends up with four guides back
+and no idea which one they missed.
+
 ## Anti-repetition
 
 1. **Large pools** — twelve lines minimum per villager for ambient. Lower than the eighteen

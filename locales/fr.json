@@ -643,7 +643,9 @@
     "tap_change": "Touche pour changer",
     "title": "Paramètres",
     "warmup": "Échauffement",
-    "villagers": "Villageois"
+    "villagers": "Villageois",
+    "replay_guides": "Revoir les guides",
+    "replay_guides_done": "Les guides reviendront"
   },
   "splash": {
     "loading": "Construction du village..."
@@ -825,7 +827,8 @@
         "{{exercise}} : {{delta}} de mieux. Ça va sur le poteau avec le reste.",
         "{{delta}} au-dessus de ta marque. Le corps s'en souviendra avant toi.",
         "Tu as poussé {{delta}} plus loin qu'avant. Ça ne s'est pas fait tout seul."
-      ]
+      ],
+      "guide_quests": ["Les quêtes, ce sont tes séances. Choisis-en une, je m'occupe du reste."]
     },
     "sage": {
       "rest": [
@@ -841,6 +844,19 @@
         "Quarante ans de notes. Les progrès se lisent en mois, jamais en jours.",
         "Tu recommenceras quand tu voudras. Le monde attend très bien.",
         "L'impatience est un excellent moteur et un très mauvais guide."
+      ],
+      "comeback": [
+        "Te voilà. Le village n'a pas bougé, et il n'avait pas à bouger.",
+        "La porte n'était pas fermée. Elle ne l'est jamais, c'est là son intérêt.",
+        "On reprend là où c'était. Il n'y a pas d'ardoise à effacer.",
+        "Le temps passe pour tout le monde, y compris pour ceux qui s'entraînent.",
+        "Rien de ce que tu as bâti ne s'est défait. Ces choses-là sont patientes.",
+        "Bienvenue. C'est tout ce que j'ai à dire, et c'est déjà beaucoup.",
+        "Le plus dur était de repousser la porte. C'est fait.",
+        "Ce que tu sais, tu le sais encore. Le corps est rancunier, il se calmera."
+      ],
+      "guide_home": [
+        "C'est ici qu'on te propose la prochaine chose à faire. Tu peux toujours choisir autre chose : c'est un avis, pas un ordre."
       ]
     },
     "herbalist": {
@@ -857,6 +873,23 @@
         "Respire par le nez. Ce n'est pas une superstition, c'est de la plomberie.",
         "Personne ne m'a jamais remerciée pour un conseil de repos. Tout le monde revient.",
         "Ce que tu ressens là a un nom, et ce n'est pas un problème."
+      ],
+      "village_visit": [
+        "Mon jardin a doublé. Je ne me plains pas, mais je désherbe deux fois plus.",
+        "Il y a de la place pour un séchoir, maintenant. J'y pense depuis longtemps.",
+        "On tombe moins malade dans un village bien bâti. C'est vérifiable.",
+        "Chaque mur en plus, c'est un courant d'air en moins. Ça compte, l'hiver.",
+        "Je reconnais chaque toit à sa fumée. Un talent inutile, je sais.",
+        "On m'a demandé un remède contre la fierté. Je n'en ai pas. Tant mieux.",
+        "Ce village respire mieux qu'avant. Je choisis mes mots, d'habitude.",
+        "Il pousse des choses ici qui ne poussaient pas. Va savoir pourquoi.",
+        "Regarde-le sans rien chercher à corriger. C'est un exercice, aussi.",
+        "Les enfants ont où courir, maintenant. Ça vaut tous mes onguents.",
+        "J'ai vu des villages disparaître. Celui-là ne va nulle part.",
+        "Tu peux rester là un moment. Ce n'est pas du temps perdu."
+      ],
+      "guide_journal": [
+        "Tout ce que tu as fait est là. Pas pour te juger : pour voir ce qui bouge."
       ]
     },
     "minstrel": {
@@ -873,6 +906,30 @@
         "Reprends quand tu veux. Moi, je suis payé au vers, pas à l'heure.",
         "Il me faut un mot pour le bruit que tu fais. Rien ne convient vraiment.",
         "C'est le moment où le public croit que c'est fini. Il a tort."
+      ],
+      "village_visit": [
+        "Je connais une chanson pour chaque toit d'ici. Certaines sont même bonnes.",
+        "C'est plus joli qu'à mon arrivée. Je ne dis pas ça pour flatter. Un peu, si.",
+        "J'ai vu des capitales moins vivantes que ce coin de boue.",
+        "Il faudrait un nom pour cette place. Je propose, personne n'écoute.",
+        "Chaque bâtiment a son histoire. J'en ai inventé la moitié, mais quand même.",
+        "Les voyageurs demandent qui a bâti tout ça. J'aime beaucoup ce moment.",
+        "Un jour on chantera cet endroit ailleurs. Je m'en occupe personnellement.",
+        "Regarde les toits. Non, vraiment. Voilà, c'était ça, le conseil.",
+        "Il y a de la lumière à des fenêtres qui étaient noires. Ça se remarque.",
+        "J'ai composé trois vers sur ce puits. Trois. On ne m'avait rien demandé.",
+        "Les gens s'installent ici. Ils ne me demandent jamais pourquoi. Dommage.",
+        "C'est un bel endroit. Je le dis rarement, alors note-le quelque part."
+      ],
+      "comeback": [
+        "Te revoilà ! J'avais gardé la chanson au chaud, elle est un peu froissée.",
+        "Quelqu'un est rentré ! Personne ne m'écoute, mais je le dis quand même.",
+        "J'ai continué l'histoire sans toi. Elle était nettement moins bien.",
+        "Le héros revient au chapitre suivant. C'est toujours le meilleur chapitre.",
+        "Tu tombes bien, j'étais à court de matière.",
+        "On me demandait de tes nouvelles. J'inventais, comme d'habitude.",
+        "Le village est exactement comme tu l'as laissé. C'est le principe d'un village.",
+        "Bon retour. Je place ça ici, dans le refrain, ça ira très bien."
       ]
     },
     "farmer": {
@@ -889,6 +946,23 @@
         "Personne ne te regarde. C'est justement là que ça compte.",
         "Il y aura des jours où ce sera moins bon. Ils comptent quand même.",
         "Le corps s'habitue. C'est bête, un corps, mais c'est appliqué."
+      ],
+      "village_visit": [
+        "Tout ça a poussé pendant que tu t'entraînais. C'est comme ça que ça marche ici.",
+        "Le village grandit lentement. C'est le seul rythme que je connaisse.",
+        "Personne n'a rien acheté ici. Chaque planche a été gagnée.",
+        "Il y a plus de toits qu'avant. Je ne saurais pas dire lesquels.",
+        "On répare, on rebâtit, on recommence. C'est un village, pas un monument.",
+        "Je passe par là tous les matins. Ça change sans qu'on le voie changer.",
+        "Le bois vient d'ici. Le reste aussi, si on remonte assez loin.",
+        "Ce qui tient debout, c'est ce qui a été fait deux fois plutôt qu'une.",
+        "Tu regardes ton travail. Ce n'est pas de la vanité, c'est de la comptabilité.",
+        "Un village, ça ne se termine jamais. C'est plutôt rassurant, je trouve.",
+        "Les fondations ne se voient plus. Elles portent toujours le reste.",
+        "Rien ici n'est arrivé d'un coup. Absolument rien."
+      ],
+      "guide_village": [
+        "Rien ne s'achète ici. Ce que tu vois, tu l'as bâti en t'entraînant — un bâtiment par muscle."
       ]
     },
     "champion": {
@@ -933,6 +1007,9 @@
         "Rapport transmis. Ce sera écrit exactement comme c'est arrivé, promis.",
         "C'était celle dont on ne revient pas. Statistiquement, tu as triché.",
         "Il y aura une histoire demain matin. Fausse pour l'essentiel, comme toujours."
+      ],
+      "guide_adventures": [
+        "Les aventures enchaînent des quêtes et finissent sur un boss. Tu peux t'arrêter entre deux : il attendra."
       ]
     }
   }

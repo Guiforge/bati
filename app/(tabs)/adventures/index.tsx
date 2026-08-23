@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { starsFor } from "@/components/adventures/replayStars";
+import { useScreenGuide } from "@/components/chorus/screenCues";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -329,6 +330,8 @@ function StatusMessage({
 }
 
 export default function AdventuresGallery() {
+  useScreenGuide("guide_adventures");
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();

@@ -142,7 +142,9 @@
     "report_bug_empty": "Nothing recorded",
     "no_mail_client": "No email app found on this device",
     "photos_denied": "Photo access is off — allow it in system settings",
-    "villagers": "Villagers"
+    "villagers": "Villagers",
+    "replay_guides": "Review the guides",
+    "replay_guides_done": "The guides will show again"
   },
   "credits": {
     "title": "Credits",
@@ -825,7 +827,8 @@
         "{{exercise}}: {{delta}} better. That goes on the post with the rest.",
         "{{delta}} above your mark. Your body will remember it before you do.",
         "You pushed {{delta}} further than before. That didn't happen by itself."
-      ]
+      ],
+      "guide_quests": ["Quests are your workouts. Pick one, and I'll see to the rest."]
     },
     "sage": {
       "rest": [
@@ -841,6 +844,19 @@
         "Forty years of notes. Progress reads in months, never in days.",
         "You will begin again when you like. The world waits very well.",
         "Impatience is an excellent engine and a very poor guide."
+      ],
+      "comeback": [
+        "There you are. The village hasn't moved, and it had no need to.",
+        "The door wasn't locked. It never is — that's rather the point of it.",
+        "We pick up where it was. There's no slate to wipe clean.",
+        "Time passes for everyone, including the people who train.",
+        "Nothing you built has come undone. These things are patient.",
+        "Welcome. That's all I have to say, and it's already a great deal.",
+        "The hard part was pushing the door. That's done.",
+        "What you know, you still know. The body sulks longer; it will settle."
+      ],
+      "guide_home": [
+        "This is where the app offers you the next thing. You can always pick something else — it's an opinion, not an order."
       ]
     },
     "herbalist": {
@@ -857,6 +873,23 @@
         "Breathe through your nose. It isn't superstition, it's plumbing.",
         "Nobody has ever thanked me for advising rest. Everybody comes back.",
         "What you're feeling has a name, and it isn't a problem."
+      ],
+      "village_visit": [
+        "My garden has doubled. I'm not complaining, but I weed twice as much.",
+        "There's room for a drying shed now. I've wanted one for a long time.",
+        "People fall ill less in a well-built village. That's checkable.",
+        "Every extra wall is one less draught. That counts, in winter.",
+        "I know each roof by its smoke. A useless talent, I'm aware.",
+        "Someone asked me for a cure for pride. I haven't got one. Just as well.",
+        "This village breathes better than it did. I usually choose my words.",
+        "Things grow here that didn't grow before. Who knows why.",
+        "Look at it without trying to fix anything. That's an exercise too.",
+        "The children have somewhere to run now. Worth all my ointments.",
+        "I've watched villages disappear. This one isn't going anywhere.",
+        "You can stand there a while. It isn't wasted time."
+      ],
+      "guide_journal": [
+        "Everything you've done is here. Not to judge you by — to see what's moving."
       ]
     },
     "minstrel": {
@@ -873,6 +906,30 @@
         "Pick it up whenever. I'm paid by the verse, not by the hour.",
         "I need a word for the noise you're making. Nothing quite fits.",
         "This is the part where the audience thinks it's over. They're wrong."
+      ],
+      "village_visit": [
+        "I know a song for every roof here. Some of them are even good.",
+        "It's prettier than when I arrived. Not flattery. Well — a little.",
+        "I've seen capitals with less life in them than this patch of mud.",
+        "This square needs a name. I suggest things. Nobody listens.",
+        "Every building has a story. I invented half of them, but still.",
+        "Travellers ask who built all this. I do enjoy that moment.",
+        "One day this place will be sung elsewhere. I'll see to it personally.",
+        "Look at the roofs. No, properly. There — that was the advice.",
+        "There's light in windows that used to be dark. You notice that.",
+        "I wrote three lines about that well. Three. Nobody asked me to.",
+        "People settle here. They never ask me why. A shame, really.",
+        "It's a fine place. I don't say that often, so write it down somewhere."
+      ],
+      "comeback": [
+        "There you are! I kept the song warm. It's a little creased.",
+        "Somebody's home! Nobody listens to me, but I say it anyway.",
+        "I carried the story on without you. It was markedly worse.",
+        "The hero returns next chapter. That's always the best chapter.",
+        "Good timing — I was running out of material.",
+        "People asked after you. I made things up, as usual.",
+        "The village is exactly as you left it. That's rather the point of a village.",
+        "Welcome back. I'll put that here, in the chorus. It'll do nicely."
       ]
     },
     "farmer": {
@@ -889,6 +946,23 @@
         "Nobody is watching you. That's exactly when it counts.",
         "There'll be days when it's worse than this. Those count too.",
         "The body adapts. A body is stupid, but it is diligent."
+      ],
+      "village_visit": [
+        "All this grew while you were training. That's how it works here.",
+        "The village grows slowly. It's the only pace I know.",
+        "Nobody bought anything here. Every plank was earned.",
+        "There are more roofs than there were. I couldn't tell you which.",
+        "We mend, rebuild, start again. It's a village, not a monument.",
+        "I come past every morning. It changes without anyone seeing it change.",
+        "The timber comes from here. So does the rest, if you go back far enough.",
+        "What stands is what got done twice rather than once.",
+        "You're looking at your own work. That's not vanity, it's bookkeeping.",
+        "A village is never finished. I find that fairly reassuring.",
+        "You can't see the foundations any more. They still hold up the rest.",
+        "Nothing here arrived all at once. Nothing at all."
+      ],
+      "guide_village": [
+        "Nothing is bought here. What you see, you built by training — one building per muscle."
       ]
     },
     "champion": {
@@ -933,6 +1007,9 @@
         "Report's filed. It'll be written exactly as it happened, I promise.",
         "That was the one nobody comes back from. Statistically, you cheated.",
         "There'll be a story by morning. Wrong in most details, as they always are."
+      ],
+      "guide_adventures": [
+        "Adventures chain quests together and end on a boss. You can stop between two — it will wait."
       ]
     }
   }

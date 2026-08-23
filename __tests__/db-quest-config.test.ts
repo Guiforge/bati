@@ -62,13 +62,27 @@ describe("db/questConfig", () => {
     // Unknown level, out-of-range numbers and non-numeric targets are repaired, not kept.
     expect(
       parseQuestConfig(
-        JSON.stringify({ level: "godlike", rounds: 99, restSeconds: -5, targets: { 11: "x" } }),
+        JSON.stringify({
+          level: "godlike",
+          rounds: 99,
+          restSeconds: -5,
+          roundRestSeconds: 9000,
+          targets: { 11: "x" },
+        }),
       ),
-    ).toEqual({ level: Difficulty.Medium, rounds: 10, restSeconds: 0 });
+    ).toEqual({ level: Difficulty.Medium, rounds: 10, restSeconds: 0, roundRestSeconds: 300 });
 
     expect(
       parseQuestConfig(JSON.stringify({ level: "hard", rounds: 4, targets: { 11: 12 } })),
     ).toEqual({ level: Difficulty.Hard, rounds: 4, targets: { 11: 12 } });
+  });
+
+  test("a round rest on its own counts as an override", () => {
+    const quest = makeQuest();
+    const config = { level: Difficulty.Medium, roundRestSeconds: 120 };
+
+    expect(hasQuestOverrides(config)).toBe(true);
+    expect(applyQuestConfig(quest, config).roundRestSeconds).toBe(120);
   });
 
   test("a level-only config changes nothing about the quest", () => {
@@ -78,17 +92,19 @@ describe("db/questConfig", () => {
     expect(applyQuestConfig(quest, null)).toBe(quest);
   });
 
-  test("overrides replace rounds, rest and the targets they name", () => {
+  test("overrides replace rounds, both rests and the targets they name", () => {
     const quest = makeQuest();
     const configured = applyQuestConfig(quest, {
       level: Difficulty.Medium,
       rounds: 5,
       restSeconds: 45,
+      roundRestSeconds: 120,
       targets: { 12: 60, 999: 5 },
     });
 
     expect(configured.rounds).toBe(5);
     expect(configured.restSeconds).toBe(45);
+    expect(configured.roundRestSeconds).toBe(120);
     // Untouched exercise keeps its generated target; the stale id 999 is ignored.
     expect(configured.exercises[0]?.target).toEqual({ type: "reps", value: 10 });
     expect(configured.exercises[1]?.target).toEqual({ type: "time", value: 60 });

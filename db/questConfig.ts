@@ -4,7 +4,7 @@ import { Difficulty, type UserLevel } from "./targets";
 
 /**
  * What the hero changed on a quest and wants back next time: the level they train it at, plus
- * optional overrides of the template's rounds, rest and per-exercise targets.
+ * optional overrides of the template's rounds, both rests and per-exercise targets.
  *
  * Stored as JSON in `user_preferences` rather than in the quest row, because the template is
  * shared content: an override must survive a content update, and must not leak into anyone
@@ -14,6 +14,7 @@ export type QuestConfig = {
   level: UserLevel;
   rounds?: number;
   restSeconds?: number;
+  roundRestSeconds?: number;
   /**
    * quest_exercises row id -> target value. Editing a quest rewrites those rows, so stale keys
    * are possible; `applyQuestConfig` simply ignores ids the quest no longer has.
@@ -74,6 +75,9 @@ export function parseQuestConfig(raw: string | null): QuestConfig | null {
   const restSeconds = readNumber(record.restSeconds, REST_RANGE);
   if (restSeconds !== undefined) config.restSeconds = restSeconds;
 
+  const roundRestSeconds = readNumber(record.roundRestSeconds, REST_RANGE);
+  if (roundRestSeconds !== undefined) config.roundRestSeconds = roundRestSeconds;
+
   const targets = readTargets(record.targets);
   if (targets !== undefined) config.targets = targets;
 
@@ -98,6 +102,7 @@ export function hasQuestOverrides(config: QuestConfig | null): boolean {
   return (
     config.rounds !== undefined ||
     config.restSeconds !== undefined ||
+    config.roundRestSeconds !== undefined ||
     Object.keys(config.targets ?? {}).length > 0
   );
 }
@@ -115,6 +120,7 @@ export function applyQuestConfig(quest: Quest, config: QuestConfig | null): Ques
     ...quest,
     rounds: config.rounds ?? quest.rounds,
     restSeconds: config.restSeconds ?? quest.restSeconds,
+    roundRestSeconds: config.roundRestSeconds ?? quest.roundRestSeconds,
     exercises: quest.exercises.map((qex) => {
       const value = targets[String(qex.id)];
       return value === undefined ? qex : { ...qex, target: { ...qex.target, value } };

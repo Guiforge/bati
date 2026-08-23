@@ -9,7 +9,7 @@
 A dark-fantasy fitness RPG. Your workouts are quests, your reps are damage,
 and the village you build is made of what you actually lifted.
 
-<a href="https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97"><img alt="Get it on F-Droid" src="assets/badges/get-it-on-fdroid.png" height="60" /></a>
+<a href="https://f-droid.org/packages/com.guiforge.bati/"><img alt="Get it on F-Droid" src="assets/badges/get-it-on-fdroid.png" height="60" /></a>
 <a href="https://github.com/Guiforge/bati/releases/latest"><img alt="Get it on GitHub" src="assets/badges/get-it-on-github.png" height="60" /></a>
 
 <br />
@@ -86,13 +86,12 @@ All of this is also on [the site](https://guiforge.github.io/bati/#install), in 
 
 ### F-Droid — the one that updates itself
 
-**Searching F-Droid for "Bati" will not find it.** The app is not in the main F-Droid catalogue;
-it lives in its own repository, and F-Droid only searches repositories you have added. That is a
-property of how the client works, not something a setting fixes — submission to the main catalogue
-is tracked in [`docs/fdroid.md`](docs/fdroid.md), and the badge above switches to the official
-listing once it lands.
-
-Add this repository once and Bati shows up in search, with updates arriving like any other app's:
+Bati is in [the official F-Droid catalogue](https://f-droid.org/packages/com.guiforge.bati/) —
+that is what the badge above opens, and searching F-Droid for "Bati" finds it. **Installed from
+GitHub Releases before that?** F-Droid signs its builds with its own key, so the catalogue cannot
+update that copy (Android refuses a different signature, and uninstalling takes your hero with it).
+Keep the self-hosted repository instead — same APKs, same key, updates arriving like any other
+app's — see [`docs/fdroid.md`](docs/fdroid.md).
 
 [**Add the repository to F-Droid**](https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
 

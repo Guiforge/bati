@@ -261,12 +261,12 @@ builds after all.
 [`fdroid/fdroiddata-recipe.yml`](../fdroid/fdroiddata-recipe.yml) is our copy of the file that has
 to live in a fork of `fdroiddata` as `metadata/com.guiforge.bati.yml`.
 
-> **Since [MR 45076](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/45076) is open, the
-> flow below has already run and the direction reversed**: review reshaped the recipe (it gained
-> `subdir: android/app` — possible since `android/` is committed — `gradleprops`, `scandelete`,
-> and a Java 21 shim), so the fork's `com.guiforge.bati` branch is now authoritative and our copy
-> mirrors it verbatim. Edit there, `fdroid lint`, push to update the MR, copy back here. The
-> original recipe this section describes is in the file's git history.
+> **[MR 45076](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/45076) is merged; the flow
+> below has already run.** Review reshaped the recipe (it gained `subdir: android/app` — possible
+> since `android/` is committed — `gradleprops`, `scandelete`, and a Java 21 shim), and
+> `fdroiddata` master is now authoritative: F-Droid's bot appends a `builds` block per tag, and
+> our copy mirrors the file for reference. The original recipe this section describes is in the
+> file's git history.
 
 ```bash
 # 1. Fork https://gitlab.com/fdroid/fdroiddata on GitLab, then:
@@ -294,12 +294,11 @@ git push -u origin com.guiforge.bati
 Then open the merge request against `fdroid/fdroiddata`. Review is done by people, so expect
 questions and a wait measured in weeks; publication follows 24–48 h after it is accepted.
 
-**Only then does the README badge change.** It currently points at `fdroid.link/#…` with our
-repository address and fingerprint, which is what works today. The official URL,
-`https://f-droid.org/packages/com.guiforge.bati/`, does not exist until the merge request lands —
-pointing at it earlier just ships a 404. Being in the catalogue is also the *only* thing that makes
-the app findable by searching in the F-Droid client, which never searches repositories a user has
-not added.
+**Merged on 2026-08-19, live at <https://f-droid.org/packages/com.guiforge.bati/>.** The README
+and site badges point there now; the `fdroid.link/#…` repository link stays beside them because of
+the signing-key break above — it is the only update path for copies installed from GitHub Releases.
+The recipe carries `AutoUpdateMode: Version` + `UpdateCheckMode: Tags`, so F-Droid's bot picks up
+each tag by itself; nothing to do on our side per release.
 
 ### What is actually verified
 

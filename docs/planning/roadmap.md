@@ -74,11 +74,6 @@ calendar, not a keyboard — the 14-day closed test is running.
 - **P1 — Screenshots must be regenerated after §2.** They must show the UI that ships, not the
   one before the device pass. Play caps them at **8 per device type** and rejects the ninth with
   a generic `PERMISSION_DENIED`; see `fastlane/metadata/README.md`.
-- **P2 — f-droid.org, the official catalogue.** Three of four blockers cleared (artwork CC BY-SA
-  4.0, Expo AARs built from source, Firebase stripped). What remains is a decision: F-Droid signs
-  with its own key, so either reproducible builds plus `AllowedAPKSigningKeys` so existing
-  installs survive, or f-droid.org is a fresh install and we say so. The recipe is written and
-  never run through `fdroid build` — [../fdroid.md](../fdroid.md).
 - **P2 — The self-hosted F-Droid repository.** `fdroid/config.yml` committed, secrets set, and
   the publishing half of `.github/workflows/pages.yml` has never run against a real index.
 - **P3 — iOS.** Apple Developer account, certificates, provisioning profiles — none of it exists,

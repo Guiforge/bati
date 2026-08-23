@@ -19,6 +19,19 @@ export type Target = {
 };
 
 /**
+ * A target as the hero reads it. Lives here rather than on the quest screen because the session
+ * shows the same numbers — a ghost line saying "18" has to use the same words as the target above
+ * it, and two copies of this drift (see `localizedTitle()` in AGENTS.md, "one source per value").
+ *
+ * "reps" reads fine in French too — see the `reps`/`config_reps` locale keys, which are the same
+ * word in both languages — so there is no per-language branch here.
+ */
+export function formatTarget(target: Target): string {
+  if (target.type === "time") return `${target.value}s`;
+  return `${target.value} reps`;
+}
+
+/**
  * How much of a quest's prescribed range the hero actually gets. Also what a boss's HP pool is
  * scaled by — damage *is* the work you did, so a pool tuned at one level is unreachable at
  * another. One multiplier, both sides. See `db/bossFights.ts`.

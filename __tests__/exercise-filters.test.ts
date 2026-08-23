@@ -3,6 +3,8 @@ import {
   type ExerciseFilters,
   filterExercises,
   NO_EXERCISE_FILTERS,
+  rankSwapCandidates,
+  type SwapCandidate,
 } from "@/constants/exerciseFilters";
 import type { Exercise } from "@/db/exercises";
 
@@ -159,5 +161,89 @@ describe("filterExercises", () => {
       LEADS_TO,
     );
     expect(ids(out)).toEqual([2]);
+  });
+});
+
+describe("rankSwapCandidates", () => {
+  const reasonOf = (out: SwapCandidate[], id: number) =>
+    out.find((c) => c.exercise.id === id)?.reason;
+
+  it("never offers the movement it is replacing", () => {
+    const out = rankSwapCandidates(ALL, pullUp, null);
+    expect(out.some((c) => c.exercise.id === pullUp.id)).toBe(false);
+    expect(out).toHaveLength(ALL.length - 1);
+  });
+
+  /**
+   * The regression this whole feature exists for. Every seeded `pull_vertical` movement needs a
+   * bar, so "same pattern" alone hands a bar-less hero an empty sheet on a Pull-ups slot — and so
+   * does a one-rung ladder step, because the rung below a pull-up is another pull-up. Only the
+   * full walk reaches a movement they can actually do tonight.
+   */
+  it("reaches an equipment-free movement for a bar-less hero, through the ladder", () => {
+    const out = rankSwapCandidates(ALL, pullUp, new Set());
+
+    const firstFree = out.find((c) => c.exercise.equipment === "none");
+    expect(firstFree).toBeDefined();
+    expect(firstFree?.reason).not.toBeNull();
+
+    // And it leads the list: nothing the hero cannot lift outranks something they can.
+    expect(out[0]?.exercise.equipment).toBe("none");
+  });
+
+  it("sinks unowned equipment inside its tier instead of hiding it", () => {
+    const barRow = makeExercise({
+      id: 6,
+      enName: "Bar Row",
+      equipment: "pullup_bar",
+      pattern: "pull_horizontal",
+    });
+    const out = rankSwapCandidates([...ALL, barRow], tableRow, new Set());
+
+    // Still offered — the hero decides what is in the room — but behind the free ones.
+    const positions = out.map((c) => c.exercise.id);
+    expect(positions).toContain(barRow.id);
+    expect(positions.indexOf(invertedRow.id)).toBeLessThan(positions.indexOf(barRow.id));
+  });
+
+  it("names why each movement is offered", () => {
+    const out = rankSwapCandidates(ALL, invertedRow, null);
+
+    expect(reasonOf(out, tableRow.id)).toBe("easier");
+    expect(reasonOf(out, pullUp.id)).toBe("harder");
+    // Off the ladder and a different family entirely.
+    expect(reasonOf(out, pushUp.id)).toBeNull();
+  });
+
+  it("reports a same-pattern movement that is not on the ladder", () => {
+    const dip = makeExercise({ id: 7, enName: "Dip", pattern: "push_horizontal" });
+    const out = rankSwapCandidates([...ALL, dip], pushUp, null);
+
+    expect(reasonOf(out, dip.id)).toBe("same_pattern");
+  });
+
+  it("falls back to the push/pull family when the pattern has nothing else", () => {
+    const out = rankSwapCandidates(ALL, pullUp, null);
+
+    // `pull_horizontal` is not `pull_vertical`, but it is the same family — which is what makes
+    // the tail of the vertical-pull ladder reachable at all.
+    expect(reasonOf(out, tableRow.id)).toBe("easier");
+    expect(reasonOf(out, pushUp.id)).toBeNull();
+  });
+
+  it("still ranks a movement that declares no pattern", () => {
+    const unclassified = makeExercise({ id: 8, enName: "Nap", prerequisiteExerciseId: 1 });
+    const out = rankSwapCandidates([...ALL, unclassified], unclassified, null);
+
+    expect(reasonOf(out, tableRow.id)).toBe("easier");
+    expect(out).toHaveLength(ALL.length);
+  });
+
+  it("survives a prerequisite cycle in the seed rather than hanging a screen", () => {
+    const a = makeExercise({ id: 20, enName: "A", prerequisiteExerciseId: 21 });
+    const b = makeExercise({ id: 21, enName: "B", prerequisiteExerciseId: 20 });
+
+    const out = rankSwapCandidates([a, b], a, null);
+    expect(out.map((c) => c.exercise.id)).toEqual([21]);
   });
 });

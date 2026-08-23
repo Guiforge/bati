@@ -1,3 +1,4 @@
+import { type Exercise, listExercises } from "./exercises";
 import { deletePreference, getPreference, setPreference } from "./preferences";
 import { getQuestById, type Quest } from "./quests";
 import { Difficulty, type UserLevel } from "./targets";
@@ -20,6 +21,12 @@ export type QuestConfig = {
    * are possible; `applyQuestConfig` simply ignores ids the quest no longer has.
    */
   targets?: Record<string, number>;
+  /**
+   * quest_exercises row id -> the exercise the hero put in that slot instead. Same stale-key rule
+   * as `targets`, and the same reason it lives here rather than on the quest row: a substitution
+   * is this hero's, and the template is shared content.
+   */
+  swaps?: Record<string, number>;
 };
 
 export const ROUNDS_RANGE = { min: 1, max: 10 };
@@ -38,6 +45,22 @@ function isLevel(value: unknown): value is UserLevel {
 
 function readNumber(value: unknown, range: { min: number; max: number }): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? clamp(value, range) : undefined;
+}
+
+/**
+ * Not `readNumber`: its `clamp` would round a corrupt `3.7` into exercise id 4, which exists. An
+ * id is either an id or nothing — whether it still *names* an exercise is `applyQuestConfig`'s
+ * problem, exactly as with a stale `targets` key.
+ */
+function readSwaps(value: unknown): Record<string, number> | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+
+  const swaps: Record<string, number> = {};
+  for (const [key, raw] of Object.entries(value)) {
+    if (typeof raw === "number" && Number.isInteger(raw) && raw > 0) swaps[key] = raw;
+  }
+
+  return Object.keys(swaps).length > 0 ? swaps : undefined;
 }
 
 function readTargets(value: unknown): Record<string, number> | undefined {
@@ -81,6 +104,9 @@ export function parseQuestConfig(raw: string | null): QuestConfig | null {
   const targets = readTargets(record.targets);
   if (targets !== undefined) config.targets = targets;
 
+  const swaps = readSwaps(record.swaps);
+  if (swaps !== undefined) config.swaps = swaps;
+
   return config;
 }
 
@@ -103,18 +129,38 @@ export function hasQuestOverrides(config: QuestConfig | null): boolean {
     config.rounds !== undefined ||
     config.restSeconds !== undefined ||
     config.roundRestSeconds !== undefined ||
-    Object.keys(config.targets ?? {}).length > 0
+    Object.keys(config.targets ?? {}).length > 0 ||
+    Object.keys(config.swaps ?? {}).length > 0
   );
+}
+
+/**
+ * The catalogue keyed by id, the shape `applyQuestConfig` wants. Exported so the quest screen
+ * builds it the same way Home does — the two must agree on what "this quest" means.
+ */
+export function indexExercises(exercises: Exercise[]): Record<number, Exercise> {
+  return Object.fromEntries(exercises.map((e) => [e.id, e] as const));
 }
 
 /**
  * The quest as this hero configured it. Pure so the estimate, the XP preview and the session all
  * read the same numbers: apply once, then everything downstream keeps working untouched.
+ *
+ * `exercisesById` is **required**, not optional, and that is the whole point. A substitution needs
+ * the replacement's full row, which this function has no way to fetch without going async and
+ * losing its purity — so the catalogue is threaded in. Optional, `loadConfiguredQuest` would keep
+ * compiling while silently ignoring every swap, and Home would start push-ups while the quest
+ * screen started dips. Required, that divergence is a compile error at every call site.
  */
-export function applyQuestConfig(quest: Quest, config: QuestConfig | null): Quest {
+export function applyQuestConfig(
+  quest: Quest,
+  config: QuestConfig | null,
+  exercisesById: Record<number, Exercise>,
+): Quest {
   if (!hasQuestOverrides(config) || !config) return quest;
 
   const targets = config.targets ?? {};
+  const swaps = config.swaps ?? {};
 
   return {
     ...quest,
@@ -122,8 +168,28 @@ export function applyQuestConfig(quest: Quest, config: QuestConfig | null): Ques
     restSeconds: config.restSeconds ?? quest.restSeconds,
     roundRestSeconds: config.roundRestSeconds ?? quest.roundRestSeconds,
     exercises: quest.exercises.map((qex) => {
-      const value = targets[String(qex.id)];
-      return value === undefined ? qex : { ...qex, target: { ...qex.target, value } };
+      const key = String(qex.id);
+      const swappedId = swaps[key];
+      const substitute = swappedId === undefined ? undefined : exercisesById[swappedId];
+      const value = targets[key];
+
+      if (substitute === undefined && value === undefined) return qex;
+
+      return {
+        ...qex,
+        ...(value === undefined ? {} : { target: { ...qex.target, value } }),
+        ...(substitute === undefined
+          ? {}
+          : {
+              exercise: substitute,
+              // `images` is the quest's own art *of the movement that used to be here*, off
+              // `quest_exercises.imagesJson`. Kept, the card illustrates the wrong exercise.
+              images: [],
+              // The ghost belongs to the slot's old movement too, and the substitute's own
+              // history is not in this object — better silent than wrong.
+              ghost: undefined,
+            }),
+      };
     }),
   };
 }
@@ -140,9 +206,12 @@ export function applyQuestConfig(quest: Quest, config: QuestConfig | null): Ques
 export async function loadConfiguredQuest(
   questId: number,
 ): Promise<{ quest: Quest; level: UserLevel } | null> {
-  const config = await getQuestConfig(questId);
+  // `listExercises()` is promise-cached, so the catalogue is free after the first read anywhere
+  // in the app — and it is what lets a swap resolve without this function knowing about screens.
+  const [config, exercises] = await Promise.all([getQuestConfig(questId), listExercises()]);
   const level = config?.level ?? Difficulty.Medium;
   const quest = await getQuestById(questId, level);
+  if (!quest) return null;
 
-  return quest ? { quest: applyQuestConfig(quest, config), level } : null;
+  return { quest: applyQuestConfig(quest, config, indexExercises(exercises)), level };
 }

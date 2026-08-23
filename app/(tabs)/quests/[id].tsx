@@ -1,4 +1,4 @@
-import { ChevronLeft, Dumbbell, Pencil, Sparkles } from "@tamagui/lucide-icons";
+import { ChevronLeft, Dumbbell, Pencil, Repeat, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
@@ -15,9 +15,11 @@ import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import {
   applyQuestConfig,
   Difficulty,
@@ -25,16 +27,20 @@ import {
   formatDurationEstimate,
   getQuestById,
   getQuestConfig,
+  indexExercises,
   isUserQuest,
   type QuestConfig,
   saveQuestConfig,
 } from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { type Exercise, listExercises } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
-import type { Quest, Target } from "@/db/quests";
-import type { DifficultyCode } from "@/db/schema";
+import type { Quest } from "@/db/quests";
+import type { DifficultyCode, EquipmentCode } from "@/db/schema";
+import { formatTarget } from "@/db/targets";
 import { computeSessionXp } from "@/db/xp";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -56,11 +62,39 @@ function resolveExerciseImage(path?: string | null): ImageSourcePropType | null 
   return path.startsWith("http") ? { uri: path } : getExerciseThumb(path);
 }
 
-// "reps" reads fine in French too — see the "reps"/"config_reps" locale keys, which are
-// the same word in both languages — so there is no per-language branch here.
-function formatTarget(target: Target) {
-  if (target.type === "time") return `${target.value}s`;
-  return `${target.value} reps`;
+/** Stable empty list, so the sheet's props do not change identity on every render. */
+const EMPTY_CANDIDATES: ReturnType<typeof rankSwapCandidates> = [];
+
+/**
+ * Why a substitute is offered, in one line under the muscles — the slot `ExerciseRow` already
+ * keeps for the catalogue's ladder marker. One caption, never a row of badges: a difficulty chip
+ * and a progress bar per row were both refused on this component for the catalogue, and a wall of
+ * labels would be no kinder here.
+ */
+function swapReasonLabel(reason: SwapReason | null | undefined, t: TFunction): string | null {
+  if (reason === "easier") return t("quests.swap_reason_easier", "An easier rung");
+  if (reason === "harder") return t("quests.swap_reason_harder", "A harder rung");
+  if (reason === "same_pattern") return t("quests.swap_reason_pattern", "Same movement");
+  if (reason === "same_family") return t("quests.swap_reason_family", "Same family");
+  return null;
+}
+
+/**
+ * `ExerciseRow` drops `caption` straight into a `YStack`, so it has to be an element — a bare
+ * string throws "Text strings must be rendered within a <Text> component" at runtime, which
+ * neither `tsc` nor the test suite can see (`caption` is typed `ReactNode`, and a string is one).
+ * Same shape as the catalogue's `LeadsToCaption`.
+ */
+function SwapCaption({ reason }: { reason: SwapReason | null | undefined }) {
+  const { t } = useTranslation();
+  const label = swapReasonLabel(reason, t);
+  if (!label) return null;
+
+  return (
+    <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+      {label}
+    </Text>
+  );
 }
 
 function levelLabel(level: Difficulty, t: TFunction) {
@@ -147,6 +181,13 @@ export default function QuestDetails() {
     const cached = questId != null ? getCached<Quest>(`quest:${questId}:${initialLevel}`) : null;
     return cached ? { status: "ready", quest: cached } : { status: "loading", quest: null };
   });
+  // The catalogue and the hero's kit: what a substitution picks from, and how it is ordered.
+  // Loaded with the quest rather than in their own effect, so a swapped slot never paints its
+  // original movement for a frame first.
+  const [catalogue, setCatalogue] = useState<Exercise[]>([]);
+  const [owned, setOwned] = useState<ReadonlySet<EquipmentCode> | null>(null);
+  /** The `quest_exercises` row whose picker is open, if any. */
+  const [swapFor, setSwapFor] = useState<number | null>(null);
   const [narrative, setNarrative] = useState<string | null>(null);
   const [showNarrative, setShowNarrative] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
@@ -163,7 +204,11 @@ export default function QuestDetails() {
     async (id: number, nextLevel: Difficulty) => {
       setState((s) => ({ status: "loading", quest: s.quest }));
       try {
-        const quest = await getQuestById(id, nextLevel);
+        const [quest, exercises, ownedList] = await Promise.all([
+          getQuestById(id, nextLevel),
+          listExercises(),
+          preferences.getOwnedEquipment(),
+        ]);
         if (!quest) {
           setState({
             status: "error",
@@ -172,6 +217,9 @@ export default function QuestDetails() {
           });
           return;
         }
+        setCatalogue(exercises);
+        // null means the question was never answered — "allow everything", as everywhere else.
+        setOwned(ownedList === null ? null : new Set(ownedList));
         setState({ status: "ready", quest });
       } catch (e) {
         reportError("quest.load", e);
@@ -252,13 +300,31 @@ export default function QuestDetails() {
     updateConfig({ level: config.level });
   }, [config.level, updateConfig]);
 
+  const applySwap = useCallback(
+    (questExerciseId: number, exercise: Exercise) => {
+      // The target override goes with the movement it was tuned for: "20" carried from push-ups
+      // onto a one-arm push-up is a bad prescription, and a swap is the hero saying this movement
+      // is not right for them. Dropped here rather than in `applyQuestConfig`, which stays a pure
+      // projection — `targets[id]` must never mean "a value for a movement no longer in this slot".
+      const { [String(questExerciseId)]: _replaced, ...targets } = config.targets ?? {};
+
+      updateConfig({
+        ...config,
+        targets,
+        swaps: { ...config.swaps, [String(questExerciseId)]: exercise.id },
+      });
+      setSwapFor(null);
+    },
+    [config, updateConfig],
+  );
+
   // Everything below — the estimate, the XP preview, the session that gets started — reads the
   // configured quest, so the numbers on screen are the numbers that will run. Memoized: this
   // used to run in the render body, so any unrelated re-render rebuilt the whole quest object
   // and re-ran the color/duration/XP pipeline.
   const derived = useMemo(() => {
     if (!state.quest) return null;
-    const quest = applyQuestConfig(state.quest, config);
+    const quest = applyQuestConfig(state.quest, config, indexExercises(catalogue));
     const estimatedSeconds = estimateQuestSeconds(quest);
     return {
       quest,
@@ -272,7 +338,16 @@ export default function QuestDetails() {
         userLevel: level as unknown as DifficultyCode,
       }),
     };
-  }, [state.quest, config, language, level]);
+  }, [state.quest, config, language, level, catalogue]);
+
+  // The slot being replaced, and what can go in it. Ranked here rather than inside the sheet:
+  // the sheet renders the order it is given, which is what lets the editor and this screen share
+  // it without a mode flag.
+  const swapSlot = derived?.quest.exercises.find((qex) => qex.id === swapFor) ?? null;
+  const swapCandidates = swapSlot
+    ? rankSwapCandidates(catalogue, swapSlot.exercise, owned)
+    : EMPTY_CANDIDATES;
+  const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
 
   // Thumbnails resolved once per quest — resolveExerciseImage (a split+regex asset lookup)
   // used to run twice per thumb on every render: once to filter, once to display.
@@ -532,6 +607,7 @@ export default function QuestDetails() {
               language={language}
               onChange={updateConfig}
               onReset={resetConfig}
+              onSwap={setSwapFor}
             />
           ) : null}
 
@@ -609,6 +685,21 @@ export default function QuestDetails() {
                         </Paragraph>
 
                         <XStack gap="$2" flexWrap="wrap" pt="$2">
+                          {/* What the hero did on this movement last time, in the slot's own unit.
+                              Here rather than in the config card's steppers: that card is folded
+                              shut by default, and this is the row the hero is already reading. */}
+                          {qex.ghost ? (
+                            <Tag
+                              label={t("quests.ghost_last", {
+                                value: formatTarget({
+                                  type: qex.target.type,
+                                  value: qex.ghost.last,
+                                }),
+                                defaultValue: `Last: ${qex.ghost.last}`,
+                              })}
+                              tone="secondary"
+                            />
+                          ) : null}
                           <Tag
                             label={
                               EQUIPMENT_LABELS[qex.exercise.equipment]?.[language] ??
@@ -671,6 +762,26 @@ export default function QuestDetails() {
             </Text>
           </AppButton>
         </YStack>
+      ) : null}
+
+      {swapSlot ? (
+        <ExercisePickerSheet
+          exercises={swapCandidates.map((c) => c.exercise)}
+          // The movement that is there now: the row wears the picker's "already picked" outline,
+          // which reads correctly as "this is the one you have".
+          pickedIds={[swapSlot.exercise.id]}
+          language={language}
+          open
+          onOpenChange={(next) => {
+            if (!next) setSwapFor(null);
+          }}
+          title={t("quests.swap_exercise", "Replace this movement")}
+          onPick={(exercise) => applySwap(swapSlot.id, exercise)}
+          closeOnPick
+          pickAction={<Repeat size={20} color="$primaryText" strokeWidth={2.5} />}
+          captionFor={(exercise) => <SwapCaption reason={swapReasons.get(exercise.id)} />}
+          bottomInset={insets.bottom}
+        />
       ) : null}
 
       <NarrativeModal

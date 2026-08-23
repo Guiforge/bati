@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/quests", () => {
@@ -86,6 +88,57 @@ describe("db/quests", () => {
     expect(third.exercise.enName).toBe("Plank");
     expect(third.target.type).toBe("time");
     expect(third.target.value).toBe(29);
+  });
+
+  /**
+   * The ghost only matters if it reaches the object the session screen and the quest screen both
+   * read — `getQuestById`'s output. Testing the query alone would not have caught a slot picking
+   * up the wrong unit, which is the one way this can be wrong and still look right.
+   */
+  test("getQuestById carries the journal onto each slot, in that slot's unit", async () => {
+    const quests = require("../db/quests") as typeof import("../db/quests");
+
+    const templates = await quests.listQuestTemplates();
+    const seeded = templates.find((q) => q.frTitle === "Couper du bois");
+    assert(seeded);
+
+    const before = await quests.getQuestById(seeded.id, quests.Difficulty.Easy);
+    assert(before);
+    const squatId = before.exercises[0]?.exercise.id;
+    const plankId = before.exercises[2]?.exercise.id;
+    assert(squatId);
+    assert(plankId);
+
+    // No history yet: no ghost at all, rather than a zero.
+    expect(before.exercises[0]?.ghost).toBeUndefined();
+
+    const now = Math.floor(Date.now() / 1000);
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (9001, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (9001, ${squatId}, 'reps', 22, ${now}, 0),
+        (9001, ${squatId}, 'time', 600, ${now}, 1),
+        (9001, ${plankId}, 'time', 600, ${now}, 2);
+    `);
+
+    const after = await quests.getQuestById(seeded.id, quests.Difficulty.Easy);
+    assert(after);
+
+    // The squat slot asks for reps, so it must show the 22 — never the 600 s hold logged against
+    // the same movement, which is what a pooled max would have handed it.
+    const squat = after.exercises[0];
+    expect(squat?.target.type).toBe("reps");
+    expect(squat?.ghost).toEqual({ last: 22, best: 22 });
+
+    // The plank slot asks for a hold, so its ghost is in seconds — and the same record still
+    // drives the prescription, which is the behaviour this read replaced `getMaxHoldSeconds` for.
+    const plank = after.exercises[2];
+    expect(plank?.target.type).toBe("time");
+    expect(plank?.ghost).toEqual({ last: 600, best: 600 });
+    expect(plank?.target.value ?? 0).toBeGreaterThan(29);
+
+    t.sqlite.exec(`DELETE FROM completed_exercises WHERE sessionId = 9001`);
+    t.sqlite.exec(`DELETE FROM completed_sessions WHERE id = 9001`);
   });
 
   test("create/update/set/delete quest template", async () => {

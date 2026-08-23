@@ -1,0 +1,8 @@
+- Un repos plus long entre les manches, réglable depuis la carte de
+  quête ou l'éditeur, à côté du court entre les exercices.
+- L'écran de quête montre quoi battre : ton meilleur de la dernière
+  fois, sous le compteur et en étiquette sur la carte.
+- Remplace un mouvement d'une quête. Pas de barre ? Prends-en un de
+  la même voie ; il garde son image et sa cible.
+- Sept villageois qui surgissent quand il se passe quelque chose et
+  disent une phrase. À couper dans Paramètres → Villageois.

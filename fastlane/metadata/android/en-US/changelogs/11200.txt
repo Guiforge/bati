@@ -1,0 +1,8 @@
+- A longer rest between rounds, set from the quest card or the
+  editor, next to the short one between exercises.
+- The quest screen shows what to beat: your best from last time,
+  under the rep counter and as a tag on the card.
+- Swap a movement out of a quest. No bar? Pick one from the same
+  ladder; it keeps its own art and target.
+- Seven villagers who show up when something happens and say one
+  line. Off in one tap: Settings → Villagers.

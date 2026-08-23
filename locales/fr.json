@@ -517,6 +517,12 @@
     "reward_xp_estimate": "jusqu'à +{{count}} XP",
     "rounds": "{{count}} manches",
     "seconds_per_rep": "tempo {{count}} s/rép",
+    "ghost_last": "Dernier : {{value}}",
+    "swap_exercise": "Remplacer ce mouvement",
+    "swap_reason_easier": "Un échelon plus facile",
+    "swap_reason_harder": "Un échelon plus difficile",
+    "swap_reason_pattern": "Même mouvement",
+    "swap_reason_family": "Même famille",
     "see_all": "Voir tout",
     "start_button": "Commencer la quête",
     "start_error": "Impossible de lancer la quête",
@@ -616,7 +622,9 @@
     "warmup_next_accessibility": "Mouvement suivant",
     "countdown_subtitle": "C'est l'heure de bouger.",
     "reserve_hint": "Garde 1 à 2 répétitions en réserve — ne va pas à l'échec.",
-    "crit_hint": "Chaque répétition au-delà de l'objectif est une chance de coup critique — {{percent}} % pour l'instant."
+    "crit_hint": "Chaque répétition au-delà de l'objectif est une chance de coup critique — {{percent}} % pour l'instant.",
+    "ghost_last": "La dernière fois : {{value}}",
+    "ghost_last_best": "La dernière fois {{last}} · record {{best}}"
   },
   "settings": {
     "avatar": "AVATAR",

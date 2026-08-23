@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
+import { desc, eq, inArray, max, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import type { QuestTargetType } from "./schema";
 
@@ -87,82 +87,97 @@ export async function getMostXpSession(): Promise<PersonalRecord | null> {
 }
 
 /**
- * Best single result for an exercise, in one unit.
+ * What the hero has already done on a movement, in that movement's own unit.
  *
- * The unit is not optional: reps and seconds share the `resultValue` column, so pooling them
- * makes a 60 s hold outrank every rep set the hero has ever done on the same movement.
+ * `last` is the best set of the most recent session, not its last row: a 12/10/8 quest would
+ * otherwise report 8 as the thing to beat — a floor the hero cleared twice on the way down. It is
+ * the rule `checkForNewRecords` already applies below, so "what to beat" and "what the app
+ * celebrates" name the same number.
+ *
+ * ponytail: the session's best set, not the same round's. Matching `roundIndex` would compare
+ * round 3 against last time's round 3, which is truer and doubles the fold; do it if anyone
+ * reports the round-1 number feeling unreachable.
  */
-/** @legacy Meilleur résultat sur un exercice ; l'écran exercice calcule le sien. */
-export async function getExerciseMax(
-  exerciseId: number,
-  resultType: QuestTargetType = "reps",
-): Promise<PersonalRecord | null> {
-  const rows = await db
-    .select({
-      sessionId: completedExercises.sessionId,
-      resultValue: completedExercises.resultValue,
-      performedAt: completedExercises.performedAt,
-      enName: exercises.enName,
-      frName: exercises.frName,
-    })
-    .from(completedExercises)
-    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
-    .where(
-      and(
-        eq(completedExercises.exerciseId, exerciseId),
-        eq(completedExercises.resultType, resultType),
-      ),
-    )
-    .orderBy(desc(completedExercises.resultValue))
-    .limit(1);
+export type ExerciseGhost = { last: number; best: number };
 
-  const best = rows[0];
-  if (!best) {
-    return null;
-  }
+/**
+ * Reps and seconds share `resultValue` and nothing in the column says which one it holds, so a
+ * 60 s hold pooled with rep sets reports itself as a rep record. The unit rides in the key —
+ * same composite `checkForNewRecords` folds on.
+ */
+export function ghostKey(exerciseId: number, type: QuestTargetType): string {
+  return `${exerciseId}:${type}`;
+}
 
-  return {
-    type: resultType === "time" ? "exercise_max_time" : "exercise_max_reps",
-    value: best.resultValue,
-    achievedAt: best.performedAt,
-    exerciseId,
-    exerciseName: { en: best.enName, fr: best.frName },
-    sessionId: best.sessionId,
-  };
+type SessionBest = ExerciseGhost & { at: number; sessionId: number };
+
+/**
+ * Two sessions finished in the same second share a timestamp, so the timestamp alone would leave
+ * "last time" up to row order. The id breaks the tie.
+ */
+function isNewerSession(a: SessionBest, b: SessionBest): boolean {
+  return a.at > b.at || (a.at === b.at && a.sessionId > b.sessionId);
 }
 
 /**
- * Longest logged hold per exercise, for a batch of exercises, in one query.
+ * The journal's answer for a batch of movements, in one query.
  *
- * `getExerciseMax` above answers for one exercise and joins the name and session for display.
- * Opening a quest needs neither, and needs the answer for every hold in it — one grouped read
- * instead of three round trips, because each is a synchronous SQLite call on the JS thread and
- * duplicates are paid in dropped frames (same reasoning as `shortLivedQuery`).
+ * Opening a quest needs this for every exercise in it, and each read is a synchronous SQLite call
+ * on the JS thread — duplicates are paid in dropped frames (same reasoning as `shortLivedQuery`).
+ * Movements with nothing logged are simply absent from the map.
  *
- * Exercises with no logged hold are simply absent from the map.
+ * Grouping by session first is what makes `last` mean "the best set of that evening": the two
+ * aggregates are independent on purpose, `best` being the session's best value and `at` its last
+ * set's time.
  */
-export async function getMaxHoldSeconds(exerciseIds: number[]): Promise<Map<number, number>> {
+export async function getExerciseHistory(
+  exerciseIds: number[],
+): Promise<Map<string, ExerciseGhost>> {
   if (exerciseIds.length === 0) return new Map();
 
   const rows = await db
     .select({
       exerciseId: completedExercises.exerciseId,
+      resultType: completedExercises.resultType,
+      sessionId: completedExercises.sessionId,
       best: max(completedExercises.resultValue),
+      at: max(completedExercises.performedAt),
     })
     .from(completedExercises)
-    .where(
-      and(
-        inArray(completedExercises.exerciseId, exerciseIds),
-        eq(completedExercises.resultType, "time"),
-      ),
-    )
-    .groupBy(completedExercises.exerciseId);
+    .where(inArray(completedExercises.exerciseId, exerciseIds))
+    .groupBy(
+      completedExercises.exerciseId,
+      completedExercises.resultType,
+      completedExercises.sessionId,
+    );
 
-  const byExercise = new Map<number, number>();
+  const byKey = new Map<string, SessionBest>();
+
   for (const r of rows) {
-    if (r.best != null && r.best > 0) byExercise.set(r.exerciseId, r.best);
+    if (r.best == null || r.best <= 0) continue;
+
+    // An aggregate does not go through the column's timestamp mapper on every driver, so accept
+    // both shapes rather than trusting one.
+    const at = r.at instanceof Date ? r.at.getTime() : Number(r.at ?? 0);
+    const row: SessionBest = { last: r.best, best: r.best, at, sessionId: r.sessionId };
+    const key = ghostKey(r.exerciseId, r.resultType);
+    const entry = byKey.get(key);
+
+    if (!entry) {
+      byKey.set(key, row);
+      continue;
+    }
+
+    entry.best = Math.max(entry.best, row.best);
+
+    if (isNewerSession(row, entry)) {
+      entry.last = row.last;
+      entry.at = row.at;
+      entry.sessionId = row.sessionId;
+    }
   }
-  return byExercise;
+
+  return new Map([...byKey].map(([key, v]) => [key, { last: v.last, best: v.best }]));
 }
 
 /**

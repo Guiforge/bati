@@ -13,6 +13,7 @@ import {
   getExerciseBgRawForSessionStep,
 } from "@/constants/exerciseColors";
 import { critChance } from "@/db/bossFights";
+import { formatTarget } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
@@ -52,6 +53,7 @@ export function ActiveExerciseView() {
   if (!quest || !currentEx) return null;
 
   const isTimeBased = currentEx.target.type === "time";
+  const ghost = currentEx.ghost;
 
   const exerciseName = localizedName(currentEx.exercise, language);
   const exerciseDescription =
@@ -437,6 +439,24 @@ export function ActiveExerciseView() {
                 {t("session.keep_going_hint")}
               </Text>
             )}
+
+            {/* What the hero already did on this movement. Outside the reps/time ternary above so
+                one line serves both units, and read straight off the quest — `getQuestById` put it
+                there, so nothing is queried mid-workout and a recovered session keeps it.
+                Two phrasings: on a first-ever session `last` and `best` are the same number, and
+                "last time 12 · best 12" reads like a bug. */}
+            {ghost ? (
+              <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                {ghost.best > ghost.last
+                  ? t("session.ghost_last_best", {
+                      last: formatTarget({ type: currentEx.target.type, value: ghost.last }),
+                      best: formatTarget({ type: currentEx.target.type, value: ghost.best }),
+                    })
+                  : t("session.ghost_last", {
+                      value: formatTarget({ type: currentEx.target.type, value: ghost.last }),
+                    })}
+              </Text>
+            ) : null}
           </YStack>
         </ScrollView>
 

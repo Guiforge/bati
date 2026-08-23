@@ -1,4 +1,4 @@
-import { ChevronLeft, Trash2, X } from "@tamagui/lucide-icons";
+import { ChevronLeft, Plus, Trash2, X } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -93,6 +93,7 @@ export default function QuestEditor() {
   const [rest, setRest] = useState(DEFAULT_REST);
   const [roundRest, setRoundRest] = useState(DEFAULT_REST);
   const [picked, setPicked] = useState<PickedExercise[]>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const nextUid = useRef(0);
   // The absolute save bar overlapped the "add an exercise" button by ~75px, so taps meant for
@@ -486,11 +487,26 @@ export default function QuestEditor() {
             );
           })}
 
+          {/* The trigger lives here, not in the sheet: its label names *this* screen's action,
+              and substitution opens the same sheet from a row with a different one. */}
+          <AppButton
+            variant="outline"
+            icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
+            onPress={() => setPickerOpen(true)}
+            accessibilityLabel={t("quests.editor_add_exercise", "Add an exercise")}
+          >
+            {t("quests.editor_add_exercise", "Add an exercise")}
+          </AppButton>
+
           <ExercisePickerSheet
             exercises={exercises}
             pickedIds={pickedIds}
             language={language}
-            onAdd={addExercise}
+            open={pickerOpen}
+            onOpenChange={setPickerOpen}
+            title={t("quests.editor_add_exercise", "Add an exercise")}
+            onPick={addExercise}
+            pickAction={<Plus size={20} color="$primaryText" strokeWidth={2.5} />}
             bottomInset={insets.bottom}
           />
         </YStack>

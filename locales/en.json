@@ -210,6 +210,12 @@
     "reward_xp": "+{{count}} XP",
     "reward_xp_estimate": "up to +{{count}} XP",
     "seconds_per_rep": "tempo {{count}}s/rep",
+    "ghost_last": "Last: {{value}}",
+    "swap_exercise": "Replace this movement",
+    "swap_reason_easier": "An easier rung",
+    "swap_reason_harder": "A harder rung",
+    "swap_reason_pattern": "Same movement",
+    "swap_reason_family": "Same family",
     "level": "Level",
     "level_easy": "Easy",
     "level_effect_easy": "Targets −25% · XP ×0.9",
@@ -420,7 +426,9 @@
     "warmup_next_accessibility": "Next movement",
     "countdown_subtitle": "Time to move.",
     "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure.",
-    "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now."
+    "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now.",
+    "ghost_last": "Last time: {{value}}",
+    "ghost_last_best": "Last time {{last}} · best {{best}}"
   },
   "muscles": {
     "arms": "Arms",

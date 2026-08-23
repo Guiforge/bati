@@ -1,4 +1,4 @@
-import { Difficulty, generateTarget } from "@/db/targets";
+import { Difficulty, formatTarget, generateTarget } from "@/db/targets";
 
 describe("generateTarget", () => {
   it("scales reps by user level (easy < medium < hard)", () => {
@@ -57,5 +57,14 @@ describe("generateTarget", () => {
       const reps = { type: "reps" as const, min: 10, max: 20 };
       expect(generateTarget(reps, Difficulty.Medium, 60).value).toBe(15);
     });
+  });
+});
+
+describe("formatTarget", () => {
+  // One source for these words: the session's ghost line has to read the same as the target
+  // above it, and it used to live privately on the quest screen.
+  test("names the unit the slot is measured in", () => {
+    expect(formatTarget({ type: "reps", value: 12 })).toBe("12 reps");
+    expect(formatTarget({ type: "time", value: 30 })).toBe("30s");
   });
 });

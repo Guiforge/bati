@@ -1,4 +1,5 @@
-import { Check, Plus, Search, X } from "@tamagui/lucide-icons";
+import { Check, Search, X } from "@tamagui/lucide-icons";
+import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, Pressable } from "react-native";
@@ -17,6 +18,11 @@ import type { AppLanguage } from "@/stores/settings";
 const EMPTY_LADDER: ReadonlyMap<number, unknown> = new Map();
 
 type Props = {
+  /**
+   * Rendered in the order given — the caller decides what "best first" means. The editor passes
+   * the catalogue as it comes; a substitution passes it ranked. Keeping the ordering out here is
+   * what lets one sheet serve both without growing a mode.
+   */
   exercises: Exercise[];
   /**
    * Already in the quest, one entry per pick. Shown as a count on the row, never filtered out:
@@ -25,15 +31,39 @@ type Props = {
    */
   pickedIds: number[];
   language: AppLanguage;
-  onAdd: (exercise: Exercise) => void;
+  /** Controlled: the trigger belongs to the screen, because its label names the screen's action. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  onPick: (exercise: Exercise) => void;
+  /** Adding builds a list, so the sheet stays open; replacing is one decision, so it closes. */
+  closeOnPick?: boolean;
+  /** The row's right-hand affordance — a `+` on an add, a swap glyph on a replace. */
+  pickAction: ReactNode;
+  /** A third line per row, e.g. why a substitute is being offered. */
+  captionFor?: (exercise: Exercise) => ReactNode;
   bottomInset: number;
 };
 
-/** The sheet stays open after each pick, so building a five-move quest is five taps, not five sheets. */
-export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bottomInset }: Props) {
+/**
+ * The catalogue as a picker. Shared by the quest editor, where picking repeatedly builds a quest,
+ * and by substitution, where one pick replaces one slot.
+ */
+export function ExercisePickerSheet({
+  exercises,
+  pickedIds,
+  language,
+  open,
+  onOpenChange,
+  title,
+  onPick,
+  closeOnPick = false,
+  pickAction,
+  captionFor,
+  bottomInset,
+}: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   // Android reports a 0 bottom inset even where the system gesture area eats taps.
@@ -42,9 +72,9 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
   // Closing resets the search: it used to survive, so reopening showed a list still filtered by
   // a word the hero had long forgotten typing, with no visible cue why most exercises were gone.
   const close = useCallback(() => {
-    setOpen(false);
+    onOpenChange(false);
     setSearch("");
-  }, []);
+  }, [onOpenChange]);
 
   // The catalogue's filter, with only the search facet set: one name-matching rule for both
   // screens, and it goes through `localizedName` rather than a fifteenth inline ternary.
@@ -68,123 +98,116 @@ export function ExercisePickerSheet({ exercises, pickedIds, language, onAdd, bot
   );
 
   return (
-    <>
-      <AppButton
-        variant="outline"
-        icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
-        onPress={() => setOpen(true)}
-        accessibilityLabel={t("quests.editor_add_exercise", "Add an exercise")}
-      >
-        {t("quests.editor_add_exercise", "Add an exercise")}
-      </AppButton>
-
-      <Sheet
-        modal
-        open={open}
-        onOpenChange={(next: boolean) => (next ? setOpen(true) : close())}
-        snapPoints={[85]}
-        dismissOnSnapToBottom
+    <Sheet
+      modal
+      open={open}
+      onOpenChange={(next: boolean) => (next ? onOpenChange(true) : close())}
+      snapPoints={[85]}
+      dismissOnSnapToBottom
+      transition={reducedMotion ? undefined : "quick"}
+      zIndex={100_000}
+    >
+      <Sheet.Overlay
+        bg="rgba(0,0,0,0.5)"
         transition={reducedMotion ? undefined : "quick"}
-        zIndex={100_000}
-      >
-        <Sheet.Overlay
-          bg="rgba(0,0,0,0.5)"
-          transition={reducedMotion ? undefined : "quick"}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
-        />
-        <Sheet.Handle bg="$borderStrong" />
-        {/* No flex={1}: the snap point already sets the frame's height, and letting it also grow
+        enterStyle={{ opacity: 0 }}
+        exitStyle={{ opacity: 0 }}
+      />
+      <Sheet.Handle bg="$borderStrong" />
+      {/* No flex={1}: the snap point already sets the frame's height, and letting it also grow
             left the frame stranded mid-screen after a close — visible, but with open already
             false, so nothing in it answered. VillageDetailSheet, which works, has no flex here. */}
-        <Sheet.Frame bg="$surface">
-          <YStack px="$4" pt="$4" pb="$3" gap="$3">
-            <XStack items="center" justify="space-between">
-              <Text fontWeight="700" fontSize={18} color="$text">
-                {t("quests.editor_add_exercise", "Add an exercise")}
-              </Text>
-              <Pressable
-                hitSlop={12}
-                accessibilityRole="button"
-                accessibilityLabel={t("common.close", "Close")}
-                onPress={close}
-              >
-                <X size={20} color="$textSecondary" />
-              </Pressable>
-            </XStack>
-
-            <XStack items="center" gap="$2">
-              <Input
-                flex={1}
-                value={search}
-                onChangeText={setSearch}
-                placeholder={t("quests.editor_search", "Search")}
-                bg="$background"
-                borderColor="$borderStrong"
-                color="$text"
-              />
-              <Search size={18} color="$textSecondary" />
-            </XStack>
-          </YStack>
-
-          <Sheet.ScrollView flex={1} px="$4" keyboardShouldPersistTaps="handled">
-            <YStack gap="$2" pb="$3">
-              {results.map((exercise) => {
-                const picked = countByExerciseId.get(exercise.id) ?? 0;
-                const name = localizedName(exercise, language);
-
-                return (
-                  <ExerciseRow
-                    key={exercise.id}
-                    exercise={exercise}
-                    language={language}
-                    thumb={assetByExerciseId.get(exercise.id)}
-                    borderColor={picked > 0 ? "$primaryText" : "$borderStrong"}
-                    accessibilityLabel={
-                      picked > 0
-                        ? `${name}, ${t("quests.editor_added_count", { count: picked })}`
-                        : name
-                    }
-                    onPress={() => onAdd(exercise)}
-                    trailing={
-                      <>
-                        {picked > 0 ? (
-                          <XStack
-                            items="center"
-                            gap="$1"
-                            px="$2"
-                            py="$1"
-                            rounded="$10"
-                            bg="$surface"
-                            borderWidth={1}
-                            borderColor="$primaryText"
-                          >
-                            <Check size={14} color="$primaryText" strokeWidth={3} />
-                            <Text fontSize={12} fontWeight="700" color="$primaryText">
-                              {picked}
-                            </Text>
-                          </XStack>
-                        ) : null}
-                        <Plus size={20} color="$primaryText" strokeWidth={2.5} />
-                      </>
-                    }
-                  />
-                );
-              })}
-
-              {results.length === 0 ? (
-                <Text fontSize={14} color="$textSecondary" p="$3">
-                  {t("quests.editor_no_results", "No exercise matches that.")}
-                </Text>
-              ) : null}
-            </YStack>
-          </Sheet.ScrollView>
-
-          <XStack p="$4" pb={bottomPad} borderTopWidth={1} borderColor="$borderStrong">
-            <AppButton onPress={close}>{t("common.done", "Done")}</AppButton>
+      <Sheet.Frame bg="$surface">
+        <YStack px="$4" pt="$4" pb="$3" gap="$3">
+          <XStack items="center" justify="space-between">
+            <Text fontWeight="700" fontSize={18} color="$text">
+              {title}
+            </Text>
+            <Pressable
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.close", "Close")}
+              onPress={close}
+            >
+              <X size={20} color="$textSecondary" />
+            </Pressable>
           </XStack>
-        </Sheet.Frame>
-      </Sheet>
-    </>
+
+          <XStack items="center" gap="$2">
+            <Input
+              flex={1}
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t("quests.editor_search", "Search")}
+              bg="$background"
+              borderColor="$borderStrong"
+              color="$text"
+            />
+            <Search size={18} color="$textSecondary" />
+          </XStack>
+        </YStack>
+
+        <Sheet.ScrollView flex={1} px="$4" keyboardShouldPersistTaps="handled">
+          <YStack gap="$2" pb="$3">
+            {results.map((exercise) => {
+              const picked = countByExerciseId.get(exercise.id) ?? 0;
+              const name = localizedName(exercise, language);
+
+              return (
+                <ExerciseRow
+                  key={exercise.id}
+                  exercise={exercise}
+                  language={language}
+                  thumb={assetByExerciseId.get(exercise.id)}
+                  borderColor={picked > 0 ? "$primaryText" : "$borderStrong"}
+                  accessibilityLabel={
+                    picked > 0
+                      ? `${name}, ${t("quests.editor_added_count", { count: picked })}`
+                      : name
+                  }
+                  caption={captionFor?.(exercise)}
+                  onPress={() => {
+                    onPick(exercise);
+                    if (closeOnPick) close();
+                  }}
+                  trailing={
+                    <>
+                      {picked > 0 ? (
+                        <XStack
+                          items="center"
+                          gap="$1"
+                          px="$2"
+                          py="$1"
+                          rounded="$10"
+                          bg="$surface"
+                          borderWidth={1}
+                          borderColor="$primaryText"
+                        >
+                          <Check size={14} color="$primaryText" strokeWidth={3} />
+                          <Text fontSize={12} fontWeight="700" color="$primaryText">
+                            {picked}
+                          </Text>
+                        </XStack>
+                      ) : null}
+                      {pickAction}
+                    </>
+                  }
+                />
+              );
+            })}
+
+            {results.length === 0 ? (
+              <Text fontSize={14} color="$textSecondary" p="$3">
+                {t("quests.editor_no_results", "No exercise matches that.")}
+              </Text>
+            ) : null}
+          </YStack>
+        </Sheet.ScrollView>
+
+        <XStack p="$4" pb={bottomPad} borderTopWidth={1} borderColor="$borderStrong">
+          <AppButton onPress={close}>{t("common.done", "Done")}</AppButton>
+        </XStack>
+      </Sheet.Frame>
+    </Sheet>
   );
 }

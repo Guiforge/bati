@@ -1,4 +1,19 @@
+import assert from "node:assert/strict";
+
 import { clientMock, createTestDb } from "./helpers/testDb";
+
+/**
+ * Any seeded movement will do — these tests are about the fold over `completed_exercises`, not
+ * about which exercise it is. `assert` rather than `?? 1`: a fallback id would silently test
+ * nothing if the migrations ever stopped seeding a catalogue.
+ */
+function firstExerciseId(t: ReturnType<typeof createTestDb>): number {
+  const row = t.sqlite.prepare("SELECT id FROM exercises LIMIT 1").get() as
+    | { id: number }
+    | undefined;
+  assert(row);
+  return row.id;
+}
 
 describe("db/personalRecords", () => {
   const t = createTestDb();
@@ -63,63 +78,104 @@ describe("db/personalRecords", () => {
     expect(result?.sessionId).toBe(2);
   });
 
-  test("getExerciseMax returns null for unseen exercise", async () => {
-    const { getExerciseMax } =
+  test("getExerciseHistory returns an empty map for no ids", async () => {
+    const { getExerciseHistory } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");
-    const result = await getExerciseMax(999);
-    expect(result).toBeNull();
+    expect(await getExerciseHistory([])).toEqual(new Map());
   });
 
-  test("getExerciseMax returns the max reps for an exercise", async () => {
-    const { getExerciseMax } =
+  test("getExerciseHistory skips a movement with nothing logged", async () => {
+    const { getExerciseHistory } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");
-    const now = Math.floor(Date.now() / 1000);
+    const history = await getExerciseHistory([999]);
 
-    // Get a real exercise ID
-    const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
-      | { id: number }
-      | undefined;
-    const exerciseId = exerciseRow?.id ?? 1;
-
-    t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now}), (2, ${now});
-      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
-        (1, ${exerciseId}, 'reps', 15, ${now}, 0),
-        (2, ${exerciseId}, 'reps', 20, ${now}, 0);
-    `);
-
-    const result = await getExerciseMax(exerciseId);
-    expect(result).not.toBeNull();
-    expect(result?.type).toBe("exercise_max_reps");
-    expect(result?.value).toBe(20);
+    // Absent, not zero: the screen shows no ghost line at all rather than "last time: 0".
+    expect(history.has("999:reps")).toBe(false);
   });
 
   /**
-   * Regression: reps and seconds share the resultValue column, and the max was taken across
-   * both. A 60 s hold therefore outranked every rep set on the same movement and reported
-   * itself as a rep record.
+   * Regression: reps and seconds share the resultValue column, and a pooled max let a 60 s hold
+   * outrank every rep set on the same movement and report itself as a rep record.
    */
-  test("getExerciseMax keeps reps and seconds apart", async () => {
-    const { getExerciseMax } =
+  test("getExerciseHistory keeps reps and seconds apart", async () => {
+    const { getExerciseHistory, ghostKey } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");
     const now = Math.floor(Date.now() / 1000);
-    const exerciseRow = t.sqlite.prepare(`SELECT id FROM exercises LIMIT 1`).get() as
-      | { id: number }
-      | undefined;
-    const exerciseId = exerciseRow?.id ?? 1;
+    const exerciseId = firstExerciseId(t);
 
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now}), (2, ${now + 60});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${exerciseId}, 'reps', 12, ${now}, 0),
+        (2, ${exerciseId}, 'time', 90, ${now + 60}, 0);
+    `);
+
+    const history = await getExerciseHistory([exerciseId]);
+    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({ last: 12, best: 12 });
+    expect(history.get(ghostKey(exerciseId, "time"))).toEqual({ last: 90, best: 90 });
+  });
+
+  /**
+   * The whole point of the function, and the one thing a naive MAX gets wrong: "what to beat" is
+   * the last session, "your record" is all time, and the two are different numbers whenever the
+   * hero has had a better day earlier.
+   */
+  test("getExerciseHistory separates the last session from the all-time best", async () => {
+    const { getExerciseHistory, ghostKey } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const exerciseId = firstExerciseId(t);
+
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES
+        (1, ${now - 7200}), (2, ${now - 3600}), (3, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${exerciseId}, 'reps', 10, ${now - 7200}, 0),
+        (2, ${exerciseId}, 'reps', 25, ${now - 3600}, 0),
+        (3, ${exerciseId}, 'reps', 18, ${now}, 0);
+    `);
+
+    const history = await getExerciseHistory([exerciseId]);
+    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({ last: 18, best: 25 });
+  });
+
+  test("getExerciseHistory reports the best round of the last session, not its last row", async () => {
+    const { getExerciseHistory, ghostKey } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const exerciseId = firstExerciseId(t);
+
+    // A 12/10/8 quest: the hero cleared 12 and faded. Reporting 8 would name a floor they beat
+    // twice on the way down.
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, roundIndex, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${exerciseId}, 0, 'reps', 12, ${now}, 0),
+        (1, ${exerciseId}, 1, 'reps', 10, ${now + 1}, 0),
+        (1, ${exerciseId}, 2, 'reps', 8, ${now + 2}, 0);
+    `);
+
+    const history = await getExerciseHistory([exerciseId]);
+    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({ last: 12, best: 12 });
+  });
+
+  test("getExerciseHistory breaks a same-second tie on the session id", async () => {
+    const { getExerciseHistory, ghostKey } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const exerciseId = firstExerciseId(t);
+
+    // Two sessions written in the same second share a timestamp, so the timestamp alone leaves
+    // the answer up to row order.
     t.sqlite.exec(`
       INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now}), (2, ${now});
       INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
-        (1, ${exerciseId}, 'reps', 12, ${now}, 0),
-        (2, ${exerciseId}, 'time', 90, ${now}, 0);
+        (1, ${exerciseId}, 'reps', 20, ${now}, 0),
+        (2, ${exerciseId}, 'reps', 14, ${now}, 0);
     `);
 
-    const reps = await getExerciseMax(exerciseId, "reps");
-    expect(reps).toMatchObject({ type: "exercise_max_reps", value: 12 });
-
-    const hold = await getExerciseMax(exerciseId, "time");
-    expect(hold).toMatchObject({ type: "exercise_max_time", value: 90 });
+    const history = await getExerciseHistory([exerciseId]);
+    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({ last: 14, best: 20 });
   });
 
   test("getPersonalRecordsSummary returns all records and session count", async () => {

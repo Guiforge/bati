@@ -40,6 +40,7 @@ export {
   clearQuestConfig,
   getQuestConfig,
   hasQuestOverrides,
+  indexExercises,
   REST_RANGE,
   ROUNDS_RANGE,
   saveQuestConfig,

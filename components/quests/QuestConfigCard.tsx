@@ -1,9 +1,15 @@
-import { ChevronDown, ChevronUp, RotateCcw, SlidersHorizontal } from "@tamagui/lucide-icons";
+import {
+  ChevronDown,
+  ChevronUp,
+  Repeat,
+  RotateCcw,
+  SlidersHorizontal,
+} from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Separator, Text, XStack, YStack } from "tamagui";
 
-import { AppButton } from "@/components/common/AppButton";
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Stepper } from "@/components/common/Stepper";
 import { Tag } from "@/components/common/Tag";
@@ -21,9 +27,11 @@ type Props = {
   language: AppLanguage;
   onChange: (next: QuestConfig) => void;
   onReset: () => void;
+  /** Opens the picker for one slot. Lives here because a substitution *is* a config override. */
+  onSwap: (questExerciseId: number) => void;
 };
 
-export function QuestConfigCard({ quest, config, language, onChange, onReset }: Props) {
+export function QuestConfigCard({ quest, config, language, onChange, onReset, onSwap }: Props) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const modified = hasQuestOverrides(config);
@@ -96,21 +104,30 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset }: 
             <Separator borderColor="$borderStrong" />
 
             {quest.exercises.map((qex) => (
-              <Stepper
-                key={qex.id}
-                label={language === "fr" ? qex.exercise.frName : qex.exercise.enName}
-                hint={
-                  qex.target.type === "time"
-                    ? t("quests.config_seconds", "Seconds")
-                    : t("quests.config_reps", "Reps")
-                }
-                value={qex.target.value}
-                min={TARGET_RANGE.min}
-                max={TARGET_RANGE.max}
-                step={qex.target.type === "time" ? REST_STEP : 1}
-                suffix={qex.target.type === "time" ? "s" : ""}
-                onChange={(value) => setTarget(qex.id, value)}
-              />
+              <XStack key={qex.id} items="center" gap="$2">
+                <YStack flex={1}>
+                  <Stepper
+                    label={language === "fr" ? qex.exercise.frName : qex.exercise.enName}
+                    hint={
+                      qex.target.type === "time"
+                        ? t("quests.config_seconds", "Seconds")
+                        : t("quests.config_reps", "Reps")
+                    }
+                    value={qex.target.value}
+                    min={TARGET_RANGE.min}
+                    max={TARGET_RANGE.max}
+                    step={qex.target.type === "time" ? REST_STEP : 1}
+                    suffix={qex.target.type === "time" ? "s" : ""}
+                    onChange={(value) => setTarget(qex.id, value)}
+                  />
+                </YStack>
+                <AppIconButton
+                  accessibilityLabel={t("quests.swap_exercise", "Replace this movement")}
+                  onPress={() => onSwap(qex.id)}
+                >
+                  <Repeat size={18} color="$text" strokeWidth={2.5} />
+                </AppIconButton>
+              </XStack>
             ))}
 
             {modified ? (

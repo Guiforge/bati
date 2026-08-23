@@ -228,6 +228,36 @@ describe("content invariants", () => {
     expect(offenders).toEqual([]);
   });
 
+  /**
+   * Substitution can only ever offer what the catalogue holds, so "can this hero swap out of a
+   * movement they cannot do?" is a property of the *content*, not of the picker.
+   *
+   * It is not hypothetical: every seeded `pull_vertical` movement requires a bar, so a hero
+   * without one has no same-pattern option at all on a Pull-ups slot — the ladder is the only
+   * route out, and only walked to its end. This fails the moment someone seeds a pattern with no
+   * equipment-free way down.
+   */
+  test("every movement has an equipment-free substitute that is worth explaining", async () => {
+    const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
+    const { rankSwapCandidates } =
+      require("../constants/exerciseFilters") as typeof import("../constants/exerciseFilters");
+
+    const all = await listExercises();
+    expect(all.length).toBeGreaterThan(0);
+
+    // An empty set, not null: the hero who answered "I own nothing" is the hard case.
+    const stranded = all
+      .filter(
+        (ex) =>
+          !rankSwapCandidates(all, ex, new Set()).some(
+            (c) => c.reason !== null && c.exercise.equipment === "none",
+          ),
+      )
+      .map((ex) => `${ex.enName} (${ex.pattern ?? "no pattern"})`);
+
+    expect(stranded).toEqual([]);
+  });
+
   test("a quest is either equipment-free or a declared equipment quest", async () => {
     const all = await loadQuests();
 

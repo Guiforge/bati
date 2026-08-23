@@ -3,7 +3,7 @@ import { db, schema } from "./client";
 import { dayKey } from "./dates";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
-import { getMaxHoldSeconds } from "./personalRecords";
+import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import type { DifficultyCode, MuscleCode, QuestArchetype, QuestTargetType } from "./schema";
@@ -30,6 +30,16 @@ export interface QuestExercise {
 
   /** Target for this quest – either repetitions or seconds */
   target: Target;
+
+  /**
+   * What the hero has already done on this movement, in *this slot's* unit — the best set of
+   * their last session, and their all-time best. Absent when they have never trained it.
+   *
+   * It rides on the quest rather than living in the session store on purpose: `quest` is already
+   * inside `SavedSessionState`, so a session recovered after a crash keeps its ghosts with no
+   * second field to keep in sync, and the quest screen gets the same numbers from the same read.
+   */
+  ghost?: ExerciseGhost;
 }
 
 export type QuestTemplateExercise = {
@@ -422,12 +432,11 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   const first = rows[0];
   if (!first) return null;
 
-  // Holds are prescribed from the hero's own longest hold (60-75% of max), so read the records
-  // for this quest's time-based movements before building any target. One grouped query, and
-  // none at all for a quest that has no holds in it.
-  const maxHolds = await getMaxHoldSeconds([
-    ...new Set(rows.filter((r) => r.targetType === "time").map((r) => r.exId)),
-  ]);
+  // Two things come out of the journal here, in one grouped query: the longest hold, because a
+  // hold is prescribed from the hero's own maximum (60-75% of it), and the ghost every slot shows
+  // — what they did last time on this movement. Both are per (movement, unit), so one read
+  // answers both and nothing is fetched again mid-session.
+  const history = await getExerciseHistory([...new Set(rows.map((r) => r.exId))]);
 
   const quest: Quest = {
     id: first.questId,
@@ -474,7 +483,10 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
           muscles: [],
         },
         images: safeParseImages(r.imagesJson),
-        target: generateTarget(base, userLevel, maxHolds.get(r.exId)),
+        target: generateTarget(base, userLevel, history.get(ghostKey(r.exId, "time"))?.best),
+        // In the slot's own unit: a movement trained both ways has two records, and showing the
+        // hold next to a rep target would be a number the hero cannot act on.
+        ghost: history.get(ghostKey(r.exId, r.targetType)),
       };
       byQuestExercise.set(r.qexId, qex);
       quest.exercises.push(qex);
@@ -627,6 +639,12 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
  * equipment they do not have, and advanced quests for someone who said they are a beginner.
  * A "regular" hero still gets offered advanced work — that is a stretch, not a wall — and a
  * hero who skipped the onboarding question (`null`) is not filtered at all.
+ */
+/**
+ * ponytail: eligibility reads the template, so a quest the hero has swapped the barbell movement
+ * out of is still hidden from them. Half-serves the case substitution exists for. Folding saved
+ * swaps in means scanning `user_preferences` here, on a path Home hits on every mount — do it
+ * when someone reports the quest staying hidden after they fixed it.
  */
 export async function getEligibleQuestIds(): Promise<Set<number>> {
   const [ownedEquipment, trainingLevel, rows] = await Promise.all([

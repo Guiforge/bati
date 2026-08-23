@@ -64,13 +64,32 @@ what it **refuses**:
 - **One cameo on screen, ever.** Never two.
 - **Priority** — `event` > `guide` > `ambient`. An ambient line is *overwritten, never queued*: a
   reaction that arrives after its moment has passed is worse than no reaction.
-- **90 s cooldown** on ambient. Events bypass it.
-- **Three ambient cameos per window**, the window refilling after 30 minutes of silence. Events
-  are not counted.
-- **35 % chance** on an eligible ambient slot. The absence is what makes the presence worth
-  noticing; a villager at every rest is furniture within two sessions.
+- **One ambient cameo per window**, the window refilling after 30 minutes of silence. Events are
+  not counted, and there is no separate cooldown — with a budget of one there is never a second
+  cameo to space out, so the window *is* the cooldown.
+- **18 % chance** on an eligible rest. The absence is what makes the presence worth noticing; a
+  villager at every rest is furniture within two sessions.
 - **One switch** in Settings — "Villagers". It silences events too, not just atmosphere.
 - **Reduced motion** removes the slide, keeping the cameo.
+
+### How those numbers were chosen
+
+Not by taste — by replaying the real rule against real quest shapes. The first pass (three per
+window, 90 s cooldown, 35 % draw) produced **two to three villagers in every session**, and on a
+long quest it hit the cap 97 % of the time. Which meant the probability decided nothing: the
+*budget* set the rate, and the rate was therefore a function of how long your quest happened to be
+— 1.9 villagers on a short one, 3.0 on a long one, chosen by nobody.
+
+| setting | short quest | medium | long | very long |
+|---|---|---|---|---|
+| three per window, 35 % | 2.18 | 2.37 | 2.98 | 3.00 |
+| **one per window, 18 %** | **0.75** | **0.79** | **0.98** | **1.08** |
+
+At one, quest length stops driving the rate — it only changes the odds a villager comes at all,
+never how many. A short quest meets someone three times in four; a long one almost always; a very
+long one can earn a second because it outlives the window. That is the shape a cosmetic layer
+should have: a bit of life, not a presence. `__tests__/chorus-store.test.ts` pins it with a
+twenty-rest session that must still produce exactly one.
 
 ## Anti-repetition
 

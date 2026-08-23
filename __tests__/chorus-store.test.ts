@@ -33,7 +33,6 @@ const { preferences: mockPreferences } = jest.requireMock("@/db") as {
  * happen. A layer that always fires would pass a naive rendering test and be unbearable on device.
  */
 
-const AMBIENT_COOLDOWN_MS = 90_000;
 const AMBIENT_WINDOW_MS = 1_800_000;
 
 function resetChorus() {
@@ -75,38 +74,49 @@ describe("what the chorus refuses", () => {
     expect(useChorusStore.getState().current).toBe(speaking);
   });
 
-  test("an ambient line stays away inside the cooldown", () => {
+  test("a second ambient line stays away for the rest of the window", () => {
     useChorusStore.getState().cue("rest");
     useChorusStore.getState().dismiss(useChorusStore.getState().current?.id ?? -1);
 
-    jest.advanceTimersByTime(AMBIENT_COOLDOWN_MS - 1);
+    jest.advanceTimersByTime(AMBIENT_WINDOW_MS - 1);
     useChorusStore.getState().cue("rest");
 
+    // One per window is the whole rate control now. There is no separate cooldown, because with a
+    // budget of one there is never a second cameo to space out.
     expect(useChorusStore.getState().current).toBeNull();
   });
 
-  test("the fourth ambient line in a window stays away, and the window refills", () => {
-    const restOnce = () => {
-      useChorusStore.getState().cue("rest");
-      const id = useChorusStore.getState().current?.id;
-      if (id != null) useChorusStore.getState().dismiss(id);
-      return id != null;
-    };
+  test("the window refills once the layer has been quiet long enough", () => {
+    useChorusStore.getState().cue("rest");
+    useChorusStore.getState().dismiss(useChorusStore.getState().current?.id ?? -1);
 
-    expect(restOnce()).toBe(true);
-    jest.advanceTimersByTime(AMBIENT_COOLDOWN_MS);
-    expect(restOnce()).toBe(true);
-    jest.advanceTimersByTime(AMBIENT_COOLDOWN_MS);
-    expect(restOnce()).toBe(true);
-    jest.advanceTimersByTime(AMBIENT_COOLDOWN_MS);
-    expect(restOnce()).toBe(false);
+    jest.advanceTimersByTime(AMBIENT_WINDOW_MS + 1);
+    useChorusStore.getState().cue("rest");
 
-    // Nothing has spoken for the length of the window, so the next line is not repetition.
-    jest.advanceTimersByTime(AMBIENT_WINDOW_MS);
-    expect(restOnce()).toBe(true);
+    expect(useChorusStore.getState().current).not.toBeNull();
   });
 
-  test("an event ignores both the cooldown and whoever is mid-sentence", () => {
+  /**
+   * Found by simulating the real rule against real quest shapes, not by reading the code: with a
+   * budget of three, a long quest hit the cap in 97% of sessions, so how many villagers you met
+   * was set by how long your quest happened to be rather than by any decision anyone made.
+   */
+  test("a longer quest does not buy more villagers", () => {
+    let fired = 0;
+    for (let i = 0; i < 20; i++) {
+      useChorusStore.getState().cue("rest");
+      const id = useChorusStore.getState().current?.id;
+      if (id != null) {
+        fired++;
+        useChorusStore.getState().dismiss(id);
+      }
+      jest.advanceTimersByTime(85_000); // a rest every 85s, the cadence measured on device
+    }
+
+    expect(fired).toBe(1);
+  });
+
+  test("an event ignores the budget and whoever is mid-sentence", () => {
     useChorusStore.getState().cue("rest");
     const ambient = useChorusStore.getState().current;
     expect(ambient).not.toBeNull();

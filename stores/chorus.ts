@@ -20,25 +20,41 @@ import { useSettingsStore } from "@/stores/settings";
  * arbitrate when two of them wanted to speak at once.
  */
 
-/** How long the layer stays silent after a cameo before an ambient one may fire again. */
-const AMBIENT_COOLDOWN_MS = 90_000;
-
-/** How many ambient cameos may fire inside one window. Events are not counted. */
-const AMBIENT_BUDGET = 3;
+/**
+ * How many ambient cameos may appear inside one window. One, deliberately.
+ *
+ * This started at three with a 90-second cooldown, and simulating the real rule against real quest
+ * shapes is what showed the problem: a long quest (4 rounds x 5 exercises, nineteen rests) hit the
+ * cap in 97% of sessions, so the probability decided nothing and the *budget* set the rate. Which
+ * meant the number of villagers you met was a function of how long your quest was — 1.9 on a short
+ * one, 3.0 on a long one — and nobody had chosen that.
+ *
+ * At one, quest length stops driving the rate. It only changes the odds that a villager comes at
+ * all, never how many, which is the shape a cosmetic layer should have: a bit of life, not a
+ * presence. There is no separate cooldown any more because there cannot be a second cameo to space
+ * out — the window *is* the cooldown.
+ */
+const AMBIENT_PER_WINDOW = 1;
 
 /**
- * The budget refills after this long without a single cameo.
+ * How long the layer stays quiet before another ambient cameo becomes possible.
  *
- * The design says "three per session", but the chorus has no idea what a session is and giving it
- * one would mean a cross-store subscription for a counter. A quiet window is the same rule from
- * the hero's side — nothing has spoken for half an hour, so the next line is not repetition — and
- * it costs no wiring at all. The visible difference is only on a session longer than 30 minutes,
- * which earns a second helping rather than going silent for its whole second half.
+ * The design says "once a session", but the chorus has no idea what a session is and giving it one
+ * would mean a cross-store subscription for a counter. A quiet window is the same rule from the
+ * hero's side, and costs no wiring at all. The only visible difference is a session longer than
+ * half an hour, which earns a second villager rather than going silent for its whole second half.
  */
 const AMBIENT_WINDOW_MS = 1_800_000;
 
-/** The share of eligible ambient slots that actually produce a cameo. */
-const AMBIENT_CHANCE = 0.35;
+/**
+ * The odds an eligible rest actually produces a villager.
+ *
+ * Tuned against a simulation of the real rule rather than guessed: at 0.18 a short quest meets a
+ * villager three times in four and a long one almost always, for an average under one per session
+ * either way. The silence is the feature — a villager at every rest is furniture within two
+ * sessions.
+ */
+const AMBIENT_CHANCE = 0.18;
 
 /**
  * How many lines are remembered as "just said".
@@ -97,10 +113,9 @@ function ambientAllowance(state: ChorusState, now: number): number | null {
   // Overwritten, never queued: a reaction that arrives after its moment has passed is worse than
   // no reaction. An event may interrupt an ambient line; nothing interrupts an event.
   if (state.current) return null;
-  if (now - state.lastCameoAt < AMBIENT_COOLDOWN_MS) return null;
 
   const spent = now - state.lastCameoAt > AMBIENT_WINDOW_MS ? 0 : state.ambientShown;
-  if (spent >= AMBIENT_BUDGET) return null;
+  if (spent >= AMBIENT_PER_WINDOW) return null;
   if (Math.random() > AMBIENT_CHANCE) return null;
 
   return spent + 1;

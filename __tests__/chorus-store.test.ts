@@ -147,7 +147,47 @@ describe("what the chorus refuses", () => {
   });
 });
 
+describe("what the chorus reports back", () => {
+  test("says whether a villager actually came", () => {
+    expect(useChorusStore.getState().cue("personal_record")).toBe(true);
+  });
+
+  test("says no when it refused", () => {
+    useSettingsStore.setState({ villagersEnabled: false });
+
+    expect(useChorusStore.getState().cue("personal_record")).toBe(false);
+  });
+
+  test("a guide waits for an event, and takes over from village chatter", () => {
+    // `event > guide > ambient`. A guide has exactly one chance to be read, so it does not throw
+    // it away for a line of atmosphere — but it does not interrupt the moment the layer exists for
+    // either.
+    useChorusStore.getState().cue("rest");
+    expect(useChorusStore.getState().cue("guide_village")).toBe(true);
+    expect(useChorusStore.getState().current?.moment).toBe("guide_village");
+
+    useChorusStore.setState({ current: null, lastCameoAt: 0, ambientShown: 0 });
+    useChorusStore.getState().cue("boss_defeated");
+    const event = useChorusStore.getState().current;
+
+    expect(useChorusStore.getState().cue("guide_home")).toBe(false);
+    expect(useChorusStore.getState().current).toBe(event);
+  });
+});
+
 describe("what the chorus remembers", () => {
+  test("hydrating does not throw away what was said while it was reading", async () => {
+    useChorusStore.getState().cue("personal_record");
+    const saidAtStartup = useChorusStore.getState().recentKeys;
+    (mockPreferences.getRecentCameoLines as jest.Mock).mockResolvedValueOnce(["from:disk:0"]);
+
+    await useChorusStore.getState().hydrate();
+
+    // The disk read is async and a screen can cue before it lands. Replacing rather than merging
+    // meant every cold start quietly dropped the lines said during startup.
+    expect(useChorusStore.getState().recentKeys).toEqual(["from:disk:0", ...saidAtStartup]);
+  });
+
   test("the ring is per villager, so one repeating does not silence the other", () => {
     const say = () => {
       useChorusStore.getState().cue("personal_record");

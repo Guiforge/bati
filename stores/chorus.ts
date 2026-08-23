@@ -93,7 +93,12 @@ interface ChorusState {
   isHydrated: boolean;
 
   hydrate: () => Promise<void>;
-  cue: (moment: CueMoment, params?: CueParams) => void;
+  /**
+   * Returns whether a villager actually came. Callers that spend something on the attempt need to
+   * know: a first-visit guide marked "seen" after a refused cue is a guide burnt without ever
+   * having been read, and there is no second chance for one.
+   */
+  cue: (moment: CueMoment, params?: CueParams) => boolean;
   /** Takes the id so a timer belonging to a cameo that was already replaced cannot clear its successor. */
   dismiss: (id: number) => void;
 }
@@ -119,6 +124,34 @@ function ambientAllowance(state: ChorusState, now: number): number | null {
   if (Math.random() > AMBIENT_CHANCE) return null;
 
   return spent + 1;
+}
+
+/**
+ * Whether this cameo is allowed on screen at all, and what it costs.
+ *
+ * `null` is a refusal, and refusing is most of this layer's job — so it gets its own function
+ * whose name is the question a caller is asking. The returned object is spread into the store, so
+ * an ambient cameo pays for its slot and nothing else does.
+ */
+function admit(
+  rule: (typeof MOMENT_CAST)[CueMoment],
+  state: ChorusState,
+  now: number,
+): { ambientShown?: number } | null {
+  // A guide yields to an event and to another guide, and to nothing else — which is the documented
+  // order, `event > guide > ambient`. Yielding to *everything* was the first attempt and it was
+  // wrong in both directions: two screens mounting together burnt four of the five tutorials
+  // without ever showing them, and then a piece of village chatter on the same screen was enough
+  // to hold the guide off forever. Ambient is disposable by nature; a guide has one chance.
+  if (rule.priority === "guide") {
+    const speaking = state.current ? MOMENT_CAST[state.current.moment].priority : null;
+    return speaking === "event" || speaking === "guide" ? null : {};
+  }
+  // An event always speaks. It is the moment the whole layer exists for.
+  if (rule.priority !== "ambient") return {};
+
+  const allowance = ambientAllowance(state, now);
+  return allowance === null ? null : { ambientShown: allowance };
 }
 
 /** The same face twice running reads as a scripted sequence rather than a village. */
@@ -193,27 +226,39 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
   isHydrated: false,
 
   hydrate: async () => {
-    const recentKeys = await preferences.getRecentCameoLines();
-    set({ recentKeys, isHydrated: true });
+    const stored = await preferences.getRecentCameoLines();
+    // Merged, not replaced. The read is async and a screen can cue before it lands — the first
+    // version overwrote those, so every cold start quietly threw away the lines said during
+    // startup and the app could repeat one it had just used.
+    set((state) => ({
+      recentKeys: [...stored, ...state.recentKeys].slice(-RECENT_MEMORY),
+      isHydrated: true,
+    }));
   },
 
   cue: (moment, params) => {
-    if (!useSettingsStore.getState().villagersEnabled) return;
+    if (!useSettingsStore.getState().villagersEnabled) return false;
 
     const rule = MOMENT_CAST[moment];
     const state = get();
     const now = Date.now();
 
-    const allowance = rule.priority === "ambient" ? ambientAllowance(state, now) : null;
-    if (rule.priority === "ambient" && allowance === null) return;
+    // A guide waits its turn rather than taking it. Two screens mounting together — which the tab
+    // navigator does — used to mean the second guide overwrote the first, and *both* were then
+    // marked seen: four of the five tutorials burnt without ever being read. Refusing here, plus
+    // `useScreenGuide` only writing the flag when this returns true, is what makes each guide
+    // wait for a visit where it can actually be shown.
+
+    const admitted = admit(rule, state, now);
+    if (!admitted) return false;
 
     const villager = pickSpeaker(rule.speakers, state.lastVillager);
-    if (!villager) return;
+    if (!villager) return false;
 
     const selected = selectLine(villager, moment, new Set(state.recentKeys), params);
     // Nothing to say beats saying a raw translation key. The budget is spent below, only once a
     // villager actually has a line — a slot burned on a failed lookup would silence the next one.
-    if (!selected) return;
+    if (!selected) return false;
 
     const recentKeys = [...state.recentKeys, selected.key].slice(-RECENT_MEMORY);
     set({
@@ -221,7 +266,7 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
       recentKeys,
       lastVillager: villager,
       lastCameoAt: now,
-      ...(allowance === null ? {} : { ambientShown: allowance }),
+      ...admitted,
     });
 
     // Fire and forget: a cameo must never wait on a disk write, and a ring that fails to persist
@@ -238,6 +283,8 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
     } catch (error) {
       reportError("chorus.persistRecent", error);
     }
+
+    return true;
   },
 
   dismiss: (id) => {

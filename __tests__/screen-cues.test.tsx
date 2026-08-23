@@ -7,6 +7,12 @@ import { useSettingsStore } from "@/stores/settings";
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/src/widget", () => ({ requestWidgetsUpdate: jest.fn().mockResolvedValue(undefined) }));
 jest.mock("@/db/streaks", () => ({ getStreakInfo: jest.fn() }));
+// `useFocusEffect` is `useEffect` for a screen that is on top. With one hook rendered in
+// isolation it is always on top, so the two are the same thing here.
+jest.mock("expo-router", () => ({
+  useFocusEffect: (effect: import("react").EffectCallback) =>
+    (jest.requireActual("react") as typeof import("react")).useEffect(effect, [effect]),
+}));
 jest.mock("@/db", () => ({
   preferences: {
     getRecentCameoLines: jest.fn().mockResolvedValue([]),
@@ -80,6 +86,52 @@ describe("useScreenGuide", () => {
 
     expect(useChorusStore.getState().current).toBeNull();
     expect(prefs.setGuidesSeen).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The bug this pins down shipped, and was found by reading the device database rather than the
+   * code: four of the five guides were marked seen having never appeared. The tab navigator mounts
+   * more than one screen, their guides raced, each overwrote the last — and every one of them
+   * wrote its flag anyway. A once-in-a-lifetime tutorial has no second chance.
+   */
+  it("does not burn a guide that never got to be shown", async () => {
+    useChorusStore.setState({
+      current: { id: 9, moment: "boss_defeated", villager: "watcher", pose: "salute", line: "…" },
+    });
+
+    await mountAndSettle(() => useScreenGuide("guide_adventures"));
+
+    expect(prefs.setGuidesSeen).not.toHaveBeenCalled();
+    expect(useChorusStore.getState().current?.moment).toBe("boss_defeated");
+  });
+
+  it("shows it on the next visit instead", async () => {
+    useChorusStore.setState({
+      current: { id: 9, moment: "boss_defeated", villager: "watcher", pose: "salute", line: "…" },
+    });
+    await mountAndSettle(() => useScreenGuide("guide_adventures"));
+
+    // The screen is quiet now — the same visit tomorrow gets the guide it was owed.
+    useChorusStore.setState({ current: null });
+    await mountAndSettle(() => useScreenGuide("guide_adventures"));
+
+    expect(useChorusStore.getState().current?.moment).toBe("guide_adventures");
+    expect(prefs.setGuidesSeen).toHaveBeenCalledWith(["guide_adventures"]);
+  });
+
+  /**
+   * The other half of the same bug. Yielding to *everything* meant a piece of village chatter on
+   * the same screen — cued synchronously, while the guide is still reading its flag off disk —
+   * was enough to hold the guide off on every single visit. Ambient is disposable by nature.
+   */
+  it("talks over village chatter, which is disposable, but never over an event", async () => {
+    useChorusStore.setState({
+      current: { id: 9, moment: "menu_visit", villager: "sage", pose: "talk", line: "…" },
+    });
+
+    await mountAndSettle(() => useScreenGuide("guide_adventures"));
+
+    expect(useChorusStore.getState().current?.moment).toBe("guide_adventures");
   });
 
   it("keeps the other guides when one is met", async () => {

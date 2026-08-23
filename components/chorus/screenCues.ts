@@ -1,5 +1,6 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { useEffect } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect } from "react";
 
 import type { GuideMoment } from "@/constants/villagers";
 import { preferences } from "@/db";
@@ -30,24 +31,33 @@ const ABSENCE_DAYS = 7;
 export function useScreenGuide(moment: GuideMoment): void {
   const cue = useChorusStore((s) => s.cue);
 
-  useEffect(() => {
-    let cancelled = false;
+  // On *focus*, not on mount. A tab navigator keeps a screen mounted once it has been visited, so
+  // a mount effect runs exactly once per app launch — and a guide that politely stood aside the
+  // first time would then never try again. Arriving on a screen is a focus event.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
 
-    preferences
-      .getGuidesSeen()
-      .then((seen) => {
-        if (cancelled || seen.includes(moment)) return;
-        cue(moment);
-        return preferences.setGuidesSeen([...seen, moment]);
-      })
-      .catch((error) => reportError("chorus.guide", error));
+      preferences
+        .getGuidesSeen()
+        .then((seen) => {
+          if (cancelled || seen.includes(moment)) return;
+          // Only marked seen when a villager actually came. `cue` refuses a guide while an event
+          // or another guide is speaking, and a flag written on a refused cue is a tutorial burnt
+          // without ever having been read. There is no second chance for one, so it waits for a
+          // visit it can use.
+          if (!cue(moment)) return;
+          return preferences.setGuidesSeen([...seen, moment]);
+        })
+        .catch((error) => reportError("chorus.guide", error));
 
-    // Marked seen as soon as it is raised, not when it finishes: a hero who leaves the screen
-    // mid-sentence has met the guide, and showing it again would be the app not trusting them.
-    return () => {
-      cancelled = true;
-    };
-  }, [moment, cue]);
+      // Marked as soon as it is *shown*, not when it finishes: a hero who leaves the screen
+      // mid-sentence has met the guide, and showing it again would be the app not trusting them.
+      return () => {
+        cancelled = true;
+      };
+    }, [moment, cue]),
+  );
 }
 
 /**
@@ -61,9 +71,14 @@ export function useScreenGuide(moment: GuideMoment): void {
 export function useAmbientVisit(moment: "village_visit" | "menu_visit"): void {
   const cue = useChorusStore((s) => s.cue);
 
-  useEffect(() => {
-    cue(moment);
-  }, [moment, cue]);
+  // Focus, not mount, for the same reason as the guide: a tab screen stays mounted after its first
+  // visit, so a mount effect would mean the village greeted you once per app launch and never
+  // again. The window is what keeps this rare, not the mounting.
+  useFocusEffect(
+    useCallback(() => {
+      cue(moment);
+    }, [moment, cue]),
+  );
 }
 
 /**

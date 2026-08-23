@@ -129,7 +129,7 @@ describe("exercise catalogue", () => {
     await waitFor(() => expect(screen.getByText("Push-up")).toBeTruthy());
 
     await act(async () =>
-      fireEvent.changeText(screen.getByPlaceholderText("Search a movement"), "push"),
+      fireEvent.changeText(screen.getByPlaceholderText("Search for a movement"), "push"),
     );
 
     expect(screen.getByText("Push-up")).toBeTruthy();
@@ -141,7 +141,7 @@ describe("exercise catalogue", () => {
     await waitFor(() => expect(screen.getByText("Push-up")).toBeTruthy());
 
     await act(async () =>
-      fireEvent.changeText(screen.getByPlaceholderText("Search a movement"), "burpee"),
+      fireEvent.changeText(screen.getByPlaceholderText("Search for a movement"), "burpee"),
     );
     expect(screen.getByText("No matches")).toBeTruthy();
 

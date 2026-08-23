@@ -12,7 +12,7 @@
     "resume_journey": "Resume your journey",
     "pick_quest_label": "Pick a quest",
     "see_quest": "See the quest",
-    "oath_focus_chain": "Toward your oath: {{goal}} — rung {{position}} of {{total}}, tonight: {{name}}",
+    "oath_focus_chain": "Toward your oath: {{goal}} — rung {{position}} of {{total}}, up next: {{name}}",
     "oath_focus_simple": "Toward your oath: {{goal}}",
     "focus_on": "Strengthens your weak points: {{muscles}}",
     "quick_workout": "Quick Workout",
@@ -43,7 +43,7 @@
   "onboarding": {
     "chars_min": "chars min",
     "save_error": "Could not save — try again",
-    "finish": "Start my training journey",
+    "finish": "Start",
     "kingdom_founded": "KINGDOM FOUNDED",
     "language_selection": "Pick your language",
     "level_advanced": "Advanced",
@@ -51,7 +51,7 @@
     "level_regular": "Regular",
     "level_subtitle": "So we can suggest the right workouts. You can change this later.",
     "level_title": "What's your level?",
-    "next": "Start my training adventure",
+    "next": "Start the adventure",
     "presentation_description": "Every workout builds your village. Start your adventure today.",
     "presentation_title": "Your fitness is\nyour fortress.",
     "skip": "Skip",
@@ -60,7 +60,7 @@
     "village_name_subtitle": "Every legend needs a name. What will yours be?",
     "village_name_hint": "Every muscle you train raises a building here.",
     "village_name_title": "Name your village",
-    "first_session_title": "Your first march",
+    "first_session_title": "Your first steps",
     "first_session_subtitle": "Eight minutes, four movements, no equipment. A squire has to start somewhere.",
     "first_session_start": "Start now",
     "first_session_later": "Later"
@@ -85,13 +85,13 @@
     "abandon_title": "Abandon this oath?",
     "abandon_body": "Its progress will be lost.",
     "replace_title": "Replace your current oath?",
-    "replace_body": "The oath in force and its progress will be abandoned.",
+    "replace_body": "Your current oath and its progress will be abandoned.",
     "replace_confirm": "Swear the new oath",
     "save_error": "Could not save the oath",
     "pick_metric": "WHAT DO YOU SWEAR?",
     "pick_target": "TARGET",
     "pick_exercise": "EXERCISE",
-    "search_exercise": "Search an exercise",
+    "search_exercise": "Search for an exercise",
     "swear": "Swear it",
     "error_target": "Choose a target above zero.",
     "error_exercise": "Choose an exercise.",
@@ -143,7 +143,7 @@
     "no_mail_client": "No email app found on this device",
     "photos_denied": "Photo access is off — allow it in system settings",
     "villagers": "Villagers",
-    "replay_guides": "Review the guides",
+    "replay_guides": "Show the guides again",
     "replay_guides_done": "The guides will show again"
   },
   "credits": {
@@ -169,13 +169,13 @@
   "welcome": "Welcome to Bati!",
   "progression": {
     "increase_title": "Step it up",
-    "increase_message": "Your recent sessions have earned more. Raise the difficulty for greater rewards.",
+    "increase_message": "Your recent sessions have proven your worth. Raise the difficulty for greater rewards.",
     "decrease_title": "Recovery Recommended",
-    "decrease_message": "It seems tough lately. Lowering difficulty can help you maintain consistency.",
+    "decrease_message": "It's been tough lately. Lowering the difficulty can help you stay consistent.",
     "chain_position": "Rung {{position}}/{{total}} · {{name}}",
     "ladder_title": "Your next rung",
     "difficulty_title": "Adjust the difficulty",
-    "step_earned": "You have mastered {{name}} — this is the next step.",
+    "step_earned": "You have mastered {{name}} — this is the next rung.",
     "step_progress_one": "Hit your target {{count}} more time on {{name}} to earn it.",
     "step_progress_other": "Hit your target {{count}} more times on {{name}} to earn it.",
     "new_rung": "New rung unlocked",
@@ -186,8 +186,9 @@
     "gallery_title": "Quests",
     "gallery_subtitle": "Single workouts — pick one and go",
     "details_title": "Quest",
-    "count": "{{count}} quests",
-    "loading": "Loading...",
+    "count_one": "{{count}} quest",
+    "count_other": "{{count}} quests",
+    "loading": "Loading…",
     "load_error": "Failed to load",
     "retry": "Retry",
     "start_error": "Could not start the quest",
@@ -196,8 +197,10 @@
     "empty_subtitle": "Come back soon — new quests are being forged.",
     "empty_filters_title": "No quests match",
     "empty_filters_subtitle": "Try removing filters.",
-    "rounds": "{{count}} rounds",
-    "exercises": "{{count}} exercises",
+    "rounds_one": "{{count}} round",
+    "rounds_other": "{{count}} rounds",
+    "exercises_one": "{{count}} exercise",
+    "exercises_other": "{{count}} exercises",
     "exercises_list": "Exercises",
     "filters_clear": "Clear filters",
     "filter_clear_all": "Clear",
@@ -279,7 +282,8 @@
     "invalid_id": "Invalid adventure",
     "load_error": "Failed to load adventure",
     "start_error": "Could not start the adventure",
-    "steps": "{{count}} steps",
+    "steps_one": "{{count}} step",
+    "steps_other": "{{count}} steps",
     "weeks_one": "≈ {{count}} week",
     "weeks_other": "≈ {{count}} weeks",
     "steps_title": "Campaign steps",
@@ -309,18 +313,18 @@
     "damage_dealt": "Damage Dealt",
     "critical_hit": "CRITICAL HIT!",
     "weakness_bonus": "Weakness!",
-    "resistance_penalty": "Resisted...",
+    "resistance_penalty": "Resisted…",
     "fight_intro": "A powerful foe blocks your path.",
     "weakness": "Weakness",
     "resistance": "Resistance",
     "threat": "Threat level {{rank}} of 4",
     "final_blow": "Felled by your final blow!",
-    "triumph_subtitle": "Triumph! Felled by your own blows — +{{xp}} XP",
+    "triumph_subtitle": "Triumph! Felled by your blows — +{{xp}} XP",
     "matchup_hint": "Strike its weakness for 1.5× damage — its resistance halves yours."
   },
   "exercises": {
     "details_title": "Exercise",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "load_error": "Failed to load exercise",
     "retry": "Retry",
     "not_found": "Exercise not found",
@@ -334,7 +338,7 @@
     "catalogue_title": "Exercises",
     "count_one": "{{count}} movement",
     "count_other": "{{count}} movements",
-    "search": "Search a movement",
+    "search": "Search for a movement",
     "filter_group_ladder": "Ladder",
     "filter_ladder": "Ladder",
     "filter_group_pattern": "Movement",
@@ -380,7 +384,7 @@
     "how_to_do_it": "How to do it",
     "increase_reps_accessibility": "Increase reps by one",
     "increase_result_accessibility": "Increase result",
-    "keep_going_hint": "Keep going! Timer continues after target.",
+    "keep_going_hint": "Keep going! The timer keeps running past the target.",
     "loot_title": "Loot Earned",
     "new_records": "New Personal Records!",
     "overtime": "BONUS TIME",
@@ -390,7 +394,8 @@
     "paused_title": "Game Paused",
     "pr_exercise": "{{exercise}} PR",
     "pr_longest_session": "Longest Workout",
-    "pr_more": "+{{count}} more records",
+    "pr_more_one": "+{{count}} more record",
+    "pr_more_other": "+{{count}} more records",
     "pr_most_xp": "Most XP Earned",
     "pr_new_record": "New Record",
     "quit_button": "Quit Quest",
@@ -412,7 +417,8 @@
     "up_next": "Up Next",
     "victory_title": "Quest Complete!",
     "village_growth_cta": "View my village",
-    "village_growth_more": "+{{count}} more",
+    "village_growth_more_one": "+{{count}} more",
+    "village_growth_more_other": "+{{count}} more",
     "village_growth_title": "Your village grows",
     "village_tier_up_title": "Your village grew!",
     "xp_earned": "XP Earned",
@@ -423,7 +429,7 @@
     "warmup_next_accessibility": "Next movement",
     "countdown_subtitle": "Time to move.",
     "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure.",
-    "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now."
+    "crit_hint": "Every rep past the target is a chance to land a critical hit — {{percent}}% right now."
   },
   "muscles": {
     "arms": "Arms",
@@ -493,7 +499,8 @@
     "session_not_found": "Session not found",
     "invalid_session": "Session not found",
     "quest_completed": "Quest Completed",
-    "rounds_completed": "{{count}} rounds",
+    "rounds_completed_one": "{{count}} round",
+    "rounds_completed_other": "{{count}} rounds",
     "round": "Round",
     "result": "Result",
     "target": "Target",
@@ -525,7 +532,7 @@
     "balance_good": "Balanced!",
     "balance_needs_work": "Needs Work",
     "pull_deficit_title": "Your pulling is behind",
-    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first — towel rows or a doorway bar.",
+    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first — try towel rows or a doorway bar.",
     "suggested_quests": "Your weak spots",
     "suggested_quests_desc": "Quests to strengthen your weak areas",
     "personal_records": "Personal Records",
@@ -560,13 +567,14 @@
     "filter_streaks": "Streaks",
     "filter_xp": "XP",
     "filter_special": "Special",
-    "more_count": "+{{count}} more achievements",
+    "more_count_one": "+{{count}} more achievement",
+    "more_count_other": "+{{count}} more achievements",
     "show_less": "Show less",
     "new_unlock": "Achievement Unlocked!",
     "new_unlocks": "{{count}} Achievements Unlocked!"
   },
   "chart": {
-    "loading": "Loading chart...",
+    "loading": "Loading chart…",
     "error": "Failed to load chart",
     "no_data": "No data yet",
     "complete_more": "Complete more workouts to see your progress!",
@@ -589,8 +597,8 @@
     "increase": "Increase {{label}}",
     "language_en": "English",
     "language_fr": "French",
-    "saving": "Saving...",
-    "loading": "Loading...",
+    "saving": "Saving…",
+    "loading": "Loading…",
     "error": "Something went wrong",
     "retry": "Retry",
     "go_back": "Go back",
@@ -602,7 +610,7 @@
     "daily_xp_bonus": "+50% XP"
   },
   "splash": {
-    "loading": "Building your village..."
+    "loading": "Building your village…"
   },
   "village": {
     "title": "My Village",
@@ -641,9 +649,12 @@
     "detail_prereq_driver": "Grows with the {{building}}, currently level {{level}}",
     "detail_prereq_next": "Rises again when the {{building}} reaches level {{target}}",
     "detail_prereq_locked": "Appears when the {{building}} reaches level {{target}} — it is at level {{level}}",
-    "detail_bosses_driver": "{{count}} bosses defeated",
-    "detail_adventures_driver": "{{count}} adventures completed",
-    "detail_victories_driver": "{{count}} boss victories",
+    "detail_bosses_driver_one": "{{count}} boss defeated",
+    "detail_bosses_driver_other": "{{count}} bosses defeated",
+    "detail_adventures_driver_one": "{{count}} adventure completed",
+    "detail_adventures_driver_other": "{{count}} adventures completed",
+    "detail_victories_driver_one": "{{count}} boss victory",
+    "detail_victories_driver_other": "{{count}} boss victories",
     "detail_unlock_muscle": "Train your {{muscle}} to raise this building",
     "detail_unlock_style": "Complete a {{style}} exercise to raise this building",
     "detail_progress": "{{current}}/{{target}}",
@@ -651,7 +662,8 @@
     "hall_times": "×{{count}}",
     "trophy_earned": "Earned {{date}}",
     "trophy_defeated": "Defeated {{date}}",
-    "trophy_victories": "{{count}} victories",
+    "trophy_victories_one": "{{count}} victory",
+    "trophy_victories_other": "{{count}} victories",
     "style_strength": "strength",
     "style_calisthenics": "calisthenics",
     "style_yoga": "yoga",
@@ -698,7 +710,7 @@
     "preview_confirm": "Start This Plan",
     "preview_regenerate": "Generate New Plan",
     "preview_empty": "No sessions planned",
-    "generating_plan": "Creating your plan..."
+    "generating_plan": "Creating your plan…"
   },
   "errors": {
     "save_session_failed": "Failed to save workout. Please try again.",
@@ -712,7 +724,7 @@
   },
   "recovery": {
     "title": "Resume workout?",
-    "description": "You have an unfinished session",
+    "description": "You have an unfinished session.",
     "progress": "Progress: Round {{round}}/{{roundTotal}}, Exercise {{exercise}}/{{exerciseTotal}}",
     "elapsed": "Time: {{time}}",
     "resume": "Resume",
@@ -735,7 +747,7 @@
     "storage_title": "Where your training lives",
     "storage_body": "Every session, set, quest, adventure, achievement and setting is written to a database inside this app's private storage on your device. It is never uploaded and never synced. There is no server to upload it to, and no account to attach it to. Deleting the app deletes all of it.",
     "backups_title": "Backups you make",
-    "backups_body": "Two rows write your database to a file: Share my backup hands it to your system's share sheet, Save a file writes it into a folder you choose on the device. Either way the app sends it nowhere. That file is not encrypted: anyone who opens it can read your training history, so keep it the way you would keep a personal photo. Restoring replaces everything; the database you had is kept on the device as a recovery copy.",
+    "backups_body": "Two rows write your database to a file: \"Share my backup\" hands it to your system's share sheet, \"Save a file\" writes it into a folder you choose on the device. Either way the app sends it nowhere. That file is not encrypted: anyone who opens it can read your training history, so keep it the way you would keep a personal photo. Restoring replaces everything; the database you had is kept on the device as a recovery copy.",
     "never_title": "What Bati never does",
     "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. The app makes no network requests at all, at any point.",
     "permissions_title": "Permissions",
@@ -750,7 +762,7 @@
   },
   "feedback": {
     "subject": "Bati {{version}} — feedback",
-    "prompt": "Tell me anything — there are no wrong answers. If you are stuck, these help:\n\n1. What made you open the app today?\n2. What annoyed you?\n3. What did you almost look for and not find?\n",
+    "prompt": "Tell me anything — there are no wrong answers. If you're stuck, these three help:\n\n1. What made you open the app today?\n2. What annoyed you?\n3. What did you almost look for and not find?\n",
     "technical_header": "Technical details (edit or delete anything below)",
     "no_crash": "No crash was recorded on this device."
   },
@@ -812,18 +824,18 @@
         "New mark on the post. I cut it myself — that doesn't happen on its own.",
         "First time that's been done here. It counts, even with nobody watching.",
         "Well. The metal gave before you did, for once.",
-        "That's clean work. I don't say it often, so take it while it's going.",
+        "That's clean work. I don't say it often, so take it.",
         "You found one more notch. It was there the whole time.",
         "I'm writing it down. Not for you — for the next one who says it can't be done.",
         "The form held all the way through. That's what did it, not the strength.",
-        "There. Nothing magic, nothing spectacular. Just done."
+        "There. Nothing magical, nothing spectacular. Just done."
       ],
       "personal_record_beat": [
         "{{exercise}}: {{delta}} more than last time. I keep count.",
         "You added {{delta}}. Not found, not lucky — added.",
         "{{delta}} better. That's the exact amount of work it represents.",
         "Last time you let go {{delta}} sooner. Not today.",
-        "{{delta}} more. Sounds like nothing out loud. In the arms it's something else.",
+        "{{delta}} more. Sounds like nothing out loud. In your arms it's something else.",
         "{{exercise}}: {{delta}} better. That goes on the post with the rest.",
         "{{delta}} above your mark. Your body will remember it before you do.",
         "You pushed {{delta}} further than before. That didn't happen by itself."
@@ -832,9 +844,9 @@
       "menu_visit": [
         "You're looking. That's a form of work, if we're being generous.",
         "Take your time choosing. What's badly chosen gets paid for later.",
-        "I never understood these tables. I have hands, not eyes.",
+        "I never understood these boards. I have hands, not eyes.",
         "I decide by hitting things. You get to think first. That's a luxury.",
-        "Look at all of it, pick one. That's how you avoid scattering yourself.",
+        "Look at all of it, pick one. That's how you keep from spreading yourself thin.",
         "There are no bad choices here. Only choices not made, which is different.",
         "You can stand there a while. The forge will wait. It always waits.",
         "The best tool is the one you pick up. Not the one you admire.",
@@ -862,11 +874,11 @@
       "comeback": [
         "There you are. The village hasn't moved, and it had no need to.",
         "The door wasn't locked. It never is — that's rather the point of it.",
-        "We pick up where it was. There's no slate to wipe clean.",
+        "We pick up where it left off. There's no slate to wipe clean.",
         "Time passes for everyone, including the people who train.",
         "Nothing you built has come undone. These things are patient.",
         "Welcome. That's all I have to say, and it's already a great deal.",
-        "The hard part was pushing the door. That's done.",
+        "The hard part was pushing the door open. That's done.",
         "What you know, you still know. The body sulks longer; it will settle."
       ],
       "guide_home": [
@@ -883,7 +895,7 @@
         "A plan too precise breaks on the first surprise. Keep it loose.",
         "You don't have to understand all of it to begin something.",
         "Curiosity is a good reason. It's worth a great many others.",
-        "What's written there isn't a debt. They're possibilities.",
+        "What's written there isn't a debt — only possibilities.",
         "Choose, or don't. Both are valid answers."
       ]
     },
@@ -892,7 +904,7 @@
         "Drink. Not because I said so — because you'll regret it otherwise.",
         "Breath comes back before the legs do. Always that order. Don't worry.",
         "I have remedies for a great many things. For impatience I've found none.",
-        "The body repairs while you do nothing. Badly distributed, I'm aware.",
+        "The body repairs itself while you do nothing. An unfair split, I know.",
         "Sit down if you want. People think it's cheating. It isn't.",
         "Pain that shouts is usually lying. The kind that whispers — listen to that.",
         "I've watched far bigger people go down from not knowing when to stop.",
@@ -968,7 +980,7 @@
         "You don't harvest by sowing harder. Took me ten years to see that.",
         "How often do you do this? Doesn't matter. What matters is coming back.",
         "People think the harvest is the hard part. It's every day before it.",
-        "Take a breath. My animals breathe too, and they know their business.",
+        "Take a breath. My animals catch their breath too, and they know their business.",
         "What you're doing isn't heroic. It's just done properly. That's better.",
         "I've watched whole seasons go past. Nothing good ever went fast.",
         "Nobody is watching you. That's exactly when it counts.",
@@ -1002,7 +1014,7 @@
         "So that's what it feels like. You'll recognise it next time.",
         "The body never does that by accident. There was room, and you took it.",
         "First time. There's only ever one, so stay in it a second.",
-        "Clean. Come and find me when you want to go above it."
+        "Clean. Come and find me when you want to go higher."
       ],
       "personal_record_beat": [
         "{{delta}} more than your best. That's neither nothing nor an accident.",
@@ -1022,7 +1034,7 @@
         "You held the distance. That's rarer than strength.",
         "There. It won't happen the same way twice, so look at it a second.",
         "Stay standing a moment. The village likes to see who comes back.",
-        "Clean. Not elegant, but clean. Both of those comes later."
+        "Clean. Not elegant, but clean. Both of those come later."
       ]
     },
     "watcher": {
@@ -1037,7 +1049,7 @@
         "There'll be a story by morning. Wrong in most details, as they always are."
       ],
       "guide_adventures": [
-        "Adventures chain quests together and end on a boss. You can stop between two — it will wait."
+        "Adventures chain quests together and end on a boss. You can stop between quests — the boss will wait."
       ],
       "menu_visit": [
         "I watch the road, you watch your options. Each to their post.",
@@ -1048,7 +1060,7 @@
         "I'd rather watch you choose slowly than run the wrong way.",
         "The ground changes. What was impossible didn't stay impossible.",
         "You see better from up here than down there. That's the point of stopping.",
-        "Good reconnaissance is worth two hours of walking saved.",
+        "Good scouting saves you two hours of walking.",
         "You're preparing. It doesn't show immediately, but it shows afterwards.",
         "I log what passes. You log what tempts you. Same trade, really.",
         "There's nothing to fear in a list. I check. It's my job."

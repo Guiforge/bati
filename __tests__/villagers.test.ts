@@ -84,7 +84,7 @@ describe("villager pools", () => {
    */
   test.each(PAIRS)("%s does not gender the hero at %s, in French", (villager, moment) => {
     for (const line of FR[villager]?.[moment] ?? []) {
-      expect(line).not.toMatch(/tu t'es /i);
+      expect(line).not.toMatch(/tu t['’]es /i);
       expect(line).not.toMatch(/\(e\)|·e\b|é\(e\)/);
     }
   });

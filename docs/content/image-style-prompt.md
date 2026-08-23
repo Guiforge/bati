@@ -38,6 +38,7 @@ were wrong:
 | Avatars | 1:1 | Rendered circular at 48–64 px. A 4:3 source lost the sides of every one. |
 | Bosses | 2:1 | `BossArena` sizes art at `min(width * 0.5, height * 0.28)` — a letterbox. 4:3 art had its head and feet cropped. |
 | Covers, backgrounds | 4:3 | Correct as they were. |
+| Villagers | 3:4 | A cameo rises from the bottom edge, ~150dp tall in a ~115dp column. Square would crop the figure; the boss letterbox would crop the head. |
 
 Check the slot before choosing the frame. `contentFit="cover"` never warns you.
 
@@ -58,6 +59,37 @@ what to do with their body. Every tie is resolved towards legibility.
 Two things were tried here and removed. **Onion-skin ghosts** of the start position, with a motion
 arc, read well at full size and as clutter at thumbnail size. **A varied fantasy-race cast** —
 elves, orcs, dwarves, one per exercise — made the set less clear, not more characterful.
+
+## Villagers are the only family that needs an alpha channel
+
+A cameo is drawn over `$surface`, over the boss arena and over full-bleed exercise art, so an
+opaque void would show on all three. FLUX cannot output alpha, so the family is rendered on a flat
+void and cut by [`cutout.py`](../../scripts/cutout.py) — the same two-step the emblems use.
+
+Three instructions in that style block are load-bearing rather than decorative, and each is there
+because of something that went wrong:
+
+- **A flat field, explicitly no vignette.** The flood fill starts in the corners and stops at a
+  contrast step. Three emblems came back on a *radial* background and needed hand-tuned thresholds
+  because the fill stalled halfway up the gradient. Asking for one value edge to edge keeps the
+  villagers' override table empty.
+- **A rim light all the way round**, borrowed verbatim from the avatars. It earns its keep twice:
+  it separates the figure from the void for the reader, and it gives the flood a bright boundary
+  it cannot cross. Without it a villager in dark wool is eaten from the shoulders in.
+- **A pre-industrial world, named by its materials.** Left unsaid, the model dresses these people
+  from photographs: the champion's first pass arrived in what read as a modern canvas work jacket.
+  Naming hand-woven wool, hand-stitched leather with visible thread, horn buttons and cloth belted
+  rather than tailored fixed it far better than forbidding the modern version would have.
+
+Two failures worth knowing about. One of 35 renders drew a **white comic-panel border** around the
+whole image, which the flood then dutifully cleared — 14 % of the picture — and the
+`30 <= share <= 92` guard refused it. It survived nothing but a re-roll, so it was the dice, not
+the prompt; but the style block does say "all four corners of the **frame**", and a noun that can
+be drawn is a noun that will be. Worth changing the next time the family is re-rendered anyway.
+And `champion_talk` came back **Content Moderated for Violence** three times on one seed while her
+other poses passed — an inventory of injuries ("a broken nose and an old scar through one
+eyebrow") in an otherwise martial description. An error that survives a change of seed is the
+prompt: it was rewritten, not re-rolled, and the character lost nothing.
 
 ## Prompts that fail, and why
 

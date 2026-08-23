@@ -9,6 +9,7 @@ import {
   HeartPulse,
   ImagePlus,
   Languages,
+  MessagesSquare,
   ScrollText,
   ShieldCheck,
   Swords,
@@ -215,10 +216,12 @@ export default function SettingsScreen() {
     avatarId,
     customAvatarUri,
     hapticsEnabled,
+    villagersEnabled,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
     setHapticsEnabled,
+    setVillagersEnabled,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -422,6 +425,19 @@ export default function SettingsScreen() {
                   // Haptics errors are non-critical
                 });
               }
+            }}
+          />
+
+          <SettingRow
+            testID="settings-villagers"
+            icon={<MessagesSquare size={22} color="$text" />}
+            label={t("settings.villagers", "Villagers")}
+            value={villagersEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            onPress={() => {
+              haptics.selection();
+              setVillagersEnabled(!villagersEnabled).catch((error) => {
+                reportError("settings.villagersWrite", error);
+              });
             }}
           />
 

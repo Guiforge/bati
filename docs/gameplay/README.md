@@ -2,7 +2,7 @@
 title: Gameplay Systems
 type: category
 status: active
-updated: 2026-07-18
+updated: 2026-08-23
 related: [../README.md, ../planning/roadmap.md]
 ---
 
@@ -23,6 +23,7 @@ related: [../README.md, ../planning/roadmap.md]
 - [statistics-progress.md](statistics-progress.md) — Statistics & progress (4 derived views)
 - [coach-planning.md](coach-planning.md) — what Home offers next: oath, weak-area & rest rules
 - [oaths.md](oaths.md) — Oaths: the user's own target, derived from the journal
+- [villagers.md](villagers.md) — the cameo layer: who speaks, when, and what stops them
 
 ## Related
 

@@ -1,4 +1,5 @@
 import { type BuildingStage, buildingStage } from "@/constants/buildingLevels";
+import type { VillagerId, VillagerPose } from "@/constants/villagers";
 
 /**
  * BATI Asset Map
@@ -339,6 +340,79 @@ export const BUILDING_ICON_ASSETS = {
     grand: require("@/assets/images/village/buildings/champion_arena_grand.webp"),
   },
 } as const;
+
+// ============================================================
+// VILLAGER CAMEOS (7 named x 5 poses) — see constants/villagers.ts
+// ============================================================
+
+/**
+ * Typed rather than `as const` so a villager added to `VILLAGER_IDS` without art is a compile
+ * error. The art is the expensive half of adding one: forgetting it is exactly the mistake worth
+ * catching at build time rather than as a placeholder square on a victory screen.
+ *
+ * These carry an alpha channel, cut by scripts/cutout.py — a cameo is drawn over `$surface`, over
+ * the boss arena and over full-bleed exercise art, and an opaque void would show on all three.
+ */
+export const VILLAGER_ASSETS: Record<VillagerId, Record<VillagerPose, number>> = {
+  smith: {
+    talk: require("@/assets/images/villagers/smith_talk.webp"),
+    cheer: require("@/assets/images/villagers/smith_cheer.webp"),
+    urge: require("@/assets/images/villagers/smith_urge.webp"),
+    concern: require("@/assets/images/villagers/smith_concern.webp"),
+    salute: require("@/assets/images/villagers/smith_salute.webp"),
+  },
+  watcher: {
+    talk: require("@/assets/images/villagers/watcher_talk.webp"),
+    cheer: require("@/assets/images/villagers/watcher_cheer.webp"),
+    urge: require("@/assets/images/villagers/watcher_urge.webp"),
+    concern: require("@/assets/images/villagers/watcher_concern.webp"),
+    salute: require("@/assets/images/villagers/watcher_salute.webp"),
+  },
+  sage: {
+    talk: require("@/assets/images/villagers/sage_talk.webp"),
+    cheer: require("@/assets/images/villagers/sage_cheer.webp"),
+    urge: require("@/assets/images/villagers/sage_urge.webp"),
+    concern: require("@/assets/images/villagers/sage_concern.webp"),
+    salute: require("@/assets/images/villagers/sage_salute.webp"),
+  },
+  champion: {
+    talk: require("@/assets/images/villagers/champion_talk.webp"),
+    cheer: require("@/assets/images/villagers/champion_cheer.webp"),
+    urge: require("@/assets/images/villagers/champion_urge.webp"),
+    concern: require("@/assets/images/villagers/champion_concern.webp"),
+    salute: require("@/assets/images/villagers/champion_salute.webp"),
+  },
+  herbalist: {
+    talk: require("@/assets/images/villagers/herbalist_talk.webp"),
+    cheer: require("@/assets/images/villagers/herbalist_cheer.webp"),
+    urge: require("@/assets/images/villagers/herbalist_urge.webp"),
+    concern: require("@/assets/images/villagers/herbalist_concern.webp"),
+    salute: require("@/assets/images/villagers/herbalist_salute.webp"),
+  },
+  minstrel: {
+    talk: require("@/assets/images/villagers/minstrel_talk.webp"),
+    cheer: require("@/assets/images/villagers/minstrel_cheer.webp"),
+    urge: require("@/assets/images/villagers/minstrel_urge.webp"),
+    concern: require("@/assets/images/villagers/minstrel_concern.webp"),
+    salute: require("@/assets/images/villagers/minstrel_salute.webp"),
+  },
+  farmer: {
+    talk: require("@/assets/images/villagers/farmer_talk.webp"),
+    cheer: require("@/assets/images/villagers/farmer_cheer.webp"),
+    urge: require("@/assets/images/villagers/farmer_urge.webp"),
+    concern: require("@/assets/images/villagers/farmer_concern.webp"),
+    salute: require("@/assets/images/villagers/farmer_salute.webp"),
+  },
+};
+
+/**
+ * No `keyFromPath` and no placeholder fallback, unlike every getter above: a villager is picked
+ * from a closed union in code, never from a database `imagePath`, so both arguments are already
+ * proven by the type system and there is no missing-key case left to fall back from.
+ */
+export function getVillagerAsset(id: VillagerId, pose: VillagerPose): number {
+  return VILLAGER_ASSETS[id][pose];
+}
 
 // ============================================================
 // TYPE EXPORTS

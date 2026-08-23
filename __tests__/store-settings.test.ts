@@ -21,10 +21,12 @@ const prefs = {
   getAvatarId: jest.fn<Promise<string | null>, []>(),
   getCustomAvatarUri: jest.fn<Promise<string | null>, []>(),
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
+  getVillagersEnabled: jest.fn<Promise<boolean>, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
+  setVillagersEnabled: jest.fn().mockResolvedValue(undefined),
 };
 
 beforeAll(() => {
@@ -61,6 +63,7 @@ function storedSettings() {
   prefs.getAvatarId.mockResolvedValue("archmage");
   prefs.getCustomAvatarUri.mockResolvedValue("file:///stored-avatar.jpg");
   prefs.getHapticsEnabled.mockResolvedValue(false);
+  prefs.getVillagersEnabled.mockResolvedValue(false);
 }
 
 const DEFAULTS = {
@@ -68,6 +71,7 @@ const DEFAULTS = {
   avatarId: "guardian" as const,
   hapticsEnabled: true,
   reducedMotion: false,
+  villagersEnabled: true,
   isLoaded: false,
 };
 
@@ -88,6 +92,7 @@ describe("useSettingsStore", () => {
       language: "fr",
       avatarId: "archmage",
       hapticsEnabled: false,
+      villagersEnabled: false,
       isLoaded: true,
     });
   });
@@ -165,16 +170,22 @@ describe("useSettingsStore", () => {
     await s().setLanguage("fr");
     await s().setAvatarId("scout");
     await s().setHapticsEnabled(false);
+    await s().setCustomAvatarUri("file:///picked.jpg");
+    await s().setVillagersEnabled(false);
 
     expect(s()).toMatchObject({
       language: "fr",
       avatarId: "scout",
       hapticsEnabled: false,
+      customAvatarUri: "file:///picked.jpg",
+      villagersEnabled: false,
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
     expect(prefs.setAvatarId).toHaveBeenCalledWith("scout");
     expect(prefs.setHapticsEnabled).toHaveBeenCalledWith(false);
+    expect(prefs.setCustomAvatarUri).toHaveBeenCalledWith("file:///picked.jpg");
+    expect(prefs.setVillagersEnabled).toHaveBeenCalledWith(false);
   });
 
   /**

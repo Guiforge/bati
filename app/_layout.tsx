@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Theme } from "tamagui";
 
+import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
@@ -21,6 +22,7 @@ import { installCrashHandler, recordCrash } from "@/src/crashLog";
 import { reportError } from "@/src/reportError";
 import { AppBackground } from "@/src/ui/AppBackground";
 import { requestWidgetsUpdate } from "@/src/widget";
+import { useChorusStore } from "@/stores/chorus";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
@@ -56,6 +58,7 @@ export default function RootLayout() {
   const loadUserFromDatabase = useUserStore((s) => s.loadFromDatabase);
   const settingsLoaded = useSettingsStore((s) => s.isLoaded);
   const loadSettingsFromDatabase = useSettingsStore((s) => s.loadFromDatabase);
+  const hydrateChorus = useChorusStore((s) => s.hydrate);
 
   // Typed as `string[]` rather than expo-router's tuple, which is built from the route types
   // generated into .expo/types by a dev server run. CI has never run one, so there the tuple is
@@ -91,7 +94,10 @@ export default function RootLayout() {
     // so a cold start is another moment the widgets need a redraw.
     // Non-blocking: never hold up the app over a widget redraw.
     requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
-  }, [loadUserFromDatabase, loadSettingsFromDatabase]);
+    // The "lines said recently" ring, so the first rest of a fresh session is not where the
+    // repetition shows. Nothing waits on it: an unhydrated ring costs one possible repeat.
+    hydrateChorus().catch((e) => reportError("chorus.hydrate", e));
+  }, [loadUserFromDatabase, loadSettingsFromDatabase, hydrateChorus]);
 
   useEffect(() => {
     // Wait for first render to complete
@@ -145,6 +151,8 @@ export default function RootLayout() {
                   <ErrorBoundary onError={(error) => recordCrash("render", error)}>
                     <AppBackground />
                     <Slot />
+                    {/* Above every route, mounted once. See components/chorus/VillagerCameo.tsx. */}
+                    <VillagerCameo />
                   </ErrorBoundary>
                 </ToastProvider>
               </DatabaseProvider>

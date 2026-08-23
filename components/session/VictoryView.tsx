@@ -15,6 +15,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
+import { recordCue } from "@/components/chorus/recordCue";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
@@ -33,6 +34,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
+import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { ProgressionChart } from "./ProgressionChart";
@@ -125,6 +127,7 @@ export function VictoryView() {
     felledByFinalBlow,
   } = useSessionStore();
   const [bossExpanded, setBossExpanded] = useState(false);
+  const cue = useChorusStore((s) => s.cue);
 
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saveError, setSaveError] = useState(false);
@@ -173,6 +176,34 @@ export function VictoryView() {
   // session id that only exists once `result` lands. Writing it from the tap handler meant the
   // early taps were dropped on the floor — the button lit up, the row kept `feedback: null`.
   // Keyed on both, so a tap before the save and a tap after take the same path.
+  // One villager per victory, chosen here rather than by competing effects: these are all `event`
+  // priority, so firing two would just mean the second silently overwrote the first and which one
+  // you saw depended on effect ordering. A felled boss outranks a record — it is the rarer thing,
+  // and the hero already has the badge for the other.
+  useEffect(() => {
+    if (!result) return;
+    if (isBossDefeat) {
+      cue("boss_defeated");
+      return;
+    }
+
+    const earned = recordCue(result.newRecords, language);
+    if (!earned) return;
+    if (earned.moment === "personal_record") {
+      cue("personal_record");
+      return;
+    }
+
+    // The one place a villager quotes a number, and the reason the layer bothers: "ten more than
+    // last time" is the shape the evidence says keeps working, where "well done!" stops working
+    // inside two months. Pluralised through i18next rather than glued together, so the English
+    // says "1 rep" and not "1 reps".
+    cue("personal_record_beat", {
+      delta: t(`villagers.units.delta_${earned.unit}`, { count: earned.delta }),
+      exercise: earned.exercise,
+    });
+  }, [result, isBossDefeat, cue, language, t]);
+
   useEffect(() => {
     if (!result || !feedbackTouched.current) return;
     updateSessionFeedback(result.sessionId, feedback).catch(() => {

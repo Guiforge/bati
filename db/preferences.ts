@@ -168,4 +168,38 @@ export const preferences = {
   async clearSavedSession(): Promise<void> {
     await deletePreference("savedSession");
   },
+
+  // The villager cameo layer. On by default: it carries the first-visit guides, and a new hero
+  // switching it off before they have seen one would be switching off the only tutorial there is.
+  async getVillagersEnabled(): Promise<boolean> {
+    return (await getPreference("villagersEnabled")) !== "false";
+  },
+
+  async setVillagersEnabled(enabled: boolean): Promise<void> {
+    await setPreference("villagersEnabled", String(enabled));
+  },
+
+  /**
+   * The lines a villager said recently, so the next draw can avoid them.
+   *
+   * One key holding the whole ring rather than a row per line: it is read once at startup and
+   * rewritten whole on every cameo, so there is nothing to gain from splitting it and a
+   * multi-row write would be the slower half of showing a bubble. Malformed JSON reads as an
+   * empty ring — the worst that costs is one repeatable line, which is not worth a crash.
+   */
+  async getRecentCameoLines(): Promise<string[]> {
+    const raw = await getPreference("recentCameoLines");
+    if (raw === null) return [];
+
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setRecentCameoLines(keys: string[]): Promise<void> {
+    await setPreference("recentCameoLines", JSON.stringify(keys));
+  },
 };

@@ -24,7 +24,12 @@ jest.mock("@/db/preferences", () => ({
   },
 }));
 jest.mock("@/db", () => ({ preferences: {} }));
-jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
+// `t` included because RestView cues a villager on mount and the chorus resolves its pools
+// through i18next. A mock that describes less than the real module is how the last two
+// suites went down — see the header of __tests__/store-settings.test.ts.
+jest.mock("@/i18n", () => ({
+  i18n: { changeLanguage: jest.fn(), t: (key: string) => key },
+}));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 
 const REST_SECONDS = 30;

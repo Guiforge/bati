@@ -57,6 +57,10 @@ const saveResult = {
   campaign: null,
   fulfilledOath: null,
   tierUp: false,
+  // `SaveResult` declares this required and `saveSession` always returns it; the fixture is cast
+  // through `as unknown` and so was free to omit it until something read it. The villager cameo
+  // does — it asks whether this session set a record before deciding who, if anyone, speaks.
+  newRecords: [],
 };
 
 const mockQuest = {

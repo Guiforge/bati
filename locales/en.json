@@ -141,7 +141,8 @@
     "report_bug_count_other": "{{count}} crashes",
     "report_bug_empty": "Nothing recorded",
     "no_mail_client": "No email app found on this device",
-    "photos_denied": "Photo access is off — allow it in system settings"
+    "photos_denied": "Photo access is off — allow it in system settings",
+    "villagers": "Villagers"
   },
   "credits": {
     "title": "Credits",
@@ -782,5 +783,157 @@
       "unreadable": "That file could not be opened."
     },
     "saveDone": "Backup saved"
+  },
+  "villagers": {
+    "units": {
+      "delta_reps_one": "{{count}} rep",
+      "delta_reps_other": "{{count}} reps",
+      "delta_seconds_one": "{{count}} second",
+      "delta_seconds_other": "{{count}} seconds"
+    },
+    "smith": {
+      "rest": [
+        "Iron cools between blows too. Nobody ever complained about that.",
+        "You're breathing hard. That's the sound work makes once it's been done.",
+        "I've seen anvils give out sooner than you have.",
+        "Nothing gets forged in one blow. That's more or less the definition.",
+        "Take your time. The work isn't going anywhere in a hurry.",
+        "An arm that shakes is an arm that got used.",
+        "I sit down between pieces. Nobody has ever said a word about it.",
+        "Hardest part of this trade is stopping at the right moment.",
+        "Start again whenever you like. I'm in no rush.",
+        "Thirty years hitting metal. I've learned to respect a pause.",
+        "What you just did shows in the hands before it shows anywhere else.",
+        "Breathe. The rest follows on its own, or it doesn't. We'll see."
+      ],
+      "personal_record": [
+        "New mark on the post. I cut it myself — that doesn't happen on its own.",
+        "First time that's been done here. It counts, even with nobody watching.",
+        "Well. The metal gave before you did, for once.",
+        "That's clean work. I don't say it often, so take it while it's going.",
+        "You found one more notch. It was there the whole time.",
+        "I'm writing it down. Not for you — for the next one who says it can't be done.",
+        "The form held all the way through. That's what did it, not the strength.",
+        "There. Nothing magic, nothing spectacular. Just done."
+      ],
+      "personal_record_beat": [
+        "{{exercise}}: {{delta}} more than last time. I keep count.",
+        "You added {{delta}}. Not found, not lucky — added.",
+        "{{delta}} better. That's the exact amount of work it represents.",
+        "Last time you let go {{delta}} sooner. Not today.",
+        "{{delta}} more. Sounds like nothing out loud. In the arms it's something else.",
+        "{{exercise}}: {{delta}} better. That goes on the post with the rest.",
+        "{{delta}} above your mark. Your body will remember it before you do.",
+        "You pushed {{delta}} further than before. That didn't happen by itself."
+      ]
+    },
+    "sage": {
+      "rest": [
+        "Rest is not the opposite of effort. It's the half you don't see.",
+        "Nobody ever climbed a hill without catching their breath halfway up.",
+        "I have read a great deal about patience. None of it made me patient.",
+        "What is built quickly comes apart quickly. Tedious, but there it is.",
+        "You are between two things. That is a perfectly honourable place to be.",
+        "Starlight takes centuries to arrive. It doesn't appear to be in a hurry.",
+        "People ask me for the secret. The secret is coming back.",
+        "A quiet moment never cost anyone what they had already earned.",
+        "There is nothing to prove in the gaps. Only to breathe.",
+        "Forty years of notes. Progress reads in months, never in days.",
+        "You will begin again when you like. The world waits very well.",
+        "Impatience is an excellent engine and a very poor guide."
+      ]
+    },
+    "herbalist": {
+      "rest": [
+        "Drink. Not because I said so — because you'll regret it otherwise.",
+        "Breath comes back before the legs do. Always that order. Don't worry.",
+        "I have remedies for a great many things. For impatience I've found none.",
+        "The body repairs while you do nothing. Badly distributed, I'm aware.",
+        "Sit down if you want. People think it's cheating. It isn't.",
+        "Pain that shouts is usually lying. The kind that whispers — listen to that.",
+        "I've watched far bigger people go down from not knowing when to stop.",
+        "Sleep does more for your muscles than anything I keep in a bottle.",
+        "You're sweating. That's the machinery running, nothing more sinister.",
+        "Breathe through your nose. It isn't superstition, it's plumbing.",
+        "Nobody has ever thanked me for advising rest. Everybody comes back.",
+        "What you're feeling has a name, and it isn't a problem."
+      ]
+    },
+    "minstrel": {
+      "rest": [
+        "Hold still, I'm hunting a rhyme. It's harder than what you just did.",
+        "In the song, this pause lasts three seconds and is extremely heroic.",
+        "I'm adding a verse. It'll make you sound far calmer than this.",
+        "Heroes in songs never stop. Which is precisely why they die young.",
+        "I have the title already. The rest turns up at the last moment, as usual.",
+        "Do you want the version where you're gasping, or the one where you aren't?",
+        "Nobody sings about the pauses. An injustice I intend to correct.",
+        "I'm writing all this down. One day it'll be sung in taverns you'll never see.",
+        "The crowd, inside my head, is absolutely losing it. You can't hear them.",
+        "Pick it up whenever. I'm paid by the verse, not by the hour.",
+        "I need a word for the noise you're making. Nothing quite fits.",
+        "This is the part where the audience thinks it's over. They're wrong."
+      ]
+    },
+    "farmer": {
+      "rest": [
+        "I carried sacks all morning. We sit down. Nobody dies of it.",
+        "A field that never rests gives less the next year. Same with you.",
+        "The work will still be here in two minutes. It's loyal that way.",
+        "You don't harvest by sowing harder. Took me ten years to see that.",
+        "How often do you do this? Doesn't matter. What matters is coming back.",
+        "People think the harvest is the hard part. It's every day before it.",
+        "Take a breath. My animals breathe too, and they know their business.",
+        "What you're doing isn't heroic. It's just done properly. That's better.",
+        "I've watched whole seasons go past. Nothing good ever went fast.",
+        "Nobody is watching you. That's exactly when it counts.",
+        "There'll be days when it's worse than this. Those count too.",
+        "The body adapts. A body is stupid, but it is diligent."
+      ]
+    },
+    "champion": {
+      "personal_record": [
+        "New ceiling. The next one is harder to reach. That's how it goes.",
+        "That wasn't luck. That was work coming due.",
+        "Took me three winters to get past that notch. Well done anyway.",
+        "Mark beaten. Keep the feeling, not the number — the feeling is what returns.",
+        "So that's what it feels like. You'll recognise it next time.",
+        "The body never does that by accident. There was room, and you took it.",
+        "First time. There's only ever one, so stay in it a second.",
+        "Clean. Come and find me when you want to go above it."
+      ],
+      "personal_record_beat": [
+        "{{delta}} more than your best. That's neither nothing nor an accident.",
+        "{{exercise}}: {{delta}} above. I know exactly what that costs.",
+        "You beat yourself by {{delta}}. The only opponent that counts here.",
+        "{{delta}} better. The next step up is higher. It always is.",
+        "Last time, {{delta}} fewer. Today, this. That's the line.",
+        "{{delta}} more, and the form held. It's the second half that matters.",
+        "{{exercise}}, {{delta}} above your mark. Keep it for the flat days.",
+        "{{delta}} gained. You pay for that in sleep, not willpower. Go and sleep."
+      ],
+      "boss_defeated": [
+        "It's over. Sit down before your legs work that out.",
+        "I've watched bigger things go down. Not many.",
+        "Struck well right to the end. The end is the hard part, not the start.",
+        "The next one will have heard about you. It won't help.",
+        "You held the distance. That's rarer than strength.",
+        "There. It won't happen the same way twice, so look at it a second.",
+        "Stay standing a moment. The village likes to see who comes back.",
+        "Clean. Not elegant, but clean. Both of those comes later."
+      ]
+    },
+    "watcher": {
+      "boss_defeated": [
+        "It's down. Whatever it was, it isn't any more.",
+        "I watched it come over the ridge weeks ago. I'd not have bet on the outcome.",
+        "The east road is quiet tonight. You're the reason it's quiet.",
+        "From the tower you mostly see what's coming. Tonight, nothing is.",
+        "I've stood the watch down. They can sleep. That doesn't happen often.",
+        "Report's filed. It'll be written exactly as it happened, I promise.",
+        "That was the one nobody comes back from. Statistically, you cheated.",
+        "There'll be a story by morning. Wrong in most details, as they always are."
+      ]
+    }
   }
 }

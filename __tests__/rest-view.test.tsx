@@ -100,6 +100,18 @@ describe("RestView", () => {
     jest.useRealTimers();
   });
 
+  it("names the rest after the round when a round just ended", async () => {
+    // Mid-round: the index points at the second exercise of round 0.
+    const midRound = await mountRest();
+    expect(midRound.queryByText(/round_rest_title/)).toBeNull();
+
+    // Round boundary: back to exercise 0, one round further in.
+    await act(() => {
+      useSessionStore.setState({ currentRoundIndex: 1, currentExerciseIndex: 0 });
+    });
+    expect(midRound.queryByText(/round_rest_title/)).not.toBeNull();
+  });
+
   it("stays resting while the timer still has time on it", async () => {
     await mountRest();
 

@@ -39,6 +39,7 @@ function makeQuest(): Quest {
     author: "Admin",
     rounds: 3,
     restSeconds: 30,
+    roundRestSeconds: null,
     archetype: null,
     imagePath: "assets/placeholder.jpg",
     exercises: [

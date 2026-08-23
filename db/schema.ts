@@ -147,6 +147,10 @@ export const quests = sqliteTable("quests", {
   // Rest between sets (a "set" = one exercise target). In seconds.
   restSeconds: int().notNull().default(30),
 
+  // The longer rest taken when a round ends, in seconds. Null means there is no separate round
+  // rest and `restSeconds` applies there too — what every quest did before the column existed.
+  roundRestSeconds: int(),
+
   // What kind of session this is meant to be — sets the rest range, the rep targets and how far
   // its exercises may stack. Null for user-authored quests.
   archetype: text().$type<QuestArchetype>(),

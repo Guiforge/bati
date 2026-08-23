@@ -133,6 +133,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
       questAuthor: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      roundRestSeconds: quests.roundRestSeconds,
       questImagePath: quests.imagePath,
 
       questExerciseId: questExercises.id,
@@ -182,6 +183,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
         author: r.questAuthor,
         rounds: r.rounds,
         restSeconds: r.restSeconds,
+        roundRestSeconds: r.roundRestSeconds,
         // The adventure gallery only needs the cover quest's identity, not its shape.
         archetype: null,
         imagePath: r.questImagePath ?? "assets/placeholder.jpg",

@@ -107,6 +107,7 @@ describe("content invariants", () => {
         const seconds = estimateQuestSeconds({
           rounds: q.rounds,
           restSeconds: q.restSeconds,
+          roundRestSeconds: q.roundRestSeconds,
           exercises: q.exercises.map((qex) => ({ exercise: qex.exercise, target: qex.target })),
         });
         const min = archetypeOf(q) === "mobility" ? MOBILITY_MIN_SECONDS : MIN_SECONDS;

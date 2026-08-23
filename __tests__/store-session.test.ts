@@ -98,6 +98,7 @@ describe("useSessionStore", () => {
     id: 1,
     rounds: 2,
     restSeconds: 30,
+    roundRestSeconds: 90,
     exercises: [
       {
         exercise: { id: 1, enName: "Pushups", muscles: [] },
@@ -193,7 +194,33 @@ describe("useSessionStore", () => {
 
     const state = store.getState();
     expect(state.status).toBe("resting");
-    expect(state.timerDuration).toBe(30); // Rest seconds
+    expect(state.timerDuration).toBe(90); // The longer round rest
+  });
+
+  test("a rest inside a round is the short one", async () => {
+    await store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    await store.getState().completeExercise(10);
+
+    const state = store.getState();
+    expect(state.status).toBe("resting");
+    expect(state.timerDuration).toBe(30);
+    expect(state.currentRoundIndex).toBe(0);
+  });
+
+  test("a round rest of zero skips the rest screen, it does not fall back", async () => {
+    await store
+      .getState()
+      .startSession({ ...mockQuest, roundRestSeconds: 0 } as unknown as Quest, "medium");
+    store.getState().finishCountdown();
+    await store.getState().completeExercise(10);
+    expect(store.getState().timerDuration).toBe(30); // still rests between exercises
+    await store.getState().completeExercise(60);
+
+    const state = store.getState();
+    expect(state.status).toBe("running");
+    expect(state.currentRoundIndex).toBe(1);
+    expect(state.currentExerciseIndex).toBe(0);
   });
 
   test("skipRest starts next round", async () => {

@@ -17,6 +17,7 @@ function quest(
     archetype,
     rounds,
     restSeconds,
+    roundRestSeconds: null,
     exercises: patterns.map((pattern) => ({
       exercise: { pattern, secondsPerRep: 3 },
       target: { type: "reps" as const, value: reps },
@@ -78,6 +79,7 @@ describe("buildWarmup", () => {
         archetype: null,
         rounds: 2,
         restSeconds: 30,
+        roundRestSeconds: null,
         exercises: [
           {
             exercise: { pattern: null, secondsPerRep: undefined as unknown as number },

@@ -163,6 +163,7 @@ export type WarmupQuest = {
   archetype: QuestArchetype | null;
   rounds: number;
   restSeconds: number;
+  roundRestSeconds: number | null;
   exercises: {
     exercise: { pattern: MovementPattern | null; secondsPerRep: number };
     target: Target;

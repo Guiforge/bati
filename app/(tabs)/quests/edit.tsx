@@ -91,6 +91,7 @@ export default function QuestEditor() {
   const [description, setDescription] = useState("");
   const [rounds, setRounds] = useState(DEFAULT_ROUNDS);
   const [rest, setRest] = useState(DEFAULT_REST);
+  const [roundRest, setRoundRest] = useState(DEFAULT_REST);
   const [picked, setPicked] = useState<PickedExercise[]>([]);
   const [busy, setBusy] = useState(false);
   const nextUid = useRef(0);
@@ -109,13 +110,14 @@ export default function QuestEditor() {
       description: "",
       rounds: DEFAULT_ROUNDS,
       rest: DEFAULT_REST,
+      roundRest: DEFAULT_REST,
       picked: [] as PickedExercise[],
     }),
   );
   const skipGuardRef = useRef(false);
   const isDirty =
     !skipGuardRef.current &&
-    JSON.stringify({ title, description, rounds, rest, picked }) !== baseline;
+    JSON.stringify({ title, description, rounds, rest, roundRest, picked }) !== baseline;
   const isDirtyRef = useRef(isDirty);
   isDirtyRef.current = isDirty;
 
@@ -174,6 +176,7 @@ export default function QuestEditor() {
       setDescription(nextDescription);
       setRounds(template.rounds);
       setRest(template.restSeconds);
+      setRoundRest(template.roundRestSeconds ?? template.restSeconds);
       setPicked(nextPicked);
       setBaseline(
         JSON.stringify({
@@ -181,6 +184,7 @@ export default function QuestEditor() {
           description: nextDescription,
           rounds: template.rounds,
           rest: template.restSeconds,
+          roundRest: template.roundRestSeconds ?? template.restSeconds,
           picked: nextPicked,
         }),
       );
@@ -254,6 +258,7 @@ export default function QuestEditor() {
           archetype: null,
           rounds,
           restSeconds: rest,
+          roundRestSeconds: roundRest,
           exercises: payload,
         });
         // The edit used to vanish with no confirmation it persisted.
@@ -270,6 +275,7 @@ export default function QuestEditor() {
         frDescription: text,
         rounds,
         restSeconds: rest,
+        roundRestSeconds: roundRest,
       });
       await setQuestExercises(questId, payload);
 
@@ -395,14 +401,26 @@ export default function QuestEditor() {
                 max={ROUNDS_RANGE.max}
                 onChange={setRounds}
               />
+              {/* The label renders on one line, so which rest is which goes in the hint. */}
               <Stepper
                 label={t("quests.config_rest", "Rest")}
+                hint={t("quests.config_rest_hint", "Between exercises")}
                 value={rest}
                 min={REST_RANGE.min}
                 max={REST_RANGE.max}
                 step={REST_STEP}
                 suffix="s"
                 onChange={setRest}
+              />
+              <Stepper
+                label={t("quests.config_round_rest", "Round rest")}
+                hint={t("quests.config_round_rest_hint", "Between rounds")}
+                value={roundRest}
+                min={REST_RANGE.min}
+                max={REST_RANGE.max}
+                step={REST_STEP}
+                suffix="s"
+                onChange={setRoundRest}
               />
             </YStack>
           </Card>

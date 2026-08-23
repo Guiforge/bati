@@ -100,6 +100,7 @@ export type CuePriority = "event" | "guide" | "ambient";
 export const CUE_MOMENTS = [
   "rest",
   "village_visit",
+  "menu_visit",
   "personal_record",
   "personal_record_beat",
   "boss_defeated",
@@ -157,6 +158,12 @@ export const MOMENT_CAST: Record<
     priority: "ambient",
     pose: "talk",
   },
+  // Quests, Adventures and Journal — the screens where the hero is choosing rather than doing.
+  // Deliberately the three villagers `village_visit` does *not* use, so browsing around does not
+  // keep producing the same three faces. The lines are about being near someone who is deciding,
+  // never about the screen itself: one pool serves all three, and a villager who commented on
+  // "your journal" would be describing UI back at you.
+  menu_visit: { speakers: ["smith", "sage", "watcher"], priority: "ambient", pose: "talk" },
   // The highest-value moment in the whole layer, and the one with the strictest rule: shame is the
   // documented reason people stop opening a fitness app, so a returning hero is greeted and the
   // absence is never mentioned. Not one line in this pool asks where you were.
@@ -183,19 +190,34 @@ export const MOMENT_CAST: Record<
 export const MINIMUM_POOL: Record<CuePriority, number> = { ambient: 12, guide: 1, event: 8 };
 
 /**
- * How long a bubble stays up, by priority.
+ * How long a bubble stays up *after* its line has finished appearing.
  *
- * An event earns a beat longer because it lands on a screen the hero is already reading; an
- * ambient line is glanced at between breaths and must be gone before it becomes something to
- * wait out. Same order of magnitude as BossTauntOverlay's 4s, which reads well on device.
+ * Measured from the end of the typing rather than from the start, so a long line is not punished
+ * with less reading time than a short one — the first version was a flat total, which meant the
+ * guides (the longest lines in the app) got the least time to be read.
+ *
+ * An ambient line has no typing at all, so its linger is its whole life: glanced at between
+ * breaths, gone before it becomes something to wait out.
  */
-export const CAMEO_DURATION_MS: Record<CuePriority, number> = {
-  event: 5000,
-  // A guide is a whole screen explained in one breath, read once in a hero's life, so it gets the
-  // longest beat — and it is still gone on its own, with nothing to tap.
-  guide: 9000,
+export const CAMEO_LINGER_MS: Record<CuePriority, number> = {
+  event: 4000,
+  // A guide is a whole screen explained in one breath, read once in a hero's life. At ~200 words
+  // per minute a 20-word sentence takes about six seconds to read for the first time.
+  guide: 6000,
   ambient: 3500,
 };
+
+/**
+ * How fast a line types itself out, per character.
+ *
+ * Only guides and events type — the Pokémon rhythm belongs to moments the hero is reading, not to
+ * a line glanced at between two sets, where waiting for a sentence to finish appearing would be
+ * time taken from the session. Reduced motion switches it off entirely: a typewriter is motion.
+ *
+ * 24ms puts a 120-character guide at about three seconds, which reads as deliberate rather than
+ * slow.
+ */
+export const TYPE_MS_PER_CHAR = 24;
 
 /** The length caps the writing rules promise, enforced by `__tests__/villagers.test.ts`. */
 export const LINE_LENGTH_CAP: Record<CuePriority, number> = {

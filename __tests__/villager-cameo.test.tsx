@@ -1,12 +1,13 @@
-import { act, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { cameoBottomOffset, cameoMaxHeight, cameoTopEdge } from "@/components/chorus/cameoAnchor";
 import { VillagerCameo } from "@/components/chorus/VillagerCameo";
-import { CAMEO_DURATION_MS } from "@/constants/villagers";
+import { CAMEO_LINGER_MS, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import en from "@/locales/en.json";
 import { useChorusStore } from "@/stores/chorus";
+import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
@@ -39,6 +40,12 @@ function renderCameo() {
   );
 }
 
+function speakGuide(line: string) {
+  useChorusStore.setState({
+    current: { id: 2, moment: "guide_village", villager: "farmer", pose: "talk", line },
+  });
+}
+
 function speak() {
   useChorusStore.setState({
     current: {
@@ -54,6 +61,9 @@ function speak() {
 describe("VillagerCameo", () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    // The real hook reads the real store. Mocking `useReducedMotion` would verify the cameo
+    // against a stub and hide the day the hook stops reading that field.
+    useSettingsStore.setState({ reducedMotion: false });
     useChorusStore.setState({ current: null });
   });
 
@@ -77,9 +87,11 @@ describe("VillagerCameo", () => {
     });
 
     expect(getByText(en.villagers.farmer.rest[0] as string)).toBeTruthy();
-    // The entire safe-zone promise rests on this prop. PRODUCT.md: "never obstruct logging or
-    // reading the next set" — a villager that swallows the "done" tap breaks the app's one rule.
-    expect(getByTestId("villager-cameo").props.pointerEvents).toBe("none");
+    // `box-none`, not `none`: the container itself never receives a touch, only a child that
+    // explicitly opts in — and the only child that ever does is a guide or event bubble. The
+    // safe-zone promise from PRODUCT.md ("never obstruct logging or reading the next set") is
+    // that during a session nothing here is a target, which the ambient test below pins down.
+    expect(getByTestId("villager-cameo").props.pointerEvents).toBe("box-none");
   });
 
   it("leaves on its own, without anyone dismissing it", async () => {
@@ -89,11 +101,95 @@ describe("VillagerCameo", () => {
       speak();
     });
     await act(() => {
-      jest.advanceTimersByTime(CAMEO_DURATION_MS.ambient + 1);
+      jest.advanceTimersByTime(CAMEO_LINGER_MS.ambient + 1);
     });
 
     expect(queryByText(en.villagers.farmer.rest[0] as string)).toBeNull();
     expect(useChorusStore.getState().current).toBeNull();
+  });
+
+  it("shows an ambient line whole, with nothing to wait for between two sets", async () => {
+    const { getByText, queryByTestId } = await renderCameo();
+
+    await act(() => {
+      speak();
+    });
+
+    // No typing and no tap target: a villager glanced at mid-session must never be something the
+    // hero has to finish, and must never take a tap meant for the set underneath.
+    expect(getByText(en.villagers.farmer.rest[0] as string)).toBeTruthy();
+    expect(queryByTestId("villager-bubble")).toBeNull();
+  });
+
+  it("types a guide out, and a tap finishes it early", async () => {
+    const guide = en.villagers.farmer.guide_village[0] as string;
+    const { getByTestId } = await renderCameo();
+
+    await act(() => {
+      speakGuide(guide);
+    });
+    await act(() => {
+      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 5);
+    });
+
+    // Probed on the visible span, not on the bubble's text: the untyped remainder is rendered
+    // transparent so the bubble never grows mid-sentence, which means the whole string is in the
+    // tree from the first frame and `getByText` would find it regardless.
+    expect(getByTestId("villager-line").props.children).not.toBe(guide);
+
+    await act(async () => {
+      // Awaited: this testing-library's fireEvent is thenable, and an unhandled one swallows
+      // whatever the press handler threw.
+      await fireEvent.press(getByTestId("villager-bubble"));
+    });
+
+    expect(getByTestId("villager-line").props.children).toBe(guide);
+  });
+
+  it("sends the guide away on the tap after it has finished", async () => {
+    const guide = en.villagers.farmer.guide_village[0] as string;
+    const { getByTestId } = await renderCameo();
+
+    await act(() => {
+      speakGuide(guide);
+    });
+    await act(() => {
+      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * guide.length + 1);
+    });
+    await act(async () => {
+      // Awaited: this testing-library's fireEvent is thenable, and an unhandled one swallows
+      // whatever the press handler threw.
+      await fireEvent.press(getByTestId("villager-bubble"));
+    });
+
+    expect(useChorusStore.getState().current).toBeNull();
+  });
+
+  it("does not type at all under reduced motion", async () => {
+    useSettingsStore.setState({ reducedMotion: true });
+    const guide = en.villagers.farmer.guide_village[0] as string;
+    const { getByText } = await renderCameo();
+
+    await act(() => {
+      speakGuide(guide);
+    });
+
+    // A typewriter is motion. Someone who asked the OS for less of it gets the whole line at once.
+    expect(getByText(guide)).toBeTruthy();
+  });
+
+  it("gives a screen reader the whole sentence, not the part typed so far", async () => {
+    const guide = en.villagers.farmer.guide_village[0] as string;
+    const { getByTestId } = await renderCameo();
+
+    await act(() => {
+      speakGuide(guide);
+    });
+    await act(() => {
+      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 3);
+    });
+
+    expect(getByTestId("villager-bubble").props.accessibilityLabel).toBe(guide);
   });
 });
 

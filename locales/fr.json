@@ -828,7 +828,21 @@
         "{{delta}} au-dessus de ta marque. Le corps s'en souviendra avant toi.",
         "Tu as poussé {{delta}} plus loin qu'avant. Ça ne s'est pas fait tout seul."
       ],
-      "guide_quests": ["Les quêtes, ce sont tes séances. Choisis-en une, je m'occupe du reste."]
+      "guide_quests": ["Les quêtes, ce sont tes séances. Choisis-en une, je m'occupe du reste."],
+      "menu_visit": [
+        "Tu regardes. C'est déjà une forme de travail, si on est généreux.",
+        "Prends ton temps pour choisir. Ce qui est mal choisi se paie plus tard.",
+        "Je n'ai jamais compris ces tableaux. J'ai des mains, pas des yeux.",
+        "Moi je décide en tapant. Toi tu peux réfléchir avant. C'est un luxe.",
+        "Regarde tout, choisis une chose. C'est comme ça qu'on ne s'éparpille pas.",
+        "Il n'y a pas de mauvais choix ici. Il y a des choix pas faits, c'est tout.",
+        "Tu peux rester là un moment. La forge attendra, elle attend toujours.",
+        "Le meilleur outil, c'est celui qu'on prend. Pas celui qu'on admire.",
+        "J'ai vu des gens choisir une heure entière. Ils n'ont jamais rien forgé.",
+        "Ça ne se décide pas au poids. Ça se décide à ce que tu veux devenir.",
+        "Rien de tout ça n'est urgent. C'est même le contraire d'urgent.",
+        "Tu sais déjà ce que tu vas prendre. Tu regardes pour te rassurer."
+      ]
     },
     "sage": {
       "rest": [
@@ -857,6 +871,20 @@
       ],
       "guide_home": [
         "C'est ici qu'on te propose la prochaine chose à faire. Tu peux toujours choisir autre chose : c'est un avis, pas un ordre."
+      ],
+      "menu_visit": [
+        "Regarder avant de choisir, c'est déjà choisir un peu.",
+        "Il n'y a pas d'ordre juste. Il y a l'ordre que tu suivras vraiment.",
+        "Les listes rassurent. C'est leur vraie fonction, et ce n'est pas rien.",
+        "Ce que tu ne feras pas aujourd'hui existera encore demain.",
+        "On croit choisir entre des options. On choisit surtout de commencer.",
+        "Prends celle qui te fait le moins peur. Les autres attendront leur tour.",
+        "J'ai passé ma vie à classer des choses. Rien n'est jamais resté classé.",
+        "Un plan trop précis casse au premier imprévu. Garde-le souple.",
+        "Tu n'es pas obligé de tout comprendre pour commencer quelque chose.",
+        "La curiosité est une bonne raison. Elle en vaut beaucoup d'autres.",
+        "Ce qui est écrit là n'est pas une dette. Ce sont des possibilités.",
+        "Choisis, ou ne choisis pas. Les deux sont des réponses valables."
       ]
     },
     "herbalist": {
@@ -1010,6 +1038,20 @@
       ],
       "guide_adventures": [
         "Les aventures enchaînent des quêtes et finissent sur un boss. Tu peux t'arrêter entre deux : il attendra."
+      ],
+      "menu_visit": [
+        "Je regarde la route, toi tes options. Chacun son poste.",
+        "Repère avant d'avancer. C'est le seul conseil que je donne deux fois.",
+        "Ce qui est loin paraît toujours plus dur. C'est un effet d'optique.",
+        "Tu peux revenir sur ta décision. Ce n'est pas un traité de paix.",
+        "Rien n'approche pour l'instant. Profites-en pour préparer tranquille.",
+        "Je préfère te voir choisir lentement que courir dans le mauvais sens.",
+        "Le terrain change. Ce qui était impossible ne l'est pas resté.",
+        "On voit mieux d'ici que d'en bas. C'est tout l'intérêt de s'arrêter.",
+        "Une bonne reconnaissance vaut deux heures de marche économisées.",
+        "Tu prépares. Ça ne se voit pas tout de suite, mais ça se voit après.",
+        "Je note ce qui passe. Toi ce qui te tente. Même métier, au fond.",
+        "Il n'y a rien à craindre dans une liste. Je vérifie, c'est mon travail."
       ]
     }
   }

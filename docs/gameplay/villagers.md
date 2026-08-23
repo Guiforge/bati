@@ -97,6 +97,7 @@ twenty-rest session that must still produce exactly one.
 |---|---|---|---|
 | `rest` | `RestView` mounting | the five ordinary villagers | ambient |
 | `village_visit` | the Village screen | farmer, minstrel, herbalist | ambient |
+| `menu_visit` | Quests, Adventures, Journal | smith, sage, watcher | ambient |
 | `personal_record` | a record with nothing to compare it to | smith, champion | event |
 | `personal_record_beat` | a record that beat a previous mark | smith, champion | event |
 | `boss_defeated` | `isBossDefeat` on the victory screen | watcher, champion | event |
@@ -105,22 +106,58 @@ twenty-rest session that must still produce exactly one.
 
 Two of these carry a rule that is not obvious from the trigger:
 
-**`village_visit` shares the ambient window with `rest`.** The promise is *one villager per
-half-hour wherever you are*, not one per surface — otherwise browsing between sessions would
-quietly double the rate the session was tuned for.
+**All four browsing screens share the ambient window with `rest`.** The promise is *one villager
+per half-hour wherever you are*, not one per surface — otherwise wandering Quests → Adventures →
+Journal before a session would quietly spend three times the rate the session was tuned for.
+`menu_visit` deliberately uses the three villagers `village_visit` does not, so moving between
+screens does not keep producing the same faces; and its lines are about being near someone who is
+deciding, never about the screen, because a villager commenting on "your journal" is describing
+the UI back at you.
 
 **`comeback` is keyed on the last workout date, not on when it was last shown.** Storing "when did
 we greet" would re-greet on every app open during a long absence, reminding someone daily that
 they have stopped — which is the exact shame loop the pool is written against. None of the lines
 mention the absence either.
 
+## What is tappable, and what is never
+
+The figure is inert, always. The **bubble** accepts a tap only for guides and events — never for
+ambient. That line is the safe-zone promise made concrete: during a session, at rest, between two
+sets, nothing this layer draws can intercept a tap meant for the screen underneath.
+
+A guide or an event lands on a screen the hero is *reading* rather than working through, so there
+the bubble behaves the way a text box should: **the first tap finishes the line, the second sends
+it away.** Which is also the Pokémon rhythm the layer borrows its dialogue shape from.
+
+The container is `pointerEvents="box-none"`, not `"none"`: it never receives a touch itself, only a
+child that explicitly opts in, and the only child that ever does is a non-ambient bubble.
+
+## The typing
+
+Guides and events type themselves out at 24 ms a character — about three seconds for a
+120-character guide, which reads as deliberate rather than slow. **Ambient lines never type**: a
+sentence appearing letter by letter between two sets is time taken from the session, and there is
+nothing there to tap to hurry it along.
+
+Reduced motion switches it off entirely. A typewriter is motion.
+
+Two details that are easy to get wrong and are pinned by tests:
+
+- The untyped remainder is rendered **transparent rather than omitted**, so the bubble is its final
+  size from the first character instead of growing line by line under the reader's eye.
+- The accessibility label on the bubble is the **whole sentence**, not the part typed so far — a
+  label that changes every 24 ms is unusable, and a screen reader should get the line at once.
+  The text itself is `accessible={false}` so the half-typed version never reaches the tree.
+
+`CAMEO_LINGER_MS` is measured from the *end* of the typing, not from the start: a flat total meant
+the guides, which are the longest lines in the app, got the least time to be read.
+
 ## The guides
 
-Five, one per tab, one villager and one sentence each, seen once ever. **No tap-to-advance and no
-second bubble**: that keeps the whole layer non-interactive — `pointerEvents="none"` everywhere,
-no exception carved out for a guide — and makes "short and skippable" true by construction rather
-than by a Skip button. A screen you are looking at needs one sentence; if it needs three, the
-screen is the problem.
+Five, one per tab, one villager and one sentence each, seen once ever. **One bubble, not three**:
+"short and skippable" is true by construction rather than by a Skip button, and a screen you are
+looking at needs one sentence — if it needs three, the screen is the problem. Skipping is the tap
+described above.
 
 Settings → **Review the guides** clears the whole `guidesSeen` set at once. One key rather than
 five booleans, because forgetting one of five is exactly how a hero ends up with four guides back

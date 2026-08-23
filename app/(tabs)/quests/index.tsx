@@ -9,7 +9,7 @@ import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
-import { useScreenGuide } from "@/components/chorus/screenCues";
+import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -326,6 +326,7 @@ const ANDROID_MIN_BOTTOM_INSET = 24;
 
 export default function QuestsGallery() {
   useScreenGuide("guide_quests");
+  useAmbientVisit("menu_visit");
 
   const router = useRouter();
   const insets = useSafeAreaInsets();

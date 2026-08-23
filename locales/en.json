@@ -828,7 +828,21 @@
         "{{delta}} above your mark. Your body will remember it before you do.",
         "You pushed {{delta}} further than before. That didn't happen by itself."
       ],
-      "guide_quests": ["Quests are your workouts. Pick one, and I'll see to the rest."]
+      "guide_quests": ["Quests are your workouts. Pick one, and I'll see to the rest."],
+      "menu_visit": [
+        "You're looking. That's a form of work, if we're being generous.",
+        "Take your time choosing. What's badly chosen gets paid for later.",
+        "I never understood these tables. I have hands, not eyes.",
+        "I decide by hitting things. You get to think first. That's a luxury.",
+        "Look at all of it, pick one. That's how you avoid scattering yourself.",
+        "There are no bad choices here. Only choices not made, which is different.",
+        "You can stand there a while. The forge will wait. It always waits.",
+        "The best tool is the one you pick up. Not the one you admire.",
+        "I've watched people choose for an hour. They never forged a thing.",
+        "It isn't decided by weight. It's decided by what you want to become.",
+        "None of this is urgent. It's rather the opposite of urgent.",
+        "You already know what you'll take. You're looking to reassure yourself."
+      ]
     },
     "sage": {
       "rest": [
@@ -857,6 +871,20 @@
       ],
       "guide_home": [
         "This is where the app offers you the next thing. You can always pick something else — it's an opinion, not an order."
+      ],
+      "menu_visit": [
+        "Looking before choosing is already choosing, a little.",
+        "There is no correct order. There is the order you'll actually follow.",
+        "Lists are reassuring. That's their real function, and it isn't nothing.",
+        "What you don't do today will still exist tomorrow.",
+        "We think we choose between options. Mostly we choose to begin.",
+        "Take the one that frightens you least. The others will wait their turn.",
+        "I spent my life sorting things. Nothing ever stayed sorted.",
+        "A plan too precise breaks on the first surprise. Keep it loose.",
+        "You don't have to understand all of it to begin something.",
+        "Curiosity is a good reason. It's worth a great many others.",
+        "What's written there isn't a debt. They're possibilities.",
+        "Choose, or don't. Both are valid answers."
       ]
     },
     "herbalist": {
@@ -1010,6 +1038,20 @@
       ],
       "guide_adventures": [
         "Adventures chain quests together and end on a boss. You can stop between two — it will wait."
+      ],
+      "menu_visit": [
+        "I watch the road, you watch your options. Each to their post.",
+        "Scout before you move. It's the only advice I give twice.",
+        "Distant things always look harder. That's a trick of the eye.",
+        "You can go back on a decision. It isn't a peace treaty.",
+        "Nothing is coming just now. Use it to get ready without hurrying.",
+        "I'd rather watch you choose slowly than run the wrong way.",
+        "The ground changes. What was impossible didn't stay impossible.",
+        "You see better from up here than down there. That's the point of stopping.",
+        "Good reconnaissance is worth two hours of walking saved.",
+        "You're preparing. It doesn't show immediately, but it shows afterwards.",
+        "I log what passes. You log what tempts you. Same trade, really.",
+        "There's nothing to fear in a list. I check. It's my job."
       ]
     }
   }

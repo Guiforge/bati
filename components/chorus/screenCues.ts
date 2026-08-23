@@ -51,6 +51,22 @@ export function useScreenGuide(moment: GuideMoment): void {
 }
 
 /**
+ * Raise a screen's ambient cue when the hero arrives on it.
+ *
+ * All four browsing screens share the *same* ambient window as the rest screen, on purpose: the
+ * promise is one villager per half-hour wherever you are, not one per surface. Without that,
+ * wandering Quests -> Adventures -> Journal before a session would quietly spend three times the
+ * rate the session was tuned for.
+ */
+export function useAmbientVisit(moment: "village_visit" | "menu_visit"): void {
+  const cue = useChorusStore((s) => s.cue);
+
+  useEffect(() => {
+    cue(moment);
+  }, [moment, cue]);
+}
+
+/**
  * Greet a hero who has been away, exactly once per absence.
  *
  * Keyed on the *last workout date* rather than on when the greeting was last shown. Storing "when

@@ -11,6 +11,7 @@ export function estimateExerciseSeconds(exercise: Pick<Exercise, "secondsPerRep"
 export type EstimateQuestInput = {
   rounds: number;
   restSeconds: number;
+  roundRestSeconds: number | null;
   exercises: Array<{
     exercise: Pick<Exercise, "secondsPerRep">;
     target: Target;
@@ -20,6 +21,9 @@ export type EstimateQuestInput = {
 export function estimateQuestSeconds(quest: EstimateQuestInput) {
   const rounds = Math.max(1, Math.round(quest.rounds));
   const restSeconds = Math.max(0, Math.round(quest.restSeconds));
+  // Null is not "zero rest between rounds", it is "no separate round rest" — the shape every
+  // quest had before the column existed.
+  const roundRest = Math.max(0, Math.round(quest.roundRestSeconds ?? restSeconds));
 
   const workPerRound = quest.exercises.reduce(
     (sum, qex) => sum + estimateExerciseSeconds(qex.exercise, qex.target),
@@ -27,9 +31,11 @@ export function estimateQuestSeconds(quest: EstimateQuestInput) {
   );
 
   const setCount = rounds * quest.exercises.length;
-  const restCount = Math.max(0, setCount - 1);
+  // The round rest replaces the set rest at every round boundary but the last, which has neither.
+  const roundRestCount = setCount === 0 ? 0 : rounds - 1;
+  const restCount = Math.max(0, setCount - 1 - roundRestCount);
 
-  return rounds * workPerRound + restCount * restSeconds;
+  return rounds * workPerRound + restCount * restSeconds + roundRestCount * roundRest;
 }
 
 /**

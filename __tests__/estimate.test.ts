@@ -16,6 +16,7 @@ describe("db/estimate", () => {
     const quest = {
       rounds: 2,
       restSeconds: 30,
+      roundRestSeconds: null,
       exercises: [
         {
           exercise: { secondsPerRep: 3 },
@@ -33,6 +34,31 @@ describe("db/estimate", () => {
     // sets = 2 rounds * 2 exercises = 4; rest intervals = 3
     // rest = 3 * 30 = 90
     expect(estimateQuestSeconds(quest)).toBe(190);
+  });
+
+  it("bills the round rest at round boundaries and the set rest inside them", () => {
+    const quest = {
+      rounds: 2,
+      restSeconds: 30,
+      roundRestSeconds: 90,
+      exercises: [
+        { exercise: { secondsPerRep: 3 }, target: { type: "reps", value: 10 } },
+        { exercise: { secondsPerRep: 1 }, target: { type: "time", value: 20 } },
+      ],
+    } satisfies EstimateQuestInput;
+
+    // 100 work, 2 gaps inside rounds (2 * 30) and 1 round boundary (90).
+    expect(estimateQuestSeconds(quest)).toBe(250);
+
+    // A single exercise makes every gap a round boundary, so no set rest is billed at all.
+    expect(
+      estimateQuestSeconds({
+        rounds: 3,
+        restSeconds: 30,
+        roundRestSeconds: 90,
+        exercises: [{ exercise: { secondsPerRep: 3 }, target: { type: "reps", value: 10 } }],
+      }),
+    ).toBe(3 * 30 + 2 * 90);
   });
 
   it("rounds estimates to the minute, never below one", () => {

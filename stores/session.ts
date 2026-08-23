@@ -628,8 +628,12 @@ export const useSessionStore = create<SessionState>()(
         nextExercise = 0;
       }
 
-      // Handle Rest
-      const restSeconds = quest.restSeconds;
+      // Handle Rest. The last exercise of a round means the round is over — the last-round case
+      // already returned as "finished" above — so the longer round rest applies. `??`, not `||`:
+      // a round rest of 0 means "no rest screen between rounds", not "fall back to restSeconds".
+      const restSeconds = isLastExerciseInRound
+        ? (quest.roundRestSeconds ?? quest.restSeconds)
+        : quest.restSeconds;
 
       // If we have rest, we go to resting state.
       // The indices (round/exercise) will point to the NEXT exercise,

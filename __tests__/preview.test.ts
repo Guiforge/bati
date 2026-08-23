@@ -5,6 +5,7 @@ describe("db/preview", () => {
     const template = {
       rounds: 2,
       restSeconds: 30,
+      roundRestSeconds: null,
       exercises: [
         {
           exerciseId: 1,

@@ -51,6 +51,8 @@ export type QuestTemplate = {
   author: string;
   rounds: number;
   restSeconds: number;
+  /** Rest between rounds. Null = no separate round rest, `restSeconds` applies there too. */
+  roundRestSeconds: number | null;
   /** What kind of session this is. Null for user-authored quests. */
   archetype: QuestArchetype | null;
   imagePath: string;
@@ -66,6 +68,8 @@ export type Quest = {
   author: string;
   rounds: number;
   restSeconds: number;
+  /** Rest between rounds. Null = no separate round rest, `restSeconds` applies there too. */
+  roundRestSeconds: number | null;
   /** What kind of session this is. Null for user-authored quests. */
   archetype: QuestArchetype | null;
   imagePath: string;
@@ -167,6 +171,7 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
       author: input.author ?? "Admin",
       rounds: input.rounds,
       restSeconds: input.restSeconds,
+      roundRestSeconds: input.roundRestSeconds,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -225,6 +230,7 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      roundRestSeconds: quests.roundRestSeconds,
       archetype: quests.archetype,
       imagePath: quests.imagePath,
 
@@ -253,6 +259,7 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
         author: r.author,
         rounds: r.rounds,
         restSeconds: r.restSeconds,
+        roundRestSeconds: r.roundRestSeconds,
         archetype: r.archetype ?? null,
         imagePath: r.imagePath ?? "assets/placeholder.jpg",
         exercises: [],
@@ -305,6 +312,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      roundRestSeconds: quests.roundRestSeconds,
       archetype: quests.archetype,
       imagePath: quests.imagePath,
 
@@ -333,6 +341,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
     author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
+    roundRestSeconds: first.roundRestSeconds,
     archetype: first.archetype ?? null,
     imagePath: first.imagePath ?? "assets/placeholder.jpg",
     exercises: [],
@@ -376,6 +385,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       author: quests.author,
       rounds: quests.rounds,
       restSeconds: quests.restSeconds,
+      roundRestSeconds: quests.roundRestSeconds,
       archetype: quests.archetype,
       imagePath: quests.imagePath,
 
@@ -428,6 +438,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     author: first.author,
     rounds: first.rounds,
     restSeconds: first.restSeconds,
+    roundRestSeconds: first.roundRestSeconds,
     archetype: first.archetype ?? null,
     imagePath: first.imagePath ?? "assets/placeholder.jpg",
     exercises: [],
@@ -487,7 +498,13 @@ export async function updateQuestMeta(
   patch: Partial<
     Pick<
       QuestTemplate,
-      "enTitle" | "frTitle" | "enDescription" | "frDescription" | "rounds" | "restSeconds"
+      | "enTitle"
+      | "frTitle"
+      | "enDescription"
+      | "frDescription"
+      | "rounds"
+      | "restSeconds"
+      | "roundRestSeconds"
     >
   >,
 ): Promise<void> {

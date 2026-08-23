@@ -69,14 +69,28 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset }: 
               onChange={(rounds) => onChange({ ...config, rounds })}
             />
 
+            {/* The label renders on one line, so which rest is which goes in the hint. */}
             <Stepper
               label={t("quests.config_rest", "Rest")}
+              hint={t("quests.config_rest_hint", "Between exercises")}
               value={quest.restSeconds}
               min={REST_RANGE.min}
               max={REST_RANGE.max}
               step={REST_STEP}
               suffix="s"
               onChange={(restSeconds) => onChange({ ...config, restSeconds })}
+            />
+
+            {/* Null means the quest has no separate round rest, so the short one is what runs. */}
+            <Stepper
+              label={t("quests.config_round_rest", "Round rest")}
+              hint={t("quests.config_round_rest_hint", "Between rounds")}
+              value={quest.roundRestSeconds ?? quest.restSeconds}
+              min={REST_RANGE.min}
+              max={REST_RANGE.max}
+              step={REST_STEP}
+              suffix="s"
+              onChange={(roundRestSeconds) => onChange({ ...config, roundRestSeconds })}
             />
 
             <Separator borderColor="$borderStrong" />

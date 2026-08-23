@@ -29,6 +29,7 @@ Think of quests as pre-designed workout routines:
 | `author` | string | Content creator ("Admin" for built-in) |
 | `rounds` | number | How many times to repeat all exercises |
 | `restSeconds` | number | Rest between sets (in seconds) |
+| `roundRestSeconds` | number \| null | Longer rest taken when a round ends. `null` = no separate round rest, `restSeconds` applies there too |
 
 ### Quest Exercises
 
@@ -90,6 +91,7 @@ CREATE TABLE quests (
   author TEXT NOT NULL DEFAULT 'Admin',
   rounds INTEGER NOT NULL DEFAULT 1,
   restSeconds INTEGER NOT NULL DEFAULT 30,
+  roundRestSeconds INTEGER,
   createdAt INTEGER,
   updatedAt INTEGER
 );
@@ -146,6 +148,7 @@ export interface Quest {
   author: string;
   rounds: number;
   restSeconds: number;
+  roundRestSeconds: number | null;
   exercises: QuestExercise[];
   createdAt: Date;
   updatedAt: Date;

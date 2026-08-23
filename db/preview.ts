@@ -5,7 +5,7 @@ import type { DifficultyCode } from "./schema";
 import { Difficulty, generateTarget } from "./targets";
 
 export function estimateQuestTemplateSeconds(input: {
-  template: Pick<QuestTemplate, "rounds" | "restSeconds" | "exercises">;
+  template: Pick<QuestTemplate, "rounds" | "restSeconds" | "roundRestSeconds" | "exercises">;
   exercisesById: Record<number, Pick<Exercise, "secondsPerRep">>;
   userLevel: DifficultyCode;
 }): number {
@@ -44,6 +44,7 @@ export function estimateQuestTemplateSeconds(input: {
   return estimateQuestSeconds({
     rounds: input.template.rounds,
     restSeconds: input.template.restSeconds,
+    roundRestSeconds: input.template.roundRestSeconds,
     exercises,
   });
 }

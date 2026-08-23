@@ -27,6 +27,7 @@ export function RestView() {
   const reducedMotion = useReducedMotion();
   const quest = useSessionStore((s) => s.quest);
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
+  const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
   const skipRest = useSessionStore((s) => s.skipRest);
   const addRestTime = useSessionStore((s) => s.addRestTime);
   const results = useSessionStore((s) => s.results);
@@ -52,6 +53,9 @@ export function RestView() {
   // Rest is shown *before* an exercise, so the index always points at one — unless a saved
   // session is restored against a quest that has since been edited, in which case there is
   // nothing to rest before and the screen has nothing to say.
+  // Same reason: an exercise index back at zero on any round past the first means the round just
+  // ended, so this is the longer rest and the screen says so.
+  const isRoundRest = currentExerciseIndex === 0 && currentRoundIndex > 0;
   const nextEx = quest.exercises[currentExerciseIndex];
   const nextExName = nextEx ? localizedName(nextEx.exercise, language) : "";
 
@@ -139,7 +143,7 @@ export function RestView() {
         >
           <GameIcon name="flame" size={40} color="$warning" />
           <H3 color="$text" fontWeight="700">
-            {t("session.rest_title")}
+            {isRoundRest ? t("session.round_rest_title") : t("session.rest_title")}
           </H3>
         </YStack>
       )}

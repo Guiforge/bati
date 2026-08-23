@@ -104,6 +104,7 @@ describe("db/quests", () => {
       frDescription: "Test",
       rounds: 1,
       restSeconds: 20,
+      roundRestSeconds: 60,
       exercises: [
         {
           exerciseId: squat.id,
@@ -115,6 +116,7 @@ describe("db/quests", () => {
 
     const created = await quests.getQuestTemplateById(id);
     expect(created?.enTitle).toBe("Test quest");
+    expect(created?.roundRestSeconds).toBe(60);
     expect(created?.exercises.length).toBe(1);
 
     await quests.updateQuestMeta(id, { enTitle: "Test quest updated" });

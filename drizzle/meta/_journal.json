@@ -239,6 +239,13 @@
       "when": 1787104800000,
       "tag": "0033_calisthenics_summits",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "6",
+      "when": 1787108400000,
+      "tag": "0034_quest_round_rest",
+      "breakpoints": true
     }
   ]
 }

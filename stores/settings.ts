@@ -23,12 +23,14 @@ interface SettingsState {
   customAvatarUri: string | null;
   hapticsEnabled: boolean;
   reducedMotion: boolean;
+  villagersEnabled: boolean;
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
   setAvatarId: (avatarId: AvatarId) => Promise<void>;
   setCustomAvatarUri: (uri: string | null) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => Promise<void>;
+  setVillagersEnabled: (enabled: boolean) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
 }
@@ -61,6 +63,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   customAvatarUri: null,
   hapticsEnabled: true,
   reducedMotion: false,
+  villagersEnabled: true,
   isLoaded: false,
 
   setLanguage: async (language) => {
@@ -93,15 +96,21 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setHapticsEnabled(enabled);
   },
 
+  setVillagersEnabled: async (enabled) => {
+    set({ villagersEnabled: enabled });
+    await preferences.setVillagersEnabled(enabled);
+  },
+
   loadFromDatabase: async () => {
     try {
-      const [language, avatarId, customAvatarUri, hapticsEnabled, reducedMotion] =
+      const [language, avatarId, customAvatarUri, hapticsEnabled, reducedMotion, villagersEnabled] =
         await Promise.all([
           preferences.getLanguage(),
           preferences.getAvatarId(),
           preferences.getCustomAvatarUri(),
           preferences.getHapticsEnabled(),
           deviceReducedMotionWithin(ACCESSIBILITY_PROBE_MS),
+          preferences.getVillagersEnabled(),
         ]);
 
       const normalizedLanguage = resolveAppLanguage(language);
@@ -119,6 +128,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         customAvatarUri,
         hapticsEnabled,
         reducedMotion,
+        villagersEnabled,
         isLoaded: true,
       });
 

@@ -650,7 +650,10 @@
     "safety": "S'entraîner en sécurité",
     "tap_change": "Touche pour changer",
     "title": "Paramètres",
-    "warmup": "Échauffement"
+    "warmup": "Échauffement",
+    "villagers": "Villageois",
+    "replay_guides": "Revoir les guides",
+    "replay_guides_done": "Les guides reviendront"
   },
   "splash": {
     "loading": "Construction du village..."
@@ -790,5 +793,274 @@
       "unreadable": "Ce fichier n'a pas pu être ouvert."
     },
     "saveDone": "Sauvegarde enregistrée"
+  },
+  "villagers": {
+    "units": {
+      "delta_reps_one": "{{count}} répétition",
+      "delta_reps_other": "{{count}} répétitions",
+      "delta_seconds_one": "{{count}} seconde",
+      "delta_seconds_other": "{{count}} secondes"
+    },
+    "smith": {
+      "rest": [
+        "Le fer aussi refroidit entre deux coups. Personne ne s'en plaint.",
+        "Tu souffles. C'est le bruit que fait le travail quand il a été fait.",
+        "J'ai vu des enclumes tenir moins longtemps que toi.",
+        "Rien ne se forge d'un seul coup. C'est même la définition.",
+        "Prends ton temps. L'ouvrage ne se sauve pas en courant.",
+        "Un bras qui tremble, c'est un bras qui a servi.",
+        "Moi je m'assois entre deux pièces. Personne n'a jamais rien dit.",
+        "Le plus dur dans ce métier, c'est de s'arrêter au bon moment.",
+        "Tu repars quand tu veux. Moi, je ne suis pas pressé.",
+        "Trente ans à taper sur du métal. J'ai appris à respecter une pause.",
+        "Ce que tu viens de faire se voit dans les mains avant de se voir ailleurs.",
+        "Souffle. Le reste suivra tout seul, ou pas. On verra bien."
+      ],
+      "personal_record": [
+        "Nouvelle marque sur le poteau. Je la taille moi-même, ça ne se fait pas tout seul.",
+        "Première fois que ça se fait ici. Ça compte, même si personne ne regardait.",
+        "Tiens. Le métal a cédé avant toi, pour une fois.",
+        "Ça, c'est du travail propre. Je ne le dis pas souvent, alors prends-le.",
+        "Tu as trouvé un cran de plus. Il était là depuis le début.",
+        "Je note. Pas pour toi : pour le prochain qui dira que c'est impossible.",
+        "Le geste a tenu jusqu'au bout. C'est ça qui a fait la différence, pas la force.",
+        "Voilà. Rien de magique, rien de spectaculaire. Juste fait."
+      ],
+      "personal_record_beat": [
+        "{{exercise}} : {{delta}} de plus que la dernière fois. Je compte, moi.",
+        "Tu as ajouté {{delta}}. Pas trouvé, pas eu de chance : ajouté.",
+        "{{delta}} de mieux. C'est la quantité exacte de travail que ça représente.",
+        "La dernière fois, tu as lâché {{delta}} plus tôt. Aujourd'hui, non.",
+        "{{delta}} de plus. Dit comme ça, ce n'est rien. Dans les bras, c'est autre chose.",
+        "{{exercise}} : {{delta}} de mieux. Ça va sur le poteau avec le reste.",
+        "{{delta}} au-dessus de ta marque. Le corps s'en souviendra avant toi.",
+        "Tu as poussé {{delta}} plus loin qu'avant. Ça ne s'est pas fait tout seul."
+      ],
+      "guide_quests": ["Les quêtes, ce sont tes séances. Choisis-en une, je m'occupe du reste."],
+      "menu_visit": [
+        "Tu regardes. C'est déjà une forme de travail, si on est généreux.",
+        "Prends ton temps pour choisir. Ce qui est mal choisi se paie plus tard.",
+        "Je n'ai jamais compris ces tableaux. J'ai des mains, pas des yeux.",
+        "Moi je décide en tapant. Toi tu peux réfléchir avant. C'est un luxe.",
+        "Regarde tout, choisis une chose. C'est comme ça qu'on ne s'éparpille pas.",
+        "Il n'y a pas de mauvais choix ici. Il y a des choix pas faits, c'est tout.",
+        "Tu peux rester là un moment. La forge attendra, elle attend toujours.",
+        "Le meilleur outil, c'est celui qu'on prend. Pas celui qu'on admire.",
+        "J'ai vu des gens choisir une heure entière. Ils n'ont jamais rien forgé.",
+        "Ça ne se décide pas au poids. Ça se décide à ce que tu veux devenir.",
+        "Rien de tout ça n'est urgent. C'est même le contraire d'urgent.",
+        "Tu sais déjà ce que tu vas prendre. Tu regardes pour te rassurer."
+      ]
+    },
+    "sage": {
+      "rest": [
+        "Le repos n'est pas l'envers de l'effort. C'est la moitié qu'on ne voit pas.",
+        "Personne n'a gravi une colline sans reprendre son souffle à mi-pente.",
+        "J'ai lu beaucoup de choses sur la patience. Aucune ne m'a rendu patient.",
+        "Ce qui se construit vite se défait vite. C'est ennuyeux, mais c'est ainsi.",
+        "Tu es entre deux choses. C'est un endroit parfaitement honorable.",
+        "La lumière des étoiles met des siècles à venir. Elle n'a pas l'air pressée.",
+        "On me demande souvent le secret. Le secret, c'est de revenir.",
+        "Un instant de calme n'a jamais coûté à personne ce qu'il avait déjà gagné.",
+        "Il n'y a rien à prouver dans les intervalles. Seulement à respirer.",
+        "Quarante ans de notes. Les progrès se lisent en mois, jamais en jours.",
+        "Tu recommenceras quand tu voudras. Le monde attend très bien.",
+        "L'impatience est un excellent moteur et un très mauvais guide."
+      ],
+      "comeback": [
+        "Te voilà. Le village n'a pas bougé, et il n'avait pas à bouger.",
+        "La porte n'était pas fermée. Elle ne l'est jamais, c'est là son intérêt.",
+        "On reprend là où c'était. Il n'y a pas d'ardoise à effacer.",
+        "Le temps passe pour tout le monde, y compris pour ceux qui s'entraînent.",
+        "Rien de ce que tu as bâti ne s'est défait. Ces choses-là sont patientes.",
+        "Bienvenue. C'est tout ce que j'ai à dire, et c'est déjà beaucoup.",
+        "Le plus dur était de repousser la porte. C'est fait.",
+        "Ce que tu sais, tu le sais encore. Le corps est rancunier, il se calmera."
+      ],
+      "guide_home": [
+        "C'est ici qu'on te propose la prochaine chose à faire. Tu peux toujours choisir autre chose : c'est un avis, pas un ordre."
+      ],
+      "menu_visit": [
+        "Regarder avant de choisir, c'est déjà choisir un peu.",
+        "Il n'y a pas d'ordre juste. Il y a l'ordre que tu suivras vraiment.",
+        "Les listes rassurent. C'est leur vraie fonction, et ce n'est pas rien.",
+        "Ce que tu ne feras pas aujourd'hui existera encore demain.",
+        "On croit choisir entre des options. On choisit surtout de commencer.",
+        "Prends celle qui te fait le moins peur. Les autres attendront leur tour.",
+        "J'ai passé ma vie à classer des choses. Rien n'est jamais resté classé.",
+        "Un plan trop précis casse au premier imprévu. Garde-le souple.",
+        "Tu n'es pas obligé de tout comprendre pour commencer quelque chose.",
+        "La curiosité est une bonne raison. Elle en vaut beaucoup d'autres.",
+        "Ce qui est écrit là n'est pas une dette. Ce sont des possibilités.",
+        "Choisis, ou ne choisis pas. Les deux sont des réponses valables."
+      ]
+    },
+    "herbalist": {
+      "rest": [
+        "Bois. Pas parce que je te le dis : parce que tu vas le regretter sinon.",
+        "Le souffle revient avant les jambes. Toujours dans cet ordre. Ne t'inquiète pas.",
+        "J'ai des remèdes pour bien des choses. Pour l'impatience, je n'ai rien trouvé.",
+        "Le corps répare pendant que tu ne fais rien. C'est très mal réparti, je sais.",
+        "Assieds-toi si tu veux. Les gens croient que c'est de la triche. Ce n'en est pas.",
+        "La douleur qui crie ment souvent. Celle qui chuchote, écoute-la.",
+        "J'ai vu des gens bien plus costauds tomber de ne pas savoir s'arrêter.",
+        "Le sommeil fait plus pour tes muscles que tout ce que j'ai dans mes fioles.",
+        "Tu transpires. C'est la mécanique qui tourne, rien de plus grave.",
+        "Respire par le nez. Ce n'est pas une superstition, c'est de la plomberie.",
+        "Personne ne m'a jamais remerciée pour un conseil de repos. Tout le monde revient.",
+        "Ce que tu ressens là a un nom, et ce n'est pas un problème."
+      ],
+      "village_visit": [
+        "Mon jardin a doublé. Je ne me plains pas, mais je désherbe deux fois plus.",
+        "Il y a de la place pour un séchoir, maintenant. J'y pense depuis longtemps.",
+        "On tombe moins malade dans un village bien bâti. C'est vérifiable.",
+        "Chaque mur en plus, c'est un courant d'air en moins. Ça compte, l'hiver.",
+        "Je reconnais chaque toit à sa fumée. Un talent inutile, je sais.",
+        "On m'a demandé un remède contre la fierté. Je n'en ai pas. Tant mieux.",
+        "Ce village respire mieux qu'avant. Je choisis mes mots, d'habitude.",
+        "Il pousse des choses ici qui ne poussaient pas. Va savoir pourquoi.",
+        "Regarde-le sans rien chercher à corriger. C'est un exercice, aussi.",
+        "Les enfants ont où courir, maintenant. Ça vaut tous mes onguents.",
+        "J'ai vu des villages disparaître. Celui-là ne va nulle part.",
+        "Tu peux rester là un moment. Ce n'est pas du temps perdu."
+      ],
+      "guide_journal": [
+        "Tout ce que tu as fait est là. Pas pour te juger : pour voir ce qui bouge."
+      ]
+    },
+    "minstrel": {
+      "rest": [
+        "Ne bouge pas, je cherche une rime. C'est plus dur que ce que tu viens de faire.",
+        "Dans la chanson, cette pause durera trois secondes et sera très héroïque.",
+        "J'ajoute un vers. Il te fera passer pour quelqu'un de beaucoup plus calme.",
+        "Les héros des chansons ne s'arrêtent jamais. C'est pour ça qu'ils meurent jeunes.",
+        "J'ai déjà le titre. Le reste viendra au dernier moment, comme d'habitude.",
+        "Tu veux la version où tu souffles, ou la version où tu ne souffles pas ?",
+        "Personne ne chante les pauses. Une injustice que je compte réparer.",
+        "Je note tout. Un jour ça se chantera dans des tavernes que tu ne verras jamais.",
+        "La foule, dans ma tête, est absolument déchaînée. Tu ne peux pas l'entendre.",
+        "Reprends quand tu veux. Moi, je suis payé au vers, pas à l'heure.",
+        "Il me faut un mot pour le bruit que tu fais. Rien ne convient vraiment.",
+        "C'est le moment où le public croit que c'est fini. Il a tort."
+      ],
+      "village_visit": [
+        "Je connais une chanson pour chaque toit d'ici. Certaines sont même bonnes.",
+        "C'est plus joli qu'à mon arrivée. Je ne dis pas ça pour flatter. Un peu, si.",
+        "J'ai vu des capitales moins vivantes que ce coin de boue.",
+        "Il faudrait un nom pour cette place. Je propose, personne n'écoute.",
+        "Chaque bâtiment a son histoire. J'en ai inventé la moitié, mais quand même.",
+        "Les voyageurs demandent qui a bâti tout ça. J'aime beaucoup ce moment.",
+        "Un jour on chantera cet endroit ailleurs. Je m'en occupe personnellement.",
+        "Regarde les toits. Non, vraiment. Voilà, c'était ça, le conseil.",
+        "Il y a de la lumière à des fenêtres qui étaient noires. Ça se remarque.",
+        "J'ai composé trois vers sur ce puits. Trois. On ne m'avait rien demandé.",
+        "Les gens s'installent ici. Ils ne me demandent jamais pourquoi. Dommage.",
+        "C'est un bel endroit. Je le dis rarement, alors note-le quelque part."
+      ],
+      "comeback": [
+        "Te revoilà ! J'avais gardé la chanson au chaud, elle est un peu froissée.",
+        "Quelqu'un est rentré ! Personne ne m'écoute, mais je le dis quand même.",
+        "J'ai continué l'histoire sans toi. Elle était nettement moins bien.",
+        "Le héros revient au chapitre suivant. C'est toujours le meilleur chapitre.",
+        "Tu tombes bien, j'étais à court de matière.",
+        "On me demandait de tes nouvelles. J'inventais, comme d'habitude.",
+        "Le village est exactement comme tu l'as laissé. C'est le principe d'un village.",
+        "Bon retour. Je place ça ici, dans le refrain, ça ira très bien."
+      ]
+    },
+    "farmer": {
+      "rest": [
+        "J'ai porté des sacs toute la matinée. On s'assoit. Personne n'en meurt.",
+        "Un champ qui ne se repose pas donne moins l'année suivante. Toi, c'est pareil.",
+        "Le travail sera encore là dans deux minutes. Il est très fidèle comme ça.",
+        "On ne récolte pas en semant plus fort. Ça m'a pris dix ans à comprendre.",
+        "Tu fais ça tous les combien ? Peu importe. Ce qui compte, c'est d'y revenir.",
+        "On croit que le dur, c'est la moisson. Le dur, c'est tous les jours d'avant.",
+        "Souffle un coup. Chez moi les bêtes soufflent aussi, et elles savent y faire.",
+        "Ce n'est pas héroïque, ce que tu fais. C'est juste bien fait. C'est mieux.",
+        "J'ai vu passer des saisons entières. Rien de bon n'est jamais allé vite.",
+        "Personne ne te regarde. C'est justement là que ça compte.",
+        "Il y aura des jours où ce sera moins bon. Ils comptent quand même.",
+        "Le corps s'habitue. C'est bête, un corps, mais c'est appliqué."
+      ],
+      "village_visit": [
+        "Tout ça a poussé pendant que tu t'entraînais. C'est comme ça que ça marche ici.",
+        "Le village grandit lentement. C'est le seul rythme que je connaisse.",
+        "Personne n'a rien acheté ici. Chaque planche a été gagnée.",
+        "Il y a plus de toits qu'avant. Je ne saurais pas dire lesquels.",
+        "On répare, on rebâtit, on recommence. C'est un village, pas un monument.",
+        "Je passe par là tous les matins. Ça change sans qu'on le voie changer.",
+        "Le bois vient d'ici. Le reste aussi, si on remonte assez loin.",
+        "Ce qui tient debout, c'est ce qui a été fait deux fois plutôt qu'une.",
+        "Tu regardes ton travail. Ce n'est pas de la vanité, c'est de la comptabilité.",
+        "Un village, ça ne se termine jamais. C'est plutôt rassurant, je trouve.",
+        "Les fondations ne se voient plus. Elles portent toujours le reste.",
+        "Rien ici n'est arrivé d'un coup. Absolument rien."
+      ],
+      "guide_village": [
+        "Rien ne s'achète ici. Ce que tu vois, tu l'as bâti en t'entraînant — un bâtiment par muscle."
+      ]
+    },
+    "champion": {
+      "personal_record": [
+        "Nouveau plafond. Le prochain sera plus dur à décrocher, c'est comme ça.",
+        "Ce n'est pas de la chance. C'est du travail qui arrive à échéance.",
+        "J'ai mis trois hivers à passer ce cran-là. Bravo quand même.",
+        "Marque battue. Retiens la sensation, pas le chiffre : c'est elle qui revient.",
+        "Voilà ce que ça fait. Tu sauras le reconnaître la prochaine fois.",
+        "Le corps ne fait jamais ça par hasard. Il avait la place, tu l'as prise.",
+        "Première fois. Il n'y en a qu'une, alors reste dedans une seconde.",
+        "Propre. On se reparle quand tu voudras passer au-dessus."
+      ],
+      "personal_record_beat": [
+        "{{delta}} de plus qu'à ton meilleur. Ce n'est ni rien, ni un accident.",
+        "{{exercise}} : {{delta}} au-dessus. Je sais exactement ce que ça coûte.",
+        "Tu as gagné {{delta}} sur toi-même. Le seul adversaire qui compte ici.",
+        "{{delta}} de mieux. La marche suivante sera plus haute. Elle l'est toujours.",
+        "La dernière fois, {{delta}} de moins. Aujourd'hui, ça. Voilà la ligne.",
+        "{{delta}} de plus, et le geste a tenu. C'est la deuxième partie qui compte.",
+        "{{exercise}}, {{delta}} au-dessus de ta marque. Garde-le pour les jours creux.",
+        "{{delta}} de gagné. Ça se paie en sommeil, pas en volonté. Va dormir."
+      ],
+      "boss_defeated": [
+        "C'est fini. Assieds-toi avant que tes jambes s'en aperçoivent.",
+        "J'ai vu tomber des choses plus grosses. Pas beaucoup.",
+        "Bien frappé jusqu'au bout. C'est la fin qui est dure, pas le début.",
+        "Le suivant aura entendu parler de toi. Ça ne l'aidera pas.",
+        "Tu as tenu la distance. C'est plus rare que la force.",
+        "Voilà. Ça ne se refera pas deux fois pareil, alors regarde-le une seconde.",
+        "Reste debout un moment. Le village aime voir qui rentre.",
+        "Propre. Sans élégance, mais propre. Les deux, ce sera pour plus tard."
+      ]
+    },
+    "watcher": {
+      "boss_defeated": [
+        "C'est tombé. Quoi que c'était, ça ne l'est plus.",
+        "Je l'ai vu passer la crête il y a des semaines. Je n'aurais pas parié sur l'issue.",
+        "La route de l'est est calme ce soir. C'est toi qui l'as rendue calme.",
+        "Du haut de la tour on voit surtout ce qui approche. Ce soir, rien n'approche.",
+        "J'ai relevé la garde. Elle peut dormir. Ça n'arrive pas souvent.",
+        "Rapport transmis. Ce sera écrit exactement comme c'est arrivé, promis.",
+        "C'était celle dont on ne revient pas. Statistiquement, tu as triché.",
+        "Il y aura une histoire demain matin. Fausse pour l'essentiel, comme toujours."
+      ],
+      "guide_adventures": [
+        "Les aventures enchaînent des quêtes et finissent sur un boss. Tu peux t'arrêter entre deux : il attendra."
+      ],
+      "menu_visit": [
+        "Je regarde la route, toi tes options. Chacun son poste.",
+        "Repère avant d'avancer. C'est le seul conseil que je donne deux fois.",
+        "Ce qui est loin paraît toujours plus dur. C'est un effet d'optique.",
+        "Tu peux revenir sur ta décision. Ce n'est pas un traité de paix.",
+        "Rien n'approche pour l'instant. Profites-en pour préparer tranquille.",
+        "Je préfère te voir choisir lentement que courir dans le mauvais sens.",
+        "Le terrain change. Ce qui était impossible ne l'est pas resté.",
+        "On voit mieux d'ici que d'en bas. C'est tout l'intérêt de s'arrêter.",
+        "Une bonne reconnaissance vaut deux heures de marche économisées.",
+        "Tu prépares. Ça ne se voit pas tout de suite, mais ça se voit après.",
+        "Je note ce qui passe. Toi ce qui te tente. Même métier, au fond.",
+        "Il n'y a rien à craindre dans une liste. Je vérifie, c'est mon travail."
+      ]
+    }
   }
 }

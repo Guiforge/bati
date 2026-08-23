@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { RefreshControl, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { AppButton } from "@/components/common/AppButton";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
@@ -84,6 +85,9 @@ function TabButton({
 }
 
 export default function JournalScreen() {
+  useScreenGuide("guide_journal");
+  useAmbientVisit("menu_visit");
+
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();

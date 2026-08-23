@@ -4,8 +4,10 @@ import {
   getAdventureAsset,
   getExerciseAsset,
   getQuestAsset,
+  getVillagerAsset,
   QUEST_ASSETS,
 } from "@/constants/assetMap";
+import { VILLAGER_IDS, VILLAGER_POSES } from "@/constants/villagers";
 
 describe("assetMap", () => {
   // The seeds still store `.png` paths for the exercises whose art is now `.jpg` (0001/0010 were
@@ -33,5 +35,22 @@ describe("assetMap", () => {
     expect(getAdventureAsset("assets/images/adventures/scout_trial.jpg")).toBe(
       ADVENTURE_ASSETS.scout_trial,
     );
+  });
+});
+
+describe("villager assets", () => {
+  test("every villager has art for every pose, and no two are the same file", () => {
+    const seen = new Set<number>();
+    for (const id of VILLAGER_IDS) {
+      for (const pose of VILLAGER_POSES) {
+        const asset = getVillagerAsset(id, pose);
+        expect(asset).toBeDefined();
+        // A copy-paste in the 35-entry grid shows up as one villager wearing another's pose,
+        // which is invisible until someone spots the smith saluting in the herbalist's coif.
+        expect(seen.has(asset)).toBe(false);
+        seen.add(asset);
+      }
+    }
+    expect(seen.size).toBe(VILLAGER_IDS.length * VILLAGER_POSES.length);
   });
 });

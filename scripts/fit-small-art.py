@@ -16,7 +16,13 @@ Deliberately *not* applied to the tier scenes, the quest and adventure covers, t
 or the onboarding backgrounds: those render full-bleed at the width of the display, where 1024 is
 already slightly under a modern phone's pixel width. Shrinking them would be visible.
 
-Run after cutout-emblems.py, never before: the flood fill wants full resolution to work with,
+Nor to the villager cameos, for the second half of the same reason. A cameo is capped at 38% of
+the window height — ~730px on a 3x screen, against a 1024px source — so there is barely anything
+to give back, and the memory argument does not apply either: the emblems earn their downscale by
+appearing twenty at a time, while the cameo layer mounts exactly one image and unmounts it when
+nobody is speaking.
+
+Run after cutout.py, never before: the flood fill wants full resolution to work with,
 and a resized emblem has soft edges the fill would stop at.
 """
 

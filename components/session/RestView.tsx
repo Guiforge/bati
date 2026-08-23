@@ -13,6 +13,7 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
+import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
@@ -37,6 +38,15 @@ export function RestView() {
   const status = useSessionStore((s) => s.status);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const { remainingSeconds, progress } = useSessionTimer();
+  const cue = useChorusStore((s) => s.cue);
+
+  // Once per rest, on mount — this view is mounted and unmounted by `displayStatus`, so the
+  // component's own lifecycle is already "one rest". The chorus decides whether anyone actually
+  // comes: rest is `ambient`, so it is behind a cooldown, a budget and a 35% draw. Most rests
+  // stay empty on purpose, which is the only reason the ones that do not are worth looking at.
+  useEffect(() => {
+    cue("rest");
+  }, [cue]);
 
   // The rest timer runs out on its own and nothing consumed the zero: useSessionTimer floors
   // `resting` at 0, so the screen parked on 0:00 and the next exercise never started unless you

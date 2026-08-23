@@ -1,5 +1,6 @@
 import { ScrollView } from "react-native";
 import { YStack } from "tamagui";
+import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
 import { OathCard } from "@/components/home/OathCard";
@@ -21,6 +22,10 @@ import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard"
  * challengers discarded (none beat it without breaking the committed identity).
  */
 export default function HomeScreen() {
+  useScreenGuide("guide_home");
+  // Only fires after a real absence, and never mentions it. See components/chorus/screenCues.ts.
+  useComebackCue();
+
   return (
     <YStack flex={1} bg="$background">
       {/* HUD top chrome: identity, level, XP, streak — owns the top inset, never scrolls */}

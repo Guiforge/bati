@@ -77,7 +77,7 @@ in the scroll parallax on the hero image; both return to nothing under reduced m
 weather under the village name is drawn from `constants/villageFlavour.ts` by the same
 `pickDailyVariant()` Home uses, seeded by day *and* tier.
 
-The emblems carry an alpha channel, cut by [`scripts/cutout-emblems.py`](../../scripts/cutout-emblems.py).
+The emblems carry an alpha channel, cut by [`scripts/cutout.py`](../../scripts/cutout.py).
 They ship from FLUX as opaque squares, and without that cut `tintColor` has nothing to silhouette:
 the "to build" grid rendered as identical navy blocks. Any new emblem needs the same treatment.
 

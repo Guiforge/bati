@@ -9,6 +9,8 @@ import {
   HeartPulse,
   ImagePlus,
   Languages,
+  MessagesSquare,
+  RotateCcw,
   ScrollText,
   ShieldCheck,
   Swords,
@@ -215,15 +217,17 @@ export default function SettingsScreen() {
     avatarId,
     customAvatarUri,
     hapticsEnabled,
+    villagersEnabled,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
     setHapticsEnabled,
+    setVillagersEnabled,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [crashCount, setCrashCount] = useState(0);
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const haptics = useHaptics();
   const { busy: backupBusy, runExport, runImport, runSaveToFolder } = useBackup();
 
@@ -422,6 +426,36 @@ export default function SettingsScreen() {
                   // Haptics errors are non-critical
                 });
               }
+            }}
+          />
+
+          <SettingRow
+            testID="settings-villagers"
+            icon={<MessagesSquare size={22} color="$text" />}
+            label={t("settings.villagers", "Villagers")}
+            value={villagersEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            onPress={() => {
+              haptics.selection();
+              setVillagersEnabled(!villagersEnabled).catch((error) => {
+                reportError("settings.villagersWrite", error);
+              });
+            }}
+          />
+
+          {/* Clears the whole `guidesSeen` set, not one flag: forgetting one of five is exactly
+              how a hero would end up with four guides back and wonder which one they missed. */}
+          <SettingRow
+            testID="settings-replay-guides"
+            icon={<RotateCcw size={22} color="$text" />}
+            label={t("settings.replay_guides", "Review the guides")}
+            onPress={() => {
+              haptics.selection();
+              preferences
+                .setGuidesSeen([])
+                .then(() =>
+                  showSuccess(t("settings.replay_guides_done", "The guides will show again")),
+                )
+                .catch((error) => reportError("settings.replayGuides", error));
             }}
           />
 

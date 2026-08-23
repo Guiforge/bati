@@ -168,4 +168,78 @@ export const preferences = {
   async clearSavedSession(): Promise<void> {
     await deletePreference("savedSession");
   },
+
+  // The villager cameo layer. On by default: it carries the first-visit guides, and a new hero
+  // switching it off before they have seen one would be switching off the only tutorial there is.
+  async getVillagersEnabled(): Promise<boolean> {
+    return (await getPreference("villagersEnabled")) !== "false";
+  },
+
+  async setVillagersEnabled(enabled: boolean): Promise<void> {
+    await setPreference("villagersEnabled", String(enabled));
+  },
+
+  /**
+   * The lines a villager said recently, so the next draw can avoid them.
+   *
+   * One key holding the whole ring rather than a row per line: it is read once at startup and
+   * rewritten whole on every cameo, so there is nothing to gain from splitting it and a
+   * multi-row write would be the slower half of showing a bubble. Malformed JSON reads as an
+   * empty ring — the worst that costs is one repeatable line, which is not worth a crash.
+   */
+  async getRecentCameoLines(): Promise<string[]> {
+    const raw = await getPreference("recentCameoLines");
+    if (raw === null) return [];
+
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setRecentCameoLines(keys: string[]): Promise<void> {
+    await setPreference("recentCameoLines", JSON.stringify(keys));
+  },
+
+  /**
+   * Which first-visit guides the hero has already met.
+   *
+   * One key holding the whole set, for the same reason as the cameo ring: it is read once per
+   * screen mount and there are five of them for the lifetime of an install. "Review the guides"
+   * in Settings clears it, which is why it is a set rather than five booleans — forgetting to
+   * clear one of five is exactly the bug that would leave a hero with four guides back.
+   */
+  async getGuidesSeen(): Promise<string[]> {
+    const raw = await getPreference("guidesSeen");
+    if (raw === null) return [];
+
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setGuidesSeen(moments: string[]): Promise<void> {
+    await setPreference("guidesSeen", JSON.stringify(moments));
+  },
+
+  /**
+   * The last workout date the hero has already been welcomed back after.
+   *
+   * Keyed on *that* date rather than on "when did we last greet", so the greeting fires exactly
+   * once per absence. Storing a greeting timestamp instead would re-greet every day the app was
+   * opened without training — which is the one thing this moment must never do, because a hero
+   * being reminded daily that they are away is the shame loop the whole pool is written against.
+   */
+  async getComebackGreetedAfter(): Promise<string | null> {
+    return await getPreference("comebackGreetedAfter");
+  },
+
+  async setComebackGreetedAfter(lastWorkoutDate: string): Promise<void> {
+    await setPreference("comebackGreetedAfter", lastWorkoutDate);
+  },
 };

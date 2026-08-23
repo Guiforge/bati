@@ -28,8 +28,21 @@ function collectLeafKeys(
       continue;
     }
 
-    // We don't expect arrays/numbers/etc. in our translation JSON.
-    // If we get them, treat it like a leaf so we catch it.
+    // Arrays are real translation content since the villager pools moved in here — each line is
+    // its own leaf at `…rest.0`, `…rest.1`. Descending rather than stringifying is what makes the
+    // parity test below also assert that a pool has the *same number of lines* in both languages:
+    // the anti-repetition ring pairs `en[i]` with `fr[i]`, so an array that grew on one side only
+    // means one index quietly says two different things.
+    if (Array.isArray(v)) {
+      v.forEach((item, i) => {
+        const itemPath = `${keyPath}.${i}`;
+        if (isObject(item)) collectLeafKeys(item, itemPath, out);
+        else out.set(itemPath, String(item));
+      });
+      continue;
+    }
+
+    // Numbers, booleans, null: not expected. Treat as a leaf so they surface.
     out.set(keyPath, String(v));
   }
 

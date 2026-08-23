@@ -24,6 +24,8 @@ A minimal, ludic fitness RPG that makes staying consistent feel like playing a g
 
 Minimal, epic, and focused. The voice is dark and immersive: a high-tech fantasy HUD that treats a workout like a heroic quest, but never at the cost of clarity. It speaks with confidence and restraint, no clutter, no filler, no cartoon mascots. Every screen should feel like gearing up for a fight, then get out of the way so the user can train.
 
+*Villagers are not mascots.* The cameo layer puts faces in the app for the first time — inked, unglowing, never speaking first, never on screen for longer than a breath. It is the same dark-fantasy BD register as the rest of the art, applied to a figure instead of a scene. The moment one of them bounces, waves, or talks over a set, it has become the thing this section rules out.
+
 ## Anti-references
 
 Not a cluttered, stat-heavy gym app that buries the next action under charts and numbers. Not a cartoonish kids' game with bright mascots and bouncy everything. Not corporate or clinical, no flat white dashboards, no health-app sterility. The immersion is real dark fantasy, not decoration bolted onto a spreadsheet.

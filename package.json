@@ -55,7 +55,7 @@
     "@tamagui/babel-plugin": "^2.7.4",
     "@testing-library/react-native": "^14.0.1",
     "@types/better-sqlite3": "^9.6.0",
-    "@types/jest": "29.5.14",
+    "@types/jest": "30.0.0",
     "@types/react": "~19.2.18",
     "babel-plugin-inline-import": "^3.0.0",
     "babel-plugin-transform-remove-console": "^6.9.4",
@@ -63,10 +63,10 @@
     "better-sqlite3": "^13.0.3",
     "drizzle-kit": "^0.31.10",
     "expo-dev-client": "~57.0.14",
-    "jest": "~29.7.0",
+    "jest": "~30.4.2",
     "jest-expo": "~57.0.4",
     "knip": "^6.32.2",
-    "typescript": "~6.0.3"
+    "typescript": "~7.0.2"
   },
   "jest": {
     "moduleNameMapper": {

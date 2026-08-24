@@ -7,8 +7,9 @@ import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
 import { getAvatarSource } from "@/constants/avatars";
-import { getFlameLevel, getStreakInfo, type StreakInfo } from "@/db/streaks";
+import { getFlameLevel } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
+import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -23,7 +24,7 @@ export function HomeHeader() {
   const customAvatarUri = useSettingsStore((s) => s.customAvatarUri);
   const language = useSettingsStore((s) => s.language);
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
-  const [streak, setStreak] = useState<StreakInfo | null>(null);
+  const streak = useStreakInfo();
 
   const avatarSource = getAvatarSource(avatarId, customAvatarUri);
 
@@ -33,9 +34,6 @@ export function HomeHeader() {
       getUserLevelInfo()
         .then(setLevelInfo)
         .catch((e) => reportError("home.levelInfo", e));
-      getStreakInfo()
-        .then(setStreak)
-        .catch((e) => reportError("home.streak", e));
     }, []),
   );
 

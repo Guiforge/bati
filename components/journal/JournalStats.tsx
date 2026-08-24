@@ -1,5 +1,5 @@
 import { Flame, Target, Timer, TrendingUp, Trophy, Zap } from "@tamagui/lucide-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
@@ -9,7 +9,7 @@ import { Chip } from "@/components/common/Chip";
 import { TrendsCard } from "@/components/journal/TrendsCard";
 import { getWeekStart } from "@/constants/dateFormatters";
 import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
-import { getStreakInfo, type StreakInfo } from "@/db/streaks";
+import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { useSettingsStore } from "@/stores/settings";
 import { buildWeekdayBars } from "./journalGrids";
 
@@ -121,19 +121,12 @@ export function JournalStats({ sessions }: JournalStatsProps) {
     };
   }, [sessions, language]);
 
-  const [streak, setStreak] = useState<StreakInfo>({
+  const streak = useStreakInfo() ?? {
     current: 0,
     best: 0,
     isActive: false,
     lastWorkoutDate: null,
-  });
-  useEffect(() => {
-    getStreakInfo()
-      .then(setStreak)
-      .catch(() => {
-        // Keep default zero-streak state
-      });
-  }, []);
+  };
 
   const weekdayData = useMemo(
     () =>

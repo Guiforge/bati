@@ -1,4 +1,5 @@
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import assert from "node:assert/strict";
+import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
 import AdventureDetailsScreen from "@/app/(tabs)/adventures/[id]";
@@ -111,18 +112,26 @@ test("the active step's row pushes its quest with the adventure id, and keeps wi
   expect(mockPush).toHaveBeenCalledWith("/quests/100?adventureId=1", { withAnchor: true });
 });
 
-test("a locked step explains why — the hint shows once, not on the active step too", async () => {
+test("a locked step explains why; the active step does not repeat it", async () => {
   const { getByText } = await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <AdventureDetailsScreen />
     </TamaguiProvider>,
   );
 
-  await waitFor(() => expect(getByText("Step 2: Step 1")).toBeTruthy());
+  const activeTitle = await waitFor(() => getByText("Step 1: Step 0"));
+  const lockedTitle = getByText("Step 2: Step 1");
 
-  // getByText throws on zero OR more-than-one match, so this alone proves the hint renders
-  // for the locked step (index 1) and not for the active one (index 0).
-  expect(getByText("Finish the previous step to unlock it")).toBeTruthy();
+  // The title and its row's hint are both direct children of the same YStack (see the JSX in
+  // AdventureStepRow) — so scoping to a title's own `.parent` lands exactly on that row, not on
+  // whichever row happens to render the hint. A bare `getByText(hint)` passed even when the
+  // production condition was flipped to `status === "active"` (hint on the wrong row, still
+  // exactly one match on screen) — this scoping is what actually pins the hint to its row.
+  assert(lockedTitle.parent);
+  assert(activeTitle.parent);
+  const hint = "Finish the previous step to unlock it";
+  expect(within(lockedTitle.parent).getByText(hint)).toBeTruthy();
+  expect(within(activeTitle.parent).queryByText(hint)).toBeNull();
 });
 
 test("a completed adventure offers a replay and wears its stars", async () => {

@@ -126,7 +126,9 @@ describe("useSmartAction", () => {
 
     result.current.config?.onPress();
 
-    expect(mockPush).toHaveBeenCalledWith("/quests/12");
+    // withAnchor mounts the gallery under the detail so the hardware back pops to it
+    // instead of falling through to the Home tab.
+    expect(mockPush).toHaveBeenCalledWith("/quests/12", { withAnchor: true });
     // Only the detail screen calls startSession, and /session redirects home on an empty
     // store — so Home reaching it directly is the bug this line exists to catch.
     expect(mockPush).not.toHaveBeenCalledWith("/session");
@@ -169,7 +171,7 @@ describe("useSmartAction", () => {
     );
 
     result.current.config?.onPress();
-    expect(mockPush).toHaveBeenCalledWith("/quests/7");
+    expect(mockPush).toHaveBeenCalledWith("/quests/7", { withAnchor: true });
   });
 
   it("falls back to the weak areas when the oath names no exercise", async () => {

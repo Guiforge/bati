@@ -97,9 +97,17 @@ const AdventureStepRow = memo(function AdventureStepRow({
   status: "locked" | "active" | "completed";
 }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const langKey = useSettingsStore((s) => s.language);
 
   const stepTitle = langKey === "fr" ? step.quest.frTitle : step.quest.enTitle;
+
+  // Locked steps stay inert; active/completed ones open the quest sheet read-only.
+  // withAnchor mounts the gallery under the sheet so the hardware back has somewhere to pop.
+  const openQuest =
+    status === "locked"
+      ? undefined
+      : () => router.push(`/quests/${step.questId}` as never, { withAnchor: true });
 
   const narrative =
     langKey === "fr" ? step.frNarrative || step.enNarrative : step.enNarrative || step.frNarrative;
@@ -114,6 +122,9 @@ const AdventureStepRow = memo(function AdventureStepRow({
       borderBottomWidth={1}
       borderColor="$borderStrong"
       pb="$3"
+      onPress={openQuest}
+      pressStyle={openQuest ? { opacity: 0.6 } : undefined}
+      accessibilityRole={openQuest ? "button" : undefined}
     >
       <XStack flex={1} items="center" gap="$3">
         {stepImage ? (
@@ -343,6 +354,7 @@ export default function AdventureDetailsScreen() {
       const level = nextRun.run.difficultyOverride ?? suggestedDifficulty;
       router.push(
         `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}` as never,
+        { withAnchor: true },
       );
     } catch (e) {
       setIsStarting(false);

@@ -84,7 +84,7 @@ export function useSmartAction() {
               .filter(Boolean)
               .join(" · "),
           },
-          onPress: () => router.push(`/quests/${questId}` as never),
+          onPress: () => router.push(`/quests/${questId}` as never, { withAnchor: true }),
         };
       };
 

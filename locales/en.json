@@ -295,6 +295,7 @@
     "step_completed": "Completed",
     "step_active": "Active",
     "step_locked": "Locked",
+    "step_locked_hint": "Finish the previous step to unlock it",
     "completed_times_one": "Completed once",
     "completed_times_other": "Completed {{count}} times",
     "continue": "Continue",

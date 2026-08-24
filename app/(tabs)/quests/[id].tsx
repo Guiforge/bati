@@ -150,6 +150,7 @@ export default function QuestDetails() {
     id?: string | string[];
     level?: string;
     runStepId?: string;
+    adventureId?: string | string[];
   }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -279,9 +280,23 @@ export default function QuestDetails() {
   // Not router.back(): this screen is pushed from home, the journal and adventure steps as well
   // as from the gallery, so "back" used to land wherever you came from. A quest belongs to the
   // gallery, and dismissTo unwinds to it — it already sits at the bottom of this tab's stack.
+  //
+  // A quest opened from an adventure step is the exception: the hero thinks of the adventure as
+  // "back", not a gallery they never visited. The chevron honors that richer intent; hardware
+  // back still pops structurally to the gallery (anchored in 0b41d31) regardless of origin — the
+  // asymmetry is deliberate, not a bug to unify. navigate (not push) so repeated taps don't stack
+  // adventure screens, and not dismissTo — the adventure isn't necessarily beneath this quest on
+  // the stack (it's under the withAnchor'd gallery instead).
   const goToGallery = useCallback(() => {
+    const adventureId = Array.isArray(params.adventureId)
+      ? params.adventureId[0]
+      : params.adventureId;
+    if (adventureId) {
+      router.navigate(`/adventures/${adventureId}` as never);
+      return;
+    }
     router.dismissTo("/quests");
-  }, [router]);
+  }, [router, params.adventureId]);
 
   const updateConfig = useCallback(
     (next: QuestConfig) => {

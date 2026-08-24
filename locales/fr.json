@@ -36,6 +36,7 @@
     "step_completed": "Terminée",
     "step_label": "Étape {{count}}",
     "step_locked": "Verrouillée",
+    "step_locked_hint": "Termine l'étape précédente pour la déverrouiller",
     "step_progress": "Étape {{current}}/{{total}}",
     "steps": "{{count}} étapes",
     "steps_title": "Étapes de la campagne",

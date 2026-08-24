@@ -92,9 +92,11 @@ function StepStatusTag({ status }: { status: "locked" | "active" | "completed" }
 const AdventureStepRow = memo(function AdventureStepRow({
   step,
   status,
+  adventureId,
 }: {
   step: AdventureStepTemplate;
   status: "locked" | "active" | "completed";
+  adventureId: number;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -104,10 +106,14 @@ const AdventureStepRow = memo(function AdventureStepRow({
 
   // Locked steps stay inert; active/completed ones open the quest sheet read-only.
   // withAnchor mounts the gallery under the sheet so the hardware back has somewhere to pop.
+  // adventureId rides along so the quest screen's chevron can return here instead of the gallery.
   const openQuest =
     status === "locked"
       ? undefined
-      : () => router.push(`/quests/${step.questId}` as never, { withAnchor: true });
+      : () =>
+          router.push(`/quests/${step.questId}?adventureId=${adventureId}` as never, {
+            withAnchor: true,
+          });
 
   const narrative =
     langKey === "fr" ? step.frNarrative || step.enNarrative : step.enNarrative || step.frNarrative;
@@ -146,6 +152,11 @@ const AdventureStepRow = memo(function AdventureStepRow({
             <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
               {narrative}
             </Paragraph>
+          ) : null}
+          {status === "locked" ? (
+            <Text fontSize={12} color="$muted">
+              {t("adventures.step_locked_hint", "Finish the previous step to unlock it")}
+            </Text>
           ) : null}
         </YStack>
       </XStack>
@@ -353,7 +364,7 @@ export default function AdventureDetailsScreen() {
 
       const level = nextRun.run.difficultyOverride ?? suggestedDifficulty;
       router.push(
-        `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}` as never,
+        `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}&adventureId=${adventureId}` as never,
         { withAnchor: true },
       );
     } catch (e) {
@@ -543,6 +554,7 @@ export default function AdventureDetailsScreen() {
                         stepStatusByIndex.get(s.stepIndex) ??
                         (s.stepIndex === 0 ? "active" : "locked")
                       }
+                      adventureId={adventureId}
                     />
                   ))}
                 </YStack>

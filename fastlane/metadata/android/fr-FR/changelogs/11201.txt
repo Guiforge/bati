@@ -1,0 +1,8 @@
+- Les bâtiments qui viennent de monter réaffichent leur nom, au lieu
+  de se réduire à une lamelle jusqu'au prochain lancement.
+- Retour, étapes d'aventure et reprises de campagne ramènent d'où tu
+  viens, et l'écran de victoire survit à un détour par le village.
+- Les étapes verrouillées disent ce qui les ouvre, et la fiche de
+  quête d'une étape revient à son aventure.
+- Les tendances du journal comparent des jours entiers et des
+  semaines glissantes : le lundi arrête de crier.

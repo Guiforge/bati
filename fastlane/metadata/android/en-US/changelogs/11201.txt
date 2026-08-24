@@ -1,0 +1,8 @@
+- Buildings that just grew show their names again, instead of
+  collapsing into slivers until the next launch.
+- Back, adventure steps and mid-campaign continues land where you
+  came from, and the victory screen survives a village detour.
+- Locked adventure steps say what opens them, and a step's quest
+  sheet returns to its adventure.
+- Journal trends compare whole days and rolling weeks, so Monday
+  stops shouting.

@@ -165,7 +165,7 @@ export function FilterRail({
               key={c.key}
               label={c.label}
               tone="primary"
-              icon={<X size={14} color="$bgDark" strokeWidth={3} />}
+              icon={<X size={14} color="$white" strokeWidth={3} />}
               onPress={c.onPress}
               accessibilityRole="button"
               accessibilityLabel={t("quests.filter_remove", {

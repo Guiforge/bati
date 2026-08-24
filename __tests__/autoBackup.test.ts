@@ -201,6 +201,16 @@ describe("backupFolderLabel", () => {
     expect(backupFolderLabel(TREE)).toBe("Documents/Bati");
   });
 
+  /** The shape the device actually returns: expo-file-system normalises a directory URI to end
+   * in a slash, so the raw label read "Download/Test/" in Settings. */
+  test("drops the trailing slash expo-file-system puts on a directory URI", () => {
+    expect(
+      backupFolderLabel(
+        "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FTest/",
+      ),
+    ).toBe("Download/Test");
+  });
+
   test("falls back to the volume when the whole storage root was picked", () => {
     expect(
       backupFolderLabel("content://com.android.externalstorage.documents/tree/primary%3A"),

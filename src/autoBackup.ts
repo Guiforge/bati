@@ -37,6 +37,10 @@ async function rememberedFolder(): Promise<Directory | null> {
  * Everything after the last colon is the document id's path, which is the human half. Picking
  * the root of a volume leaves that half empty; the volume name is then the best available
  * answer, and it is at least the word Android's own picker used.
+ *
+ * The trailing slash is real and has to go: expo-file-system normalises a directory URI to end
+ * in one, so the tree the picker returns is `…%3ADownload%2FTest/` and the row read
+ * "Download/Test/" on a device. No file manager names a folder that way.
  */
 export function backupFolderLabel(uri: string): string {
   let decoded = uri;
@@ -48,7 +52,7 @@ export function backupFolderLabel(uri: string): string {
     reportError("backup.folderLabel", error);
   }
 
-  const segments = decoded.split(":");
+  const segments = decoded.replace(/\/+$/, "").split(":");
   const path = segments.pop() ?? "";
   if (path !== "") return path;
 

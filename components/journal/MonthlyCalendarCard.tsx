@@ -39,7 +39,10 @@ export function MonthlyCalendarCard() {
   // The card's streak cell shows the same flame as the home header (db/streaks.ts via
   // useStreakInfo), not a second consecutive-days count: two "streak" numbers with different
   // definitions on screen at once read as a bug.
-  const flameDays = useStreakInfo()?.current ?? 0;
+  // Null until the read lands. Kept nullable rather than defaulted to 0: a fabricated zero
+  // renders as a statement that the flame is out, which is the one thing this cell must never
+  // say wrongly.
+  const streak = useStreakInfo();
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
@@ -200,12 +203,18 @@ export function MonthlyCalendarCard() {
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="700" fontSize={18} color="$resourceFire">
-              {flameDays}
-            </Text>
-            <Text fontSize={11} color="$text" opacity={0.6}>
-              {t("journal.streak_days", { count: flameDays, defaultValue: "Flame days" })}
-            </Text>
+            {streak ? (
+              <>
+                <Text fontWeight="700" fontSize={18} color="$resourceFire">
+                  {streak.current}
+                </Text>
+                <Text fontSize={11} color="$text" opacity={0.6}>
+                  {t("journal.streak_days", { count: streak.current, defaultValue: "Flame days" })}
+                </Text>
+              </>
+            ) : (
+              <Skeleton height={34} width={80} />
+            )}
           </YStack>
         </XStack>
       </YStack>

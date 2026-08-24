@@ -6,6 +6,7 @@ import { BarChart } from "react-native-gifted-charts";
 import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { TrendsCard } from "@/components/journal/TrendsCard";
 import { getWeekStart } from "@/constants/dateFormatters";
 import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
@@ -122,12 +123,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
     };
   }, [sessions, language]);
 
-  const streak = useStreakInfo() ?? {
-    current: 0,
-    best: 0,
-    isActive: false,
-    lastWorkoutDate: null,
-  };
+  const streak = useStreakInfo();
 
   const weekdayData = useMemo(
     () =>
@@ -160,44 +156,53 @@ export function JournalStats({ sessions }: JournalStatsProps) {
   return (
     <YStack gap="$4">
       {/* Streak Card */}
-      <Card bg="$surface2">
-        <XStack items="center" justify="space-between">
-          <XStack items="center" gap="$3">
-            <YStack
-              width={50}
-              height={50}
-              rounded={25}
-              bg="$bgLight"
-              items="center"
-              justify="center"
-            >
-              <Flame size={28} color={streak.isActive ? "$success" : "$textSecondary"} />
-            </YStack>
-            <YStack>
-              <Text fontWeight="700" fontSize={28} color="$text">
-                {streak.current} {t("journal.days", "days")}
-              </Text>
-              <Text
-                fontSize={14}
-                color={streak.isActive ? "$success" : "$textSecondary"}
-                fontWeight="700"
+      {streak ? (
+        <Card bg="$surface2">
+          <XStack items="center" justify="space-between">
+            <XStack items="center" gap="$3">
+              <YStack
+                width={50}
+                height={50}
+                rounded={25}
+                bg="$bgLight"
+                items="center"
+                justify="center"
               >
-                {streak.isActive
-                  ? t("journal.streak_active", "Current streak 🔥")
-                  : t("journal.streak_inactive", "Streak paused")}
+                <Flame size={28} color={streak.isActive ? "$success" : "$textSecondary"} />
+              </YStack>
+              <YStack>
+                <Text fontWeight="700" fontSize={28} color="$text">
+                  {streak.current} {t("journal.days", "days")}
+                </Text>
+                <Text
+                  fontSize={14}
+                  color={streak.isActive ? "$success" : "$textSecondary"}
+                  fontWeight="700"
+                >
+                  {streak.isActive
+                    ? t("journal.streak_active", "Current streak 🔥")
+                    : t("journal.streak_inactive", "Streak paused")}
+                </Text>
+              </YStack>
+            </XStack>
+            <YStack items="center">
+              <Text fontSize={12} color="$textSecondary">
+                {t("journal.best_streak", "Best")}
+              </Text>
+              <Text fontWeight="700" fontSize={20} color="$secondary">
+                {streak.best}
               </Text>
             </YStack>
           </XStack>
-          <YStack items="center">
-            <Text fontSize={12} color="$textSecondary">
-              {t("journal.best_streak", "Best")}
-            </Text>
-            <Text fontWeight="700" fontSize={20} color="$secondary">
-              {streak.best}
-            </Text>
-          </YStack>
-        </XStack>
-      </Card>
+        </Card>
+      ) : (
+        // Same row shape as the loaded card above (50px icon disc is the tallest element),
+        // so the layout doesn't jump once the read lands — the sibling cards on this screen
+        // (TrendsCard, PersonalRecordsCard) reserve height the same way.
+        <SkeletonCard>
+          <Skeleton height={50} />
+        </SkeletonCard>
+      )}
 
       {/* Quick Stats Grid */}
       <XStack gap="$3">

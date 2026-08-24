@@ -51,6 +51,20 @@ describe("useStreakInfo", () => {
     expect(result.current.best).toBe(2);
   });
 
+  // Found on-device after the hook shipped: the Journal's top card wrote its own
+  // `?? { current: 0, best: 0, isActive: false }` around this hook, so the first visit after
+  // launch announced "0 jours · Série en pause · Record 0" while the calendar card below it
+  // already showed 2. Consumers reserve space for a pending read; this is the contract that
+  // lets them tell "not known yet" from "the flame is out".
+  it("stays null while the read is in flight — a pending flame is not a dead flame", async () => {
+    mockGetStreakInfo.mockReturnValue(new Promise(() => {}));
+
+    const { result } = await renderHook(() => useStreakInfo());
+
+    await waitFor(() => expect(mockGetStreakInfo).toHaveBeenCalledTimes(1));
+    expect(result.current).toBeNull();
+  });
+
   it("retries on next focus instead of freezing zeros after one failure", async () => {
     mockGetStreakInfo
       .mockRejectedValueOnce(new Error("db warming up"))

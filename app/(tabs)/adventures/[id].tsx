@@ -564,6 +564,18 @@ export default function AdventureDetailsScreen() {
         </YStack>
       </ScrollView>
 
+      {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
+      <YStack
+        position="absolute"
+        t={0}
+        l={0}
+        r={0}
+        height={insets.top}
+        bg="$bgDark"
+        opacity={0.88}
+        pointerEvents="none"
+      />
+
       {details ? (
         <YStack
           p="$4"

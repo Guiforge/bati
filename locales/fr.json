@@ -29,6 +29,7 @@
     "kind_route": "ROUTE",
     "load_error": "Échec du chargement de l’aventure",
     "not_found": "Aventure introuvable",
+    "reward_xp_per_step": "jusqu'à +{{count}} XP par étape",
     "start": "Commencer l’aventure",
     "start_error": "Impossible de lancer l’aventure",
     "step_active": "Active",

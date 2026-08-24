@@ -285,6 +285,7 @@
     "invalid_id": "Invalid adventure",
     "load_error": "Failed to load adventure",
     "start_error": "Could not start the adventure",
+    "reward_xp_per_step": "up to +{{count}} XP per step",
     "steps": "{{count}} steps",
     "weeks_one": "≈ {{count}} week",
     "weeks_other": "≈ {{count}} weeks",

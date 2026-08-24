@@ -124,7 +124,10 @@ function buildAdventureRow(
       count: a.stepsCount,
       defaultValue: `${a.stepsCount} steps`,
     }),
-    xpLabel: t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
+    xpLabel: t("adventures.reward_xp_per_step", {
+      count: xp,
+      defaultValue: `up to +${xp} XP per step`,
+    }),
     finishedCount,
     starsLabel: starsFor(finishedCount),
   };

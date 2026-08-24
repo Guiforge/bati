@@ -608,7 +608,9 @@
     "xp_value": "{{value}} XP",
     "exercises_short": "ex",
     "crit": "CRIT!",
-    "daily_xp_bonus": "+50% XP"
+    "daily_xp_bonus": "+50% XP",
+    "on": "On",
+    "off": "Off"
   },
   "splash": {
     "loading": "Building your village..."

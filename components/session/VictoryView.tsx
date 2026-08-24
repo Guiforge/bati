@@ -256,7 +256,6 @@ export function VictoryView() {
 
   const handleViewVillage = () => {
     if (!result) return;
-    quitSession();
     const codes = result.villageGrowth.map((g) => g.code).join(",");
     router.push(`/(tabs)/village?grown=${codes}` as never);
   };

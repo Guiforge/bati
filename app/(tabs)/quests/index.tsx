@@ -38,6 +38,7 @@ import {
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
@@ -98,6 +99,7 @@ function buildQuestMeta(
   exercisesById: Record<number, Exercise>,
   language: AppLanguage,
   t: TFunction,
+  config: QuestConfig | null,
 ): QuestMeta {
   const muscles = new Set<MuscleCode>();
   const equipment = new Set<EquipmentCode>();
@@ -109,12 +111,17 @@ function buildQuestMeta(
     for (const m of ex.muscles) muscles.add(m);
   }
 
+  // Same numbers as the detail screen: the saved level and structure overrides feed the
+  // estimate. ponytail: target/swap overrides are not folded in — the detail's
+  // estimateQuestSeconds sees them, so a target-overridden quest can still drift by
+  // a few seconds; fold them in if anyone notices.
+  const level = config?.level ?? "medium";
   const durationSeconds = estimateQuestTemplateSeconds({
-    template: q,
+    template: { ...q, ...resolveTemplateOverrides(q, config) },
     exercisesById,
-    userLevel: "medium",
+    userLevel: level,
   });
-  const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
+  const xp = computeSessionXp({ durationSeconds, userLevel: level });
   const estimate = formatDurationEstimate(durationSeconds);
   const muscleList = [...muscles];
   // Ranked, not the full set above: a five-exercise quest brushes five muscle groups, and the
@@ -341,6 +348,8 @@ export default function QuestsGallery() {
 
   const [filters, setFilters] = useState<QuestFilters>(NO_FILTERS);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // One bulk read alongside the templates — never per card, the list renders ~34 of them.
+  const [configs, setConfigs] = useState<Map<number, QuestConfig>>(new Map());
 
   // Handlers below are plain closures on purpose: the React Compiler
   // (app.json experiments.reactCompiler) stabilizes them automatically.
@@ -374,7 +383,12 @@ export default function QuestsGallery() {
         : { status: "loading", quests: s.quests, exercisesById: s.exercisesById },
     );
     try {
-      const [quests, exercises] = await Promise.all([listQuestTemplates(), listExercises()]);
+      const [quests, exercises, questConfigs] = await Promise.all([
+        listQuestTemplates(),
+        listExercises(),
+        getAllQuestConfigs(),
+      ]);
+      setConfigs(questConfigs);
       setState((s) => {
         // listQuestTemplates/listExercises are promise-cached: a warm cache returns the same
         // array identity. Bail so a tab refocus doesn't invalidate questMeta → filtered → list.
@@ -407,8 +421,9 @@ export default function QuestsGallery() {
   const exercisesById = state.exercisesById;
 
   const questMeta = useMemo(
-    () => quests.map((q) => buildQuestMeta(q, exercisesById, language, t)),
-    [exercisesById, quests, language, t],
+    () =>
+      quests.map((q) => buildQuestMeta(q, exercisesById, language, t, configs.get(q.id) ?? null)),
+    [exercisesById, quests, language, t, configs],
   );
 
   const availableMuscles = useMemo(() => {

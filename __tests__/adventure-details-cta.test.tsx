@@ -1,4 +1,5 @@
-import { render, waitFor } from "@testing-library/react-native";
+import assert from "node:assert/strict";
+import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
 import AdventureDetailsScreen from "@/app/(tabs)/adventures/[id]";
@@ -9,8 +10,10 @@ import config from "@/tamagui.config";
 // culminates in a boss fight on its final step — the CTA must not claim
 // "Fight Boss" while step 1 (a regular warm-up step) is what's actually next.
 
+const mockPush = jest.fn();
+
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useLocalSearchParams: () => ({ id: "1" }),
   // The screen loads on focus; in tests "focused" is simply "mounted".
   useFocusEffect: (effect: () => undefined | (() => void)) => {
@@ -35,9 +38,10 @@ jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn(), showInfo: jest.fn() }),
 }));
 
-function mockStep(stepIndex: number) {
+function mockStep(stepIndex: number, questId = 100 + stepIndex) {
   return {
     stepIndex,
+    questId,
     imagePath: null,
     enNarrative: "",
     frNarrative: "",
@@ -87,6 +91,47 @@ test("boss adventure CTA reads Start Adventure on step 1, not Fight Boss", async
 
   expect(await findByText("Start Adventure")).toBeVisible();
   expect(queryByText("Fight Boss")).toBeNull();
+});
+
+// With no active run, step 0 resolves to "active" (pressable) and step 1 to "locked" (inert) —
+// see the fallback in the steps map: `stepStatusByIndex.get(...) ?? (stepIndex === 0 ? "active" : "locked")`.
+test("the active step's row pushes its quest with the adventure id, and keeps withAnchor (regression guard for 0b41d31)", async () => {
+  mockPush.mockClear();
+  const { getByText } = await render(
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <AdventureDetailsScreen />
+    </TamaguiProvider>,
+  );
+
+  const row = await waitFor(() => getByText("Step 1: Step 0"));
+  await fireEvent.press(row);
+
+  // adventureId rides along so the quest screen's chevron can return to this adventure;
+  // withAnchor keeps the quests-tab gallery mounted under it so hardware back has somewhere
+  // to pop, per 0b41d31 — losing either one silently breaks a screen this test never visits.
+  expect(mockPush).toHaveBeenCalledWith("/quests/100?adventureId=1", { withAnchor: true });
+});
+
+test("a locked step explains why; the active step does not repeat it", async () => {
+  const { getByText } = await render(
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <AdventureDetailsScreen />
+    </TamaguiProvider>,
+  );
+
+  const activeTitle = await waitFor(() => getByText("Step 1: Step 0"));
+  const lockedTitle = getByText("Step 2: Step 1");
+
+  // The title and its row's hint are both direct children of the same YStack (see the JSX in
+  // AdventureStepRow) — so scoping to a title's own `.parent` lands exactly on that row, not on
+  // whichever row happens to render the hint. A bare `getByText(hint)` passed even when the
+  // production condition was flipped to `status === "active"` (hint on the wrong row, still
+  // exactly one match on screen) — this scoping is what actually pins the hint to its row.
+  assert(lockedTitle.parent);
+  assert(activeTitle.parent);
+  const hint = "Finish the previous step to unlock it";
+  expect(within(lockedTitle.parent).getByText(hint)).toBeTruthy();
+  expect(within(activeTitle.parent).queryByText(hint)).toBeNull();
 });
 
 test("a completed adventure offers a replay and wears its stars", async () => {

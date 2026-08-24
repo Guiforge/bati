@@ -1,4 +1,5 @@
 import {
+  addDays,
   eachMonthOfInterval,
   eachWeekOfInterval,
   format,
@@ -22,7 +23,7 @@ import type {
 } from "./schema";
 import { repEquivalentSql } from "./workUnits";
 
-const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
+const { completedExercises, completedQuest, exerciseMuscles, exercises, quests } = schema;
 
 export type CompletedExerciseInput = {
   exerciseId: number;
@@ -438,6 +439,9 @@ export type ContributingSession = {
   sessionId: number;
   performedAt: Date;
   volume: number;
+  /** Null for a session whose quest was deleted, or that was never linked to one. */
+  enTitle: string | null;
+  frTitle: string | null;
 };
 
 /**
@@ -456,10 +460,15 @@ export async function getRecentContributingSessions(
       sessionId: completedQuest.id,
       performedAt: completedQuest.performedAt,
       volume,
+      enTitle: quests.enTitle,
+      frTitle: quests.frTitle,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
-    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId));
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    // Left, not inner: a session whose quest was later deleted (questId set null) is still a
+    // real contribution, just with no title to show — dropping the row would undercount volume.
+    .leftJoin(quests, eq(quests.id, completedQuest.questId));
 
   // One exerciseMuscles row per muscle an exercise trains, so filtering on the muscle here
   // counts that exercise once — joining without the filter would multiply the volume.
@@ -477,6 +486,8 @@ export async function getRecentContributingSessions(
     sessionId: r.sessionId,
     performedAt: r.performedAt,
     volume: Number(r.volume),
+    enTitle: r.enTitle,
+    frTitle: r.frTitle,
   }));
 }
 
@@ -622,6 +633,45 @@ export function analyzeTrend(current: number, previous: number): TrendAnalysis {
 }
 
 /**
+ * Trailing 7-day totals vs the 7 days before — the flame's own window (db/streaks.ts),
+ * so the trend badges never punish a calendar week that just started.
+ *
+ * Buckets by local calendar day via `dayKey`, the same unit db/streaks.ts's `countInWindow`
+ * counts in — not raw wall-clock milliseconds. `db/dates.ts`'s docstring is scar tissue from
+ * widgets disagreeing about what "today" means; bucketing by day here (instead of `now.getTime()
+ * - 7 * DAY`) is what keeps this window and the flame's window agreeing at every hour of the day,
+ * not just at midnight.
+ */
+export function rollingWeekTotals(
+  sessions: { performedAt: Date; durationSeconds: number; xp: number }[],
+  now: Date = new Date(),
+): {
+  current: { sessions: number; minutes: number; xp: number };
+  previous: { sessions: number; minutes: number; xp: number };
+} {
+  // today, today-1, … today-6 vs today-7, today-8, … today-13 — contiguous, non-overlapping,
+  // same split as db/streaks.ts's isLit (countInWindow(day, 7) then countInWindow(day-7, 7)).
+  const currentDays = new Set<string>();
+  const previousDays = new Set<string>();
+  for (let i = 0; i < 7; i++) {
+    currentDays.add(dayKey(addDays(now, -i)));
+    previousDays.add(dayKey(addDays(now, -7 - i)));
+  }
+
+  const current = { sessions: 0, minutes: 0, xp: 0 };
+  const previous = { sessions: 0, minutes: 0, xp: 0 };
+  for (const s of sessions) {
+    const key = dayKey(s.performedAt);
+    const bucket = currentDays.has(key) ? current : previousDays.has(key) ? previous : null;
+    if (!bucket) continue;
+    bucket.sessions += 1;
+    bucket.minutes += Math.round(s.durationSeconds / 60);
+    bucket.xp += s.xp;
+  }
+  return { current, previous };
+}
+
+/**
  * Get comprehensive trend summary
  */
 export async function getTrendSummary(): Promise<{
@@ -634,15 +684,23 @@ export async function getTrendSummary(): Promise<{
   const weeklyTrends = await getWeeklyTrends(8);
   const monthlyTrends = await getMonthlyTrends(6);
 
-  // Calculate week-over-week analysis
-  const thisWeek = weeklyTrends[weeklyTrends.length - 1];
-  const lastWeek = weeklyTrends[weeklyTrends.length - 2];
+  // Rolling 7-day windows for the badges — see rollingWeekTotals. The charts above keep their
+  // calendar buckets; only these three analyzeTrend inputs change.
+  const now = new Date();
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const recentRows = await selectTrendRows(fourteenDaysAgo);
+  const { current, previous } = rollingWeekTotals(
+    recentRows.map((row) => ({
+      performedAt: row.performedAt,
+      durationSeconds: row.durationSeconds ?? 0,
+      xp: row.xpEarned ?? 0,
+    })),
+    now,
+  );
 
-  const sessionsAnalysis = analyzeTrend(thisWeek?.sessionCount ?? 0, lastWeek?.sessionCount ?? 0);
-
-  const minutesAnalysis = analyzeTrend(thisWeek?.totalMinutes ?? 0, lastWeek?.totalMinutes ?? 0);
-
-  const xpAnalysis = analyzeTrend(thisWeek?.totalXp ?? 0, lastWeek?.totalXp ?? 0);
+  const sessionsAnalysis = analyzeTrend(current.sessions, previous.sessions);
+  const minutesAnalysis = analyzeTrend(current.minutes, previous.minutes);
+  const xpAnalysis = analyzeTrend(current.xp, previous.xp);
 
   return {
     weeklyTrends,

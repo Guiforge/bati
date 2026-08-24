@@ -1,3 +1,4 @@
+import { Settings } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,8 +8,9 @@ import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
 import { getAvatarSource } from "@/constants/avatars";
-import { getFlameLevel, getStreakInfo, type StreakInfo } from "@/db/streaks";
+import { getFlameLevel } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
+import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -23,7 +25,7 @@ export function HomeHeader() {
   const customAvatarUri = useSettingsStore((s) => s.customAvatarUri);
   const language = useSettingsStore((s) => s.language);
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
-  const [streak, setStreak] = useState<StreakInfo | null>(null);
+  const streak = useStreakInfo();
 
   const avatarSource = getAvatarSource(avatarId, customAvatarUri);
 
@@ -33,9 +35,6 @@ export function HomeHeader() {
       getUserLevelInfo()
         .then(setLevelInfo)
         .catch((e) => reportError("home.levelInfo", e));
-      getStreakInfo()
-        .then(setStreak)
-        .catch((e) => reportError("home.streak", e));
     }, []),
   );
 
@@ -58,20 +57,36 @@ export function HomeHeader() {
       borderColor="$borderStrong"
     >
       {/* Avatar - Tap to edit profile */}
-      <Avatar
-        testID="home-settings"
-        circular
-        size="$6"
-        borderWidth={1}
-        borderColor="$borderStrong"
-        pressStyle={{ scale: 0.95 }}
-        onPress={() => router.push("/settings")}
-        accessibilityRole="button"
-        accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
-      >
-        <Avatar.Image source={avatarSource} />
-        <Avatar.Fallback background="$primary" />
-      </Avatar>
+      <YStack position="relative">
+        <Avatar
+          testID="home-settings"
+          circular
+          size="$6"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          pressStyle={{ scale: 0.95 }}
+          onPress={() => router.push("/settings")}
+          accessibilityRole="button"
+          accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
+        >
+          <Avatar.Image source={avatarSource} />
+          <Avatar.Fallback background="$primary" />
+        </Avatar>
+        {/* Visible affordance for what the avatar already does — tap target stays the avatar itself. */}
+        <XStack
+          position="absolute"
+          b={-2}
+          r={-2}
+          bg="$surface2"
+          rounded={999}
+          p={3}
+          borderWidth={1}
+          borderColor="$borderStrong"
+          pointerEvents="none"
+        >
+          <Settings size={12} color="$textSecondary" />
+        </XStack>
+      </YStack>
 
       {/* Identity & XP */}
       <YStack flex={1} gap="$1">

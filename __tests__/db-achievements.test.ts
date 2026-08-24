@@ -38,7 +38,7 @@ describe("db/achievements", () => {
 
       const def = achievements.getAchievementDefinition("first_workout");
       expect(def).toBeTruthy();
-      expect(def?.icon).toBe("🎯");
+      expect(def?.icon).toBe("Target");
       expect(def?.category).toBe("sessions");
     });
 

@@ -2,12 +2,12 @@ import { ChevronLeft, Dumbbell, Pencil, Repeat, Sparkles } from "@tamagui/lucide
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
@@ -103,6 +103,19 @@ function levelLabel(level: Difficulty, t: TFunction) {
   return t("quests.level_medium", "Medium");
 }
 
+// The Journal's difficulty breakdown (components/journal/JournalStats.tsx, the `Chip` tones on
+// its "Difficulty Split" card) is what a hero actually reads as "this colour means this level" —
+// easy/success green, medium/primary violet, hard/secondary pink, with success alone keeping dark
+// text (Task 7 moved primary and secondary to $white on contrast grounds; success was never
+// flagged, so its $bgDark text stays). Matching it here, not `DIFFICULTY_COLOR_TOKENS`
+// (constants/rawColors.ts), whose bar uses $error for hard — a second, undocumented mapping nested
+// in the same Journal card that this task does not touch.
+const LEVEL_CHIP_COLORS: Record<Difficulty, { bg: ColorTokens; text: ColorTokens }> = {
+  [Difficulty.Easy]: { bg: "$success", text: "$bgDark" },
+  [Difficulty.Medium]: { bg: "$primary", text: "$white" },
+  [Difficulty.Hard]: { bg: "$secondary", text: "$white" },
+};
+
 function LevelChip({
   value,
   level,
@@ -114,6 +127,7 @@ function LevelChip({
 }) {
   const { t } = useTranslation();
   const active = value === level;
+  const colors = LEVEL_CHIP_COLORS[value];
 
   return (
     <AppButton
@@ -124,14 +138,14 @@ function LevelChip({
       // sideways would make neighbouring chips fight over the same pixels.
       hitSlop={{ top: 4, bottom: 4 }}
       px="$3"
-      bg={active ? "$secondary" : "$surface"}
-      borderColor={active ? "$secondary" : "$borderStrong"}
+      bg={active ? colors.bg : "$surface"}
+      borderColor={active ? colors.bg : "$borderStrong"}
       borderWidth={1}
       rounded="$10"
       fontSize={14}
       pressStyle={{ opacity: 0.9 }}
     >
-      <Text color="$text" fontWeight="700">
+      <Text color={active ? colors.text : "$text"} fontWeight="700">
         {levelLabel(value, t)}
       </Text>
     </AppButton>
@@ -150,6 +164,7 @@ export default function QuestDetails() {
     id?: string | string[];
     level?: string;
     runStepId?: string;
+    adventureId?: string | string[];
   }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -191,6 +206,10 @@ export default function QuestDetails() {
   const [narrative, setNarrative] = useState<string | null>(null);
   const [showNarrative, setShowNarrative] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  // Whether the route's level has already been applied once. A route level (an adventure step
+  // picks one) should win on the first load, but not re-win on every later refocus — opening an
+  // exercise sheet and coming back must not snap a hero's own choice back to it.
+  const routeLevelConsumed = useRef(false);
 
   // The screen stays mounted under the session; without this, coming back would leave
   // the start button stuck on "Starting…" forever.
@@ -242,7 +261,9 @@ export default function QuestDetails() {
 
   // What the hero last set on this quest. Re-read on focus, not just on mount: editing a quest
   // you wrote drops its overrides, and the screen underneath must not keep showing them.
-  // A level passed in the route (an adventure step picks one) outranks the remembered one.
+  // A level passed in the route (an adventure step picks one) outranks the remembered one — but
+  // only the first time this screen focuses. The route's level wins once — after that the hero's
+  // own choice is the saved truth.
   useFocusEffect(
     useCallback(() => {
       if (!questId) return;
@@ -252,7 +273,9 @@ export default function QuestDetails() {
         .then((saved) => {
           if (cancelled) return;
           const next = saved ?? { level: initialLevel };
-          setConfig(params.level ? { ...next, level: initialLevel } : next);
+          const applyRouteLevel = Boolean(params.level) && !routeLevelConsumed.current;
+          if (params.level) routeLevelConsumed.current = true;
+          setConfig(applyRouteLevel ? { ...next, level: initialLevel } : next);
         })
         .catch((error) => {
           // A missing or corrupt config just means "run the quest as written" — but a corrupt
@@ -271,9 +294,26 @@ export default function QuestDetails() {
   // Not router.back(): this screen is pushed from home, the journal and adventure steps as well
   // as from the gallery, so "back" used to land wherever you came from. A quest belongs to the
   // gallery, and dismissTo unwinds to it — it already sits at the bottom of this tab's stack.
+  //
+  // A quest opened from an adventure step is the exception: the hero thinks of the adventure as
+  // "back", not a gallery they never visited. The chevron honors that richer intent; hardware
+  // back still pops structurally to the gallery (anchored in 0b41d31) regardless of origin — the
+  // asymmetry is deliberate, not a bug to unify. `navigate` is the honest expression of that intent
+  // ("go to that screen", don't grow a stack) — it is not what stops duplicate adventure screens;
+  // expo-router downgrades a cross-tab `push` to a `navigate` at the tab boundary regardless of
+  // which call is used here, so `push` would behave identically. Not `dismissTo` either — the
+  // adventure isn't on this tab's stack to begin with, it lives on the adventures tab's own stack.
   const goToGallery = useCallback(() => {
+    const raw = Array.isArray(params.adventureId) ? params.adventureId[0] : params.adventureId;
+    const adventureId = Number(raw);
+    // A malformed deep link (literal "undefined", non-numeric garbage) is truthy but not a real
+    // id — Number.isFinite catches it, same guard as questId/adventureId above in this file.
+    if (raw && Number.isFinite(adventureId)) {
+      router.navigate(`/adventures/${adventureId}` as never);
+      return;
+    }
     router.dismissTo("/quests");
-  }, [router]);
+  }, [router, params.adventureId]);
 
   const updateConfig = useCallback(
     (next: QuestConfig) => {
@@ -731,6 +771,18 @@ export default function QuestDetails() {
           ) : null}
         </YStack>
       </ScrollView>
+
+      {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
+      <YStack
+        position="absolute"
+        t={0}
+        l={0}
+        r={0}
+        height={insets.top}
+        bg="$bgDark"
+        opacity={0.88}
+        pointerEvents="none"
+      />
 
       {quest ? (
         <YStack

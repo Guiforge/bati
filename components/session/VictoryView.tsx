@@ -256,7 +256,6 @@ export function VictoryView() {
 
   const handleViewVillage = () => {
     if (!result) return;
-    quitSession();
     const codes = result.villageGrowth.map((g) => g.code).join(",");
     router.push(`/(tabs)/village?grown=${codes}` as never);
   };
@@ -268,12 +267,13 @@ export function VictoryView() {
     const campaign = result.campaign;
     if (campaign?.nextQuestId && campaign.nextRunStepId) {
       router.replace(
-        `/quests/${campaign.nextQuestId}?runStepId=${campaign.nextRunStepId}` as never,
+        `/quests/${campaign.nextQuestId}?runStepId=${campaign.nextRunStepId}&adventureId=${campaign.adventureId}` as never,
+        { withAnchor: true },
       );
       return;
     }
     if (campaign?.isFinished) {
-      router.replace(`/adventures/${campaign.adventureId}` as never);
+      router.replace(`/adventures/${campaign.adventureId}` as never, { withAnchor: true });
       return;
     }
     router.replace("/");

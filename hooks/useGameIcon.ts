@@ -31,6 +31,11 @@ const ICONS = {
 
 export type GameIconName = keyof typeof ICONS;
 
+/** Runtime guard for strings that come from data (achievement/trophy icon codes), not literals. */
+export function isGameIconName(name: string): name is GameIconName {
+  return name in ICONS;
+}
+
 /**
  * Hook to get a game icon source
  * @param iconName - The name of the icon to load

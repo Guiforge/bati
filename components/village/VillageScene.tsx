@@ -13,6 +13,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 
+import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { AppButton } from "@/components/common/AppButton";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
@@ -461,8 +462,9 @@ export function VillageScene() {
                       borderWidth={2}
                       {...(trophy.kind === "boss" ? MEDAL_BOSS : MEDAL_PLAIN)}
                     >
-                      {/* A trophy with an image is a boss — achievements are emoji — and the
-                          medal shows the monster you beat, not the poster for its journey. */}
+                      {/* A trophy with an image is a boss; achievements render the game's own
+                          icons. The medal shows the monster you beat, not the poster for its
+                          journey. */}
                       {trophy.imagePath ? (
                         <Image
                           source={getBossAsset(trophy.imagePath, 0, "defeated")}
@@ -470,7 +472,7 @@ export function VillageScene() {
                           contentFit="cover"
                         />
                       ) : (
-                        <Text fontSize={28}>{trophy.emoji}</Text>
+                        <AchievementIcon icon={trophy.emoji ?? "Award"} size={28} color="$text" />
                       )}
                     </YStack>
                     <Text

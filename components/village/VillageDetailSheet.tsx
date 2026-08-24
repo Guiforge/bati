@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 
+import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { AppButton } from "@/components/common/AppButton";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
@@ -20,6 +21,7 @@ import {
   type VillageBuilding,
 } from "@/db/village";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -38,6 +40,15 @@ const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   day: "numeric",
   month: "short",
   year: "numeric",
+};
+
+// "Recent work" rows can land three sessions on the same day; the date alone can't tell them
+// apart, so this pairs it with the time — same fields as SessionCard's journal row.
+const RECENT_WORK_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
 };
 
 /** The detail sheet's second half: the deeds behind the number, fetched only when opened. */
@@ -294,16 +305,25 @@ function BuildingDetail({
           <Text fontWeight="700" fontSize={13} color="$text">
             {t("village.detail_recent_title", "Recent work")}
           </Text>
-          {extra.sessions.map((session) => (
-            <XStack key={session.sessionId} justify="space-between" gap="$2">
-              <Text fontSize={12} color="$textSecondary">
-                {formatDate(session.performedAt)}
-              </Text>
-              <Text fontSize={12} color="$muted">
-                {t("village.detail_recent_units", { volume: session.volume })}
-              </Text>
-            </XStack>
-          ))}
+          {extra.sessions.map((session) => {
+            const title =
+              session.enTitle && session.frTitle
+                ? localizedTitle({ enTitle: session.enTitle, frTitle: session.frTitle }, language)
+                : null;
+            const when = getDateTimeFormat(language, RECENT_WORK_DATE_OPTIONS).format(
+              session.performedAt,
+            );
+            return (
+              <XStack key={session.sessionId} justify="space-between" gap="$2">
+                <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
+                  {`${title ? `${title} · ` : ""}${when}`}
+                </Text>
+                <Text fontSize={12} color="$muted">
+                  {t("village.detail_recent_units", { volume: session.volume })}
+                </Text>
+              </XStack>
+            );
+          })}
         </YStack>
       )}
 
@@ -358,7 +378,7 @@ function TrophyDetail({ trophy, extra, language, formatDate }: DetailProps & { t
     <YStack gap="$3">
       {/* A beaten boss deserves better than a 56px disc: the monster itself — its *fallen*
           painting, because a trophy is proof of the defeat — wide, and tappable to full screen.
-          A trophy with an image is always a boss, achievements are emoji. */}
+          A trophy with an image is always a boss; achievements render the game's own icons. */}
       {trophy.imagePath ? (
         <YStack gap="$3">
           <YStack
@@ -388,7 +408,7 @@ function TrophyDetail({ trophy, extra, language, formatDate }: DetailProps & { t
         </YStack>
       ) : (
         <XStack items="center" gap="$3">
-          <Text fontSize={40}>{trophy.emoji}</Text>
+          <AchievementIcon icon={trophy.emoji ?? "Award"} size={40} color="$text" />
           <Text fontWeight="700" fontSize={18} color="$text" flex={1}>
             {fr ? trophy.frTitle : trophy.enTitle}
           </Text>

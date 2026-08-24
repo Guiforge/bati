@@ -106,8 +106,9 @@
     "metric_exercise_volume": "{{count}} × {{exercise}} in total",
     "metric_sessions": "{{count}} sessions logged",
     "metric_streak": "A {{count}}-day flame",
+    "preset_lsit_30": "{{count}} s L-Sit hold",
     "presets_title": "READY-MADE OATHS",
-    "custom_toggle": "✍️ Custom oath",
+    "custom_toggle": "Custom oath",
     "empty_cta": "Swear an oath",
     "empty_hint": "Set a goal to work toward",
     "metric_label_weekly_sessions": "Every week",
@@ -285,6 +286,7 @@
     "invalid_id": "Invalid adventure",
     "load_error": "Failed to load adventure",
     "start_error": "Could not start the adventure",
+    "reward_xp_per_step": "up to +{{count}} XP per step",
     "steps": "{{count}} steps",
     "weeks_one": "≈ {{count}} week",
     "weeks_other": "≈ {{count}} weeks",
@@ -294,6 +296,7 @@
     "step_completed": "Completed",
     "step_active": "Active",
     "step_locked": "Locked",
+    "step_locked_hint": "Finish the previous step to unlock it",
     "completed_times_one": "Completed once",
     "completed_times_other": "Completed {{count}} times",
     "continue": "Continue",
@@ -607,7 +610,9 @@
     "xp_value": "{{value}} XP",
     "exercises_short": "ex",
     "crit": "CRIT!",
-    "daily_xp_bonus": "+50% XP"
+    "daily_xp_bonus": "+50% XP",
+    "on": "On",
+    "off": "Off"
   },
   "splash": {
     "loading": "Building your village..."

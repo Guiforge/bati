@@ -15,7 +15,13 @@ import config from "@/tamagui.config";
  */
 
 const mockUpdateSessionFeedback = jest.fn().mockResolvedValue(undefined);
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
+const mockQuitSession = jest.fn();
 
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
+}));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/completed", () => ({
   updateSessionFeedback: (...args: unknown[]) => mockUpdateSessionFeedback(...args),
@@ -43,9 +49,21 @@ jest.mock("@/components/common/Toast", () => ({
 }));
 jest.mock("react-native-confetti-cannon", () => "ConfettiCannon");
 jest.mock("@/components/session/ProgressionChart", () => ({ ProgressionChart: () => null }));
-jest.mock("@/components/session/SessionRewards", () => ({ SessionRewards: () => null }));
+jest.mock("@/components/session/SessionRewards", () => {
+  const { Pressable, Text } = require("react-native");
+  return {
+    SessionRewards: ({ onViewVillage }: { onViewVillage: () => void }) => (
+      <Pressable accessibilityLabel="test-view-village" onPress={onViewVillage}>
+        <Text>village</Text>
+      </Pressable>
+    ),
+  };
+});
 
 const SESSION_ID = 42;
+
+type StoreState = ReturnType<typeof useSessionStore.getState>;
+type Campaign = Awaited<ReturnType<StoreState["saveSession"]>>["campaign"];
 
 const saveResult = {
   sessionId: SESSION_ID,
@@ -54,7 +72,7 @@ const saveResult = {
   dailyBonusApplied: false,
   heroXp: { before: 50, after: 150 },
   villageGrowth: [],
-  campaign: null,
+  campaign: null as Campaign,
   fulfilledOath: null,
   tierUp: false,
   // `SaveResult` declares this required and `saveSession` always returns it; the fixture is cast
@@ -74,10 +92,10 @@ const mockQuest = {
 } as unknown as Quest;
 
 /** Mount with the save deliberately left in flight; call the returned fn to let it land. */
-async function mountWithPendingSave() {
+async function mountWithPendingSave(campaign: Campaign = null) {
   let release!: () => void;
   const pending = new Promise((resolve) => {
-    release = () => resolve(saveResult);
+    release = () => resolve({ ...saveResult, campaign });
   });
 
   type SessionState = ReturnType<typeof useSessionStore.getState>;
@@ -92,6 +110,7 @@ async function mountWithPendingSave() {
     // The point of the test is a save that has not resolved yet, so the real one is replaced
     // by a promise this test opens and closes by hand.
     saveSession: (() => pending) as unknown as SessionState["saveSession"],
+    quitSession: mockQuitSession as unknown as SessionState["quitSession"],
   } as unknown as Partial<SessionState>);
 
   const view = await render(
@@ -113,6 +132,8 @@ async function mountWithPendingSave() {
 describe("VictoryView feedback", () => {
   beforeEach(() => {
     mockUpdateSessionFeedback.mockClear();
+    mockPush.mockClear();
+    mockQuitSession.mockClear();
   });
 
   it("persists a feeling tapped while the save is still in flight", async () => {
@@ -151,5 +172,78 @@ describe("VictoryView feedback", () => {
     await fireEvent.press(view.getByLabelText("session.feedback_good"));
 
     expect(mockUpdateSessionFeedback).toHaveBeenLastCalledWith(SESSION_ID, null);
+  });
+});
+
+/**
+ * `handleViewVillage` used to call `quitSession()` before pushing the village, so the store
+ * emptied and `/session` redirected home the moment the hero came back — rewards, records,
+ * achievements and "continue the campaign" below the fold became unreachable for good. Only the
+ * village button may leave the store populated; `handleContinue` still tears it down (untested
+ * here — it is the existing, correct behaviour).
+ */
+describe("VictoryView village navigation", () => {
+  beforeEach(() => {
+    mockPush.mockClear();
+    mockQuitSession.mockClear();
+  });
+
+  it("viewing the village does not tear down the session — the hero can come back to the rewards", async () => {
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    await fireEvent.press(view.getByLabelText("test-view-village"));
+
+    expect(mockQuitSession).not.toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("/village"));
+  });
+});
+
+/**
+ * `handleContinue`'s two campaign branches. `campaign.adventureId` used to be threaded into the
+ * `isFinished` branch but dropped from the mid-campaign one, so finishing step 1 of a multi-step
+ * campaign landed the hero on step 2's quest sheet with no `adventureId` — the chevron there sent
+ * them to the quests gallery instead of back to the adventure. Both branches must also keep
+ * `{ withAnchor: true }`, the hardware-back guarantee from commit 0b41d31.
+ */
+describe("VictoryView continue navigation", () => {
+  beforeEach(() => {
+    mockReplace.mockClear();
+    mockQuitSession.mockClear();
+  });
+
+  it("mid-campaign continue carries both runStepId and adventureId", async () => {
+    const { view, release } = await mountWithPendingSave({
+      adventureId: 7,
+      runId: 1,
+      isFinished: false,
+      nextRunStepId: 3,
+      nextQuestId: 9,
+    });
+    await release();
+
+    await fireEvent.press(view.getByTestId("session-victory-continue"));
+
+    expect(mockQuitSession).toHaveBeenCalled();
+    const [url, options] = mockReplace.mock.calls[0] ?? [];
+    expect(url).toEqual(expect.stringContaining("/quests/9"));
+    expect(url).toEqual(expect.stringContaining("runStepId=3"));
+    expect(url).toEqual(expect.stringContaining("adventureId=7"));
+    expect(options).toEqual({ withAnchor: true });
+  });
+
+  it("campaign finished returns to the adventure", async () => {
+    const { view, release } = await mountWithPendingSave({
+      adventureId: 7,
+      runId: 1,
+      isFinished: true,
+      nextRunStepId: null,
+      nextQuestId: null,
+    });
+    await release();
+
+    await fireEvent.press(view.getByTestId("session-victory-continue"));
+
+    expect(mockReplace).toHaveBeenCalledWith("/adventures/7", { withAnchor: true });
   });
 });

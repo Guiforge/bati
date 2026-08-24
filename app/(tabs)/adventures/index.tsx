@@ -33,6 +33,7 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import { computeSessionXp } from "@/db/xp";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -88,14 +89,18 @@ function buildAdventureRow(
   finishedCount: number,
   language: AppLanguage,
   t: TFunction,
+  config: QuestConfig | null,
 ): AdventureRow {
   const q = a.coverQuest;
+  // Same numbers as the quest detail/gallery: the saved level and structure overrides feed
+  // the estimate, priced off the cover quest — the one step the poster's XP chip advertises.
+  const level = config?.level ?? "medium";
   const durationSeconds = estimateQuestTemplateSeconds({
-    template: q,
+    template: { ...q, ...resolveTemplateOverrides(q, config) },
     exercisesById,
-    userLevel: "medium",
+    userLevel: level,
   });
-  const xp = computeSessionXp({ durationSeconds, userLevel: "medium" });
+  const xp = computeSessionXp({ durationSeconds, userLevel: level });
   const weeks = adventureWeeks(a.stepsCount);
 
   return {
@@ -124,7 +129,10 @@ function buildAdventureRow(
       count: a.stepsCount,
       defaultValue: `${a.stepsCount} steps`,
     }),
-    xpLabel: t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
+    xpLabel: t("adventures.reward_xp_per_step", {
+      count: xp,
+      defaultValue: `up to +${xp} XP per step`,
+    }),
     finishedCount,
     starsLabel: starsFor(finishedCount),
   };
@@ -345,6 +353,8 @@ export default function AdventuresGallery() {
   });
   const [activeProgress, setActiveProgress] = useState<AdventureProgress | null>(null);
   const [finishedCounts, setFinishedCounts] = useState<Map<number, number>>(new Map());
+  // One bulk read alongside the templates — never per card.
+  const [configs, setConfigs] = useState<Map<number, QuestConfig>>(new Map());
 
   const load = useCallback(async () => {
     // Only show the loading state on first load — on focus refetches we already have data.
@@ -355,11 +365,12 @@ export default function AdventuresGallery() {
     );
 
     try {
-      const [adventures, exercises, activeRun, finished] = await Promise.all([
+      const [adventures, exercises, activeRun, finished, questConfigs] = await Promise.all([
         listAdventures(),
         listExercises(),
         getAnyActiveAdventureRun(),
         getFinishedRunCountsByAdventure(),
+        getAllQuestConfigs(),
       ]);
       setActiveProgress(
         activeRun
@@ -372,6 +383,7 @@ export default function AdventuresGallery() {
           : null,
       );
       setFinishedCounts(finished);
+      setConfigs(questConfigs);
       const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
       setState({ status: "ready", adventures, exercisesById });
     } catch (e) {
@@ -402,9 +414,16 @@ export default function AdventuresGallery() {
   const rows = useMemo(
     () =>
       adventures.map((a) =>
-        buildAdventureRow(a, exercisesById, finishedCounts.get(a.id) ?? 0, language, t),
+        buildAdventureRow(
+          a,
+          exercisesById,
+          finishedCounts.get(a.id) ?? 0,
+          language,
+          t,
+          configs.get(a.coverQuestId) ?? null,
+        ),
       ),
-    [adventures, exercisesById, finishedCounts, language, t],
+    [adventures, exercisesById, finishedCounts, language, t, configs],
   );
 
   const title = t("adventures.gallery_title", "Adventures");

@@ -92,14 +92,28 @@ function StepStatusTag({ status }: { status: "locked" | "active" | "completed" }
 const AdventureStepRow = memo(function AdventureStepRow({
   step,
   status,
+  adventureId,
 }: {
   step: AdventureStepTemplate;
   status: "locked" | "active" | "completed";
+  adventureId: number;
 }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const langKey = useSettingsStore((s) => s.language);
 
   const stepTitle = langKey === "fr" ? step.quest.frTitle : step.quest.enTitle;
+
+  // Locked steps stay inert; active/completed ones open the quest sheet read-only.
+  // withAnchor mounts the gallery under the sheet so the hardware back has somewhere to pop.
+  // adventureId rides along so the quest screen's chevron can return here instead of the gallery.
+  const openQuest =
+    status === "locked"
+      ? undefined
+      : () =>
+          router.push(`/quests/${step.questId}?adventureId=${adventureId}` as never, {
+            withAnchor: true,
+          });
 
   const narrative =
     langKey === "fr" ? step.frNarrative || step.enNarrative : step.enNarrative || step.frNarrative;
@@ -114,6 +128,9 @@ const AdventureStepRow = memo(function AdventureStepRow({
       borderBottomWidth={1}
       borderColor="$borderStrong"
       pb="$3"
+      onPress={openQuest}
+      pressStyle={openQuest ? { opacity: 0.6 } : undefined}
+      accessibilityRole={openQuest ? "button" : undefined}
     >
       <XStack flex={1} items="center" gap="$3">
         {stepImage ? (
@@ -135,6 +152,11 @@ const AdventureStepRow = memo(function AdventureStepRow({
             <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
               {narrative}
             </Paragraph>
+          ) : null}
+          {status === "locked" ? (
+            <Text fontSize={12} color="$muted">
+              {t("adventures.step_locked_hint", "Finish the previous step to unlock it")}
+            </Text>
           ) : null}
         </YStack>
       </XStack>
@@ -342,7 +364,8 @@ export default function AdventureDetailsScreen() {
 
       const level = nextRun.run.difficultyOverride ?? suggestedDifficulty;
       router.push(
-        `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}` as never,
+        `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}&adventureId=${adventureId}` as never,
+        { withAnchor: true },
       );
     } catch (e) {
       setIsStarting(false);
@@ -504,7 +527,7 @@ export default function AdventureDetailsScreen() {
 
                   {preview ? (
                     <Chip
-                      label={t("quests.reward_xp_estimate", {
+                      label={t("adventures.reward_xp_per_step", {
                         count: preview.xp,
                       })}
                       tone="secondary"
@@ -531,6 +554,7 @@ export default function AdventureDetailsScreen() {
                         stepStatusByIndex.get(s.stepIndex) ??
                         (s.stepIndex === 0 ? "active" : "locked")
                       }
+                      adventureId={adventureId}
                     />
                   ))}
                 </YStack>
@@ -539,6 +563,18 @@ export default function AdventureDetailsScreen() {
           ) : null}
         </YStack>
       </ScrollView>
+
+      {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
+      <YStack
+        position="absolute"
+        t={0}
+        l={0}
+        r={0}
+        height={insets.top}
+        bg="$bgDark"
+        opacity={0.88}
+        pointerEvents="none"
+      />
 
       {details ? (
         <YStack

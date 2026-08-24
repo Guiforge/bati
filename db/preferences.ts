@@ -42,8 +42,11 @@ export async function deletePreference(key: string): Promise<void> {
   await db.delete(userPreferences).where(eq(userPreferences.key, key));
 }
 
-// Get all preferences as object
-/** @legacy Vidage complet des préférences, utile au débogage, sans appelant. */
+/**
+ * Vidage complet des préférences en une lecture. `getAllQuestConfigs` s'en sert pour tarifer
+ * les 34 cartes d'une galerie sans 34 requêtes — ne pas le remplacer par une boucle de
+ * `getPreference`.
+ */
 export async function getAllPreferences(): Promise<Record<string, string>> {
   const results = await db.select().from(userPreferences);
   return Object.fromEntries(results.map((r: { key: string; value: string }) => [r.key, r.value]));

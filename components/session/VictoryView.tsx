@@ -267,7 +267,7 @@ export function VictoryView() {
     const campaign = result.campaign;
     if (campaign?.nextQuestId && campaign.nextRunStepId) {
       router.replace(
-        `/quests/${campaign.nextQuestId}?runStepId=${campaign.nextRunStepId}` as never,
+        `/quests/${campaign.nextQuestId}?runStepId=${campaign.nextRunStepId}&adventureId=${campaign.adventureId}` as never,
         { withAnchor: true },
       );
       return;

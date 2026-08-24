@@ -16,10 +16,11 @@ import config from "@/tamagui.config";
 
 const mockUpdateSessionFeedback = jest.fn().mockResolvedValue(undefined);
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 const mockQuitSession = jest.fn();
 
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, replace: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/completed", () => ({
@@ -61,6 +62,9 @@ jest.mock("@/components/session/SessionRewards", () => {
 
 const SESSION_ID = 42;
 
+type StoreState = ReturnType<typeof useSessionStore.getState>;
+type Campaign = Awaited<ReturnType<StoreState["saveSession"]>>["campaign"];
+
 const saveResult = {
   sessionId: SESSION_ID,
   xpEarned: 100,
@@ -68,7 +72,7 @@ const saveResult = {
   dailyBonusApplied: false,
   heroXp: { before: 50, after: 150 },
   villageGrowth: [],
-  campaign: null,
+  campaign: null as Campaign,
   fulfilledOath: null,
   tierUp: false,
   // `SaveResult` declares this required and `saveSession` always returns it; the fixture is cast
@@ -88,10 +92,10 @@ const mockQuest = {
 } as unknown as Quest;
 
 /** Mount with the save deliberately left in flight; call the returned fn to let it land. */
-async function mountWithPendingSave() {
+async function mountWithPendingSave(campaign: Campaign = null) {
   let release!: () => void;
   const pending = new Promise((resolve) => {
-    release = () => resolve(saveResult);
+    release = () => resolve({ ...saveResult, campaign });
   });
 
   type SessionState = ReturnType<typeof useSessionStore.getState>;
@@ -192,5 +196,54 @@ describe("VictoryView village navigation", () => {
 
     expect(mockQuitSession).not.toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("/village"));
+  });
+});
+
+/**
+ * `handleContinue`'s two campaign branches. `campaign.adventureId` used to be threaded into the
+ * `isFinished` branch but dropped from the mid-campaign one, so finishing step 1 of a multi-step
+ * campaign landed the hero on step 2's quest sheet with no `adventureId` — the chevron there sent
+ * them to the quests gallery instead of back to the adventure. Both branches must also keep
+ * `{ withAnchor: true }`, the hardware-back guarantee from commit 0b41d31.
+ */
+describe("VictoryView continue navigation", () => {
+  beforeEach(() => {
+    mockReplace.mockClear();
+    mockQuitSession.mockClear();
+  });
+
+  it("mid-campaign continue carries both runStepId and adventureId", async () => {
+    const { view, release } = await mountWithPendingSave({
+      adventureId: 7,
+      runId: 1,
+      isFinished: false,
+      nextRunStepId: 3,
+      nextQuestId: 9,
+    });
+    await release();
+
+    await fireEvent.press(view.getByTestId("session-victory-continue"));
+
+    expect(mockQuitSession).toHaveBeenCalled();
+    const [url, options] = mockReplace.mock.calls[0] ?? [];
+    expect(url).toEqual(expect.stringContaining("/quests/9"));
+    expect(url).toEqual(expect.stringContaining("runStepId=3"));
+    expect(url).toEqual(expect.stringContaining("adventureId=7"));
+    expect(options).toEqual({ withAnchor: true });
+  });
+
+  it("campaign finished returns to the adventure", async () => {
+    const { view, release } = await mountWithPendingSave({
+      adventureId: 7,
+      runId: 1,
+      isFinished: true,
+      nextRunStepId: null,
+      nextQuestId: null,
+    });
+    await release();
+
+    await fireEvent.press(view.getByTestId("session-victory-continue"));
+
+    expect(mockReplace).toHaveBeenCalledWith("/adventures/7", { withAnchor: true });
   });
 });

@@ -1,3 +1,4 @@
+import { Settings } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,20 +57,36 @@ export function HomeHeader() {
       borderColor="$borderStrong"
     >
       {/* Avatar - Tap to edit profile */}
-      <Avatar
-        testID="home-settings"
-        circular
-        size="$6"
-        borderWidth={1}
-        borderColor="$borderStrong"
-        pressStyle={{ scale: 0.95 }}
-        onPress={() => router.push("/settings")}
-        accessibilityRole="button"
-        accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
-      >
-        <Avatar.Image source={avatarSource} />
-        <Avatar.Fallback background="$primary" />
-      </Avatar>
+      <YStack position="relative">
+        <Avatar
+          testID="home-settings"
+          circular
+          size="$6"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          pressStyle={{ scale: 0.95 }}
+          onPress={() => router.push("/settings")}
+          accessibilityRole="button"
+          accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
+        >
+          <Avatar.Image source={avatarSource} />
+          <Avatar.Fallback background="$primary" />
+        </Avatar>
+        {/* Visible affordance for what the avatar already does — tap target stays the avatar itself. */}
+        <XStack
+          position="absolute"
+          b={-2}
+          r={-2}
+          bg="$surface2"
+          rounded={999}
+          p={3}
+          borderWidth={1}
+          borderColor="$borderStrong"
+          pointerEvents="none"
+        >
+          <Settings size={12} color="$textSecondary" />
+        </XStack>
+      </YStack>
 
       {/* Identity & XP */}
       <YStack flex={1} gap="$1">

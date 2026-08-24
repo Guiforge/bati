@@ -2,7 +2,7 @@
 title: Roadmap
 type: planning
 status: active
-updated: 2026-08-16
+updated: 2026-08-24
 related:
   [
     README.md,
@@ -66,10 +66,18 @@ first cost is not the code.
 
 ## 1. Release & distribution
 
-**Play is live on the internal track** (v1.7.4, versionCode 10704), uploaded by the `play` job of
-`release.yml` behind the `play-internal` GitHub Environment. The listing, both locales, the
-feature graphic, the privacy policy and the signing story are all done. What is left is a
-calendar, not a keyboard — the 14-day closed test is running.
+**Play is live on the internal track** (v1.12.0, versionCode 11200 — `grep '"version"'
+package.json` and `grep versionCode app.json`; this line sat at 1.7.4/10704 for five releases),
+uploaded by the `play` job of `release.yml` behind the `play-internal` GitHub Environment. The
+listing, both locales, the feature graphic, the privacy policy and the signing story are all done.
+What is left is a calendar, not a keyboard — the 14-day closed test is running.
+
+- **P1 — Promotion out of `internal` is manual, and nothing in the repo does it.**
+  `release.yml:230` pins `fastlane supply --track internal`; no closed, open or production track
+  appears anywhere in the workflow. Reaching testers beyond the internal list means opening the
+  Play Console and promoting by hand. Automating it is one more `supply` call with a `--track` and
+  a rollout fraction — cheap, and deliberately not done: a gate nobody can forget to open is a
+  gate that opens on a bad tag.
 
 - **P1 — Screenshots must be regenerated after §2.** They must show the UI that ships, not the
   one before the device pass. Play caps them at **8 per device type** and rejects the ninth with
@@ -143,9 +151,6 @@ Severity order P0 → P1 → P2 → P3; never polish before P0/P1 are gone.
 
 Not tidiness. Each line is a gate that does not close, or a risk with a date on it.
 
-- **P1 — The knip gate does not gate.** `npm run deadcode` runs in CI and the report is at zero since
-  2026-08-12, but the step exits 0 regardless of findings. Verify it goes red when a finding
-  appears, or it is decoration.
 - **P1 — The suite tests `db/` and leaves the screens bare.** 64 test files
   (`ls __tests__/*.test.*`) against 137 sources (`find app components src db hooks -name "*.ts*"`)
   reads healthy; the distribution does not. **9** of them render anything
@@ -331,9 +336,36 @@ What it does not do is **remember the tree** — it calls `Directory.pickDirecto
 time, so there is no folder to write to unattended.
 
 So the work is: keep the picked URI in preferences, write on a trigger, prune old snapshots.
-The one thing to check before estimating is whether the `Directory` API takes a *persistable* URI
-permission on Android — if it does not, the fallback is `StorageAccessFramework`'s
-`requestDirectoryPermissionsAsync`, which does, and the rest is unchanged.
+
+**The one open question is closed, and the answer deletes the fallback branch.** `Directory` does
+take a persistable permission, and takes it for us: expo-file-system 57's
+`FilePickerContract.kt:48` calls `contentResolver.takePersistableUriPermission()` on the result of
+`ACTION_OPEN_DOCUMENT_TREE`. So the tree `Directory.pickDirectoryAsync()` returns already survives
+a reboot, the URI string is the whole thing to persist, and `new Directory(uri)` reconstructs it.
+No `StorageAccessFramework` fallback, no new dependency, no manifest change.
+
+**Shape — four steps, each shippable alone.**
+
+1. **Remember the tree.** `saveBackupToFolder()` (`src/backupFiles.ts:99`) takes an optional
+   folder; the picked `folder.uri` goes to `setPreference("backupFolderUri", …)`.
+   `user_preferences` is key/value (`db/schema.ts:65`), so this costs no migration. Settings shows
+   the remembered folder and offers to forget it — a stored URI the hero can neither see nor
+   revoke is exactly the invisible state the quality rules warn about.
+2. **Write on a trigger.** The trigger that pays for the P1 is `ensureMigrations()`
+   (`db/migrate.ts:220`): snapshot *before* the runner, only when a folder is remembered *and*
+   migrations are pending, so an ordinary launch costs nothing. That function is memoised on its
+   promise and shared with the widget task, so the snapshot belongs inside it rather than at a
+   call site — one writer.
+3. **Survive a revoked tree.** A remembered folder can vanish: card pulled, folder deleted,
+   permission cleared in Settings. A failed unattended write reports through `reportError` and
+   clears the preference; it must never block the launch and never fail silently on every start.
+4. **Prune.** Snapshots are named by the day (`src/backupFiles.ts:48`), so pruning is: list the
+   tree, keep the newest N by name, delete the rest. Nothing here needs to be clever.
+
+**One test, on the branch that earns it** — the migration-gated write, asserting *state*: pending
+migrations plus a remembered folder leave a snapshot behind and the migration ran; no pending
+migrations write nothing; a revoked tree clears the preference and the launch still completes.
+Asserting that the picker opened would repeat the mistake the Maestro flows already made.
 
 **P1, above several older items, for a reason that lives in §3.** Migrations have never been
 replayed against a real upgraded database, testers are carrying real history right now, and a

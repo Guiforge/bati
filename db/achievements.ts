@@ -47,6 +47,13 @@ export type AchievementCode = (typeof achievementCodes)[number];
 
 export interface AchievementDefinition {
   code: AchievementCode;
+  /**
+   * A `GameIconName` (see hooks/useGameIcon.ts) or, when the fantasy set has no match, a
+   * `@tamagui/lucide-icons` component name — resolved by components/common/AchievementIcon.tsx,
+   * the one place every trophy view (journal shelf, village shelf, village detail) renders this.
+   * Not persisted: only the unlocked `code` and timestamp are stored, so this string is safe to
+   * repoint at any time without a migration.
+   */
   icon: string;
   enTitle: string;
   frTitle: string;
@@ -59,7 +66,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   // Session milestones
   {
     code: "first_workout",
-    icon: "🎯",
+    icon: "Target",
     enTitle: "First Steps",
     frTitle: "Premiers Pas",
     enDescription: "Complete your first workout",
@@ -68,7 +75,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "sessions_10",
-    icon: "💪",
+    icon: "muscle",
     enTitle: "Getting Started",
     frTitle: "Bien Parti",
     enDescription: "Complete 10 workouts",
@@ -77,7 +84,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "sessions_25",
-    icon: "🏃",
+    icon: "Footprints",
     enTitle: "Dedicated",
     frTitle: "Dévoué",
     enDescription: "Complete 25 workouts",
@@ -86,7 +93,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "sessions_50",
-    icon: "🔥",
+    icon: "flame",
     enTitle: "On Fire",
     frTitle: "En Feu",
     enDescription: "Complete 50 workouts",
@@ -95,7 +102,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "sessions_100",
-    icon: "⚔️",
+    icon: "sword",
     enTitle: "Century Warrior",
     frTitle: "Guerrier Centenaire",
     enDescription: "Complete 100 workouts",
@@ -104,7 +111,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "sessions_250",
-    icon: "🏆",
+    icon: "trophy",
     enTitle: "Champion",
     frTitle: "Champion",
     enDescription: "Complete 250 workouts",
@@ -113,7 +120,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "sessions_500",
-    icon: "👑",
+    icon: "crown",
     enTitle: "Legend",
     frTitle: "Légende",
     enDescription: "Complete 500 workouts",
@@ -124,7 +131,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   // Streak milestones
   {
     code: "streak_3",
-    icon: "🌱",
+    icon: "Sprout",
     enTitle: "Sprouting",
     frTitle: "Bourgeonnement",
     enDescription: "Keep your flame lit for 3 days",
@@ -133,7 +140,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "streak_7",
-    icon: "🌿",
+    icon: "Leaf",
     enTitle: "Weekly Warrior",
     frTitle: "Guerrier Hebdo",
     enDescription: "Keep your flame lit for 7 days",
@@ -142,7 +149,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "streak_14",
-    icon: "🌳",
+    icon: "TreePine",
     enTitle: "Two Week Wonder",
     frTitle: "Merveille de Deux Semaines",
     enDescription: "Keep your flame lit for 14 days",
@@ -151,7 +158,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "streak_30",
-    icon: "🔥",
+    icon: "flame",
     enTitle: "Monthly Master",
     frTitle: "Maître Mensuel",
     enDescription: "Keep your flame lit for 30 days",
@@ -160,7 +167,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "streak_60",
-    icon: "⚡",
+    icon: "lightning",
     enTitle: "Unstoppable",
     frTitle: "Inarrêtable",
     enDescription: "Keep your flame lit for 60 days",
@@ -169,7 +176,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "streak_100",
-    icon: "💫",
+    icon: "star",
     enTitle: "Centurion",
     frTitle: "Centurion",
     enDescription: "Keep your flame lit for 100 days",
@@ -180,7 +187,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   // XP milestones
   {
     code: "xp_100",
-    icon: "✨",
+    icon: "Sparkles",
     enTitle: "XP Hunter",
     frTitle: "Chasseur d'XP",
     enDescription: "Earn 100 total XP",
@@ -189,7 +196,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "xp_500",
-    icon: "💎",
+    icon: "Gem",
     enTitle: "XP Collector",
     frTitle: "Collectionneur d'XP",
     enDescription: "Earn 500 total XP",
@@ -198,7 +205,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "xp_1000",
-    icon: "🏅",
+    icon: "Medal",
     enTitle: "XP Master",
     frTitle: "Maître de l'XP",
     enDescription: "Earn 1,000 total XP",
@@ -207,7 +214,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "xp_5000",
-    icon: "🎖️",
+    icon: "Award",
     enTitle: "XP Elite",
     frTitle: "Élite de l'XP",
     enDescription: "Earn 5,000 total XP",
@@ -216,7 +223,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "xp_10000",
-    icon: "👑",
+    icon: "crown",
     enTitle: "XP Legend",
     frTitle: "Légende de l'XP",
     enDescription: "Earn 10,000 total XP",
@@ -227,7 +234,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   // Special achievements
   {
     code: "long_session_30min",
-    icon: "⏱️",
+    icon: "Timer",
     enTitle: "Endurance",
     frTitle: "Endurance",
     enDescription: "Complete a 30+ minute workout",
@@ -236,7 +243,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "long_session_60min",
-    icon: "🏋️",
+    icon: "Dumbbell",
     enTitle: "Iron Will",
     frTitle: "Volonté de Fer",
     enDescription: "Complete a 60+ minute workout",
@@ -245,7 +252,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "early_bird",
-    icon: "🌅",
+    icon: "Sunrise",
     enTitle: "Early Bird",
     frTitle: "Lève-Tôt",
     enDescription: "Complete a workout before 7am",
@@ -254,7 +261,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "night_owl",
-    icon: "🦉",
+    icon: "Moon",
     enTitle: "Night Owl",
     frTitle: "Oiseau de Nuit",
     enDescription: "Complete a workout after 10pm",
@@ -266,7 +273,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
     // the intrinsic kind and must "stay secondary to real progress", while endorsing badges that
     // *materialize* mastery. The trophy has to **be** the progress, never a currency laid on top.
     code: "path_climbed",
-    icon: "⛰️",
+    icon: "Mountain",
     enTitle: "Path Climbed",
     frTitle: "Voie gravie",
     enDescription: "Own every rung of one path",
@@ -275,7 +282,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "variety_3_quests",
-    icon: "🎭",
+    icon: "Drama",
     enTitle: "Variety Seeker",
     frTitle: "Chercheur de Variété",
     enDescription: "Complete 3 different quests",
@@ -284,7 +291,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
   },
   {
     code: "variety_5_quests",
-    icon: "🎪",
+    icon: "scroll",
     enTitle: "Quest Master",
     frTitle: "Maître des Quêtes",
     enDescription: "Complete 5 different quests",

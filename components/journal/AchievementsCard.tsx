@@ -2,6 +2,7 @@ import { Award, Lock } from "@tamagui/lucide-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
+import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
@@ -233,7 +234,7 @@ function AchievementRow({
         justify="center"
       >
         {isUnlocked ? (
-          <Text fontSize={24}>{definition.icon}</Text>
+          <AchievementIcon icon={definition.icon} size={28} color="$text" />
         ) : (
           <Lock size={20} color="$text" opacity={0.5} />
         )}

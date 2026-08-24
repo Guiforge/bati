@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "@tamagui/lucide-icons";
+import { ChevronLeft, ChevronRight, PenLine } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -452,6 +452,7 @@ export default function OathScreen() {
                 variant="outline"
                 size="$3"
                 fontSize={15}
+                icon={<PenLine size={16} color="$text" />}
                 onPress={() => setShowCustom(true)}
               >
                 {t("oath.custom_toggle")}

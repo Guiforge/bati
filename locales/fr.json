@@ -120,7 +120,7 @@
     "metric_sessions": "{{count}} séances accomplies",
     "metric_streak": "Une flamme de {{count}} jours",
     "presets_title": "SERMENTS TOUT PRÊTS",
-    "custom_toggle": "✍️ Serment personnalisé",
+    "custom_toggle": "Serment personnalisé",
     "empty_cta": "Prête un serment",
     "empty_hint": "Fixe-toi un objectif à atteindre",
     "metric_label_weekly_sessions": "Chaque semaine",

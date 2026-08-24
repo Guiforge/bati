@@ -107,7 +107,7 @@
     "metric_sessions": "{{count}} sessions logged",
     "metric_streak": "A {{count}}-day flame",
     "presets_title": "READY-MADE OATHS",
-    "custom_toggle": "✍️ Custom oath",
+    "custom_toggle": "Custom oath",
     "empty_cta": "Swear an oath",
     "empty_hint": "Set a goal to work toward",
     "metric_label_weekly_sessions": "Every week",

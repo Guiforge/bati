@@ -2,7 +2,7 @@ import { ChevronLeft, Dumbbell, Pencil, Repeat, Sparkles } from "@tamagui/lucide
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
@@ -191,6 +191,10 @@ export default function QuestDetails() {
   const [narrative, setNarrative] = useState<string | null>(null);
   const [showNarrative, setShowNarrative] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  // Whether the route's level has already been applied once. A route level (an adventure step
+  // picks one) should win on the first load, but not re-win on every later refocus — opening an
+  // exercise sheet and coming back must not snap a hero's own choice back to it.
+  const routeLevelConsumed = useRef(false);
 
   // The screen stays mounted under the session; without this, coming back would leave
   // the start button stuck on "Starting…" forever.
@@ -242,7 +246,9 @@ export default function QuestDetails() {
 
   // What the hero last set on this quest. Re-read on focus, not just on mount: editing a quest
   // you wrote drops its overrides, and the screen underneath must not keep showing them.
-  // A level passed in the route (an adventure step picks one) outranks the remembered one.
+  // A level passed in the route (an adventure step picks one) outranks the remembered one — but
+  // only the first time this screen focuses. The route's level wins once — after that the hero's
+  // own choice is the saved truth.
   useFocusEffect(
     useCallback(() => {
       if (!questId) return;
@@ -252,7 +258,9 @@ export default function QuestDetails() {
         .then((saved) => {
           if (cancelled) return;
           const next = saved ?? { level: initialLevel };
-          setConfig(params.level ? { ...next, level: initialLevel } : next);
+          const applyRouteLevel = Boolean(params.level) && !routeLevelConsumed.current;
+          if (params.level) routeLevelConsumed.current = true;
+          setConfig(applyRouteLevel ? { ...next, level: initialLevel } : next);
         })
         .catch((error) => {
           // A missing or corrupt config just means "run the quest as written" — but a corrupt

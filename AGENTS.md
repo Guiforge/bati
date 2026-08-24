@@ -138,6 +138,13 @@ outlived it.
   `lang === "fr" ? \`${m} min\` : \`${m} min\`` shipped for months with six call sites feeding it
   the live language. `.biome/plugins/noIdenticalTernaryArms.grit` rejects it now; Biome's own
   `noUselessTernary` does not, it only covers boolean arms.
+- **A percentage size measures its parent, so the parent must never be conditional.** A tile that
+  asks for `31.5%` asks whatever node happens to be above it. Mount a wrapper for one state only —
+  a pulse, a badge, an animation — and that state silently re-parents the measurement: issue #29
+  collapsed a just-grown village tile to a sliver, its name wrapped to one letter per line, and a
+  restart "fixed" it by dropping the param that mounted the wrapper. Put the width on the
+  outermost node and render that node unconditionally; a component with two tree shapes is a
+  component with two layouts, and tests only ever see one of them.
 - **Every dependency arrives with permissions you did not ask for.** They land through manifest
   merging, announce nothing, and surface months later in someone else's privacy report —
   `expo-audio` held a microphone, a foreground media service and three permissions for a sound

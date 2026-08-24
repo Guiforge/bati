@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
@@ -103,6 +103,19 @@ function levelLabel(level: Difficulty, t: TFunction) {
   return t("quests.level_medium", "Medium");
 }
 
+// The Journal's difficulty breakdown (components/journal/JournalStats.tsx, the `Chip` tones on
+// its "Difficulty Split" card) is what a hero actually reads as "this colour means this level" —
+// easy/success green, medium/primary violet, hard/secondary pink, with success alone keeping dark
+// text (Task 7 moved primary and secondary to $white on contrast grounds; success was never
+// flagged, so its $bgDark text stays). Matching it here, not `DIFFICULTY_COLOR_TOKENS`
+// (constants/rawColors.ts), whose bar uses $error for hard — a second, undocumented mapping nested
+// in the same Journal card that this task does not touch.
+const LEVEL_CHIP_COLORS: Record<Difficulty, { bg: ColorTokens; text: ColorTokens }> = {
+  [Difficulty.Easy]: { bg: "$success", text: "$bgDark" },
+  [Difficulty.Medium]: { bg: "$primary", text: "$white" },
+  [Difficulty.Hard]: { bg: "$secondary", text: "$white" },
+};
+
 function LevelChip({
   value,
   level,
@@ -114,6 +127,7 @@ function LevelChip({
 }) {
   const { t } = useTranslation();
   const active = value === level;
+  const colors = LEVEL_CHIP_COLORS[value];
 
   return (
     <AppButton
@@ -124,14 +138,14 @@ function LevelChip({
       // sideways would make neighbouring chips fight over the same pixels.
       hitSlop={{ top: 4, bottom: 4 }}
       px="$3"
-      bg={active ? "$secondary" : "$surface"}
-      borderColor={active ? "$secondary" : "$borderStrong"}
+      bg={active ? colors.bg : "$surface"}
+      borderColor={active ? colors.bg : "$borderStrong"}
       borderWidth={1}
       rounded="$10"
       fontSize={14}
       pressStyle={{ opacity: 0.9 }}
     >
-      <Text color="$text" fontWeight="700">
+      <Text color={active ? colors.text : "$text"} fontWeight="700">
         {levelLabel(value, t)}
       </Text>
     </AppButton>

@@ -103,9 +103,13 @@ jest.mock("expo-file-system", () => {
 
     list() {
       const prefix = `${strip(this.uri)}/`;
-      return [...disk.keys()]
-        .filter((key) => key.startsWith(prefix))
-        .map((key) => new File(`file://${key}`));
+      return (
+        [...disk.keys()]
+          .filter((key) => key.startsWith(prefix))
+          // A key that already carries a scheme is a Storage Access Framework entry and keeps
+          // its URI verbatim; only local paths get the `file://` back.
+          .map((key) => new File(key.includes("://") ? key : `file://${key}`))
+      );
     }
   }
 
@@ -147,6 +151,8 @@ jest.mock("@/db/backup", () => ({
 
 jest.mock("@/db/schemaVersion", () => ({ SCHEMA_VERSION: 3 }));
 
+import type { Directory } from "expo-file-system";
+
 import {
   commitRestore,
   discardStagedImport,
@@ -157,7 +163,10 @@ import {
 
 type FakeFs = {
   File: { new (uri: string): object; pickFileAsync: jest.Mock };
-  Directory: { new (uri: string): object; pickDirectoryAsync: jest.Mock };
+  // Typed as the real `Directory` rather than `object`, because `saveBackupToFolder` now takes
+  // one as an argument. The fake implements the two members this file exercises — `uri` and
+  // `list()` — so anything else reaching for the real API fails loudly here, which is the point.
+  Directory: { new (uri: string): Directory; pickDirectoryAsync: jest.Mock };
   __disk: Map<string, string>;
   __ops: string[];
   __control: { failMoveInto: string | null };
@@ -365,6 +374,88 @@ describe("saveBackupToFolder", () => {
    * Replacing is the right answer: the file being replaced is this app's own backup, from the
    * same day, under a name only this app writes.
    */
+  /**
+   * The whole point of `src/autoBackup.ts`: a tree granted once, written into with no picker in
+   * sight. If this ever opens the picker again, automatic backup becomes a dialog that appears
+   * while the app is starting up.
+   */
+  test("writes into a folder it was handed, without opening the picker", async () => {
+    const remembered = new fs.Directory("content://tree/primary%3ADocuments");
+
+    expect(await saveBackupToFolder(remembered)).toBe(true);
+
+    expect(fs.Directory.pickDirectoryAsync).not.toHaveBeenCalled();
+    const copied = [...fs.__disk.keys()].filter((key) => key.startsWith("content://tree/"));
+    expect(copied).toEqual([expect.stringMatching(/bati-export-v3-\d{4}-\d{2}-\d{2}\.db$/)]);
+  });
+
+  /**
+   * Unattended writes accumulate, and these are whole databases in the hero's own storage. The
+   * prune sorts on the *day* rather than the whole name, because `v3` and `v10` do not sort as
+   * numbers — a name-ordered prune would start by deleting the newest schema's backups.
+   */
+  test("keeps the five newest snapshots and deletes the older ones", async () => {
+    const folder = new fs.Directory("file:///sdcard/Documents");
+    for (const day of ["2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01"]) {
+      fs.__disk.set(`/sdcard/Documents/bati-export-v10-${day}.db`, day);
+    }
+    // Older than every v10 above, and lexicographically larger than all of them.
+    fs.__disk.set("/sdcard/Documents/bati-export-v3-2025-12-01.db", "oldest");
+
+    await saveBackupToFolder(folder);
+
+    const kept = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/")).sort();
+    expect(kept).toHaveLength(5);
+    expect(kept).not.toContain("/sdcard/Documents/bati-export-v3-2025-12-01.db");
+  });
+
+  /**
+   * The shape a real Storage Access Framework tree produces, which the `file://` tests above
+   * cannot reach: children come back as **document** URIs whose whole document id is one
+   * percent-encoded segment. `File.name` recovers the filename from that only when React
+   * Native's partial `URL` polyfill happens to parse `content://` — so a prune anchored on
+   * `name` matches nothing here, deletes nothing, and stays green on every `file://` test in
+   * this file while doing nothing at all on a device.
+   */
+  test("prunes a Storage Access Framework tree, where the filename arrives percent-encoded", async () => {
+    const tree = "content://com.android.externalstorage.documents/tree/primary%3ADocuments";
+    const folder = new fs.Directory(tree);
+    const asDocument = (name: string) =>
+      `${tree}/document/${encodeURIComponent(`primary:Documents/${name}`)}`;
+
+    const oldest = asDocument("bati-export-v3-2025-12-01.db");
+    for (const day of ["2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01"]) {
+      fs.__disk.set(asDocument(`bati-export-v10-${day}.db`), day);
+    }
+    fs.__disk.set(oldest, "oldest");
+    fs.__disk.set(asDocument("taxes-2025.pdf"), "not ours");
+
+    await saveBackupToFolder(folder);
+
+    const left = [...fs.__disk.keys()].filter((key) => key.startsWith(tree));
+    expect(left).toHaveLength(6); // five snapshots kept, plus the hero's own file
+    expect(left).not.toContain(oldest);
+    expect(fs.__disk.get(asDocument("taxes-2025.pdf"))).toBe("not ours");
+  });
+
+  /**
+   * The folder is the hero's, and may well be their Documents root. Pruning only ever considers
+   * names this app writes — never "everything but the newest five files in here".
+   */
+  test("never deletes a file it did not write", async () => {
+    const folder = new fs.Directory("file:///sdcard/Documents");
+    for (const day of ["2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01", "2026-05-01"]) {
+      fs.__disk.set(`/sdcard/Documents/bati-export-v3-${day}.db`, day);
+    }
+    fs.__disk.set("/sdcard/Documents/taxes-2025.pdf", "not ours");
+    fs.__disk.set("/sdcard/Documents/bati-export-notes.txt", "not ours either");
+
+    await saveBackupToFolder(folder);
+
+    expect(fs.__disk.get("/sdcard/Documents/taxes-2025.pdf")).toBe("not ours");
+    expect(fs.__disk.get("/sdcard/Documents/bati-export-notes.txt")).toBe("not ours either");
+  });
+
   test("saving twice into the same folder replaces the day's file", async () => {
     const folder = new fs.Directory("file:///sdcard/Documents");
     fs.Directory.pickDirectoryAsync.mockResolvedValue(folder);

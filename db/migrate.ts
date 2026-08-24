@@ -1,5 +1,7 @@
 import migrations from "../drizzle/migrations";
+import { backupBeforeMigrations } from "../src/autoBackup";
 import { db } from "./client";
+import { sqlString } from "./sql";
 
 /**
  * The migration runner, shared between the two entry points that open the database: the React
@@ -20,9 +22,32 @@ type SqliteMigrationClient = {
   getAllAsync?: <T = unknown>(source: string, params?: readonly unknown[]) => Promise<T[]>;
 };
 
-/** SQLite string literal. Exported because db/backup.ts interpolates file paths into SQL too. */
-export function sqlString(value: string) {
-  return `'${value.replaceAll("'", "''")}'`;
+/**
+ * When the newest migration in `__drizzle_migrations` was written, or `-Infinity` for a database
+ * that has never been migrated. A read that fails counts as never: applying is idempotent, and
+ * the alternative is skipping migrations because a query went wrong.
+ */
+async function readLastAppliedAt(client: SqliteMigrationClient): Promise<number> {
+  try {
+    if (!client.getFirstAsync) return -Infinity;
+    const row = await client.getFirstAsync<{ created_at: number | string }>(
+      "SELECT created_at FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1",
+    );
+    if (row?.created_at === undefined || row?.created_at === null) return -Infinity;
+    return Number(row.created_at);
+  } catch {
+    // The table does not exist on a fresh database, and this read runs before it is created.
+    return -Infinity;
+  }
+}
+
+/**
+ * Whether one journal entry still has to run. The runner skips on this and `ensureMigrations`
+ * decides whether to write a backup on it — through the same function, because two copies of
+ * "has this run yet?" that drift is how a backup gets written on every launch, or on none.
+ */
+function isPending(entry: { when: number }, lastAppliedAt: number): boolean {
+  return !(Number.isFinite(lastAppliedAt) && lastAppliedAt >= entry.when);
 }
 
 // ponytail: hand-rolled instead of drizzle-orm/expo-sqlite/migrator's `useMigrations`
@@ -46,19 +71,7 @@ async function runMigrationsAsync(
     )
   `);
 
-  let lastCreatedAt = -Infinity;
-  try {
-    if (client.getFirstAsync) {
-      const row = await client.getFirstAsync<{ created_at: number | string }>(
-        "SELECT created_at FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1",
-      );
-      if (row?.created_at !== undefined && row?.created_at !== null) {
-        lastCreatedAt = Number(row.created_at);
-      }
-    }
-  } catch {
-    // Ignore if querying fails; we'll just apply all migrations.
-  }
+  const lastCreatedAt = await readLastAppliedAt(client);
 
   const entries = config.journal.entries;
   // ponytail: hand-rolled migration runner — drizzle's own could not be used on this driver.
@@ -70,7 +83,7 @@ async function runMigrationsAsync(
     runAsync?: SqliteMigrationClient["runAsync"];
   }) {
     for (const entry of entries) {
-      if (Number.isFinite(lastCreatedAt) && lastCreatedAt >= entry.when) continue;
+      if (!isPending(entry, lastCreatedAt)) continue;
 
       const key = getMigrationKeyFromIdx(entry.idx);
       const raw = config.migrations[key];
@@ -223,9 +236,19 @@ export function ensureMigrations(): Promise<void> {
     if (!client) {
       return Promise.reject(new Error("Database client not available for migrations"));
     }
-    const promise = runMigrationsAsync(client, buildMigrationConfig(), {
-      debug: migrationsDebugEnabled(),
-    });
+    const config = buildMigrationConfig();
+    const promise = (async () => {
+      // The one moment a backup is worth writing unattended, and the one moment this database
+      // can be damaged in a way no undo covers. Gated on there being something to run so an
+      // ordinary launch — every launch but the first after an update — pays one indexed read.
+      // It never throws: a folder that cannot be written is not a reason an app fails to start.
+      const lastAppliedAt = await readLastAppliedAt(client);
+      if (config.journal.entries.some((entry) => isPending(entry, lastAppliedAt))) {
+        await backupBeforeMigrations();
+      }
+
+      await runMigrationsAsync(client, config, { debug: migrationsDebugEnabled() });
+    })();
     promise.catch(() => {
       // Don't cache a failure — let the next caller retry. Same pattern as streakMemo.
       if (migrated === promise) migrated = null;

@@ -6,6 +6,7 @@ import {
   Dumbbell,
   Flame,
   FolderDown,
+  FolderSync,
   HeartPulse,
   ImagePlus,
   Languages,
@@ -82,7 +83,11 @@ function SettingRow({ testID, icon, label, value, onPress, disabled }: SettingRo
           {label}
         </Text>
         {value ? (
-          <Text fontSize="$3" color="$textSecondary">
+          // Capped at just over half the row, and truncated rather than wrapped. `label` holds
+          // the `flex={1}`, so it is the half that gives way: an unbounded value — a folder
+          // path, a long count — takes the space the label needed and squeezes it off the
+          // screen. `flexShrink` is not a prop Tamagui's `Text` accepts; `maxW` is.
+          <Text fontSize="$3" color="$textSecondary" numberOfLines={1} maxW="55%">
             {value}
           </Text>
         ) : null}
@@ -229,7 +234,15 @@ export default function SettingsScreen() {
   const [crashCount, setCrashCount] = useState(0);
   const { showError, showSuccess } = useToast();
   const haptics = useHaptics();
-  const { busy: backupBusy, runExport, runImport, runSaveToFolder } = useBackup();
+  const {
+    busy: backupBusy,
+    autoFolder,
+    runExport,
+    runImport,
+    runSaveToFolder,
+    runEnableAuto,
+    runDisableAuto,
+  } = useBackup();
 
   // The confirmation lives here rather than in the hook: onboarding calls the same import with
   // no dialog, because at that point there is no history to lose. One writer, two entrances.
@@ -239,6 +252,27 @@ export default function SettingsScreen() {
       { text: t("backup.confirmCta"), style: "destructive", onPress: runImport },
     ]);
   }, [runImport, t]);
+
+  // Turning it on is one tap into the folder picker — there is nothing to warn about, and the
+  // first snapshot is written before the folder is remembered, so the confirmation is the toast.
+  // Turning it *off* is the branch that needs a dialog, because "change folder" and "stop" are
+  // the same row and only the hero knows which one they meant.
+  const confirmAuto = useCallback(() => {
+    if (autoFolder === null) {
+      runEnableAuto();
+      return;
+    }
+
+    // Order matters, and not for iOS: React Native maps a three-button Android alert to
+    // neutral / negative / positive, and positive is the emphasised one on the right. Listing
+    // "Turn off" last would put the destructive choice under the most inviting button —
+    // `style: "destructive"` does nothing on Android to warn anyone off it.
+    Alert.alert(t("backup.auto"), t("backup.autoMessage", { folder: autoFolder }), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("backup.autoOffCta"), style: "destructive", onPress: runDisableAuto },
+      { text: t("backup.autoChangeCta"), onPress: runEnableAuto },
+    ]);
+  }, [autoFolder, runDisableAuto, runEnableAuto, t]);
 
   useEffect(() => {
     readCrashLog()
@@ -513,6 +547,21 @@ export default function SettingsScreen() {
             value={t("backup.saveHint")}
             disabled={backupBusy}
             onPress={runSaveToFolder}
+          />
+
+          {/* Between the two manual rows and the destructive one, because it is the same act as
+              "Save a file" with the remembering added — and because a hero scanning this section
+              should meet the option that keeps working without them before the one that replaces
+              everything. The value is the folder and nothing else: every other row here spends
+              the same few words, and "Before each update · Documents/Bati" squeezed the label off
+              the screen. When it runs is one tap away, in the dialog. */}
+          <SettingRow
+            testID="settings-auto-backup"
+            icon={<FolderSync size={22} color="$text" />}
+            label={t("backup.auto")}
+            value={autoFolder ?? t("backup.autoOff")}
+            disabled={backupBusy}
+            onPress={confirmAuto}
           />
 
           <SettingRow

@@ -214,7 +214,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | --- | --- | --- | --- | --- | --- |
 | 4.1 | ~~Export / import of the history~~ — **shipped** | High | M | ✅ | |
 | 4.2 | Local training reminders, no Firebase | High | M | **P1** | |
-| 4.21 | Backups that write themselves to a chosen folder | High | S | **P1** | Streak |
+| 4.21 | ~~Backups that write themselves to a chosen folder~~ — **shipped** | High | S | ✅ | Streak |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.4 | ~~The variation ladder becomes visible~~ — **shipped as *paths*** | High | S | ✅ | calisthenics review |
 | 4.22 | ~~An exercise catalogue — the screen 4.4 needs~~ — **shipped** | High | S–M | ✅ | GymMane |
@@ -329,48 +329,43 @@ API, and it is the only item here that acts on a user who has *stopped* opening 
 
 ### 4.21 Backups that write themselves — and the whole answer to "sync with Drive / Dropbox / …"
 
-4.1 shipped a backup the hero has to remember. This is the same snapshot on a trigger instead of a
-tap, and after 4.1's folder picker landed it is nearly nothing: `saveBackupToFolder()`
-(`src/backupFiles.ts:99`) already writes `writeSnapshot()` into a Storage Access Framework tree.
-What it does not do is **remember the tree** — it calls `Directory.pickDirectoryAsync()` every
-time, so there is no folder to write to unattended.
+Shipped, and the estimate held: no new dependency, no manifest change, no migration. Four things
+worth keeping, because no commit message says them.
 
-So the work is: keep the picked URI in preferences, write on a trigger, prune old snapshots.
+**The blocking unknown had already been answered upstream.** This page asked whether `Directory`
+takes a *persistable* URI permission, and planned a `StorageAccessFramework` fallback in case it
+does not. It does, and it takes it for us: expo-file-system 57's `FilePickerContract.kt:48` calls
+`contentResolver.takePersistableUriPermission()` on the result of `ACTION_OPEN_DOCUMENT_TREE`. The
+whole fallback branch was deleted before it was written. Reading the dependency's own source cost
+ten minutes and removed a day.
 
-**The one open question is closed, and the answer deletes the fallback branch.** `Directory` does
-take a persistable permission, and takes it for us: expo-file-system 57's
-`FilePickerContract.kt:48` calls `contentResolver.takePersistableUriPermission()` on the result of
-`ACTION_OPEN_DOCUMENT_TREE`. So the tree `Directory.pickDirectoryAsync()` returns already survives
-a reboot, the URI string is the whole thing to persist, and `new Directory(uri)` reconstructs it.
-No `StorageAccessFramework` fallback, no new dependency, no manifest change.
+**The trigger forced an import edge the wrong way round.** `ensureMigrations()` is the one writer
+both entry points share, so the snapshot belongs inside it — but `db/backup.ts` imported
+`sqlString` *from* `db/migrate.ts`, which made `migrate → backup` a cycle. `sqlString` now lives in
+`db/sql.ts`, a module that imports nothing and therefore cannot take part in a cycle at all. The
+same predicate answers "has this migration run yet?" for the runner and for the backup gate
+(`isPending`), so the two cannot drift into backing up on every launch, or on none.
 
-**Shape — four steps, each shippable alone.**
+**A failed unattended write turns the feature off.** `reportError` goes to a dev console this app
+does not ship, so it is not a report a hero can see; the Settings row falling back to "Off" is.
+The cost is that a transient failure — a full card, a folder unmounted — buys a trip to Settings.
+That is a `ponytail:` note in `src/autoBackup.ts` with the retry counter as its upgrade path.
 
-1. **Remember the tree.** `saveBackupToFolder()` (`src/backupFiles.ts:99`) takes an optional
-   folder; the picked `folder.uri` goes to `setPreference("backupFolderUri", …)`.
-   `user_preferences` is key/value (`db/schema.ts:65`), so this costs no migration. Settings shows
-   the remembered folder and offers to forget it — a stored URI the hero can neither see nor
-   revoke is exactly the invisible state the quality rules warn about.
-2. **Write on a trigger.** The trigger that pays for the P1 is `ensureMigrations()`
-   (`db/migrate.ts:220`): snapshot *before* the runner, only when a folder is remembered *and*
-   migrations are pending, so an ordinary launch costs nothing. That function is memoised on its
-   promise and shared with the widget task, so the snapshot belongs inside it rather than at a
-   call site — one writer.
-3. **Survive a revoked tree.** A remembered folder can vanish: card pulled, folder deleted,
-   permission cleared in Settings. A failed unattended write reports through `reportError` and
-   clears the preference; it must never block the launch and never fail silently on every start.
-4. **Prune.** Snapshots are named by the day (`src/backupFiles.ts:48`), so pruning is: list the
-   tree, keep the newest N by name, delete the rest. Nothing here needs to be clever.
+**A Storage Access Framework tree does not hand back filenames.** Its children arrive as
+*document* URIs whose entire document id is one percent-encoded segment —
+`…/document/primary%3ADocuments%2Fbati-export-v3-2026-08-15.db`. `File.name` is `Paths.basename`,
+which only recovers a filename from that when `new URL()` parses the `content://` scheme, and
+React Native's `URL` is a partial polyfill that need not. Anything matching on `name` therefore
+matches nothing on a device while staying green against a fake filesystem built from plain paths.
+Match on the decoded `uri`. This is the "a mock counts as a hit" trap in AGENTS.md wearing a new
+hat, and the test that caught it is the only one in the file built from the shape a device
+actually produces.
 
-**One test, on the branch that earns it** — the migration-gated write, asserting *state*: pending
-migrations plus a remembered folder leave a snapshot behind and the migration ran; no pending
-migrations write nothing; a revoked tree clears the preference and the launch still completes.
-Asserting that the picker opened would repeat the mistake the Maestro flows already made.
-
-**P1, above several older items, for a reason that lives in §3.** Migrations have never been
-replayed against a real upgraded database, testers are carrying real history right now, and a
-snapshot written automatically before a migration runs is the cheapest insurance this codebase can
-buy. It is a backup feature paying for a debt item.
+**The privacy policy was load-bearing and said the wrong thing.** `docs/legal/privacy.md` promised
+"nothing is exported automatically and nothing is scheduled" in both languages — true until this
+shipped. It is a published legal document behind a store listing, so the feature is not done until
+that sentence is. Worth a grep before any feature that writes a file, opens a socket, or reads a
+sensor.
 
 **It is also the complete answer to "sync via Google Drive, Dropbox, GitHub or WebDAV".** Drive,
 Dropbox, Nextcloud, OneDrive and Syncthing all publish an Android `DocumentsProvider`, so they

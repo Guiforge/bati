@@ -66,7 +66,7 @@ function Pill({
       accessibilityLabel={label}
       accessibilityState={{ expanded: open, selected: active }}
     >
-      <Text fontWeight="700" fontSize={13} color={active ? "$bgDark" : "$text"}>
+      <Text fontWeight="700" fontSize={13} color={active ? "$white" : "$text"}>
         {label}
       </Text>
     </YStack>

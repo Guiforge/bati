@@ -11,10 +11,18 @@ function isTrainingLevel(value: string | null): value is TrainingLevel {
   return value === "beginner" || value === "regular" || value === "advanced";
 }
 
-// Get a preference value by key
+/**
+ * Get a preference value by key.
+ *
+ * Projected down to `value` rather than `select()`-ing the row: `src/autoBackup.ts` calls this
+ * *before* the migration runner, so the SQL it emits must only name columns that have existed
+ * since `0000_schema.sql`. A `select()` asks for every column the TypeScript schema declares —
+ * so the first migration to add one to `user_preferences` would make this read fail with
+ * "no such column" on exactly the launches the pre-migration backup exists for.
+ */
 export async function getPreference(key: string): Promise<string | null> {
   const result = await db
-    .select()
+    .select({ value: userPreferences.value })
     .from(userPreferences)
     .where(eq(userPreferences.key, key))
     .limit(1);

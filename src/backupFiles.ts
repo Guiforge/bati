@@ -6,6 +6,7 @@ import { snapshotDatabaseTo } from "@/db/backup";
 import { closeDatabase, DB_NAME, serializeOnDatabase } from "@/db/client";
 import { dayKey } from "@/db/dates";
 import { SCHEMA_VERSION } from "@/db/schemaVersion";
+import { reportError } from "@/src/reportError";
 
 /**
  * Backup and restore, the disk half: picking, sharing, and the file swap.
@@ -36,8 +37,20 @@ const EXPORT_PREFIX = "bati-export-";
  */
 const KEEP_SNAPSHOTS = 5;
 
-/** `bati-export-v3-2026-08-15.db` — the capture is the day, which is what pruning sorts on. */
-const SNAPSHOT_NAME = new RegExp(`^${EXPORT_PREFIX}v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.db$`);
+/**
+ * The tail of a snapshot's URI — `…/bati-export-v3-2026-08-15.db` — capturing the day, which is
+ * what pruning sorts on.
+ *
+ * Matched against the *URI* rather than `entry.name`, and that is not a style choice. A Storage
+ * Access Framework tree hands back **document** URIs, whose whole document id is one
+ * percent-encoded segment: `…/document/primary%3ADocuments%2Fbati-export-v3-2026-08-15.db`.
+ * `File.name` is `Paths.basename`, which only recovers the filename from that if `new URL()`
+ * parses the `content://` scheme — and React Native's `URL` is a partial polyfill that does not
+ * have to. Where it does not, `name` is the encoded segment and a name-anchored pattern matches
+ * nothing, so the prune would silently never run on a device while every test stayed green.
+ * Decoding the URI turns `%2F` back into a separator and makes both shapes match.
+ */
+const SNAPSHOT_URI = new RegExp(`(?:^|/)${EXPORT_PREFIX}v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.db$`);
 
 function pathIn(name: string) {
   return `${DB_DIR}/${name}`;
@@ -137,7 +150,18 @@ export async function saveBackupToFolder(folder?: Directory): Promise<boolean> {
   // writes. Without the flag they get "the backup could not be created" for a folder they picked
   // precisely because last time worked.
   await snapshot.copy(target, { overwrite: true });
-  pruneSnapshotsIn(target);
+
+  // After the copy, and deliberately not allowed to undo it. The file is written; pruning is
+  // housekeeping, and a folder that refuses a delete — a provider that only grants create, a
+  // file another app has open — must not turn a backup that succeeded into "the backup could
+  // not be created". Unattended, it would be worse than a wrong toast: `backupBeforeMigrations`
+  // forgets the folder on a throw, so a failed prune would switch the feature off for good.
+  try {
+    pruneSnapshotsIn(target);
+  } catch (error) {
+    reportError("backup.prune", error);
+  }
+
   return true;
 }
 
@@ -155,12 +179,22 @@ function pruneSnapshotsIn(folder: Directory): void {
   const snapshots: { day: string; entry: File }[] = [];
   for (const entry of folder.list()) {
     if (!(entry instanceof File)) continue;
-    const day = SNAPSHOT_NAME.exec(entry.name)?.[1];
+    const day = SNAPSHOT_URI.exec(decodeUri(entry.uri))?.[1];
     if (day) snapshots.push({ day, entry });
   }
 
   snapshots.sort((a, b) => b.day.localeCompare(a.day));
   for (const stale of snapshots.slice(KEEP_SNAPSHOTS)) stale.entry.delete();
+}
+
+/** A URI that will not decode is left as it is: the pattern simply will not match it, which is
+ * the safe answer — an unrecognised file is one this app did not write and must not delete. */
+function decodeUri(uri: string): string {
+  try {
+    return decodeURIComponent(uri);
+  } catch {
+    return uri;
+  }
 }
 
 function isPickerCancelled(error: unknown): boolean {

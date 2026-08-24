@@ -775,7 +775,6 @@
     "saveHint": "Tu choisis le dossier",
     "auto": "Sauvegarde automatique",
     "autoOff": "Désactivée",
-    "autoOn": "Avant chaque mise à jour · {{folder}}",
     "autoMessage": "Bati enregistre une copie dans {{folder}} avant chaque mise à jour. Tu peux choisir un autre dossier, ou arrêter.",
     "autoChangeCta": "Changer de dossier",
     "autoOffCta": "Arrêter",

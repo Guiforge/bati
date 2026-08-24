@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import migrations from "../drizzle/migrations";
 import { db, serializeOnDatabase } from "./client";
 import { SCHEMA_VERSION } from "./schemaVersion";
-import { sqlString } from "./sql";
+import { errorTrail, sqlString } from "./sql";
 
 /**
  * Backup and restore, the SQL half.
@@ -83,33 +83,6 @@ export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
 function knownMigrationTimes(): Set<number> {
   const journal = migrations.journal as { entries: { when: number }[] };
   return new Set(journal.entries.map((entry) => entry.when));
-}
-
-/**
- * Every message and driver code down the `cause` chain, lowercased into one string.
- *
- * Duck-typed rather than `instanceof Error`, which is the bug this replaced. Drizzle wraps the
- * driver error, so the useful text ("file is not a database") sits on `cause` while the outer
- * message only repeats the SQL — and an `instanceof` that answers false there discards the only
- * half worth reading. It answers false more often than it looks: jest's sandbox gives the test
- * realm its own `Error`, so four rejection tests classified correctly on one machine and
- * degraded to `unreadable` on CI, on the same driver and the same SQLite. Expo's native bridge
- * is the same hazard at runtime.
- *
- * The depth cap is for a `cause` that points back at its own error.
- */
-function errorTrail(error: unknown): string {
-  const parts: string[] = [];
-  let current = error as { message?: unknown; code?: unknown; cause?: unknown } | null | undefined;
-
-  for (let depth = 0; current && depth < 5; depth++) {
-    if (typeof current.message === "string") parts.push(current.message);
-    // `SQLITE_NOTADB` and friends outlive the prose: SQLite's wording has changed before.
-    if (typeof current.code === "string") parts.push(current.code);
-    current = current.cause as typeof current;
-  }
-
-  return parts.join(" ").toLowerCase();
 }
 
 /**

@@ -103,9 +103,13 @@ jest.mock("expo-file-system", () => {
 
     list() {
       const prefix = `${strip(this.uri)}/`;
-      return [...disk.keys()]
-        .filter((key) => key.startsWith(prefix))
-        .map((key) => new File(`file://${key}`));
+      return (
+        [...disk.keys()]
+          .filter((key) => key.startsWith(prefix))
+          // A key that already carries a scheme is a Storage Access Framework entry and keeps
+          // its URI verbatim; only local paths get the `file://` back.
+          .map((key) => new File(key.includes("://") ? key : `file://${key}`))
+      );
     }
   }
 
@@ -403,6 +407,35 @@ describe("saveBackupToFolder", () => {
     const kept = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/")).sort();
     expect(kept).toHaveLength(5);
     expect(kept).not.toContain("/sdcard/Documents/bati-export-v3-2025-12-01.db");
+  });
+
+  /**
+   * The shape a real Storage Access Framework tree produces, which the `file://` tests above
+   * cannot reach: children come back as **document** URIs whose whole document id is one
+   * percent-encoded segment. `File.name` recovers the filename from that only when React
+   * Native's partial `URL` polyfill happens to parse `content://` — so a prune anchored on
+   * `name` matches nothing here, deletes nothing, and stays green on every `file://` test in
+   * this file while doing nothing at all on a device.
+   */
+  test("prunes a Storage Access Framework tree, where the filename arrives percent-encoded", async () => {
+    const tree = "content://com.android.externalstorage.documents/tree/primary%3ADocuments";
+    const folder = new fs.Directory(tree);
+    const asDocument = (name: string) =>
+      `${tree}/document/${encodeURIComponent(`primary:Documents/${name}`)}`;
+
+    const oldest = asDocument("bati-export-v3-2025-12-01.db");
+    for (const day of ["2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01"]) {
+      fs.__disk.set(asDocument(`bati-export-v10-${day}.db`), day);
+    }
+    fs.__disk.set(oldest, "oldest");
+    fs.__disk.set(asDocument("taxes-2025.pdf"), "not ours");
+
+    await saveBackupToFolder(folder);
+
+    const left = [...fs.__disk.keys()].filter((key) => key.startsWith(tree));
+    expect(left).toHaveLength(6); // five snapshots kept, plus the hero's own file
+    expect(left).not.toContain(oldest);
+    expect(fs.__disk.get(asDocument("taxes-2025.pdf"))).toBe("not ours");
   });
 
   /**

@@ -1,6 +1,6 @@
 import { Directory } from "expo-file-system";
-
 import { preferences } from "@/db/preferences";
+import { errorTrail } from "@/db/sql";
 import { pickBackupFolder, saveBackupToFolder } from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 
@@ -120,7 +120,13 @@ export async function backupBeforeMigrations(): Promise<void> {
   }
 }
 
-/** A pre-migration read of a table a migration has not created yet. Not a failure worth logging. */
+/**
+ * A pre-migration read of a table a migration has not created yet. Not a failure worth logging.
+ *
+ * Down the whole `cause` chain, not just `error.message`: Drizzle wraps the driver error, so the
+ * outer message only repeats the SQL and "no such table" sits underneath. Reading the top level
+ * alone would report a fresh install's first launch as a failure, every time.
+ */
 function isMissingTable(error: unknown): boolean {
-  return /no such table/i.test(String((error as { message?: unknown } | null)?.message ?? ""));
+  return errorTrail(error).includes("no such table");
 }

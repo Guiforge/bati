@@ -775,7 +775,6 @@
     "saveHint": "You pick the folder",
     "auto": "Automatic backup",
     "autoOff": "Off",
-    "autoOn": "Before each update · {{folder}}",
     "autoMessage": "Bati saves a copy into {{folder}} before every update. You can point it somewhere else, or stop.",
     "autoChangeCta": "Change folder",
     "autoOffCta": "Turn off",

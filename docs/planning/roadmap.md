@@ -351,6 +351,16 @@ does not ship, so it is not a report a hero can see; the Settings row falling ba
 The cost is that a transient failure — a full card, a folder unmounted — buys a trip to Settings.
 That is a `ponytail:` note in `src/autoBackup.ts` with the retry counter as its upgrade path.
 
+**A Storage Access Framework tree does not hand back filenames.** Its children arrive as
+*document* URIs whose entire document id is one percent-encoded segment —
+`…/document/primary%3ADocuments%2Fbati-export-v3-2026-08-15.db`. `File.name` is `Paths.basename`,
+which only recovers a filename from that when `new URL()` parses the `content://` scheme, and
+React Native's `URL` is a partial polyfill that need not. Anything matching on `name` therefore
+matches nothing on a device while staying green against a fake filesystem built from plain paths.
+Match on the decoded `uri`. This is the "a mock counts as a hit" trap in AGENTS.md wearing a new
+hat, and the test that caught it is the only one in the file built from the shape a device
+actually produces.
+
 **The privacy policy was load-bearing and said the wrong thing.** `docs/legal/privacy.md` promised
 "nothing is exported automatically and nothing is scheduled" in both languages — true until this
 shipped. It is a published legal document behind a store listing, so the feature is not done until

@@ -83,7 +83,11 @@ function SettingRow({ testID, icon, label, value, onPress, disabled }: SettingRo
           {label}
         </Text>
         {value ? (
-          <Text fontSize="$3" color="$textSecondary">
+          // Capped at just over half the row, and truncated rather than wrapped. `label` holds
+          // the `flex={1}`, so it is the half that gives way: an unbounded value — a folder
+          // path, a long count — takes the space the label needed and squeezes it off the
+          // screen. `flexShrink` is not a prop Tamagui's `Text` accepts; `maxW` is.
+          <Text fontSize="$3" color="$textSecondary" numberOfLines={1} maxW="55%">
             {value}
           </Text>
         ) : null}
@@ -259,10 +263,14 @@ export default function SettingsScreen() {
       return;
     }
 
+    // Order matters, and not for iOS: React Native maps a three-button Android alert to
+    // neutral / negative / positive, and positive is the emphasised one on the right. Listing
+    // "Turn off" last would put the destructive choice under the most inviting button —
+    // `style: "destructive"` does nothing on Android to warn anyone off it.
     Alert.alert(t("backup.auto"), t("backup.autoMessage", { folder: autoFolder }), [
       { text: t("common.cancel"), style: "cancel" },
-      { text: t("backup.autoChangeCta"), onPress: runEnableAuto },
       { text: t("backup.autoOffCta"), style: "destructive", onPress: runDisableAuto },
+      { text: t("backup.autoChangeCta"), onPress: runEnableAuto },
     ]);
   }, [autoFolder, runDisableAuto, runEnableAuto, t]);
 
@@ -544,15 +552,14 @@ export default function SettingsScreen() {
           {/* Between the two manual rows and the destructive one, because it is the same act as
               "Save a file" with the remembering added — and because a hero scanning this section
               should meet the option that keeps working without them before the one that replaces
-              everything. The value says *when* it happens: a feature whose timing is invisible
-              is one the hero cannot trust. */}
+              everything. The value is the folder and nothing else: every other row here spends
+              the same few words, and "Before each update · Documents/Bati" squeezed the label off
+              the screen. When it runs is one tap away, in the dialog. */}
           <SettingRow
             testID="settings-auto-backup"
             icon={<FolderSync size={22} color="$text" />}
             label={t("backup.auto")}
-            value={
-              autoFolder === null ? t("backup.autoOff") : t("backup.autoOn", { folder: autoFolder })
-            }
+            value={autoFolder ?? t("backup.autoOff")}
             disabled={backupBusy}
             onPress={confirmAuto}
           />

@@ -121,6 +121,20 @@ describe("backupBeforeMigrations", () => {
     await expect(backupBeforeMigrations()).resolves.toBeUndefined();
   });
 
+  test("recognises the missing table through Drizzle's wrapper, not just the top-level message", async () => {
+    // Drizzle wraps the driver error: the outer message repeats the SQL and "no such table" sits
+    // on `cause`. Reading only the top level would report a fresh install's first launch as a
+    // failure, every time — the same bug `db/backup.ts` already fixed once for validation.
+    mockControl.readThrows = Object.assign(
+      new Error('Failed query: select "value" from "user_preferences" where "key" = ?'),
+      { cause: new Error("no such table: user_preferences") },
+    );
+
+    await backupBeforeMigrations();
+
+    expect(mockReported).toEqual([]);
+  });
+
   test("a database too old to have a preferences table is not a failure to report", async () => {
     // This runs *before* the migration that creates the table. On a fresh install the read
     // throws, and there is no folder to write to either — reporting it would be noise on every

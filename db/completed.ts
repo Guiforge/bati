@@ -622,6 +622,34 @@ export function analyzeTrend(current: number, previous: number): TrendAnalysis {
 }
 
 /**
+ * Trailing 7-day totals vs the 7 days before — the flame's own window (db/streaks.ts),
+ * so the trend badges never punish a calendar week that just started.
+ */
+export function rollingWeekTotals(
+  sessions: { performedAt: Date; durationSeconds: number; xp: number }[],
+  now: Date = new Date(),
+): {
+  current: { sessions: number; minutes: number; xp: number };
+  previous: { sessions: number; minutes: number; xp: number };
+} {
+  const DAY = 24 * 60 * 60 * 1000;
+  const cutoff = now.getTime() - 7 * DAY;
+  const floor = now.getTime() - 14 * DAY;
+  const current = { sessions: 0, minutes: 0, xp: 0 };
+  const previous = { sessions: 0, minutes: 0, xp: 0 };
+  for (const s of sessions) {
+    const at = s.performedAt.getTime();
+    const bucket =
+      at > cutoff && at <= now.getTime() ? current : at > floor && at <= cutoff ? previous : null;
+    if (!bucket) continue;
+    bucket.sessions += 1;
+    bucket.minutes += Math.round(s.durationSeconds / 60);
+    bucket.xp += s.xp;
+  }
+  return { current, previous };
+}
+
+/**
  * Get comprehensive trend summary
  */
 export async function getTrendSummary(): Promise<{
@@ -634,15 +662,23 @@ export async function getTrendSummary(): Promise<{
   const weeklyTrends = await getWeeklyTrends(8);
   const monthlyTrends = await getMonthlyTrends(6);
 
-  // Calculate week-over-week analysis
-  const thisWeek = weeklyTrends[weeklyTrends.length - 1];
-  const lastWeek = weeklyTrends[weeklyTrends.length - 2];
+  // Rolling 7-day windows for the badges — see rollingWeekTotals. The charts above keep their
+  // calendar buckets; only these three analyzeTrend inputs change.
+  const now = new Date();
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const recentRows = await selectTrendRows(fourteenDaysAgo);
+  const { current, previous } = rollingWeekTotals(
+    recentRows.map((row) => ({
+      performedAt: row.performedAt,
+      durationSeconds: row.durationSeconds ?? 0,
+      xp: row.xpEarned ?? 0,
+    })),
+    now,
+  );
 
-  const sessionsAnalysis = analyzeTrend(thisWeek?.sessionCount ?? 0, lastWeek?.sessionCount ?? 0);
-
-  const minutesAnalysis = analyzeTrend(thisWeek?.totalMinutes ?? 0, lastWeek?.totalMinutes ?? 0);
-
-  const xpAnalysis = analyzeTrend(thisWeek?.totalXp ?? 0, lastWeek?.totalXp ?? 0);
+  const sessionsAnalysis = analyzeTrend(current.sessions, previous.sessions);
+  const minutesAnalysis = analyzeTrend(current.minutes, previous.minutes);
+  const xpAnalysis = analyzeTrend(current.xp, previous.xp);
 
   return {
     weeklyTrends,

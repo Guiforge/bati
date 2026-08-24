@@ -1,5 +1,5 @@
 import { type Exercise, listExercises } from "./exercises";
-import { deletePreference, getPreference, setPreference } from "./preferences";
+import { deletePreference, getAllPreferences, getPreference, setPreference } from "./preferences";
 import { getQuestById, type Quest } from "./quests";
 import { Difficulty, type UserLevel } from "./targets";
 
@@ -112,6 +112,19 @@ export function parseQuestConfig(raw: string | null): QuestConfig | null {
 
 export async function getQuestConfig(questId: number): Promise<QuestConfig | null> {
   return parseQuestConfig(await getPreference(configKey(questId)));
+}
+
+/** Every saved per-quest config in one read — the gallery prices 34 cards per render. */
+export async function getAllQuestConfigs(): Promise<Map<number, QuestConfig>> {
+  const prefs = await getAllPreferences();
+  const configs = new Map<number, QuestConfig>();
+  for (const [key, value] of Object.entries(prefs)) {
+    const match = key.match(/^quest:(\d+):config$/);
+    if (!match?.[1]) continue;
+    const parsed = parseQuestConfig(value);
+    if (parsed) configs.set(Number(match[1]), parsed);
+  }
+  return configs;
 }
 
 export async function saveQuestConfig(questId: number, config: QuestConfig): Promise<void> {

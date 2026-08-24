@@ -284,14 +284,17 @@ export default function QuestDetails() {
   // A quest opened from an adventure step is the exception: the hero thinks of the adventure as
   // "back", not a gallery they never visited. The chevron honors that richer intent; hardware
   // back still pops structurally to the gallery (anchored in 0b41d31) regardless of origin — the
-  // asymmetry is deliberate, not a bug to unify. navigate (not push) so repeated taps don't stack
-  // adventure screens, and not dismissTo — the adventure isn't necessarily beneath this quest on
-  // the stack (it's under the withAnchor'd gallery instead).
+  // asymmetry is deliberate, not a bug to unify. `navigate` is the honest expression of that intent
+  // ("go to that screen", don't grow a stack) — it is not what stops duplicate adventure screens;
+  // expo-router downgrades a cross-tab `push` to a `navigate` at the tab boundary regardless of
+  // which call is used here, so `push` would behave identically. Not `dismissTo` either — the
+  // adventure isn't on this tab's stack to begin with, it lives on the adventures tab's own stack.
   const goToGallery = useCallback(() => {
-    const adventureId = Array.isArray(params.adventureId)
-      ? params.adventureId[0]
-      : params.adventureId;
-    if (adventureId) {
+    const raw = Array.isArray(params.adventureId) ? params.adventureId[0] : params.adventureId;
+    const adventureId = Number(raw);
+    // A malformed deep link (literal "undefined", non-numeric garbage) is truthy but not a real
+    // id — Number.isFinite catches it, same guard as questId/adventureId above in this file.
+    if (raw && Number.isFinite(adventureId)) {
       router.navigate(`/adventures/${adventureId}` as never);
       return;
     }

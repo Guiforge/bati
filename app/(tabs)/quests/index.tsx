@@ -38,7 +38,7 @@ import {
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { getAllQuestConfigs, type QuestConfig } from "@/db/questConfig";
+import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { computeSessionXp } from "@/db/xp";
@@ -117,12 +117,7 @@ function buildQuestMeta(
   // a few seconds; fold them in if anyone notices.
   const level = config?.level ?? "medium";
   const durationSeconds = estimateQuestTemplateSeconds({
-    template: {
-      ...q,
-      rounds: config?.rounds ?? q.rounds,
-      restSeconds: config?.restSeconds ?? q.restSeconds,
-      roundRestSeconds: config?.roundRestSeconds ?? q.roundRestSeconds,
-    },
+    template: { ...q, ...resolveTemplateOverrides(q, config) },
     exercisesById,
     userLevel: level,
   });

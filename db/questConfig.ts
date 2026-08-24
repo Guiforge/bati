@@ -155,6 +155,30 @@ export function indexExercises(exercises: Exercise[]): Record<number, Exercise> 
   return Object.fromEntries(exercises.map((e) => [e.id, e] as const));
 }
 
+/** The three structural fields a saved config can override, on either a `Quest` or a `QuestTemplate`. */
+type TemplateOverrides = {
+  rounds: number;
+  restSeconds: number;
+  roundRestSeconds: number | null;
+};
+
+/**
+ * The precedence a saved config's structural overrides take over the pristine template: a saved
+ * `rounds`/`restSeconds`/`roundRestSeconds` wins, an absent one falls back to the template's own.
+ * Both quest galleries estimate duration/XP off this, and `applyQuestConfig` below builds the
+ * actual session off the same precedence — one seam instead of three copies drifting apart.
+ */
+export function resolveTemplateOverrides(
+  template: TemplateOverrides,
+  config: QuestConfig | null,
+): TemplateOverrides {
+  return {
+    rounds: config?.rounds ?? template.rounds,
+    restSeconds: config?.restSeconds ?? template.restSeconds,
+    roundRestSeconds: config?.roundRestSeconds ?? template.roundRestSeconds,
+  };
+}
+
 /**
  * The quest as this hero configured it. Pure so the estimate, the XP preview and the session all
  * read the same numbers: apply once, then everything downstream keeps working untouched.
@@ -177,9 +201,7 @@ export function applyQuestConfig(
 
   return {
     ...quest,
-    rounds: config.rounds ?? quest.rounds,
-    restSeconds: config.restSeconds ?? quest.restSeconds,
-    roundRestSeconds: config.roundRestSeconds ?? quest.roundRestSeconds,
+    ...resolveTemplateOverrides(quest, config),
     exercises: quest.exercises.map((qex) => {
       const key = String(qex.id);
       const swappedId = swaps[key];

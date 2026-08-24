@@ -33,7 +33,7 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { getAllQuestConfigs, type QuestConfig } from "@/db/questConfig";
+import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import { computeSessionXp } from "@/db/xp";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -96,12 +96,7 @@ function buildAdventureRow(
   // the estimate, priced off the cover quest — the one step the poster's XP chip advertises.
   const level = config?.level ?? "medium";
   const durationSeconds = estimateQuestTemplateSeconds({
-    template: {
-      ...q,
-      rounds: config?.rounds ?? q.rounds,
-      restSeconds: config?.restSeconds ?? q.restSeconds,
-      roundRestSeconds: config?.roundRestSeconds ?? q.roundRestSeconds,
-    },
+    template: { ...q, ...resolveTemplateOverrides(q, config) },
     exercisesById,
     userLevel: level,
   });

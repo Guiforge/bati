@@ -1,4 +1,5 @@
 import {
+  addDays,
   eachMonthOfInterval,
   eachWeekOfInterval,
   format,
@@ -624,6 +625,12 @@ export function analyzeTrend(current: number, previous: number): TrendAnalysis {
 /**
  * Trailing 7-day totals vs the 7 days before — the flame's own window (db/streaks.ts),
  * so the trend badges never punish a calendar week that just started.
+ *
+ * Buckets by local calendar day via `dayKey`, the same unit db/streaks.ts's `countInWindow`
+ * counts in — not raw wall-clock milliseconds. `db/dates.ts`'s docstring is scar tissue from
+ * widgets disagreeing about what "today" means; bucketing by day here (instead of `now.getTime()
+ * - 7 * DAY`) is what keeps this window and the flame's window agreeing at every hour of the day,
+ * not just at midnight.
  */
 export function rollingWeekTotals(
   sessions: { performedAt: Date; durationSeconds: number; xp: number }[],
@@ -632,15 +639,20 @@ export function rollingWeekTotals(
   current: { sessions: number; minutes: number; xp: number };
   previous: { sessions: number; minutes: number; xp: number };
 } {
-  const DAY = 24 * 60 * 60 * 1000;
-  const cutoff = now.getTime() - 7 * DAY;
-  const floor = now.getTime() - 14 * DAY;
+  // today, today-1, … today-6 vs today-7, today-8, … today-13 — contiguous, non-overlapping,
+  // same split as db/streaks.ts's isLit (countInWindow(day, 7) then countInWindow(day-7, 7)).
+  const currentDays = new Set<string>();
+  const previousDays = new Set<string>();
+  for (let i = 0; i < 7; i++) {
+    currentDays.add(dayKey(addDays(now, -i)));
+    previousDays.add(dayKey(addDays(now, -7 - i)));
+  }
+
   const current = { sessions: 0, minutes: 0, xp: 0 };
   const previous = { sessions: 0, minutes: 0, xp: 0 };
   for (const s of sessions) {
-    const at = s.performedAt.getTime();
-    const bucket =
-      at > cutoff && at <= now.getTime() ? current : at > floor && at <= cutoff ? previous : null;
+    const key = dayKey(s.performedAt);
+    const bucket = currentDays.has(key) ? current : previousDays.has(key) ? previous : null;
     if (!bucket) continue;
     bucket.sessions += 1;
     bucket.minutes += Math.round(s.durationSeconds / 60);

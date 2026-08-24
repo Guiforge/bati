@@ -9,6 +9,7 @@ import { Chip } from "@/components/common/Chip";
 import { TrendsCard } from "@/components/journal/TrendsCard";
 import { getWeekStart } from "@/constants/dateFormatters";
 import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
+import { formatDurationEstimate } from "@/db";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { useSettingsStore } from "@/stores/settings";
 import { buildWeekdayBars } from "./journalGrids";
@@ -216,7 +217,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
         />
         <StatCard
           icon={<Zap size={18} color="$white" />}
-          value={stats.avgMinutes}
+          value={formatDurationEstimate(stats.avgMinutes * 60)}
           label={t("journal.avg_duration", "Avg Duration")}
           color="$secondary"
         />

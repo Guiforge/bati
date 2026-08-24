@@ -292,9 +292,16 @@ export default function OathScreen() {
           !ownedEquipment.includes(ex.equipment))
       )
         continue;
+      // ponytail: `metric_exercise_pr` reads as "N reps in a row", true for every exercise_pr
+      // preset except this one hold — L-Sit's PR is seconds. One special case rather than a
+      // unit field on OathPreset, since it's the only hold-type preset today; give the field a
+      // real home if a second one shows up.
       rows.push({
         preset: p,
-        label: t(`oath.metric_${p.metric}`, { count: p.target, exercise: exerciseLabel(ex) }),
+        label:
+          p.id === "lsit_30"
+            ? t("oath.preset_lsit_30", { count: p.target })
+            : t(`oath.metric_${p.metric}`, { count: p.target, exercise: exerciseLabel(ex) }),
       });
     }
     return rows;

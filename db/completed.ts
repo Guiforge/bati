@@ -23,7 +23,7 @@ import type {
 } from "./schema";
 import { repEquivalentSql } from "./workUnits";
 
-const { completedExercises, completedQuest, exerciseMuscles, exercises } = schema;
+const { completedExercises, completedQuest, exerciseMuscles, exercises, quests } = schema;
 
 export type CompletedExerciseInput = {
   exerciseId: number;
@@ -439,6 +439,9 @@ export type ContributingSession = {
   sessionId: number;
   performedAt: Date;
   volume: number;
+  /** Null for a session whose quest was deleted, or that was never linked to one. */
+  enTitle: string | null;
+  frTitle: string | null;
 };
 
 /**
@@ -457,10 +460,15 @@ export async function getRecentContributingSessions(
       sessionId: completedQuest.id,
       performedAt: completedQuest.performedAt,
       volume,
+      enTitle: quests.enTitle,
+      frTitle: quests.frTitle,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
-    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId));
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    // Left, not inner: a session whose quest was later deleted (questId set null) is still a
+    // real contribution, just with no title to show — dropping the row would undercount volume.
+    .leftJoin(quests, eq(quests.id, completedQuest.questId));
 
   // One exerciseMuscles row per muscle an exercise trains, so filtering on the muscle here
   // counts that exercise once — joining without the filter would multiply the volume.
@@ -478,6 +486,8 @@ export async function getRecentContributingSessions(
     sessionId: r.sessionId,
     performedAt: r.performedAt,
     volume: Number(r.volume),
+    enTitle: r.enTitle,
+    frTitle: r.frTitle,
   }));
 }
 

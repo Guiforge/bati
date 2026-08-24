@@ -119,6 +119,7 @@
     "metric_exercise_volume": "{{count}} × {{exercise}} au total",
     "metric_sessions": "{{count}} séances accomplies",
     "metric_streak": "Une flamme de {{count}} jours",
+    "preset_lsit_30": "L-Sit de {{count}} s",
     "presets_title": "SERMENTS TOUT PRÊTS",
     "custom_toggle": "Serment personnalisé",
     "empty_cta": "Prête un serment",

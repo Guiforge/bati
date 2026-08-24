@@ -21,6 +21,7 @@ import {
   type VillageBuilding,
 } from "@/db/village";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -39,6 +40,15 @@ const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   day: "numeric",
   month: "short",
   year: "numeric",
+};
+
+// "Recent work" rows can land three sessions on the same day; the date alone can't tell them
+// apart, so this pairs it with the time — same fields as SessionCard's journal row.
+const RECENT_WORK_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
 };
 
 /** The detail sheet's second half: the deeds behind the number, fetched only when opened. */
@@ -295,16 +305,25 @@ function BuildingDetail({
           <Text fontWeight="700" fontSize={13} color="$text">
             {t("village.detail_recent_title", "Recent work")}
           </Text>
-          {extra.sessions.map((session) => (
-            <XStack key={session.sessionId} justify="space-between" gap="$2">
-              <Text fontSize={12} color="$textSecondary">
-                {formatDate(session.performedAt)}
-              </Text>
-              <Text fontSize={12} color="$muted">
-                {t("village.detail_recent_units", { volume: session.volume })}
-              </Text>
-            </XStack>
-          ))}
+          {extra.sessions.map((session) => {
+            const title =
+              session.enTitle && session.frTitle
+                ? localizedTitle({ enTitle: session.enTitle, frTitle: session.frTitle }, language)
+                : null;
+            const when = getDateTimeFormat(language, RECENT_WORK_DATE_OPTIONS).format(
+              session.performedAt,
+            );
+            return (
+              <XStack key={session.sessionId} justify="space-between" gap="$2">
+                <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
+                  {`${title ? `${title} · ` : ""}${when}`}
+                </Text>
+                <Text fontSize={12} color="$muted">
+                  {t("village.detail_recent_units", { volume: session.volume })}
+                </Text>
+              </XStack>
+            );
+          })}
         </YStack>
       )}
 

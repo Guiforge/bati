@@ -2,8 +2,8 @@ import { sql } from "drizzle-orm";
 
 import migrations from "../drizzle/migrations";
 import { db, serializeOnDatabase } from "./client";
-import { sqlString } from "./migrate";
 import { SCHEMA_VERSION } from "./schemaVersion";
+import { sqlString } from "./sql";
 
 /**
  * Backup and restore, the SQL half.

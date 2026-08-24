@@ -26,9 +26,17 @@ function makeClient(sqlite: Database.Database) {
   };
 }
 
+/**
+ * The pre-migration backup, stubbed. The real one reads preferences — a table this runner is in
+ * the middle of creating — so it belongs to `__tests__/autoBackup.test.ts`. What matters here is
+ * *when* the runner calls it, and the tests below assert that against the schema, not the call.
+ */
+const backupBeforeMigrations = jest.fn(() => Promise.resolve());
+
 function freshRunner(sqlite: Database.Database) {
   jest.resetModules();
   jest.doMock("../db/client", () => ({ db: { $client: makeClient(sqlite) } }));
+  jest.doMock("../src/autoBackup", () => ({ backupBeforeMigrations }));
   return require("../db/migrate") as typeof import("../db/migrate");
 }
 
@@ -38,6 +46,8 @@ describe("db/migrate", () => {
   beforeEach(() => {
     sqlite = new Database(":memory:");
     sqlite.pragma("foreign_keys = ON");
+    backupBeforeMigrations.mockClear();
+    backupBeforeMigrations.mockImplementation(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -108,6 +118,38 @@ describe("db/migrate", () => {
       .prepare("SELECT value FROM user_preferences WHERE key = 'language'")
       .get() as { value: string } | undefined;
     expect(kept?.value).toBe("fr");
+  });
+
+  it("backs up before the runner touches the schema, and not at all when nothing is pending", async () => {
+    // Asserted against the schema as it stood *inside* the call, not against the call itself:
+    // a backup taken after the migrations is a backup of the thing that might already be broken,
+    // and "it was called" is exactly as true in that version as in this one.
+    let schemaAtBackup: string[] = [];
+    backupBeforeMigrations.mockImplementation(() => {
+      schemaAtBackup = tables();
+      return Promise.resolve();
+    });
+
+    await freshRunner(sqlite).ensureMigrations();
+
+    expect(backupBeforeMigrations).toHaveBeenCalledTimes(1);
+    expect(schemaAtBackup).not.toContain("user_preferences");
+    expect(tables()).toContain("user_preferences");
+
+    // The database is now current. A second cold start has nothing to migrate, so it has nothing
+    // worth writing into the hero's folder either — this is what keeps an ordinary launch free.
+    backupBeforeMigrations.mockClear();
+    await freshRunner(sqlite).ensureMigrations();
+
+    expect(backupBeforeMigrations).not.toHaveBeenCalled();
+  });
+
+  it("migrates even when the backup fails, because a backup is not a gate", async () => {
+    // `backupBeforeMigrations` promises never to throw, and this is the test that keeps the
+    // promise cheap to rely on: if it ever breaks it, the app still starts.
+    backupBeforeMigrations.mockImplementation(() => Promise.reject(new Error("card removed")));
+
+    await expect(freshRunner(sqlite).ensureMigrations()).rejects.toThrow("card removed");
   });
 
   it("memoises success, so two callers in one process migrate once", async () => {
@@ -195,7 +237,7 @@ describe("db/migrate", () => {
 
 describe("sqlString", () => {
   it("doubles quotes so a hero's own text cannot end the literal", () => {
-    const { sqlString } = require("../db/migrate") as typeof import("../db/migrate");
+    const { sqlString } = require("../db/sql") as typeof import("../db/sql");
 
     expect(sqlString("plain")).toBe("'plain'");
     expect(sqlString("O'Brien")).toBe("'O''Brien'");

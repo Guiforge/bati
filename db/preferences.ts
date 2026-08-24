@@ -135,6 +135,29 @@ export const preferences = {
     await setPreference("warmupEnabled", String(enabled));
   },
 
+  /**
+   * The Storage Access Framework tree the hero chose for automatic backups, or `null` when the
+   * feature is off. Off is the only default: writing files into someone's storage is not
+   * something an app gets to assume.
+   *
+   * The URI is persistable — expo-file-system takes the permission for us when the picker
+   * resolves — so it is expected to survive a reboot. It is *not* guaranteed to survive a
+   * deleted folder or a permission cleared from Android's settings, which is why the one writer
+   * of this key (`src/autoBackup.ts`) clears it the moment a write fails: a folder the hero can
+   * see in Settings is the only honest report that backups have stopped.
+   */
+  async getBackupFolderUri(): Promise<string | null> {
+    return await getPreference("backupFolderUri");
+  },
+
+  async setBackupFolderUri(uri: string): Promise<void> {
+    await setPreference("backupFolderUri", uri);
+  },
+
+  async clearBackupFolderUri(): Promise<void> {
+    await deletePreference("backupFolderUri");
+  },
+
   async setOwnedEquipment(equipment: EquipmentCode[] | null): Promise<void> {
     if (equipment === null) {
       await deletePreference("ownedEquipment");

@@ -29,6 +29,16 @@ const SAFETY_NAME = `${DB_NAME}.bak`;
 /** The snapshot handed to the share sheet. One at a time, replaced on the next export. */
 const EXPORT_PREFIX = "bati-export-";
 
+/**
+ * How many snapshots survive in a chosen folder. More than one because the reason to keep a
+ * backup at all is that the newest thing might be the broken thing; not many more because these
+ * are whole databases sitting in the hero's own storage, and nobody asked us to fill it.
+ */
+const KEEP_SNAPSHOTS = 5;
+
+/** `bati-export-v3-2026-08-15.db` — the capture is the day, which is what pruning sorts on. */
+const SNAPSHOT_NAME = new RegExp(`^${EXPORT_PREFIX}v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.db$`);
+
 function pathIn(name: string) {
   return `${DB_DIR}/${name}`;
 }
@@ -87,25 +97,38 @@ export async function exportBackup(): Promise<void> {
 }
 
 /**
- * Writes a snapshot straight into a folder the hero picks. Returns `false` if they backed out.
+ * Opens the folder picker. Returns `null` if the hero backed out, which is not a failure.
  *
- * The share sheet hands the file to another app, which is not the same thing as having a copy:
- * on a device with nothing installed that accepts a `.db`, the sheet is a dead end. This is the
- * other half of the same snapshot — the folder picker returns a Storage Access Framework tree,
- * so the file is written locally first (`VACUUM INTO` needs a real path) and copied in after.
- *
- * The snapshot is written *after* the picker resolves, so backing out leaves nothing behind.
+ * The tree it returns carries a *persistable* URI permission — expo-file-system's
+ * `FilePickerContract` takes it on the result of `ACTION_OPEN_DOCUMENT_TREE` — so
+ * `folder.uri` is worth storing and reconstructing later with `new Directory(uri)`. That is
+ * what `src/autoBackup.ts` does, and the only reason unattended backups are possible at all.
  */
-export async function saveBackupToFolder(): Promise<boolean> {
-  let folder: Directory;
+export async function pickBackupFolder(): Promise<Directory | null> {
   try {
-    folder = await Directory.pickDirectoryAsync();
+    return await Directory.pickDirectoryAsync();
   } catch (error) {
     // The picker signals "the user backed out" by throwing, so this is the one place that has to
     // tell a cancellation apart from a failure. Everything else here treats a throw as a failure.
     if (!isPickerCancelled(error)) throw error;
-    return false;
+    return null;
   }
+}
+
+/**
+ * Writes a snapshot straight into a folder. Returns `false` if the hero backed out of the picker.
+ *
+ * The share sheet hands the file to another app, which is not the same thing as having a copy:
+ * on a device with nothing installed that accepts a `.db`, the sheet is a dead end. This is the
+ * other half of the same snapshot — the folder is a Storage Access Framework tree, so the file
+ * is written locally first (`VACUUM INTO` needs a real path) and copied in after.
+ *
+ * Pass a `folder` to write into a tree already granted; without one it asks. The snapshot is
+ * written *after* the picker resolves, so backing out leaves nothing behind.
+ */
+export async function saveBackupToFolder(folder?: Directory): Promise<boolean> {
+  const target = folder ?? (await pickBackupFolder());
+  if (!target) return false;
 
   const snapshot = await writeSnapshot();
   // Snapshots are named by the day, so a second save into the same folder aims at a name that is
@@ -113,8 +136,31 @@ export async function saveBackupToFolder(): Promise<boolean> {
   // file under that name is this app's own backup, from the same day, under a name only this app
   // writes. Without the flag they get "the backup could not be created" for a folder they picked
   // precisely because last time worked.
-  await snapshot.copy(folder, { overwrite: true });
+  await snapshot.copy(target, { overwrite: true });
+  pruneSnapshotsIn(target);
   return true;
+}
+
+/**
+ * Deletes all but the newest `KEEP_SNAPSHOTS` Bati snapshots in a folder.
+ *
+ * Every write into a chosen tree ends here, so nothing accumulates unattended. The filter is the
+ * safety: this runs inside a folder the hero picked, which may be their Documents root, and only
+ * names this app writes are ever considered — never "everything but the newest five files".
+ *
+ * Sorted on the captured day rather than the whole name: `v3` and `v10` do not sort as numbers,
+ * so a name-ordered prune would start deleting the newest schema's backups first.
+ */
+function pruneSnapshotsIn(folder: Directory): void {
+  const snapshots: { day: string; entry: File }[] = [];
+  for (const entry of folder.list()) {
+    if (!(entry instanceof File)) continue;
+    const day = SNAPSHOT_NAME.exec(entry.name)?.[1];
+    if (day) snapshots.push({ day, entry });
+  }
+
+  snapshots.sort((a, b) => b.day.localeCompare(a.day));
+  for (const stale of snapshots.slice(KEEP_SNAPSHOTS)) stale.entry.delete();
 }
 
 function isPickerCancelled(error: unknown): boolean {

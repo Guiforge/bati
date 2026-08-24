@@ -6,7 +6,7 @@ head_title: "Privacy policy — Bati"
 description: Bati collects nothing. No account, no server, no analytics, no network requests at all.
 type: legal
 status: active
-updated: 2026-07-31
+updated: 2026-08-24
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -15,7 +15,7 @@ related: [../planning/roadmap.md]
 
 # Privacy Policy — Bati
 
-**Last updated: 31 July 2026**
+**Last updated: 24 August 2026**
 
 Bati is an offline training app. It has no account, no server, and no analytics. This page
 exists because both app stores require a privacy policy URL, and because the short version
@@ -37,16 +37,29 @@ app's private storage on your device**.
 
 ## Backups you make
 
-Settings offers two ways to write that database to a file: **Share my backup** hands it to your
-system's share sheet, and **Save a file** writes it into a folder you choose on the device. Where
-it goes from there is entirely your choice: the app sends it nowhere and has no way to.
+Settings offers three ways to write that database to a file. **Share my backup** hands it to your
+system's share sheet. **Save a file** writes it into a folder you choose on the device.
+**Automatic backup** writes it into a folder you choose once, and then again on its own before
+each app update. Where any of those files goes from there is entirely your choice: the app sends
+it nowhere and has no way to.
 
 - **The file is not encrypted.** Anyone who opens it can read your training history. Keep it the
   way you would keep a personal photo — and think about it before putting it somewhere shared.
 - **Restoring replaces everything.** Importing a backup swaps the app's contents for the file you
   supply. The database you had is kept on the device as a recovery copy, in the same private
   storage, until the next restore overwrites it.
-- Both actions are yours alone. Nothing is exported automatically and nothing is scheduled.
+- **Automatic backup is off until you turn it on**, and turning it on means picking the folder
+  yourself — the app cannot write anywhere you have not pointed it at. It writes only before an
+  update, only into that folder, and keeps the five most recent files there, deleting older ones
+  it wrote itself and nothing else. Settings shows which folder it is using, and switching it off
+  is one tap; the files already written stay where they are, because they are yours.
+- If the folder you chose becomes unavailable — a card removed, a folder deleted, a permission
+  withdrawn — Bati stops and the Settings row goes back to **Off**, rather than quietly failing
+  while claiming to work.
+- **This is still local.** A folder you pick may belong to a cloud app (Drive, Dropbox, Nextcloud,
+  and others appear in Android's folder picker), and if you pick one, that app syncs the file
+  under its own privacy policy. Bati never learns which folder you chose beyond writing to it, and
+  makes no network request of its own — it has no permission to.
 
 ## What Bati never does
 
@@ -104,7 +117,7 @@ Questions about this policy — and anything else: a bug, an idea, a feature you
 
 # Politique de confidentialité — Bati
 
-**Dernière mise à jour : 31 juillet 2026**
+**Dernière mise à jour : 24 août 2026**
 
 Bati est une application d'entraînement hors-ligne. Pas de compte, pas de serveur, pas
 d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -126,10 +139,12 @@ aventures, village, hauts faits, flamme, serment, avatar et réglages — est é
 
 ## Les sauvegardes que vous faites
 
-Les réglages proposent deux façons d'écrire cette base dans un fichier : **Partager ma sauvegarde**
-la remet au partage de votre système, **Enregistrer un fichier** l'écrit dans un dossier que vous
-choisissez sur l'appareil. Ce qu'il devient ensuite ne dépend que de vous : l'application ne
-l'envoie nulle part, et n'en a aucun moyen.
+Les réglages proposent trois façons d'écrire cette base dans un fichier. **Partager ma sauvegarde**
+la remet au partage de votre système. **Enregistrer un fichier** l'écrit dans un dossier que vous
+choisissez sur l'appareil. **Sauvegarde automatique** l'écrit dans un dossier que vous choisissez
+une fois, puis de nouveau toute seule avant chaque mise à jour de l'application. Ce que ces
+fichiers deviennent ensuite ne dépend que de vous : l'application ne les envoie nulle part, et
+n'en a aucun moyen.
 
 - **Ce fichier n'est pas chiffré.** Quiconque l'ouvre lit votre historique d'entraînement.
   Rangez-le comme vous rangeriez une photo personnelle — et réfléchissez-y à deux fois avant de
@@ -137,8 +152,20 @@ l'envoie nulle part, et n'en a aucun moyen.
 - **Restaurer remplace tout.** Importer une sauvegarde échange le contenu de l'application contre
   le fichier que vous fournissez. La base que vous aviez est conservée sur l'appareil comme copie
   de secours, dans le même stockage privé, jusqu'à la restauration suivante.
-- Les deux actions n'appartiennent qu'à vous. Rien n'est exporté automatiquement, rien n'est
-  planifié.
+- **La sauvegarde automatique est désactivée tant que vous ne l'activez pas**, et l'activer, c'est
+  choisir le dossier vous-même — l'application ne peut écrire nulle part où vous ne l'avez pas
+  envoyée. Elle n'écrit qu'avant une mise à jour, uniquement dans ce dossier, et n'y conserve que
+  les cinq fichiers les plus récents, en supprimant les plus anciens qu'elle a elle-même écrits et
+  rien d'autre. Les réglages affichent le dossier utilisé, et l'arrêter tient en une pression ;
+  les fichiers déjà écrits restent où ils sont, ils sont à vous.
+- Si le dossier choisi devient indisponible — carte retirée, dossier supprimé, autorisation
+  révoquée — Bati s'arrête et la ligne des réglages repasse sur **Désactivée**, plutôt que
+  d'échouer en silence en prétendant fonctionner.
+- **Cela reste local.** Le dossier que vous choisissez peut appartenir à une application de cloud
+  (Drive, Dropbox, Nextcloud et d'autres apparaissent dans le sélecteur de dossier d'Android) ;
+  si vous en choisissez un, cette application synchronise le fichier sous sa propre politique de
+  confidentialité. Bati n'apprend rien du dossier choisi au-delà d'y écrire, et ne fait aucune
+  requête réseau — elle n'en a pas l'autorisation.
 
 ## Ce que Bati ne fait jamais
 

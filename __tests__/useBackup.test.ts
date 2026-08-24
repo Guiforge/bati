@@ -49,6 +49,27 @@ jest.mock("@/src/backupFiles", () => ({
   }),
 }));
 
+let mockAutoFolderOutcome: () => string | null = () => null;
+let mockEnableOutcome: () => string | null = () => "Documents/Bati";
+let mockDisableOutcome: () => void = () => {};
+
+jest.mock("@/src/autoBackup", () => ({
+  autoBackupFolder: jest.fn(async () => {
+    await Promise.resolve();
+    return mockAutoFolderOutcome();
+  }),
+  enableAutoBackup: jest.fn(async () => {
+    await Promise.resolve();
+    mockCalls.push("enable");
+    return mockEnableOutcome();
+  }),
+  disableAutoBackup: jest.fn(async () => {
+    await Promise.resolve();
+    mockCalls.push("disable");
+    mockDisableOutcome();
+  }),
+}));
+
 const mockShownErrors: string[] = [];
 const mockShownSuccesses: string[] = [];
 jest.mock("@/components/common/Toast", () => ({
@@ -78,6 +99,9 @@ beforeEach(() => {
   mockValidateBehaviour = () => {};
   mockStageGate = null;
   mockSaveOutcome = () => true;
+  mockAutoFolderOutcome = () => null;
+  mockEnableOutcome = () => "Documents/Bati";
+  mockDisableOutcome = () => {};
   useRestoreStore.setState({ phase: "idle" });
 });
 
@@ -205,6 +229,105 @@ describe("useBackup — save to a folder", () => {
 
     expect(mockShownErrors).toEqual(["backup.exportFailed"]);
     expect(mockReportedErrors).toEqual(["backup.save"]);
+  });
+});
+
+describe("useBackup — automatic backup", () => {
+  /**
+   * The row is the only place a hero can see that automatic backups are still on, and
+   * `backupBeforeMigrations` turns them off by clearing the preference when a folder stops
+   * working. So the label has to come from storage on every mount, never from a flag the app
+   * kept in memory since the day it was switched on.
+   */
+  test("shows the folder storage actually holds", async () => {
+    mockAutoFolderOutcome = () => "Documents/Bati";
+
+    const { result } = await renderHook(() => useBackup());
+
+    await waitFor(() => expect(result.current.autoFolder).toBe("Documents/Bati"));
+  });
+
+  test("turning it on shows the folder back, so 'on' names a place", async () => {
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runEnableAuto());
+
+    expect(mockCalls).toEqual(["enable"]);
+    expect(result.current.autoFolder).toBe("Documents/Bati");
+    expect(mockShownSuccesses).toEqual(["backup.autoOnDone"]);
+  });
+
+  test("backing out of the picker leaves the row off and says nothing", async () => {
+    mockEnableOutcome = () => null;
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runEnableAuto());
+
+    expect(result.current.autoFolder).toBeNull();
+    expect(mockShownSuccesses).toEqual([]);
+    expect(mockShownErrors).toEqual([]);
+  });
+
+  /**
+   * The folder is remembered only after its first write succeeds, so a failure here must leave
+   * the row saying exactly what is true: off. A row that read "on" after a failed enable would
+   * be the invisible state this whole feature exists to avoid.
+   */
+  test("a failure to turn it on leaves the row off, surfaced and recorded", async () => {
+    mockEnableOutcome = () => {
+      throw new Error("permission denied");
+    };
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runEnableAuto());
+
+    expect(result.current.autoFolder).toBeNull();
+    expect(mockShownErrors).toEqual(["backup.exportFailed"]);
+    expect(mockReportedErrors).toEqual(["backup.auto.enable"]);
+  });
+
+  /**
+   * A read that fails must land the row on "Off", not on a stale label: the only thing worse
+   * than not knowing whether backups are on is being told they are when nobody can tell.
+   */
+  test("a folder that cannot be read leaves the row off, and is recorded", async () => {
+    mockAutoFolderOutcome = () => {
+      throw new Error("database disk image is malformed");
+    };
+
+    const { result } = await renderHook(() => useBackup());
+
+    await waitFor(() => expect(mockReportedErrors).toEqual(["backup.auto.read"]));
+    expect(result.current.autoFolder).toBeNull();
+  });
+
+  test("a failure to turn it off keeps the row honest, surfaced and recorded", async () => {
+    mockAutoFolderOutcome = () => "Documents/Bati";
+    mockDisableOutcome = () => {
+      throw new Error("database is locked");
+    };
+    const { result } = await renderHook(() => useBackup());
+    await waitFor(() => expect(result.current.autoFolder).toBe("Documents/Bati"));
+
+    await act(async () => result.current.runDisableAuto());
+
+    // The folder is still remembered, so the row must still say so — clearing the label on a
+    // failed write would be the invisible state with the sign flipped.
+    expect(result.current.autoFolder).toBe("Documents/Bati");
+    expect(mockShownErrors).toEqual(["backup.exportFailed"]);
+    expect(mockReportedErrors).toEqual(["backup.auto.disable"]);
+  });
+
+  test("turning it off empties the row it filled", async () => {
+    mockAutoFolderOutcome = () => "Documents/Bati";
+    const { result } = await renderHook(() => useBackup());
+    await waitFor(() => expect(result.current.autoFolder).toBe("Documents/Bati"));
+
+    await act(async () => result.current.runDisableAuto());
+
+    expect(mockCalls).toEqual(["disable"]);
+    expect(result.current.autoFolder).toBeNull();
+    expect(mockShownSuccesses).toEqual(["backup.autoOffDone"]);
   });
 });
 

@@ -17,7 +17,10 @@
 --
 -- The rule this buys, enforced by `__tests__/seed-migration-guard.test.ts`: every migration
 -- statement that UPDATEs or DELETEs `exercises` scopes itself to `creator`. INSERT needs no guard,
--- the column defaults to 'Admin'.
+-- the column defaults to 'Admin'. Everything below this migration's index is exempt — `0009`,
+-- `0018`, `0023`, `0030` and `0031` all write by name — and not on trust: the whole journal runs
+-- inside one BEGIN IMMEDIATE before the app is usable, so no hero row can exist while any of them
+-- executes.
 --
 -- `retiredAt`: foreign keys are off on the device and nine queries innerJoin this table, so a hard
 -- delete rewrites the hero's own history. Hero rows are retired instead.

@@ -47,9 +47,12 @@ the `INSERT` hits the unique index; the transaction rolls back; `ensureMigration
 **the app never opens again on that phone**. There is no in-app recovery — the migration will
 fail identically on every launch.
 
-Four migrations are worse in a quieter way. `0023`, `0029`, `0030` and `0031` do
-`UPDATE exercises SET … WHERE enName = '…'` with no owner filter: they would rewrite a hero's
-row because it happens to share a name.
+Three migrations are worse in a quieter way. `0023`, `0030` and `0031` do
+`UPDATE exercises SET … WHERE enName = '…'` with no owner filter, and `0018` does a
+`DELETE FROM exercises WHERE enName`: they would rewrite or remove a hero's row because it
+happens to share a name. (`0029_fr_tutoiement` looked like a fourth and is not — it rewrites
+`quests`, `adventures` and `adventure_steps` only. The guard test in the plan is what found
+that, which is the point of writing the guard before trusting the list.)
 
 **This is what "avoid conflicts" means here.** Not ids.
 
@@ -145,8 +148,8 @@ Three rules follow, and together they *are* the conflict model:
    caller today (`db/oaths.ts` resolves by id, and `db/paths.ts` walks `prerequisiteExerciseId`,
    which no hero row carries). It exists so the rule has one home when the second caller arrives.
 
-Rule 2 is grandfathered for the migrations that predate it — `0018` deletes, `0023`/`0029`/`0030`/`0031`
-update — and for any other pre-partition writer the guard turns up. They are safe forever, not merely tolerated: every
+Rule 2 is grandfathered for the four migrations that predate it — `0018` deletes, `0023`/`0030`/`0031`
+update. They are safe forever, not merely tolerated: every
 migration runs before the app is usable, so no hero row can exist while they execute.
 
 **Rejected: a separate `custom_exercises` table.** Total isolation and zero migration risk, but

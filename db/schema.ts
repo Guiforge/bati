@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // ------------------------------------------------------------
@@ -105,11 +106,26 @@ export const exercises = sqliteTable(
     // Used to estimate quest duration. (Time-based exercises ignore it.)
     secondsPerRep: int().notNull().default(3),
 
+    // Retired, not deleted. Foreign keys are off on the device — db/client.ts issues no
+    // `PRAGMA foreign_keys` — and nine queries innerJoin this table, so a hard delete silently
+    // removes past volume, a village level and a personal record. Hero rows are retired
+    // instead; only a row nothing has ever used is really deleted. Seed rows are always null.
+    retiredAt: int({ mode: "timestamp" }),
+
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({
-    enNameUnique: uniqueIndex("exercises_en_name_unique").on(table.enName),
+    // Two populations, two namespaces. A hero may name a movement "Dead Bug" whether or not an
+    // official one exists, and a future content migration may seed "Dead Bug" whether or not a
+    // hero took it. One global index made the second case an app that never opens again — see
+    // `drizzle/0035_hero_exercises.sql` and `docs/architecture/exercise-ownership.md`.
+    adminNameUnique: uniqueIndex("exercises_admin_name_unique")
+      .on(table.enName)
+      .where(sql`${table.creator} = 'Admin'`),
+    heroNameUnique: uniqueIndex("exercises_hero_name_unique")
+      .on(table.enName)
+      .where(sql`${table.creator} <> 'Admin'`),
   }),
 );
 

@@ -23,6 +23,7 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
     muscles: [],
     pattern: null,
     prerequisiteExerciseId: null,
+    retiredAt: null,
     ...over,
   };
 }

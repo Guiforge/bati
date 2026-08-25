@@ -40,6 +40,8 @@ export type Exercise = {
    * inverted, `prerequisite → this` is "what does this movement lead to".
    */
   prerequisiteExerciseId: number | null;
+  /** Set when a hero retires their own movement. Seed rows are always null. */
+  retiredAt: Date | null;
 };
 
 export { isEquipmentCode, isMuscleCode };
@@ -66,6 +68,7 @@ async function fetchExercises(): Promise<Exercise[]> {
       secondsPerRep: exercises.secondsPerRep,
       pattern: exercises.pattern,
       prerequisiteExerciseId: exercises.prerequisiteExerciseId,
+      retiredAt: exercises.retiredAt,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -90,6 +93,7 @@ async function fetchExercises(): Promise<Exercise[]> {
         secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
         pattern: r.pattern ?? null,
         prerequisiteExerciseId: r.prerequisiteExerciseId,
+        retiredAt: r.retiredAt,
         muscles: [],
       });
     }
@@ -129,6 +133,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
       secondsPerRep: exercises.secondsPerRep,
       pattern: exercises.pattern,
       prerequisiteExerciseId: exercises.prerequisiteExerciseId,
+      retiredAt: exercises.retiredAt,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -151,6 +156,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
     secondsPerRep: typeof first.secondsPerRep === "number" ? first.secondsPerRep : 3,
     pattern: first.pattern ?? null,
     prerequisiteExerciseId: first.prerequisiteExerciseId,
+    retiredAt: first.retiredAt,
     muscles: [],
   };
 

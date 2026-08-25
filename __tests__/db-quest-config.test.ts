@@ -36,6 +36,7 @@ function makeQuest(): Quest {
     secondsPerRep: 3,
     pattern: null,
     prerequisiteExerciseId: null,
+    retiredAt: null,
     muscles: [],
   };
 
@@ -80,6 +81,7 @@ const dip: Quest["exercises"][number]["exercise"] = {
   secondsPerRep: 3,
   pattern: "push_vertical",
   prerequisiteExerciseId: null,
+  retiredAt: null,
   muscles: ["arms"],
 };
 

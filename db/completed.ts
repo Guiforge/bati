@@ -292,6 +292,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       exSecondsPerRep: exercises.secondsPerRep,
       exPattern: exercises.pattern,
       exPrerequisiteId: exercises.prerequisiteExerciseId,
+      exRetiredAt: exercises.retiredAt,
       exStyle: exercises.style,
 
       muscle: exerciseMuscles.muscle,
@@ -347,6 +348,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
           secondsPerRep: r.exSecondsPerRep,
           pattern: r.exPattern ?? null,
           prerequisiteExerciseId: r.exPrerequisiteId,
+          retiredAt: r.exRetiredAt,
           style: parseExerciseStyle(r.exStyle),
           muscles: [],
         },

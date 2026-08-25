@@ -515,11 +515,24 @@ function keyFromPath(id: string): string {
 }
 
 /**
+ * A hero-authored movement carries its picture in the row itself: either a bundled illustration
+ * it picked from the app's own art, or a `data:` URI of a photo (see `0035` and the exercise
+ * editor). Both getters below take all three forms, so the five screens that render an exercise
+ * do not each need to know — only the detail screen did, and everything else showed the
+ * placeholder.
+ */
+function asUriSource(id: string): { uri: string } | null {
+  return /^(data:|file:|content:|https?:)/.test(id) ? { uri: id } : null;
+}
+
+/**
  * Get exercise asset by ID (with fallback to placeholder)
  */
 export function getExerciseAsset(id: string) {
   return (
-    EXERCISE_ASSETS[keyFromPath(id) as ExerciseAssetKey] ?? require("@/assets/placeholder.webp")
+    asUriSource(id) ??
+    EXERCISE_ASSETS[keyFromPath(id) as ExerciseAssetKey] ??
+    require("@/assets/placeholder.webp")
   );
 }
 
@@ -531,6 +544,7 @@ export function getExerciseAsset(id: string) {
  */
 export function getExerciseThumb(id: string) {
   return (
+    asUriSource(id) ??
     EXERCISE_THUMB_ASSETS[keyFromPath(id) as ExerciseAssetKey] ??
     require("@/assets/placeholder.webp")
   );

@@ -32,16 +32,12 @@ import { useSettingsStore } from "@/stores/settings";
 type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
 type Status = "loading" | "ready" | "error";
 
-const resolveAsset = (path?: string | null): ImageSourcePropType =>
-  path?.startsWith("http") ? { uri: path } : getExerciseAsset(path ?? "");
-
 /**
  * The 1280 px art belongs to the 16:9 hero and nowhere else — an image costs its *source*
  * resolution in memory, not its slot (docs/architecture/performance.md). Every small slot reads
  * the 128 px thumbnail, which is what `ProgressionCard` and `SessionRewards` already do.
  */
-const resolveThumb = (path?: string | null): ImageSourcePropType =>
-  path?.startsWith("http") ? { uri: path } : getExerciseThumb(path ?? "");
+const resolveThumb = (path?: string | null): ImageSourcePropType => getExerciseThumb(path ?? "");
 
 const parseId = (raw?: string | string[]): number | null => {
   const val = Array.isArray(raw) ? raw[0] : raw;
@@ -365,7 +361,9 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
   const title = localizedName(exercise, language);
   const desc = language === "fr" ? exercise.frDescription : exercise.enDescription;
   const equipmentLabel = EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment;
-  const img = resolveAsset(exercise.imagePath);
+  // `getExerciseAsset` understands a bundled path, a picked illustration and a photo's
+  // data URI alike, so this screen no longer needs its own `startsWith("http")` branch.
+  const img = getExerciseAsset(exercise.imagePath);
 
   const [progression, setProgression] = useState<NextProgression | null>(null);
   const [chain, setChain] = useState<Chain | null>(null);

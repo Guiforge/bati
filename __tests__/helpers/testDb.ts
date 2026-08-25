@@ -72,7 +72,11 @@ export function clientMock(t: { db: unknown }) {
 export function createTestDb() {
   const sqlite = new Database(":memory:");
 
-  // Keep SQLite behavior close to the app DB.
+  // Stricter than the app on purpose. `db/client.ts` issues no `PRAGMA foreign_keys`, so on a
+  // device SQLite leaves them OFF and every `ON DELETE` clause in the schema is decoration.
+  // Enforcing them here catches a bad reference a phone would swallow — but never read a green
+  // test as proof that the app enforces one. It is why `deleteUserExercise` counts rows instead
+  // of trusting a constraint.
   sqlite.pragma("foreign_keys = ON");
 
   applyMigrations(sqlite);

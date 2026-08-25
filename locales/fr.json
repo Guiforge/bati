@@ -348,6 +348,8 @@
     "muscle_balance": "Équilibre musculaire",
     "next_month": "Mois suivant",
     "notes": "Notes",
+    "unclassified_volume_one": "{{count}} résultat vient d'un exercice sans muscles renseignés : il n'est pas compté ici.",
+    "unclassified_volume_other": "{{count}} résultats viennent d'exercices sans muscles renseignés : ils ne sont pas comptés ici.",
     "personal_records": "Records personnels",
     "pr_badge": "Record",
     "pr_best_streak": "Meilleure série",

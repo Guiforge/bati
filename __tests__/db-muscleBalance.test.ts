@@ -138,6 +138,7 @@ describe("db/muscleBalance", () => {
       muscles: [],
       weakAreas: [],
       strongAreas: [],
+      unclassifiedResults: 0,
     };
 
     const rec = getBalanceRecommendation(balance);
@@ -157,6 +158,7 @@ describe("db/muscleBalance", () => {
       muscles: [],
       weakAreas: [],
       strongAreas: [],
+      unclassifiedResults: 0,
     };
 
     const rec = getBalanceRecommendation(balance);
@@ -176,6 +178,7 @@ describe("db/muscleBalance", () => {
       muscles: [],
       weakAreas: ["abs", "legs"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "legs")[],
       strongAreas: ["chest"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "legs")[],
+      unclassifiedResults: 0,
     };
 
     const rec = getBalanceRecommendation(balance);
@@ -353,5 +356,50 @@ describe("db/muscleBalance", () => {
 
     const balance = await getPatternBalance("30d");
     expect(balance.totalVolume).toBe(20);
+  });
+
+  test("results from an unclassified hero exercise are counted, and named", async () => {
+    const { createUserExercise, DEFAULT_USER_EXERCISE_DRAFT } =
+      require("../db/exercises") as typeof import("../db/exercises");
+    const { getMuscleBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    // The fold left closed: no muscles, so the inner join in getMuscleBalance cannot see it and
+    // its volume is in no bar and no total. Silently shrinking the number is the lie.
+    const id = await createUserExercise({
+      ...DEFAULT_USER_EXERCISE_DRAFT,
+      name: "Qi Gong Flow",
+      description: "Move slowly.",
+      muscles: [],
+    });
+
+    t.sqlite
+      .prepare("INSERT INTO completed_sessions (userLevel, performedAt) VALUES ('medium', ?)")
+      .run(Math.floor(Date.now() / 1000));
+    const session = t.sqlite.prepare("SELECT MAX(id) AS id FROM completed_sessions").get() as {
+      id: number;
+    };
+    t.sqlite
+      .prepare(
+        `INSERT INTO completed_exercises
+           (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, performedAt)
+         VALUES (?, ?, 0, 0, 'reps', 12, ?)`,
+      )
+      .run(session.id, id, Math.floor(Date.now() / 1000));
+
+    const balance = await getMuscleBalance("all");
+
+    expect(balance.totalVolume).toBe(0);
+    expect(balance.unclassifiedResults).toBe(1);
+  });
+
+  test("a tagged exercise is not reported as unclassified", async () => {
+    const { getMuscleBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+
+    seedByName([{ name: "Plank", volume: 30, type: "time" }]);
+
+    const balance = await getMuscleBalance("all");
+    expect(balance.unclassifiedResults).toBe(0);
   });
 });

@@ -561,7 +561,9 @@
     "trends_stable": "stable",
     "trends_no_data": "Train more to see trends",
     "prev_month": "Previous month",
-    "next_month": "Next month"
+    "next_month": "Next month",
+    "unclassified_volume_one": "{{count}} result comes from an exercise with no muscles set, so it isn't counted here.",
+    "unclassified_volume_other": "{{count}} results come from exercises with no muscles set, so they aren't counted here."
   },
   "achievements": {
     "title": "Achievements",

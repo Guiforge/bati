@@ -1,5 +1,5 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { ChevronLeft, ChevronRight, Dumbbell, Link2, Plus, Search } from "@tamagui/lucide-icons";
+import { ChevronLeft, ChevronRight, Link2, Plus, Search } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -374,12 +374,13 @@ export default function ExerciseCatalogue() {
             >
               <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
-            <XStack items="center" gap="$2" flex={1} minW={0}>
-              <Dumbbell size={18} color="$text" strokeWidth={2.5} />
-              <Text flex={1} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
-                {t("exercises.catalogue_title", "Exercises")}
-              </Text>
-            </XStack>
+            {/* No decorative dumbbell beside the title any more: the row gained a create
+              button, and with four elements the title — the one thing that gives way here —
+              truncated to "Exerci…". The icon was the least informative of the four, on the
+              one screen whose whole subject is exercises. */}
+            <Text flex={1} minW={0} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
+              {t("exercises.catalogue_title", "Exercises")}
+            </Text>
           </XStack>
           <AppIconButton
             testID="exercise-create"

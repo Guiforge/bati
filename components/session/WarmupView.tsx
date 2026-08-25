@@ -20,6 +20,16 @@ import { useSettingsStore } from "@/stores/settings";
  * disk — nothing here is a second kind of content. Nothing is journaled either: the hero's
  * volume, records and boss damage all start at the first real exercise.
  */
+/**
+ * The how-to box: caps at ~6 lines and scrolls past that, and refuses to be squeezed.
+ *
+ * `flexShrink` is 1 by default on an RN ScrollView, so the overflowing column above shrank this
+ * to three lines and cut the sentence mid-word — the same defect `FilterRail`'s `RAIL_STYLE`
+ * exists to prevent, and the exact complaint that started this: a hero who does not know the
+ * movement, reading half a sentence while the clock runs.
+ */
+const DESCRIPTION_STYLE = { maxHeight: 120, flexGrow: 0, flexShrink: 0 } as const;
+
 export function WarmupView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -130,7 +140,7 @@ export function WarmupView() {
           timer off the bottom edge. Three lines was the old cap, and it cut the one screen
           whose job is teaching a movement off mid-sentence. */}
         {description ? (
-          <ScrollView style={{ maxHeight: 120 }} showsVerticalScrollIndicator={false}>
+          <ScrollView style={DESCRIPTION_STYLE} showsVerticalScrollIndicator={false}>
             <Text
               fontSize={14}
               color="$textSecondary"

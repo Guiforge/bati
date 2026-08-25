@@ -366,6 +366,8 @@
     "hero_badge": "Yours",
     "edit": "Edit",
     "retire": "Retire",
+    "restore": "Put back",
+    "restore_failed": "Could not put the movement back.",
     "retire_confirm_title": "Retire this movement?",
     "retire_confirm_body": "It leaves the lists you pick from. Your past sessions, records and village keep it.",
     "retire_failed": "Could not retire the movement.",

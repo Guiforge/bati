@@ -7,9 +7,10 @@ import { Input, Sheet, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
+import { MineCaption } from "@/components/exercises/MineCaption";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { filterExercises, NO_EXERCISE_FILTERS } from "@/constants/exerciseFilters";
-import type { Exercise } from "@/db/exercises";
+import { ADMIN_CREATOR, type Exercise } from "@/db/exercises";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
@@ -165,7 +166,13 @@ export function ExercisePickerSheet({
                       ? `${name}, ${t("quests.editor_added_count", { count: picked })}`
                       : name
                   }
-                  caption={captionFor?.(exercise)}
+                  caption={
+                    // The caller's caption wins — a substitution explains *why* it is offering
+                    // this movement, which beats saying who wrote it. Otherwise: a hero may own
+                    // a name seed content also owns, and two identical rows are unpickable.
+                    captionFor?.(exercise) ??
+                    (exercise.creator === ADMIN_CREATOR ? undefined : <MineCaption />)
+                  }
                   onPress={() => {
                     onPick(exercise);
                     if (closeOnPick) close();

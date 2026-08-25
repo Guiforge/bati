@@ -13,6 +13,7 @@ import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
+import { MineCaption } from "@/components/exercises/MineCaption";
 import { getExerciseThumb } from "@/constants/assetMap";
 import {
   buildLeadsTo,
@@ -69,15 +70,6 @@ function LeadsToCaption({ name }: { name: string }) {
         {t("exercises.leads_to", { name, defaultValue: `leads to ${name}` })}
       </Text>
     </XStack>
-  );
-}
-
-/** "Yours" — the one thing a row has to say about a movement the hero wrote. */
-function MineCaption({ label }: { label: string }) {
-  return (
-    <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
-      {label}
-    </Text>
   );
 }
 
@@ -341,7 +333,7 @@ export default function ExerciseCatalogue() {
             // A hero movement carries no ladder, so these can never both apply — written in
             // this order anyway, because the day one does, "yours" is the more useful of the two.
             item.creator !== ADMIN_CREATOR ? (
-              <MineCaption label={t("exercises.hero_badge")} />
+              <MineCaption />
             ) : nextName ? (
               <LeadsToCaption name={nextName} />
             ) : undefined

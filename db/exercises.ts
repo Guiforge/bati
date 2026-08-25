@@ -706,9 +706,14 @@ export async function getExerciseUsage(id: number): Promise<ExerciseUsage> {
       .select({ n: count() })
       .from(schema.completedExercises)
       .where(eq(schema.completedExercises.exerciseId, id)),
+    // Joined to `quests`, not counted straight off `quest_exercises`: foreign keys are OFF on
+    // the device, so deleting a quest leaves its slots behind and the `ON DELETE CASCADE` in the
+    // schema does nothing. Counting an orphan would strand the movement as "in use" by a quest
+    // that no longer exists — undeletable forever, with nothing on screen to explain why.
     db
       .select({ n: count() })
       .from(schema.questExercises)
+      .innerJoin(schema.quests, eq(schema.quests.id, schema.questExercises.questId))
       .where(eq(schema.questExercises.exerciseId, id)),
   ]);
 
@@ -718,6 +723,19 @@ export async function getExerciseUsage(id: number): Promise<ExerciseUsage> {
 export async function retireUserExercise(id: number): Promise<void> {
   await assertHeroAuthored(id);
   await db.update(exercises).set({ retiredAt: new Date() }).where(eq(exercises.id, id));
+  invalidateExercisesCache();
+}
+
+/**
+ * Puts a retired movement back where it can be chosen.
+ *
+ * Without this, "Retirer" is a one-way door while its own copy promises the opposite — *it
+ * leaves the lists you pick from* — and the catalogue's "Retired" facet finds the movement
+ * without being able to do anything with it.
+ */
+export async function unretireUserExercise(id: number): Promise<void> {
+  await assertHeroAuthored(id);
+  await db.update(exercises).set({ retiredAt: null }).where(eq(exercises.id, id));
   invalidateExercisesCache();
 }
 
@@ -739,6 +757,10 @@ export async function deleteUserExercise(id: number): Promise<void> {
   }
 
   await db.delete(exerciseMuscles).where(eq(exerciseMuscles.exerciseId, id));
+  // Slots whose quest is already gone are the only ones that can be here — `getExerciseUsage`
+  // refuses the delete otherwise. Sweeping them keeps this path from leaving litter of its own,
+  // since `ON DELETE CASCADE` does nothing on a device.
+  await db.delete(schema.questExercises).where(eq(schema.questExercises.exerciseId, id));
   await db.delete(exercises).where(eq(exercises.id, id));
   invalidateExercisesCache();
 }

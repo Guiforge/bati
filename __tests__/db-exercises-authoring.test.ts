@@ -147,4 +147,66 @@ describe("hero-authored exercises", () => {
     // The whole point: retiring is not a retroactive edit of what the hero did.
     expect((await getMuscleBalance("all")).totalVolume).toBe(volumeBefore);
   });
+
+  test("a retired movement can be put back", async () => {
+    const { listExercises, pickableExercises, unretireUserExercise } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const before = await listExercises();
+    const retired = before.find((e) => e.enName === "Horse Stance");
+    assert(retired);
+    expect(retired.retiredAt).toBeInstanceOf(Date);
+
+    await unretireUserExercise(retired.id);
+
+    const after = await listExercises();
+    expect(after.find((e) => e.id === retired.id)?.retiredAt).toBeNull();
+    // The whole point: it is choosable again, so "Retire" is a door that opens both ways.
+    expect(pickableExercises(after).some((e) => e.id === retired.id)).toBe(true);
+  });
+
+  test("seed content cannot be un-retired either", async () => {
+    const { listExercises, unretireUserExercise } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const all = await listExercises();
+    const squat = all.find((e) => e.enName === "Squat" && e.creator === "Admin");
+    assert(squat);
+
+    await expect(unretireUserExercise(squat.id)).rejects.toThrow(/not hero-authored/i);
+  });
+
+  test("a quest slot whose quest is gone does not keep a movement alive", async () => {
+    const { createUserExercise, deleteUserExercise, getExerciseById, getExerciseUsage } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const id = await createUserExercise(draft("Orphan Test"));
+
+    // Exactly what a deleted quest leaves behind on a phone: foreign keys are OFF there
+    // (db/client.ts issues no PRAGMA), so `ON DELETE CASCADE` does nothing and the slot
+    // outlives its quest. Counting it would strand the movement as "in use" by a quest that
+    // does not exist — undeletable, forever, with nothing on screen to explain why.
+    // This database is stricter than a phone and would refuse the orphan outright, which is
+    // precisely why it cannot be the evidence — drop the constraint for one statement to get
+    // the row a device really holds.
+    t.sqlite.pragma("foreign_keys = OFF");
+    t.sqlite
+      .prepare(
+        `INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax)
+         VALUES (99999, ?, 0, 'reps', 10, 10)`,
+      )
+      .run(id);
+    t.sqlite.pragma("foreign_keys = ON");
+
+    expect(await getExerciseUsage(id)).toEqual({ completedRows: 0, questRows: 0 });
+
+    await deleteUserExercise(id);
+    expect(await getExerciseById(id)).toBeNull();
+
+    // …and takes the dead slot with it, rather than leaving litter a phone cannot clean up.
+    const leftover = t.sqlite
+      .prepare("SELECT COUNT(*) AS n FROM quest_exercises WHERE exerciseId = ?")
+      .get(id) as { n: number };
+    expect(leftover.n).toBe(0);
+  });
 });

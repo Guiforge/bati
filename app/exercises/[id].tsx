@@ -20,6 +20,7 @@ import {
   getExerciseUsage,
   isUserExercise,
   retireUserExercise,
+  unretireUserExercise,
 } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
@@ -324,9 +325,24 @@ function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => v
           {t("exercises.edit")}
         </AppButton>
 
+        {/* A retired movement offers only the way back: it is already out of every list you
+            pick from, and "Retirer" promised that door opens both ways. */}
+        {exercise.retiredAt !== null ? (
+          <AppButton
+            testID="exercise-restore"
+            variant="outline"
+            disabled={busy}
+            onPress={() => run(() => unretireUserExercise(exercise.id), "exercises.restore_failed")}
+            accessibilityRole="button"
+            accessibilityLabel={t("exercises.restore")}
+          >
+            {t("exercises.restore")}
+          </AppButton>
+        ) : null}
+
         {/* One button, never both: a movement with history cannot be deleted, and one that has
             none has nothing to keep. `null` means the count is still in flight. */}
-        {deletable === null ? null : deletable ? (
+        {exercise.retiredAt !== null ? null : deletable === null ? null : deletable ? (
           <AppButton
             testID="exercise-delete"
             variant="outline"

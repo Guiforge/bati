@@ -265,6 +265,8 @@
     "hero_badge": "À toi",
     "edit": "Modifier",
     "retire": "Retirer",
+    "restore": "Remettre",
+    "restore_failed": "Impossible de remettre le mouvement.",
     "retire_confirm_title": "Retirer ce mouvement ?",
     "retire_confirm_body": "Il quitte les listes où tu choisis. Tes séances passées, tes records et ton village le gardent.",
     "retire_failed": "Impossible de retirer le mouvement.",

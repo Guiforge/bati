@@ -39,6 +39,7 @@ export {
   listExercises,
   pickableExercises,
   retireUserExercise,
+  unretireUserExercise,
 } from "./exercises";
 export { preferences, type TrainingLevel } from "./preferences";
 export { estimateQuestTemplateSeconds } from "./preview";

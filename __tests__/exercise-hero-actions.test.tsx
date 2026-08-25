@@ -48,6 +48,7 @@ jest.mock("@/db", () => ({
   getExerciseUsage: (id: number) => mockGetExerciseUsage(id),
   isUserExercise: (ex: { creator: string }) => ex.creator !== "Admin",
   retireUserExercise: jest.fn(),
+  unretireUserExercise: jest.fn(),
   deleteUserExercise: jest.fn(),
 }));
 
@@ -138,5 +139,19 @@ describe("hero movement actions", () => {
     expect(screen.queryByTestId("exercise-edit")).toBeNull();
     expect(screen.queryByTestId("exercise-delete")).toBeNull();
     expect(screen.queryByTestId("exercise-retire")).toBeNull();
+  });
+
+  it("offers only the way back on a retired movement", async () => {
+    mockGetExerciseById.mockResolvedValue({ ...heroMovement, retiredAt: new Date() });
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0 });
+
+    const screen = await mountDetails();
+
+    // "Retire" promised the door opens both ways; without this it was one-way and the
+    // catalogue's "Retired" facet could find the movement without doing anything with it.
+    await waitFor(() => expect(screen.getByTestId("exercise-restore")).toBeTruthy());
+    expect(screen.queryByTestId("exercise-retire")).toBeNull();
+    expect(screen.queryByTestId("exercise-delete")).toBeNull();
+    expect(screen.getByTestId("exercise-edit")).toBeTruthy();
   });
 });

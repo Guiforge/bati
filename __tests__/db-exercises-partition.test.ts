@@ -59,4 +59,25 @@ describe("exercises name partition", () => {
     const squat = all.find((e) => e.enName === "Squat" && e.creator === "Admin");
     expect(squat?.retiredAt).toBeNull();
   });
+
+  test("officialByName prefers the seed row when a hero owns the same name", async () => {
+    const { listExercises, officialByName, isUserExercise } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const all = await listExercises();
+    const found = officialByName(all, "Squat");
+
+    expect(found?.enName).toBe("Squat");
+    expect(found ? isUserExercise(found) : true).toBe(false);
+  });
+
+  test("officialByName returns undefined for a name only a hero owns", async () => {
+    const { listExercises, officialByName } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const all = await listExercises();
+    // Inserted hero-side by an earlier case; the official row was never seeded.
+    expect(all.some((e) => e.enName === "Archer Squat")).toBe(true);
+    expect(officialByName(all, "Archer Squat")).toBeUndefined();
+  });
 });

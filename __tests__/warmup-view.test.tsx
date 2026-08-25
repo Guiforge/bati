@@ -17,7 +17,13 @@ import config from "@/tamagui.config";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
-jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue([]) }));
+jest.mock("@/db/exercises", () => ({
+  listExercises: jest.fn().mockResolvedValue([]),
+  // Mirrors the real one: seed rows only. The view must not resolve a warm-up step to a
+  // same-named movement the hero wrote.
+  officialByName: (catalogue: { enName: string; creator: string }[], enName: string) =>
+    catalogue.find((e) => e.enName === enName && e.creator === "Admin"),
+}));
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),

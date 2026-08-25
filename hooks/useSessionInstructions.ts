@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { type Exercise, listExercises } from "@/db/exercises";
+import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -60,7 +60,7 @@ export function useSessionInstructions(): SessionInstruction | null {
   });
 
   if (warmupName) {
-    const found = catalogue.find((e) => e.enName === warmupName);
+    const found = officialByName(catalogue, warmupName);
     return found ? describe(found) : null;
   }
 

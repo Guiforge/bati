@@ -6,7 +6,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
-import { type Exercise, listExercises } from "@/db/exercises";
+import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
@@ -70,12 +70,15 @@ export function WarmupView() {
   if (!step) return null;
 
   const nameOf = (enName: string) => {
-    const found = catalogue.find((e) => e.enName === enName);
+    // Seed rows only: since `0035` a hero can own a name too, and the warm-up prescribes the
+    // seeded movement — teaching someone their own half-written note would be worse than the
+    // English fallback.
+    const found = officialByName(catalogue, enName);
     if (!found) return enName;
     return localizedName(found, language);
   };
 
-  const exercise = catalogue.find((e) => e.enName === step.exerciseName);
+  const exercise = officialByName(catalogue, step.exerciseName);
   const label = nameOf(step.exerciseName);
   const description = exercise
     ? language === "fr"
@@ -84,9 +87,7 @@ export function WarmupView() {
     : undefined;
 
   const nextStep = warmupSequence[warmupIndex + 1];
-  const nextExercise = nextStep
-    ? catalogue.find((e) => e.enName === nextStep.exerciseName)
-    : undefined;
+  const nextExercise = nextStep ? officialByName(catalogue, nextStep.exerciseName) : undefined;
 
   const isFirst = warmupIndex === 0;
 

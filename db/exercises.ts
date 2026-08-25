@@ -46,6 +46,36 @@ export type Exercise = {
 
 export { isEquipmentCode, isMuscleCode };
 
+/** The `creator` seed content carries. The column has defaulted to it since `0000`. */
+export const ADMIN_CREATOR = "Admin";
+
+/**
+ * Stamped on exercises written in the app, exactly as `USER_QUEST_AUTHOR` is on quests: only rows
+ * carrying this may be edited or retired from the UI, so a content update can never clobber the
+ * hero's work and the hero can never edit the seed.
+ */
+export const USER_EXERCISE_CREATOR = "hero";
+
+export function isUserExercise(ex: Pick<Exercise, "creator">): boolean {
+  return ex.creator !== ADMIN_CREATOR;
+}
+
+/**
+ * Resolve a movement the *content* named.
+ *
+ * The warm-up prescribes by `enName` (`constants/warmup.ts` says so in its own docblock), and
+ * since `0035` a hero can own names too — a bare `find` on `enName` can land on their row and
+ * teach a hero their own half-written note instead of the seeded movement.
+ *
+ * Pure on purpose: it reads the list `listExercises()` already caches, so this costs no query.
+ * `db/oaths.ts` resolves by id and `db/paths.ts` walks `prerequisiteExerciseId`, which no hero row
+ * carries, so the warm-up is the only caller today. It exists so the rule has one home when the
+ * second one arrives.
+ */
+export function officialByName(catalogue: Exercise[], enName: string): Exercise | undefined {
+  return catalogue.find((e) => e.enName === enName && e.creator === ADMIN_CREATOR);
+}
+
 // Exercise definitions are static seed content (no in-app editing), so every screen that
 // mounts (quest/adventure galleries, adventure details) can share one fetch instead of each
 // re-querying on every navigation - the biggest source of the post-navigation loading flash.

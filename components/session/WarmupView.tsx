@@ -2,6 +2,7 @@ import { Pause, SkipBack, SkipForward } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
@@ -123,16 +124,21 @@ export function WarmupView() {
           {label}
         </H3>
 
+        {/* Not truncated, and scrolling rather than growing: this column's siblings are
+          fixed-height and RN's flexShrink is 0, so a long movement would otherwise push the
+          timer off the bottom edge. Three lines was the old cap, and it cut the one screen
+          whose job is teaching a movement off mid-sentence. */}
         {description ? (
-          <Text
-            fontSize={14}
-            color="$textSecondary"
-            lineHeight={20}
-            numberOfLines={3}
-            style={{ textAlign: "center" }}
-          >
-            {description}
-          </Text>
+          <ScrollView style={{ maxHeight: 120 }} showsVerticalScrollIndicator={false}>
+            <Text
+              fontSize={14}
+              color="$textSecondary"
+              lineHeight={20}
+              style={{ textAlign: "center" }}
+            >
+              {description}
+            </Text>
+          </ScrollView>
         ) : null}
 
         <H1 color="$primaryText" fontSize={64} fontWeight="700">

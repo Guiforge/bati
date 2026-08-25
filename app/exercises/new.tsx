@@ -11,6 +11,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
+import { ExerciseImagePicker } from "@/components/exercises/ExerciseImagePicker";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import {
   createUserExercise,
@@ -301,6 +302,11 @@ export default function ExerciseEditor() {
                   ))}
                 </XStack>
               </YStack>
+
+              <ExerciseImagePicker
+                value={details.imagePath}
+                onChange={(imagePath) => setDetails((d) => ({ ...d, imagePath }))}
+              />
 
               <Stepper
                 label={t("exercise_editor.seconds_per_rep")}

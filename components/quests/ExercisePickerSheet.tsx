@@ -41,8 +41,15 @@ type Props = {
   closeOnPick?: boolean;
   /** The row's right-hand affordance — a `+` on an add, a swap glyph on a replace. */
   pickAction: ReactNode;
-  /** A third line per row, e.g. why a substitute is being offered. */
-  captionFor?: (exercise: Exercise) => ReactNode;
+  /**
+   * A third line per row, e.g. why a substitute is being offered — the text, not an element.
+   *
+   * Deliberately not a `ReactNode`: the hero badge below is a *nullish* fallback, and a caller
+   * returning `<Caption reason={undefined} />` — an element that renders nothing — wins the
+   * coalesce all the same. Every unranked candidate then lost the badge that tells a hero's
+   * "Dead Bug" from seed content's. A string can only be empty or absent, and both are nullish.
+   */
+  captionFor?: (exercise: Exercise) => string | null;
   bottomInset: number;
 };
 
@@ -153,6 +160,7 @@ export function ExercisePickerSheet({
             {results.map((exercise) => {
               const picked = countByExerciseId.get(exercise.id) ?? 0;
               const name = localizedName(exercise, language);
+              const caption = captionFor?.(exercise);
 
               return (
                 <ExerciseRow
@@ -170,8 +178,13 @@ export function ExercisePickerSheet({
                     // The caller's caption wins — a substitution explains *why* it is offering
                     // this movement, which beats saying who wrote it. Otherwise: a hero may own
                     // a name seed content also owns, and two identical rows are unpickable.
-                    captionFor?.(exercise) ??
-                    (exercise.creator === ADMIN_CREATOR ? undefined : <MineCaption />)
+                    caption ? (
+                      <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+                        {caption}
+                      </Text>
+                    ) : exercise.creator === ADMIN_CREATOR ? undefined : (
+                      <MineCaption />
+                    )
                   }
                   onPress={() => {
                     onPick(exercise);

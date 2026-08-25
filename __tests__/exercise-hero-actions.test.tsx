@@ -94,7 +94,7 @@ describe("hero movement actions", () => {
   });
 
   it("offers delete only for a movement nothing has ever used", async () => {
-    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0 });
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0, preferenceRows: 0 });
 
     const screen = await mountDetails();
 
@@ -103,7 +103,7 @@ describe("hero movement actions", () => {
   });
 
   it("offers retire instead once the movement has history", async () => {
-    mockGetExerciseUsage.mockResolvedValue({ completedRows: 3, questRows: 0 });
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 3, questRows: 0, preferenceRows: 0 });
 
     const screen = await mountDetails();
 
@@ -112,11 +112,22 @@ describe("hero movement actions", () => {
   });
 
   it("offers retire when a quest still holds the movement, even with no results", async () => {
-    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 1 });
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 1, preferenceRows: 0 });
 
     const screen = await mountDetails();
 
     await waitFor(() => expect(screen.getByTestId("exercise-retire")).toBeTruthy());
+  });
+
+  it("offers retire when only a saved choice holds the movement", async () => {
+    // A quest's swap and an oath's target are ids inside `user_preferences` JSON. This screen
+    // used to name the two counts it knew about, so a third kind of reference read as "unused".
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0, preferenceRows: 1 });
+
+    const screen = await mountDetails();
+
+    await waitFor(() => expect(screen.getByTestId("exercise-retire")).toBeTruthy());
+    expect(screen.queryByTestId("exercise-delete")).toBeNull();
   });
 
   it("falls back to retire when the usage count cannot be read", async () => {
@@ -131,7 +142,7 @@ describe("hero movement actions", () => {
 
   it("offers nothing on seed content", async () => {
     mockGetExerciseById.mockResolvedValue({ ...heroMovement, creator: "Admin" });
-    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0 });
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0, preferenceRows: 0 });
 
     const screen = await mountDetails();
 
@@ -143,7 +154,7 @@ describe("hero movement actions", () => {
 
   it("offers only the way back on a retired movement", async () => {
     mockGetExerciseById.mockResolvedValue({ ...heroMovement, retiredAt: new Date() });
-    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0 });
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0, preferenceRows: 0 });
 
     const screen = await mountDetails();
 

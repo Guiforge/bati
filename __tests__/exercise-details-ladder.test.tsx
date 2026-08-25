@@ -38,7 +38,7 @@ jest.mock("@/db", () => ({
   getExerciseById: (id: number) => mockGetExerciseById(id),
   // Seed content, so the hero actions never render here — this suite is about the ladder.
   isUserExercise: (ex: { creator: string }) => ex.creator !== "Admin",
-  getExerciseUsage: () => Promise.resolve({ completedRows: 0, questRows: 0 }),
+  getExerciseUsage: () => Promise.resolve({ completedRows: 0, questRows: 0, preferenceRows: 0 }),
   retireUserExercise: jest.fn(),
   deleteUserExercise: jest.fn(),
 }));

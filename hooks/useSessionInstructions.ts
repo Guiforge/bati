@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
+import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -55,7 +56,7 @@ export function useSessionInstructions(): SessionInstruction | null {
 
   const describe = (ex: Exercise): SessionInstruction => ({
     imagePath: ex.imagePath,
-    name: language === "fr" ? ex.frName : ex.enName,
+    name: localizedName(ex, language),
     description: language === "fr" ? ex.frDescription : ex.enDescription,
   });
 

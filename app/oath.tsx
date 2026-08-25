@@ -13,7 +13,7 @@ import { ProgressBar } from "@/components/common/ProgressBar";
 import { useToast } from "@/components/common/Toast";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
-import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
+import { type Exercise, listExercises, officialByName, pickableExercises } from "@/db/exercises";
 import {
   breakOath,
   DEFAULT_WEEKLY_TARGET,
@@ -204,6 +204,17 @@ const DEFAULT_TARGET: Record<OathMetric, number> = {
   weekly_sessions: 8, // weeks
 };
 
+/**
+ * The seed movement a preset names, or undefined.
+ *
+ * `officialByName`, not a bare name match: a preset names seed content, and since `0035` a hero
+ * may own a movement called exactly the same thing — swearing on their half-written note instead
+ * of the seeded one is the collision that helper exists for.
+ */
+function presetExercise(preset: OathPreset, catalogue: Exercise[]): Exercise | undefined {
+  return preset.exerciseName ? officialByName(catalogue, preset.exerciseName) : undefined;
+}
+
 export default function OathScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -283,7 +294,7 @@ export default function OathScreen() {
         });
         continue;
       }
-      const ex = exercises.find((e) => e.enName === p.exerciseName);
+      const ex = presetExercise(p, exercises);
       // Drop presets whose exercise is absent, and any that need kit the hero does not own —
       // an oath you cannot move is worse than no oath at all.
       if (
@@ -364,7 +375,7 @@ export default function OathScreen() {
     (preset: OathPreset) => {
       let id: number | null = null;
       if (oathNeedsExercise(preset.metric)) {
-        const ex = exercises.find((e) => e.enName === preset.exerciseName);
+        const ex = presetExercise(preset, exercises);
         if (!ex) return; // filtered out of the list, shouldn't reach here
         id = ex.id;
       }

@@ -265,7 +265,8 @@ function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => v
     let cancelled = false;
     getExerciseUsage(exercise.id)
       .then((usage) => {
-        if (!cancelled) setDeletable(usage.completedRows === 0 && usage.questRows === 0);
+        // Every count, not the two this screen knows the names of — see `ExerciseUsage`.
+        if (!cancelled) setDeletable(Object.values(usage).every((n) => n === 0));
       })
       .catch((error) => {
         // Unknown usage means the safe answer, not a missing button: retire.

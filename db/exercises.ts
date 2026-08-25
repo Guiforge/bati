@@ -2,6 +2,7 @@ import { and, count, desc, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
+import { getAllPreferences } from "./preferences";
 import {
   ADMIN_CREATOR,
   type DifficultyCode,
@@ -69,9 +70,9 @@ export function isUserExercise(ex: Pick<Exercise, "creator">): boolean {
  * teach a hero their own half-written note instead of the seeded movement.
  *
  * Pure on purpose: it reads the list `listExercises()` already caches, so this costs no query.
- * `db/oaths.ts` resolves by id and `db/paths.ts` walks `prerequisiteExerciseId`, which no hero row
- * carries, so the warm-up is the only caller today. It exists so the rule has one home when the
- * second one arrives.
+ * Two callers: the warm-up, and `app/oath.tsx`, whose presets name seed content the same way.
+ * `db/oaths.ts` stores an id and `db/paths.ts` walks `prerequisiteExerciseId`, which no hero row
+ * carries — neither goes through a name, so neither needs this.
  */
 export function officialByName(catalogue: Exercise[], enName: string): Exercise | undefined {
   return catalogue.find((e) => e.enName === enName && e.creator === ADMIN_CREATOR);
@@ -697,11 +698,50 @@ export async function updateUserExercise(id: number, draft: UserExerciseDraft): 
   invalidateExercisesCache();
 }
 
-/** What a delete would take with it. Both counts are zero, or the row is retired instead. */
-export type ExerciseUsage = { completedRows: number; questRows: number };
+/**
+ * What a delete would take with it. Every count is zero, or the row is retired instead.
+ *
+ * Read with `Object.values(...)`, never field by field: a caller that names the fields it knows
+ * about keeps saying "deletable" after a new kind of reference is added here, which is exactly
+ * how `swaps` and the oath went unnoticed until they were.
+ */
+export type ExerciseUsage = { completedRows: number; questRows: number; preferenceRows: number };
+
+/**
+ * References that live inside `user_preferences` JSON, where no join can reach them: a quest
+ * config's `swaps` map (`db/questConfig.ts`) and the active oath's `exerciseId` (`db/oaths.ts`).
+ * Delete a movement a quest swapped in and the slot silently reverts to the template's; delete
+ * the one an oath names and the oath loses its title and can never progress again.
+ *
+ * Matched by shape rather than by key because `questConfig` imports this module — the key
+ * builders cannot be imported back — and a shape survives a key being renamed.
+ */
+async function countPreferenceRefs(id: number): Promise<number> {
+  const prefs = await getAllPreferences();
+  let refs = 0;
+
+  for (const raw of Object.values(prefs)) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      // Not JSON, or corrupt: every reader of these blobs already treats that as "absent".
+      continue;
+    }
+    if (typeof parsed !== "object" || parsed === null) continue;
+
+    const blob = parsed as { exerciseId?: unknown; swaps?: unknown };
+    if (blob.exerciseId === id) refs += 1;
+    if (typeof blob.swaps === "object" && blob.swaps !== null) {
+      refs += Object.values(blob.swaps).filter((v) => v === id).length;
+    }
+  }
+
+  return refs;
+}
 
 export async function getExerciseUsage(id: number): Promise<ExerciseUsage> {
-  const [completedRows, questRows] = await Promise.all([
+  const [completedRows, questRows, preferenceRows] = await Promise.all([
     db
       .select({ n: count() })
       .from(schema.completedExercises)
@@ -715,9 +755,14 @@ export async function getExerciseUsage(id: number): Promise<ExerciseUsage> {
       .from(schema.questExercises)
       .innerJoin(schema.quests, eq(schema.quests.id, schema.questExercises.questId))
       .where(eq(schema.questExercises.exerciseId, id)),
+    countPreferenceRefs(id),
   ]);
 
-  return { completedRows: completedRows[0]?.n ?? 0, questRows: questRows[0]?.n ?? 0 };
+  return {
+    completedRows: completedRows[0]?.n ?? 0,
+    questRows: questRows[0]?.n ?? 0,
+    preferenceRows,
+  };
 }
 
 export async function retireUserExercise(id: number): Promise<void> {
@@ -750,9 +795,9 @@ export async function deleteUserExercise(id: number): Promise<void> {
   await assertHeroAuthored(id);
 
   const usage = await getExerciseUsage(id);
-  if (usage.completedRows > 0 || usage.questRows > 0) {
+  if (Object.values(usage).some((n) => n > 0)) {
     throw new Error(
-      `Exercise ${id} is in use (${usage.completedRows} results, ${usage.questRows} quest slots) — retire it instead`,
+      `Exercise ${id} is in use (${usage.completedRows} results, ${usage.questRows} quest slots, ${usage.preferenceRows} saved choices) — retire it instead`,
     );
   }
 

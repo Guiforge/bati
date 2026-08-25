@@ -101,10 +101,34 @@ describe("hero-authored exercises", () => {
       require("../db/exercises") as typeof import("../db/exercises");
 
     const id = await createUserExercise(draft("Typo"));
-    expect(await getExerciseUsage(id)).toEqual({ completedRows: 0, questRows: 0 });
+    expect(await getExerciseUsage(id)).toEqual({
+      completedRows: 0,
+      questRows: 0,
+      preferenceRows: 0,
+    });
 
     await deleteUserExercise(id);
     expect(await getExerciseById(id)).toBeNull();
+  });
+
+  test("a movement a quest swapped in, or an oath named, is refused for deletion", async () => {
+    const { createUserExercise, deleteUserExercise, getExerciseUsage } =
+      require("../db/exercises") as typeof import("../db/exercises");
+    const { saveQuestConfig } = require("../db/questConfig") as typeof import("../db/questConfig");
+    const { swearOath } = require("../db/oaths") as typeof import("../db/oaths");
+
+    // Neither of these is a row anywhere `getExerciseUsage` can join to: both ids live inside a
+    // JSON blob in `user_preferences`. Delete the movement and the swapped slot silently reverts
+    // to the template's, while the oath loses its name and can never progress again.
+    const swapped = await createUserExercise(draft("Swapped In"));
+    await saveQuestConfig(1, { level: "medium", swaps: { "7": swapped } });
+    expect((await getExerciseUsage(swapped)).preferenceRows).toBe(1);
+    await expect(deleteUserExercise(swapped)).rejects.toThrow(/in use/i);
+
+    const sworn = await createUserExercise(draft("Sworn On"));
+    await swearOath({ metric: "exercise_volume", target: 100, exerciseId: sworn });
+    expect((await getExerciseUsage(sworn)).preferenceRows).toBe(1);
+    await expect(deleteUserExercise(sworn)).rejects.toThrow(/in use/i);
   });
 
   test("an exercise with history is refused for deletion", async () => {
@@ -198,7 +222,11 @@ describe("hero-authored exercises", () => {
       .run(id);
     t.sqlite.pragma("foreign_keys = ON");
 
-    expect(await getExerciseUsage(id)).toEqual({ completedRows: 0, questRows: 0 });
+    expect(await getExerciseUsage(id)).toEqual({
+      completedRows: 0,
+      questRows: 0,
+      preferenceRows: 0,
+    });
 
     await deleteUserExercise(id);
     expect(await getExerciseById(id)).toBeNull();

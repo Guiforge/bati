@@ -34,7 +34,7 @@ import {
 } from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { type Exercise, listExercises } from "@/db/exercises";
+import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
@@ -77,24 +77,6 @@ function swapReasonLabel(reason: SwapReason | null | undefined, t: TFunction): s
   if (reason === "same_pattern") return t("quests.swap_reason_pattern", "Same movement");
   if (reason === "same_family") return t("quests.swap_reason_family", "Same family");
   return null;
-}
-
-/**
- * `ExerciseRow` drops `caption` straight into a `YStack`, so it has to be an element — a bare
- * string throws "Text strings must be rendered within a <Text> component" at runtime, which
- * neither `tsc` nor the test suite can see (`caption` is typed `ReactNode`, and a string is one).
- * Same shape as the catalogue's `LeadsToCaption`.
- */
-function SwapCaption({ reason }: { reason: SwapReason | null | undefined }) {
-  const { t } = useTranslation();
-  const label = swapReasonLabel(reason, t);
-  if (!label) return null;
-
-  return (
-    <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
-      {label}
-    </Text>
-  );
 }
 
 function levelLabel(level: Difficulty, t: TFunction) {
@@ -384,8 +366,10 @@ export default function QuestDetails() {
   // the sheet renders the order it is given, which is what lets the editor and this screen share
   // it without a mode flag.
   const swapSlot = derived?.quest.exercises.find((qex) => qex.id === swapFor) ?? null;
+  // `pickableExercises` here and not on `catalogue`: the line above resolves the slot's current
+  // movement by id, and a retired one still has to render as the thing you are replacing.
   const swapCandidates = swapSlot
-    ? rankSwapCandidates(catalogue, swapSlot.exercise, owned)
+    ? rankSwapCandidates(pickableExercises(catalogue), swapSlot.exercise, owned)
     : EMPTY_CANDIDATES;
   const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
 
@@ -831,7 +815,7 @@ export default function QuestDetails() {
           onPick={(exercise) => applySwap(swapSlot.id, exercise)}
           closeOnPick
           pickAction={<Repeat size={20} color="$primaryText" strokeWidth={2.5} />}
-          captionFor={(exercise) => <SwapCaption reason={swapReasons.get(exercise.id)} />}
+          captionFor={(exercise) => swapReasonLabel(swapReasons.get(exercise.id), t)}
           bottomInset={insets.bottom}
         />
       ) : null}

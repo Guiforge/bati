@@ -222,4 +222,27 @@ describe("exercise editor", () => {
     });
     expect(editor.getByTestId("exercise-name").props.value).toBe("");
   });
+
+  it("keeps the picture choices behind the preview, and picking one closes them", async () => {
+    const editor = await mountEditor();
+
+    // Collapsed: the preview is the whole control, so the form below starts at the name
+    // rather than at a wall of thumbnails.
+    expect(editor.queryByTestId("exercise-illustration-lunge")).toBeNull();
+
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-image-preview")));
+    expect(editor.getByTestId("exercise-illustration-lunge")).toBeTruthy();
+
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-illustration-lunge")));
+    expect(editor.queryByTestId("exercise-illustration-lunge")).toBeNull();
+
+    await act(async () =>
+      fireEvent.changeText(editor.getByTestId("exercise-name"), "Squat de l'archer"),
+    );
+    await act(() => fireEvent.press(editor.getByTestId("exercise-save")));
+
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ imagePath: "lunge" }));
+    });
+  });
 });

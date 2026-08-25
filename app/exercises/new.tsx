@@ -159,6 +159,14 @@ export default function ExerciseEditor() {
           </Text>
         </XStack>
 
+        {/* The picture leads. A movement is a card before it is a form — the hero sees it in a
+          session, in the catalogue and on its own page long before anyone reads the muscles —
+          so the editor opens on that card forming rather than on two text fields. */}
+        <ExerciseImagePicker
+          value={details.imagePath}
+          onChange={(imagePath) => setDetails((d) => ({ ...d, imagePath }))}
+        />
+
         <Card>
           <YStack gap="$3">
             <Text fontWeight="700" fontSize={13} color="$textSecondary">
@@ -302,11 +310,6 @@ export default function ExerciseEditor() {
                   ))}
                 </XStack>
               </YStack>
-
-              <ExerciseImagePicker
-                value={details.imagePath}
-                onChange={(imagePath) => setDetails((d) => ({ ...d, imagePath }))}
-              />
 
               <Stepper
                 label={t("exercise_editor.seconds_per_rep")}

@@ -62,6 +62,13 @@ export type FeedbackCode = (typeof feedbackCodes)[number];
 export const exerciseStyles = ["strength", "calisthenics", "yoga", "cardio"] as const;
 export type ExerciseStyle = (typeof exerciseStyles)[number];
 
+/**
+ * The two populations `exercises.creator` tells apart, next to the column that holds them so
+ * nothing has to import the database client to know what "mine" means.
+ */
+export const ADMIN_CREATOR = "Admin";
+export const USER_EXERCISE_CREATOR = "hero";
+
 // User preferences table - stores onboarding and settings
 export const userPreferences = sqliteTable("user_preferences", {
   id: int().primaryKey({ autoIncrement: true }),

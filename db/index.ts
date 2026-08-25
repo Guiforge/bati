@@ -31,7 +31,18 @@ export {
   formatDuration,
   formatDurationEstimate,
 } from "./estimate";
-export { getExerciseById, listExercises } from "./exercises";
+export {
+  createUserExercise,
+  DEFAULT_USER_EXERCISE_DRAFT,
+  deleteUserExercise,
+  getExerciseById,
+  getExerciseUsage,
+  isUserExercise,
+  listExercises,
+  pickableExercises,
+  retireUserExercise,
+  updateUserExercise,
+} from "./exercises";
 export { preferences, type TrainingLevel } from "./preferences";
 export { estimateQuestTemplateSeconds } from "./preview";
 export type { QuestConfig } from "./questConfig";

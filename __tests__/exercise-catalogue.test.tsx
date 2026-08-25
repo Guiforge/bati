@@ -14,6 +14,12 @@ const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
+  // The catalogue reloads on focus since the hero can write to it; the real hook needs a
+  // navigation container, so run the effect once like a mount.
+  useFocusEffect: (effect: () => undefined | (() => void)) => {
+    const { useEffect } = require("react");
+    useEffect(effect, [effect]);
+  },
 }));
 
 jest.mock(
@@ -54,6 +60,7 @@ jest.mock("@legendapp/list/react-native", () => {
 const mockListExercises = jest.fn();
 jest.mock("@/db/exercises", () => ({
   listExercises: (...args: unknown[]) => mockListExercises(...args),
+  ADMIN_CREATOR: "Admin",
 }));
 
 function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id" | "enName">): Exercise {
@@ -70,8 +77,11 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id" | "enName">)
     muscles: ["back"],
     pattern: "pull_horizontal",
     prerequisiteExerciseId: null,
+    retiredAt: null,
     ...over,
-  } as Exercise;
+    // No `as Exercise`: the cast is what let this fixture miss `retiredAt` when the column
+    // landed, and a fixture the compiler cannot check is a fixture that drifts from the row.
+  };
 }
 
 const TABLE_ROW = makeExercise({ id: 1, enName: "Table Row" });

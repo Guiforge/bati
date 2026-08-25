@@ -21,6 +21,7 @@ import {
   getQuestConfig,
   getQuestTemplateById,
   listExercises,
+  pickableExercises,
   REST_RANGE,
   ROUNDS_RANGE,
   saveQuestConfig,
@@ -157,7 +158,8 @@ export default function QuestEditor() {
       ]);
       if (cancelled) return;
 
-      setExercises(all);
+      // Retired movements leave every list you pick from.
+      setExercises(pickableExercises(all));
       if (!template) return;
 
       const nextTitle = localizedTitle(template, language);

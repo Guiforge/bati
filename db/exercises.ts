@@ -3,12 +3,14 @@ import { db, schema } from "./client";
 import { isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
 import {
+  ADMIN_CREATOR,
   type DifficultyCode,
   type EquipmentCode,
   type ExerciseStyle,
   exerciseStyles,
   type MovementPattern,
   type MuscleCode,
+  USER_EXERCISE_CREATOR,
 } from "./schema";
 
 const { exercises, exerciseMuscles } = schema;
@@ -44,17 +46,16 @@ export type Exercise = {
   retiredAt: Date | null;
 };
 
-export { isEquipmentCode, isMuscleCode };
-
-/** The `creator` seed content carries. The column has defaulted to it since `0000`. */
-export const ADMIN_CREATOR = "Admin";
-
 /**
- * Stamped on exercises written in the app, exactly as `USER_QUEST_AUTHOR` is on quests: only rows
- * carrying this may be edited or retired from the UI, so a content update can never clobber the
- * hero's work and the hero can never edit the seed.
+ * `ADMIN_CREATOR` is what seed content carries — the column has defaulted to it since `0000`.
+ * `USER_EXERCISE_CREATOR` is stamped on exercises written in the app, exactly as
+ * `USER_QUEST_AUTHOR` is on quests: only rows carrying it may be edited or retired from the UI,
+ * so a content update can never clobber the hero's work and the hero can never edit the seed.
+ *
+ * They live in `./schema` beside the column, and are re-exported here because this is where the
+ * rest of the app looks for anything about an exercise.
  */
-export const USER_EXERCISE_CREATOR = "hero";
+export { ADMIN_CREATOR, isEquipmentCode, isMuscleCode, USER_EXERCISE_CREATOR };
 
 export function isUserExercise(ex: Pick<Exercise, "creator">): boolean {
   return ex.creator !== ADMIN_CREATOR;

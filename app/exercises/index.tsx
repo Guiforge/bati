@@ -1,7 +1,7 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { ChevronLeft, ChevronRight, Dumbbell, Link2, Search } from "@tamagui/lucide-icons";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Dumbbell, Link2, Plus, Search } from "@tamagui/lucide-icons";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +22,7 @@ import {
 } from "@/constants/exerciseFilters";
 import { toggleInSet } from "@/constants/questFilters";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { type Exercise, listExercises } from "@/db/exercises";
+import { ADMIN_CREATOR, type Exercise, listExercises } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { EquipmentCode, MovementPattern, MuscleCode } from "@/db/schema";
 import { localizedName } from "@/src/i18n/localized";
@@ -69,6 +69,15 @@ function LeadsToCaption({ name }: { name: string }) {
         {t("exercises.leads_to", { name, defaultValue: `leads to ${name}` })}
       </Text>
     </XStack>
+  );
+}
+
+/** "Yours" — the one thing a row has to say about a movement the hero wrote. */
+function MineCaption({ label }: { label: string }) {
+  return (
+    <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+      {label}
+    </Text>
   );
 }
 
@@ -175,13 +184,17 @@ export default function ExerciseCatalogue() {
     }
   }, []);
 
-  // Not `useFocusEffect`: exercises are seed content with no in-app editing, so unlike the
-  // quest gallery there is nothing that can change under this screen while it is open.
-  useEffect(() => {
-    load().catch(() => {
-      // Error already handled in `load`.
-    });
-  }, [load]);
+  // On focus, not on mount: this used to say exercises were seed content that nothing could
+  // change under the screen. The hero writes here now, so coming back from the editor has to
+  // show what they just wrote. `listExercises()` is promise-cached and the writers invalidate
+  // it, so an unchanged catalogue costs nothing.
+  useFocusEffect(
+    useCallback(() => {
+      load().catch(() => {
+        // Error already handled in `load`.
+      });
+    }, [load]),
+  );
 
   const exercises = state.exercises;
 
@@ -194,6 +207,8 @@ export default function ExerciseCatalogue() {
   const togglePattern = (p: MovementPattern) =>
     setFilters((f) => ({ ...f, patterns: toggleInSet(f.patterns, p) }));
   const toggleLadder = () => setFilters((f) => ({ ...f, ladderOnly: !f.ladderOnly }));
+  const toggleMine = () => setFilters((f) => ({ ...f, mine: !f.mine }));
+  const toggleRetired = () => setFilters((f) => ({ ...f, retired: !f.retired }));
   const setSearch = (search: string) => setFilters((f) => ({ ...f, search }));
   const clearFilters = () => setFilters(NO_EXERCISE_FILTERS);
 
@@ -274,6 +289,27 @@ export default function ExerciseCatalogue() {
       })),
     },
     {
+      key: "mine",
+      label: t("exercises.filter_group_mine", "Yours"),
+      // Only once there is hero content to filter — the trailing filter drops an empty group.
+      chips: exercises.some((e) => e.creator !== ADMIN_CREATOR)
+        ? [
+            {
+              key: "mine-only",
+              label: t("exercises.mine"),
+              active: filters.mine,
+              onPress: toggleMine,
+            },
+            {
+              key: "retired-only",
+              label: t("exercises.retired"),
+              active: filters.retired,
+              onPress: toggleRetired,
+            },
+          ]
+        : [],
+    },
+    {
       key: "ladder",
       label: t("exercises.filter_group_ladder", "Ladder"),
       chips: leadsTo.size
@@ -301,7 +337,15 @@ export default function ExerciseCatalogue() {
           exercise={item}
           language={language}
           thumb={thumbById.get(item.id)}
-          caption={nextName ? <LeadsToCaption name={nextName} /> : undefined}
+          caption={
+            // A hero movement carries no ladder, so these can never both apply — written in
+            // this order anyway, because the day one does, "yours" is the more useful of the two.
+            item.creator !== ADMIN_CREATOR ? (
+              <MineCaption label={t("exercises.hero_badge")} />
+            ) : nextName ? (
+              <LeadsToCaption name={nextName} />
+            ) : undefined
+          }
           trailing={<ChevronRight size={20} color="$textSecondary" strokeWidth={2.5} />}
           accessibilityLabel={
             nextName
@@ -337,6 +381,14 @@ export default function ExerciseCatalogue() {
               </Text>
             </XStack>
           </XStack>
+          <AppIconButton
+            testID="exercise-create"
+            onPress={() => router.push("/exercises/new" as never)}
+            accessibilityRole="button"
+            accessibilityLabel={t("exercise_editor.title_new")}
+          >
+            <Plus size={22} color="$text" strokeWidth={2.5} />
+          </AppIconButton>
           <Chip
             label={t("exercises.count", {
               count: visible.length,

@@ -13,7 +13,7 @@ import { ProgressBar } from "@/components/common/ProgressBar";
 import { useToast } from "@/components/common/Toast";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
-import { type Exercise, listExercises } from "@/db/exercises";
+import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import {
   breakOath,
   DEFAULT_WEEKLY_TARGET,
@@ -238,7 +238,8 @@ export default function OathScreen() {
         setOwnedEquipment(null);
       });
     listExercises()
-      .then(setExercises)
+      // Retired movements leave every list you pick from.
+      .then((all) => setExercises(pickableExercises(all)))
       .catch((e) => {
         reportError("oath.exercises", e);
         setExercises([]);

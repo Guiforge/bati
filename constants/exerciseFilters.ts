@@ -1,6 +1,12 @@
 import type { Exercise } from "@/db/exercises";
 import { PULL_PATTERNS, PUSH_PATTERNS } from "@/db/patterns";
-import type { DifficultyCode, EquipmentCode, MovementPattern, MuscleCode } from "@/db/schema";
+import {
+  ADMIN_CREATOR,
+  type DifficultyCode,
+  type EquipmentCode,
+  type MovementPattern,
+  type MuscleCode,
+} from "@/db/schema";
 import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -14,6 +20,10 @@ export type ExerciseFilters = {
   patterns: Set<MovementPattern>;
   /** Only movements that lead somewhere — the variation ladder, as a facet. */
   ladderOnly: boolean;
+  /** Only what the hero wrote themselves. */
+  mine: boolean;
+  /** Retired movements are out of every list until this is on — this is how they come back. */
+  retired: boolean;
   search: string;
 };
 
@@ -22,6 +32,8 @@ export const NO_EXERCISE_FILTERS: ExerciseFilters = {
   equipment: new Set(),
   patterns: new Set(),
   ladderOnly: false,
+  mine: false,
+  retired: false,
   search: "",
 };
 
@@ -67,6 +79,11 @@ export function filterExercises(
   return exercises.filter(
     (e) =>
       (!needle || localizedName(e, language).toLowerCase().includes(needle)) &&
+      // Retired movements leave every list you pick from; the facet is how they come back.
+      // Written as an equality rather than a ternary: the lint plugin that rejects identical
+      // ternary arms cannot tell `!== null` from `=== null`, and this reads better anyway.
+      (e.retiredAt !== null) === filters.retired &&
+      (!filters.mine || e.creator !== ADMIN_CREATOR) &&
       (!filters.ladderOnly || leadsTo.has(e.id)) &&
       matchesAny(filters.muscles, e.muscles) &&
       matchesOne(filters.equipment, e.equipment) &&

@@ -1,9 +1,9 @@
 import { Check, Search, X } from "@tamagui/lucide-icons";
 import type { ReactNode } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, Pressable } from "react-native";
-import { Input, Sheet, Text, XStack, YStack } from "tamagui";
+import { Keyboard, Platform, Pressable, type ScrollView } from "react-native";
+import { Input, Sheet, ScrollView as TamaguiScrollView, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
@@ -77,12 +77,23 @@ export function ExercisePickerSheet({
   // Android reports a 0 bottom inset even where the system gesture area eats taps.
   const bottomPad = Math.max(bottomInset, Platform.OS === "android" ? 24 : 0) + 10;
 
+  // Nothing else ever moves the list, and neither a close nor a narrowing search clamps its
+  // offset: reopening the picker landed mid-catalogue, and a search that cut 34 rows to 3 left
+  // them — and the "nothing matches" line — above the fold, so the sheet read as empty.
+  const listRef = useRef<ScrollView>(null);
+  const toTop = useCallback(() => listRef.current?.scrollTo({ y: 0, animated: false }), []);
+
   // Closing resets the search: it used to survive, so reopening showed a list still filtered by
   // a word the hero had long forgotten typing, with no visible cue why most exercises were gone.
+  // `Keyboard.dismiss()` is what makes that reset stick: the sheet leaves, its search input keeps
+  // the focus, and every keystroke after — the hero typing at the screen behind — lands back in a
+  // box nobody can see. That is how a picker reopened pre-filled with "ZZZ" and no rows.
   const close = useCallback(() => {
+    Keyboard.dismiss();
     onOpenChange(false);
     setSearch("");
-  }, [onOpenChange]);
+    toTop();
+  }, [onOpenChange, toTop]);
 
   // The catalogue's filter, with only the search facet set: one name-matching rule for both
   // screens, and it goes through `localizedName` rather than a fifteenth inline ternary.
@@ -111,7 +122,17 @@ export function ExercisePickerSheet({
       open={open}
       onOpenChange={(next: boolean) => (next ? onOpenChange(true) : close())}
       snapPoints={[85]}
-      dismissOnSnapToBottom
+      // ponytail: drag-to-dismiss off, because the drag is what breaks the sheet. Scrolling the
+      // list hands part of the gesture to the pane, which drifts down and never returns to its
+      // snap point; from there a close leaves the frame *painted where it drifted* with `open`
+      // already false — a corpse of a picker whose rows still show, answer nothing, and let taps
+      // fall through to the "Save quest" button behind (measured: the title sat 291px low, and a
+      // tap on a row raised "Your quest needs a name"). That is the "stranded mid-screen" note
+      // this file carried, blamed on `flex` and never actually fixed. With the drag off,
+      // `scrollBridge.drag` stays the no-op default and the pane cannot leave its snap point.
+      // Three deliberate exits remain: the X, "Done", and hardware back. Revisit when a Tamagui
+      // bump fixes the pane strand — `dismissOnSnapToBottom` goes back with it.
+      disableDrag
       transition={reducedMotion ? undefined : "quick"}
       zIndex={100_000}
     >
@@ -121,10 +142,12 @@ export function ExercisePickerSheet({
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
-      <Sheet.Handle bg="$borderStrong" />
-      {/* No flex={1}: the snap point already sets the frame's height, and letting it also grow
-            left the frame stranded mid-screen after a close — visible, but with open already
-            false, so nothing in it answered. VillageDetailSheet, which works, has no flex here. */}
+      {/* No handle: it is the universal "drag me" mark, and with the drag off it would promise a
+          gesture that no longer answers — a control wired to nothing. */}
+      {/* Nothing to set here: `createSheet` already gives the frame `flex={1}` and
+          `height={frameSize}` before spreading these props. The stranding this once tried to fix
+          by dropping a `flex` was the pane drift above, and `VillageDetailSheet` was never the
+          reference — it is `snapPointsMode="fit"` with no ScrollView, so no pan to lose to. */}
       <Sheet.Frame bg="$surface">
         <YStack px="$4" pt="$4" pb="$3" gap="$3">
           <XStack items="center" justify="space-between">
@@ -145,7 +168,10 @@ export function ExercisePickerSheet({
             <Input
               flex={1}
               value={search}
-              onChangeText={setSearch}
+              onChangeText={(next) => {
+                setSearch(next);
+                toTop();
+              }}
               placeholder={t("quests.editor_search", "Search")}
               bg="$background"
               borderColor="$borderStrong"
@@ -155,7 +181,13 @@ export function ExercisePickerSheet({
           </XStack>
         </YStack>
 
-        <Sheet.ScrollView flex={1} px="$4" keyboardShouldPersistTaps="handled">
+        {/* A plain scroll view, not `Sheet.ScrollView`: that one exists to feed the sheet's drag,
+            which is off above, and it keeps a `lastPageY` it never resets between gestures. The
+            first move of any new touch is therefore compared against where the *previous* gesture
+            ended, reads as >10px, and the scroll view seizes the responder — cancelling the row's
+            press. So the first tap did nothing and the second, landing within 10px of the first,
+            worked. Measured: one tap on "Tractions", no badge; the identical tap again, added. */}
+        <TamaguiScrollView ref={listRef} flex={1} px="$4" keyboardShouldPersistTaps="handled">
           <YStack gap="$2" pb="$3">
             {results.map((exercise) => {
               const picked = countByExerciseId.get(exercise.id) ?? 0;
@@ -222,7 +254,7 @@ export function ExercisePickerSheet({
               </Text>
             ) : null}
           </YStack>
-        </Sheet.ScrollView>
+        </TamaguiScrollView>
 
         <XStack p="$4" pb={bottomPad} borderTopWidth={1} borderColor="$borderStrong">
           <AppButton onPress={close}>{t("common.done", "Done")}</AppButton>

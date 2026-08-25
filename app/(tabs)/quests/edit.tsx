@@ -158,8 +158,7 @@ export default function QuestEditor() {
       ]);
       if (cancelled) return;
 
-      // Retired movements leave every list you pick from.
-      setExercises(pickableExercises(all));
+      setExercises(all);
       if (!template) return;
 
       const nextTitle = localizedTitle(template, language);
@@ -202,6 +201,12 @@ export default function QuestEditor() {
       cancelled = true;
     };
   }, [questId, language, t]);
+
+  // Retired movements leave every list you pick from — but not a quest that already holds one.
+  // Filtering them out of `exercises` filtered them out of `exercisesById` too, so an existing
+  // row rendered as nothing while `save()` still wrote it: the hero saw four exercises, saved
+  // five, and had no way to remove the one they could not see.
+  const pickable = useMemo(() => pickableExercises(exercises), [exercises]);
 
   const exercisesById = useMemo(
     () => Object.fromEntries(exercises.map((e) => [e.id, e] as const)),
@@ -501,7 +506,7 @@ export default function QuestEditor() {
           </AppButton>
 
           <ExercisePickerSheet
-            exercises={exercises}
+            exercises={pickable}
             pickedIds={pickedIds}
             language={language}
             open={pickerOpen}
@@ -513,6 +518,18 @@ export default function QuestEditor() {
           />
         </YStack>
       </ScrollView>
+
+      {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
+      <YStack
+        position="absolute"
+        t={0}
+        l={0}
+        r={0}
+        height={insets.top}
+        bg="$background"
+        opacity={0.88}
+        pointerEvents="none"
+      />
 
       <YStack
         p="$4"

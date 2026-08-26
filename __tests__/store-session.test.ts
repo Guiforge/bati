@@ -733,4 +733,78 @@ describe("useSessionStore", () => {
       expect(store.getState().bossFight?.currentHp).toBeGreaterThan(0);
     });
   });
+
+  /**
+   * Issue #33's second half. `CHECK (resultValue > 0)` made "1" the only way past a movement out
+   * of reach, and that 1 then fed muscle volume, the weak-area read and the targets generated
+   * from them — the app teaching its own journal a lie.
+   */
+  describe("a set the hero could not do", () => {
+    beforeEach(() => {
+      store.setState({
+        quest: mockQuest as unknown as Quest,
+        status: "running",
+        currentRoundIndex: 0,
+        currentExerciseIndex: 0,
+        results: [],
+        lastSetSkipped: false,
+        startTime: Date.now(),
+      });
+    });
+
+    test("writes no result at all, rather than a 1", () => {
+      store.getState().completeExercise(10);
+      store.getState().skipExercise();
+
+      const { results } = store.getState();
+      expect(results).toHaveLength(1);
+      expect(results[0]?.sortOrder).toBe(0);
+      expect(store.getState().lastSetSkipped).toBe(true);
+    });
+
+    test("advances exactly like a completed set would", () => {
+      store.getState().skipExercise();
+
+      // Same landing as `completeExercise`: the second slot, with the rest screen in between.
+      expect(store.getState().currentExerciseIndex).toBe(1);
+      expect(store.getState().status).toBe("resting");
+    });
+
+    test("banks no boss damage", () => {
+      store.setState({
+        bossFight: { id: 1, totalHp: 100, currentHp: 100, defeatedAt: null } as never,
+        pendingDamage: [],
+      });
+
+      store.getState().skipExercise();
+
+      expect(store.getState().pendingDamage).toHaveLength(0);
+      expect(store.getState().bossFight?.currentHp).toBe(100);
+    });
+
+    test("completing a set afterwards clears the flag the rest screen reads", () => {
+      store.getState().skipExercise();
+      expect(store.getState().lastSetSkipped).toBe(true);
+
+      store.getState().completeExercise(8);
+      expect(store.getState().lastSetSkipped).toBe(false);
+    });
+
+    /**
+     * A session with nothing in it cannot be written, and the victory screen would sit on a retry
+     * that can never succeed. Quit is the way out of a workout the hero cannot do.
+     */
+    test("the last remaining set is not skippable on an empty journal", () => {
+      store.setState({
+        currentRoundIndex: (mockQuest as unknown as Quest).rounds - 1,
+        currentExerciseIndex: (mockQuest as unknown as Quest).exercises.length - 1,
+        results: [],
+      });
+
+      store.getState().skipExercise();
+
+      expect(store.getState().status).toBe("running");
+      expect(store.getState().results).toHaveLength(0);
+    });
+  });
 });

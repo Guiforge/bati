@@ -33,6 +33,7 @@ export function RestView() {
   const addRestTime = useSessionStore((s) => s.addRestTime);
   const results = useSessionStore((s) => s.results);
   const updateLastResult = useSessionStore((s) => s.updateLastResult);
+  const lastSetSkipped = useSessionStore((s) => s.lastSetSkipped);
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
   const status = useSessionStore((s) => s.status);
@@ -212,8 +213,10 @@ export function RestView() {
             </XStack>
           </YStack>
 
-          {/* Last Set Review */}
-          {!!lastResult && (
+          {/* Last Set Review — hidden after a skip. A skipped set writes no result, so
+            `results.at(-1)` is a set from an earlier round: the stepper would silently correct
+            something the hero is not looking at. */}
+          {!!lastResult && !lastSetSkipped && (
             <YStack
               bg="$surface"
               p="$4"

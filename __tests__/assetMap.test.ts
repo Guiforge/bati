@@ -53,6 +53,12 @@ describe("assetMap", () => {
     );
   });
 
+  test("a hero's quest cover resolves too, key or photo", () => {
+    const dataUri = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    expect(getQuestAsset(dataUri)).toEqual({ uri: dataUri });
+    expect(getQuestAsset("escape_collapsing_mine")).toBe(QUEST_ASSETS.escape_collapsing_mine);
+  });
+
   test("resolves adventure cover assets from full database image paths", () => {
     expect(getAdventureAsset("assets/images/adventures/scout_trial.jpg")).toBe(
       ADVENTURE_ASSETS.scout_trial,

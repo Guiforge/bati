@@ -362,7 +362,6 @@
     "mine": "Mine",
     "filter_group_mine": "Yours",
     "retired": "Retired",
-    "hero_badge": "Yours",
     "edit": "Edit",
     "retire": "Retire",
     "restore": "Put back",
@@ -638,6 +637,7 @@
     "avg_mins": "Avg mins"
   },
   "common": {
+    "hero_badge": "Yours",
     "begin_adventure": "Begin Adventure",
     "by": "By {{author}}",
     "cancel": "Cancel",

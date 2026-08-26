@@ -10,10 +10,11 @@ import { Button, Input, Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { getExerciseThumb } from "@/constants/assetMap";
+import { getExerciseThumb, getQuestAsset, QUEST_ASSETS } from "@/constants/assetMap";
 import {
   clearQuestConfig,
   createQuestTemplate,
@@ -68,6 +69,16 @@ function missingPiece(
   return null;
 }
 
+/**
+ * "No cover chosen" — a real state, not a picture. The gallery paints a muscle-tinted banner for
+ * a quest with no `imagePath`, which is nicer than a grey plate, so an untouched field must save
+ * as null rather than as the placeholder's path.
+ */
+const NO_COVER = "";
+
+/** The quest art already in the APK. Covers are 4:3, unlike the movements' square plates. */
+const QUEST_CHOICES = Object.keys(QUEST_ASSETS);
+
 const DEFAULT_ROUNDS = 3;
 const DEFAULT_REST = 30;
 const DEFAULT_REPS = 10;
@@ -94,6 +105,7 @@ export default function QuestEditor() {
   const [rest, setRest] = useState(DEFAULT_REST);
   const [roundRest, setRoundRest] = useState(DEFAULT_REST);
   const [picked, setPicked] = useState<PickedExercise[]>([]);
+  const [imagePath, setImagePath] = useState(NO_COVER);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const nextUid = useRef(0);
@@ -113,13 +125,14 @@ export default function QuestEditor() {
       rounds: DEFAULT_ROUNDS,
       rest: DEFAULT_REST,
       roundRest: DEFAULT_REST,
+      imagePath: NO_COVER,
       picked: [] as PickedExercise[],
     }),
   );
   const skipGuardRef = useRef(false);
   const isDirty =
     !skipGuardRef.current &&
-    JSON.stringify({ title, description, rounds, rest, roundRest, picked }) !== baseline;
+    JSON.stringify({ title, description, rounds, rest, roundRest, imagePath, picked }) !== baseline;
   const isDirtyRef = useRef(isDirty);
   isDirtyRef.current = isDirty;
 
@@ -180,6 +193,8 @@ export default function QuestEditor() {
       setRest(template.restSeconds);
       setRoundRest(template.roundRestSeconds ?? template.restSeconds);
       setPicked(nextPicked);
+      const nextImagePath = template.imagePath ?? NO_COVER;
+      setImagePath(nextImagePath);
       setBaseline(
         JSON.stringify({
           title: nextTitle,
@@ -187,6 +202,7 @@ export default function QuestEditor() {
           rounds: template.rounds,
           rest: template.restSeconds,
           roundRest: template.roundRestSeconds ?? template.restSeconds,
+          imagePath: nextImagePath,
           picked: nextPicked,
         }),
       );
@@ -267,6 +283,7 @@ export default function QuestEditor() {
           rounds,
           restSeconds: rest,
           roundRestSeconds: roundRest,
+          imagePath: imagePath || null,
           exercises: payload,
         });
         // The edit used to vanish with no confirmation it persisted.
@@ -284,6 +301,7 @@ export default function QuestEditor() {
         rounds,
         restSeconds: rest,
         roundRestSeconds: roundRest,
+        imagePath: imagePath || null,
       });
       await setQuestExercises(questId, payload);
 
@@ -369,6 +387,18 @@ export default function QuestEditor() {
               </AppIconButton>
             ) : null}
           </XStack>
+
+          {/* The cover leads, as it does in the movement editor: a quest is a card in a gallery
+            long before anyone reads its rounds. Seed quests carry authored art; a hero picks
+            from the same set or brings a photo. */}
+          <ImageChoiceField
+            value={imagePath}
+            onChange={setImagePath}
+            choices={QUEST_CHOICES}
+            resolve={getQuestAsset}
+            resolveThumb={getQuestAsset}
+            aspect={[4, 3]}
+          />
 
           <Card>
             <YStack gap="$3">

@@ -132,6 +132,7 @@
     "sworn_toast": "Serment prêté"
   },
   "common": {
+    "hero_badge": "À toi",
     "begin_adventure": "Commencer l'aventure",
     "by": "Par {{author}}",
     "cancel": "Annuler",
@@ -261,7 +262,6 @@
     "mine": "Les miens",
     "filter_group_mine": "À toi",
     "retired": "Retirés",
-    "hero_badge": "À toi",
     "edit": "Modifier",
     "retire": "Retirer",
     "restore": "Remettre",

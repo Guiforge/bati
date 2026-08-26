@@ -9,9 +9,10 @@ import { Input, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
-import { ExerciseImagePicker } from "@/components/exercises/ExerciseImagePicker";
+import { EXERCISE_THUMB_ASSETS, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import {
   createUserExercise,
@@ -35,6 +36,9 @@ import { useSettingsStore } from "@/stores/settings";
 
 /** Everything under the fold. Split from the two required fields so the draft assembles in one. */
 type Details = Omit<UserExerciseDraft, "name" | "description">;
+
+/** The movement art already in the APK. */
+const EXERCISE_CHOICES = Object.keys(EXERCISE_THUMB_ASSETS);
 
 const SECONDS_PER_REP_MIN = 1;
 const SECONDS_PER_REP_MAX = 30;
@@ -159,9 +163,13 @@ export default function ExerciseEditor() {
         {/* The picture leads. A movement is a card before it is a form — the hero sees it in a
           session, in the catalogue and on its own page long before anyone reads the muscles —
           so the editor opens on that card forming rather than on two text fields. */}
-        <ExerciseImagePicker
+        <ImageChoiceField
           value={details.imagePath}
           onChange={(imagePath) => setDetails((d) => ({ ...d, imagePath }))}
+          choices={EXERCISE_CHOICES}
+          resolve={getExerciseAsset}
+          resolveThumb={getExerciseThumb}
+          aspect={[1, 1]}
         />
 
         <Card>

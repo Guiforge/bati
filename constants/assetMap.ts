@@ -554,7 +554,12 @@ export function getExerciseThumb(id: string) {
  * Get quest cover asset by ID (with fallback to placeholder)
  */
 export function getQuestAsset(id: string) {
-  return QUEST_ASSETS[keyFromPath(id) as QuestAssetKey] ?? require("@/assets/placeholder.webp");
+  // A hero-chosen cover is a bundled key or a `data:` photo, exactly like a movement's art.
+  return (
+    asUriSource(id) ??
+    QUEST_ASSETS[keyFromPath(id) as QuestAssetKey] ??
+    require("@/assets/placeholder.webp")
+  );
 }
 
 /**

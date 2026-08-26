@@ -52,9 +52,10 @@ type LoadState =
   | { status: "ready"; quest: Quest }
   | { status: "error"; quest: Quest | null; message: string };
 
+/** No path means no cover — the header simply does not render. Every other form, bundled key or
+ *  a hero's `data:` photo, `getQuestAsset` resolves. */
 function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
-  if (!path) return null;
-  return path.startsWith("http") ? { uri: path } : getQuestAsset(path);
+  return path ? getQuestAsset(path) : null;
 }
 
 function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
@@ -476,6 +477,11 @@ export default function QuestDetails() {
             </XStack>
 
             <XStack items="center" gap="$2">
+              {/* Says whose quest this is before the pencil implies it. Same word the gallery
+                card and the movement rows wear. */}
+              {quest && isUserQuest(quest) ? (
+                <Tag label={t("common.hero_badge")} tone="primary" />
+              ) : null}
               <Tag label={levelLabel(level, t)} tone="secondary" />
               {/* Only quests written in the app may be edited: seed content is shared. */}
               {quest && isUserQuest(quest) ? (

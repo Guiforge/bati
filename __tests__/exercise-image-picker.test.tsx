@@ -57,7 +57,8 @@ jest.mock("@/stores/settings", () => ({
 import { act, fireEvent, render } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
-import { ExerciseImagePicker } from "@/components/exercises/ExerciseImagePicker";
+import { ImageChoiceField } from "@/components/common/ImageChoiceField";
+import { EXERCISE_THUMB_ASSETS, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { encodePhoto, MAX_PHOTO_WIDTH } from "@/src/exercisePhoto";
 import config from "@/tamagui.config";
 
@@ -95,13 +96,20 @@ describe("picking a photo", () => {
     // harmless — the same call in the older suites returns the tree directly.
     const screen = await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <ExerciseImagePicker value="assets/placeholder.webp" onChange={onChange} />
+        <ImageChoiceField
+          value="assets/placeholder.webp"
+          onChange={onChange}
+          choices={Object.keys(EXERCISE_THUMB_ASSETS)}
+          resolve={getExerciseAsset}
+          resolveThumb={getExerciseThumb}
+          aspect={[1, 1]}
+        />
       </TamaguiProvider>,
     );
 
     // The tiles live behind the preview, which is the control.
-    await act(async () => fireEvent.press(screen.getByTestId("exercise-image-preview")));
-    await act(async () => fireEvent.press(screen.getByTestId("exercise-photo")));
+    await act(async () => fireEvent.press(screen.getByTestId("image-choice-preview")));
+    await act(async () => fireEvent.press(screen.getByTestId("image-choice-photo")));
     return screen;
   }
 
@@ -152,6 +160,6 @@ describe("picking a photo", () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(mockShowError).toHaveBeenCalled();
     // `finally` put `busy` back: without it the tile stays greyed out and dead.
-    expect(screen.getByTestId("exercise-photo").props.accessibilityState.disabled).toBeFalsy();
+    expect(screen.getByTestId("image-choice-photo").props.accessibilityState.disabled).toBeFalsy();
   });
 });

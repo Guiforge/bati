@@ -215,13 +215,13 @@ describe("exercise editor", () => {
 
     // Collapsed: the preview is the whole control, so the form below starts at the name
     // rather than at a wall of thumbnails.
-    expect(editor.queryByTestId("exercise-illustration-lunge")).toBeNull();
+    expect(editor.queryByTestId("image-choice-lunge")).toBeNull();
 
-    await act(async () => fireEvent.press(editor.getByTestId("exercise-image-preview")));
-    expect(editor.getByTestId("exercise-illustration-lunge")).toBeTruthy();
+    await act(async () => fireEvent.press(editor.getByTestId("image-choice-preview")));
+    expect(editor.getByTestId("image-choice-lunge")).toBeTruthy();
 
-    await act(async () => fireEvent.press(editor.getByTestId("exercise-illustration-lunge")));
-    expect(editor.queryByTestId("exercise-illustration-lunge")).toBeNull();
+    await act(async () => fireEvent.press(editor.getByTestId("image-choice-lunge")));
+    expect(editor.queryByTestId("image-choice-lunge")).toBeNull();
 
     await act(async () =>
       fireEvent.changeText(editor.getByTestId("exercise-name"), "Squat de l'archer"),

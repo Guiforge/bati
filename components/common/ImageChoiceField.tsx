@@ -3,46 +3,65 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 
 import { useToast } from "@/components/common/Toast";
-import { EXERCISE_THUMB_ASSETS, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { encodePhoto } from "@/src/exercisePhoto";
 import { reportError } from "@/src/reportError";
-
-/** The art already in the APK, offered as a strip. Keys are what `imagePath` then holds. */
-const ILLUSTRATIONS = Object.keys(EXERCISE_THUMB_ASSETS);
 
 const TILE = 64;
 
 /** Explicit, not `width="100%" + aspectRatio`: that pair resolved to a tall rectangle here. */
-const PREVIEW = 220;
+const PREVIEW_WIDTH = 220;
 
 /**
  * The picture, first, and the picture *is* the control.
- *
- * Square, and deliberately not the 16:9 the detail page uses: the choice itself is square. Every
- * bundled illustration is 1:1 and the photo picker crops to `[1, 1]`, so a 16:9 preview would
- * letterbox the art against a ground that does not quite match it — and would misrepresent a
- * photo the hero had just cropped square. It carries the detail page's frame — hairline border,
- * offset hard shadow — because that is the app's vocabulary for "a movement's art".
  *
  * Tapping it opens the choices, the way the avatar row in Settings does: one thing on screen
  * until you want more, so the form underneath starts at the name rather than at a wall of
  * thumbnails. The preview stays visible while choosing, so a tap on a tile shows its result
  * immediately instead of after a collapse.
  *
- * Until something is chosen, `getExerciseAsset` falls through to `placeholder.webp` — a dark,
+ * The preview takes the art's own shape rather than the shape of whatever card will hold it:
+ * exercise illustrations are 1:1 and quest covers 4:3, and a preview in the wrong ratio either
+ * letterboxes against a ground that never quite matches or crops what the hero just chose. The
+ * frame around it — hairline border, offset hard shadow — is the app's existing vocabulary for
+ * "this is a piece of content's art".
+ *
+ * Until something is chosen, the caller's resolver falls through to `placeholder.webp` — a dark,
  * quiet plate that reads as "no picture yet" without pretending to be one.
+ *
+ * Two callers: the exercise editor and the quest editor. It lives in `common/` for that reason
+ * and takes its art from props, because the only thing that differs between them is which
+ * pictures exist and what shape they are.
  */
-export function ExerciseImagePicker({
-  value,
-  onChange,
-}: {
+export type ImageChoiceFieldProps = {
+  /** A bundled key, a bundled path, or a `data:` URI. */
   value: string;
   onChange: (imagePath: string) => void;
-}) {
+  /** Keys of the art already in the APK this field offers. */
+  choices: readonly string[];
+  /** Key or URI -> the source the preview renders. */
+  resolve: (key: string) => ImageSourcePropType;
+  /** The same, thumbnail-sized, for the strip. */
+  resolveThumb: (key: string) => ImageSourcePropType;
+  /**
+   * The art's own shape — exercise illustrations are 1:1, quest covers 4:3 — so the preview
+   * never letterboxes and the photo the hero crops comes back the shape it will be shown at.
+   */
+  aspect: readonly [number, number];
+};
+
+export function ImageChoiceField({
+  value,
+  onChange,
+  choices,
+  resolve,
+  resolveThumb,
+  aspect,
+}: ImageChoiceFieldProps) {
   const { t } = useTranslation();
   const { showError } = useToast();
   const [busy, setBusy] = useState(false);
@@ -64,7 +83,7 @@ export function ExerciseImagePicker({
       const picked = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [1, 1],
+        aspect: [aspect[0], aspect[1]],
         quality: 1,
       });
       if (picked.canceled) return;
@@ -84,10 +103,10 @@ export function ExerciseImagePicker({
   return (
     <YStack gap="$3">
       <YStack
-        testID="exercise-image-preview"
+        testID="image-choice-preview"
         onPress={() => setOpen((v) => !v)}
-        width={PREVIEW}
-        height={PREVIEW}
+        width={PREVIEW_WIDTH}
+        height={(PREVIEW_WIDTH * aspect[1]) / aspect[0]}
         self="center"
         bg="$bgDark"
         borderWidth={open ? 2 : 1}
@@ -103,7 +122,7 @@ export function ExerciseImagePicker({
         accessibilityLabel={t("exercise_editor.image")}
       >
         <Image
-          source={getExerciseAsset(value)}
+          source={resolve(value)}
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
           transition={200}
@@ -124,7 +143,7 @@ export function ExerciseImagePicker({
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <XStack gap="$2">
             <YStack
-              testID="exercise-photo"
+              testID="image-choice-photo"
               onPress={pickPhoto}
               disabled={busy}
               width={TILE}
@@ -149,10 +168,10 @@ export function ExerciseImagePicker({
               )}
             </YStack>
 
-            {ILLUSTRATIONS.map((key) => (
+            {choices.map((key) => (
               <YStack
                 key={key}
-                testID={`exercise-illustration-${key}`}
+                testID={`image-choice-${key}`}
                 onPress={() => {
                   onChange(key);
                   setOpen(false);
@@ -169,7 +188,7 @@ export function ExerciseImagePicker({
                 accessibilityLabel={key}
               >
                 <Image
-                  source={getExerciseThumb(key)}
+                  source={resolveThumb(key)}
                   style={{ width: TILE, height: TILE }}
                   contentFit="cover"
                 />

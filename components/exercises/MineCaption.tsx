@@ -7,14 +7,15 @@ import { Text } from "tamagui";
  * Shared by the catalogue and the quest editor's picker sheet, because a hero may name a
  * movement exactly as seed content is named (see `docs/architecture/exercise-ownership.md`), and
  * two rows reading "Squat" with nothing to tell them apart is the picker's version of that
- * collision.
+ * collision. The word itself lives in `common` — quests wear it too, on their gallery card and
+ * their own page.
  */
 export function MineCaption() {
   const { t } = useTranslation();
 
   return (
     <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
-      {t("exercises.hero_badge")}
+      {t("common.hero_badge")}
     </Text>
   );
 }

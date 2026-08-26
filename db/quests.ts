@@ -169,6 +169,8 @@ export type CreateQuestTemplateInput = Omit<
   QuestTemplate,
   "id" | "author" | "imagePath" | "archetype"
 > & {
+  /** Seed quests carry authored art; a hero picks theirs, and null falls back to the placeholder. */
+  imagePath?: string | null;
   author?: ContentOwner;
   /** Optional: user-authored quests declare no archetype. */
   archetype?: QuestArchetype | null;
@@ -186,6 +188,7 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
       enDescription: input.enDescription,
       frDescription: input.frDescription,
       author: input.author ?? ADMIN_CREATOR,
+      imagePath: input.imagePath ?? null,
       rounds: input.rounds,
       restSeconds: input.restSeconds,
       roundRestSeconds: input.roundRestSeconds,
@@ -527,7 +530,14 @@ export async function updateQuestMeta(
       | "restSeconds"
       | "roundRestSeconds"
     >
-  >,
+  > & {
+    /**
+     * Widened from `QuestTemplate`, where readers default it to the placeholder path: null is a
+     * real answer here — "this quest has no cover" — and the gallery paints a muscle-tinted
+     * banner for it rather than a grey plate.
+     */
+    imagePath?: string | null;
+  },
 ): Promise<void> {
   await db
     .update(quests)

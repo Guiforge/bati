@@ -60,6 +60,25 @@ en premier, c'est calibrer un capteur sur des données que le capteur lui-même 
 
 Chaque phase est livrable seule et referme une partie du rapport.
 
+## Ce que l'audit du plan a changé
+
+Ce plan a été relu contre le code avant d'être exécuté, avec la méthode qui a trouvé trois trous
+dans la refonte XP de cette semaine : vérifier chaque affirmation, chercher ce qui traverse.
+
+La trouvaille qui a payé la relecture est dans la **tâche 1** — le swap en séance reprix les sets
+déjà faits, parce que `toXpSets` re-résout le mouvement depuis le slot au lieu de le lire sur le
+résultat. Swapper vers un mouvement `hard` au dernier round aurait regonflé toute la séance
+×2,5 : la phase censée fermer un abus en ouvrait un autre, du même type exact que le fantôme de
+la planche.
+
+Deux autres corrections en découlent : le timer laissé dans le mauvais état par un swap entre
+`time` et `reps` (tâche 1), et l'ajustement de l'écran de repos qui, après un set sauté, éditerait
+un set d'un round antérieur (tâche 6). Les phases 3 gagnent la garde sur les quêtes du héros
+(tâche 8) et un critère d'acceptation chiffré (tâche 11).
+
+L'ordre des phases, l'option « pas de ligne » pour le skip et la sémantique de cible au swap ont
+été vérifiés consommateur par consommateur et n'ont pas bougé.
+
 ## Contraintes globales
 
 - **Le choix explicite du héros gagne toujours.** Aucune substitution automatique ne doit écraser
@@ -93,6 +112,40 @@ Ferme le besoin réel du rapporteur : il *a* fait des pompes inclinées, il voul
 - `quest` est déjà dans `SavedSessionState`, donc le swap survit à un crash sans champ nouveau.
 - les dégâts de boss suivants liront les muscles du nouveau mouvement, ce qui est correct.
 
+**Le piège, et il livrerait une triche neuve.** `toXpSets`
+([`stores/session.ts:254-261`](../../../stores/session.ts)) ne lit pas le mouvement depuis le
+résultat, il le re-résout depuis le **slot courant** :
+
+```ts
+const slot = quest.exercises[r.sortOrder];
+return [{ exercise: slot.exercise, target: r.target ?? slot.target, result: r.result }];
+```
+
+Remplacer `slot.exercise` en cours de séance reprix donc **les sets déjà faits**. Deux rounds de
+pompes (`medium`, 3 s/rep) puis swap vers inclinées (`easy`) : les rounds 1-2 repassent de ×1,0 à
+×0,8. Et dans l'autre sens — swap vers un mouvement `hard` au dernier round — toute la séance est
+regonflée ×2,5. C'est exactement la famille du fantôme de la planche que la refonte XP a fermée :
+une quantité re-résolue au lieu d'être capturée au moment du fait.
+
+**Correctif** : `completeExercise` capture le prix avec le set. Un champ mémoire optionnel sur
+`CompletedExerciseInput` — `pricing?: Pick<Exercise, "secondsPerRep" | "difficulty">` — que
+`createCompletedSession` ignore (il n'a pas de colonne), et `toXpSets` préfère au slot :
+
+```ts
+exercise: r.pricing ?? slot.exercise
+```
+
+Le même geste que `target: r.target ?? slot.target`, un champ plus loin. Sans lui, la phase 1
+ferme un abus et en ouvre un autre.
+
+**Et le timer.** Chaque entrée dans un mouvement pose la paire
+`timerStartTimestamp` / `timerDuration` selon son type — `completeExercise`
+([`stores/session.ts:655-662`](../../../stores/session.ts)), `skipRest`, `restartRound` le font
+tous. Swapper en plein `running` d'une planche (`time`) vers des pompes (`reps`) laisserait un
+timer de tenue courir sur un mouvement à reps ; l'inverse démarrerait des secondes jamais
+initialisées. `swapCurrentExercise` reprend la même paire que `skipRest` : time-based →
+`Date.now()` et la cible du slot ; reps → `null` et 0.
+
 ### Tâche 2 — l'atteindre depuis l'écran actif
 
 `components/session/ActiveExerciseView.tsx` : une action discrète, et `ExercisePickerSheet` monté
@@ -110,6 +163,11 @@ Réutiliser `swapReasonLabel` (« un barreau plus facile ») plutôt que d'en é
 - `__tests__/store-session.test.ts` : le swap change le mouvement à venir, laisse `results` intact,
   et persiste. Le mock de `@/db/xp` est plat — passer en `jest.requireActual` étalé, l'idiome déjà
   utilisé pour `@/db/bossFights`, sinon toute constante nouvelle arrive `undefined` sans bruit.
+- **le test qui garde le prix** : deux sets, swap vers un mouvement `hard`, deux sets → l'XP des
+  deux premiers ne bouge pas. Il échoue si quelqu'un fait sauter `pricing` et que `toXpSets`
+  retombe sur le slot.
+- **le test qui garde le timer** : swap `time` → `reps` remet `timerStartTimestamp` à `null` ;
+  `reps` → `time` le pose et prend la cible du slot.
 - un test d'écran : la feuille s'ouvre, le choix applique.
 
 **Livrable seul.** Après cette phase, le rapporteur aurait tapé « 6 » sur *Incline Push-Up* au lieu
@@ -144,10 +202,23 @@ Recommandation : **pas de ligne**, plus un garde nommé pour la séance entière
 dégât de boss banké. Un set sauté n'est pas une session sur cible, donc `recentMetFlags` ne le
 comptera pas — l'échelle reste juste **par construction**, sans code dédié.
 
-### Tâche 6 — l'UI et les tests
+### Tâche 6 — l'UI, l'ajustement qui doit se taire, et les tests
 
-L'action vit à côté de « DONE », visuellement plus discrète. Tests : le journal ne contient pas le
-set, le boss n'a rien pris, `checkForNewRungs` ne l'a pas compté.
+L'action vit à côté de « DONE », visuellement plus discrète.
+
+**Et l'écran de repos doit cesser d'offrir l'ajustement après un skip.** `RestView` monte un
+stepper branché sur `updateLastResult`
+([`components/session/RestView.tsx:35,97,229-250`](../../../components/session/RestView.tsx)),
+qui édite `results[results.length - 1]`. Un set sauté n'écrit aucune ligne, donc ce « dernier »
+est un set d'un round **antérieur** : le héros qui saute une série puis touche « +1 » sur l'écran
+de repos corrige silencieusement autre chose que ce qu'il regarde.
+
+Le plus simple qui tienne : le store porte `lastSetSkipped: boolean`, posé par `skipExercise`,
+levé par `completeExercise`, et `RestView` masque le stepper quand il est vrai. Il rejoint
+`SavedSessionState` — c'est un `Pick<SessionState, …>`, donc le compilateur force les deux côtés.
+
+Tests : le journal ne contient pas le set, le boss n'a rien pris, `checkForNewRungs` ne l'a pas
+compté, **et l'écran de repos qui suit un skip n'offre pas d'ajustement**.
 
 ---
 
@@ -160,17 +231,35 @@ Ce que le rapporteur a demandé littéralement.
 Dans `getQuestById(id, userLevel)`, après la résolution de chaque slot : si
 `chain.position < chain.rungs.length`, servir `chain.rungs[chain.position - 1].exercise`.
 
+**Pourquoi là et pas ailleurs.** `loadConfiguredQuest` — le chemin de Home — appelle
+`getQuestById` ([`db/questConfig.ts:252-260`](../../../db/questConfig.ts)), et l'écran de quête
+compose `getQuestById` + config de son côté ; AGENTS.md exige déjà que les deux lisent la même
+chose, sous peine que Home démarre une séance différente de celle que l'écran affichait.
+Accrocher là sert les deux sans divergence possible. Pas dans `applyQuestConfig`, dont le
+docstring dit qu'elle reste une projection pure. Pas dans les écrans, qui divergeraient.
+
+**Ce que ça laisse dehors, et qu'on assume** : les aperçus de la galerie et les posters
+d'aventure lisent les *templates* (`estimateQuestTemplateSeconds` / `…Xp`), pas la quête résolue —
+ils ne verront pas la substitution. La vignette peut donc annoncer un mouvement que le détail
+remplace. Même classe que le `ponytail:` déjà posé dans `app/(tabs)/quests/index.tsx` sur les
+overrides de cible ; à écrire comme tel plutôt qu'à découvrir en review.
+
 **Coût à mesurer avant d'écrire.** `getChainTo` fait un `recentMetFlags` par barreau ; une quête de
 trois slots à trois barreaux vaut neuf lectures du journal, sur un chemin que Home touche à chaque
 montage. Une passe groupée existe déjà — le commentaire de `db/exercises.ts:403` décrit
 « every ladder movement's sessions, oldest first, in one pass over the journal ». S'en servir, ou
 mesurer d'abord et ne rien optimiser si c'est sous le seuil.
 
-### Tâche 8 — l'ordre par rapport à la config
+### Tâche 8 — l'ordre par rapport à la config, et ce qu'on ne touche pas
 
 La substitution passe **avant** `applyQuestConfig`, ou saute les slots qui portent déjà un
 `swaps[id]`. Un slot que le héros a choisi à la main n'est jamais retouché. C'est la contrainte
 globale, et c'est le test qui la garde.
+
+**Et jamais une quête que le héros a écrite.** `getQuestById` sert aussi le contenu
+hero-authored : substituer un mouvement qu'il a choisi lui-même dans sa propre quête, c'est
+corriger son travail d'auteur, ce qui n'est pas le mandat. Le champ existe déjà — `quest.author`,
+lu par `isUserQuest`. Une ligne de garde, un test nommé.
 
 ### Tâche 9 — le dire
 
@@ -191,8 +280,14 @@ mesure.
 
 ### Tâche 11 — les tests
 
-Un héros neuf reçoit le barreau du bas ; un héros qui a gagné le prérequis reçoit le mouvement
-écrit ; un swap explicite gagne toujours ; jamais de substitution vers le haut.
+**Le test principal est le rejeu chiffré du rapport.** `isEarned` demande
+`PROGRESSION_SESSIONS_REQUIRED = 3` sessions sur cible ; au jour 2 le rapporteur en a **une** sur
+Wall Push-Up, donc `position = 1` et le slot pompes de « Chop Wood » doit servir *Wall Push-Up* —
+mot pour mot son attendu, « wall push-ups again, maybe in a higher rep number ». C'est un cas
+concret avec un nombre dedans, pas « un barreau que le héros a réellement atteint ».
+
+Puis : un héros qui a gagné le prérequis reçoit le mouvement écrit ; un swap explicite gagne
+toujours ; une quête d'auteur `hero` n'est jamais substituée ; jamais de substitution vers le haut.
 
 ---
 
@@ -216,8 +311,8 @@ Par phase, et sur appareil — c'est un défaut que seul un vrai parcours a trou
 3. **Phase 2** : sauter un set, vérifier qu'il n'apparaît ni dans le journal, ni dans le volume
    musculaire, ni dans les dégâts de boss.
 4. **Phase 3** : rejouer le parcours exact du rapport — compte vierge, niveau débutant, une séance
-   avec des pompes au mur, puis « Chop Wood » le lendemain. Le mouvement servi doit être un barreau
-   que le héros a réellement atteint.
+   de pompes au mur, puis « Chop Wood » le lendemain. Une session sur trois requises, donc
+   `position = 1` : le slot pompes doit servir **Wall Push-Up**, et l'écran doit dire pourquoi.
 5. Répondre sur l'issue #33 quand la phase qui le débloque est publiée.
 
 ## Décisions ouvertes

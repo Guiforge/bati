@@ -42,10 +42,22 @@ that drives the village's tier (below). Nothing else consumes or stores XP per-b
 
 ### XP measures effort, not elapsed time
 
-**One XP per three seconds of effort** — so one XP per rep at the catalogue's default 3s tempo,
-and a minute of holds is worth a minute of reps. Effort is read from what the hero logged, at each
-movement's own `secondsPerRep`, weighted by its difficulty (0.85 / 1.0 / 1.25). The hero's chosen
-level still scales the payout (×0.9 / ×1.0 / ×1.2), as the quest screen advertises.
+**One XP per three seconds of effort** — so one XP per rep on a `medium` movement at the
+catalogue's default 3s tempo, and a minute of holds is worth a minute of reps. Effort is read from
+what the hero logged, at each movement's own `secondsPerRep`, then weighted by how hard that
+movement is: **easy 0.8 · medium 1.0 · hard 2.5**. The hero's chosen level scales the payout on top
+of that (×0.9 / ×1.0 / ×1.2), as the quest screen advertises.
+
+The hard weight is wide because a narrow one was measured against the seeded catalogue and found
+to punish the two archetypes it should reward. `skill` and `strength` quests are 80-87% rest *by
+protocol* — ten seconds of front lever, two minutes of recovery — so a volume metric undervalues
+them: at 0.85/1.0/1.25 they paid 0.31× and 0.51× of what the old clock paid, while `mobility` kept
+0.97×. A hard rep being worth roughly three easy ones is also simply true; one pull-up is not one
+jumping jack.
+
+Order matters between the weight and the ceiling below: the ceiling bounds *physical* seconds,
+the weight prices them. Weighting first would clip every honest session of hard movements against
+its own clock.
 
 Three bounds, each answering a different question (`db/xp.ts`):
 

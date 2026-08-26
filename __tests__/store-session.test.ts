@@ -13,6 +13,7 @@ jest.mock("@/db/client", () => ({
 
 // Mock quests module
 jest.mock("@/db/quests", () => ({
+  ...jest.requireActual("@/db/quests"),
   isDailyQuest: jest.fn().mockReturnValue(false),
 }));
 
@@ -39,6 +40,7 @@ jest.mock("@/db/oaths", () => ({
   OATH_XP_BONUS: 50,
 }));
 jest.mock("@/db/queryCache", () => ({
+  ...jest.requireActual("@/db/queryCache"),
   clearShortLivedQueries: jest.fn(),
 }));
 jest.mock("@/db/userLevel", () => ({
@@ -53,11 +55,13 @@ jest.mock("@/db/village", () => ({
 jest.mock("@/src/widget", () => ({
   requestWidgetsUpdate: jest.fn().mockResolvedValue(undefined),
 }));
+// Spread the real module, stub only the one function these tests want deterministic. A flat mock
+// listing constants by hand made every symbol added to `db/xp.ts` arrive `undefined` with no error
+// anywhere — `Math.min(undefined, xp)` is NaN, and the failure surfaces three asserts later.
+// Same idiom as `@/db/bossFights` above.
 jest.mock("@/db/xp", () => ({
+  ...jest.requireActual("@/db/xp"),
   computeSessionXp: jest.fn().mockReturnValue(100),
-  // Real value, not a stand-in: `saveSession` clamps with it, and a mock that omits it turns the
-  // session's XP into NaN with no error anywhere.
-  MAX_SESSION_XP: 2000,
 }));
 jest.mock("@/db/preferences", () => ({
   preferences: {

@@ -69,6 +69,37 @@ export function clientMock(t: { db: unknown }) {
   };
 }
 
+/**
+ * Log three on-target sessions on every movement, so `getQuestById` serves each quest exactly as
+ * the content team wrote it.
+ *
+ * Since issue #33 a slot is served at the rung the hero is standing on, and on an empty journal
+ * that is the bottom of every chain. A test about target maths, swaps or catalogue invariants
+ * would otherwise be reading what a day-one beginner is prescribed instead of what was authored.
+ * Owning everything is the shortest way to say "not that hero" — the substitution has its own file.
+ */
+export function ownEveryRung(t: { sqlite: Database.Database }): void {
+  const ids = t.sqlite.prepare("SELECT id FROM exercises").all() as Array<{ id: number }>;
+  const at = Math.floor(Date.now() / 1000);
+  const session = t.sqlite.prepare(
+    "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, ?)",
+  );
+  const entry = t.sqlite.prepare(
+    `INSERT INTO completed_exercises
+       (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetType,
+        targetValue, performedAt)
+     VALUES (?, ?, 0, ?, 'reps', 10, 'reps', 10, ?)`,
+  );
+
+  // `isEarned` wants PROGRESSION_SESSIONS_REQUIRED distinct on-target sessions.
+  for (let n = 0; n < 3; n++) {
+    const sessionId = Number(session.run(at - n * 86400).lastInsertRowid);
+    ids.forEach((row, i) => {
+      entry.run(sessionId, row.id, i, at - n * 86400);
+    });
+  }
+}
+
 export function createTestDb() {
   const sqlite = new Database(":memory:");
 

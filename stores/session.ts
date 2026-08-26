@@ -27,7 +27,7 @@ import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
 import { REST_RANGE, TARGET_RANGE } from "@/db/questConfig";
-import { isDailyQuest, type Quest } from "@/db/quests";
+import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
@@ -979,6 +979,14 @@ export const useSessionStore = create<SessionState>()(
       // apart. Without this, "after" replayed the pre-session volumes and no muscle-driven
       // building ever appeared to grow on the victory screen.
       clearShortLivedQueries();
+
+      // A different cache, and a different reason. `getQuestById` memoizes a resolved quest per
+      // (id, level) with no TTL, and what it resolves now depends on the journal: the third
+      // on-target session earns a rung, which is exactly when a slot should stop being substituted
+      // down (issue #33). Without this the hero climbs and keeps being handed the easier movement
+      // until the app restarts.
+      invalidateQuestTemplates();
+
       const afterBuildings = await getVillageBuildings();
       const villageGrowth = diffVillageGrowth(beforeBuildings, afterBuildings);
 

@@ -234,6 +234,10 @@ export function applyQuestConfig(
               // The ghost belongs to the slot's old movement too, and the substitute's own
               // history is not in this object — better silent than wrong.
               ghost: undefined,
+              // An explicit swap outranks the rung substitution `getQuestById` may have made, so
+              // the "we served you an easier rung" caption has to go with it. Left behind, the
+              // screen would explain a substitution that is no longer on the slot.
+              substitutedFor: undefined,
             }),
       };
     }),

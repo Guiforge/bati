@@ -30,6 +30,7 @@ jest.mock("@/db/exercises", () => ({
   updateUserExercise: (...args: unknown[]) => mockUpdate(...args),
   getExerciseById: (...args: unknown[]) => mockGetById(...args),
   isUserExercise: (ex: { creator: string }) => ex.creator !== "Admin",
+  SECONDS_PER_REP_RANGE: { min: 1, max: 30 },
   DEFAULT_USER_EXERCISE_DRAFT: {
     muscles: [],
     style: "strength",

@@ -79,6 +79,7 @@ jest.mock("@/db", () => ({
   startAdventureRun: jest.fn(),
   suggestDifficultyFromSessions: jest.fn().mockReturnValue("medium"),
   estimateQuestTemplateSeconds: jest.fn().mockReturnValue(300),
+  estimateQuestTemplateXp: jest.fn().mockReturnValue(60),
   adventureWeeks: jest.fn().mockReturnValue(1),
 }));
 

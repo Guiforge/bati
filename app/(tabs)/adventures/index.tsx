@@ -26,6 +26,7 @@ import {
   type Adventure,
   adventureWeeks,
   estimateQuestTemplateSeconds,
+  estimateQuestTemplateXp,
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
   listAdventures,
@@ -34,7 +35,6 @@ import {
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
-import { computeSessionXp } from "@/db/xp";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -95,12 +95,13 @@ function buildAdventureRow(
   // Same numbers as the quest detail/gallery: the saved level and structure overrides feed
   // the estimate, priced off the cover quest — the one step the poster's XP chip advertises.
   const level = config?.level ?? "medium";
-  const durationSeconds = estimateQuestTemplateSeconds({
+  const previewInput = {
     template: { ...q, ...resolveTemplateOverrides(q, config) },
     exercisesById,
     userLevel: level,
-  });
-  const xp = computeSessionXp({ durationSeconds, userLevel: level });
+  };
+  const durationSeconds = estimateQuestTemplateSeconds(previewInput);
+  const xp = estimateQuestTemplateXp(previewInput);
   const weeks = adventureWeeks(a.stepsCount);
 
   return {

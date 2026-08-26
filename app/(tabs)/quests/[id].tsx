@@ -24,6 +24,7 @@ import {
   applyQuestConfig,
   Difficulty,
   estimateQuestSeconds,
+  estimateQuestXp,
   formatDurationEstimate,
   getQuestById,
   getQuestConfig,
@@ -41,7 +42,6 @@ import { getCached } from "@/db/queryCache";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatTarget } from "@/db/targets";
-import { computeSessionXp } from "@/db/xp";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -356,10 +356,7 @@ export default function QuestDetails() {
       questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
       estimate: formatDurationEstimate(estimatedSeconds),
-      xpReward: computeSessionXp({
-        durationSeconds: estimatedSeconds,
-        userLevel: level as unknown as DifficultyCode,
-      }),
+      xpReward: estimateQuestXp(quest, level as unknown as DifficultyCode),
     };
   }, [state.quest, config, language, level, catalogue]);
 

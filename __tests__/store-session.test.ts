@@ -55,6 +55,9 @@ jest.mock("@/src/widget", () => ({
 }));
 jest.mock("@/db/xp", () => ({
   computeSessionXp: jest.fn().mockReturnValue(100),
+  // Real value, not a stand-in: `saveSession` clamps with it, and a mock that omits it turns the
+  // session's XP into NaN with no error anywhere.
+  MAX_SESSION_XP: 2000,
 }));
 jest.mock("@/db/preferences", () => ({
   preferences: {

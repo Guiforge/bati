@@ -23,7 +23,7 @@ import {
 } from "@/constants/exerciseFilters";
 import { toggleInSet } from "@/constants/questFilters";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { ADMIN_CREATOR, type Exercise, listExercises } from "@/db/exercises";
+import { ADMIN_CREATOR, type Exercise, heroFirst, listExercises } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { EquipmentCode, MovementPattern, MuscleCode } from "@/db/schema";
 import { localizedName } from "@/src/i18n/localized";
@@ -214,10 +214,14 @@ export default function ExerciseCatalogue() {
   );
 
   // Seed order is insertion order across six migrations, which reads as random on a flat list.
+  // What the hero wrote leads, then the catalogue alphabetically: a hero-authored movement is a
+  // needle in sixty-odd, and they are the one person who cannot browse to find it.
   const sorted = useMemo(
     () =>
-      [...exercises].sort((a, b) =>
-        localizedName(a, language).localeCompare(localizedName(b, language), language),
+      heroFirst(
+        [...exercises].sort((a, b) =>
+          localizedName(a, language).localeCompare(localizedName(b, language), language),
+        ),
       ),
     [exercises, language],
   );

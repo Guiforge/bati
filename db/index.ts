@@ -35,6 +35,7 @@ export {
   deleteUserExercise,
   getExerciseById,
   getExerciseUsage,
+  heroFirst,
   isUserExercise,
   listExercises,
   pickableExercises,

@@ -61,6 +61,9 @@ const mockListExercises = jest.fn();
 jest.mock("@/db/exercises", () => ({
   listExercises: (...args: unknown[]) => mockListExercises(...args),
   ADMIN_CREATOR: "Admin",
+  // The real rule, not a stub: the screen's ordering is what these cases assert.
+  heroFirst: (list: { creator: string }[]) =>
+    [...list].sort((a, b) => Number(b.creator !== "Admin") - Number(a.creator !== "Admin")),
 }));
 
 function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id" | "enName">): Exercise {
@@ -168,5 +171,22 @@ describe("exercise catalogue", () => {
     );
 
     expect(mockPush).toHaveBeenCalledWith("/exercises/1");
+  });
+
+  it("puts what the hero wrote at the top, ahead of the alphabet", async () => {
+    // A name that would otherwise sort last, so the assertion proves the ordering beats the
+    // alphabet rather than agreeing with it by luck.
+    const mine = makeExercise({ id: 9, enName: "Zephyr Kick", creator: "hero" });
+    mockListExercises.mockResolvedValue([TABLE_ROW, INVERTED_ROW, PUSH_UP, mine]);
+
+    await renderScreen();
+
+    await waitFor(() => expect(screen.getByText("Zephyr Kick")).toBeTruthy());
+
+    // Order, not mere presence: a hero-authored movement is one needle in sixty-odd.
+    const rendered = screen
+      .getAllByText(/^(Zephyr Kick|Inverted Row|Push-up|Table Row)$/)
+      .map((node) => node.props.children);
+    expect(rendered[0]).toBe("Zephyr Kick");
   });
 });

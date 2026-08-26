@@ -21,6 +21,7 @@ import {
   deleteQuest,
   getQuestConfig,
   getQuestTemplateById,
+  heroFirst,
   listExercises,
   pickableExercises,
   REST_RANGE,
@@ -222,7 +223,8 @@ export default function QuestEditor() {
   // Filtering them out of `exercises` filtered them out of `exercisesById` too, so an existing
   // row rendered as nothing while `save()` still wrote it: the hero saw four exercises, saved
   // five, and had no way to remove the one they could not see.
-  const pickable = useMemo(() => pickableExercises(exercises), [exercises]);
+  // Same rule as the catalogue: what the hero wrote leads the sheet.
+  const pickable = useMemo(() => heroFirst(pickableExercises(exercises)), [exercises]);
 
   const exercisesById = useMemo(
     () => Object.fromEntries(exercises.map((e) => [e.id, e] as const)),

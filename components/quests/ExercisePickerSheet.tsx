@@ -20,9 +20,10 @@ const EMPTY_LADDER: ReadonlyMap<number, unknown> = new Map();
 
 type Props = {
   /**
-   * Rendered in the order given — the caller decides what "best first" means. The editor passes
-   * the catalogue as it comes; a substitution passes it ranked. Keeping the ordering out here is
-   * what lets one sheet serve both without growing a mode.
+   * Rendered in the order given — the caller decides what "best first" means. The editor leads
+   * with what the hero wrote (`heroFirst`); a substitution passes its own ranking, which must
+   * not be reshuffled. Keeping the ordering out here is what lets one sheet serve both without
+   * growing a mode.
    */
   exercises: Exercise[];
   /**

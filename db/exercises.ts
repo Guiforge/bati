@@ -621,6 +621,18 @@ export function pickableExercises(all: Exercise[]): Exercise[] {
   return all.filter((e) => e.retiredAt === null);
 }
 
+/**
+ * What the hero wrote, first.
+ *
+ * Ordering only — `pickableExercises` is what hides. Stable, so the caller's own order survives
+ * inside each group: the catalogue sorts by name and keeps that, the quest picker keeps the
+ * catalogue's. A hero-authored movement is one needle in sixty-odd, and its author is the one
+ * person who cannot browse to find it.
+ */
+export function heroFirst(list: Exercise[]): Exercise[] {
+  return [...list].sort((a, b) => Number(isUserExercise(b)) - Number(isUserExercise(a)));
+}
+
 async function assertHeroAuthored(id: number): Promise<void> {
   const rows = await db
     .select({ creator: exercises.creator })

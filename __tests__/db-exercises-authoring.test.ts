@@ -237,4 +237,31 @@ describe("hero-authored exercises", () => {
       .get(id) as { n: number };
     expect(leftover.n).toBe(0);
   });
+
+  test("heroFirst leads with what the hero wrote and keeps the given order inside each group", async () => {
+    const { heroFirst, listExercises } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const all = await listExercises();
+    const ordered = heroFirst(all);
+
+    const firstSeedAt = ordered.findIndex((e) => e.creator === "Admin");
+    const lastHeroAt = ordered.map((e) => e.creator !== "Admin").lastIndexOf(true);
+    expect(lastHeroAt).toBeGreaterThanOrEqual(0);
+    expect(lastHeroAt).toBeLessThan(firstSeedAt);
+
+    // Stable: the caller's own order survives inside each group, so the catalogue keeps its
+    // alphabetical sort and the picker keeps the catalogue's.
+    const seedInput = all.filter((e) => e.creator === "Admin").map((e) => e.id);
+    const seedOutput = ordered.filter((e) => e.creator === "Admin").map((e) => e.id);
+    expect(seedOutput).toEqual(seedInput);
+  });
+
+  test("heroFirst orders only — it hides nothing, including retired rows", async () => {
+    const { heroFirst, listExercises } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const all = await listExercises();
+    expect(heroFirst(all)).toHaveLength(all.length);
+  });
 });

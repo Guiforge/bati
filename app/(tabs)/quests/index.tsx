@@ -433,9 +433,13 @@ export default function QuestsGallery() {
   const quests = state.quests;
   const exercisesById = state.exercisesById;
 
+  // Hero quests lead. Seed order is authored — the gallery opens on a curated first card — so
+  // the rest keeps it rather than being re-sorted around them.
   const questMeta = useMemo(
     () =>
-      quests.map((q) => buildQuestMeta(q, exercisesById, language, t, configs.get(q.id) ?? null)),
+      [...quests]
+        .sort((a, b) => Number(isUserQuest(b)) - Number(isUserQuest(a)))
+        .map((q) => buildQuestMeta(q, exercisesById, language, t, configs.get(q.id) ?? null)),
     [exercisesById, quests, language, t, configs],
   );
 

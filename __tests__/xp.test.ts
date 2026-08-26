@@ -135,7 +135,7 @@ describe("db/xp", () => {
 
     expect(
       computeSessionXp({ sets: sets("easy"), effortCeilingSeconds: ceiling, userLevel: "medium" }),
-    ).toBe(102);
+    ).toBe(96);
     expect(
       computeSessionXp({
         sets: sets("medium"),
@@ -145,7 +145,25 @@ describe("db/xp", () => {
     ).toBe(120);
     expect(
       computeSessionXp({ sets: sets("hard"), effortCeilingSeconds: ceiling, userLevel: "medium" }),
-    ).toBe(150);
+    ).toBe(300);
+  });
+
+  /**
+   * At `DIFFICULTY_WEIGHT.hard = 2.5` the two quantities diverge badly, so the order matters: the
+   * ceiling bounds *physical* seconds, the weight prices them. Weighting first would clip every
+   * honest session of hard movements against its own clock.
+   */
+  test("the ceiling bounds real seconds, not what they were worth", () => {
+    // 10 × 12 reps × 3s = 360 real seconds of hard work, inside a ten-minute window.
+    const sets = Array.from({ length: 10 }, () => reps(12, 12, movement("hard")));
+
+    expect(computeSessionXp({ sets, effortCeilingSeconds: 10 * 60, userLevel: "medium" })).toBe(
+      300,
+    );
+
+    // Halve the window below what the work needed and the credit halves with it — it neither
+    // collapses to the clock nor survives untouched.
+    expect(computeSessionXp({ sets, effortCeilingSeconds: 150, userLevel: "medium" })).toBe(150);
   });
 
   test("the hero's chosen level still scales the reward", () => {

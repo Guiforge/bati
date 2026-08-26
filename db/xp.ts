@@ -67,14 +67,23 @@ const XP_FLOOR = 10;
  * What a movement is worth per second of effort.
  *
  * Without it the optimal strategy is the easiest exercise in the catalogue: `toRepEquivalent` is
- * flat, so fifty jumping jacks and fifty pull-ups weigh the same. Kept narrow on purpose — a hero
- * can mark their own movement `hard` (`db/exercises.ts`, `createUserExercise`), and a 1.25×
- * self-grant is not worth defending against.
+ * flat, so fifty jumping jacks and fifty pull-ups weigh the same.
+ *
+ * The spread is wide because a narrow one was measured against the seeded catalogue and found to
+ * punish the two archetypes it should reward. `skill` and `strength` quests are 80-87% rest *by
+ * protocol* — ten seconds of front lever, two minutes of recovery — so any volume metric
+ * undervalues them: at 0.85/1.0/1.25 they paid 0.31× and 0.51× of what the old clock paid, while
+ * `mobility` kept 0.97×. A hard rep being worth roughly three easy ones is also just true; one
+ * pull-up is not one jumping jack.
+ *
+ * A hero can mark their own movement `hard` (`createUserExercise`), which is now a 2.5× self-grant
+ * rather than 1.25×. It is bounded by the effort ceiling and `MAX_SESSION_XP` like everything
+ * else, and lying about a movement's difficulty is a different act from dragging a slider.
  */
 const DIFFICULTY_WEIGHT: Record<DifficultyCode, number> = {
-  easy: 0.85,
+  easy: 0.8,
   medium: 1.0,
-  hard: 1.25,
+  hard: 2.5,
 };
 
 /** The hero's chosen level. Distinct from `USER_LEVEL_MULTIPLIER`, which scales targets. */
@@ -105,7 +114,15 @@ export type ComputeSessionXpInput = {
   userLevel: DifficultyCode;
 };
 
-/** Weighted seconds of effort credited for one set. */
+/**
+ * Seconds of effort credited for one set, before the movement's weight.
+ *
+ * Raw and weighted are tracked apart on purpose: the effort ceiling is a bound on *physical*
+ * seconds — nobody trained longer than the session lasted — while the difficulty weight is a
+ * judgement about what a second was worth. Weighting first and clipping after would measure a
+ * value against a clock, and at `DIFFICULTY_WEIGHT.hard = 2.5` that clips every honest strength
+ * session, which is the opposite of why the weight is wide.
+ */
 function setEffortSeconds({ exercise, target, result }: XpSet): number {
   const done = Math.max(0, estimateExerciseSeconds(exercise, result));
   const allowed = Math.max(0, estimateExerciseSeconds(exercise, target)) * OVERSHOOT_ALLOWANCE;
@@ -120,7 +137,12 @@ function setEffortSeconds({ exercise, target, result }: XpSet): number {
       ? Math.min(done, allowed)
       : Math.min(done, allowed) + Math.max(0, done - allowed) * OVERSHOOT_DECAY;
 
-  return credited * DIFFICULTY_WEIGHT[exercise.difficulty];
+  return credited;
+}
+
+/** What that set is worth, once the movement it trained is taken into account. */
+function setWeightedSeconds(set: XpSet): number {
+  return setEffortSeconds(set) * DIFFICULTY_WEIGHT[set.exercise.difficulty];
 }
 
 /** Weighted effort seconds → XP. The tail every entry point shares. */
@@ -136,10 +158,19 @@ export function computeSessionXp({
   effortCeilingSeconds,
   userLevel,
 }: ComputeSessionXpInput): number {
-  const claimed = sets.reduce((sum, set) => sum + setEffortSeconds(set), 0);
-  const ceiling = Math.max(0, effortCeilingSeconds) * SPEED_ALLOWANCE;
+  const rawSeconds = sets.reduce((sum, set) => sum + setEffortSeconds(set), 0);
+  const weightedSeconds = sets.reduce((sum, set) => sum + setWeightedSeconds(set), 0);
 
-  return effortToXp(Math.min(claimed, ceiling), userLevel);
+  // The clock bounds the physical claim; whatever fraction of it survives, the weighted value
+  // keeps. Scaling rather than clipping is what lets a session of hard movements be worth more
+  // than its own duration without letting it claim more seconds than it lasted.
+  const ceiling = Math.max(0, effortCeilingSeconds) * SPEED_ALLOWANCE;
+  const credited =
+    rawSeconds > ceiling && rawSeconds > 0
+      ? weightedSeconds * (ceiling / rawSeconds)
+      : weightedSeconds;
+
+  return effortToXp(credited, userLevel);
 }
 
 export type EstimateQuestXpInput = {
@@ -162,7 +193,7 @@ export function estimateQuestXp(quest: EstimateQuestXpInput, userLevel: Difficul
   const perRound = quest.exercises.reduce(
     (sum, qex) =>
       sum +
-      setEffortSeconds({
+      setWeightedSeconds({
         exercise: qex.exercise,
         target: qex.target,
         result: { type: qex.target.type, value: qex.target.value * OVERSHOOT_ALLOWANCE },

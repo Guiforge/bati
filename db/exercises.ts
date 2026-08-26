@@ -599,11 +599,15 @@ export type UserExerciseDraft = {
 /**
  * The tempo a hero may claim for their own movement.
  *
- * Mirrors `app/exercises/new.tsx`'s stepper, which was the only thing enforcing it — the writers
- * below took `draft.secondsPerRep` raw. It is not cosmetic: XP counts seconds of effort at this
- * tempo, so an unbounded value is a multiplier on the reward for every rep of that movement.
+ * The stepper in `app/exercises/new.tsx` was the only thing enforcing this — the writers below
+ * took `draft.secondsPerRep` raw — and it allowed up to 30. That is not cosmetic: XP counts
+ * seconds of effort at this tempo, so 30 was a ×10 multiplier on every rep of a hero's own
+ * movement, against a seeded catalogue that spans 1 to 5.
+ *
+ * 10 is twice the slowest movement anyone has authored. Past that it is not a repetition at all,
+ * it is a hold, and holds have their own target type — which is measured rather than declared.
  */
-export const SECONDS_PER_REP_RANGE = { min: 1, max: 30 };
+export const SECONDS_PER_REP_RANGE = { min: 1, max: 10 };
 
 function clampSecondsPerRep(value: number): number {
   if (!Number.isFinite(value)) return DEFAULT_SECONDS_PER_REP;

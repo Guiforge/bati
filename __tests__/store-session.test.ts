@@ -2,6 +2,7 @@ import { waitFor } from "@testing-library/react-native";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
+import { saveQuestConfig } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
 import { useSessionStore } from "../stores/session";
 
@@ -39,6 +40,10 @@ jest.mock("@/db/exercises", () => ({
 jest.mock("@/db/oaths", () => ({
   checkOathFulfilled: jest.fn().mockResolvedValue(null),
   OATH_XP_BONUS: 50,
+}));
+jest.mock("@/db/questConfig", () => ({
+  ...jest.requireActual("@/db/questConfig"),
+  saveQuestConfig: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("@/db/queryCache", () => ({
   ...jest.requireActual("@/db/queryCache"),
@@ -879,6 +884,19 @@ describe("useSessionStore", () => {
       // mockQuest's first slot is rep-based, so a hold timer must not be left running on it.
       const isTimeBased = (mockQuest as unknown as Quest).exercises[0]?.target.type === "time";
       expect(store.getState().timerStartTimestamp === null).toBe(!isTimeBased);
+    });
+
+    /**
+     * The sheet on the quest screen writes `quest:<id>:config`; this one deliberately does not.
+     * That is configuration, posted cold before starting; this is a correction for tonight, made
+     * mid-set on a movement that turned out to be out of reach. Persisting it pins the slot —
+     * `applyQuestConfig` swaps before `currentRungFor` runs — and the progression substitution
+     * issue #33 exists for would stop applying to the one slot the hero struggled on.
+     */
+    test("does not pin the slot in the quest's saved config", () => {
+      store.getState().swapCurrentExercise(easier);
+
+      expect(saveQuestConfig).not.toHaveBeenCalled();
     });
 
     test("swapping to the movement already there is a no-op", () => {

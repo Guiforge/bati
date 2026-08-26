@@ -188,7 +188,7 @@
     "react-dom": "19.2.3",
     "esbuild": "^0.28.2"
   },
-  "version": "1.12.1",
+  "version": "1.13.0",
   "license": "MIT",
   "expo": {
     "autolinking": {

@@ -571,6 +571,7 @@
     "rounds": "{{count}} manches",
     "seconds_per_rep": "tempo {{count}} s/rép",
     "ghost_last": "Dernier : {{value}}",
+    "served_easier_rung": "En route vers {{name}}",
     "swap_exercise": "Remplacer ce mouvement",
     "swap_reason_easier": "Un échelon plus facile",
     "swap_reason_harder": "Un échelon plus difficile",

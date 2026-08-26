@@ -215,6 +215,7 @@
     "reward_xp_estimate": "up to +{{count}} XP",
     "seconds_per_rep": "tempo {{count}}s/rep",
     "ghost_last": "Last: {{value}}",
+    "served_easier_rung": "Working up to {{name}}",
     "swap_exercise": "Replace this movement",
     "swap_reason_easier": "An easier rung",
     "swap_reason_harder": "A harder rung",

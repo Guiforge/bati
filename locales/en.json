@@ -469,6 +469,7 @@
     "village_growth_more": "+{{count}} more",
     "village_growth_title": "Your village grows",
     "village_tier_up_title": "Your village grew!",
+    "xp_overshoot": "incl. +{{count}} for beating your targets",
     "xp_earned": "XP Earned",
     "warmup_title": "WARM-UP",
     "warmup_skip": "Skip warm-up",

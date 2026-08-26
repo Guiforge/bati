@@ -426,55 +426,17 @@ interface Quest {
 
 ---
 
-## Resources
+## Resources — removed
 
-Fantasy resources earned through workouts.
+This section documented `getResourceInventory`, `addResources`, `spendResources`,
+`calculateSessionResources` and `getDifficultyMultiplier`. **None of those functions exist**, and
+none ever shipped: `grep getDifficultyMultiplier` returns nothing. The `resource_inventory` and
+`resource_transactions` tables are still in `db/schema.ts` and are read by no code at all.
 
-Product scope note: in MVP these resources are passive/read-only reward visibility. The DB exposes
-inventory and transaction helpers, including spending primitives, but Gold-first shops and manual
-village management are deferred product scope.
-
-### Types
-
-```typescript
-type ResourceCode =
-  | "gold" | "wood" | "stone" | "fire" | "water" | "wind" | "grain"
-  | "mana" | "leaf" | "boss_token";
-
-interface ResourceLoot {
-  resource: ResourceCode;
-  amount: number;
-  reason: string;  // Why earned
-}
-```
-
-### Muscle → Resource Mapping
-
-| Muscle | Resource |
-|--------|----------|
-| Arms | Wood 🪵 |
-| Back | Stone 🪨 |
-| Chest | Fire 🔥 |
-| Abs | Water 💧 |
-| Shoulders | Wind 🌬️ |
-| Legs (`calf` in schema) | Grain 🌾 |
-| Calisthenics style | Mana ✨ |
-| Yoga style | Leaf 🌿 |
-
-### Functions
-
-| Function | Description |
-|----------|-------------|
-| `getResourceInventory()` | Get all resource amounts |
-| `getResourceAmount(resource)` | Get single resource amount |
-| `addResources(loot[])` | Add resources to inventory |
-| `spendResources(resource, amount)` | Spend resources (returns success) |
-| `calculateSessionResources(exercises)` | Calculate loot from exercises |
-| `awardSessionResources(exercises)` | Calculate and add resources |
-| `previewSessionLoot(exercises)` | Preview loot without saving |
-| `getDifficultyMultiplier(difficulty)` | Get resource multiplier |
-
----
+Resources, Gold and boss tokens are a closed decision — see
+[roadmap.md](../planning/roadmap.md) §7 and
+[progression.md](../gameplay/progression.md)'s "What was removed, and why". The village is a pure
+function of the session journal; XP is the only currency.
 
 ## Rest Suggestions
 
@@ -582,25 +544,27 @@ Experience and leveling system.
 ```typescript
 interface UserLevelInfo {
   level: number;
-  title: string;          // "Novice", "Warrior", etc.
+  title: { en: string; fr: string };  // localised, one per level
   totalXp: number;
   currentLevelXp: number;
   xpToNextLevel: number;
-  progressPercent: number;
+  xpProgress: number;                 // 0-100
 }
 ```
 
 ### Level Titles
 
-| Level | Title (EN) |
-|-------|------------|
-| 1-4 | Novice |
-| 5-9 | Apprentice |
-| 10-14 | Warrior |
-| 15-19 | Champion |
-| 20-24 | Hero |
-| 25-29 | Legend |
-| 30+ | Immortal |
+**One title per level, not a band.** `db/userLevel.ts` keys 1→20 individually — Apprentice,
+Novice, Trainee, Squire, Warrior, Fighter, Veteran, Champion, Elite, Master, Grandmaster, Legend,
+Mythic, Titan, Demigod, Hero, Paragon, Ascended, Immortal, Divine — and everything past 20 is
+`Divine N`. This page previously showed bands ("1-4 Novice", "30+ Immortal") that never matched
+the code.
+
+### The curve
+
+Cumulative thresholds `50·n·(n−1)` up to level 20 (19 000 XP), then a flat 2 000 XP a level with
+no cap. At the ~300 XP an honest session pays (see
+[progression.md](../gameplay/progression.md)), level 20 is roughly 63 sessions.
 
 ### Functions
 

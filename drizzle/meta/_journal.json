@@ -260,6 +260,13 @@
       "when": 1787115600000,
       "tag": "0036_hero_names_are_theirs",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "6",
+      "when": 1787119200000,
+      "tag": "0037_xp_measures_effort",
+      "breakpoints": true
     }
   ]
 }

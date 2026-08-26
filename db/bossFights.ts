@@ -100,8 +100,13 @@ export const SHINY_CHANCE = 0.05;
  * decides. This: empty it with your own damage — meet targets, push past them for crits, land the
  * weakness — and the kill is a Triumph, worth this bonus on the session that dealt the killing
  * hit. Fall short and the final blow still fells it, at no cost but the bonus. Reward for
- * pushing, never punishment for training under target. Twice the oath's bonus, because a boss is
- * not a mini-boss.
+ * pushing, never punishment for training under target.
+ *
+ * ponytail: this comment claimed "twice the oath's bonus" for months while `OATH_XP_BONUS` was
+ *           250 — it is 0.4×, not 2×. Only the claim is corrected here; the number is a balance
+ *           call, and it wants a decision rather than a quiet edit. Against the effort-based
+ *           economy (`db/xp.ts`), where an honest session pays ~300, felling a campaign boss
+ *           currently pays a third of one. Raise it if that reads wrong on a device.
  */
 export const TRIUMPH_XP_BONUS = 100;
 

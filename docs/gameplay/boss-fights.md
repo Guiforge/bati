@@ -115,9 +115,12 @@ If the kill is guaranteed either way, the fair question is what the pool still d
   card narrates the killing stroke (`boss.final_blow`) so "defeated at 300 HP" reads as the design
   it is, not a bug.
 
-Reward for pushing, never punishment for training under target. Detection is in-memory in
+Reward for pushing, never punishment for training under target. Detection is in
 `saveSession` (`payTriumphBonus`): the fight was alive at session start (a corpse is dropped at
-load), its pool hit zero, and `dealFinalBlow` had nothing left to do.
+load), its pool hit zero, and `dealFinalBlow` had nothing left to do. The payment is guarded by a
+`triumphBonusPaid` flag on the session store, because none of those conditions can tell a first
+attempt from a retry — by the time the bonus is due the pool is already empty in the database, so
+the victory screen's retry button used to pay it twice.
 
 **This is a ratchet.** `__tests__/content-invariants.test.ts` re-derives every campaign's total from
 the seeded quests at all three difficulties and fails if any boss survives its campaign or dies

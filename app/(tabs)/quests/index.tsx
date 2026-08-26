@@ -30,6 +30,7 @@ import {
 } from "@/constants/questFilters";
 import {
   estimateQuestTemplateSeconds,
+  estimateQuestTemplateXp,
   formatDurationEstimate,
   isUserQuest,
   listExercises,
@@ -42,7 +43,6 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
-import { computeSessionXp } from "@/db/xp";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -121,12 +121,13 @@ function buildQuestMeta(
   // estimateQuestSeconds sees them, so a target-overridden quest can still drift by
   // a few seconds; fold them in if anyone notices.
   const level = config?.level ?? "medium";
-  const durationSeconds = estimateQuestTemplateSeconds({
+  const previewInput = {
     template: { ...q, ...resolveTemplateOverrides(q, config) },
     exercisesById,
     userLevel: level,
-  });
-  const xp = computeSessionXp({ durationSeconds, userLevel: level });
+  };
+  const durationSeconds = estimateQuestTemplateSeconds(previewInput);
+  const xp = estimateQuestTemplateXp(previewInput);
   const estimate = formatDurationEstimate(durationSeconds);
   const muscleList = [...muscles];
   // Ranked, not the full set above: a five-exercise quest brushes five muscle groups, and the

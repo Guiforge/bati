@@ -20,13 +20,15 @@ import {
   getSessionAggregates,
   markSessionWithNewRecords,
 } from "@/db/completed";
+import { estimateQuestSeconds } from "@/db/estimate";
 import { checkForNewRungs, type VariationStep } from "@/db/exercises";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
+import { REST_RANGE, TARGET_RANGE } from "@/db/questConfig";
 import { isDailyQuest, type Quest } from "@/db/quests";
-import type { DifficultyCode, FeedbackCode, MuscleCode } from "@/db/schema";
+import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import {
@@ -36,7 +38,7 @@ import {
   type VillageGrowth,
   type VillageTierUp,
 } from "@/db/village";
-import { computeSessionXp } from "@/db/xp";
+import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 
@@ -50,6 +52,25 @@ export type SessionStatus =
   | "finished";
 
 const PRE_START_COUNTDOWN_SECONDS = 3;
+
+/** Ceiling on one hold. An hour in a single set is past any prescription this app can write. */
+const MAX_HOLD_SECONDS = 3600;
+
+/**
+ * What one set may claim.
+ *
+ * The database only demands `> 0`, so an absurd value used to flow straight into muscle volume,
+ * the village's building levels, the journal's balance card and the personal records — none of
+ * which `MAX_SESSION_XP` covers, because that caps XP and nothing else. Clamped here, where the
+ * `max(1, ...)` guard the DB constraints already required lives, so every consumer of a result is
+ * bounded by construction rather than by each caller remembering.
+ */
+function clampResultValue(resultValue: number, type: QuestTargetType): number {
+  if (!Number.isFinite(resultValue)) return 1;
+
+  const ceiling = type === "time" ? MAX_HOLD_SECONDS : TARGET_RANGE.max;
+  return Math.min(ceiling, Math.max(1, Math.floor(resultValue)));
+}
 
 interface SessionState {
   // Static Data
@@ -104,6 +125,18 @@ interface SessionState {
   startTime: number | null; // Date.now() when session started
   totalPausedTime: number; // Accumulator for pause duration
   lastPauseTimestamp: number | null; // Date.now() when pause started
+  /**
+   * Rest actually taken between sets, in seconds — banked when the rest screen is left.
+   *
+   * XP is paid for effort, and the ceiling that bounds a session's claimed effort is the window
+   * in which effort could have happened. Rest is not that window: leaving it in would let a hero
+   * camp the rest screen to inflate the very ceiling fabricated results then fill, which is the
+   * original bug wearing a different hat.
+   *
+   * Measured, never prescribed. Subtracting the configured rest instead would push a hero who
+   * skips their rests below their own effort and floor them for training harder.
+   */
+  restTakenSeconds: number;
 
   // Active Timer (for Time-based exercises or Rest)
   timerStartTimestamp: number | null; // Date.now() when current timer started
@@ -117,6 +150,15 @@ interface SessionState {
    * resumes that session instead of banking a second one.
    */
   savedSessionId: number | null;
+  /**
+   * Whether this session already paid the Triumph bonus.
+   *
+   * Not derivable from the boss: by the time the bonus is paid the pool is already empty in the
+   * database, so a retry re-reading the fight sees exactly what the first pass saw and pays again.
+   * The only fact that distinguishes them is this one, and it lives beside `savedSessionId`
+   * because it answers the same question about a different write.
+   */
+  triumphBonusPaid: boolean;
 
   // Actions
   startSession: (
@@ -152,6 +194,8 @@ interface SessionState {
     newAchievements: NewAchievementResult[];
     fulfilledOath: OathProgress | null;
     oathBonusXp: number;
+    /** Of `xpEarned`, how much came from beating targets rather than meeting them. */
+    overshootXp: number;
     campaign: {
       adventureId: number;
       runId: number;
@@ -194,10 +238,27 @@ export type SavedSessionState = Pick<
   | "currentExerciseIndex"
   | "startTime"
   | "totalPausedTime"
+  | "restTakenSeconds"
   | "timerStartTimestamp"
   | "timerDuration"
   | "results"
 > & { savedAt: number };
+
+/**
+ * The session's results paired back with the movements that produced them.
+ *
+ * `sortOrder` is the slot index `completeExercise` recorded, so the join is exact even when a
+ * quest repeats an exercise or a config swapped one out. A result whose slot has vanished is
+ * dropped rather than guessed at — it cannot be priced without knowing what was asked.
+ */
+function toXpSets(quest: Quest, results: CompletedExerciseInput[]): XpSet[] {
+  return results.flatMap((r) => {
+    const slot = quest.exercises[r.sortOrder];
+    if (!slot) return [];
+
+    return [{ exercise: slot.exercise, target: r.target ?? slot.target, result: r.result }];
+  });
+}
 
 /**
  * The row for this save, created once however many times `saveSession` runs.
@@ -285,7 +346,13 @@ async function payTriumphBonus(
   sessionId: number,
 ): Promise<number> {
   if (!bossFight || bossFight.currentHp > 0 || finalBlow) return 0;
+  // `saveSession` is a dozen awaits long and the victory screen retries it on failure. Every
+  // condition above is unchanged between attempts — the pool is empty in the database by then —
+  // so without this flag a retry pays the Triumph a second time.
+  if (useSessionStore.getState().triumphBonusPaid) return 0;
+
   await addBonusXpToSession(sessionId, TRIUMPH_XP_BONUS);
+  useSessionStore.setState({ triumphBonusPaid: true });
   return TRIUMPH_XP_BONUS;
 }
 
@@ -333,11 +400,13 @@ export const useSessionStore = create<SessionState>()(
     currentExerciseIndex: 0,
     startTime: null,
     totalPausedTime: 0,
+    restTakenSeconds: 0,
     lastPauseTimestamp: null,
     timerStartTimestamp: null,
     timerDuration: 0,
     results: [],
     savedSessionId: null,
+    triumphBonusPaid: false,
 
     startSession: async (quest, userLevel, options) => {
       // Load boss fight if this is a boss adventure. Callers only ever hold the run step id —
@@ -378,6 +447,7 @@ export const useSessionStore = create<SessionState>()(
         currentExerciseIndex: 0,
         startTime: Date.now(),
         totalPausedTime: 0,
+        restTakenSeconds: 0,
         lastPauseTimestamp: null,
         // Warm-up step, or the full-screen 3..2..1. Exercise timers start after the countdown.
         timerStartTimestamp: Date.now(),
@@ -386,6 +456,7 @@ export const useSessionStore = create<SessionState>()(
           : PRE_START_COUNTDOWN_SECONDS,
         results: [],
         savedSessionId: null,
+        triumphBonusPaid: false,
       });
     },
 
@@ -537,11 +608,13 @@ export const useSessionStore = create<SessionState>()(
         currentExerciseIndex: 0,
         startTime: null,
         totalPausedTime: 0,
+        restTakenSeconds: 0,
         lastPauseTimestamp: null,
         timerStartTimestamp: null,
         timerDuration: 0,
         results: [],
         savedSessionId: null,
+        triumphBonusPaid: false,
       });
     },
 
@@ -550,14 +623,13 @@ export const useSessionStore = create<SessionState>()(
       const { quest, currentRoundIndex, currentExerciseIndex, results, bossFight } = get();
       if (!quest) return;
 
-      // DB constraints (see migrations) require: resultValue > 0, roundIndex >= 0, sortOrder >= 0.
-      // Guard against accidental 0/NaN when users tap "DONE" immediately on time-based exercises.
-      const safeResultValue = Number.isFinite(resultValue)
-        ? Math.max(1, Math.floor(resultValue))
-        : 1;
-
       const currentEx = quest.exercises[currentExerciseIndex];
       if (!currentEx) return;
+
+      // DB constraints (see migrations) require: resultValue > 0, roundIndex >= 0, sortOrder >= 0.
+      // Guards accidental 0/NaN when users tap "DONE" immediately on time-based exercises, and
+      // the ceiling above.
+      const safeResultValue = clampResultValue(resultValue, currentEx.target.type);
 
       // Land the hit on the fight we hold, and bank it. Nothing reaches the database until
       // saveSession: see `pendingDamage`. This is pure maths now, so there is no failure to
@@ -664,14 +736,23 @@ export const useSessionStore = create<SessionState>()(
     },
 
     skipRest: () => {
-      const { status, quest, currentExerciseIndex } = get();
+      const { status, quest, currentExerciseIndex, timerStartTimestamp, restTakenSeconds } = get();
       if (status !== "resting" || !quest) return;
 
       const nextExDef = quest.exercises[currentExerciseIndex];
       const isNextTimeBased = nextExDef?.target.type === "time";
 
+      // The single exit from `resting` — the skip button and RestView's auto-advance at 0:00 both
+      // land here — so it is the one place rest gets measured. `timerStartTimestamp` is pushed
+      // forward by `resumeSession`, so a pause taken mid-rest is already excluded and cannot be
+      // subtracted twice.
+      const restTaken = timerStartTimestamp
+        ? Math.max(0, (Date.now() - timerStartTimestamp) / 1000)
+        : 0;
+
       set({
         status: "running",
+        restTakenSeconds: restTakenSeconds + restTaken,
         timerStartTimestamp: isNextTimeBased ? Date.now() : null,
         timerDuration: isNextTimeBased ? nextExDef.target.value : 0,
       });
@@ -680,7 +761,9 @@ export const useSessionStore = create<SessionState>()(
     addRestTime: (seconds) => {
       const { status, timerDuration } = get();
       if (status !== "resting") return;
-      set({ timerDuration: timerDuration + seconds });
+      // Same ceiling the quest editor and the config card enforce. Without it "+30s" stacked
+      // forever and the rest screen had no way out but the skip button.
+      set({ timerDuration: Math.min(REST_RANGE.max, timerDuration + seconds) });
     },
 
     updateLastResult: (resultValue) => {
@@ -689,9 +772,7 @@ export const useSessionStore = create<SessionState>()(
       if (!last) return;
 
       // DB constraints require resultValue > 0.
-      const safeResultValue = Number.isFinite(resultValue)
-        ? Math.max(1, Math.floor(resultValue))
-        : 1;
+      const safeResultValue = clampResultValue(resultValue, last.result.type);
       const updated = {
         ...last,
         result: { ...last.result, value: safeResultValue },
@@ -746,6 +827,7 @@ export const useSessionStore = create<SessionState>()(
         userLevel,
         startTime,
         totalPausedTime,
+        restTakenSeconds,
         results,
         adventureRunStepId,
         bossFight,
@@ -753,8 +835,35 @@ export const useSessionStore = create<SessionState>()(
       } = get();
       if (!quest || !startTime) throw new Error("No active session");
 
-      const durationSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
-      let xpEarned = computeSessionXp({ durationSeconds, userLevel });
+      const measuredSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+
+      // Nothing pauses when the app goes to the background — there is no `AppState` listener in
+      // this project — so a session left open overnight measures nine hours, takes the
+      // "longest session" record and unlocks both long-session achievements. XP no longer reads
+      // this as a source, but `checkForNewRecords` and `checkForNewAchievements` still do.
+      // ponytail: twice the quest's own estimate is the ceiling. A real session that genuinely
+      //           runs past it loses the surplus from its journal entry only; if anyone ever
+      //           reports that, the fix is an AppState listener that banks background time as
+      //           pause, not a bigger multiplier.
+      const durationSeconds = Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
+
+      // XP is paid for the work in `results`; the clock only says how much of it could have been
+      // real. Rest comes out of that window along with explicit pauses — otherwise camping the
+      // rest screen raises the ceiling that fabricated results then fill, which is the very bug
+      // this replaced. Clamped at zero: a hero who skips every rest still gets their own effort.
+      const effortCeilingSeconds = Math.max(0, durationSeconds - restTakenSeconds);
+      const sets = toXpSets(quest, results);
+      let xpEarned = computeSessionXp({ sets, effortCeilingSeconds, userLevel });
+
+      // What the same session would have paid for hitting every target exactly. The difference is
+      // the reward for going past them — surfaced on the victory screen, because an allowance the
+      // hero cannot see reads as a ceiling that ate their last few reps.
+      const xpAtTarget = computeSessionXp({
+        sets: sets.map((set) => ({ ...set, result: set.target })),
+        effortCeilingSeconds,
+        userLevel,
+      });
+      let overshootXp = Math.max(0, xpEarned - xpAtTarget);
 
       // Snapshot before this session's exercises land, so the village-growth diff at the
       // end reflects exactly what this save changed.
@@ -763,6 +872,7 @@ export const useSessionStore = create<SessionState>()(
       const dailyBonusApplied = await isDailyQuest(quest.id);
       if (dailyBonusApplied) {
         xpEarned = Math.round(xpEarned * 1.5);
+        overshootXp = Math.round(overshootXp * 1.5);
       }
 
       // Calculate level before saving (current state)
@@ -845,6 +955,12 @@ export const useSessionStore = create<SessionState>()(
       // and the level pick it up with no extra state.
       xpEarned += await payTriumphBonus(bossFight, finalBlow, sessionId);
 
+      // The ceiling belongs here, not inside `computeSessionXp`: the daily ×1.5 and the two flat
+      // bonuses land after it, and a cap applied before them capped nothing — the old `min(5000)`
+      // let a session reach 7850. Everything that can add XP has now been added.
+      xpEarned = Math.min(MAX_SESSION_XP, xpEarned);
+      overshootXp = Math.min(overshootXp, xpEarned);
+
       // Level after all XP (base + any oath bonus) is settled.
       const newTotalXp = oldTotalXp + xpEarned;
       const newLevel = calculateLevelFromXp(newTotalXp);
@@ -875,6 +991,7 @@ export const useSessionStore = create<SessionState>()(
         newAchievements,
         fulfilledOath,
         oathBonusXp,
+        overshootXp,
         campaign,
         levelUp,
         heroXp: { before: oldTotalXp, after: newTotalXp },
@@ -944,6 +1061,7 @@ useSessionStore.subscribe(
           currentExerciseIndex: state.currentExerciseIndex,
           startTime: state.startTime,
           totalPausedTime: state.totalPausedTime,
+          restTakenSeconds: state.restTakenSeconds,
           timerStartTimestamp: state.timerStartTimestamp,
           timerDuration: state.timerDuration,
           results: state.results,

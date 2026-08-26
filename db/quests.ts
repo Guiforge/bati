@@ -6,6 +6,7 @@ import { isMuscleCode } from "./muscles";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
+import { clampToRange, REST_RANGE, ROUNDS_RANGE, TARGET_RANGE } from "./questConfig";
 import {
   ADMIN_CREATOR,
   type ContentOwner,
@@ -189,9 +190,10 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
       frDescription: input.frDescription,
       author: input.author ?? ADMIN_CREATOR,
       imagePath: input.imagePath ?? null,
-      rounds: input.rounds,
-      restSeconds: input.restSeconds,
-      roundRestSeconds: input.roundRestSeconds,
+      rounds: clampToRange(input.rounds, ROUNDS_RANGE),
+      restSeconds: clampToRange(input.restSeconds, REST_RANGE),
+      roundRestSeconds:
+        input.roundRestSeconds === null ? null : clampToRange(input.roundRestSeconds, REST_RANGE),
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -217,8 +219,8 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
         exerciseId: qex.exerciseId,
         sortOrder: i,
         targetType: qex.baseTarget.type,
-        targetMin: qex.baseTarget.min,
-        targetMax: qex.baseTarget.max,
+        targetMin: clampToRange(qex.baseTarget.min, TARGET_RANGE),
+        targetMax: clampToRange(qex.baseTarget.max, TARGET_RANGE),
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );
@@ -543,6 +545,15 @@ export async function updateQuestMeta(
     .update(quests)
     .set({
       ...patch,
+      // Spread first, then re-state the bounded columns: `...patch` is a partial, so each one is
+      // only touched when the caller actually sent it.
+      ...(patch.rounds === undefined ? {} : { rounds: clampToRange(patch.rounds, ROUNDS_RANGE) }),
+      ...(patch.restSeconds === undefined
+        ? {}
+        : { restSeconds: clampToRange(patch.restSeconds, REST_RANGE) }),
+      ...(patch.roundRestSeconds === undefined || patch.roundRestSeconds === null
+        ? {}
+        : { roundRestSeconds: clampToRange(patch.roundRestSeconds, REST_RANGE) }),
       updatedAt: new Date(),
     })
     .where(eq(quests.id, id));
@@ -568,8 +579,8 @@ export async function setQuestExercises(
         exerciseId: qex.exerciseId,
         sortOrder: i,
         targetType: qex.baseTarget.type,
-        targetMin: qex.baseTarget.min,
-        targetMax: qex.baseTarget.max,
+        targetMin: clampToRange(qex.baseTarget.min, TARGET_RANGE),
+        targetMax: clampToRange(qex.baseTarget.max, TARGET_RANGE),
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );

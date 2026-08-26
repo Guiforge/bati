@@ -393,6 +393,17 @@ export function VictoryView() {
                 {t("common.daily_xp_bonus")}
               </Text>
             )}
+            {!!result?.overshootXp && (
+              <Text
+                fontWeight="700"
+                fontSize={11}
+                color="$success"
+                text="center"
+                fontFamily="$body"
+              >
+                {t("session.xp_overshoot", { count: result.overshootXp })}
+              </Text>
+            )}
           </Card>
         </XStack>
 

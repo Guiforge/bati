@@ -29,6 +29,7 @@ import {
   adventureWeeks,
   Difficulty,
   estimateQuestTemplateSeconds,
+  estimateQuestTemplateXp,
   getActiveAdventureRun,
   getAdventureDetails,
   getFinishedRunCountsByAdventure,
@@ -40,7 +41,6 @@ import {
 import { type BossFight, getBossFightByAdventure } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { computeSessionXp } from "@/db/xp";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -330,13 +330,14 @@ export default function AdventureDetailsScreen() {
   const preview = useMemo(() => {
     if (!activeTemplateStep) return null;
 
-    const durationSeconds = estimateQuestTemplateSeconds({
+    const previewInput = {
       template: activeTemplateStep.quest,
       exercisesById: state.exercisesById,
       userLevel: effectiveDifficulty,
-    });
+    };
 
-    const xp = computeSessionXp({ durationSeconds, userLevel: effectiveDifficulty });
+    const durationSeconds = estimateQuestTemplateSeconds(previewInput);
+    const xp = estimateQuestTemplateXp(previewInput);
 
     return {
       durationSeconds,

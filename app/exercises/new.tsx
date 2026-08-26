@@ -19,6 +19,7 @@ import {
   DEFAULT_USER_EXERCISE_DRAFT,
   getExerciseById,
   isUserExercise,
+  SECONDS_PER_REP_RANGE,
   type UserExerciseDraft,
   updateUserExercise,
 } from "@/db/exercises";
@@ -39,9 +40,6 @@ type Details = Omit<UserExerciseDraft, "name" | "description">;
 
 /** The movement art already in the APK. */
 const EXERCISE_CHOICES = Object.keys(EXERCISE_THUMB_ASSETS);
-
-const SECONDS_PER_REP_MIN = 1;
-const SECONDS_PER_REP_MAX = 30;
 
 /**
  * Where a hero writes a movement of their own.
@@ -320,8 +318,8 @@ export default function ExerciseEditor() {
                 label={t("exercise_editor.seconds_per_rep")}
                 hint={t("exercise_editor.seconds_per_rep_hint")}
                 value={details.secondsPerRep}
-                min={SECONDS_PER_REP_MIN}
-                max={SECONDS_PER_REP_MAX}
+                min={SECONDS_PER_REP_RANGE.min}
+                max={SECONDS_PER_REP_RANGE.max}
                 onChange={(secondsPerRep) => setDetails((d) => ({ ...d, secondsPerRep }))}
               />
             </YStack>

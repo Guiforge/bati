@@ -72,6 +72,7 @@ jest.mock("@/db", () => ({
   getQuestConfig: jest.fn().mockResolvedValue(null),
   applyQuestConfig: (quest: unknown) => quest,
   estimateQuestSeconds: jest.fn().mockReturnValue(300),
+  estimateQuestXp: jest.fn().mockReturnValue(60),
   formatDurationEstimate: jest.fn().mockReturnValue("5 min"),
   indexExercises: jest.fn().mockReturnValue(new Map()),
   isUserQuest: jest.fn().mockReturnValue(false),

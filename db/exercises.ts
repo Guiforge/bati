@@ -596,13 +596,32 @@ export type UserExerciseDraft = {
  * and `getMuscleBalance` reports how much it is not counting rather than quietly shrinking a
  * total.
  */
+/**
+ * The tempo a hero may claim for their own movement.
+ *
+ * Mirrors `app/exercises/new.tsx`'s stepper, which was the only thing enforcing it — the writers
+ * below took `draft.secondsPerRep` raw. It is not cosmetic: XP counts seconds of effort at this
+ * tempo, so an unbounded value is a multiplier on the reward for every rep of that movement.
+ */
+export const SECONDS_PER_REP_RANGE = { min: 1, max: 30 };
+
+function clampSecondsPerRep(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_SECONDS_PER_REP;
+  return Math.min(
+    SECONDS_PER_REP_RANGE.max,
+    Math.max(SECONDS_PER_REP_RANGE.min, Math.round(value)),
+  );
+}
+
+const DEFAULT_SECONDS_PER_REP = 3;
+
 export const DEFAULT_USER_EXERCISE_DRAFT: Omit<UserExerciseDraft, "name" | "description"> = {
   muscles: [],
   style: "strength",
   difficulty: "medium",
   equipment: "none",
   pattern: null,
-  secondsPerRep: 3,
+  secondsPerRep: DEFAULT_SECONDS_PER_REP,
   imagePath: "assets/placeholder.webp",
 };
 
@@ -672,7 +691,7 @@ export async function createUserExercise(draft: UserExerciseDraft): Promise<numb
       equipment: draft.equipment,
       style: draft.style,
       pattern: draft.pattern,
-      secondsPerRep: draft.secondsPerRep,
+      secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -701,7 +720,7 @@ export async function updateUserExercise(id: number, draft: UserExerciseDraft): 
       equipment: draft.equipment,
       style: draft.style,
       pattern: draft.pattern,
-      secondsPerRep: draft.secondsPerRep,
+      secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       updatedAt: new Date(),
     })
     .where(eq(exercises.id, id));

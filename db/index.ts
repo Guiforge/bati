@@ -43,7 +43,7 @@ export {
   unretireUserExercise,
 } from "./exercises";
 export { preferences, type TrainingLevel } from "./preferences";
-export { estimateQuestTemplateSeconds } from "./preview";
+export { estimateQuestTemplateSeconds, estimateQuestTemplateXp } from "./preview";
 export type { QuestConfig } from "./questConfig";
 export {
   applyQuestConfig,
@@ -75,3 +75,6 @@ export {
   getTotalXp,
   getXpForLevel,
 } from "./userLevel";
+// `db/xp.ts` is the only place the XP arithmetic and its constants live. Only the screens' entry
+// point is re-exported here; `saveSession` and the tests import the module itself.
+export { estimateQuestXp } from "./xp";

@@ -326,6 +326,14 @@ preview and the session that starts all read the same numbers. A level passed in
 adventure step) still wins over the remembered one. Stored values are re-clamped on read — they are
 untrusted text from SQLite.
 
+The swap sheet reaches this config from the quest screen, and **only** from there. The same sheet
+opened mid-session changes the movement for that session and writes nothing: the two are different
+acts. Configuring is posted cold, before starting, because the hero has no parallel bars at home;
+a mid-set swap is a correction for tonight, on the movement that just turned out to be out of
+reach. Storing the second would pin the slot — `applyQuestConfig` swaps before `currentRungFor`
+runs — so the rung substitution above would stop applying to the one slot the hero struggled on.
+Costing them a tap next session is the cheaper mistake.
+
 ---
 
 ## 🎮 Design Philosophy

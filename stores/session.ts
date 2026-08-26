@@ -26,7 +26,7 @@ import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
-import { getQuestConfig, REST_RANGE, saveQuestConfig, TARGET_RANGE } from "@/db/questConfig";
+import { REST_RANGE, TARGET_RANGE } from "@/db/questConfig";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
@@ -254,31 +254,6 @@ export type SavedSessionState = Pick<
   | "results"
   | "lastSetSkipped"
 > & { savedAt: number };
-
-/**
- * Remember a mid-session swap, so the quest opens on the movement the hero chose next time.
- *
- * The target override goes with the movement it was tuned for — "20" carried from push-ups onto a
- * one-arm push-up is a bad prescription, the reasoning `applySwap` spells out on the quest screen.
- */
-async function persistSwap(
-  questId: number,
-  questExerciseId: number,
-  exerciseId: number,
-  userLevel: DifficultyCode,
-): Promise<void> {
-  const config = await getQuestConfig(questId);
-  const { [String(questExerciseId)]: _replaced, ...targets } = config?.targets ?? {};
-
-  await saveQuestConfig(questId, {
-    ...config,
-    // `level` is required on the stored shape; a quest never configured has none yet, and the
-    // session is running at the one the hero started it with.
-    level: config?.level ?? userLevel,
-    targets,
-    swaps: { ...config?.swaps, [String(questExerciseId)]: exerciseId },
-  });
-}
 
 /**
  * Where a session goes once a set is behind it: finished, resting, or straight into the next
@@ -844,11 +819,13 @@ export const useSessionStore = create<SessionState>()(
           : {}),
       });
 
-      // Stick for next time. Never blocking: a preference that fails to save must not take a
-      // workout down with it.
-      persistSwap(quest.id, slot.id, exercise.id, get().userLevel).catch((e) =>
-        reportError("session.swap", e),
-      );
+      // Deliberately not written to the quest's saved config, unlike the same sheet on the quest
+      // screen. That one is configuration — posted cold, before starting, because the hero has no
+      // parallel bars at home. This one is a correction for tonight, made mid-set on the movement
+      // that just turned out to be out of reach, and reading a standing preference out of it pins
+      // the slot: `applyQuestConfig` swaps before `currentRungFor` ever runs, so the progression
+      // substitution issue #33 exists for stops applying to the one slot the hero struggled on.
+      // Costing them a tap next session is the cheaper mistake; the quest screen still pins.
     },
 
     skipExercise: () => {

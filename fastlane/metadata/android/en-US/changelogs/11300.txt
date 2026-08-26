@@ -1,0 +1,9 @@
+- Write your own movements: a name, how to do it, a picture. Edit,
+  retire or delete them, and what you wrote leads every list.
+- XP counts effort now, not the clock. A long rest no longer pays
+  better than training.
+- A quest hands you the rung you are on — wall push-ups instead of
+  push-ups. Out of reach anyway? Swap it mid-session, or mark the set
+  undone instead of typing a 1.
+- Pick a backup folder once and Bati writes a snapshot into it before
+  every update.

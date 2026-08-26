@@ -23,6 +23,7 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
     muscles: [],
     pattern: null,
     prerequisiteExerciseId: null,
+    retiredAt: null,
     ...over,
   };
 }
@@ -245,5 +246,41 @@ describe("rankSwapCandidates", () => {
 
     const out = rankSwapCandidates([a, b], a, null);
     expect(out.map((c) => c.exercise.id)).toEqual([21]);
+  });
+});
+
+describe("hero-authored facets", () => {
+  const seed = makeExercise({ id: 1, enName: "Squat", frName: "Squat" });
+  const mine = makeExercise({
+    id: 2,
+    enName: "Archer Squat",
+    frName: "Archer Squat",
+    creator: "hero",
+  });
+  const retired = makeExercise({
+    id: 3,
+    enName: "Old Note",
+    frName: "Old Note",
+    creator: "hero",
+    retiredAt: new Date(),
+  });
+
+  const all = [seed, mine, retired];
+
+  test("`mine` keeps only what the hero wrote", () => {
+    const result = filterExercises(all, { ...NO_EXERCISE_FILTERS, mine: true }, "en", new Map());
+    expect(result.map((e) => e.enName)).toEqual(["Archer Squat"]);
+  });
+
+  test("retired movements are out of every list until asked for", () => {
+    expect(filterExercises(all, NO_EXERCISE_FILTERS, "en", new Map()).map((e) => e.enName)).toEqual(
+      ["Squat", "Archer Squat"],
+    );
+
+    expect(
+      filterExercises(all, { ...NO_EXERCISE_FILTERS, retired: true }, "en", new Map()).map(
+        (e) => e.enName,
+      ),
+    ).toEqual(["Old Note"]);
   });
 });

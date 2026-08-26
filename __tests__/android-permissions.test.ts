@@ -44,8 +44,8 @@ function strippedByPlugin(): Set<string> {
 const ALLOWED: Record<string, string> = {
   "android.permission.VIBRATE": "expo-haptics — every button in the app buzzes.",
   "android.permission.READ_EXTERNAL_STORAGE":
-    "expo-image-picker, capped at maxSdkVersion 32 — picking an avatar photo, and reading a " +
-    "backup file the hero chose.",
+    "expo-image-picker, capped at maxSdkVersion 32 — picking an avatar photo, picking a photo " +
+    "for a hero-authored exercise, and reading a backup file the hero chose.",
   "android.permission.WRITE_EXTERNAL_STORAGE":
     "same pair, capped at maxSdkVersion 32 — writing the backup the hero asked to export.",
 };

@@ -159,6 +159,15 @@ outlived it.
   block is a lint error.
 - **Coverage thresholds sit just under actual**, so they catch deletion. They are a ratchet,
   not a target: raise them when coverage rises, never lower them to make a build pass.
+- **Seed content and hero content share one table.** `exercises` holds both, told apart by
+  `creator` (`Admin` vs `hero`), and the unique index on `enName` is partial *per population*: a
+  hero naming a movement can never make a future content migration fail, and a future migration
+  can never take a name away from a hero. One global index made the second case an app that never
+  opens again — a `UNIQUE` failure rolls the whole journal back, on every launch, forever. The
+  price is one rule: every migration statement that reaches `exercises` — writing it, or
+  reading one by `enName` from a join — scopes itself to `creator`. `__tests__/seed-migration-guard.test.ts` fails on any that does not, and
+  exempts everything below `0035` because those ran before a hero row could exist. See
+  [`docs/architecture/exercise-ownership.md`](docs/architecture/exercise-ownership.md).
 - **Mark a deliberate shortcut with a `ponytail:` comment** naming its ceiling and what would
   trigger the real fix. "Refactor planned" tells the next reader nothing.
 

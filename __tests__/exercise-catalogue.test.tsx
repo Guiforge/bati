@@ -14,6 +14,12 @@ const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
+  // The catalogue reloads on focus since the hero can write to it; the real hook needs a
+  // navigation container, so run the effect once like a mount.
+  useFocusEffect: (effect: () => undefined | (() => void)) => {
+    const { useEffect } = require("react");
+    useEffect(effect, [effect]);
+  },
 }));
 
 jest.mock(
@@ -54,6 +60,10 @@ jest.mock("@legendapp/list/react-native", () => {
 const mockListExercises = jest.fn();
 jest.mock("@/db/exercises", () => ({
   listExercises: (...args: unknown[]) => mockListExercises(...args),
+  ADMIN_CREATOR: "Admin",
+  // The real rule, not a stub: the screen's ordering is what these cases assert.
+  heroFirst: (list: { creator: string }[]) =>
+    [...list].sort((a, b) => Number(b.creator !== "Admin") - Number(a.creator !== "Admin")),
 }));
 
 function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id" | "enName">): Exercise {
@@ -70,8 +80,11 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id" | "enName">)
     muscles: ["back"],
     pattern: "pull_horizontal",
     prerequisiteExerciseId: null,
+    retiredAt: null,
     ...over,
-  } as Exercise;
+    // No `as Exercise`: the cast is what let this fixture miss `retiredAt` when the column
+    // landed, and a fixture the compiler cannot check is a fixture that drifts from the row.
+  };
 }
 
 const TABLE_ROW = makeExercise({ id: 1, enName: "Table Row" });
@@ -158,5 +171,22 @@ describe("exercise catalogue", () => {
     );
 
     expect(mockPush).toHaveBeenCalledWith("/exercises/1");
+  });
+
+  it("puts what the hero wrote at the top, ahead of the alphabet", async () => {
+    // A name that would otherwise sort last, so the assertion proves the ordering beats the
+    // alphabet rather than agreeing with it by luck.
+    const mine = makeExercise({ id: 9, enName: "Zephyr Kick", creator: "hero" });
+    mockListExercises.mockResolvedValue([TABLE_ROW, INVERTED_ROW, PUSH_UP, mine]);
+
+    await renderScreen();
+
+    await waitFor(() => expect(screen.getByText("Zephyr Kick")).toBeTruthy());
+
+    // Order, not mere presence: a hero-authored movement is one needle in sixty-odd.
+    const rendered = screen
+      .getAllByText(/^(Zephyr Kick|Inverted Row|Push-up|Table Row)$/)
+      .map((node) => node.props.children);
+    expect(rendered[0]).toBe("Zephyr Kick");
   });
 });

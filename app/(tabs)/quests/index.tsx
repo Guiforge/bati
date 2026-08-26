@@ -31,6 +31,7 @@ import {
 import {
   estimateQuestTemplateSeconds,
   formatDurationEstimate,
+  isUserQuest,
   listExercises,
   listQuestTemplates,
   trainingFocus,
@@ -64,9 +65,10 @@ function questEmoji(rounds: number, exerciseCount: number) {
 
 const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
 
+/** No path means no cover: the muscle tint carries the banner instead. Anything else — a bundled
+ *  key, a seeded path, a hero's `data:` photo — `getQuestAsset` already knows. */
 function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
-  if (!path) return null;
-  return path.startsWith("http") ? { uri: path } : getQuestAsset(path);
+  return path ? getQuestAsset(path) : null;
 }
 
 type QuestMeta = {
@@ -92,6 +94,9 @@ type QuestMeta = {
   metaLabel: string;
   /** "+45 XP" — the reward, in gold. */
   xpLabel: string;
+  /** "Yours" on a hero-written quest, null on seed content. Resolved here because `QuestRow`
+   *  deliberately has no `useTranslation` of its own. */
+  heroLabel: string | null;
 };
 
 function buildQuestMeta(
@@ -153,6 +158,7 @@ function buildQuestMeta(
       defaultValue: `${q.exercises.length} exercises`,
     }),
     xpLabel: t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
+    heroLabel: isUserQuest(q) ? t("common.hero_badge") : null,
   };
 }
 
@@ -191,6 +197,13 @@ function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: 
           <XStack position="absolute" t="$3" l="$3">
             <Chip label={meta.durationLabel} />
           </XStack>
+          {/* Opposite the duration, so a hero's own quest is legible from the gallery rather
+            than only once opened. Same word the movement rows wear. */}
+          {meta.heroLabel ? (
+            <XStack position="absolute" t="$3" r="$3">
+              <Chip label={meta.heroLabel} tone="primary" />
+            </XStack>
+          ) : null}
         </YStack>
 
         <YStack gap="$2" p="$4">
@@ -420,9 +433,13 @@ export default function QuestsGallery() {
   const quests = state.quests;
   const exercisesById = state.exercisesById;
 
+  // Hero quests lead. Seed order is authored — the gallery opens on a curated first card — so
+  // the rest keeps it rather than being re-sorted around them.
   const questMeta = useMemo(
     () =>
-      quests.map((q) => buildQuestMeta(q, exercisesById, language, t, configs.get(q.id) ?? null)),
+      [...quests]
+        .sort((a, b) => Number(isUserQuest(b)) - Number(isUserQuest(a)))
+        .map((q) => buildQuestMeta(q, exercisesById, language, t, configs.get(q.id) ?? null)),
     [exercisesById, quests, language, t, configs],
   );
 

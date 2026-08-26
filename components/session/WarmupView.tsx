@@ -2,10 +2,11 @@ import { Pause, SkipBack, SkipForward } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
-import { type Exercise, listExercises } from "@/db/exercises";
+import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
@@ -19,6 +20,16 @@ import { useSettingsStore } from "@/stores/settings";
  * disk — nothing here is a second kind of content. Nothing is journaled either: the hero's
  * volume, records and boss damage all start at the first real exercise.
  */
+/**
+ * The how-to box: caps at ~6 lines and scrolls past that, and refuses to be squeezed.
+ *
+ * `flexShrink` is 1 by default on an RN ScrollView, so the overflowing column above shrank this
+ * to three lines and cut the sentence mid-word — the same defect `FilterRail`'s `RAIL_STYLE`
+ * exists to prevent, and the exact complaint that started this: a hero who does not know the
+ * movement, reading half a sentence while the clock runs.
+ */
+const DESCRIPTION_STYLE = { maxHeight: 120, flexGrow: 0, flexShrink: 0 } as const;
+
 export function WarmupView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -69,12 +80,15 @@ export function WarmupView() {
   if (!step) return null;
 
   const nameOf = (enName: string) => {
-    const found = catalogue.find((e) => e.enName === enName);
+    // Seed rows only: since `0035` a hero can own a name too, and the warm-up prescribes the
+    // seeded movement — teaching someone their own half-written note would be worse than the
+    // English fallback.
+    const found = officialByName(catalogue, enName);
     if (!found) return enName;
     return localizedName(found, language);
   };
 
-  const exercise = catalogue.find((e) => e.enName === step.exerciseName);
+  const exercise = officialByName(catalogue, step.exerciseName);
   const label = nameOf(step.exerciseName);
   const description = exercise
     ? language === "fr"
@@ -83,9 +97,7 @@ export function WarmupView() {
     : undefined;
 
   const nextStep = warmupSequence[warmupIndex + 1];
-  const nextExercise = nextStep
-    ? catalogue.find((e) => e.enName === nextStep.exerciseName)
-    : undefined;
+  const nextExercise = nextStep ? officialByName(catalogue, nextStep.exerciseName) : undefined;
 
   const isFirst = warmupIndex === 0;
 
@@ -123,16 +135,21 @@ export function WarmupView() {
           {label}
         </H3>
 
+        {/* Not truncated, and scrolling rather than growing: this column's siblings are
+          fixed-height and RN's flexShrink is 0, so a long movement would otherwise push the
+          timer off the bottom edge. Three lines was the old cap, and it cut the one screen
+          whose job is teaching a movement off mid-sentence. */}
         {description ? (
-          <Text
-            fontSize={14}
-            color="$textSecondary"
-            lineHeight={20}
-            numberOfLines={3}
-            style={{ textAlign: "center" }}
-          >
-            {description}
-          </Text>
+          <ScrollView style={DESCRIPTION_STYLE} showsVerticalScrollIndicator={false}>
+            <Text
+              fontSize={14}
+              color="$textSecondary"
+              lineHeight={20}
+              style={{ textAlign: "center" }}
+            >
+              {description}
+            </Text>
+          </ScrollView>
         ) : null}
 
         <H1 color="$primaryText" fontSize={64} fontWeight="700">

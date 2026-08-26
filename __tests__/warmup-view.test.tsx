@@ -17,7 +17,13 @@ import config from "@/tamagui.config";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
-jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue([]) }));
+jest.mock("@/db/exercises", () => ({
+  listExercises: jest.fn().mockResolvedValue([]),
+  // Mirrors the real one: seed rows only. The view must not resolve a warm-up step to a
+  // same-named movement the hero wrote.
+  officialByName: (catalogue: { enName: string; creator: string }[], enName: string) =>
+    catalogue.find((e) => e.enName === enName && e.creator === "Admin"),
+}));
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),
@@ -91,6 +97,7 @@ describe("WarmupView", () => {
         enDescription: "Jump while spreading your legs and raising your arms overhead.",
         frDescription: "Sautez en écartant les jambes et en levant les bras.",
         imagePath: "unknown",
+        creator: "Admin",
       },
     ]);
 
@@ -99,5 +106,29 @@ describe("WarmupView", () => {
     expect(
       getByText("Jump while spreading your legs and raising your arms overhead."),
     ).toBeTruthy();
+  });
+
+  it("shows the whole description, not a truncated head", async () => {
+    // A user wrote in about exactly this: they did not know the movement, and the three lines
+    // this screen allowed cut the instructions off mid-sentence while the clock ran.
+    const howTo =
+      "Stand tall with your feet together and your arms at your sides, then jump your feet " +
+      "wide while sweeping your arms overhead, and jump back. Keep the landing soft and the " +
+      "rhythm even, because this step is here to raise your temperature rather than tire you.";
+
+    (listExercises as jest.Mock).mockResolvedValueOnce([
+      {
+        enName: WARMUP_SEQUENCE[0].exerciseName,
+        frName: "Jumping Jack",
+        enDescription: howTo,
+        frDescription: howTo,
+        imagePath: "unknown",
+        creator: "Admin",
+      },
+    ]);
+
+    const { getByText } = await mountWarmup();
+
+    expect(getByText(howTo).props.numberOfLines).toBeUndefined();
   });
 });

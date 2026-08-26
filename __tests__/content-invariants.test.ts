@@ -274,7 +274,11 @@ describe("content invariants", () => {
     const all = await loadQuests();
 
     const used = new Set(all.flatMap((q) => q.exercises.map((qex) => qex.exercise.id)));
+    // Seed content only. `exercises` has held two populations since `0035`, and a hero-authored
+    // movement is allowed to belong to no quest and to declare no pattern — these rules are
+    // about the catalogue the app ships, not about what someone writes in it.
     const orphans = (await exerciseApi.listExercises())
+      .filter((e) => e.creator === "Admin")
       .filter((e) => !used.has(e.id))
       .map((e) => e.enName);
 

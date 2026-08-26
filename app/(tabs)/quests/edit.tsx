@@ -10,17 +10,20 @@ import { Button, Input, Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { getExerciseThumb } from "@/constants/assetMap";
+import { getExerciseThumb, getQuestAsset, QUEST_ASSETS } from "@/constants/assetMap";
 import {
   clearQuestConfig,
   createQuestTemplate,
   deleteQuest,
   getQuestConfig,
   getQuestTemplateById,
+  heroFirst,
   listExercises,
+  pickableExercises,
   REST_RANGE,
   ROUNDS_RANGE,
   saveQuestConfig,
@@ -67,6 +70,16 @@ function missingPiece(
   return null;
 }
 
+/**
+ * "No cover chosen" — a real state, not a picture. The gallery paints a muscle-tinted banner for
+ * a quest with no `imagePath`, which is nicer than a grey plate, so an untouched field must save
+ * as null rather than as the placeholder's path.
+ */
+const NO_COVER = "";
+
+/** The quest art already in the APK. Covers are 4:3, unlike the movements' square plates. */
+const QUEST_CHOICES = Object.keys(QUEST_ASSETS);
+
 const DEFAULT_ROUNDS = 3;
 const DEFAULT_REST = 30;
 const DEFAULT_REPS = 10;
@@ -93,6 +106,7 @@ export default function QuestEditor() {
   const [rest, setRest] = useState(DEFAULT_REST);
   const [roundRest, setRoundRest] = useState(DEFAULT_REST);
   const [picked, setPicked] = useState<PickedExercise[]>([]);
+  const [imagePath, setImagePath] = useState(NO_COVER);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const nextUid = useRef(0);
@@ -112,13 +126,14 @@ export default function QuestEditor() {
       rounds: DEFAULT_ROUNDS,
       rest: DEFAULT_REST,
       roundRest: DEFAULT_REST,
+      imagePath: NO_COVER,
       picked: [] as PickedExercise[],
     }),
   );
   const skipGuardRef = useRef(false);
   const isDirty =
     !skipGuardRef.current &&
-    JSON.stringify({ title, description, rounds, rest, roundRest, picked }) !== baseline;
+    JSON.stringify({ title, description, rounds, rest, roundRest, imagePath, picked }) !== baseline;
   const isDirtyRef = useRef(isDirty);
   isDirtyRef.current = isDirty;
 
@@ -179,6 +194,8 @@ export default function QuestEditor() {
       setRest(template.restSeconds);
       setRoundRest(template.roundRestSeconds ?? template.restSeconds);
       setPicked(nextPicked);
+      const nextImagePath = template.imagePath ?? NO_COVER;
+      setImagePath(nextImagePath);
       setBaseline(
         JSON.stringify({
           title: nextTitle,
@@ -186,6 +203,7 @@ export default function QuestEditor() {
           rounds: template.rounds,
           rest: template.restSeconds,
           roundRest: template.roundRestSeconds ?? template.restSeconds,
+          imagePath: nextImagePath,
           picked: nextPicked,
         }),
       );
@@ -200,6 +218,13 @@ export default function QuestEditor() {
       cancelled = true;
     };
   }, [questId, language, t]);
+
+  // Retired movements leave every list you pick from — but not a quest that already holds one.
+  // Filtering them out of `exercises` filtered them out of `exercisesById` too, so an existing
+  // row rendered as nothing while `save()` still wrote it: the hero saw four exercises, saved
+  // five, and had no way to remove the one they could not see.
+  // Same rule as the catalogue: what the hero wrote leads the sheet.
+  const pickable = useMemo(() => heroFirst(pickableExercises(exercises)), [exercises]);
 
   const exercisesById = useMemo(
     () => Object.fromEntries(exercises.map((e) => [e.id, e] as const)),
@@ -260,6 +285,7 @@ export default function QuestEditor() {
           rounds,
           restSeconds: rest,
           roundRestSeconds: roundRest,
+          imagePath: imagePath || null,
           exercises: payload,
         });
         // The edit used to vanish with no confirmation it persisted.
@@ -277,6 +303,7 @@ export default function QuestEditor() {
         rounds,
         restSeconds: rest,
         roundRestSeconds: roundRest,
+        imagePath: imagePath || null,
       });
       await setQuestExercises(questId, payload);
 
@@ -362,6 +389,18 @@ export default function QuestEditor() {
               </AppIconButton>
             ) : null}
           </XStack>
+
+          {/* The cover leads, as it does in the movement editor: a quest is a card in a gallery
+            long before anyone reads its rounds. Seed quests carry authored art; a hero picks
+            from the same set or brings a photo. */}
+          <ImageChoiceField
+            value={imagePath}
+            onChange={setImagePath}
+            choices={QUEST_CHOICES}
+            resolve={getQuestAsset}
+            resolveThumb={getQuestAsset}
+            aspect={[4, 3]}
+          />
 
           <Card>
             <YStack gap="$3">
@@ -499,7 +538,7 @@ export default function QuestEditor() {
           </AppButton>
 
           <ExercisePickerSheet
-            exercises={exercises}
+            exercises={pickable}
             pickedIds={pickedIds}
             language={language}
             open={pickerOpen}
@@ -511,6 +550,18 @@ export default function QuestEditor() {
           />
         </YStack>
       </ScrollView>
+
+      {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
+      <YStack
+        position="absolute"
+        t={0}
+        l={0}
+        r={0}
+        height={insets.top}
+        bg="$background"
+        opacity={0.88}
+        pointerEvents="none"
+      />
 
       <YStack
         p="$4"

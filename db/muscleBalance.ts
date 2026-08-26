@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { MUSCLE_LABELS } from "./muscles";
 import { isMovementPattern, PATTERN_LABELS, PULL_PATTERNS, PUSH_PATTERNS } from "./patterns";
@@ -41,6 +41,13 @@ export type MuscleBalance = {
   muscles: MuscleVolume[];
   weakAreas: MuscleCode[]; // Muscles below average
   strongAreas: MuscleCode[]; // Muscles above average
+  /**
+   * Results whose exercise carries no muscle tag — hero-authored movements where the hero left
+   * the editor's fold closed. The join above is an inner one, so they are in no bar and in no
+   * total. The card prints this rather than reporting a smaller number and looking confident
+   * about it: a screen that cannot know must not assert.
+   */
+  unclassifiedResults: number;
 };
 
 /**
@@ -76,6 +83,19 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
     .innerJoin(exerciseMuscles, sql`${exerciseMuscles.exerciseId} = ${exercises.id}`)
     .where(whereClause)
     .orderBy(desc(completedQuest.performedAt));
+
+  // The same window, over the results the join above cannot see: an exercise with no muscle row.
+  const unclassified = await db
+    .select({ n: count() })
+    .from(completedQuest)
+    .innerJoin(completedExercises, sql`${completedExercises.sessionId} = ${completedQuest.id}`)
+    .innerJoin(exercises, sql`${exercises.id} = ${completedExercises.exerciseId}`)
+    .leftJoin(exerciseMuscles, sql`${exerciseMuscles.exerciseId} = ${exercises.id}`)
+    .where(
+      whereClause
+        ? and(whereClause, isNull(exerciseMuscles.muscle))
+        : isNull(exerciseMuscles.muscle),
+    );
 
   // Aggregate volume by muscle
   const muscleVolumes = new Map<MuscleCode, { volume: number; sessions: Set<number> }>();
@@ -147,6 +167,7 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
     muscles: muscleResults,
     weakAreas,
     strongAreas,
+    unclassifiedResults: unclassified[0]?.n ?? 0,
   };
 }
 

@@ -199,4 +199,38 @@ describe("db/quests", () => {
     await quests.deleteQuest(id);
     expect(await quests.getQuestTemplateById(id)).toBeNull();
   });
+
+  test("a hero quest keeps 'no cover' as a real state, and can be given one later", async () => {
+    const { createQuestTemplate, getQuestTemplateById, updateQuestMeta } =
+      require("../db/quests") as typeof import("../db/quests");
+
+    const id = await createQuestTemplate({
+      enTitle: "Cover test",
+      frTitle: "Cover test",
+      enDescription: "",
+      frDescription: "",
+      author: "hero",
+      archetype: null,
+      rounds: 1,
+      restSeconds: 30,
+      roundRestSeconds: null,
+      exercises: [],
+    });
+
+    // Null, not the placeholder path: the gallery paints a muscle-tinted banner for a quest with
+    // no cover, and writing the placeholder would replace that with a grey plate.
+    const raw = t.sqlite.prepare("SELECT imagePath FROM quests WHERE id = ?").get(id) as {
+      imagePath: string | null;
+    };
+    expect(raw.imagePath).toBeNull();
+
+    await updateQuestMeta(id, { imagePath: "arcane_gauntlet" });
+    expect((await getQuestTemplateById(id))?.imagePath).toBe("arcane_gauntlet");
+
+    await updateQuestMeta(id, { imagePath: null });
+    const cleared = t.sqlite.prepare("SELECT imagePath FROM quests WHERE id = ?").get(id) as {
+      imagePath: string | null;
+    };
+    expect(cleared.imagePath).toBeNull();
+  });
 });

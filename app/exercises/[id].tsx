@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { ScrollView } from "react-native";
+import { Alert, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
@@ -12,8 +12,16 @@ import { Card } from "@/components/common/Card";
 import { PathStrip } from "@/components/common/PathStrip";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
+import { useToast } from "@/components/common/Toast";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
-import { getExerciseById } from "@/db";
+import {
+  deleteUserExercise,
+  getExerciseById,
+  getExerciseUsage,
+  isUserExercise,
+  retireUserExercise,
+  unretireUserExercise,
+} from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
@@ -25,16 +33,12 @@ import { useSettingsStore } from "@/stores/settings";
 type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
 type Status = "loading" | "ready" | "error";
 
-const resolveAsset = (path?: string | null): ImageSourcePropType =>
-  path?.startsWith("http") ? { uri: path } : getExerciseAsset(path ?? "");
-
 /**
  * The 1280 px art belongs to the 16:9 hero and nowhere else — an image costs its *source*
  * resolution in memory, not its slot (docs/architecture/performance.md). Every small slot reads
  * the 128 px thumbnail, which is what `ProgressionCard` and `SessionRewards` already do.
  */
-const resolveThumb = (path?: string | null): ImageSourcePropType =>
-  path?.startsWith("http") ? { uri: path } : getExerciseThumb(path ?? "");
+const resolveThumb = (path?: string | null): ImageSourcePropType => getExerciseThumb(path ?? "");
 
 const parseId = (raw?: string | string[]): number | null => {
   const val = Array.isArray(raw) ? raw[0] : raw;
@@ -242,14 +246,141 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
   );
 }
 
-function ExerciseContent({ exercise }: { exercise: Exercise }) {
+/**
+ * What a hero may do to a movement they wrote. Nothing here is offered for seed content.
+ *
+ * Retire is the normal path and delete is the narrow one, because foreign keys are off on the
+ * device and nine queries innerJoin `exercises` — removing a movement someone has trained would
+ * silently rewrite their volume, their village level and their records. `getExerciseUsage` is
+ * what decides which of the two this screen shows.
+ */
+function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => void }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { showError } = useToast();
+  const [deletable, setDeletable] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getExerciseUsage(exercise.id)
+      .then((usage) => {
+        // Every count, not the two this screen knows the names of — see `ExerciseUsage`.
+        if (!cancelled) setDeletable(Object.values(usage).every((n) => n === 0));
+      })
+      .catch((error) => {
+        // Unknown usage means the safe answer, not a missing button: retire.
+        reportError("exercise.usage", error);
+        if (!cancelled) setDeletable(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [exercise.id]);
+
+  const run = (action: () => Promise<void>, failureKey: string) => {
+    setBusy(true);
+    action()
+      .then(onGone)
+      .catch((error: unknown) => {
+        setBusy(false);
+        reportError("exercise.heroAction", error);
+        showError(t(failureKey));
+      });
+  };
+
+  const confirmRetire = () =>
+    Alert.alert(t("exercises.retire_confirm_title"), t("exercises.retire_confirm_body"), [
+      { text: t("common.cancel", "Cancel"), style: "cancel" },
+      {
+        text: t("exercises.retire"),
+        onPress: () => run(() => retireUserExercise(exercise.id), "exercises.retire_failed"),
+      },
+    ]);
+
+  const confirmDelete = () =>
+    Alert.alert(t("exercises.delete_confirm_title"), t("exercises.delete_confirm_body"), [
+      { text: t("common.cancel", "Cancel"), style: "cancel" },
+      {
+        text: t("exercises.delete"),
+        style: "destructive",
+        onPress: () => run(() => deleteUserExercise(exercise.id), "exercises.delete_failed"),
+      },
+    ]);
+
+  return (
+    <Card>
+      <YStack gap="$3">
+        <AppButton
+          testID="exercise-edit"
+          variant="outline"
+          disabled={busy}
+          // `as never` like every other push here: typed routes are generated by `expo start`
+          // (see AGENTS.md), so a fresh checkout does not know this route exists.
+          onPress={() =>
+            router.push({ pathname: "/exercises/new", params: { id: exercise.id } } as never)
+          }
+          accessibilityRole="button"
+          accessibilityLabel={t("exercises.edit")}
+        >
+          {t("exercises.edit")}
+        </AppButton>
+
+        {/* A retired movement offers only the way back: it is already out of every list you
+            pick from, and "Retirer" promised that door opens both ways. */}
+        {exercise.retiredAt !== null ? (
+          <AppButton
+            testID="exercise-restore"
+            variant="outline"
+            disabled={busy}
+            onPress={() => run(() => unretireUserExercise(exercise.id), "exercises.restore_failed")}
+            accessibilityRole="button"
+            accessibilityLabel={t("exercises.restore")}
+          >
+            {t("exercises.restore")}
+          </AppButton>
+        ) : null}
+
+        {/* One button, never both: a movement with history cannot be deleted, and one that has
+            none has nothing to keep. `null` means the count is still in flight. */}
+        {exercise.retiredAt !== null ? null : deletable === null ? null : deletable ? (
+          <AppButton
+            testID="exercise-delete"
+            variant="outline"
+            disabled={busy}
+            onPress={confirmDelete}
+            accessibilityRole="button"
+            accessibilityLabel={t("exercises.delete")}
+          >
+            {t("exercises.delete")}
+          </AppButton>
+        ) : (
+          <AppButton
+            testID="exercise-retire"
+            variant="outline"
+            disabled={busy}
+            onPress={confirmRetire}
+            accessibilityRole="button"
+            accessibilityLabel={t("exercises.retire")}
+          >
+            {t("exercises.retire")}
+          </AppButton>
+        )}
+      </YStack>
+    </Card>
+  );
+}
+
+function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () => void }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
 
   const title = localizedName(exercise, language);
   const desc = language === "fr" ? exercise.frDescription : exercise.enDescription;
   const equipmentLabel = EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment;
-  const img = resolveAsset(exercise.imagePath);
+  // `getExerciseAsset` understands a bundled path, a picked illustration and a photo's
+  // data URI alike, so this screen no longer needs its own `startsWith("http")` branch.
+  const img = getExerciseAsset(exercise.imagePath);
 
   const [progression, setProgression] = useState<NextProgression | null>(null);
   const [chain, setChain] = useState<Chain | null>(null);
@@ -326,6 +457,9 @@ function ExerciseContent({ exercise }: { exercise: Exercise }) {
           ladder vanished. The movement a hero opens out of ambition showed the least. */}
       {chain ? <PathCard chain={chain} /> : null}
       {progression ? <NextStepCard progression={progression} /> : null}
+
+      {/* Seed content is never offered these — a content update must not be clobberable. */}
+      {isUserExercise(exercise) ? <HeroActions exercise={exercise} onGone={onGone} /> : null}
     </YStack>
   );
 }
@@ -407,7 +541,9 @@ export default function ExerciseDetails() {
 
           {status === "loading" && <LoadingCard />}
           {status === "error" && <ErrorCard message={error} onRetry={() => load(exerciseId)} />}
-          {status === "ready" && exercise && <ExerciseContent exercise={exercise} />}
+          {status === "ready" && exercise && (
+            <ExerciseContent exercise={exercise} onGone={goBack} />
+          )}
         </YStack>
       </ScrollView>
     </YStack>

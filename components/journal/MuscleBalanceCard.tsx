@@ -145,6 +145,15 @@ export function MuscleBalanceCard() {
           </Text>
         )}
 
+        {/* The bars cannot show these either, for a blunter reason: an exercise with no muscle
+            tags joins to nothing. Reporting the smaller total in silence is the same lie a
+            loading state tells when it renders a zero. */}
+        {balance.unclassifiedResults > 0 ? (
+          <Text fontSize={12} color="$text" opacity={0.7}>
+            {t("journal.unclassified_volume", { count: balance.unclassifiedResults })}
+          </Text>
+        ) : null}
+
         {/* The muscle bars above cannot show this: a row and a push-up both count as "arms".
             Pulling is the first thing to vanish when you train without a bar. */}
         {pullDeficit ? (

@@ -1,14 +1,17 @@
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
+import { getAllPreferences } from "./preferences";
 import {
+  ADMIN_CREATOR,
   type DifficultyCode,
   type EquipmentCode,
   type ExerciseStyle,
   exerciseStyles,
   type MovementPattern,
   type MuscleCode,
+  USER_EXERCISE_CREATOR,
 } from "./schema";
 
 const { exercises, exerciseMuscles } = schema;
@@ -40,13 +43,49 @@ export type Exercise = {
    * inverted, `prerequisite → this` is "what does this movement lead to".
    */
   prerequisiteExerciseId: number | null;
+  /** Set when a hero retires their own movement. Seed rows are always null. */
+  retiredAt: Date | null;
 };
 
-export { isEquipmentCode, isMuscleCode };
+/**
+ * `ADMIN_CREATOR` is what seed content carries — the column has defaulted to it since `0000`.
+ * `USER_EXERCISE_CREATOR` is stamped on exercises written in the app, exactly as
+ * `USER_QUEST_AUTHOR` is on quests: only rows carrying it may be edited or retired from the UI,
+ * so a content update can never clobber the hero's work and the hero can never edit the seed.
+ *
+ * They live in `./schema` beside the column, and are re-exported here because this is where the
+ * rest of the app looks for anything about an exercise.
+ */
+export { ADMIN_CREATOR, isEquipmentCode, isMuscleCode, USER_EXERCISE_CREATOR };
 
-// Exercise definitions are static seed content (no in-app editing), so every screen that
-// mounts (quest/adventure galleries, adventure details) can share one fetch instead of each
-// re-querying on every navigation - the biggest source of the post-navigation loading flash.
+export function isUserExercise(ex: Pick<Exercise, "creator">): boolean {
+  return ex.creator !== ADMIN_CREATOR;
+}
+
+/**
+ * Resolve a movement the *content* named.
+ *
+ * The warm-up prescribes by `enName` (`constants/warmup.ts` says so in its own docblock), and
+ * since `0035` a hero can own names too — a bare `find` on `enName` can land on their row and
+ * teach a hero their own half-written note instead of the seeded movement.
+ *
+ * Pure on purpose: it reads the list `listExercises()` already caches, so this costs no query.
+ * Two callers: the warm-up, and `app/oath.tsx`, whose presets name seed content the same way.
+ * `db/oaths.ts` stores an id and `db/paths.ts` walks `prerequisiteExerciseId`, which no hero row
+ * carries — neither goes through a name, so neither needs this.
+ */
+export function officialByName(catalogue: Exercise[], enName: string): Exercise | undefined {
+  return catalogue.find((e) => e.enName === enName && e.creator === ADMIN_CREATOR);
+}
+
+// One fetch shared by every screen that mounts (quest/adventure galleries, adventure details)
+// instead of each re-querying on every navigation — the biggest source of the post-navigation
+// loading flash. This used to say "static seed content (no in-app editing)"; since `0035` the
+// hero writes here too, so every writer below calls `invalidateExercisesCache()`.
+//
+// The list still includes retired rows on purpose: db/adventures.ts, db/questConfig.ts and the
+// quest screen all resolve a quest's exercise ids against it, and a quest holding a retired
+// movement has to keep working. Hiding belongs at the moment of choosing — `pickableExercises`.
 let exercisesCache: Promise<Exercise[]> | null = null;
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Exercise list includes muscle groups and equipment filtering
@@ -66,6 +105,7 @@ async function fetchExercises(): Promise<Exercise[]> {
       secondsPerRep: exercises.secondsPerRep,
       pattern: exercises.pattern,
       prerequisiteExerciseId: exercises.prerequisiteExerciseId,
+      retiredAt: exercises.retiredAt,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -90,6 +130,7 @@ async function fetchExercises(): Promise<Exercise[]> {
         secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
         pattern: r.pattern ?? null,
         prerequisiteExerciseId: r.prerequisiteExerciseId,
+        retiredAt: r.retiredAt,
         muscles: [],
       });
     }
@@ -129,6 +170,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
       secondsPerRep: exercises.secondsPerRep,
       pattern: exercises.pattern,
       prerequisiteExerciseId: exercises.prerequisiteExerciseId,
+      retiredAt: exercises.retiredAt,
       muscle: exerciseMuscles.muscle,
     })
     .from(exercises)
@@ -151,6 +193,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
     secondsPerRep: typeof first.secondsPerRep === "number" ? first.secondsPerRep : 3,
     pattern: first.pattern ?? null,
     prerequisiteExerciseId: first.prerequisiteExerciseId,
+    retiredAt: first.retiredAt,
     muscles: [],
   };
 
@@ -522,4 +565,259 @@ export async function getReadyStep(): Promise<VariationStep | null> {
   }
 
   return best;
+}
+
+// ------------------------------------------------------------
+// Hero-authored exercises
+// ------------------------------------------------------------
+
+/**
+ * What a hero owns on an exercise.
+ *
+ * `Pick`ed from `Exercise` rather than spelled out, so a new column on the table is a compile
+ * error here until someone decides whether the hero sets it — the same trick `SavedSessionState`
+ * plays on the session store.
+ */
+export type UserExerciseDraft = {
+  /** One name for both locales — the row is bilingual, the hero is not. */
+  name: string;
+  /** One description for both locales. */
+  description: string;
+} & Pick<
+  Exercise,
+  "muscles" | "style" | "difficulty" | "equipment" | "pattern" | "secondsPerRep" | "imagePath"
+>;
+
+/**
+ * What the editor's fold starts at — the table's own defaults, restated once so the screen and
+ * the writer cannot disagree about them.
+ *
+ * `muscles: []` is a real answer, not a missing one: an unclassified movement is counted nowhere,
+ * and `getMuscleBalance` reports how much it is not counting rather than quietly shrinking a
+ * total.
+ */
+export const DEFAULT_USER_EXERCISE_DRAFT: Omit<UserExerciseDraft, "name" | "description"> = {
+  muscles: [],
+  style: "strength",
+  difficulty: "medium",
+  equipment: "none",
+  pattern: null,
+  secondsPerRep: 3,
+  imagePath: "assets/placeholder.webp",
+};
+
+/** Drops the cached catalogue. Every writer below calls it; nothing else should have to. */
+export function invalidateExercisesCache(): void {
+  exercisesCache = null;
+}
+
+/**
+ * The rows a hero may choose from — the catalogue, the quest editor's picker, the oath screen.
+ *
+ * Separate from `listExercises()` because that list is also how every screen resolves an id it
+ * already holds, and those must keep resolving after a movement is retired.
+ */
+export function pickableExercises(all: Exercise[]): Exercise[] {
+  return all.filter((e) => e.retiredAt === null);
+}
+
+/**
+ * What the hero wrote, first.
+ *
+ * Ordering only — `pickableExercises` is what hides. Stable, so the caller's own order survives
+ * inside each group: the catalogue sorts by name and keeps that, the quest picker keeps the
+ * catalogue's. A hero-authored movement is one needle in sixty-odd, and its author is the one
+ * person who cannot browse to find it.
+ */
+export function heroFirst(list: Exercise[]): Exercise[] {
+  return [...list].sort((a, b) => Number(isUserExercise(b)) - Number(isUserExercise(a)));
+}
+
+async function assertHeroAuthored(id: number): Promise<void> {
+  const rows = await db
+    .select({ creator: exercises.creator })
+    .from(exercises)
+    .where(eq(exercises.id, id))
+    .limit(1);
+
+  const row = rows[0];
+  if (!row) throw new Error(`Exercise ${id} not found`);
+  if (row.creator === ADMIN_CREATOR) {
+    throw new Error(`Exercise ${id} is not hero-authored — seed content is not editable`);
+  }
+}
+
+/** Replace, not merge: the editor sends the whole set, and a stale tag is a wrong village. */
+async function writeMuscles(exerciseId: number, muscles: MuscleCode[]): Promise<void> {
+  await db.delete(exerciseMuscles).where(eq(exerciseMuscles.exerciseId, exerciseId));
+  if (muscles.length === 0) return;
+  await db
+    .insert(exerciseMuscles)
+    .values([...new Set(muscles)].map((muscle) => ({ exerciseId, muscle })));
+}
+
+export async function createUserExercise(draft: UserExerciseDraft): Promise<number> {
+  // `.returning()` rather than "select the newest row with this name": the same id race
+  // `createQuestTemplate` documents, and here two rows really can share a name across creators.
+  const inserted = await db
+    .insert(exercises)
+    .values({
+      enName: draft.name,
+      frName: draft.name,
+      enDescription: draft.description,
+      frDescription: draft.description,
+      imagePath: draft.imagePath,
+      creator: USER_EXERCISE_CREATOR,
+      difficulty: draft.difficulty,
+      equipment: draft.equipment,
+      style: draft.style,
+      pattern: draft.pattern,
+      secondsPerRep: draft.secondsPerRep,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning({ id: exercises.id });
+
+  const id = inserted[0]?.id;
+  if (id == null) throw new Error("Failed to create exercise");
+
+  await writeMuscles(id, draft.muscles);
+  invalidateExercisesCache();
+  return id;
+}
+
+export async function updateUserExercise(id: number, draft: UserExerciseDraft): Promise<void> {
+  await assertHeroAuthored(id);
+
+  await db
+    .update(exercises)
+    .set({
+      enName: draft.name,
+      frName: draft.name,
+      enDescription: draft.description,
+      frDescription: draft.description,
+      imagePath: draft.imagePath,
+      difficulty: draft.difficulty,
+      equipment: draft.equipment,
+      style: draft.style,
+      pattern: draft.pattern,
+      secondsPerRep: draft.secondsPerRep,
+      updatedAt: new Date(),
+    })
+    .where(eq(exercises.id, id));
+
+  await writeMuscles(id, draft.muscles);
+  invalidateExercisesCache();
+}
+
+/**
+ * What a delete would take with it. Every count is zero, or the row is retired instead.
+ *
+ * Read with `Object.values(...)`, never field by field: a caller that names the fields it knows
+ * about keeps saying "deletable" after a new kind of reference is added here, which is exactly
+ * how `swaps` and the oath went unnoticed until they were.
+ */
+export type ExerciseUsage = { completedRows: number; questRows: number; preferenceRows: number };
+
+/**
+ * References that live inside `user_preferences` JSON, where no join can reach them: a quest
+ * config's `swaps` map (`db/questConfig.ts`) and the active oath's `exerciseId` (`db/oaths.ts`).
+ * Delete a movement a quest swapped in and the slot silently reverts to the template's; delete
+ * the one an oath names and the oath loses its title and can never progress again.
+ *
+ * Matched by shape rather than by key because `questConfig` imports this module — the key
+ * builders cannot be imported back — and a shape survives a key being renamed.
+ */
+async function countPreferenceRefs(id: number): Promise<number> {
+  const prefs = await getAllPreferences();
+  let refs = 0;
+
+  for (const raw of Object.values(prefs)) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      // Not JSON, or corrupt: every reader of these blobs already treats that as "absent".
+      continue;
+    }
+    if (typeof parsed !== "object" || parsed === null) continue;
+
+    const blob = parsed as { exerciseId?: unknown; swaps?: unknown };
+    if (blob.exerciseId === id) refs += 1;
+    if (typeof blob.swaps === "object" && blob.swaps !== null) {
+      refs += Object.values(blob.swaps).filter((v) => v === id).length;
+    }
+  }
+
+  return refs;
+}
+
+export async function getExerciseUsage(id: number): Promise<ExerciseUsage> {
+  const [completedRows, questRows, preferenceRows] = await Promise.all([
+    db
+      .select({ n: count() })
+      .from(schema.completedExercises)
+      .where(eq(schema.completedExercises.exerciseId, id)),
+    // Joined to `quests`, not counted straight off `quest_exercises`: foreign keys are OFF on
+    // the device, so deleting a quest leaves its slots behind and the `ON DELETE CASCADE` in the
+    // schema does nothing. Counting an orphan would strand the movement as "in use" by a quest
+    // that no longer exists — undeletable forever, with nothing on screen to explain why.
+    db
+      .select({ n: count() })
+      .from(schema.questExercises)
+      .innerJoin(schema.quests, eq(schema.quests.id, schema.questExercises.questId))
+      .where(eq(schema.questExercises.exerciseId, id)),
+    countPreferenceRefs(id),
+  ]);
+
+  return {
+    completedRows: completedRows[0]?.n ?? 0,
+    questRows: questRows[0]?.n ?? 0,
+    preferenceRows,
+  };
+}
+
+export async function retireUserExercise(id: number): Promise<void> {
+  await assertHeroAuthored(id);
+  await db.update(exercises).set({ retiredAt: new Date() }).where(eq(exercises.id, id));
+  invalidateExercisesCache();
+}
+
+/**
+ * Puts a retired movement back where it can be chosen.
+ *
+ * Without this, "Retirer" is a one-way door while its own copy promises the opposite — *it
+ * leaves the lists you pick from* — and the catalogue's "Retired" facet finds the movement
+ * without being able to do anything with it.
+ */
+export async function unretireUserExercise(id: number): Promise<void> {
+  await assertHeroAuthored(id);
+  await db.update(exercises).set({ retiredAt: null }).where(eq(exercises.id, id));
+  invalidateExercisesCache();
+}
+
+/**
+ * Only ever the movement nothing has used — the typo made ten seconds ago.
+ *
+ * Foreign keys are off on the device, so SQLite would not stop this; nine queries innerJoin this
+ * table, so it would silently take past volume, a village level and a personal record with it.
+ * The count is the enforcement.
+ */
+export async function deleteUserExercise(id: number): Promise<void> {
+  await assertHeroAuthored(id);
+
+  const usage = await getExerciseUsage(id);
+  if (Object.values(usage).some((n) => n > 0)) {
+    throw new Error(
+      `Exercise ${id} is in use (${usage.completedRows} results, ${usage.questRows} quest slots, ${usage.preferenceRows} saved choices) — retire it instead`,
+    );
+  }
+
+  await db.delete(exerciseMuscles).where(eq(exerciseMuscles.exerciseId, id));
+  // Slots whose quest is already gone are the only ones that can be here — `getExerciseUsage`
+  // refuses the delete otherwise. Sweeping them keeps this path from leaving litter of its own,
+  // since `ON DELETE CASCADE` does nothing on a device.
+  await db.delete(schema.questExercises).where(eq(schema.questExercises.exerciseId, id));
+  await db.delete(exercises).where(eq(exercises.id, id));
+  invalidateExercisesCache();
 }

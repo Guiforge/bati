@@ -3,6 +3,7 @@ import {
   EXERCISE_ASSETS,
   getAdventureAsset,
   getExerciseAsset,
+  getExerciseThumb,
   getQuestAsset,
   getVillagerAsset,
   QUEST_ASSETS,
@@ -22,6 +23,27 @@ describe("assetMap", () => {
     );
   });
 
+  // A hero-authored movement carries its picture in the row: either a bundled illustration it
+  // picked, or a `data:` URI of a photo. Only the detail screen knew how to render a URI, so the
+  // warm-up, the session hero and the paused overlay all showed the placeholder for it.
+  test("a URI or data URI resolves to itself, not the placeholder", () => {
+    const dataUri = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    expect(getExerciseAsset(dataUri)).toEqual({ uri: dataUri });
+    expect(getExerciseThumb(dataUri)).toEqual({ uri: dataUri });
+
+    expect(getExerciseAsset("file:///data/user/0/x.jpg")).toEqual({
+      uri: "file:///data/user/0/x.jpg",
+    });
+    expect(getExerciseAsset("https://example.test/x.jpg")).toEqual({
+      uri: "https://example.test/x.jpg",
+    });
+  });
+
+  test("a bundled path still resolves to the bundled asset", () => {
+    expect(getExerciseThumb("assets/images/exercises/squat.png")).toBeDefined();
+    expect(getExerciseAsset("assets/images/exercises/squat.png")).toBe(EXERCISE_ASSETS.squat);
+  });
+
   // getQuestAsset/getBossAsset/getAdventureAsset used to do an exact-key lookup instead of
   // stripping the directory + extension, so a real DB imagePath (full bundled path) always
   // missed and fell back to the placeholder.
@@ -29,6 +51,12 @@ describe("assetMap", () => {
     expect(getQuestAsset("assets/images/quests/escape_collapsing_mine.jpg")).toBe(
       QUEST_ASSETS.escape_collapsing_mine,
     );
+  });
+
+  test("a hero's quest cover resolves too, key or photo", () => {
+    const dataUri = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    expect(getQuestAsset(dataUri)).toEqual({ uri: dataUri });
+    expect(getQuestAsset("escape_collapsing_mine")).toBe(QUEST_ASSETS.escape_collapsing_mine);
   });
 
   test("resolves adventure cover assets from full database image paths", () => {

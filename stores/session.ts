@@ -21,12 +21,12 @@ import {
   markSessionWithNewRecords,
 } from "@/db/completed";
 import { estimateQuestSeconds } from "@/db/estimate";
-import { checkForNewRungs, type VariationStep } from "@/db/exercises";
+import { checkForNewRungs, type Exercise, type VariationStep } from "@/db/exercises";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
-import { REST_RANGE, TARGET_RANGE } from "@/db/questConfig";
+import { getQuestConfig, REST_RANGE, saveQuestConfig, TARGET_RANGE } from "@/db/questConfig";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
@@ -189,6 +189,7 @@ interface SessionState {
   // Progression
   completeExercise: (resultValue: number) => void;
   skipExercise: () => void;
+  swapCurrentExercise: (exercise: Exercise) => void;
   updateLastResult: (resultValue: number) => void;
   skipRest: () => void;
   addRestTime: (seconds: number) => void;
@@ -253,6 +254,31 @@ export type SavedSessionState = Pick<
   | "results"
   | "lastSetSkipped"
 > & { savedAt: number };
+
+/**
+ * Remember a mid-session swap, so the quest opens on the movement the hero chose next time.
+ *
+ * The target override goes with the movement it was tuned for — "20" carried from push-ups onto a
+ * one-arm push-up is a bad prescription, the reasoning `applySwap` spells out on the quest screen.
+ */
+async function persistSwap(
+  questId: number,
+  questExerciseId: number,
+  exerciseId: number,
+  userLevel: DifficultyCode,
+): Promise<void> {
+  const config = await getQuestConfig(questId);
+  const { [String(questExerciseId)]: _replaced, ...targets } = config?.targets ?? {};
+
+  await saveQuestConfig(questId, {
+    ...config,
+    // `level` is required on the stored shape; a quest never configured has none yet, and the
+    // session is running at the one the hero started it with.
+    level: config?.level ?? userLevel,
+    targets,
+    swaps: { ...config?.swaps, [String(questExerciseId)]: exerciseId },
+  });
+}
 
 /**
  * Where a session goes once a set is behind it: finished, resting, or straight into the next
@@ -324,7 +350,17 @@ function toXpSets(quest: Quest, results: CompletedExerciseInput[]): XpSet[] {
     const slot = quest.exercises[r.sortOrder];
     if (!slot) return [];
 
-    return [{ exercise: slot.exercise, target: r.target ?? slot.target, result: r.result }];
+    // `r.pricing` before `slot.exercise`, for the same reason `r.target` comes before
+    // `slot.target`: a slot can change mid-session now, and a set is priced by what it was, not
+    // by what the slot became. Without this, swapping to a `hard` movement on the last round
+    // re-prices every set already logged and inflates the whole workout.
+    return [
+      {
+        exercise: r.pricing ?? slot.exercise,
+        target: r.target ?? slot.target,
+        result: r.result,
+      },
+    ];
   });
 }
 
@@ -741,6 +777,10 @@ export const useSessionStore = create<SessionState>()(
         sortOrder: currentExerciseIndex,
         result: { type: currentEx.target.type, value: safeResultValue },
         target: { type: currentEx.target.type, value: currentEx.target.value },
+        pricing: {
+          secondsPerRep: currentEx.exercise.secondsPerRep,
+          difficulty: currentEx.exercise.difficulty,
+        },
         performedAt: new Date(),
       };
 
@@ -758,6 +798,59 @@ export const useSessionStore = create<SessionState>()(
      * issue #33's second half, where the app taught its own journal a lie. A set that left no row
      * is counted by nothing, with no reader having to remember to filter it out.
      */
+    /**
+     * Change the movement in front of the hero, mid-set.
+     *
+     * The swap sheet existed already, but only on the quest screen — before starting, which is
+     * not when a hero discovers a movement is out of reach (issue #33). Reaching it from here is
+     * what lets them log what they actually did instead of typing the lowest number the field
+     * accepts.
+     */
+    swapCurrentExercise: (exercise) => {
+      const { quest, currentExerciseIndex, status } = get();
+      if (!quest || (status !== "running" && status !== "resting")) return;
+
+      const slot = quest.exercises[currentExerciseIndex];
+      if (!slot || slot.exercise.id === exercise.id) return;
+
+      // The target belongs to the slot, not to the movement — same call `applyQuestConfig` makes.
+      // Results already logged keep their own `exerciseId` and `pricing`: they are true.
+      const exercises = quest.exercises.map((qex, i) =>
+        i === currentExerciseIndex
+          ? {
+              ...qex,
+              exercise,
+              // The quest's art is of the movement that used to be here, and the caption named a
+              // rung the hero has just overruled.
+              images: [],
+              ghost: undefined,
+              substitutedFor: undefined,
+            }
+          : qex,
+      );
+
+      // Every other entry into a movement sets this pair, and the two units are not
+      // interchangeable: a hold timer left running on a rep movement counts nothing down, and reps
+      // arrived at with no timer would show seconds that never started.
+      const isTimeBased = slot.target.type === "time";
+
+      set({
+        quest: { ...quest, exercises },
+        ...(status === "running"
+          ? {
+              timerStartTimestamp: isTimeBased ? Date.now() : null,
+              timerDuration: isTimeBased ? slot.target.value : 0,
+            }
+          : {}),
+      });
+
+      // Stick for next time. Never blocking: a preference that fails to save must not take a
+      // workout down with it.
+      persistSwap(quest.id, slot.id, exercise.id, get().userLevel).catch((e) =>
+        reportError("session.swap", e),
+      );
+    },
+
     skipExercise: () => {
       const { quest, currentRoundIndex, currentExerciseIndex, results } = get();
       if (!quest) return;

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { clientMock, createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb, ownEveryRung } from "./helpers/testDb";
 
 describe("db/quests", () => {
   const t = createTestDb();
@@ -8,6 +8,14 @@ describe("db/quests", () => {
   beforeAll(() => {
     jest.resetModules();
     jest.doMock("../db/client", () => clientMock(t));
+  });
+
+  // The journal decides which rung a slot is served at, so a test that seeds it must not leak
+  // into the next one — and the resolved quest is memoized per (id, level) with no TTL.
+  afterEach(() => {
+    t.sqlite.exec("DELETE FROM completed_exercises");
+    t.sqlite.exec("DELETE FROM completed_sessions");
+    (require("../db/quests") as typeof import("../db/quests")).invalidateQuestTemplates();
   });
 
   afterAll(() => {
@@ -60,6 +68,10 @@ describe("db/quests", () => {
   });
 
   test("getQuestById computes targets from user level", async () => {
+    // Assert the movements the template names, so own every rung: on an empty journal a slot is
+    // served at the bottom of its chain (issue #33), which has its own file.
+    ownEveryRung(t);
+
     const quests = require("../db/quests") as typeof import("../db/quests");
 
     const templates = await quests.listQuestTemplates();

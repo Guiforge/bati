@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 
 import type { Quest } from "@/db/quests";
 import { Difficulty } from "@/db/targets";
-import { clientMock, createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb, ownEveryRung } from "./helpers/testDb";
 
 // questConfig reaches the preferences table, which pulls in the native client: the same
 // mock every other db test uses keeps this one honest about what it imports.
 const t = createTestDb();
+
+// The quest as authored, not as prescribed to a day-one beginner — see `ownEveryRung`.
+ownEveryRung(t);
 
 jest.resetModules();
 jest.doMock("../db/client", () => clientMock(t));

@@ -1,7 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
 import { dayKey } from "./dates";
-import type { Exercise } from "./exercises";
+import { currentRungFor, type Exercise, listExercises, type MovementRef } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
@@ -11,6 +11,9 @@ import {
   ADMIN_CREATOR,
   type ContentOwner,
   type DifficultyCode,
+  type EquipmentCode,
+  type ExerciseStyle,
+  type MovementPattern,
   type MuscleCode,
   type QuestArchetype,
   type QuestTargetType,
@@ -38,6 +41,16 @@ export interface QuestExercise {
 
   /** Target for this quest – either repetitions or seconds */
   target: Target;
+
+  /**
+   * The movement the quest template actually names, when the hero is served an easier rung of its
+   * chain instead. Absent on every slot that runs as written.
+   *
+   * Issue #33: a quest that hands classical push-ups to someone whose last session was wall
+   * push-ups is a wall, not a stretch. The substitution is silent without this — and a quest that
+   * quietly shows something other than its own card reads as a bug from where the hero sits.
+   */
+  substitutedFor?: MovementRef;
 
   /**
    * What the hero has already done on this movement, in *this slot's* unit — the best set of
@@ -395,6 +408,90 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
   return quest;
 }
 
+type SlotRow = {
+  qexId: number;
+  targetType: QuestTargetType;
+  targetMin: number;
+  targetMax: number;
+  imagesJson: string;
+  exId: number;
+  exEnName: string;
+  exFrName: string;
+  exEnDescription: string;
+  exFrDescription: string;
+  exImagePath: string;
+  exCreator: ContentOwner;
+  exDifficulty: DifficultyCode;
+  exEquipment: EquipmentCode;
+  exStyle: ExerciseStyle | null;
+  exSecondsPerRep: number;
+  exPattern: MovementPattern | null;
+  exPrerequisiteId: number | null;
+  exRetiredAt: Date | null;
+};
+
+/**
+ * One slot of a quest, resolved for this hero.
+ *
+ * Split out of `getQuestById` so the substitution (issue #33) does not push one function past
+ * what anyone can hold in their head — the loop that calls this only has to know that a row
+ * either opens a slot or adds a muscle to one.
+ */
+function buildSlot(
+  r: SlotRow,
+  ctx: {
+    userLevel: UserLevel;
+    servedId: (exerciseId: number) => number;
+    catalogue: Map<number, Exercise>;
+    history: Map<string, ExerciseGhost>;
+  },
+): QuestExercise {
+  const base = { type: r.targetType, min: r.targetMin, max: r.targetMax };
+
+  // The movement this slot will actually run. Identical to the written one unless the hero is
+  // still working a rung below it — and never for a quest they authored themselves.
+  const served = ctx.catalogue.get(ctx.servedId(r.exId));
+  const isSubstituted = served !== undefined && served.id !== r.exId;
+  const effectiveId = ctx.servedId(r.exId);
+
+  return {
+    id: r.qexId,
+    exercise: served ?? {
+      id: r.exId,
+      enName: r.exEnName,
+      frName: r.exFrName,
+      enDescription: r.exEnDescription,
+      frDescription: r.exFrDescription,
+      imagePath: r.exImagePath,
+      creator: r.exCreator,
+      difficulty: r.exDifficulty,
+      equipment: r.exEquipment,
+      style: r.exStyle ?? "strength",
+      secondsPerRep: r.exSecondsPerRep,
+      pattern: r.exPattern ?? null,
+      prerequisiteExerciseId: r.exPrerequisiteId,
+      retiredAt: r.exRetiredAt,
+      muscles: [],
+    },
+    // The quest's own art is *of the movement the template wrote*; on a substituted slot it
+    // would illustrate the wrong exercise. Same call `applyQuestConfig` makes on a swap.
+    images: isSubstituted ? [] : safeParseImages(r.imagesJson),
+    target: generateTarget(
+      base,
+      ctx.userLevel,
+      ctx.history.get(ghostKey(effectiveId, "time"))?.best,
+    ),
+    // In the slot's own unit: a movement trained both ways has two records, and showing the
+    // hold next to a rep target would be a number the hero cannot act on.
+    ghost: ctx.history.get(ghostKey(effectiveId, r.targetType)),
+    // What the template asked for, when that is not what runs — the screens owe the hero an
+    // explanation and a way back, and nothing else in the object can tell them.
+    substitutedFor: isSubstituted
+      ? { id: r.exId, enName: r.exEnName, frName: r.exFrName, imagePath: r.exImagePath }
+      : undefined,
+  };
+}
+
 export async function getQuestById(id: number, userLevel: UserLevel): Promise<Quest | null> {
   // Join quests -> quest_exercises -> exercises -> exercise_muscles and aggregate.
   const rows = await db
@@ -445,11 +542,32 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   const first = rows[0];
   if (!first) return null;
 
+  // What the hero is actually working, per slot — a quest that names classical push-ups serves
+  // wall push-ups to someone who has not earned the rungs below (issue #33). Resolved before the
+  // journal read below, because a substituted slot must be priced and ghosted against the movement
+  // it will actually run, not the one the template wrote.
+  //
+  // Hero-authored quests are left exactly as written: substituting there would be correcting
+  // someone's own authoring, which is not this function's business.
+  const substitutes = isUserQuest(first)
+    ? new Map<number, number>()
+    : await currentRungFor(rows.map((r) => r.exId));
+  const servedId = (exerciseId: number): number => substitutes.get(exerciseId) ?? exerciseId;
+
   // Two things come out of the journal here, in one grouped query: the longest hold, because a
   // hold is prescribed from the hero's own maximum (60-75% of it), and the ghost every slot shows
   // — what they did last time on this movement. Both are per (movement, unit), so one read
   // answers both and nothing is fetched again mid-session.
-  const history = await getExerciseHistory([...new Set(rows.map((r) => r.exId))]);
+  const history = await getExerciseHistory([
+    ...new Set(rows.flatMap((r) => [r.exId, servedId(r.exId)])),
+  ]);
+
+  // A substituted slot needs the whole movement, not the four fields the ladder carries: the
+  // session prices it by `difficulty` and `secondsPerRep`, and the village counts its muscles.
+  // `listExercises()` is promise-cached, so this is free after the first read anywhere.
+  const catalogue = new Map<number, Exercise>(
+    substitutes.size > 0 ? (await listExercises()).map((e) => [e.id, e]) : [],
+  );
 
   const quest: Quest = {
     id: first.questId,
@@ -469,47 +587,24 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   const byQuestExercise = new Map<number, QuestExercise>();
 
   for (const r of rows) {
-    const base = {
-      type: r.targetType,
-      min: r.targetMin,
-      max: r.targetMax,
-    };
-
     let qex = byQuestExercise.get(r.qexId);
     if (!qex) {
-      qex = {
-        id: r.qexId,
-        exercise: {
-          id: r.exId,
-          enName: r.exEnName,
-          frName: r.exFrName,
-          enDescription: r.exEnDescription,
-          frDescription: r.exFrDescription,
-          imagePath: r.exImagePath,
-          creator: r.exCreator,
-          difficulty: r.exDifficulty,
-          equipment: r.exEquipment,
-          style: r.exStyle ?? "strength",
-          secondsPerRep: r.exSecondsPerRep,
-          pattern: r.exPattern ?? null,
-          prerequisiteExerciseId: r.exPrerequisiteId,
-          retiredAt: r.exRetiredAt,
-          muscles: [],
-        },
-        images: safeParseImages(r.imagesJson),
-        target: generateTarget(base, userLevel, history.get(ghostKey(r.exId, "time"))?.best),
-        // In the slot's own unit: a movement trained both ways has two records, and showing the
-        // hold next to a rep target would be a number the hero cannot act on.
-        ghost: history.get(ghostKey(r.exId, r.targetType)),
-      };
+      qex = buildSlot(r, { userLevel, servedId, catalogue, history });
       byQuestExercise.set(r.qexId, qex);
       quest.exercises.push(qex);
     }
 
-    if (isMuscleCode(r.muscle) && !qex.exercise.muscles.includes(r.muscle)) {
+    // The join carries the *written* movement's muscles; a substituted slot already arrived with
+    // its own from the catalogue and must not collect the other one's.
+    if (
+      qex.exercise.id === r.exId &&
+      isMuscleCode(r.muscle) &&
+      !qex.exercise.muscles.includes(r.muscle)
+    ) {
       qex.exercise.muscles.push(r.muscle);
     }
   }
+
   setCached(`quest:${id}:${userLevel}`, quest);
   return quest;
 }

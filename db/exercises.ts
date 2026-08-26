@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
@@ -214,7 +214,7 @@ export const PROGRESSION_SESSIONS_REQUIRED = 3;
 /** How many recent rows to scan when looking for the most recently trained movements. */
 const RECENT_RESULT_ROWS = 60;
 
-type MovementRef = { id: number; enName: string; frName: string; imagePath: string };
+export type MovementRef = { id: number; enName: string; frName: string; imagePath: string };
 
 /** One rung of the ladder, seen from below: the movement, and how close its next step is. */
 export type VariationStep = {
@@ -435,6 +435,108 @@ async function allSessionMetFlags(): Promise<Map<number, boolean[]>> {
     byExercise.set(row.exerciseId, flags);
   }
   return byExercise;
+}
+
+/**
+ * `recentMetFlags` for many movements at once — the *current* state, windowed, most recent first.
+ *
+ * `allSessionMetFlags` above answers a different question (did it *ever* happen, unwindowed, for
+ * the trophy shelf) and cannot stand in: a hero who owned a rung last spring is not standing on it
+ * tonight. This is the same seek `recentMetFlags` does, hoisted out of the per-movement loop
+ * because `currentRungFor` needs it for every rung of every slot of a quest.
+ */
+async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<number, boolean[]>> {
+  if (exerciseIds.length === 0) return new Map();
+
+  const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const met = sql<number>`min(case when ${schema.completedExercises.targetValue} is not null
+      and ${schema.completedExercises.resultValue} >= ${schema.completedExercises.targetValue}
+    then 1 else 0 end)`;
+  const at = sql<number>`max(${schema.completedExercises.performedAt})`;
+
+  const rows = await db
+    .select({ exerciseId: schema.completedExercises.exerciseId, met })
+    .from(schema.completedExercises)
+    .where(
+      and(
+        inArray(schema.completedExercises.exerciseId, exerciseIds),
+        gte(schema.completedExercises.performedAt, since),
+      ),
+    )
+    .groupBy(schema.completedExercises.exerciseId, schema.completedExercises.sessionId)
+    .orderBy(
+      schema.completedExercises.exerciseId,
+      desc(at),
+      desc(schema.completedExercises.sessionId),
+    );
+
+  const byExercise = new Map<number, boolean[]>();
+  for (const row of rows) {
+    const flags = byExercise.get(row.exerciseId) ?? [];
+    // Most recent first, and only as many as a rung is judged on — the `limit` of the
+    // per-movement query, applied here because one query serves every movement.
+    if (flags.length < PROGRESSION_SESSIONS_REQUIRED) {
+      flags.push(row.met === 1);
+      byExercise.set(row.exerciseId, flags);
+    }
+  }
+  return byExercise;
+}
+
+/**
+ * For each movement asked about, the one the hero is actually working: the lowest rung of its
+ * chain they have not yet earned, or the movement itself once everything below it is owned.
+ *
+ * This is what stops a quest handing classical push-ups to someone whose last session was wall
+ * push-ups (issue #33). It reads the same `isEarned` rule the exercise screen shows, so the app
+ * never prescribes something it is simultaneously telling the hero to work up to.
+ *
+ * Batched rather than `getChainTo` per slot: that walks the whole `exercises` table and seeks the
+ * journal once per rung, and this runs for every slot of every quest Home resolves.
+ *
+ * A movement off the ladder, or one whose chain is fully earned, maps to itself — callers can
+ * treat the result as a total function and never special-case.
+ */
+export async function currentRungFor(exerciseIds: number[]): Promise<Map<number, number>> {
+  const wanted = [...new Set(exerciseIds)];
+  if (wanted.length === 0) return new Map();
+
+  const rows = await fetchLadderRows();
+  const byId = new Map(rows.map((r) => [r.id, r]));
+
+  // Walk each request down to its easiest variation first, so one journal read covers every rung
+  // of every chain involved.
+  const chains = new Map<number, number[]>();
+  for (const id of wanted) {
+    const chain: number[] = [];
+    const seen = new Set<number>();
+    let cursor = byId.get(id);
+    // `seen` guards a cycle in the data, which would otherwise hang rather than fail.
+    while (cursor && !seen.has(cursor.id)) {
+      seen.add(cursor.id);
+      chain.unshift(cursor.id);
+      cursor = cursor.prerequisiteExerciseId ? byId.get(cursor.prerequisiteExerciseId) : undefined;
+    }
+    chains.set(id, chain);
+  }
+
+  const flags = await recentMetFlagsBatch([...new Set([...chains.values()].flat())]);
+  const earned = (exerciseId: number): boolean =>
+    (flags.get(exerciseId) ?? []).filter(Boolean).length >= PROGRESSION_SESSIONS_REQUIRED;
+
+  const result = new Map<number, number>();
+  for (const id of wanted) {
+    const chain = chains.get(id) ?? [];
+    // Contiguous from the bottom, exactly as `getChainTo` counts: owning a hard variation out of
+    // order does not skip the ones below it.
+    let climbed = 0;
+    while (climbed < chain.length && earned(chain[climbed] as number)) climbed++;
+
+    // `chain[climbed]` is the first unearned rung; past the top it is undefined, which means
+    // everything is owned and the movement as written is the right one.
+    result.set(id, chain[climbed] ?? id);
+  }
+  return result;
 }
 
 /** Whether a run of `PROGRESSION_SESSIONS_REQUIRED` on-target sessions ever happened. */

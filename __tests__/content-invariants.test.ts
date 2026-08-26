@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { type DifficultyCode, movementPatterns, type QuestArchetype } from "../db/schema";
-import { clientMock, createTestDb } from "./helpers/testDb";
+import { clientMock, createTestDb, ownEveryRung } from "./helpers/testDb";
 
 /**
  * Content invariants — the hard constraints every seeded quest has to satisfy. This file is
@@ -81,6 +81,8 @@ describe("content invariants", () => {
 
   async function loadQuests() {
     const quests = require("../db/quests") as typeof import("../db/quests");
+    ownEveryRung(t);
+    quests.invalidateQuestTemplates();
     const templates = await quests.listQuestTemplates();
 
     const loaded = await Promise.all(

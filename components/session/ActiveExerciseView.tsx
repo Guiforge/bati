@@ -1,23 +1,28 @@
 import { ChevronDown, ChevronUp, Crosshair, Pause } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
+import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import {
   getExerciseBgForSessionStep,
   getExerciseBgRawForSessionStep,
 } from "@/constants/exerciseColors";
+import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { critChance } from "@/db/bossFights";
+import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
+import { preferences } from "@/db/preferences";
 import { formatTarget } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
@@ -39,6 +44,28 @@ export function ActiveExerciseView() {
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
   const completeExercise = useSessionStore((s) => s.completeExercise);
   const skipExercise = useSessionStore((s) => s.skipExercise);
+  const swapCurrentExercise = useSessionStore((s) => s.swapCurrentExercise);
+
+  // Loaded when the session screen mounts, not when the sheet opens: the moment a hero reaches
+  // for this is the moment they are stuck, and a spinner there is the worst possible time.
+  // `listExercises()` is promise-cached, so this is free after the first read anywhere in the app.
+  const [catalogue, setCatalogue] = useState<Exercise[]>([]);
+  const [owned, setOwned] = useState<ReadonlySet<string> | null>(null);
+  const [swapOpen, setSwapOpen] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all([listExercises(), preferences.getOwnedEquipment()])
+      .then(([all, equipment]) => {
+        if (!alive) return;
+        setCatalogue(all);
+        setOwned(equipment === null ? null : new Set(equipment));
+      })
+      .catch((e) => reportError("session.catalogue", e));
+    return () => {
+      alive = false;
+    };
+  }, []);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
@@ -88,6 +115,22 @@ export function ActiveExerciseView() {
   const handleSkip = () => {
     selection();
     skipExercise();
+  };
+
+  // Ladder rungs first, then the same pattern, then the family — `rankSwapCandidates` already
+  // encodes that order for the quest screen, and a hero stuck mid-set wants the easier rung at
+  // the top of the list.
+  const swapCandidates = swapOpen
+    ? rankSwapCandidates(pickableExercises(catalogue), currentEx.exercise, owned as never)
+    : [];
+  const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
+
+  const swapReasonLabel = (reason: SwapReason | null | undefined): string | null => {
+    if (reason === "easier") return t("quests.swap_reason_easier", "An easier rung");
+    if (reason === "harder") return t("quests.swap_reason_harder", "A harder rung");
+    if (reason === "same_pattern") return t("quests.swap_reason_pattern", "Same movement");
+    if (reason === "same_family") return t("quests.swap_reason_family", "Same family");
+    return null;
   };
 
   const handleAdjustReps = (delta: number) => {
@@ -478,6 +521,24 @@ export function ActiveExerciseView() {
           </YStack>
         </ScrollView>
 
+        {/* Out of reach is not always "I cannot" — often it is "not this variation". The sheet
+          the quest screen has always had, reachable at the moment it is actually needed. */}
+        <Pressable
+          testID="session-swap-exercise"
+          onPress={() => {
+            selection();
+            setSwapOpen(true);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={t("quests.swap_exercise")}
+        >
+          <XStack items="center" justify="center" py="$2" opacity={0.7} hoverStyle={{ opacity: 1 }}>
+            <Text fontSize={13} fontWeight="700" color="$textSecondary" fontFamily="$body">
+              {t("quests.swap_exercise")}
+            </Text>
+          </XStack>
+        </Pressable>
+
         {/* The honest way out of a movement the hero cannot do. Deliberately quiet next to the
           primary action — it is a release valve, not a choice being offered. Before it existed,
           `CHECK (resultValue > 0)` made "1" the only way past, and that 1 went on to feed muscle
@@ -516,6 +577,22 @@ export function ActiveExerciseView() {
           </Text>
         </Button>
       </YStack>
+
+      <ExercisePickerSheet
+        exercises={swapCandidates.map((c) => c.exercise)}
+        pickedIds={[currentEx.exercise.id]}
+        language={language}
+        open={swapOpen}
+        onOpenChange={setSwapOpen}
+        title={t("quests.swap_exercise", "Replace this movement")}
+        onPick={(exercise) => {
+          swapCurrentExercise(exercise);
+          setSwapOpen(false);
+        }}
+        captionFor={(exercise) => swapReasonLabel(swapReasons.get(exercise.id))}
+        bottomInset={insets.bottom}
+        pickAction={null}
+      />
     </YStack>
   );
 }

@@ -1,5 +1,6 @@
 import { waitFor } from "@testing-library/react-native";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
+import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import { useSessionStore } from "../stores/session";
@@ -805,6 +806,88 @@ describe("useSessionStore", () => {
 
       expect(store.getState().status).toBe("running");
       expect(store.getState().results).toHaveLength(0);
+    });
+  });
+
+  describe("changing the movement mid-session", () => {
+    const easier = {
+      id: 99,
+      enName: "Wall Push-Up",
+      frName: "Pompe au mur",
+      difficulty: "easy",
+      secondsPerRep: 2,
+      muscles: ["chest"],
+    } as unknown as Exercise;
+
+    beforeEach(() => {
+      store.setState({
+        quest: mockQuest as unknown as Quest,
+        status: "running",
+        currentRoundIndex: 0,
+        currentExerciseIndex: 0,
+        results: [],
+        startTime: Date.now(),
+      });
+    });
+
+    test("replaces the movement ahead and drops the art that belonged to the old one", () => {
+      store.getState().swapCurrentExercise(easier);
+
+      const slot = store.getState().quest?.exercises[0];
+      expect(slot?.exercise.enName).toBe("Wall Push-Up");
+      expect(slot?.images).toEqual([]);
+    });
+
+    test("leaves results already logged exactly as they were", () => {
+      store.getState().completeExercise(10);
+      const before = store.getState().results;
+
+      store.setState({ currentExerciseIndex: 0, status: "running" });
+      store.getState().swapCurrentExercise(easier);
+
+      expect(store.getState().results).toEqual(before);
+      expect(store.getState().results[0]?.exerciseId).toBe(before[0]?.exerciseId);
+    });
+
+    /**
+     * The trap this whole field exists for. `toXpSets` used to re-read the movement off the slot
+     * at save time, so swapping to a harder one on the last round re-priced every set already
+     * logged. Two sets, a swap, and the first two must still cost what they cost.
+     */
+    test("does not re-price the sets already done", () => {
+      store.getState().completeExercise(10);
+
+      const pricedAtCompletion = store.getState().results[0]?.pricing;
+      expect(pricedAtCompletion).toEqual({
+        secondsPerRep: (mockQuest as unknown as Quest).exercises[0]?.exercise.secondsPerRep,
+        difficulty: (mockQuest as unknown as Quest).exercises[0]?.exercise.difficulty,
+      });
+
+      store.setState({ currentExerciseIndex: 0, status: "running" });
+      store.getState().swapCurrentExercise(easier);
+
+      // The slot changed; the set's own price did not.
+      expect(store.getState().quest?.exercises[0]?.exercise.difficulty).toBe("easy");
+      expect(store.getState().results[0]?.pricing).toEqual(pricedAtCompletion);
+    });
+
+    test("resets the timer to the unit the new movement is measured in", () => {
+      store.setState({ timerStartTimestamp: 123, timerDuration: 45 });
+
+      store.getState().swapCurrentExercise(easier);
+
+      // mockQuest's first slot is rep-based, so a hold timer must not be left running on it.
+      const isTimeBased = (mockQuest as unknown as Quest).exercises[0]?.target.type === "time";
+      expect(store.getState().timerStartTimestamp === null).toBe(!isTimeBased);
+    });
+
+    test("swapping to the movement already there is a no-op", () => {
+      const same = (mockQuest as unknown as Quest).exercises[0]?.exercise;
+      const before = store.getState().quest;
+
+      store.getState().swapCurrentExercise(same as never);
+
+      expect(store.getState().quest).toBe(before);
     });
   });
 });

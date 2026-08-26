@@ -35,6 +35,17 @@ export type CompletedExerciseInput = {
 
   notes?: string;
   performedAt?: Date;
+
+  /**
+   * What this set cost, captured when it was done. In memory only — there is no column, and
+   * `createCompletedSession` ignores it.
+   *
+   * XP prices a set by the movement's tempo and difficulty, and `toXpSets` used to re-read those
+   * off the quest slot at save time. That is fine until a slot can change mid-session: swapping to
+   * a `hard` movement on the last round would re-price every set already logged, inflating the
+   * whole workout. The price belongs to the moment, like `target` beside it.
+   */
+  pricing?: { secondsPerRep: number; difficulty: DifficultyCode };
 };
 
 export type CompletedSessionInput = {

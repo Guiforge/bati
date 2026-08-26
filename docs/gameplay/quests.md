@@ -64,9 +64,34 @@ Each quest contains an ordered list of exercises:
 
 | Difficulty | Target Adjustment | XP Multiplier |
 | ---------- | ----------------- | ------------- |
-| **Easy** | Use targetMin | 0.8x |
-| **Medium** | Average of min/max | 1.0x |
-| **Hard** | Use targetMax | 1.2x |
+| **Easy** | Targets x0.75 | 0.9x |
+| **Medium** | Targets x1.0 | 1.0x |
+| **Hard** | Targets x1.25 | 1.2x |
+
+Difficulty moves the *numbers*. It never changes the *movement* — which is why it is not, on its
+own, an answer to "this is beyond me". That is the section below.
+
+### The slot serves the rung the hero is on
+
+A quest names a movement; `getQuestById` serves the one the hero is actually working. If the
+ladder (`prerequisiteExerciseId`) puts Wall Push-Up under Knee Push-Up under Push-ups, and the
+hero has not yet earned the rungs below, the push-up slot runs as Wall Push-Up. The slot carries
+`substitutedFor` so both the quest card and the session screen can say "Working up to Push-ups",
+and the swap sheet is one tap away for anyone who wants the written movement anyway.
+
+Ownership is the same `isEarned` rule the exercise screen shows — three on-target sessions inside
+the 56-day window — so the app never prescribes something it is simultaneously telling the hero to
+work up to.
+
+Four things it never does: override an explicit swap, touch a quest the hero authored themselves,
+substitute upward, or carry the quest's own artwork onto a movement it does not depict.
+
+**Why it exists.** [Issue #33](https://github.com/Guiforge/bati/issues/33): a beginner did wall
+push-ups on day one and was handed classical push-ups on day two. The only way past was to type
+"1" — the lowest the field accepts — which then fed muscle volume, the weak-area read and every
+target generated from them. The app had the ladder recorded the whole time; it just was not
+reading it when it mattered. A session can now also skip a set outright, which writes no row at
+all rather than a number nobody performed.
 
 ### By Duration
 

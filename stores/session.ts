@@ -144,6 +144,14 @@ interface SessionState {
 
   // Results Accumulator
   results: CompletedExerciseInput[];
+  /**
+   * Whether the set just left behind was skipped rather than logged.
+   *
+   * A skipped set writes no row, so `results[results.length - 1]` is a set from an earlier round —
+   * and the rest screen's "adjust the last one" stepper edits exactly that. Without this flag it
+   * would silently correct a set the hero is not looking at.
+   */
+  lastSetSkipped: boolean;
 
   /**
    * The row `saveSession` created, once it has. Held so a retry after a partial failure
@@ -180,6 +188,7 @@ interface SessionState {
 
   // Progression
   completeExercise: (resultValue: number) => void;
+  skipExercise: () => void;
   updateLastResult: (resultValue: number) => void;
   skipRest: () => void;
   addRestTime: (seconds: number) => void;
@@ -242,7 +251,66 @@ export type SavedSessionState = Pick<
   | "timerStartTimestamp"
   | "timerDuration"
   | "results"
+  | "lastSetSkipped"
 > & { savedAt: number };
+
+/**
+ * Where a session goes once a set is behind it: finished, resting, or straight into the next
+ * movement.
+ *
+ * Shared by `completeExercise` and `skipExercise`, which differ only in whether the set left a
+ * result behind. The advance itself is identical, and two copies of it would drift — the rest
+ * choice alone carries the `??` that separates "no rest screen between rounds" from "fall back to
+ * restSeconds".
+ */
+function advanceAfterSet(
+  quest: Quest,
+  currentRoundIndex: number,
+  currentExerciseIndex: number,
+  results: CompletedExerciseInput[],
+): Partial<SessionState> {
+  const isLastExerciseInRound = currentExerciseIndex === quest.exercises.length - 1;
+  const isLastRound = currentRoundIndex === quest.rounds - 1;
+
+  if (isLastExerciseInRound && isLastRound) {
+    return { status: "finished", results, timerStartTimestamp: null, timerDuration: 0 };
+  }
+
+  const nextRound = isLastExerciseInRound ? currentRoundIndex + 1 : currentRoundIndex;
+  const nextExercise = isLastExerciseInRound ? 0 : currentExerciseIndex + 1;
+
+  // The last exercise of a round means the round is over — the last-round case already returned
+  // as "finished" above — so the longer round rest applies. `??`, not `||`: a round rest of 0
+  // means "no rest screen between rounds", not "fall back to restSeconds".
+  const restSeconds = isLastExerciseInRound
+    ? (quest.roundRestSeconds ?? quest.restSeconds)
+    : quest.restSeconds;
+
+  // The indices point at the *next* movement either way, so the rest screen can say what is
+  // coming up.
+  if (restSeconds > 0) {
+    return {
+      status: "resting",
+      results,
+      currentRoundIndex: nextRound,
+      currentExerciseIndex: nextExercise,
+      timerStartTimestamp: Date.now(),
+      timerDuration: restSeconds,
+    };
+  }
+
+  const nextExDef = quest.exercises[nextExercise];
+  const isNextTimeBased = nextExDef?.target.type === "time";
+
+  return {
+    status: "running",
+    results,
+    currentRoundIndex: nextRound,
+    currentExerciseIndex: nextExercise,
+    timerStartTimestamp: isNextTimeBased ? Date.now() : null,
+    timerDuration: isNextTimeBased ? nextExDef.target.value : 0,
+  };
+}
 
 /**
  * The session's results paired back with the movements that produced them.
@@ -405,6 +473,7 @@ export const useSessionStore = create<SessionState>()(
     timerStartTimestamp: null,
     timerDuration: 0,
     results: [],
+    lastSetSkipped: false,
     savedSessionId: null,
     triumphBonusPaid: false,
 
@@ -455,6 +524,7 @@ export const useSessionStore = create<SessionState>()(
           ? (warmupSequence[0]?.seconds ?? PRE_START_COUNTDOWN_SECONDS)
           : PRE_START_COUNTDOWN_SECONDS,
         results: [],
+        lastSetSkipped: false,
         savedSessionId: null,
         triumphBonusPaid: false,
       });
@@ -613,12 +683,12 @@ export const useSessionStore = create<SessionState>()(
         timerStartTimestamp: null,
         timerDuration: 0,
         results: [],
+        lastSetSkipped: false,
         savedSessionId: null,
         triumphBonusPaid: false,
       });
     },
 
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex exercise completion logic, refactor planned
     completeExercise: (resultValue) => {
       const { quest, currentRoundIndex, currentExerciseIndex, results, bossFight } = get();
       if (!quest) return;
@@ -674,65 +744,37 @@ export const useSessionStore = create<SessionState>()(
         performedAt: new Date(),
       };
 
-      const nextResults = [...results, newResult];
+      set({
+        ...advanceAfterSet(quest, currentRoundIndex, currentExerciseIndex, [...results, newResult]),
+        lastSetSkipped: false,
+      });
+    },
 
-      // Determine next step
-      const isLastExerciseInRound = currentExerciseIndex === quest.exercises.length - 1;
-      const isLastRound = currentRoundIndex === quest.rounds - 1;
+    /**
+     * The hero could not do this movement, and says so instead of typing a number.
+     *
+     * Writes nothing. `CHECK (resultValue > 0)` made "1" the only way past a movement out of
+     * reach, and that 1 then fed muscle volume, the weak-area read and the targets it generates —
+     * issue #33's second half, where the app taught its own journal a lie. A set that left no row
+     * is counted by nothing, with no reader having to remember to filter it out.
+     */
+    skipExercise: () => {
+      const { quest, currentRoundIndex, currentExerciseIndex, results } = get();
+      if (!quest) return;
 
-      if (isLastExerciseInRound && isLastRound) {
-        // FINISHED
-        set({
-          status: "finished",
-          results: nextResults,
-          timerStartTimestamp: null,
-          timerDuration: 0,
-        });
-        return;
-      }
+      // A session with nothing in it cannot be written — `createCompletedSession` refuses, and
+      // the victory screen would sit on a retry button that can never succeed. So the last
+      // remaining set is not skippable: the way out of a workout the hero cannot do is Quit,
+      // which the pause overlay already offers with a confirmation.
+      const isLastSet =
+        currentExerciseIndex === quest.exercises.length - 1 &&
+        currentRoundIndex === quest.rounds - 1;
+      if (isLastSet && results.length === 0) return;
 
-      // Not finished, so we are either moving to next exercise or next round
-      let nextRound = currentRoundIndex;
-      let nextExercise = currentExerciseIndex + 1;
-
-      if (isLastExerciseInRound) {
-        nextRound = currentRoundIndex + 1;
-        nextExercise = 0;
-      }
-
-      // Handle Rest. The last exercise of a round means the round is over — the last-round case
-      // already returned as "finished" above — so the longer round rest applies. `??`, not `||`:
-      // a round rest of 0 means "no rest screen between rounds", not "fall back to restSeconds".
-      const restSeconds = isLastExerciseInRound
-        ? (quest.roundRestSeconds ?? quest.restSeconds)
-        : quest.restSeconds;
-
-      // If we have rest, we go to resting state.
-      // The indices (round/exercise) will point to the NEXT exercise,
-      // so the UI can show "Up Next: [Next Exercise]".
-      if (restSeconds > 0) {
-        set({
-          status: "resting",
-          results: nextResults,
-          currentRoundIndex: nextRound,
-          currentExerciseIndex: nextExercise,
-          timerStartTimestamp: Date.now(),
-          timerDuration: restSeconds,
-        });
-      } else {
-        // No rest, jump straight to next
-        const nextExDef = quest.exercises[nextExercise];
-        const isNextTimeBased = nextExDef?.target.type === "time";
-
-        set({
-          status: "running",
-          results: nextResults,
-          currentRoundIndex: nextRound,
-          currentExerciseIndex: nextExercise,
-          timerStartTimestamp: isNextTimeBased ? Date.now() : null,
-          timerDuration: isNextTimeBased ? nextExDef.target.value : 0,
-        });
-      }
+      set({
+        ...advanceAfterSet(quest, currentRoundIndex, currentExerciseIndex, results),
+        lastSetSkipped: true,
+      });
     },
 
     skipRest: () => {
@@ -1073,6 +1115,7 @@ useSessionStore.subscribe(
           timerStartTimestamp: state.timerStartTimestamp,
           timerDuration: state.timerDuration,
           results: state.results,
+          lastSetSkipped: state.lastSetSkipped,
           savedAt: Date.now(),
         };
         await preferences.setSavedSession(JSON.stringify(savedState));

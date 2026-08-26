@@ -38,6 +38,7 @@ export function ActiveExerciseView() {
   const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
   const completeExercise = useSessionStore((s) => s.completeExercise);
+  const skipExercise = useSessionStore((s) => s.skipExercise);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
@@ -82,6 +83,11 @@ export function ActiveExerciseView() {
     } else {
       completeExercise(Math.max(1, adjustedReps));
     }
+  };
+
+  const handleSkip = () => {
+    selection();
+    skipExercise();
   };
 
   const handleAdjustReps = (delta: number) => {
@@ -471,6 +477,23 @@ export function ActiveExerciseView() {
             ) : null}
           </YStack>
         </ScrollView>
+
+        {/* The honest way out of a movement the hero cannot do. Deliberately quiet next to the
+          primary action — it is a release valve, not a choice being offered. Before it existed,
+          `CHECK (resultValue > 0)` made "1" the only way past, and that 1 went on to feed muscle
+          volume, the weak-area read and every target generated from them (issue #33). */}
+        <Pressable
+          testID="session-skip-exercise"
+          onPress={handleSkip}
+          accessibilityRole="button"
+          accessibilityLabel={t("session.skip_exercise")}
+        >
+          <XStack items="center" justify="center" py="$2" opacity={0.7} hoverStyle={{ opacity: 1 }}>
+            <Text fontSize={13} fontWeight="700" color="$textSecondary" fontFamily="$body">
+              {t("session.skip_exercise")}
+            </Text>
+          </XStack>
+        </Pressable>
 
         {/* Footer Action */}
         <Button

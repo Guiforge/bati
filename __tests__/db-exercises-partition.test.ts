@@ -43,12 +43,17 @@ describe("exercises name partition", () => {
     expect(() => insert("Chigong Punch", "Admin")).not.toThrow();
   });
 
-  test("a hero cannot own the same name twice", () => {
+  test("a hero may own the same name twice — nothing resolves an exercise by a hero name", () => {
+    // `0036` dropped the hero-side index. `officialByName` filters to seed rows and every
+    // migration is held to the same side, so a duplicate hurts nothing — and reserving a name
+    // was actively harmful: a retired movement kept its name while being invisible.
     insert("Archer Squat", "hero");
-    expect(() => insert("Archer Squat", "hero")).toThrow(/UNIQUE/i);
+    expect(() => insert("Archer Squat", "hero")).not.toThrow();
   });
 
   test("seed content still cannot own the same name twice", () => {
+    // The half that earns its keep: two official movements of one name is a content bug, and
+    // nothing downstream could tell them apart.
     expect(() => insert("Squat", "Admin")).toThrow(/UNIQUE/i);
   });
 

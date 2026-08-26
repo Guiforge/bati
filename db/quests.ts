@@ -6,7 +6,14 @@ import { isMuscleCode } from "./muscles";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
-import type { DifficultyCode, MuscleCode, QuestArchetype, QuestTargetType } from "./schema";
+import {
+  ADMIN_CREATOR,
+  type ContentOwner,
+  type DifficultyCode,
+  type MuscleCode,
+  type QuestArchetype,
+  type QuestTargetType,
+} from "./schema";
 import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
@@ -58,7 +65,7 @@ export type QuestTemplate = {
   frTitle: string;
   enDescription: string;
   frDescription: string;
-  author: string;
+  author: ContentOwner;
   rounds: number;
   restSeconds: number;
   /** Rest between rounds. Null = no separate round rest, `restSeconds` applies there too. */
@@ -75,7 +82,7 @@ export type Quest = {
   frTitle: string;
   enDescription: string;
   frDescription: string;
-  author: string;
+  author: ContentOwner;
   rounds: number;
   restSeconds: number;
   /** Rest between rounds. Null = no separate round rest, `restSeconds` applies there too. */
@@ -162,7 +169,7 @@ export type CreateQuestTemplateInput = Omit<
   QuestTemplate,
   "id" | "author" | "imagePath" | "archetype"
 > & {
-  author?: string;
+  author?: ContentOwner;
   /** Optional: user-authored quests declare no archetype. */
   archetype?: QuestArchetype | null;
 };
@@ -178,7 +185,7 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
       frTitle: input.frTitle,
       enDescription: input.enDescription,
       frDescription: input.frDescription,
-      author: input.author ?? "Admin",
+      author: input.author ?? ADMIN_CREATOR,
       rounds: input.rounds,
       restSeconds: input.restSeconds,
       roundRestSeconds: input.roundRestSeconds,
@@ -708,7 +715,7 @@ export async function findQuestWithExercise(exerciseId: number): Promise<number 
       .innerJoin(quests, eq(quests.id, questExercises.questId)),
   ]);
 
-  const byQuest = new Map<number, { size: number; hasIt: boolean; author: string }>();
+  const byQuest = new Map<number, { size: number; hasIt: boolean; author: ContentOwner }>();
   for (const row of rows) {
     const entry = byQuest.get(row.questId) ?? { size: 0, hasIt: false, author: row.author };
     entry.size++;

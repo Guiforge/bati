@@ -36,6 +36,7 @@ import m0032 from "./0032_calisthenics_rungs.sql";
 import m0033 from "./0033_calisthenics_summits.sql";
 import m0034 from "./0034_quest_round_rest.sql";
 import m0035 from "./0035_hero_exercises.sql";
+import m0036 from "./0036_hero_names_are_theirs.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -77,5 +78,6 @@ export default {
     m0033,
     m0034,
     m0035,
+    m0036,
   },
 };

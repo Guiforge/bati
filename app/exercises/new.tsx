@@ -124,13 +124,10 @@ export default function ExerciseEditor() {
       router.back();
     } catch (error) {
       reportError("exercises.editor.save", error);
-      // The one save failure a hero can act on: the partial unique index over their own names.
-      const message = error instanceof Error ? error.message : String(error);
-      showError(
-        /UNIQUE/i.test(message)
-          ? t("exercise_editor.name_taken")
-          : t("exercise_editor.save_failed"),
-      );
+      // No name-collision branch: `0036` dropped the hero-side unique index, so there is no
+      // failure here a hero could act on. A branch nothing can reach is a control wired to
+      // nothing, waiting to be believed.
+      showError(t("exercise_editor.save_failed"));
     } finally {
       setSaving(false);
     }

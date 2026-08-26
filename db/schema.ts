@@ -63,11 +63,19 @@ export const exerciseStyles = ["strength", "calisthenics", "yoga", "cardio"] as 
 export type ExerciseStyle = (typeof exerciseStyles)[number];
 
 /**
- * The two populations `exercises.creator` tells apart, next to the column that holds them so
- * nothing has to import the database client to know what "mine" means.
+ * The two populations `exercises.creator` and `quests.author` tell apart, next to the columns
+ * that hold them so nothing has to import the database client to know what "mine" means.
+ *
+ * Two values, and only ever two: this app has no accounts and no network (roadmap §7), so there
+ * is never a third author to attribute. The union below is what keeps it that way — the columns
+ * are `$type`d to it, so assigning anything else, a village name most of all, is a compile
+ * error rather than a row that quietly re-partitions the table.
  */
 export const ADMIN_CREATOR = "Admin";
 export const USER_EXERCISE_CREATOR = "hero";
+
+export const contentOwners = [ADMIN_CREATOR, USER_EXERCISE_CREATOR] as const;
+export type ContentOwner = (typeof contentOwners)[number];
 
 // User preferences table - stores onboarding and settings
 export const userPreferences = sqliteTable("user_preferences", {
@@ -90,8 +98,10 @@ export const exercises = sqliteTable(
     // Store a simple asset path; UI can map it to `require()`.
     imagePath: text().notNull().default("assets/placeholder.jpg"),
 
-    // Exercise owner: user id (string) or "Admin" for built-in content.
-    creator: text().notNull().default("Admin"),
+    // Who wrote this movement: seed content, or the hero. Never a display name — the village
+    // name lives in `user_preferences`, and the partial indexes below partition on this column,
+    // so a value that can change would re-partition the table under them.
+    creator: text().notNull().default(ADMIN_CREATOR).$type<ContentOwner>(),
 
     // Stored as lowercase string: easy | medium | hard
     difficulty: text().notNull().default("medium").$type<DifficultyCode>(),
@@ -127,12 +137,14 @@ export const exercises = sqliteTable(
     // official one exists, and a future content migration may seed "Dead Bug" whether or not a
     // hero took it. One global index made the second case an app that never opens again — see
     // `drizzle/0035_hero_exercises.sql` and `docs/architecture/exercise-ownership.md`.
+    // Seed content only. Two official movements of the same name would be a content bug and
+    // nothing else can tell them apart; two of the hero's cannot hurt anything, because nothing
+    // in the app resolves an exercise by a hero name — `officialByName` filters to seed rows,
+    // and every migration is held to the same side by the seed-migration guard. Hero-authored
+    // quests carry no title index either, for the same reason: it is their catalogue.
     adminNameUnique: uniqueIndex("exercises_admin_name_unique")
       .on(table.enName)
       .where(sql`${table.creator} = 'Admin'`),
-    heroNameUnique: uniqueIndex("exercises_hero_name_unique")
-      .on(table.enName)
-      .where(sql`${table.creator} <> 'Admin'`),
   }),
 );
 
@@ -162,8 +174,8 @@ export const quests = sqliteTable("quests", {
   enDescription: text().notNull(),
   frDescription: text().notNull(),
 
-  // Content attribution (user id / name or "Admin" for built-in content).
-  author: text().notNull().default("Admin"),
+  // Same two values as `exercises.creator`, and for the same reason: never a display name.
+  author: text().notNull().default(ADMIN_CREATOR).$type<ContentOwner>(),
 
   rounds: int().notNull().default(1),
 

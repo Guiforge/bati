@@ -253,6 +253,13 @@
       "when": 1787112000000,
       "tag": "0035_hero_exercises",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "6",
+      "when": 1787115600000,
+      "tag": "0036_hero_names_are_theirs",
+      "breakpoints": true
     }
   ]
 }

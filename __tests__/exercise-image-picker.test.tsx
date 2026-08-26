@@ -37,7 +37,29 @@ jest.mock("expo-image-picker", () => ({
   MediaTypeOptions: { Images: "Images" },
 }));
 
+const mockShowError = jest.fn();
+jest.mock("@/components/common/Toast", () => ({
+  useToast: () => ({
+    showError: (...args: unknown[]) => mockShowError(...args),
+    showSuccess: jest.fn(),
+    showInfo: jest.fn(),
+    showToast: jest.fn(),
+  }),
+}));
+
+jest.mock("@/stores/settings", () => ({
+  useSettingsStore: (selector?: (s: { language: string }) => unknown) => {
+    const state = { language: "en" };
+    return selector ? selector(state) : state;
+  },
+}));
+
+import { act, fireEvent, render } from "@testing-library/react-native";
+import { TamaguiProvider } from "tamagui";
+
+import { ExerciseImagePicker } from "@/components/exercises/ExerciseImagePicker";
 import { encodePhoto, MAX_PHOTO_WIDTH } from "@/src/exercisePhoto";
+import config from "@/tamagui.config";
 
 describe("encodePhoto", () => {
   beforeEach(() => {
@@ -60,5 +82,76 @@ describe("encodePhoto", () => {
     mockSave.mockResolvedValue({ base64: undefined });
 
     await expect(encodePhoto("file:///tmp/x.jpg")).rejects.toThrow();
+  });
+});
+
+describe("picking a photo", () => {
+  const requestPermission = jest.requireMock("expo-image-picker")
+    .requestMediaLibraryPermissionsAsync as jest.Mock;
+  const launchLibrary = jest.requireMock("expo-image-picker").launchImageLibraryAsync as jest.Mock;
+
+  async function tapPhotoTile() {
+    // `await` on the render: RNTL 14 hands back a promise here, and awaiting a plain result is
+    // harmless — the same call in the older suites returns the tree directly.
+    const screen = await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <ExerciseImagePicker value="assets/placeholder.webp" onChange={onChange} />
+      </TamaguiProvider>,
+    );
+
+    // The tiles live behind the preview, which is the control.
+    await act(async () => fireEvent.press(screen.getByTestId("exercise-image-preview")));
+    await act(async () => fireEvent.press(screen.getByTestId("exercise-photo")));
+    return screen;
+  }
+
+  const onChange = jest.fn();
+
+  beforeEach(() => {
+    onChange.mockClear();
+    mockShowError.mockClear();
+    requestPermission.mockClear();
+    launchLibrary.mockClear();
+    mockSave.mockResolvedValue({ base64: "QUJD" });
+    requestPermission.mockResolvedValue({ granted: true });
+    launchLibrary.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///tmp/a.jpg" }] });
+  });
+
+  it("stores the encoded photo when one is chosen", async () => {
+    await tapPhotoTile();
+
+    expect(onChange).toHaveBeenCalledWith("data:image/jpeg;base64,QUJD");
+  });
+
+  it("says so when the photo permission is refused, instead of doing nothing", async () => {
+    // A silently-declined permission is what made the avatar row inert forever.
+    requestPermission.mockResolvedValue({ granted: false });
+
+    await tapPhotoTile();
+
+    expect(launchLibrary).not.toHaveBeenCalled();
+    expect(mockShowError).toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("changes nothing, and says nothing, when the hero backs out of the picker", async () => {
+    launchLibrary.mockResolvedValue({ canceled: true });
+
+    await tapPhotoTile();
+
+    expect(onChange).not.toHaveBeenCalled();
+    // Backing out is not a failure; a toast here would be the app scolding a decision.
+    expect(mockShowError).not.toHaveBeenCalled();
+  });
+
+  it("reports a failed encode and leaves the tile usable again", async () => {
+    mockSave.mockResolvedValue({ base64: undefined });
+
+    const screen = await tapPhotoTile();
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(mockShowError).toHaveBeenCalled();
+    // `finally` put `busy` back: without it the tile stays greyed out and dead.
+    expect(screen.getByTestId("exercise-photo").props.accessibilityState.disabled).toBeFalsy();
   });
 });

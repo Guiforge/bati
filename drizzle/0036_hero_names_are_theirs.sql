@@ -1,0 +1,12 @@
+-- Hero names stop being policed.
+--
+-- `0035` gave each population its own unique index on `enName`. The Admin one earns its keep: two
+-- official movements of the same name is a content bug, and nothing downstream could tell them
+-- apart. The hero one protected nothing — no code resolves an exercise by a hero name
+-- (`officialByName` filters to seed rows, and `__tests__/seed-migration-guard.test.ts` holds every
+-- migration to the same side), and `quests` has never had a unique title, so hero-authored content
+-- was already un-policed everywhere else.
+--
+-- What it did cost: a retired movement kept its name reserved while being invisible under the
+-- default filters, so re-creating it was refused by a duplicate the hero could not see.
+DROP INDEX `exercises_hero_name_unique`;

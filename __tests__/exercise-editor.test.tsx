@@ -144,19 +144,6 @@ describe("exercise editor", () => {
     });
   });
 
-  it("tells the hero the name is taken rather than swallowing the unique index", async () => {
-    mockCreate.mockRejectedValueOnce(new Error("UNIQUE constraint failed: exercises.enName"));
-
-    const editor = await mountEditor();
-    await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Squat"));
-    await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
-
-    await waitFor(() => {
-      expect(mockShowError).toHaveBeenCalledWith(expect.stringMatching(/name/i));
-    });
-    expect(mockBack).not.toHaveBeenCalled();
-  });
-
   it("loads a hero movement for editing and updates it in place", async () => {
     mockParams.id = "7";
     mockGetById.mockResolvedValue({

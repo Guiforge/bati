@@ -274,6 +274,18 @@ export function ActiveExerciseView() {
             {/* The exercise's name is on the artwork either way now — the hero paints it, and in a
               fight the arena carries it on its own scrim. Nothing repeats it here. */}
             <YStack items="center" gap="$2" width="100%">
+              {/* The template named a harder movement and the hero is not on that rung yet
+                (issue #33). Named here too: mid-session is where the substitution is felt, and
+                a hero who thinks the app got it wrong is a hero who logs a lie. */}
+              {currentEx.substitutedFor ? (
+                <Text fontSize={12} color="$textSecondary" fontFamily="$body" text="center">
+                  {t("quests.served_easier_rung", {
+                    name: localizedName(currentEx.substitutedFor, language),
+                    defaultValue: `Working up to ${localizedName(currentEx.substitutedFor, language)}`,
+                  })}
+                </Text>
+              ) : null}
+
               {/* How to do it - expandable */}
               {exerciseDescription ? (
                 <YStack width="100%">

@@ -42,7 +42,7 @@ import { getCached } from "@/db/queryCache";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatTarget } from "@/db/targets";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -682,6 +682,18 @@ export default function QuestDetails() {
                             tone={qex.target.type === "time" ? "secondary" : "primary"}
                           />
                         </XStack>
+
+                        {/* A slot the hero is not on the rung for is served easier (issue #33).
+                          Said out loud, or the card disagrees with the quest for no visible
+                          reason — and the movement it names stays one tap away through swap. */}
+                        {qex.substitutedFor ? (
+                          <Text fontSize={12} color="$textSecondary" fontFamily="$body">
+                            {t("quests.served_easier_rung", {
+                              name: localizedName(qex.substitutedFor, language),
+                              defaultValue: `Working up to ${localizedName(qex.substitutedFor, language)}`,
+                            })}
+                          </Text>
+                        ) : null}
 
                         {thumbs.length > 0 ? (
                           <XStack gap="$2" pt="$2" pb="$1">

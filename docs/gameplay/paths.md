@@ -80,6 +80,13 @@ The path also answers the *downward* question. The rung the hero stands on is th
 "this is too hard, what do I train instead?" — and it is not the direct prerequisite, which on the
 Pull-ups page would be Chin-Up.
 
+Since [issue #33](https://github.com/Guiforge/bati/issues/33) a quest *answers that question by
+itself*: a slot naming a movement whose lower rungs are unearned runs at the rung the hero is on.
+That is still not a gate, and the distinction is the whole point — the written movement is named
+on the card ("Working up to Push-ups") and is one tap away in the swap sheet. What changed is the
+default, not the permission. A hero who wants the summit tonight still gets it by asking; before,
+the only way to decline was to type a number they had not performed.
+
 ## Where a path speaks
 
 | Surface | What it says |

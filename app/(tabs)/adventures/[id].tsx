@@ -399,8 +399,11 @@ export default function AdventureDetailsScreen() {
     <YStack flex={1} bg="$background">
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
-          <XStack items="center" justify="space-between">
-            <XStack items="center" gap="$3">
+          <XStack items="center" justify="space-between" gap="$2">
+            {/* Same rule as the exercises header: only the title gives way. Yoga's flexShrink
+                defaults to 0, so without this the level column kept its natural width and pushed
+                its caption off the screen edge, across the title. */}
+            <XStack items="center" gap="$3" flex={1} minW={0}>
               <AppIconButton
                 onPress={() => router.back()}
                 accessibilityRole="button"
@@ -409,9 +412,16 @@ export default function AdventureDetailsScreen() {
                 <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
               </AppIconButton>
 
-              <XStack items="center" gap="$2">
+              <XStack items="center" gap="$2" flex={1} minW={0}>
                 <Sparkles size={18} color="$primaryText" />
-                <Text fontWeight="700" fontSize={20} color="$text">
+                <Text
+                  flex={1}
+                  minW={0}
+                  fontWeight="700"
+                  fontSize={20}
+                  color="$text"
+                  numberOfLines={1}
+                >
                   {t("adventures.details_title")}
                 </Text>
               </XStack>
@@ -422,7 +432,7 @@ export default function AdventureDetailsScreen() {
               {/* Only when the shown level *is* the suggestion: a pinned run displays its own
                   starting level, and the caption would be describing something else. */}
               {feedbackAdjusted && !run?.run.difficultyOverride ? (
-                <Paragraph color="$textSecondary" size="$3">
+                <Paragraph color="$textSecondary" size="$2" numberOfLines={1}>
                   {t("adventures.level_from_feedback")}
                 </Paragraph>
               ) : null}

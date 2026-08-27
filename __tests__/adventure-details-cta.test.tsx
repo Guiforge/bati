@@ -194,7 +194,7 @@ describe("the caption under the tag", () => {
 
     const { findByText } = await renderScreen();
 
-    expect(await findByText("Adjusted from your feedback")).toBeTruthy();
+    expect(await findByText("From your feedback")).toBeTruthy();
   });
 
   test("stays away when the level is the hero's own doing", async () => {
@@ -203,6 +203,6 @@ describe("the caption under the tag", () => {
     const { findByText, queryByText } = await renderScreen();
 
     await findByText("Hard");
-    expect(queryByText("Adjusted from your feedback")).toBeNull();
+    expect(queryByText("From your feedback")).toBeNull();
   });
 });

@@ -91,13 +91,23 @@ describe("db/completed — history and trends", () => {
       expect([...times].sort((a, b) => a - b)).toEqual(times);
     });
 
-    it("honours the limit", async () => {
+    // The limit must bite the *old* end. Asserting only the count passed while the query
+    // returned the oldest two — which is what froze the chart and the difficulty suggestion
+    // on the first ten sessions a hero ever banked.
+    it("drops the oldest sessions when the limit bites", async () => {
       const now = new Date();
       await bankSession({ performedAt: subDays(now, 3) });
       await bankSession({ performedAt: subDays(now, 2) });
       await bankSession({ performedAt: subDays(now, 1) });
 
-      expect((await completed().getRecentSessionHistory(2)).length).toBe(2);
+      const history = await completed().getRecentSessionHistory(2);
+
+      // Stored as a unix second, so the millis the test built with do not survive the round trip.
+      const seconds = (d: Date) => Math.floor(d.getTime() / 1000);
+      expect(history.map((h) => seconds(h.performedAt))).toEqual([
+        seconds(subDays(now, 2)),
+        seconds(subDays(now, 1)),
+      ]);
     });
 
     it("keeps a quest's history to that quest", async () => {
@@ -116,6 +126,27 @@ describe("db/completed — history and trends", () => {
 
       expect(history.length).toBe(2);
       expect(history.every((h) => h.questId === target.id)).toBe(true);
+    });
+
+    it("drops a quest's oldest sessions when the limit bites", async () => {
+      const now = new Date();
+      const target = t.sqlite.prepare("SELECT id FROM quests LIMIT 1").get() as
+        | { id: number }
+        | undefined;
+      if (!target) throw new Error("No seeded quests");
+
+      await bankSession({ performedAt: subDays(now, 3), questId: target.id });
+      await bankSession({ performedAt: subDays(now, 2), questId: target.id });
+      await bankSession({ performedAt: subDays(now, 1), questId: target.id });
+
+      const history = await completed().getQuestSessionHistory(target.id, 2);
+
+      // Stored as a unix second, so the millis the test built with do not survive the round trip.
+      const seconds = (d: Date) => Math.floor(d.getTime() / 1000);
+      expect(history.map((h) => seconds(h.performedAt))).toEqual([
+        seconds(subDays(now, 2)),
+        seconds(subDays(now, 1)),
+      ]);
     });
 
     it("returns nothing for a quest never played", async () => {

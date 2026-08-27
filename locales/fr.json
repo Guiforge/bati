@@ -27,6 +27,7 @@
     "kind_boss": "BOSS",
     "kind_event": "ÉVÉNEMENT",
     "kind_route": "ROUTE",
+    "level_from_feedback": "D’après tes retours",
     "load_error": "Échec du chargement de l’aventure",
     "not_found": "Aventure introuvable",
     "reward_xp_per_step": "jusqu'à +{{count}} XP par étape",

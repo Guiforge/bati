@@ -285,6 +285,7 @@
     "details_title": "Adventure",
     "not_found": "Adventure not found",
     "invalid_id": "Invalid adventure",
+    "level_from_feedback": "From your feedback",
     "load_error": "Failed to load adventure",
     "start_error": "Could not start the adventure",
     "reward_xp_per_step": "up to +{{count}} XP per step",

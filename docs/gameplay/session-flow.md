@@ -247,11 +247,18 @@ was there for it.
 └─────────────────────────────────────────────┘
 ```
 
-**Feedback Impact**:
+**Feedback Impact**: the answer moves the level an **adventure** proposes, one rung, and the
+adventure screen captions the tag when it did. It takes 3 of the last 5 sessions saying the same
+thing (`analyzeDifficultyProgression`), so one bad night changes nothing, and a hero who never
+answers is never moved — a missing answer counts as "good".
 
-- Easy → Suggest harder quests
-- Hard → Adjust difficulty, offer encouragement
-- Good → Continue current path
+- Easy ×3 → the next adventure step proposes one rung harder
+- Hard ×3 → one rung easier
+- Good, or no answer → unchanged
+
+A **quest** keeps the level the hero set on it: nothing here overrides a choice they made by
+hand. `suggestDifficultyFromSessions` is the single writer of this rule
+([`db/difficultySuggestion.ts`](../../db/difficultySuggestion.ts)).
 
 ---
 

@@ -389,8 +389,11 @@ export type SessionSummary = {
 };
 
 /**
- * Get session history for a specific quest, ordered by date ascending.
- * Useful for building progression charts.
+ * Get a quest's most recent sessions, returned oldest-first so a chart reads left to right.
+ *
+ * The limit has to bite the old end, which is why the query sorts descending and the result is
+ * reversed: sorting ascending and limiting returns the *first* n sessions a hero ever banked,
+ * frozen there forever once they pass n.
  */
 export async function getQuestSessionHistory(
   questId: number,
@@ -407,10 +410,10 @@ export async function getQuestSessionHistory(
     })
     .from(completedQuest)
     .where(eq(completedQuest.questId, questId))
-    .orderBy(completedQuest.performedAt, completedQuest.id)
+    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
     .limit(limit);
 
-  return rows.map((r) => ({
+  return rows.reverse().map((r) => ({
     id: r.id,
     questId: r.questId ?? null,
     userLevel: r.userLevel,
@@ -421,8 +424,8 @@ export async function getQuestSessionHistory(
 }
 
 /**
- * Get recent session history across all quests, ordered by date ascending.
- * Useful for overall progression charts.
+ * The most recent sessions across all quests, returned oldest-first so a chart reads left to
+ * right. Same descending-then-reverse reason as `getQuestSessionHistory` above.
  */
 export async function getRecentSessionHistory(limit = 30): Promise<SessionSummary[]> {
   const rows = await db
@@ -435,10 +438,10 @@ export async function getRecentSessionHistory(limit = 30): Promise<SessionSummar
       feedback: completedQuest.feedback,
     })
     .from(completedQuest)
-    .orderBy(completedQuest.performedAt, completedQuest.id)
+    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
     .limit(limit);
 
-  return rows.map((r) => ({
+  return rows.reverse().map((r) => ({
     id: r.id,
     questId: r.questId ?? null,
     userLevel: r.userLevel,

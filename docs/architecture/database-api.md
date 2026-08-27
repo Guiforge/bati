@@ -254,8 +254,8 @@ interface TrendAnalysis {
 | `createCompletedSession(data)` | Save a completed session |
 | `listCompletedSessions(limit?)` | Get recent sessions |
 | `getCompletedSessionById(id)` | Get session with exercises |
-| `getRecentSessionHistory(questId, limit)` | Quest-specific history |
-| `getQuestSessionHistory(questId)` | Full history for quest |
+| `getRecentSessionHistory(limit?)` | Most recent sessions, all quests, oldest-first |
+| `getQuestSessionHistory(questId, limit?)` | Most recent sessions for one quest, oldest-first |
 | `getWeeklyTrends(weeks?)` | Get weekly trend data |
 | `getMonthlyTrends(months?)` | Get monthly trend data |
 | `analyzeTrend(current, previous)` | Compare two values |

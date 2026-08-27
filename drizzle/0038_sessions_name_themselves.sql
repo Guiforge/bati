@@ -47,6 +47,5 @@ UPDATE `completed_sessions` SET
     substr('89ab', (random() & 3) + 1, 1) || substr(lower(hex(randomblob(2))), 1, 3) || '-' ||
     lower(hex(randomblob(6))),
   `tzOffsetMin` =
-    (strftime('%s', datetime(`performedAt`, 'unixepoch', 'localtime')) - `performedAt`) / 60
-WHERE `performedAt` IS NOT NULL;--> statement-breakpoint
+    (strftime('%s', datetime(`performedAt`, 'unixepoch', 'localtime')) - `performedAt`) / 60;--> statement-breakpoint
 CREATE UNIQUE INDEX `completed_sessions_uuid_unique` ON `completed_sessions` (`uuid`);

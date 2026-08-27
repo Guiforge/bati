@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { uuidv7 } from "./uuid";
 
 // ------------------------------------------------------------
 // Exercises catalogue
@@ -398,10 +399,29 @@ export const completedQuest = sqliteTable(
     performedAt: int({ mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
+
+    // The name this session keeps outside this database (0038). `id` is an AUTOINCREMENT
+    // counter, so two phones both call a session `143`; this is what a row-by-row merge would
+    // have to match on. Nullable only because `ADD COLUMN NOT NULL` wants a constant default —
+    // the `$defaultFn` is what actually guarantees it, on every Drizzle insert.
+    uuid: text().$defaultFn(uuidv7),
+
+    // Which install wrote the row — provenance, not identity (`db/preferences.ts`). Null on
+    // every session logged before 0038: nothing here recorded it.
+    originDevice: text(),
+
+    // Minutes east of Greenwich at the moment of the session: Paris in summer is **+120**, the
+    // opposite sign to `getTimezoneOffset()`. `dayKey()` buckets a session by the device's local
+    // day and never wrote down which day that was, so a session arriving from another device
+    // lands on the wrong calendar square with nothing able to notice.
+    // `0 - x`, not `-x`: negating a zero offset yields `-0`, which every later `Object.is` or
+    // strict comparison against a plain `0` answers false to.
+    tzOffsetMin: int().$defaultFn(() => 0 - new Date().getTimezoneOffset()),
   },
   (table) => ({
     performedAtIdx: index("completed_sessions_performed_at_idx").on(table.performedAt),
     questIdx: index("completed_sessions_quest_idx").on(table.questId),
+    uuidIdx: uniqueIndex("completed_sessions_uuid_unique").on(table.uuid),
   }),
 );
 

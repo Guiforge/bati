@@ -13,6 +13,7 @@ import { db, schema, type TransactionTx, transactionOrFallback } from "./client"
 import { dayKey } from "./dates";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
+import { getDeviceId } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import type {
   DifficultyCode,
@@ -89,9 +90,14 @@ function parseExerciseStyle(value: unknown): ExerciseStyle {
     : "strength";
 }
 
-// biome-ignore lint/suspicious/useAwait: async keeps the guard throw a rejected promise, not a sync throw
 export async function createCompletedSession(input: CompletedSessionInput): Promise<number> {
   if (input.exercises.length === 0) throw new Error("A completed session must have exercises");
+
+  // Read *before* the transaction, never inside it: on this install's first save `getDeviceId`
+  // writes `user_preferences` through `db`, and reaching for `db` from inside an open
+  // `db.transaction` is the nesting `serializeOnDatabase` warns about (db/client.ts) — the inner
+  // call would wait on the queue entry that is waiting on it.
+  const originDevice = await getDeviceId();
 
   return transactionOrFallback(async (tx) => {
     const inserted = await tx
@@ -104,6 +110,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         notes: input.notes ?? "",
         feedback: input.feedback ?? null,
         performedAt: input.performedAt ?? new Date(),
+        originDevice,
       })
       .returning({ id: completedQuest.id });
 

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { db, schema, type TransactionTx } from "./client";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
+import { uuidv7 } from "./uuid";
 
 const { userPreferences } = schema;
 
@@ -43,6 +44,35 @@ export async function setPreference(
       target: userPreferences.key,
       set: { value, updatedAt: new Date() },
     });
+}
+
+const DEVICE_ID_KEY = "deviceId";
+let deviceId: string | null = null;
+
+/**
+ * Which install is writing. Generated once, then it is this database's own name.
+ *
+ * Stamped into `completed_sessions.originDevice` so a merged journal can say where a session
+ * came from. It is provenance, not identity — the identity is the session's `uuid` (db/uuid.ts),
+ * which is unique whatever this returns.
+ *
+ * ponytail: the id lives *in* the database, so restoring a backup onto a second phone makes both
+ *           claim the same origin. Harmless while nothing reads the column back; re-draw it on
+ *           restore the day a merge actually attributes rows by it.
+ */
+export async function getDeviceId(): Promise<string> {
+  if (deviceId !== null) return deviceId;
+
+  const existing = await getPreference(DEVICE_ID_KEY);
+  if (existing !== null) {
+    deviceId = existing;
+    return existing;
+  }
+
+  const fresh = uuidv7();
+  await setPreference(DEVICE_ID_KEY, fresh);
+  deviceId = fresh;
+  return fresh;
 }
 
 // Delete a preference

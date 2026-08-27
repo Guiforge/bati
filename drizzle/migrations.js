@@ -38,6 +38,7 @@ import m0034 from "./0034_quest_round_rest.sql";
 import m0035 from "./0035_hero_exercises.sql";
 import m0036 from "./0036_hero_names_are_theirs.sql";
 import m0037 from "./0037_xp_measures_effort.sql";
+import m0038 from "./0038_sessions_name_themselves.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -81,5 +82,6 @@ export default {
     m0035,
     m0036,
     m0037,
+    m0038,
   },
 };

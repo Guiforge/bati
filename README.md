@@ -201,5 +201,13 @@ whose licence places no ownership claim on outputs and allows any use. `scripts/
 records the model, prompt and seed behind every one of them, so fork away — the art comes with
 you, and you can regenerate it yourself.
 
+Most of the exercise illustrations in `assets/images/exercises/` are *derived* work on top of
+that: FLUX redrew them from anatomical line studies by
+[Everkinetic](https://github.com/everkinetic/data), reframed by
+[workout-guide](https://github.com/bryllim/workout-guide) — both CC BY-SA 4.0. Credit is due to
+Everkinetic and Bryl Lim, and the share-alike obligation is already satisfied by the licence
+above. It binds the images, never the app code. `scripts/provenance.json` names the source frame
+for each one.
+
 Two exceptions keep their own terms: the [game-icons.net](https://game-icons.net) set
 (CC BY 3.0 / CC0) and the store badges.

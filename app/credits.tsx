@@ -82,6 +82,34 @@ export default function CreditsScreen() {
 
         <Card gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
+            {t("credits.illustrations_title")}
+          </Text>
+          <Paragraph color="$textSecondary">{t("credits.illustrations_note")}</Paragraph>
+
+          <Separator />
+
+          <CreditLink
+            title={t("credits.everkinetic")}
+            subtitle={t("credits.everkinetic_subtitle")}
+            url="https://github.com/everkinetic/data"
+            onPress={openUrl}
+          />
+          <CreditLink
+            title={t("credits.workout_guide")}
+            subtitle={t("credits.workout_guide_subtitle")}
+            url="https://github.com/bryllim/workout-guide"
+            onPress={openUrl}
+          />
+          <CreditLink
+            title={t("credits.cc_by_sa_40")}
+            subtitle={t("credits.cc_by_sa_40_subtitle")}
+            url="https://creativecommons.org/licenses/by-sa/4.0/"
+            onPress={openUrl}
+          />
+        </Card>
+
+        <Card gap="$3">
+          <Text fontSize="$4" fontWeight="700" color="$text">
             {t("credits.icons_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("credits.game_icons_note")}</Paragraph>

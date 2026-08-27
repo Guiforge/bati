@@ -67,7 +67,7 @@
     "jest": "~29.7.0",
     "jest-expo": "~57.0.5",
     "knip": "^6.32.2",
-    "typescript": "~7.0.2"
+    "typescript": "~6.0.3"
   },
   "jest": {
     "moduleNameMapper": {

@@ -126,4 +126,39 @@ describe("createCompletedSession names its row", () => {
     // Positive east of Greenwich, the opposite sign to getTimezoneOffset().
     expect(first.tzOffsetMin).toBe(0 - new Date().getTimezoneOffset());
   });
+
+  // The two writers of these columns — this one and the 0038 backfill — have to mean the same
+  // thing, and only one of them can see `performedAt`. A session is saved after it is performed
+  // (stores/session.ts passes `startTime`), so a stamp read off the clock puts the save time in
+  // the new half of the journal and the session time in the migrated half: `ORDER BY uuid` stops
+  // being `ORDER BY performedAt` at the seam, and a summer save calls a winter workout CEST.
+  test("names a backdated session after when it happened, not when it was written", async () => {
+    const { createCompletedSession } =
+      require("../db/completed") as typeof import("../db/completed");
+
+    const exerciseId = (
+      t.sqlite.prepare("SELECT id FROM exercises LIMIT 1").get() as { id: number } | undefined
+    )?.id;
+    assert(exerciseId);
+
+    const performedAt = new Date("2024-01-15T10:00:00Z");
+    const id = await createCompletedSession({
+      performedAt,
+      exercises: [{ exerciseId, sortOrder: 0, result: { type: "reps", value: 10 } }],
+    });
+
+    const row = t.sqlite
+      .prepare("SELECT uuid, tzOffsetMin FROM completed_sessions WHERE id = ?")
+      .get(id) as { uuid: string; tzOffsetMin: number } | undefined;
+    assert(row);
+
+    // The first 48 bits are the millisecond, and it is the session's, to the millisecond.
+    const uuidMs = Number.parseInt(row.uuid.slice(0, 8) + row.uuid.slice(9, 13), 16);
+    expect(uuidMs).toBe(performedAt.getTime());
+
+    // Off that same date, so a zone with summer time reads 60 here and 120 in July. On a UTC
+    // runner both are 0 and this proves nothing beyond the uuid above — which is why the real
+    // assertion is the millisecond, and this one is written against `Date` rather than a literal.
+    expect(row.tzOffsetMin).toBe(0 - performedAt.getTimezoneOffset());
+  });
 });

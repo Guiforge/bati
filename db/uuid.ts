@@ -34,9 +34,16 @@ function randomHex(length: number): string {
   return out.slice(0, length);
 }
 
-export function uuidv7(): string {
+/**
+ * @param ms the instant this name stands for. Pass the session's `performedAt`, not the clock:
+ *   the 0038 backfill reads each row's own `performedAt`, so a writer that reads `Date.now()`
+ *   instead puts the save time in half the journal and the session time in the other half, and
+ *   `ORDER BY uuid` stops being `ORDER BY performedAt` at the seam. It defaults to now for a
+ *   name with no row behind it — `getDeviceId()`.
+ */
+export function uuidv7(ms: number = Date.now()): string {
   // 48 bits of unix milliseconds, hex. Twelve characters until the year 10889.
-  const ts = Date.now().toString(16).padStart(12, "0");
+  const ts = ms.toString(16).padStart(12, "0");
   // The variant nibble is 8, 9, a or b — 2 bits fixed, 2 random.
   const variant = "89ab"[Math.floor(Math.random() * 4)];
 

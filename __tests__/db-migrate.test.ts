@@ -224,11 +224,16 @@ describe("db/migrate", () => {
   });
 
   it("migrates even when the backup fails, because a backup is not a gate", async () => {
-    // `backupBeforeMigrations` promises never to throw, and this is the test that keeps the
-    // promise cheap to rely on: if it ever breaks it, the app still starts.
+    // `backupBeforeMigrations` promises never to throw, and this is the test that stops the app
+    // depending on it keeping the promise: a card pulled mid-launch must cost the backup, not
+    // the launch. Asserted on the schema, not on "it didn't reject" — the question is whether
+    // the migrations *ran*.
     backupBeforeMigrations.mockImplementation(() => Promise.reject(new Error("card removed")));
 
-    await expect(freshRunner(sqlite).ensureMigrations()).rejects.toThrow("card removed");
+    await freshRunner(sqlite).ensureMigrations();
+
+    expect(backupBeforeMigrations).toHaveBeenCalledTimes(1);
+    expect(tables()).toContain("user_preferences");
   });
 
   it("memoises success, so two callers in one process migrate once", async () => {

@@ -404,7 +404,11 @@ export const completedQuest = sqliteTable(
     // counter, so two phones both call a session `143`; this is what a row-by-row merge would
     // have to match on. Nullable only because `ADD COLUMN NOT NULL` wants a constant default —
     // the `$defaultFn` is what actually guarantees it, on every Drizzle insert.
-    uuid: text().$defaultFn(uuidv7),
+    //
+    // A net, not the writer: it cannot see `performedAt`, so it names the row after the moment
+    // it was saved. `createCompletedSession` overrides it with the moment it was *performed*,
+    // which is what the 0038 backfill wrote and what keeps `ORDER BY uuid` sorting the journal.
+    uuid: text().$defaultFn(() => uuidv7()),
 
     // Which install wrote the row — provenance, not identity (`db/preferences.ts`). Null on
     // every session logged before 0038: nothing here recorded it.
@@ -416,6 +420,10 @@ export const completedQuest = sqliteTable(
     // lands on the wrong calendar square with nothing able to notice.
     // `0 - x`, not `-x`: negating a zero offset yields `-0`, which every later `Object.is` or
     // strict comparison against a plain `0` answers false to.
+    //
+    // The same net as `uuid` above, with the same blind spot: today's offset, which is not the
+    // session's the moment a summer save describes a winter workout. `createCompletedSession`
+    // reads it off `performedAt`, like 0038 does.
     tzOffsetMin: int().$defaultFn(() => 0 - new Date().getTimezoneOffset()),
   },
   (table) => ({

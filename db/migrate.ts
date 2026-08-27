@@ -1,5 +1,6 @@
 import migrations from "../drizzle/migrations";
 import { backupBeforeMigrations } from "../src/autoBackup";
+import { reportError } from "../src/reportError";
 import { db } from "./client";
 import { sqlString } from "./sql";
 
@@ -241,10 +242,14 @@ export function ensureMigrations(): Promise<void> {
       // The one moment a backup is worth writing unattended, and the one moment this database
       // can be damaged in a way no undo covers. Gated on there being something to run so an
       // ordinary launch — every launch but the first after an update — pays one indexed read.
-      // It never throws: a folder that cannot be written is not a reason an app fails to start.
+      //
+      // Caught here rather than trusted: `backupBeforeMigrations` handles its own failures today,
+      // so this catch is unreachable — and that is exactly the point. A folder that cannot be
+      // written is not a reason an app fails to start, and without this line that promise is one
+      // future `throw` inside autoBackup away from being a launch that never completes.
       const lastAppliedAt = await readLastAppliedAt(client);
       if (config.journal.entries.some((entry) => isPending(entry, lastAppliedAt))) {
-        await backupBeforeMigrations();
+        await backupBeforeMigrations().catch((e) => reportError("backup.auto.gate", e));
       }
 
       await runMigrationsAsync(client, config, { debug: migrationsDebugEnabled() });

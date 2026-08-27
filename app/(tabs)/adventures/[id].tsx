@@ -58,6 +58,8 @@ type LoadedData = {
   activeRun: ActiveAdventureRun | null;
   exercisesById: Record<number, Exercise>;
   suggestedDifficulty: "easy" | "medium" | "hard";
+  /** Whether the hero's post-session feedback moved that suggestion off their own choices. */
+  feedbackAdjusted: boolean;
   /** Null until the campaign's first session creates the fight, and for every non-boss adventure. */
   bossFight: BossFight | null;
 };
@@ -193,6 +195,7 @@ export default function AdventureDetailsScreen() {
     activeRun: null,
     exercisesById: {},
     suggestedDifficulty: "medium",
+    feedbackAdjusted: false,
     bossFight: null,
   });
 
@@ -223,6 +226,7 @@ export default function AdventureDetailsScreen() {
             activeRun: null,
             exercisesById: {},
             suggestedDifficulty: "medium",
+            feedbackAdjusted: false,
             bossFight: null,
             message: t("adventures.not_found"),
           });
@@ -230,7 +234,7 @@ export default function AdventureDetailsScreen() {
         }
 
         const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-        const suggestedDifficulty = suggestDifficultyFromSessions(history, {
+        const suggestion = suggestDifficultyFromSessions(history, {
           maxSessions: 10,
           defaultDifficulty: "medium",
         });
@@ -240,7 +244,8 @@ export default function AdventureDetailsScreen() {
           details,
           activeRun,
           exercisesById,
-          suggestedDifficulty,
+          suggestedDifficulty: suggestion.level,
+          feedbackAdjusted: suggestion.adjusted,
           bossFight,
         });
       } catch (e) {
@@ -274,8 +279,11 @@ export default function AdventureDetailsScreen() {
   const details = state.details;
   const run = state.activeRun;
   const suggestedDifficulty = state.suggestedDifficulty;
-  // A started run pins its difficulty for the whole campaign (schema comment on
-  // `difficultyOverride`); once set, every step must honor it instead of a fresh suggestion.
+  const feedbackAdjusted = state.feedbackAdjusted;
+  // `difficultyOverride` still pins a campaign when it is set, and runs started before the
+  // feedback link shipped carry one — they finish at the level they began. Nothing writes it any
+  // more: a fresh run follows the suggestion at every step, so answering "too hard" mid-campaign
+  // eases the next one instead of waiting weeks for the next campaign.
   const effectiveDifficulty = run?.run.difficultyOverride ?? suggestedDifficulty;
 
   const langKey = language;
@@ -350,8 +358,7 @@ export default function AdventureDetailsScreen() {
 
     setIsStarting(true);
     try {
-      const nextRun =
-        run ?? (await startAdventureRun({ adventureId, difficultyOverride: suggestedDifficulty }));
+      const nextRun = run ?? (await startAdventureRun({ adventureId }));
       const step =
         nextRun.activeStep ??
         nextRun.steps.find((s) => s.status === "active") ??
@@ -410,7 +417,16 @@ export default function AdventureDetailsScreen() {
               </XStack>
             </XStack>
 
-            <Tag label={levelLabel(effectiveDifficulty, t)} tone="secondary" />
+            <YStack items="flex-end" gap="$1">
+              <Tag label={levelLabel(effectiveDifficulty, t)} tone="secondary" />
+              {/* Only when the shown level *is* the suggestion: a pinned run displays its own
+                  starting level, and the caption would be describing something else. */}
+              {feedbackAdjusted && !run?.run.difficultyOverride ? (
+                <Paragraph color="$textSecondary" size="$3">
+                  {t("adventures.level_from_feedback")}
+                </Paragraph>
+              ) : null}
+            </YStack>
           </XStack>
 
           {state.status === "error" ? (

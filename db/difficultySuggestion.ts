@@ -1,13 +1,41 @@
 import type { SessionSummary } from "./completed";
 import type { DifficultyCode } from "./schema";
 
+export type DifficultySuggestion = {
+  level: DifficultyCode;
+  /**
+   * Whether the feeling moved the level off what the hero's own choices asked for. The screen
+   * captions the level from this, so it has to mean "it actually moved", not "there was a
+   * verdict": `increase` at `hard` has nowhere to go, and a caption over an unchanged level lies.
+   */
+  adjusted: boolean;
+};
+
+const LADDER: DifficultyCode[] = ["easy", "medium", "hard"];
+
+/** One rung up or down, clamped at both ends. */
+function shift(level: DifficultyCode, by: -1 | 0 | 1): DifficultyCode {
+  const next = LADDER[Math.min(LADDER.length - 1, Math.max(0, LADDER.indexOf(level) + by))];
+  return next ?? level;
+}
+
+/**
+ * What level to propose next, from what the hero *did* — their last `maxSessions` choices — then
+ * moved one rung by what they *felt*, over the shorter window `analyzeDifficultyProgression`
+ * reads. Two windows on purpose: the choices are the baseline, the feeling is the correction.
+ *
+ * ponytail: the feeling window straddles a shift — three "too easy" reported at `medium` are
+ *           still in it after the move to `hard`, so they push once more. Ceiling: converges in
+ *           three reports either way and is symmetric, so it self-corrects. Count only the
+ *           feedback from sessions performed at the current level if that surprises anyone.
+ */
 export function suggestDifficultyFromSessions(
   sessions: SessionSummary[],
   options?: {
     maxSessions?: number;
     defaultDifficulty?: DifficultyCode;
   },
-): DifficultyCode {
+): DifficultySuggestion {
   const maxSessions = options?.maxSessions ?? 10;
   const fallback: DifficultyCode = options?.defaultDifficulty ?? "medium";
 
@@ -16,7 +44,7 @@ export function suggestDifficultyFromSessions(
     .map((s) => s.userLevel)
     .filter((v): v is DifficultyCode => v === "easy" || v === "medium" || v === "hard");
 
-  if (recent.length === 0) return fallback;
+  if (recent.length === 0) return { level: fallback, adjusted: false };
 
   const score = (level: DifficultyCode) => {
     if (level === "easy") return 0;
@@ -26,9 +54,12 @@ export function suggestDifficultyFromSessions(
 
   const avg = recent.reduce((acc, lvl) => acc + score(lvl), 0) / recent.length;
 
-  if (avg <= 0.75) return "easy";
-  if (avg >= 1.25) return "hard";
-  return "medium";
+  const chosen: DifficultyCode = avg <= 0.75 ? "easy" : avg >= 1.25 ? "hard" : "medium";
+
+  const { action } = analyzeDifficultyProgression(sessions);
+  const level = shift(chosen, action === "increase" ? 1 : action === "decrease" ? -1 : 0);
+
+  return { level, adjusted: level !== chosen };
 }
 
 export type ProgressionRecommendation = {

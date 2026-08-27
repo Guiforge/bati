@@ -218,7 +218,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.4 | ~~The variation ladder becomes visible~~ — **shipped as *paths*** | High | S | ✅ | calisthenics review |
 | 4.22 | ~~An exercise catalogue — the screen 4.4 needs~~ — **shipped** | High | S–M | ✅ | GymMane |
-| 4.5 | The feeling feeds the prescription | Med-high | S | **P1** | Freeletics |
+| 4.5 | ~~The feeling feeds the prescription~~ — **shipped** | Med-high | S | ✅ | Freeletics |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |
 | 4.7 | FR review of the exercise content | Med-high | S | **P1** | |
 | 4.8 | Stats refonte | Med-high | M | **P1** | |
@@ -486,24 +486,6 @@ What was refused: a difficulty badge and a per-row progress bar. The row's job i
 movement*; where the hero stands on it belongs to the detail screen, and a wall of unlit bars is
 exactly what the dedicated skill-tree screen was dropped for.
 
-### 4.5 The feeling feeds the prescription — the last link of a loop that is otherwise built
-
-*Freeletics* sells an adaptive coach and the mechanism under the marketing is mundane: the plan
-reacts to what the athlete reports. Bati collects that report already — "Comment c'était ? ·
-Trop facile · Parfait · Trop dur" ships on `components/session/VictoryView.tsx`, persists through
-`updateSessionFeedback`, and `analyzeDifficultyProgression` turns the last five sessions into
-increase / maintain / decrease.
-
-The link that is missing is the last one. `suggestDifficultyFromSessions` — what
-`app/(tabs)/adventures/[id].tsx` actually calls to pick a level — reads `sessions.userLevel`, the
-difficulty the hero *chose*. Not the feeling. So answering "too easy" five times raises nothing
-by itself; it renders a recommendation card in the Journal and waits for the hero to act on it.
-Two functions in one file, one of them already computing the right answer.
-
-**This is not the per-set RIR capture that §7 closed**, and it never becomes it: the question
-already exists and asks once, after the effort. If it ever grows a per-set form, the closed
-decision applies again.
-
 ### 4.6–4.8 The other refontes
 
 **Boss battle** (4.6) is the payoff the whole RPG layer is promising — and the scan changed what
@@ -710,7 +692,7 @@ one arrives naked, and 27 authored quests behind two filters answer the same nee
 
 Freeletics' adaptive coach went the same way: "ask the athlete how it went" is on the victory
 screen already, in both locales, feeding `analyzeDifficultyProgression`. Only the last hop was
-missing (4.5).
+missing, and 4.5 shipped it — the feeling now moves an adventure's level one rung.
 
 **Three of the first four candidates from this scan turned out to be already built.** That is the
 finding, not an embarrassment: this app's problem is not a thin feature set, it is that
@@ -883,8 +865,8 @@ Each of these was proposed, considered, and closed. They are here so they stop c
   form did not. Twelve extra interactions a session, in an app that spent a whole roadmap
   removing friction. One optional field on an exercise's last set is the door if the data is
   ever genuinely wanted. **The session feeling on the victory screen is not that door** — it asks
-  once, after the effort, and it shipped. If it ever grows a per-set form, this decision applies
-  again. See §4.5 for the half of that loop still missing.
+  once, after the effort, and it shipped — and since 4.5 its answer moves the level an adventure
+  proposes. If it ever grows a per-set form, this decision applies again.
 - **Finer muscle taxonomy.** `muscleToResource` maps muscles 1:1 onto the village's six
   resources, so every muscle added costs a resource, a building, a sprite and a colour. The rules
   that wanted finer muscles actually wanted **movement patterns** — `exercises.pattern`, added in

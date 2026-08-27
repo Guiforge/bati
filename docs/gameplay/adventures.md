@@ -98,7 +98,8 @@ CREATE TABLE adventure_runs (
   id INTEGER PRIMARY KEY,
   adventureId INTEGER REFERENCES adventures(id),
   status TEXT NOT NULL,        -- 'active' | 'finished'
-  difficultyOverride TEXT,     -- Override quest difficulty
+  difficultyOverride TEXT,     -- Pins the campaign. Null in practice since the feedback link
+                               -- shipped: each step re-reads the suggestion instead.
   startedAt INTEGER,
   finishedAt INTEGER,
   createdAt INTEGER

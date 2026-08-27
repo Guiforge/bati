@@ -77,7 +77,7 @@ jest.mock("@/db", () => ({
   listExercises: jest.fn().mockResolvedValue([]),
   getRecentSessionHistory: jest.fn().mockResolvedValue([]),
   startAdventureRun: jest.fn(),
-  suggestDifficultyFromSessions: jest.fn().mockReturnValue("medium"),
+  suggestDifficultyFromSessions: jest.fn().mockReturnValue({ level: "medium", adjusted: false }),
   estimateQuestTemplateSeconds: jest.fn().mockReturnValue(300),
   estimateQuestTemplateXp: jest.fn().mockReturnValue(60),
   adventureWeeks: jest.fn().mockReturnValue(1),
@@ -165,7 +165,7 @@ test.each([
   ["hard", "Hard"],
 ])("the tag wears the suggested difficulty (%s)", async (suggested, label) => {
   const db = require("@/db") as { suggestDifficultyFromSessions: jest.Mock };
-  db.suggestDifficultyFromSessions.mockReturnValue(suggested);
+  db.suggestDifficultyFromSessions.mockReturnValue({ level: suggested, adjusted: false });
 
   const { findByText } = await render(
     <TamaguiProvider config={config} defaultTheme="dark">
@@ -174,4 +174,35 @@ test.each([
   );
 
   expect(await findByText(label)).toBeTruthy();
+});
+
+// The screen carries no difficulty control, so a level that moves on its own has to say why —
+// otherwise the hero sees their adventure harden with nothing to point at.
+describe("the caption under the tag", () => {
+  const suggestion = () =>
+    (require("@/db") as { suggestDifficultyFromSessions: jest.Mock }).suggestDifficultyFromSessions;
+
+  const renderScreen = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+
+  test("appears when the feeling moved the level", async () => {
+    suggestion().mockReturnValue({ level: "hard", adjusted: true });
+
+    const { findByText } = await renderScreen();
+
+    expect(await findByText("Adjusted from your feedback")).toBeTruthy();
+  });
+
+  test("stays away when the level is the hero's own doing", async () => {
+    suggestion().mockReturnValue({ level: "hard", adjusted: false });
+
+    const { findByText, queryByText } = await renderScreen();
+
+    await findByText("Hard");
+    expect(queryByText("Adjusted from your feedback")).toBeNull();
+  });
 });

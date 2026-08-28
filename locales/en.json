@@ -163,7 +163,15 @@
     "attribution_example": "Example attribution (from game-icons.net): \"Icons made by {author}. Available on https://game-icons.net\".",
     "view_authors": "View authors",
     "open_source_title": "Open-source software",
-    "open_source_body": "Built with Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next, and more."
+    "open_source_body": "Built with Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next, and more.",
+    "illustrations_title": "Exercise illustrations",
+    "illustrations_note": "Many of the exercise illustrations are derived from Everkinetic's anatomical studies, reframed by the workout-guide project, under CC BY-SA 4.0. Bati modified them and redistributes them under the same licence.",
+    "everkinetic": "Everkinetic",
+    "everkinetic_subtitle": "Original anatomical artwork",
+    "workout_guide": "workout-guide",
+    "workout_guide_subtitle": "Frames and normalisation by Bryl Lim",
+    "cc_by_sa_40": "Creative Commons BY-SA 4.0",
+    "cc_by_sa_40_subtitle": "Licence terms — share-alike"
   },
   "system": "System",
   "theme": "Theme",

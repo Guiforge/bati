@@ -78,7 +78,7 @@ exactly `com.guiforge.bati` — suffixing it would orphan every installed copy.
   in the shipped tree, because F-Droid rejects what it cannot redistribute and does so a release
   cycle late; it is a blocklist, not an allowlist, so adding an MIT package must never turn main
   red. **APK size** ([`release.yml`](.github/workflows/release.yml)) fails the release over
-  64 MiB — a ratchet, lower it after a release that measures under, never raise it. The measured
+  55 MiB — a ratchet, lower it after a release that measures under, never raise it. The measured
   breakdown of where those megabytes are is in
   [`docs/architecture/performance.md`](docs/architecture/performance.md) § Binary size.
 

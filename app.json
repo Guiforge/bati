@@ -95,6 +95,7 @@
       "./plugins/withAndroidLintExtraTranslation",
       "./plugins/withAndroidReleaseSigning",
       "./plugins/withAndroidGradleMemory",
+      "./plugins/withAndroidSmallerApk",
       "./plugins/withAndroidTrimPermissions",
       "./plugins/withAndroidReproducibleNative",
       "./plugins/withAndroidDebugAppId",

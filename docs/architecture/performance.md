@@ -119,7 +119,7 @@ compressed sizes as stored in the zip:
 
 | Part | Size | Notes |
 | --- | --- | --- |
-| `lib/arm64-v8a` (25 `.so`) | 23.6 MiB | Hermes, Reanimated, RN core — the floor, not addressable |
+| `lib/arm64-v8a` (25 `.so`) | 23.6 MiB | Hermes, Reanimated, RN core — stored uncompressed, see below |
 | 320 `.webp` | 21.3 MiB | stored, not deflated; already WebP and already sized once (rule 2 above) |
 | `index.android.bundle` | 8.1 MiB | JS — 14% of it was unused Lucide icons |
 | 3 `.dex` | 6.2 MiB | after R8 |
@@ -153,12 +153,23 @@ Two things this measurement settles, against guesses that sound plausible:
   [`hooks/useGameIcon.ts`](../../hooks/useGameIcon.ts) names 21. Only those 21 are in the APK
   (20 `.svg`, 33 KiB). Also checkout weight only.
 
+**Native libraries were stored, not compressed.** Expo defaults
+`expo.useLegacyPackaging` to false, which leaves the `.so` uncompressed and page-aligned so
+Android maps them straight out of the APK. That is the right trade for a Play install and the
+wrong one here, where the whole APK is what people download from F-Droid and from GitHub
+Releases: those 23.6 MiB deflate to 8.0 MiB.
+[`plugins/withAndroidSmallerApk.js`](../../plugins/withAndroidSmallerApk.js) flips it back, and
+turns off Fresco's GIF decoders in the same pass (0.56 MiB — Fresco only backs react-native's
+`<Image>`, which nothing here uses, and `assets/` holds no GIF). Android extracts the libraries
+at install instead, so the device carries roughly 8 MiB more; that is the price. WebP stays
+enabled on purpose — the same argument applies and a wrong call there is 295 blank images.
+
 What is left is the 21 MiB of art. Every file is already WebP and has been through one sizing
 pass; a second pass has to start by measuring the slot each one actually renders into, the way
 the exercise thumbnails were derived — not by re-compressing blind.
 
 [`.github/workflows/release.yml`](../../.github/workflows/release.yml) fails the release over
-64 MiB. It is a ratchet: lower it after a release that measures under it, never raise it to make
+55 MiB. It is a ratchet: lower it after a release that measures under it, never raise it to make
 a build pass.
 
 ## Related

@@ -12,7 +12,7 @@
     "@tamagui/lucide-icons": "^1.144.4",
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.2",
-    "expo": "~57.0.17",
+    "expo": "~57.0.18",
     "expo-asset": "~57.0.15",
     "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.15",

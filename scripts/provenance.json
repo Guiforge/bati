@@ -447,21 +447,15 @@
     "reencoded": "cwebp -q 85, from wind_wraith_wounded.jpg"
   },
   "assets/images/exercises/archer_pushup.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "everkinetic frame `archer-push-up-2` via bryllim/workout-guide",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete is at the bottom of an archer push-up, seen from in front and slightly above, the two arms doing completely different things. The body has sunk down over its left side: the left palm is flat on the floor just under the left shoulder, the left elbow is sharply bent and points backward, and the chest on that side is only a hand's width above the floor. The right arm is stretched out sideways, dead straight from shoulder to wrist with the elbow locked, reaching far out past the right shoulder, and the right palm lies flat on the floor at the end of it, fingers spread. The legs are straight, feet apart, only the toes of two dark low shoes touching down. The face is turned toward the viewer, chin up",
-    "seed": 1234,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "brume",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero holding the bottom of an archer push-up, seen from the front at a low angle. The legs are stretched straight out behind, knees locked and feet together up on the toes, so that head, hips and heels form one rigid straight plank close to the ground — the knees are never bent and the hips are never piled up under the body; this is not a crouch. The two hands are planted very far apart, much wider than the shoulders. One elbow is bent deeply so that the chest is lowered right down beside that hand, almost touching the floor. The other arm is stretched straight out sideways away from the body, elbow locked and palm flat on the ground, nearly horizontal — that arm is doing no work and is simply extended along the floor. The two arms are doing completely different things. The bent arm and the chest above it glow with fiery orange-red energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 896085712,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-17",
+    "reencoded": "cwebp -q 85, from archer_pushup.jpg"
   },
   "assets/images/exercises/bear_crawl.webp": {
     "model": "flux-2-pro",
@@ -676,21 +670,15 @@
     }
   },
   "assets/images/exercises/dragon_flag.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "prepared reference `_dragon_flag_clean.png`",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete is seen from the side and he is FACE UP: his chest, the fronts of his thighs and the soles of his shoes all point up, his back is turned toward the ground. Only the back of his head, his shoulders and his elbows touch the ground; everything from the shoulder blades down is up in the air. From the shoulders all the way to the toes the body is one straight rigid line tilted up at about forty degrees, hips and knees locked with no bend anywhere, the hips as far above the ground as the chest is. Both hands are behind his head, the palms cupping the back of the skull, the elbows flat and pointing out. The shorts stop above the knee and the shins are bare skin",
-    "seed": 707,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "braise",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A fantasy athlete hero holding a whole-body lever on a low stone bench, seen from the side. There is no banner, no flag, no cloth and no pole anywhere in the picture. Only the shoulders and the very top of the back still rest on the bench; both hands reach back over the head to grip its far edge. From the shoulders upward the entire body — back, hips, legs and feet — is one single rigid straight pole tilted steeply into the air, with the hips and the whole lower back lifted well clear of the bench and nothing but empty dark space beneath them. The body does not bend at the waist and the hips never touch the bench: the whole pole pivots on the shoulders, and it is not a leg raise. The abdominals glow with electric-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3992126226,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-17",
+    "reencoded": "cwebp -q 85, from dragon_flag.jpg"
   },
   "assets/images/exercises/flutter_kicks.webp": {
     "model": "flux-2-pro",
@@ -1253,21 +1241,15 @@
     }
   },
   "assets/images/exercises/table_row.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "prepared reference `_table_row_ref.png`",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete lies face-up under a single straight horizontal bar, seen in strict side profile, at the top of the pull. One smooth cylinder crosses the whole picture from the left edge to the right edge, level and parallel to the top edge of the frame: that bar is the only equipment -- no post, no upright, no leg, no panel, no board, nothing vertical, nothing wooden, nothing brown. Both hands are closed over the top of the bar side by side with the two fists touching, knuckles up, so only a narrow strip of bar shows between the wrists. Both elbows are bent and driven down and back behind the torso, and the chest has come up close under the bar. From the shoulders the body runs down in one straight line to the heels, hips level with the shoulders, knees straight, only the heels touching the ground and the toes pointing up. The two legs are staggered, the far one a little behind the near one, so two separate shins, two separate ankles and two separate shoes are each fully drawn and both shoes are visible. The athlete wears a fitted dark t-shirt whose short sleeves cover the top of each arm; the bare skin of the arms and lower legs is an ordinary natural warm tan, the same believable flesh tone all over",
-    "seed": 850,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "forge",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "prompt": "A fantasy athlete hero lying face-up beneath a heavy wooden table, both hands gripping its edge, body held rigid in a straight line from heels to shoulders as they pull their chest up toward the underside of the table; the back and arm muscles glow with silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2379578559,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-02",
+    "reencoded": "cwebp -q 85, from table_row.jpg"
   },
   "assets/images/exercises/thread_the_needle.webp": {
     "model": "flux-2-pro",

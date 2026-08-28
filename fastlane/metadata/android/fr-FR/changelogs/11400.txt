@@ -1,9 +1,8 @@
-- Les aventures écoutent ton ressenti. Dis « trop facile » ou « trop
-  dur » quelques fois et l'étape suivante change d'échelon, avec une
-  légende qui l'explique.
-- Graphes et Journal relisent tes dernières séances, pas les
-  premières — passé un cap, ils s'étaient figés sur le début.
-- Toutes les illustrations d'exercices redessinées, muscle-up compris ;
-  36 suivent les planches d'Everkinetic, créditées dans Crédits.
-- L'appli pèse un tiers de moins : polices et icônes en trop
-  retirées.
+- Tes aventures t'écoutent enfin. Dis quelques fois qu'une séance
+  était trop facile ou trop dure, et l'étape suivante s'adapte.
+- Les graphes de progression montrent à nouveau tes dernières séances,
+  pas les premières.
+- Toutes les images d'exercices ont été redessinées. Plus belles, plus
+  claires.
+- L'appli a perdu un tiers de son poids. Plus rapide à télécharger,
+  même jeu.

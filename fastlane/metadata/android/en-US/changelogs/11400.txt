@@ -1,8 +1,5 @@
-- Adventures listen to how a session felt. Say "too easy" or "too
-  hard" a few times and the next step moves a rung, with a note
-  saying why.
-- Graphs and the Journal read your latest sessions again, not your
-  oldest — past a point they had frozen on the beginning.
-- Every exercise illustration redrawn, muscle-up included; 36 follow
-  Everkinetic's anatomical plates, credited in Credits.
-- The app is a third lighter: unused fonts and icons are gone.
+- Your adventures now listen to you. Say a session was too easy or
+  too hard a few times, and the next step adapts.
+- Progress graphs show your latest sessions again, not your first ones.
+- Every exercise picture has been redrawn. Prettier, and clearer.
+- The app lost a third of its weight. Faster to download, same game.

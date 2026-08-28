@@ -73,6 +73,14 @@ exactly `com.guiforge.bati` — suffixing it would orphan every installed copy.
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.
 
+[`jest.setup.ts`](jest.setup.ts) exists for one reason: jest 30 refuses a `require` that happens
+outside the test scope, and Expo installs its WinterCG globals (`fetch`, `URL`,
+`__ExpoImportMetaRegistry`, …) as lazy getters that require on first touch. Reading each one
+during setup forces them to resolve while that is still legal. Deleting it, or dropping a name
+from its list, fails whole suites with "You are trying to `require` a file outside of the scope
+of the test code" — **on Node 24 only**, which is what CI runs (`lts/*`) and probably not what
+you run. `nvm exec 24 npm test` before trusting a green suite that touches jest or Expo.
+
 ### Strictness
 
 One `tsconfig.json`, and it covers the tests. `strict`, `noUncheckedIndexedAccess`,

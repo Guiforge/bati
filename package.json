@@ -93,7 +93,8 @@
       "!babel.config.js",
       "!drizzle.config.ts",
       "!tamagui.config.ts",
-      "!db/schema.ts"
+      "!db/schema.ts",
+      "!jest.setup.ts"
     ],
     "coverageReporters": [
       "text",
@@ -143,7 +144,10 @@
         "functions": 88
       }
     },
-    "collectCoverage": true
+    "collectCoverage": true,
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.ts"
+    ]
   },
   "main": "index.ts",
   "name": "bati",

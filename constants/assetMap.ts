@@ -74,8 +74,8 @@ export const EXERCISE_ASSETS = {
   worlds_greatest_stretch: require("@/assets/images/exercises/worlds_greatest_stretch.webp"),
   // The calisthenics rungs and summits from 0032/0033. bulgarian_split_squat is still absent
   // on purpose — no usable art yet, and a wrong illustration in a training app is worse than
-  // the placeholder it falls back to. See exos-pipeline/regen/RETEX.md: the model either sits
-  // the athlete on the bench or leaves them standing, five attempts.
+  // the placeholder it falls back to — the model either sits the athlete on the bench or leaves
+  // them standing, five attempts.
   muscle_up: require("@/assets/images/exercises/muscle_up.webp"),
   knee_pushup: require("@/assets/images/exercises/knee_pushup.webp"),
   wall_handstand: require("@/assets/images/exercises/wall_handstand.webp"),

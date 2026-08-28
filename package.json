@@ -154,6 +154,7 @@
   "private": true,
   "scripts": {
     "android": "expo run:android",
+    "android:release": "cd android && ./gradlew installRelease -PbatiLocalId=.perf -PreactNativeArchitectures=arm64-v8a",
     "check": "biome check --write --error-on-warnings . && npx tsc -p tsconfig.json --noEmit",
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",

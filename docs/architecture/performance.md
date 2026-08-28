@@ -39,7 +39,7 @@ don't re-add it.
 
 | # | Rule | Effort | Impact | Status here |
 | --- | --- | --- | --- | --- |
-| 1 | **Profile on release builds only.** Dev builds are 2–5× slower (unminified, runtime checks) — never chase a jank number in dev. | trivial | high (diagnosis) | habit |
+| 1 | **Profile on release builds only.** Dev builds are 2–5× slower (unminified, runtime checks) — never chase a jank number in dev. | trivial | high (diagnosis) | `npm run android:release` installs the shipped build as `com.guiforge.bati.perf`, beside the real one; see AGENTS.md § Measuring like the release |
 | 2 | **Ship bundled art as WebP**, sized to display resolution. ~25–35% smaller than PNG/JPEG → less memory + smaller binary. | low | high | **done** — 131 files converted by [`scripts/to-webp.py`](../../scripts/to-webp.py), 51.5 MB → 15.0 MB (**−71%**). Sizing done in two passes: [`scripts/fit-small-art.py`](../../scripts/fit-small-art.py) shrinks small-slot art in place, [`scripts/thumb-exercises.py`](../../scripts/thumb-exercises.py) derives 128px thumbnails for the exercise art (which stays 1280 for the session hero). |
 | 3 | **Strip `console.*` in production** via `babel-plugin-transform-remove-console`. Each call has bridge/JS overhead. | low | medium | **done** — [babel.config.js](../../babel.config.js) applies it when `NODE_ENV=production`, keeping `console.error` because that is what `reportError()` writes to. |
 | 4 | **Set `expo-image` `cachePolicy="memory-disk"`** (and a stable `recyclingKey` for images inside `@legendapp/list`) to kill flicker + redundant decodes. | low | medium | default policy today; none set explicitly |
@@ -158,7 +158,7 @@ Two things this measurement settles, against guesses that sound plausible:
 Android maps them straight out of the APK. That is the right trade for a Play install and the
 wrong one here, where the whole APK is what people download from F-Droid and from GitHub
 Releases: those 23.6 MiB deflate to 8.0 MiB.
-[`plugins/withAndroidSmallerApk.js`](../../plugins/withAndroidSmallerApk.js) flips it back, and
+[`plugins/withAndroidReleaseFlags.js`](../../plugins/withAndroidReleaseFlags.js) flips it back, and
 turns off Fresco's GIF decoders in the same pass (0.56 MiB — Fresco only backs react-native's
 `<Image>`, which nothing here uses, and `assets/` holds no GIF). Android extracts the libraries
 at install instead, so the device carries roughly 8 MiB more; that is the price. WebP stays

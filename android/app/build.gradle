@@ -120,7 +120,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            // See plugins/withAndroidDebugAppId.js — keeps the release install alive.
+            // See plugins/withAndroidLocalAppId.js — keeps the release install alive.
             applicationIdSuffix '.dev'
         }
         release {
@@ -129,6 +129,10 @@ android {
             signingConfig project.hasProperty('MYAPP_UPLOAD_STORE_FILE') ? signingConfigs.release : signingConfigs.debug
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
+            // See plugins/withAndroidLocalAppId.js — set by npm run android:release, never by CI.
+            if (project.hasProperty('batiLocalId')) {
+                applicationIdSuffix batiLocalId
+            }
             minifyEnabled enableMinifyInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'

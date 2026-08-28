@@ -1,4 +1,3 @@
-import { ChevronLeft, ChevronRight, PenLine } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +10,7 @@ import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { useToast } from "@/components/common/Toast";
+import { ChevronLeft, ChevronRight, PenLine } from "@/components/icons";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { type Exercise, listExercises, officialByName, pickableExercises } from "@/db/exercises";

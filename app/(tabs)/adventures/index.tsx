@@ -1,5 +1,4 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
@@ -9,7 +8,6 @@ import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
-
 import { starsFor } from "@/components/adventures/replayStars";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { AppButton } from "@/components/common/AppButton";
@@ -17,6 +15,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { Sparkles } from "@/components/icons";
 import { getAdventureAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,

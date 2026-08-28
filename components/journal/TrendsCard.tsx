@@ -1,9 +1,9 @@
-import { TrendingDown, TrendingUp } from "@tamagui/lucide-icons";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { TrendingDown, TrendingUp } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
   getTrendSummary,

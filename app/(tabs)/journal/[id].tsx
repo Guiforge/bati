@@ -1,4 +1,3 @@
-import { ChevronLeft, Clock, Dumbbell, Repeat, Target } from "@tamagui/lucide-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,6 +7,7 @@ import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { ChevronLeft, Clock, Dumbbell, Repeat, Target } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDuration, getCompletedSessionById } from "@/db";
 import type { CompletedSession } from "@/db/completed";

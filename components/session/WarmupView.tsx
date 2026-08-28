@@ -1,10 +1,10 @@
-import { Pause, SkipBack, SkipForward } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
+import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { useHaptics } from "@/hooks/useHaptics";

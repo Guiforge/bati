@@ -1,4 +1,3 @@
-import { ChevronLeft, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
@@ -8,7 +7,6 @@ import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
-
 import { BossPanel } from "@/components/adventures/BossPanel";
 import { starsFor } from "@/components/adventures/replayStars";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
@@ -17,6 +15,7 @@ import { Chip } from "@/components/common/Chip";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { ChevronLeft, Sparkles } from "@/components/icons";
 import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
 import type {

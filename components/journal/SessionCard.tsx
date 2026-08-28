@@ -1,9 +1,9 @@
-import { Calendar, Star, Trophy } from "@tamagui/lucide-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
+import { Calendar, Star, Trophy } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDuration } from "@/db";
 import type { DifficultyCode } from "@/db/schema";

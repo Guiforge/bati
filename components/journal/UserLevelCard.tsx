@@ -1,9 +1,9 @@
-import { Star, TrendingUp } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { Star, TrendingUp } from "@/components/icons";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";

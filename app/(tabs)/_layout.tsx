@@ -1,8 +1,8 @@
-import { Castle, Home, Map as MapIcon, Scroll, Sparkles } from "@tamagui/lucide-icons";
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "tamagui";
+import { Castle, Home, Map as MapIcon, Scroll, Sparkles } from "@/components/icons";
 
 export default function TabsLayout() {
   const { t } = useTranslation();

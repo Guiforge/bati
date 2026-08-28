@@ -1,10 +1,10 @@
-import { TrendingDown, TrendingUp } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { H3, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { TrendingDown, TrendingUp } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { getRecentSessionHistory } from "@/db/completed";
 import {

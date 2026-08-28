@@ -1,8 +1,8 @@
-import { AlertTriangle, Play, X } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { AlertTriangle, Play, X } from "@/components/icons";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { type RecoverableSession, useSessionRecovery } from "@/hooks/useSessionRecovery";

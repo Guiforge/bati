@@ -1,4 +1,3 @@
-import { Settings } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,6 +6,7 @@ import { Avatar, Text, XStack, YStack } from "tamagui";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
+import { Settings } from "@/components/icons";
 import { getAvatarSource } from "@/constants/avatars";
 import { getFlameLevel } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";

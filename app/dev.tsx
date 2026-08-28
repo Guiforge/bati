@@ -1,13 +1,12 @@
-import { ChevronLeft } from "@tamagui/lucide-icons";
 import { and, eq, lt } from "drizzle-orm";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
-
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { ChevronLeft } from "@/components/icons";
 import {
   calculateUserLevelFromXp,
   db,

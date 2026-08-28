@@ -1,10 +1,9 @@
-import { X } from "@tamagui/lucide-icons";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-
 import { Chip } from "@/components/common/Chip";
+import { X } from "@/components/icons";
 
 export type RailChip = {
   key: string;

@@ -1,13 +1,12 @@
-import { Check, Search, X } from "@tamagui/lucide-icons";
 import type { ReactNode } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Platform, Pressable, type ScrollView } from "react-native";
 import { Input, Sheet, ScrollView as TamaguiScrollView, Text, XStack, YStack } from "tamagui";
-
 import { AppButton } from "@/components/common/AppButton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
 import { MineCaption } from "@/components/exercises/MineCaption";
+import { Check, Search, X } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { filterExercises, NO_EXERCISE_FILTERS } from "@/constants/exerciseFilters";
 import { ADMIN_CREATOR, type Exercise } from "@/db/exercises";

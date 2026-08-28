@@ -1,8 +1,8 @@
-import { AlertCircle, Check, Info } from "@tamagui/lucide-icons";
 import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Text, XStack, YStack } from "tamagui";
+import { AlertCircle, Check, Info } from "@/components/icons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 type ToastType = "success" | "error" | "info";

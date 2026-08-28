@@ -1,4 +1,3 @@
-import { Shield, Swords, Target, Zap } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ReactNode } from "react";
@@ -9,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
+import { Shield, Swords, Target, Zap } from "@/components/icons";
 import { getBossAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";

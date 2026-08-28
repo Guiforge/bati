@@ -1,12 +1,10 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { ChevronLeft, ChevronRight, Link2, Plus, Search } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Paragraph, Text, XStack, YStack } from "tamagui";
-
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -14,6 +12,7 @@ import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
 import { MineCaption } from "@/components/exercises/MineCaption";
+import { ChevronLeft, ChevronRight, Link2, Plus, Search } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
 import {
   buildLeadsTo,

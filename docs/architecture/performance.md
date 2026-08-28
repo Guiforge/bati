@@ -41,7 +41,7 @@ don't re-add it.
 | --- | --- | --- | --- | --- |
 | 1 | **Profile on release builds only.** Dev builds are 2–5× slower (unminified, runtime checks) — never chase a jank number in dev. | trivial | high (diagnosis) | habit |
 | 2 | **Ship bundled art as WebP**, sized to display resolution. ~25–35% smaller than PNG/JPEG → less memory + smaller binary. | low | high | **done** — 131 files converted by [`scripts/to-webp.py`](../../scripts/to-webp.py), 51.5 MB → 15.0 MB (**−71%**). Sizing done in two passes: [`scripts/fit-small-art.py`](../../scripts/fit-small-art.py) shrinks small-slot art in place, [`scripts/thumb-exercises.py`](../../scripts/thumb-exercises.py) derives 128px thumbnails for the exercise art (which stays 1280 for the session hero). |
-| 3 | **Strip `console.*` in production** via `babel-plugin-transform-remove-console` (add to [babel.config.js](../../babel.config.js) prod env). Each call has bridge/JS overhead. | low | medium | **not done** — plugin not installed |
+| 3 | **Strip `console.*` in production** via `babel-plugin-transform-remove-console`. Each call has bridge/JS overhead. | low | medium | **done** — [babel.config.js](../../babel.config.js) applies it when `NODE_ENV=production`, keeping `console.error` because that is what `reportError()` writes to. |
 | 4 | **Set `expo-image` `cachePolicy="memory-disk"`** (and a stable `recyclingKey` for images inside `@legendapp/list`) to kill flicker + redundant decodes. | low | medium | default policy today; none set explicitly |
 | 5 | **Debounce rapid inputs** (search/filter fields) so keystrokes don't fan out into renders/queries. | low | medium | no debounce in repo yet |
 | 6 | **`InteractionManager.runAfterInteractions()`** for heavy work triggered by navigation, so transitions land at 60fps first. | medium | med-high | used in [journal](../../app/(tabs)/journal/index.tsx); extend to other heavy screens |
@@ -121,17 +121,28 @@ compressed sizes as stored in the zip:
 | --- | --- | --- |
 | `lib/arm64-v8a` (25 `.so`) | 23.6 MiB | Hermes, Reanimated, RN core — the floor, not addressable |
 | 320 `.webp` | 21.3 MiB | stored, not deflated; already WebP and already sized once (rule 2 above) |
-| `index.android.bundle` | 8.1 MiB | JS |
+| `index.android.bundle` | 8.1 MiB | JS — 14% of it was unused Lucide icons |
 | 3 `.dex` | 6.2 MiB | after R8 |
-| 24 `.ttf` | 5.9 MiB | **was the one free win** — see below |
+| 24 `.ttf` | 5.9 MiB | 18 Noto weights for the 2 the app loads — see below |
 | everything else | ~1.7 MiB | resources, 203 PNGs, XML |
 
-**A barrel import of an asset package bundles every asset it ships.**
-`import { NotoSans_400Regular } from "@expo-google-fonts/noto-sans"` runs the package's
-`index.js`, which `require`s all 18 weights, so all 18 landed in the APK for the two the app
-loads. Per-weight subpaths (`.../noto-sans/400Regular`) took the APK from 24 fonts to 6, −4.7 MiB.
-Metro drops an *unreferenced* asset happily; it cannot drop one a barrel referenced. The same
-trap applies to any `@expo-google-fonts/*` or icon package.
+**Metro does not tree-shake, so a barrel import ships the whole package.** It drops an
+*unreferenced* module happily; it cannot drop one a barrel referenced. Both of the wins above
+are the same bug:
+
+- `import { NotoSans_400Regular } from "@expo-google-fonts/noto-sans"` runs the package's
+  `index.js`, which `require`s all 18 weights — all 18 landed in the APK for the two the app
+  loads. Per-weight subpaths (`.../noto-sans/400Regular`) took it from 24 fonts to 6, **−4.7 MiB**.
+- `import { Sparkles } from "@tamagui/lucide-icons"` pulled all **1761** icon modules, 1.87 MB of
+  source and 14% of the bundle, for the 74 the app draws. Every icon now comes through
+  [`components/icons.ts`](../../components/icons.ts), which re-exports from the per-icon
+  subpaths: 3398 modules instead of 5081, **−1.24 MiB** of Hermes bytecode (like-for-like
+  `expo export`, and the bundle is *stored* in the APK, not deflated, so that comes off whole).
+
+Before reaching for a `paths` entry in `tsconfig.json` to make subpath types resolve: Expo's
+Metro *and* jest-expo read tsconfig paths as runtime resolution, so a mapping meant for `tsc`
+alone breaks every suite that renders one. [`types/lucide-icons.d.ts`](../../types/lucide-icons.d.ts)
+is an ambient declaration, which neither resolver can see.
 
 Two things this measurement settles, against guesses that sound plausible:
 

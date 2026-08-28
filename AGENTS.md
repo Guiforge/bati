@@ -70,6 +70,16 @@ exactly `com.guiforge.bati` — suffixing it would orphan every installed copy.
   by `expo/bundledNativeModules.json` on purpose, F-Droid rebuilds them from source against the
   SDK's React Native, and a version the SDK does not expect is their build error, not ours.
 
+- Two gates run only in CI, so run them by hand if a change plausibly moves either:
+  **dependency licences** (`npx license-checker-rseidelsohn --production --excludePrivatePackages
+  --summary --failOn "…"` in [`ci.yml`](.github/workflows/ci.yml)) blocks GPL/AGPL/LGPL/SSPL/BUSL
+  in the shipped tree, because F-Droid rejects what it cannot redistribute and does so a release
+  cycle late; it is a blocklist, not an allowlist, so adding an MIT package must never turn main
+  red. **APK size** ([`release.yml`](.github/workflows/release.yml)) fails the release over
+  64 MiB — a ratchet, lower it after a release that measures under, never raise it. The measured
+  breakdown of where those megabytes are is in
+  [`docs/architecture/performance.md`](docs/architecture/performance.md) § Binary size.
+
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.
 

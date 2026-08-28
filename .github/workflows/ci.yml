@@ -42,6 +42,25 @@ jobs:
       # main red without a commit here. That is the trade for the other 20.
       - run: npx expo-doctor
 
+      # Double distribution makes a licence surprise expensive: F-Droid rejects a tree it cannot
+      # redistribute, and it does so at the end of a release cycle, not when the dependency lands.
+      # --failOn names only what would actually block — an allowlist would turn main red every
+      # time somebody adds an MIT package, which is a gate nobody reads. --excludePrivatePackages
+      # skips this repo, which npm reports as UNLICENSED because it is `private`.
+      #
+      # Verified against the tree on 2026-08-28: the only non-MIT-family entries are MPL-2.0
+      # (lightningcss), CC-BY-4.0 (caniuse-lite), Python-2.0 (argparse) and one BSD/GPL dual
+      # (node-forge) — all redistributable. Five @tamagui subpackages report UNKNOWN for a
+      # missing field in their own package.json; Tamagui itself is MIT.
+      #
+      # This checks the npm tree, which is what Metro bundles. It says nothing about the Gradle
+      # side — that one is on the SDK's own licensing.
+      - name: Dependency licences
+        run: >-
+          npx --yes license-checker-rseidelsohn@4.4.2 --production --excludePrivatePackages
+          --summary --failOn
+          "GPL-1.0;GPL-2.0;GPL-3.0;AGPL-1.0;AGPL-3.0;LGPL-2.0;LGPL-2.1;LGPL-3.0;SSPL-1.0;BUSL-1.1;UNLICENSED"
+
       # An invalid workflow file does not fail loudly — it produces a run with no jobs and no
       # error, which is exactly how v1.0.1 shipped (see the comment on release.yml's keystore
       # step). actionlint validates the expression syntax and the contexts each field allows.

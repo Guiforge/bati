@@ -1,9 +1,11 @@
-import { NotoSans_400Regular, NotoSans_700Bold } from "@expo-google-fonts/noto-sans";
-import {
-  SpaceGrotesk_300Light,
-  SpaceGrotesk_400Regular,
-  SpaceGrotesk_700Bold,
-} from "@expo-google-fonts/space-grotesk";
+// Per-weight subpaths, never the package root: the barrel index requires every weight it ships,
+// so `from "@expo-google-fonts/noto-sans"` put all 18 Noto files in the APK for the 2 used here
+// (24 .ttf, 5.9 MB compressed, measured on the v1.13.0 APK).
+import { NotoSans_400Regular } from "@expo-google-fonts/noto-sans/400Regular";
+import { NotoSans_700Bold } from "@expo-google-fonts/noto-sans/700Bold";
+import { SpaceGrotesk_300Light } from "@expo-google-fonts/space-grotesk/300Light";
+import { SpaceGrotesk_400Regular } from "@expo-google-fonts/space-grotesk/400Regular";
+import { SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk/700Bold";
 import { useFonts } from "expo-font";
 import { DefaultTheme, Slot, ThemeProvider, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";

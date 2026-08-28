@@ -112,6 +112,44 @@ Generic guides push these; the stack already gives them, so skip:
   a new `React.Context` is ever added for something that updates often (a timer, a scroll
   position), every consumer re-renders on each tick; prefer a store selector instead.
 
+## Binary size
+
+Measured on the published `bati-1.13.0.apk` (67.1 MiB, arm64-only, R8 + resource shrinking),
+compressed sizes as stored in the zip:
+
+| Part | Size | Notes |
+| --- | --- | --- |
+| `lib/arm64-v8a` (25 `.so`) | 23.6 MiB | Hermes, Reanimated, RN core — the floor, not addressable |
+| 320 `.webp` | 21.3 MiB | stored, not deflated; already WebP and already sized once (rule 2 above) |
+| `index.android.bundle` | 8.1 MiB | JS |
+| 3 `.dex` | 6.2 MiB | after R8 |
+| 24 `.ttf` | 5.9 MiB | **was the one free win** — see below |
+| everything else | ~1.7 MiB | resources, 203 PNGs, XML |
+
+**A barrel import of an asset package bundles every asset it ships.**
+`import { NotoSans_400Regular } from "@expo-google-fonts/noto-sans"` runs the package's
+`index.js`, which `require`s all 18 weights, so all 18 landed in the APK for the two the app
+loads. Per-weight subpaths (`.../noto-sans/400Regular`) took the APK from 24 fonts to 6, −4.7 MiB.
+Metro drops an *unreferenced* asset happily; it cannot drop one a barrel referenced. The same
+trap applies to any `@expo-google-fonts/*` or icon package.
+
+Two things this measurement settles, against guesses that sound plausible:
+
+- `assets/icon.png` is 2.6 MiB of 16-bit PNG, but it never ships — prebuild re-encodes it into
+  the launcher mipmaps, and the APK holds 0.64 MiB of PNG in total. It is checkout weight, not
+  binary weight.
+- The 17 MiB of `assets/game-icons.net.svg-foreground-white` is 4171 files of which
+  [`hooks/useGameIcon.ts`](../../hooks/useGameIcon.ts) names 21. Only those 21 are in the APK
+  (20 `.svg`, 33 KiB). Also checkout weight only.
+
+What is left is the 21 MiB of art. Every file is already WebP and has been through one sizing
+pass; a second pass has to start by measuring the slot each one actually renders into, the way
+the exercise thumbnails were derived — not by re-compressing blind.
+
+[`.github/workflows/release.yml`](../../.github/workflows/release.yml) fails the release over
+64 MiB. It is a ratchet: lower it after a release that measures under it, never raise it to make
+a build pass.
+
 ## Related
 
 - [technical-architecture.md](technical-architecture.md) — tech stack and state ownership

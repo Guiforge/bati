@@ -1002,17 +1002,17 @@
   "assets/images/exercises/pullups.webp": {
     "model": "flux-2-pro",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "prepared reference `_pullup_top.png`",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "reference": "the `chin_up` render of this same catalogue, redrawn -- see that entry",
     "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete is seen from the front, motionless at the very top of a pull-up, exactly as in the reference: the chin is level with the bar, both elbows are folded shut and point down and out to the sides, the shoulders are drawn up close to the bar, and both legs hang straight down together. One unbroken smooth cylinder crosses the whole picture from the left edge to the right edge, level and parallel to the top edge of the frame: that bar is the only piece of equipment -- no upright post, no frame, no bracket, no hook, nothing vertical anywhere. Both hands are closed over the top of the bar exactly as in the reference, a little wider apart than the shoulders. Both feet are clear of the ground and well above the bottom edge of the frame. The athlete wears a plain fitted dark short-sleeved t-shirt, dark shorts ending above the knee and dark low-cut training shoes, and the lower legs are bare skin",
+    "prompt": "(inherited from `chin_up`) Redraw image 1 exactly: same athlete, same clothes, same camera from directly behind, same body position at the top of the pull, same single straight bar. Both hands stay closed tight around the bar, wrapped into fists, gripping it just as firmly as in image 1 -- no open hand, no spread fingers, no palm laid flat. Change ONE thing only: how each forearm is rolled. In image 1 the two thumbs point inward toward each other and the knuckles face us. Roll each forearm the other way, so that the two thumbs now point OUTWARD, away from each other, each toward its own side of the picture, and the knuckles are turned away and hidden from us. What we see on the near side of each closed fist is the soft heel of the palm and the smooth inner edge of the curled fingers, no knuckle and no fingernail anywhere. The height of the body does not change: the back of the head stays clearly ABOVE the bar line with the bar passing behind the neck, and both elbows stay folded shut exactly as in image 1. Everything else in the picture stays exactly as it is",
     "seed": 1234,
     "restyle": {
       "model": "flux-2-pro",
       "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
+      "pipeline": "exospipeline regen/ambiance.py (single redraw) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt; reference image is new/chin_up.png, not new/pullups.png",
       "background": "donjon",
-      "seed": 1234,
+      "seed": 66,
       "licence": "restyle of the render above — same licence, no new source introduced"
     }
   },
@@ -1027,9 +1027,9 @@
     "restyle": {
       "model": "flux-2-pro",
       "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
+      "pipeline": "exospipeline regen/ambiance.py (single redraw) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
       "background": "brume",
-      "seed": 1234,
+      "seed": 101,
       "licence": "restyle of the render above — same licence, no new source introduced"
     }
   },
@@ -1415,9 +1415,9 @@
     "restyle": {
       "model": "flux-2-pro",
       "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
+      "pipeline": "exospipeline regen/ambiance.py (single redraw) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
       "background": "voile",
-      "seed": 1234,
+      "seed": 101,
       "licence": "restyle of the render above — same licence, no new source introduced"
     }
   },

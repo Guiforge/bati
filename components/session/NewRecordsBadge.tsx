@@ -1,4 +1,3 @@
-import { Award, Clock, Star, TrendingUp } from "@tamagui/lucide-icons";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Animated, {
@@ -10,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Award, Clock, Star, TrendingUp } from "@/components/icons";
 import type { NewRecordResult } from "@/db/personalRecords";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";

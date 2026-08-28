@@ -1,4 +1,3 @@
-import { ImagePlus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
@@ -6,8 +5,8 @@ import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-
 import { useToast } from "@/components/common/Toast";
+import { ImagePlus } from "@/components/icons";
 import { encodePhoto } from "@/src/exercisePhoto";
 import { reportError } from "@/src/reportError";
 

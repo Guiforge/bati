@@ -1,3 +1,16 @@
+import Constants from "expo-constants";
+import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
+import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Alert, ScrollView as RNScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, Text, useTheme, XStack, YStack } from "tamagui";
+import { Card } from "@/components/common/Card";
+import { useToast } from "@/components/common/Toast";
 import {
   Archive,
   ArchiveRestore,
@@ -17,21 +30,7 @@ import {
   Swords,
   Vibrate,
   Wrench,
-} from "@tamagui/lucide-icons";
-import Constants from "expo-constants";
-import * as Haptics from "expo-haptics";
-import { Image } from "expo-image";
-import * as ImagePicker from "expo-image-picker";
-import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Alert, ScrollView as RNScrollView } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Text, useTheme, XStack, YStack } from "tamagui";
-
-import { Card } from "@/components/common/Card";
-import { useToast } from "@/components/common/Toast";
+} from "@/components/icons";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";

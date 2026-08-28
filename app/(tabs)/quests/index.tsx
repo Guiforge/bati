@@ -1,5 +1,4 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { Dumbbell, Map as MapIcon, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
@@ -15,6 +14,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { Dumbbell, Map as MapIcon, Plus } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,

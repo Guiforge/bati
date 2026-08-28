@@ -1,3 +1,5 @@
+import type { ColorTokens } from "tamagui";
+import { GameIcon } from "@/components/common/GameIcon";
 import {
   Award,
   Drama,
@@ -14,9 +16,7 @@ import {
   Target,
   Timer,
   TreePine,
-} from "@tamagui/lucide-icons";
-import type { ColorTokens } from "tamagui";
-import { GameIcon } from "@/components/common/GameIcon";
+} from "@/components/icons";
 import { isGameIconName } from "@/hooks/useGameIcon";
 
 // Achievement/trophy icon codes (db/achievements.ts) that have no game-icons.net match. Named

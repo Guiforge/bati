@@ -1,4 +1,3 @@
-import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -13,6 +12,7 @@ import { PathStrip } from "@/components/common/PathStrip";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import {
   deleteUserExercise,

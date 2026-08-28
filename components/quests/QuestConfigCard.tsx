@@ -1,18 +1,11 @@
-import {
-  ChevronDown,
-  ChevronUp,
-  Repeat,
-  RotateCcw,
-  SlidersHorizontal,
-} from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Separator, Text, XStack, YStack } from "tamagui";
-
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Stepper } from "@/components/common/Stepper";
 import { Tag } from "@/components/common/Tag";
+import { ChevronDown, ChevronUp, Repeat, RotateCcw, SlidersHorizontal } from "@/components/icons";
 import { hasQuestOverrides, type QuestConfig, REST_RANGE, ROUNDS_RANGE, TARGET_RANGE } from "@/db";
 import type { Quest } from "@/db/quests";
 import type { AppLanguage } from "@/stores/settings";

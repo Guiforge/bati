@@ -244,7 +244,7 @@ stripped by the plugin. The list stopped being something you have to remember to
 F-Droid signs its own builds with its own key, so **nobody who installed from GitHub Releases or
 from our own repository can update across to the f-droid.org listing**: Android refuses an install
 whose signature differs, and uninstalling first takes the SQLite database — hero, streak, journal —
-with it. This is the same failure `plugins/withAndroidDebugAppId.js` avoids in dev.
+with it. This is the same failure `plugins/withAndroidLocalAppId.js` avoids in dev.
 
 The alternative was reproducible builds plus `AllowedAPKSigningKeys`, where F-Droid rebuilds,
 compares against our signed APK byte for byte, and ships *ours* so nothing breaks. **Not taken**,

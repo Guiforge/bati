@@ -1,4 +1,3 @@
-import { ChevronLeft, Dumbbell, Pencil, Repeat, Sparkles } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
@@ -8,13 +7,13 @@ import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
-
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { ChevronLeft, Dumbbell, Pencil, Repeat, Sparkles } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";

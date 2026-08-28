@@ -64,6 +64,22 @@ describe("db/backup — identity", () => {
     expect(t.sqlite.pragma("user_version", { simple: true })).toBe(SCHEMA_VERSION);
   });
 
+  test("re-stamps a version that drifted, which is the half of the skip that can be wrong", async () => {
+    // The stamp is skipped when the header already agrees, so an inverted comparison would show
+    // up as a database that never gets restamped after a schema bump — silent, and only visible
+    // the day a backup fails to identify itself.
+    const { stampDatabaseIdentity, BATI_APPLICATION_ID } = backupModule();
+    const { SCHEMA_VERSION } =
+      require("../db/schemaVersion") as typeof import("../db/schemaVersion");
+
+    await stampDatabaseIdentity();
+    t.sqlite.pragma(`user_version = ${SCHEMA_VERSION + 1}`);
+    await stampDatabaseIdentity();
+
+    expect(t.sqlite.pragma("user_version", { simple: true })).toBe(SCHEMA_VERSION);
+    expect(t.sqlite.pragma("application_id", { simple: true })).toBe(BATI_APPLICATION_ID);
+  });
+
   test("the stamp survives the snapshot, which is what lets a backup identify itself", async () => {
     const { BATI_APPLICATION_ID } = backupModule();
     const target = await makeValidBackup("identity.db");

@@ -1,9 +1,9 @@
-import { Target } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type ColorTokens, Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { Target } from "@/components/icons";
 import {
   getBalanceRecommendation,
   getMuscleBalance,

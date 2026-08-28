@@ -1,10 +1,10 @@
-import { Shield, Skull, Target } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Shield, Skull, Target } from "@/components/icons";
 import { getHpPercent, getPhaseFromHp } from "@/components/session/bossPhase";
 import { getBossAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";

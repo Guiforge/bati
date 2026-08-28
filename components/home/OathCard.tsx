@@ -1,4 +1,3 @@
-import { ChevronRight } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,6 +7,7 @@ import { GameIcon } from "@/components/common/GameIcon";
 import { PathStrip } from "@/components/common/PathStrip";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
+import { ChevronRight } from "@/components/icons";
 import { useOathText } from "@/components/oath/useOathText";
 import { type Chain, getChainTo } from "@/db/exercises";
 import { getOathProgress, type OathProgress, oathNeedsExercise } from "@/db/oaths";

@@ -1,10 +1,10 @@
-import { Award, Lock } from "@tamagui/lucide-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
 import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
+import { Award, Lock } from "@/components/icons";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedTitle } from "@/src/i18n/localized";

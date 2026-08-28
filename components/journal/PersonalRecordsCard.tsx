@@ -1,9 +1,9 @@
-import { Clock, Flame, Star, Trophy, Zap } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { Clock, Flame, Star, Trophy, Zap } from "@/components/icons";
 import { formatDuration } from "@/db/estimate";
 import { getPersonalRecordsSummary, type PersonalRecord } from "@/db/personalRecords";
 import { getStreakInfo } from "@/db/streaks";

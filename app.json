@@ -95,9 +95,10 @@
       "./plugins/withAndroidLintExtraTranslation",
       "./plugins/withAndroidReleaseSigning",
       "./plugins/withAndroidGradleMemory",
+      "./plugins/withAndroidReleaseFlags",
       "./plugins/withAndroidTrimPermissions",
       "./plugins/withAndroidReproducibleNative",
-      "./plugins/withAndroidDebugAppId",
+      "./plugins/withAndroidLocalAppId",
       "./plugins/withAndroidDebugIcon",
       "./plugins/withAndroidDebugNetworkPermissions"
     ],

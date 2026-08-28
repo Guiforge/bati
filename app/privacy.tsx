@@ -1,11 +1,10 @@
-import { ChevronLeft, ShieldCheck } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
-
 import { Card } from "@/components/common/Card";
+import { ChevronLeft, ShieldCheck } from "@/components/icons";
 
 /**
  * The privacy policy, readable without a network — which is the whole point, since the claim

@@ -171,6 +171,28 @@ jobs:
           cp "$aab_src" "$aab_dest"
           echo "aab_path=$aab_dest" >> "$GITHUB_OUTPUT"
 
+      # A size budget is the only thing that keeps the APK from drifting back up — a one-off
+      # optimisation pass does not. It is a ratchet: lower MAX_MB after any release that measures
+      # under it, never raise it to make a build pass.
+      #
+      # Baseline: v1.13.0 shipped at 67.1 MiB. Four measured cuts since — 4.7 MiB of unused font
+      # weights, 1.2 MiB of unused Lucide icons, 15.6 MiB from compressing the native libraries,
+      # 0.6 MiB of GIF decoders — put the next build near 45 MiB, so 64 leaves deliberate slack
+      # for an estimate that proves optimistic. Lower it to just above whatever that build
+      # actually reports. `workflow_dispatch` on a branch builds the APK without publishing, so a
+      # change can be weighed before it is tagged.
+      - name: Size budget
+        env:
+          APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
+          MAX_MB: 55
+        run: |
+          mb=$(( $(stat -c%s "$APK_PATH") / 1048576 ))
+          echo "APK: ${mb} MiB (budget ${MAX_MB} MiB)" >> "$GITHUB_STEP_SUMMARY"
+          if (( mb > MAX_MB )); then
+            echo "::error::APK is ${mb} MiB, over the ${MAX_MB} MiB budget"
+            exit 1
+          fi
+
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:

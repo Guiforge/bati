@@ -1,4 +1,3 @@
-import { ChevronLeft, Plus, Trash2, X } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -6,13 +5,13 @@ import { useTranslation } from "react-i18next";
 import { Alert, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Input, Separator, Text, XStack, YStack } from "tamagui";
-
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
+import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { getExerciseThumb, getQuestAsset, QUEST_ASSETS } from "@/constants/assetMap";
 import {

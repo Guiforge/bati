@@ -1,5 +1,4 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { BarChart2, List } from "@tamagui/lucide-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +8,7 @@ import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { AppButton } from "@/components/common/AppButton";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { BarChart2, List } from "@/components/icons";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
 import { JournalStats } from "@/components/journal/JournalStats";
 import { MonthlyCalendarCard } from "@/components/journal/MonthlyCalendarCard";

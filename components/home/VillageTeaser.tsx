@@ -1,9 +1,9 @@
-import { ChevronRight } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
+import { ChevronRight } from "@/components/icons";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { getUserLevelInfo } from "@/db/userLevel";
 import { getVillageTier, TIER_NAMES, type VillageTier } from "@/db/village";

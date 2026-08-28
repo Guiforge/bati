@@ -1,10 +1,10 @@
-import { ChevronLeft, ChevronRight } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
 import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { ChevronLeft, ChevronRight } from "@/components/icons";
 import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
 import { listWorkoutDayKeys } from "@/db/completed";
 import { useStreakInfo } from "@/hooks/useStreakInfo";

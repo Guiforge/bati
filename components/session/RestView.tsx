@@ -1,4 +1,3 @@
-import { Minus, Pause, Plus } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,6 +5,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Minus, Pause, Plus } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";

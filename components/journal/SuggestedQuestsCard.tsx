@@ -1,10 +1,10 @@
-import { Sparkles } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Sparkles } from "@/components/icons";
 import { getSuggestedQuestsForWeakAreas, type SuggestedQuest } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { localizedTitle } from "@/src/i18n/localized";

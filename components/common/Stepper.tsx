@@ -1,6 +1,6 @@
-import { Minus, Plus } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
+import { Minus, Plus } from "@/components/icons";
 
 type StepperProps = {
   label: string;

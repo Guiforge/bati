@@ -1,4 +1,3 @@
-import { ChevronLeft, ExternalLink, ScrollText } from "@tamagui/lucide-icons";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
@@ -6,9 +5,9 @@ import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Paragraph, Separator, Text, XStack, YStack } from "tamagui";
-
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { ChevronLeft, ExternalLink, ScrollText } from "@/components/icons";
 
 type CreditLinkProps = {
   title: string;

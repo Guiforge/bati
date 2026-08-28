@@ -1,10 +1,9 @@
-import { Castle } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TextInput } from "react-native";
 import { Text, useTheme, XStack, YStack } from "tamagui";
-
 import { useToast } from "@/components/common/Toast";
+import { Castle } from "@/components/icons";
 import { reportError } from "@/src/reportError";
 import { useUserStore, VILLAGE_NAME_MAX_LENGTH, VILLAGE_NAME_MIN_LENGTH } from "@/stores/user";
 

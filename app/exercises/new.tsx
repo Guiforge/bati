@@ -1,17 +1,16 @@
-import { ChevronDown, ChevronLeft, ChevronUp } from "@tamagui/lucide-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Text, XStack, YStack } from "tamagui";
-
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
+import { ChevronDown, ChevronLeft, ChevronUp } from "@/components/icons";
 import { EXERCISE_THUMB_ASSETS, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import {

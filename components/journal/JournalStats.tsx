@@ -1,4 +1,3 @@
-import { Flame, Target, Timer, TrendingUp, Trophy, Zap } from "@tamagui/lucide-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
@@ -7,6 +6,7 @@ import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { Flame, Target, Timer, TrendingUp, Trophy, Zap } from "@/components/icons";
 import { TrendsCard } from "@/components/journal/TrendsCard";
 import { getWeekStart } from "@/constants/dateFormatters";
 import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";

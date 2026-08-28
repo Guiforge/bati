@@ -113,6 +113,26 @@ describe("Android permissions", () => {
     }
   });
 
+  test("expo-audio is configured for beeps, not for a media player", () => {
+    // The scan above reads dependency manifests, and expo-audio's declares exactly one line
+    // (MODIFY_AUDIO_SETTINGS). Everything that got it thrown out in 1.8.1 — RECORD_AUDIO,
+    // FOREGROUND_SERVICE, FOREGROUND_SERVICE_MEDIA_PLAYBACK, an AudioControlsService and
+    // androidx.media3 — is written by its *config plugin*, from defaults that a bare
+    // `"expo-audio"` string accepts wholesale. No scan of node_modules can see that, so this is
+    // the only thing standing between a tidied-up plugins array and MR fdroid/fdroiddata!45076
+    // finding 5, a second time.
+    const entry = (appJson.expo.plugins as unknown[]).find(
+      (p): p is [string, Record<string, unknown>] => Array.isArray(p) && p[0] === "expo-audio",
+    );
+    expect(entry).toBeDefined();
+    expect(entry?.[1]).toMatchObject({
+      enableBackgroundPlayback: false,
+      enableBackgroundRecording: false,
+      microphonePermission: false,
+      recordAudioAndroid: false,
+    });
+  });
+
   test("the app still ships no way to reach the network", () => {
     // The whole "nothing leaves your phone" claim in the store description rests on this one
     // line. expo-file-system and expo-image both declare INTERNET; blockedPermissions is what

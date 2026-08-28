@@ -23,10 +23,14 @@ const { withAndroidManifest } = require("expo/config-plugins");
  *
  * - **CAMERA** — `app/settings.tsx` calls `launchImageLibraryAsync`, never `launchCameraAsync`.
  *   Picking an existing photo does not need a camera.
- * - **RECORD_AUDIO** — came from `expo-audio`, which is gone since 1.8.1: the Sound Effects
- *   setting toggled a `SOUNDS` map whose every entry was `null`, so it drove a foreground media
- *   service and three permissions for silence. The marker stays because it costs nothing and
- *   the day audio comes back it must not come back with a microphone.
+ * - **RECORD_AUDIO** — `expo-audio` is back since the session countdown beeps, but only as a
+ *   player: its config plugin is called with `recordAudioAndroid: false` in `app.json`, so it no
+ *   longer asks. This marker is the belt to that suspenders — audio came back once already, and
+ *   it must never come back with a microphone.
+ * - **MODIFY_AUDIO_SETTINGS** — the one permission `expo-audio`'s *library* manifest declares, so
+ *   the plugin options cannot switch it off. It gates `AudioManager` mode and routing changes
+ *   (speakerphone, earpiece); the app only plays a bundled wav through the media stream and never
+ *   calls `setAudioModeAsync` with anything that touches routing.
  * - **SYSTEM_ALERT_WINDOW** — drawing over other apps, from the dev-client tooling. Nothing in a
  *   release build has any business with it.
  *
@@ -37,6 +41,7 @@ const { withAndroidManifest } = require("expo/config-plugins");
 const REMOVE = [
   "android.permission.CAMERA",
   "android.permission.RECORD_AUDIO",
+  "android.permission.MODIFY_AUDIO_SETTINGS",
   "android.permission.SYSTEM_ALERT_WINDOW",
 ];
 

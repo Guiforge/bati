@@ -54,6 +54,15 @@
       ],
       "expo-router",
       "expo-asset",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": false,
+          "enableBackgroundRecording": false
+        }
+      ],
       "expo-sharing",
       [
         "expo-image-picker",

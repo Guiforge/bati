@@ -20,3 +20,16 @@ for (const name of [
 ]) {
   (globalThis as unknown as Record<string, unknown>)[name];
 }
+
+// expo-audio reaches for the native ExpoAudio module at import time, so *any* suite that renders
+// a session view dies on it — the module is three files up the import chain from RestView and
+// nothing in a jest environment provides it. One mock here rather than one per test file: the
+// views under test have no opinion about audio, and a per-file mock is a per-file chance to
+// forget. `__tests__/sounds.test.ts` declares its own, which wins for that file.
+jest.mock("expo-audio", () => ({
+  createAudioPlayer: () => ({
+    seekTo: () => Promise.resolve(),
+    play: () => {},
+  }),
+  setAudioModeAsync: () => Promise.resolve(),
+}));

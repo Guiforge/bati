@@ -223,6 +223,18 @@ export const preferences = {
     await setPreference("hapticsEnabled", String(enabled));
   },
 
+  // The 3-2-1 countdown beeps at the end of a rest and of a timed exercise. On by default: a
+  // hero holding a plank is looking anywhere but at the screen, which is the whole reason the
+  // cue exists. The key predates 1.8.1 on purpose — someone who switched the old (silent) Sound
+  // Effects row off had a preference, and it still counts.
+  async getSoundEnabled(): Promise<boolean> {
+    return (await getPreference("soundEnabled")) !== "false";
+  },
+
+  async setSoundEnabled(enabled: boolean): Promise<void> {
+    await setPreference("soundEnabled", String(enabled));
+  },
+
   /**
    * `null` means the hero has never answered, which is not the same as answering "no".
    * The settings store fills that case from the OS accessibility preference — without the

@@ -79,6 +79,7 @@ export { TrendingDown } from "@tamagui/lucide-icons/icons/TrendingDown";
 export { TrendingUp } from "@tamagui/lucide-icons/icons/TrendingUp";
 export { Trophy } from "@tamagui/lucide-icons/icons/Trophy";
 export { Vibrate } from "@tamagui/lucide-icons/icons/Vibrate";
+export { Volume2 } from "@tamagui/lucide-icons/icons/Volume2";
 export { Wrench } from "@tamagui/lucide-icons/icons/Wrench";
 export { X } from "@tamagui/lucide-icons/icons/X";
 export { Zap } from "@tamagui/lucide-icons/icons/Zap";

@@ -231,9 +231,11 @@ the Play install-referrer library, for one reminder three idle days late. Removi
 patch script, the reminder, and twenty-two of the app's thirty-three Android permissions in one
 move. See [gameplay/oaths.md](gameplay/oaths.md) for what the product lost.
 
-What remains is `plugins/withAndroidTrimPermissions.js`, which drops three permissions that
-`expo-image-picker` declares and the app never exercises — a camera it never opens, and the
-microphone `expo-audio` used to bring before 1.8.1 removed it entirely.
+What remains is `plugins/withAndroidTrimPermissions.js`, which drops four permissions the app
+never exercises: a camera `expo-image-picker` declares and nothing opens, the dev-client's
+overlay, and two from `expo-audio` — the microphone it no longer asks for (its plugin is
+configured with `recordAudioAndroid: false`) and `MODIFY_AUDIO_SETTINGS`, which its library
+manifest declares unconditionally and which only gates audio routing the app never touches.
 
 `__tests__/android-permissions.test.ts` is the guard: it scans every dependency's manifest and
 fails the suite on a permission that is neither justified there, blocked in `app.json`, nor

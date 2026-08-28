@@ -9,6 +9,7 @@ import { Minus, Pause, Plus } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
@@ -39,6 +40,9 @@ export function RestView() {
   const status = useSessionStore((s) => s.status);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const { remainingSeconds, progress } = useSessionTimer();
+  // Declared above the auto-advance effect below on purpose: on the render where the rest hits
+  // zero, this one runs first, so the "go" starts before skipRest() unmounts the screen.
+  useCountdownCues(remainingSeconds);
   const cue = useChorusStore((s) => s.cue);
 
   // Once per rest, on mount — this view is mounted and unmounted by `displayStatus`, so the

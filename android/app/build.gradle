@@ -122,6 +122,7 @@ android {
             signingConfig signingConfigs.debug
             // See plugins/withAndroidLocalAppId.js — keeps the release install alive.
             applicationIdSuffix '.dev'
+            resValue "string", "app_name", "Bati (dev)"
         }
         release {
             // Signed with the release key when one is supplied (see plugins/withAndroidReleaseSigning.js),
@@ -132,6 +133,8 @@ android {
             // See plugins/withAndroidLocalAppId.js — set by npm run android:release, never by CI.
             if (project.hasProperty('batiLocalId')) {
                 applicationIdSuffix batiLocalId
+                resValue "string", "app_name", "Bati (" + batiLocalId.substring(1) + ")"
+                resValue "color", "iconBackground", "#06B6D4"
             }
             minifyEnabled enableMinifyInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"

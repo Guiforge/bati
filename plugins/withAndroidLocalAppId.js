@@ -15,6 +15,14 @@ const { withAppBuildGradle } = require("expo/config-plugins");
  * its own sandbox: its own database (empty — expect to redo onboarding), its own notification
  * channels, its own widget. The release install is never touched.
  *
+ * Each variant also names itself on the home screen — `Bati (dev)`, `Bati (perf)` — through a
+ * `resValue`, which lands in a generated source set that outranks the `app_name` prebuild wrote
+ * into `src/main/res`. Three identical launcher icons under three identical labels is how the
+ * wrong app gets measured. The colour half of the same job is `withAndroidDebugIcon` for debug
+ * (a `src/debug/res` override, amber) and the `iconBackground` resValue below for the local
+ * release (cyan) — that one cannot be a source-set file, because `src/release/res` would repaint
+ * the published app too.
+ *
  * **Debug is suffixed always, release only when asked** (see below). The *published* release id
  * must stay exactly `com.guiforge.bati` or every already-installed copy — GitHub Releases, the
  * F-Droid repo — stops seeing updates as updates. That is the one thing this plugin must never
@@ -36,6 +44,7 @@ const SUFFIXED_DEBUG_BLOCK = `        debug {
             signingConfig signingConfigs.debug
             // See plugins/withAndroidLocalAppId.js — keeps the release install alive.
             applicationIdSuffix '.dev'
+            resValue "string", "app_name", "Bati (dev)"
         }
 `;
 
@@ -55,6 +64,8 @@ const RELEASE_MINIFY = `            minifyEnabled enableMinifyInReleaseBuilds
 const SUFFIXED_RELEASE_MINIFY = `            // See plugins/withAndroidLocalAppId.js — set by npm run android:release, never by CI.
             if (project.hasProperty('batiLocalId')) {
                 applicationIdSuffix batiLocalId
+                resValue "string", "app_name", "Bati (" + batiLocalId.substring(1) + ")"
+                resValue "color", "iconBackground", "#06B6D4"
             }
             minifyEnabled enableMinifyInReleaseBuilds
 `;

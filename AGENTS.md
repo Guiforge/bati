@@ -71,6 +71,10 @@ npm run android:release   # installs com.guiforge.bati.perf
 adb shell am start -W -S -n com.guiforge.bati.perf/com.guiforge.bati.MainActivity
 ```
 
+On the home screen it is `Bati (perf)` behind a cyan icon, next to `Bati (dev)` in amber and the
+real `Bati` in the app's own navy — three identical launchers under three identical names is how
+the wrong app gets measured.
+
 The `.perf` suffix is what keeps it off the real app
 ([`plugins/withAndroidLocalAppId.js`](plugins/withAndroidLocalAppId.js), on
 `-PbatiLocalId`). Without it a local release build installs *over* the installed release, and on

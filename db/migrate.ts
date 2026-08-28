@@ -248,9 +248,14 @@ export function ensureMigrations(): Promise<void> {
       // written is not a reason an app fails to start, and without this line that promise is one
       // future `throw` inside autoBackup away from being a launch that never completes.
       const lastAppliedAt = await readLastAppliedAt(client);
-      if (config.journal.entries.some((entry) => isPending(entry, lastAppliedAt))) {
-        await backupBeforeMigrations().catch((e) => reportError("backup.auto.gate", e));
+      if (!config.journal.entries.some((entry) => isPending(entry, lastAppliedAt))) {
+        // Every launch but the first after an update lands here. Returning now skips a
+        // CREATE TABLE IF NOT EXISTS, a second read of the journal and a BEGIN IMMEDIATE that
+        // takes the write lock to apply nothing. Safe on the same predicate the runner uses:
+        // a database with no `__drizzle_migrations` reads as `-Infinity`, which is pending.
+        return;
       }
+      await backupBeforeMigrations().catch((e) => reportError("backup.auto.gate", e));
 
       await runMigrationsAsync(client, config, { debug: migrationsDebugEnabled() });
     })();

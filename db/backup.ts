@@ -62,9 +62,20 @@ export type BackupCheck = { ok: true } | { ok: false; reason: BackupRejection };
  * created first carries no stamp until the app opens. That is harmless because the stamp only
  * has to be there when a snapshot is *taken*, and `exportBackup` is reachable from the UI alone.
  */
+const IDENTITY_PRAGMAS = [
+  ["application_id", BATI_APPLICATION_ID],
+  ["user_version", SCHEMA_VERSION],
+] as const;
+
 export async function stampDatabaseIdentity(): Promise<void> {
-  await db.run(sql.raw(`PRAGMA application_id = ${BATI_APPLICATION_ID}`));
-  await db.run(sql.raw(`PRAGMA user_version = ${SCHEMA_VERSION}`));
+  for (const [name, value] of IDENTITY_PRAGMAS) {
+    // Both of these write page 1, so stamping unconditionally costs a WAL frame and a commit on
+    // every cold start for two numbers that change once per schema bump. The read is on a page
+    // SQLite has already loaded to open the file.
+    const row = await db.get<Record<string, unknown>>(sql.raw(`PRAGMA ${name}`));
+    if (Number(row?.[name]) === value) continue;
+    await db.run(sql.raw(`PRAGMA ${name} = ${value}`));
+  }
 }
 
 /**

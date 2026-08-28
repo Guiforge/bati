@@ -1,5 +1,7 @@
 import Database from "better-sqlite3";
 
+import { UUID_V7_RE } from "../db/uuid";
+
 // The riskiest code in the app and, until now, the least covered: 2 lines of 80. It runs on every
 // cold start of both entry points (the React tree and the headless widget task), and its failure
 // mode is not a crash — it is a stranger's year of training disappearing on an update.
@@ -120,6 +122,83 @@ describe("db/migrate", () => {
     expect(kept?.value).toBe("fr");
   });
 
+  it("0038 names every session already in the journal", async () => {
+    // The backfill is a one-shot: it runs once, on a real hero's history, and there is no second
+    // chance to notice it wrote nonsense. So it is driven here the way a device meets it — a
+    // journal written under the old schema, then the migration.
+    process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX = "37";
+    await freshRunner(sqlite).ensureMigrations();
+
+    // One session either side of a DST switch. Not pinned to a zone: `process.env.TZ` set from a
+    // test never reaches SQLite's `localtime`, because jest hands the sandbox a copy of the
+    // environment and libc reads the real one. So the offsets are asserted against `Date` for the
+    // same instants instead — which is the invariant that matters, the column having two writers
+    // (this SQL and the schema's `$defaultFn`) that have to agree.
+    const winter = 1_700_000_000; // 2023-11-14, CET where this is written
+    const summer = 1_718_083_200; // 2024-06-11, CEST
+    // Distinct instants, deliberately: v7 orders by the millisecond and leaves ties to the random
+    // tail, so two sessions logged in the same second have no defined order and asserting one
+    // would be asserting a coin toss.
+    const log = sqlite.prepare("INSERT INTO completed_sessions (performedAt) VALUES (?)");
+    log.run(winter);
+    log.run(summer);
+    log.run(summer + 3600);
+
+    process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX = undefined;
+    delete process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
+    await freshRunner(sqlite).ensureMigrations();
+
+    const rows = sqlite
+      .prepare("SELECT id, uuid, originDevice, tzOffsetMin FROM completed_sessions ORDER BY id")
+      .all() as { id: number; uuid: string; originDevice: string | null; tzOffsetMin: number }[];
+
+    expect(rows).toHaveLength(3);
+    for (const row of rows) {
+      expect(row.uuid).toMatch(UUID_V7_RE);
+      // Nothing in this database ever recorded which device wrote a row before today, and
+      // inventing one would be worse than admitting it.
+      expect(row.originDevice).toBeNull();
+    }
+    expect(new Set(rows.map((r) => r.uuid)).size).toBe(3);
+
+    // The whole point of v7 over v4: sorting the names sorts the history.
+    const byUuid = sqlite.prepare("SELECT id FROM completed_sessions ORDER BY uuid").all() as {
+      id: number;
+    }[];
+    const byTime = sqlite
+      .prepare("SELECT id FROM completed_sessions ORDER BY performedAt, id")
+      .all() as { id: number }[];
+    expect(byUuid).toEqual(byTime);
+
+    // Positive east of Greenwich — the opposite sign to getTimezoneOffset(), which is the
+    // convention db/schema.ts writes down, and the one thing here a phone cannot correct later.
+    const jsWinter = 0 - new Date(winter * 1000).getTimezoneOffset();
+    const jsSummer = 0 - new Date(summer * 1000).getTimezoneOffset();
+    expect(rows[0]?.tzOffsetMin).toBe(jsWinter);
+    expect(rows[1]?.tzOffsetMin).toBe(jsSummer);
+
+    // Read per row, not once for "now": in a zone with summer time the two rows must differ, and
+    // by the same amount `Date` says. On a runner in UTC — which CI is — there is no difference
+    // to see and this proves nothing, so it is stated rather than asserted into a false green.
+    if (jsWinter !== jsSummer) {
+      expect((rows[1]?.tzOffsetMin ?? 0) - (rows[0]?.tzOffsetMin ?? 0)).toBe(jsSummer - jsWinter);
+    }
+
+    // A UNIQUE index the backfill could violate would fail every launch forever, which is the
+    // failure mode 0035 was written about.
+    expect(() =>
+      sqlite
+        .prepare("INSERT INTO completed_sessions (performedAt, uuid) VALUES (?, ?)")
+        .run(summer, rows[0]?.uuid),
+    ).toThrow(/UNIQUE/);
+    // …but several NULLs are fine, which is what keeps the dev seeder's raw SQL legal.
+    const seeded = sqlite.prepare("INSERT INTO completed_sessions (performedAt) VALUES (?)");
+    expect(() => {
+      seeded.run(summer);
+      seeded.run(summer);
+    }).not.toThrow();
+  });
+
   it("backs up before the runner touches the schema, and not at all when nothing is pending", async () => {
     // Asserted against the schema as it stood *inside* the call, not against the call itself:
     // a backup taken after the migrations is a backup of the thing that might already be broken,
@@ -145,11 +224,16 @@ describe("db/migrate", () => {
   });
 
   it("migrates even when the backup fails, because a backup is not a gate", async () => {
-    // `backupBeforeMigrations` promises never to throw, and this is the test that keeps the
-    // promise cheap to rely on: if it ever breaks it, the app still starts.
+    // `backupBeforeMigrations` promises never to throw, and this is the test that stops the app
+    // depending on it keeping the promise: a card pulled mid-launch must cost the backup, not
+    // the launch. Asserted on the schema, not on "it didn't reject" — the question is whether
+    // the migrations *ran*.
     backupBeforeMigrations.mockImplementation(() => Promise.reject(new Error("card removed")));
 
-    await expect(freshRunner(sqlite).ensureMigrations()).rejects.toThrow("card removed");
+    await freshRunner(sqlite).ensureMigrations();
+
+    expect(backupBeforeMigrations).toHaveBeenCalledTimes(1);
+    expect(tables()).toContain("user_preferences");
   });
 
   it("memoises success, so two callers in one process migrate once", async () => {

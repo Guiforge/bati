@@ -9,10 +9,12 @@ import {
   subWeeks,
 } from "date-fns";
 import { count, countDistinct, desc, eq, gte, sql, sum } from "drizzle-orm";
+import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { dayKey } from "./dates";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
+import { getDeviceId } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import type {
   DifficultyCode,
@@ -21,6 +23,7 @@ import type {
   MuscleCode,
   QuestTargetType,
 } from "./schema";
+import { uuidv7 } from "./uuid";
 import { repEquivalentSql } from "./workUnits";
 
 const { completedExercises, completedQuest, exerciseMuscles, exercises, quests } = schema;
@@ -89,9 +92,27 @@ function parseExerciseStyle(value: unknown): ExerciseStyle {
     : "strength";
 }
 
-// biome-ignore lint/suspicious/useAwait: async keeps the guard throw a rejected promise, not a sync throw
 export async function createCompletedSession(input: CompletedSessionInput): Promise<number> {
   if (input.exercises.length === 0) throw new Error("A completed session must have exercises");
+
+  // Read *before* the transaction, never inside it: on this install's first save `getDeviceId`
+  // writes `user_preferences` through `db`, and reaching for `db` from inside an open
+  // `db.transaction` is the nesting `serializeOnDatabase` warns about (db/client.ts) — the inner
+  // call would wait on the queue entry that is waiting on it.
+  //
+  // And never a reason to fail: this is provenance nothing reads back, the column is nullable,
+  // and NULL already means "unknown" for every row logged before 0038. A workout the hero cannot
+  // re-enter must not be lost over the name of the phone that logged it.
+  const originDevice = await getDeviceId().catch((e) => {
+    reportError("session.originDevice", e);
+    return null;
+  });
+
+  // Resolved once, then it names the row: `uuid` and `tzOffsetMin` both describe *this instant*,
+  // and the schema's `$defaultFn` cannot see it — it would stamp the save instead. The session
+  // starts before it is saved (stores/session.ts passes `startTime`), so those are different
+  // clocks and different days, and 0038 backfilled the older half from `performedAt`.
+  const performedAt = input.performedAt ?? new Date();
 
   return transactionOrFallback(async (tx) => {
     const inserted = await tx
@@ -103,7 +124,10 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         xpEarned: Math.max(0, Math.round(input.xpEarned ?? 0)),
         notes: input.notes ?? "",
         feedback: input.feedback ?? null,
-        performedAt: input.performedAt ?? new Date(),
+        performedAt,
+        uuid: uuidv7(performedAt.getTime()),
+        tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
+        originDevice,
       })
       .returning({ id: completedQuest.id });
 

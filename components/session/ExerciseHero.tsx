@@ -47,7 +47,7 @@ export function ExerciseHero({
       onPress={onPress}
       pressStyle={onPress ? { opacity: 0.92 } : undefined}
       accessibilityRole={onPress ? "button" : undefined}
-      accessibilityLabel={onPress ? accessibilityLabel : undefined}
+      accessibilityLabel={accessibilityLabel}
     >
       {/* ponytail: the exercise art ships at 1024x768, so a full-bleed hero upscales it ~1.2x on
           a 3x screen and `cover` crops the sides. Re-export the assets wider (and as WebP, see

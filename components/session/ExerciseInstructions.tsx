@@ -34,8 +34,9 @@ export function ExerciseInstructionsBody({
         {instruction.name}
       </Text>
       {/* Scrolls rather than grows: a long movement would otherwise push whatever sits below —
-          "resume", or the modal's own close — off the bottom of a small screen. */}
-      <ScrollView style={{ maxHeight: 220, width: "100%" }} showsVerticalScrollIndicator={false}>
+          "resume", or the modal's own close — off the bottom of a small screen. 160 is what the
+          paused card can spare on a 640dp phone, and the modal has no reason to want more. */}
+      <ScrollView style={{ maxHeight: 160, width: "100%" }} showsVerticalScrollIndicator={false}>
         <Text fontSize={14} color="$textSecondary" lineHeight={20}>
           {instruction.description}
         </Text>

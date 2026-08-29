@@ -83,7 +83,7 @@ export function PausedOverlay() {
               watching the clock run while they worked it out; here it is stopped. Same block the
               running screen opens as a modal — see ExerciseInstructions.tsx. */}
           {instruction ? (
-            <YStack width="100%" pt="$2">
+            <YStack pt="$2">
               <ExerciseInstructionsBody instruction={instruction} artHeight={120} />
             </YStack>
           ) : null}

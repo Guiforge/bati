@@ -39,6 +39,7 @@ import {
   type VillageTierUp,
 } from "@/db/village";
 import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
+import { backupAfterSession } from "@/src/autoBackup";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 
@@ -1035,6 +1036,11 @@ export const useSessionStore = create<SessionState>()(
       // a finished session is one of the moments their numbers can move.
       // Non-blocking: never fail a logged session over a widget redraw.
       requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
+
+      // The other moment there is something new to save. Non-blocking and silent for the same
+      // reason as the widgets: a folder that will not take a copy tonight must not fail a
+      // workout the database has already recorded. See src/autoBackup.ts.
+      backupAfterSession().catch((e) => reportError("backup.auto.session", e));
 
       // Check for new achievements (on the base session XP, before the oath bonus).
       // `startTime`, not `new Date()`: the session row is written with the start too, and the

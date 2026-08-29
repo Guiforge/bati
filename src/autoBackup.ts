@@ -1,4 +1,5 @@
 import { Directory } from "expo-file-system";
+import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { errorTrail } from "@/db/sql";
 import { pickBackupFolder, saveBackupToFolder } from "@/src/backupFiles";
@@ -13,10 +14,15 @@ import { reportError } from "@/src/reportError";
  * integration covers every backend, with no OAuth, no SDK per vendor, no credential at rest and
  * no network request. The app never learns which provider was chosen, which is the point.
  *
- * The trigger is `ensureMigrations()` (db/migrate.ts), before the runner. Migrations are the one
- * moment this database can be damaged in a way no undo covers, and they are also the only moment
- * worth spending a write on: an ordinary launch has nothing new to save that the hero did not
- * just watch happen.
+ * Two triggers, for the two moments there is something to save:
+ *
+ * - `ensureMigrations()` (db/migrate.ts), before the runner. Migrations are the one moment this
+ *   database can be damaged in a way no undo covers.
+ * - the end of a session (`saveSession`), at most once a day. That one exists because "before
+ *   every update" turned out to mean *months* between snapshots for a hero who trains daily and
+ *   updates rarely: they switched the feature on, watched the first copy land, and the folder
+ *   still held that one file weeks later. An ordinary launch still writes nothing — nothing has
+ *   happened — but a finished session is by definition new history.
  *
  * This module is the single writer of the `backupFolderUri` preference. Everything else asks it.
  */
@@ -121,6 +127,30 @@ export async function backupBeforeMigrations(): Promise<void> {
     //           single signal a real hero can see. Add a counter when a real device produces a
     //           failure that recovers on its own.
     await disableAutoBackup().catch((e) => reportError("backup.auto.forget", e));
+  }
+}
+
+/**
+ * Writes a snapshot after a session, unless one already went out today.
+ *
+ * Never throws, and — unlike `backupBeforeMigrations` — never turns the feature off on failure.
+ * A pre-migration write is the last chance before something irreversible; this one is a spare
+ * copy of history the device still holds, so a full card or a card pulled out for the evening
+ * must not cost the hero their folder. The day is stamped only after the write succeeds, so a
+ * failure is retried by the next session rather than swallowed until tomorrow.
+ */
+export async function backupAfterSession(): Promise<void> {
+  try {
+    const folder = await rememberedFolder();
+    if (!folder) return;
+
+    const today = dayKey(new Date());
+    if ((await preferences.getLastAutoBackupDay()) === today) return;
+
+    await saveBackupToFolder(folder);
+    await preferences.setLastAutoBackupDay(today);
+  } catch (error) {
+    reportError("backup.auto.session", error);
   }
 }
 

@@ -835,7 +835,7 @@
     "saveHint": "Tu choisis le dossier",
     "auto": "Sauvegarde automatique",
     "autoOff": "Désactivée",
-    "autoMessage": "Bati enregistre une copie dans {{folder}} avant chaque mise à jour. Tu peux choisir un autre dossier, ou arrêter.",
+    "autoMessage": "Bati enregistre une copie dans {{folder}} après une séance, une fois par jour, et avant chaque mise à jour. Tu peux choisir un autre dossier, ou arrêter.",
     "autoChangeCta": "Changer de dossier",
     "autoOffCta": "Arrêter",
     "autoOnDone": "Sauvegarde automatique activée — une première copie est déjà dans {{folder}}",

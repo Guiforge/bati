@@ -37,6 +37,14 @@ jest.mock("@/db/preferences", () => ({
       await Promise.resolve();
       mockStored.delete("backupFolderUri");
     },
+    getLastAutoBackupDay: async () => {
+      await Promise.resolve();
+      return mockStored.get("lastAutoBackupDay") ?? null;
+    },
+    setLastAutoBackupDay: async (day: string) => {
+      await Promise.resolve();
+      mockStored.set("lastAutoBackupDay", day);
+    },
   },
 }));
 
@@ -68,6 +76,7 @@ jest.mock("@/src/reportError", () => ({
 }));
 
 import {
+  backupAfterSession,
   backupBeforeMigrations,
   backupFolderLabel,
   disableAutoBackup,
@@ -152,6 +161,54 @@ describe("backupBeforeMigrations", () => {
 
     await expect(backupBeforeMigrations()).resolves.toBeUndefined();
     expect(mockReported).toContain("backup.auto.read");
+  });
+});
+
+describe("backupAfterSession", () => {
+  test("writes nothing when the hero never chose a folder", async () => {
+    await backupAfterSession();
+
+    expect(mockSavedInto).toEqual([]);
+    expect(mockReported).toEqual([]);
+  });
+
+  test("writes once, then not again the same day", async () => {
+    mockStored.set("backupFolderUri", TREE);
+
+    await backupAfterSession();
+    await backupAfterSession();
+    await backupAfterSession();
+
+    // Three sessions in an evening are one snapshot, not three: the file is named by the day and
+    // would only overwrite itself, at a whole database's worth of I/O each time.
+    expect(mockSavedInto).toEqual([TREE]);
+  });
+
+  test("writes again once the day has turned over", async () => {
+    mockStored.set("backupFolderUri", TREE);
+    mockStored.set("lastAutoBackupDay", "1999-12-31");
+
+    await backupAfterSession();
+
+    expect(mockSavedInto).toEqual([TREE]);
+  });
+
+  test("a failed write keeps the folder, and is retried by the next session", async () => {
+    // Unlike the pre-migration write, this one is a spare copy of history the device still
+    // holds. A card pulled out for the evening must not cost the hero their folder — and the day
+    // must not be stamped, or the retry would wait until tomorrow.
+    mockStored.set("backupFolderUri", TREE);
+    mockPicked.saveThrows = new Error("card removed");
+
+    await expect(backupAfterSession()).resolves.toBeUndefined();
+
+    expect(mockStored.get("backupFolderUri")).toBe(TREE);
+    expect(mockStored.has("lastAutoBackupDay")).toBe(false);
+    expect(mockReported).toContain("backup.auto.session");
+
+    mockPicked.saveThrows = null;
+    await backupAfterSession();
+    expect(mockSavedInto).toEqual([TREE]);
   });
 });
 

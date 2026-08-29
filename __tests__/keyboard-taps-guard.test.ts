@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -16,6 +17,11 @@ import * as path from "node:path";
  * `android-permissions.test.ts` and the scanignore test already make — and the same ratchet.
  * The fix is one prop; adding a file to EXEMPT instead needs a reason written next to it.
  *
+ * It follows relative imports one level, because the first version of this scan did not and
+ * missed Settings outright: the `ScrollView` is in `app/settings.tsx` and the `TextInput` is
+ * three files away in `VillageNameRow`. One level is where it stops — a screen that reaches a
+ * text field through two intermediaries is a screen worth reading by hand.
+ *
  * "handled", not "always": a tap on empty space should still put the keyboard away.
  */
 
@@ -30,10 +36,30 @@ const TEXT_FIELD = /<TextInput|<Input\b/;
 /**
  * Files that hold both but are not one tree. Each line is a claim someone has to defend.
  *
- * (Empty today. It is meant to stay that way: a screen where the field and the list really are
- * separate surfaces is rare enough to be worth explaining here.)
+ * A sheet or a modal is its own surface: its text field is never inside the importer's scroll
+ * view, and the sheet sets the prop on its own list.
  */
-const EXEMPT: Record<string, string> = {};
+const EXEMPT: Record<string, string> = {
+  "components/session/ActiveExerciseView.tsx":
+    "the only text field it reaches is ExercisePickerSheet's search, which lives in a modal " +
+    "sheet over this screen and persists taps itself.",
+  "app/(tabs)/quests/[id].tsx":
+    "same picker sheet, opened over the quest detail. Nothing on this screen is typed into.",
+};
+
+/** `@/components/x/Y` and `./Y` alike, resolved to a repo-relative .tsx path when one exists. */
+function localImports(file: string, source: string): string[] {
+  const resolved: string[] = [];
+  for (const [, specifier] of source.matchAll(/from "(@\/[^"]+|\.[^"]+)"/g)) {
+    // The group is always there when the pattern matched; noUncheckedIndexedAccess cannot know.
+    assert(specifier);
+    const target = specifier.startsWith("@/")
+      ? path.join(ROOT, specifier.slice(2))
+      : path.resolve(path.dirname(file), specifier);
+    if (fs.existsSync(`${target}.tsx`)) resolved.push(`${target}.tsx`);
+  }
+  return resolved;
+}
 
 function sourceFiles(): string[] {
   const found: string[] = [];
@@ -48,20 +74,25 @@ function sourceFiles(): string[] {
   return found;
 }
 
+/** Whether this one file scrolls over a keyboard without saying what to do about it. */
+function eatsTheFirstTap(file: string): boolean {
+  if (path.relative(ROOT, file) in EXEMPT) return false;
+
+  const source = fs.readFileSync(file, "utf8");
+  if (!SCROLLER.test(source)) return false;
+  if (source.includes("keyboardShouldPersistTaps")) return false;
+
+  if (TEXT_FIELD.test(source)) return true;
+  return localImports(file, source).some((imported) =>
+    TEXT_FIELD.test(fs.readFileSync(imported, "utf8")),
+  );
+}
+
 describe("a keyboard must not eat the first tap", () => {
   test("every scrolling surface with a text field in it persists taps", () => {
-    const offenders: string[] = [];
-
-    for (const file of sourceFiles()) {
-      const relative = path.relative(ROOT, file);
-      if (relative in EXEMPT) continue;
-
-      const source = fs.readFileSync(file, "utf8");
-      if (!(SCROLLER.test(source) && TEXT_FIELD.test(source))) continue;
-      if (source.includes("keyboardShouldPersistTaps")) continue;
-
-      offenders.push(`  ${relative}`);
-    }
+    const offenders = sourceFiles()
+      .filter(eatsTheFirstTap)
+      .map((file) => `  ${path.relative(ROOT, file)}`);
 
     if (offenders.length > 0) {
       throw new Error(
@@ -78,6 +109,13 @@ describe("a keyboard must not eat the first tap", () => {
     // it would leave the suite passing over zero files, forever.
     const searched = sourceFiles();
     expect(searched.length).toBeGreaterThan(50);
+    // And the import walk still resolves something: Settings is the case it was written for.
+    const settings = path.join(ROOT, "app", "settings.tsx");
+    expect(
+      localImports(settings, fs.readFileSync(settings, "utf8")).some((f) =>
+        f.endsWith(path.join("settings", "VillageNameRow.tsx")),
+      ),
+    ).toBe(true);
     expect(searched.some((file) => file.endsWith(path.join("app", "exercises", "index.tsx")))).toBe(
       true,
     );

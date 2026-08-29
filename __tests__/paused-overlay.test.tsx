@@ -1,4 +1,5 @@
-import { act, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
+import { Alert } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -138,5 +139,69 @@ describe("PausedOverlay", () => {
 
     expect(paused.queryByText("Dead Bug")).toBeNull();
     expect(paused.getByTestId("session-resume")).toBeTruthy();
+  });
+});
+
+/**
+ * Two buttons on this card destroy work, and only one of them sounds like it.
+ *
+ * Asserted on the results in the store, not on "an alert appeared": the point is that the sets
+ * survive the first tap and only go when the hero says so. A test that watched the dialog would
+ * pass just as happily against a dialog wired to nothing.
+ */
+describe("restarting a round", () => {
+  const twoLoggedSets = [
+    { roundIndex: 0, exerciseIndex: 0, result: { type: "reps" as const, value: 12 } },
+    { roundIndex: 0, exerciseIndex: 1, result: { type: "reps" as const, value: 10 } },
+  ];
+
+  function pauseWithTwoSets() {
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 2,
+      warmupSequence: [],
+      warmupIndex: 0,
+      results: twoLoggedSets as never,
+      pendingDamage: [],
+      bossFight: null,
+    });
+  }
+
+  it("keeps every logged set until the hero confirms", async () => {
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    pauseWithTwoSets();
+    const paused = await mountPaused();
+
+    await act(async () => {
+      await fireEvent.press(paused.getByTestId("session-restart-round"));
+    });
+
+    // One tap used to be the whole gesture, on the button sitting directly above the *guarded*
+    // one, wearing a label that reads additive.
+    expect(useSessionStore.getState().results).toHaveLength(2);
+    expect(alert).toHaveBeenCalledTimes(1);
+    alert.mockRestore();
+  });
+
+  it("drops this round's sets once they do", async () => {
+    let destructive: (() => void) | undefined;
+    const alert = jest.spyOn(Alert, "alert").mockImplementation((_title, _body, buttons) => {
+      destructive = buttons?.find((b) => b.style === "destructive")?.onPress as () => void;
+    });
+    pauseWithTwoSets();
+    const paused = await mountPaused();
+
+    await act(async () => {
+      await fireEvent.press(paused.getByTestId("session-restart-round"));
+    });
+    await act(() => {
+      destructive?.();
+    });
+
+    expect(useSessionStore.getState().results).toHaveLength(0);
+    alert.mockRestore();
   });
 });

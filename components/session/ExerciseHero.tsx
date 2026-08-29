@@ -59,14 +59,25 @@ export function ExerciseHero({
         transition={150}
       />
 
-      {/* Top scrim: the HUD sits on painted art with no card behind it, and some of these
-          paintings are bright. This is what holds its contrast, not decoration. Fully opaque at
-          the very top: the character art reaches the asset's own edge, and without it the figure
-          hard-clips against the status bar instead of fading out under the HUD. */}
+      {/* Top scrim: the status bar's own band, and barely past it.
+
+          It used to run `topInset + 80` — around 120dp on a punch-hole phone, opaque to ~48dp.
+          The exercise art is 1280x1280 in a slot that is nearly square, so `cover` crops about 5%
+          and the figure is very nearly all in frame: the head lands ~21dp down and the shoulders
+          and arms between 40 and 120. All of it was under that wash. On a lunge, knee-over-ankle
+          and the trailing arm *are* the instruction, and the app was painting over them.
+
+          Same argument as the bottom scrim one gradient down: this was holding contrast for the
+          HUD *and* covering the status bar, and only the second needs the paint. The HUD row
+          carries its own shadow now (ActiveExerciseView), so this ends just past the inset.
+
+          What it cannot fix: the head sits *inside* the status bar band, because the artwork runs
+          full-bleed under it. No scrim setting reveals those pixels — that one is a layout
+          decision, not a gradient. */}
       <LinearGradient
         colors={[rawColors.bgDark, rawColors.bgOverlay, "transparent"]}
-        locations={[0, 0.4, 1]}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, height: topInset + 80 }}
+        locations={[0, 0.6, 1]}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, height: topInset + 28 }}
         pointerEvents="none"
       />
 

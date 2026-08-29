@@ -657,6 +657,8 @@
     "pr_new_record": "Nouveau Record",
     "quit_button": "Quitter la quête",
     "quit_confirm_body": "La progression de cette séance sera perdue.",
+    "restart_confirm_title": "Recommencer cette manche ?",
+    "restart_confirm_body": "Toutes les séries enregistrées dans cette manche sont effacées.",
     "quit_confirm_title": "Abandonner cette séance ?",
     "reps": "Reps",
     "rest_title": "Repos & Récup",

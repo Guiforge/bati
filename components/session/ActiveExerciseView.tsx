@@ -250,7 +250,18 @@ export function ActiveExerciseView() {
         <XStack items="center" justify="space-between" gap="$2">
           {/* 12px, not 13: "MANCHE 1 / 3 · EXERCICE 2 / 5" is the long form and it has to survive
               a 320dp screen without ellipsing away the exercise counter. */}
-          <Text color="$text" fontSize={12} fontWeight="700" numberOfLines={1} flex={1}>
+          <Text
+            color="$text"
+            fontSize={12}
+            fontWeight="700"
+            numberOfLines={1}
+            flex={1}
+            // Its own contrast, so the scrim above it can stop covering the movement. Same trade
+            // ExerciseHero's title makes one gradient down.
+            textShadowColor="rgba(6, 8, 18, 0.9)"
+            textShadowOffset={{ width: 0, height: 1 }}
+            textShadowRadius={6}
+          >
             {t("session.round_label", {
               count: currentRoundIndex + 1,
               total: quest.rounds,
@@ -262,7 +273,14 @@ export function ActiveExerciseView() {
             })}
           </Text>
           <XStack items="center" gap="$2">
-            <Text fontSize={12} fontWeight="700" color="$textSecondary">
+            <Text
+              fontSize={12}
+              fontWeight="700"
+              color="$textSecondary"
+              textShadowColor="rgba(6, 8, 18, 0.9)"
+              textShadowOffset={{ width: 0, height: 1 }}
+              textShadowRadius={6}
+            >
               {Math.round(progressPercent)}%
             </Text>
             <Button

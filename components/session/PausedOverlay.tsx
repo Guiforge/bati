@@ -33,8 +33,27 @@ export function PausedOverlay() {
   };
 
   const handleRestartRound = () => {
-    mediumImpact();
-    restartRound();
+    warning();
+    // Guarded like `handleQuit`, and for the stronger reason. `restartRound()` drops every result
+    // whose roundIndex is the current one — up to five sets the hero just finished — and it sat
+    // one tap away, unconfirmed, directly above the button that *was* confirmed. Worse, its label
+    // reads additive: "redo the round" sounds like going again, not like erasing what is already
+    // logged. The confirmation was on the button whose name already sounds dangerous.
+    Alert.alert(
+      t("session.restart_confirm_title", "Restart this round?"),
+      t("session.restart_confirm_body", "Every set you logged in this round is erased."),
+      [
+        { text: t("common.cancel", "Cancel"), style: "cancel" },
+        {
+          text: t("session.restart_round_button"),
+          style: "destructive",
+          onPress: () => {
+            mediumImpact();
+            restartRound();
+          },
+        },
+      ],
+    );
   };
 
   const confirmQuit = () => {

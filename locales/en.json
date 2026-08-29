@@ -458,6 +458,8 @@
     "pr_most_xp": "Most XP Earned",
     "pr_new_record": "New Record",
     "quit_button": "Quit Quest",
+    "restart_confirm_title": "Restart this round?",
+    "restart_confirm_body": "Every set you logged in this round is erased.",
     "quit_confirm_title": "Abandon this session?",
     "quit_confirm_body": "This session's progress will be lost.",
     "reps": "Reps",

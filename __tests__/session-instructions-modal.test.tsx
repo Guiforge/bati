@@ -3,6 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
+import { RestView } from "@/components/session/RestView";
 import type { Quest } from "@/db/quests";
 import { useSessionStore } from "@/stores/session";
 import config from "@/tamagui.config";
@@ -75,17 +76,7 @@ const mockQuest = {
   exercises: [{ exercise: mockDeadBug, target: { type: "reps", value: 10 } }],
 } as unknown as Quest;
 
-async function mountRunning() {
-  useSessionStore.setState({
-    quest: mockQuest,
-    status: "running",
-    currentRoundIndex: 0,
-    currentExerciseIndex: 0,
-    bossFight: null,
-    warmupSequence: [],
-    warmupIndex: 0,
-  });
-
+async function mount(view: React.ReactElement) {
   await act(async () => {
     // Awaited: this testing-library's `render` is thenable, and a floating one leaves every
     // `screen` query reporting "render function has not been called".
@@ -97,11 +88,42 @@ async function mountRunning() {
         }}
       >
         <TamaguiProvider config={config} defaultTheme="dark">
-          <ActiveExerciseView />
+          {view}
         </TamaguiProvider>
       </SafeAreaProvider>,
     );
   });
+}
+
+async function mountRunning() {
+  useSessionStore.setState({
+    quest: mockQuest,
+    status: "running",
+    currentRoundIndex: 0,
+    currentExerciseIndex: 0,
+    bossFight: null,
+    warmupSequence: [],
+    warmupIndex: 0,
+  });
+
+  await mount(<ActiveExerciseView />);
+}
+
+async function mountResting() {
+  useSessionStore.setState({
+    quest: mockQuest,
+    status: "resting",
+    currentRoundIndex: 0,
+    currentExerciseIndex: 0,
+    bossFight: null,
+    warmupSequence: [],
+    warmupIndex: 0,
+    results: [],
+    timerStartTimestamp: Date.now(),
+    timerDuration: 30,
+  });
+
+  await mount(<RestView />);
 }
 
 describe("the movement's instructions, mid-set", () => {
@@ -120,6 +142,22 @@ describe("the movement's instructions, mid-set", () => {
 
     // The name and the description, inside the modal — the picture beside them is an
     // <Image>, which has no text to assert on and is covered by the component's own props.
+    expect(screen.getByTestId("session-instructions")).toBeTruthy();
+    expect(screen.getByText(HOW_TO)).toBeTruthy();
+  });
+
+  // The rest is the one moment reading is free, and "up next" names the movement worth reading
+  // about — the same hook resolves it, because completeExercise advances the index before the
+  // rest screen mounts.
+  it("opens the same block from the up-next card during a rest", async () => {
+    await mountResting();
+
+    expect(screen.queryByText(HOW_TO)).toBeNull();
+
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("rest-up-next"));
+    });
+
     expect(screen.getByTestId("session-instructions")).toBeTruthy();
     expect(screen.getByText(HOW_TO)).toBeTruthy();
   });

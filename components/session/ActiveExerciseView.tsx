@@ -517,42 +517,64 @@ export function ActiveExerciseView() {
           </YStack>
         </ScrollView>
 
-        {/* Out of reach is not always "I cannot" — often it is "not this variation". The sheet
-          the quest screen has always had, reachable at the moment it is actually needed. */}
-        <Pressable
-          testID="session-swap-exercise"
-          hitSlop={12}
-          onPress={() => {
-            selection();
-            setSwapOpen(true);
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={t("quests.swap_exercise")}
-        >
-          <XStack items="center" justify="center" py="$2" opacity={0.7} hoverStyle={{ opacity: 1 }}>
-            <Text fontSize={13} fontWeight="700" color="$textSecondary" fontFamily="$body">
-              {t("quests.swap_exercise")}
-            </Text>
-          </XStack>
-        </Pressable>
+        {/* One decision at two intensities — "I cannot do this set as prescribed" — so one row.
+          Out of reach is not always "I cannot": often it is "not this variation", and the sheet
+          the quest screen has always had is reachable at the moment it is actually needed. The
+          other is the honest way past a movement, deliberately quiet next to the primary action;
+          it is a release valve, not a choice being offered. Before it existed, `CHECK
+          (resultValue > 0)` made "1" the only way through, and that 1 went on to feed muscle
+          volume, the weak-area read and every target generated from them (issue #33).
 
-        {/* The honest way out of a movement the hero cannot do. Deliberately quiet next to the
-          primary action — it is a release valve, not a choice being offered. Before it existed,
-          `CHECK (resultValue > 0)` made "1" the only way past, and that 1 went on to feed muscle
-          volume, the weak-area read and every target generated from them (issue #33). */}
-        <Pressable
-          testID="session-skip-exercise"
-          hitSlop={12}
-          onPress={handleSkip}
-          accessibilityRole="button"
-          accessibilityLabel={t("session.skip_exercise")}
-        >
-          <XStack items="center" justify="center" py="$2" opacity={0.7} hoverStyle={{ opacity: 1 }}>
-            <Text fontSize={13} fontWeight="700" color="$textSecondary" fontFamily="$body">
+          Stacked, they were two full-width rows and ~100dp of link between the counter and the
+          button that ends the set — the two things that have to read as one gesture. Side by
+          side they are half that, and they finally look like what they are: siblings. The swap
+          gets its short label here; the sheet it opens still carries the full sentence. */}
+        <XStack items="center" justify="center" gap="$3" opacity={0.7}>
+          <Pressable
+            testID="session-swap-exercise"
+            hitSlop={12}
+            onPress={() => {
+              selection();
+              setSwapOpen(true);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={t("quests.swap_exercise")}
+          >
+            <Text
+              py="$2"
+              fontSize={13}
+              fontWeight="700"
+              color="$textSecondary"
+              fontFamily="$body"
+              numberOfLines={1}
+            >
+              {t("session.swap_short", "Replace")}
+            </Text>
+          </Pressable>
+
+          <Text fontSize={13} color="$textSecondary" opacity={0.5}>
+            ·
+          </Text>
+
+          <Pressable
+            testID="session-skip-exercise"
+            hitSlop={12}
+            onPress={handleSkip}
+            accessibilityRole="button"
+            accessibilityLabel={t("session.skip_exercise")}
+          >
+            <Text
+              py="$2"
+              fontSize={13}
+              fontWeight="700"
+              color="$textSecondary"
+              fontFamily="$body"
+              numberOfLines={1}
+            >
               {t("session.skip_exercise")}
             </Text>
-          </XStack>
-        </Pressable>
+          </Pressable>
+        </XStack>
 
         {/* Footer Action */}
         <Button

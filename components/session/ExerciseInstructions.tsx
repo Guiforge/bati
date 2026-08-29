@@ -17,17 +17,22 @@ import type { SessionInstruction } from "@/hooks/useSessionInstructions";
  */
 export function ExerciseInstructionsBody({
   instruction,
-  artHeight,
+  artSize,
 }: {
   instruction: SessionInstruction;
-  /** The paused card gives it a thumbnail's worth of room; the modal gives it the page. */
-  artHeight: number;
+  /**
+   * The art's side, in dp. A *side*, not a height: the exercise illustrations are square
+   * (1280x1280), and a full-width band 120 tall asked `cover` for an 8:1 slice out of the middle
+   * of one — the figure cropped away and mostly dark ground left. The paused card gives it a
+   * thumbnail's worth of room; the modal gives it more.
+   */
+  artSize: number;
 }) {
   return (
     <YStack width="100%" gap="$2" items="center">
       <Image
         source={getExerciseAsset(instruction.imagePath)}
-        style={{ width: "100%", height: artHeight, borderRadius: 12 }}
+        style={{ width: artSize, height: artSize, borderRadius: 12 }}
         contentFit="cover"
       />
       <Text fontWeight="700" fontSize={16} color="$text" style={{ textAlign: "center" }}>
@@ -69,7 +74,7 @@ export function ExerciseInstructionsModal({
     >
       <YStack flex={1} bg="$bgOverlay" justify="center" items="center" p="$4">
         <Card testID="session-instructions" width="100%" maxW={420} bg="$surface" gap="$3">
-          <ExerciseInstructionsBody instruction={instruction} artHeight={200} />
+          <ExerciseInstructionsBody instruction={instruction} artSize={220} />
           <Button
             testID="session-instructions-close"
             bg="$primary"

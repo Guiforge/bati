@@ -84,7 +84,7 @@ export function PausedOverlay() {
               running screen opens as a modal — see ExerciseInstructions.tsx. */}
           {instruction ? (
             <YStack pt="$2">
-              <ExerciseInstructionsBody instruction={instruction} artHeight={120} />
+              <ExerciseInstructionsBody instruction={instruction} artSize={120} />
             </YStack>
           ) : null}
 

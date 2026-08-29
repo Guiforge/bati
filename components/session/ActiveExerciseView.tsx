@@ -376,20 +376,19 @@ export function ActiveExerciseView() {
               ) : null}
             </YStack>
 
-            {/* Big Counter — the loudest thing on the screen, so it needs no outline to be found.
-              The border stays only in overtime, where it is a state signal and not decoration. */}
-            <YStack
-              bg={isTimeBased && isOvertime ? "$surface2" : "$surface"}
-              py="$6"
-              px="$8"
-              rounded="$8"
-              borderWidth={isOvertime ? 1 : 0}
-              borderColor="$success"
-              width="100%"
-              items="center"
-              justify="center"
-              transition="quick"
-            >
+            {/* Big Counter — the loudest thing on the screen, so it needs no outline to be found,
+              and on second thought no surface either. The border went first, then this: the box
+              was `py="$6"` twice over, 64dp of padding wrapped around an 80px numeral that was
+              never going to be missed, and those 64dp were the reason the counter overflowed its
+              own scroll view and got clipped on a boss fight. The number now sits straight on the
+              room's colour — the exercise's muscle tint, or the boss phase — which is what the
+              screen was already painting behind the box.
+
+              Overtime loses nothing by it: the flame pair, the "overtime" label and the green
+              numeral all still say so, so the state was never carried by the border alone. The
+              only surfaces left in here are the two ± buttons, which is right — they are objects
+              you press, and the count is not. */}
+            <YStack width="100%" items="center" justify="center">
               {isTimeBased ? (
                 <YStack items="center" gap="$2">
                   {isOvertime ? (

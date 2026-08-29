@@ -58,7 +58,8 @@ function applyMigrations(sqlite: Database.Database): void {
  * is exactly what this does. A mock that omits it makes every write path throw
  * "transactionOrFallback is not a function".
  */
-export function clientMock(t: { db: unknown }) {
+export function clientMock(t: { db: unknown; sqlite: Database.Database }) {
+  const { sqlString } = require("../../db/sql") as typeof import("../../db/sql");
   return {
     db: t.db,
     schema: require("../../db/schema"),
@@ -66,6 +67,14 @@ export function clientMock(t: { db: unknown }) {
     // The real one queues; here there is nothing to queue behind, and a stub keeps a test
     // failure inside the assertion that caused it rather than one tick later.
     serializeOnDatabase: <T>(fn: () => Promise<T>) => fn(),
+    // The real one opens its own expo-sqlite connection, because the shared one always has a
+    // prepared statement alive and `VACUUM INTO` refuses to run behind one. better-sqlite3 is
+    // synchronous and holds none, so here it is the plain statement — which is also why this
+    // stub cannot catch that bug, and why it took a device to find it.
+    vacuumIntoFile: async (destinationPath: string) => {
+      await Promise.resolve();
+      t.sqlite.exec(`VACUUM INTO ${sqlString(destinationPath)}`);
+    },
   };
 }
 

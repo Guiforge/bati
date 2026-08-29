@@ -1,7 +1,8 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { deleteDatabaseSync, openDatabaseSync } from "expo-sqlite";
+import { deleteDatabaseSync, openDatabaseAsync, openDatabaseSync } from "expo-sqlite";
 import * as schema from "./schema";
 import { SCHEMA_VERSION } from "./schemaVersion";
+import { sqlString } from "./sql";
 
 export { SCHEMA_VERSION };
 
@@ -64,6 +65,35 @@ const expoDb = singleton.expoDb;
  */
 export function getRawDb() {
   return expoDb;
+}
+
+/**
+ * `VACUUM INTO`, on a connection of its own.
+ *
+ * It has to be its own, and that cost about an evening to learn. SQLite refuses `VACUUM` while
+ * any statement on the connection is still busy, and the shared connection always has one:
+ * Drizzle's expo driver prepares statements and keeps them alive. Measured on a device, every
+ * snapshot this app has ever attempted failed the same way —
+ *
+ *     cannot VACUUM - SQL statements in progress
+ *
+ * — through Drizzle's `db.run(sql.raw(...))` and, when that was suspected, through the raw
+ * handle's `execAsync` too. Same error, so it was never about how the statement was issued. The
+ * app's SQLite directory had no `bati-export-*.db` in it at all: not one backup, manual or
+ * unattended, had ever been written, and each failure reported into a dev console nobody reads.
+ *
+ * A second connection has nothing in flight by construction, and WAL gives it a consistent read
+ * of the same file. It lives here rather than in db/backup.ts because that module is deliberately
+ * free of per-platform file openers so it can run on better-sqlite3 — this is the one line of it
+ * that cannot be, so it is behind the same door as every other handle in this app.
+ */
+export async function vacuumIntoFile(destinationPath: string): Promise<void> {
+  const isolated = await openDatabaseAsync(DB_NAME);
+  try {
+    await isolated.execAsync(`VACUUM INTO ${sqlString(destinationPath)}`);
+  } finally {
+    await isolated.closeAsync();
+  }
 }
 
 /**

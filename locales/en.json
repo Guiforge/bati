@@ -836,7 +836,7 @@
     "saveHint": "You pick the folder",
     "auto": "Automatic backup",
     "autoOff": "Off",
-    "autoMessage": "Bati saves a copy into {{folder}} after a session, once a day, and before every update. You can point it somewhere else, or stop.",
+    "autoMessage": "Bati saves a copy into {{folder}} once a day and before every update. You can point it somewhere else, or stop.",
     "autoChangeCta": "Change folder",
     "autoOffCta": "Turn off",
     "autoOnDone": "Automatic backup on — a first copy is already in {{folder}}",

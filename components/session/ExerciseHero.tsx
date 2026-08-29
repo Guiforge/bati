@@ -71,16 +71,25 @@ export function ExerciseHero({
       />
 
       {/* Bottom scrim: ends on the screen's own background, so the artwork has no visible edge —
-          which is the whole point of dropping the border. */}
+          which is the whole point of dropping the border.
+
+          It used to cover 60% of the hero and reach full `fadeTo` at 85% of that, so on a 354dp
+          hero the painting was washed from 142dp down and painted over outright for the last
+          32dp. On the darker illustrations the movement itself disappeared into it.
+
+          The reason it had to be that heavy was the title below, not the seam: one gradient was
+          holding contrast for the H1 *and* dissolving the edge. The H1 carries its own shadow
+          now, so this only has the edge left to do — 38% of the hero, solid for the last tenth of
+          itself, which is all it takes to hide a seam. About 78dp of painting handed back. */}
       <LinearGradient
         colors={["transparent", fadeTo]}
-        locations={[0, 0.85]}
+        locations={[0, 0.9]}
         style={{
           position: "absolute",
           left: 0,
           right: 0,
           bottom: 0,
-          height: Math.round(height * 0.6),
+          height: Math.round(height * 0.38),
         }}
         pointerEvents="none"
       />
@@ -95,6 +104,11 @@ export function ExerciseHero({
         fontSize={32}
         lineHeight={36}
         color="$text"
+        // Its own contrast, so the scrim above does not have to supply it by covering the
+        // painting. Same trick the onboarding titles use over their full-bleed art.
+        textShadowColor="rgba(6, 8, 18, 0.85)"
+        textShadowOffset={{ width: 0, height: 2 }}
+        textShadowRadius={10}
         numberOfLines={2}
       >
         {name}

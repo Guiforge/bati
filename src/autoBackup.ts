@@ -18,11 +18,11 @@ import { reportError } from "@/src/reportError";
  *
  * - `ensureMigrations()` (db/migrate.ts), before the runner. Migrations are the one moment this
  *   database can be damaged in a way no undo covers.
- * - the end of a session (`saveSession`), at most once a day. That one exists because "before
- *   every update" turned out to mean *months* between snapshots for a hero who trains daily and
+ * - the first launch of each day, from `DatabaseProvider` once migrations are done and before
+ *   the React tree has asked the database anything. That one exists because "before every
+ *   update" turned out to mean *months* between snapshots for a hero who trains daily and
  *   updates rarely: they switched the feature on, watched the first copy land, and the folder
- *   still held that one file weeks later. An ordinary launch still writes nothing — nothing has
- *   happened — but a finished session is by definition new history.
+ *   still held that one file weeks later.
  *
  * This module is the single writer of the `backupFolderUri` preference. Everything else asks it.
  */
@@ -131,15 +131,32 @@ export async function backupBeforeMigrations(): Promise<void> {
 }
 
 /**
- * Writes a snapshot after a session, unless one already went out today.
+ * Writes one snapshot a day, at launch, when a folder is remembered.
  *
- * Never throws, and — unlike `backupBeforeMigrations` — never turns the feature off on failure.
- * A pre-migration write is the last chance before something irreversible; this one is a spare
- * copy of history the device still holds, so a full card or a card pulled out for the evening
- * must not cost the hero their folder. The day is stamped only after the write succeeds, so a
- * failure is retried by the next session rather than swallowed until tomorrow.
+ * **Launch, and not the end of a session, for a reason a device taught us.** The obvious trigger
+ * is `saveSession` — a finished workout is the new history worth keeping — and it fails:
+ *
+ *     [backup.auto.session] cannot VACUUM - SQL statements in progress
+ *
+ * `snapshotDatabaseTo` is `VACUUM INTO`, and SQLite refuses it while any statement is stepping on
+ * the connection. `serializeOnDatabase` is not enough: it queues what opts in, and saving a
+ * session is a long chain of *plain* reads and writes — achievements, records, rungs, the village
+ * diff — that were still in flight around it. The end of a session is the busiest this database
+ * ever gets, which makes it the worst possible moment for the one statement that demands the
+ * database to itself.
+ *
+ * Launch is the quietest: migrations have run, identity is stamped, and the React tree has not
+ * asked for anything yet. The cost is that a Monday-evening workout is copied on Tuesday morning,
+ * which is a backup that lags by one launch instead of a backup that never runs.
+ *
+ * Never throws — it is awaited on the launch path, and a folder that cannot be written must not
+ * become a database-error screen. Unlike `backupBeforeMigrations` it never turns the feature off
+ * either: that one is the last chance before something irreversible, this is a spare copy of
+ * history the device still holds, so a card pulled out for the evening must not cost the hero
+ * their folder. The day is stamped only after the write lands, so a failure is retried by the
+ * next launch rather than swallowed until tomorrow.
  */
-export async function backupAfterSession(): Promise<void> {
+export async function backupIfStaleToday(): Promise<void> {
   try {
     const folder = await rememberedFolder();
     if (!folder) return;
@@ -150,7 +167,7 @@ export async function backupAfterSession(): Promise<void> {
     await saveBackupToFolder(folder);
     await preferences.setLastAutoBackupDay(today);
   } catch (error) {
-    reportError("backup.auto.session", error);
+    reportError("backup.auto.daily", error);
   }
 }
 

@@ -5,7 +5,7 @@ import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
-import { ChevronDown, ChevronUp, Crosshair, Pause } from "@/components/icons";
+import { Crosshair, Pause } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
@@ -20,6 +20,7 @@ import { preferences } from "@/db/preferences";
 import { formatTarget } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -28,6 +29,7 @@ import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { ExerciseHero } from "./ExerciseHero";
+import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { sessionArtHeight } from "./sessionArt";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -77,6 +79,9 @@ export function ActiveExerciseView() {
   const targetValue = currentEx?.target.value ?? 0;
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
   const [showHowTo, setShowHowTo] = useState(false);
+  // The same reader the paused screen uses, rather than a second derivation of "which movement
+  // is this, drawn and described" built out of `currentEx` right here.
+  const instruction = useSessionInstructions();
 
   if (!quest || !currentEx) return null;
 
@@ -84,8 +89,6 @@ export function ActiveExerciseView() {
   const ghost = currentEx.ghost;
 
   const exerciseName = localizedName(currentEx.exercise, language);
-  const exerciseDescription =
-    language === "fr" ? currentEx.exercise.frDescription : currentEx.exercise.enDescription;
 
   // Progress calculation
   const exercisesPerRound = quest.exercises.length;
@@ -93,9 +96,9 @@ export function ActiveExerciseView() {
   const currentStep = currentRoundIndex * exercisesPerRound + currentExerciseIndex + 1;
   const progressPercent = (currentStep / totalSteps) * 100;
 
-  const handleToggleHowTo = () => {
+  const handleShowHowTo = () => {
     selection();
-    setShowHowTo((prev) => !prev);
+    setShowHowTo(true);
   };
 
   const handleComplete = () => {
@@ -191,7 +194,14 @@ export function ActiveExerciseView() {
           {/* The exercise is still what you are doing — it just does it on the boss's ground.
               It used to shrink to a 52 px chip below the fold, so you could not see the movement
               you were performing. */}
-          <XStack items="center" gap="$2">
+          <XStack
+            items="center"
+            gap="$2"
+            onPress={handleShowHowTo}
+            pressStyle={{ opacity: 0.8 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("session.how_to_do_it")}
+          >
             <YStack
               width={36}
               height={36}
@@ -227,6 +237,8 @@ export function ActiveExerciseView() {
           height={heroHeight}
           fadeTo={screenBgRaw}
           topInset={insets.top}
+          onPress={handleShowHowTo}
+          accessibilityLabel={t("session.how_to_do_it")}
         />
       )}
 
@@ -335,48 +347,32 @@ export function ActiveExerciseView() {
                 </Text>
               ) : null}
 
-              {/* How to do it - expandable */}
-              {exerciseDescription ? (
-                <YStack width="100%">
-                  <Pressable
-                    onPress={handleToggleHowTo}
-                    accessibilityRole="button"
-                    accessibilityState={{ expanded: showHowTo }}
-                    accessibilityLabel={t("session.how_to_do_it")}
+              {/* The written half of "how do I do this?". The picture is the other half, and it
+                  is why this opens a modal instead of unfolding text under the counter — the art
+                  is already on screen but cropped into a hero, and an accordion could not show
+                  it. Tapping the art itself does the same thing; this row is what makes that
+                  discoverable. */}
+              {instruction?.description ? (
+                <Pressable
+                  testID="session-how-to"
+                  onPress={handleShowHowTo}
+                  hitSlop={12}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("session.how_to_do_it")}
+                >
+                  <XStack
+                    items="center"
+                    justify="center"
+                    gap="$2"
+                    py="$2"
+                    opacity={0.7}
+                    hoverStyle={{ opacity: 1 }}
                   >
-                    <XStack
-                      items="center"
-                      justify="center"
-                      gap="$2"
-                      py="$1"
-                      opacity={0.7}
-                      hoverStyle={{ opacity: 1 }}
-                    >
-                      <Text fontSize={12} fontWeight="700" color="$textSecondary">
-                        {t("session.how_to_do_it")}
-                      </Text>
-                      {showHowTo ? (
-                        <ChevronUp size={14} color="$textSecondary" />
-                      ) : (
-                        <ChevronDown size={14} color="$textSecondary" />
-                      )}
-                    </XStack>
-                  </Pressable>
-                  {!!showHowTo && (
-                    <YStack
-                      bg="$surface2"
-                      p="$3"
-                      rounded="$4"
-                      mt="$2"
-                      transition="quick"
-                      enterStyle={{ opacity: 0, scale: 0.95 }}
-                    >
-                      <Text fontSize={14} color="$textSecondary" lineHeight={20}>
-                        {exerciseDescription}
-                      </Text>
-                    </YStack>
-                  )}
-                </YStack>
+                    <Text fontSize={12} fontWeight="700" color="$textSecondary">
+                      {t("session.how_to_do_it")}
+                    </Text>
+                  </XStack>
+                </Pressable>
               ) : null}
             </YStack>
 
@@ -525,6 +521,7 @@ export function ActiveExerciseView() {
           the quest screen has always had, reachable at the moment it is actually needed. */}
         <Pressable
           testID="session-swap-exercise"
+          hitSlop={12}
           onPress={() => {
             selection();
             setSwapOpen(true);
@@ -545,6 +542,7 @@ export function ActiveExerciseView() {
           volume, the weak-area read and every target generated from them (issue #33). */}
         <Pressable
           testID="session-skip-exercise"
+          hitSlop={12}
           onPress={handleSkip}
           accessibilityRole="button"
           accessibilityLabel={t("session.skip_exercise")}
@@ -577,6 +575,12 @@ export function ActiveExerciseView() {
           </Text>
         </Button>
       </YStack>
+
+      <ExerciseInstructionsModal
+        instruction={instruction}
+        visible={showHowTo}
+        onClose={() => setShowHowTo(false)}
+      />
 
       <ExercisePickerSheet
         exercises={swapCandidates.map((c) => c.exercise)}

@@ -13,6 +13,9 @@ type ExerciseHeroProps = {
   fadeTo: string;
   /** Safe-area top, so the scrim covers the status bar the art now runs behind. */
   topInset: number;
+  /** Opens the movement's instructions. The art is the biggest, most obvious thing to tap. */
+  onPress?: () => void;
+  accessibilityLabel?: string;
 };
 
 /**
@@ -26,9 +29,26 @@ type ExerciseHeroProps = {
  * already proved that a painting carries a session screen better than a card does. The
  * difference is that this one has no card around it at all.
  */
-export function ExerciseHero({ source, name, height, fadeTo, topInset }: ExerciseHeroProps) {
+export function ExerciseHero({
+  source,
+  name,
+  height,
+  fadeTo,
+  topInset,
+  onPress,
+  accessibilityLabel,
+}: ExerciseHeroProps) {
   return (
-    <YStack height={height} width="100%" position="relative" bg="$surface">
+    <YStack
+      height={height}
+      width="100%"
+      position="relative"
+      bg="$surface"
+      onPress={onPress}
+      pressStyle={onPress ? { opacity: 0.92 } : undefined}
+      accessibilityRole={onPress ? "button" : undefined}
+      accessibilityLabel={onPress ? accessibilityLabel : undefined}
+    >
       {/* ponytail: the exercise art ships at 1024x768, so a full-bleed hero upscales it ~1.2x on
           a 3x screen and `cover` crops the sides. Re-export the assets wider (and as WebP, see
           docs/architecture/performance.md rule #2) if the softness ever reads as blur. */}

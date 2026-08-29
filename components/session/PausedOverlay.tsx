@@ -1,11 +1,10 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView } from "react-native";
+import { Alert } from "react-native";
 import { Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructions";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { useSessionStore } from "@/stores/session";
@@ -81,27 +80,11 @@ export function PausedOverlay() {
           </Paragraph>
 
           {/* The one moment reading is free. A hero who does not know what a dead bug is was
-              watching the clock run while they worked it out; here it is stopped. */}
+              watching the clock run while they worked it out; here it is stopped. Same block the
+              running screen opens as a modal — see ExerciseInstructions.tsx. */}
           {instruction ? (
-            <YStack width="100%" gap="$2" items="center" pt="$2">
-              <Image
-                source={getExerciseAsset(instruction.imagePath)}
-                style={{ width: 120, height: 120, borderRadius: 12 }}
-                contentFit="cover"
-              />
-              <Text fontWeight="700" fontSize={16} color="$text" style={{ textAlign: "center" }}>
-                {instruction.name}
-              </Text>
-              {/* Scrolls rather than grows: a long movement would otherwise push "resume" off
-                  the bottom of a small screen. */}
-              <ScrollView
-                style={{ maxHeight: 160, width: "100%" }}
-                showsVerticalScrollIndicator={false}
-              >
-                <Text fontSize={14} color="$textSecondary" lineHeight={20}>
-                  {instruction.description}
-                </Text>
-              </ScrollView>
+            <YStack width="100%" pt="$2">
+              <ExerciseInstructionsBody instruction={instruction} artHeight={120} />
             </YStack>
           ) : null}
 

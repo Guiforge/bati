@@ -691,8 +691,8 @@
     "countdown_subtitle": "C'est l'heure de bouger.",
     "reserve_hint": "Garde 1 à 2 répétitions en réserve — ne va pas à l'échec.",
     "crit_hint": "Chaque répétition au-delà de l'objectif est une chance de coup critique — {{percent}} % pour l'instant.",
-    "ghost_last": "La dernière fois : {{value}}",
-    "ghost_last_best": "La dernière fois {{last}} · record {{best}}"
+    "ghost_last_label": "La dernière fois",
+    "ghost_best_label": "record"
   },
   "settings": {
     "avatar": "AVATAR",

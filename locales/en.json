@@ -493,8 +493,8 @@
     "countdown_subtitle": "Time to move.",
     "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure.",
     "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now.",
-    "ghost_last": "Last time: {{value}}",
-    "ghost_last_best": "Last time {{last}} · best {{best}}"
+    "ghost_last_label": "Last time",
+    "ghost_best_label": "best"
   },
   "muscles": {
     "arms": "Arms",

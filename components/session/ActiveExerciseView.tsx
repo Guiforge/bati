@@ -519,17 +519,39 @@ export function ActiveExerciseView() {
                 there, so nothing is queried mid-workout and a recovered session keeps it.
                 Two phrasings: on a first-ever session `last` and `best` are the same number, and
                 "last time 12 · best 12" reads like a bug. */}
+            {/* The word and the number no longer weigh the same. This used to be one flat grey
+                sentence at 12px, so "La dernière fois 12 · record 15" asked the hero to read a
+                line to find two figures — mid-set, which is the one moment reading is expensive.
+                The labels stay quiet; the numbers step up a size and take the full text colour,
+                and the best takes the gold this app already spends on progression everywhere
+                else. Gold is never the only signal: the word "record" is right beside it.
+
+                Composed rather than interpolated, which is also why the two phrasings collapsed
+                into one. On a first-ever session `last` and `best` are the same number and
+                "last time 12 · best 12" reads like a bug — so the best half simply does not
+                render, instead of a second sentence existing to say the same thing. */}
             {ghost ? (
-              <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {ghost.best > ghost.last
-                  ? t("session.ghost_last_best", {
-                      last: formatTarget({ type: currentEx.target.type, value: ghost.last }),
-                      best: formatTarget({ type: currentEx.target.type, value: ghost.best }),
-                    })
-                  : t("session.ghost_last", {
-                      value: formatTarget({ type: currentEx.target.type, value: ghost.last }),
-                    })}
-              </Text>
+              <XStack items="baseline" justify="center" gap="$2" flexWrap="wrap">
+                <Text fontSize={12} color="$textSecondary">
+                  {t("session.ghost_last_label", "Last time")}
+                </Text>
+                <Text fontSize={15} fontWeight="700" color="$text">
+                  {formatTarget({ type: currentEx.target.type, value: ghost.last })}
+                </Text>
+                {ghost.best > ghost.last ? (
+                  <>
+                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                      ·
+                    </Text>
+                    <Text fontSize={12} color="$textSecondary">
+                      {t("session.ghost_best_label", "best")}
+                    </Text>
+                    <Text fontSize={15} fontWeight="700" color="$resourceGold">
+                      {formatTarget({ type: currentEx.target.type, value: ghost.best })}
+                    </Text>
+                  </>
+                ) : null}
+              </XStack>
             ) : null}
           </YStack>
         </ScrollView>

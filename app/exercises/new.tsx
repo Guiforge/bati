@@ -199,6 +199,7 @@ export default function ExerciseEditor() {
         <Card>
           <Pressable
             testID="exercise-details-toggle"
+            hitSlop={12}
             onPress={() => setShowDetails((v) => !v)}
             accessibilityRole="button"
             accessibilityState={{ expanded: showDetails }}

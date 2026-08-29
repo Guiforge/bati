@@ -425,6 +425,10 @@ export default function ExerciseCatalogue() {
 
       {visible.length > 0 && (
         <LegendList
+          // The search field above scrolls with this list, so with the keyboard up the default
+          // ("never") spends the first tap on a row dismissing it — react-native#4087. Searching
+          // for a movement and then tapping it is the whole point of this screen.
+          keyboardShouldPersistTaps="handled"
           data={visible}
           renderItem={renderItem}
           keyExtractor={exerciseKey}

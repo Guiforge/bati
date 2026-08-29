@@ -448,7 +448,15 @@ export default function OathScreen() {
         </Text>
       </XStack>
 
-      <RNScrollView contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}>
+      <RNScrollView
+        // With the keyboard up, the default ("never") spends the first tap on any control in
+        // here dismissing it — react-native#4087, and the reason a button on a screen you
+        // type into has to be pressed twice. "handled" keeps the dismiss-on-empty-space
+        // gesture and gives the child the tap it was aimed at. Same value the exercise
+        // picker sheet already uses.
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}
+      >
         <YStack px="$4" gap="$4">
           {/* Current oath — swearing a new one replaces it, so say so up front */}
           {existing !== null && <CurrentOathCard progress={existing} onAbandon={abandon} />}

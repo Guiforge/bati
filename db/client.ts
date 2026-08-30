@@ -91,9 +91,14 @@ export function getRawDb() {
  *     cannot VACUUM - SQL statements in progress
  *
  * — through Drizzle's `db.run(sql.raw(...))` and, when that was suspected, through the raw
- * handle's `execAsync` too. Same error, so it was never about how the statement was issued. The
- * app's SQLite directory had no `bati-export-*.db` in it at all: not one backup, manual or
- * unattended, had ever been written, and each failure reported into a dev console nobody reads.
+ * handle's `execAsync` too. Same error, so it was never about how the statement was issued.
+ *
+ * The one slot that used to work was `backupBeforeMigrations`, and by accident: it runs before
+ * the migration runner, so the only query ahead of it is `readLastAppliedAt` on the raw async
+ * handle, which finalises. Every later moment has a Drizzle statement behind it — the daily
+ * backup sits after `stampDatabaseIdentity`, which is a Drizzle write, and that alone was enough.
+ * Which is why the folder on a real phone held snapshots dated only on update days, then nothing:
+ * the feature looked alive and was reachable from exactly one instant in the app's life.
  *
  * A second connection has nothing in flight by construction, and WAL — switched on in
  * `createSingleton`, because it was not on before this — lets it read the same file while the

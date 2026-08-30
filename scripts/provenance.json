@@ -1828,6 +1828,72 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from tower_climb.jpg"
   },
+  "assets/images/rest/rest_campfire.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A weary armoured warrior sitting on a fallen log beside a small campfire at night, elbows on knees, head bowed, sword planted in the earth beside them, breath misting in the cold air, dark pines fading into fog behind. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no harsh light source pointed at the viewer, the mood calm and exhausted, the scene falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. The warrior's face is turned away or lowered, never looking at the viewer. No lettering and no watermark.",
+    "seed": 388219251,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-30",
+    "reencoded": "cwebp -q 85, from rest_campfire.jpg"
+  },
+  "assets/images/rest/rest_campfire_archer.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A weary lean marksman with a topknot and a leather bracer on one forearm, sitting on a fallen log beside a small campfire at night, elbows on knees, head bowed in exhausted rest, breath misting in the cold air, dark pines fading into fog behind. His unstrung longbow rests across his knees and a quiver leans against the log; a faint crimson energy glows along the coiled bowstring at his belt. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no harsh light source pointed at the viewer, the mood calm and exhausted, the scene falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. The figure's face is turned away or lowered, never looking at the viewer. No lettering and no watermark.",
+    "seed": 2366003618,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-30",
+    "reencoded": "cwebp -q 85, from rest_campfire_archer.jpg"
+  },
+  "assets/images/rest/rest_campfire_archmage.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A weary elder sorceress in a high-collared embroidered robe, long dark hair loose over her shoulders, sitting on a fallen log beside a small campfire at night, elbows on knees, head bowed in exhausted rest, breath misting in the cold air, dark pines fading into fog behind. Her staff leans against the log beside her; a faint arcane cyan light runs through the embroidery of her collar. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no harsh light source pointed at the viewer, the mood calm and exhausted, the scene falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. The figure's face is turned away or lowered, never looking at the viewer. No lettering and no watermark.",
+    "seed": 66057651,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-30",
+    "reencoded": "cwebp -q 85, from rest_campfire_archmage.jpg"
+  },
+  "assets/images/rest/rest_campfire_elder.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A weary very old sage with a long white beard, a deeply lined face and a plain heavy woollen cowl pushed back, sitting on a fallen log beside a small campfire at night, elbows on knees, head bowed in exhausted rest, breath misting in the cold air, dark pines fading into fog behind. A gnarled wooden staff leans against the log beside him; a faint pale gold light catches the edge of the cowl. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no harsh light source pointed at the viewer, the mood calm and exhausted, the scene falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. The figure's face is turned away or lowered, never looking at the viewer. No lettering and no watermark.",
+    "seed": 2001357864,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-30",
+    "reencoded": "cwebp -q 85, from rest_campfire_elder.jpg"
+  },
+  "assets/images/rest/rest_campfire_scout.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A weary young woman ranger with short wind-blown hair, a light hood pushed back and a leather pauldron on one shoulder, sitting on a fallen log beside a small campfire at night, elbows on knees, head bowed in exhausted rest, breath misting in the cold air, dark pines fading into fog behind. Her longbow is propped against the log and a quiver rests in the grass; a faint spring-green energy glows along the stitching of her collar. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no harsh light source pointed at the viewer, the mood calm and exhausted, the scene falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. The figure's face is turned away or lowered, never looking at the viewer. No lettering and no watermark.",
+    "seed": 1870489305,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-30",
+    "reencoded": "cwebp -q 85, from rest_campfire_scout.jpg"
+  },
+  "assets/images/rest/rest_campfire_shadow.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A weary hooded assassin, a scarf drawn across the lower face and the hood pulled low, sitting on a fallen log beside a small campfire at night, elbows on knees, head bowed in exhausted rest, breath misting in the cold air, dark pines fading into fog behind. Twin daggers lie sheathed in the grass at their feet; a faint violet energy traces the seams of the dark leather hood. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19), overall very dark and low in contrast with no harsh light source pointed at the viewer, the mood calm and exhausted, the scene falling off into darkness at every border. A wide 4:3 composition filling the frame edge to edge. The figure's face is turned away or lowered, never looking at the viewer. No lettering and no watermark.",
+    "seed": 3235797243,
+    "width": 1280,
+    "height": 960,
+    "generated": "2026-08-30",
+    "reencoded": "cwebp -q 85, from rest_campfire_shadow.jpg"
+  },
   "assets/images/village/buildings/armory.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",

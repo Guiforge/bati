@@ -77,3 +77,4 @@ app-example
 
 # Raw device captures: an input to the store shots, not an artefact worth versioning.
 fastlane/raw*/
+.gbrain-source

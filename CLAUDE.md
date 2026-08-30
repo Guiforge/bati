@@ -63,3 +63,7 @@ file globs. The brain auto-syncs incrementally on every gstack skill start.
 Run `/sync-gbrain` to force-refresh, `/sync-gbrain --full` for full reindex.
 
 <!-- gstack-gbrain-search-guidance:end -->
+
+## Skill routing
+
+When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.

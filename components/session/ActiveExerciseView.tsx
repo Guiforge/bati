@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, useWindowDimensions } from "react-native";
+import { Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
@@ -163,9 +163,10 @@ export function ActiveExerciseView() {
       targetType: currentEx.target.type,
     });
 
-  // Tall enough that the movement reads across a room, capped so the counter and the CTA below
-  // still have somewhere to live on a short screen — the same slot, and the same size, as the arena.
-  const heroHeight = sessionArtHeight(width, height);
+  // The hero is the elastic part of the column: the counter and the CTA take their own height
+  // and the picture gets everything left over, so nothing below it is ever clipped and a tall
+  // screen shows more movement rather than more empty tint. This is only its floor.
+  const heroMinHeight = Math.round(sessionArtHeight(width, height) * 0.6);
   const targetMuscle = currentEx.exercise.muscles[0];
 
   return (
@@ -234,7 +235,7 @@ export function ActiveExerciseView() {
         <ExerciseHero
           source={getExerciseAsset(currentEx.exercise.imagePath)}
           name={exerciseName}
-          height={heroHeight}
+          minHeight={heroMinHeight}
           fadeTo={screenBgRaw}
           topInset={insets.top}
           onPress={handleShowHowTo}
@@ -312,18 +313,18 @@ export function ActiveExerciseView() {
         </YStack>
       </YStack>
 
-      <YStack flex={1} px="$4" pt="$4" gap="$4">
+      {/* Content-sized on purpose — no flex. The hero above is the only elastic child, so this
+          column's height is exactly what its children need and the CTA can never be pushed off
+          screen. Give this flex back and Yoga splits the screen between it and the hero by grow
+          factor instead of by content, which is how the CTA ended up below the fold.
+          The boss branch is the exception: the arena is fixed-height, so with nothing elastic
+          above, this column grows instead — the counter wrapper below carries the same grow, so
+          the slack lands around the counter and the CTA stays on the bottom edge. */}
+      <YStack px="$4" pt="$4" gap="$4" style={bossFight ? { flexGrow: 1 } : undefined}>
         {/* Within-exercise timer progress (only for time-based exercises) */}
         {isTimeBased && (
           <YStack gap="$2">
-            <XStack justify="space-between" items="baseline">
-              <Text fontSize={12} fontWeight="700" color="$textSecondary">
-                {isOvertime ? t("session.bonus_time") : t("session.time_progress")}
-              </Text>
-              <Text fontSize={12} fontWeight="700" color="$textSecondary">
-                {isOvertime ? formatOvertime(overtimeSeconds) : formatTime(remainingSeconds)}
-              </Text>
-            </XStack>
+            {/* No label row: the numeral below is the same figure at 72px. */}
             <Progress
               value={Math.min(1, Math.max(0, progress)) * 100}
               size="$4"
@@ -340,16 +341,15 @@ export function ActiveExerciseView() {
           </YStack>
         )}
 
-        {/* Main Content — scrolls so the footer CTA below stays reachable. The hero, the boss
-          HUD and the progress bars are fixed-height siblings in a column that does not shrink
-          (flexShrink is 0 in RN), so before this the tall content simply pushed "done" past the
-          bottom edge — worst on a boss fight, on a small screen, or with "how to" expanded. */}
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-          showsVerticalScrollIndicator={false}
-        >
-          <YStack items="center" justify="center" gap="$5">
+        {/* Main Content — its own height, no scroll. It used to be a centred ScrollView, and
+          centring inside a ScrollView clips the *top* of anything taller than the viewport, so
+          the counter lost its head instead of gaining a scrollbar. The hero above is the
+          elastic sibling now; if this ever overflows again, it is the hero's floor to lower,
+          not a scroll to bring back.
+          ponytail: a 640dp screen on a boss fight (fixed-height arena) in overtime with a ghost
+          line is the ceiling. Past it, drop the ghost line or shrink the numeral. */}
+        <YStack justify="center" style={bossFight ? { flexGrow: 1 } : undefined}>
+          <YStack items="center" justify="center" gap="$2">
             {/* The exercise's name is on the artwork either way now — the hero paints it, and in a
               fight the arena carries it on its own scrim. Nothing repeats it here. */}
             <YStack items="center" gap="$2" width="100%">
@@ -394,7 +394,9 @@ export function ActiveExerciseView() {
               ) : null}
             </YStack>
 
-            {/* Big Counter — the loudest thing on the screen, so it needs no outline to be found,
+            {/* Big Counter — the loudest thing on the screen. The numerals set their own
+              lineHeight: the heading default at this size leaves ~50dp of air between the
+              figure and its unit label, which read as two separate things. so it needs no outline to be found,
               and on second thought no surface either. The border went first, then this: the box
               was `py="$6"` twice over, 64dp of padding wrapped around an 80px numeral that was
               never going to be missed, and those 64dp were the reason the counter overflowed its
@@ -419,7 +421,13 @@ export function ActiveExerciseView() {
                         </Text>
                         <GameIcon name="flame" size={16} color="$success" />
                       </XStack>
-                      <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$success">
+                      <H1
+                        fontSize={72}
+                        lineHeight={80}
+                        fontWeight="700"
+                        fontFamily="$body"
+                        color="$success"
+                      >
                         {formatOvertime(overtimeSeconds)}
                       </H1>
                       <Paragraph fontWeight="700" color="$textSecondary">
@@ -429,7 +437,13 @@ export function ActiveExerciseView() {
                   ) : (
                     <>
                       {/* Normal countdown */}
-                      <H1 fontSize={72} fontWeight="700" fontFamily="$body" color="$text">
+                      <H1
+                        fontSize={72}
+                        lineHeight={80}
+                        fontWeight="700"
+                        fontFamily="$body"
+                        color="$text"
+                      >
                         {formatTime(remainingSeconds)}
                       </H1>
                       <Paragraph fontWeight="700" color="$textSecondary">
@@ -464,7 +478,13 @@ export function ActiveExerciseView() {
                       enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
                       scale={1}
                     >
-                      <H1 fontSize={80} fontWeight="700" fontFamily="$body" color="$text">
+                      <H1
+                        fontSize={80}
+                        lineHeight={88}
+                        fontWeight="700"
+                        fontFamily="$body"
+                        color="$text"
+                      >
                         {adjustedReps}
                       </H1>
                       <Paragraph fontWeight="700" color="$textSecondary">
@@ -554,7 +574,7 @@ export function ActiveExerciseView() {
               </XStack>
             ) : null}
           </YStack>
-        </ScrollView>
+        </YStack>
 
         {/* One decision at two intensities — "I cannot do this set as prescribed" — so one row.
           Out of reach is not always "I cannot": often it is "not this variation", and the sheet

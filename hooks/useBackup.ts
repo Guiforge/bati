@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
 import { validateBackup } from "@/db/backup";
+import { useBugReport } from "@/hooks/useBugReport";
 import { autoBackupFolder, disableAutoBackup, enableAutoBackup } from "@/src/autoBackup";
 import {
   discardStagedImport,
@@ -25,6 +26,9 @@ import { useRestoreStore } from "@/stores/restore";
 export function useBackup() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
+  // A failure here is exactly the kind of report that used to arrive as a screenshot with no
+  // cause — so every catch below offers the bug-report mail instead of a dead-end toast.
+  const { alertWithReport } = useBugReport();
   const beginRestore = useRestoreStore((state) => state.beginRestore);
   const [busy, setBusy] = useState(false);
   // The folder automatic backups write into, as a label, or `null` when the feature is off.
@@ -54,12 +58,12 @@ export function useBackup() {
       showSuccess(t("backup.exportDone"));
     } catch (error) {
       reportError("backup.export", error);
-      showError(t("backup.exportFailed"));
+      alertWithReport(t("backup.exportFailed"));
     } finally {
       running.current = false;
       setBusy(false);
     }
-  }, [showError, showSuccess, t]);
+  }, [alertWithReport, showSuccess, t]);
 
   const runSaveToFolder = useCallback(async () => {
     if (running.current) return;
@@ -71,12 +75,12 @@ export function useBackup() {
       if (await saveBackupToFolder()) showSuccess(t("backup.saveDone"));
     } catch (error) {
       reportError("backup.save", error);
-      showError(t("backup.exportFailed"));
+      alertWithReport(t("backup.exportFailed"));
     } finally {
       running.current = false;
       setBusy(false);
     }
-  }, [showError, showSuccess, t]);
+  }, [alertWithReport, showSuccess, t]);
 
   const runEnableAuto = useCallback(async () => {
     if (running.current) return;
@@ -93,12 +97,12 @@ export function useBackup() {
       reportError("backup.auto.enable", error);
       // The folder is only remembered after the first write succeeds, so a failure here leaves
       // the feature exactly as off as the row still says it is.
-      showError(t("backup.exportFailed"));
+      alertWithReport(t("backup.exportFailed"));
     } finally {
       running.current = false;
       setBusy(false);
     }
-  }, [showError, showSuccess, t]);
+  }, [alertWithReport, showSuccess, t]);
 
   const runDisableAuto = useCallback(async () => {
     if (running.current) return;
@@ -110,12 +114,12 @@ export function useBackup() {
       showSuccess(t("backup.autoOffDone"));
     } catch (error) {
       reportError("backup.auto.disable", error);
-      showError(t("backup.exportFailed"));
+      alertWithReport(t("backup.exportFailed"));
     } finally {
       running.current = false;
       setBusy(false);
     }
-  }, [showError, showSuccess, t]);
+  }, [alertWithReport, showSuccess, t]);
 
   const runImport = useCallback(async () => {
     if (running.current) return;
@@ -136,12 +140,12 @@ export function useBackup() {
     } catch (error) {
       reportError("backup.import", error);
       discardStagedImport();
-      showError(t("backup.importFailed"));
+      alertWithReport(t("backup.importFailed"));
     } finally {
       running.current = false;
       setBusy(false);
     }
-  }, [beginRestore, showError, t]);
+  }, [alertWithReport, beginRestore, showError, t]);
 
   // Returned as fire-and-forget handlers: both swallow their own failures into a toast, so a
   // caller has nothing to await and nothing to catch. It keeps the press handlers one-liners.

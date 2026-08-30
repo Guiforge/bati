@@ -25,8 +25,14 @@ import {
   clearCrashLog,
   installCrashHandler,
   readCrashLog,
+  readErrorLog,
   recordCrash,
+  recordHandledError,
 } from "@/src/crashLog";
+import { reportError } from "@/src/reportError";
+
+/** Lets the error-log write queue (microtasks + one macrotask) drain. */
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe("crashLog", () => {
   beforeEach(() => {
@@ -87,6 +93,84 @@ describe("crashLog", () => {
     expect(await readCrashLog()).toEqual([]);
   });
 
+  test("two identical crashes merge into one entry that counts", async () => {
+    await recordCrash("render", new Error("boom"));
+    await recordCrash("render", new Error("boom"));
+
+    const reports = await readCrashLog();
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.count).toBe(2);
+  });
+
+  describe("handled errors", () => {
+    // The path the app actually calls: `reportError` → sink → error log. Testing
+    // `recordHandledError` alone would pass with the sink never installed.
+    test("reportError lands in the error log once the handler is installed", async () => {
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      installCrashHandler();
+
+      reportError("backup.save", new Error("Unable to open output stream"));
+      await flush();
+
+      const [entry] = await readErrorLog();
+      assert(entry);
+      expect(entry.context).toBe("backup.save");
+      expect(entry.message).toBe("Unable to open output stream");
+      // No stacks on breadcrumbs: the context+message pair names the call site.
+      expect(entry.stack).toBeNull();
+      consoleSpy.mockRestore();
+    });
+
+    test("two errors reported in the same tick both land, newest first", async () => {
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      installCrashHandler();
+
+      reportError("widget.update", new Error("first"));
+      reportError("session.save", new Error("second"));
+      await flush();
+
+      const entries = await readErrorLog();
+      expect(entries.map((e) => e.message)).toEqual(["second", "first"]);
+      consoleSpy.mockRestore();
+    });
+
+    test("a repeating error becomes one entry whose count grows and whose time moves", async () => {
+      for (let i = 0; i < 25; i++) {
+        await recordHandledError("backup.auto", new Error("grant revoked"));
+      }
+
+      const entries = await readErrorLog();
+      expect(entries).toHaveLength(1);
+      expect(entries[0]?.count).toBe(25);
+      expect(Date.parse(entries[0]?.at ?? "")).not.toBeNaN();
+    });
+
+    test("distinct errors cap at twenty, newest first", async () => {
+      for (let i = 0; i < 25; i++) {
+        await recordHandledError("backup.auto", new Error(`failure ${i}`));
+      }
+
+      const entries = await readErrorLog();
+      expect(entries).toHaveLength(20);
+      expect(entries[0]?.message).toBe("failure 24");
+    });
+
+    test("a chatty error can never evict a crash — the two logs are separate rows", async () => {
+      await recordCrash("fatal", new Error("the one crash that matters"));
+      for (let i = 0; i < 25; i++) {
+        await recordHandledError("widget.update", new Error(`noise ${i}`));
+      }
+
+      expect((await readCrashLog())[0]?.message).toBe("the one crash that matters");
+    });
+
+    test("an enormous message is cut to one line's worth", async () => {
+      await recordHandledError("backup.save", new Error("x".repeat(5000)));
+
+      expect((await readErrorLog())[0]?.message.length).toBeLessThanOrEqual(300);
+    });
+  });
+
   describe("the global handler", () => {
     const globalAny = globalThis as unknown as { ErrorUtils?: unknown };
     const original = globalAny.ErrorUtils;
@@ -133,10 +217,12 @@ describe("crashLog", () => {
       prompt: "Dis-moi tout",
       technicalHeader: "Détails techniques",
       noCrash: "Aucun plantage enregistré sur cet appareil.",
+      errorsHeader: "Erreurs récentes",
+      noErrors: "Aucune erreur récente enregistrée.",
     };
 
     test("is a mailto to the contact address, carrying the crash", () => {
-      const url = buildBugReportMailto(reports, "1.0.0 (7)", strings);
+      const url = buildBugReportMailto(reports, [], "1.0.0 (7)", strings);
 
       expect(url.startsWith(`mailto:${CONTACT_EMAIL}?`)).toBe(true);
       expect(decodeURIComponent(url)).toContain("boom");
@@ -146,7 +232,7 @@ describe("crashLog", () => {
 
     // The wording travels from the caller, so a French hero writes a French mail.
     test("carries the caller's wording, not a hardcoded English draft", () => {
-      const url = decodeURIComponent(buildBugReportMailto(reports, "1.0.0", strings));
+      const url = decodeURIComponent(buildBugReportMailto(reports, [], "1.0.0", strings));
 
       expect(url).toContain("subject=Bati 1.0.0 — retour");
       expect(url).toContain("Dis-moi tout");
@@ -155,7 +241,7 @@ describe("crashLog", () => {
 
     // "It lags" is unactionable without knowing what it lagged on.
     test("names the device it was sent from", () => {
-      const url = decodeURIComponent(buildBugReportMailto(reports, "1.0.0", strings));
+      const url = decodeURIComponent(buildBugReportMailto(reports, [], "1.0.0", strings));
 
       expect(url).toContain("Device: ");
     });
@@ -164,6 +250,7 @@ describe("crashLog", () => {
     test("escapes the body", () => {
       const url = buildBugReportMailto(
         [{ at: "2026-07-31T10:00:00.000Z", context: "render", message: "a&b", stack: null }],
+        [],
         "1.0.0",
         strings,
       );
@@ -173,8 +260,29 @@ describe("crashLog", () => {
     });
 
     test("still composes when nothing was recorded", () => {
-      const url = buildBugReportMailto([], "1.0.0", strings);
-      expect(decodeURIComponent(url)).toContain("Aucun plantage enregistré");
+      const url = buildBugReportMailto([], [], "1.0.0", strings);
+      const body = decodeURIComponent(url);
+      expect(body).toContain("Aucun plantage enregistré");
+      expect(body).toContain("Aucune erreur récente enregistrée.");
+    });
+
+    test("handled errors get their own section, one line each, with the repeat count", () => {
+      const handled: CrashReport[] = [
+        {
+          at: "2026-08-30T09:00:00.000Z",
+          context: "backup.save",
+          message: "Unable to create file",
+          stack: null,
+          count: 3,
+        },
+      ];
+
+      const body = decodeURIComponent(buildBugReportMailto(reports, handled, "1.0.0", strings));
+
+      expect(body).toContain("--- Erreurs récentes ---");
+      expect(body).toContain("(backup.save ×3) — Unable to create file");
+      // The crash section is still there, above it.
+      expect(body).toContain("boom");
     });
   });
 });

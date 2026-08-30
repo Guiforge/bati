@@ -83,7 +83,9 @@ the same on-device database.
 
 ## Crash reports
 
-If Bati crashes, it writes the error and its stack trace **to your device only**.
+If Bati crashes, it writes the error and its stack trace **to your device only**. When a
+feature fails without crashing — a backup that could not be written, say — the error message is
+kept the same way; that message may include the name of a folder or file you chose.
 
 Nothing is transmitted automatically. If you want to help fix a crash, Settings has a
 "Report a bug" action that opens **your own email app** with the report filled in. You can read
@@ -190,7 +192,10 @@ dans la même base locale.
 
 ## Rapports de crash
 
-En cas de plantage, Bati écrit l'erreur et sa trace **uniquement sur votre appareil**.
+En cas de plantage, Bati écrit l'erreur et sa trace **uniquement sur votre appareil**. Quand
+une fonction échoue sans plantage — une sauvegarde impossible à écrire, par exemple — le message
+d'erreur est conservé de la même façon ; ce message peut contenir le nom d'un dossier ou d'un
+fichier que vous avez choisi.
 
 Rien n'est transmis automatiquement. Si vous souhaitez aider à corriger un bug, les Réglages
 proposent « Signaler un bug », qui ouvre **votre propre application e-mail** avec le rapport

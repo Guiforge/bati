@@ -122,10 +122,10 @@ export async function backupBeforeMigrations(): Promise<void> {
     reportError("backup.auto", error);
     // ponytail: one failure turns the feature off, rather than a retry counter. The ceiling is
     //           that a transient failure — a full disk, an unmounted card — costs the hero a
-    //           trip to Settings. It buys the only honest report available: `reportError` writes
-    //           to a dev console nobody ships, so the Settings row falling back to "Off" is the
-    //           single signal a real hero can see. Add a counter when a real device produces a
-    //           failure that recovers on its own.
+    //           trip to Settings. The Settings row falling back to "Off" is the visible half of
+    //           the report; since `reportError` also lands in the local error log, the cause
+    //           rides along in the next bug-report mail. Add a counter when a real device
+    //           produces a failure that recovers on its own.
     await disableAutoBackup().catch((e) => reportError("backup.auto.forget", e));
   }
 }

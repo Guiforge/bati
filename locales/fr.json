@@ -817,7 +817,7 @@
     "permissions_title": "Permissions",
     "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar — elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. L'application n'envoie aucune notification.",
     "crashes_title": "Rapports de crash",
-    "crashes_body": "En cas de plantage, l'erreur est écrite uniquement sur votre appareil. Rien n'est envoyé automatiquement. « Signaler un bug » ouvre votre propre application e-mail avec le rapport pré-rempli : vous pouvez le lire, le modifier ou le supprimer avant envoi. Si vous ne l'envoyez jamais, il ne quitte jamais votre téléphone.",
+    "crashes_body": "En cas de plantage, l'erreur est écrite uniquement sur votre appareil — et quand une fonction échoue sans plantage (une sauvegarde impossible à écrire, par exemple), son message d'erreur est conservé de la même façon ; ce message peut contenir le nom d'un dossier ou d'un fichier que vous avez choisi. Rien n'est envoyé automatiquement. « Signaler un bug » ouvre votre propre application e-mail avec le rapport pré-rempli : vous pouvez le lire, le modifier ou le supprimer avant envoi. Si vous ne l'envoyez jamais, il ne quitte jamais votre téléphone.",
     "children_title": "Enfants",
     "children_body": "Bati est une application de sport tout public, non destinée aux enfants de moins de 13 ans. Elle ne collecte aucune donnée personnelle, quel que soit l'âge.",
     "contact_title": "Questions",
@@ -825,8 +825,11 @@
     "updated": "Dernière mise à jour : 31 juillet 2026"
   },
   "feedback": {
+    "errors_header": "Erreurs récentes",
     "no_crash": "Aucun plantage enregistré sur cet appareil.",
+    "no_errors": "Aucune erreur récente enregistrée.",
     "prompt": "Dis-moi tout — il n'y a pas de mauvaise réponse. Si tu sèches, ces trois-là aident :\n\n1. Qu'est-ce qui t'a fait ouvrir l'app aujourd'hui ?\n2. Qu'est-ce qui t'a agacé ?\n3. Qu'est-ce que tu as failli chercher sans le trouver ?\n",
+    "report_cta": "M'envoyer le détail",
     "subject": "Bati {{version}} — retour",
     "technical_header": "Détails techniques (modifie ou supprime ce qui suit)"
   },

@@ -143,6 +143,7 @@
     "report_bug_empty": "Nothing recorded",
     "no_mail_client": "No email app found on this device",
     "photos_denied": "Photo access is off — allow it in system settings",
+    "sound": "Countdown beeps",
     "villagers": "Villagers",
     "replay_guides": "Review the guides",
     "replay_guides_done": "The guides will show again"

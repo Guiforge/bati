@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, Text, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
+import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
@@ -12,6 +13,9 @@ export function CountdownView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { remainingSeconds } = useSessionTimer();
+  // The same cue the rest and the timed set use. This view opens on exactly 3, which is why the
+  // hook counts a mount inside the last three seconds instead of staying quiet through it.
+  useCountdownCues(remainingSeconds);
   const status = useSessionStore((s) => s.status);
   const finishCountdown = useSessionStore((s) => s.finishCountdown);
   const { lightImpact, success } = useHaptics();

@@ -16,6 +16,14 @@ import appJson from "../app.json";
 // This is a ratchet, not a target: a new permission fails the suite until someone writes down
 // why the app needs it. Adding a line here is cheap and deliberate; noticing one you never
 // added is what this exists for.
+//
+// Know its blind spot before you trust it. The scan below reads *npm package* manifests. A
+// Gradle AAR declares permissions too, and nothing here can see those: WAKE_LOCK and
+// FOREGROUND_SERVICE below ship in every APK and were justified only after someone read a built
+// manifest by hand. RECEIVE_BOOT_COMPLETED is in `blockedPermissions` for the same reason and
+// from the same library, which no package manifest declares either — evidence this hole had
+// already been patched once, invisibly. `fdroid/expected-permissions.txt` and the release
+// workflow's gate are what actually assert the shipped list; this file is the fast pre-check.
 
 const ROOT = path.resolve(__dirname, "..");
 const NODE_MODULES = path.join(ROOT, "node_modules");
@@ -48,6 +56,17 @@ const ALLOWED: Record<string, string> = {
     "for a hero-authored exercise, and reading a backup file the hero chose.",
   "android.permission.WRITE_EXTERNAL_STORAGE":
     "same pair, capped at maxSdkVersion 32 — writing the backup the hero asked to export.",
+  // These two arrive from androidx.work:work-runtime, which react-native-android-widget pulls in
+  // and actively uses: RNWidgetJsCommunication enqueues the widget's redraw as a WorkManager
+  // worker. They reach the APK through the Gradle graph, not through any npm package manifest,
+  // so the scan below has never seen them — see the note at the top of this file.
+  "android.permission.WAKE_LOCK":
+    "androidx.work via react-native-android-widget — WorkManager holds a wake lock for the " +
+    "duration of the worker that redraws the home-screen widget.",
+  "android.permission.FOREGROUND_SERVICE":
+    "the same worker: RNWidgetJsCommunication calls setExpedited, and below API 31 WorkManager " +
+    "runs expedited work as a foreground service. Stripping it would break widget updates on " +
+    "older devices, silently.",
 };
 
 const USES_PERMISSION = /<uses-permission[^>]*android:name="([^"]+)"/g;
@@ -111,6 +130,45 @@ describe("Android permissions", () => {
     for (const name of Object.keys(ALLOWED)) {
       expect(blocked.has(name) || removed.has(name)).toBe(false);
     }
+  });
+
+  test("expo-audio is configured for beeps, not for a media player", () => {
+    // The scan above reads dependency manifests, and expo-audio's declares exactly one line
+    // (MODIFY_AUDIO_SETTINGS). Everything that got it thrown out in 1.8.1 — RECORD_AUDIO,
+    // FOREGROUND_SERVICE, FOREGROUND_SERVICE_MEDIA_PLAYBACK, an AudioControlsService and
+    // androidx.media3 — is written by its *config plugin*, from defaults that a bare
+    // `"expo-audio"` string accepts wholesale. No scan of node_modules can see that, so this is
+    // the only thing standing between a tidied-up plugins array and MR fdroid/fdroiddata!45076
+    // finding 5, a second time.
+    const entry = (appJson.expo.plugins as unknown[]).find(
+      (p): p is [string, Record<string, unknown>] => Array.isArray(p) && p[0] === "expo-audio",
+    );
+    expect(entry).toBeDefined();
+    expect(entry?.[1]).toMatchObject({
+      enableBackgroundPlayback: false,
+      enableBackgroundRecording: false,
+      microphonePermission: false,
+      recordAudioAndroid: false,
+    });
+  });
+
+  test("everything justified here is also on the list the release gate reads", () => {
+    // Two lists, and only one of them describes the built APK. This file explains *why* each
+    // permission is acceptable; fdroid/expected-permissions.txt is what the release workflow
+    // diffs against `aapt2 dump permissions`. A permission justified here but missing there
+    // would fail the release build; one listed there and not here has a gate but no reason.
+    const expected = fs
+      .readFileSync(path.join(ROOT, "fdroid", "expected-permissions.txt"), "utf8")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith("#"));
+
+    for (const name of Object.keys(ALLOWED)) {
+      expect(expected).toContain(name);
+    }
+    // Sorted, so a hand-edit lands where the gate's `sort -u` will put it and the diff a failing
+    // release prints reads as one added line rather than a reshuffle.
+    expect(expected).toEqual([...expected].sort());
   });
 
   test("the app still ships no way to reach the network", () => {

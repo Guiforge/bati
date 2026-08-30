@@ -6,6 +6,7 @@ import { TamaguiProvider } from "tamagui";
 import { PausedOverlay } from "@/components/session/PausedOverlay";
 import type { Quest } from "@/db/quests";
 import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
 
 /**
@@ -149,6 +150,38 @@ describe("PausedOverlay", () => {
  * survive the first tap and only go when the hero says so. A test that watched the dialog would
  * pass just as happily against a dialog wired to nothing.
  */
+/**
+ * Settings is two screens and an abandoned session away. The moment a hero wants the beeps off is
+ * the moment one just went off in a quiet gym, and pause is the only surface every session state
+ * can reach. This asserts the row is wired to the real setter, not that a button exists.
+ */
+describe("the countdown beeps, from inside a session", () => {
+  it("toggles the setting the session actually reads", async () => {
+    const setSoundEnabled = jest.fn().mockResolvedValue(undefined);
+    useSettingsStore.setState({ soundEnabled: true, setSoundEnabled });
+
+    const paused = await mountPaused();
+    await fireEvent.press(paused.getByTestId("session-sound"));
+
+    // The negation, not the current value: a row wired to `setSoundEnabled(soundEnabled)` looks
+    // identical on screen and does nothing.
+    expect(setSoundEnabled).toHaveBeenCalledWith(false);
+  });
+
+  it("says which way it is set", async () => {
+    useSettingsStore.setState({ soundEnabled: false });
+    const off = await mountPaused();
+    // Regex, not a string: this matcher compares strings exactly, and the label carries the
+    // setting's name alongside its state.
+    expect(off.getByTestId("session-sound")).toHaveTextContent(/common\.off/);
+
+    await act(() => {
+      useSettingsStore.setState({ soundEnabled: true });
+    });
+    expect(off.getByTestId("session-sound")).toHaveTextContent(/common\.on/);
+  });
+});
+
 describe("restarting a round", () => {
   const twoLoggedSets = [
     { roundIndex: 0, exerciseIndex: 0, result: { type: "reps" as const, value: 12 } },

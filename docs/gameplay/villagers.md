@@ -245,7 +245,8 @@ two failures this family hit.
 
 ## Not built
 
-No sound (`expo-audio` was removed from this project for unjustified permissions — see
-`__tests__/android-permissions.test.ts`). No dialogue tree, no reply choices, no villager-given
+No sound. `expo-audio` is in the project again, but only as `src/sounds.ts`, which plays two
+generated beeps for the session countdown; giving a villager a voice is a content project, not a
+plumbing one. No dialogue tree, no reply choices, no villager-given
 quests, no affinity, no villager who remembers a session by name. The layer supports all of it
 without being rebuilt; none of it is here.

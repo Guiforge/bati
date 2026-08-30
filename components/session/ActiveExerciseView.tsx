@@ -18,6 +18,7 @@ import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import { formatTarget } from "@/db/targets";
+import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
@@ -73,6 +74,7 @@ export function ActiveExerciseView() {
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
 
   const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
+  useCountdownCues(remainingSeconds);
 
   // Get current exercise safely
   const currentEx = quest?.exercises[currentExerciseIndex];

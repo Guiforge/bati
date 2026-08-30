@@ -178,7 +178,7 @@
       }
     },
     {
-      "includes": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/__tests__/**"],
+      "includes": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/__tests__/**", "jest.setup.ts"],
       "javascript": {
         "globals": ["jest"]
       },

@@ -383,9 +383,12 @@ The art half was the original scope. The audio half comes from *Zombies, Run!*, 
 product is one idea worth stealing: **the story arrives during the effort, not around it.** Bati
 has the fiction (`db/adventures-narrative.ts`), and it delivers it in
 `components/adventures/NarrativeModal.tsx` — a modal, i.e. exactly the moment the hero is not
-training. The audio plumbing does *not* exist: `expo-audio`, `hooks/useSound.ts` and the
-Sound Effects setting were removed in 1.8.1, because the sound map was entirely `null` and the
-switch drove a foreground media service for silence (F-Droid MR !45076, finding 5).
+training. The audio plumbing now exists in the small: `expo-audio` is back for the session
+countdown beeps (`src/sounds.ts`), with its config plugin stripped of everything that got the
+first attempt thrown out — no microphone, no foreground media service, no androidx.media3. It
+plays a bundled clip on demand and nothing more; narration is still a project, not a switch.
+The first attempt was removed in 1.8.1 because the sound map was entirely `null` and the switch
+drove a foreground media service for silence (F-Droid MR !45076, finding 5).
 
 **The lazy version costs no assets:** `expo-speech` is on-device TTS, both locales for free, zero
 bytes in the APK, and it reads the narrative that is already written. Recorded voice-over is the

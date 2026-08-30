@@ -231,13 +231,25 @@ the Play install-referrer library, for one reminder three idle days late. Removi
 patch script, the reminder, and twenty-two of the app's thirty-three Android permissions in one
 move. See [gameplay/oaths.md](gameplay/oaths.md) for what the product lost.
 
-What remains is `plugins/withAndroidTrimPermissions.js`, which drops three permissions that
-`expo-image-picker` declares and the app never exercises — a camera it never opens, and the
-microphone `expo-audio` used to bring before 1.8.1 removed it entirely.
+What remains is `plugins/withAndroidTrimPermissions.js`, which drops four permissions the app
+never exercises: a camera `expo-image-picker` declares and nothing opens, the dev-client's
+overlay, and two from `expo-audio` — the microphone it no longer asks for (its plugin is
+configured with `recordAudioAndroid: false`) and `MODIFY_AUDIO_SETTINGS`, which its library
+manifest declares unconditionally and which only gates audio routing the app never touches.
 
-`__tests__/android-permissions.test.ts` is the guard: it scans every dependency's manifest and
-fails the suite on a permission that is neither justified there, blocked in `app.json`, nor
+`__tests__/android-permissions.test.ts` is the first guard: it scans every dependency's manifest
+and fails the suite on a permission that is neither justified there, blocked in `app.json`, nor
 stripped by the plugin. The list stopped being something you have to remember to look at.
+
+It has one blind spot, and it is worth knowing rather than trusting around. It reads *npm package*
+manifests; a Gradle AAR declares permissions too, and none of those are visible to it.
+`androidx.work`, which `react-native-android-widget` pulls in to redraw the widget, is how
+`WAKE_LOCK` and `FOREGROUND_SERVICE` shipped in every APK for months without appearing in any
+list — and how `RECEIVE_BOOT_COMPLETED`, declared by no package manifest, came to sit in
+`blockedPermissions` with nothing explaining it. So the release workflow diffs the built APK's
+real permission list against [`fdroid/expected-permissions.txt`](../fdroid/expected-permissions.txt)
+with `aapt2 dump permissions`. That file is the one that describes the artefact; the test is the
+fast pre-check, and a jest case keeps the two from drifting apart.
 
 ### The signing key — decided: the break is accepted
 

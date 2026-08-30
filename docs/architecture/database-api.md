@@ -371,10 +371,22 @@ User settings persistence.
 | `hasFinishedOnboarding` | `boolean` | `false` | Onboarding completion flag |
 | `language` | `"en" \| "fr"` | device language, fallback `"en"` | UI language |
 | `avatarId` | `string` | first configured avatar (`guardian`) | Selected avatar |
-| `notificationsEnabled` | `boolean` | `true` in current code | Reminder preference; notification implementation remains product-scoped separately |
-| `notificationTime` | JSON `{ hour, minute }` | `{ "hour": 18, "minute": 0 }` | Daily reminder time preference |
+| `customAvatarUri` | `string \| null` | `null` | Photo the hero picked instead of an avatar |
+| `trainingLevel` | `TrainingLevel \| null` | `null` | Answer from onboarding, used to size quests |
+| `ownedEquipment` | JSON array \| `null` | `null` | `null` means never answered, which is not `[]` |
 | `hapticsEnabled` | `boolean` | `true` | Haptic feedback |
+| `soundEnabled` | `boolean` | `true` | The 3-2-1 countdown beeps in a session |
+| `villagersEnabled` | `boolean` | `true` | Villager cameos, which carry the first-visit guides |
+| `warmupEnabled` | `boolean` | `true` | Warm-up steps before the first exercise |
+| `guidesSeen` | JSON array | `[]` | Which first-visit guides have been shown |
+| `recentCameoLines` | JSON array | `[]` | Ring buffer, so the next cameo can avoid a repeat |
+| `comebackGreetedAfter` | `string \| null` | `null` | Last gap already greeted, so it is greeted once |
+| `backupFolderUri` | `string \| null` | `null` | SAF tree the hero granted for auto-backup |
 | `savedSession` | serialized JSON | `null` | Crash/session recovery payload |
+
+There is no column per setting: `user_preferences` is a key/value table, so adding one is a
+helper pair here and a store field — never a migration. The store's default and the helper's
+fallback have to agree, or the value visibly changes a beat after every cold start.
 
 ### Functions
 

@@ -4,6 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { RestView } from "@/components/session/RestView";
 import type { Quest } from "@/db/quests";
+import { playCue } from "@/src/sounds";
 import { useSessionStore } from "@/stores/session";
 import config from "@/tamagui.config";
 
@@ -31,6 +32,7 @@ jest.mock("@/i18n", () => ({
   i18n: { changeLanguage: jest.fn(), t: (key: string) => key },
 }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
+jest.mock("@/src/sounds", () => ({ playCue: jest.fn(), warm: jest.fn() }));
 
 const REST_SECONDS = 30;
 
@@ -115,6 +117,33 @@ describe("RestView", () => {
       useSessionStore.setState({ currentRoundIndex: 1, currentExerciseIndex: 0 });
     });
     expect(midRound.queryByText(/round_rest_title/)).not.toBeNull();
+  });
+
+  /**
+   * The wiring, not the counting. `useCountdownCues` is proven on its own in
+   * __tests__/countdown-cues.test.ts and the setting is proven in __tests__/store-settings.test.ts;
+   * nothing proved this screen actually calls the hook. Delete the one line in RestView and every
+   * other test here still passes — which is exactly how the 1.8.1 Sound Effects switch stayed
+   * wired to a map of nulls for seven months.
+   */
+  it("counts its last three seconds out loud, then announces the zero", async () => {
+    const mockedPlayCue = playCue as jest.MockedFunction<typeof playCue>;
+    mockedPlayCue.mockClear();
+
+    await mountRest();
+
+    // One second per act(), not one 31-second jump: React batches the state updates inside a
+    // single act, so a jump renders once with the final value and the screen would only ever
+    // announce the zero. The hook is right either way — it fires "go" alone on a skip, which is
+    // what an app returning from the background does — but the ticks are only observable when
+    // the render happens per second, which is what really happens on a phone.
+    for (let second = 0; second <= REST_SECONDS; second++) {
+      await act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    }
+
+    expect(mockedPlayCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "go"]);
   });
 
   it("stays resting while the timer still has time on it", async () => {

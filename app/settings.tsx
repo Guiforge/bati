@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   Swords,
   Vibrate,
+  Volume2,
   Wrench,
 } from "@/components/icons";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
@@ -221,11 +222,13 @@ export default function SettingsScreen() {
     avatarId,
     customAvatarUri,
     hapticsEnabled,
+    soundEnabled,
     villagersEnabled,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
     setHapticsEnabled,
+    setSoundEnabled,
     setVillagersEnabled,
   } = useSettingsStore();
 
@@ -465,6 +468,19 @@ export default function SettingsScreen() {
                   // Haptics errors are non-critical
                 });
               }
+            }}
+          />
+
+          <SettingRow
+            testID="settings-sound"
+            icon={<Volume2 size={22} color="$text" />}
+            label={t("settings.sound", "Countdown beeps")}
+            value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            onPress={() => {
+              haptics.selection();
+              setSoundEnabled(!soundEnabled).catch((error) => {
+                reportError("settings.soundWrite", error);
+              });
             }}
           />
 

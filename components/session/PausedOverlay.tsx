@@ -7,12 +7,16 @@ import { Card } from "@/components/common/Card";
 import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructions";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
+import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 
 export function PausedOverlay() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { mediumImpact, warning } = useHaptics();
+  const { mediumImpact, selection, warning } = useHaptics();
+  const soundEnabled = useSettingsStore((s) => s.soundEnabled);
+  const setSoundEnabled = useSettingsStore((s) => s.setSoundEnabled);
   const status = useSessionStore((s) => s.status);
   const prePauseStatus = useSessionStore((s) => s.prePauseStatus);
   const resumeSession = useSessionStore((s) => s.resumeSession);
@@ -30,6 +34,17 @@ export function PausedOverlay() {
   const handleResume = () => {
     mediumImpact();
     resumeSession();
+  };
+
+  // The beeps are reachable from Settings, which is two screens and a lost session away. The
+  // moment a hero wants them off is the moment one just went off in a quiet gym, and pause is
+  // the only control surface every session state can reach — warm-up, countdown, set and rest
+  // all route here. Same setting, same store, same row as Settings writes: one writer.
+  const handleToggleSound = () => {
+    selection();
+    setSoundEnabled(!soundEnabled).catch((error) => {
+      reportError("session.soundWrite", error);
+    });
   };
 
   const handleRestartRound = () => {
@@ -116,6 +131,20 @@ export function PausedOverlay() {
               accessibilityRole="button"
             >
               {t("session.resume_button")}
+            </AppButton>
+
+            {/* Between resume and the two that erase things: benign, and not adjacent to quit. */}
+            <AppButton
+              testID="session-sound"
+              onPress={handleToggleSound}
+              variant="outline"
+              backgroundColor="$surface2"
+              pressStyle={{ opacity: 0.9 }}
+              accessibilityLabel={t("settings.sound")}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: soundEnabled }}
+            >
+              {`${t("settings.sound")} · ${soundEnabled ? t("common.on") : t("common.off")}`}
             </AppButton>
 
             {canRestartRound ? (

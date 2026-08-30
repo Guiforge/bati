@@ -216,7 +216,11 @@ outlived it.
   `expo-audio` held a microphone, a foreground media service and three permissions for a sound
   map whose every entry was `null`. `__tests__/android-permissions.test.ts` fails on any
   permission not justified, blocked, or stripped. It is a ratchet: write the justification, never
-  widen the list to make a build pass.
+  widen the list to make a build pass. It also has a blind spot worth knowing: it reads
+  *dependency* manifests, and a config plugin writes permissions no manifest declares. `expo-audio`
+  is back for the session countdown beeps, and none of what got it thrown out came with it —
+  because its `app.json` entry passes options instead of being a bare string, which the fourth
+  test in that file is the only thing holding in place.
 - **Never write game state before the thing that earned it exists.** Boss damage written during
   a session survived quitting and was double-counted when a round restarted. Bank it in memory,
   commit it in `saveSession`.

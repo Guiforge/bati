@@ -22,11 +22,13 @@ const prefs = {
   getCustomAvatarUri: jest.fn<Promise<string | null>, []>(),
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
   getVillagersEnabled: jest.fn<Promise<boolean>, []>(),
+  getSoundEnabled: jest.fn<Promise<boolean>, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
   setVillagersEnabled: jest.fn().mockResolvedValue(undefined),
+  setSoundEnabled: jest.fn().mockResolvedValue(undefined),
 };
 
 beforeAll(() => {
@@ -64,6 +66,7 @@ function storedSettings() {
   prefs.getCustomAvatarUri.mockResolvedValue("file:///stored-avatar.jpg");
   prefs.getHapticsEnabled.mockResolvedValue(false);
   prefs.getVillagersEnabled.mockResolvedValue(false);
+  prefs.getSoundEnabled.mockResolvedValue(false);
 }
 
 const DEFAULTS = {
@@ -72,6 +75,7 @@ const DEFAULTS = {
   hapticsEnabled: true,
   reducedMotion: false,
   villagersEnabled: true,
+  soundEnabled: true,
   isLoaded: false,
 };
 
@@ -93,6 +97,7 @@ describe("useSettingsStore", () => {
       avatarId: "archmage",
       hapticsEnabled: false,
       villagersEnabled: false,
+      soundEnabled: false,
       isLoaded: true,
     });
   });
@@ -172,6 +177,7 @@ describe("useSettingsStore", () => {
     await s().setHapticsEnabled(false);
     await s().setCustomAvatarUri("file:///picked.jpg");
     await s().setVillagersEnabled(false);
+    await s().setSoundEnabled(false);
 
     expect(s()).toMatchObject({
       language: "fr",
@@ -179,6 +185,7 @@ describe("useSettingsStore", () => {
       hapticsEnabled: false,
       customAvatarUri: "file:///picked.jpg",
       villagersEnabled: false,
+      soundEnabled: false,
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
@@ -186,6 +193,7 @@ describe("useSettingsStore", () => {
     expect(prefs.setHapticsEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setCustomAvatarUri).toHaveBeenCalledWith("file:///picked.jpg");
     expect(prefs.setVillagersEnabled).toHaveBeenCalledWith(false);
+    expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
   });
 
   /**

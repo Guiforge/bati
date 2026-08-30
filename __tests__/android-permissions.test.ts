@@ -152,6 +152,25 @@ describe("Android permissions", () => {
     });
   });
 
+  test("everything justified here is also on the list the release gate reads", () => {
+    // Two lists, and only one of them describes the built APK. This file explains *why* each
+    // permission is acceptable; fdroid/expected-permissions.txt is what the release workflow
+    // diffs against `aapt2 dump permissions`. A permission justified here but missing there
+    // would fail the release build; one listed there and not here has a gate but no reason.
+    const expected = fs
+      .readFileSync(path.join(ROOT, "fdroid", "expected-permissions.txt"), "utf8")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith("#"));
+
+    for (const name of Object.keys(ALLOWED)) {
+      expect(expected).toContain(name);
+    }
+    // Sorted, so a hand-edit lands where the gate's `sort -u` will put it and the diff a failing
+    // release prints reads as one added line rather than a reshuffle.
+    expect(expected).toEqual([...expected].sort());
+  });
+
   test("the app still ships no way to reach the network", () => {
     // The whole "nothing leaves your phone" claim in the store description rests on this one
     // line. expo-file-system and expo-image both declare INTERNET; blockedPermissions is what

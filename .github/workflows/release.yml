@@ -193,6 +193,32 @@ jobs:
             exit 1
           fi
 
+      # The permission list is the app's public record: the install screen, what Exodus Privacy
+      # publishes, what an F-Droid reviewer reads back to you. __tests__/android-permissions.test.ts
+      # guards it on every push, but it scans npm package manifests and a Gradle AAR is invisible
+      # to it — WAKE_LOCK and FOREGROUND_SERVICE shipped in every APK for months without appearing
+      # in any list. This step reads the built artefact instead, so nothing arrives unannounced.
+      # It runs on workflow_dispatch too, which is how a change gets weighed before it is tagged.
+      - name: Permission list
+        env:
+          APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
+        run: |
+          aapt2=$(find "$ANDROID_HOME/build-tools" -name aapt2 | sort | tail -1)
+          "$aapt2" dump permissions "$APK_PATH" \
+            | sed -n "s/^uses-permission: name='\([^']*\)'.*/\1/p" | sort -u > got.txt
+          # A parse that quietly returns nothing would match an empty list and pass forever, which
+          # is the failure this whole step exists to stop happening again.
+          grep -qx "android.permission.VIBRATE" got.txt || {
+            echo "::error::could not read any permission out of $APK_PATH — the aapt2 output format changed"
+            exit 1
+          }
+          grep -v -e '^#' -e '^$' fdroid/expected-permissions.txt | sort -u > want.txt
+          if ! diff -u want.txt got.txt; then
+            echo "::error::the APK's permissions differ from fdroid/expected-permissions.txt — justify each new one in __tests__/android-permissions.test.ts and add it there, or remove whatever pulled it in"
+            exit 1
+          fi
+          echo "Permissions: $(wc -l < got.txt), all declared" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:

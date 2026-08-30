@@ -30,6 +30,7 @@ import {
   type MuscleCode,
   movementPatterns,
   muscleCodes,
+  questTargetTypes,
 } from "@/db/schema";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -49,8 +50,8 @@ const EXERCISE_CHOICES = Object.keys(EXERCISE_THUMB_ASSETS);
  * `getMuscleBalance` reports the same fact from the other side, and a hero should hear it before
  * the journal tells them.
  *
- * Target type (reps vs time) is deliberately absent: it lives on `quest_exercises`, and the quest
- * editor already asks for it once per slot.
+ * `measure` (reps vs time) is asked here since `0039`: a slot's unit used to be the only one, and
+ * a hold swapped into a rep slot ran as reps.
  *
  * Seed content is never editable here. `updateUserExercise` refuses it at the writer, and this
  * screen refuses to even load it, so a content update can never be clobbered.
@@ -87,6 +88,7 @@ export default function ExerciseEditor() {
           difficulty: ex.difficulty,
           equipment: ex.equipment,
           pattern: ex.pattern,
+          measure: ex.measure,
           secondsPerRep: ex.secondsPerRep,
           imagePath: ex.imagePath,
         });
@@ -292,6 +294,23 @@ export default function ExerciseEditor() {
                       label={EQUIPMENT_LABELS[equipment][language]}
                       tone={details.equipment === equipment ? "primary" : "default"}
                       onPress={() => setDetails((d) => ({ ...d, equipment }))}
+                    />
+                  ))}
+                </XStack>
+              </YStack>
+
+              <YStack gap="$2">
+                <Text fontSize={12} color="$textSecondary">
+                  {t("exercise_editor.measure")}
+                </Text>
+                <XStack gap="$2">
+                  {questTargetTypes.map((measure) => (
+                    <Chip
+                      key={measure}
+                      testID={`exercise-measure-${measure}`}
+                      label={t(measure === "reps" ? "quests.config_reps" : "quests.config_seconds")}
+                      tone={details.measure === measure ? "primary" : "default"}
+                      onPress={() => setDetails((d) => ({ ...d, measure }))}
                     />
                   ))}
                 </XStack>

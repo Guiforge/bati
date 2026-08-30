@@ -30,6 +30,7 @@ import { REST_RANGE, TARGET_RANGE } from "@/db/questConfig";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
+import { retargetForMovement } from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import {
   diffVillageGrowth,
@@ -788,13 +789,16 @@ export const useSessionStore = create<SessionState>()(
       const slot = quest.exercises[currentExerciseIndex];
       if (!slot || slot.exercise.id === exercise.id) return;
 
-      // The target belongs to the slot, not to the movement — same call `applyQuestConfig` makes.
-      // Results already logged keep their own `exerciseId` and `pricing`: they are true.
+      // The slot's target, unless the movement is measured the other way — same call
+      // `applyQuestConfig` makes. Results already logged keep their own `exerciseId` and
+      // `pricing`: they are true.
+      const target = retargetForMovement(slot.target, exercise, get().userLevel);
       const exercises = quest.exercises.map((qex, i) =>
         i === currentExerciseIndex
           ? {
               ...qex,
               exercise,
+              target,
               // The quest's art is of the movement that used to be here, and the caption named a
               // rung the hero has just overruled.
               images: [],
@@ -807,14 +811,14 @@ export const useSessionStore = create<SessionState>()(
       // Every other entry into a movement sets this pair, and the two units are not
       // interchangeable: a hold timer left running on a rep movement counts nothing down, and reps
       // arrived at with no timer would show seconds that never started.
-      const isTimeBased = slot.target.type === "time";
+      const isTimeBased = target.type === "time";
 
       set({
         quest: { ...quest, exercises },
         ...(status === "running"
           ? {
               timerStartTimestamp: isTimeBased ? Date.now() : null,
-              timerDuration: isTimeBased ? slot.target.value : 0,
+              timerDuration: isTimeBased ? target.value : 0,
             }
           : {}),
       });
@@ -1128,6 +1132,9 @@ useSessionStore.subscribe(
     currentRoundIndex: state.currentRoundIndex,
     currentExerciseIndex: state.currentExerciseIndex,
     resultsCount: state.results.length,
+    // A mid-session swap moves none of the above, and a recovery that missed it hands the hero
+    // back the movement they just refused.
+    exerciseIds: state.quest?.exercises.map((qex) => qex.exercise.id),
   }),
   async (curr, prev) => {
     const state = useSessionStore.getState();
@@ -1159,6 +1166,8 @@ useSessionStore.subscribe(
       curr.currentRoundIndex !== prev.currentRoundIndex ||
       curr.currentExerciseIndex !== prev.currentExerciseIndex ||
       curr.resultsCount !== prev.resultsCount ||
+      // A movement swapped mid-session — a quest *arriving* is not progress, its start is.
+      (prev.exerciseIds !== undefined && String(curr.exerciseIds) !== String(prev.exerciseIds)) ||
       curr.status === "paused";
 
     if (hasProgressed) {

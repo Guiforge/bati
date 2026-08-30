@@ -1,9 +1,9 @@
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
+import { Button, H1, H2, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
@@ -21,6 +21,16 @@ import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
+
+// One campfire per avatar archetype (scripts/generate-rest.py); a rest draws one at random.
+const REST_ART = [
+  require("../../assets/images/rest/rest_campfire.webp"),
+  require("../../assets/images/rest/rest_campfire_archer.webp"),
+  require("../../assets/images/rest/rest_campfire_archmage.webp"),
+  require("../../assets/images/rest/rest_campfire_elder.webp"),
+  require("../../assets/images/rest/rest_campfire_scout.webp"),
+  require("../../assets/images/rest/rest_campfire_shadow.webp"),
+];
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one screen component, boss/rest branches read top-to-bottom
 export function RestView() {
@@ -50,6 +60,9 @@ export function RestView() {
   // before handing over — which is exactly the one the "up next" card names.
   const instruction = useSessionInstructions();
   const [showHowTo, setShowHowTo] = useState(false);
+  // Drawn once per rest: this view is mounted and unmounted by `displayStatus`, so the mount is
+  // the rest, and the pick must not re-roll on every timer tick's render.
+  const [restArt] = useState(() => REST_ART[Math.floor(Math.random() * REST_ART.length)]);
 
   // Once per rest, on mount — this view is mounted and unmounted by `displayStatus`, so the
   // component's own lifecycle is already "one rest". The chorus decides whether anyone actually
@@ -120,6 +133,14 @@ export function RestView() {
       transition={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
+      {/* Campfire scene behind everything, quiet enough for the timer to stay readable — same
+          low-opacity treatment AppBackground gives new_city. */}
+      <Image
+        source={restArt}
+        style={[StyleSheet.absoluteFill, { opacity: 0.3 }]}
+        contentFit="cover"
+        pointerEvents="none"
+      />
       {/* The one view of the flow that had no pause: on iOS there is no hardware back, so
           mid-rest the session could not be paused at all. Same floating control as the
           running screen. */}
@@ -163,9 +184,9 @@ export function RestView() {
           enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
         >
           <GameIcon name="flame" size={40} color="$warning" />
-          <H3 color="$text" fontWeight="700">
+          <H2 color="$text" fontWeight="700" fontSize={32} lineHeight={38}>
             {isRoundRest ? t("session.round_rest_title") : t("session.rest_title")}
-          </H3>
+          </H2>
         </YStack>
       )}
 

@@ -38,6 +38,7 @@ function makeQuest(): Quest {
     style: "strength" as const,
     secondsPerRep: 3,
     pattern: null,
+    measure: null,
     prerequisiteExerciseId: null,
     retiredAt: null,
     muscles: [],
@@ -83,6 +84,7 @@ const dip: Quest["exercises"][number]["exercise"] = {
   style: "calisthenics",
   secondsPerRep: 3,
   pattern: "push_vertical",
+  measure: null,
   prerequisiteExerciseId: null,
   retiredAt: null,
   muscles: ["arms"],
@@ -200,6 +202,25 @@ describe("db/questConfig", () => {
     // And the shared template is not mutated.
     expect(quest.exercises[0]?.exercise.enName).toBe("Squat");
     expect(quest.exercises[0]?.images).toEqual(["assets/squat_a.webp"]);
+  });
+
+  /**
+   * The report: Squat (22 reps) swapped for Superman, a hold in every seed, said "22 reps of
+   * Superman". The unit was never in the config — only the value — so nothing on the swap path
+   * could drop it. It comes from the movement now.
+   */
+  test("a swap onto a movement measured the other way runs in that movement's unit", () => {
+    const superman = { ...dip, id: 3, enName: "Superman", measure: "time" as const };
+    const out = applyQuestConfig(
+      makeQuest(),
+      { level: Difficulty.Medium, targets: { 11: 22 }, swaps: { 11: 3 } },
+      indexExercises([superman]),
+    );
+
+    expect(out.exercises[0]?.exercise.enName).toBe("Superman");
+    expect(out.exercises[0]?.target).toEqual({ type: "time", value: 30 });
+    // The slot next to it, untouched, keeps its own unit.
+    expect(out.exercises[1]?.target).toEqual({ type: "time", value: 30 });
   });
 
   test("a swap naming an exercise the catalogue does not have is ignored", () => {

@@ -876,6 +876,41 @@ describe("useSessionStore", () => {
       expect(store.getState().results[0]?.pricing).toEqual(pricedAtCompletion);
     });
 
+    /**
+     * The mid-session copy of the bug: the first slot is 10 reps, Superman is a hold. The set
+     * the hero logs next is what records, volume, XP and the ladder will trust, so it is the
+     * written row that has to carry the right unit — not just the screen.
+     */
+    test("a hold swapped into a rep slot arms a timer and logs seconds", () => {
+      const superman = { ...easier, id: 98, enName: "Superman", measure: "time" } as Exercise;
+
+      store.getState().swapCurrentExercise(superman);
+
+      const slot = store.getState().quest?.exercises[0];
+      expect(slot?.target).toEqual({ type: "time", value: 30 });
+      expect(store.getState().timerDuration).toBe(30);
+      expect(store.getState().timerStartTimestamp).not.toBeNull();
+
+      store.getState().completeExercise(30);
+      expect(store.getState().results[0]?.result).toEqual({ type: "time", value: 30 });
+    });
+
+    /**
+     * A swap moves neither the indexes nor the result count the snapshot subscriber watched, so
+     * a crash right after one recovered the movement the hero had just refused.
+     */
+    test("is written to the recovery snapshot before the next set lands", async () => {
+      (preferences.setSavedSession as jest.Mock).mockClear();
+
+      store.getState().swapCurrentExercise(easier);
+
+      await waitFor(() => expect(preferences.setSavedSession).toHaveBeenCalled());
+      const saved = JSON.parse(
+        (preferences.setSavedSession as jest.Mock).mock.calls.at(-1)?.[0] ?? "{}",
+      );
+      expect(saved.quest.exercises[0].exercise.id).toBe(easier.id);
+    });
+
     test("resets the timer to the unit the new movement is measured in", () => {
       store.setState({ timerStartTimestamp: 123, timerDuration: 45 });
 

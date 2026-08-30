@@ -8,10 +8,12 @@ type ExerciseHeroProps = {
   source: ImageSourcePropType;
   /** The movement's name, painted on the artwork rather than under it. */
   name: string;
-  height: number;
+  /** Floor for the picture band, below the HUD. The hero grows past it to fill the column. */
+  minHeight: number;
   /** The screen colour the artwork fades into — a raw string, because gradients cannot take a token. */
   fadeTo: string;
-  /** Safe-area top, so the scrim covers the status bar the art now runs behind. */
+  /** Safe-area top: the picture starts below it and the HUD row, so the figure's head is no
+   *  longer painted under the status bar (see the top-scrim note below). */
   topInset: number;
   /** Opens the movement's instructions. The art is the biggest, most obvious thing to tap. */
   onPress?: () => void;
@@ -29,10 +31,13 @@ type ExerciseHeroProps = {
  * already proved that a painting carries a session screen better than a card does. The
  * difference is that this one has no card around it at all.
  */
+/** The floating HUD row in ActiveExerciseView: 8 top + ~36 row + 8 gap + 3 hairline. */
+const HUD_HEIGHT = 56;
+
 export function ExerciseHero({
   source,
   name,
-  height,
+  minHeight,
   fadeTo,
   topInset,
   onPress,
@@ -40,10 +45,14 @@ export function ExerciseHero({
 }: ExerciseHeroProps) {
   return (
     <YStack
-      height={height}
+      // Plain RN flex, not Tamagui's `flex={1}`: without a `styleCompat`, Tamagui expands that to
+      // `flexBasis: auto`, and the hero then sizes to its content instead of to the column.
+      style={{ flex: 1 }}
+      minH={topInset + HUD_HEIGHT + minHeight}
       width="100%"
       position="relative"
-      bg="$surface"
+      bg="$bgDark"
+      pt={topInset + HUD_HEIGHT}
       onPress={onPress}
       pressStyle={onPress ? { opacity: 0.92 } : undefined}
       accessibilityRole={onPress ? "button" : undefined}
@@ -100,7 +109,7 @@ export function ExerciseHero({
           left: 0,
           right: 0,
           bottom: 0,
-          height: Math.round(height * 0.38),
+          height: 120,
         }}
         pointerEvents="none"
       />
@@ -112,15 +121,15 @@ export function ExerciseHero({
         r="$4"
         fontFamily="$heading"
         fontWeight="700"
-        fontSize={32}
-        lineHeight={36}
+        fontSize={20}
+        lineHeight={24}
         color="$text"
         // Its own contrast, so the scrim above does not have to supply it by covering the
         // painting. Same trick the onboarding titles use over their full-bleed art.
         textShadowColor="rgba(6, 8, 18, 0.85)"
         textShadowOffset={{ width: 0, height: 2 }}
-        textShadowRadius={10}
-        numberOfLines={2}
+        textShadowRadius={6}
+        numberOfLines={1}
       >
         {name}
       </H1>

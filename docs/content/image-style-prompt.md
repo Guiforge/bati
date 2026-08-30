@@ -1,7 +1,7 @@
 ---
 title: Image style
 status: active
-updated: 2026-08-02
+updated: 2026-08-30
 ---
 
 # Image style
@@ -11,7 +11,7 @@ The art direction, and the rules that were learned by getting it wrong.
 **The prompts themselves are not here.** Each family owns its own `STYLE` block inside its
 generator, appended verbatim to every prompt in that family — `scripts/generate-exercises.py`,
 `generate-covers.py`, `generate-village.py`, `generate-bosses.py`, `generate-avatars.py`,
-`generate-backgrounds.py`. That is deliberate: a style guide in prose and a style block in code
+`generate-backgrounds.py`, `generate-rest.py`. That is deliberate: a style guide in prose and a style block in code
 drift apart, and only one of them is what actually gets sent. This page explains *why* those
 blocks say what they say.
 

@@ -116,6 +116,11 @@ export const exercises = sqliteTable(
     // Movement family. Null only for user-authored content.
     pattern: text().$type<MovementPattern>(),
 
+    // How this movement is measured — counted or held (0039). Null means the movement never said
+    // (a hero's own, from before the column) and the quest slot's unit is trusted, as it always
+    // was. Set, it outranks the slot: a substitution onto this movement runs in *its* unit.
+    measure: text().$type<QuestTargetType>(),
+
     // The movement to own before this one — the variation ladder (0022). A hint on the exercise
     // screen, never a gate: nothing in the app is locked behind it.
     prerequisiteExerciseId: int(),

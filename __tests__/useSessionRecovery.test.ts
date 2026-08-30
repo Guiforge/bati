@@ -39,7 +39,7 @@ const quest = {
   enTitle: "Ash Ridge",
   frTitle: "Crête de Cendre",
   rounds: 3,
-  exercises: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }],
+  exercises: [1, 2, 3, 4, 5].map((id) => ({ id, exercise: { id } })),
 } as unknown as Quest;
 
 const NOW = 1_800_000_000_000;

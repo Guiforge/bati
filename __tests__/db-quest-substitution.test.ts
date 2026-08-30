@@ -85,6 +85,42 @@ describe("db/quests — a slot serves the rung the hero stands on", () => {
     expect(slot?.exercise.enName).toBe("Wall Push-Up");
   });
 
+  /**
+   * The rung below Squat is Wall Sit, a hold — and `buildSlot` kept the slot's unit, so every
+   * fresh install was handed "12 reps of Wall Sit" on nine seeded slots, with a caption calling
+   * it deliberate. The same seam as a hero swap, without the hero.
+   */
+  test("a served rung measured the other way runs in its own unit", async () => {
+    const quest = await questsApi().getQuestById(questIdOf("Knight Push"), "medium");
+    const slot = quest?.exercises.find((qex) => qex.substitutedFor?.enName === "Squat");
+
+    expect(slot?.exercise.enName).toBe("Wall Sit");
+    expect(slot?.target.type).toBe("time");
+  });
+
+  /**
+   * Eight ladder edges cross the unit boundary (Squat's easier rung is Wall Sit, a hold).
+   * `retargetForMovement` makes each of them run in the served movement's unit; this walks the
+   * whole seeded graph, as a hero with no history, so a new edge cannot skip the seam.
+   */
+  test("a served rung always runs in its own unit, on every seeded ladder edge", async () => {
+    const quests = questsApi();
+    const templates = await quests.listQuestTemplates();
+    const loaded = await Promise.all(
+      templates.map((tpl) => quests.getQuestById(tpl.id, quests.Difficulty.Medium)),
+    );
+
+    const substituted = loaded
+      .flatMap((q) => q?.exercises ?? [])
+      .filter((qex) => qex.substitutedFor !== undefined);
+    expect(substituted.length).toBeGreaterThan(0);
+
+    const wrongUnit = substituted
+      .filter((qex) => qex.target.type !== qex.exercise.measure)
+      .map((qex) => `${qex.substitutedFor?.enName} -> ${qex.exercise.enName}`);
+    expect(wrongUnit).toEqual([]);
+  });
+
   /** Earn every rung below, and the quest reads as written — no caption, no substitution. */
   test("once the rungs below are owned, the written movement is served", async () => {
     for (const day of [1, 2, 3]) logOnTarget(idOf("Wall Push-Up"), day);

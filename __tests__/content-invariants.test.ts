@@ -271,6 +271,30 @@ describe("content invariants", () => {
     expect(offenders).toEqual([]);
   });
 
+  /**
+   * `0039` gave every seed movement a unit of its own, backfilled from the quests. This is the
+   * ratchet behind it: a future seed that prescribes a hold in reps — or a movement in both units
+   * — would silently reopen "22 reps of Superman", so it fails here instead.
+   */
+  test("every seed movement declares how it is measured, and no quest disagrees", async () => {
+    const exerciseApi = require("../db/exercises") as typeof import("../db/exercises");
+    const seeds = (await exerciseApi.listExercises()).filter((e) => e.creator === "Admin");
+
+    expect(seeds.filter((e) => e.measure === null).map((e) => e.enName)).toEqual([]);
+
+    const slots = t.sqlite
+      .prepare(
+        `SELECT e.enName AS name, e.measure AS measure, qe.targetType AS slot
+           FROM quest_exercises qe
+           JOIN exercises e ON e.id = qe.exerciseId
+           JOIN quests q ON q.id = qe.questId
+          WHERE q.author = 'Admin' AND e.measure <> qe.targetType`,
+      )
+      .all() as { name: string; measure: string; slot: string }[];
+
+    expect(slots).toEqual([]);
+  });
+
   test("every exercise in the catalogue is used by at least one quest", async () => {
     const exerciseApi = require("../db/exercises") as typeof import("../db/exercises");
     const all = await loadQuests();

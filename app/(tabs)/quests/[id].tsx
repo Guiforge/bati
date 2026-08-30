@@ -313,7 +313,11 @@ export default function QuestDetails() {
 
   const selectLevel = useCallback(
     (nextLevel: Difficulty) => {
-      updateConfig({ ...config, level: nextLevel });
+      // A value tuned at one level is not a value for another — 22 stepped at Hard is not what
+      // Easy should serve, and a hold pinned by hand stops following the hero's record. Swaps
+      // are about the movement, not the level, and stay.
+      const { targets: _tuned, ...rest } = config;
+      updateConfig({ ...rest, level: nextLevel });
     },
     [config, updateConfig],
   );

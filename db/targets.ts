@@ -18,6 +18,32 @@ export type Target = {
   value: number;
 };
 
+/** What a slot starts at when nothing better is known — the quest editor's defaults too. */
+export const DEFAULT_TARGET_VALUE: Record<QuestTargetType, number> = { reps: 10, time: 30 };
+
+/**
+ * The target a movement actually runs in when it lands in a slot written for another one.
+ *
+ * Every substitution — a hero swap, or the easier rung `getQuestById` serves — keeps the slot's
+ * target and replaces the movement. Fine within a unit; across one it produced "22 reps of
+ * Superman", and every consumer of the row written from that slot (records, volume, XP, ladder
+ * progression) trusted it. So the movement's own `measure` outranks the slot: a unit flip lands
+ * on that unit's default at the hero's level. `null` — a hero movement that never said — trusts
+ * the slot, as before.
+ *
+ * ponytail: a flipped unit gets the level-scaled default, not the movement's seeded band — add
+ * baseMin/baseMax on `exercises` if 30 s of Wall Sit for a Squat slot turns out to be wrong.
+ */
+export function retargetForMovement(
+  target: Target,
+  movement: { measure: QuestTargetType | null },
+  userLevel: UserLevel,
+): Target {
+  if (movement.measure === null || movement.measure === target.type) return target;
+  const value = DEFAULT_TARGET_VALUE[movement.measure];
+  return generateTarget({ type: movement.measure, min: value, max: value }, userLevel);
+}
+
 /**
  * A target as the hero reads it. Lives here rather than on the quest screen because the session
  * shows the same numbers — a ghost line saying "18" has to use the same words as the target above

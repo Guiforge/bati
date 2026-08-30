@@ -11,6 +11,8 @@ import {
   exerciseStyles,
   type MovementPattern,
   type MuscleCode,
+  type QuestTargetType,
+  questTargetTypes,
   USER_EXERCISE_CREATOR,
 } from "./schema";
 
@@ -20,6 +22,10 @@ const EXERCISE_STYLE_SET = new Set<ExerciseStyle>(exerciseStyles);
 
 function isExerciseStyle(value: unknown): value is ExerciseStyle {
   return typeof value === "string" && EXERCISE_STYLE_SET.has(value as ExerciseStyle);
+}
+
+function isQuestTargetType(value: unknown): value is QuestTargetType {
+  return typeof value === "string" && (questTargetTypes as readonly string[]).includes(value);
 }
 
 export type Exercise = {
@@ -37,6 +43,11 @@ export type Exercise = {
   muscles: MuscleCode[];
   /** Movement family — what the exercise *is*, as opposed to what it works. */
   pattern: MovementPattern | null;
+  /**
+   * Counted or held. Null when the movement never said (hero rows from before `0039`), in which
+   * case the quest slot's unit stands. Seed rows always have one.
+   */
+  measure: QuestTargetType | null;
   /**
    * The easier variation this one is built on (`0022`). Carried on the list row so the
    * catalogue can derive the whole ladder from the cached list instead of one query per row —
@@ -104,6 +115,7 @@ async function fetchExercises(): Promise<Exercise[]> {
       style: exercises.style,
       secondsPerRep: exercises.secondsPerRep,
       pattern: exercises.pattern,
+      measure: exercises.measure,
       prerequisiteExerciseId: exercises.prerequisiteExerciseId,
       retiredAt: exercises.retiredAt,
       muscle: exerciseMuscles.muscle,
@@ -129,6 +141,7 @@ async function fetchExercises(): Promise<Exercise[]> {
         style: isExerciseStyle(r.style) ? r.style : "strength",
         secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
         pattern: r.pattern ?? null,
+        measure: isQuestTargetType(r.measure) ? r.measure : null,
         prerequisiteExerciseId: r.prerequisiteExerciseId,
         retiredAt: r.retiredAt,
         muscles: [],
@@ -169,6 +182,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
       style: exercises.style,
       secondsPerRep: exercises.secondsPerRep,
       pattern: exercises.pattern,
+      measure: exercises.measure,
       prerequisiteExerciseId: exercises.prerequisiteExerciseId,
       retiredAt: exercises.retiredAt,
       muscle: exerciseMuscles.muscle,
@@ -192,6 +206,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
     style: isExerciseStyle(first.style) ? first.style : "strength",
     secondsPerRep: typeof first.secondsPerRep === "number" ? first.secondsPerRep : 3,
     pattern: first.pattern ?? null,
+    measure: isQuestTargetType(first.measure) ? first.measure : null,
     prerequisiteExerciseId: first.prerequisiteExerciseId,
     retiredAt: first.retiredAt,
     muscles: [],
@@ -687,7 +702,14 @@ export type UserExerciseDraft = {
   description: string;
 } & Pick<
   Exercise,
-  "muscles" | "style" | "difficulty" | "equipment" | "pattern" | "secondsPerRep" | "imagePath"
+  | "muscles"
+  | "style"
+  | "difficulty"
+  | "equipment"
+  | "pattern"
+  | "measure"
+  | "secondsPerRep"
+  | "imagePath"
 >;
 
 /**
@@ -727,6 +749,7 @@ export const DEFAULT_USER_EXERCISE_DRAFT: Omit<UserExerciseDraft, "name" | "desc
   difficulty: "medium",
   equipment: "none",
   pattern: null,
+  measure: "reps",
   secondsPerRep: DEFAULT_SECONDS_PER_REP,
   imagePath: "assets/placeholder.webp",
 };
@@ -797,6 +820,7 @@ export async function createUserExercise(draft: UserExerciseDraft): Promise<numb
       equipment: draft.equipment,
       style: draft.style,
       pattern: draft.pattern,
+      measure: draft.measure,
       secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -826,6 +850,7 @@ export async function updateUserExercise(id: number, draft: UserExerciseDraft): 
       equipment: draft.equipment,
       style: draft.style,
       pattern: draft.pattern,
+      measure: draft.measure,
       secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       updatedAt: new Date(),
     })

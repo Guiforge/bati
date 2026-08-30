@@ -1,7 +1,7 @@
 import { type Exercise, listExercises } from "./exercises";
 import { deletePreference, getAllPreferences, getPreference, setPreference } from "./preferences";
 import { getQuestById, type Quest } from "./quests";
-import { Difficulty, type UserLevel } from "./targets";
+import { Difficulty, retargetForMovement, type UserLevel } from "./targets";
 
 /**
  * What the hero changed on a quest and wants back next time: the level they train it at, plus
@@ -228,6 +228,13 @@ export function applyQuestConfig(
           ? {}
           : {
               exercise: substitute,
+              // The value override above is dropped by `applySwap` when the movement changes; the
+              // *unit* was never in the config at all, so it is resolved here, from the movement.
+              target: retargetForMovement(
+                value === undefined ? qex.target : { ...qex.target, value },
+                substitute,
+                config.level,
+              ),
               // `images` is the quest's own art *of the movement that used to be here*, off
               // `quest_exercises.imagesJson`. Kept, the card illustrates the wrong exercise.
               images: [],

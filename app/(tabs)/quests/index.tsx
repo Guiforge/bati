@@ -73,7 +73,7 @@ function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
 
 type QuestMeta = {
   quest: QuestTemplate;
-  /** Every muscle the quest touches — what the filter rail offers and `matchesFilters` reads. */
+  /** The quest's ranked focus muscles — what the card shows, the rail offers, `matchesFilters` reads. */
   muscles: MuscleCode[];
   equipment: EquipmentCode[];
   archetype: QuestArchetype | null;
@@ -106,14 +106,11 @@ function buildQuestMeta(
   t: TFunction,
   config: QuestConfig | null,
 ): QuestMeta {
-  const muscles = new Set<MuscleCode>();
   const equipment = new Set<EquipmentCode>();
 
   for (const qex of q.exercises) {
     const ex = exercisesById[qex.exerciseId];
-    if (!ex) continue;
-    equipment.add(ex.equipment);
-    for (const m of ex.muscles) muscles.add(m);
+    if (ex) equipment.add(ex.equipment);
   }
 
   // Same numbers as the detail screen: the saved level and structure overrides feed the
@@ -129,14 +126,14 @@ function buildQuestMeta(
   const durationSeconds = estimateQuestTemplateSeconds(previewInput);
   const xp = estimateQuestTemplateXp(previewInput);
   const estimate = formatDurationEstimate(durationSeconds);
-  const muscleList = [...muscles];
-  // Ranked, not the full set above: a five-exercise quest brushes five muscle groups, and the
-  // two it brushes once say nothing. Same rule as the adventure posters.
+  // Ranked, not every muscle any exercise brushes: a five-exercise quest touches five groups,
+  // and the two it touches once say nothing — "back" matched 28 of 34 seed quests that way,
+  // and the filter looked broken. The card's focus line and the filter read the same list.
   const focus = trainingFocus([q], exercisesById);
 
   return {
     quest: q,
-    muscles: muscleList,
+    muscles: focus.muscles,
     equipment: [...equipment],
     archetype: q.archetype,
     tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),

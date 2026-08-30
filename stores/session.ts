@@ -1035,7 +1035,6 @@ export const useSessionStore = create<SessionState>()(
       // a finished session is one of the moments their numbers can move.
       // Non-blocking: never fail a logged session over a widget redraw.
       requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
-
       // Check for new achievements (on the base session XP, before the oath bonus).
       // `startTime`, not `new Date()`: the session row is written with the start too, and the
       // time-of-day achievements read the hour off this. A workout begun at 06:40 and finished

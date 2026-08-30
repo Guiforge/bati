@@ -23,13 +23,18 @@ import { cameoBottomOffset, cameoMaxHeight } from "./cameoAnchor";
  * whatever is behind it with no seam. Height comes from `cameoMaxHeight`; width follows the aspect
  * ratio rather than being given, because a cameo that is the wrong shape crops the face off.
  *
- * ## What is tappable, and what is never
+ * ## What is tappable
  *
- * The figure is inert, always. The *bubble* accepts a tap only for guides and events — never for
- * ambient. That line is the safe-zone promise: during a session, at rest, between two sets,
- * nothing this layer draws can intercept a tap meant for the screen underneath. A guide or an
- * event lands on a screen the hero is reading rather than working through, so there the bubble
- * behaves like a text box should: the first tap finishes the line, the second sends it away.
+ * The figure and the bubble, always: a villager you can see talking is a villager you can send
+ * away, whatever brought them. A guide or an event types itself out, so there the first tap
+ * finishes the line and the second sends it away; an ambient line is whole from the first frame,
+ * so its first tap already sends it away.
+ *
+ * Nothing *else* on this layer takes a touch — the container stays `box-none` — and the safe zone
+ * is still `cameoAnchor.ts`'s job: the figure sits above the band every screen puts its primary
+ * button in, so what it does intercept is empty ground. That band is the whole promise now;
+ * before, "the ambient bubble is inert" was carrying half of it, and it left the hero tapping a
+ * villager who would not leave.
  */
 export function VillagerCameo() {
   const current = useChorusStore((s) => s.current);
@@ -40,8 +45,9 @@ export function VillagerCameo() {
 
   const line = current?.line ?? "";
   const priority = current ? MOMENT_CAST[current.moment].priority : "ambient";
-  const interactive = priority !== "ambient";
-  const types = interactive && !reducedMotion;
+  // Ambient lines never type: a villager glanced at between two sets must not be something the
+  // hero has to finish reading. Tapping sends any of them away all the same.
+  const types = priority !== "ambient" && !reducedMotion;
 
   const [revealed, setRevealed] = useState(0);
 
@@ -77,6 +83,8 @@ export function VillagerCameo() {
   const figureHeight = cameoMaxHeight(width, height);
   const figureWidth = Math.round(figureHeight * 0.75);
   const bottom = cameoBottomOffset(insets.bottom);
+  // One tap on a line still typing finishes it; one on a finished line ends the cameo.
+  const onTap = () => (finished ? dismiss(current.id) : setRevealed(line.length));
 
   const bubble = (
     <Card
@@ -118,30 +126,32 @@ export function VillagerCameo() {
       enterStyle={reducedMotion ? undefined : { opacity: 0, y: 48 }}
     >
       <XStack px="$3" gap="$2" items="flex-start" pointerEvents="box-none">
-        <Image
-          source={getVillagerAsset(current.villager, current.pose)}
-          style={{ width: figureWidth, height: figureHeight }}
-          contentFit="contain"
-          pointerEvents="none"
-          // The figure is decoration; the line beside it is the content, and a screen reader
-          // reading "image" before it adds nothing.
+        {/* Tappable, but never in the accessibility tree: the bubble beside it already carries
+            the sentence and the same dismiss action, and a screen reader announcing the drawing
+            as a second button would only offer the same thing twice. */}
+        <Pressable
+          testID="villager-figure"
+          onPress={onTap}
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
-        />
-        {interactive ? (
-          <Pressable
-            testID="villager-bubble"
-            onPress={() => (finished ? dismiss(current.id) : setRevealed(line.length))}
-            accessibilityRole="button"
-            // The whole line, not the part typed so far: a label that changes every 24ms is
-            // unusable, and a screen reader should get the sentence at once.
-            accessibilityLabel={line}
-          >
-            {bubble}
-          </Pressable>
-        ) : (
-          <YStack pointerEvents="none">{bubble}</YStack>
-        )}
+        >
+          <Image
+            source={getVillagerAsset(current.villager, current.pose)}
+            style={{ width: figureWidth, height: figureHeight }}
+            contentFit="contain"
+            pointerEvents="none"
+          />
+        </Pressable>
+        <Pressable
+          testID="villager-bubble"
+          onPress={onTap}
+          accessibilityRole="button"
+          // The whole line, not the part typed so far: a label that changes every 24ms is
+          // unusable, and a screen reader should get the sentence at once.
+          accessibilityLabel={line}
+        >
+          {bubble}
+        </Pressable>
       </XStack>
     </YStack>
   );

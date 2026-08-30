@@ -5,6 +5,7 @@ import { Text, View } from "react-native";
 import { rawColors } from "@/constants/rawColors";
 import { stampDatabaseIdentity } from "@/db/backup";
 import { ensureMigrations } from "@/db/migrate";
+import { backupIfStaleToday } from "@/src/autoBackup";
 import { commitRestore } from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
@@ -76,6 +77,12 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         // on the way back in. Kept out of the migration chain so SCHEMA_VERSION stays declared
         // once, in TypeScript.
         await stampDatabaseIdentity();
+        // The quietest instant this database ever has: migrations are done, identity is stamped,
+        // and nothing in the React tree has queried yet — `onReady` fires on the state below.
+        // `VACUUM INTO` needs exactly that, which is why it cannot live at the end of a session;
+        // see src/autoBackup.ts. It never throws, so it cannot turn a backup into the
+        // database-error screen, and it returns immediately on every launch but the day's first.
+        await backupIfStaleToday();
         if (!cancelled) setMigrationState({ success: true });
       } catch (e) {
         if (cancelled) return;

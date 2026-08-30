@@ -97,11 +97,22 @@ export function SessionRewards({
           building leveling up, so it gets the real tier art instead of an icon. */}
       {!!result.tierUp && (
         <Card {...revealProps} width="100%" maxW={520} bg="$pastelPurple" p="$0" overflow="hidden">
-          <Image
-            source={getVillageTierAsset(result.tierUp.newTier)}
-            style={{ width: "100%", height: 140 }}
-            contentFit="cover"
-          />
+          {/* Square, not `height: 140`. Ten of the twelve tier paintings are 1024x1024 and the
+              composition is vertical — tier 10 is a spire that touches the top edge and a base
+              that touches the bottom. 140dp at ~340dp wide is a 2.34:1 slot, so `cover` took a
+              strip out of the middle and threw away ~29% off each end: the spire and the ground
+              it stands on. 16:9 would still lose 22%. There is no letterbox that survives this
+              art, which is the whole answer — a square source gets a square slot.
+
+              This is the payoff screen. The one moment the app says the training built something,
+              and it was showing the thing it built with the roof cut off. */}
+          <YStack width="100%" aspectRatio={1}>
+            <Image
+              source={getVillageTierAsset(result.tierUp.newTier)}
+              style={{ width: "100%", height: "100%" }}
+              contentFit="cover"
+            />
+          </YStack>
           <YStack p="$4" gap="$1" items="center">
             <Text fontWeight="700" fontSize={13} color="$primaryText" textTransform="uppercase">
               {t("session.village_tier_up_title", "Your village grew!")}

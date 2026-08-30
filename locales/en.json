@@ -458,6 +458,8 @@
     "pr_most_xp": "Most XP Earned",
     "pr_new_record": "New Record",
     "quit_button": "Quit Quest",
+    "restart_confirm_title": "Restart this round?",
+    "restart_confirm_body": "Every set you logged in this round is erased.",
     "quit_confirm_title": "Abandon this session?",
     "quit_confirm_body": "This session's progress will be lost.",
     "reps": "Reps",
@@ -480,6 +482,7 @@
     "village_growth_title": "Your village grows",
     "village_tier_up_title": "Your village grew!",
     "xp_overshoot": "incl. +{{count}} for beating your targets",
+    "swap_short": "Replace",
     "skip_exercise": "I couldn't do this one",
     "xp_earned": "XP Earned",
     "warmup_title": "WARM-UP",
@@ -490,8 +493,8 @@
     "countdown_subtitle": "Time to move.",
     "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure.",
     "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now.",
-    "ghost_last": "Last time: {{value}}",
-    "ghost_last_best": "Last time {{last}} · best {{best}}"
+    "ghost_last_label": "Last time",
+    "ghost_best_label": "best"
   },
   "muscles": {
     "arms": "Arms",
@@ -835,7 +838,7 @@
     "saveHint": "You pick the folder",
     "auto": "Automatic backup",
     "autoOff": "Off",
-    "autoMessage": "Bati saves a copy into {{folder}} before every update. You can point it somewhere else, or stop.",
+    "autoMessage": "Bati saves a copy into {{folder}} once a day and before every update. You can point it somewhere else, or stop.",
     "autoChangeCta": "Change folder",
     "autoOffCta": "Turn off",
     "autoOnDone": "Automatic backup on — a first copy is already in {{folder}}",

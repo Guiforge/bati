@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 
 import migrations from "../drizzle/migrations";
-import { db, serializeOnDatabase } from "./client";
+import { db, serializeOnDatabase, vacuumIntoFile } from "./client";
 import { SCHEMA_VERSION } from "./schemaVersion";
 import { errorTrail, sqlString } from "./sql";
 
@@ -85,9 +85,10 @@ export async function stampDatabaseIdentity(): Promise<void> {
  * `VACUUM INTO` refuses a destination that already exists, so the caller deletes it first.
  */
 export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
-  return serializeOnDatabase(async () => {
-    await db.run(sql.raw(`VACUUM INTO ${sqlString(destinationPath)}`));
-  });
+  // Still queued, because `VACUUM INTO` is also illegal inside a transaction and the shared
+  // connection is where those live. The isolated handle is about *statements*, this queue is
+  // about transactions; both are needed. See `vacuumIntoFile`.
+  return serializeOnDatabase(() => vacuumIntoFile(destinationPath));
 }
 
 /** Timestamps of every migration this build ships, for the compatibility check below. */

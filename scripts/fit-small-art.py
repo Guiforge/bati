@@ -16,11 +16,13 @@ Deliberately *not* applied to the tier scenes, the quest and adventure covers, t
 or the onboarding backgrounds: those render full-bleed at the width of the display, where 1024 is
 already slightly under a modern phone's pixel width. Shrinking them would be visible.
 
-Nor to the villager cameos, for the second half of the same reason. A cameo is capped at 38% of
-the window height — ~730px on a 3x screen, against a 1024px source — so there is barely anything
-to give back, and the memory argument does not apply either: the emblems earn their downscale by
-appearing twenty at a time, while the cameo layer mounts exactly one image and unmounts it when
-nobody is speaking.
+The villager cameos used to be excluded here too, on the grounds that a cameo is capped at 38% of
+the window height (~730px on a 3x screen) and so had almost nothing to give back. That ceiling is
+not the one that shipped: `components/chorus/cameoAnchor.ts` draws the figure at
+`min(22% of height, 45% of width, 200dp)`, which is 600px at 3x and usually nearer 530. The
+exclusion outlived the number it was reasoning about, which is exactly how a 3.1 MB bitmap ends
+up decoded over the running session screen — the one place in this app where a dropped frame is
+a tap the hero has to make twice.
 
 Run after cutout.py, never before: the flood fill wants full resolution to work with,
 and a resized emblem has soft edges the fill would stop at.
@@ -45,6 +47,9 @@ SETS = [
     ("assets/images/village/buildings/*.webp", 512),
     ("assets/images/village/sport_*.webp", 512),
     ("assets/avatar/*.webp", 256),
+    # Cameos: 640 clears cameoMaxHeight's 200dp ceiling on a 3x screen with a little to spare.
+    # Keep this in step with HEIGHT_CAP in components/chorus/cameoAnchor.ts.
+    ("assets/images/villagers/*.webp", 640),
 ]
 
 

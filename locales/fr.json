@@ -657,6 +657,8 @@
     "pr_new_record": "Nouveau Record",
     "quit_button": "Quitter la quête",
     "quit_confirm_body": "La progression de cette séance sera perdue.",
+    "restart_confirm_title": "Recommencer cette manche ?",
+    "restart_confirm_body": "Toutes les séries enregistrées dans cette manche sont effacées.",
     "quit_confirm_title": "Abandonner cette séance ?",
     "reps": "Reps",
     "rest_title": "Repos & Récup",
@@ -678,6 +680,7 @@
     "village_growth_title": "Ton village grandit",
     "village_tier_up_title": "Ton village a grandi !",
     "xp_overshoot": "dont +{{count}} pour avoir dépassé vos cibles",
+    "swap_short": "Remplacer",
     "skip_exercise": "Je n'ai pas pu",
     "xp_earned": "XP gagnés",
     "warmup_title": "ÉCHAUFFEMENT",
@@ -688,8 +691,8 @@
     "countdown_subtitle": "C'est l'heure de bouger.",
     "reserve_hint": "Garde 1 à 2 répétitions en réserve — ne va pas à l'échec.",
     "crit_hint": "Chaque répétition au-delà de l'objectif est une chance de coup critique — {{percent}} % pour l'instant.",
-    "ghost_last": "La dernière fois : {{value}}",
-    "ghost_last_best": "La dernière fois {{last}} · record {{best}}"
+    "ghost_last_label": "La dernière fois",
+    "ghost_best_label": "record"
   },
   "settings": {
     "avatar": "AVATAR",
@@ -835,7 +838,7 @@
     "saveHint": "Tu choisis le dossier",
     "auto": "Sauvegarde automatique",
     "autoOff": "Désactivée",
-    "autoMessage": "Bati enregistre une copie dans {{folder}} avant chaque mise à jour. Tu peux choisir un autre dossier, ou arrêter.",
+    "autoMessage": "Bati enregistre une copie dans {{folder}} une fois par jour et avant chaque mise à jour. Tu peux choisir un autre dossier, ou arrêter.",
     "autoChangeCta": "Changer de dossier",
     "autoOffCta": "Arrêter",
     "autoOnDone": "Sauvegarde automatique activée — une première copie est déjà dans {{folder}}",

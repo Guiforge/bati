@@ -1,7 +1,8 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { deleteDatabaseSync, openDatabaseSync } from "expo-sqlite";
+import { deleteDatabaseSync, openDatabaseAsync, openDatabaseSync } from "expo-sqlite";
 import * as schema from "./schema";
 import { SCHEMA_VERSION } from "./schemaVersion";
+import { sqlString } from "./sql";
 
 export { SCHEMA_VERSION };
 
@@ -37,6 +38,19 @@ function createSingleton(): DbSingleton {
   }
 
   const expoDb = openDatabaseSync(DB_NAME, { enableChangeListener: true });
+  // WAL and a wait, set here because they are properties of the connection and this is where
+  // connections are made.
+  //
+  // Neither was set at all, which nothing noticed while there was only ever one connection.
+  // `vacuumIntoFile` opens a second one and reads the whole database through it, and under the
+  // default rollback journal a reader blocks a writer outright: the first backup after that
+  // change turned the chorus's own write into `database is locked`. Under WAL a reader and a
+  // writer no longer see each other, and `busy_timeout` makes whoever still collides wait five
+  // seconds rather than fail on the spot — which is what every other SQLite app on a phone does.
+  //
+  // Durable, and already expected: `commitRestore` has always deleted the `-wal` and `-shm`
+  // sidecars alongside `-journal`, for a mode this database was never actually put into.
+  expoDb.execSync("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
   const db = drizzle(expoDb, { schema });
   return { expoDb, db };
 }
@@ -64,6 +78,44 @@ const expoDb = singleton.expoDb;
  */
 export function getRawDb() {
   return expoDb;
+}
+
+/**
+ * `VACUUM INTO`, on a connection of its own.
+ *
+ * It has to be its own, and that cost about an evening to learn. SQLite refuses `VACUUM` while
+ * any statement on the connection is still busy, and the shared connection always has one:
+ * Drizzle's expo driver prepares statements and keeps them alive. Measured on a device, every
+ * snapshot this app has ever attempted failed the same way —
+ *
+ *     cannot VACUUM - SQL statements in progress
+ *
+ * — through Drizzle's `db.run(sql.raw(...))` and, when that was suspected, through the raw
+ * handle's `execAsync` too. Same error, so it was never about how the statement was issued.
+ *
+ * The one slot that used to work was `backupBeforeMigrations`, and by accident: it runs before
+ * the migration runner, so the only query ahead of it is `readLastAppliedAt` on the raw async
+ * handle, which finalises. Every later moment has a Drizzle statement behind it — the daily
+ * backup sits after `stampDatabaseIdentity`, which is a Drizzle write, and that alone was enough.
+ * Which is why the folder on a real phone held snapshots dated only on update days, then nothing:
+ * the feature looked alive and was reachable from exactly one instant in the app's life.
+ *
+ * A second connection has nothing in flight by construction, and WAL — switched on in
+ * `createSingleton`, because it was not on before this — lets it read the same file while the
+ * shared connection keeps writing. It lives here rather than in db/backup.ts because that module is deliberately
+ * free of per-platform file openers so it can run on better-sqlite3 — this is the one line of it
+ * that cannot be, so it is behind the same door as every other handle in this app.
+ */
+export async function vacuumIntoFile(destinationPath: string): Promise<void> {
+  const isolated = await openDatabaseAsync(DB_NAME);
+  try {
+    // Its own wait, for the same reason the shared connection has one: this handle is new and
+    // inherits no pragma.
+    await isolated.execAsync("PRAGMA busy_timeout = 5000;");
+    await isolated.execAsync(`VACUUM INTO ${sqlString(destinationPath)}`);
+  } finally {
+    await isolated.closeAsync();
+  }
 }
 
 /**

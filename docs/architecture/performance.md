@@ -85,14 +85,11 @@ Generic guides push these; the stack already gives them, so skip:
 
 ## Antipatterns to avoid (and where they already exist here)
 
-- **Whole-store Zustand subscriptions.** [`PausedOverlay.tsx`](../../components/session/PausedOverlay.tsx),
-  [`CountdownView.tsx`](../../components/session/CountdownView.tsx), and
-  [`BossTauntOverlay.tsx`](../../components/session/BossTauntOverlay.tsx) call
-  `useSessionStore()` with no selector, so each re-renders on *any* session state change
-  (timer ticks, damage events, etc.), unlike
-  [`ActiveExerciseView.tsx`](../../components/session/ActiveExerciseView.tsx), which
-  selects individual fields correctly. Fix opportunistically when touching these files —
-  not a blocking issue today, but the pattern to avoid in new code.
+- **Whole-store Zustand subscriptions.** `useSessionStore()` with no selector re-renders on
+  *any* session state change — timer ticks, damage events, the lot. This section used to name
+  `PausedOverlay`, `CountdownView` and `BossTauntOverlay` as the offenders; all three select
+  individual fields now, and nothing in the session screens subscribes to a whole store. Kept as
+  the pattern to avoid in new code, not as a debt to go and pay.
 - **`ScrollView` + `.map()` for unbounded lists.** Fine for a handful of fixed items (e.g.
   a settings screen); wrong for anything that grows with user data (history, exercises) —
   use `@legendapp/list` instead, as the quest/adventure galleries already do.
@@ -106,6 +103,15 @@ Generic guides push these; the stack already gives them, so skip:
   same way, sat at 27 ms with zero. Pointing those rows at 128px thumbnails
   (`getExerciseThumb`, not `getExerciseAsset`) took it to 34 ms and 0 slow uploads. When art is
   shared between a hero slot and a list, derive a second copy; do not shrink the original.
+
+  One image is enough when it lands at the wrong moment. The villager cameos were 768x1024 —
+  ~3.1 MB of bitmap with their alpha channel — drawn into a slot `cameoAnchor.ts` caps at 200dp,
+  and mounted *over the running session screen*, which is the one place in this app where a
+  dropped frame is a tap the hero has to make twice. `scripts/fit-small-art.py` excluded them on
+  the strength of an older 38%-of-the-window ceiling that the shipped anchor had already replaced
+  with 22%/200dp: the exclusion outlived the number it was reasoning about. At 480x640 they cost
+  a third of that and 2.6 MB less APK. **When art is excluded from a downscale, the exclusion
+  cites a number — go and check that number is still the one the code uses.**
 - **Reanimated worklets closing over large objects.** Capture the one property you need,
   not the whole record — shipping a big closure to the UI thread costs a serialization pass.
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if

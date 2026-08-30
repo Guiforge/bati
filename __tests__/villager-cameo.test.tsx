@@ -87,10 +87,9 @@ describe("VillagerCameo", () => {
     });
 
     expect(getByText(en.villagers.farmer.rest[0] as string)).toBeTruthy();
-    // `box-none`, not `none`: the container itself never receives a touch, only a child that
-    // explicitly opts in — and the only child that ever does is a guide or event bubble. The
-    // safe-zone promise from PRODUCT.md ("never obstruct logging or reading the next set") is
-    // that during a session nothing here is a target, which the ambient test below pins down.
+    // `box-none`, not `none`: the container itself never receives a touch, only the figure and
+    // the bubble do. The safe-zone promise from PRODUCT.md ("never obstruct logging or reading
+    // the next set") is `cameoAnchor`'s job — the anchor test below pins it down.
     expect(getByTestId("villager-cameo").props.pointerEvents).toBe("box-none");
   });
 
@@ -109,17 +108,40 @@ describe("VillagerCameo", () => {
   });
 
   it("shows an ambient line whole, with nothing to wait for between two sets", async () => {
-    const { getByText, queryByTestId } = await renderCameo();
+    const { getByText } = await renderCameo();
 
     await act(() => {
       speak();
     });
 
-    // No typing and no tap target: a villager glanced at mid-session must never be something the
-    // hero has to finish, and must never take a tap meant for the set underneath.
+    // No typing: a villager glanced at mid-session must never be something the hero has to
+    // finish reading.
     expect(getByText(en.villagers.farmer.rest[0] as string)).toBeTruthy();
-    expect(queryByTestId("villager-bubble")).toBeNull();
   });
+
+  // Both halves of the cameo, because "click on the villager" means the drawing as often as
+  // the words.
+  it.each(["villager-figure", "villager-bubble"])(
+    "sends an ambient villager away on the first tap on %s",
+    async (target) => {
+      const { getByTestId } = await renderCameo();
+
+      await act(() => {
+        speak();
+      });
+      await act(async () => {
+        // `includeHiddenElements`: the figure is deliberately out of the accessibility tree —
+        // the bubble beside it offers the same dismiss with the sentence attached — and that is
+        // exactly what this query hides by default. A finger still lands on it.
+        // Awaited: this testing-library's fireEvent is thenable, and an unhandled one swallows
+        // whatever the press handler threw.
+        await fireEvent.press(getByTestId(target, { includeHiddenElements: true }));
+      });
+
+      // An ambient line is whole from the first frame, so there is nothing to finish first.
+      expect(useChorusStore.getState().current).toBeNull();
+    },
+  );
 
   it("types a guide out, and a tap finishes it early", async () => {
     const guide = en.villagers.farmer.guide_village[0] as string;
@@ -144,6 +166,24 @@ describe("VillagerCameo", () => {
     });
 
     expect(getByTestId("villager-line").props.children).toBe(guide);
+  });
+
+  it("finishes a typing guide from a tap on the figure too", async () => {
+    const guide = en.villagers.farmer.guide_village[0] as string;
+    const { getByTestId } = await renderCameo();
+
+    await act(() => {
+      speakGuide(guide);
+    });
+    await act(() => {
+      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 5);
+    });
+    await act(async () => {
+      await fireEvent.press(getByTestId("villager-figure", { includeHiddenElements: true }));
+    });
+
+    expect(getByTestId("villager-line").props.children).toBe(guide);
+    expect(useChorusStore.getState().current).not.toBeNull();
   });
 
   it("sends the guide away on the tap after it has finished", async () => {

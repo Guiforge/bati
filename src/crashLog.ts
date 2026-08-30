@@ -17,26 +17,43 @@ import { getPreference, setPreference } from "@/db/preferences";
  * (`react-native-exception-handler`) has been unmaintained since 2022 and ships no Expo config
  * plugin, so it cannot be linked under CNG at all.
  *
- * ponytail: last N crashes in one preference row, no breadcrumbs, no device metadata beyond
- *           the app version. If reports start arriving without enough to act on, the next rung
- *           is threading `reportError`'s silenced failures in as breadcrumbs.
+ * Since 2026-08 `reportError`'s silenced failures ride along as breadcrumbs: a second row keyed
+ * `errorLog`, capped and deduplicated, rendered as its own section of the mail. That was this
+ * file's own "next rung", climbed because a real report ("backup could not be created", one
+ * screenshot, zero cause) arrived with nothing to act on.
+ *
+ * ponytail: no device metadata beyond the app version, and no stacks on breadcrumbs — the
+ *           context+message pair names the failing call site well enough, and twenty stacks
+ *           would drown the mail. Add per-entry detail only when a report arrives that these
+ *           two rows cannot explain.
  */
 
+import { setErrorSink } from "@/src/reportError";
+
 const CRASH_LOG_KEY = "crashLog";
+const ERROR_LOG_KEY = "errorLog";
 
 /** Enough to show a pattern, few enough that the row stays small and the mail stays readable. */
 const MAX_ENTRIES = 5;
 
+/** Handled errors are cheaper per line (no stack), so the window can be wider. */
+const MAX_ERROR_ENTRIES = 20;
+
 /** A stack trace is the useful part; anything past this is noise in an email body. */
 const MAX_STACK_CHARS = 4000;
 
+/** Some native errors serialise their world into `message`; a breadcrumb needs one line of it. */
+const MAX_ERROR_MESSAGE_CHARS = 300;
+
 export type CrashReport = {
-  /** ISO timestamp of the crash. */
+  /** ISO timestamp of the crash — for a merged entry, of its latest occurrence. */
   at: string;
-  /** Where it came from, in the app's own words: "fatal", "render". */
+  /** Where it came from, in the app's own words: "fatal", "render", "backup.save". */
   context: string;
   message: string;
   stack: string | null;
+  /** How many consecutive identical reports this entry stands for. Absent means 1. */
+  count?: number;
 };
 
 /**
@@ -64,6 +81,19 @@ function parse(raw: string | null): CrashReport[] {
   } catch {
     return [];
   }
+}
+
+/**
+ * Newest first, capped — and consecutive identical reports merge into one entry whose `count`
+ * grows and whose `at` moves to the latest occurrence. Without the merge, one error in a loop
+ * fills every slot in seconds and evicts the entries that explain it.
+ */
+function push(entries: CrashReport[], report: CrashReport, cap: number): CrashReport[] {
+  const latest = entries[0];
+  if (latest && latest.context === report.context && latest.message === report.message) {
+    return [{ ...latest, at: report.at, count: (latest.count ?? 1) + 1 }, ...entries.slice(1)];
+  }
+  return [report, ...entries].slice(0, cap);
 }
 
 /**
@@ -97,8 +127,9 @@ export async function recordCrash(context: string, error: unknown, fatal = false
   if (recording) return;
   recording = true;
   try {
-    const entries = [toReport(context, error), ...parse(await getPreference(CRASH_LOG_KEY))].slice(
-      0,
+    const entries = push(
+      parse(await getPreference(CRASH_LOG_KEY)),
+      toReport(context, error),
       MAX_ENTRIES,
     );
 
@@ -114,6 +145,40 @@ export async function recordCrash(context: string, error: unknown, fatal = false
 export async function readCrashLog(): Promise<CrashReport[]> {
   try {
     return parse(await getPreference(CRASH_LOG_KEY));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Writes are chained rather than guarded by a flag: two failures reported in the same tick both
+ * land, in order, instead of the second being dropped mid-flight. No sync path — a handled error
+ * is by definition not tearing the app down. Every failure inside is swallowed for the same
+ * reason as `recordCrash`'s: logging must never mint a failure of its own. That includes the
+ * calls that run before migrations (`db/migrate.ts` reports through here) — on a first launch
+ * the table does not exist yet and that entry is lost by design, not retried.
+ */
+let errorLogQueue: Promise<void> = Promise.resolve();
+
+export function recordHandledError(context: string, error: unknown): Promise<void> {
+  const report = toReport(context, error);
+  report.stack = null;
+  report.message = report.message.slice(0, MAX_ERROR_MESSAGE_CHARS);
+
+  errorLogQueue = errorLogQueue.then(async () => {
+    try {
+      const entries = push(parse(await getPreference(ERROR_LOG_KEY)), report, MAX_ERROR_ENTRIES);
+      await setPreference(ERROR_LOG_KEY, JSON.stringify(entries));
+    } catch {
+      // A breadcrumb that throws while recording a failure helps nobody.
+    }
+  });
+  return errorLogQueue;
+}
+
+export async function readErrorLog(): Promise<CrashReport[]> {
+  try {
+    return parse(await getPreference(ERROR_LOG_KEY));
   } catch {
     return [];
   }
@@ -144,6 +209,8 @@ export type BugReportStrings = {
   prompt: string;
   technicalHeader: string;
   noCrash: string;
+  errorsHeader: string;
+  noErrors: string;
 };
 
 /**
@@ -160,8 +227,14 @@ function deviceLine(): string {
   return model ? `${model} — ${os}` : os;
 }
 
+/** " ×3" for a merged entry, nothing for a single one. */
+function times(report: CrashReport): string {
+  return report.count && report.count > 1 ? ` ×${report.count}` : "";
+}
+
 export function buildBugReportMailto(
   reports: CrashReport[],
+  handled: CrashReport[],
   appVersion: string,
   strings: BugReportStrings,
 ): string {
@@ -180,8 +253,16 @@ export function buildBugReportMailto(
     ...(reports.length === 0
       ? [strings.noCrash]
       : reports.map(
-          (r, i) => `\n[${i + 1}] ${r.at} (${r.context})\n${r.message}\n${r.stack ?? ""}`,
+          (r, i) =>
+            `\n[${i + 1}] ${r.at} (${r.context}${times(r)})\n${r.message}\n${r.stack ?? ""}`,
         )),
+    "",
+    // One line per handled error, no stacks: the context+message pair names the call site, and
+    // twenty stacks would make the mail unreadable — and the URL enormous.
+    `--- ${strings.errorsHeader} ---`,
+    ...(handled.length === 0
+      ? [strings.noErrors]
+      : handled.map((r, i) => `[${i + 1}] ${r.at} (${r.context}${times(r)}) — ${r.message}`)),
   ].join("\n");
 
   return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(strings.subject)}&body=${encodeURIComponent(body)}`;
@@ -202,6 +283,13 @@ export async function clearCrashLog(): Promise<void> {
  * swallowing it would trade a visible crash for a silent one.
  */
 export function installCrashHandler(): void {
+  // Handled errors flow in through `reportError`'s sink rather than an import in the other
+  // direction, so `reportError` stays import-free (see its comment). Installed here because this
+  // runs at module scope in app/_layout.tsx, before anything can fail. The returned promise is
+  // dropped by the sink's `void` signature on purpose: it never rejects, and no caller of
+  // `reportError` should ever wait on a log write.
+  setErrorSink(recordHandledError);
+
   const globalHandlers = globalThis as unknown as {
     ErrorUtils?: {
       getGlobalHandler: () => (error: unknown, isFatal?: boolean) => void;

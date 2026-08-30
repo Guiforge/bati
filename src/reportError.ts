@@ -10,12 +10,25 @@
  * `context` is what broke, in the app's own words — "session.save", "sound.play" — so a log
  * line says where to look without a stack trace.
  */
+/**
+ * Where reported failures go beyond the dev console. Injected rather than imported: this module
+ * is pulled in by `db/` code and by `src/widget.tsx` (a headless task), and must stay free of
+ * imports so requiring it never drags `Platform` or the SQLite client along.
+ *
+ * `installCrashHandler()` points it at the local error log in `src/crashLog.ts` — which is why
+ * failures in the widget task, whose entry point never runs `app/_layout.tsx`, still go only to
+ * the dev console.
+ */
+let sink: ((context: string, error: unknown) => void) | null = null;
+
+export function setErrorSink(fn: (context: string, error: unknown) => void): void {
+  sink = fn;
+}
+
 export function reportError(context: string, error: unknown): void {
   if (__DEV__) {
     console.error(`[${context}]`, error);
   }
 
-  // ponytail: dev console only, because the app ships no telemetry service today. Point this
-  //           at one and every silenced failure in the codebase becomes visible at once —
-  //           that is the whole reason the calls route through one function.
+  sink?.(context, error);
 }

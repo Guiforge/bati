@@ -79,6 +79,17 @@ jest.mock("@/components/common/Toast", () => ({
   }),
 }));
 
+// Failures are offered as an alert with a "send me the details" button, not a toast — the two
+// are recorded apart so a test cannot pass with the report action wired to the wrong surface.
+const mockAlerts: string[] = [];
+jest.mock("@/hooks/useBugReport", () => ({
+  useBugReport: () => ({
+    alertWithReport: (message: string) => mockAlerts.push(message),
+    openBugReport: jest.fn(),
+    crashCount: 0,
+  }),
+}));
+
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
@@ -92,6 +103,7 @@ beforeEach(() => {
   mockCalls.length = 0;
   mockShownErrors.length = 0;
   mockShownSuccesses.length = 0;
+  mockAlerts.length = 0;
   mockReportedErrors.length = 0;
   mockStagedPath = "/tmp/staged.db";
   mockValidation = { ok: true };
@@ -179,7 +191,7 @@ describe("useBackup — import", () => {
 
     expect(mockCalls).toEqual(["stage", "validate", "discard"]);
     expect(useRestoreStore.getState().phase).toBe("idle");
-    expect(mockShownErrors).toEqual(["backup.importFailed"]);
+    expect(mockAlerts).toEqual(["backup.importFailed"]);
     expect(mockReportedErrors).toEqual(["backup.import"]);
   });
 
@@ -216,10 +228,11 @@ describe("useBackup — save to a folder", () => {
 
     expect(mockShownSuccesses).toEqual([]);
     expect(mockShownErrors).toEqual([]);
+    expect(mockAlerts).toEqual([]);
     expect(mockReportedErrors).toEqual([]);
   });
 
-  test("a real failure is surfaced and recorded, never swallowed", async () => {
+  test("a real failure is surfaced with the report offer and recorded, never swallowed", async () => {
     mockSaveOutcome = () => {
       throw new Error("no space left on device");
     };
@@ -227,7 +240,7 @@ describe("useBackup — save to a folder", () => {
 
     await act(async () => result.current.runSaveToFolder());
 
-    expect(mockShownErrors).toEqual(["backup.exportFailed"]);
+    expect(mockAlerts).toEqual(["backup.exportFailed"]);
     expect(mockReportedErrors).toEqual(["backup.save"]);
   });
 });
@@ -266,6 +279,7 @@ describe("useBackup — automatic backup", () => {
     expect(result.current.autoFolder).toBeNull();
     expect(mockShownSuccesses).toEqual([]);
     expect(mockShownErrors).toEqual([]);
+    expect(mockAlerts).toEqual([]);
   });
 
   /**
@@ -282,7 +296,7 @@ describe("useBackup — automatic backup", () => {
     await act(async () => result.current.runEnableAuto());
 
     expect(result.current.autoFolder).toBeNull();
-    expect(mockShownErrors).toEqual(["backup.exportFailed"]);
+    expect(mockAlerts).toEqual(["backup.exportFailed"]);
     expect(mockReportedErrors).toEqual(["backup.auto.enable"]);
   });
 
@@ -314,7 +328,7 @@ describe("useBackup — automatic backup", () => {
     // The folder is still remembered, so the row must still say so — clearing the label on a
     // failed write would be the invisible state with the sign flipped.
     expect(result.current.autoFolder).toBe("Documents/Bati");
-    expect(mockShownErrors).toEqual(["backup.exportFailed"]);
+    expect(mockAlerts).toEqual(["backup.exportFailed"]);
     expect(mockReportedErrors).toEqual(["backup.auto.disable"]);
   });
 
@@ -350,7 +364,7 @@ describe("useBackup — export", () => {
 
     await act(async () => result.current.runExport());
 
-    expect(mockShownErrors).toEqual(["backup.exportFailed"]);
+    expect(mockAlerts).toEqual(["backup.exportFailed"]);
     expect(mockReportedErrors).toEqual(["backup.export"]);
   });
 });

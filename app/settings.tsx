@@ -1,8 +1,6 @@
-import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,22 +35,10 @@ import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
+import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
-import { buildBugReportMailto, readCrashLog } from "@/src/crashLog";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
-
-// Version comes from the embedded manifest. The Android build number is derived from the version
-// by app.config.js, so it is always present here; the iOS fallback is not, hence the guard.
-const buildNumber =
-  Constants.expoConfig?.android?.versionCode ?? Constants.expoConfig?.ios?.buildNumber;
-const versionLabel = [
-  Constants.expoConfig?.version,
-  buildNumber && `(${buildNumber})`,
-  __DEV__ && "· DEV",
-]
-  .filter(Boolean)
-  .join(" ");
 
 type SettingRowProps = {
   testID?: string;
@@ -233,7 +219,7 @@ export default function SettingsScreen() {
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
-  const [crashCount, setCrashCount] = useState(0);
+  const { openBugReport, crashCount } = useBugReport();
   const { showError, showSuccess } = useToast();
   const haptics = useHaptics();
   const {
@@ -275,39 +261,6 @@ export default function SettingsScreen() {
       { text: t("backup.autoChangeCta"), onPress: runEnableAuto },
     ]);
   }, [autoFolder, runDisableAuto, runEnableAuto, t]);
-
-  useEffect(() => {
-    readCrashLog()
-      .then((reports) => setCrashCount(reports.length))
-      .catch((error) => {
-        // The row falls back to "0 reports"; the failure itself must not be one more silence.
-        reportError("settings.crashLog", error);
-      });
-  }, []);
-
-  // Reads the log at press time rather than holding it in state: the draft should carry what
-  // is on disk now, and the row only ever needed the count.
-  const openBugReport = useCallback(async () => {
-    try {
-      const reports = await readCrashLog();
-      const url = buildBugReportMailto(reports, versionLabel, {
-        subject: t("feedback.subject", { version: versionLabel }),
-        prompt: t("feedback.prompt"),
-        technicalHeader: t("feedback.technical_header"),
-        noCrash: t("feedback.no_crash"),
-      });
-      if (!(await Linking.canOpenURL(url))) {
-        // Tapping the row and having nothing ever happen reads as broken, not as "no mail app".
-        showError(t("settings.no_mail_client", "No email app found on this device"));
-        return;
-      }
-      await Linking.openURL(url);
-    } catch (error) {
-      // Nothing was sent, which is the safe direction to fail in — but say so.
-      reportError("settings.bugReport", error);
-      showError(t("settings.no_mail_client", "No email app found on this device"));
-    }
-  }, [t, showError]);
 
   const pickCustomAvatar = useCallback(async () => {
     try {

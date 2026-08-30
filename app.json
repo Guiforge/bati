@@ -106,6 +106,7 @@
       "./plugins/withAndroidGradleMemory",
       "./plugins/withAndroidReleaseFlags",
       "./plugins/withAndroidTrimPermissions",
+      "./plugins/withAndroidMailtoQuery",
       "./plugins/withAndroidReproducibleNative",
       "./plugins/withAndroidLocalAppId",
       "./plugins/withAndroidDebugIcon",

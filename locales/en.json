@@ -817,7 +817,7 @@
     "permissions_title": "Permissions",
     "permissions_body": "Photos: only if you pick one as your avatar — it stays on your device. The Android widget reads your streak from the same local database. The app sends no notifications at all.",
     "crashes_title": "Crash reports",
-    "crashes_body": "If the app crashes, the error is written to your device only. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
+    "crashes_body": "If the app crashes, the error is written to your device only — and when a feature fails without crashing (a backup that could not be written, say), its error message is kept the same way; that message may include the name of a folder or file you chose. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
     "children_title": "Children",
     "children_body": "Bati is a general-audience fitness app and is not directed at children under 13. It collects no personal data from anyone, of any age.",
     "contact_title": "Questions",
@@ -828,7 +828,10 @@
     "subject": "Bati {{version}} — feedback",
     "prompt": "Tell me anything — there are no wrong answers. If you are stuck, these help:\n\n1. What made you open the app today?\n2. What annoyed you?\n3. What did you almost look for and not find?\n",
     "technical_header": "Technical details (edit or delete anything below)",
-    "no_crash": "No crash was recorded on this device."
+    "no_crash": "No crash was recorded on this device.",
+    "errors_header": "Recent errors",
+    "no_errors": "No recent errors recorded.",
+    "report_cta": "Send me the details"
   },
   "backup": {
     "section": "BACKUP",

@@ -29,8 +29,11 @@ const { withAndroidManifest } = require("expo/config-plugins");
  *   it must never come back with a microphone.
  * - **MODIFY_AUDIO_SETTINGS** — the one permission `expo-audio`'s *library* manifest declares, so
  *   the plugin options cannot switch it off. It gates `AudioManager` mode and routing changes
- *   (speakerphone, earpiece); the app only plays a bundled wav through the media stream and never
- *   calls `setAudioModeAsync` with anything that touches routing.
+ *   (speakerphone, earpiece). `src/sounds.ts` does call `setAudioModeAsync`, and expo-audio's
+ *   Android handler writes `audioManager.mode` and `setSpeakerphoneOn` on every such call whether
+ *   asked to or not — so this marker is what keeps a countdown beep from mutating device-global
+ *   audio routing. Stripped, those two writes are refused and ignored; the playback the app
+ *   actually wants goes through the media stream and needs nothing.
  * - **SYSTEM_ALERT_WINDOW** — drawing over other apps, from the dev-client tooling. Nothing in a
  *   release build has any business with it.
  *

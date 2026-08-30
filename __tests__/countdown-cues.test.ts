@@ -67,7 +67,13 @@ describe("useCountdownCues", () => {
   // A timed exercise is not stopped by its own timer: the hero decides when the hold is over,
   // and `remainingSeconds` keeps falling. Zero is announced once and then the set is silent.
   test("goes quiet in overtime instead of beeping every second", async () => {
-    expect(await countDown([2, 1, 0, -1, -2, -3, -4])).toEqual(["tick", "tick", "go"]);
+    // Mounted above the beeping range on purpose, so what this measures is overtime and not the
+    // mount rule below.
+    expect(await countDown([2, 1, 0, -1, -2, -3, -4], { from: 10 })).toEqual([
+      "tick",
+      "tick",
+      "go",
+    ]);
   });
 
   // useSessionTimer ticks at 10 Hz. Only one in ten of those renders is a new second.
@@ -92,6 +98,24 @@ describe("useCountdownCues", () => {
       "tick",
       "go",
     ]);
+  });
+
+  // CountdownView opens on exactly PRE_START_COUNTDOWN_SECONDS = 3. A blanket "the mount is
+  // silent" rule showed a 3 on screen and beeped twice.
+  test("a view that opens inside the last three seconds counts all of them", async () => {
+    expect(await countDown([3, 2, 1, 0], { from: 3 })).toEqual(["tick", "tick", "tick", "go"]);
+  });
+
+  // Android stops the 10 Hz interval while the app is backgrounded, and React batches a burst of
+  // updates into one render either way, so a resume arrives as one large step rather than a
+  // sequence. The range test is what makes that land correctly, and it is worth pinning: a guard
+  // rewritten as `remainingSeconds <= 3` would beep through the whole of overtime.
+  test("a backgrounded rest announces zero once, without the ticks it slept through", async () => {
+    expect(await countDown([40, 0])).toEqual(["go"]);
+  });
+
+  test("a backgrounded timed set wakes up in overtime and stays silent", async () => {
+    expect(await countDown([40, -90])).toEqual([]);
   });
 
   test("says nothing at all when the hero turned sound off", async () => {

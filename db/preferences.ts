@@ -205,6 +205,20 @@ export const preferences = {
     await deletePreference("backupFolderUri");
   },
 
+  /**
+   * The hero's own day the last automatic snapshot was written on, `yyyy-MM-dd`, or `null` for
+   * never. One key so `backupIfStale` can answer "already done today" without listing a Storage
+   * Access Framework tree — a listing there is an IPC round trip per entry, and `File.name` is
+   * not reliable on a document URI (see src/backupFiles.ts `SNAPSHOT_URI`).
+   */
+  async getLastAutoBackupDay(): Promise<string | null> {
+    return await getPreference("lastAutoBackupDay");
+  },
+
+  async setLastAutoBackupDay(day: string): Promise<void> {
+    await setPreference("lastAutoBackupDay", day);
+  },
+
   async setOwnedEquipment(equipment: EquipmentCode[] | null): Promise<void> {
     if (equipment === null) {
       await deletePreference("ownedEquipment");

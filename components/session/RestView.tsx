@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,6 +12,7 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
 import { useChorusStore } from "@/stores/chorus";
@@ -19,6 +20,7 @@ import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
+import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one screen component, boss/rest branches read top-to-bottom
 export function RestView() {
@@ -44,6 +46,10 @@ export function RestView() {
   // zero, this one runs first, so the "go" starts before skipRest() unmounts the screen.
   useCountdownCues(remainingSeconds);
   const cue = useChorusStore((s) => s.cue);
+  // During a rest this is the movement *about to start* — `completeExercise` advances the index
+  // before handing over — which is exactly the one the "up next" card names.
+  const instruction = useSessionInstructions();
+  const [showHowTo, setShowHowTo] = useState(false);
 
   // Once per rest, on mount — this view is mounted and unmounted by `displayStatus`, so the
   // component's own lifecycle is already "one rest". The chorus decides whether anyone actually
@@ -281,14 +287,24 @@ export function RestView() {
             </YStack>
           )}
 
-          {/* Up Next Card */}
+          {/* Up Next Card. Tappable: the rest is the one moment reading is free, and the movement
+              the hero is about to do is the one worth reading about. Same modal the running
+              screen opens from its artwork. */}
           <YStack
+            testID="rest-up-next"
             bg="$surface"
             p="$4"
             rounded="$6"
             borderWidth={1}
             borderColor="$borderStrong"
             gap="$2"
+            onPress={() => {
+              selection();
+              setShowHowTo(true);
+            }}
+            pressStyle={{ opacity: 0.9 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("session.how_to_do_it")}
             transition={reducedMotion ? undefined : "bouncy"}
             enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
           >
@@ -345,6 +361,12 @@ export function RestView() {
           </Text>
         </Button>
       </YStack>
+
+      <ExerciseInstructionsModal
+        instruction={instruction}
+        visible={showHowTo}
+        onClose={() => setShowHowTo(false)}
+      />
     </YStack>
   );
 }

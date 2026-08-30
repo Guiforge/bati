@@ -1,11 +1,10 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView } from "react-native";
+import { Alert } from "react-native";
 import { Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { getExerciseAsset } from "@/constants/assetMap";
+import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructions";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { useSessionStore } from "@/stores/session";
@@ -34,8 +33,27 @@ export function PausedOverlay() {
   };
 
   const handleRestartRound = () => {
-    mediumImpact();
-    restartRound();
+    warning();
+    // Guarded like `handleQuit`, and for the stronger reason. `restartRound()` drops every result
+    // whose roundIndex is the current one — up to five sets the hero just finished — and it sat
+    // one tap away, unconfirmed, directly above the button that *was* confirmed. Worse, its label
+    // reads additive: "redo the round" sounds like going again, not like erasing what is already
+    // logged. The confirmation was on the button whose name already sounds dangerous.
+    Alert.alert(
+      t("session.restart_confirm_title", "Restart this round?"),
+      t("session.restart_confirm_body", "Every set you logged in this round is erased."),
+      [
+        { text: t("common.cancel", "Cancel"), style: "cancel" },
+        {
+          text: t("session.restart_round_button"),
+          style: "destructive",
+          onPress: () => {
+            mediumImpact();
+            restartRound();
+          },
+        },
+      ],
+    );
   };
 
   const confirmQuit = () => {
@@ -81,27 +99,11 @@ export function PausedOverlay() {
           </Paragraph>
 
           {/* The one moment reading is free. A hero who does not know what a dead bug is was
-              watching the clock run while they worked it out; here it is stopped. */}
+              watching the clock run while they worked it out; here it is stopped. Same block the
+              running screen opens as a modal — see ExerciseInstructions.tsx. */}
           {instruction ? (
-            <YStack width="100%" gap="$2" items="center" pt="$2">
-              <Image
-                source={getExerciseAsset(instruction.imagePath)}
-                style={{ width: 120, height: 120, borderRadius: 12 }}
-                contentFit="cover"
-              />
-              <Text fontWeight="700" fontSize={16} color="$text" style={{ textAlign: "center" }}>
-                {instruction.name}
-              </Text>
-              {/* Scrolls rather than grows: a long movement would otherwise push "resume" off
-                  the bottom of a small screen. */}
-              <ScrollView
-                style={{ maxHeight: 160, width: "100%" }}
-                showsVerticalScrollIndicator={false}
-              >
-                <Text fontSize={14} color="$textSecondary" lineHeight={20}>
-                  {instruction.description}
-                </Text>
-              </ScrollView>
+            <YStack pt="$2">
+              <ExerciseInstructionsBody instruction={instruction} artSize={120} />
             </YStack>
           ) : null}
 

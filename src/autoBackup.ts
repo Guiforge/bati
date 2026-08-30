@@ -1,4 +1,5 @@
 import { Directory } from "expo-file-system";
+import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { errorTrail } from "@/db/sql";
 import { pickBackupFolder, saveBackupToFolder } from "@/src/backupFiles";
@@ -13,10 +14,15 @@ import { reportError } from "@/src/reportError";
  * integration covers every backend, with no OAuth, no SDK per vendor, no credential at rest and
  * no network request. The app never learns which provider was chosen, which is the point.
  *
- * The trigger is `ensureMigrations()` (db/migrate.ts), before the runner. Migrations are the one
- * moment this database can be damaged in a way no undo covers, and they are also the only moment
- * worth spending a write on: an ordinary launch has nothing new to save that the hero did not
- * just watch happen.
+ * Two triggers, for the two moments there is something to save:
+ *
+ * - `ensureMigrations()` (db/migrate.ts), before the runner. Migrations are the one moment this
+ *   database can be damaged in a way no undo covers.
+ * - the first launch of each day, from `DatabaseProvider` once migrations are done and before
+ *   the React tree has asked the database anything. That one exists because "before every
+ *   update" turned out to mean *months* between snapshots for a hero who trains daily and
+ *   updates rarely: they switched the feature on, watched the first copy land, and the folder
+ *   still held that one file weeks later.
  *
  * This module is the single writer of the `backupFolderUri` preference. Everything else asks it.
  */
@@ -121,6 +127,47 @@ export async function backupBeforeMigrations(): Promise<void> {
     //           single signal a real hero can see. Add a counter when a real device produces a
     //           failure that recovers on its own.
     await disableAutoBackup().catch((e) => reportError("backup.auto.forget", e));
+  }
+}
+
+/**
+ * Writes one snapshot a day, at launch, when a folder is remembered.
+ *
+ * **Launch, and not the end of a session, for a reason a device taught us.** The obvious trigger
+ * is `saveSession` — a finished workout is the new history worth keeping — and it fails:
+ *
+ *     [backup.auto.session] cannot VACUUM - SQL statements in progress
+ *
+ * `snapshotDatabaseTo` is `VACUUM INTO`, and SQLite refuses it while any statement is stepping on
+ * the connection. `serializeOnDatabase` is not enough: it queues what opts in, and saving a
+ * session is a long chain of *plain* reads and writes — achievements, records, rungs, the village
+ * diff — that were still in flight around it. The end of a session is the busiest this database
+ * ever gets, which makes it the worst possible moment for the one statement that demands the
+ * database to itself.
+ *
+ * Launch is the quietest: migrations have run, identity is stamped, and the React tree has not
+ * asked for anything yet. The cost is that a Monday-evening workout is copied on Tuesday morning,
+ * which is a backup that lags by one launch instead of a backup that never runs.
+ *
+ * Never throws — it is awaited on the launch path, and a folder that cannot be written must not
+ * become a database-error screen. Unlike `backupBeforeMigrations` it never turns the feature off
+ * either: that one is the last chance before something irreversible, this is a spare copy of
+ * history the device still holds, so a card pulled out for the evening must not cost the hero
+ * their folder. The day is stamped only after the write lands, so a failure is retried by the
+ * next launch rather than swallowed until tomorrow.
+ */
+export async function backupIfStaleToday(): Promise<void> {
+  try {
+    const folder = await rememberedFolder();
+    if (!folder) return;
+
+    const today = dayKey(new Date());
+    if ((await preferences.getLastAutoBackupDay()) === today) return;
+
+    await saveBackupToFolder(folder);
+    await preferences.setLastAutoBackupDay(today);
+  } catch (error) {
+    reportError("backup.auto.daily", error);
   }
 }
 

@@ -309,7 +309,11 @@ export function VictoryView() {
               }
             : null)}
         >
-          <YStack width="100%" aspectRatio={16 / 9} bg="$surface2">
+          {/* The ratio follows the source, because this slot serves two of them: a felled boss is
+              1024x1024 and a quest cover is 1024x768. One fixed 16:9 box cut 22% off each end of
+              the boss — the monster you just beat, shown with its head and its feet removed — and
+              11% off the quest. Neither loses anything now. */}
+          <YStack width="100%" aspectRatio={felledBoss ? 1 : 4 / 3} bg="$surface2">
             <Image
               source={
                 felledBoss

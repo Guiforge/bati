@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Progress, Text, XStack, YStack } from "tamagui";
 import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { Card } from "@/components/common/Card";
+import { Chip } from "@/components/common/Chip";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Award, Lock } from "@/components/icons";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
@@ -146,22 +147,15 @@ export function AchievementsCard() {
 
       {/* Category Filters */}
       <XStack gap="$2" flexWrap="wrap">
+        {/* The house chip, not a hand-rolled one: it is the only pressable that knows about
+            DESIGN.md's 44x44 floor, and the copy here sat at roughly half that. */}
         {categories.map(({ key, label }) => (
-          <YStack
+          <Chip
             key={key}
-            px="$2"
-            py="$1"
-            bg={filter === key ? "$primary" : "$bgLight"}
-            borderWidth={1}
-            borderColor={filter === key ? "$primary" : "$text"}
-            rounded="$3"
-            pressStyle={{ opacity: 0.8 }}
+            label={label}
+            tone={filter === key ? "primary" : "default"}
             onPress={() => setFilter(key)}
-          >
-            <Text fontSize={12} fontWeight="700" color={filter === key ? "white" : "$text"}>
-              {label}
-            </Text>
-          </YStack>
+          />
         ))}
       </XStack>
 
@@ -181,6 +175,8 @@ export function AchievementsCard() {
           color="$text"
           opacity={0.6}
           style={{ textAlign: "center" }}
+          py="$2"
+          hitSlop={12}
           pressStyle={{ opacity: 1 }}
           accessibilityRole="button"
           onPress={() => setExpanded((value) => !value)}

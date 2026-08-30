@@ -11,12 +11,14 @@ const mockStampDatabaseIdentity = jest.fn();
 const mockCommitRestore = jest.fn();
 const mockHideAsync = jest.fn(() => Promise.resolve());
 const mockReportError = jest.fn();
+const mockBackupIfStaleToday = jest.fn();
 let mockPhase = "idle";
 const mockFinishRestore = jest.fn();
 
 jest.mock("@/db/migrate", () => ({ ensureMigrations: () => mockEnsureMigrations() }));
 jest.mock("@/db/backup", () => ({ stampDatabaseIdentity: () => mockStampDatabaseIdentity() }));
 jest.mock("@/src/backupFiles", () => ({ commitRestore: () => mockCommitRestore() }));
+jest.mock("@/src/autoBackup", () => ({ backupIfStaleToday: () => mockBackupIfStaleToday() }));
 jest.mock("@/src/reportError", () => ({
   reportError: (...args: unknown[]) => mockReportError(...args),
 }));
@@ -37,6 +39,7 @@ beforeEach(() => {
   mockEnsureMigrations.mockResolvedValue(undefined);
   mockStampDatabaseIdentity.mockResolvedValue(undefined);
   mockCommitRestore.mockResolvedValue(undefined);
+  mockBackupIfStaleToday.mockResolvedValue(undefined);
 });
 
 async function mount(onReady?: () => void) {
@@ -57,6 +60,22 @@ describe("DatabaseProvider", () => {
     // The stamp is what makes an exported snapshot recognisable as Bati's on the way back in.
     expect(mockStampDatabaseIdentity).toHaveBeenCalled();
     await waitFor(() => expect(onReady).toHaveBeenCalledTimes(1));
+  });
+
+  it("takes the day's backup before the app is allowed to query anything", async () => {
+    const onReady = jest.fn();
+    await mount(onReady);
+    await screen.findByText("the app");
+
+    // `VACUUM INTO` needs the database to itself, and this is the only moment it gets it —
+    // after the migrations and the stamp, before `onReady` hands the tree its stores. Putting
+    // it at the end of a session instead produced "cannot VACUUM - SQL statements in progress"
+    // on a real device. See src/autoBackup.ts.
+    expect(mockBackupIfStaleToday).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onReady).toHaveBeenCalled());
+    expect(mockBackupIfStaleToday.mock.invocationCallOrder[0]).toBeLessThan(
+      onReady.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+    );
   });
 
   it("runs migrations once per process, not once per render", async () => {

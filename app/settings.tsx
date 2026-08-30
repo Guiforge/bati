@@ -421,7 +421,13 @@ export default function SettingsScreen() {
         </Text>
       </XStack>
 
-      <RNScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+      <RNScrollView
+        // VillageNameRow holds a TextInput, so the keyboard opens over this list — and the
+        // default ("never") would spend the first tap on every row below it closing the keyboard
+        // instead. react-native#4087; see __tests__/keyboard-taps-guard.test.ts.
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: 16, gap: 12 }}
+      >
         {/* Avatar Section */}
         <AvatarSection
           avatarId={avatarId}

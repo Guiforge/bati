@@ -359,7 +359,15 @@ export default function QuestEditor() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: saveBarHeight + 24 }}>
+      <ScrollView
+        // With the keyboard up, the default ("never") spends the first tap on any control in
+        // here dismissing it — react-native#4087, and the reason a button on a screen you
+        // type into has to be pressed twice. "handled" keeps the dismiss-on-empty-space
+        // gesture and gives the child the tap it was aimed at. Same value the exercise
+        // picker sheet already uses.
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: saveBarHeight + 24 }}
+      >
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3" flex={1}>

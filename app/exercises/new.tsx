@@ -137,6 +137,12 @@ export default function ExerciseEditor() {
   return (
     <YStack flex={1} bg="$background">
       <ScrollView
+        // With the keyboard up, the default ("never") spends the first tap on any control in
+        // here dismissing it — react-native#4087, and the reason a button on a screen you
+        // type into has to be pressed twice. "handled" keeps the dismiss-on-empty-space
+        // gesture and gives the child the tap it was aimed at. Same value the exercise
+        // picker sheet already uses.
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           padding: 20,
           paddingTop: insets.top + 12,
@@ -199,6 +205,7 @@ export default function ExerciseEditor() {
         <Card>
           <Pressable
             testID="exercise-details-toggle"
+            hitSlop={12}
             onPress={() => setShowDetails((v) => !v)}
             accessibilityRole="button"
             accessibilityState={{ expanded: showDetails }}

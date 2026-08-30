@@ -37,6 +37,7 @@ jest.mock("@/db/exercises", () => ({
     difficulty: "medium",
     equipment: "none",
     pattern: null,
+    measure: "reps",
     secondsPerRep: 3,
     imagePath: "assets/placeholder.webp",
   },

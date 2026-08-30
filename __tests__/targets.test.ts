@@ -1,4 +1,4 @@
-import { Difficulty, formatTarget, generateTarget } from "@/db/targets";
+import { Difficulty, formatTarget, generateTarget, retargetForMovement } from "@/db/targets";
 
 describe("generateTarget", () => {
   it("scales reps by user level (easy < medium < hard)", () => {
@@ -66,5 +66,24 @@ describe("formatTarget", () => {
   test("names the unit the slot is measured in", () => {
     expect(formatTarget({ type: "reps", value: 12 })).toBe("12 reps");
     expect(formatTarget({ type: "time", value: 30 })).toBe("30s");
+  });
+});
+
+describe("retargetForMovement", () => {
+  const repSlot = { type: "reps" as const, value: 22 };
+
+  test("keeps the slot's target when the movement is measured the same way, or never said", () => {
+    expect(retargetForMovement(repSlot, { measure: "reps" }, Difficulty.Medium)).toBe(repSlot);
+    expect(retargetForMovement(repSlot, { measure: null }, Difficulty.Medium)).toBe(repSlot);
+  });
+
+  // The bug: Squat (22 reps) swapped for Superman, a hold everywhere in the seeds, ran as
+  // "22 reps of Superman" — and that row then poisoned records, volume, XP and the ladder.
+  test("a hold landing in a rep slot runs in seconds, at the hero's level", () => {
+    expect(retargetForMovement(repSlot, { measure: "time" }, Difficulty.Medium)).toEqual({
+      type: "time",
+      value: 30,
+    });
+    expect(retargetForMovement(repSlot, { measure: "time" }, Difficulty.Easy).value).toBe(23);
   });
 });

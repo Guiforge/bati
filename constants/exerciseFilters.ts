@@ -189,6 +189,13 @@ export function rankSwapCandidates(
     .sort((a, b) => {
       if (a.tier !== b.tier) return a.tier - b.tier;
 
+      // A hold offered for a rep slot runs in its own unit now, but the slot was written for
+      // reps: the movements measured the same way are the closer substitutes.
+      const sameUnit =
+        Number(b.exercise.measure === current.measure) -
+        Number(a.exercise.measure === current.measure);
+      if (sameUnit !== 0) return sameUnit;
+
       const affordable =
         Number(isAffordable(b.exercise, owned)) - Number(isAffordable(a.exercise, owned));
       if (affordable !== 0) return affordable;

@@ -79,6 +79,7 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id" | "enName">)
     secondsPerRep: 3,
     muscles: ["back"],
     pattern: "pull_horizontal",
+    measure: null,
     prerequisiteExerciseId: null,
     retiredAt: null,
     ...over,

@@ -33,6 +33,7 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
+import { DEFAULT_TARGET_VALUE } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -81,8 +82,6 @@ const QUEST_CHOICES = Object.keys(QUEST_ASSETS);
 
 const DEFAULT_ROUNDS = 3;
 const DEFAULT_REST = 30;
-const DEFAULT_REPS = 10;
-const DEFAULT_SECONDS = 30;
 const REST_STEP = 5;
 
 export default function QuestEditor() {
@@ -241,7 +240,13 @@ export default function QuestEditor() {
     const uid = nextUid.current;
     setPicked((prev) => [
       ...prev,
-      { uid, exerciseId: exercise.id, type: "reps", value: DEFAULT_REPS },
+      {
+        uid,
+        exerciseId: exercise.id,
+        // The movement's own unit when it has one — "10 reps of Plank" is the swap bug at birth.
+        type: exercise.measure ?? "reps",
+        value: DEFAULT_TARGET_VALUE[exercise.measure ?? "reps"],
+      },
     ]);
   }, []);
 
@@ -510,12 +515,16 @@ export default function QuestEditor() {
                     <Chip
                       label={t("quests.config_reps", "Reps")}
                       tone={p.type === "reps" ? "primary" : "default"}
-                      onPress={() => patchExercise(p.uid, { type: "reps", value: DEFAULT_REPS })}
+                      onPress={() =>
+                        patchExercise(p.uid, { type: "reps", value: DEFAULT_TARGET_VALUE.reps })
+                      }
                     />
                     <Chip
                       label={t("quests.config_seconds", "Seconds")}
                       tone={p.type === "time" ? "primary" : "default"}
-                      onPress={() => patchExercise(p.uid, { type: "time", value: DEFAULT_SECONDS })}
+                      onPress={() =>
+                        patchExercise(p.uid, { type: "time", value: DEFAULT_TARGET_VALUE.time })
+                      }
                     />
                   </XStack>
 

@@ -114,17 +114,37 @@ describe("db/quests", () => {
     const seeded = templates.find((q) => q.frTitle === "Couper du bois");
     assert(seeded);
 
+    // With no history a slot serves its easier rung — Squat's is Wall Sit, a hold, so the slot
+    // would read in seconds. Own the served rungs first: this test is about the written slots.
+    const fresh = await quests.getQuestById(seeded.id, quests.Difficulty.Easy);
+    assert(fresh);
+    expect(fresh.exercises[0]?.substitutedFor?.enName).toBe("Squat");
+    const now = Math.floor(Date.now() / 1000);
+    let sessionId = 8000;
+    for (const slot of fresh.exercises) {
+      if (!slot.substitutedFor) continue;
+      for (const day of [1, 2, 3]) {
+        sessionId += 1;
+        const at = now - day * 86400;
+        t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (${sessionId}, ${at});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, targetType, targetValue, performedAt, sortOrder)
+        VALUES (${sessionId}, ${slot.exercise.id}, '${slot.target.type}', ${slot.target.value}, '${slot.target.type}', ${slot.target.value}, ${at}, 0);`);
+      }
+    }
+    quests.invalidateQuestTemplates();
+
     const before = await quests.getQuestById(seeded.id, quests.Difficulty.Easy);
     assert(before);
     const squatId = before.exercises[0]?.exercise.id;
     const plankId = before.exercises[2]?.exercise.id;
     assert(squatId);
     assert(plankId);
+    expect(before.exercises[0]?.exercise.enName).toBe("Squat");
 
-    // No history yet: no ghost at all, rather than a zero.
+    // No history on the squat yet: no ghost at all, rather than a zero.
     expect(before.exercises[0]?.ghost).toBeUndefined();
 
-    const now = Math.floor(Date.now() / 1000);
     t.sqlite.exec(`
       INSERT INTO completed_sessions (id, performedAt) VALUES (9001, ${now});
       INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES

@@ -22,6 +22,7 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
     secondsPerRep: 3,
     muscles: [],
     pattern: null,
+    measure: null,
     prerequisiteExerciseId: null,
     retiredAt: null,
     ...over,
@@ -190,6 +191,16 @@ describe("rankSwapCandidates", () => {
 
     // And it leads the list: nothing the hero cannot lift outranks something they can.
     expect(out[0]?.exercise.equipment).toBe("none");
+  });
+
+  it("offers the movements measured the same way first, inside a tier", () => {
+    const squat = makeExercise({ id: 10, enName: "Squat", pattern: "squat", measure: "reps" });
+    const wallSit = makeExercise({ id: 11, enName: "Wall Sit", pattern: "squat", measure: "time" });
+    const lunge = makeExercise({ id: 12, enName: "Lunge", pattern: "squat", measure: "reps" });
+
+    const out = rankSwapCandidates([squat, wallSit, lunge], squat, null);
+
+    expect(out.map((c) => c.exercise.enName)).toEqual(["Lunge", "Wall Sit"]);
   });
 
   it("sinks unowned equipment inside its tier instead of hiding it", () => {

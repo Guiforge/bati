@@ -18,7 +18,13 @@ import {
   type QuestArchetype,
   type QuestTargetType,
 } from "./schema";
-import { Difficulty, generateTarget, type Target, type UserLevel } from "./targets";
+import {
+  Difficulty,
+  generateTarget,
+  retargetForMovement,
+  type Target,
+  type UserLevel,
+} from "./targets";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
 
@@ -426,6 +432,7 @@ type SlotRow = {
   exStyle: ExerciseStyle | null;
   exSecondsPerRep: number;
   exPattern: MovementPattern | null;
+  exMeasure: QuestTargetType | null;
   exPrerequisiteId: number | null;
   exRetiredAt: Date | null;
 };
@@ -454,6 +461,14 @@ function buildSlot(
   const isSubstituted = served !== undefined && served.id !== r.exId;
   const effectiveId = ctx.servedId(r.exId);
 
+  // A served rung runs in *its* unit, not the slot's: Squat's easier rung is Wall Sit, a hold.
+  const bestHold = ctx.history.get(ghostKey(effectiveId, "time"))?.best;
+  const target = retargetForMovement(
+    generateTarget(base, ctx.userLevel, bestHold),
+    served ?? { measure: null },
+    ctx.userLevel,
+  );
+
   return {
     id: r.qexId,
     exercise: served ?? {
@@ -469,6 +484,7 @@ function buildSlot(
       style: r.exStyle ?? "strength",
       secondsPerRep: r.exSecondsPerRep,
       pattern: r.exPattern ?? null,
+      measure: r.exMeasure,
       prerequisiteExerciseId: r.exPrerequisiteId,
       retiredAt: r.exRetiredAt,
       muscles: [],
@@ -476,14 +492,10 @@ function buildSlot(
     // The quest's own art is *of the movement the template wrote*; on a substituted slot it
     // would illustrate the wrong exercise. Same call `applyQuestConfig` makes on a swap.
     images: isSubstituted ? [] : safeParseImages(r.imagesJson),
-    target: generateTarget(
-      base,
-      ctx.userLevel,
-      ctx.history.get(ghostKey(effectiveId, "time"))?.best,
-    ),
-    // In the slot's own unit: a movement trained both ways has two records, and showing the
+    target,
+    // In the target's own unit: a movement trained both ways has two records, and showing the
     // hold next to a rep target would be a number the hero cannot act on.
-    ghost: ctx.history.get(ghostKey(effectiveId, r.targetType)),
+    ghost: ctx.history.get(ghostKey(effectiveId, target.type)),
     // What the template asked for, when that is not what runs — the screens owe the hero an
     // explanation and a way back, and nothing else in the object can tell them.
     substitutedFor: isSubstituted
@@ -527,6 +539,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exStyle: exercises.style,
       exSecondsPerRep: exercises.secondsPerRep,
       exPattern: exercises.pattern,
+      exMeasure: exercises.measure,
       exPrerequisiteId: exercises.prerequisiteExerciseId,
       exRetiredAt: exercises.retiredAt,
 

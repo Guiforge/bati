@@ -41,10 +41,17 @@ function matchesDuration(seconds: number, bucket: DurationBucket | null): boolea
 /**
  * Union (OR) inside a dimension, intersection (AND) across them:
  * "(chest OR back) AND (dumbbells) AND (≤ 30 min)". An empty dimension matches everything.
+ *
+ * Equipment is the one dimension read as "what I have": every exercise must be doable with the
+ * selection, bodyweight always is. "Any exercise uses it" matched 33 of 34 seed quests for
+ * "no equipment", which is a filter that does nothing.
  */
 export function matchesFilters(quest: Filterable, filters: QuestFilters): boolean {
   if (filters.muscles.size > 0 && !quest.muscles.some((c) => filters.muscles.has(c))) return false;
-  if (filters.equipment.size > 0 && !quest.equipment.some((c) => filters.equipment.has(c))) {
+  if (
+    filters.equipment.size > 0 &&
+    quest.equipment.some((c) => c !== "none" && !filters.equipment.has(c))
+  ) {
     return false;
   }
   // A hero training for strength can now say so. Quests with no archetype drop out of an

@@ -52,6 +52,20 @@ test("dimensions intersect — right muscle but wrong equipment is out", () => {
   expect(matchesFilters(quest(["chest"], ["none"], 600), f)).toBe(true);
 });
 
+test("equipment is what the hero has — bodyweight always fits, anything else must be selected", () => {
+  const noEquipment = filters({ equipment: new Set<EquipmentCode>(["none"]) });
+  const pullupBar = filters({ equipment: new Set<EquipmentCode>(["pullup_bar"]) });
+  const mixed = quest(["back"], ["none", "pullup_bar"], 600);
+
+  // One pull-up in a bodyweight quest is not a bodyweight quest.
+  expect(matchesFilters(mixed, noEquipment)).toBe(false);
+  expect(matchesFilters(backNone45min, noEquipment)).toBe(true);
+  // Owning a bar does not rule out the quests that never needed one.
+  expect(matchesFilters(mixed, pullupBar)).toBe(true);
+  expect(matchesFilters(backNone45min, pullupBar)).toBe(true);
+  expect(matchesFilters(chestDumbbell10min, pullupBar)).toBe(false);
+});
+
 test("duration buckets — 30 min or less includes the short quests", () => {
   const short = filters({ duration: "short" });
   const medium = filters({ duration: "medium" });

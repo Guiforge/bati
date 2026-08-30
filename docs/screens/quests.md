@@ -33,6 +33,12 @@ A **Quest** is a workout template (one quest = one session when you run it).
   as removable chips plus "Clear". No filters, no second line. Duration is single-select and
   folds on pick. This replaced one horizontal strip of ~22 chips, where the hero saw three and
   could not know the other dimensions existed.
+- **Muscles filter on the card's focus line, equipment on what the hero has.** A muscle chip
+  matches the quests whose ranked focus (`trainingFocus`, the same list the card prints) names
+  it — not every quest with one exercise that brushes it, which matched 28 of 34 seed quests
+  for "back". An equipment chip means "I have this": every exercise must be doable with the
+  selection, bodyweight always is, so "No equipment" is the 27 pure-bodyweight quests, not the
+  33 that contain one bodyweight move.
 
 ## Typical user actions
 

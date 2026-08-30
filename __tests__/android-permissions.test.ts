@@ -16,6 +16,14 @@ import appJson from "../app.json";
 // This is a ratchet, not a target: a new permission fails the suite until someone writes down
 // why the app needs it. Adding a line here is cheap and deliberate; noticing one you never
 // added is what this exists for.
+//
+// Know its blind spot before you trust it. The scan below reads *npm package* manifests. A
+// Gradle AAR declares permissions too, and nothing here can see those: WAKE_LOCK and
+// FOREGROUND_SERVICE below ship in every APK and were justified only after someone read a built
+// manifest by hand. RECEIVE_BOOT_COMPLETED is in `blockedPermissions` for the same reason and
+// from the same library, which no package manifest declares either — evidence this hole had
+// already been patched once, invisibly. `fdroid/expected-permissions.txt` and the release
+// workflow's gate are what actually assert the shipped list; this file is the fast pre-check.
 
 const ROOT = path.resolve(__dirname, "..");
 const NODE_MODULES = path.join(ROOT, "node_modules");
@@ -48,6 +56,17 @@ const ALLOWED: Record<string, string> = {
     "for a hero-authored exercise, and reading a backup file the hero chose.",
   "android.permission.WRITE_EXTERNAL_STORAGE":
     "same pair, capped at maxSdkVersion 32 — writing the backup the hero asked to export.",
+  // These two arrive from androidx.work:work-runtime, which react-native-android-widget pulls in
+  // and actively uses: RNWidgetJsCommunication enqueues the widget's redraw as a WorkManager
+  // worker. They reach the APK through the Gradle graph, not through any npm package manifest,
+  // so the scan below has never seen them — see the note at the top of this file.
+  "android.permission.WAKE_LOCK":
+    "androidx.work via react-native-android-widget — WorkManager holds a wake lock for the " +
+    "duration of the worker that redraws the home-screen widget.",
+  "android.permission.FOREGROUND_SERVICE":
+    "the same worker: RNWidgetJsCommunication calls setExpedited, and below API 31 WorkManager " +
+    "runs expedited work as a foreground service. Stripping it would break widget updates on " +
+    "older devices, silently.",
 };
 
 const USES_PERMISSION = /<uses-permission[^>]*android:name="([^"]+)"/g;

@@ -103,6 +103,45 @@ describe("db/gps", () => {
       expect(await g.orphanedSessionIds()).toEqual([]);
     });
 
+    /**
+     * This function deletes data, so the test that matters is the one about what it spares.
+     * Sweeping without the session the recovery banner is offering would throw away the trace of
+     * the run the hero is one tap from resuming.
+     */
+    describe("the sweep", () => {
+      test("keeps the run that is about to be resumed, and takes the rest", async () => {
+        const g = gps();
+        await g.appendPoints("resuming", [fix({ t: 1000 })]);
+        await g.appendPoints("abandoned", [fix({ t: 1000 })]);
+
+        expect(await g.sweepOrphanedPoints("resuming")).toBe(1);
+        expect(await g.pointsOf("resuming")).toHaveLength(1);
+        expect(await g.pointsOf("abandoned")).toEqual([]);
+      });
+
+      test("never touches a session that reached the journal", async () => {
+        const g = gps();
+        await g.appendPoints("kept", [fix({ t: 1000 })]);
+        t.sqlite
+          .prepare(
+            "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, uuid) VALUES ('medium', 10, ?, ?)",
+          )
+          .run(Date.now(), "kept");
+
+        expect(await g.sweepOrphanedPoints(null)).toBe(0);
+        expect(await g.pointsOf("kept")).toHaveLength(1);
+      });
+
+      test("with nothing to resume, every orphan goes", async () => {
+        const g = gps();
+        await g.appendPoints("a", [fix({ t: 1000 })]);
+        await g.appendPoints("b", [fix({ t: 2000 })]);
+
+        expect(await g.sweepOrphanedPoints(null)).toBe(2);
+        expect(await g.totalLeaguesM()).toBe(0);
+      });
+    });
+
     test("and can be thrown away, which is the only thing it ever wrote", async () => {
       const g = gps();
       await g.appendPoints("orphan", [fix({ t: 1000 }), fix({ t: 2000 })]);

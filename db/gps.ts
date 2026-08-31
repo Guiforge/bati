@@ -122,3 +122,22 @@ export async function orphanedSessionIds(): Promise<string[]> {
 export async function deletePoints(sessionId: string): Promise<void> {
   await db.delete(gpsPoints).where(eq(gpsPoints.sessionId, sessionId));
 }
+
+/**
+ * Throw away ground nothing will ever claim.
+ *
+ * Points are written every second while a session runs, so an app that dies mid-outing leaves a
+ * trace with no session and no snapshot to resume from. Nobody is coming for those: they are not
+ * in the journal, no screen can reach them, and they would still be summed into the leagues that
+ * grow the High Road — a village built by a run that, as far as the hero is concerned, never
+ * happened.
+ *
+ * `keep` is the session the recovery banner is offering, whose points are exactly the ones that
+ * must survive. Passing it is not optional in practice: sweeping without it deletes the trace of
+ * the run the hero is about to resume.
+ */
+export async function sweepOrphanedPoints(keep: string | null): Promise<number> {
+  const orphans = (await orphanedSessionIds()).filter((id) => id !== keep);
+  for (const id of orphans) await deletePoints(id);
+  return orphans.length;
+}

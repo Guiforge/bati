@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { deletePoints, sweepOrphanedPoints } from "@/db/gps";
 import { preferences } from "@/db/preferences";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -11,6 +12,12 @@ import { useSettingsStore } from "@/stores/settings";
 export interface RecoverableSession {
   questTitle: string;
   questId: number;
+  /**
+   * The name the interrupted session was already filing GPS points under. Carried so discarding
+   * can take its ground with it, and so the orphan sweep knows the one trace it must not touch.
+   * Null for a snapshot written before sessions had names.
+   */
+  sessionUuid: string | null;
   /**
    * Where the hero stopped, as numbers. This used to be a pre-formatted
    * `"Round 2/3, Exercise 3/5"` built right here — in English, unconditionally, inside a hook
@@ -67,6 +74,7 @@ export function useSessionRecovery() {
       setRecoverableSession({
         questTitle: localizedTitle(saved.quest, language),
         questId: saved.quest.id,
+        sessionUuid: saved.sessionUuid ?? null,
         round: saved.currentRoundIndex + 1,
         roundTotal: saved.quest.rounds,
         exercise: saved.currentExerciseIndex + 1,
@@ -84,6 +92,22 @@ export function useSessionRecovery() {
       setIsChecking(false);
     }
   }, [language]);
+
+  /**
+   * Ground nothing will ever claim.
+   *
+   * An outing writes a point a second, so an app killed mid-run leaves a trace with no session
+   * and, if the snapshot went with it, nothing that could ever resume. Those points reach no
+   * screen and stay in the leagues that grow the High Road, which is a village built by a run
+   * that never happened. Swept after the recovery check rather than before, so the one trace
+   * the banner is about to offer is known and kept.
+   */
+  useEffect(() => {
+    if (isChecking) return;
+    sweepOrphanedPoints(recoverableSession?.sessionUuid ?? null).catch((e) =>
+      reportError("session.sweepOrphanedPoints", e),
+    );
+  }, [isChecking, recoverableSession]);
 
   // Check for saved session on mount
   useEffect(() => {
@@ -140,9 +164,17 @@ export function useSessionRecovery() {
   }, []);
 
   const discardSession = useCallback(async () => {
+    // The ground an abandoned outing covered goes with it. Points are written every second while
+    // a session runs, so a discarded expedition leaves a trace belonging to nothing: it would
+    // count toward the leagues that grow the High Road, for a session the hero just said never
+    // happened.
+    const uuid = recoverableSession?.sessionUuid;
+    if (uuid) {
+      await deletePoints(uuid).catch((e: unknown) => reportError("session.discardPoints", e));
+    }
     await preferences.clearSavedSession();
     setRecoverableSession(null);
-  }, []);
+  }, [recoverableSession]);
 
   return {
     recoverableSession,

@@ -815,6 +815,15 @@
     "resume": "Resume",
     "discard": "Discard"
   },
+  "recap": {
+    "title": "The ground covered",
+    "open": "See the ground covered",
+    "no_trace": "This quest never left the walls.",
+    "distance": "Distance",
+    "moving_time": "Moving",
+    "pace": "Pace",
+    "privacy": "Your route never leaves this phone."
+  },
   "safety": {
     "title": "Train safely",
     "before_title": "Before you start",

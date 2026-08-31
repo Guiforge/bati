@@ -85,6 +85,12 @@ export type CompletedExercise = {
 
 export type CompletedSession = {
   id: number;
+  /**
+   * The name this session was given at `startSession`, and the key its GPS points are written
+   * under — `gps_points.session_id` is this string, not the integer `id`. Null for every row
+   * logged before 0038 backfilled the column.
+   */
+  uuid: string | null;
   questId: number | null;
   userLevel: DifficultyCode;
   durationSeconds: number | null;
@@ -232,7 +238,9 @@ export async function updateSessionFeedback(
   await db.update(completedQuest).set({ feedback }).where(eq(completedQuest.id, sessionId));
 }
 
-export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
+// `uuid` is dropped as well as `exercises`: the list is a scroll of cards, and none of them opens
+// a trace. The screen that does re-reads the session by id.
+export type CompletedSessionListItem = Omit<CompletedSession, "exercises" | "uuid"> & {
   hasNewRecords: boolean;
 };
 
@@ -306,6 +314,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
   const rows = await db
     .select({
       sessionId: completedQuest.id,
+      sessionUuid: completedQuest.uuid,
       questId: completedQuest.questId,
       userLevel: completedQuest.userLevel,
       durationSeconds: completedQuest.durationSeconds,
@@ -353,6 +362,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
   if (!first) return null;
   const session: CompletedSession = {
     id: first.sessionId,
+    uuid: first.sessionUuid,
     questId: first.questId ?? null,
     userLevel: first.userLevel,
     durationSeconds: first.durationSeconds ?? null,

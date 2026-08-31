@@ -1,0 +1,9 @@
+- Le compte à rebours bipe les dernières secondes de repos, et tu
+  peux le couper sans quitter la séance.
+- Le repos se passe au coin du feu — une scène dessinée pour ton
+  héros, derrière le minuteur.
+- Remplacer un mouvement respecte sa mesure : des secondes pour des
+  secondes, des reps pour des reps.
+- Les sauvegardes promises n'avaient jamais été écrites. C'est réglé.
+- Petits correctifs : le clavier mangeait le premier tap, un filtre
+  cachait une quête, le compteur de reps débordait.

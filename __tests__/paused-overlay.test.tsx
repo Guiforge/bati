@@ -171,14 +171,14 @@ describe("the countdown beeps, from inside a session", () => {
   it("says which way it is set", async () => {
     useSettingsStore.setState({ soundEnabled: false });
     const off = await mountPaused();
-    // Regex, not a string: this matcher compares strings exactly, and the label carries the
-    // setting's name alongside its state.
-    expect(off.getByTestId("session-sound")).toHaveTextContent(/common\.off/);
+    // Regex, not a string: this matcher compares strings exactly, and the mocked t() renders
+    // the key itself.
+    expect(off.getByTestId("session-sound")).toHaveTextContent(/session\.sound_off/);
 
     await act(() => {
       useSettingsStore.setState({ soundEnabled: true });
     });
-    expect(off.getByTestId("session-sound")).toHaveTextContent(/common\.on/);
+    expect(off.getByTestId("session-sound")).toHaveTextContent(/session\.sound_on/);
   });
 });
 

@@ -144,7 +144,7 @@ export function PausedOverlay() {
               accessibilityRole="switch"
               accessibilityState={{ checked: soundEnabled }}
             >
-              {`${t("settings.sound")} · ${soundEnabled ? t("common.on") : t("common.off")}`}
+              {soundEnabled ? t("session.sound_on") : t("session.sound_off")}
             </AppButton>
 
             {canRestartRound ? (

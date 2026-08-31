@@ -37,7 +37,8 @@
   "plugins": [
     "./.biome/plugins/noRawHexColor.grit",
     "./.biome/plugins/noIdenticalTernaryArms.grit",
-    "./.biome/plugins/noDynamicEnvAccess.grit"
+    "./.biome/plugins/noDynamicEnvAccess.grit",
+    "./.biome/plugins/noJsNetwork.grit"
   ],
   "linter": {
     "enabled": true,

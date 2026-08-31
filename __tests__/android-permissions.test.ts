@@ -93,6 +93,14 @@ const ALLOWED: Record<string, string> = {
     "modules/bati-location — the typed half of FOREGROUND_SERVICE since API 34. A service of " +
     "type `location` is also the one type Android 15 exempts from its foreground-service " +
     "duration cap, which is what lets a session outlast a long climb.",
+  "android.permission.INTERNET":
+    "@maplibre/maplibre-react-native, for the recap map's tiles — the app's first network " +
+    "request, and the end of a line that had been true since it shipped. What kept the promise " +
+    "before was this permission's absence; what keeps it now is " +
+    ".biome/plugins/noJsNetwork.grit, which refuses fetch, XMLHttpRequest, WebSocket, " +
+    "EventSource and sendBeacon anywhere in the app. MapLibre fetches natively, from the one " +
+    "host named in the privacy policy, and no JavaScript here opens a socket at all. " +
+    "expo-file-system and expo-image also declare it and still never use it.",
   "android.permission.POST_NOTIFICATIONS":
     "modules/bati-location — since API 33 the foreground-service notification is invisible " +
     "without it. The service still runs, but the one thing telling the hero their phone is " +
@@ -222,11 +230,26 @@ describe("Android permissions", () => {
     expect(expected).toEqual([...expected].sort());
   });
 
-  test("the app still ships no way to reach the network", () => {
-    // The whole "nothing leaves your phone" claim in the store description rests on this one
-    // line. expo-file-system and expo-image both declare INTERNET; blockedPermissions is what
-    // keeps it out of the built manifest.
-    expect(blocked.has("android.permission.INTERNET")).toBe(true);
+  test("the network the app can reach is one host, and a lint rule is what says so", () => {
+    // This test used to assert that INTERNET was blocked, and that single line was the whole
+    // enforcement behind "nothing leaves your phone". The recap map needs tiles, so the line is
+    // gone. What replaced it has to be asserted here, or the promise degrades into a claim the
+    // moment someone writes a convenient fetch().
+    expect(blocked.has("android.permission.INTERNET")).toBe(false);
+    const biome = JSON.parse(fs.readFileSync(path.join(ROOT, "biome.json"), "utf8")) as {
+      plugins: string[];
+    };
+    expect(biome.plugins).toContain("./.biome/plugins/noJsNetwork.grit");
+    // The plugin has to name every way JavaScript can open a socket, not just the famous one.
+    const plugin = fs.readFileSync(
+      path.join(ROOT, ".biome", "plugins", "noJsNetwork.grit"),
+      "utf8",
+    );
+    for (const api of ["fetch", "XMLHttpRequest", "WebSocket", "EventSource", "sendBeacon"]) {
+      expect(plugin).toContain(api);
+    }
+    // Still blocked, and still for the original reason: nothing here asks what kind of network
+    // it is on. If the map turns out to need it, that is a decision, not a patch.
     expect(blocked.has("android.permission.ACCESS_NETWORK_STATE")).toBe(true);
     // ACCESS_WIFI_STATE joined them on 2026-08-31, from MapLibre — and not from the npm package
     // this file can read. `org.maplibre.gl:android-sdk-opengl` declares it in the AAR, which is

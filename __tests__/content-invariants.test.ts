@@ -305,16 +305,6 @@ describe("content invariants", () => {
     // about the catalogue the app ships, not about what someone writes in it.
     const orphans = (await exerciseApi.listExercises())
       .filter((e) => e.creator === "Admin")
-      // ponytail: cardio exempted because a quest is no longer the only door. An expedition is
-      //           an ad-hoc session, not a quest, so these movements will never appear in
-      //           `quest_exercises` — but the entry screen that reaches them is step 4 of
-      //           docs/designs/expeditions.md and does not exist yet, so right now they are
-      //           genuinely unreachable. The trigger to tighten this: when that screen lands,
-      //           replace the exemption with a reachability assertion through it. Until then
-      //           the test below is what stops these three from drifting unnoticed. Note it
-      //           exempts `expedition`, never `cardio`: burpees belong to quests and must stay
-      //           inside this rule.
-      .filter((e) => e.style !== "expedition")
       .filter((e) => !used.has(e.id))
       .map((e) => e.enName);
 

@@ -199,8 +199,24 @@ the `BuildingDriver` union, the hardcoded driver chain at `village.ts:331-336`,
 `getBuildingProgress` (whose whitelist otherwise shows nothing for a locked road at level 0),
 and a leagues fetch threaded into `LevelInputs` and the `Promise.all` in `getVillageBuildings`.
 
-### The entry, and the two-second session it must not create
-An ad-hoc quest: one round, one exercise, target optional.
+### The entry: three quests, not an ad-hoc object
+**Revised in build, 2026-08-31.** This section imagined a synthetic quest assembled in memory.
+The mechanism was already on the shelf: `db/questConfig.ts` stores a target per slot that the
+hero edits before starting, persisted, which is exactly the "choose your duration" of D1. So the
+three expeditions are three seeded quests — one round, one movement, `metabolic` archetype
+(continuous effort, low rest, which is what an outing is on that axis). Nothing new in the store,
+and the orphan-exercise exemption that 0041 needed is **deleted**: the movements are reachable,
+so the invariant holds without a hole in it.
+
+The seeded targets are 10 to 20 minutes because `content-invariants` holds seeded quests to an
+8-to-25-minute design window. That is not advice about how far to walk: the hero's own duration
+lives in their quest config, which is theirs and is not content.
+
+What this defers: the stopwatch half of D1 — leaving with no target at all. A quest always
+carries one, and the clamp below is exactly why the untargeted case is its own piece of work.
+
+### The clamp, still owed by the stopwatch
+An ad-hoc, untargeted session: one round, one exercise, no target.
 
 **The clamp is the showstopper, found in review and verified.** `stores/session.ts:964` writes
 `durationSeconds = Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2)`. With no target,

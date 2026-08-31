@@ -252,6 +252,26 @@ without knowing how far — the RPG justification for "no objective", at the cos
    the accident this doc first called it. Decide before the entry screen ships.
 2. Names: the three activities, the resource (leagues?) and the building (road? gate? stable?).
 3. Where the leagues total is read — journal, village, or both.
+
+**Settled 2026-08-31, four decisions that unblock the rest.**
+
+- **Leagues are metres.** Distance, never seconds, and never a column that holds both: an hour's
+  walk (3600) beside a 3 km run (3000) would land within a fifth of each other by accident,
+  which is the unit-mixing bug `db/workUnits.ts` exists to correct, one storey up. The price is
+  honest: a time-mode outing earns no leagues until GPS is wired, because it has not measured
+  any ground. Time was rejected for the reason the whole feature exists — an hour on a mount
+  covers four times an hour on foot, and a currency that cannot say so has nothing to say.
+- **Signal loss is not stillness.** Under trees the accuracy collapses and fixes are refused,
+  but the hero is walking. The trace breaks and the reward clock keeps running; only movement
+  that has actually stopped stops it. The service already tells these apart — `noFixTimeout` and
+  `providerEnabled` are separate events. A phone in a pocket with no sky credits time it cannot
+  prove, and that is a deliberate bet on the hero: a training app that tells someone they did
+  not walk through a forest is wrong even when its sensors are right.
+- **Tile host: VersaTiles**, Shortbread schema. See `map-immersion.md`.
+- **v2 stops after the road.** Storage, the session screen, the recap map and the
+  `leagues`-driven building. The stopwatch (leaving with no target at all) and the
+  anti-task-killer screen are v2.1: the first needs the duration clamp solved, and the second
+  needs a field report before it knows what to say.
 6. `app/oath.tsx`'s custom form offers any non-retired exercise, so a hero can swear an
    `exercise_volume` oath on a cardio movement and sit at 0 forever once the chokepoint returns
    0. Either exclude cardio from that picker for volume metrics, or give leagues an oath metric

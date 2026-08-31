@@ -33,12 +33,20 @@ the buildings of a village that grows out of what you lifted — not out of what
 Sport first, RPG second: the training logic leads and the game amplifies it. Nothing decorative
 gets between you and your next set.
 
-**Nothing leaves your phone.** No account, no servers, no analytics, no ads. Bati makes no network
-requests at all — your history lives in a database on your device and nowhere else. That is the
-architecture, not a setting you have to find.
+It is built for people who train alone and lose the thread, at home, in a gym, or on a road out of
+town. No coach, no feed, no leaderboard, nobody to compare yourself to. The only thing keeping
+score is a village that can only be built by showing up.
 
-> **Early days.** The app works end to end and is in the hands of its first testers. It is on no
-> store yet: the builds below are signed by its author rather than by a shop.
+**Your training stays on your phone.** No account, no servers, no analytics, no ads. Your history
+lives in a database on the device and is never uploaded. Bati asks for internet access for exactly
+one thing: the map tiles behind an expedition's route, fetched from `tiles.openfreemap.org`. No
+other part of the app is allowed to open a connection: a lint rule rejects every network call
+written in JavaScript, so a second destination cannot arrive by accident. That is the architecture,
+not a setting you have to find.
+
+> **Early days.** The app works end to end and is published through F-Droid, which is where its
+> first users came from. It is not on Google Play: that account exists and has never left its
+> internal track.
 
 ## See it
 
@@ -74,11 +82,19 @@ session in the arc you have to show up for.
 **The village is made of what you lifted.** Train shoulders, the forge rises. Nothing in it can be
 bought, skipped or rushed; every building is a receipt for work you actually did.
 
+**Some quests leave the walls.** Walking, running and riding are expeditions: a session measured
+in ground covered rather than repetitions. The distance comes from the app's own GPS module,
+written against Android's `LocationManager` with no Google library anywhere near it, and the
+leagues it records raise the High Road, the one building in the village that nothing you lift can
+level.
+
 **Years of history, on one screen.** Streaks, records, muscle balance and every session you ever
 finished — read from a database on your phone, with nothing to log in to.
 
-**No account, no network.** Bati makes no requests at all. There is no server to leak, no analytics
-to opt out of, and no cloud copy of your training. [Privacy policy](https://guiforge.github.io/bati/privacy/).
+**No account, and one network destination.** There is no server to leak, no analytics to opt out
+of, and no cloud copy of your training. The only thing Bati ever fetches is map tiles, from
+`tiles.openfreemap.org`; nothing travels the other way, and the trace of your route stays in the
+database on your phone. [Privacy policy](https://guiforge.github.io/bati/privacy/).
 
 ## Install it
 
@@ -146,7 +162,8 @@ npm start          # Expo dev server
 ```
 
 Running on a device needs a dev build (`npm run android` / `npm run ios`), because the app uses
-native modules — SQLite, audio, an Android home-screen widget.
+native modules: SQLite, audio, an Android home-screen widget, MapLibre, and `modules/bati-location`,
+the location service this repo owns. Expo Go loads none of them.
 
 ## Scripts
 
@@ -164,10 +181,13 @@ native modules — SQLite, audio, an Android home-screen widget.
 
 All of these run in CI; the first three also run on commit or push.
 
-- **Biome** — formatting and lint, including a GritQL plugin that rejects raw hex colours
-  outside [`constants/rawColors.ts`](constants/rawColors.ts).
+- **Biome** — formatting and lint, including four GritQL plugins written for this repo. One
+  rejects raw hex colours outside [`constants/rawColors.ts`](constants/rawColors.ts); another
+  ([`noJsNetwork.grit`](.biome/plugins/noJsNetwork.grit)) rejects `fetch`, `XMLHttpRequest`,
+  `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app, which is what keeps "one host"
+  a fact rather than a sentence in this file.
 - **TypeScript**, strict.
-- **Jest** — ~600 tests, with coverage thresholds set just under actual so they catch deletion
+- **Jest** — ~1100 tests, with coverage thresholds set just under actual so they catch deletion
   rather than reward padding.
 - **Knip** — dead code. At zero; anything it reports is new.
 - **expo-doctor** — 20 checks on dependency versions and project shape, all green. A version the
@@ -181,6 +201,7 @@ All of these run in CI; the first three also run on commit or push.
 - `db/` — SQLite + Drizzle domain logic; the source of truth for game rules
 - `stores/` — Zustand state (session, settings, user)
 - `constants/` — game design constants and the colour palette
+- `modules/` — local Expo modules; `bati-location` is the Kotlin GPS service
 - `docs/` — the wiki: product, design, gameplay, architecture, planning
 - `.maestro/` — E2E flows
 - `plugins/` — local Expo config plugins

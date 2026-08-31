@@ -16,7 +16,8 @@ npm start            # Expo dev server
 ```
 
 The app needs a dev build to run on a device (`npm run android` / `npm run ios`): it uses SQLite,
-audio, notifications and an Android home-screen widget, none of which work in Expo Go.
+audio, notifications, an Android home-screen widget, MapLibre and `modules/bati-location` (the
+Kotlin location service this repo owns), none of which work in Expo Go.
 
 ## Before you push
 
@@ -43,6 +44,11 @@ is a bug that got past a fully green build, and they are short. The three that c
   while the data underneath is wrong.
 - **One source per value.** Colours live in `constants/rawColors.ts`; a lint plugin rejects raw
   hex anywhere else. Titles go through `localizedTitle()`.
+- **No network from JavaScript.** `.biome/plugins/noJsNetwork.grit` rejects `fetch`,
+  `XMLHttpRequest`, `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app. Map tiles are
+  fetched natively by MapLibre from the one host named in the privacy policy; a second destination
+  is a product decision and a policy edit, not a patch. If a feature genuinely needs a request from
+  JS, delete that plugin in the same commit and say in the message which host and why.
 
 [`DESIGN.md`](DESIGN.md) holds the visual non-negotiables — dark-only, tokens, one primary action
 per screen. [`PRODUCT.md`](PRODUCT.md) says who the app is for and what it deliberately refuses
@@ -63,5 +69,5 @@ goes — it is fine, and encouraged, for it to be longer than the change.
 
 ## Releases
 
-Tag-driven, see [`AGENTS.md`](AGENTS.md#branching-and-releases). You almost certainly do not need
-to cut one; open a PR and it will go out with the next.
+Tag-driven, see [`AGENTS.md`](AGENTS.md#releases). You almost certainly do not need to cut one;
+open a PR and it will go out with the next.

@@ -17,6 +17,13 @@ recipe choice, the long-form reasoning lives in fdroiddata-recipe.yml beside thi
 
 Review is human — expect questions and a wait measured in weeks. Once accepted, the README badge
 switches to https://f-droid.org/packages/com.guiforge.bati/ (it 404s until then).
+
+HISTORICAL RECORD. Merged on 2026-08-19 as MR 45076; the body below is the text that was actually
+submitted and is kept as written. Two of its claims describe 1.2.x and no longer describe the app:
+the APK is smaller now, and "no network requests at all" ended with the expeditions release, which
+added INTERNET for map tiles from tiles.openfreemap.org and five permissions for outdoor sessions.
+fdroid/expected-permissions.txt is the current list; fdroiddata-recipe.yml carries the current
+MaintainerNotes.
 -->
 
 ## Required

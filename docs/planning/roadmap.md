@@ -37,13 +37,17 @@ mini-game. If a reward surface competes with starting or continuing a workout, d
   is loaded — anything above it renders wrong, silently).
 - i18n for every user-facing string. A raw English literal in a component is a bug, not a TODO.
 - The dark-fantasy voice stays. Best practice changes the numbers, never the fiction.
-- **No network requests**, and this one is enforced rather than promised: `app.json` lists
-  `android.permission.INTERNET` and `ACCESS_NETWORK_STATE` under `blockedPermissions`, so the
-  release manifest ships without them and a stray `fetch` fails at runtime rather than at review.
-  The Data Safety form says "no data collected, no data shared", and every feature below is scoped
-  so that stays true. Lifting the guardrail therefore costs a manifest change as well as a
-  paragraph on this page — which is the correct price, and why every network item in §4 and §5 is
-  ranked where it is.
+- **One network destination, and nothing uploaded.** This guardrail was "no network requests at
+  all" until expeditions landed, and it was enforced by `blockedPermissions`: `INTERNET` was not in
+  the manifest, so a stray `fetch` failed at runtime rather than at review. A route drawn on a map
+  needs the map, so `INTERNET` is now in the build and `tiles.openfreemap.org` is the one host the
+  app talks to. What replaces the manifest is narrower and says the same thing:
+  [`.biome/plugins/noJsNetwork.grit`](../../.biome/plugins/noJsNetwork.grit) rejects `fetch`,
+  `XMLHttpRequest`, `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app; MapLibre
+  fetches natively, and no JavaScript here opens a socket at all. `ACCESS_NETWORK_STATE` stays
+  blocked. **Nothing is ever sent up**: no session, no trace, no identifier. A *second* host, or
+  any request from our own code, is still the guardrail, and it now costs deleting that plugin in
+  the same commit, which is why every network item in §4 and §5 is ranked where it is.
 - [../design/ui-checklist.md](../design/ui-checklist.md) is the merge gate for UI work.
 
 ---
@@ -235,7 +239,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.17 | Micro-animations, incl. resource gain | Low | S each | P3 | |
 | 4.25 | A result card that can be shared as an image | Low | S–M | P3 | Streak |
 | 4.18 | Multi-device sync — reconciliation only | Medium | XL | P3 | |
-| 4.19 | GPS / outdoor quests | Low | L | P3 | |
+| 4.19 | GPS / outdoor quests | Low | L | done | **Shipped** as expeditions, 2026-08-31 |
 | 4.20 | `fallow` in the toolchain | Dev-only | S | P3 | |
 
 Desktop is a distribution question, not a feature — it lives in §1.
@@ -672,8 +676,12 @@ one of them buys the same file 4.21 already writes, for a cost 4.21 does not pay
 
 ### 4.19–4.20 The rest
 
-GPS (4.19) means a runtime location permission and a Data Safety answer that stops being "no",
-for outdoor quests nobody has asked for — the cost is not the code. `fallow`
+GPS (4.19) **shipped on 2026-08-31** as expeditions, and it cost exactly what this line said it
+would: a runtime location permission, five other permissions beside it, `INTERNET` in the manifest
+and a Data Safety answer that stops being "no". What made it worth the bill was not demand but the
+proof: an Expo app tracking a run on a de-Googled ROM, with no Google library in the tree and
+F-Droid still able to build it. See [`../designs/gps-without-google.md`](../designs/gps-without-google.md)
+and [`../designs/expeditions.md`](../designs/expeditions.md). `fallow`
 (<https://github.com/fallow-rs/fallow>, 4.20) is already leaving caches in `.fallow/`; the open
 question is whether it replaces `npm run deadcode` in CI or merely runs beside it, and a second dead
 code gate that nothing gates on is worth less than the one in §3 being made to fail.

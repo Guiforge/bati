@@ -12,9 +12,13 @@ adaptive
 
 Bati is built for solo lifters at the gym who want their workouts to feel like a game. The primary user opens the app between sets or on the way to the rack: phone in one hand, mid-session, wanting to log the next set quickly and feel a sense of progress without breaking focus. They train alone, motivate themselves, and stick with it because the app turns effort into something worth coming back to.
 
+The same person also walks, runs or rides, and expeditions exist so those outings land in the same journal rather than in a second app. Outdoors the phone is in a pocket, not in a hand: an expedition asks for one tap on the way out and one on the way back, and says the rest through a notification.
+
 ## Product Purpose
 
 Bati turns strength training into an RPG so people stay consistent. Quests are workouts, boss fights turn reps into damage, and muscle work earns resources that build out a village. Success is a logged workout streak: the user keeps showing up because each session advances an adventure, not just a spreadsheet.
+
+Expeditions are the one thing that happens outside the walls, and they are deliberately paid in a currency nothing else uses: ground covered raises the road out of the village and never becomes boss damage or building volume. A hero who only walks travels far and kills nothing; a hero who only lifts hits hard and never leaves. That tension is the reason a training app should want both.
 
 ## Positioning
 

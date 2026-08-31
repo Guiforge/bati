@@ -39,7 +39,13 @@ F-Droid React Native doc predates prebuild and Hermes.
   still runs), and removes `INTERNET` from `blockedPermissions`. No `ACCESS_BACKGROUND_LOCATION`: the quest starts with the app on
   screen, and a foreground service of type `location` has no duration cap on Android 15.
 - Play Data Safety form and privacy policy change: location collected (on device only), one
-  network destination (the tile host). This is the app's first network request.
+  network destination (the tile host). This is the app's first network request. "One screen,
+  one host" is enforced by lint, not prose (review 3A): a GritQL plugin under
+  `.biome/plugins/` bans `fetch`, `XMLHttpRequest` and `WebSocket` everywhere — MapLibre does
+  its networking natively, so JS network APIs have zero legitimate users in this codebase.
+- Play Console: `FOREGROUND_SERVICE_LOCATION` requires a foreground-service-type declaration
+  (with video justification) and the location permission triggers its own declaration flow —
+  a Play-side gate independent of F-Droid, handled in step 8.
 - Dark mode only, Tamagui tokens, no manual memo (React Compiler), one writer per state.
 - Time-mode quests (minutes, not reps) are a prerequisite and land first.
 
@@ -63,8 +69,8 @@ F-Droid React Native doc predates prebuild and Hermes.
 ### Approach A: Local Expo module, JS writes points (chosen)
 `modules/bati-location`: Kotlin foreground service emits `Location` events to JS; JS filters
 and inserts into a `gps_points` table through Drizzle/expo-sqlite like every other write.
-Effort M (human ~7 d / CC ~1.75 d, the sum of Next Steps 4 and 6-8). Risk Med.
-~250 lines Kotlin, one hand-written migration.
+Effort M (human ~7.5 d / CC ~1.9 d, the sum of Next Steps 4 and 6-8). Risk Med.
+~300 lines Kotlin, one generated migration edited once.
 Con: points buffered in the service while Hermes is dead are lost until the restart receiver
 relaunches the app; the trace gets a hole.
 
@@ -81,15 +87,43 @@ permission ratchet would vouch for a dependency Bati does not control.
 
 **A.** Smallest module that owns its whole loop, points stay on the existing write path.
 
+```
+ GPS chip → LocationManager (GPS_PROVIDER, 1000 ms / 0 m)
+              │ fix
+              ▼
+ BatiLocationService (Kotlin, FGS type location, PARTIAL_WAKE_LOCK)
+   ├─ permission guard before startForeground (typed error, no throw)
+   ├─ accuracy/speed thresholds (from start()), distFromPrev
+   ├─ notification state: acquiring / tracking / paused / GPS off
+   └─ self-stop 2 min after restart with no JS consumer
+              │ event {t, lat, lon, ele, acc, speed, bearing, distFromPrev}, 1 Hz
+              ▼
+ src/gps/track.ts (pure reducer)             src/gps/points.ts (codec)
+   ├─ monotonic guard (skip t ≤ lastT)          ▲ encode        │ decode
+   ├─ distance += distFromPrev                  │               ▼
+   ├─ auto-pause / segment breaks               │      ┌─ recap map (MapLibre)
+   └─ storage decimation ≥ 10 m ──────────► gps_points ┼─ GPX export
+              │                     (SQLite, WAL,      └─ orphan resume
+              ▼                      INSERT OR IGNORE)    (recompute aggregates)
+ session store (Zustand)
+   ├─ aggregates banked in memory, committed in saveSession
+   └─ SavedSessionState snapshot @ GPS start + every pause transition
+```
+
 ### Native module (`modules/bati-location`, Android only)
 - `LocationManager.requestLocationUpdates(GPS_PROVIDER, 1000, 0f, listener)` — the GPSLogger
   call, without its AlarmManager duty cycle.
 - Foreground service: `startForeground(id, notification, FOREGROUND_SERVICE_TYPE_LOCATION)`,
   `PARTIAL_WAKE_LOCK`, `START_STICKY`, restart receiver on process death (GPSLogger's
   `RestarterReceiver` pattern, rewritten).
-- Events to JS: `{ t, lat, lon, ele, acc, speed, bearing }` per fix, plus
-  `{ providerEnabled }` and a `noFixTimeout` after 30 s without a fix (LineageOS providers that
-  declare themselves alive and return nothing). No satellite count: a reliable one needs a
+- Events to JS: `{ t, lat, lon, ele, acc, speed, bearing, distFromPrev }` per fix — the
+  service computes `Location.distanceTo(prev)` natively, so JS never calls native for math
+  (review 4A). The accuracy and speed rejection also lives in the service (thresholds passed
+  to `start()`), otherwise `distFromPrev` would measure against fixes JS discarded; JS keeps
+  session-level logic only: auto-pause, segments, storage decimation. Plus
+  `{ providerEnabled }`, an `acquiring` state, and a `noFixTimeout` that only arms *after*
+  the first fix — cold TTFF on de-Googled ROMs (no SUPL/PSDS assistance) is minutes, not
+  seconds, and the pill must say "acquiring", never "GPS off", during warm-up. No satellite count: a reliable one needs a
   separate `GnssStatus` callback, and the start gate below works on accuracy alone — machinery
   deleted, revisit only if T5 shows the gate opening on garbage fixes.
 - JS API: `start(notification: {title, body})`, `stop()`, `addListener()`,
@@ -102,8 +136,14 @@ permission ratchet would vouch for a dependency Bati does not control.
   grants work normally for that session.
 - Manifest entries via the module's own `AndroidManifest.xml`; each permission justified in
   `__tests__/android-permissions.test.ts` in the same commit.
-- Small: for a service restarted by the OS with no JS alive, the service emits nothing and
-  waits; JS resumes on next app open via the orphan-session rule below. Native buffering is the
+- `start()` checks the location grant natively before `startForeground` and returns a typed
+  error event instead of throwing — Android 14+ raises `SecurityException` on a location-type
+  service without the grant (review 2A). Mid-session revocation kills the app process by
+  design; that death lands in the orphan-resume path and the recap says why the session ended.
+- For a service restarted by the OS with no JS alive (`START_STICKY`), the service does not
+  re-acquire GPS or the wake lock; if no JS consumer binds within 2 minutes it calls
+  `stopSelf()` — a waiting service holding a wake lock forever is an overnight battery drain.
+  JS resumes on next app open via the orphan-session rule below. Native buffering is the
   Approach B upgrade.
 
 ### Filtering (JS, at read and at write)
@@ -111,7 +151,11 @@ permission ratchet would vouch for a dependency Bati does not control.
   check, which needs `GnssStatus` plumbing the gate does not earn).
 - Write raw points, reject only accuracy > 50 m and implausible speed per mode: > 8 m/s
   walking or running, > 25 m/s riding (28.8 km/h is routine on a bike downhill; 8 m/s would
-  drop legitimate fixes and sink the 3 % distance criterion on the ridden T5 loop).
+  drop legitimate fixes and sink the 3 % distance criterion on the ridden T5 loop). These
+  thresholds are enforced in the service, passed via `start()` (see the module section).
+- Monotonic guard (review 1A): JS keeps `lastT` per session and skips any fix with
+  `t <= lastT` for storage (still counted for distance); `Location.getTime()` is the system
+  clock on several ROMs, and an NTP step backwards must never be able to abort a batch.
 - Distance: `Location.distanceTo()` exposed by the module (WGS84, native). Distance sums the
   gap between every pair of consecutive accepted fixes; a point is *stored* only when ≥ 10 m
   from the last stored one (storage threshold, not a distance filter).
@@ -131,9 +175,16 @@ permission ratchet would vouch for a dependency Bati does not control.
   one prepared insert per stored point, flushed as a transaction every 10 accepted fixes and
   on pause/stop — event-count flushing, because a JS timer with the screen off is not what the
   wake lock guarantees; native event delivery is.
-- `WITHOUT ROWID` + composite PK is outside drizzle-kit's vocabulary: the migration is
-  hand-written SQL, and the Drizzle table definition describes a table it did not create.
-  One migration still, but not on the generator's happy path.
+- The prepared insert is `INSERT OR IGNORE`, so one duplicate `t` can never kill a batch
+  (review 1A backstop).
+- Migration path: `gps_points` is defined in `schema.ts`, `db:generate` produces the
+  migration, and the generated SQL is edited once to add `WITHOUT ROWID` before it ever runs.
+  The snapshot tracks `schema.ts`, so every future `db:generate` stays on the happy path — no
+  forked workflow.
+- Single codec (review 5A): `src/gps/points.ts` owns encode/decode between
+  `{ lat, lon, ele, … }` and the scaled-integer row shape; the writer, both screens, the GPX
+  exporter and orphan-resume all import it, and a property test round-trips it — "one source
+  per value".
 - Live-session identity: a session UUID minted at session start. Today `uuidv7` is minted
   inside `saveSession` (`db/completed.ts`) and `SavedSessionState` carries no uuid — so the
   change is: mint at start, add the field to `SessionState` and the `SavedSessionState` Pick
@@ -141,6 +192,12 @@ permission ratchet would vouch for a dependency Bati does not control.
   `createCompletedSession` instead of minting there. `gps_points.session_id` is that UUID. A
   `gps_points` session id with no matching `completed_quest.uuid` and no live session state =
   orphan; offer resume-or-discard on next launch. No new writer, no in-progress table.
+- Snapshot trigger (the review's biggest catch): today `SavedSessionState` is written only
+  when round / exercise / results indices change or on pause — none of which move during a
+  45-minute screen-off run, so process death would find no snapshot and "resume" would be a
+  lie. The GPS session forces a snapshot write at session start and on every auto-pause
+  transition: same writer, two more trigger points, so quest identity and config always
+  survive process death.
 - Aggregates (distance, moving time, current pace) live in the session Zustand store,
   banked in memory and committed in `saveSession`, per the "never write game state before it
   is earned" rule. Orphan resume recomputes them from the stored points — slightly lossy
@@ -154,8 +211,13 @@ permission ratchet would vouch for a dependency Bati does not control.
   <host>; your route is never uploaded".
 - Battery-killer screen on first GPS quest: one generic explainer with a deep link to the
   app's own battery settings page. Per-OEM deep links (Xiaomi, Samsung, OnePlus, Huawei)
-  deferred until a field report shows a killed session — the stated audience runs ROMs
-  without those killers.
+  deferred until a field report shows a killed session. The F-Droid audience runs ROMs
+  without those killers, but the Play internal track does not — expect the first report from
+  a Xiaomi, and treat it as the trigger.
+- Every failure event becomes a breadcrumb (review 6A): `noFixTimeout`, provider-off,
+  permission-revoked, batch write failure and tile-load failure each call
+  `reportError(context, error)` with the session phase — GPS on exotic ROMs is the breadcrumb
+  pipeline's highest-value customer. Deliberate silences get the mandated written why.
 
 ### Export
 - GPX 1.1, pure TypeScript, `time` on every `trkpt`, XSD order `ele`/`time`/`extensions`,
@@ -175,6 +237,13 @@ permission ratchet would vouch for a dependency Bati does not control.
    Product call, needed before the session store changes. Settled already: a time-mode GPS
    quest credits moving time only (see Filtering); what remains open is distance-mode quests
    and how distance converts to damage and resources.
+6. Reward fairness under bad GPS: with moving-time-only credit, auto-pause triggered by tree
+   cover or an urban canyon docks a hero's pay for effort actually spent — the accuracy filter
+   becomes the paymaster. Product call: does the reward clock key on movement only, or does
+   accuracy loss pause the trace but never the credit? Decide before step 6 builds the
+   aggregates.
+7. Time-mode quest design: step 1 needs its own design doc — quest schema, session store,
+   damage conversion, Home — before any GPS step is scheduled.
 
 ## Success Criteria
 
@@ -185,7 +254,9 @@ permission ratchet would vouch for a dependency Bati does not control.
 - `npm test` green including `android-permissions.test.ts` with every new permission justified.
 - F-Droid metadata builds the APK with the module, no `scandelete`, no anti-feature.
 - APK under 55 MiB.
-- The recap map renders from cache with airplane mode on, for a route seen once online.
+- The recap map renders from MapLibre's ambient cache with airplane mode on for a route seen
+  recently online — best effort, not guaranteed: the cache is ~50 MB LRU and promises no
+  retention. The trace itself always renders; only the basemap can be missing.
 
 ## Distribution Plan
 
@@ -196,19 +267,69 @@ Play internal track needs the Data Safety form updated before the next upload.
 
 ## Next Steps
 
-1. Time-mode quests (prerequisite, separate branch).
+1. Time-mode quests (prerequisite, separate branch). Unscoped today and plausibly more
+   product work than the module itself — it gets its own design doc before step 4 starts.
 2. Read GPSLogger `GpsLoggingService`, note, close the tab (GPL). Read OpenTracks and Traccar
    Client for the same mechanism in Apache-2.0 (copyable).
 3. Empty `modules/bati-location` with a manifest that declares the six permissions and a
    test justification, pushed to a branch, `workflow_dispatch` release build + F-Droid recipe
-   dry run. This answers open question 2 before any Kotlin.
+   dry run. This answers open question 2 before any Kotlin. The build also carries
+   `@maplibre/maplibre-react-native` and one spike screen: the measured APK delta against the
+   size ratchet (review 8A) and proof the map renders on this RN + Fabric combination both
+   arrive before anything depends on MapLibre.
 4. Module: foreground service + listener + events (2 d human / 0.5 d CC), app in foreground.
 5. Field test T5 (needs a GrapheneOS or /e/OS phone).
-6. `gps_points` migration, JS filters, session store aggregates (2 d / 0.5 d).
+6. `gps_points` migration, codec, service-side filter thresholds, session store aggregates,
+   and the dev-only test-provider replay harness — a recorded trace replayed through the real
+   service, filters and storage via `LocationManager.addTestProvider`, `__DEV__`-gated
+   (review 7A) (2.5 d / 0.6 d).
 7. Session numbers screen, recap with MapLibre, tile host chosen, privacy line (2 d / 0.5 d).
 8. GPX export, battery-killer screen, Data Safety form (1 d / 0.25 d).
 9. v1.1: barometer elevation (tier 1), OpenTracks recipe (5 s sample, EMA α=0.3, 3 m steps),
    labelled "measured by barometer" in the UI.
+
+## Test Plan
+
+Full coverage map (24 paths, all pre-implementation gaps) lives in the eng-review test plan
+artifact under `~/.gstack/projects/Guiforge-bati/`. The spine:
+
+- `src/gps/track.ts` is a pure reducer so every branch unit-tests without mocks: rejection
+  thresholds, monotonic guard, distance accumulation, segment break, auto-pause engage /
+  resume / credit rules, start gate.
+- `src/gps/points.ts`: property test round-tripping the codec.
+- Storage: `INSERT OR IGNORE` survives a duplicate `t`; flush on 10 fixes and on pause/stop;
+  orphan query finds points without a `completed_quest.uuid`.
+- GPX: golden-file test — timestamp on every `trkpt`, XSD order, `gpxtpx` prefix.
+- `__tests__/android-permissions.test.ts`: six new justifications, ratchet not widened.
+- **CRITICAL regression**: uuid moves from `createCompletedSession` to session start —
+  existing `saveSession` tests must still prove `completedQuest.uuid` written and unique.
+- End-to-end: the dev-only test-provider replay harness (step 6); Maestro asserts stored
+  state, never navigation.
+
+## What already exists
+
+- Session Zustand store: pause accounting (`totalPausedTime`), timers, `SavedSessionState`
+  Pick — extended, not rebuilt.
+- `completedQuest.uuid` (uuidv7) — relocated to session start, not duplicated.
+- Permissions ratchet test + `withAndroidTrimPermissions` — the enforcement points this plan
+  hooks into.
+- `reportError` breadcrumbs (PR #53) — the sink for every GPS failure event.
+- expo-sqlite with WAL already on; the Drizzle migration pipeline.
+- `.biome/plugins/` GritQL precedent — the network-API ban is the fourth plugin, same idiom.
+- Nothing like `modules/` exists yet: this is the repo's first local native module, which is
+  why the F-Droid dry run precedes any Kotlin.
+
+## NOT in scope
+
+- iOS (deferred until an iOS build exists in CI — premise P4).
+- Elevation beyond storing `ele` (tier 1 barometer in v1.1 — premise P7).
+- Offline map packs and bundled maps (rejected in office hours, D3).
+- TCX / FIT export (licence and maintenance — GPX only).
+- Per-OEM battery-killer deep links (generic screen ships; OEM links on first field report).
+- Live map during the session (numbers only — battery decision).
+- A separate demo repo as the open-source proof vehicle (outside voice #11, rejected: the
+  quest mode is half the value and cannot live there).
+- Approach B native writes (upgrade path, gated on T5 hole frequency).
 
 ## What I noticed about how you think
 
@@ -221,3 +342,45 @@ Play internal track needs the Data Safety form updated before the next upload.
 - When I put "no basemap in v1" in front of you as a premise you rejected it and took the
   permission cost instead. You then chose the smallest module of the three. Conviction on the
   product, restraint on the code.
+
+## GSTACK REVIEW REPORT
+
+| Runs | Skill | Date | Status |
+|------|-------|------|--------|
+| 1 | /office-hours + 3-round adversarial spec review | 2026-08-30 | APPROVED (9/10) |
+| 2 | /plan-eng-review (this report) | 2026-08-31 | CLEAN |
+
+**Findings** (all resolved, decisions folded into the body above):
+
+| # | Severity | Finding | Decision |
+|---|----------|---------|----------|
+| 1 | P1 | Clock step aborts point batches (PK on t) | 1A monotonic guard + INSERT OR IGNORE |
+| 2 | P2 | FGS permission lifecycle (Android 14+, revocation) | 2A native guard + documented death path |
+| 3 | P2 | INTERNET is app-wide; "one host" was prose | 3A GritQL ban on JS network APIs |
+| 4 | P3 | distanceTo() as a JS-callable native method | 4A distFromPrev in the event, filters native |
+| 5 | P2 | Scaled-integer conversion in four places | 5A single codec src/gps/points.ts |
+| 6 | P2 | GPS failures never reach breadcrumbs | 6A reportError on every failure event |
+| 7 | P2 | No end-to-end path without a field trip | 7A dev-only test-provider replay harness |
+| 8 | P2 | MapLibre APK delta unmeasured | 8A dependency + spike in step-3 dry-run build |
+| OV1 | P1 | SavedSessionState never written during a screen-off run | snapshot @ GPS start + pause transitions |
+| OV2 | P1 | Cold TTFF on de-Googled ROMs vs 30 s timeout | acquiring state; timeout arms after first fix |
+| OV3 | P1 | Restarted service waits forever holding wake lock | no re-acquire; self-stop after 2 min |
+| OV4 | P2 | Accuracy filter docks quest rewards | open question 6 (product call) |
+| OV5 | P2 | Step 1 (time-mode) unscoped | own design doc before step 4 (OQ 7) |
+| OV6 | P2 | Hand-written migration forks db:generate | corrected: schema.ts + one-time SQL edit |
+| OV7 | P2 | Play Console FGS declaration missing | named in Constraints, handled step 8 |
+| OV8 | P2 | MapLibre new-arch compat assumed | spike screen in step 3 |
+| OV9 | P3 | Tile-cache success criterion over-promises | criterion softened to best effort |
+| OV10 | P3 | Battery-killer rationale ignored Play track | rationale corrected, trigger widened |
+| OV11 | P3 | Demo-repo alternative for the OSS proof | rejected (D12): quest mode is half the value |
+
+CROSS-MODEL: outside voice ran as a Claude subagent (Codex installed, not authenticated).
+Its 11 findings are absorbed above: 8 folded, 2 to open questions, 1 rejected by the user.
+
+Sections: Architecture 3 issues · Code quality 3 · Tests 1 (+24-gap coverage map, 1 CRITICAL
+regression) · Performance 1. Scope accepted as-is (D1). Test-plan artifact written for /qa.
+
+VERDICT: CLEAN — plan locked; implementation may start at step 1 (time-mode design doc) and
+step 3 (dry-run build), which are independent.
+
+NO UNRESOLVED DECISIONS

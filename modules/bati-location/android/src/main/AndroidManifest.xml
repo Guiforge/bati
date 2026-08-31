@@ -4,11 +4,11 @@
       travels with the module that needs it: delete the module, and the app's install screen
       goes back to what it was.
 
-      Nothing exercises these yet. The module is a skeleton whose only job is to answer the
-      question no F-Droid-built Expo app has answered in public — does their builder handle a
-      local Expo module — before a line of the foreground service is written. Until that
-      service exists, this manifest must not reach a release tag: a permission the app never
-      uses is exactly the shape __tests__/android-permissions.test.ts was written to catch.
+      Each one is earned by BatiLocationService below: FINE and COARSE for the fixes (the pair
+      because API 31 refuses a FINE-only runtime request), FOREGROUND_SERVICE and its typed
+      half for a service that outlives the screen going off, WAKE_LOCK for the session, and
+      POST_NOTIFICATIONS because from API 33 the foreground-service notification is invisible
+      without it. Each is justified again, in prose, in __tests__/android-permissions.test.ts.
 
       See docs/designs/gps-without-google.md.
     -->
@@ -18,4 +18,15 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <application>
+        <!--
+          Fully qualified on purpose: a leading dot in a library manifest resolves against the
+          *merged* package, which is the app's, and would name a class that does not exist.
+        -->
+        <service
+            android:name="expo.modules.batilocation.BatiLocationService"
+            android:exported="false"
+            android:foregroundServiceType="location"/>
+    </application>
 </manifest>

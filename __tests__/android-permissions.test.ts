@@ -74,9 +74,9 @@ const ALLOWED: Record<string, string> = {
 
   // modules/bati-location — Google-free GPS. These four arrive from a manifest this repo owns
   // rather than from a dependency, which is the case the scan below could not see until it
-  // learned to read `modules/` too. Nothing exercises them yet: the module is the skeleton that
-  // proves an F-Droid build can carry it. They must not reach a release tag before the service
-  // that uses them does. See docs/designs/gps-without-google.md.
+  // learned to read `modules/` too. BatiLocationService spends all four; what no test here can
+  // see is whether a session ever starts it, since no screen calls start() yet.
+  // See docs/designs/gps-without-google.md.
   "android.permission.ACCESS_FINE_LOCATION":
     "modules/bati-location — the whole feature. Precise location from LocationManager's " +
     "GPS_PROVIDER at 1 Hz; coarse location cannot measure a run. Also declared by " +

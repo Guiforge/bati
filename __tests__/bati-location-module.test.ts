@@ -1,6 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { hasGpsProvider, isAvailable } from "@/modules/bati-location";
+import {
+  addListener,
+  hasGpsProvider,
+  isAvailable,
+  requestPermission,
+  start,
+  stop,
+} from "@/modules/bati-location";
 
 const MODULE_ROOT = path.resolve(__dirname, "..", "modules", "bati-location");
 
@@ -14,6 +21,32 @@ describe("bati-location, without its native half", () => {
 
   test("answers the provider question with false rather than a null crash", () => {
     expect(hasGpsProvider()).toBe(false);
+  });
+
+  test("refuses to start, and says nothing started", () => {
+    expect(
+      start({
+        notification: { title: "Bati", acquiring: "…", tracking: "…", paused: "…", gpsOff: "…" },
+      }),
+    ).toBe(false);
+  });
+
+  test("stopping something that never started is not an error", () => {
+    expect(() => stop()).not.toThrow();
+  });
+
+  test("reports the permission denied rather than resolving undefined", async () => {
+    // A caller branches on `granted`; without the fallback it would branch on `undefined?.granted`
+    // and crash the screen that was meant to explain why GPS is unavailable.
+    await expect(requestPermission()).resolves.toMatchObject({
+      granted: false,
+      canAskAgain: false,
+    });
+  });
+
+  test("hands back a subscription that can still be removed", () => {
+    // Callers unsubscribe in a cleanup they do not get to make conditional.
+    expect(() => addListener("onLocation", () => {}).remove()).not.toThrow();
   });
 });
 

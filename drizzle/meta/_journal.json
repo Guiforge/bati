@@ -288,6 +288,13 @@
       "when": 1787212800000,
       "tag": "0040_the_plan_nobody_read",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1787299200000,
+      "tag": "0041_the_three_ways_out",
+      "breakpoints": true
     }
   ]
 }

@@ -21,7 +21,9 @@ export const SECONDS_PER_REP_EQUIVALENT = 3;
  * The style whose work is never a rep-equivalent.
  *
  * An expedition is measured in ground covered, not repetitions, and the two must not be
- * exchangeable — see docs/designs/expeditions.md. The arithmetic is the reason, not the taste:
+ * exchangeable. Not `cardio`: that style holds eight movements across eleven slots of six
+ * shipped quests, and zeroing it would silently stop every burpee quest from damaging a boss.
+ * Cardio is what leaves you breathless; an expedition is what leaves the walls — see docs/designs/expeditions.md. The arithmetic is the reason, not the taste:
  * damage is `toRepEquivalent` with no ceiling and every boss carries between 278 and 1115 HP
  * for a whole campaign, so an hour's walk at 3 s per rep is 1200 damage and one-shots the
  * largest of them. A building tops out at 1000 work units, so fifty minutes would max one on
@@ -29,10 +31,10 @@ export const SECONDS_PER_REP_EQUIVALENT = 3;
  * not to kill the campaign and large enough not to insult someone who walked an hour, and no
  * such number exists. So cardio contributes zero here, and earns leagues instead.
  *
- * `getStyleVolumes` in db/village.ts therefore reads cardio as 0 forever. That is the design,
- * not a bug to fix.
+ * `getStyleVolumes` in db/village.ts therefore reads `expedition` as 0 forever. That is the
+ * design, not a bug to fix.
  */
-export const NON_REP_STYLE: ExerciseStyle = "cardio";
+export const NON_REP_STYLE: ExerciseStyle = "expedition";
 
 /**
  * One rule per target type, in one place, in both languages the aggregates speak.

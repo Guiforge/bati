@@ -60,7 +60,12 @@ export type QuestTargetType = (typeof questTargetTypes)[number];
 export const feedbackCodes = ["easy", "good", "hard"] as const;
 export type FeedbackCode = (typeof feedbackCodes)[number];
 
-export const exerciseStyles = ["strength", "calisthenics", "yoga", "cardio"] as const;
+// `expedition` is not a synonym for `cardio`, and the difference is load-bearing: cardio is
+// what leaves you breathless — burpees, jumping jacks, mountain climbers, eight movements in
+// eleven slots of six shipped quests — and it earns rep-equivalents like anything else.
+// An expedition is what happens outside the walls, is measured in ground covered rather than
+// repetitions, and converts to nothing in `db/workUnits.ts`. See docs/designs/expeditions.md.
+export const exerciseStyles = ["strength", "calisthenics", "yoga", "cardio", "expedition"] as const;
 export type ExerciseStyle = (typeof exerciseStyles)[number];
 
 /**

@@ -305,10 +305,44 @@ describe("content invariants", () => {
     // about the catalogue the app ships, not about what someone writes in it.
     const orphans = (await exerciseApi.listExercises())
       .filter((e) => e.creator === "Admin")
+      // ponytail: cardio exempted because a quest is no longer the only door. An expedition is
+      //           an ad-hoc session, not a quest, so these movements will never appear in
+      //           `quest_exercises` — but the entry screen that reaches them is step 4 of
+      //           docs/designs/expeditions.md and does not exist yet, so right now they are
+      //           genuinely unreachable. The trigger to tighten this: when that screen lands,
+      //           replace the exemption with a reachability assertion through it. Until then
+      //           the test below is what stops these three from drifting unnoticed. Note it
+      //           exempts `expedition`, never `cardio`: burpees belong to quests and must stay
+      //           inside this rule.
+      .filter((e) => e.style !== "expedition")
       .filter((e) => !used.has(e.id))
       .map((e) => e.enName);
 
     expect(orphans).toEqual([]);
+  });
+
+  // What the exemption above owes back: the three expedition movements are checked for what is
+  // actually true of them today, so "not in a quest" cannot quietly become "not anything".
+  test("the expedition movements are held, unmuscled and locomotive", async () => {
+    const exerciseApi = require("../db/exercises") as typeof import("../db/exercises");
+    const cardio = (await exerciseApi.listExercises())
+      .filter((e) => e.creator === "Admin" && e.style === "expedition")
+      .sort((a, b) => a.enName.localeCompare(b.enName));
+
+    expect(cardio.map((e) => e.enName)).toEqual([
+      "Messenger's Run",
+      "Outrider's Ride",
+      "Warden's Walk",
+    ]);
+
+    for (const movement of cardio) {
+      // Held, not counted: a substitution onto one of these runs in its own unit (0039).
+      expect(movement.measure).toBe("time");
+      expect(movement.pattern).toBe("locomotion");
+      // No muscle rows, on purpose: an expedition converts to zero rep-equivalents, so a walk
+      // tagged `legs` would show the balance card a leg trained for a volume of nothing.
+      expect(movement.muscles).toEqual([]);
+    }
   });
 
   // No "strength quests need an antagonist" test: the muscle taxonomy cannot express movement
@@ -397,8 +431,12 @@ describe("content invariants", () => {
         targetType: schema.questExercises.targetType,
         targetMin: schema.questExercises.targetMin,
         targetMax: schema.questExercises.targetMax,
+        // Joined for the style alone: the boss-HP arithmetic below must weigh each slot the way
+        // the app will, and `toRepEquivalent` now answers differently per style.
+        style: schema.exercises.style,
       })
-      .from(schema.questExercises);
+      .from(schema.questExercises)
+      .innerJoin(schema.exercises, eq(schema.exercises.id, schema.questExercises.exerciseId));
 
     const byQuest = new Map<number, typeof exercises>();
     for (const ex of exercises) {
@@ -413,10 +451,11 @@ describe("content invariants", () => {
           { type: ex.targetType, min: ex.targetMin, max: ex.targetMax },
           level as never,
         );
-        // Seed quests carry no cardio slot — an expedition is not a quest — so the style that
-        // matters here is any that converts. `content-invariants` would notice if one appeared:
-        // its boss-HP arithmetic would drop to zero for that step.
-        return sum + toRepEquivalent(target.value, ex.targetType, "strength");
+        // The real style, never a stand-in. An earlier draft passed "strength" here with a
+        // comment claiming seed quests carry no cardio slot; they carry eleven, and that one
+        // hardcoded word is what let a change zeroing cardio pass this suite. A test bent to
+        // stay green cannot see the thing it was written to see.
+        return sum + toRepEquivalent(target.value, ex.targetType, ex.style);
       }, 0);
 
     const byAdventure = new Map<string, { hp: number; steps: typeof steps }>();

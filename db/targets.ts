@@ -21,8 +21,32 @@ export type Target = {
 /** What a slot starts at when nothing better is known — the quest editor's defaults too. */
 export const DEFAULT_TARGET_VALUE: Record<QuestTargetType, number> = { reps: 10, time: 30 };
 
+/**
+ * What a target, a round count and a rest may be, and the clamp every writer runs them through.
+ *
+ * Here rather than in `questConfig`, which is where they used to live, because `db/quests` needs
+ * them to write a quest and `questConfig` needs `db/quests` to read one: a cycle that fallow
+ * names and that this repo has already been bitten by. `store-session.test.ts` failed to load
+ * with "Cannot read properties of undefined (reading 'TARGET_RANGE')" - the two modules were
+ * initialising each other, and whichever lost the race saw the other as `undefined`. Nothing in
+ * this file imports anything that could close a loop; that is the point of it.
+ */
 /** What a rep target may be. Seconds have their own ceiling below. */
 export const TARGET_RANGE = { min: 1, max: 999 };
+
+export const ROUNDS_RANGE = { min: 1, max: 10 };
+export const REST_RANGE = { min: 0, max: 300 };
+
+/**
+ * Exported because the ranges above were UI-only for a long time: the steppers refused to go past
+ * them and every writer below `db/` took whatever it was handed. A quest saved by an editor that
+ * skipped its own stepper — or by a future screen that forgets one — reached SQLite unbounded, and
+ * the schema has no CHECK on any of these columns. Writers clamp with this now.
+ */
+export function clampToRange(value: number, range: { min: number; max: number }): number {
+  if (!Number.isFinite(value)) return range.min;
+  return Math.min(range.max, Math.max(range.min, Math.round(value)));
+}
 
 /**
  * A time target's ceiling, and it is not `TARGET_RANGE.max`.

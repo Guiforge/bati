@@ -146,6 +146,53 @@ export const QUEST_ASSETS = {
   long_reach: require("@/assets/images/quests/long_reach.webp"),
 } as const;
 
+/**
+ * List-sized copies of QUEST_ASSETS, derived by the same script as the exercise thumbnails.
+ *
+ * The full cover stays 1024x768 because the gallery banner is full-width and 140px tall. The
+ * journal's history rows draw the same art in a 50px tile, where the full cover costs ~3 MB of
+ * bitmap per row and the list is a hundred sessions deep.
+ */
+export const QUEST_THUMB_ASSETS = {
+  escape_collapsing_mine: require("@/assets/images/quests/thumbs/escape_collapsing_mine.webp"),
+  guard_fortress_gate: require("@/assets/images/quests/thumbs/guard_fortress_gate.webp"),
+  forge_dragon_blade: require("@/assets/images/quests/thumbs/forge_dragon_blade.webp"),
+  climb_titan_tower: require("@/assets/images/quests/thumbs/climb_titan_tower.webp"),
+  arcane_gauntlet: require("@/assets/images/quests/thumbs/arcane_gauntlet.webp"),
+  druid_path: require("@/assets/images/quests/thumbs/druid_path.webp"),
+  sprint_shadowlands: require("@/assets/images/quests/thumbs/sprint_shadowlands.webp"),
+  build_stronghold: require("@/assets/images/quests/thumbs/build_stronghold.webp"),
+  iron_gauntlet_challenge: require("@/assets/images/quests/thumbs/iron_gauntlet_challenge.webp"),
+  morning_champion: require("@/assets/images/quests/thumbs/morning_champion.webp"),
+  chop_wood: require("@/assets/images/quests/thumbs/chop_wood.webp"),
+  gather_stones: require("@/assets/images/quests/thumbs/gather_stones.webp"),
+  raise_the_shelter: require("@/assets/images/quests/thumbs/raise_the_shelter.webp"),
+  golem_strike: require("@/assets/images/quests/thumbs/golem_strike.webp"),
+  golem_core: require("@/assets/images/quests/thumbs/golem_core.webp"),
+  tower_climb: require("@/assets/images/quests/thumbs/tower_climb.webp"),
+  knight_push: require("@/assets/images/quests/thumbs/knight_push.webp"),
+  shield_wall: require("@/assets/images/quests/thumbs/shield_wall.webp"),
+  core_forge: require("@/assets/images/quests/thumbs/core_forge.webp"),
+  squire_awakening: require("@/assets/images/quests/thumbs/squire_awakening.webp"),
+  bears_road: require("@/assets/images/quests/thumbs/bears_road.webp"),
+  cellar_hauler: require("@/assets/images/quests/thumbs/cellar_hauler.webp"),
+  ploughmans_vow: require("@/assets/images/quests/thumbs/ploughmans_vow.webp"),
+  crows_ascent: require("@/assets/images/quests/thumbs/crows_ascent.webp"),
+  colossus_trial: require("@/assets/images/quests/thumbs/colossus_trial.webp"),
+  storm_of_blades: require("@/assets/images/quests/thumbs/storm_of_blades.webp"),
+  serpents_coil: require("@/assets/images/quests/thumbs/serpents_coil.webp"),
+  dawn_ritual: require("@/assets/images/quests/thumbs/dawn_ritual.webp"),
+  hearthside_unbinding: require("@/assets/images/quests/thumbs/hearthside_unbinding.webp"),
+  handlers_vigil: require("@/assets/images/quests/thumbs/handlers_vigil.webp"),
+  patient_ascent: require("@/assets/images/quests/thumbs/patient_ascent.webp"),
+  masons_footing: require("@/assets/images/quests/thumbs/masons_footing.webp"),
+  summit_trial: require("@/assets/images/quests/thumbs/summit_trial.webp"),
+  straight_arm_vigil: require("@/assets/images/quests/thumbs/straight_arm_vigil.webp"),
+  wardens_round: require("@/assets/images/quests/thumbs/wardens_round.webp"),
+  word_must_travel: require("@/assets/images/quests/thumbs/word_must_travel.webp"),
+  long_reach: require("@/assets/images/quests/thumbs/long_reach.webp"),
+} as const;
+
 // ============================================================
 // BOSS ASSETS (5 bosses)
 // ============================================================
@@ -569,6 +616,19 @@ export function getExerciseThumb(id: string) {
     EXERCISE_THUMB_ASSETS[keyFromPath(id) as ExerciseAssetKey] ??
     require("@/assets/placeholder.webp")
   );
+}
+
+/**
+ * Get the list-sized quest thumbnail by ID.
+ *
+ * Null rather than a placeholder, unlike its exercise sibling: a hero-authored quest genuinely
+ * has no cover, and the surfaces that show one already have something to draw instead - the
+ * gallery paints a tinted banner, the journal keeps its trophy. A placeholder square would be
+ * the `high_road` mistake again, in a smaller slot.
+ */
+export function getQuestThumb(id: string | null | undefined) {
+  if (!id) return null;
+  return asUriSource(id) ?? QUEST_THUMB_ASSETS[keyFromPath(id) as QuestAssetKey] ?? null;
 }
 
 /**

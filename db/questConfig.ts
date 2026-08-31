@@ -2,7 +2,10 @@ import { type Exercise, listExercises } from "./exercises";
 import { deletePreference, getAllPreferences, getPreference, setPreference } from "./preferences";
 import { getQuestById, type Quest } from "./quests";
 import {
+  clampToRange,
   Difficulty,
+  REST_RANGE,
+  ROUNDS_RANGE,
   retargetForMovement,
   TARGET_RANGE,
   TIME_TARGET_MAX,
@@ -36,25 +39,12 @@ export type QuestConfig = {
   swaps?: Record<string, number>;
 };
 
-export const ROUNDS_RANGE = { min: 1, max: 10 };
-export const REST_RANGE = { min: 0, max: 300 };
-
-const configKey = (questId: number) => `quest:${questId}:config`;
-
-/**
- * Exported because the ranges above were UI-only for a long time: the steppers refused to go past
- * them and every writer below `db/` took whatever it was handed. A quest saved by an editor that
- * skipped its own stepper — or by a future screen that forgets one — reached SQLite unbounded, and
- * the schema has no CHECK on any of these columns. Writers clamp with this now.
- */
-export function clampToRange(value: number, range: { min: number; max: number }): number {
-  if (!Number.isFinite(value)) return range.min;
-  return Math.min(range.max, Math.max(range.min, Math.round(value)));
-}
-
+/** The private alias the readers below use; the clamp itself lives with the ranges. */
 function clamp(value: number, range: { min: number; max: number }): number {
   return clampToRange(value, range);
 }
+
+const configKey = (questId: number) => `quest:${questId}:config`;
 
 function isLevel(value: unknown): value is UserLevel {
   return value === Difficulty.Easy || value === Difficulty.Medium || value === Difficulty.Hard;

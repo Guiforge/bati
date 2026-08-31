@@ -619,10 +619,15 @@ export default function QuestsGallery() {
 
   const onPressQuest = (id: number) => router.push(`/quests/${id}` as never);
 
-  // The list does not re-sort under the hero's thumb. `favourites` feeds the star's own fill and
-  // the order the *next* visit opens in, and a card jumping to the top the instant it is pinned
-  // is how you lose the one you were reading. The gallery reloads on focus, so leaving and
-  // coming back is what applies it - which is also when "my quests are at the top" is useful.
+  // The card moves to the top as the star fills: `favourites` feeds `galleryOrder` through the
+  // same memo, so pinning re-sorts at once rather than on the next visit.
+  //
+  // That is the feedback, and it is why the star is on the card rather than on the quest screen -
+  // the hero sees the thing they asked for happen to the thing they asked it of. The cost is that
+  // whatever was above it slides down under their thumb, which is survivable here because the
+  // pinned card is the one that moves and it moves somewhere visible. Verified on device: the
+  // order also survives leaving the tab and a cold start, because it is a preference row and not
+  // component state.
   const onToggleFavourite = useCallback((id: number) => {
     toggleFavouriteQuest(id)
       .then(setFavourites)

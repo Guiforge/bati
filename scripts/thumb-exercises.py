@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Derive list-sized thumbnails from the full exercise art.
+"""Derive list-sized thumbnails from the full exercise and quest art.
 
     python3 scripts/thumb-exercises.py
     python3 scripts/thumb-exercises.py --dry-run
@@ -27,8 +27,6 @@ from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
-SOURCE_GLOB = "assets/images/exercises/*.webp"
-OUT_DIR = ROOT / "assets/images/exercises/thumbs"
 # Longest edge. The biggest slot a thumbnail fills is the picker sheet's 56px tile; 128 covers it
 # on a 3x screen with room to spare, and the whole set still weighs well under 100 KB.
 SIZE = 128
@@ -51,11 +49,21 @@ CROPS: dict[str, tuple[float, float, float, float]] = {
 }
 
 
-def sources() -> list[pathlib.Path]:
-    return sorted(p for p in ROOT.glob(SOURCE_GLOB) if p.parent != OUT_DIR)
+# Two families now, and the second arrived for the same reason as the first: the journal's history
+# rows draw a quest's cover in a 50px tile, and a quest cover is 1024x768 -> ~3 MB of bitmap per
+# row, a hundred rows deep. The exercise art learned this lesson first; nothing about it was
+# specific to exercises.
+FAMILIES: tuple[tuple[str, str], ...] = (
+    ("assets/images/exercises/*.webp", "assets/images/exercises/thumbs"),
+    ("assets/images/quests/*.webp", "assets/images/quests/thumbs"),
+)
 
 
-def thumbnail(path: pathlib.Path) -> int:
+def sources(glob: str, out_dir: pathlib.Path) -> list[pathlib.Path]:
+    return sorted(p for p in ROOT.glob(glob) if p.parent != out_dir)
+
+
+def thumbnail(path: pathlib.Path, out_dir: pathlib.Path) -> int:
     """Write the derived thumbnail. Returns its size in bytes."""
     image = Image.open(path)
     box = CROPS.get(path.stem)
@@ -67,7 +75,7 @@ def thumbnail(path: pathlib.Path) -> int:
         )
     # LANCZOS: the art is ink-outlined like the emblems, and a cheaper filter frays the outline.
     image.thumbnail((SIZE, SIZE), Image.Resampling.LANCZOS)
-    out = OUT_DIR / path.name
+    out = out_dir / path.name
     image.save(out, "WEBP", quality=82)
     return out.stat().st_size
 
@@ -77,22 +85,32 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="report only, change nothing")
     args = parser.parse_args()
 
-    found = sources()
-    if not found:
-        print(f"No exercise art at {SOURCE_GLOB}.", file=sys.stderr)
-        return 1
+    total_before = 0
+    total_after = 0
+    total_count = 0
+
+    for glob, out_name in FAMILIES:
+        out_dir = ROOT / out_name
+        found = sources(glob, out_dir)
+        if not found:
+            print(f"No art at {glob}.", file=sys.stderr)
+            return 1
+
+        if args.dry_run:
+            print(f"{len(found)} files would be thumbnailed to {SIZE}px into {out_dir}.")
+            continue
+
+        out_dir.mkdir(parents=True, exist_ok=True)
+        total_before += sum(p.stat().st_size for p in found)
+        total_after += sum(thumbnail(p, out_dir) for p in found)
+        total_count += len(found)
 
     if args.dry_run:
-        print(f"{len(found)} files would be thumbnailed to {SIZE}px into {OUT_DIR}.")
         return 0
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    before = sum(p.stat().st_size for p in found)
-    after = sum(thumbnail(p) for p in found)
-
     print(
-        f"Wrote {len(found)} thumbnails: {before / 1e6:.2f} MB of source art -> "
-        f"{after / 1e3:.0f} KB of thumbnails."
+        f"Wrote {total_count} thumbnails: {total_before / 1e6:.2f} MB of source art -> "
+        f"{total_after / 1e3:.0f} KB of thumbnails."
     )
     return 0
 

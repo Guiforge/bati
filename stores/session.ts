@@ -28,11 +28,10 @@ import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
-import { REST_RANGE } from "@/db/questConfig";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
-import { retargetForMovement, targetRangeFor } from "@/db/targets";
+import { REST_RANGE, retargetForMovement, targetRangeFor } from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { uuidv7 } from "@/db/uuid";
 import {

@@ -1,5 +1,7 @@
+import { Image } from "expo-image";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
@@ -12,6 +14,16 @@ import { useSettingsStore } from "@/stores/settings";
 export interface JournalEntry {
   id: number;
   questTitle: string;
+  /**
+   * The quest's cover, list-sized, or null when it has none.
+   *
+   * Every row drew the same gold trophy, so a journal of twenty sessions was twenty identical
+   * icons and the title was the only thing telling them apart - on the one screen whose job is
+   * to let you find a session again. Resolved by the list rather than here, next to the title it
+   * comes from: the quest template is already in hand there, and `SessionCard` is memoized on
+   * props it should not be re-deriving.
+   */
+  cover?: ImageSourcePropType | null;
   performedAt: Date;
   durationSeconds: number | null;
   userLevel: DifficultyCode;
@@ -24,6 +36,8 @@ interface SessionCardProps {
   // row and React.memo actually skips re-renders.
   onPressEntry?: (id: number) => void;
 }
+
+const COVER_STYLE = { width: "100%", height: "100%" } as const;
 
 const SESSION_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   weekday: "short",
@@ -57,8 +71,21 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
           borderColor="$borderStrong"
           items="center"
           justify="center"
+          overflow="hidden"
         >
-          <Trophy size={24} color="$resourceGold" />
+          {entry.cover ? (
+            <Image
+              source={entry.cover}
+              recyclingKey={String(entry.id)}
+              style={COVER_STYLE}
+              contentFit="cover"
+              accessible={false}
+            />
+          ) : (
+            // A hero-authored quest has no cover, and the trophy is the honest stand-in: it says
+            // "a session happened" without pretending to be a picture of one.
+            <Trophy size={24} color="$resourceGold" />
+          )}
         </YStack>
 
         <YStack flex={1} gap="$1">

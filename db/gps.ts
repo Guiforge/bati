@@ -69,6 +69,22 @@ export async function pointsOf(sessionId: string): Promise<LocationFix[]> {
 }
 
 /**
+ * Whether a session recorded any ground at all.
+ *
+ * The journal's door to the recap, and the reason it is `limit(1)` rather than `pointsOf().length`:
+ * every strength quest in the app has no points, and asking that question must not read a
+ * 45-minute trace to answer "none".
+ */
+export async function hasPoints(sessionId: string): Promise<boolean> {
+  const rows = await db
+    .select({ t: gpsPoints.t })
+    .from(gpsPoints)
+    .where(eq(gpsPoints.sessionId, sessionId))
+    .limit(1);
+  return rows.length > 0;
+}
+
+/**
  * Leagues: the second currency, in metres.
  *
  * Metres and never seconds, and never a column holding both — an hour's walk at 3600 beside a

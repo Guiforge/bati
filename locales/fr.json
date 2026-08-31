@@ -808,6 +808,15 @@
     "trophies_empty": "Les succès et les boss vaincus finissent sur cette étagère."
   },
   "welcome": "Bienvenue sur Bati !",
+  "recap": {
+    "title": "Le terrain parcouru",
+    "open": "Voir le terrain parcouru",
+    "no_trace": "Cette quête n'a jamais quitté les murs.",
+    "distance": "Distance",
+    "moving_time": "En mouvement",
+    "pace": "Allure",
+    "privacy": "Votre trajet ne quitte jamais ce téléphone."
+  },
   "safety": {
     "title": "S'entraîner en sécurité",
     "before_title": "Avant de commencer",

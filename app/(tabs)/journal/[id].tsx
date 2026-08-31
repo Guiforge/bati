@@ -7,11 +7,20 @@ import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
-import { ChevronLeft, Clock, Dumbbell, Repeat, Target } from "@/components/icons";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Dumbbell,
+  Map as MapIcon,
+  Repeat,
+  Target,
+} from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDuration, getCompletedSessionById } from "@/db";
 import type { CompletedSession } from "@/db/completed";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { hasPoints } from "@/db/gps";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getCached, setCached } from "@/db/queryCache";
 import { listQuestTemplates } from "@/db/quests";
@@ -42,6 +51,9 @@ export default function SessionDetailScreen() {
   const [session, setSession] = useState<CompletedSession | null>(() =>
     sessionId != null ? (getCached<CompletedSession>(`session:${sessionId}`) ?? null) : null,
   );
+  // Whether this session left a trace. Every strength quest has none, and a door onto an empty
+  // map is worse than no door — see app/recap.tsx.
+  const [hasTrace, setHasTrace] = useState(false);
   const [questTitle, setQuestTitle] = useState<string>(() =>
     sessionId != null ? (getCached<string>(`sessionTitle:${sessionId}:${language}`) ?? "") : "",
   );
@@ -61,6 +73,16 @@ export default function SessionDetailScreen() {
           return;
         }
         setSession(data);
+        // Never allowed to fail the screen: whether a door appears is not worth losing the
+        // session over, and a swallowed failure is not allowed either.
+        setHasTrace(
+          data.uuid
+            ? await hasPoints(data.uuid).catch((e) => {
+                reportError("journal.hasTrace", e);
+                return false;
+              })
+            : false,
+        );
 
         // Fetch quest title
         if (data.questId) {
@@ -228,6 +250,25 @@ export default function SessionDetailScreen() {
                   </XStack>
                 </YStack>
               </Card>
+
+              {/* The way out to the map. Only for a session that actually recorded ground. */}
+              {hasTrace && !!session.uuid && (
+                <Card
+                  bg="$surface"
+                  onPress={() =>
+                    router.push(`/recap?session=${encodeURIComponent(session.uuid ?? "")}` as never)
+                  }
+                  accessibilityLabel={t("recap.open", "See the ground covered")}
+                >
+                  <XStack items="center" gap="$3">
+                    <MapIcon size={20} color="$resourceGold" strokeWidth={2.5} />
+                    <Text flex={1} fontWeight="700" fontSize={16} color="$text">
+                      {t("recap.open", "See the ground covered")}
+                    </Text>
+                    <ChevronRight size={20} color="$textSecondary" />
+                  </XStack>
+                </Card>
+              )}
 
               {/* Exercises by Round */}
               {roundNumbers.map((roundIndex) => (

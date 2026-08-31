@@ -1,5 +1,5 @@
 import type { LocationFix } from "@/modules/bati-location";
-import { accept, EMPTY, RULES, type TrackState } from "@/src/gps/track";
+import { accept, credited, EMPTY, RULES, type TrackState } from "@/src/gps/track";
 
 const T0 = Date.UTC(2026, 7, 31, 15, 0, 0);
 
@@ -141,5 +141,52 @@ describe("teleports", () => {
     let state = started();
     state = accept(state, fix({ t: T0 + 5000, distFromPrev: 900 }));
     expect(state.fromAnchorM).toBe(0);
+  });
+});
+
+/**
+ * The difference between "you covered nothing" and "nobody was watching".
+ *
+ * XP for an outing is bounded by moving seconds, which is what makes a phone on a windowsill
+ * worth nothing. Read naively that same rule pays the XP floor to a hero who declined the
+ * location prompt, or whose phone has no GPS, or who spent an hour under trees that never let a
+ * fix land - people the panel has already told the tracking is off, and who then get an hour of
+ * real walking priced at ten XP with nothing saying why. Null is how the caller learns to stop
+ * asking and use the clock instead.
+ */
+describe("what a run credits", () => {
+  test("is nothing at all before a single fix has locked", () => {
+    expect(credited(EMPTY)).toBeNull();
+  });
+
+  test("is still nothing when fixes arrived but the gate never opened", () => {
+    // Every fix too vague to trust: this is a phone in a pocket under cover for an hour.
+    const vague = run([
+      fix({ t: T0, acc: 40 }),
+      fix({ t: T0 + 1000, acc: 55 }),
+      fix({ t: T0 + 3000, acc: 48 }),
+    ]);
+    expect(vague.startedAt).toBeNull();
+    expect(credited(vague)).toBeNull();
+  });
+
+  test("is a real zero once the gate has opened and nothing moved", () => {
+    // The windowsill. The app *was* watching, and what it saw was a phone that stayed put.
+    const credit = credited(started());
+    expect(credit).not.toBeNull();
+    expect(credit?.movingSeconds).toBe(0);
+  });
+
+  test("is metres and whole seconds once the hero is walking", () => {
+    let state = started();
+    for (let i = 1; i <= 10; i += 1) {
+      state = accept(state, fix({ t: T0 + 3000 + i * 1000, distFromPrev: 1.4 }));
+    }
+    // Whole metres and whole seconds, off the reducer's own reading rather than a second sum:
+    // the road and the recap have to be paid the same number the panel showed.
+    const credit = credited(state);
+    expect(credit?.leaguesM).toBe(Math.round(state.distanceM));
+    expect(credit?.leaguesM).toBeGreaterThan(0);
+    expect(credit?.movingSeconds).toBe(Math.floor(state.movingMs / 1000));
   });
 });

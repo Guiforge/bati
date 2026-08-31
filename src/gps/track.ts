@@ -155,3 +155,29 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
     fromAnchorM,
   };
 }
+
+/** What a finished outing credited: ground for the road, moving seconds for the XP ceiling. */
+export type Credit = { leaguesM: number; movingSeconds: number };
+
+/**
+ * What this run is worth, or null when the run has no witness.
+ *
+ * Null is the whole point of this function. `startedAt` is set the first time the start gate
+ * opens, which needs one fix accurate to 10 m held for three seconds, and it covers every way
+ * that can fail to happen at all: the hero refused the location prompt, the build has no native
+ * half, the phone has no GPS provider, or an hour passed under tree cover and nothing ever
+ * locked. A caller that treated those as "zero moving seconds" would pay an honest hour the XP
+ * floor with nothing on screen saying why, which is the app punishing someone for declining a
+ * permission it called optional. Null means "no opinion", and the caller falls back to the clock.
+ *
+ * A phone left outside with a working GPS is *not* this case and must not become it: the gate
+ * opens within seconds and the reducer then credits no moving time, which is a real zero.
+ */
+export function credited(track: TrackState): Credit | null {
+  if (track.startedAt === null) return null;
+
+  return {
+    leaguesM: Math.round(track.distanceM),
+    movingSeconds: Math.floor(track.movingMs / 1000),
+  };
+}

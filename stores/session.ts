@@ -44,6 +44,7 @@ import {
 } from "@/db/village";
 import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
 import { i18n } from "@/i18n";
+import { credited } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { isExpedition, useExpeditionStore } from "@/stores/expedition";
@@ -357,14 +358,14 @@ function advanceAfterSet(
  *   time it actually took where a hold has to be clamped to its prescription.
  */
 function measureGround(quest: Quest | null): Ground {
-  if (!isExpedition(quest)) return { leaguesM: null, movingSeconds: null };
+  if (!isExpedition(quest)) return NO_GROUND;
 
-  const { track } = useExpeditionStore.getState();
-  return {
-    leaguesM: Math.round(track.distanceM),
-    movingSeconds: Math.floor(track.movingMs / 1000),
-  };
+  // Null from `credited` means the run had no witness at all - no fix ever locked - so the app
+  // has no opinion and the clock decides, exactly as it does for a workout. See `src/gps/track`.
+  return credited(useExpeditionStore.getState().track) ?? NO_GROUND;
 }
+
+const NO_GROUND: Ground = { leaguesM: null, movingSeconds: null };
 
 /** Null in both fields when the quest never left the walls. */
 type Ground = { leaguesM: number | null; movingSeconds: number | null };

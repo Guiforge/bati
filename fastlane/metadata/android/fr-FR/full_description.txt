@@ -1,14 +1,14 @@
 Entraîne-toi comme un héros, bâtis comme un roi.
 
-Bati transforme la musculation en RPG dark-fantasy. Une séance est une quête. Tes répétitions deviennent des dégâts sur un boss. Les muscles que tu travailles vraiment font monter les bâtiments d'un village qui pousse à partir de ce que tu as soulevé — pas de ce que tu as acheté.
+Bati transforme la musculation en RPG dark-fantasy. Une séance est une quête. Tes répétitions deviennent des dégâts sur un boss. Les muscles que tu travailles vraiment font monter les bâtiments d'un village qui pousse à partir de ce que tu as soulevé, pas de ce que tu as acheté.
 
 LE SPORT D'ABORD, LE RPG ENSUITE
-La logique d'entraînement mène, le jeu l'amplifie. Rien de décoratif ne s'interpose entre toi et ta série suivante : grandes zones tactiles, texte très contrasté, et un écran pensé pour une main dans une salle bruyante.
+La logique d'entraînement mène, le jeu l'amplifie. Rien de décoratif ne s'interpose entre toi et ta série suivante : grandes zones tactiles, texte très contrasté, un écran pensé pour une main dans une salle bruyante.
 
 CE QUE TU TROUVES DEDANS
 • Des quêtes — séances guidées, objectifs adaptés à ton niveau
 • Des aventures — campagnes en plusieurs séances, avec un récit entre les étapes
-• Des combats de boss — les reps deviennent des dégâts ; faiblesses et coups critiques donnent du sens aux chiffres
+• Des combats de boss — les répétitions deviennent des dégâts ; faiblesses et coups critiques donnent du sens aux chiffres
 • Des expéditions — marche, course ou vélo ; le terrain parcouru fait grandir le chemin hors du village
 • Un village — les bâtiments montent avec le volume réellement enregistré
 • Des serments — fixe un objectif et laisse l'app t'y tenir
@@ -24,6 +24,6 @@ La position n'est lue que pendant une expédition, par un module GPS écrit pour
 Ce n'est pas un réglage à aller chercher. C'est toute l'architecture.
 
 AU POIDS DU CORPS D'ABORD
-Le catalogue d'exercices est construit autour de ce qui se fait sans matériel, et s'adapte si tu en possèdes. Les échauffements sont dynamiques et calibrés sur la séance qui suit — un échauffement de cinq minutes devant un entraînement de six, personne ne le fait deux fois.
+Le catalogue d'exercices est construit autour de ce qui se fait sans matériel, et s'adapte si tu en possèdes. Les échauffements sont dynamiques et calibrés sur la séance qui suit : un échauffement de cinq minutes devant un entraînement de six, personne ne le fait deux fois.
 
 Code source : https://github.com/Guiforge/bati

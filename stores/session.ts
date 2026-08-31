@@ -497,17 +497,23 @@ function mountedExpedition(quest: Quest): boolean {
  */
 function beginTrackingIfOuting(quest: Quest, sessionUuid: string | null): void {
   if (!isExpedition(quest) || sessionUuid === null) return;
-  useExpeditionStore.getState().begin(
-    sessionUuid,
-    {
-      title: i18n.t("session.expedition_notification_title"),
-      acquiring: i18n.t("session.expedition_acquiring"),
-      tracking: i18n.t("session.expedition_tracking"),
-      paused: i18n.t("session.expedition_paused"),
-      gpsOff: i18n.t("session.expedition_gps_off"),
-    },
-    mountedExpedition(quest),
-  );
+  // Fire and forget: the permission dialog and the service start are the expedition store's
+  // business, and a session must not wait on a system prompt before its own screen appears.
+  // A refusal lands in that store's `error`, which the panel reads.
+  useExpeditionStore
+    .getState()
+    .begin(
+      sessionUuid,
+      {
+        title: i18n.t("session.expedition_notification_title"),
+        acquiring: i18n.t("session.expedition_acquiring"),
+        tracking: i18n.t("session.expedition_tracking"),
+        paused: i18n.t("session.expedition_paused"),
+        gpsOff: i18n.t("session.expedition_gps_off"),
+      },
+      mountedExpedition(quest),
+    )
+    .catch((error: unknown) => reportError("session.beginTracking", error));
 }
 
 export const useSessionStore = create<SessionState>()(

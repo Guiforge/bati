@@ -6,6 +6,7 @@ import {
   addListener,
   isAvailable,
   type LocationFix,
+  requestPermission,
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
@@ -40,7 +41,7 @@ type ExpeditionState = {
   lastFix: LocationFix | null;
   /** Set when the service refused to start, so a screen can say why rather than sit blank. */
   error: string | null;
-  begin: (sessionUuid: string, notification: Notification, mounted: boolean) => boolean;
+  begin: (sessionUuid: string, notification: Notification, mounted: boolean) => Promise<boolean>;
   end: () => Promise<void>;
 };
 
@@ -85,13 +86,33 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   lastFix: null,
   error: null,
 
-  begin: (sessionUuid, notification, mounted) => {
+  begin: async (sessionUuid, notification, mounted) => {
     if (!isAvailable()) {
       // No native half: iOS today, and jest. The quest still runs, it just measures nothing.
       set({ error: "unavailable" });
       return false;
     }
-    get()
+
+    /**
+     * Ask before starting, because Android will not.
+     *
+     * This was missing and the whole feature was dead on a real install: the service refuses
+     * without the grant, returns `permission`, and the hero walks an hour while nothing is
+     * written. It went unnoticed because the only caller of `requestPermission` was the
+     * `__DEV__` harness, where the grant had already been given by hand — a control that works
+     * everywhere except where it ships.
+     *
+     * Asked here rather than on the quest screen so there is exactly one place that decides an
+     * outing may begin. If the hero refuses, the session still runs and still counts as a
+     * workout; it simply measures no ground, and the panel says so instead of showing a zero
+     * that means nothing.
+     */
+    const permission = await requestPermission();
+    if (!permission.granted) {
+      set({ error: "permission" });
+      return false;
+    }
+    await get()
       .end()
       .catch((e) => reportError("expedition.restart", e));
 

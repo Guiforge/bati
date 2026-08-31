@@ -3,6 +3,7 @@ import type { LocationFix } from "@/modules/bati-location";
 const mockListeners = new Map<string, (payload: never) => void>();
 const mockAppendPoints = jest.fn().mockResolvedValue(undefined);
 const mockStart = jest.fn().mockReturnValue(true);
+const mockRequestPermission = jest.fn().mockResolvedValue({ granted: true, status: "granted" });
 const mockStop = jest.fn();
 let mockAvailable = true;
 
@@ -10,6 +11,7 @@ jest.mock("@/db/gps", () => ({ appendPoints: (...a: never[]) => mockAppendPoints
 jest.mock("@/modules/bati-location", () => ({
   isAvailable: () => mockAvailable,
   start: (...a: never[]) => mockStart(...a),
+  requestPermission: () => mockRequestPermission(),
   stop: () => mockStop(),
   addListener: (event: string, fn: (payload: never) => void) => {
     mockListeners.set(event, fn);
@@ -51,32 +53,34 @@ describe("stores/expedition", () => {
     mockListeners.clear();
     mockAppendPoints.mockClear();
     mockStart.mockClear();
+    mockRequestPermission.mockClear();
+    mockRequestPermission.mockResolvedValue({ granted: true, status: "granted" });
     mockStop.mockClear();
     mockAvailable = true;
     store = (require("@/stores/expedition") as typeof import("@/stores/expedition"))
       .useExpeditionStore;
   });
 
-  test("starting subscribes and hands the service the on-foot speed cap", () => {
-    expect(store.getState().begin("s1", NOTIFICATION, false)).toBe(true);
+  test("starting subscribes and hands the service the on-foot speed cap", async () => {
+    expect(await store.getState().begin("s1", NOTIFICATION, false)).toBe(true);
     expect(mockStart).toHaveBeenCalledWith(expect.objectContaining({ maxSpeedMs: 8 }));
     expect(mockListeners.has("onLocation")).toBe(true);
   });
 
-  test("a mount gets the cap a bicycle needs, or a descent would be thrown away", () => {
-    store.getState().begin("s1", NOTIFICATION, true);
+  test("a mount gets the cap a bicycle needs, or a descent would be thrown away", async () => {
+    await store.getState().begin("s1", NOTIFICATION, true);
     expect(mockStart).toHaveBeenCalledWith(expect.objectContaining({ maxSpeedMs: 25 }));
   });
 
-  test("without a native half nothing starts, and the reason is readable", () => {
+  test("without a native half nothing starts, and the reason is readable", async () => {
     mockAvailable = false;
-    expect(store.getState().begin("s1", NOTIFICATION, false)).toBe(false);
+    expect(await store.getState().begin("s1", NOTIFICATION, false)).toBe(false);
     expect(store.getState().error).toBe("unavailable");
     expect(mockStart).not.toHaveBeenCalled();
   });
 
-  test("fixes fold into the reading the screen shows", () => {
-    store.getState().begin("s1", NOTIFICATION, false);
+  test("fixes fold into the reading the screen shows", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false);
     // Three fixes open the start gate, then the walk is credited.
     for (let i = 0; i < 20; i++) emit(walking(i));
 
@@ -88,8 +92,8 @@ describe("stores/expedition", () => {
   });
 
   // The buffer is what a crash costs. Thirty seconds, never the run.
-  test("points are written in batches rather than one at a time", () => {
-    store.getState().begin("s1", NOTIFICATION, false);
+  test("points are written in batches rather than one at a time", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false);
 
     for (let i = 0; i < 29; i++) emit(walking(i));
     expect(mockAppendPoints).not.toHaveBeenCalled();
@@ -101,7 +105,7 @@ describe("stores/expedition", () => {
   });
 
   test("ending writes what the buffer still holds, then stops the service", async () => {
-    store.getState().begin("s1", NOTIFICATION, false);
+    await store.getState().begin("s1", NOTIFICATION, false);
     for (let i = 0; i < 5; i++) emit(walking(i));
 
     await store.getState().end();
@@ -113,7 +117,7 @@ describe("stores/expedition", () => {
   });
 
   test("after ending, a stray fix cannot land on the session that just closed", async () => {
-    store.getState().begin("s1", NOTIFICATION, false);
+    await store.getState().begin("s1", NOTIFICATION, false);
     emit(walking(0));
     await store.getState().end();
     mockAppendPoints.mockClear();
@@ -121,12 +125,41 @@ describe("stores/expedition", () => {
     expect(mockListeners.has("onLocation")).toBe(false);
   });
 
-  test("a native error is kept where a screen can read it", () => {
-    store.getState().begin("s1", NOTIFICATION, false);
+  test("a native error is kept where a screen can read it", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false);
     (mockListeners.get("onError") as (e: { code: string; message: string }) => void)({
       code: "permission",
       message: "denied",
     });
     expect(store.getState().error).toBe("permission");
+  });
+
+  /**
+   * The bug this file exists to make unrepeatable.
+   *
+   * Android does not grant location on its own, and for a while nothing in the shipped app ever
+   * asked: `requestPermission` was called only from the `__DEV__` harness, where the grant had
+   * already been given by hand. So the service refused, no point was ever written, the leagues
+   * stayed at zero and the High Road never rose - and every test passed, because every test ran
+   * where the permission was already there. A control that works everywhere except where it
+   * ships.
+   */
+  describe("the permission", () => {
+    test("is asked for before the service is ever started", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false);
+
+      expect(mockRequestPermission).toHaveBeenCalled();
+      expect(mockRequestPermission.mock.invocationCallOrder[0]).toBeLessThan(
+        mockStart.mock.invocationCallOrder[0] as number,
+      );
+    });
+
+    test("refused, nothing starts and the panel is told why", async () => {
+      mockRequestPermission.mockResolvedValue({ granted: false, status: "denied" });
+
+      expect(await store.getState().begin("s1", NOTIFICATION, false)).toBe(false);
+      expect(mockStart).not.toHaveBeenCalled();
+      expect(store.getState().error).toBe("permission");
+    });
   });
 });

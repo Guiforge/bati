@@ -307,13 +307,35 @@ Play internal track needs the Data Safety form updated before the next upload.
    attached, so not one fix has ever arrived through this code.** Nothing below is proven, and
    step 5 is what proves it:
 
-   - that a fix arrives at all — `requestLocationUpdates` and the whole `onLocationChanged`
-     path have never executed;
-   - `startForeground` with `FOREGROUND_SERVICE_TYPE_LOCATION` succeeding on Android 14+, and
-     the `SecurityException` branch on a revoked grant;
-   - the notification: icon, the tap-to-return intent, and whether state changes update it in
-     place;
+   **Measured on hardware 2026-08-31** — Fairphone 6, LineageOS, **Android 16 (API 36)**, microG
+   0.3.15 in `/system/priv-app`, no Google Play Services. What now holds:
+
+   - **Fixes arrive.** First fix in **2.2 s**, then **72 fixes in ~70 s** — the 1000 ms interval
+     is honoured exactly. Payload complete: ±4 m accuracy, 116 m altitude, speed, and
+     `distFromPrev` reading 0.0 m on a phone sitting still.
+   - **The call lands where it was aimed.** `dumpsys location` shows
+     `ProviderRequest[@+1s0ms, HIGH_ACCURACY, WorkSource{…bati.dev}]` on the **gps provider** —
+     the 1 Hz / 0 m request registered against `GPS_PROVIDER`, with no fused provider anywhere.
+   - **`startForeground` is accepted on API 36**: `isForeground=true types=0x00000008`, which is
+     `FOREGROUND_SERVICE_TYPE_LOCATION`, with its ongoing notification on channel
+     `bati-location`.
+   - **The permission pair is right.** The system shows the precise/approximate chooser, which
+     it only does when FINE and COARSE are requested together.
+   - **Teardown is clean.** `PARTIAL_WAKE_LOCK 'bati:location'` ACQ on start, REL on stop; the
+     service record is gone and the GPS request is deregistered.
+
+   **The 2.2 s is a warm fix and must not be read as a cold one.** The receiver had a two-day-old
+   almanac. A genuinely cold start — days off, or hundreds of kilometres travelled — is what the
+   design's "minutes without SUPL" claim is about, and that is still unmeasured. The
+   `noFixTimeout` arming after the first fix stays right for that reason.
+
+   Still unproven, and still needing a walk rather than a desk:
+
+   - **movement**: `distFromPrev` over real ground, and the speed filter against a real bicycle;
    - the wake lock surviving Doze across a 45-minute screen-off session;
+   - the `SecurityException` branch on a grant revoked mid-session;
+   - the notification's appearance and whether its state changes update in place;
+   - a genuinely cold time to first fix;
    - the `START_STICKY` orphan path end to end — that the OS redelivers a null intent, that
      `startForeground` from a system restart is not refused as a background start, and that
      `stopSelf()` before `startForeground` on the permission-denied branch does not trip the

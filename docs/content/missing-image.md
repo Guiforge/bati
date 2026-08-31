@@ -540,3 +540,27 @@ at bundle time, so a key pointing at a missing file breaks the build instead of 
 
 - [missing-covers.md](missing-covers.md) — the prior (resolved) cover gap + generation pipeline
 - [../planning/roadmap.md](../planning/roadmap.md) — what is still open, art included
+
+## 9. The expeditions (`0041`/`0042`) — 0 of 6 delivered
+
+Six assets, none drawn. Everything below ships on `placeholder.webp` until they are, which is
+the same deliberate state as `muscle_up` in §8: the paths are written into the migrations, the
+files are absent, and `getExerciseAsset` falls back. Nothing in the tree is dead.
+
+**Three movements** (`assets/images/exercises/`, keyed without the extension, so the migration's
+`.jpg` and a delivered `.webp` are the same asset):
+
+| key | movement | what it has to show |
+|---|---|---|
+| `wardens_walk` | Warden's Walk | a figure walking a wall line or a track at dusk, unhurried — the pace is the subject |
+| `messengers_run` | Messenger's Run | a runner on a road between two places, carrying something, mid-stride |
+| `outriders_ride` | Outrider's Ride | a mounted scout at a steady canter. **This is the bicycle**, and the whole reason the catalogue renames movements: the art must never show one |
+
+**Three quest covers** (`assets/images/quests/`): `wardens_round`, `word_must_travel`,
+`long_reach`.
+
+What makes these harder than §8: every other illustration in the catalogue is a body doing a
+movement against a plain ground, and these are *places* — a road, a wall, a horizon. They belong
+closer to the quest covers in `scripts/generate-covers.py` than to the poses in
+`scripts/generate-exercises.py`, including for the three "exercise" ones. An expedition has no
+pose; it has a landscape and a direction.

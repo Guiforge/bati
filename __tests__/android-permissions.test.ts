@@ -27,6 +27,7 @@ import appJson from "../app.json";
 
 const ROOT = path.resolve(__dirname, "..");
 const NODE_MODULES = path.join(ROOT, "node_modules");
+const LOCAL_MODULES = path.join(ROOT, "modules");
 const TRIM_PLUGIN = path.join(ROOT, "plugins", "withAndroidTrimPermissions.js");
 
 /**
@@ -61,12 +62,37 @@ const ALLOWED: Record<string, string> = {
   // worker. They reach the APK through the Gradle graph, not through any npm package manifest,
   // so the scan below has never seen them — see the note at the top of this file.
   "android.permission.WAKE_LOCK":
-    "androidx.work via react-native-android-widget — WorkManager holds a wake lock for the " +
-    "duration of the worker that redraws the home-screen widget.",
+    "two consumers now. androidx.work via react-native-android-widget — WorkManager holds a " +
+    "wake lock for the duration of the worker that redraws the home-screen widget. And " +
+    "modules/bati-location, which holds a PARTIAL_WAKE_LOCK for the length of an outdoor " +
+    "session: Doze during a long pause is what otherwise puts a hole in the trace.",
   "android.permission.FOREGROUND_SERVICE":
     "the same worker: RNWidgetJsCommunication calls setExpedited, and below API 31 WorkManager " +
     "runs expedited work as a foreground service. Stripping it would break widget updates on " +
-    "older devices, silently.",
+    "older devices, silently. Also modules/bati-location, whose tracking service is a " +
+    "foreground service so Android does not stop it when the screen goes off.",
+
+  // modules/bati-location — Google-free GPS. These four arrive from a manifest this repo owns
+  // rather than from a dependency, which is the case the scan below could not see until it
+  // learned to read `modules/` too. Nothing exercises them yet: the module is the skeleton that
+  // proves an F-Droid build can carry it. They must not reach a release tag before the service
+  // that uses them does. See docs/designs/gps-without-google.md.
+  "android.permission.ACCESS_FINE_LOCATION":
+    "modules/bati-location — the whole feature. Precise location from LocationManager's " +
+    "GPS_PROVIDER at 1 Hz; coarse location cannot measure a run.",
+  "android.permission.ACCESS_COARSE_LOCATION":
+    "modules/bati-location — not used, but declared: from API 31 Android refuses a FINE-only " +
+    "runtime request, the pair has to be asked for together, and a permission requested at " +
+    "runtime must be in the manifest. The hero granting coarse only is turned away by the app.",
+  "android.permission.FOREGROUND_SERVICE_LOCATION":
+    "modules/bati-location — the typed half of FOREGROUND_SERVICE since API 34. A service of " +
+    "type `location` is also the one type Android 15 exempts from its foreground-service " +
+    "duration cap, which is what lets a session outlast a long climb.",
+  "android.permission.POST_NOTIFICATIONS":
+    "modules/bati-location — since API 33 the foreground-service notification is invisible " +
+    "without it. The service still runs, but the one thing telling the hero their phone is " +
+    "tracking them would be silently absent, which is the opposite of what that notification " +
+    "is for.",
 };
 
 const USES_PERMISSION = /<uses-permission[^>]*android:name="([^"]+)"/g;
@@ -85,17 +111,32 @@ function packageDirs(): string[] {
   return dirs;
 }
 
-/** Every permission node_modules asks the manifest merger for, mapped to who asked. */
+/**
+ * Local Expo modules under `modules/`. Their manifests are merged exactly like a dependency's,
+ * and they are the one kind this file used to miss entirely: not in node_modules, not an AAR,
+ * so neither the scan nor the note about AARs above covered them. A permission we write
+ * ourselves deserves the same sentence as one a library drags in — more, arguably, since
+ * nobody else will ever ask us to justify it.
+ */
+function localModuleDirs(): string[] {
+  if (!fs.existsSync(LOCAL_MODULES)) return [];
+  return fs
+    .readdirSync(LOCAL_MODULES)
+    .filter((entry) => !entry.startsWith("."))
+    .map((entry) => path.join(LOCAL_MODULES, entry));
+}
+
+/** Every permission the manifest merger is asked for, mapped to who asked. */
 function declaredPermissions(): Map<string, string[]> {
   const found = new Map<string, string[]>();
-  for (const pkgDir of packageDirs()) {
+  for (const pkgDir of [...packageDirs(), ...localModuleDirs()]) {
     const manifest = path.join(pkgDir, "android", "src", "main", "AndroidManifest.xml");
     if (!fs.existsSync(manifest)) continue;
     const xml = fs.readFileSync(manifest, "utf8");
     for (const [, name] of xml.matchAll(USES_PERMISSION)) {
       assert(name);
       const askers = found.get(name) ?? [];
-      askers.push(path.relative(NODE_MODULES, pkgDir));
+      askers.push(path.relative(ROOT, pkgDir));
       found.set(name, askers);
     }
   }
@@ -110,6 +151,11 @@ describe("Android permissions", () => {
     const declared = declaredPermissions();
     // A scan that finds nothing would pass forever; VIBRATE is expo-haptics and is not going away.
     expect(declared.has("android.permission.VIBRATE")).toBe(true);
+    // And the same canary for the half of the scan that reads modules/: a local module's
+    // manifest was invisible here until 2026-08-31, so prove the eye is open, not just the list.
+    expect(declared.get("android.permission.ACCESS_FINE_LOCATION")).toContain(
+      path.join("modules", "bati-location"),
+    );
 
     const unaccounted = [...declared]
       .filter(([name]) => !(name in ALLOWED) && !blocked.has(name) && !removed.has(name))

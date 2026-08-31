@@ -1,0 +1,21 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      The permission bill for Google-free GPS, declared here rather than in app.json so it
+      travels with the module that needs it: delete the module, and the app's install screen
+      goes back to what it was.
+
+      Nothing exercises these yet. The module is a skeleton whose only job is to answer the
+      question no F-Droid-built Expo app has answered in public — does their builder handle a
+      local Expo module — before a line of the foreground service is written. Until that
+      service exists, this manifest must not reach a release tag: a permission the app never
+      uses is exactly the shape __tests__/android-permissions.test.ts was written to catch.
+
+      See docs/designs/gps-without-google.md.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+</manifest>

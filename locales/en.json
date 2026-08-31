@@ -425,6 +425,11 @@
     "path_you_are_here": "You are here."
   },
   "session": {
+    "expedition_status_acquiring": "Finding the sky",
+    "expedition_status_moving": "On the road",
+    "expedition_status_paused": "Standing still",
+    "expedition_status_error": "No signal",
+    "expedition_accuracy": "within {{metres}} m",
     "expedition_notification_title": "Bati",
     "expedition_acquiring": "Finding the sky",
     "expedition_tracking": "On the road",

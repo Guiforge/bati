@@ -18,6 +18,7 @@ import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import { formatTarget } from "@/db/targets";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -31,6 +32,7 @@ import { BossArena } from "./BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { ExerciseHero } from "./ExerciseHero";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
+import { ExpeditionPanel } from "./ExpeditionPanel";
 import { sessionArtHeight } from "./sessionArt";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -88,6 +90,8 @@ export function ActiveExerciseView() {
   if (!quest || !currentEx) return null;
 
   const isTimeBased = currentEx.target.type === "time";
+  /** An expedition measures ground rather than repetitions, and shows it. */
+  const isOuting = currentEx.exercise.style === NON_REP_STYLE;
   const ghost = currentEx.ghost;
 
   const exerciseName = localizedName(currentEx.exercise, language);
@@ -323,8 +327,14 @@ export function ActiveExerciseView() {
           above, this column grows instead — the counter wrapper below carries the same grow, so
           the slack lands around the counter and the CTA stays on the bottom edge. */}
       <YStack px="$4" pt="$4" gap="$4" style={bossFight ? { flexGrow: 1 } : undefined}>
+        {/* An outing replaces the countdown entirely: what a hero wants at kilometre three is
+            how far they have gone, not how much of a prescribed duration is left. The clock is
+            still running underneath — `completeExercise` records the elapsed seconds either
+            way — but it is not what the screen is about. */}
+        {isOuting ? <ExpeditionPanel /> : null}
+
         {/* Within-exercise timer progress (only for time-based exercises) */}
-        {isTimeBased && (
+        {isTimeBased && !isOuting && (
           <YStack gap="$2">
             {/* No label row: the numeral below is the same figure at 72px. */}
             <Progress

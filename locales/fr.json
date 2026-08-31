@@ -619,6 +619,11 @@
     "title": "Planning Hebdomadaire"
   },
   "session": {
+    "expedition_status_acquiring": "Cherche le ciel",
+    "expedition_status_moving": "En chemin",
+    "expedition_status_paused": "À l'arrêt",
+    "expedition_status_error": "Aucun signal",
+    "expedition_accuracy": "à {{metres}} m près",
     "expedition_notification_title": "Bati",
     "expedition_acquiring": "Cherche le ciel",
     "expedition_tracking": "En chemin",

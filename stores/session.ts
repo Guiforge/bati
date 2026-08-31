@@ -487,6 +487,29 @@ function mountedExpedition(quest: Quest): boolean {
   return quest.exercises.some((slot) => slot.exercise.enName === "Outrider's Ride");
 }
 
+/**
+ * Start measuring the ground, if there is ground to measure.
+ *
+ * Its own function because setting up a session and starting a foreground service are two
+ * different jobs, and because the notification's five strings are localized here: the native
+ * half owns no words at all, which is what lets it follow the app's language without knowing
+ * one exists.
+ */
+function beginTrackingIfOuting(quest: Quest, sessionUuid: string | null): void {
+  if (!isExpedition(quest) || sessionUuid === null) return;
+  useExpeditionStore.getState().begin(
+    sessionUuid,
+    {
+      title: i18n.t("session.expedition_notification_title"),
+      acquiring: i18n.t("session.expedition_acquiring"),
+      tracking: i18n.t("session.expedition_tracking"),
+      paused: i18n.t("session.expedition_paused"),
+      gpsOff: i18n.t("session.expedition_gps_off"),
+    },
+    mountedExpedition(quest),
+  );
+}
+
 export const useSessionStore = create<SessionState>()(
   subscribeWithSelector((set, get) => ({
     quest: null,
@@ -570,24 +593,9 @@ export const useSessionStore = create<SessionState>()(
         triumphBonusPaid: false,
       });
 
-      // An outing measures ground; a workout in a room does not. Started after the state is set
+      // An outing measures ground; a workout in a room does not. Called after the state is set
       // so the uuid the points are filed under is already the one the session will keep.
-      if (isExpedition(quest)) {
-        const uuid = get().sessionUuid;
-        if (uuid) {
-          useExpeditionStore.getState().begin(
-            uuid,
-            {
-              title: i18n.t("session.expedition_notification_title"),
-              acquiring: i18n.t("session.expedition_acquiring"),
-              tracking: i18n.t("session.expedition_tracking"),
-              paused: i18n.t("session.expedition_paused"),
-              gpsOff: i18n.t("session.expedition_gps_off"),
-            },
-            mountedExpedition(quest),
-          );
-        }
-      }
+      beginTrackingIfOuting(quest, get().sessionUuid);
     },
 
     nextWarmupStep: () => {

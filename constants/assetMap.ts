@@ -88,6 +88,12 @@ export const EXERCISE_ASSETS = {
   pistol_squat: require("@/assets/images/exercises/pistol_squat.webp"),
   dragon_flag: require("@/assets/images/exercises/dragon_flag.webp"),
   tuck_planche: require("@/assets/images/exercises/tuck_planche.webp"),
+  // The expeditions from 0041. Scenes rather than poses — a wall, a road, a horizon — because
+  // nobody needs teaching to walk, and what these three have to say is *where*. The migration
+  // writes `.jpg`; `keyFromPath` strips the extension, so this is the same asset.
+  wardens_walk: require("@/assets/images/exercises/wardens_walk.webp"),
+  messengers_run: require("@/assets/images/exercises/messengers_run.webp"),
+  outriders_ride: require("@/assets/images/exercises/outriders_ride.webp"),
 } as const;
 
 // ============================================================
@@ -134,6 +140,10 @@ export const QUEST_ASSETS = {
   masons_footing: require("@/assets/images/quests/masons_footing.webp"),
   summit_trial: require("@/assets/images/quests/summit_trial.webp"),
   straight_arm_vigil: require("@/assets/images/quests/straight_arm_vigil.webp"),
+  // The three doors out of 0042. Each cover is a route leaving somewhere, not a place to stand.
+  wardens_round: require("@/assets/images/quests/wardens_round.webp"),
+  word_must_travel: require("@/assets/images/quests/word_must_travel.webp"),
+  long_reach: require("@/assets/images/quests/long_reach.webp"),
 } as const;
 
 // ============================================================
@@ -489,6 +499,9 @@ export const EXERCISE_THUMB_ASSETS = {
   pistol_squat: require("@/assets/images/exercises/thumbs/pistol_squat.webp"),
   dragon_flag: require("@/assets/images/exercises/thumbs/dragon_flag.webp"),
   tuck_planche: require("@/assets/images/exercises/thumbs/tuck_planche.webp"),
+  wardens_walk: require("@/assets/images/exercises/thumbs/wardens_walk.webp"),
+  messengers_run: require("@/assets/images/exercises/thumbs/messengers_run.webp"),
+  outriders_ride: require("@/assets/images/exercises/thumbs/outriders_ride.webp"),
 } as const;
 
 export type ExerciseAssetKey = keyof typeof EXERCISE_ASSETS;

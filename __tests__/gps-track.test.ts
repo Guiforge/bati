@@ -107,7 +107,7 @@ describe("auto-pause, which is the rule this file exists for", () => {
     }
     expect(state.paused).toBe(true);
     // 0.0002 degrees of latitude is about 22 m: the hero has actually left.
-    state = accept(state, fix({ t: T0 + 34_000, distFromPrev: 12, lat: 48.4730 }));
+    state = accept(state, fix({ t: T0 + 34_000, distFromPrev: 12, lat: 48.473 }));
     expect(state.paused).toBe(false);
     expect(state.distanceM).toBeGreaterThan(12);
   });

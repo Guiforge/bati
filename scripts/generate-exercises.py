@@ -588,9 +588,67 @@ EXERCISES = [
      "outline, border or frame around the figure."),
 ]
 
+# The three expeditions of 0041 are the one family in this folder that STYLE cannot describe.
+# Every other entry above is a body against a void, because a reader mid-session has to copy a
+# joint angle. Nobody needs to be taught to walk: what these three have to say is *where* — outside
+# the walls, ground covered, a direction. So they take the covers' register instead (a place, edges
+# falling into darkness, emptiness stated positively), and a walker in one of them is scenery at
+# the scale of a merlon, not a diagram of a stride.
+#
+# Still square at 1280, and still in this folder: they land in the same six slots as every other
+# movement, five of them square, and thumb-exercises.py reads this directory.
+EXPEDITION_STYLE = (
+    "Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident "
+    "black ink outlines and flat cel-shaded colour fills with hard-edged shadows. The palette is "
+    "anchored in deep obsidian blue (#0B0F19) with cold rim light and high-contrast volumetric "
+    "lighting; the edges of the frame fall off into darkness like a soft vignette so the art "
+    "blends into a dark app background. A square 1:1 landscape composition filling the entire "
+    "frame edge to edge, cinematic and immersive, the sky and the ground both given room. The "
+    "artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark."
+)
+
+EXPEDITIONS = [
+    ("wardens_walk",
+     "A wide shot at dusk along a long stretch of village wall, the worn earth track that runs "
+     "beside it leading away from the camera past the merlons and out into open moorland, one "
+     "brazier burning far ahead where the wall turns, the last cold light draining out of the sky. "
+     "Small in the middle distance, seen from behind and no taller than the merlons beside them, "
+     "one lone walker in a plain travelling cloak carries a lantern down the track at an easy "
+     "conversational pace, both feet on the ground, going nowhere in a hurry. Nothing is "
+     "happening: the track simply carries on out of the frame, and the walk is the whole subject. "
+     "Beyond that one small figure the wall and the moor are deserted."),
+    ("messengers_run",
+     "A wide shot at last light of a rutted dirt road crossing open country between two places, "
+     "wooded hills behind and the small warm lights of a village showing far ahead on the plain, a "
+     "leaning wooden waymarker at the roadside and mist gathering in the fields. Small in the "
+     "middle distance, one lone messenger runs along the road towards those lights, seen from "
+     "behind and slightly to the side, mid-stride with one foot clear of the ground, a sealed "
+     "leather satchel strapped across the back and a thin plume of dust hanging where they have "
+     "just passed. The distance is the subject, not the runner. The road holds nobody else."),
+    # The hard one, and the reason it is written the way it is. This movement is a bicycle in the
+    # real world and this world has no bicycles, so the whole picture has to be horse. Two of §8's
+    # rules apply at once: a countable fact beats an adjective (four hooves, one of them down), and
+    # add rather than forbid — an anatomy given in full leaves the model nothing to substitute. The
+    # single blunt negative stays anyway, because this is the one failure worth discarding a draw
+    # over rather than shipping.
+    ("outriders_ride",
+     "A wide shot at golden hour of a grass track running across rolling open downland toward far "
+     "blue ridges, the country falling away for leagues on either side and a low sun raking long "
+     "shadows across the turf. Along that track, seen from the side at a middle distance, a lone "
+     "scout rides a real horse at a steady even canter: a large muscular animal with four legs and "
+     "four hooves, a long mane streaming back off its arched neck, a full tail flowing behind, "
+     "leather saddle and stirrups and bridle, reins running from the bit to the rider's hands, the "
+     "forelegs reaching forward and one hind hoof still driving off the ground and throwing up "
+     "turf. The rider sits deep and upright in the saddle in a plain travelling cloak, unhurried, "
+     "covering ground. The horse is the only thing that carries them. There is nothing mechanical "
+     "anywhere in this picture: no wheel, no cart, no machine, no vehicle of any kind. The downland "
+     "is otherwise empty, no other riders and no people."),
+]
+
 if __name__ == "__main__":
     failed = run(
-        [(slug, f"{pose} {STYLE}") for slug, pose in EXERCISES],
+        [(slug, f"{pose} {STYLE}") for slug, pose in EXERCISES]
+        + [(slug, f"{scene} {EXPEDITION_STYLE}") for slug, scene in EXPEDITIONS],
         out_dir=ROOT / "assets" / "images" / "exercises",
         width=1280,
         height=1280,

@@ -170,6 +170,22 @@ describe("rankSwapCandidates", () => {
   const reasonOf = (out: SwapCandidate[], id: number) =>
     out.find((c) => c.exercise.id === id)?.reason;
 
+  /**
+   * The picker filters on `retiredAt` alone, so before this an hour's walk was one tap from any
+   * boss quest's slot: thirty seconds outside for a strike the boss's HP was never priced for,
+   * no volume and no muscle balance. The mirror is worse — an indoor movement swapped into an
+   * expedition's only slot leaves a foreground service and 1 Hz GPS tracking a set of push-ups.
+   */
+  it("never crosses the line between an outing and a workout, in either direction", () => {
+    const walk = makeExercise({ id: 900, enName: "Warden's Walk", style: "expedition" });
+    const pool = [...ALL, walk];
+
+    expect(rankSwapCandidates(pool, pullUp, null).some((c) => c.exercise.id === walk.id)).toBe(
+      false,
+    );
+    expect(rankSwapCandidates(pool, walk, null)).toEqual([]);
+  });
+
   it("never offers the movement it is replacing", () => {
     const out = rankSwapCandidates(ALL, pullUp, null);
     expect(out.some((c) => c.exercise.id === pullUp.id)).toBe(false);

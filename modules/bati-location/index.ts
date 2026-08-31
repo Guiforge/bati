@@ -65,6 +65,8 @@ type BatiLocationNativeModule = {
   start(options: StartOptions): boolean;
   stop(): void;
   requestPermission(): Promise<PermissionResponse>;
+  requestNotificationPermission(): Promise<PermissionResponse>;
+  setProgress(text: string): void;
   // Every expo native module is an EventEmitter; spelling the one method used here beats
   // importing `NativeModule`, whose exported type is the constructor and carries no members.
   addListener<Event extends keyof BatiLocationEvents>(
@@ -74,6 +76,14 @@ type BatiLocationNativeModule = {
 };
 
 const native = requireOptionalNativeModule<BatiLocationNativeModule>("BatiLocation");
+
+/** The answer on a build with no native half, so every caller branches on one shape. */
+const DENIED: PermissionResponse = {
+  canAskAgain: false,
+  expires: "never",
+  granted: false,
+  status: PermissionStatus.DENIED,
+};
 
 /** Whether the native module is linked into this build at all. */
 export function isAvailable(): boolean {
@@ -93,14 +103,20 @@ export function hasGpsProvider(): boolean {
  * breath. Denied everywhere the native module is absent, so a caller can branch on one answer.
  */
 export async function requestPermission(): Promise<PermissionResponse> {
-  return (
-    (await native?.requestPermission()) ?? {
-      canAskAgain: false,
-      expires: "never",
-      granted: false,
-      status: PermissionStatus.DENIED,
-    }
-  );
+  return (await native?.requestPermission()) ?? DENIED;
+}
+
+/**
+ * Asks to be allowed to post the ongoing notification.
+ *
+ * Separate from the location prompt on purpose: from API 33 the foreground-service notification
+ * is invisible without this grant, so on a phone that never asked, the whole promise the feature
+ * makes — one tap on the way out, one on the way back, and the rest said through a notification —
+ * silently did not exist. It is still only the *voice* of the feature, not the feature, so a
+ * refusal must never stop a walk: callers fire this and ignore the answer.
+ */
+export async function requestNotificationPermission(): Promise<PermissionResponse> {
+  return (await native?.requestNotificationPermission()) ?? DENIED;
 }
 
 /**
@@ -109,6 +125,18 @@ export async function requestPermission(): Promise<PermissionResponse> {
  */
 export function start(options: StartOptions): boolean {
   return native?.start(options) ?? false;
+}
+
+/**
+ * Move the second half of the notification's line, e.g. "On the road · 2.40 km".
+ *
+ * A string rather than a number: the ground covered has to be phrased the way the hero's own
+ * screen phrases it, in their unit and their language, and it has to be the reducer's distance
+ * rather than a native sum of every accepted fix. Those two numbers differ on purpose, and the
+ * notification is the one place the hero cannot check which they are reading.
+ */
+export function setProgress(text: string): void {
+  native?.setProgress(text);
 }
 
 /** Stops the service, releases the wake lock and takes the notification down. */

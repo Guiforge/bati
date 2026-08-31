@@ -33,6 +33,23 @@ OUT_DIR = ROOT / "assets/images/exercises/thumbs"
 # on a 3x screen with room to spare, and the whole set still weighs well under 100 KB.
 SIZE = 128
 
+# Where the subject actually is, for the art that is a landscape rather than a figure.
+#
+# Every other movement in the catalogue is drawn as one person filling the frame, so shrinking
+# the whole square to 128 still reads as a person doing a thing. The three expeditions are wide
+# shots on purpose — the distance is the subject at full size — and at 48 pt in the picker that
+# same composition is a grey smudge with an orange dot beside sixty legible neighbours, which
+# reads as a broken image rather than a different one.
+#
+# So the thumbnail is a different crop of the same painting, not a different painting. Boxes are
+# fractions of the source, square, and named per image because there is no rule that finds a
+# lantern in the dark. Anything absent here is thumbnailed whole, which is right for a figure.
+CROPS: dict[str, tuple[float, float, float, float]] = {
+    "wardens_walk": (0.30, 0.55, 0.75, 1.00),
+    "messengers_run": (0.18, 0.40, 0.63, 0.85),
+    "outriders_ride": (0.20, 0.28, 0.80, 0.88),
+}
+
 
 def sources() -> list[pathlib.Path]:
     return sorted(p for p in ROOT.glob(SOURCE_GLOB) if p.parent != OUT_DIR)
@@ -41,6 +58,13 @@ def sources() -> list[pathlib.Path]:
 def thumbnail(path: pathlib.Path) -> int:
     """Write the derived thumbnail. Returns its size in bytes."""
     image = Image.open(path)
+    box = CROPS.get(path.stem)
+    if box is not None:
+        width, height = image.size
+        left, top, right, bottom = box
+        image = image.crop(
+            (round(left * width), round(top * height), round(right * width), round(bottom * height))
+        )
     # LANCZOS: the art is ink-outlined like the emblems, and a cheaper filter frays the outline.
     image.thumbnail((SIZE, SIZE), Image.Resampling.LANCZOS)
     out = OUT_DIR / path.name

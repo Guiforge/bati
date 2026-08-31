@@ -116,7 +116,8 @@
     "pick_weekly": "SESSIONS PER WEEK",
     "weekly_chip": "{{count}}× / week",
     "streak_hint": "Rest days count — the flame tracks consistency, not attendance.",
-    "sworn_toast": "Oath sworn"
+    "sworn_toast": "Oath sworn",
+    "error_target_unreachable": "A single set cannot be logged above {{max}}. Swear a lower one, or swear it on total volume instead."
   },
   "settings": {
     "title": "Settings",
@@ -209,8 +210,6 @@
     "empty_subtitle": "Come back soon — new quests are being forged.",
     "empty_filters_title": "No quests match",
     "empty_filters_subtitle": "Try removing filters.",
-    "rounds": "{{count}} rounds",
-    "exercises": "{{count}} exercises",
     "exercises_list": "Exercises",
     "filters_clear": "Clear filters",
     "filter_clear_all": "Clear",
@@ -289,7 +288,12 @@
     "editor_discard_title": "Discard changes?",
     "editor_delete_body": "This cannot be undone.",
     "editor_saved": "Quest saved",
-    "filter_remove": "Remove {{label}}"
+    "filter_remove": "Remove {{label}}",
+    "rounds_one": "{{count}} round",
+    "rounds_other": "{{count}} rounds",
+    "exercises_one": "{{count}} exercise",
+    "exercises_other": "{{count}} exercises",
+    "filter_outside": "Outside"
   },
   "adventures": {
     "gallery_title": "Adventures",
@@ -488,7 +492,7 @@
     "sound_off": "Sound off",
     "sound_on": "Sound on",
     "summary_too_short_title": "That was a short one",
-    "summary_too_short_body": "You were out for {{seconds}} seconds. Keep it and it counts toward your streak and your oath, or discard it and nothing happened.",
+    "summary_too_short_body": "You trained for {{duration}}. Keep it and it counts toward your streak and your oath, or discard it and nothing happened.",
     "summary_too_short_keep": "Keep it",
     "summary_too_short_discard": "Discard",
     "summary_saving": "Saving your workout…",
@@ -513,7 +517,13 @@
     "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure.",
     "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now.",
     "ghost_last_label": "Last time",
-    "ghost_best_label": "best"
+    "ghost_best_label": "best",
+    "expedition_status_denied": "Location is off for Bati",
+    "expedition_acquiring_hint": "The first fix can take a few minutes outdoors. Set off anyway, the trace will catch up.",
+    "expedition_ground": "Ground covered",
+    "expedition_moving": "Moving",
+    "expedition_pace": "Pace",
+    "expedition_road": "{{building}} · {{value}}/{{target}} leagues"
   },
   "muscles": {
     "arms": "Arms",
@@ -822,7 +832,7 @@
     "distance": "Distance",
     "moving_time": "Moving",
     "pace": "Pace",
-    "privacy": "Your route never leaves this phone."
+    "privacy": "Your route never leaves this phone. The map behind it is downloaded from OpenFreeMap."
   },
   "safety": {
     "title": "Train safely",

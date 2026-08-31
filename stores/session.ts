@@ -25,13 +25,14 @@ import { checkForNewRungs, type Exercise, type VariationStep } from "@/db/exerci
 import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
+import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
-import { REST_RANGE, targetRangeFor } from "@/db/questConfig";
+import { REST_RANGE } from "@/db/questConfig";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
-import { retargetForMovement } from "@/db/targets";
+import { retargetForMovement, targetRangeFor } from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { uuidv7 } from "@/db/uuid";
 import {
@@ -580,21 +581,31 @@ function mountedExpedition(quest: Quest): boolean {
  */
 function beginTrackingIfOuting(quest: Quest, sessionUuid: string | null): void {
   if (!isExpedition(quest) || sessionUuid === null) return;
+
   // Fire and forget: the permission dialog and the service start are the expedition store's
   // business, and a session must not wait on a system prompt before its own screen appears.
   // A refusal lands in that store's `error`, which the panel reads.
-  useExpeditionStore
-    .getState()
-    .begin(
-      sessionUuid,
-      {
-        title: i18n.t("session.expedition_notification_title"),
-        acquiring: i18n.t("session.expedition_acquiring"),
-        tracking: i18n.t("session.expedition_tracking"),
-        paused: i18n.t("session.expedition_paused"),
-        gpsOff: i18n.t("session.expedition_gps_off"),
-      },
-      mountedExpedition(quest),
+  //
+  // The unit is resolved here rather than inside that store, and only once the quest is known to
+  // be an outing: the store has no business importing settings, which would pull the whole `db`
+  // barrel into a module the session screen mounts. It only ever needs the word the notification
+  // prints.
+  preferences
+    .getDistanceUnit()
+    .catch((): DistanceUnit => "metric")
+    .then((unit) =>
+      useExpeditionStore.getState().begin(
+        sessionUuid,
+        {
+          title: i18n.t("session.expedition_notification_title"),
+          acquiring: i18n.t("session.expedition_acquiring"),
+          tracking: i18n.t("session.expedition_tracking"),
+          paused: i18n.t("session.expedition_paused"),
+          gpsOff: i18n.t("session.expedition_gps_off"),
+        },
+        mountedExpedition(quest),
+        unit,
+      ),
     )
     .catch((error: unknown) => reportError("session.beginTracking", error));
 }

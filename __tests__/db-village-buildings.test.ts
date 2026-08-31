@@ -135,12 +135,15 @@ describe("db/village buildings", () => {
   test("a locked road still shows how far along it is", async () => {
     const { getBuildingProgress } = require("../db/village") as typeof import("../db/village");
 
-    // Half a league: real ground, not yet a rung.
+    // Half a league: real ground, not yet a rung. The tally is whole leagues, because "0.5
+    // leagues covered beyond the walls" is not a sentence — but the bar has to move, or the
+    // first outing a hero ever takes leaves the one building it feeds sitting at zero.
     walkLeagues(0.5);
 
     const partial = await road();
     expect(partial.level).toBe(0);
-    expect(getBuildingProgress(partial)).toBe(0);
+    expect(partial.metricValue).toBe(0);
+    expect(getBuildingProgress(partial)).toBe(50);
   });
 
   test("walking raises the road", async () => {

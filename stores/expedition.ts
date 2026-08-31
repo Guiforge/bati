@@ -1,12 +1,16 @@
 import { create } from "zustand";
+import { formatDistance } from "@/constants/distanceFormat";
 import { appendPoints } from "@/db/gps";
+import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import {
   addListener,
   isAvailable,
   type LocationFix,
+  requestNotificationPermission,
   requestPermission,
+  setProgress,
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
@@ -41,7 +45,12 @@ type ExpeditionState = {
   lastFix: LocationFix | null;
   /** Set when the service refused to start, so a screen can say why rather than sit blank. */
   error: string | null;
-  begin: (sessionUuid: string, notification: Notification, mounted: boolean) => Promise<boolean>;
+  begin: (
+    sessionUuid: string,
+    notification: Notification,
+    mounted: boolean,
+    unit: DistanceUnit,
+  ) => Promise<boolean>;
   end: () => Promise<void>;
 };
 
@@ -86,7 +95,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   lastFix: null,
   error: null,
 
-  begin: async (sessionUuid, notification, mounted) => {
+  begin: async (sessionUuid, notification, mounted, unit) => {
     if (!isAvailable()) {
       // No native half: iOS today, and jest. The quest still runs, it just measures nothing.
       set({ error: "unavailable" });
@@ -112,6 +121,15 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       set({ error: "permission" });
       return false;
     }
+    // Asked after location and never bundled with it: from API 33 the ongoing notification is
+    // invisible without this grant, so the promise the feature makes — one tap out, one tap back,
+    // the rest said through a notification — silently did not exist on any recent phone. The
+    // answer is deliberately ignored. A hero who refuses the notification still gets their walk
+    // measured; bundling the two would have let one refusal veto the other.
+    await requestNotificationPermission().catch((e: unknown) =>
+      reportError("expedition.notificationPermission", e),
+    );
+
     await get()
       .end()
       .catch((e) => reportError("expedition.restart", e));
@@ -122,8 +140,12 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     subscriptions = [
       addListener("onLocation", (fix) => {
         buffer.push(fix);
-        set((state) => ({ track: accept(state.track, fix), lastFix: fix }));
+        const track = accept(get().track, fix);
+        set({ track, lastFix: fix });
+        // Same cadence as the write, so a pocket that is never looked at costs one notification
+        // update every thirty seconds rather than one a second.
         if (buffer.length >= FLUSH_EVERY) {
+          setProgress(formatDistance(track.distanceM, unit));
           flush(sessionUuid).catch((e) => reportError("expedition.flush", e));
         }
       }),

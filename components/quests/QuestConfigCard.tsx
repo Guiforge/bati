@@ -6,6 +6,7 @@ import { Card } from "@/components/common/Card";
 import { Stepper } from "@/components/common/Stepper";
 import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Repeat, RotateCcw, SlidersHorizontal } from "@/components/icons";
+import { restsBetweenExercises, restsBetweenRounds } from "@/components/quests/questShape";
 import {
   hasQuestOverrides,
   type QuestConfig,
@@ -76,29 +77,35 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
               onChange={(rounds) => onChange({ ...config, rounds })}
             />
 
-            {/* The label renders on one line, so which rest is which goes in the hint. */}
-            <Stepper
-              label={t("quests.config_rest", "Rest")}
-              hint={t("quests.config_rest_hint", "Between exercises")}
-              value={quest.restSeconds}
-              min={REST_RANGE.min}
-              max={REST_RANGE.max}
-              step={REST_STEP}
-              suffix="s"
-              onChange={(restSeconds) => onChange({ ...config, restSeconds })}
-            />
+            {/* The label renders on one line, so which rest is which goes in the hint. Both
+                steppers answer to the quest's shape: see components/quests/questShape.ts. The
+                Rounds stepper above is what brings the round rest back, in the same breath. */}
+            {restsBetweenExercises(quest) ? (
+              <Stepper
+                label={t("quests.config_rest", "Rest")}
+                hint={t("quests.config_rest_hint", "Between exercises")}
+                value={quest.restSeconds}
+                min={REST_RANGE.min}
+                max={REST_RANGE.max}
+                step={REST_STEP}
+                suffix="s"
+                onChange={(restSeconds) => onChange({ ...config, restSeconds })}
+              />
+            ) : null}
 
             {/* Null means the quest has no separate round rest, so the short one is what runs. */}
-            <Stepper
-              label={t("quests.config_round_rest", "Round rest")}
-              hint={t("quests.config_round_rest_hint", "Between rounds")}
-              value={quest.roundRestSeconds ?? quest.restSeconds}
-              min={REST_RANGE.min}
-              max={REST_RANGE.max}
-              step={REST_STEP}
-              suffix="s"
-              onChange={(roundRestSeconds) => onChange({ ...config, roundRestSeconds })}
-            />
+            {restsBetweenRounds(quest) ? (
+              <Stepper
+                label={t("quests.config_round_rest", "Round rest")}
+                hint={t("quests.config_round_rest_hint", "Between rounds")}
+                value={quest.roundRestSeconds ?? quest.restSeconds}
+                min={REST_RANGE.min}
+                max={REST_RANGE.max}
+                step={REST_STEP}
+                suffix="s"
+                onChange={(roundRestSeconds) => onChange({ ...config, roundRestSeconds })}
+              />
+            ) : null}
 
             <Separator borderColor="$borderStrong" />
 

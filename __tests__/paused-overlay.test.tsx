@@ -190,7 +190,8 @@ describe("restarting a round", () => {
 
   function pauseWithTwoSets() {
     useSessionStore.setState({
-      quest: mockQuest,
+      // Three rounds, because the button only exists where there is a round to go back to.
+      quest: { ...mockQuest, rounds: 3 },
       status: "paused",
       prePauseStatus: "running",
       currentRoundIndex: 0,
@@ -202,6 +203,21 @@ describe("restarting a round", () => {
       bossFight: null,
     });
   }
+
+  /**
+   * A quest of one round has no round to go back to: "Redo the round" there restarts the session
+   * itself, under a word that promises less than it does. The three expeditions are one round of
+   * one movement, so this showed there first, but any one-round quest written in the editor had
+   * it too - which is why the guard is quest shape rather than an expedition check.
+   */
+  it("is not offered at all when the quest has only one round", async () => {
+    pauseWithTwoSets();
+    useSessionStore.setState({ quest: { ...mockQuest, rounds: 1 } });
+    const paused = await mountPaused();
+
+    expect(paused.queryByTestId("session-restart-round")).toBeNull();
+    expect(paused.getByTestId("session-resume")).toBeTruthy();
+  });
 
   it("keeps every logged set until the hero confirms", async () => {
     const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);

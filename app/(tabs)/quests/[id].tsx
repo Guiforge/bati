@@ -13,9 +13,10 @@ import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
-import { ChevronLeft, Dumbbell, Pencil, Repeat, Sparkles } from "@/components/icons";
+import { ChevronLeft, Dumbbell, Footprints, Pencil, Repeat, Sparkles } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
+import { restsBetweenExercises } from "@/components/quests/questShape";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
@@ -34,13 +35,15 @@ import {
 } from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { formatDuration } from "@/db/estimate";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
-import { formatTarget } from "@/db/targets";
+import { formatTarget, type Target } from "@/db/targets";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -60,6 +63,18 @@ function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
 function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
   return path.startsWith("http") ? { uri: path } : getExerciseThumb(path);
+}
+
+/**
+ * A target in the words the hero reads it in.
+ *
+ * `formatTarget` prints seconds raw, which is fine at plank length and unreadable past a minute:
+ * an expedition asks for 900, and "900s" is not a number anybody converts. Time targets go
+ * through `formatDuration`, the app's own exact form — "15 min" above the minute, still "30s"
+ * below it, so nothing shorter than a round changes. Reps stay `formatTarget`'s job.
+ */
+function targetLabel(target: Target): string {
+  return target.type === "time" ? formatDuration(target.value) : formatTarget(target);
 }
 
 /** Stable empty list, so the sheet's props do not change identity on every render. */
@@ -582,12 +597,16 @@ export default function QuestDetails() {
                     })}
                     tone="primary"
                   />
-                  <Tag
-                    label={t("quests.rest", {
-                      count: quest.restSeconds,
-                      defaultValue: `Rest ${quest.restSeconds}s`,
-                    })}
-                  />
+                  {/* One movement means every gap is a round boundary, so this rest is never
+                      taken — components/quests/questShape.ts. */}
+                  {restsBetweenExercises(quest) ? (
+                    <Tag
+                      label={t("quests.rest", {
+                        count: quest.restSeconds,
+                        defaultValue: `Rest ${quest.restSeconds}s`,
+                      })}
+                    />
+                  ) : null}
                   {estimate ? (
                     <Tag
                       label={t("quests.estimate", {
@@ -672,7 +691,13 @@ export default function QuestDetails() {
                         justify="center"
                         items="center"
                       >
-                        <Dumbbell size={24} color="$text" strokeWidth={2.5} />
+                        {/* An outing is not a dumbbell. `Footprints` is already in
+                            components/icons.ts, so this costs the bundle nothing. */}
+                        {qex.exercise.style === NON_REP_STYLE ? (
+                          <Footprints size={24} color="$text" strokeWidth={2.5} />
+                        ) : (
+                          <Dumbbell size={24} color="$text" strokeWidth={2.5} />
+                        )}
                       </YStack>
 
                       <YStack flex={1} gap="$1">
@@ -681,7 +706,7 @@ export default function QuestDetails() {
                             {i + 1}. {exName}
                           </Text>
                           <Tag
-                            label={formatTarget(qex.target)}
+                            label={targetLabel(qex.target)}
                             tone={qex.target.type === "time" ? "secondary" : "primary"}
                           />
                         </XStack>
@@ -733,7 +758,7 @@ export default function QuestDetails() {
                           {qex.ghost ? (
                             <Tag
                               label={t("quests.ghost_last", {
-                                value: formatTarget({
+                                value: targetLabel({
                                   type: qex.target.type,
                                   value: qex.ghost.last,
                                 }),

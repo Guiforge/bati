@@ -54,9 +54,6 @@ export {
   REST_RANGE,
   ROUNDS_RANGE,
   saveQuestConfig,
-  TARGET_RANGE,
-  TIME_TARGET_MAX,
-  targetRangeFor,
 } from "./questConfig";
 export type { TrainingFocus } from "./quests";
 export {
@@ -72,6 +69,7 @@ export {
   USER_QUEST_AUTHOR,
   updateQuestMeta,
 } from "./quests";
+export { TARGET_RANGE, targetRangeFor } from "./targets";
 export {
   calculateLevelFromXp as calculateUserLevelFromXp,
   getTotalXp,

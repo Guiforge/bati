@@ -14,12 +14,23 @@ const quest = (
   equipment: EquipmentCode[],
   durationSeconds: number,
   archetype: QuestArchetype | null = null,
+  outside = false,
 ) => ({
   muscles,
   equipment,
   durationSeconds,
   archetype,
+  outside,
 });
+
+// The three seeded outings, as `matchesFilters` sees them: no muscles at all (an expedition
+// converts to zero rep-equivalents, so tagging it `legs` would lie to the balance card), the
+// same `metabolic` archetype every continuous-effort quest declares, and no equipment.
+const expedition = (durationSeconds: number) =>
+  quest([], ["none"], durationSeconds, "metabolic", true);
+const wardensRound = expedition(15 * 60);
+const messengersRoad = expedition(15 * 60);
+const outridersWay = expedition(20 * 60);
 
 const filters = (over: Partial<QuestFilters> = {}): QuestFilters => ({
   ...NO_FILTERS,
@@ -101,4 +112,47 @@ test("toggleInSet adds then removes, without mutating the original", () => {
   expect([...withChest]).toEqual(["chest"]);
   expect(empty.size).toBe(0);
   expect([...toggleInSet(withChest, "chest")]).toEqual([]);
+});
+
+describe("the Outside dimension", () => {
+  const outside = filters({ outside: true });
+  const indoors = [chestDumbbell10min, backNone45min, quest(["legs"], ["none"], 600, "metabolic")];
+
+  test("returns exactly the expeditions and excludes everything else", () => {
+    expect(
+      [wardensRound, messengersRoad, outridersWay, ...indoors].filter((q) =>
+        matchesFilters(q, outside),
+      ),
+    ).toEqual([wardensRound, messengersRoad, outridersWay]);
+  });
+
+  test("off means 'not asked', never 'indoors only'", () => {
+    // The chip is one boolean, so its off state has to leave the outings in the gallery — the
+    // failure mode is a filter that hides three quests nobody asked it to hide.
+    for (const q of [wardensRound, ...indoors]) {
+      expect(matchesFilters(q, NO_FILTERS)).toBe(true);
+    }
+  });
+
+  test("intersects the other dimensions like every rail before it", () => {
+    expect(matchesFilters(wardensRound, filters({ outside: true, duration: "short" }))).toBe(true);
+    expect(matchesFilters(outridersWay, filters({ outside: true, duration: "short" }))).toBe(false);
+    // A metabolic archetype is shared with indoor circuits, which is the whole problem the chip
+    // exists to solve: asking for both must not widen either.
+    expect(
+      matchesFilters(
+        quest(["legs"], ["none"], 600, "metabolic"),
+        filters({ outside: true, archetypes: new Set<QuestArchetype>(["metabolic"]) }),
+      ),
+    ).toBe(false);
+  });
+
+  test("a muscle filter still hides them, which is why the chip had to exist", () => {
+    // Deliberately unchanged: "Chest" must mean chest, exactly as "Strength" must mean strength.
+    // Pinned so nobody makes muscle-less quests match every muscle to fix discovery — Outside is
+    // the fix, and this asserts the two are not confused.
+    expect(matchesFilters(wardensRound, filters({ muscles: new Set<MuscleCode>(["legs"]) }))).toBe(
+      false,
+    );
+  });
 });

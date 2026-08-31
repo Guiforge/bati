@@ -26,6 +26,7 @@ import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { readPath } from "@/db/paths";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -426,14 +427,20 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               label={equipmentLabel}
               tone={exercise.equipment === "none" ? "default" : "secondary"}
             />
-            <Tag
-              icon={<Timer size={12} color="$text" opacity={0.7} />}
-              label={t("exercises.seconds_per_rep", {
-                count: exercise.secondsPerRep,
-                defaultValue: `${exercise.secondsPerRep}s`,
-              })}
-              tone="primary"
-            />
+            {/* A tempo is seconds per repetition, and an expedition has none — it is measured
+                in ground covered (db/workUnits.ts). The column still holds a 1 so the duration
+                estimator has something to multiply; that number is not a fact about the
+                movement, so it does not get a chip. */}
+            {exercise.style === NON_REP_STYLE ? null : (
+              <Tag
+                icon={<Timer size={12} color="$text" opacity={0.7} />}
+                label={t("exercises.seconds_per_rep", {
+                  count: exercise.secondsPerRep,
+                  defaultValue: `${exercise.secondsPerRep}s`,
+                })}
+                tone="primary"
+              />
+            )}
           </XStack>
 
           {/* Muscles */}

@@ -21,6 +21,25 @@ export type Target = {
 /** What a slot starts at when nothing better is known — the quest editor's defaults too. */
 export const DEFAULT_TARGET_VALUE: Record<QuestTargetType, number> = { reps: 10, time: 30 };
 
+/** What a rep target may be. Seconds have their own ceiling below. */
+export const TARGET_RANGE = { min: 1, max: 999 };
+
+/**
+ * A time target's ceiling, and it is not `TARGET_RANGE.max`.
+ *
+ * 999 is a generous rep count and sixteen minutes thirty-nine. Every seeded expedition targets
+ * more than that at hard (`drizzle/0042_three_doors_out.sql` reaches 1200 s), so the shared range
+ * silently shortened the quest on the way into SQLite, and the stepper could not be pushed back
+ * up: an hour-long walk was one edit away and the edit did not exist. An hour is also exactly
+ * what one set may ever record (`clampResultValue`), so a target above this could never be met.
+ */
+export const TIME_TARGET_MAX = 3600;
+
+/** What a target may be, by what it counts. Reps and seconds are not the same magnitude. */
+export function targetRangeFor(type: QuestTargetType): { min: number; max: number } {
+  return type === "time" ? { min: TARGET_RANGE.min, max: TIME_TARGET_MAX } : TARGET_RANGE;
+}
+
 /**
  * The target a movement actually runs in when it lands in a slot written for another one.
  *

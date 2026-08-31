@@ -28,6 +28,7 @@ import {
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
+import { targetRangeFor } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { useHaptics } from "@/hooks/useHaptics";
 import { localizedName } from "@/src/i18n/localized";
@@ -407,8 +408,22 @@ export default function OathScreen() {
       return;
     }
 
+    // A promise nothing could ever fulfil.
+    //
+    // `exercise_pr` fills from `MAX(resultValue)` over single sets, and a single set is clamped
+    // at `targetRangeFor(type).max` before it is ever written. For reps that ceiling is far past
+    // anything a hero types. For a held or walked movement it is one hour, which is exactly the
+    // first number someone swears an oath about a walk on: "one hour" and "ninety minutes" were
+    // both permanently stuck oaths with no way back.
+    const measure = exercises.find((e) => e.id === exerciseId)?.measure ?? null;
+    const ceiling = measure === null ? null : targetRangeFor(measure).max;
+    if (metric === "exercise_pr" && ceiling !== null && parsed > ceiling) {
+      setError(t("oath.error_target_unreachable", { max: ceiling }));
+      return;
+    }
+
     confirmThenSwear({ metric, target: parsed, exerciseId, weeklyTarget });
-  }, [metric, target, exerciseId, weeklyTarget, confirmThenSwear, t]);
+  }, [metric, target, exerciseId, weeklyTarget, confirmThenSwear, t, exercises]);
 
   const abandon = useCallback(() => {
     Alert.alert(

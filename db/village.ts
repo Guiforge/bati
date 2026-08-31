@@ -238,6 +238,18 @@ export type VillageBuilding = {
   metricValue: number;
   /** What the driver must reach for the next level; null once the building is maxed. */
   nextTarget: number | null;
+  /**
+   * The same tally before it was rounded down to a whole unit, when those differ.
+   *
+   * Only the road has one. Leagues are stored in metres and shown as whole leagues, so a first
+   * outing of 900 m reads "0/1" and its bar sat at zero for the entire walk — under a comment in
+   * `getBuildingProgress` promising the road counts from the first metre. The tally stays whole,
+   * because "0.9 leagues covered beyond the walls" is not a sentence; the bar reads this.
+   *
+   * Optional rather than nullable everywhere: only one driver has ever needed it, and every
+   * other branch of `deriveLevel` would otherwise carry a `null` that says nothing.
+   */
+  exactValue?: number;
 };
 
 // The shared ladder from schema.ts, with level 1 at "any work at all" — a building appears
@@ -345,11 +357,16 @@ type LevelInputs = {
   bossVictories: number;
   /** Ground covered outside the walls, in leagues. Never a work unit, never a rep. */
   leagues: number;
+  /** Leagues before the floor, so the road's bar can move inside its first one. */
+  leaguesExact: number;
   volumeByMuscle: Map<MuscleCode, number>;
   styleVolumes: Partial<Record<ExerciseStyle, number>>;
 };
 
-type DerivedLevel = Pick<VillageBuilding, "level" | "driver" | "metricValue" | "nextTarget">;
+type DerivedLevel = Pick<
+  VillageBuilding,
+  "level" | "driver" | "metricValue" | "nextTarget" | "exactValue"
+>;
 
 /** Level for everything except tier 3, which needs its prerequisite resolved first. */
 function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
@@ -384,6 +401,8 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
       driver: spec.driver,
       metricValue: value,
       nextTarget: nextFloor(level, spec.floors),
+      // Deeds are counted, not measured: only the road arrives already rounded down.
+      ...(spec.driver === "leagues" ? { exactValue: inputs.leaguesExact } : {}),
     };
   }
 
@@ -436,6 +455,7 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
         finishedRuns: tally.finishedRuns,
         bossVictories: tally.bossVictories,
         leagues: Math.floor(leaguesM / METRES_PER_LEAGUE),
+        leaguesExact: leaguesM / METRES_PER_LEAGUE,
         volumeByMuscle,
         styleVolumes,
       }),
@@ -476,6 +496,7 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
       driver: derived?.driver ?? "tier",
       metricValue: derived?.metricValue ?? 0,
       nextTarget: derived?.nextTarget ?? null,
+      ...(derived?.exactValue === undefined ? {} : { exactValue: derived.exactValue }),
     };
   });
 }
@@ -502,7 +523,8 @@ export function getBuildingProgress(building: VillageBuilding): number | null {
   if (building.level === 0 && !countsWhileLocked) return null;
 
   if (building.nextTarget <= 0) return 0;
-  return Math.max(0, Math.min(100, (building.metricValue / building.nextTarget) * 100));
+  const value = building.exactValue ?? building.metricValue;
+  return Math.max(0, Math.min(100, (value / building.nextTarget) * 100));
 }
 
 export type VillageGrowth = {

@@ -130,7 +130,8 @@
     "pick_weekly": "SÉANCES PAR SEMAINE",
     "weekly_chip": "{{count}}× / semaine",
     "streak_hint": "Les jours de repos comptent — la flamme mesure la régularité, pas l'assiduité.",
-    "sworn_toast": "Serment prêté"
+    "sworn_toast": "Serment prêté",
+    "error_target_unreachable": "Une seule série ne peut pas dépasser {{max}}. Jurez plus bas, ou jurez sur le volume total."
   },
   "common": {
     "hero_badge": "À toi",
@@ -548,7 +549,6 @@
     "empty_subtitle": "Reviens bientôt — de nouvelles quêtes se forgent.",
     "empty_title": "Aucune quête pour l'instant",
     "estimate": "≈ {{duration}}",
-    "exercises": "{{count}} exercices",
     "exercises_list": "Exercices",
     "filter_clear_all": "Effacer",
     "filter_group_duration": "Durée",
@@ -578,7 +578,6 @@
     "retry": "Réessayer",
     "reward_xp": "+{{count}} XP",
     "reward_xp_estimate": "jusqu'à +{{count}} XP",
-    "rounds": "{{count}} manches",
     "seconds_per_rep": "tempo {{count}} s/rép",
     "ghost_last": "Dernier : {{value}}",
     "served_easier_rung": "En route vers {{name}}",
@@ -599,7 +598,12 @@
     "archetype_core": "Gainage",
     "archetype_mobility": "Mobilité",
     "editor_saved": "Quête enregistrée",
-    "filter_remove": "Retirer {{label}}"
+    "filter_remove": "Retirer {{label}}",
+    "rounds_one": "{{count}} manche",
+    "rounds_other": "{{count}} manches",
+    "exercises_one": "{{count}} exercice",
+    "exercises_other": "{{count}} exercices",
+    "filter_outside": "Dehors"
   },
   "recovery": {
     "description": "Tu as une séance laissée en chemin.",
@@ -682,7 +686,7 @@
     "sound_off": "Son coupé",
     "sound_on": "Son activé",
     "summary_too_short_title": "C'était court",
-    "summary_too_short_body": "Tu es sorti {{seconds}} secondes. Garde-la et elle compte pour ta série et ton serment, ou jette-la et il ne s'est rien passé.",
+    "summary_too_short_body": "Tu as tenu {{duration}}. Garde-la et elle compte pour ta série et ton serment, ou jette-la et il ne s'est rien passé.",
     "summary_too_short_keep": "Je la garde",
     "summary_too_short_discard": "Jeter",
     "summary_saving": "Enregistrement de ta séance…",
@@ -707,7 +711,13 @@
     "reserve_hint": "Garde 1 à 2 répétitions en réserve — ne va pas à l'échec.",
     "crit_hint": "Chaque répétition au-delà de l'objectif est une chance de coup critique — {{percent}} % pour l'instant.",
     "ghost_last_label": "La dernière fois",
-    "ghost_best_label": "record"
+    "ghost_best_label": "record",
+    "expedition_status_denied": "Localisation coupée pour Bati",
+    "expedition_acquiring_hint": "La première position peut prendre quelques minutes dehors. Partez quand même, le tracé vous rattrapera.",
+    "expedition_ground": "Terrain parcouru",
+    "expedition_moving": "En chemin",
+    "expedition_pace": "Allure",
+    "expedition_road": "{{building}} · {{value}}/{{target}} lieues"
   },
   "settings": {
     "avatar": "AVATAR",
@@ -822,7 +832,7 @@
     "distance": "Distance",
     "moving_time": "En mouvement",
     "pace": "Allure",
-    "privacy": "Votre trajet ne quitte jamais ce téléphone."
+    "privacy": "Votre trajet ne quitte jamais ce téléphone. La carte derrière lui est téléchargée depuis OpenFreeMap."
   },
   "safety": {
     "title": "S'entraîner en sécurité",

@@ -1,0 +1,215 @@
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { TamaguiProvider } from "tamagui";
+
+import QuestDetails from "@/app/(tabs)/quests/[id]";
+import "@/i18n";
+import config from "@/tamagui.config";
+
+// A device review of the three expeditions found the quest screen saying three things that were
+// not true: a target of "900s", a rest that is never taken, and two rest steppers on a quest with
+// one movement and one round. All three are quest *shape* rather than expedition specials, so the
+// second half of this file runs the same screen on an ordinary three-round workout and pins that
+// nothing was hidden from it.
+
+jest.mock("expo-router", () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    back: jest.fn(),
+    navigate: jest.fn(),
+    dismissTo: jest.fn(),
+  }),
+  useLocalSearchParams: () => ({ id: "5" }),
+  // The screen loads on focus; in tests "focused" is simply "mounted".
+  useFocusEffect: (effect: () => undefined | (() => void)) => {
+    const { useEffect } = require("react");
+    useEffect(effect, [effect]);
+  },
+}));
+
+jest.mock(
+  "react-native-safe-area-context",
+  () => require("react-native-safe-area-context/jest/mock").default,
+);
+
+jest.mock("@/stores/settings", () => ({
+  useSettingsStore: (selector?: (s: { language: string }) => unknown) => {
+    const state = { language: "en" };
+    return selector ? selector(state) : state;
+  },
+}));
+
+jest.mock("@/stores/session", () => ({ useSessionStore: () => ({ startSession: jest.fn() }) }));
+
+jest.mock("@/components/common/Toast", () => ({
+  useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn(), showInfo: jest.fn() }),
+}));
+
+// Function declarations, not consts: babel-plugin-jest-hoist lifts the jest.mock() calls above
+// every import and therefore above every `const` in this file. A declaration is fully hoisted, so
+// the factory below may call it. See the same note in quest-details-navigation.test.tsx.
+function movement(over: Record<string, unknown>) {
+  return {
+    id: 21,
+    enName: "Warden's Walk",
+    frName: "Marche du Veilleur",
+    enDescription: "",
+    frDescription: "",
+    muscles: [],
+    equipment: "none",
+    secondsPerRep: 1,
+    imagePath: null,
+    style: "strength",
+    ...over,
+  };
+}
+
+/** The Warden's Round as seeded (drizzle/0042): one round, one movement, a 900 s target. */
+function expeditionQuest() {
+  return {
+    id: 5,
+    enTitle: "The Warden's Round",
+    frTitle: "La Ronde du Veilleur",
+    enDescription: "",
+    frDescription: "",
+    imagePath: null,
+    archetype: "metabolic",
+    rounds: 1,
+    restSeconds: 30,
+    roundRestSeconds: null,
+    exercises: [
+      {
+        id: 11,
+        images: [],
+        substitutedFor: null,
+        ghost: { last: 720, best: 900 },
+        target: { type: "time", value: 900 },
+        exercise: movement({ style: "expedition" }),
+      },
+    ],
+  };
+}
+
+/** An ordinary workout: three rounds, two movements — every control has something to change. */
+function workoutQuest() {
+  return {
+    ...expeditionQuest(),
+    enTitle: "The Iron Vigil",
+    rounds: 3,
+    exercises: [
+      {
+        id: 11,
+        images: [],
+        substitutedFor: null,
+        ghost: null,
+        target: { type: "reps", value: 12 },
+        exercise: movement({ enName: "Push-up" }),
+      },
+      {
+        id: 12,
+        images: [],
+        substitutedFor: null,
+        ghost: null,
+        target: { type: "time", value: 45 },
+        exercise: movement({ id: 22, enName: "Plank" }),
+      },
+    ],
+  };
+}
+
+jest.mock("@/db", () => ({
+  Difficulty: { Easy: "easy", Medium: "medium", Hard: "hard" },
+  // Read at call time, so each test may set it before mounting.
+  getQuestById: jest.fn(() => Promise.resolve(mockLoaded.quest)),
+  getQuestConfig: jest.fn().mockResolvedValue(null),
+  applyQuestConfig: (quest: unknown) => quest,
+  estimateQuestSeconds: jest.fn().mockReturnValue(900),
+  estimateQuestXp: jest.fn().mockReturnValue(60),
+  formatDurationEstimate: jest.fn().mockReturnValue("15 min"),
+  indexExercises: jest.fn().mockReturnValue(new Map()),
+  isUserQuest: jest.fn().mockReturnValue(false),
+  saveQuestConfig: jest.fn().mockResolvedValue(undefined),
+  hasQuestOverrides: jest.fn().mockReturnValue(false),
+  ROUNDS_RANGE: { min: 1, max: 10 },
+  REST_RANGE: { min: 0, max: 300 },
+  targetRangeFor: () => ({ min: 1, max: 999 }),
+}));
+
+jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue([]) }));
+
+jest.mock("@/db/preferences", () => ({
+  preferences: { getOwnedEquipment: jest.fn().mockResolvedValue(null) },
+}));
+
+jest.mock("@/db/adventures-narrative", () => ({
+  getAdventureStepNarrative: jest.fn().mockResolvedValue(null),
+}));
+
+/** The two fixtures differ in their slots (a ghost line, a rep target), so the mount takes both. */
+type QuestFixture = ReturnType<typeof expeditionQuest> | ReturnType<typeof workoutQuest>;
+
+const mockLoaded: { quest: QuestFixture } = { quest: expeditionQuest() };
+
+async function mountQuest(quest: QuestFixture) {
+  mockLoaded.quest = quest;
+  const view = await render(
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <QuestDetails />
+    </TamaguiProvider>,
+  );
+  await waitFor(() => expect(view.getByText(quest.enTitle)).toBeTruthy());
+  return view;
+}
+
+describe("an expedition on the quest screen", () => {
+  test("its target reads as a duration, not as a three-digit second count", async () => {
+    const { getByText, queryByText } = await mountQuest(expeditionQuest());
+
+    expect(getByText("15 min")).toBeTruthy();
+    expect(queryByText("900s")).toBeNull();
+  });
+
+  test("the ghost line speaks the same unit as the target above it", async () => {
+    const { getByText, queryByText } = await mountQuest(expeditionQuest());
+
+    expect(getByText("Last: 12 min")).toBeTruthy();
+    expect(queryByText("Last: 720s")).toBeNull();
+  });
+
+  test("no rest is promised on a quest that never takes one", async () => {
+    const { queryByText } = await mountQuest(expeditionQuest());
+
+    expect(queryByText("Rest 30s")).toBeNull();
+  });
+
+  test("neither rest stepper is offered — one movement, one round", async () => {
+    const view = await mountQuest(expeditionQuest());
+
+    await fireEvent.press(view.getByLabelText("Adjust this quest"));
+
+    expect(view.queryByText("Rest")).toBeNull();
+    expect(view.queryByText("Round rest")).toBeNull();
+    // The controls that do something are untouched: rounds, and the outing's own length.
+    expect(view.getByText("Rounds")).toBeTruthy();
+    expect(view.getByText("Warden's Walk")).toBeTruthy();
+  });
+});
+
+describe("an ordinary workout keeps every control", () => {
+  test("the rest chip and both rest steppers are still there", async () => {
+    const view = await mountQuest(workoutQuest());
+
+    expect(view.getByText("Rest 30s")).toBeTruthy();
+
+    await fireEvent.press(view.getByLabelText("Adjust this quest"));
+
+    expect(view.getByText("Rest")).toBeTruthy();
+    expect(view.getByText("Round rest")).toBeTruthy();
+  });
+
+  test("a short hold still reads in seconds — only long targets become minutes", async () => {
+    const { getByText } = await mountQuest(workoutQuest());
+
+    expect(getByText("45s")).toBeTruthy();
+    expect(getByText("12 reps")).toBeTruthy();
+  });
+});

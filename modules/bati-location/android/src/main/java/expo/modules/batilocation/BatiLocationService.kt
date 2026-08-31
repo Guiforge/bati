@@ -58,6 +58,17 @@ class BatiLocationService : Service(), LocationListener {
   private var pausedText = ""
   private var gpsOffText = ""
 
+  /**
+   * The one line the hero reads without unlocking, pushed from JS.
+   *
+   * Native never computes it. The distance the notification shows has to be the distance the
+   * panel and the recap show, and that is the reducer's, not a sum of every fix the service
+   * accepted — those two numbers are different on purpose (see `src/gps/track.ts`), and a
+   * notification quoting the second one would be the app disagreeing with itself in the one
+   * place the hero cannot check.
+   */
+  private var progressText = ""
+
   private var maxAccuracy = 50f
   private var maxSpeed = 8f
   private var noFixTimeoutMs = 30_000L
@@ -69,6 +80,7 @@ class BatiLocationService : Service(), LocationListener {
     // The label survives process death; the session's own localized strings do not, so the
     // orphan restart below still has something honest to put in a notification.
     title = applicationInfo.loadLabel(packageManager).toString()
+    running = this
   }
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -199,6 +211,10 @@ class BatiLocationService : Service(), LocationListener {
   private fun setState(next: State) {
     if (state == next) return
     state = next
+    renotify()
+  }
+
+  private fun renotify() {
     // Dropped without POST_NOTIFICATIONS on API 33+, which costs the text and not the tracking.
     getSystemService(NotificationManager::class.java)?.notify(NOTIFICATION_ID, notification())
   }
@@ -237,12 +253,15 @@ class BatiLocationService : Service(), LocationListener {
         State.PAUSED -> pausedText
         State.GPS_OFF -> gpsOffText
       }
+    // "On the road" alone never changed once a walk had started, so the notification said the
+    // same four words for an hour. The ground covered is the only thing about it that moves.
+    val line = if (progressText.isEmpty()) text else "$text \u00b7 $progressText"
     return NotificationCompat.Builder(this, CHANNEL_ID)
       // ponytail: a platform drawable, so the module ships no res/. Swap in a monochrome pin the
       // day the notification is worth designing.
       .setSmallIcon(android.R.drawable.ic_menu_mylocation)
       .setContentTitle(title)
-      .setContentText(text)
+      .setContentText(line)
       .setContentIntent(launchIntent())
       .setOngoing(true)
       .setOnlyAlertOnce(true)
@@ -281,6 +300,8 @@ class BatiLocationService : Service(), LocationListener {
   }
 
   override fun onDestroy() {
+    running = null
+    progressText = ""
     handler.removeCallbacksAndMessages(null)
     (getSystemService(Context.LOCATION_SERVICE) as? LocationManager)?.removeUpdates(this)
     tracking = false
@@ -297,6 +318,11 @@ class BatiLocationService : Service(), LocationListener {
     @Volatile
     @JvmStatic
     var emitter: ((String, Map<String, Any?>) -> Unit)? = null
+
+    /** The live service, so JS can move the one line the notification shows. Null when stopped. */
+    @Volatile
+    @JvmStatic
+    var running: BatiLocationService? = null
 
     const val EVENT_LOCATION = "onLocation"
     const val EVENT_PROVIDER = "onProviderEnabled"
@@ -326,6 +352,18 @@ class BatiLocationService : Service(), LocationListener {
      * refuses to go foreground without it, and Android 14+ crashes a location-type service that
      * skips the question.
      */
+    /**
+     * Move the notification's second half. A no-op when nothing is running, which is what makes
+     * it safe to call from a JS flush that raced the hero tapping Done.
+     */
+    @JvmStatic
+    fun setProgress(text: String) {
+      val service = running ?: return
+      if (service.progressText == text) return
+      service.progressText = text
+      service.renotify()
+    }
+
     @JvmStatic
     fun hasLocationPermission(context: Context): Boolean =
       ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==

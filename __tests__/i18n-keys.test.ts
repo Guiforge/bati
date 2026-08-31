@@ -93,3 +93,30 @@ describe("i18n locale parity", () => {
     expect(emptyFr).toEqual([]);
   });
 });
+
+/**
+ * The count-aware keys, resolved through the real i18next rather than by reading the JSON.
+ *
+ * "1 exercices" shipped on every expedition card in both languages: `quests.exercises` was a
+ * plain `{{count}} exercices`, and no seeded quest before the expeditions had one round or one
+ * exercise, so nothing ever rendered the singular. i18next only pluralises a key that has the
+ * `_one` / `_other` forms, and only when `Intl.PluralRules` is there to choose between them —
+ * which is exactly what this asserts, on the same runtime that ships.
+ */
+describe("plural forms", () => {
+  const { i18n } = require("@/i18n") as typeof import("@/i18n");
+
+  test.each([
+    ["en", 1, "quests.rounds", "1 round"],
+    ["en", 3, "quests.rounds", "3 rounds"],
+    ["en", 1, "quests.exercises", "1 exercise"],
+    ["en", 3, "quests.exercises", "3 exercises"],
+    ["fr", 1, "quests.rounds", "1 manche"],
+    ["fr", 3, "quests.rounds", "3 manches"],
+    ["fr", 1, "quests.exercises", "1 exercice"],
+    ["fr", 3, "quests.exercises", "3 exercices"],
+  ])("%s renders %d as %s", async (language, count, key, expected) => {
+    await i18n.changeLanguage(language);
+    expect(i18n.t(key, { count })).toBe(expected);
+  });
+});

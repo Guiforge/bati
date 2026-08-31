@@ -75,11 +75,17 @@ export function ActiveExerciseView() {
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
 
-  const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
-  useCountdownCues(remainingSeconds);
-
-  // Get current exercise safely
+  // Get current exercise safely. Read here rather than below the early return, because the cues
+  // need to know what kind of set this is before they are given a number to count down.
   const currentEx = quest?.exercises[currentExerciseIndex];
+  /** An expedition measures ground rather than repetitions, and shows it. */
+  const isOuting = currentEx?.exercise.style === NON_REP_STYLE;
+
+  const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
+  // An outing has nothing to announce. Left on the real count, this fired three ticks and a "go"
+  // from a phone in a pocket at the target mark, while the hero was a third of the way round the
+  // lake. Zero is the value a rep-based set already parks on, which the hook is silent about.
+  useCountdownCues(isOuting ? 0 : remainingSeconds);
   const targetValue = currentEx?.target.value ?? 0;
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
   const [showHowTo, setShowHowTo] = useState(false);
@@ -90,8 +96,6 @@ export function ActiveExerciseView() {
   if (!quest || !currentEx) return null;
 
   const isTimeBased = currentEx.target.type === "time";
-  /** An expedition measures ground rather than repetitions, and shows it. */
-  const isOuting = currentEx.exercise.style === NON_REP_STYLE;
   const ghost = currentEx.ghost;
 
   const exerciseName = localizedName(currentEx.exercise, language);
@@ -149,6 +153,12 @@ export function ActiveExerciseView() {
 
   // Calculate overtime seconds for display
   const overtimeSeconds = isOvertime ? Math.abs(remainingSeconds) : 0;
+
+  // An outing has no overtime. Its target is a suggestion the hero is free to walk past, and the
+  // moment they do is the moment they are furthest from the phone: the countdown is already
+  // hidden, so a green CTA reading "Finish" a third of the way round the lake announces an end
+  // to a walk nobody had finished, with nothing on screen left to explain it.
+  const isPastTarget = isOvertime && !isOuting;
 
   // A fight owns the room's colour. Without this the fire dragon is fought on the "shoulders"
   // pastel, because both branches read the exercise's muscle. Derived from the same pure function
@@ -419,128 +429,135 @@ export function ActiveExerciseView() {
               Overtime loses nothing by it: the flame pair, the "overtime" label and the green
               numeral all still say so, so the state was never carried by the border alone. The
               only surfaces left in here are the two ± buttons, which is right — they are objects
-              you press, and the count is not. */}
-            <YStack width="100%" items="center" justify="center">
-              {isTimeBased ? (
-                <YStack items="center" gap="$2">
-                  {isOvertime ? (
-                    <>
-                      {/* Overtime display - counting UP */}
-                      <XStack items="center" gap="$2">
-                        <GameIcon name="flame" size={16} color="$success" />
-                        <Text fontSize={14} fontWeight="700" color="$textSecondary">
-                          {t("session.overtime")}
+              you press, and the count is not.
+
+              An outing has no counter at all. It is time-based underneath, so this used to show
+              a 72px countdown that did not pause while the panel's own moving clock did, then
+              turned green and said OVERTIME at the target mark, a verdict on a walk the hero
+              was still halfway through. The panel above is the readout. */}
+            {isOuting ? null : (
+              <YStack width="100%" items="center" justify="center">
+                {isTimeBased ? (
+                  <YStack items="center" gap="$2">
+                    {isOvertime ? (
+                      <>
+                        {/* Overtime display - counting UP */}
+                        <XStack items="center" gap="$2">
+                          <GameIcon name="flame" size={16} color="$success" />
+                          <Text fontSize={14} fontWeight="700" color="$textSecondary">
+                            {t("session.overtime")}
+                          </Text>
+                          <GameIcon name="flame" size={16} color="$success" />
+                        </XStack>
+                        <H1
+                          fontSize={72}
+                          lineHeight={80}
+                          fontWeight="700"
+                          fontFamily="$body"
+                          color="$success"
+                        >
+                          {formatOvertime(overtimeSeconds)}
+                        </H1>
+                        <Paragraph fontWeight="700" color="$textSecondary">
+                          {t("session.target_reached")}
+                        </Paragraph>
+                      </>
+                    ) : (
+                      <>
+                        {/* Normal countdown */}
+                        <H1
+                          fontSize={72}
+                          lineHeight={80}
+                          fontWeight="700"
+                          fontFamily="$body"
+                          color="$text"
+                        >
+                          {formatTime(remainingSeconds)}
+                        </H1>
+                        <Paragraph fontWeight="700" color="$textSecondary">
+                          {t("session.seconds")}
+                        </Paragraph>
+                      </>
+                    )}
+                  </YStack>
+                ) : (
+                  <YStack items="center" gap="$2">
+                    <XStack items="center" gap="$4">
+                      <Button
+                        size="$4"
+                        circular
+                        bg="$surface2"
+                        borderWidth={0}
+                        onPress={() => handleAdjustReps(-1)}
+                        pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                        disabled={adjustedReps <= 1}
+                        opacity={adjustedReps <= 1 ? 0.4 : 1}
+                        accessibilityLabel={t("session.decrease_reps_accessibility")}
+                        accessibilityRole="button"
+                      >
+                        <Text fontSize={24} fontWeight="700" color="$text">
+                          −
                         </Text>
-                        <GameIcon name="flame" size={16} color="$success" />
-                      </XStack>
-                      <H1
-                        fontSize={72}
-                        lineHeight={80}
-                        fontWeight="700"
-                        fontFamily="$body"
-                        color="$success"
+                      </Button>
+                      <YStack
+                        items="center"
+                        key={reducedMotion ? undefined : adjustedReps}
+                        transition={reducedMotion ? undefined : "bouncy"}
+                        enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
+                        scale={1}
                       >
-                        {formatOvertime(overtimeSeconds)}
-                      </H1>
-                      <Paragraph fontWeight="700" color="$textSecondary">
-                        {t("session.target_reached")}
-                      </Paragraph>
-                    </>
-                  ) : (
-                    <>
-                      {/* Normal countdown */}
-                      <H1
-                        fontSize={72}
-                        lineHeight={80}
-                        fontWeight="700"
-                        fontFamily="$body"
-                        color="$text"
+                        <H1
+                          fontSize={80}
+                          lineHeight={88}
+                          fontWeight="700"
+                          fontFamily="$body"
+                          color="$text"
+                        >
+                          {adjustedReps}
+                        </H1>
+                        <Paragraph fontWeight="700" color="$textSecondary">
+                          {t("session.reps")}
+                        </Paragraph>
+                      </YStack>
+                      <Button
+                        size="$4"
+                        circular
+                        bg="$surface2"
+                        borderWidth={0}
+                        onPress={() => handleAdjustReps(1)}
+                        pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                        accessibilityLabel={t("session.increase_reps_accessibility")}
+                        accessibilityRole="button"
                       >
-                        {formatTime(remainingSeconds)}
-                      </H1>
-                      <Paragraph fontWeight="700" color="$textSecondary">
-                        {t("session.seconds")}
-                      </Paragraph>
-                    </>
-                  )}
-                </YStack>
-              ) : (
-                <YStack items="center" gap="$2">
-                  <XStack items="center" gap="$4">
-                    <Button
-                      size="$4"
-                      circular
-                      bg="$surface2"
-                      borderWidth={0}
-                      onPress={() => handleAdjustReps(-1)}
-                      pressStyle={{ opacity: 0.8, scale: 0.95 }}
-                      disabled={adjustedReps <= 1}
-                      opacity={adjustedReps <= 1 ? 0.4 : 1}
-                      accessibilityLabel={t("session.decrease_reps_accessibility")}
-                      accessibilityRole="button"
-                    >
-                      <Text fontSize={24} fontWeight="700" color="$text">
-                        −
+                        <Text fontSize={24} fontWeight="700" color="$text">
+                          +
+                        </Text>
+                      </Button>
+                    </XStack>
+                    {adjustedReps !== targetValue && (
+                      <Text fontSize={12} color="$textSecondary">
+                        {t("session.adjust_reps_hint")}
                       </Text>
-                    </Button>
-                    <YStack
-                      items="center"
-                      key={reducedMotion ? undefined : adjustedReps}
-                      transition={reducedMotion ? undefined : "bouncy"}
-                      enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
-                      scale={1}
-                    >
-                      <H1
-                        fontSize={80}
-                        lineHeight={88}
-                        fontWeight="700"
-                        fontFamily="$body"
-                        color="$text"
-                      >
-                        {adjustedReps}
-                      </H1>
-                      <Paragraph fontWeight="700" color="$textSecondary">
-                        {t("session.reps")}
-                      </Paragraph>
-                    </YStack>
-                    <Button
-                      size="$4"
-                      circular
-                      bg="$surface2"
-                      borderWidth={0}
-                      onPress={() => handleAdjustReps(1)}
-                      pressStyle={{ opacity: 0.8, scale: 0.95 }}
-                      accessibilityLabel={t("session.increase_reps_accessibility")}
-                      accessibilityRole="button"
-                    >
-                      <Text fontSize={24} fontWeight="700" color="$text">
-                        +
-                      </Text>
-                    </Button>
-                  </XStack>
-                  {adjustedReps !== targetValue && (
-                    <Text fontSize={12} color="$textSecondary">
-                      {t("session.adjust_reps_hint")}
-                    </Text>
-                  )}
-                  {/* In a fight the ± control *is* the decision, so say what it buys. Crit odds
+                    )}
+                    {/* In a fight the ± control *is* the decision, so say what it buys. Crit odds
                   scale with how far past the target you go, and nothing on screen has ever
                   admitted the rule exists. Outside a fight, intensity as reps-in-reserve rather
                   than "go to failure" — the safer and more teachable framing, and one the app can
                   give as a cue instead of collecting as data. */}
-                  <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                    {bossFight
-                      ? t("session.crit_hint", {
-                          percent: Math.round(critChance(adjustedReps, targetValue) * 100),
-                        })
-                      : t("session.reserve_hint")}
-                  </Text>
-                </YStack>
-              )}
-            </YStack>
+                    <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                      {bossFight
+                        ? t("session.crit_hint", {
+                            percent: Math.round(critChance(adjustedReps, targetValue) * 100),
+                          })
+                        : t("session.reserve_hint")}
+                    </Text>
+                  </YStack>
+                )}
+              </YStack>
+            )}
 
             {/* Hint for time-based exercises */}
-            {isTimeBased && !isOvertime && (
+            {isTimeBased && !isOvertime && !isOuting && (
               <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
                 {t("session.keep_going_hint")}
               </Text>
@@ -562,7 +579,10 @@ export function ActiveExerciseView() {
                 into one. On a first-ever session `last` and `best` are the same number and
                 "last time 12 · best 12" reads like a bug — so the best half simply does not
                 render, instead of a second sentence existing to say the same thing. */}
-            {ghost ? (
+            {/* Not on an outing: `formatTarget` speaks the units of a prescribed set, so a walk
+                got "last time 900s", a duration nobody set out to beat, under a panel that
+                measures ground. */}
+            {ghost && !isOuting ? (
               <XStack items="baseline" justify="center" gap="$2" flexWrap="wrap">
                 <Text fontSize={12} color="$textSecondary">
                   {t("session.ghost_last_label", "Last time")}
@@ -651,20 +671,20 @@ export function ActiveExerciseView() {
         <Button
           testID="session-complete-exercise"
           size="$6"
-          bg={isOvertime ? "$success" : "$primary"}
+          bg={isPastTarget ? "$success" : "$primary"}
           pressStyle={{ opacity: 0.8 }}
           onPress={handleComplete}
           borderWidth={0}
           rounded="$6"
           accessibilityLabel={
-            isOvertime
+            isPastTarget
               ? t("session.finish_exercise_accessibility")
               : t("session.complete_exercise_accessibility")
           }
           accessibilityRole="button"
         >
           <Text color="$text" fontSize={24} fontWeight="700">
-            {isOvertime ? t("session.complete_overtime") : t("session.complete_button")}
+            {isPastTarget ? t("session.complete_overtime") : t("session.complete_button")}
           </Text>
         </Button>
       </YStack>

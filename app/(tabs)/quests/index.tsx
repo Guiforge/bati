@@ -43,6 +43,7 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -77,6 +78,8 @@ type QuestMeta = {
   muscles: MuscleCode[];
   equipment: EquipmentCode[];
   archetype: QuestArchetype | null;
+  /** Any movement in this quest happens outdoors — what `matchesFilters` reads for the chip. */
+  outside: boolean;
   // Precomputed once per data load — recomputing these in renderItem made every
   // recycled row rebuild color maps, re-run the duration estimator, and re-interpolate
   // i18next strings while scrolling.
@@ -97,6 +100,8 @@ type QuestMeta = {
   /** "Yours" on a hero-written quest, null on seed content. Resolved here because `QuestRow`
    *  deliberately has no `useTranslation` of its own. */
   heroLabel: string | null;
+  /** "Outside" on an expedition, null otherwise. Same reason as `heroLabel` for living here. */
+  outsideLabel: string | null;
 };
 
 function buildQuestMeta(
@@ -107,10 +112,13 @@ function buildQuestMeta(
   config: QuestConfig | null,
 ): QuestMeta {
   const equipment = new Set<EquipmentCode>();
+  let outside = false;
 
   for (const qex of q.exercises) {
     const ex = exercisesById[qex.exerciseId];
-    if (ex) equipment.add(ex.equipment);
+    if (!ex) continue;
+    equipment.add(ex.equipment);
+    if (ex.style === NON_REP_STYLE) outside = true;
   }
 
   // Same numbers as the detail screen: the saved level and structure overrides feed the
@@ -136,6 +144,7 @@ function buildQuestMeta(
     muscles: focus.muscles,
     equipment: [...equipment],
     archetype: q.archetype,
+    outside,
     tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
     durationSeconds,
     xp,
@@ -157,6 +166,9 @@ function buildQuestMeta(
     }),
     xpLabel: t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
     heroLabel: isUserQuest(q) ? t("common.hero_badge") : null,
+    // The archetype line above reads "Metabolic" on all three outings, which is true of their
+    // shape and says nothing about where they happen. This is the word that does.
+    outsideLabel: outside ? t("quests.filter_outside", "Outside") : null,
   };
 }
 
@@ -195,11 +207,13 @@ function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: 
           <XStack position="absolute" t="$3" l="$3">
             <Chip label={meta.durationLabel} />
           </XStack>
-          {/* Opposite the duration, so a hero's own quest is legible from the gallery rather
-            than only once opened. Same word the movement rows wear. */}
-          {meta.heroLabel ? (
-            <XStack position="absolute" t="$3" r="$3">
-              <Chip label={meta.heroLabel} tone="primary" />
+          {/* Opposite the duration, so a hero's own quest — and a quest that starts by leaving
+            the house — is legible from the gallery rather than only once opened. Same words the
+            movement rows and the filter rail wear. */}
+          {meta.outsideLabel || meta.heroLabel ? (
+            <XStack position="absolute" t="$3" r="$3" gap="$2">
+              {meta.outsideLabel ? <Chip label={meta.outsideLabel} tone="secondary" /> : null}
+              {meta.heroLabel ? <Chip label={meta.heroLabel} tone="primary" /> : null}
             </XStack>
           ) : null}
         </YStack>
@@ -379,6 +393,8 @@ export default function QuestsGallery() {
   const toggleArchetype = (a: QuestArchetype) =>
     applyFilters((f) => ({ ...f, archetypes: toggleInSet(f.archetypes, a) }));
 
+  const toggleOutside = () => applyFilters((f) => ({ ...f, outside: !f.outside }));
+
   // Single-select: you only ever have one amount of time. Tapping the active one clears it.
   const toggleDuration = (d: DurationBucket) =>
     applyFilters((f) => ({ ...f, duration: f.duration === d ? null : d }));
@@ -459,6 +475,9 @@ export default function QuestsGallery() {
     return [...s];
   }, [questMeta]);
 
+  // Same rule as the archetypes above: never offer a chip that can only empty the list.
+  const hasOutside = useMemo(() => questMeta.some((m) => m.outside), [questMeta]);
+
   const filtered = useMemo(
     () => questMeta.filter((m) => matchesFilters(m, filters)),
     [questMeta, filters],
@@ -481,12 +500,26 @@ export default function QuestsGallery() {
     {
       key: "type",
       label: t("quests.filter_group_type", "Type"),
-      chips: availableArchetypes.map((a) => ({
-        key: `a-${a}`,
-        label: t(`quests.archetype_${a}`),
-        active: filters.archetypes.has(a),
-        onPress: () => toggleArchetype(a),
-      })),
+      chips: [
+        ...availableArchetypes.map((a) => ({
+          key: `a-${a}`,
+          label: t(`quests.archetype_${a}`),
+          active: filters.archetypes.has(a),
+          onPress: () => toggleArchetype(a),
+        })),
+        // Last in the same rail rather than a rail of its own: "outside" is a kind of session,
+        // and it is the only kind no archetype names — all three outings declare `metabolic`.
+        ...(hasOutside
+          ? [
+              {
+                key: "outside",
+                label: t("quests.filter_outside", "Outside"),
+                active: filters.outside,
+                onPress: toggleOutside,
+              },
+            ]
+          : []),
+      ],
     },
     {
       key: "muscle",

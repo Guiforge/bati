@@ -6,7 +6,7 @@ import { isMuscleCode } from "./muscles";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
-import { clampToRange, REST_RANGE, ROUNDS_RANGE, targetRangeFor } from "./questConfig";
+import { clampToRange, REST_RANGE, ROUNDS_RANGE } from "./questConfig";
 import {
   ADMIN_CREATOR,
   type ContentOwner,
@@ -23,6 +23,7 @@ import {
   generateTarget,
   retargetForMovement,
   type Target,
+  targetRangeFor,
   type UserLevel,
 } from "./targets";
 

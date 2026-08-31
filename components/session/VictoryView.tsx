@@ -27,6 +27,7 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
+import { formatDuration } from "@/db/estimate";
 import type { FeedbackCode } from "@/db/schema";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -36,8 +37,10 @@ import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { isTrivialSession } from "@/src/session/trivial";
 import { useChorusStore } from "@/stores/chorus";
+import { isExpedition } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { ExpeditionSummary } from "./ExpeditionSummary";
 import { ProgressionChart } from "./ProgressionChart";
 import { SessionRewards } from "./SessionRewards";
 
@@ -126,6 +129,7 @@ export function VictoryView() {
     bossFight,
     bossStartHp,
     felledByFinalBlow,
+    sessionUuid,
   } = useSessionStore();
   const [bossExpanded, setBossExpanded] = useState(false);
   const cue = useChorusStore((s) => s.cue);
@@ -485,7 +489,7 @@ export function VictoryView() {
               {t("session.summary_too_short_title")}
             </Text>
             <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
-              {t("session.summary_too_short_body", { seconds: durationSeconds })}
+              {t("session.summary_too_short_body", { duration: formatDuration(durationSeconds) })}
             </Text>
             <AppButton onPress={() => setKeepShort(true)}>
               <Text color="$text" fontSize={16} fontWeight="700">
@@ -530,6 +534,12 @@ export function VictoryView() {
               </Text>
             </AppButton>
           </YStack>
+        )}
+
+        {/* What the walk was worth. Held until the save lands for the same reason the rewards
+            are: the leagues it reports are the ones `saveSession` has just credited. */}
+        {!!result && isExpedition(quest) && (
+          <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
         )}
 
         {!!result && (

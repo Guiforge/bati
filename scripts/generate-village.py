@@ -204,6 +204,15 @@ BUILDINGS = [
     ("buildings/champion_arena",
      "A single stylized circular stone gladiator arena with tiered stone seating, torches "
      "lit around its rim, glowing with warm amber torchlight."),
+    # The road is the one building that is not a place but a direction. First draft drew the
+    # direction — a track climbing away over a rise — and came back a landscape in a frame, with
+    # its own vignette, sitting among fourteen isolated objects that have none. The object that
+    # *means* the road out is what stands at its head, so that is what this asks for.
+    ("buildings/high_road",
+     "A single stylized weathered wooden crossroads signpost with two carved arm boards "
+     "pointing opposite ways, planted in a low cairn of mossy flagstones with a few loose "
+     "cobbles at its foot, a small cool pale-blue waystone lantern hanging from the post. "
+     "No outer glow, aura or halo around the object."),
 ]
 
 

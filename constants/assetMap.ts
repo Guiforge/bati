@@ -351,6 +351,11 @@ export const BUILDING_ICON_ASSETS = {
     solid: require("@/assets/images/village/buildings/champion_arena.webp"),
     grand: require("@/assets/images/village/buildings/champion_arena_grand.webp"),
   },
+  high_road: {
+    rough: require("@/assets/images/village/buildings/high_road_rough.webp"),
+    solid: require("@/assets/images/village/buildings/high_road.webp"),
+    grand: require("@/assets/images/village/buildings/high_road_grand.webp"),
+  },
 } as const;
 
 // ============================================================

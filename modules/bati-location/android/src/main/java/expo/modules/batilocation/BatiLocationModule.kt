@@ -4,7 +4,9 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
+import android.os.Build
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import expo.modules.interfaces.permissions.Permissions
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
@@ -46,6 +48,15 @@ class BatiLocationModule : Module() {
       BatiLocationService.emitter = null
     }
 
+    /**
+     * The ground covered, as the hero's own screen phrases it: unit preference, language, and the
+     * reducer's distance rather than a native sum of every fix. Native owns no strings here for
+     * the same reason it owns none in the notification's four states.
+     */
+    Function("setProgress") { text: String ->
+      BatiLocationService.setProgress(text)
+    }
+
     Function("hasGpsProvider") {
       val context = appContext.reactContext ?: return@Function false
       val manager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
@@ -61,6 +72,34 @@ class BatiLocationModule : Module() {
         promise,
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
+      )
+    }
+
+    /**
+     * The notification permission, asked for on its own and never bundled with the location pair.
+     *
+     * From API 33 the foreground-service notification is invisible without it, and the whole
+     * pocket promise is that an expedition says the rest through that notification. But a hero who
+     * refuses it has still granted the thing the feature needs, so a combined request would have
+     * one refusal veto the other. Below API 33 there is nothing to ask and the manager resolves
+     * granted.
+     */
+    AsyncFunction("requestNotificationPermission") { promise: Promise ->
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        promise.resolve(
+          bundleOf(
+            "status" to "granted",
+            "expires" to "never",
+            "granted" to true,
+            "canAskAgain" to true,
+          ),
+        )
+        return@AsyncFunction
+      }
+      Permissions.askForPermissionsWithPermissionsManager(
+        appContext.permissions,
+        promise,
+        Manifest.permission.POST_NOTIFICATIONS,
       )
     }
 

@@ -229,6 +229,30 @@ describe("db/bossFights", () => {
    * Crit is the one thing the session screen lets the hero decide, so it has to be earned. Meeting
    * the target is not a decision — `adjustedReps` starts there and a time result reaches it.
    */
+  /**
+   * The one place the two currencies could still convert. Base damage for an outing is zero by
+   * construction, `Math.max(1, damage)` raised it back to one, and `calculateBossHp` prices an
+   * expedition slot at zero — so a boss met with a thirty-second walk lost HP nobody had paid
+   * for. Small in points, and exactly the leak the whole style column exists to close.
+   */
+  test("an outing strikes nothing, floor included, and a crit does not change that", async () => {
+    jest.spyOn(Math, "random").mockReturnValue(0);
+    const b = boss();
+
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
+    if (!fight) throw new Error("Expected a boss fight");
+
+    const walk = b.computeDamage(fight, {
+      resultValue: 1800,
+      targetValue: 900,
+      targetType: "time",
+      style: "expedition",
+    });
+
+    expect(walk.damage).toBe(0);
+    expect(walk.newHp).toBe(fight.currentHp);
+  });
+
   test("only exceeding the target can crit, and by more than you exceed it", async () => {
     jest.spyOn(Math, "random").mockReturnValue(0.1);
     const b = boss();

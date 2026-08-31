@@ -4,6 +4,7 @@ import { Alert } from "react-native";
 import { Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { restsBetweenRounds } from "@/components/quests/questShape";
 import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructions";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
@@ -22,14 +23,20 @@ export function PausedOverlay() {
   const resumeSession = useSessionStore((s) => s.resumeSession);
   const restartRound = useSessionStore((s) => s.restartRound);
   const quitSession = useSessionStore((s) => s.quitSession);
+  const rounds = useSessionStore((s) => s.quest?.rounds ?? 1);
   // Above the early return: hook order may not depend on the paused state.
   const instruction = useSessionInstructions();
 
   if (status !== "paused") return null;
 
   // No round has begun before the first exercise, and restartRound() would jump straight to
-  // "running" — skipping the rest of the warm-up and the 3-2-1 countdown with it.
-  const canRestartRound = prePauseStatus !== "warmup" && prePauseStatus !== "countdown";
+  // "running" - skipping the rest of the warm-up and the 3-2-1 countdown with it.
+  //
+  // And a quest of one round has no round to go back to: "Redo the round" there is the session
+  // itself, offered under a word that promises less than it does. An expedition is where that
+  // showed, and any one-round quest written in the editor had it too.
+  const canRestartRound =
+    restsBetweenRounds({ rounds }) && prePauseStatus !== "warmup" && prePauseStatus !== "countdown";
 
   const handleResume = () => {
     mediumImpact();

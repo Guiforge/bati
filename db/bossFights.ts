@@ -2,7 +2,7 @@ import { and, count, eq, inArray } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
 import type { DifficultyCode, ExerciseStyle, MuscleCode, QuestTargetType } from "./schema";
 import { USER_LEVEL_MULTIPLIER } from "./targets";
-import { toRepEquivalent } from "./workUnits";
+import { NON_REP_STYLE, toRepEquivalent } from "./workUnits";
 
 const {
   bossFights,
@@ -251,8 +251,11 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
     damage = damage * 2;
   }
 
-  // Ensure minimum 1 damage
-  damage = Math.max(1, damage);
+  // A set that did work always lands for at least one. An outing never did work *here*: leagues
+  // advance the road and strike nothing, `calculateBossHp` values an expedition slot at zero, and
+  // a floor applied to zero was the one place the two currencies converted. One point of damage
+  // from a thirty-second walk is small; a boss whose HP was priced without it is the bug.
+  damage = params.style === NON_REP_STYLE ? 0 : Math.max(1, damage);
 
   const newHp = Math.max(0, fight.currentHp - damage);
 

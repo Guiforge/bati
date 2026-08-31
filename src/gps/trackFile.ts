@@ -54,13 +54,3 @@ export async function shareTrack(file: File): Promise<void> {
     UTI: "public.xml",
   });
 }
-
-/** Every track recorded so far, newest first — a run is useless if it cannot be found again. */
-export function listTracks(): File[] {
-  const dir = tracksDir();
-  if (!dir.exists) return [];
-  return dir
-    .list()
-    .filter((entry): entry is File => entry instanceof File && entry.name.endsWith(".gpx"))
-    .sort((a, b) => b.name.localeCompare(a.name));
-}

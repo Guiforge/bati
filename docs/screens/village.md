@@ -29,9 +29,11 @@ levels up because you trained the muscle it belongs to.
 
 - **Visual progression**: the scene's tier grows with your level.
 - **Training fingerprint**: your dominant sport shows up as a visual on the scene.
-- **Buildings with levels**: 20 buildings, each `level 0..5`. Starter buildings follow the
+- **Buildings with levels**: 21 buildings, each `level 0..5`. Starter buildings follow the
   village tier, muscle buildings follow that muscle's lifetime volume, tier-3 buildings are
-  the upgrade of their tier-2 prerequisite, legendary buildings unlock on bosses defeated.
+  the upgrade of their tier-2 prerequisite, legendary buildings unlock on deeds — bosses
+  defeated, adventures finished, boss victories, and, for the High Road, leagues covered
+  outside the walls (the second currency, which never becomes a work unit).
   The level is legible without tapping: pips, a bar toward the next rung, and the art itself —
   each building has three paintings (`rough` / `solid` / `grand`, picked by `buildingStage()` in
   [constants/buildingLevels.ts](../../constants/buildingLevels.ts)) with an opacity ramp filling

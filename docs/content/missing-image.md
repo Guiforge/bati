@@ -49,7 +49,10 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
   `drizzle/0010_seed_bodyweight_exercises.sql` now have dedicated character-pose art,
   assigned by `drizzle/0011_seed_bodyweight_exercise_images.sql` and registered in
   `EXERCISE_ASSETS`. See §4 below.
-- **§0 RESOLVED (2026-07-21)**: all 20 village building icons now have real art — 14
+- **§9b OPEN (2026-08-31)**: the 21st building, the `high_road` the leagues drive, has no art
+  and renders `placeholder.webp` through `getBuildingIconAsset`'s fallback. Deliberate — its
+  floors are a guess until a first real league total corrects them.
+- **§0 RESOLVED (2026-07-21)**: all 20 village building icons of the day now have real art — 14
   generated (`scripts/generate-village.py buildings/*`, `assets/images/village/buildings/`)
   and registered as `BUILDING_ICON_ASSETS` / `getBuildingIconAsset(code, relatedMuscle)` in
   `assetMap.ts`; the other 6 (the tier-2 muscle buildings) reuse the existing `sport_*`
@@ -171,7 +174,7 @@ npx tsc --noEmit && npx jest __tests__/assetMap.test.ts
 
 ---
 
-## 0. RESOLVED — village building icons (20/20 have art)
+## 0. RESOLVED — village building icons (20 of the 20 that existed then; see §9b)
 
 `VillageScene.tsx` still renders the building grid from the `emoji` field on
 `buildingDefinitions` today — that UI wiring is unchanged. What changed is that real art now
@@ -647,3 +650,31 @@ One trap in that last line, worth knowing before the next batch: `thumb-exercise
 **every** thumbnail in the folder, and a different libwebp version writes different bytes for an
 unchanged image. It produced 61 spurious modifications here. Check `git status` after running it and
 restore the ones you did not mean to touch.
+
+### 9b. OPEN — the High Road has no art (2026-08-31)
+
+The building the leagues drive (`high_road`, "High Road" / "Grand Chemin",
+[db/village.ts](../../db/village.ts)) shipped with **no icon of its own**, which is the first
+time a building has done that since §0 closed. It is deliberate, not an oversight: the floors it
+levels on are a guess pending a first real league total, and commissioning three paintings for a
+building whose curve may be re-tuned is the wrong order.
+
+**What it renders today.** `getBuildingIconAsset(code, relatedMuscle, level)` looks the code up in
+`BUILDING_ICON_ASSETS`, misses, then tries the `relatedMuscle` sprite — and the road has no muscle
+either (an expedition has no `exercise_muscles` rows at all, §9 above and `0041`), so it falls all
+the way through to `placeholder.webp`. Nothing breaks and nothing needs a guard; the tile and the
+180px detail sheet both draw the placeholder. Village art is code-only, so there is **no migration
+to write** when it lands (§0's wiring note).
+
+**What it needs when it is drawn**: three paintings — `high_road_rough`, `high_road`,
+`high_road_grand` — in `assets/images/village/buildings/`, one `BUILDING_ICON_ASSETS` entry, in
+the same commit as the files (Metro resolves `require()` at bundle time). It belongs to
+`scripts/generate-village.py buildings/*` and its two shared stage modifiers, like the other 14.
+
+The subject is *reach*, not a structure: a rutted track leaving the gate and dying in the grass →
+a graded road with a waystone → a stone-laid road running to the horizon. That is the same
+covers-register judgement §9 needed for the three movement scenes, so budget it at the ~350 KB a
+landscape costs rather than the ~80 KB a building emblem does — three of those is 1 MB against
+the release workflow's 55 MiB ceiling.
+
+Buildings with dedicated art: **20 of 21**.

@@ -24,7 +24,10 @@ jest.mock("@/modules/bati-location", () => ({
     return { remove: () => mockListeners.delete(event) };
   },
 }));
-jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
+const mockReportError = jest.fn();
+jest.mock("@/src/reportError", () => ({
+  reportError: (...a: never[]) => mockReportError(...a),
+}));
 
 const NOTIFICATION = {
   title: "Bati",
@@ -65,6 +68,7 @@ describe("stores/expedition", () => {
     mockRequestPermission.mockResolvedValue({ granted: true, status: "granted" });
     mockStop.mockClear();
     mockSetProgress.mockClear();
+    mockReportError.mockClear();
     mockAvailable = true;
     store = (require("@/stores/expedition") as typeof import("@/stores/expedition"))
       .useExpeditionStore;
@@ -167,6 +171,38 @@ describe("stores/expedition", () => {
     expect(mockSetProgress.mock.calls[0]?.[0]).toMatch(/^\d+ m$/);
   });
 
+  /**
+   * Both mean "the trace is broken and the hero may still be walking". The reducer decides what
+   * that costs; here they are worth a breadcrumb, because a GPS that drops out on a de-Googled
+   * ROM is exactly the field report nobody can reproduce at a desk.
+   */
+  describe("a trace that goes quiet", () => {
+    test("leaves a breadcrumb when the provider is switched off", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+
+      (mockListeners.get("onProviderEnabled") as (e: { enabled: boolean }) => void)({
+        enabled: false,
+      });
+      expect(mockReportError).toHaveBeenCalledWith("expedition.providerOff", expect.any(Error));
+
+      // Coming back is not news.
+      mockReportError.mockClear();
+      (mockListeners.get("onProviderEnabled") as (e: { enabled: boolean }) => void)({
+        enabled: true,
+      });
+      expect(mockReportError).not.toHaveBeenCalled();
+    });
+
+    test("leaves one when no fix has arrived for a while", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+
+      (mockListeners.get("onNoFixTimeout") as (e: { sinceLastFixMs: number }) => void)({
+        sinceLastFixMs: 30_000,
+      });
+      expect(mockReportError).toHaveBeenCalledWith("expedition.noFix", expect.any(Error));
+    });
+  });
+
   describe("the permission", () => {
     test("is asked for before the service is ever started", async () => {
       await store.getState().begin("s1", NOTIFICATION, false, "metric");
@@ -189,6 +225,16 @@ describe("stores/expedition", () => {
       expect(mockRequestNotificationPermission).toHaveBeenCalled();
       expect(mockStart).toHaveBeenCalled();
       expect(store.getState().error).toBeNull();
+    });
+
+    test("that throws is a breadcrumb, not a cancelled walk", async () => {
+      mockRequestNotificationPermission.mockRejectedValue(new Error("no permissions manager"));
+
+      expect(await store.getState().begin("s1", NOTIFICATION, false, "metric")).toBe(true);
+      expect(mockReportError).toHaveBeenCalledWith(
+        "expedition.notificationPermission",
+        expect.any(Error),
+      );
     });
 
     test("refused, nothing starts and the panel is told why", async () => {

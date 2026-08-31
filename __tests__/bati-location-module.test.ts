@@ -4,7 +4,9 @@ import {
   addListener,
   hasGpsProvider,
   isAvailable,
+  requestNotificationPermission,
   requestPermission,
+  setProgress,
   start,
   stop,
 } from "@/modules/bati-location";
@@ -42,6 +44,21 @@ describe("bati-location, without its native half", () => {
       granted: false,
       canAskAgain: false,
     });
+  });
+
+  test("reports the notification permission denied too, and separately", async () => {
+    // Separate from the location prompt because a hero who refuses the notification has still
+    // granted the thing the feature needs; one shape for both answers so the caller branches once.
+    await expect(requestNotificationPermission()).resolves.toMatchObject({
+      granted: false,
+      canAskAgain: false,
+    });
+  });
+
+  test("moving a notification that does not exist is not an error", () => {
+    // Called from a flush that can race the hero tapping Done, and on every build with no
+    // service at all.
+    expect(() => setProgress("2.40 km")).not.toThrow();
   });
 
   test("hands back a subscription that can still be removed", () => {

@@ -206,12 +206,17 @@ async function measure(oath: Oath): Promise<number> {
       if (oath.exerciseId === null) {
         return 0;
       }
-      // Summed, so seconds have to become rep-equivalents first — see ./workUnits.
+      // Summed, so seconds have to become rep-equivalents first — see ./workUnits. The join to
+      // `exercises` is what carries the style: cardio work is measured in leagues and converts
+      // to nothing here, so an oath sworn on an expedition would sit at zero. That is a real
+      // gap in the swear screen's exercise picker, not in this sum — see
+      // docs/designs/expeditions.md, open question 6.
       const rows = await db
         .select({
-          value: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType)}), 0)`,
+          value: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
         })
         .from(completedExercises)
+        .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
         .where(eq(completedExercises.exerciseId, oath.exerciseId));
       return rows[0]?.value ?? 0;
     }

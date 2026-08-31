@@ -1,6 +1,6 @@
 import { and, count, eq, inArray } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
-import type { DifficultyCode, MuscleCode, QuestTargetType } from "./schema";
+import type { DifficultyCode, ExerciseStyle, MuscleCode, QuestTargetType } from "./schema";
 import { USER_LEVEL_MULTIPLIER } from "./targets";
 import { toRepEquivalent } from "./workUnits";
 
@@ -12,6 +12,7 @@ const {
   adventureSteps,
   questExercises,
   quests,
+  exercises,
 } = schema;
 
 // Same fallback used by every getXAsset() helper in constants/assetMap.ts — never expose
@@ -167,6 +168,12 @@ export type PendingHit = {
   damage: number;
   isCritical: boolean;
   muscle: MuscleCode | null;
+  /**
+   * Banked with the hit, not looked up when it is re-landed. A correction rewinds the HP and
+   * recomputes the same hit at a new value; reading the style from anywhere else would let the
+   * two computations disagree about whether this exercise can damage a boss at all.
+   */
+  style: ExerciseStyle;
 };
 
 /** The fight fields the damage maths reads. Keeps `computeDamage` callable on an in-memory fight. */
@@ -181,6 +188,12 @@ export type DamageParams = {
   muscle?: MuscleCode;
   /** Omitted means reps. Time results are normalised before they become damage. */
   targetType?: QuestTargetType;
+  /**
+   * Which kind of work this was. Required rather than optional on purpose: cardio deals no
+   * damage (see `NON_REP_STYLE`), and an optional field with a non-cardio default would let a
+   * forgetful caller hand an hour's walk to a boss with 278 HP.
+   */
+  style: ExerciseStyle;
   /**
    * Skip the crit roll and use this outcome. For re-landing an already-shown hit (the hero
    * corrected the rep count afterwards): the crit the screen celebrated must not be re-rolled,
@@ -209,7 +222,7 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
   }
 
   // Base damage = the result value, with seconds converted to rep-equivalents
-  let damage = toRepEquivalent(params.resultValue, params.targetType);
+  let damage = toRepEquivalent(params.resultValue, params.targetType, params.style);
   let weaknessBonus = false;
   let resistancePenalty = false;
 
@@ -471,19 +484,23 @@ export async function calculateBossHp(
 
   const questIds = [...stepCountByQuestId.keys()];
 
-  const exercises = await db
+  const slots = await db
     .select({
       questId: questExercises.questId,
       targetMax: questExercises.targetMax,
       targetType: questExercises.targetType,
       rounds: quests.rounds,
+      style: exercises.style,
     })
     .from(questExercises)
     .innerJoin(quests, eq(quests.id, questExercises.questId))
+    .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId))
     .where(inArray(questExercises.questId, questIds));
 
-  const totalHp = exercises.reduce((sum, ex) => {
-    const perSet = toRepEquivalent(ex.targetMax, ex.targetType);
+  // A cardio slot contributes nothing, so a campaign built only of expeditions floors at the
+  // minimum below rather than handing the boss an unreachable HP total.
+  const totalHp = slots.reduce((sum, ex) => {
+    const perSet = toRepEquivalent(ex.targetMax, ex.targetType, ex.style);
     return sum + perSet * ex.rounds * (stepCountByQuestId.get(ex.questId) ?? 0);
   }, 0);
 
@@ -511,6 +528,7 @@ export function dealDamage(
     muscle?: MuscleCode;
     /** Omitted means reps. Time results are normalised before they become damage. */
     targetType?: QuestTargetType;
+    style: ExerciseStyle;
   },
 ): Promise<DamageResult> {
   // Read-modify-write on currentHp, so the whole thing runs in one transaction: two

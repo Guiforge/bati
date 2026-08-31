@@ -413,7 +413,10 @@ describe("content invariants", () => {
           { type: ex.targetType, min: ex.targetMin, max: ex.targetMax },
           level as never,
         );
-        return sum + toRepEquivalent(target.value, ex.targetType);
+        // Seed quests carry no cardio slot — an expedition is not a quest — so the style that
+        // matters here is any that converts. `content-invariants` would notice if one appeared:
+        // its boss-HP arithmetic would drop to zero for that step.
+        return sum + toRepEquivalent(target.value, ex.targetType, "strength");
       }, 0);
 
     const byAdventure = new Map<string, { hp: number; steps: typeof steps }>();

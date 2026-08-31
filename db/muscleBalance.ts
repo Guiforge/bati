@@ -76,6 +76,7 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
       resultType: completedExercises.resultType,
       muscle: exerciseMuscles.muscle,
       performedAt: completedQuest.performedAt,
+      style: exercises.style,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, sql`${completedExercises.sessionId} = ${completedQuest.id}`)
@@ -113,7 +114,7 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
     const muscle = row.muscle as MuscleCode;
     const data = muscleVolumes.get(muscle);
     if (data) {
-      data.volume += toRepEquivalent(row.resultValue, row.resultType);
+      data.volume += toRepEquivalent(row.resultValue, row.resultType, row.style);
       data.sessions.add(row.sessionId);
     }
     allSessions.add(row.sessionId);
@@ -280,6 +281,7 @@ async function computePatternBalance(period: BalancePeriod): Promise<PatternBala
       pattern: exercises.pattern,
       resultValue: completedExercises.resultValue,
       resultType: completedExercises.resultType,
+      style: exercises.style,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
@@ -292,7 +294,7 @@ async function computePatternBalance(period: BalancePeriod): Promise<PatternBala
   let totalVolume = 0;
   for (const row of rows) {
     if (!isMovementPattern(row.pattern)) continue;
-    const units = toRepEquivalent(row.resultValue, row.resultType);
+    const units = toRepEquivalent(row.resultValue, row.resultType, row.style);
     volumes.set(row.pattern, (volumes.get(row.pattern) ?? 0) + units);
     totalVolume += units;
   }

@@ -9,12 +9,17 @@ WHAT YOU GET
 • Quests — guided sessions with targets that adapt to your level
 • Adventures — multi-session campaigns with a story between steps
 • Boss fights — reps become damage; weaknesses and criticals make the numbers mean something
+• Expeditions — walk, run or ride; the ground you cover raises the road out of the village
 • A village — buildings level up from the volume you actually logged
 • Oaths — pick one goal and let the app hold you to it
 • A journal — history, personal records, streaks, muscle balance
 
-NOTHING LEAVES YOUR PHONE
-No account. No sign-up. No servers. No analytics, no ads, no tracking of any kind. Bati makes no network requests at all: your training history lives in a database on your device and nowhere else. Uninstalling it destroys every record the app ever made.
+YOUR TRAINING STAYS ON YOUR PHONE
+No account. No sign-up. No server of ours. No analytics, no ads, no tracking of any kind. Your sessions, your records and the GPS trace of an expedition live in a database on your device and nowhere else. Uninstalling the app destroys every record it ever made.
+
+Bati asks for internet access for exactly one thing: the map tiles behind an expedition's route, fetched from tiles.openfreemap.org. That host sees an IP address and which squares of the map were asked for, which is what any map costs. It never sees your route, and no other part of the app is allowed to open a connection: a lint rule fails the build if a network call appears anywhere in the code.
+
+Location is read only while an expedition is running, by a GPS module written for this app against Android's own location service. No Google Play Services, no third-party SDK, nothing that phones home.
 
 That is not a setting you have to find. It is the whole architecture.
 

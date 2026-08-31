@@ -190,11 +190,15 @@ Visual design guidelines.
 
 ### Offline-First
 
-Works without internet connection.
+Every workout works with the phone in flight mode.
 
 - Local SQLite database
 - All content stored on device
 - No account required
+- One network destination, download only: `tiles.openfreemap.org`, for the map behind an
+  expedition's route. Nothing is ever uploaded, and
+  [`.biome/plugins/noJsNetwork.grit`](../../.biome/plugins/noJsNetwork.grit) fails the build on any
+  network call written in the app's own code.
 
 ### Performance
 

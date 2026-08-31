@@ -281,6 +281,24 @@ permalink: /
 
       <li>
         <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="6" cy="19" r="3" />
+          <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+          <circle cx="18" cy="5" r="3" />
+        </svg>
+        <h3><span lang="en">Expeditions</span><span lang="fr">Expéditions</span></h3>
+        <p>
+          <span lang="en"
+            >Walk, run or ride. The ground you cover raises the road out of the village.</span
+          >
+          <span lang="fr"
+            >Marche, course ou vélo. Le terrain parcouru fait grandir le chemin hors du
+            village.</span
+          >
+        </p>
+      </li>
+
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M19 17V5a2 2 0 0 0-2-2H4" />
           <path
             d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"
@@ -369,28 +387,33 @@ permalink: /
 <section class="band privacy" id="privacy">
   <div class="wrap">
     <h2>
-      <span lang="en">Nothing leaves your phone.</span>
-      <span lang="fr">Rien ne sort de ton téléphone.</span>
+      <span lang="en">Your training stays on your phone.</span>
+      <span lang="fr">Ton entraînement reste sur ton téléphone.</span>
     </h2>
     <p class="band__intro">
       <span lang="en"
-        >No account. No sign-up. No server. Bati makes no network requests at all: your training
-        history lives in a database on your device and nowhere else. Uninstalling it destroys every
-        record the app ever made. That is not a setting you have to find — it is the whole
-        architecture.</span
+        >No account. No sign-up. No server of ours. Your sessions, your records and the GPS trace of
+        an expedition live in a database on your device and nowhere else, and uninstalling the app
+        destroys every one of them. Bati asks for internet access for exactly one thing: the map
+        tiles behind an expedition's route, fetched from tiles.openfreemap.org. That host sees an IP
+        address and which squares of the map were asked for; it never sees your route. Nothing else
+        in the app may open a connection, and a lint rule fails the build if anything tries.</span
       >
       <span lang="fr"
-        >Aucun compte. Aucune inscription. Aucun serveur. Bati ne fait strictement aucune requête
-        réseau : ton historique vit dans une base de données sur ton appareil et nulle part ailleurs.
-        Désinstaller l'app détruit chaque enregistrement qu'elle a produit. Ce n'est pas un réglage à
-        aller chercher — c'est toute l'architecture.</span
+        >Aucun compte. Aucune inscription. Aucun serveur à nous. Tes séances, tes records et la trace
+        GPS d'une expédition vivent dans une base de données sur ton appareil et nulle part ailleurs,
+        et désinstaller l'app les détruit tous. Bati demande l'accès à Internet pour une seule
+        chose : les tuiles de la carte derrière le tracé d'une expédition, récupérées sur
+        tiles.openfreemap.org. Cet hôte voit une adresse IP et les carrés de carte demandés ; il ne
+        voit jamais ton tracé. Rien d'autre dans l'app n'a le droit d'ouvrir une connexion, et une
+        règle de lint fait échouer la compilation si quoi que ce soit essaie.</span
       >
     </p>
 
     <ul class="zeros">
       <li>
         <b>0</b>
-        <span lang="en">network requests</span><span lang="fr">requête réseau</span>
+        <span lang="en">uploads</span><span lang="fr">envoi</span>
       </li>
       <li>
         <b>0</b>
@@ -427,14 +450,18 @@ permalink: /
         </h3>
         <p>
           <span lang="en"
-            >Searching F-Droid for "Bati" finds nothing — the app is not in the main catalogue, it
-            lives in its own repository, and the client only searches the ones you have added. Add
-            it once and updates arrive like any other app's.</span
+            >Bati is in the official F-Droid catalogue: search for "Bati" and it is there. If you
+            installed an APK from GitHub before that, the catalogue cannot update your copy: F-Droid
+            signs its builds with its own key and Android refuses a different signature. Keep the
+            self-hosted repository below instead: same APKs, same key, updates like any other
+            app's.</span
           >
           <span lang="fr"
-            >Chercher « Bati » dans F-Droid ne donne rien : l'app n'est pas au catalogue principal,
-            elle vit dans son propre dépôt, et le client ne cherche que dans ceux que tu as ajoutés.
-            Ajoute-le une fois, et les mises à jour arrivent comme pour n'importe quelle app.</span
+            >Bati est au catalogue officiel F-Droid : cherche « Bati », elle y est. Si tu as installé
+            un APK depuis GitHub avant ça, le catalogue ne peut pas mettre ta copie à jour : F-Droid
+            signe ses compilations avec sa propre clé, et Android refuse une signature différente.
+            Garde plutôt le dépôt auto-hébergé ci-dessous : mêmes APK, même clé, des mises à jour
+            comme pour n'importe quelle app.</span
           >
         </p>
         <p style="margin-top: 1.5rem">

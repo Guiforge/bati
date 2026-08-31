@@ -32,6 +32,7 @@ import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "
 import { updateStreakAfterSession } from "@/db/streaks";
 import { retargetForMovement } from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
+import { uuidv7 } from "@/db/uuid";
 import {
   diffVillageGrowth,
   diffVillageTier,
@@ -40,8 +41,10 @@ import {
   type VillageTierUp,
 } from "@/db/village";
 import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
+import { i18n } from "@/i18n";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
+import { isExpedition, useExpeditionStore } from "@/stores/expedition";
 
 export type SessionStatus =
   | "idle"
@@ -158,6 +161,15 @@ interface SessionState {
    * The row `saveSession` created, once it has. Held so a retry after a partial failure
    * resumes that session instead of banking a second one.
    */
+  /**
+   * The name this session has from its first second, before anything is written.
+   *
+   * `createCompletedSession` used to mint it at save time, which is fine until something has to
+   * refer to a session that has not ended: an expedition writes a GPS point every second, and
+   * `gps_points.sessionId` is this. In `SavedSessionState` too, so a resumed session keeps the
+   * name its points were filed under — the Pick makes forgetting that a compile error.
+   */
+  sessionUuid: string | null;
   savedSessionId: number | null;
   /**
    * Whether this session already paid the Triumph bonus.
@@ -254,6 +266,7 @@ export type SavedSessionState = Pick<
   | "timerDuration"
   | "results"
   | "lastSetSkipped"
+  | "sessionUuid"
 > & { savedAt: number };
 
 /**
@@ -462,10 +475,23 @@ async function dealFinalBlow(
   return felled;
 }
 
+/**
+ * Whether this outing is on a mount, which is the only thing that changes the speed a fix may
+ * plausibly carry: 8 m/s throws away a bicycle on any descent, and 25 m/s lets a walk keep a
+ * fix no walker could have produced.
+ *
+ * Read off the movement rather than asked, because the hero already chose it by choosing the
+ * quest, and a question whose answer is on screen is a question not worth asking.
+ */
+function mountedExpedition(quest: Quest): boolean {
+  return quest.exercises.some((slot) => slot.exercise.enName === "Outrider's Ride");
+}
+
 export const useSessionStore = create<SessionState>()(
   subscribeWithSelector((set, get) => ({
     quest: null,
     userLevel: "medium",
+    sessionUuid: null,
     adventureRunStepId: null,
     bossFight: null,
     bossStartHp: null,
@@ -527,6 +553,9 @@ export const useSessionStore = create<SessionState>()(
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
         startTime: Date.now(),
+        // Minted here, not at save time: an expedition files a GPS point every second and needs
+        // a name for them long before there is a row to point at.
+        sessionUuid: uuidv7(),
         totalPausedTime: 0,
         restTakenSeconds: 0,
         lastPauseTimestamp: null,
@@ -540,6 +569,25 @@ export const useSessionStore = create<SessionState>()(
         savedSessionId: null,
         triumphBonusPaid: false,
       });
+
+      // An outing measures ground; a workout in a room does not. Started after the state is set
+      // so the uuid the points are filed under is already the one the session will keep.
+      if (isExpedition(quest)) {
+        const uuid = get().sessionUuid;
+        if (uuid) {
+          useExpeditionStore.getState().begin(
+            uuid,
+            {
+              title: i18n.t("session.expedition_notification_title"),
+              acquiring: i18n.t("session.expedition_acquiring"),
+              tracking: i18n.t("session.expedition_tracking"),
+              paused: i18n.t("session.expedition_paused"),
+              gpsOff: i18n.t("session.expedition_gps_off"),
+            },
+            mountedExpedition(quest),
+          );
+        }
+      }
     },
 
     nextWarmupStep: () => {
@@ -696,9 +744,16 @@ export const useSessionStore = create<SessionState>()(
         timerDuration: 0,
         results: [],
         lastSetSkipped: false,
+        sessionUuid: null,
         savedSessionId: null,
         triumphBonusPaid: false,
       });
+      // Whether the hero quit or the session ended, the service must let go: it holds a wake
+      // lock and a permanent notification, and nothing else will stop it.
+      useExpeditionStore
+        .getState()
+        .end()
+        .catch((e) => reportError("session.stopExpedition", e));
     },
 
     completeExercise: (resultValue) => {
@@ -944,6 +999,7 @@ export const useSessionStore = create<SessionState>()(
       const {
         quest,
         userLevel,
+        sessionUuid,
         startTime,
         totalPausedTime,
         restTakenSeconds,
@@ -1001,6 +1057,10 @@ export const useSessionStore = create<SessionState>()(
       const sessionId = await ensureSessionRow({
         questId: quest.id,
         userLevel,
+        // The name the session has carried since its first second. Without it the row would be
+        // minted a second one at save time, and the GPS points filed under the first would
+        // belong to a session that, as far as any query is concerned, never happened.
+        uuid: sessionUuid ?? undefined,
         durationSeconds,
         xpEarned,
         feedback,
@@ -1179,6 +1239,7 @@ useSessionStore.subscribe(
         const savedState: SavedSessionState = {
           quest: state.quest,
           userLevel: state.userLevel,
+          sessionUuid: state.sessionUuid,
           adventureRunStepId: state.adventureRunStepId,
           bossFight: state.bossFight,
           bossStartHp: state.bossStartHp,

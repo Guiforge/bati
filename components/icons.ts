@@ -55,6 +55,7 @@ export { Play } from "@tamagui/lucide-icons/icons/Play";
 export { Plus } from "@tamagui/lucide-icons/icons/Plus";
 export { Repeat } from "@tamagui/lucide-icons/icons/Repeat";
 export { RotateCcw } from "@tamagui/lucide-icons/icons/RotateCcw";
+export { Ruler } from "@tamagui/lucide-icons/icons/Ruler";
 export { Scroll } from "@tamagui/lucide-icons/icons/Scroll";
 export { ScrollText } from "@tamagui/lucide-icons/icons/ScrollText";
 export { Search } from "@tamagui/lucide-icons/icons/Search";

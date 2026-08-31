@@ -146,7 +146,10 @@
     "sound": "Countdown beeps",
     "villagers": "Villagers",
     "replay_guides": "Review the guides",
-    "replay_guides_done": "The guides will show again"
+    "replay_guides_done": "The guides will show again",
+    "distance_unit": "Distance unit",
+    "distance_metric": "Kilometres",
+    "distance_imperial": "Miles"
   },
   "credits": {
     "title": "Credits",
@@ -422,6 +425,11 @@
     "path_you_are_here": "You are here."
   },
   "session": {
+    "expedition_notification_title": "Bati",
+    "expedition_acquiring": "Finding the sky",
+    "expedition_tracking": "On the road",
+    "expedition_paused": "Standing still",
+    "expedition_gps_off": "No signal",
     "adjust_reps_hint": "Did you do more or less?",
     "adjust_reps_label": "Adjust Reps",
     "adjust_seconds_hint": "Held it longer or shorter?",

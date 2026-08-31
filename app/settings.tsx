@@ -23,6 +23,7 @@ import {
   Languages,
   MessagesSquare,
   RotateCcw,
+  Ruler,
   ScrollText,
   ShieldCheck,
   Swords,
@@ -210,12 +211,14 @@ export default function SettingsScreen() {
     hapticsEnabled,
     soundEnabled,
     villagersEnabled,
+    distanceUnit,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
     setHapticsEnabled,
     setSoundEnabled,
     setVillagersEnabled,
+    setDistanceUnit,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -478,6 +481,25 @@ export default function SettingsScreen() {
               preferences.setWarmupEnabled(next).catch((error) => {
                 // Non-blocking: it can be skipped in-session either way.
                 reportError("settings.warmupWrite", error);
+              });
+            }}
+          />
+
+          {/* Draws distances, stores nothing new: every metre stays a metre in the database and
+              in every GPX, and constants/distanceFormat.ts is the only place that converts. */}
+          <SettingRow
+            testID="settings-distance-unit"
+            icon={<Ruler size={22} color="$text" />}
+            label={t("settings.distance_unit", "Distance unit")}
+            value={
+              distanceUnit === "metric"
+                ? t("settings.distance_metric", "Kilometres")
+                : t("settings.distance_imperial", "Miles")
+            }
+            onPress={() => {
+              haptics.selection();
+              setDistanceUnit(distanceUnit === "metric" ? "imperial" : "metric").catch((error) => {
+                reportError("settings.distanceUnitWrite", error);
               });
             }}
           />

@@ -52,6 +52,15 @@ export type CompletedExerciseInput = {
 };
 
 export type CompletedSessionInput = {
+  /**
+   * The name this session already had before it was saved.
+   *
+   * Minted at `startSession` rather than here, because an expedition writes its GPS points while
+   * it is still running and needs something to key them on long before a row exists. Omitted, a
+   * uuid is minted below as it always was — every caller that does not track a live session is
+   * unchanged.
+   */
+  uuid?: string;
   questId?: number | null;
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
@@ -125,7 +134,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         notes: input.notes ?? "",
         feedback: input.feedback ?? null,
         performedAt,
-        uuid: uuidv7(performedAt.getTime()),
+        uuid: input.uuid ?? uuidv7(performedAt.getTime()),
         tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
         originDevice,
       })

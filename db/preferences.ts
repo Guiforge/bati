@@ -12,6 +12,13 @@ function isTrainingLevel(value: string | null): value is TrainingLevel {
   return value === "beginner" || value === "regular" || value === "advanced";
 }
 
+/** Which units a distance is *read* in. Never which units it is stored in — see below. */
+export type DistanceUnit = "metric" | "imperial";
+
+function isDistanceUnit(value: string | null): value is DistanceUnit {
+  return value === "metric" || value === "imperial";
+}
+
 /**
  * Get a preference value by key.
  *
@@ -225,6 +232,26 @@ export const preferences = {
       return;
     }
     await setPreference("ownedEquipment", JSON.stringify(equipment));
+  },
+
+  /**
+   * Metric or imperial, and it decides one thing only: how a number is drawn.
+   *
+   * Every distance in this database and in every GPX Bati writes is metres, whatever this says.
+   * The conversion lives in `constants/distanceFormat.ts` and happens at render time — writing a
+   * converted number anywhere durable would leave a column whose unit depends on a preference
+   * the hero can change afterwards, which is `db/workUnits.ts`'s bug one storey up.
+   *
+   * Metric is the default rather than the device's locale: `expo-localization` reports a region,
+   * and a region is a poor guess at how someone measures a run. The row in Settings is one tap.
+   */
+  async getDistanceUnit(): Promise<DistanceUnit> {
+    const value = await getPreference("distanceUnit");
+    return isDistanceUnit(value) ? value : "metric";
+  },
+
+  async setDistanceUnit(unit: DistanceUnit): Promise<void> {
+    await setPreference("distanceUnit", unit);
   },
 
   async getHapticsEnabled(): Promise<boolean> {

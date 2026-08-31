@@ -601,6 +601,34 @@ describe("useSessionStore", () => {
     });
 
     /**
+     * The session's name has to be the same one from its first second to the journal, because
+     * an expedition files a GPS point every second under `gps_points.sessionId` and there is no
+     * row to point at until the very end. A uuid minted at save time would leave every one of
+     * those points belonging to a session that, as far as any query is concerned, never
+     * happened — which is precisely how the first draft of this design described a resume it
+     * could not have delivered.
+     */
+    test("the session carries one name from its first second into the journal", async () => {
+      const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+      completed.createCompletedSession.mockClear();
+
+      // Through the real door, not the fixture: the point is that starting a session is what
+      // mints the name, and that the same one survives to the row.
+      await store.getState().startSession(mockQuest, "medium");
+      const atStart = store.getState().sessionUuid;
+      expect(atStart).toEqual(expect.any(String));
+
+      store.setState({
+        results: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
+      });
+      await store.getState().saveSession(null);
+
+      expect(completed.createCompletedSession).toHaveBeenCalledWith(
+        expect.objectContaining({ uuid: atStart }),
+      );
+    });
+
+    /**
      * saveSession is a dozen awaits long and is not one transaction, so a failure halfway
      * through leaves the session row written — and the victory screen offers a retry button for
      * exactly that case. Without this, the retry banks the workout a second time.

@@ -619,6 +619,11 @@
     "title": "Planning Hebdomadaire"
   },
   "session": {
+    "expedition_notification_title": "Bati",
+    "expedition_acquiring": "Cherche le ciel",
+    "expedition_tracking": "En chemin",
+    "expedition_paused": "À l'arrêt",
+    "expedition_gps_off": "Aucun signal",
     "adjust_reps_hint": "En as-tu fait plus ou moins ?",
     "adjust_reps_label": "Ajuster les reps",
     "adjust_seconds_hint": "Tenu plus ou moins longtemps ?",
@@ -727,7 +732,10 @@
     "sound": "Bips du décompte",
     "villagers": "Villageois",
     "replay_guides": "Revoir les guides",
-    "replay_guides_done": "Les guides reviendront"
+    "replay_guides_done": "Les guides reviendront",
+    "distance_unit": "Unité de distance",
+    "distance_metric": "Kilomètres",
+    "distance_imperial": "Miles"
   },
   "splash": {
     "loading": "Construction du village..."

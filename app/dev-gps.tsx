@@ -7,6 +7,7 @@ import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ChevronLeft } from "@/components/icons";
+import { formatDistance, formatPace } from "@/constants/distanceFormat";
 import {
   addListener,
   hasGpsProvider,
@@ -18,6 +19,7 @@ import {
 } from "@/modules/bati-location";
 import { accept, EMPTY, type TrackState } from "@/src/gps/track";
 import { FLUSH_EVERY, flushTrack, shareTrack, trackFileFor } from "@/src/gps/trackFile";
+import { useSettingsStore } from "@/stores/settings";
 
 // Field harness, not a screen. The service compiles and lints and passes a green suite, and none
 // of that says a fix ever arrives — that only happens on a phone, outdoors, with the sky in view.
@@ -61,6 +63,9 @@ export default function DevGpsHarness() {
   // run instead of against a run already filtered by today's guesses.
   const session = useRef<TrackState>(EMPTY);
   const [filtered, setFiltered] = useState<TrackState>(EMPTY);
+  // The first consumer of the Settings row. Everything above stays in metres — this is the only
+  // line in the file that knows the hero might read miles.
+  const distanceUnit = useSettingsStore((state) => state.distanceUnit);
 
   const say = (line: string) => append(setLog, line);
 
@@ -137,13 +142,14 @@ export default function DevGpsHarness() {
             </Paragraph>
           )}
           <Text fontSize="$5" fontWeight="700" color="$text">
-            raw {(distanceM / 1000).toFixed(3)} km · {Math.floor(elapsedS / 60)}:
+            raw {formatDistance(distanceM, distanceUnit)} · {Math.floor(elapsedS / 60)}:
             {String(elapsedS % 60).padStart(2, "0")}
           </Text>
           <Text fontSize="$5" fontWeight="700" color={filtered.paused ? "$textSecondary" : "$text"}>
-            filtered {(filtered.distanceM / 1000).toFixed(3)} km ·{" "}
+            filtered {formatDistance(filtered.distanceM, distanceUnit)} ·{" "}
             {Math.floor(filtered.movingMs / 60000)}:
-            {String(Math.floor(filtered.movingMs / 1000) % 60).padStart(2, "0")}
+            {String(Math.floor(filtered.movingMs / 1000) % 60).padStart(2, "0")} ·{" "}
+            {formatPace(filtered.distanceM, filtered.movingMs, distanceUnit)}
             {filtered.paused ? " · PAUSED" : ""}
           </Text>
           <Paragraph fontSize="$2" color="$textSecondary">

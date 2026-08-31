@@ -23,12 +23,14 @@ const prefs = {
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
   getVillagersEnabled: jest.fn<Promise<boolean>, []>(),
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
+  getDistanceUnit: jest.fn<Promise<"metric" | "imperial">, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
   setVillagersEnabled: jest.fn().mockResolvedValue(undefined),
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
+  setDistanceUnit: jest.fn().mockResolvedValue(undefined),
 };
 
 beforeAll(() => {
@@ -67,6 +69,7 @@ function storedSettings() {
   prefs.getHapticsEnabled.mockResolvedValue(false);
   prefs.getVillagersEnabled.mockResolvedValue(false);
   prefs.getSoundEnabled.mockResolvedValue(false);
+  prefs.getDistanceUnit.mockResolvedValue("imperial");
 }
 
 const DEFAULTS = {
@@ -76,6 +79,7 @@ const DEFAULTS = {
   reducedMotion: false,
   villagersEnabled: true,
   soundEnabled: true,
+  distanceUnit: "metric" as const,
   isLoaded: false,
 };
 
@@ -98,6 +102,7 @@ describe("useSettingsStore", () => {
       hapticsEnabled: false,
       villagersEnabled: false,
       soundEnabled: false,
+      distanceUnit: "imperial",
       isLoaded: true,
     });
   });
@@ -178,6 +183,7 @@ describe("useSettingsStore", () => {
     await s().setCustomAvatarUri("file:///picked.jpg");
     await s().setVillagersEnabled(false);
     await s().setSoundEnabled(false);
+    await s().setDistanceUnit("imperial");
 
     expect(s()).toMatchObject({
       language: "fr",
@@ -186,6 +192,7 @@ describe("useSettingsStore", () => {
       customAvatarUri: "file:///picked.jpg",
       villagersEnabled: false,
       soundEnabled: false,
+      distanceUnit: "imperial",
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
@@ -194,6 +201,7 @@ describe("useSettingsStore", () => {
     expect(prefs.setCustomAvatarUri).toHaveBeenCalledWith("file:///picked.jpg");
     expect(prefs.setVillagersEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
+    expect(prefs.setDistanceUnit).toHaveBeenCalledWith("imperial");
   });
 
   /**

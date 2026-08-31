@@ -161,7 +161,12 @@ permission ratchet would vouch for a dependency Bati does not control.
   from the last stored one (storage threshold, not a distance filter).
 - Segment break on a jump > 200 m: the jump is excluded from distance and breaks the recap
   polyline; it does not touch the auto-pause state.
-- Auto-pause after 10 s without 10 m of accumulated movement; resumes on the first accepted
+- Auto-pause after 10 s without 10 m **of displacement from the anchor** — not of accumulated
+  path length, which is how this was first written and which does not work. Standing drift adds
+  to path length without bound: at the measured 0.2 m/s it crosses ten metres in fifty seconds
+  and un-pauses a phone lying on a table. Displacement does not, because drift wanders around a
+  point rather than away from it. Caught by `__tests__/gps-track.test.ts` before it ever ran on
+  a real walk. Resumes on the first accepted
   fix ≥ 10 m from the pause anchor. Paused time is excluded from moving time and earns no
   quest credit — a time-mode GPS quest counts moving time only.
 - `providerEnabled: false` mid-session: auto-pause engages, the status pill reads "GPS off",

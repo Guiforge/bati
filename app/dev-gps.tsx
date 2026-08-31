@@ -16,6 +16,7 @@ import {
   start,
   stop,
 } from "@/modules/bati-location";
+import { accept, EMPTY, type TrackState } from "@/src/gps/track";
 import { FLUSH_EVERY, flushTrack, shareTrack, trackFileFor } from "@/src/gps/trackFile";
 
 // Field harness, not a screen. The service compiles and lints and passes a green suite, and none
@@ -55,6 +56,11 @@ export default function DevGpsHarness() {
   const recorded = useRef<LocationFix[]>([]);
   const file = useRef<File | null>(null);
   const distance = useRef(0);
+  // The filtered reading, folded from the same stream. Kept beside the raw one rather than
+  // replacing it: the GPX keeps every point, so tomorrow's rules can be re-tuned against a real
+  // run instead of against a run already filtered by today's guesses.
+  const session = useRef<TrackState>(EMPTY);
+  const [filtered, setFiltered] = useState<TrackState>(EMPTY);
 
   const say = (line: string) => append(setLog, line);
 
@@ -69,6 +75,8 @@ export default function DevGpsHarness() {
         distance.current += fix.distFromPrev;
         setFixes(recorded.current.length);
         setDistanceM(distance.current);
+        session.current = accept(session.current, fix);
+        setFiltered(session.current);
         setLast(fix);
         if (startedAt.current !== null)
           setElapsedS(Math.round((Date.now() - startedAt.current) / 1000));
@@ -129,9 +137,20 @@ export default function DevGpsHarness() {
             </Paragraph>
           )}
           <Text fontSize="$5" fontWeight="700" color="$text">
-            {(distanceM / 1000).toFixed(3)} km · {Math.floor(elapsedS / 60)}:
+            raw {(distanceM / 1000).toFixed(3)} km · {Math.floor(elapsedS / 60)}:
             {String(elapsedS % 60).padStart(2, "0")}
           </Text>
+          <Text fontSize="$5" fontWeight="700" color={filtered.paused ? "$textSecondary" : "$text"}>
+            filtered {(filtered.distanceM / 1000).toFixed(3)} km ·{" "}
+            {Math.floor(filtered.movingMs / 60000)}:
+            {String(Math.floor(filtered.movingMs / 1000) % 60).padStart(2, "0")}
+            {filtered.paused ? " · PAUSED" : ""}
+          </Text>
+          <Paragraph fontSize="$2" color="$textSecondary">
+            {filtered.startedAt === null
+              ? "start gate closed — waiting for accuracy under 10 m for 3 s"
+              : `${filtered.points} points · ${filtered.segments} segment(s)`}
+          </Paragraph>
         </Card>
 
         <Card p="$4" gap="$3">
@@ -151,6 +170,8 @@ export default function DevGpsHarness() {
               firstFixMs.current = null;
               recorded.current = [];
               distance.current = 0;
+              session.current = EMPTY;
+              setFiltered(EMPTY);
               file.current = trackFileFor(startedAt.current);
               setTrack(file.current);
               setFixes(0);

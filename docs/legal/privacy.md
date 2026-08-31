@@ -118,6 +118,12 @@ no push notifications, so there is no server that knows your device.
 
 **Internet.** For map tiles, and nothing else. See [the map](#the-map-and-the-one-host) above.
 
+**Network state.** Whether you are online, and over what kind of connection. The map library asks so
+it can stop requesting tiles when there is nothing to request them over. It reports no identity, no
+network name and no location, and it is only meaningful at all because of the permission above it.
+Bati deliberately does *not* take the neighbouring Wi-Fi permission, which would name the networks
+around you, and a network name is a location by another route.
+
 **Photos (optional).** If you choose a photo as your hero avatar, the app reads that one image
 from your library. It is stored on your device like the rest of your data, and never uploaded.
 Decline the permission and the app works normally with the built-in avatars.
@@ -277,6 +283,12 @@ appareil — il n'y a aucune notification push, donc aucun serveur ne connaît v
 
 **Internet.** Pour les tuiles de carte, et rien d'autre. Voir « La carte, et l'hôte unique » plus
 haut.
+
+**État du réseau.** Si vous êtes connecté, et par quel type de lien. La bibliothèque de carte le
+demande pour cesser de réclamer des tuiles quand il n'y a rien pour les transporter. Elle n'en tire
+aucune identité, aucun nom de réseau et aucune position, et cela n'a de sens que grâce à la
+permission ci-dessus. Bati refuse délibérément la permission Wi-Fi voisine, qui nommerait les
+réseaux autour de vous : un nom de réseau est une position par un autre chemin.
 
 **Photos (facultatif).** Si vous choisissez une photo comme avatar, l'application lit cette
 image dans votre galerie. Elle est stockée sur votre appareil comme le reste, et jamais

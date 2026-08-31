@@ -593,7 +593,6 @@
     "session_not_found": "Session not found",
     "invalid_session": "Session not found",
     "quest_completed": "Quest Completed",
-    "rounds_completed": "{{count}} rounds",
     "round": "Round",
     "result": "Result",
     "target": "Target",
@@ -652,7 +651,9 @@
     "prev_month": "Previous month",
     "next_month": "Next month",
     "unclassified_volume_one": "{{count}} result comes from an exercise with no muscles set, so it isn't counted here.",
-    "unclassified_volume_other": "{{count}} results come from exercises with no muscles set, so they aren't counted here."
+    "unclassified_volume_other": "{{count}} results come from exercises with no muscles set, so they aren't counted here.",
+    "rounds_completed_one": "{{count}} round",
+    "rounds_completed_other": "{{count}} rounds"
   },
   "achievements": {
     "title": "Achievements",

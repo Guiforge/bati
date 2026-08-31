@@ -302,14 +302,17 @@ export default function SessionDetailScreen() {
                       EQUIPMENT_LABELS[cex.exercise.equipment]?.[language] ??
                       cex.exercise.equipment;
 
+                    // A duration, not a second count. Every other screen says "15 min"; this one
+                    // said "900s", which nobody reads as fifteen minutes - and an outing is the
+                    // first content this app has had whose result is measured in quarter-hours.
                     const resultLabel =
                       cex.result.type === "time"
-                        ? `${cex.result.value}s`
+                        ? formatDuration(cex.result.value)
                         : `${cex.result.value} reps`;
 
                     const targetLabel = cex.target
                       ? cex.target.type === "time"
-                        ? `${cex.target.value}s`
+                        ? formatDuration(cex.target.value)
                         : `${cex.target.value} reps`
                       : null;
 

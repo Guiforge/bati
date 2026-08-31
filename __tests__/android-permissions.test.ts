@@ -101,6 +101,18 @@ const ALLOWED: Record<string, string> = {
     "EventSource and sendBeacon anywhere in the app. MapLibre fetches natively, from the one " +
     "host named in the privacy policy, and no JavaScript here opens a socket at all. " +
     "expo-file-system and expo-image also declare it and still never use it.",
+  "android.permission.ACCESS_NETWORK_STATE":
+    "@maplibre/maplibre-react-native, and it took a device to find out. MapLibre registers a " +
+    "connectivity BroadcastReceiver the moment a map view mounts and calls " +
+    "ConnectivityManager.getActiveNetworkInfo() from it, unconditionally, to decide whether to " +
+    "keep asking for tiles. Without the grant that call throws SecurityException on a background " +
+    "thread and the process dies: the recap screen closed the app every time, on a release " +
+    "build, with a green suite and a green release gate behind it. Nothing here asks what kind " +
+    "of network it is on; MapLibre asks so it can stop asking. It is a normal permission, not a " +
+    "dangerous one - it reports whether there is connectivity and of what type, never who or " +
+    "where - and the app already holds INTERNET for the same tiles, so it widens nothing the " +
+    "privacy policy has not already accounted for. ACCESS_WIFI_STATE stays blocked: that one " +
+    "can name the network, and a network name is a location by another route.",
   "android.permission.POST_NOTIFICATIONS":
     "modules/bati-location — since API 33 the foreground-service notification is invisible " +
     "without it. The service still runs, but the one thing telling the hero their phone is " +
@@ -248,9 +260,11 @@ describe("Android permissions", () => {
     for (const api of ["fetch", "XMLHttpRequest", "WebSocket", "EventSource", "sendBeacon"]) {
       expect(plugin).toContain(api);
     }
-    // Still blocked, and still for the original reason: nothing here asks what kind of network
-    // it is on. If the map turns out to need it, that is a decision, not a patch.
-    expect(blocked.has("android.permission.ACCESS_NETWORK_STATE")).toBe(true);
+    // The map turned out to need it, so this is the decision that comment asked for, taken on
+    // 2026-08-31 against a crash on a real device: MapLibre's connectivity receiver calls
+    // getActiveNetworkInfo() on mount and the process dies without the grant. The justification
+    // is in ALLOWED above. What must not follow it is the wifi half.
+    expect(blocked.has("android.permission.ACCESS_NETWORK_STATE")).toBe(false);
     // ACCESS_WIFI_STATE joined them on 2026-08-31, from MapLibre — and not from the npm package
     // this file can read. `org.maplibre.gl:android-sdk-opengl` declares it in the AAR, which is
     // the blind spot named at the top: the scan below was green, the release gate's aapt2 diff

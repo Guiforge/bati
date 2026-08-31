@@ -115,6 +115,12 @@ describe("plural forms", () => {
     ["fr", 3, "quests.rounds", "3 manches"],
     ["fr", 1, "quests.exercises", "1 exercice"],
     ["fr", 3, "quests.exercises", "3 exercices"],
+    // The journal has its own count, and it had the same bug: a session detail of a one-round
+    // outing read "1 manches" under a heading that says what the session was.
+    ["en", 1, "journal.rounds_completed", "1 round"],
+    ["en", 2, "journal.rounds_completed", "2 rounds"],
+    ["fr", 1, "journal.rounds_completed", "1 manche"],
+    ["fr", 2, "journal.rounds_completed", "2 manches"],
   ])("%s renders %d as %s", async (language, count, key, expected) => {
     await i18n.changeLanguage(language);
     expect(i18n.t(key, { count })).toBe(expected);

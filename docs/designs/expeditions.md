@@ -27,8 +27,9 @@ Everything Bati does happens **inside** the walls: you train in the yard, you fo
 you fight what comes to you. Walking, running and riding are the only things that take the hero
 *out*. And the schema already has the hole shaped like that: `exerciseStyles` has four members,
 the village has a building for six muscles, one for calisthenics and one for yoga — and
-**nothing for `cardio`**. The only style with no place in the village is the only one that
-happens beyond the gate.
+**no building for anything that happens outside the gate**. `cardio` has none of its own (its
+eight movements earn through their muscle tags), and `expedition`, the style these three carry,
+is born with neither a resource nor a building.
 
 So the reward for going out is not another pile of stone. It is **reach**: the road out of the
 village grows with the ground the hero covers.
@@ -49,10 +50,19 @@ village grows with the ground the hero covers.
 
 1. An expedition is a **session with one exercise**, not a new entity — it inherits XP, the
    journal, the streak and the oaths for free.
-2. Walk, run and ride are three seed exercises, `style: cardio`, with fantasy names.
+2. Walk, run and ride are three seed exercises with fantasy names, carrying a **style of their
+   own, `expedition`**. Written first as `style: cardio`, which was wrong and cost a day: that
+   style already holds eight movements — burpees, jumping jacks, mountain climbers, high knees,
+   bear crawls, jump squats, skater hops, star jumps — across eleven slots of six shipped
+   quests, every one of them counted repetitions that have earned boss damage and village
+   volume since the app shipped. Zeroing cardio silently stopped all of them, and the suite
+   stayed green. Cardio is what leaves you breathless; an expedition is what leaves the walls.
 3. The target is optional: a duration, a distance, or nothing. Countdown is the default and is
    cleared with one tap.
-4. Cardio earns its place in the village; the hole already exists, we are not inventing it.
+4. The outdoor style earns its place in the village. The hole is real but narrower than first
+   written: `cardio` has no *building*, yet its eight movements do earn resources through their
+   muscle tags. `expedition` is the style that is born with neither, which is what makes it the
+   one the road is for.
 5. **A time-mode expedition needs no GPS.** Walking for 25 minutes is measured by the clock;
    only a distance target needs a fix. So expeditions ship before the GPS feature — which is
    what the GPS design already said, not a reversal of it. Stated during the session as though
@@ -189,8 +199,24 @@ the `BuildingDriver` union, the hardcoded driver chain at `village.ts:331-336`,
 `getBuildingProgress` (whose whitelist otherwise shows nothing for a locked road at level 0),
 and a leagues fetch threaded into `LevelInputs` and the `Promise.all` in `getVillageBuildings`.
 
-### The entry, and the two-second session it must not create
-An ad-hoc quest: one round, one exercise, target optional.
+### The entry: three quests, not an ad-hoc object
+**Revised in build, 2026-08-31.** This section imagined a synthetic quest assembled in memory.
+The mechanism was already on the shelf: `db/questConfig.ts` stores a target per slot that the
+hero edits before starting, persisted, which is exactly the "choose your duration" of D1. So the
+three expeditions are three seeded quests — one round, one movement, `metabolic` archetype
+(continuous effort, low rest, which is what an outing is on that axis). Nothing new in the store,
+and the orphan-exercise exemption that 0041 needed is **deleted**: the movements are reachable,
+so the invariant holds without a hole in it.
+
+The seeded targets are 10 to 20 minutes because `content-invariants` holds seeded quests to an
+8-to-25-minute design window. That is not advice about how far to walk: the hero's own duration
+lives in their quest config, which is theirs and is not content.
+
+What this defers: the stopwatch half of D1 — leaving with no target at all. A quest always
+carries one, and the clamp below is exactly why the untargeted case is its own piece of work.
+
+### The clamp, still owed by the stopwatch
+An ad-hoc, untargeted session: one round, one exercise, no target.
 
 **The clamp is the showstopper, found in review and verified.** `stores/session.ts:964` writes
 `durationSeconds = Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2)`. With no target,
@@ -230,8 +256,11 @@ without knowing how far — the RPG justification for "no objective", at the cos
    `exercise_volume` oath on a cardio movement and sit at 0 forever once the chokepoint returns
    0. Either exclude cardio from that picker for volume metrics, or give leagues an oath metric
    of their own.
-7. Do the three cardio exercises declare `muscles` and a `pattern`? A walk mapped to `legs`
-   would appear in the muscle balance card at zero volume — visible, and wrong.
+7. ~~Do the three exercises declare `muscles` and a `pattern`?~~ **Settled 2026-08-31.**
+   `pattern` is `locomotion` and `measure` is `time`; **no `exercise_muscles` rows at all**. A
+   walk tagged `legs` would show the balance card a leg trained in N sessions for a volume of
+   nothing. With no muscle rows the same card says something true instead — those results come
+   from an exercise with no muscles set, so they are not counted there.
 4. Distance: rides need it, and it arrives with the GPS work. The exhaustive switch must be in
    place first (premise 7).
 5. The road's floors, in v1.1: league counts or something coarser, chosen against real totals

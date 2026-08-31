@@ -495,7 +495,7 @@ export async function getRecentContributingSessions(
   filter: { muscle: MuscleCode } | { style: ExerciseStyle },
   limit = 3,
 ): Promise<ContributingSession[]> {
-  const volume = sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType)}), 0)`;
+  const volume = sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`;
 
   const base = db
     .select({

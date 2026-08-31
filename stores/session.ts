@@ -724,6 +724,7 @@ export const useSessionStore = create<SessionState>()(
           targetValue: currentEx.target.value,
           muscle: primaryMuscle,
           targetType: currentEx.target.type,
+          style: currentEx.exercise.style,
         });
 
         set({
@@ -741,6 +742,7 @@ export const useSessionStore = create<SessionState>()(
               damage: damageResult.damage,
               isCritical: damageResult.isCritical,
               muscle: primaryMuscle ?? null,
+              style: currentEx.exercise.style,
             },
           ],
         });
@@ -920,6 +922,7 @@ export const useSessionStore = create<SessionState>()(
           targetValue: last.target.value,
           muscle: lastHit.muscle ?? undefined,
           targetType: last.target.type,
+          style: lastHit.style,
           forcedCritical: lastHit.isCritical,
         });
         set({

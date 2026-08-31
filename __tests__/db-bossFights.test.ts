@@ -106,7 +106,12 @@ describe("db/bossFights", () => {
 
     const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
-    await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 30, targetValue: 100 });
+    await b.dealDamage(fight.id, {
+      exerciseId: 1,
+      resultValue: 30,
+      targetValue: 100,
+      style: "strength",
+    });
 
     // Both read paths must agree — getOrCreate is the one the session uses on resume.
     expect((await b.getOrCreateBossFight(BOSS_WITH_HP, "medium"))?.currentHp).toBe(70);
@@ -164,10 +169,20 @@ describe("db/bossFights", () => {
     const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
 
-    const first = await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 20, targetValue: 25 });
+    const first = await b.dealDamage(fight.id, {
+      exerciseId: 1,
+      resultValue: 20,
+      targetValue: 25,
+      style: "strength",
+    });
     expect(first).toMatchObject({ damage: 20, newHp: 80, defeated: false, isCritical: false });
 
-    await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 5, targetValue: 25 });
+    await b.dealDamage(fight.id, {
+      exerciseId: 1,
+      resultValue: 5,
+      targetValue: 25,
+      style: "strength",
+    });
 
     const history = await b.getBossDamageHistory(fight.id);
     expect(history.map((h) => h.damageDealt)).toEqual([20, 5]);
@@ -183,6 +198,7 @@ describe("db/bossFights", () => {
 
     const weak = await b.dealDamage(fight.id, {
       exerciseId: 1,
+      style: "strength",
       resultValue: 10,
       targetValue: 25,
       muscle: "chest",
@@ -191,6 +207,7 @@ describe("db/bossFights", () => {
 
     const resisted = await b.dealDamage(fight.id, {
       exerciseId: 1,
+      style: "strength",
       resultValue: 10,
       targetValue: 25,
       muscle: "back",
@@ -200,6 +217,7 @@ describe("db/bossFights", () => {
     // 1 rep into a resistance rounds to 0 — the floor keeps the hit meaningful.
     const chip = await b.dealDamage(fight.id, {
       exerciseId: 1,
+      style: "strength",
       resultValue: 1,
       targetValue: 25,
       muscle: "back",
@@ -219,7 +237,7 @@ describe("db/bossFights", () => {
     if (!fight) throw new Error("Expected a boss fight");
 
     const roll = (resultValue: number, targetValue: number) =>
-      b.computeDamage(fight, { resultValue, targetValue });
+      b.computeDamage(fight, { resultValue, targetValue, style: "strength" });
 
     // Short of the target, and exactly on it: no crit roll, even on a lucky number.
     expect(roll(9, 10).isCritical).toBe(false);
@@ -245,7 +263,12 @@ describe("db/bossFights", () => {
     const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
 
-    const crit = await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 13, targetValue: 12 });
+    const crit = await b.dealDamage(fight.id, {
+      exerciseId: 1,
+      resultValue: 13,
+      targetValue: 12,
+      style: "strength",
+    });
     expect(crit).toMatchObject({ isCritical: true, damage: 26 });
     expect((await b.getBossDamageHistory(fight.id)).at(-1)?.isCritical).toBe(true);
   });
@@ -259,6 +282,7 @@ describe("db/bossFights", () => {
 
     const killing = await b.dealDamage(fight.id, {
       exerciseId: 1,
+      style: "strength",
       resultValue: 500,
       targetValue: 25,
     });
@@ -267,6 +291,7 @@ describe("db/bossFights", () => {
 
     const afterDeath = await b.dealDamage(fight.id, {
       exerciseId: 1,
+      style: "strength",
       resultValue: 50,
       targetValue: 25,
     });
@@ -281,7 +306,12 @@ describe("db/bossFights", () => {
 
     const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
-    await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 500, targetValue: 25 });
+    await b.dealDamage(fight.id, {
+      exerciseId: 1,
+      resultValue: 500,
+      targetValue: 25,
+      style: "strength",
+    });
 
     // First rematch: the pool is re-derived from the adventure and grows by the tier multiplier.
     await b.resetBossFight(fight.id, { userLevel: "medium", tier: 1 });
@@ -314,7 +344,12 @@ describe("db/bossFights", () => {
 
     const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
-    await b.dealDamage(fight.id, { exerciseId: 1, resultValue: 30, targetValue: 100 });
+    await b.dealDamage(fight.id, {
+      exerciseId: 1,
+      resultValue: 30,
+      targetValue: 100,
+      style: "strength",
+    });
 
     t.sqlite
       .prepare("INSERT OR IGNORE INTO completed_sessions (id, performedAt) VALUES (?, ?)")
@@ -355,7 +390,7 @@ describe("db/bossFights", () => {
   test("damaging a fight that does not exist throws instead of silently missing", async () => {
     const b = boss();
     await expect(
-      b.dealDamage(999_999, { exerciseId: 1, resultValue: 10, targetValue: 10 }),
+      b.dealDamage(999_999, { exerciseId: 1, resultValue: 10, targetValue: 10, style: "strength" }),
     ).rejects.toThrow();
     // Resetting a missing fight is a no-op, not an error.
     await expect(
@@ -376,6 +411,7 @@ describe("db/bossFights", () => {
       damage,
       isCritical: false,
       muscle: null,
+      style: "strength" as const,
     });
 
     /**

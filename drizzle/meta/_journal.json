@@ -281,6 +281,27 @@
       "when": 1787126400000,
       "tag": "0039_exercise_measure",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "6",
+      "when": 1787212800000,
+      "tag": "0040_the_plan_nobody_read",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1787299200000,
+      "tag": "0041_the_three_ways_out",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "6",
+      "when": 1787385600000,
+      "tag": "0042_three_doors_out",
+      "breakpoints": true
     }
   ]
 }

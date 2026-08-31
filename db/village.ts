@@ -281,7 +281,7 @@ async function getStyleVolumes(): Promise<Partial<Record<ExerciseStyle, number>>
   const rows = await db
     .select({
       style: exercises.style,
-      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType)}), 0)`,
+      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))

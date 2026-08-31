@@ -329,6 +329,12 @@ Play internal track needs the Data Safety form updated before the next upload.
    design's "minutes without SUPL" claim is about, and that is still unmeasured. The
    `noFixTimeout` arming after the first fix stays right for that reason.
 
+   **Stationary drift, measured the same day: 6 m in 30 s with the phone flat on a table.**
+   That is ~0.2 m/s of pure noise summed straight out of `distFromPrev`, which over a
+   45-minute stop would invent more than half a kilometre. It is the number the auto-pause
+   rule (10 s without 10 m) exists to kill, and until that rule is wired, any raw distance
+   Bati reports carries it. Expect it to be most of the gap against another app's figure.
+
    Still unproven, and still needing a walk rather than a desk:
 
    - **movement**: `distFromPrev` over real ground, and the speed filter against a real bicycle;
@@ -450,3 +456,22 @@ VERDICT: CLEAN — plan locked; implementation may start at step 1 (time-mode de
 step 3 (dry-run build), which are independent.
 
 NO UNRESOLVED DECISIONS
+
+## Open question, added 2026-08-31: the map should not break the world
+
+The recap map is a real map, and Bati is a dark-fantasy world of oaths and bosses. A default
+basemap — motorway shields, sans-serif labels, POI pins — reads as a different application
+bolted on.
+
+This is cheap to answer and worth answering: a MapLibre style is a **JSON document, not code**.
+The vector tiles arrive raw (roads, water, buildings, contours) and the style decides every
+colour, width and font. A parchment rendering — cream ground, ink-brown roads, washed water, no
+modern furniture, a serif face — is one file written once, over the same tiles, changing nothing
+about the network decision in D3. A paper texture as a translucent layer over the map is the
+cheap second half.
+
+It also lands where it belongs: the design already refuses a map during the session, so the only
+place one appears is the recap, which is the moment the hero reads the story of the outing.
+
+Not scheduled. Belongs with the recap screen, and it is content and taste rather than
+architecture.

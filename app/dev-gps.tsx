@@ -1,3 +1,4 @@
+import type { File } from "expo-file-system";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView as RNScrollView } from "react-native";
@@ -15,6 +16,7 @@ import {
   start,
   stop,
 } from "@/modules/bati-location";
+import { FLUSH_EVERY, flushTrack, shareTrack, trackFileFor } from "@/src/gps/trackFile";
 
 // Field harness, not a screen. The service compiles and lints and passes a green suite, and none
 // of that says a fix ever arrives — that only happens on a phone, outdoors, with the sky in view.
@@ -43,8 +45,16 @@ export default function DevGpsHarness() {
   const [fixes, setFixes] = useState(0);
   const [last, setLast] = useState<LocationFix | null>(null);
   const [running, setRunning] = useState(false);
+  const [distanceM, setDistanceM] = useState(0);
+  const [elapsedS, setElapsedS] = useState(0);
+  const [track, setTrack] = useState<File | null>(null);
   const startedAt = useRef<number | null>(null);
   const firstFixMs = useRef<number | null>(null);
+  // The recorded trace. Kept in a ref rather than state because it is appended once a second and
+  // nothing renders it — only its length and the running distance do.
+  const recorded = useRef<LocationFix[]>([]);
+  const file = useRef<File | null>(null);
+  const distance = useRef(0);
 
   const say = (line: string) => append(setLog, line);
 
@@ -55,8 +65,17 @@ export default function DevGpsHarness() {
           firstFixMs.current = Date.now() - startedAt.current;
           append(setLog, `FIRST FIX after ${(firstFixMs.current / 1000).toFixed(1)} s`);
         }
-        setFixes((n) => n + 1);
+        recorded.current.push(fix);
+        distance.current += fix.distFromPrev;
+        setFixes(recorded.current.length);
+        setDistanceM(distance.current);
         setLast(fix);
+        if (startedAt.current !== null)
+          setElapsedS(Math.round((Date.now() - startedAt.current) / 1000));
+        // Written during the run, not at the end: the run is when the app can be killed.
+        if (file.current && recorded.current.length % FLUSH_EVERY === 0) {
+          flushTrack(file.current, recorded.current, distance.current);
+        }
       }),
       addListener("onProviderEnabled", (e) => append(setLog, `provider enabled=${e.enabled}`)),
       addListener("onNoFixTimeout", (e) =>
@@ -109,6 +128,10 @@ export default function DevGpsHarness() {
               no fix yet
             </Paragraph>
           )}
+          <Text fontSize="$5" fontWeight="700" color="$text">
+            {(distanceM / 1000).toFixed(3)} km · {Math.floor(elapsedS / 60)}:
+            {String(elapsedS % 60).padStart(2, "0")}
+          </Text>
         </Card>
 
         <Card p="$4" gap="$3">
@@ -126,7 +149,13 @@ export default function DevGpsHarness() {
             onPress={() => {
               startedAt.current = Date.now();
               firstFixMs.current = null;
+              recorded.current = [];
+              distance.current = 0;
+              file.current = trackFileFor(startedAt.current);
+              setTrack(file.current);
               setFixes(0);
+              setDistanceM(0);
+              setElapsedS(0);
               setLast(null);
               const ok = start({ notification: NOTIFICATION, maxSpeedMs: 25 });
               setRunning(ok);
@@ -140,7 +169,12 @@ export default function DevGpsHarness() {
             onPress={() => {
               stop();
               setRunning(false);
-              say("stop()");
+              if (file.current) {
+                flushTrack(file.current, recorded.current, distance.current);
+                say(`stop() — ${recorded.current.length} fixes written to ${file.current.name}`);
+              } else {
+                say("stop()");
+              }
             }}
           >
             Stop
@@ -148,6 +182,18 @@ export default function DevGpsHarness() {
           <Text fontSize="$2" color="$textSecondary">
             {running ? "service should be running — check the notification" : "stopped"}
           </Text>
+          {track ? (
+            <AppButton
+              variant="secondary"
+              onPress={() => {
+                if (!file.current) return;
+                flushTrack(file.current, recorded.current, distance.current);
+                shareTrack(file.current).catch((e: unknown) => say(`share failed ${String(e)}`));
+              }}
+            >
+              Share the GPX
+            </AppButton>
+          ) : null}
         </Card>
 
         <Card p="$4" gap="$2">

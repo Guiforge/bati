@@ -287,6 +287,16 @@ Play internal track needs the Data Safety form updated before the next upload.
    | **delta** | **4.16 MiB** |
    | headroom left to the 55 MiB ratchet | 4.84 MiB |
 
+   The CI run of that same build caught what the local one had not: MapLibre's **AAR**
+   (`org.maplibre.gl:android-sdk-opengl:13.2.0`) declares `ACCESS_WIFI_STATE`, which no npm
+   manifest mentions and `__tests__/android-permissions.test.ts` therefore cannot see — the
+   blind spot that file names at the top, caught by the release gate's `aapt2` diff instead.
+   It is blocked now, beside `INTERNET` and `ACCESS_NETWORK_STATE` which the AAR also asks for.
+   **Step 7 must verify on device** that MapLibre survives without them once `INTERNET` is
+   unblocked: its `ConnectivityReceiver` reads `getActiveNetworkInfo()`, which needs
+   `ACCESS_NETWORK_STATE`, so the map may demand one of these back. If it does, that widens the
+   privacy surface past what D3 priced, and it is a decision, not a patch.
+
    Almost all of it is `lib/arm64-v8a/libmaplibre.so` — 10.04 MiB uncompressed, compressing to
    roughly a third — plus 0.85 MiB of dex and 0.72 MiB in `libappmodules.so`. The JS bundle
    moved 0.10 MiB. So the estimate held, and the consequence is worth writing down: the

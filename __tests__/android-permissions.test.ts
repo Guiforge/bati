@@ -228,5 +228,11 @@ describe("Android permissions", () => {
     // keeps it out of the built manifest.
     expect(blocked.has("android.permission.INTERNET")).toBe(true);
     expect(blocked.has("android.permission.ACCESS_NETWORK_STATE")).toBe(true);
+    // ACCESS_WIFI_STATE joined them on 2026-08-31, from MapLibre — and not from the npm package
+    // this file can read. `org.maplibre.gl:android-sdk-opengl` declares it in the AAR, which is
+    // the blind spot named at the top: the scan below was green, the release gate's aapt2 diff
+    // was not. If this suite ever passes while a build fails on permissions, that is where to
+    // look first.
+    expect(blocked.has("android.permission.ACCESS_WIFI_STATE")).toBe(true);
   });
 });

@@ -73,11 +73,16 @@ describe("db/village buildings", () => {
   // The High Road, and the two currencies it exists to keep apart
   // ------------------------------------------------------------
 
-  /** One league is 1000 m, and a fix carries centimetres. */
+  /**
+   * One league is 1000 m, and the road reads the metres the reducer credited rather than a sum
+   * over the fixes: drift while the hero stood still is in `gps_points` and must never be here.
+   */
+  let outings = 0;
   const walkLeagues = (leagues: number) => {
+    outings += 1;
     t.sqlite.exec(`
-      INSERT INTO gps_points (sessionId, t, latE7, lonE7, accDm, distFromPrevCm)
-        VALUES ('walk', 1, 484727810, -24943070, 38, ${leagues * 100_000});
+      INSERT INTO completed_sessions (id, performedAt, leaguesM)
+        VALUES (${10 + outings}, ${Math.floor(Date.now() / 1000)}, ${Math.round(leagues * 1000)});
     `);
   };
 

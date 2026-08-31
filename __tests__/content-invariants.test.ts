@@ -548,7 +548,15 @@ describe("content invariants", () => {
     const { estimateQuestSeconds } = require("../db/estimate") as typeof import("../db/estimate");
     const all = await loadQuests();
 
+    const { NON_REP_STYLE } = require("../db/workUnits") as typeof import("../db/workUnits");
+
     const offenders = all.flatMap((quest) => {
+      // An outing is the one quest with no warm-up, deliberately: it warms up by leaving.
+      if (quest.exercises.some((qex) => qex.exercise.style === NON_REP_STYLE)) {
+        expect(buildWarmup(quest)).toEqual([]);
+        return [];
+      }
+
       const session = estimateQuestSeconds(quest);
       const warmup = buildWarmup(quest).reduce((sum, s) => sum + s.seconds, 0);
       const share = warmup / session;

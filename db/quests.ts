@@ -6,7 +6,7 @@ import { isMuscleCode } from "./muscles";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
-import { clampToRange, REST_RANGE, ROUNDS_RANGE, TARGET_RANGE } from "./questConfig";
+import { clampToRange, REST_RANGE, ROUNDS_RANGE, targetRangeFor } from "./questConfig";
 import {
   ADMIN_CREATOR,
   type ContentOwner,
@@ -238,8 +238,8 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
         exerciseId: qex.exerciseId,
         sortOrder: i,
         targetType: qex.baseTarget.type,
-        targetMin: clampToRange(qex.baseTarget.min, TARGET_RANGE),
-        targetMax: clampToRange(qex.baseTarget.max, TARGET_RANGE),
+        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type)),
+        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type)),
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );
@@ -687,8 +687,8 @@ export async function setQuestExercises(
         exerciseId: qex.exerciseId,
         sortOrder: i,
         targetType: qex.baseTarget.type,
-        targetMin: clampToRange(qex.baseTarget.min, TARGET_RANGE),
-        targetMax: clampToRange(qex.baseTarget.max, TARGET_RANGE),
+        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type)),
+        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type)),
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );

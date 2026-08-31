@@ -420,6 +420,20 @@ export const completedQuest = sqliteTable(
     // which is what the 0038 backfill wrote and what keeps `ORDER BY uuid` sorting the journal.
     uuid: text().$defaultFn(() => uuidv7()),
 
+    /**
+     * Metres of ground this session actually credited, or null for a session that covered none.
+     *
+     * The reducer's answer (`src/gps/track.ts`), not a sum of `gps_points.distFromPrevCm`. Those
+     * differ on purpose and the difference is the whole point of the reducer: a raw sum counts
+     * drift while the hero stood still (6 m in 30 s on a phone flat on a desk) and counts the
+     * length of a GPS teleport. Summing the raw column for leagues gave one run two lengths, the
+     * one the hero read and a larger one that grew the village.
+     *
+     * Written once, by the one function that already decided it, at the moment the session is
+     * saved. Null for every strength quest, and for a walk whose service never started.
+     */
+    leaguesM: int(),
+
     // Which install wrote the row — provenance, not identity (`db/preferences.ts`). Null on
     // every session logged before 0038: nothing here recorded it.
     originDevice: text(),

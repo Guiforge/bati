@@ -1,6 +1,7 @@
 import { estimateQuestSeconds } from "@/db/estimate";
-import type { MovementPattern, QuestArchetype } from "@/db/schema";
+import type { ExerciseStyle, MovementPattern, QuestArchetype } from "@/db/schema";
 import type { Target } from "@/db/targets";
+import { NON_REP_STYLE } from "@/db/workUnits";
 
 /**
  * The dynamic warm-up played before the first exercise of a session.
@@ -165,7 +166,7 @@ export type WarmupQuest = {
   restSeconds: number;
   roundRestSeconds: number | null;
   exercises: {
-    exercise: { pattern: MovementPattern | null; secondsPerRep: number };
+    exercise: { pattern: MovementPattern | null; secondsPerRep: number; style: ExerciseStyle };
     target: Target;
   }[];
 };
@@ -243,6 +244,11 @@ function stepCount(quest: WarmupQuest): number {
  * on purpose — matches no family and falls through to the default pools.
  */
 export function buildWarmup(quest: WarmupQuest, sessionCount = 0): WarmupStep[] {
+  // An outing warms up by leaving. Eight indoor steps of star jumps and high knees in front of a
+  // quest whose whole point is the door is the wrong protocol and the wrong story, and it was the
+  // first thing every expedition showed.
+  if (quest.exercises.some((qex) => qex.exercise.style === NON_REP_STYLE)) return [];
+
   const patterns = quest.exercises
     .map((qex) => qex.exercise.pattern)
     .filter((p): p is MovementPattern => p != null);

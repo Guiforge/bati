@@ -6,7 +6,13 @@ import { Card } from "@/components/common/Card";
 import { Stepper } from "@/components/common/Stepper";
 import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Repeat, RotateCcw, SlidersHorizontal } from "@/components/icons";
-import { hasQuestOverrides, type QuestConfig, REST_RANGE, ROUNDS_RANGE, TARGET_RANGE } from "@/db";
+import {
+  hasQuestOverrides,
+  type QuestConfig,
+  REST_RANGE,
+  ROUNDS_RANGE,
+  targetRangeFor,
+} from "@/db";
 import type { Quest } from "@/db/quests";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -107,8 +113,8 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                         : t("quests.config_reps", "Reps")
                     }
                     value={qex.target.value}
-                    min={TARGET_RANGE.min}
-                    max={TARGET_RANGE.max}
+                    min={targetRangeFor(qex.target.type).min}
+                    max={targetRangeFor(qex.target.type).max}
                     step={qex.target.type === "time" ? REST_STEP : 1}
                     suffix={qex.target.type === "time" ? "s" : ""}
                     onChange={(value) => setTarget(qex.id, value)}

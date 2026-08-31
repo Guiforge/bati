@@ -55,6 +55,8 @@ export {
   ROUNDS_RANGE,
   saveQuestConfig,
   TARGET_RANGE,
+  TIME_TARGET_MAX,
+  targetRangeFor,
 } from "./questConfig";
 export type { TrainingFocus } from "./quests";
 export {

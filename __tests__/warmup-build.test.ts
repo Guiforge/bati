@@ -1,5 +1,5 @@
 import { buildWarmup, WARMUP_SEQUENCE, type WarmupQuest } from "@/constants/warmup";
-import type { MovementPattern, QuestArchetype } from "@/db/schema";
+import type { ExerciseStyle, MovementPattern, QuestArchetype } from "@/db/schema";
 
 /**
  * A quest shaped like the real thing: `buildWarmup` reads the patterns to choose movements and
@@ -11,7 +11,7 @@ import type { MovementPattern, QuestArchetype } from "@/db/schema";
 function quest(
   patterns: (MovementPattern | null)[],
   archetype: QuestArchetype | null = null,
-  { rounds = 2, reps = 8, restSeconds = 20 } = {},
+  { rounds = 2, reps = 8, restSeconds = 20, style = "strength" as ExerciseStyle } = {},
 ) {
   return {
     archetype,
@@ -19,7 +19,7 @@ function quest(
     restSeconds,
     roundRestSeconds: null,
     exercises: patterns.map((pattern) => ({
-      exercise: { pattern, secondsPerRep: 3 },
+      exercise: { pattern, secondsPerRep: 3, style },
       target: { type: "reps" as const, value: reps },
     })),
   } satisfies WarmupQuest;
@@ -82,7 +82,11 @@ describe("buildWarmup", () => {
         roundRestSeconds: null,
         exercises: [
           {
-            exercise: { pattern: null, secondsPerRep: undefined as unknown as number },
+            exercise: {
+              pattern: null,
+              secondsPerRep: undefined as unknown as number,
+              style: "strength" as const,
+            },
             target: { type: "reps" as const, value: 10 },
           },
         ],
@@ -249,4 +253,12 @@ describe("buildWarmup", () => {
       expect(WARMUP_SEQUENCE.map((s) => s.exerciseName)).not.toContain(hold);
     }
   });
+});
+
+/**
+ * The one quest that gets no warm-up. Eight indoor steps before a walk is the wrong protocol and
+ * the wrong story; an outing warms up by leaving.
+ */
+test("an outing has no warm-up", () => {
+  expect(buildWarmup(quest(["locomotion"], "metabolic", { style: "expedition" }))).toEqual([]);
 });

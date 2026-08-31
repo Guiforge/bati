@@ -1,11 +1,16 @@
-import type { DifficultyCode } from "@/db/schema";
+import type { DifficultyCode, ExerciseStyle } from "@/db/schema";
 import { computeSessionXp, estimateQuestXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
 
-const MEDIUM: XpSet["exercise"] = { secondsPerRep: 3, difficulty: "medium" };
+const MEDIUM: XpSet["exercise"] = { secondsPerRep: 3, difficulty: "medium", style: "strength" };
 
-const movement = (difficulty: DifficultyCode, secondsPerRep = 3): XpSet["exercise"] => ({
+const movement = (
+  difficulty: DifficultyCode,
+  secondsPerRep = 3,
+  style: ExerciseStyle = "strength",
+): XpSet["exercise"] => ({
   secondsPerRep,
   difficulty,
+  style,
 });
 
 /** One rep-based set: what was asked, what was done. Default tempo, so 1 rep ≈ 1 XP. */

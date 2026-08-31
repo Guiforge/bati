@@ -1,6 +1,7 @@
 import { type Exercise, listExercises } from "./exercises";
 import { deletePreference, getAllPreferences, getPreference, setPreference } from "./preferences";
 import { getQuestById, type Quest } from "./quests";
+import type { QuestTargetType } from "./schema";
 import { Difficulty, retargetForMovement, type UserLevel } from "./targets";
 
 /**
@@ -32,6 +33,22 @@ export type QuestConfig = {
 export const ROUNDS_RANGE = { min: 1, max: 10 };
 export const REST_RANGE = { min: 0, max: 300 };
 export const TARGET_RANGE = { min: 1, max: 999 };
+
+/**
+ * A time target's ceiling, and it is not `TARGET_RANGE.max`.
+ *
+ * 999 is a generous rep count and sixteen minutes thirty-nine. Every seeded expedition targets
+ * more than that at hard (`drizzle/0042_three_doors_out.sql` reaches 1200 s), so the shared range
+ * silently shortened the quest on the way into SQLite, and the stepper could not be pushed back
+ * up: an hour-long walk was one edit away and the edit did not exist. An hour is also exactly
+ * what one set may ever record (`clampResultValue`), so a target above this could never be met.
+ */
+export const TIME_TARGET_MAX = 3600;
+
+/** What a target may be, by what it counts. Reps and seconds are not the same magnitude. */
+export function targetRangeFor(type: QuestTargetType): { min: number; max: number } {
+  return type === "time" ? { min: TARGET_RANGE.min, max: TIME_TARGET_MAX } : TARGET_RANGE;
+}
 
 const configKey = (questId: number) => `quest:${questId}:config`;
 
@@ -79,7 +96,9 @@ function readTargets(value: unknown): Record<string, number> | undefined {
 
   const targets: Record<string, number> = {};
   for (const [key, raw] of Object.entries(value)) {
-    const target = readNumber(raw, TARGET_RANGE);
+    // The slot's unit is not in the config, so the permissive ceiling here and the real
+    // per-type one in `applyQuestConfig`, which has the quest.
+    const target = readNumber(raw, { min: TARGET_RANGE.min, max: TIME_TARGET_MAX });
     if (target !== undefined) targets[key] = target;
   }
 
@@ -217,7 +236,8 @@ export function applyQuestConfig(
       const key = String(qex.id);
       const swappedId = swaps[key];
       const substitute = swappedId === undefined ? undefined : exercisesById[swappedId];
-      const value = targets[key];
+      const raw = targets[key];
+      const value = raw === undefined ? undefined : clamp(raw, targetRangeFor(qex.target.type));
 
       if (substitute === undefined && value === undefined) return qex;
 

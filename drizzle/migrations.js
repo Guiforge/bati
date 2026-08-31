@@ -44,6 +44,7 @@ import m0040 from "./0040_the_plan_nobody_read.sql";
 import m0041 from "./0041_the_three_ways_out.sql";
 import m0042 from "./0042_three_doors_out.sql";
 import m0043 from "./0043_the_ground_covered.sql";
+import m0044 from "./0044_the_ground_that_counted.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -93,5 +94,6 @@ export default {
     m0041,
     m0042,
     m0043,
+    m0044,
   },
 };

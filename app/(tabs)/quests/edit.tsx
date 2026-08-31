@@ -28,6 +28,7 @@ import {
   saveQuestConfig,
   setQuestExercises,
   TARGET_RANGE,
+  targetRangeFor,
   USER_QUEST_AUTHOR,
   updateQuestMeta,
 } from "@/db";
@@ -531,8 +532,8 @@ export default function QuestEditor() {
                   <Stepper
                     label={t("quests.editor_target", "Target")}
                     value={p.value}
-                    min={TARGET_RANGE.min}
-                    max={TARGET_RANGE.max}
+                    min={targetRangeFor(p.type).min}
+                    max={targetRangeFor(p.type).max}
                     step={p.type === "time" ? REST_STEP : 1}
                     suffix={p.type === "time" ? "s" : ""}
                     onChange={(value) => patchExercise(p.uid, { value })}

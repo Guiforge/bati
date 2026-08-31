@@ -48,7 +48,7 @@ export type CompletedExerciseInput = {
    * a `hard` movement on the last round would re-price every set already logged, inflating the
    * whole workout. The price belongs to the moment, like `target` beside it.
    */
-  pricing?: { secondsPerRep: number; difficulty: DifficultyCode };
+  pricing?: { secondsPerRep: number; difficulty: DifficultyCode; style: ExerciseStyle };
 };
 
 export type CompletedSessionInput = {
@@ -61,6 +61,11 @@ export type CompletedSessionInput = {
    * unchanged.
    */
   uuid?: string;
+  /**
+   * Ground this session credited, in metres, from the reducer rather than from a raw sum of
+   * fixes. Omitted by every caller that is not an outing.
+   */
+  leaguesM?: number | null;
   questId?: number | null;
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
@@ -141,6 +146,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         feedback: input.feedback ?? null,
         performedAt,
         uuid: input.uuid ?? uuidv7(performedAt.getTime()),
+        leaguesM: input.leaguesM ?? null,
         tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
         originDevice,
       })

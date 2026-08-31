@@ -101,12 +101,15 @@ export function useSessionRecovery() {
    * screen and stay in the leagues that grow the High Road, which is a village built by a run
    * that never happened. Swept after the recovery check rather than before, so the one trace
    * the banner is about to offer is known and kept.
+   *
+   * The live session is kept as well as the offered one. The banner reads a snapshot from disk;
+   * a run happening right now has no reason to be in it, and sweeping the ground out from under
+   * a walk in progress is the same data loss by a shorter route.
    */
   useEffect(() => {
     if (isChecking) return;
-    sweepOrphanedPoints(recoverableSession?.sessionUuid ?? null).catch((e) =>
-      reportError("session.sweepOrphanedPoints", e),
-    );
+    const keep = useSessionStore.getState().sessionUuid ?? recoverableSession?.sessionUuid ?? null;
+    sweepOrphanedPoints(keep).catch((e) => reportError("session.sweepOrphanedPoints", e));
   }, [isChecking, recoverableSession]);
 
   // Check for saved session on mount

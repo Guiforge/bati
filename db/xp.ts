@@ -2,7 +2,7 @@ import { estimateExerciseSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
 import type { DifficultyCode } from "./schema";
 import type { Target } from "./targets";
-import { SECONDS_PER_REP_EQUIVALENT } from "./workUnits";
+import { NON_REP_STYLE, SECONDS_PER_REP_EQUIVALENT } from "./workUnits";
 
 /**
  * XP measures the effort a session contained, not the time it spanned.
@@ -95,7 +95,7 @@ const LEVEL_MULTIPLIER: Record<DifficultyCode, number> = {
 
 /** One set as XP reads it: what was asked, what was done, and by whom. */
 export type XpSet = {
-  exercise: Pick<Exercise, "secondsPerRep" | "difficulty">;
+  exercise: Pick<Exercise, "secondsPerRep" | "difficulty" | "style">;
   target: Target;
   result: Target;
 };
@@ -132,10 +132,17 @@ function setEffortSeconds({ exercise, target, result }: XpSet): number {
   // lying. Reps are typed by a hero who is present, so their overshoot earns the decaying tail;
   // a hold's does not. The `longest_hold` record still keeps the true value — XP pays for the
   // work prescribed, the record celebrates the feat.
-  const credited =
-    result.type === "time"
-      ? Math.min(done, allowed)
-      : Math.min(done, allowed) + Math.max(0, done - allowed) * OVERSHOOT_DECAY;
+  //
+  // An outing is the exception, and it is the reason this branch reads the style at all. Its
+  // clock has a witness: the caller passes the reducer's *moving* seconds as the effort ceiling,
+  // and a phone that sits on a windowsill accrues none of them. So the argument for clamping a
+  // hold does not hold here, and clamping anyway is what made every walk past nineteen minutes
+  // worth exactly the same as the nineteenth — three short walks beating one long one at the one
+  // thing the feature is named after.
+  const clocked = result.type === "time" && exercise.style !== NON_REP_STYLE;
+  const credited = clocked
+    ? Math.min(done, allowed)
+    : Math.min(done, allowed) + Math.max(0, done - allowed) * OVERSHOOT_DECAY;
 
   return credited;
 }

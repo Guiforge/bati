@@ -22,11 +22,12 @@ import {
 } from "@/db/completed";
 import { estimateQuestSeconds } from "@/db/estimate";
 import { checkForNewRungs, type Exercise, type VariationStep } from "@/db/exercises";
+import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
-import { REST_RANGE, TARGET_RANGE } from "@/db/questConfig";
+import { REST_RANGE, targetRangeFor } from "@/db/questConfig";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
 import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
@@ -57,8 +58,15 @@ export type SessionStatus =
 
 const PRE_START_COUNTDOWN_SECONDS = 3;
 
-/** Ceiling on one hold. An hour in a single set is past any prescription this app can write. */
-const MAX_HOLD_SECONDS = 3600;
+/**
+ * How much standing still an outing may still count as being out for.
+ *
+ * A walk has red lights, a gate, a conversation. Twenty minutes of them is generous and still
+ * finite, so a session left open on the sofa stops accruing a journal duration long before it
+ * takes the "longest session" record. XP is bounded separately and more tightly, by moving
+ * seconds alone.
+ */
+const OUTING_STOPPAGE_ALLOWANCE_SECONDS = 20 * 60;
 
 /**
  * What one set may claim.
@@ -72,7 +80,7 @@ const MAX_HOLD_SECONDS = 3600;
 function clampResultValue(resultValue: number, type: QuestTargetType): number {
   if (!Number.isFinite(resultValue)) return 1;
 
-  const ceiling = type === "time" ? MAX_HOLD_SECONDS : TARGET_RANGE.max;
+  const ceiling = targetRangeFor(type).max;
   return Math.min(ceiling, Math.max(1, Math.floor(resultValue)));
 }
 
@@ -334,6 +342,81 @@ function advanceAfterSet(
  * quest repeats an exercise or a config swapped one out. A result whose slot has vanished is
  * dropped rather than guessed at — it cannot be priced without knowing what was asked.
  */
+/**
+ * What the reducer credited for this run, or null when the quest never left the walls.
+ *
+ * Read before `end()`, and read here rather than inline so `saveSession` keeps one shape for
+ * both kinds of session. Two numbers come out of it and neither is a sum over `gps_points`:
+ *
+ * - `leaguesM` is what the road is paid in. The raw sum counts drift while the hero stood still
+ *   and counts the length of a teleport the reducer broke the line at, so the village would grow
+ *   by a number the recap never drew. See `db/gps.ts`.
+ * - `movingSeconds` is what XP is paid in, and it is a witness a windowsill cannot fake: the
+ *   auto-pause stops crediting the moment displacement does, so an outing can be paid for the
+ *   time it actually took where a hold has to be clamped to its prescription.
+ */
+function measureGround(quest: Quest | null): Ground {
+  if (!isExpedition(quest)) return { leaguesM: null, movingSeconds: null };
+
+  const { track } = useExpeditionStore.getState();
+  return {
+    leaguesM: Math.round(track.distanceM),
+    movingSeconds: Math.floor(track.movingMs / 1000),
+  };
+}
+
+/** Null in both fields when the quest never left the walls. */
+type Ground = { leaguesM: number | null; movingSeconds: number | null };
+
+/**
+ * How long this session may claim to have lasted, and how much of that could have been effort.
+ *
+ * Nothing pauses when the app goes to the background — there is no `AppState` listener in this
+ * project — so a session left open overnight measures nine hours, takes the "longest session"
+ * record and unlocks both long-session achievements. XP no longer reads the clock as a source,
+ * but `checkForNewRecords` and `checkForNewAchievements` still do. Both numbers are therefore
+ * bounded, and by different things:
+ *
+ * A workout is bounded by its own prescription — twice its estimate — and pays for the window
+ * left once the rest it actually took comes out. Rest *taken*, not rest prescribed: subtracting
+ * the prescription would floor an honest hero who skips their rests. Camping the rest screen
+ * would otherwise raise the very ceiling that fabricated results then fill.
+ *
+ * An outing is bounded by its own witness instead. Twice the estimate is thirty minutes for a
+ * default expedition, so a real hour on the road was filed as half of one and the hero's longest
+ * walk could never reach their own journal. Its effort ceiling is moving seconds alone, so a run
+ * left open on a bus keeps accruing neither.
+ *
+ * ponytail: a real workout that genuinely runs past twice its estimate loses the surplus from its
+ *           journal entry only; if anyone ever reports that, the fix is an AppState listener that
+ *           banks background time as pause, not a bigger multiplier.
+ */
+function sessionClock({
+  quest,
+  ground,
+  measuredSeconds,
+  restTakenSeconds,
+}: {
+  quest: Quest;
+  ground: Ground;
+  measuredSeconds: number;
+  restTakenSeconds: number;
+}): { durationSeconds: number; effortCeilingSeconds: number } {
+  const moving = ground.movingSeconds;
+  if (moving !== null) {
+    return {
+      durationSeconds: Math.min(measuredSeconds, moving + OUTING_STOPPAGE_ALLOWANCE_SECONDS),
+      effortCeilingSeconds: moving,
+    };
+  }
+
+  const durationSeconds = Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
+  return {
+    durationSeconds,
+    effortCeilingSeconds: Math.max(0, durationSeconds - restTakenSeconds),
+  };
+}
+
 function toXpSets(quest: Quest, results: CompletedExerciseInput[]): XpSet[] {
   return results.flatMap((r) => {
     const slot = quest.exercises[r.sortOrder];
@@ -735,6 +818,17 @@ export const useSessionStore = create<SessionState>()(
     },
 
     quitSession: () => {
+      // A discarded run leaves no ground behind. `savedSessionId` is the whole test: it is set the
+      // moment the session row exists, so null means nothing reached the journal and these points
+      // name a session that never happened. They would sit in `gps_points` until some later home
+      // mount happened to sweep them, and until then they were leagues in the village for a walk
+      // the hero threw away. The recovery banner's own discard already did this; the victory
+      // screen's did not.
+      const { sessionUuid, savedSessionId } = get();
+      if (sessionUuid !== null && savedSessionId === null) {
+        deletePoints(sessionUuid).catch((e) => reportError("session.discardPoints", e));
+      }
+
       set({
         quest: null,
         status: "idle",
@@ -827,6 +921,7 @@ export const useSessionStore = create<SessionState>()(
         pricing: {
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
+          style: currentEx.exercise.style,
         },
         performedAt: new Date(),
       };
@@ -1010,6 +1105,28 @@ export const useSessionStore = create<SessionState>()(
     },
 
     saveSession: async (feedback) => {
+      // What the reducer credited, read before `end()` and before anything else can touch it.
+      // This, not a sum over `gps_points`, is what the road is paid in: the raw sum counts drift
+      // while the hero stood still and counts the length of a teleport the reducer broke the line
+      // at, so the village would grow by a number the recap never showed. See `db/gps.ts`.
+      const ground = measureGround(get().quest);
+
+      // The ground stops being covered here, not when the hero taps Continue.
+      //
+      // `end()` used to live only in `quitSession`, and finishing a session does not go through
+      // it: the last set sets `status: "finished"`, VictoryView mounts and saves, and quitting
+      // happens later or never. So between DONE and Continue the service kept its wake lock and
+      // its 1 Hz GPS, and every fix in that window was written under the finished session's uuid
+      // — the recap would draw the walk home as part of the outing, and `durationSeconds` and
+      // the map would disagree about the same run. Worse, "view the village" navigates away
+      // without quitting at all, so the service ran until the process died.
+      //
+      // Idempotent, which matters: the victory screen retries this on failure.
+      await useExpeditionStore
+        .getState()
+        .end()
+        .catch((error: unknown) => reportError("session.endTracking", error));
+
       const {
         quest,
         userLevel,
@@ -1025,22 +1142,13 @@ export const useSessionStore = create<SessionState>()(
       if (!quest || !startTime) throw new Error("No active session");
 
       const measuredSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+      const { durationSeconds, effortCeilingSeconds } = sessionClock({
+        quest,
+        ground,
+        measuredSeconds,
+        restTakenSeconds,
+      });
 
-      // Nothing pauses when the app goes to the background — there is no `AppState` listener in
-      // this project — so a session left open overnight measures nine hours, takes the
-      // "longest session" record and unlocks both long-session achievements. XP no longer reads
-      // this as a source, but `checkForNewRecords` and `checkForNewAchievements` still do.
-      // ponytail: twice the quest's own estimate is the ceiling. A real session that genuinely
-      //           runs past it loses the surplus from its journal entry only; if anyone ever
-      //           reports that, the fix is an AppState listener that banks background time as
-      //           pause, not a bigger multiplier.
-      const durationSeconds = Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
-
-      // XP is paid for the work in `results`; the clock only says how much of it could have been
-      // real. Rest comes out of that window along with explicit pauses — otherwise camping the
-      // rest screen raises the ceiling that fabricated results then fill, which is the very bug
-      // this replaced. Clamped at zero: a hero who skips every rest still gets their own effort.
-      const effortCeilingSeconds = Math.max(0, durationSeconds - restTakenSeconds);
       const sets = toXpSets(quest, results);
       let xpEarned = computeSessionXp({ sets, effortCeilingSeconds, userLevel });
 
@@ -1075,6 +1183,7 @@ export const useSessionStore = create<SessionState>()(
         // minted a second one at save time, and the GPS points filed under the first would
         // belong to a session that, as far as any query is concerned, never happened.
         uuid: sessionUuid ?? undefined,
+        leaguesM: ground.leaguesM,
         durationSeconds,
         xpEarned,
         feedback,
@@ -1240,6 +1349,13 @@ useSessionStore.subscribe(
 
     // Debounce saves - only save when exercise/round changes or on pause
     const hasProgressed =
+      // The first second counts as progress. Everything below is a *change* to a session that
+      // was already written down, so a run that never reaches its second exercise was never
+      // written down at all: an expedition is one round of one movement with no rest, so nothing
+      // here ever fired for it and a walk the app was killed during could not be resumed — and
+      // its trace, having no snapshot to name it, was swept as an orphan by the very hook that
+      // exists to save it. Strength quests had the same hole for their opening set.
+      prev.status === "countdown" ||
       curr.currentRoundIndex !== prev.currentRoundIndex ||
       curr.currentExerciseIndex !== prev.currentExerciseIndex ||
       curr.resultsCount !== prev.resultsCount ||

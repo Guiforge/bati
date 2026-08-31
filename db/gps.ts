@@ -1,4 +1,4 @@
-import { eq, notInArray, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { LocationFix } from "@/modules/bati-location";
 import { db, schema } from "./client";
 
@@ -87,18 +87,20 @@ export async function hasPoints(sessionId: string): Promise<boolean> {
 /**
  * Leagues: the second currency, in metres.
  *
- * Metres and never seconds, and never a column holding both — an hour's walk at 3600 beside a
- * 3 km run at 3000 would land within a fifth of each other by accident, which is the unit-mixing
- * bug `db/workUnits.ts` exists to correct, one storey up. See docs/designs/expeditions.md.
+ * Summed over *sessions* rather than over fixes, and that is not a detail. A
+ * `SUM(distFromPrevCm)` is exactly the sum `src/gps/track.ts` refuses: it counts drift while the
+ * hero stood still, and it counts the length of a teleport the reducer broke the line at. It
+ * also counted points no session owned — a run in progress, or one discarded before the next
+ * sweep. One outing had two lengths, and the larger one grew the village.
  *
- * Its own query rather than `getStyleVolumes`, which reads `expedition` as 0 by design: that is
- * the point of two currencies. Nothing here ever becomes a rep-equivalent.
+ * `completed_sessions.leaguesM` is what the reducer decided, written once at save. Metres and
+ * never seconds; see docs/designs/expeditions.md.
  */
 export async function totalLeaguesM(): Promise<number> {
   const rows = await db
-    .select({ cm: sql<number>`coalesce(sum(${gpsPoints.distFromPrevCm}), 0)` })
-    .from(gpsPoints);
-  return (rows[0]?.cm ?? 0) / 100;
+    .select({ m: sql<number>`coalesce(sum(${completedQuest.leaguesM}), 0)` })
+    .from(completedQuest);
+  return rows[0]?.m ?? 0;
 }
 
 /**
@@ -109,12 +111,15 @@ export async function totalLeaguesM(): Promise<number> {
  * writer for a fact the data already carries.
  */
 export async function orphanedSessionIds(): Promise<string[]> {
-  const known = await db.select({ uuid: completedQuest.uuid }).from(completedQuest);
-  const uuids = known.map((r) => r.uuid).filter((u): u is string => u !== null);
+  // A subquery rather than reading every uuid into JS and building a `NOT IN (...)` from it: that
+  // list grows one entry per session for the life of the install, and this runs on every home
+  // mount.
   const rows = await db
     .selectDistinct({ sessionId: gpsPoints.sessionId })
     .from(gpsPoints)
-    .where(uuids.length === 0 ? undefined : notInArray(gpsPoints.sessionId, uuids));
+    .where(
+      sql`${gpsPoints.sessionId} not in (select ${completedQuest.uuid} from ${completedQuest} where ${completedQuest.uuid} is not null)`,
+    );
   return rows.map((r) => r.sessionId);
 }
 

@@ -74,15 +74,46 @@ describe("db/gps", () => {
     expect(await g.pointsOf("s2")).toHaveLength(2);
   });
 
-  test("leagues are metres, summed from every expedition", async () => {
-    const g = gps();
-    await g.appendPoints("s1", [
-      fix({ t: 1000, distFromPrev: 0 }),
-      fix({ t: 2000, distFromPrev: 1.4 }),
-      fix({ t: 3000, distFromPrev: 1.6 }),
-    ]);
-    await g.appendPoints("s2", [fix({ t: 1000, distFromPrev: 7 })]);
-    expect(await g.totalLeaguesM()).toBeCloseTo(10, 2);
+  /**
+   * The road is paid what the reducer credited, not what the receiver reported. Those are two
+   * different numbers, and the difference is the bug: a phone flat on a table logs 6 m every 30 s
+   * (`__tests__/gps-track.test.ts`), so a raw `SUM(distFromPrevCm)` invents half a kilometre over
+   * a coffee stop and grows the village by ground the recap correctly refuses to draw.
+   */
+  describe("leagues", () => {
+    const outing = (uuid: string, leaguesM: number | null) =>
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, uuid, leaguesM) VALUES ('medium', 10, ?, ?, ?)",
+        )
+        .run(Date.now(), uuid, leaguesM);
+
+    test("are metres, summed over every session that credited some", async () => {
+      outing("s1", 3);
+      outing("s2", 7);
+      expect(await gps().totalLeaguesM()).toBe(10);
+    });
+
+    test("ignore the sessions that covered no ground", async () => {
+      outing("gym", null);
+      outing("walk", 2400);
+      expect(await gps().totalLeaguesM()).toBe(2400);
+    });
+
+    test("do not count a fix the reducer threw away", async () => {
+      const g = gps();
+      // Two hundred metres of drift on the wire, twelve credited by the reducer.
+      await g.appendPoints("s1", [
+        fix({ t: 1000, distFromPrev: 0 }),
+        fix({ t: 2000, distFromPrev: 200 }),
+      ]);
+      outing("s1", 12);
+      expect(await g.totalLeaguesM()).toBe(12);
+    });
+
+    test("are zero before the first outing", async () => {
+      expect(await gps().totalLeaguesM()).toBe(0);
+    });
   });
 
   describe("a run the app died in the middle of", () => {
@@ -138,7 +169,7 @@ describe("db/gps", () => {
         await g.appendPoints("b", [fix({ t: 2000 })]);
 
         expect(await g.sweepOrphanedPoints(null)).toBe(2);
-        expect(await g.totalLeaguesM()).toBe(0);
+        expect(await g.orphanedSessionIds()).toEqual([]);
       });
     });
 
@@ -147,7 +178,7 @@ describe("db/gps", () => {
       await g.appendPoints("orphan", [fix({ t: 1000 }), fix({ t: 2000 })]);
       await g.deletePoints("orphan");
       expect(await g.pointsOf("orphan")).toEqual([]);
-      expect(await g.totalLeaguesM()).toBe(0);
+      expect(await g.orphanedSessionIds()).toEqual([]);
     });
   });
 });

@@ -302,7 +302,26 @@ Play internal track needs the Data Safety form updated before the next upload.
    moved 0.10 MiB. So the estimate held, and the consequence is worth writing down: the
    remaining 4.84 MiB is enough for the screens, the exporter and the service, and **not**
    enough for a second native dependency. The next one costs a ratchet conversation.
-4. Module: foreground service + listener + events (2 d human / 0.5 d CC), app in foreground.
+4. ~~Module: foreground service + listener + events.~~ **Written 2026-08-31**, and written is
+   all it is. It compiles, type-checks, lints, and the suite is green, but **no device is
+   attached, so not one fix has ever arrived through this code.** Nothing below is proven, and
+   step 5 is what proves it:
+
+   - that a fix arrives at all — `requestLocationUpdates` and the whole `onLocationChanged`
+     path have never executed;
+   - `startForeground` with `FOREGROUND_SERVICE_TYPE_LOCATION` succeeding on Android 14+, and
+     the `SecurityException` branch on a revoked grant;
+   - the notification: icon, the tap-to-return intent, and whether state changes update it in
+     place;
+   - the wake lock surviving Doze across a 45-minute screen-off session;
+   - the `START_STICKY` orphan path end to end — that the OS redelivers a null intent, that
+     `startForeground` from a system restart is not refused as a background start, and that
+     `stopSelf()` before `startForeground` on the permission-denied branch does not trip the
+     "did not then call startForeground" crash on older releases;
+   - the two-minute orphan timer runs on `Handler.postDelayed`, whose clock does not advance in
+     deep sleep. Deliberate — an alarm would need the wake-up this design is trying to avoid —
+     so on a sleeping phone the stop arrives late, costing a notification and never a wake lock;
+   - `requestPermission` returning `undetermined` when the hero grants approximate only.
 5. Field test T5 (needs a GrapheneOS or /e/OS phone).
 6. `gps_points` migration, codec, service-side filter thresholds, session store aggregates,
    and the dev-only test-provider replay harness — a recorded trace replayed through the real

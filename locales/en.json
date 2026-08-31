@@ -201,7 +201,7 @@
     "gallery_subtitle": "Single workouts — pick one and go",
     "details_title": "Quest",
     "count": "{{count}} quests",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "load_error": "Failed to load",
     "retry": "Retry",
     "start_error": "Could not start the quest",
@@ -338,7 +338,7 @@
     "damage_dealt": "Damage Dealt",
     "critical_hit": "CRITICAL HIT!",
     "weakness_bonus": "Weakness!",
-    "resistance_penalty": "Resisted...",
+    "resistance_penalty": "Resisted…",
     "fight_intro": "A powerful foe blocks your path.",
     "weakness": "Weakness",
     "resistance": "Resistance",
@@ -395,7 +395,7 @@
     "delete_confirm_body": "You have never used it, so nothing else changes.",
     "delete_failed": "Could not delete the movement.",
     "details_title": "Exercise",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "load_error": "Failed to load exercise",
     "retry": "Retry",
     "not_found": "Exercise not found",
@@ -671,7 +671,7 @@
     "new_unlocks": "{{count}} Achievements Unlocked!"
   },
   "chart": {
-    "loading": "Loading chart...",
+    "loading": "Loading chart…",
     "error": "Failed to load chart",
     "no_data": "No data yet",
     "complete_more": "Complete more workouts to see your progress!",
@@ -695,8 +695,8 @@
     "increase": "Increase {{label}}",
     "language_en": "English",
     "language_fr": "French",
-    "saving": "Saving...",
-    "loading": "Loading...",
+    "saving": "Saving…",
+    "loading": "Loading…",
     "error": "Something went wrong",
     "retry": "Retry",
     "go_back": "Go back",
@@ -710,7 +710,7 @@
     "off": "Off"
   },
   "splash": {
-    "loading": "Building your village..."
+    "loading": "Building your village…"
   },
   "village": {
     "title": "My Village",
@@ -808,7 +808,7 @@
     "preview_confirm": "Start This Plan",
     "preview_regenerate": "Generate New Plan",
     "preview_empty": "No sessions planned",
-    "generating_plan": "Creating your plan..."
+    "generating_plan": "Creating your plan…"
   },
   "errors": {
     "save_session_failed": "Failed to save workout. Please try again.",

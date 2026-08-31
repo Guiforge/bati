@@ -176,18 +176,17 @@ Source layers this style touches: `water`, `waterway`, `landcover`, `landuse`, `
 `poi`, `housenumber`, `boundary`, `aeroway`, `aerodrome_label`, `water_name`, `mountain_peak`,
 `park`.
 
-**Decided 2026-08-31: VersaTiles, Shortbread schema.** The table above describes OpenFreeMap
-and its filters were transcribed from the style OpenFreeMap actually serves, so **the whole
-appendix has to be retranscribed before a line of the real style is written** — water becomes
-`ocean` plus `water_polygons` plus `water_lines`, roads become `streets`, buildings become
-`buildings`. That cost was accepted for one reason: relief. OpenFreeMap's only terrain is
-Natural Earth capped at zoom 6, useless at the zoom a recap sits at, so hillshade there would
-mean a second host and the end of the one-destination promise. VersaTiles serves
-`hillshade-vectors` from the same host, which is the only route to a map of an outing that
-looks like ground rather than streets. EU hosting and a CC0 schema that asks no attribution of
-its own came free with it.
+**Decided 2026-08-31: OpenFreeMap, OpenMapTiles schema** — the table above, unchanged, and the
+appendix's filters stay valid because they were transcribed from the style OpenFreeMap actually
+serves. VersaTiles was chosen first and reversed within the hour, so the reason is written down
+rather than left as a silent flip: its draw was serving `hillshade-vectors` from the same host,
+which is the only route to terrain that keeps one network destination. That buys relief the
+recap does not have today and may never need, and it costs rewriting every `source-layer` and
+every filter before a line of the real style exists. Relief is a want; a style that can be
+written now is the feature. If terrain ever becomes the thing the map is missing, this is the
+decision to reopen, and the cost of reopening it is exactly the cost avoided here.
 
-The original framing, kept because it is the reason the decision had to come first: If the host flips to VersaTiles, the schema flips
+The framing, kept because it is the reason the decision had to come first:The original framing, kept because it is the reason the decision had to come first: If the host flips to VersaTiles, the schema flips
 to Shortbread, where water is `ocean` plus `water_polygons` plus `water_lines`, roads are
 `streets`, and buildings are `buildings`. Every layer below would be rewritten. **Choose the
 host before writing the style, not after.** The trade is real and not obvious: OpenFreeMap

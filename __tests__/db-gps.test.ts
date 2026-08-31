@@ -1,0 +1,114 @@
+import type { LocationFix } from "@/modules/bati-location";
+import { clientMock, createTestDb } from "./helpers/testDb";
+
+const fix = (over: Partial<LocationFix> & { t: number }): LocationFix => ({
+  lat: 48.472781,
+  lon: -2.494307,
+  ele: 114.6,
+  acc: 3.79,
+  speed: 1.42,
+  bearing: 90,
+  distFromPrev: 0,
+  ...over,
+});
+
+describe("db/gps", () => {
+  const t = createTestDb();
+
+  beforeAll(() => {
+    jest.resetModules();
+    jest.doMock("../db/client", () => clientMock(t));
+  });
+
+  afterAll(() => t.close());
+
+  beforeEach(() => {
+    t.sqlite.exec("DELETE FROM gps_points");
+    t.sqlite.exec("DELETE FROM completed_sessions");
+  });
+
+  function gps() {
+    return require("../db/gps") as typeof import("../db/gps");
+  }
+
+  // The reason the codec exists at all: four consumers, and one of them dividing by 1e6.
+  test("a fix survives the round trip through scaled integers", () => {
+    const { encode, decode } = gps();
+    const original = fix({ t: 1_760_000_000_000 });
+    const back = decode(encode("s1", original));
+
+    expect(back.lat).toBeCloseTo(original.lat, 6);
+    expect(back.lon).toBeCloseTo(original.lon, 6);
+    expect(back.ele).toBeCloseTo(114.6, 1);
+    expect(back.acc).toBeCloseTo(3.8, 1);
+    expect(back.speed).toBeCloseTo(1.42, 2);
+  });
+
+  test("a fix with no altitude and no speed keeps its nulls rather than inventing zeroes", () => {
+    const { encode, decode } = gps();
+    const back = decode(encode("s1", fix({ t: 1, ele: null, speed: null })));
+    expect(back.ele).toBeNull();
+    expect(back.speed).toBeNull();
+  });
+
+  test("points come back in time order, whatever order they went in", async () => {
+    const g = gps();
+    await g.appendPoints("s1", [fix({ t: 3000 }), fix({ t: 1000 }), fix({ t: 2000 })]);
+    expect((await g.pointsOf("s1")).map((p) => p.t)).toEqual([1000, 2000, 3000]);
+  });
+
+  // The system clock steps backwards when a phone syncs time. One duplicate must cost one point,
+  // never the batch: a trace that stops mid-run for an unreported reason is the worse failure.
+  test("a duplicate timestamp costs one point, not the whole batch", async () => {
+    const g = gps();
+    await g.appendPoints("s1", [fix({ t: 1000 }), fix({ t: 2000 })]);
+    await g.appendPoints("s1", [fix({ t: 2000 }), fix({ t: 3000 }), fix({ t: 4000 })]);
+    expect((await g.pointsOf("s1")).map((p) => p.t)).toEqual([1000, 2000, 3000, 4000]);
+  });
+
+  test("two sessions do not read each other's ground", async () => {
+    const g = gps();
+    await g.appendPoints("s1", [fix({ t: 1000 })]);
+    await g.appendPoints("s2", [fix({ t: 1000 }), fix({ t: 2000 })]);
+    expect(await g.pointsOf("s1")).toHaveLength(1);
+    expect(await g.pointsOf("s2")).toHaveLength(2);
+  });
+
+  test("leagues are metres, summed from every expedition", async () => {
+    const g = gps();
+    await g.appendPoints("s1", [
+      fix({ t: 1000, distFromPrev: 0 }),
+      fix({ t: 2000, distFromPrev: 1.4 }),
+      fix({ t: 3000, distFromPrev: 1.6 }),
+    ]);
+    await g.appendPoints("s2", [fix({ t: 1000, distFromPrev: 7 })]);
+    expect(await g.totalLeaguesM()).toBeCloseTo(10, 2);
+  });
+
+  describe("a run the app died in the middle of", () => {
+    test("is found by having points and no session", async () => {
+      const g = gps();
+      await g.appendPoints("orphan", [fix({ t: 1000 })]);
+      expect(await g.orphanedSessionIds()).toEqual(["orphan"]);
+    });
+
+    test("stops being an orphan once its session lands", async () => {
+      const g = gps();
+      await g.appendPoints("kept", [fix({ t: 1000 })]);
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, uuid) VALUES ('medium', 10, ?, ?)",
+        )
+        .run(Date.now(), "kept");
+      expect(await g.orphanedSessionIds()).toEqual([]);
+    });
+
+    test("and can be thrown away, which is the only thing it ever wrote", async () => {
+      const g = gps();
+      await g.appendPoints("orphan", [fix({ t: 1000 }), fix({ t: 2000 })]);
+      await g.deletePoints("orphan");
+      expect(await g.pointsOf("orphan")).toEqual([]);
+      expect(await g.totalLeaguesM()).toBe(0);
+    });
+  });
+});

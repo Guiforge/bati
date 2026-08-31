@@ -267,7 +267,11 @@ without knowing how far — the RPG justification for "no objective", at the cos
   `providerEnabled` are separate events. A phone in a pocket with no sky credits time it cannot
   prove, and that is a deliberate bet on the hero: a training app that tells someone they did
   not walk through a forest is wrong even when its sensors are right.
-- **Tile host: VersaTiles**, Shortbread schema. See `map-immersion.md`.
+- **Tile host: OpenFreeMap**, OpenMapTiles schema. Reversed from VersaTiles within the hour:
+  VersaTiles serves hillshade from the same host, which is the only route to terrain on one
+  network destination, but it costs rewriting every layer of a style that is already written
+  against OpenFreeMap. Relief is a want; a style that can be written now is the feature. See
+  `map-immersion.md`.
 - **v2 stops after the road.** Storage, the session screen, the recap map and the
   `leagues`-driven building. The stopwatch (leaving with no target at all) and the
   anti-task-killer screen are v2.1: the first needs the duration clamp solved, and the second

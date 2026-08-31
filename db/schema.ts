@@ -899,3 +899,48 @@ export const villageStats = sqliteTable("village_stats", {
   highestBuildingLevel: int().notNull().default(1),
   updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
 });
+
+// ------------------------------------------------------------
+// Expeditions: the ground covered
+// ------------------------------------------------------------
+
+/**
+ * One accepted GPS fix, as it came off the receiver.
+ *
+ * Raw on purpose. The filters in `src/gps/track.ts` are a reading of this table, not a gate in
+ * front of it: a rule tuned against real data cannot be re-tuned once the data was recorded
+ * through it. So a teleport, a paused stretch and a drifting stop are all in here, and it is
+ * the reducer's job to say what they meant.
+ *
+ * `WITHOUT ROWID` with `(sessionId, t)` as the key: this is the one table in the app that grows
+ * per second rather than per set, and the rows are only ever read in time order for one session.
+ * About 180 kB an hour at 1 Hz, against roughly 450 kB for the same rows in a table with an
+ * autoincrement id and a secondary index nothing would use.
+ *
+ * Scaled integers, and the scale is in the column name so nothing has to remember it. Floats
+ * were the alternative and were refused for the reason `lat_e7` exists everywhere else in this
+ * business: 1e-7 degrees is about a centimetre, which is far finer than any consumer receiver,
+ * and an integer cannot quietly lose the last digit on the way through a JSON bridge.
+ */
+export const gpsPoints = sqliteTable(
+  "gps_points",
+  {
+    /** The session's uuid, minted at session start — see `SavedSessionState`. */
+    sessionId: text().notNull(),
+    /** Epoch milliseconds from `Location.getTime()`, the system clock. */
+    t: int().notNull(),
+    latE7: int().notNull(),
+    lonE7: int().notNull(),
+    /** Centimetres. Null when the fix carried no altitude, which is common indoors. */
+    eleCm: int(),
+    /** Decimetres of horizontal accuracy. Never null: a fix without it is dropped natively. */
+    accDm: int().notNull(),
+    /** Centimetres per second. Null when the fix carried no speed. */
+    speedCms: int(),
+    /** Metres from the previous accepted fix, as `Location.distanceTo` measured it. */
+    distFromPrevCm: int().notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.sessionId, table.t] }),
+  }),
+);

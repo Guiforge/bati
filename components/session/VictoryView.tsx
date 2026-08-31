@@ -34,6 +34,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
+import { isTrivialSession } from "@/src/session/trivial";
 import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -131,6 +132,8 @@ export function VictoryView() {
 
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saveError, setSaveError] = useState(false);
+  /** Null until a short session is decided; the auto-save waits on it. */
+  const [keepShort, setKeepShort] = useState<boolean | null>(null);
   const [feedback, setFeedback] = useState<FeedbackCode | null>(null);
   const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
@@ -166,11 +169,16 @@ export function VictoryView() {
     }
   }, [saveSession, success, showError, t]);
 
+  // Short enough to be a false start rather than an outing. A time set records whatever the
+  // clock said when the hero tapped done, so five seconds outside writes a row that counts for
+  // the streak and the eight-week oath. Asking is the whole rule: see src/session/trivial.ts.
+  const tooShort = isTrivialSession(durationSeconds) && keepShort !== true;
+
   useEffect(() => {
-    if (savedRef.current) return;
+    if (savedRef.current || tooShort) return;
     savedRef.current = true;
     runSave().catch((e) => reportError("session.save", e));
-  }, [runSave]);
+  }, [runSave, tooShort]);
 
   // The feeling can be tapped while the save is still in flight, but persisting it needs a
   // session id that only exists once `result` lands. Writing it from the tap handler meant the
@@ -471,8 +479,38 @@ export function VictoryView() {
           </XStack>
         </Card>
 
+        {tooShort ? (
+          <YStack width="100%" maxW={520} items="center" gap="$3" py="$4">
+            <Text color="$text" fontSize={18} fontWeight="700">
+              {t("session.summary_too_short_title")}
+            </Text>
+            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+              {t("session.summary_too_short_body", { seconds: durationSeconds })}
+            </Text>
+            <AppButton onPress={() => setKeepShort(true)}>
+              <Text color="$text" fontSize={16} fontWeight="700">
+                {t("session.summary_too_short_keep")}
+              </Text>
+            </AppButton>
+            <AppButton
+              backgroundColor="$surface2"
+              onPress={() => {
+                // Discard is the existing quit path: nothing was written, so there is nothing
+                // to undo, and the session state has to be cleared either way. Home rather than
+                // back, because back from here is the session that just ended.
+                quitSession();
+                router.replace("/");
+              }}
+            >
+              <Text color="$text" fontSize={16} fontWeight="700">
+                {t("session.summary_too_short_discard")}
+              </Text>
+            </AppButton>
+          </YStack>
+        ) : null}
+
         {/* Saving / error / rewards */}
-        {!result && !saveError && (
+        {!result && !saveError && !tooShort && (
           <YStack items="center" gap="$3" py="$6">
             <ActivityIndicator />
             <Text color="$textSecondary" fontSize={14}>

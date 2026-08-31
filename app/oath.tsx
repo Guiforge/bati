@@ -28,6 +28,7 @@ import {
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { useHaptics } from "@/hooks/useHaptics";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -272,12 +273,18 @@ export default function OathScreen() {
 
   const visibleExercises = useMemo(() => {
     const needle = filter.trim().toLowerCase();
+    // An expedition converts to zero rep-equivalents by design (db/workUnits.ts), so a volume
+    // oath sworn on one would sit at 0/1000 for as long as the hero kept it — a target with a
+    // bar that cannot move. Only *this* metric is affected: `exercise_pr` reads the best raw
+    // result, so "my longest walk in one go" already works and stays offered.
+    const swearable =
+      metric === "exercise_volume" ? exercises.filter((e) => e.style !== NON_REP_STYLE) : exercises;
     const matching = needle
-      ? exercises.filter((e) => exerciseLabel(e).toLowerCase().includes(needle))
-      : exercises;
+      ? swearable.filter((e) => exerciseLabel(e).toLowerCase().includes(needle))
+      : swearable;
     // Long list on a phone mid-session: cap it and let the filter do the work.
     return matching.slice(0, 30);
-  }, [exercises, filter, exerciseLabel]);
+  }, [exercises, filter, exerciseLabel, metric]);
 
   // Exercise presets need a real id; drop any whose seed exercise isn't loaded yet/present.
   const presetRows = useMemo(() => {

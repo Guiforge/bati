@@ -293,7 +293,9 @@
     "rounds_other": "{{count}} rounds",
     "exercises_one": "{{count}} exercise",
     "exercises_other": "{{count}} exercises",
-    "filter_outside": "Outside"
+    "filter_outside": "Outside",
+    "favourite_add": "Pin to the top",
+    "favourite_remove": "Unpin"
   },
   "adventures": {
     "gallery_title": "Adventures",

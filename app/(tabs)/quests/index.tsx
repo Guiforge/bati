@@ -5,7 +5,7 @@ import type { TFunction } from "i18next";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Platform } from "react-native";
+import { Platform, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
@@ -14,7 +14,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Dumbbell, Map as MapIcon, Plus } from "@/components/icons";
+import { Dumbbell, Map as MapIcon, Plus, Star } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
@@ -23,11 +23,13 @@ import {
 import {
   DURATION_BUCKETS,
   type DurationBucket,
+  galleryOrder,
   matchesFilters,
   NO_FILTERS,
   type QuestFilters,
   toggleInSet,
 } from "@/constants/questFilters";
+import { rawColors } from "@/constants/rawColors";
 import {
   estimateQuestTemplateSeconds,
   estimateQuestTemplateXp,
@@ -39,6 +41,7 @@ import {
 } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
+import { getFavouriteQuestIds, toggleFavouriteQuest } from "@/db/favourites";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import type { QuestTemplate } from "@/db/quests";
@@ -65,6 +68,19 @@ function questEmoji(rounds: number, exerciseCount: number) {
 }
 
 const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
+/**
+ * The pin sits on the art, so it needs its own ground to stay legible over a bright cover.
+ * A plain object rather than Tamagui props: this is a bare `Pressable`, deliberately, because a
+ * Tamagui `Button` inside the card's own press target swallows the card's tap on Android.
+ */
+const FAVOURITE_STYLE = {
+  position: "absolute",
+  right: 12,
+  bottom: 12,
+  padding: 8,
+  borderRadius: 999,
+  backgroundColor: rawColors.bgOverlay,
+} as const;
 
 /** No path means no cover: the muscle tint carries the banner instead. Anything else — a bundled
  *  key, a seeded path, a hero's `data:` photo — `getQuestAsset` already knows. */
@@ -102,6 +118,10 @@ type QuestMeta = {
   heroLabel: string | null;
   /** "Outside" on an expedition, null otherwise. Same reason as `heroLabel` for living here. */
   outsideLabel: string | null;
+  /** Whether the hero pinned this quest to the top of their own gallery. */
+  favourite: boolean;
+  /** What the star's screen reader says, which is the *action*, not the state. */
+  favouriteLabel: string;
 };
 
 function buildQuestMeta(
@@ -110,6 +130,7 @@ function buildQuestMeta(
   language: AppLanguage,
   t: TFunction,
   config: QuestConfig | null,
+  favourite: boolean,
 ): QuestMeta {
   const equipment = new Set<EquipmentCode>();
   let outside = false;
@@ -169,12 +190,26 @@ function buildQuestMeta(
     // The archetype line above reads "Metabolic" on all three outings, which is true of their
     // shape and says nothing about where they happen. This is the word that does.
     outsideLabel: outside ? t("quests.filter_outside", "Outside") : null,
+    favourite,
+    // The action, not the state: a screen reader announcing "pinned" on a button leaves the hero
+    // guessing what pressing it does. `accessibilityState.selected` carries the state.
+    favouriteLabel: favourite
+      ? t("quests.favourite_remove", "Unpin")
+      : t("quests.favourite_add", "Pin to the top"),
   };
 }
 
 // No manual memo/useCallback: the React Compiler (app.json experiments.reactCompiler)
 // memoizes components and closures automatically.
-function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: number) => void }) {
+function QuestRow({
+  meta,
+  onPressQuest,
+  onToggleFavourite,
+}: {
+  meta: QuestMeta;
+  onPressQuest: (id: number) => void;
+  onToggleFavourite: (id: number) => void;
+}) {
   const q = meta.quest;
   const handlePress = () => onPressQuest(q.id);
 
@@ -216,6 +251,25 @@ function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: 
               {meta.heroLabel ? <Chip label={meta.heroLabel} tone="primary" /> : null}
             </XStack>
           ) : null}
+
+          {/* Bottom-right of the banner, clear of both chip stacks. Its own Pressable inside the
+              card's: tapping the star must never open the quest, which is the whole point of
+              being able to pin one without leaving the gallery. */}
+          <Pressable
+            onPress={() => onToggleFavourite(q.id)}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={meta.favouriteLabel}
+            accessibilityState={{ selected: meta.favourite }}
+            style={FAVOURITE_STYLE}
+          >
+            <Star
+              size={20}
+              color={meta.favourite ? "$resourceGold" : "$text"}
+              fill={meta.favourite ? rawColors.resourceGold : "transparent"}
+              strokeWidth={2.5}
+            />
+          </Pressable>
         </YStack>
 
         <YStack gap="$2" p="$4">
@@ -375,6 +429,7 @@ export default function QuestsGallery() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   // One bulk read alongside the templates — never per card, the list renders ~34 of them.
   const [configs, setConfigs] = useState<Map<number, QuestConfig>>(new Map());
+  const [favourites, setFavourites] = useState<ReadonlySet<number>>(new Set<number>());
 
   // Handlers below are plain closures on purpose: the React Compiler
   // (app.json experiments.reactCompiler) stabilizes them automatically.
@@ -410,12 +465,14 @@ export default function QuestsGallery() {
         : { status: "loading", quests: s.quests, exercisesById: s.exercisesById },
     );
     try {
-      const [quests, exercises, questConfigs] = await Promise.all([
+      const [quests, exercises, questConfigs, pinned] = await Promise.all([
         listQuestTemplates(),
         listExercises(),
         getAllQuestConfigs(),
+        getFavouriteQuestIds(),
       ]);
       setConfigs(questConfigs);
+      setFavourites(pinned);
       setState((s) => {
         // listQuestTemplates/listExercises are promise-cached: a warm cache returns the same
         // array identity. Bail so a tab refocus doesn't invalidate questMeta → filtered → list.
@@ -447,14 +504,21 @@ export default function QuestsGallery() {
   const quests = state.quests;
   const exercisesById = state.exercisesById;
 
-  // Hero quests lead. Seed order is authored — the gallery opens on a curated first card — so
-  // the rest keeps it rather than being re-sorted around them.
+  // Pinned quests lead, then the hero's own, then seed order. The rule itself lives in
+  // `constants/questFilters` beside `matchesFilters`, where it is pure and tested.
   const questMeta = useMemo(
     () =>
-      [...quests]
-        .sort((a, b) => Number(isUserQuest(b)) - Number(isUserQuest(a)))
-        .map((q) => buildQuestMeta(q, exercisesById, language, t, configs.get(q.id) ?? null)),
-    [exercisesById, quests, language, t, configs],
+      galleryOrder(quests, isUserQuest, favourites).map((q) =>
+        buildQuestMeta(
+          q,
+          exercisesById,
+          language,
+          t,
+          configs.get(q.id) ?? null,
+          favourites.has(q.id),
+        ),
+      ),
+    [exercisesById, quests, language, t, configs, favourites],
   );
 
   const availableMuscles = useMemo(() => {
@@ -555,8 +619,18 @@ export default function QuestsGallery() {
 
   const onPressQuest = (id: number) => router.push(`/quests/${id}` as never);
 
+  // The list does not re-sort under the hero's thumb. `favourites` feeds the star's own fill and
+  // the order the *next* visit opens in, and a card jumping to the top the instant it is pinned
+  // is how you lose the one you were reading. The gallery reloads on focus, so leaving and
+  // coming back is what applies it - which is also when "my quests are at the top" is useful.
+  const onToggleFavourite = useCallback((id: number) => {
+    toggleFavouriteQuest(id)
+      .then(setFavourites)
+      .catch((e: unknown) => reportError("quests.toggleFavourite", e));
+  }, []);
+
   const renderItem = ({ item }: { item: QuestMeta }) => (
-    <QuestRow meta={item} onPressQuest={onPressQuest} />
+    <QuestRow meta={item} onPressQuest={onPressQuest} onToggleFavourite={onToggleFavourite} />
   );
 
   return (

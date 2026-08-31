@@ -1,4 +1,5 @@
 import {
+  galleryOrder,
   matchesFilters,
   NO_FILTERS,
   type QuestFilters,
@@ -154,5 +155,41 @@ describe("the Outside dimension", () => {
     expect(matchesFilters(wardensRound, filters({ muscles: new Set<MuscleCode>(["legs"]) }))).toBe(
       false,
     );
+  });
+});
+
+/**
+ * The gallery's order, and mostly what it leaves alone.
+ *
+ * Seed order is authored: the gallery opens on a curated first card, and the catalogue below it
+ * is a sequence someone chose. Pinning is the hero's own thumb on that sequence, and it must lift
+ * exactly what they pinned without shuffling anything else on the way past.
+ */
+describe("galleryOrder", () => {
+  const q = (id: number) => ({ id });
+  const seed = [q(1), q(2), q(3), q(4), q(5)];
+  const mine = (x: { id: number }) => x.id === 4;
+  const ids = (list: { id: number }[]) => list.map((x) => x.id);
+
+  test("with nothing pinned, the hero's own quests lead and seed order is untouched", () => {
+    expect(ids(galleryOrder(seed, mine, new Set()))).toEqual([4, 1, 2, 3, 5]);
+  });
+
+  test("a pinned quest goes to the very top, above the hero's own", () => {
+    expect(ids(galleryOrder(seed, mine, new Set([3])))).toEqual([3, 4, 1, 2, 5]);
+  });
+
+  test("several pins keep their order relative to each other", () => {
+    expect(ids(galleryOrder(seed, mine, new Set([5, 2])))).toEqual([2, 5, 4, 1, 3]);
+  });
+
+  test("a pin on an id no quest has changes nothing", () => {
+    expect(ids(galleryOrder(seed, mine, new Set([999])))).toEqual([4, 1, 2, 3, 5]);
+  });
+
+  test("does not mutate the list it was handed", () => {
+    const original = [...seed];
+    galleryOrder(seed, mine, new Set([5]));
+    expect(seed).toEqual(original);
   });
 });

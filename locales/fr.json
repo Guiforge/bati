@@ -604,7 +604,9 @@
     "rounds_other": "{{count}} manches",
     "exercises_one": "{{count}} exercice",
     "exercises_other": "{{count}} exercices",
-    "filter_outside": "Dehors"
+    "filter_outside": "Dehors",
+    "favourite_add": "Épingler en tête",
+    "favourite_remove": "Retirer l'épingle"
   },
   "recovery": {
     "description": "Tu as une séance laissée en chemin.",

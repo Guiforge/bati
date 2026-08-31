@@ -80,3 +80,22 @@ export function toggleInSet<T>(set: Set<T>, value: T): Set<T> {
   if (!next.delete(value)) next.add(value);
   return next;
 }
+
+/**
+ * The gallery's own order: pinned first, then the hero's own quests, then seed order.
+ *
+ * Pure and here rather than inline in the screen, because the interesting part is what it does
+ * *not* do. Seed order is authored - the gallery opens on a curated first card - so both passes
+ * are stable sorts over a copy, and everything the hero has not touched keeps the order content
+ * gave it. One comparator with two terms would read as a single ranking; these are two separate
+ * claims, and "pinned beats authored" is about the hero rather than about the content.
+ */
+export function galleryOrder<T extends { id: number }>(
+  quests: readonly T[],
+  isMine: (quest: T) => boolean,
+  pinned: ReadonlySet<number>,
+): T[] {
+  return [...quests]
+    .sort((a, b) => Number(isMine(b)) - Number(isMine(a)))
+    .sort((a, b) => Number(pinned.has(b.id)) - Number(pinned.has(a.id)));
+}

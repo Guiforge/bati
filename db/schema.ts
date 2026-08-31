@@ -642,10 +642,11 @@ export const buildingCodes = [
   "fountain", // abs upgrade
   "observatory", // shoulders upgrade
   "barn", // legs upgrade
-  // Tier 4 - Legendary (boss rewards)
+  // Tier 4 - Legendary (deeds, not volume)
   "dragon_lair",
   "heroes_hall",
   "champion_arena",
+  "high_road", // leagues -> the village's reach
 ] as const;
 export type BuildingCode = (typeof buildingCodes)[number];
 
@@ -860,6 +861,21 @@ export const buildingDefinitions: Record<
     relatedMuscle: null,
     relatedStyle: null,
     unlockCondition: "Win 3 boss fights (replays count)",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
+  // The only building that is not a bigger number: it upgrades the village's *reach*.
+  //
+  // `relatedStyle` is deliberately null even though `expedition` is the style that feeds it. A
+  // `relatedStyle` here means "levelled by that style's work units", and expedition work units
+  // are zero forever by design (db/workUnits.ts, NON_REP_STYLE). The road answers to leagues,
+  // the second currency, and nothing converts between the two — docs/designs/expeditions.md.
+  high_road: {
+    tier: 4,
+    emoji: "🧭",
+    relatedMuscle: null,
+    relatedStyle: null,
+    unlockCondition: "Cover your first league beyond the walls",
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
   },

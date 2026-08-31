@@ -794,6 +794,7 @@
     "detail_bosses_driver": "{{count}} boss vaincus",
     "detail_adventures_driver": "{{count}} aventures terminées",
     "detail_victories_driver": "{{count}} victoires contre des boss",
+    "detail_leagues_driver": "{{count}} lieues parcourues au-delà des murs",
     "detail_unlock_muscle": "Entraîne {{muscle}} pour ériger ce bâtiment",
     "detail_unlock_style": "Fais un exercice de {{style}} pour ériger ce bâtiment",
     "detail_progress": "{{current}}/{{target}}",

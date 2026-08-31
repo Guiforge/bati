@@ -223,6 +223,8 @@ function BuildingDetail({
         return t("village.detail_adventures_driver", { count: building.metricValue });
       case "boss_victories":
         return t("village.detail_victories_driver", { count: building.metricValue });
+      case "leagues":
+        return t("village.detail_leagues_driver", { count: building.metricValue });
       default:
         return t("village.detail_bosses_driver", { count: building.metricValue });
     }

@@ -187,6 +187,29 @@ computed, or someone will "fix" it. Note this leaves the tier-2 *style* slot (th
 `wizard_tower` and `druid_grove` fill) deliberately empty for cardio: the narrative hole and the
 mechanical answer are in different places, on purpose.
 
+### The road — landed 2026-08-31
+
+**Shipped as `high_road`, "High Road" / "Grand Chemin".** Of the three names floated below,
+`road` alone was the plainest and `gate` collides with `castle_wall`, which is already the wall
+this village has; `stable` names a mount, and a mount is output. "High road" names the *way out*,
+which is what this building upgrades.
+
+It is a tier-4 building with driver `leagues`, in `TIER_4_DRIVERS` beside the legendary three. Not
+tier 2: a `relatedStyle` there means "levelled by that style's work units", and expedition work
+units are zero forever — the tier-2 style slot stays deliberately empty, as written below.
+
+**Its floors are still a guess, and are meant to be corrected.** `ROAD_FLOORS` in `db/village.ts`
+is `[1, 10, 30, 60, 100]` leagues, with `METRES_PER_LEAGUE = 1000` beside it as the one place that
+knows the scale. The reasoning is in the comment there: the seeded quests target 600-1200 s, a walk
+is roughly 1.4 m/s, so one outing on foot is about a league, and the table is `VOLUME_FLOORS`'
+shape divided by ten read as outings. Re-tune both constants against a first real total.
+
+What it did **not** cost, against the price below: no `resourceToBuilding` entry (leagues are not a
+`ResourceCode`) and no `constants/assetMap.ts` entry — `getBuildingIconAsset` falls through to
+the placeholder, and the art is logged in `docs/content/missing-image.md` §9b. What it did cost
+that the list missed: the two `toHaveLength(20)` assertions, `docs/screens/village.md`, and one
+locale key in each of `locales/en.json` and `locales/fr.json`.
+
 ### The road — v1.1, not v1
 A new building whose driver is `leagues`, using the `{ driver, floors }` shape that
 `TIER_4_DRIVERS` already has. Deferred so its floors can be chosen against real league totals

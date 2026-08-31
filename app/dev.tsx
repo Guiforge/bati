@@ -256,6 +256,19 @@ export default function DevScreen() {
 
         <Card p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
+            MapLibre spike
+          </Text>
+          <Paragraph fontSize="$2" color="$textSecondary">
+            Does the map renderer work on this RN + Fabric build. No basemap until INTERNET is
+            unblocked; the polyline is the part that answers the question.
+          </Paragraph>
+          <AppButton variant="secondary" onPress={() => router.push("/dev-map" as never)}>
+            Open map spike
+          </AppButton>
+        </Card>
+
+        <Card p="$4" gap="$3">
+          <Text fontSize="$4" fontWeight="700" color="$text">
             Onboarding
           </Text>
           <AppButton

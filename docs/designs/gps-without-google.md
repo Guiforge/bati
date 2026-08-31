@@ -227,9 +227,13 @@ permission ratchet would vouch for a dependency Bati does not control.
 
 1. Which tile host: OpenFreeMap (no key, CDN, OSM Liberty style) vs Versatiles (EU-hosted).
    Decide on rate limits and whether the host logs requests; that name goes in the policy.
-2. Does F-Droid's builder handle a local Expo module + prebuild? Nothing in the F-Droid docs
-   proves an Expo app has been built by their servers. Biggest residual risk of the project,
-   larger than the GPS work. Verify on a branch build before writing Kotlin.
+2. ~~Does the build carry a local Expo module?~~ **Answered locally, 2026-08-31.** Expo
+   autolinking discovers `modules/bati-location`, Gradle includes it as project
+   `:bati-location`, `:bati-location:compileReleaseKotlin` is green, and its six permissions
+   land in the merged release manifest matching `fdroid/expected-permissions.txt` exactly —
+   with `expo.autolinking.buildFromSource` on, which is the F-Droid condition. What remains is
+   narrower than the original question: whether *F-Droid's own builder* reproduces it. That is
+   now a recipe question, not an architecture one.
 3. Field test T5: 45 min, screen off, one loop walked then ridden, on a GrapheneOS or /e/OS
    phone. GPSLogger proves the capture call; nothing yet proves 45 minutes continuous.
 4. Battery: 5 to 12 %/h is extrapolated; measure in T5.
@@ -273,10 +277,21 @@ Play internal track needs the Data Safety form updated before the next upload.
    Client for the same mechanism in Apache-2.0 (copyable).
 3. Empty `modules/bati-location` with a manifest that declares the six permissions and a
    test justification, pushed to a branch, `workflow_dispatch` release build + F-Droid recipe
-   dry run. This answers open question 2 before any Kotlin. The build also carries
-   `@maplibre/maplibre-react-native` and one spike screen: the measured APK delta against the
-   size ratchet (review 8A) and proof the map renders on this RN + Fabric combination both
-   arrive before anything depends on MapLibre.
+   dry run. **Done 2026-08-31**, except the F-Droid-side reproduction and the on-device
+   render (no phone attached). Measured locally, release build, arm64-only, R8 on:
+
+   | | APK |
+   |---|---|
+   | with `modules/bati-location` only | 46.00 MiB |
+   | plus `@maplibre/maplibre-react-native` 11.3.7 | 50.16 MiB |
+   | **delta** | **4.16 MiB** |
+   | headroom left to the 55 MiB ratchet | 4.84 MiB |
+
+   Almost all of it is `lib/arm64-v8a/libmaplibre.so` — 10.04 MiB uncompressed, compressing to
+   roughly a third — plus 0.85 MiB of dex and 0.72 MiB in `libappmodules.so`. The JS bundle
+   moved 0.10 MiB. So the estimate held, and the consequence is worth writing down: the
+   remaining 4.84 MiB is enough for the screens, the exporter and the service, and **not**
+   enough for a second native dependency. The next one costs a ratchet conversation.
 4. Module: foreground service + listener + events (2 d human / 0.5 d CC), app in foreground.
 5. Field test T5 (needs a GrapheneOS or /e/OS phone).
 6. `gps_points` migration, codec, service-side filter thresholds, session store aggregates,

@@ -79,11 +79,16 @@ const ALLOWED: Record<string, string> = {
   // that uses them does. See docs/designs/gps-without-google.md.
   "android.permission.ACCESS_FINE_LOCATION":
     "modules/bati-location — the whole feature. Precise location from LocationManager's " +
-    "GPS_PROVIDER at 1 Hz; coarse location cannot measure a run.",
+    "GPS_PROVIDER at 1 Hz; coarse location cannot measure a run. Also declared by " +
+    "@maplibre/maplibre-react-native, for the show-me-on-the-map button the recap does not use: " +
+    "a second asker for a permission we already wanted, which is the quiet case this file exists " +
+    "to make loud. Nothing to strip — but if bati-location ever goes, this line goes with it and " +
+    "MapLibre's copy has to be removed rather than inherited.",
   "android.permission.ACCESS_COARSE_LOCATION":
     "modules/bati-location — not used, but declared: from API 31 Android refuses a FINE-only " +
     "runtime request, the pair has to be asked for together, and a permission requested at " +
-    "runtime must be in the manifest. The hero granting coarse only is turned away by the app.",
+    "runtime must be in the manifest. The hero granting coarse only is turned away by the app. " +
+    "@maplibre/maplibre-react-native declares it too, for the same unused button.",
   "android.permission.FOREGROUND_SERVICE_LOCATION":
     "modules/bati-location — the typed half of FOREGROUND_SERVICE since API 34. A service of " +
     "type `location` is also the one type Android 15 exempts from its foreground-service " +

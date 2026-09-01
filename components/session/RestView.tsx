@@ -174,6 +174,7 @@ export function RestView() {
           weaknessMuscle={bossFight.weaknessMuscle}
           resistanceMuscle={bossFight.resistanceMuscle}
           lastDamage={lastDamageResult}
+          resting
         />
       ) : (
         <YStack

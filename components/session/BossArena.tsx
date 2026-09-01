@@ -14,7 +14,7 @@ import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
-import { sessionArtHeight } from "./sessionArt";
+import { bossArtKind, sessionArtHeight } from "./sessionArt";
 
 type BossArenaProps = {
   currentHp: number;
@@ -41,6 +41,12 @@ type BossArenaProps = {
   } | null;
   /** Painted on the scrim over the art's base: the exercise while running, nothing while resting. */
   children?: ReactNode;
+  /**
+   * The fight is paused between sets, so the monster gives the screen back to the timer and takes
+   * the ordinary art slot (`sessionArt.ts`). Without it the rest column overflows and the
+   * set-review card is cut at the fold.
+   */
+  resting?: boolean;
 };
 
 /** How long the trail holds at the old HP before draining, and the HP hairline's own height. */
@@ -168,6 +174,7 @@ export function BossArena({
   resistanceMuscle,
   lastDamage,
   children,
+  resting = false,
 }: BossArenaProps) {
   const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
@@ -188,7 +195,7 @@ export function BossArena({
   const pulse = useEnragePulse(isEnraged && !isDown, reducedMotion);
   const [expanded, setExpanded] = useState(false);
 
-  const artHeight = sessionArtHeight(width, height, "boss");
+  const artHeight = sessionArtHeight(width, height, bossArtKind(resting));
   const trailPercent = getHpPercent(trailHp, totalHp);
   // The shiny floor keeps the gold visible even at phase 1, where the red rim would be off.
   const rimOpacity = Math.max(pulse ? look.rim * 0.55 : look.rim, shiny ? 0.25 : 0);

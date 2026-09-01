@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useWindowDimensions } from "react-native";
 import { Paragraph, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { sessionArtHeight } from "@/components/session/sessionArt";
+import { bossArtKind, sessionArtHeight } from "@/components/session/sessionArt";
 import { bossVoice } from "@/constants/bosses";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionStore } from "@/stores/session";
@@ -66,7 +66,13 @@ export function BossTauntOverlay() {
       transition={reducedMotion ? undefined : "bouncy"}
       enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
       exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
-      style={{ top: sessionArtHeight(width, height, "boss") - 8, right: 20, zIndex: 1000 }}
+      style={{
+        // The arena is shorter during a rest, so the bubble has to follow it or it hangs
+        // in mid-air over the timer. One function, two call sites, same answer.
+        top: sessionArtHeight(width, height, bossArtKind(status === "resting")) - 8,
+        right: 20,
+        zIndex: 1000,
+      }}
     >
       {/* The arena already shows the boss's real art — the bubble only needs its voice, and its
           tail points back up at the portrait. */}

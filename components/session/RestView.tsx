@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet } from "react-native";
@@ -133,14 +134,20 @@ export function RestView() {
       transition={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0 }}
     >
-      {/* Campfire scene behind everything, quiet enough for the timer to stay readable — same
-          low-opacity treatment AppBackground gives new_city. */}
-      <Image
-        source={restArt}
-        style={[StyleSheet.absoluteFill, { opacity: 0.3 }]}
-        contentFit="cover"
-        pointerEvents="none"
-      />
+      {/* Campfire scene behind everything, quiet enough for the timer to stay readable: the same
+          low-opacity treatment AppBackground gives new_city.
+
+          Not during a fight. The arena above is already a full-bleed painting, and a second one
+          bleeding through the column below it put an archer behind the boss's own timer. One
+          artwork owns a screen; here that is the monster. The phase colour carries the rest. */}
+      {bossFight ? null : (
+        <Image
+          source={restArt}
+          style={[StyleSheet.absoluteFill, { opacity: 0.3 }]}
+          contentFit="cover"
+          pointerEvents="none"
+        />
+      )}
       {/* The one view of the flow that had no pause: on iOS there is no hardware back, so
           mid-rest the session could not be paused at all. Same floating control as the
           running screen. */}
@@ -192,179 +199,206 @@ export function RestView() {
       )}
 
       <YStack flex={1} px="$4" gap="$4">
-        {/* Scrolls so the skip CTA below stays reachable — the timer, the set review and the
+        {/* Scrolls so the skip CTA below stays reachable: the timer, the set review and the
             up-next card are fixed-height siblings that never shrink, and a boss fight adds the
-            arena on top of them. */}
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1, justifyContent: "center", gap: 24 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Timer */}
-          <YStack items="center" gap="$2">
-            <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
-              {formatTime(remainingSeconds)}
-            </H1>
-            <Progress
-              value={Math.min(1, Math.max(0, progress)) * 100}
-              size="$4"
-              bg="$surface2"
-              borderWidth={1}
-              borderColor="$borderStrong"
-              rounded="$6"
-              width="100%"
-              style={{ maxWidth: 360 }}
-            >
-              <Progress.Indicator transition="quick" bg="$primary" />
-            </Progress>
-            <XStack gap="$3">
-              <Button
-                size="$3"
-                hitSlop={8}
-                bg="$surface"
+            arena on top of them.
+
+            Two intervals rather than one. The clock is the task and the two cards are what you
+            may do while it runs, so the cards sit close to each other and further from it. A
+            single 24 everywhere said all three were peers, which is the one thing they are not,
+            and it spent twelve points of a column that had none to spare. */}
+        <YStack flex={1}>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center", gap: 28 }}
+          >
+            {/* Timer */}
+            <YStack items="center" gap="$2">
+              <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
+                {formatTime(remainingSeconds)}
+              </H1>
+              <Progress
+                value={Math.min(1, Math.max(0, progress)) * 100}
+                size="$4"
+                bg="$surface2"
                 borderWidth={1}
                 borderColor="$borderStrong"
-                onPress={() => handleAddRestTime(10)}
+                rounded="$6"
+                width="100%"
+                style={{ maxWidth: 360 }}
               >
-                <Text fontWeight="700" color="$text">
-                  +10s
-                </Text>
-              </Button>
-              <Button
-                size="$3"
-                hitSlop={8}
-                bg="$surface"
-                borderWidth={1}
-                borderColor="$borderStrong"
-                onPress={() => handleAddRestTime(30)}
-              >
-                <Text fontWeight="700" color="$text">
-                  +30s
-                </Text>
-              </Button>
-            </XStack>
-          </YStack>
-
-          {/* Last Set Review — hidden after a skip. A skipped set writes no result, so
-            `results.at(-1)` is a set from an earlier round: the stepper would silently correct
-            something the hero is not looking at. */}
-          {!!lastResult && !lastSetSkipped && (
-            <YStack
-              bg="$surface"
-              p="$4"
-              rounded="$6"
-              borderWidth={1}
-              borderColor="$borderStrong"
-              gap="$2"
-            >
-              <XStack justify="space-between" items="center">
-                <YStack>
-                  <Text color="$textSecondary" fontSize={12} fontWeight="700">
-                    {isLastTimeBased
-                      ? t("session.adjust_seconds_label")
-                      : t("session.adjust_reps_label")}
+                <Progress.Indicator transition="quick" bg="$primary" />
+              </Progress>
+              <XStack gap="$3">
+                <Button
+                  size="$3"
+                  hitSlop={8}
+                  bg="$surface"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleAddRestTime(10)}
+                >
+                  <Text fontWeight="700" color="$text">
+                    +10s
                   </Text>
-                  <Text fontSize={12} color="$textSecondary">
-                    {isLastTimeBased
-                      ? t("session.adjust_seconds_hint")
-                      : t("session.adjust_reps_hint")}
+                </Button>
+                <Button
+                  size="$3"
+                  hitSlop={8}
+                  bg="$surface"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleAddRestTime(30)}
+                >
+                  <Text fontWeight="700" color="$text">
+                    +30s
                   </Text>
-                </YStack>
-
-                <XStack items="center" gap="$3">
-                  <Button
-                    size="$3"
-                    hitSlop={8}
-                    circular
-                    icon={<Minus size={16} />}
-                    accessibilityLabel={t(
-                      "session.decrease_result_accessibility",
-                      "Decrease result",
-                    )}
-                    onPress={() =>
-                      handleUpdateResult(Math.max(1, lastResult.result.value - adjustStep))
-                    }
-                  />
-                  <Text
-                    fontWeight="700"
-                    fontSize={20}
-                    color="$text"
-                    style={{ minWidth: 42, textAlign: "center" }}
-                  >
-                    {isLastTimeBased ? `${lastResult.result.value}s` : lastResult.result.value}
-                  </Text>
-                  <Button
-                    size="$3"
-                    hitSlop={8}
-                    circular
-                    icon={<Plus size={16} />}
-                    accessibilityLabel={t(
-                      "session.increase_result_accessibility",
-                      "Increase result",
-                    )}
-                    onPress={() => handleUpdateResult(lastResult.result.value + adjustStep)}
-                  />
-                </XStack>
+                </Button>
               </XStack>
             </YStack>
-          )}
 
-          {/* Up Next Card. Tappable: the rest is the one moment reading is free, and the movement
+            {/* What the hero may do while the clock runs, held together by the tighter interval:
+                correct what was just logged, read what is next. Neither is the task. */}
+            <YStack gap={12}>
+              {/* Last Set Review, hidden after a skip. A skipped set writes no result, so
+                  `results.at(-1)` is a set from an earlier round: the stepper would silently
+                  correct something the hero is not looking at. */}
+              {!!lastResult && !lastSetSkipped && (
+                <YStack
+                  bg="$surface"
+                  p="$4"
+                  rounded="$6"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  gap="$2"
+                >
+                  <XStack justify="space-between" items="center">
+                    <YStack>
+                      <Text color="$textSecondary" fontSize={12} fontWeight="700">
+                        {isLastTimeBased
+                          ? t("session.adjust_seconds_label")
+                          : t("session.adjust_reps_label")}
+                      </Text>
+                      <Text fontSize={12} color="$textSecondary">
+                        {isLastTimeBased
+                          ? t("session.adjust_seconds_hint")
+                          : t("session.adjust_reps_hint")}
+                      </Text>
+                    </YStack>
+
+                    <XStack items="center" gap="$3">
+                      <Button
+                        size="$3"
+                        hitSlop={8}
+                        circular
+                        icon={<Minus size={16} />}
+                        accessibilityLabel={t(
+                          "session.decrease_result_accessibility",
+                          "Decrease result",
+                        )}
+                        onPress={() =>
+                          handleUpdateResult(Math.max(1, lastResult.result.value - adjustStep))
+                        }
+                      />
+                      <Text
+                        fontWeight="700"
+                        fontSize={20}
+                        color="$text"
+                        style={{ minWidth: 42, textAlign: "center" }}
+                      >
+                        {isLastTimeBased ? `${lastResult.result.value}s` : lastResult.result.value}
+                      </Text>
+                      <Button
+                        size="$3"
+                        hitSlop={8}
+                        circular
+                        icon={<Plus size={16} />}
+                        accessibilityLabel={t(
+                          "session.increase_result_accessibility",
+                          "Increase result",
+                        )}
+                        onPress={() => handleUpdateResult(lastResult.result.value + adjustStep)}
+                      />
+                    </XStack>
+                  </XStack>
+                </YStack>
+              )}
+
+              {/* Up Next Card. Tappable: the rest is the one moment reading is free, and the movement
               the hero is about to do is the one worth reading about. Same modal the running
               screen opens from its artwork. */}
-          <YStack
-            testID="rest-up-next"
-            bg="$surface"
-            p="$4"
-            rounded="$6"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            gap="$2"
-            onPress={() => {
-              selection();
-              setShowHowTo(true);
-            }}
-            pressStyle={{ opacity: 0.9 }}
-            accessibilityRole="button"
-            accessibilityLabel={t("session.how_to_do_it")}
-            transition={reducedMotion ? undefined : "bouncy"}
-            enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
-          >
-            <Text color="$textSecondary" fontSize={12} fontWeight="700">
-              {t("session.up_next")}
-            </Text>
-            <XStack gap="$3" items="center">
               <YStack
-                width={50}
-                height={50}
-                bg="$surface2"
-                rounded="$3"
-                overflow="hidden"
-                items="center"
-                justify="center"
+                testID="rest-up-next"
+                bg="$surface"
+                p="$4"
+                rounded="$6"
                 borderWidth={1}
                 borderColor="$borderStrong"
+                gap="$2"
+                onPress={() => {
+                  selection();
+                  setShowHowTo(true);
+                }}
+                pressStyle={{ opacity: 0.9 }}
+                accessibilityRole="button"
+                accessibilityLabel={t("session.how_to_do_it")}
+                transition={reducedMotion ? undefined : "bouncy"}
+                enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
               >
-                <Image
-                  source={getExerciseThumb(nextEx?.exercise.imagePath ?? "")}
-                  style={{ width: "100%", height: "100%" }}
-                  contentFit="cover"
-                  transition={150}
-                />
-              </YStack>
-              <YStack flex={1}>
-                <Text fontWeight="700" fontSize={18} numberOfLines={1} color="$text">
-                  {nextExName}
+                <Text color="$textSecondary" fontSize={12} fontWeight="700">
+                  {t("session.up_next")}
                 </Text>
-                <Text color="$textSecondary">
-                  {nextEx?.target.type === "time"
-                    ? `${nextEx.target.value}s`
-                    : `${nextEx?.target.value ?? 0} reps`}
-                </Text>
+                <XStack gap="$3" items="center">
+                  <YStack
+                    width={50}
+                    height={50}
+                    bg="$surface2"
+                    rounded="$3"
+                    overflow="hidden"
+                    items="center"
+                    justify="center"
+                    borderWidth={1}
+                    borderColor="$borderStrong"
+                  >
+                    <Image
+                      source={getExerciseThumb(nextEx?.exercise.imagePath ?? "")}
+                      style={{ width: "100%", height: "100%" }}
+                      contentFit="cover"
+                      transition={150}
+                    />
+                  </YStack>
+                  <YStack flex={1}>
+                    <Text fontWeight="700" fontSize={18} numberOfLines={1} color="$text">
+                      {nextExName}
+                    </Text>
+                    <Text color="$textSecondary">
+                      {nextEx?.target.type === "time"
+                        ? `${nextEx.target.value}s`
+                        : `${nextEx?.target.value ?? 0} reps`}
+                    </Text>
+                  </YStack>
+                </XStack>
               </YStack>
-            </XStack>
-          </YStack>
-        </ScrollView>
+            </YStack>
+          </ScrollView>
+
+          {/* The fold, made to read as one. A card sliced at a hard edge reads as broken; the
+              same card dissolving reads as "there is more below", which is the truth. Only during
+              a fight: an ordinary rest has the campfire behind it, where a flat scrim would band,
+              and its column fits anyway.
+
+              `bgRaw` because a gradient takes colours rather than tokens, and `${bgRaw}00` rather
+              than "transparent" because transparent fades through black on iOS. That form needs
+              the phase colours to stay 6-digit hex, which `bossPhase.ts` reads straight out of
+              `rawColors`. */}
+          {phaseLook ? (
+            <LinearGradient
+              colors={[`${phaseLook.bgRaw}00`, phaseLook.bgRaw]}
+              style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 56 }}
+              pointerEvents="none"
+            />
+          ) : null}
+        </YStack>
 
         {/* Skip Button — the ScrollView's sibling, never inside it, so it stays reachable. */}
         <Button

@@ -1,18 +1,18 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { bossArtKind, sessionArtHeight } from "@/components/session/sessionArt";
+import { REST_HEADER_HEIGHT, sessionArtHeight } from "@/components/session/sessionArt";
 
 /**
- * The arena's height is shared by two components that cannot measure each other: `BossArena`
- * draws it, `BossTauntOverlay` anchors its bubble to the bottom of it. This module is the one
- * answer both read, so what is worth testing is the *relationship*, not the constants.
+ * Two numbers shared by components that cannot measure each other, so what is worth testing is
+ * the relationship rather than the constants.
  *
- * The bug behind `boss_rest`: during a rest the monster kept 46% of the screen while the timer
- * became the subject, the rest column overflowed, and the set-review card was cut in half at the
- * fold with the scroll indicator switched off. A resting boss must be shorter than a fighting one
- * or the fix is a comment.
+ * `BossTauntOverlay` floats above every session view and anchors its bubble under whatever the
+ * screen puts at its top. That is the arena while the set runs and the flame header once it is
+ * over, because a rest looks the same whether or not a boss is being fought. Get either wrong and
+ * the bubble hangs in mid-air, on one of the two screens only, which is the kind of bug nobody
+ * reproduces.
  */
-describe("sessionArtHeight", () => {
+describe("session art geometry", () => {
   // A tall phone, a short phone, and a wide one where the width cap is what bites.
   const SCREENS = [
     { width: 411, height: 916 },
@@ -20,59 +20,50 @@ describe("sessionArtHeight", () => {
     { width: 800, height: 600 },
   ];
 
-  it.each(SCREENS)(
-    "a resting boss gives the screen back at $width x $height",
-    ({ width, height }) => {
-      const fighting = sessionArtHeight(width, height, "boss");
-      const resting = sessionArtHeight(width, height, "boss_rest");
+  it.each(SCREENS)("the monster outsizes the movement at $width x $height", ({ width, height }) => {
+    const boss = sessionArtHeight(width, height, "boss");
+    const exercise = sessionArtHeight(width, height, "exercise");
 
-      expect(resting).toBeLessThanOrEqual(fighting);
-      // On any screen the width cap does not already flatten, the gap is what buys the rest column
-      // its overflow back, so it has to be worth having.
-      if (fighting < Math.round(width * 1.1)) {
-        expect(fighting - resting).toBeGreaterThan(height * 0.1);
-      }
-    },
-  );
+    // Play testing said the boss read too small at the shared size; that is the whole reason the
+    // second factor exists, so a change that flattens them is a change to the design.
+    if (boss < Math.round(width * 1.1)) {
+      expect(boss).toBeGreaterThan(exercise);
+    }
+  });
 
   it.each(SCREENS)(
     "never lets the art eat a narrow screen at $width x $height",
     ({ width, height }) => {
-      for (const kind of ["exercise", "boss", "boss_rest"] as const) {
+      for (const kind of ["exercise", "boss"] as const) {
         expect(sessionArtHeight(width, height, kind)).toBeLessThanOrEqual(Math.round(width * 1.1));
       }
     },
   );
 
-  it("names the slot from the only thing that decides it", () => {
-    expect(bossArtKind(true)).toBe("boss_rest");
-    expect(bossArtKind(false)).toBe("boss");
-  });
-
   /**
-   * The anchor bug this shape exists to prevent.
+   * The rest header is a fixed block, not a sum of its children, precisely so the overlay can
+   * anchor to it without measuring. That only holds while `RestView` builds it from the constant,
+   * and while both of them add `insets.top` the same way: the first version set the box to the
+   * constant alone, which made it shorter than its own contents and would have put the timer over
+   * the title on a screen with no slack.
    *
-   * `BossArena` and `BossTauntOverlay` decide the slot from different inputs, a prop and the store's
-   * status, and must land on the same one. Comparing the two function calls would compare an
-   * expression to itself and prove nothing, so this reads the source: neither may name a slot
-   * itself. Inline a ternary at one of them and the bubble hangs in mid-air over the timer, during
-   * rests only, which is the kind of bug nobody reproduces.
-   *
-   * ponytail: text scan, the same trade `android-permissions.test.ts` makes. Fine while the
-   * mapping is one exported function; if the slot ever depends on more than resting, this has to
-   * become a real assertion on rendered output.
+   * ponytail: text scan, the same trade `android-permissions.test.ts` makes. A rendered assertion
+   * would need a layout pass jest does not run.
    */
-  it.each(["BossArena.tsx", "BossTauntOverlay.tsx"])(
-    "%s asks for the slot, never names one",
-    (file) => {
-      const source = fs.readFileSync(
-        path.resolve(__dirname, "..", "components", "session", file),
-        "utf8",
-      );
+  it("the rest header is built from the constant the bubble anchors to", () => {
+    const rest = fs.readFileSync(
+      path.resolve(__dirname, "..", "components", "session", "RestView.tsx"),
+      "utf8",
+    );
+    const overlay = fs.readFileSync(
+      path.resolve(__dirname, "..", "components", "session", "BossTauntOverlay.tsx"),
+      "utf8",
+    );
 
-      expect(source).toContain("bossArtKind(");
-      expect(source).not.toMatch(/"boss_rest"/);
-      expect(source).not.toMatch(/sessionArtHeight\([^)]*"boss"/);
-    },
-  );
+    expect(rest).toContain("height={insets.top + REST_HEADER_HEIGHT}");
+    expect(overlay).toContain("REST_HEADER_HEIGHT");
+    // And the arena stays off the rest screen, which is what makes the two headers comparable.
+    expect(rest).not.toContain("BossArena");
+    expect(REST_HEADER_HEIGHT).toBeGreaterThan(0);
+  });
 });

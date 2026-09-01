@@ -180,9 +180,9 @@ tags:
     timeout: 10000
 - takeScreenshot: 8-journal
 
-# --- 5. The boss arena ------------------------------------------------------
-# Last, because the jump drops straight into a session and there is no coming back to the tabs
-# without quitting it. Worth the awkward ordering: it is the screen that explains the whole app.
+# --- The dev screen, which the last two shots both come from -----------------
+# Last, because the boss jump drops straight into a session and there is no coming back to the
+# tabs without quitting it. Worth the awkward ordering: it is the screen that explains the app.
 - tapOn:
     id: "tab-home"
 - tapOn:
@@ -193,6 +193,29 @@ tags:
     direction: DOWN
 - tapOn:
     id: "settings-dev"
+
+# --- 9. An expedition's recap ------------------------------------------------
+# The one screen that is a map, and the one the seeded hero above cannot reach: `seedHistory`
+# writes strength sessions and knows nothing about GPS. `dev-seed-expedition` writes a finished
+# outing with a synthetic trace through the real writers, then opens its recap — the only way to
+# photograph this without walking a loop with the phone. The basemap wants the network; without
+# it the trace still draws and the shot is merely plainer.
+- scrollUntilVisible:
+    element:
+      id: "dev-seed-expedition"
+    direction: DOWN
+- tapOn:
+    id: "dev-seed-expedition"
+- extendedWaitUntil:
+    visible:
+      id: "expedition-recap-screen"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: 9-recap
+- back
+
+# --- 5. The boss arena ------------------------------------------------------
 - scrollUntilVisible:
     element:
       text: "Jump to boss fight"

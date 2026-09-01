@@ -17,6 +17,7 @@ import {
   startAdventureRun,
 } from "@/db";
 import { getOrCreateBossFight } from "@/db/bossFights";
+import { clearSeededExpeditions, seedExpedition } from "@/db/devSeedExpedition";
 import { clearSeededHistory, countSeededSessions, seedHistory } from "@/db/devSeedHistory";
 import { useUserStore } from "@/stores/user";
 
@@ -108,6 +109,22 @@ export default function DevScreen() {
       })
       .catch(() => setStatus("Clear failed"));
   }, [refresh]);
+
+  const runExpedition = useCallback(() => {
+    setStatus("Seeding an outing…");
+    seedExpedition()
+      .then((seeded) => {
+        setStatus(`${seeded.leaguesM} m over ${seeded.points} points`);
+        router.push(`/recap?session=${encodeURIComponent(seeded.uuid)}` as never);
+      })
+      .catch((e: unknown) => setStatus(e instanceof Error ? e.message : "Expedition seed failed"));
+  }, [router]);
+
+  const clearExpedition = useCallback(() => {
+    clearSeededExpeditions()
+      .then(() => setStatus("Seeded outings removed"))
+      .catch(() => setStatus("Clear failed"));
+  }, []);
 
   // Boss adventures are campaigns whose last step is the fight, so getting there normally means
   // playing every step before it. This completes them and drops straight into the final step.
@@ -251,6 +268,23 @@ export default function DevScreen() {
           <AppButton onPress={() => runBossFight(false)}>Jump to boss fight</AppButton>
           <AppButton variant="secondary" onPress={() => runBossFight(true)}>
             Jump to boss fight (1 HP)
+          </AppButton>
+        </Card>
+
+        <Card p="$4" gap="$3">
+          <Text fontSize="$4" fontWeight="700" color="$text">
+            Fake expedition
+          </Text>
+          <Paragraph fontSize="$2" color="$textSecondary">
+            One finished outing with a synthetic trace, written through the real writers, then
+            straight to its recap. The only way to see the map without going outside — and no
+            evidence whatsoever that the service records a trace, which only a walk can say.
+          </Paragraph>
+          <AppButton testID="dev-seed-expedition" onPress={runExpedition}>
+            Seed an outing, open the recap
+          </AppButton>
+          <AppButton variant="secondary" onPress={clearExpedition}>
+            Clear seeded outings
           </AppButton>
         </Card>
 

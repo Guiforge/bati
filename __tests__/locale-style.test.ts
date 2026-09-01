@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-// Three typographic rules the locale files drifted on, kept from drifting again.
+// Four rules the locale files drifted on, kept from drifting again.
 //
 // They are a ratchet, like the permissions test: the fix is to write the string
 // correctly, never to widen the rule so a build passes.
@@ -21,6 +21,13 @@ import * as path from "node:path";
 //    sentence is the English hinge ("X — not Y"), and 30 of them had been translated
 //    across before this test existed. en.json is deliberately exempt: there the
 //    construction is correct and part of the voice.
+//
+// 4. One form of address per surface. The app says `tu`; the privacy policy and the
+//    safety notices say `vous`, because one is a game speaking to a hero and the
+//    other is a document addressing a user. Thirteen strings had drifted across the
+//    line, and the GPS work added two more before this was written down. The rule is
+//    the allowlist below, and widening it is a decision about which surface a screen
+//    belongs to, never a way to land a string.
 //
 // Rule 3 does not stop at the app. The published site and the privacy policy carry
 // French too, and both were written with the same lone hinge — seven of them in the
@@ -93,6 +100,25 @@ describe("locale typography", () => {
       return count % 2 !== 0;
     });
     expect(lonely).toEqual([]);
+  });
+
+  /**
+   * The two sections that address a *user* rather than a hero. Both are documents the app
+   * happens to render: a privacy policy and a set of safety notices, which is why they are
+   * allowed the register a policy is written in. Everything else is the game talking.
+   */
+  const VOUVOIEMENT_ALLOWED = ["privacy.", "safety."];
+
+  it("fr.json says tu everywhere the app speaks for itself", () => {
+    const formal = entriesOf("fr.json")
+      .filter((e) => !VOUVOIEMENT_ALLOWED.some((prefix) => e.key.startsWith(prefix)))
+      .filter((e) => /\b(vous|votre|vos)\b/i.test(e.value))
+      .map((e) => `fr.json → ${e.key}: ${e.value.slice(0, 70)}`);
+
+    expect(formal).toEqual([]);
+    // and the allowed sections really do use it, so emptying them cannot silently
+    // turn this into a rule that checks nothing
+    expect(entriesOf("fr.json").filter((e) => /\bvous\b/i.test(e.value)).length).toBeGreaterThan(0);
   });
 
   it.each(Object.keys(FRENCH_PROSE))("%s only uses em dashes in pairs", (file) => {

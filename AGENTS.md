@@ -240,6 +240,12 @@ outlived it.
   [`docs/architecture/exercise-ownership.md`](docs/architecture/exercise-ownership.md).
 - **Mark a deliberate shortcut with a `ponytail:` comment** naming its ceiling and what would
   trigger the real fix. "Refactor planned" tells the next reader nothing.
+- **Copy has rules, and most of them are measured.** A lone em dash is English punctuation in a
+  French string; the app says `tu` and only the policy says `vous`; a screen whose strings all
+  have the same shape is the shape's problem, not the words'. Removing a "not X, it's Y" means
+  finding what the sentence is about without the opposition, and compressing it keeps it.
+  `__tests__/locale-style.test.ts` and `__tests__/villagers.test.ts` hold what a machine can;
+  [`docs/product/writing.md`](docs/product/writing.md) holds the rest and says which is which.
 
 ### Known debt
 

@@ -39,6 +39,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [positioning.md](product/positioning.md) | Product doc (register / platform / principles) |
 | [user-guide.md](product/user-guide.md) | Non-technical product guide + navigation map |
 | [feature-overview.md](product/feature-overview.md) | Features overview |
+| [writing.md](product/writing.md) | How a sentence is built: punctuation, register, and which rules a test holds |
 
 ## 🗺️ Planning & Roadmap — [planning/](planning/README.md)
 

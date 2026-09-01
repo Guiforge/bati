@@ -194,7 +194,7 @@ votre appareil**.
 
 - Rien n'est envoyé, synchronisé, sauvegardé chez nous ni partagé avec qui que ce soit.
 - Nous ne pouvons pas le lire. Il n'existe aucun serveur pour le lire.
-- Désinstaller l'application supprime l'ensemble, et il n'en existe aucune copie ailleurs — sauf
+- Désinstaller l'application supprime l'ensemble, et il n'en existe aucune copie ailleurs, sauf
   si vous en avez exporté une vous-même, voir ci-dessous.
 
 ## Les sauvegardes que vous faites
@@ -207,13 +207,13 @@ fichiers deviennent ensuite ne dépend que de vous : l'application ne les envoie
 n'en a aucun moyen.
 
 - **Ce fichier n'est pas chiffré.** Quiconque l'ouvre lit votre historique d'entraînement.
-  Rangez-le comme vous rangeriez une photo personnelle — et réfléchissez-y à deux fois avant de
+  Rangez-le comme vous rangeriez une photo personnelle, et réfléchissez-y à deux fois avant de
   le déposer dans un espace partagé.
 - **Restaurer remplace tout.** Importer une sauvegarde échange le contenu de l'application contre
   le fichier que vous fournissez. La base que vous aviez est conservée sur l'appareil comme copie
   de secours, dans le même stockage privé, jusqu'à la restauration suivante.
 - **La sauvegarde automatique est désactivée tant que vous ne l'activez pas**, et l'activer, c'est
-  choisir le dossier vous-même — l'application ne peut écrire nulle part où vous ne l'avez pas
+  choisir le dossier vous-même : l'application ne peut écrire nulle part où vous ne l'avez pas
   envoyée. Elle n'écrit qu'avant une mise à jour, uniquement dans ce dossier, et n'y conserve que
   les cinq fichiers les plus récents, en supprimant les plus anciens qu'elle a elle-même écrits et
   rien d'autre. Les réglages affichent le dossier utilisé, et l'arrêter tient en une pression ;
@@ -279,7 +279,7 @@ position doit le dire, à l'écran, du début à la fin.
 
 **Notifications (facultatif).** Demandées quand vous activez un rappel, et utilisées pour la
 notification d'expédition ci-dessus. Les rappels sont programmés localement par le système de votre
-appareil — il n'y a aucune notification push, donc aucun serveur ne connaît votre appareil.
+appareil : il n'y a aucune notification push, donc aucun serveur ne connaît votre appareil.
 
 **Internet.** Pour les tuiles de carte, et rien d'autre. Voir « La carte, et l'hôte unique » plus
 haut.
@@ -306,7 +306,7 @@ fichier que vous avez choisi.
 
 Rien n'est transmis automatiquement. Si vous souhaitez aider à corriger un bug, les Réglages
 proposent « Signaler un bug », qui ouvre **votre propre application e-mail** avec le rapport
-pré-rempli. Vous pouvez le lire, le modifier ou le supprimer avant envoi — et si vous ne
+pré-rempli. Vous pouvez le lire, le modifier ou le supprimer avant envoi, et si vous ne
 l'envoyez jamais, il ne quitte jamais votre téléphone. Les rapports envoyés servent uniquement
 à corriger le bug et ne sont transmis à personne.
 
@@ -330,7 +330,7 @@ toutes lettres plutôt que glissé dans une liste.
 
 ## Contact
 
-Questions sur cette politique — et tout le reste : un bug, une idée, une fonctionnalité qui
-vous manque : **feedback.bati@proton.me**
+Questions sur cette politique, et tout le reste (un bug, une idée, une fonctionnalité qui
+vous manque) : **feedback.bati@proton.me**
 
 </div>

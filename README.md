@@ -70,13 +70,13 @@ not a setting you have to find.
 
 ## What it does
 
-**Every workout is a quest.** A campaign with a story, chapters and a map — not a list of sets you
-tick off. You pick the next quest; it knows what you trained last.
+**Every workout is a quest.** A campaign with a story, chapters and a map. You pick the next
+quest, and it knows what you trained last.
 
 **Your reps land as damage.** Finish a set and the boss takes the hit. The bar moves because you
 moved, and the fight is over when the session is.
 
-**Some sessions fight back.** Boss fights close a chapter and ask for a real effort — the one
+**Some sessions fight back.** Boss fights close a chapter and ask for a real effort: the one
 session in the arc you have to show up for.
 
 **The village is made of what you lifted.** Train shoulders, the forge rises. Nothing in it can be
@@ -89,7 +89,7 @@ leagues it records raise the High Road, the one building in the village that not
 level.
 
 **Years of history, on one screen.** Streaks, records, muscle balance and every session you ever
-finished — read from a database on your phone, with nothing to log in to.
+finished, read from a database on your phone, with nothing to log in to.
 
 **No account, and one network destination.** There is no server to leak, no analytics to opt out
 of, and no cloud copy of your training. The only thing Bati ever fetches is map tiles, from
@@ -102,7 +102,7 @@ All of this is also on [the site](https://guiforge.github.io/bati/#install), in 
 
 ### F-Droid — the one that updates itself
 
-Bati is in [the official F-Droid catalogue](https://f-droid.org/packages/com.guiforge.bati/) —
+Bati is in [the official F-Droid catalogue](https://f-droid.org/packages/com.guiforge.bati/):
 that is what the badge above opens, and searching F-Droid for "Bati" finds it. **Installed from
 GitHub Releases before that?** F-Droid signs its builds with its own key, so the catalogue cannot
 update that copy (Android refuses a different signature, and uninstalling takes your hero with it).
@@ -125,7 +125,7 @@ at that URL.
 
 ### A plain APK
 
-[Releases](https://github.com/Guiforge/bati/releases) — Android will ask you to allow installs
+[Releases](https://github.com/Guiforge/bati/releases): Android will ask you to allow installs
 from an unknown source the first time. Nothing updates itself this way; you download the next one
 yourself.
 
@@ -137,8 +137,8 @@ See [`docs/fdroid.md`](docs/fdroid.md) for how the repository is built and signe
 
 ## Written with AI
 
-This project is largely written with AI assistance — saying it up front so you read the code with
-that in mind. It is a fun project: I build it because I enjoy building it.
+This project is largely written with AI assistance. Saying it up front so you read the code
+with that in mind. It is a fun project: I build it because I enjoy building it.
 
 ## Where the art comes from
 
@@ -148,7 +148,7 @@ specific artist's work.
 
 All of it comes from **FLUX.2 by Black Forest Labs**, through our own API account. That detail is
 the licence: the FLUX grant over outputs runs to whoever holds the key, so generating through an
-aggregator would have left us with art we could not license onward — which is why an earlier
+aggregator would have left us with art we could not license onward, which is why an earlier
 Midjourney-and-Gemini-via-Mammouth set was regenerated from scratch.
 
 Icons are a separate system: game and fantasy icons go through the project's own icon hook,
@@ -187,7 +187,7 @@ All of these run in CI; the first three also run on commit or push.
   `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app, which is what keeps "one host"
   a fact rather than a sentence in this file.
 - **TypeScript**, strict.
-- **Jest** — ~1100 tests, with coverage thresholds set just under actual so they catch deletion
+- **Jest** — ~1200 tests, with coverage thresholds set just under actual so they catch deletion
   rather than reward padding.
 - **Knip** — dead code. At zero; anything it reports is new.
 - **expo-doctor** — 20 checks on dependency versions and project shape, all green. A version the
@@ -210,7 +210,7 @@ All of these run in CI; the first three also run on commit or push.
 
 [`CONTRIBUTING.md`](CONTRIBUTING.md) for code, [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for
 the wiki, [`SECURITY.md`](SECURITY.md) to report something that should not be a public issue.
-Or just write to **<feedback.bati@proton.me>** — an idea is welcome in whatever form it arrives.
+Or just write to **<feedback.bati@proton.me>**. An idea is welcome in whatever form it arrives.
 
 ## Licence
 
@@ -219,13 +219,13 @@ the artwork in `assets/`.
 
 The illustrations are generated with FLUX.2 by Black Forest Labs through our own API account,
 whose licence places no ownership claim on outputs and allows any use. `scripts/provenance.json`
-records the model, prompt and seed behind every one of them, so fork away — the art comes with
+records the model, prompt and seed behind every one of them, so fork away: the art comes with
 you, and you can regenerate it yourself.
 
 Most of the exercise illustrations in `assets/images/exercises/` are *derived* work on top of
 that: FLUX redrew them from anatomical line studies by
 [Everkinetic](https://github.com/everkinetic/data), reframed by
-[workout-guide](https://github.com/bryllim/workout-guide) — both CC BY-SA 4.0. Credit is due to
+[workout-guide](https://github.com/bryllim/workout-guide), both CC BY-SA 4.0. Credit is due to
 Everkinetic and Bryl Lim, and the share-alike obligation is already satisfied by the licence
 above. It binds the images, never the app code. `scripts/provenance.json` names the source frame
 for each one.

@@ -21,8 +21,23 @@ import * as path from "node:path";
 //    sentence is the English hinge ("X — not Y"), and 30 of them had been translated
 //    across before this test existed. en.json is deliberately exempt: there the
 //    construction is correct and part of the voice.
+//
+// Rule 3 does not stop at the app. The published site and the privacy policy carry
+// French too, and both were written with the same lone hinge — seven of them in the
+// policy alone. They are markdown and HTML rather than JSON, so they get their own
+// check below rather than a second parser: a paragraph of French prose must hold an
+// even number of dashes. A heading is exempt, because "Politique de
+// confidentialité — Bati" is a separator, not an incise.
 
-const LOCALES = path.resolve(__dirname, "..", "locales");
+const ROOT = path.resolve(__dirname, "..");
+const LOCALES = path.join(ROOT, "locales");
+
+/** The French half of the bilingual policy, and the French spans of the bilingual site. */
+const FRENCH_PROSE: Record<string, (source: string) => string> = {
+  "docs/legal/privacy.md": (source) => source.slice(source.indexOf('<div lang="fr"')),
+  "docs/legal/index.html": (source) =>
+    (source.match(/lang="fr"[^>]*>[\s\S]*?<\/span/g) ?? []).join("\n\n"),
+};
 
 const APOSTROPHE = "'"; // the form both locale files use; ’ is the banned one here
 const BANNED_APOSTROPHE = "’";
@@ -77,6 +92,18 @@ describe("locale typography", () => {
       const count = v.split(EM_DASH).length - 1;
       return count % 2 !== 0;
     });
+    expect(lonely).toEqual([]);
+  });
+
+  it.each(Object.keys(FRENCH_PROSE))("%s only uses em dashes in pairs", (file) => {
+    const french = FRENCH_PROSE[file]?.(fs.readFileSync(path.join(ROOT, file), "utf8")) ?? "";
+
+    const lonely = french
+      .split(/\n\s*\n/)
+      .filter((paragraph) => !paragraph.trimStart().startsWith("#"))
+      .filter((paragraph) => (paragraph.split(EM_DASH).length - 1) % 2 !== 0)
+      .map((paragraph) => `${file}: ${paragraph.replace(/\s+/g, " ").trim().slice(0, 90)}`);
+
     expect(lonely).toEqual([]);
   });
 });

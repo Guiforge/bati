@@ -62,8 +62,12 @@ adb shell cmd locale set-app-locales com.guiforge.bati.dev --locales "${locale%%
 adb reverse tcp:8081 tcp:8081 >/dev/null 2>&1 || true
 # `exp+bati://` is the scheme the dev launcher registers — `bati://` is the app's own and the
 # launcher never sees it. Both are tried, so this keeps working if the dev-client is dropped.
+# `-p` is not optional: three variants are installed side by side on a development machine
+# (`.dev`, `.perf` and the release) and all three claim `bati://`. Without the package the intent
+# resolves to nothing rather than to a chooser, the dev client never learns the server URL, and
+# the run fails on the very first assertion with the app sitting on "Development servers".
 for scheme in "exp+bati" "bati"; do
-  adb shell am start -a android.intent.action.VIEW \
+  adb shell am start -a android.intent.action.VIEW -p com.guiforge.bati.dev \
     -d "$scheme://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081" >/dev/null 2>&1 || true
   sleep 6
 done

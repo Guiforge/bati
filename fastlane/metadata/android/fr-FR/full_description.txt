@@ -6,13 +6,13 @@ LE SPORT D'ABORD, LE RPG ENSUITE
 La logique d'entraînement mène, le jeu l'amplifie. Rien de décoratif ne s'interpose entre toi et ta série suivante : grandes zones tactiles, texte très contrasté, un écran pensé pour une main dans une salle bruyante.
 
 CE QUE TU TROUVES DEDANS
-• Des quêtes — séances guidées, objectifs adaptés à ton niveau
-• Des aventures — campagnes en plusieurs séances, avec un récit entre les étapes
-• Des combats de boss — les répétitions deviennent des dégâts ; faiblesses et coups critiques donnent du sens aux chiffres
-• Des expéditions — marche, course ou vélo ; le terrain parcouru fait grandir le chemin hors du village
-• Un village — les bâtiments montent avec le volume réellement enregistré
-• Des serments — fixe un objectif et laisse l'app t'y tenir
-• Un journal — historique, records personnels, séries, équilibre musculaire
+• Des quêtes : séances guidées, objectifs adaptés à ton niveau
+• Des aventures : campagnes en plusieurs séances, avec un récit entre les étapes
+• Des combats de boss : les répétitions deviennent des dégâts ; faiblesses et coups critiques donnent du sens aux chiffres
+• Des expéditions : marche, course ou vélo ; le terrain parcouru fait grandir le chemin hors du village
+• Un village : les bâtiments montent avec le volume réellement enregistré
+• Des serments : fixe un objectif et laisse l'app t'y tenir
+• Un journal : historique, records personnels, séries, équilibre musculaire
 
 TON ENTRAÎNEMENT RESTE SUR TON TÉLÉPHONE
 Aucun compte. Aucune inscription. Aucun serveur à nous. Ni analytics, ni publicité, ni pistage d'aucune sorte. Tes séances, tes records et la trace GPS d'une expédition vivent dans une base de données sur ton appareil et nulle part ailleurs. Désinstaller l'app détruit chaque enregistrement qu'elle a produit.

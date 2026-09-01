@@ -4,15 +4,15 @@
   "home_continue_adventure_title": "Continue your adventure",
   "home_continue_adventure_subtitle": "Pick up where you left off.",
   "home": {
-    "stats_a11y_one": "{{count}} quest done, {{xp}} XP — open the journal",
-    "stats_a11y_other": "{{count}} quests done, {{xp}} XP — open the journal",
+    "stats_a11y_one": "{{count}} quest done, {{xp}} XP. Open the journal",
+    "stats_a11y_other": "{{count}} quests done, {{xp}} XP. Open the journal",
     "quests_done_one": "Quest",
     "quests_done_other": "Quests",
     "continue_adventure_label": "Continue Adventure",
     "resume_journey": "Resume your journey",
     "pick_quest_label": "Pick a quest",
     "see_quest": "See the quest",
-    "oath_focus_chain": "Toward your oath: {{goal}} — rung {{position}} of {{total}}, tonight: {{name}}",
+    "oath_focus_chain": "Toward your oath: {{goal}}, rung {{position}} of {{total}}, tonight: {{name}}",
     "oath_focus_simple": "Toward your oath: {{goal}}",
     "focus_on": "Strengthens your weak points: {{muscles}}",
     "quick_workout": "Quick Workout",
@@ -42,7 +42,7 @@
   },
   "onboarding": {
     "chars_min": "chars min",
-    "save_error": "Could not save — try again",
+    "save_error": "Could not save. Try again",
     "finish": "Start my training journey",
     "kingdom_founded": "KINGDOM FOUNDED",
     "language_selection": "Pick your language",
@@ -115,7 +115,7 @@
     "metric_weekly_sessions": "{{weekly}} sessions a week, for {{count}} weeks",
     "pick_weekly": "SESSIONS PER WEEK",
     "weekly_chip": "{{count}}× / week",
-    "streak_hint": "Rest days count — the flame tracks consistency, not attendance.",
+    "streak_hint": "Rest days count. The flame tracks consistency, not attendance.",
     "sworn_toast": "Oath sworn",
     "error_target_unreachable": "A single set cannot be logged above {{max}}. Swear a lower one, or swear it on total volume instead."
   },
@@ -143,7 +143,7 @@
     "report_bug_count_other": "{{count}} crashes",
     "report_bug_empty": "Nothing recorded",
     "no_mail_client": "No email app found on this device",
-    "photos_denied": "Photo access is off — allow it in system settings",
+    "photos_denied": "Photo access is off. Allow it in system settings",
     "sound": "Countdown beeps",
     "villagers": "Villagers",
     "replay_guides": "Review the guides",
@@ -176,7 +176,7 @@
     "workout_guide": "workout-guide",
     "workout_guide_subtitle": "Frames and normalisation by Bryl Lim",
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
-    "cc_by_sa_40_subtitle": "Licence terms — share-alike"
+    "cc_by_sa_40_subtitle": "Licence terms: share-alike"
   },
   "system": "System",
   "theme": "Theme",
@@ -189,7 +189,7 @@
     "chain_position": "Rung {{position}}/{{total}} · {{name}}",
     "ladder_title": "Your next rung",
     "difficulty_title": "Adjust the difficulty",
-    "step_earned": "You have mastered {{name}} — this is the next step.",
+    "step_earned": "You have mastered {{name}}. This is the next step.",
     "step_progress_one": "Hit your target {{count}} more time on {{name}} to earn it.",
     "step_progress_other": "Hit your target {{count}} more times on {{name}} to earn it.",
     "new_rung": "New rung unlocked",
@@ -198,7 +198,7 @@
   },
   "quests": {
     "gallery_title": "Quests",
-    "gallery_subtitle": "Single workouts — pick one and go",
+    "gallery_subtitle": "Single workouts. Pick one and go",
     "details_title": "Quest",
     "count": "{{count}} quests",
     "loading": "Loading…",
@@ -207,7 +207,7 @@
     "start_error": "Could not start the quest",
     "starting": "Starting…",
     "empty_title": "No quests yet",
-    "empty_subtitle": "Come back soon — new quests are being forged.",
+    "empty_subtitle": "Come back soon. New quests are being forged.",
     "empty_filters_title": "No quests match",
     "empty_filters_subtitle": "Try removing filters.",
     "exercises_list": "Exercises",
@@ -253,7 +253,7 @@
     "archetype_core": "Core",
     "archetype_mobility": "Mobility",
     "config_title": "Adjust this quest",
-    "config_hint": "Saved for this quest — it comes back next time.",
+    "config_hint": "Saved for this quest. It comes back next time.",
     "config_modified": "Custom",
     "config_rounds": "Rounds",
     "config_rest": "Rest",
@@ -327,7 +327,7 @@
     "kind_event": "EVENT",
     "kind_boss": "BOSS",
     "empty_title": "No adventures yet",
-    "empty_subtitle": "Come back soon — the village is preparing adventures."
+    "empty_subtitle": "Come back soon. The village is preparing adventures."
   },
   "boss": {
     "hp": "HP",
@@ -344,8 +344,8 @@
     "resistance": "Resistance",
     "threat": "Threat level {{rank}} of 4",
     "final_blow": "Felled by your final blow!",
-    "triumph_subtitle": "Triumph! Felled by your own blows — +{{xp}} XP",
-    "matchup_hint": "Strike its weakness for 1.5× damage — its resistance halves yours."
+    "triumph_subtitle": "Triumph! Felled by your own blows. +{{xp}} XP",
+    "matchup_hint": "Strike its weakness for 1.5× damage; its resistance halves yours."
   },
   "exercise_editor": {
     "title_new": "New movement",
@@ -403,7 +403,7 @@
     "go_back": "Go back",
     "seconds_per_rep": "tempo {{count}}s/rep",
     "next_step": "Next rung",
-    "next_step_earned": "You have earned it — give it a try.",
+    "next_step_earned": "You have earned it. Give it a try.",
     "next_step_progress_one": "Hit your target {{count}} more time to earn it.",
     "next_step_progress_other": "Hit your target {{count}} more times to earn it.",
     "catalogue_title": "Exercises",
@@ -516,8 +516,8 @@
     "warmup_prev_accessibility": "Previous movement",
     "warmup_next_accessibility": "Next movement",
     "countdown_subtitle": "Time to move.",
-    "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure.",
-    "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now.",
+    "reserve_hint": "Stop with 1-2 reps left in the tank, not at failure.",
+    "crit_hint": "Every rep past the target is a chance to strike critical. {{percent}}% right now.",
     "ghost_last_label": "Last time",
     "ghost_best_label": "best",
     "expedition_status_denied": "Location is off for Bati",
@@ -626,7 +626,7 @@
     "balance_good": "Balanced!",
     "balance_needs_work": "Needs Work",
     "pull_deficit_title": "Your pulling is behind",
-    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first — towel rows or a doorway bar.",
+    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first: towel rows or a doorway bar.",
     "suggested_quests": "Your weak spots",
     "suggested_quests_desc": "Quests to strengthen your weak areas",
     "personal_records": "Personal Records",
@@ -727,7 +727,7 @@
     "next_level": "Next Level",
     "level_line": "Level {{level}}",
     "dominant_sport": "Training focus: {{muscle}}",
-    "neglected_muscle": "Least trained: {{muscle}} — its building has stopped rising.",
+    "neglected_muscle": "Least trained: {{muscle}}. Its building has stopped rising.",
     "banners_title": "Banners",
     "buildings_title": "Buildings",
     "built_title": "Built",
@@ -738,7 +738,7 @@
     "flame_3": "Blaze",
     "flame_4": "Inferno",
     "flame_5": "Eternal",
-    "detail_tier_driver": "Grows with your hero — level {{level}}",
+    "detail_tier_driver": "Grows with your hero, level {{level}}",
     "detail_tier_next": "Hero level {{target}} raises the whole village",
     "detail_muscle_driver": "{{volume}} work units of {{muscle}} training",
     "detail_style_driver": "{{volume}} work units of {{style}}",
@@ -748,7 +748,7 @@
     "detail_recent_units": "{{volume}} units",
     "detail_prereq_driver": "Grows with the {{building}}, currently level {{level}}",
     "detail_prereq_next": "Rises again when the {{building}} reaches level {{target}}",
-    "detail_prereq_locked": "Appears when the {{building}} reaches level {{target}} — it is at level {{level}}",
+    "detail_prereq_locked": "Appears when the {{building}} reaches level {{target}}. It is at level {{level}}",
     "detail_bosses_driver": "{{count}} bosses defeated",
     "detail_adventures_driver": "{{count}} adventures completed",
     "detail_victories_driver": "{{count}} boss victories",
@@ -769,7 +769,7 @@
     "close_scene": "Close",
     "tap_to_close": "Tap anywhere to close",
     "open_scene": "See the whole scene",
-    "loop_hint": "Every muscle you train raises a building — tap one to see what feeds it.",
+    "loop_hint": "Every muscle you train raises a building. Tap one to see what feeds it.",
     "trophies_empty": "Achievements and defeated bosses land on this shelf."
   },
   "goals": {
@@ -842,7 +842,7 @@
     "before_title": "Before you start",
     "before_body": "If you are pregnant, recovering from an injury or surgery, live with a heart, joint or blood-pressure condition, or have been inactive for a long time, talk to a doctor before starting this or any training programme.",
     "during_title": "While you train",
-    "during_body": "Sharp pain is not effort — stop. Dizziness, chest pain or shortness of breath mean stop and seek medical advice. Every target here is a suggestion: end a set with a rep or two left in you rather than chasing a number with broken form.",
+    "during_body": "Sharp pain is not effort. Stop. Dizziness, chest pain or shortness of breath mean stop and seek medical advice. Every target here is a suggestion: end a set with a rep or two left in you rather than chasing a number with broken form.",
     "not_a_coach_title": "Bati is not a coach",
     "not_a_coach_body": "This app counts what you do and tells a story about it. It cannot see your technique, and it is not medical advice. For a diagnosis, an injury or a plan built around your body, see a qualified professional.",
     "onboarding_line": "Train within your limits. If you have a health condition, an injury, or you are pregnant, talk to a doctor first.",
@@ -858,18 +858,18 @@
     "never_title": "What Bati never does",
     "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. The app uploads nothing, ever. It reaches the network in one place only: the recap map downloads its tiles from tiles.openfreemap.org, which sees roughly which map squares you looked at and never your route, your training or who you are. A lint rule refuses any other network call in the app.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos: only if you pick one as your avatar — it stays on your device. The Android widget reads your streak from the same local database. Location: only while an expedition is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and sent nowhere. An outing also posts an ongoing notification and holds the phone awake, which is what stops Android killing the tracking while your screen is off.",
+    "permissions_body": "Photos: only if you pick one as your avatar, and it stays on your device. The Android widget reads your streak from the same local database. Location: only while an expedition is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and sent nowhere. An outing also posts an ongoing notification and holds the phone awake, which is what stops Android killing the tracking while your screen is off.",
     "crashes_title": "Crash reports",
-    "crashes_body": "If the app crashes, the error is written to your device only — and when a feature fails without crashing (a backup that could not be written, say), its error message is kept the same way; that message may include the name of a folder or file you chose. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
+    "crashes_body": "If the app crashes, the error is written to your device only. When a feature fails without crashing (a backup that could not be written, say), its error message is kept the same way; that message may include the name of a folder or file you chose. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
     "children_title": "Children",
     "children_body": "Bati is a general-audience fitness app and is not directed at children under 13. It collects no personal data from anyone, of any age.",
     "contact_title": "Questions",
-    "contact_body": "Write to feedback.bati@proton.me — for this policy, and for a bug, an idea, or a feature you wish existed. Since the app holds no data about you, there is nothing for us to export or delete on your behalf: uninstalling erases every record it ever made.",
+    "contact_body": "Write to feedback.bati@proton.me about this policy, and about a bug, an idea, or a feature you wish existed. Since the app holds no data about you, there is nothing for us to export or delete on your behalf: uninstalling erases every record it ever made.",
     "updated": "Last updated 31 July 2026"
   },
   "feedback": {
-    "subject": "Bati {{version}} — feedback",
-    "prompt": "Tell me anything — there are no wrong answers. If you are stuck, these help:\n\n1. What made you open the app today?\n2. What annoyed you?\n3. What did you almost look for and not find?\n",
+    "subject": "Bati {{version}}: feedback",
+    "prompt": "Tell me anything. There are no wrong answers. If you are stuck, these help:\n\n1. What made you open the app today?\n2. What annoyed you?\n3. What did you almost look for and not find?\n",
     "technical_header": "Technical details (edit or delete anything below)",
     "no_crash": "No crash was recorded on this device.",
     "errors_header": "Recent errors",
@@ -887,15 +887,15 @@
     "autoMessage": "Bati saves a copy into {{folder}} once a day and before every update. You can point it somewhere else, or stop.",
     "autoChangeCta": "Change folder",
     "autoOffCta": "Turn off",
-    "autoOnDone": "Automatic backup on — a first copy is already in {{folder}}",
+    "autoOnDone": "Automatic backup on. A first copy is already in {{folder}}",
     "autoOffDone": "Automatic backup off",
     "import": "Restore a backup",
     "importHint": "Replaces everything",
-    "exportDone": "Backup ready — choose where to keep it",
+    "exportDone": "Backup ready. Choose where to keep it",
     "exportFailed": "The backup could not be created",
     "importFailed": "That file could not be read",
     "confirmTitle": "Restore this backup?",
-    "confirmMessage": "Everything on this device — history, village, oaths — is replaced by the backup. Your current data is kept on the device as a recovery copy, but only the backup will be visible.",
+    "confirmMessage": "Everything on this device (history, village, oaths) is replaced by the backup. Your current data is kept on the device as a recovery copy, but only the backup will be visible.",
     "confirmCta": "Restore",
     "onboardingCta": "I already have a backup",
     "restoreTitle": "Restoring",
@@ -903,7 +903,7 @@
     "phase": {
       "restoring": "Putting your data in place. Do not close Bati.",
       "restartRequired": "Done. Close Bati and open it again to continue.",
-      "failed": "Nothing was replaced — your data is untouched. Close Bati and open it again, then try another file."
+      "failed": "Nothing was replaced. Your data is untouched. Close Bati and open it again, then try another file."
     },
     "rejected": {
       "notSqlite": "That file is not a Bati backup.",
@@ -990,7 +990,7 @@
       ],
       "comeback": [
         "There you are. The village hasn't moved, and it had no need to.",
-        "The door wasn't locked. It never is — that's rather the point of it.",
+        "The door wasn't locked. It never is, which is rather the point of it.",
         "We pick up where it was, and there's no slate to wipe clean.",
         "Time passes for everyone, including the people who train.",
         "Nothing you built has come undone; these things are patient.",
@@ -999,7 +999,7 @@
         "What you know, you still know. The body sulks longer; it will settle."
       ],
       "guide_home": [
-        "This is where the app offers you the next thing. You can always pick something else — it's an opinion, not an order."
+        "This is where the app offers you the next thing. You can always pick something else, because it is an opinion rather than an order."
       ],
       "menu_visit": [
         "Looking before choosing is already choosing, a little.",
@@ -1023,7 +1023,7 @@
         "I have remedies for a great many things. For impatience I've found none.",
         "The body repairs while you do nothing. Badly distributed, I'm aware.",
         "Sit down if you want. People think it's cheating. They're wrong.",
-        "Pain that shouts is usually lying. The kind that whispers — listen to that.",
+        "Pain that shouts is usually lying. Listen to the one that whispers.",
         "I've watched far bigger people go down from not knowing when to stop.",
         "Sleep does more for your muscles than anything I keep in a bottle.",
         "You're sweating. Normal machinery.",
@@ -1045,9 +1045,7 @@
         "I've watched villages disappear. This one isn't going anywhere.",
         "Stay a while. It heals as well as anything in my bottles."
       ],
-      "guide_journal": [
-        "Everything you've done is here. Not to judge you by — to see what's moving."
-      ]
+      "guide_journal": ["Everything you've done is here, so you can see what is moving."]
     },
     "minstrel": {
       "rest": [
@@ -1066,13 +1064,13 @@
       ],
       "village_visit": [
         "I know a song for every roof here. Some of them are even good.",
-        "It's prettier than when I arrived. Not flattery. Well — a little.",
+        "It's prettier than when I arrived. Not flattery. Well, a little.",
         "I've seen capitals with less life in them than this patch of mud.",
         "This square needs a name. I suggest things. Nobody listens.",
         "Every building has a story. I invented half of them, but still.",
         "Travellers ask who built all this. Guess who answers!",
         "One day this place will be sung elsewhere. I'll see to it personally.",
-        "Look at the roofs. No, properly. There — that was the advice.",
+        "Look at the roofs. No, properly. There. That was the advice.",
         "Light in windows that used to be dark.",
         "I wrote three lines about that well. Three. Nobody asked me to.",
         "People settle here. They never ask me why. A shame, really.",
@@ -1083,7 +1081,7 @@
         "Somebody's home! Nobody listens to me, but I say it anyway.",
         "I carried the story on without you. It was markedly worse.",
         "The hero returns next chapter!",
-        "Good timing — I was running out of material.",
+        "Good timing, I was running out of material.",
         "People asked after you. I made things up, as usual.",
         "The village is exactly as you left it, which is rather the point.",
         "Welcome back. I'll put that here, in the chorus. It'll do nicely."
@@ -1119,7 +1117,7 @@
         "Nothing here arrived all at once. Nothing at all."
       ],
       "guide_village": [
-        "Nothing is bought here. What you see, you built by training — one building per muscle."
+        "Nothing is bought here. What you see, you built by training: one building per muscle."
       ]
     },
     "champion": {
@@ -1127,7 +1125,7 @@
         "New ceiling, and the next one sits higher.",
         "That's work coming due.",
         "Took me three winters to get past that notch. Well done anyway.",
-        "Mark beaten. Keep the feeling, not the number — the feeling is what returns.",
+        "Mark beaten. Keep the feeling, not the number. The feeling is what returns.",
         "So that's what it feels like, and you'll know it next time.",
         "The body never does that by accident. There was room, and you took it.",
         "First time. There's only ever one, so stay in it a second.",
@@ -1166,7 +1164,7 @@
         "There'll be a story by morning, wrong in most of its details."
       ],
       "guide_adventures": [
-        "Adventures chain quests together and end on a boss. You can stop between two — it will wait."
+        "Adventures chain quests together and end on a boss. You can stop between two. It will wait."
       ],
       "menu_visit": [
         "I watch the road, you watch your options. Each to their post.",

@@ -1,5 +1,5 @@
 - The caravan reaches a new stronghold: every release now also rides
   to Google's marketplace, with the banner, the sign and the listing
   scrolls loaded onto the same cart as the app.
-- Nothing moves inside the walls: this version paves the road — the
+- Nothing moves inside the walls: this version paves the road, the
   keep itself is unchanged from 1.7.0.

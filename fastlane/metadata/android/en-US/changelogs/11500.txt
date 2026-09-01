@@ -1,6 +1,6 @@
 - The rest countdown beeps its last seconds, and you can mute it
   without leaving the session.
-- Rests happen at a campfire now — a scene drawn for your hero,
+- Rests happen at a campfire now: a scene drawn for your hero,
   behind the timer.
 - Swapping a movement respects how it is measured: seconds for
   seconds, reps for reps.

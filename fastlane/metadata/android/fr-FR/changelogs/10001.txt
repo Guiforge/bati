@@ -1,4 +1,4 @@
 Première version publique.
 
-Quêtes, aventures, combats de boss, village, serments et journal — le tout hors ligne,
+Quêtes, aventures, combats de boss, village, serments et journal, le tout hors ligne,
 sans compte et sans la moindre requête réseau.

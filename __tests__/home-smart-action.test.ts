@@ -167,7 +167,7 @@ describe("useSmartAction", () => {
     // The gold line under the title reads as a sentence. "Oath · Rung 2/3 · Inverted Row" was
     // three fragments glued by middots, and the ladder is nowhere on Home to explain itself.
     expect(result.current.config?.subtext).toBe(
-      "Toward your oath: Pull-ups — rung 2 of 3, tonight: Inverted Row",
+      "Toward your oath: Pull-ups, rung 2 of 3, tonight: Inverted Row",
     );
 
     result.current.config?.onPress();

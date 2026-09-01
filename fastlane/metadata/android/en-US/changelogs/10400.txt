@@ -2,7 +2,7 @@
   earned, and "How was it?" moves above the rewards so the answer that tunes
   your next session is actually seen.
 - The difficulty selector says what each level does: targets ×0.75/1/1.25,
-  XP ×0.9/1/1.2 — no more choosing blind.
+  XP ×0.9/1/1.2, no more choosing blind.
 - Primary buttons go deep indigo, at home in the nocturnal art instead of
   punching through it.
 - Widgets scale to the cell your launcher gives them, the week gets its own

@@ -14,7 +14,7 @@ and the village you build is made of what you actually lifted.
 
 <br />
 
-**[guiforge.github.io/bati](https://guiforge.github.io/bati/)** — the site, in English and French
+**[guiforge.github.io/bati](https://guiforge.github.io/bati/)**, the site, in English and French
 
 [![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=0D33F2)](https://github.com/Guiforge/bati/releases/latest)
@@ -28,7 +28,7 @@ and the village you build is made of what you actually lifted.
 </div>
 
 A workout is a quest. Your reps land as damage on a boss. The muscles you actually train raise
-the buildings of a village that grows out of what you lifted — not out of what you bought.
+the buildings of a village that grows out of what you lifted, not out of what you bought.
 
 Sport first, RPG second: the training logic leads and the game amplifies it. Nothing decorative
 gets between you and your next set.
@@ -100,18 +100,18 @@ database on your phone. [Privacy policy](https://guiforge.github.io/bati/privacy
 
 All of this is also on [the site](https://guiforge.github.io/bati/#install), in English and French.
 
-### F-Droid — the one that updates itself
+### F-Droid, the one that updates itself
 
 Bati is in [the official F-Droid catalogue](https://f-droid.org/packages/com.guiforge.bati/):
 that is what the badge above opens, and searching F-Droid for "Bati" finds it. **Installed from
 GitHub Releases before that?** F-Droid signs its builds with its own key, so the catalogue cannot
 update that copy (Android refuses a different signature, and uninstalling takes your hero with it).
-Keep the self-hosted repository instead — same APKs, same key, updates arriving like any other
-app's — see [`docs/fdroid.md`](docs/fdroid.md).
+Keep the self-hosted repository instead (same APKs, same key, updates arriving like any other
+app's), described in [`docs/fdroid.md`](docs/fdroid.md).
 
 [**Add the repository to F-Droid**](https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
 
-By hand instead — *Settings → Repositories → +* — paste the address, and check that F-Droid shows
+By hand instead, under *Settings → Repositories → +*: paste the address, and check that F-Droid shows
 this fingerprint before you accept it:
 
 ```text
@@ -142,8 +142,8 @@ with that in mind. It is a fun project: I build it because I enjoy building it.
 
 ## Where the art comes from
 
-Every illustration in `assets/` — exercise art, quest and adventure covers, boss portraits,
-village buildings, avatars — is **AI-generated**. Nothing is stock, and nothing is traced from a
+Every illustration in `assets/` (exercise art, quest and adventure covers, boss portraits,
+village buildings, avatars) is **AI-generated**. Nothing is stock, and nothing is traced from a
 specific artist's work.
 
 All of it comes from **FLUX.2 by Black Forest Labs**, through our own API account. That detail is
@@ -181,30 +181,30 @@ the location service this repo owns. Expo Go loads none of them.
 
 All of these run in CI; the first three also run on commit or push.
 
-- **Biome** — formatting and lint, including four GritQL plugins written for this repo. One
+- **Biome**: formatting and lint, including four GritQL plugins written for this repo. One
   rejects raw hex colours outside [`constants/rawColors.ts`](constants/rawColors.ts); another
   ([`noJsNetwork.grit`](.biome/plugins/noJsNetwork.grit)) rejects `fetch`, `XMLHttpRequest`,
   `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app, which is what keeps "one host"
   a fact rather than a sentence in this file.
 - **TypeScript**, strict.
-- **Jest** — ~1200 tests, with coverage thresholds set just under actual so they catch deletion
+- **Jest**: ~1200 tests, with coverage thresholds set just under actual so they catch deletion
   rather than reward padding.
-- **Knip** — dead code. At zero; anything it reports is new.
-- **expo-doctor** — 20 checks on dependency versions and project shape, all green. A version the
+- **Knip**: dead code. At zero; anything it reports is new.
+- **expo-doctor**: 20 checks on dependency versions and project shape, all green. A version the
   installed SDK does not expect builds fine here and fails for whoever rebuilds from source.
-- **Maestro** — end-to-end flows against a real device.
+- **Maestro**: end-to-end flows against a real device.
 
 ## Project layout
 
-- `app/` — Expo Router screens (file-based routing)
-- `components/` — UI, grouped by feature
-- `db/` — SQLite + Drizzle domain logic; the source of truth for game rules
-- `stores/` — Zustand state (session, settings, user)
-- `constants/` — game design constants and the colour palette
-- `modules/` — local Expo modules; `bati-location` is the Kotlin GPS service
-- `docs/` — the wiki: product, design, gameplay, architecture, planning
-- `.maestro/` — E2E flows
-- `plugins/` — local Expo config plugins
+- `app/`: Expo Router screens (file-based routing)
+- `components/`: UI, grouped by feature
+- `db/`: SQLite + Drizzle domain logic; the source of truth for game rules
+- `stores/`: Zustand state (session, settings, user)
+- `constants/`: game design constants and the colour palette
+- `modules/`: local Expo modules; `bati-location` is the Kotlin GPS service
+- `docs/`: the wiki: product, design, gameplay, architecture, planning
+- `.maestro/`: E2E flows
+- `plugins/`: local Expo config plugins
 
 ## Contributing
 

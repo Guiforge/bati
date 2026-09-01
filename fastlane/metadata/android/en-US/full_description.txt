@@ -1,18 +1,18 @@
 Train like a hero, build like a king.
 
-Bati turns strength training into a dark-fantasy RPG. A workout is a quest. Reps land as damage on a boss. The muscles you actually work raise the buildings of a village that grows out of what you lifted — not out of what you bought.
+Bati turns strength training into a dark-fantasy RPG. A workout is a quest. Reps land as damage on a boss. The muscles you actually work raise the buildings of a village that grows out of what you lifted, not out of what you bought.
 
 SPORT FIRST, RPG SECOND
 The training logic leads and the game amplifies it. Nothing decorative gets between you and your next set: large tap targets, high-contrast text, and a screen designed for one hand in a noisy gym.
 
 WHAT YOU GET
-• Quests — guided sessions with targets that adapt to your level
-• Adventures — multi-session campaigns with a story between steps
-• Boss fights — reps become damage; weaknesses and criticals make the numbers mean something
-• Expeditions — walk, run or ride; the ground you cover raises the road out of the village
-• A village — buildings level up from the volume you actually logged
-• Oaths — pick one goal and let the app hold you to it
-• A journal — history, personal records, streaks, muscle balance
+• Quests: guided sessions with targets that adapt to your level
+• Adventures: multi-session campaigns with a story between steps
+• Boss fights: reps become damage; weaknesses and criticals make the numbers mean something
+• Expeditions: walk, run or ride; the ground you cover raises the road out of the village
+• A village: buildings level up from the volume you actually logged
+• Oaths: pick one goal and let the app hold you to it
+• A journal: history, personal records, streaks, muscle balance
 
 YOUR TRAINING STAYS ON YOUR PHONE
 No account. No sign-up. No server of ours. No analytics, no ads, no tracking of any kind. Your sessions, your records and the GPS trace of an expedition live in a database on your device and nowhere else. Uninstalling the app destroys every record it ever made.

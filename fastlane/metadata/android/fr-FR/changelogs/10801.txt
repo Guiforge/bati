@@ -4,4 +4,4 @@
 - « Effets Sonores » disparaît des Réglages : ce réglage n'a jamais joué
   quoi que ce soit, aucun son n'était embarqué derrière. Sa suppression
   retire aussi une permission micro, un service média et deux autres
-  permissions — pour un silence qu'elles n'allaient jamais rompre.
+  permissions, pour un silence qu'elles n'allaient jamais rompre.

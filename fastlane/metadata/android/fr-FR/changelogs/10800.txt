@@ -2,7 +2,7 @@
   sauvegarde » remet ta base au partage du système, « Enregistrer un
   fichier » l'écrit dans le dossier de ton choix. Un seul fichier, ton
   année entière dedans, envoyé nulle part.
-- « Restaurer une sauvegarde » remplace tout par ce fichier — proposé
+- « Restaurer une sauvegarde » remplace tout par ce fichier, proposé
   aussi à l'entrée du village, pour un nouveau téléphone. L'ancienne base
   reste en copie de secours.
 - Fichier étranger, abîmé ou d'une autre version : refusé, avec la raison.

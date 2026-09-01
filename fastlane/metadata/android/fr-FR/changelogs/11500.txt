@@ -1,6 +1,6 @@
 - Le compte à rebours bipe les dernières secondes de repos, et tu
   peux le couper sans quitter la séance.
-- Le repos se passe au coin du feu — une scène dessinée pour ton
+- Le repos se passe au coin du feu : une scène dessinée pour ton
   héros, derrière le minuteur.
 - Remplacer un mouvement respecte sa mesure : des secondes pour des
   secondes, des reps pour des reps.

@@ -4,4 +4,4 @@
 - Sound Effects is gone from Settings. It had never played anything: no
   sound file was ever shipped behind it. Removing it also takes a
   microphone permission, a media service and two more permissions out of
-  the app — for silence it was never going to break.
+  the app, for silence it was never going to break.

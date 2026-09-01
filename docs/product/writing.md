@@ -9,7 +9,7 @@ related: [positioning.md, ../gameplay/villagers.md, ../CONTRIBUTING.md, ../meta/
 # How Bati Writes
 
 > [positioning.md](positioning.md) owns the tone: dark, minimal, confident. This page owns the
-> **sentence** — how it is punctuated, how it is built, and which of these rules a machine holds
+> **sentence**: how it is punctuated, how it is built, and which of these rules a machine holds
 > for you. None of them is a preference. Each is a finding from the copy audit of 31 August 2026,
 > and each names where it is checked or admits that nothing checks it.
 
@@ -41,19 +41,22 @@ the uniformity across all of them.
 
 ## The rules
 
-### 1. Punctuation belongs to a language, not to a project
+### 1. No em dash, in either language, anywhere a person reads
 
-French uses the tiret cadratin for dialogue and, **in pairs**, to isolate an incise. What French
-does not have is the single medial hinge — *"X — not Y"* — which is an English construction, and
-30 of them had been translated across word for word.
+The rule started narrower and was widened by decision. French uses the tiret cadratin for dialogue
+and, in pairs, to isolate an incise; what French does not have is the single medial hinge
+(*"X, not Y"* written with a dash), which is an English construction, and 30 had been translated
+across word for word. So the first version of this rule counted rather than banned, and exempted
+English, where the hinge is correct usage.
 
-So the rule counts rather than bans: an em dash in a French string is fine, an **odd number** of
-them is not. `backup.confirmMessage` uses a correct pair and passes.
+That exemption is gone. The objection was never that the construction is ungrammatical in English.
+It is that eleven of them in a thousand words of README prose read as machine-written whatever any
+individual dash is doing, and a reader who has learned to notice the tic does not stop noticing it
+at the language boundary.
 
-English keeps its hinges. They are correct there and part of the voice. What English does not get
-is *density*: eleven in a thousand words of README prose is the frequency that reads as generated,
-whatever any individual dash is doing. Term-and-gloss dashes in a definition list are exempt,
-because that is what the dash is actually for.
+**A comma, a colon, a full stop or a pair of brackets says the same thing and never has to be
+defended.** Where a dash separated a term from its gloss in a list, a colon does the same job:
+`- **Jest**: ~1200 tests`.
 
 ### 2. One apostrophe, one ellipsis
 
@@ -85,7 +88,7 @@ itself.
 
 ### 4. A voice is a rhythm before it is a vocabulary
 
-Seven villagers were given seven vocabularies — metal, seasons, remedies, songs — and still spoke
+Seven villagers were given seven vocabularies (metal, seasons, remedies, songs) and still spoke
 with one mouth, because all seven were built the same way: a statement, a full stop, a short
 second sentence commenting on the first.
 
@@ -121,26 +124,26 @@ the permissions test: the fix is always to write the string correctly, never to 
 
 | Rule | Held by | Blind to |
 | :--- | :--- | :--- |
-| Em dashes in pairs, French only | `locale-style.test.ts` | `locales/*.json`, the French half of the policy and the French spans of the site — nothing else |
+| No em dash, either language | `locale-style.test.ts` | `locales/*.json`, the README, both legal pages, the whole store listing and its changelogs. Not `docs/`, and not code comments |
 | One apostrophe, one ellipsis | `locale-style.test.ts` | anything outside `locales/*.json` |
 | `tu` outside the legal pages | `locale-style.test.ts` | English, which has no such distinction |
 | No sentence shape over three quarters of a pool | [`__tests__/villagers.test.ts`](../../__tests__/villagers.test.ts) | every string that is not a villager line |
 | No participle agreed with the hero | `villagers.test.ts` | same |
 | Ambient lines cite no data | `villagers.test.ts` | same |
-| Contrastive negation | **nothing, and nothing ever will** | — |
-| Sentence case | **nothing** | — |
-| Dash density in English prose | **nothing** | — |
+| Contrastive negation | **nothing, and nothing ever will** | |
+| Sentence case | **nothing** | |
+| Dash *density* once the dash is gone | **nothing** | a page of nothing but short sentences reads as generated too |
 
 ### The blind spots are the point
 
-Three surfaces carry French and are checked: the locale files, `docs/legal/privacy.md`, and the
-French spans of `docs/legal/index.html`. **Every other French string in the repository is
-unguarded**, including the store listing under `fastlane/metadata/android/fr-FR/`. A new bilingual
-page is a new blind spot until it is added to `FRENCH_PROSE` in the test.
+The dash rule reaches every reader-facing file, the store listing and its published release notes
+included. The others stop at `locales/*.json`, so **the apostrophe, the ellipsis and the register
+are unchecked everywhere else**, and a new page that starts carrying prose is a blind spot until
+someone adds it to `readerFacingFiles()` in the test.
 
-And the three rules at the bottom of the table are not oversights. A machine can count dashes; it
-cannot tell an antithesis that earns its place from the thirty-fourth one in a row. That judgement
-is the reason a person still reads the copy.
+And the rules at the bottom of the table are not oversights. A machine can count dashes; it cannot
+tell an antithesis that earns its place from the thirty-fourth one in a row. That judgement is the
+reason a person still reads the copy.
 
 ---
 
@@ -159,6 +162,6 @@ is the reason a person still reads the copy.
 
 ## Related
 
-- [positioning.md](positioning.md) — the tone these rules serve
-- [../gameplay/villagers.md](../gameplay/villagers.md) — the seven sentence shapes, and the count that found them
-- [../CONTRIBUTING.md](../CONTRIBUTING.md) — conventions for the wiki itself
+- [positioning.md](positioning.md): the tone these rules serve
+- [../gameplay/villagers.md](../gameplay/villagers.md): the seven sentence shapes, and the count that found them
+- [../CONTRIBUTING.md](../CONTRIBUTING.md): conventions for the wiki itself

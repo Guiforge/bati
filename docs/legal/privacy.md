@@ -2,7 +2,7 @@
 layout: default
 prose: true
 title: Privacy Policy
-head_title: "Privacy policy — Bati"
+head_title: "Privacy policy for Bati"
 description: Bati collects nothing about you. No account, no server, no analytics. One network destination, for map tiles.
 type: legal
 status: active
@@ -13,7 +13,7 @@ related: [../planning/roadmap.md]
 
 <div lang="en" markdown="1">
 
-# Privacy Policy — Bati
+# Privacy Policy for Bati
 
 **Last updated: 31 August 2026**
 
@@ -31,14 +31,14 @@ promise is one line longer rather than gone. See [the map](#the-map-and-the-one-
 
 ## What is stored, and where
 
-Everything Bati records — your workouts, sets, reps, hold times, quests, adventures, village,
-achievements, streak, oath, avatar, settings, and the GPS points of an expedition — is written to a
+Everything Bati records (your workouts, sets, reps, hold times, quests, adventures, village,
+achievements, streak, oath, avatar, settings, and the GPS points of an expedition) is written to a
 **SQLite database inside the app's private storage on your device**.
 
 - It is never uploaded, synced, backed up to us, or shared with anyone.
 - We cannot read it. There is no server to read it from.
 - Deleting the app deletes all of it, and there is no copy anywhere else unless you exported one
-  yourself — see below.
+  yourself, as described below.
 
 ## Backups you make
 
@@ -49,17 +49,17 @@ each app update. Where any of those files goes from there is entirely your choic
 it nowhere and has no way to.
 
 - **The file is not encrypted.** Anyone who opens it can read your training history. Keep it the
-  way you would keep a personal photo — and think about it before putting it somewhere shared.
+  way you would keep a personal photo, and think about it before putting it somewhere shared.
 - **Restoring replaces everything.** Importing a backup swaps the app's contents for the file you
   supply. The database you had is kept on the device as a recovery copy, in the same private
   storage, until the next restore overwrites it.
 - **Automatic backup is off until you turn it on**, and turning it on means picking the folder
-  yourself — the app cannot write anywhere you have not pointed it at. It writes only before an
+  yourself: the app cannot write anywhere you have not pointed it at. It writes only before an
   update, only into that folder, and keeps the five most recent files there, deleting older ones
   it wrote itself and nothing else. Settings shows which folder it is using, and switching it off
   is one tap; the files already written stay where they are, because they are yours.
-- If the folder you chose becomes unavailable — a card removed, a folder deleted, a permission
-  withdrawn — Bati stops and the Settings row goes back to **Off**, rather than quietly failing
+- If the folder you chose becomes unavailable (a card removed, a folder deleted, a permission
+  withdrawn), Bati stops and the Settings row goes back to **Off**, rather than quietly failing
   while claiming to work.
 - **This is still local.** A folder you pick may belong to a cloud app (Drive, Dropbox, Nextcloud,
   and others appear in Android's folder picker), and if you pick one, that app syncs the file
@@ -113,7 +113,7 @@ permanent notification during an outing is for: an app watching your position sh
 screen, the whole time.
 
 **Notifications (optional).** Asked for when you turn a reminder on, and used for the expedition
-notification above. Reminders are scheduled locally by your device's operating system — there are
+notification above. Reminders are scheduled locally by your device's operating system: there are
 no push notifications, so there is no server that knows your device.
 
 **Internet.** For map tiles, and nothing else. See [the map](#the-map-and-the-one-host) above.
@@ -134,12 +134,12 @@ the same on-device database.
 ## Crash reports
 
 If Bati crashes, it writes the error and its stack trace **to your device only**. When a
-feature fails without crashing — a backup that could not be written, say — the error message is
+feature fails without crashing (a backup that could not be written, say), the error message is
 kept the same way; that message may include the name of a folder or file you chose.
 
 Nothing is transmitted automatically. If you want to help fix a crash, Settings has a
 "Report a bug" action that opens **your own email app** with the report filled in. You can read
-it, edit it, or delete it before sending — and if you never send it, it never leaves your phone.
+it, edit it, or delete it before sending, and if you never send it, it never leaves your phone.
 Reports you do send are used only to fix the bug and are not shared onward.
 
 ## Children
@@ -161,14 +161,14 @@ plain words rather than folded into a list.
 
 ## Contact
 
-Questions about this policy — and anything else: a bug, an idea, a feature you wish existed:
+Questions about this policy, and anything else (a bug, an idea, a feature you wish existed):
 **feedback.bati@proton.me**
 
 </div>
 
 <div lang="fr" markdown="1">
 
-# Politique de confidentialité — Bati
+# Politique de confidentialité de Bati
 
 **Dernière mise à jour : 31 août 2026**
 
@@ -187,9 +187,9 @@ Voir « La carte, et l'hôte unique » plus bas.
 
 ## Ce qui est stocké, et où
 
-Tout ce que Bati enregistre — séances, séries, répétitions, temps de gainage, quêtes,
+Tout ce que Bati enregistre (séances, séries, répétitions, temps de gainage, quêtes,
 aventures, village, hauts faits, flamme, serment, avatar, réglages et les points GPS d'une
-expédition — est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
+expédition) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
 votre appareil**.
 
 - Rien n'est envoyé, synchronisé, sauvegardé chez nous ni partagé avec qui que ce soit.
@@ -218,8 +218,8 @@ n'en a aucun moyen.
   les cinq fichiers les plus récents, en supprimant les plus anciens qu'elle a elle-même écrits et
   rien d'autre. Les réglages affichent le dossier utilisé, et l'arrêter tient en une pression ;
   les fichiers déjà écrits restent où ils sont, ils sont à vous.
-- Si le dossier choisi devient indisponible — carte retirée, dossier supprimé, autorisation
-  révoquée — Bati s'arrête et la ligne des réglages repasse sur **Désactivée**, plutôt que
+- Si le dossier choisi devient indisponible (carte retirée, dossier supprimé, autorisation
+  révoquée), Bati s'arrête et la ligne des réglages repasse sur **Désactivée**, plutôt que
   d'échouer en silence en prétendant fonctionner.
 - **Cela reste local.** Le dossier que vous choisissez peut appartenir à une application de cloud
   (Drive, Dropbox, Nextcloud et d'autres apparaissent dans le sélecteur de dossier d'Android) ;
@@ -300,7 +300,7 @@ dans la même base locale.
 ## Rapports de crash
 
 En cas de plantage, Bati écrit l'erreur et sa trace **uniquement sur votre appareil**. Quand
-une fonction échoue sans plantage — une sauvegarde impossible à écrire, par exemple — le message
+une fonction échoue sans plantage (une sauvegarde impossible à écrire, par exemple), le message
 d'erreur est conservé de la même façon ; ce message peut contenir le nom d'un dossier ou d'un
 fichier que vous avez choisi.
 

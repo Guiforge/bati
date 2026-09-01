@@ -895,7 +895,7 @@
     "exportFailed": "La sauvegarde n'a pas pu être créée",
     "importFailed": "Ce fichier n'a pas pu être lu",
     "confirmTitle": "Restaurer cette sauvegarde ?",
-    "confirmMessage": "Tout ce qui est sur cet appareil — historique, village, serments — est remplacé par la sauvegarde. Tes données actuelles sont conservées sur l'appareil en copie de secours, mais seule la sauvegarde sera visible.",
+    "confirmMessage": "Tout ce qui est sur cet appareil (historique, village, serments) est remplacé par la sauvegarde. Tes données actuelles sont conservées sur l'appareil en copie de secours, mais seule la sauvegarde sera visible.",
     "confirmCta": "Restaurer",
     "onboardingCta": "J'ai déjà une sauvegarde",
     "restoreTitle": "Restauration",

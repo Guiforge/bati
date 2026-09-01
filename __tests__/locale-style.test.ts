@@ -15,12 +15,14 @@ import * as path from "node:path";
 // 2. One ellipsis. "Chargement..." and "Lancement…" shipped side by side. The real
 //    character wins: three periods are a typewriter workaround.
 //
-// 3. Em dashes come in pairs, in French only. French typography uses the tiret
-//    cadratin for dialogue and, in pairs, to isolate an incise — backup.confirmMessage
-//    does exactly that and is why this rule counts rather than bans. A lone dash mid
-//    sentence is the English hinge ("X — not Y"), and 30 of them had been translated
-//    across before this test existed. en.json is deliberately exempt: there the
-//    construction is correct and part of the voice.
+// 3. No em dash, in any language, on any surface a person reads. The rule started
+//    narrower: French uses the tiret cadratin for dialogue and, in pairs, to isolate
+//    an incise, so the first version of this test counted rather than banned, and
+//    exempted English where the medial hinge is correct usage. It was widened by
+//    decision, not by drift — the objection was never that the construction is
+//    ungrammatical in English, it is that its frequency reads as machine-written
+//    whatever any single dash is doing. A comma, a colon, a full stop or a pair of
+//    brackets says the same thing and never has to be defended.
 //
 // 4. One form of address per surface. The app says `tu`; the privacy policy and the
 //    safety notices say `vous`, because one is a game speaking to a hero and the
@@ -28,23 +30,40 @@ import * as path from "node:path";
 //    line, and the GPS work added two more before this was written down. The rule is
 //    the allowlist below, and widening it is a decision about which surface a screen
 //    belongs to, never a way to land a string.
-//
-// Rule 3 does not stop at the app. The published site and the privacy policy carry
-// French too, and both were written with the same lone hinge — seven of them in the
-// policy alone. They are markdown and HTML rather than JSON, so they get their own
-// check below rather than a second parser: a paragraph of French prose must hold an
-// even number of dashes. A heading is exempt, because "Politique de
-// confidentialité — Bati" is a separator, not an incise.
 
 const ROOT = path.resolve(__dirname, "..");
 const LOCALES = path.join(ROOT, "locales");
 
-/** The French half of the bilingual policy, and the French spans of the bilingual site. */
-const FRENCH_PROSE: Record<string, (source: string) => string> = {
-  "docs/legal/privacy.md": (source) => source.slice(source.indexOf('<div lang="fr"')),
-  "docs/legal/index.html": (source) =>
-    (source.match(/lang="fr"[^>]*>[\s\S]*?<\/span/g) ?? []).join("\n\n"),
-};
+/**
+ * Every file outside `locales/` that a person actually reads: the front page, the policy, the
+ * repository's own pages, and the store listing including its published release notes. Add a
+ * file here the day a new one starts carrying prose, because nothing else will notice.
+ */
+function readerFacingFiles(): string[] {
+  const listings = fs
+    .readdirSync(path.join(ROOT, "fastlane", "metadata", "android"))
+    .flatMap((locale) => {
+      const dir = path.join("fastlane", "metadata", "android", locale);
+      const changelogs = path.join(ROOT, dir, "changelogs");
+      return [
+        path.join(dir, "full_description.txt"),
+        path.join(dir, "short_description.txt"),
+        path.join(dir, "title.txt"),
+        ...(fs.existsSync(changelogs)
+          ? fs.readdirSync(changelogs).map((f) => path.join(dir, "changelogs", f))
+          : []),
+      ];
+    });
+
+  return [
+    "README.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "docs/legal/index.html",
+    "docs/legal/privacy.md",
+    ...listings,
+  ].filter((f) => fs.existsSync(path.join(ROOT, f)));
+}
 
 const APOSTROPHE = "'"; // the form both locale files use; ’ is the banned one here
 const BANNED_APOSTROPHE = "’";
@@ -94,42 +113,19 @@ describe("locale typography", () => {
     expect(offenders(file, (v) => v.includes("..."))).toEqual([]);
   });
 
-  it("fr.json only uses em dashes in pairs", () => {
-    const lonely = offenders("fr.json", (v) => {
-      const count = v.split(EM_DASH).length - 1;
-      return count % 2 !== 0;
-    });
-    expect(lonely).toEqual([]);
+  it.each(["fr.json", "en.json"])("%s uses no em dash at all", (file) => {
+    expect(offenders(file, (v) => v.includes(EM_DASH))).toEqual([]);
   });
 
-  /**
-   * The two sections that address a *user* rather than a hero. Both are documents the app
-   * happens to render: a privacy policy and a set of safety notices, which is why they are
-   * allowed the register a policy is written in. Everything else is the game talking.
-   */
-  const VOUVOIEMENT_ALLOWED = ["privacy.", "safety."];
+  it("no reader-facing file uses an em dash", () => {
+    const offending = readerFacingFiles()
+      .map((file) => ({ file, text: fs.readFileSync(path.join(ROOT, file), "utf8") }))
+      .filter(({ text }) => text.includes(EM_DASH))
+      .map(({ file, text }) => {
+        const line = text.split("\n").findIndex((l) => l.includes(EM_DASH)) + 1;
+        return `${file}:${line}`;
+      });
 
-  it("fr.json says tu everywhere the app speaks for itself", () => {
-    const formal = entriesOf("fr.json")
-      .filter((e) => !VOUVOIEMENT_ALLOWED.some((prefix) => e.key.startsWith(prefix)))
-      .filter((e) => /\b(vous|votre|vos)\b/i.test(e.value))
-      .map((e) => `fr.json → ${e.key}: ${e.value.slice(0, 70)}`);
-
-    expect(formal).toEqual([]);
-    // and the allowed sections really do use it, so emptying them cannot silently
-    // turn this into a rule that checks nothing
-    expect(entriesOf("fr.json").filter((e) => /\bvous\b/i.test(e.value)).length).toBeGreaterThan(0);
-  });
-
-  it.each(Object.keys(FRENCH_PROSE))("%s only uses em dashes in pairs", (file) => {
-    const french = FRENCH_PROSE[file]?.(fs.readFileSync(path.join(ROOT, file), "utf8")) ?? "";
-
-    const lonely = french
-      .split(/\n\s*\n/)
-      .filter((paragraph) => !paragraph.trimStart().startsWith("#"))
-      .filter((paragraph) => (paragraph.split(EM_DASH).length - 1) % 2 !== 0)
-      .map((paragraph) => `${file}: ${paragraph.replace(/\s+/g, " ").trim().slice(0, 90)}`);
-
-    expect(lonely).toEqual([]);
+    expect(offending).toEqual([]);
   });
 });

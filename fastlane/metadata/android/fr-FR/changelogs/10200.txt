@@ -1,7 +1,7 @@
 Le combat de boss était une barre de progression déguisée, et le monstre était plus petit qu'une pompe.
 
-Maintenant le combat, c'est l'écran. Le monstre le remplit, encaisse quand ta série porte, montre ses blessures sous la moitié de sa vie, et s'effondre au coup fatal — chaque boss a désormais un nom, une voix qui répond à tes coups, et quatre peintures au lieu d'une.
+Maintenant le combat, c'est l'écran. Le monstre le remplit, encaisse quand ta série porte, montre ses blessures sous la moitié de sa vie, et s'effondre au coup fatal. Chaque boss a désormais un nom, une voix qui répond à tes coups, et quatre peintures au lieu d'une.
 
-Les PV veulent dire quelque chose. La jauge s'adapte à ta difficulté, donc les campagnes en facile finissent enfin par une mise à mort. Vide-la par tes propres dégâts — atteins tes objectifs, dépasse-les pour des coups critiques — et c'est un Triomphe, avec de l'XP en bonus. Sinon, finir la campagne l'abat quand même : on récompense l'effort, on ne punit jamais.
+Les PV veulent dire quelque chose. La jauge s'adapte à ta difficulté, donc les campagnes en facile finissent enfin par une mise à mort. Vide-la par tes propres dégâts (atteins tes objectifs, dépasse-les pour des coups critiques) et c'est un Triomphe, avec de l'XP en bonus. Sinon, finir la campagne l'abat quand même : on récompense l'effort, on ne punit jamais.
 
-Bats un boss et il revient légendaire — nouvelle forme, plus grand nom, plus grande jauge. Un sur vingt scintille. Les trophées montrent le monstre tombé et sa date ; touche une peinture pour la voir en entier.
+Bats un boss et il revient légendaire : nouvelle forme, plus grand nom, plus grande jauge. Un sur vingt scintille. Les trophées montrent le monstre tombé et sa date ; touche une peinture pour la voir en entier.

@@ -5,7 +5,7 @@ Bati is a personal project built largely with AI assistance, so the bar for a ch
 requests are welcome; so is a plain message to **feedback.bati@proton.me** if opening an issue is
 more ceremony than your idea deserves.
 
-For documentation specifically, see [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) — this page is
+For documentation specifically, see [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). This page is
 about code.
 
 ## Getting set up
@@ -35,7 +35,7 @@ running when you touch navigation or the session flow.
 
 ## What a good change looks like
 
-The rules that matter are in [`AGENTS.md`](AGENTS.md) under *Quality rules* — every one of them
+The rules that matter are in [`AGENTS.md`](AGENTS.md) under *Quality rules*, and every one of them
 is a bug that got past a fully green build, and they are short. The three that come up most:
 
 - **Prefer a type over a test.** If a bug would be "we forgot to update the other place", make
@@ -50,14 +50,14 @@ is a bug that got past a fully green build, and they are short. The three that c
   is a product decision and a policy edit, not a patch. If a feature genuinely needs a request from
   JS, delete that plugin in the same commit and say in the message which host and why.
 
-[`DESIGN.md`](DESIGN.md) holds the visual non-negotiables — dark-only, tokens, one primary action
+[`DESIGN.md`](DESIGN.md) holds the visual non-negotiables: dark-only, tokens, one primary action
 per screen. [`PRODUCT.md`](PRODUCT.md) says who the app is for and what it deliberately refuses
 to be; a feature that fights it will get pushed back on even if the code is good.
 
 ## Comments
 
-Write down *why*, not *what*. Many comments here are small post-mortems — "this used to be X, and
-here is the bug that caused" — and they are the reason the codebase is navigable at all. If you
+Write down *why*, not *what*. Many comments here are small post-mortems ("this used to be X, and
+here is the bug that caused"), and they are the reason the codebase is navigable at all. If you
 cut a corner on purpose, mark it with a `ponytail:` comment naming the ceiling and what would
 trigger the real fix; "refactor planned" tells the next reader nothing.
 
@@ -65,7 +65,7 @@ trigger the real fix; "refactor planned" tells the next reader nothing.
 
 Conventional-ish prefixes (`feat`, `fix`, `refactor`, `docs`, `chore`) with a scope, and a
 subject that says what changed rather than restating the diff. The body is where the reasoning
-goes — it is fine, and encouraged, for it to be longer than the change.
+goes. It is fine, and encouraged, for it to be longer than the change.
 
 ## Releases
 

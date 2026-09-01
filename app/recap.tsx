@@ -8,7 +8,8 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
-import { ChevronLeft } from "@/components/icons";
+import { useToast } from "@/components/common/Toast";
+import { ChevronLeft, Share2 } from "@/components/icons";
 import { formatDistance, formatPace } from "@/constants/distanceFormat";
 import { MAP_ATTRIBUTION, mapStyle } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
@@ -17,6 +18,7 @@ import { pointsOf } from "@/db/gps";
 import type { LocationFix } from "@/modules/bati-location";
 import { toTrace } from "@/src/gps/trace";
 import { accept, EMPTY } from "@/src/gps/track";
+import { flushTrack, shareTrack, trackFileFor } from "@/src/gps/trackFile";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -70,6 +72,7 @@ export default function ExpeditionRecapScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ session?: string | string[] }>();
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
+  const { showError } = useToast();
 
   const sessionUuid = Array.isArray(params.session) ? params.session[0] : params.session;
 
@@ -98,6 +101,29 @@ export default function ExpeditionRecapScreen() {
   const track = (fixes ?? []).reduce(accept, EMPTY);
   const trace = toTrace(fixes ?? []);
 
+  /**
+   * The trace, as a file the hero owns.
+   *
+   * Through `trackFile.ts` rather than a second call to `toGpx` here: that module already decides
+   * where a track is written and what it is called, and the format is the part importers reject.
+   * The name comes from the first fix, so it says when the outing happened and re-exporting the
+   * same one overwrites its own file instead of littering.
+   *
+   * Only where a trace exists. An expedition whose service never started has nothing to hand over,
+   * and a share sheet that opens on an empty file is worse than no button.
+   */
+  const exportTrace = () => {
+    const first = fixes?.[0];
+    if (!first || !fixes) return;
+
+    const file = trackFileFor(first.t);
+    flushTrack(file, fixes, track.distanceM);
+    shareTrack(file).catch((error: unknown) => {
+      reportError("recap.share", error);
+      showError(t("recap.export_failed", "Could not write the file. Try again."));
+    });
+  };
+
   const header = (
     <XStack items="center" gap="$3" px="$5" pt={insets.top + 12} pb="$3">
       <AppIconButton
@@ -107,9 +133,19 @@ export default function ExpeditionRecapScreen() {
       >
         <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
       </AppIconButton>
-      <Text fontWeight="700" fontSize={20} color="$text">
+      <Text flex={1} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
         {t("recap.title", "The ground covered")}
       </Text>
+      {fixes && fixes.length > 0 ? (
+        <AppIconButton
+          testID="recap-export"
+          onPress={exportTrace}
+          accessibilityRole="button"
+          accessibilityLabel={t("recap.export", "Export the trace")}
+        >
+          <Share2 size={20} color="$text" strokeWidth={2.5} />
+        </AppIconButton>
+      ) : null}
     </XStack>
   );
 

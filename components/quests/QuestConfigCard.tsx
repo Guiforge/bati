@@ -66,7 +66,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
         {open ? (
           <YStack gap="$3">
             <Text fontSize={12} color="$textSecondary">
-              {t("quests.config_hint", "Saved for this quest — it comes back next time.")}
+              {t("quests.config_hint", "Saved for this quest. It comes back next time.")}
             </Text>
 
             <Stepper

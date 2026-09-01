@@ -233,7 +233,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
           </Text>
           <Paragraph color="$text" opacity={0.7} size="$3">
             {progression.isEarned
-              ? t("exercises.next_step_earned", "You have earned it — give it a try.")
+              ? t("exercises.next_step_earned", "You have earned it. Give it a try.")
               : t("exercises.next_step_progress", {
                   count: remaining,
                   defaultValue: `Hit your target ${remaining} more times to earn it.`,

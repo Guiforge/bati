@@ -835,7 +835,10 @@
     "distance": "Distance",
     "moving_time": "En mouvement",
     "pace": "Allure",
-    "privacy": "Ton trajet ne quitte jamais ce téléphone. La carte derrière lui est téléchargée depuis OpenFreeMap."
+    "privacy": "Ton trajet ne quitte jamais ce téléphone. La carte derrière lui est téléchargée depuis OpenFreeMap.",
+    "export": "Exporter la trace",
+    "export_hint": "Un fichier GPX, que Strava, Garmin Connect et Komoot lisent tous.",
+    "export_failed": "Le fichier n'a pas pu être écrit. Réessaie."
   },
   "safety": {
     "title": "S'entraîner en sécurité",

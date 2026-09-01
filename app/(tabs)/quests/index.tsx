@@ -689,7 +689,7 @@ export default function QuestsGallery() {
           </XStack>
         </XStack>
         <Text color="$textSecondary" fontSize={13}>
-          {t("quests.gallery_subtitle", "Single workouts — pick one and go")}
+          {t("quests.gallery_subtitle", "Single workouts. Pick one and go")}
         </Text>
       </YStack>
 

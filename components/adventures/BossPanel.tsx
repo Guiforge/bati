@@ -159,7 +159,7 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
         <Text fontSize={11} color="$textSecondary" opacity={0.8}>
           {t(
             "boss.matchup_hint",
-            "Strike its weakness for 1.5× damage — its resistance halves yours.",
+            "Strike its weakness for 1.5× damage; its resistance halves yours.",
           )}
         </Text>
       ) : null}

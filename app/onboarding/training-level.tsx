@@ -53,7 +53,7 @@ export default function TrainingLevelStep() {
         .then(() => router.replace("/onboarding/first-session" as never))
         .catch((error) => {
           reportError("onboarding.finish", error);
-          showError(t("onboarding.save_error", "Could not save — try again"));
+          showError(t("onboarding.save_error", "Could not save. Try again"));
         });
     },
     [success, setHasFinishedOnboarding, router, showError, t],

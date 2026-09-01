@@ -39,6 +39,19 @@ const LOCALES = path.join(ROOT, "locales");
  * repository's own pages, and the store listing including its published release notes. Add a
  * file here the day a new one starts carrying prose, because nothing else will notice.
  */
+function sourceFiles(...roots: string[]): string[] {
+  const out: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (full.endsWith(".tsx") || full.endsWith(".ts")) out.push(full);
+    }
+  };
+  for (const root of roots) walk(root);
+  return out;
+}
+
 function readerFacingFiles(): string[] {
   const listings = fs
     .readdirSync(path.join(ROOT, "fastlane", "metadata", "android"))
@@ -115,6 +128,30 @@ describe("locale typography", () => {
 
   it.each(["fr.json", "en.json"])("%s uses no em dash at all", (file) => {
     expect(offenders(file, (v) => v.includes(EM_DASH))).toEqual([]);
+  });
+
+  /**
+   * The blind spot the first sweep had: `t("key", "fallback")` puts an English string in a `.tsx`,
+   * where neither the locale scan nor the reader-facing one can see it. Ten of them still carried
+   * a dash after every locale file was clean, and a fallback is what a hero reads the moment a key
+   * goes missing.
+   *
+   * Only the dash. Asserting that a fallback equals its key would be the stronger rule and it
+   * fails today on 33 call sites, which is a real finding and a separate decision: those never
+   * render while `i18n-keys.test.ts` holds both files to the same keys.
+   */
+  it("no inline fallback uses an em dash", () => {
+    const offending: string[] = [];
+
+    for (const file of sourceFiles(path.join(ROOT, "app"), path.join(ROOT, "components"))) {
+      const source = fs.readFileSync(file, "utf8");
+      for (const match of source.matchAll(/t\(\s*"([\w.]+)"\s*,\s*"([^"]*)"/g)) {
+        const [, key, fallback] = match;
+        if (fallback?.includes(EM_DASH)) offending.push(`${path.relative(ROOT, file)} → ${key}`);
+      }
+    }
+
+    expect(offending).toEqual([]);
   });
 
   it("no reader-facing file uses an em dash", () => {

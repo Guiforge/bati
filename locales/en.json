@@ -835,7 +835,10 @@
     "distance": "Distance",
     "moving_time": "Moving",
     "pace": "Pace",
-    "privacy": "Your route never leaves this phone. The map behind it is downloaded from OpenFreeMap."
+    "privacy": "Your route never leaves this phone. The map behind it is downloaded from OpenFreeMap.",
+    "export": "Export the trace",
+    "export_hint": "A GPX file, which Strava, Garmin Connect and Komoot all read.",
+    "export_failed": "Could not write the file. Try again."
   },
   "safety": {
     "title": "Train safely",

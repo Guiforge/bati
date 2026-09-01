@@ -270,7 +270,7 @@ export default function SettingsScreen() {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         // A silently-declined permission used to make this row do nothing, forever.
-        showError(t("settings.photos_denied", "Photo access is off — allow it in system settings"));
+        showError(t("settings.photos_denied", "Photo access is off. Allow it in system settings"));
         return;
       }
 

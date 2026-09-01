@@ -362,7 +362,7 @@ export function VillageScene() {
               <Text fontSize={12} color="$textSecondary" opacity={0.8}>
                 {t(
                   "village.loop_hint",
-                  "Every muscle you train raises a building — tap one to see what feeds it.",
+                  "Every muscle you train raises a building. Tap one to see what feeds it.",
                 )}
               </Text>
               <XStack flexWrap="wrap" gap="$3">

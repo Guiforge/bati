@@ -1,7 +1,8 @@
-import { act, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import ExpeditionRecapScreen from "@/app/recap";
+import { ToastProvider } from "@/components/common/Toast";
 import type { LocationFix } from "@/modules/bati-location";
 import { accept, EMPTY } from "@/src/gps/track";
 import { useSettingsStore } from "@/stores/settings";
@@ -18,6 +19,8 @@ import config from "@/tamagui.config";
  */
 
 const mockPointsOf = jest.fn<Promise<LocationFix[]>, [string]>();
+const mockFlushTrack = jest.fn<void, [unknown, unknown, unknown]>();
+const mockShareTrack = jest.fn<Promise<void>, [unknown]>(() => Promise.resolve());
 
 jest.mock("@/db/gps", () => ({ pointsOf: (id: string) => mockPointsOf(id) }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
@@ -25,6 +28,13 @@ jest.mock("@/db", () => ({ preferences: {} }));
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("@/src/widget", () => ({ requestWidgetsUpdate: jest.fn() }));
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
+jest.mock("@/src/gps/trackFile", () => ({
+  FLUSH_EVERY: 30,
+  trackFileFor: (startedAt: number) => ({ name: `bati-${startedAt}.gpx` }),
+  flushTrack: (file: unknown, fixes: unknown, distanceM: unknown) =>
+    mockFlushTrack(file, fixes, distanceM),
+  shareTrack: (file: unknown) => mockShareTrack(file),
+}));
 jest.mock("expo-localization", () => ({
   getLocales: () => [{ languageCode: "en", languageTag: "en-US" }],
 }));
@@ -110,7 +120,12 @@ async function mount() {
         }}
       >
         <TamaguiProvider config={config} defaultTheme="dark">
-          <ExpeditionRecapScreen />
+          {/* The screen reads `useToast` to say so when a trace cannot be written, and the hook
+              throws outside its provider. `app/_layout.tsx` wraps the whole navigator in one, so
+              this mirrors the tree the screen actually renders in rather than working around it. */}
+          <ToastProvider>
+            <ExpeditionRecapScreen />
+          </ToastProvider>
         </TamaguiProvider>
       </SafeAreaProvider>,
     );
@@ -120,6 +135,8 @@ async function mount() {
 
 beforeEach(() => {
   mockPointsOf.mockReset();
+  mockFlushTrack.mockClear();
+  mockShareTrack.mockClear();
   useSettingsStore.setState({ distanceUnit: "metric" });
 });
 
@@ -181,5 +198,40 @@ describe("a session that never left the walls", () => {
     await mount();
     expect(await screen.findByTestId("recap-no-trace")).toBeTruthy();
     expect(screen.queryByTestId("maplibre")).toBeNull();
+  });
+
+  /**
+   * The export was written, tested and shipped to nobody: `shareTrack` was reachable only from
+   * `app/dev-gps.tsx`, which returns null outside `__DEV__`. The recap is where a hero looks at an
+   * outing, this one or one from the journal, so it is where the file is handed over.
+   *
+   * What matters is that it goes through `trackFile.ts` rather than formatting GPX a second time
+   * here, and that it is not offered when there is nothing to hand over.
+   */
+  test("hands the trace over as a file, through the writer that owns the format", async () => {
+    mockPointsOf.mockResolvedValue(walkThenStand());
+    await mount();
+
+    await fireEvent.press(await screen.findByTestId("recap-export"));
+
+    expect(mockFlushTrack).toHaveBeenCalledTimes(1);
+    const [file, fixes, distanceM] = mockFlushTrack.mock.calls[0] as [
+      { name: string },
+      LocationFix[],
+      number,
+    ];
+    // Named after the outing, not after the tap: exporting the same run twice overwrites one file.
+    expect(file.name).toBe(`bati-${walkThenStand()[0]?.t}.gpx`);
+    expect(fixes).toHaveLength(walkThenStand().length);
+    // The reducer's distance, the same one the screen prints, never a fresh sum of the fixes.
+    expect(distanceM).toBeCloseTo(walkThenStand().reduce(accept, EMPTY).distanceM, 5);
+    expect(mockShareTrack).toHaveBeenCalledWith(file);
+  });
+
+  test("offers nothing to export when the walls were never left", async () => {
+    mockPointsOf.mockResolvedValue([]);
+    await mount();
+    expect(await screen.findByTestId("recap-no-trace")).toBeTruthy();
+    expect(screen.queryByTestId("recap-export")).toBeNull();
   });
 });

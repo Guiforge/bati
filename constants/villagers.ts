@@ -23,7 +23,7 @@
  * both react to a record and say completely different things about it, because a voice is not a
  * label on a shared sentence.
  *
- * ## The two writing rules
+ * ## The three writing rules
  *
  * **Ambient never cites data. An event speaks only about its data.** villageFlavour.ts found the
  * first half for the weather line — "nothing may name a number, a muscle or a streak — the moment
@@ -34,6 +34,27 @@
  *
  * `__tests__/villagers.test.ts` enforces what a machine can: no digits in an ambient pool, the
  * length caps, and `en`/`fr` the same length in every pool. The rest is on whoever writes a line.
+ *
+ * **A villager is a sentence shape before they are a subject.** The third rule arrived from a
+ * count rather than a reading: 80% of the 201 lines here were once exactly two sentences, the
+ * second commenting on the first, and all seven villagers sat between 75% and 84% of it, in both
+ * languages. Seven characters can be given seven vocabularies and still speak with one mouth,
+ * because what a reader hears as a voice is the rhythm, not the nouns. So each of them owns a
+ * shape, and the shape is what a new line has to match:
+ *
+ * | id | dominant shape |
+ * |---|---|
+ * | `smith` | blunt and short. Often one sentence, sometimes no verb at all. |
+ * | `sage` | one long breath carried by a subordinate clause, rather than two flat sentences. |
+ * | `herbalist` | an imperative, then the clinical reason for it. |
+ * | `minstrel` | performing: exclamations, questions, self-interruption, wildly uneven lengths. |
+ * | `farmer` | one run-on chained with `et` / `alors`, never stopping in the middle. |
+ * | `champion` | a verdict. Nominal, two or three words, no commentary. |
+ * | `watcher` | report register: the first clause has no verb. |
+ *
+ * Dominant, not exclusive: a shape applied to twelve consecutive lines is a new metronome. The
+ * test enforces the only part a machine can see, which is that no pool goes back to being mostly
+ * one shape, and it is a ratchet like the rest of them.
  *
  * ## The cast
  *

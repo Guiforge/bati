@@ -925,37 +925,37 @@
     "smith": {
       "rest": [
         "Iron cools between blows too. Nobody ever complained about that.",
-        "You're breathing hard. That's the sound work makes once it's been done.",
+        "You're breathing hard. Good sign.",
         "I've seen anvils give out sooner than you have.",
-        "Nothing gets forged in one blow. That's more or less the definition.",
+        "Nothing gets forged in one blow.",
         "Take your time. The work isn't going anywhere in a hurry.",
         "An arm that shakes is an arm that got used.",
         "I sit down between pieces. Nobody has ever said a word about it.",
         "Hardest part of this trade is stopping at the right moment.",
-        "Start again whenever you like. I'm in no rush.",
+        "Start again when you like. I'm in no rush.",
         "Thirty years hitting metal. I've learned to respect a pause.",
         "What you just did shows in the hands before it shows anywhere else.",
-        "Breathe. The rest follows on its own, or it doesn't. We'll see."
+        "Breathe. The rest follows, or it doesn't. We'll see."
       ],
       "personal_record": [
-        "New mark on the post. I cut it myself — that doesn't happen on its own.",
-        "First time that's been done here. It counts, even with nobody watching.",
+        "New mark on the post. I cut it myself.",
+        "First time that's been done here.",
         "Well. The metal gave before you did, for once.",
         "That's clean work. I don't say it often, so take it while it's going.",
-        "You found one more notch. It was there the whole time.",
-        "I'm writing it down. Not for you — for the next one who says it can't be done.",
-        "The form held all the way through. That's what did it, not the strength.",
+        "You found one more notch, and it was there the whole time.",
+        "I'm writing it down. The next one who says it can't be done will have a line to read.",
+        "The form held all the way through. That's where it came from.",
         "There. Nothing magic, nothing spectacular. Just done."
       ],
       "personal_record_beat": [
         "{{exercise}}: {{delta}} more than last time. I keep count.",
-        "You added {{delta}}. Not found, not lucky — added.",
-        "{{delta}} better. That's the exact amount of work it represents.",
+        "You added {{delta}}. Nobody adds that by accident.",
+        "{{delta}} better. That's work, to the gram.",
         "Last time you let go {{delta}} sooner. Not today.",
         "{{delta}} more. Sounds like nothing out loud. In the arms it's something else.",
         "{{exercise}}: {{delta}} better. That goes on the post with the rest.",
-        "{{delta}} above your mark. Your body will remember it before you do.",
-        "You pushed {{delta}} further than before. That didn't happen by itself."
+        "{{delta}} above your mark, and your body will remember it before you do.",
+        "You pushed {{delta}} further than before."
       ],
       "guide_quests": ["Quests are your workouts. Pick one, and I'll see to the rest."],
       "menu_visit": [
@@ -964,26 +964,26 @@
         "I never understood these tables. I have hands, not eyes.",
         "I decide by hitting things. You get to think first. That's a luxury.",
         "Look at all of it, pick one. That's how you avoid scattering yourself.",
-        "There are no bad choices here. Only choices not made, which is different.",
+        "The bad choice here is the one you don't make.",
         "You can stand there a while. The forge will wait. It always waits.",
-        "The best tool is the one you pick up. Not the one you admire.",
+        "The best tool is the one you pick up.",
         "I've watched people choose for an hour. They never forged a thing.",
-        "It isn't decided by weight. It's decided by what you want to become.",
-        "None of this is urgent. It's rather the opposite of urgent.",
+        "You choose what you want to become, the weight follows.",
+        "None of this is urgent.",
         "You already know what you'll take. You're looking to reassure yourself."
       ]
     },
     "sage": {
       "rest": [
-        "Rest is not the opposite of effort. It's the half you don't see.",
+        "Rest is the half of the effort that nobody sees.",
         "Nobody ever climbed a hill without catching their breath halfway up.",
         "I have read a great deal about patience. None of it made me patient.",
-        "What is built quickly comes apart quickly. Tedious, but there it is.",
-        "You are between two things. That is a perfectly honourable place to be.",
+        "What is built quickly comes apart quickly, which is tedious and has always been true.",
+        "You are between two things, which is a perfectly honourable place to be.",
         "Starlight takes centuries to arrive. It doesn't appear to be in a hurry.",
         "People ask me for the secret. The secret is coming back.",
         "A quiet moment never cost anyone what they had already earned.",
-        "There is nothing to prove in the gaps. Only to breathe.",
+        "There is nothing to prove in the gaps, only to breathe.",
         "Forty years of notes. Progress reads in months, never in days.",
         "You will begin again when you like. The world waits very well.",
         "Impatience is an excellent engine and a very poor guide."
@@ -991,9 +991,9 @@
       "comeback": [
         "There you are. The village hasn't moved, and it had no need to.",
         "The door wasn't locked. It never is — that's rather the point of it.",
-        "We pick up where it was. There's no slate to wipe clean.",
+        "We pick up where it was, and there's no slate to wipe clean.",
         "Time passes for everyone, including the people who train.",
-        "Nothing you built has come undone. These things are patient.",
+        "Nothing you built has come undone; these things are patient.",
         "Welcome. That's all I have to say, and it's already a great deal.",
         "The hard part was pushing the door. That's done.",
         "What you know, you still know. The body sulks longer; it will settle."
@@ -1003,47 +1003,47 @@
       ],
       "menu_visit": [
         "Looking before choosing is already choosing, a little.",
-        "There is no correct order. There is the order you'll actually follow.",
-        "Lists are reassuring. That's their real function, and it isn't nothing.",
+        "The right order is the one you'll actually follow.",
+        "Lists are reassuring, which is their real function.",
         "What you don't do today will still exist tomorrow.",
-        "We think we choose between options. Mostly we choose to begin.",
+        "We think we're choosing between options when mostly we're choosing to begin.",
         "Take the one that frightens you least. The others will wait their turn.",
         "I spent my life sorting things. Nothing ever stayed sorted.",
         "A plan too precise breaks on the first surprise. Keep it loose.",
         "You don't have to understand all of it to begin something.",
         "Curiosity is a good reason. It's worth a great many others.",
-        "What's written there isn't a debt. They're possibilities.",
+        "Nothing written there is waiting for you with a bill.",
         "Choose, or don't. Both are valid answers."
       ]
     },
     "herbalist": {
       "rest": [
-        "Drink. Not because I said so — because you'll regret it otherwise.",
+        "Drink. You'll regret it in an hour otherwise.",
         "Breath comes back before the legs do. Always that order. Don't worry.",
         "I have remedies for a great many things. For impatience I've found none.",
         "The body repairs while you do nothing. Badly distributed, I'm aware.",
-        "Sit down if you want. People think it's cheating. It isn't.",
+        "Sit down if you want. People think it's cheating. They're wrong.",
         "Pain that shouts is usually lying. The kind that whispers — listen to that.",
         "I've watched far bigger people go down from not knowing when to stop.",
         "Sleep does more for your muscles than anything I keep in a bottle.",
-        "You're sweating. That's the machinery running, nothing more sinister.",
-        "Breathe through your nose. It isn't superstition, it's plumbing.",
+        "You're sweating. Normal machinery.",
+        "Breathe through your nose. That's plumbing.",
         "Nobody has ever thanked me for advising rest. Everybody comes back.",
-        "What you're feeling has a name, and it isn't a problem."
+        "What you're feeling has a name, and I know it."
       ],
       "village_visit": [
         "My garden has doubled. I'm not complaining, but I weed twice as much.",
-        "There's room for a drying shed now. I've wanted one for a long time.",
-        "People fall ill less in a well-built village. That's checkable.",
+        "There's room for a drying shed now.",
+        "People fall ill less in a well-built village, and that's checkable.",
         "Every extra wall is one less draught. That counts, in winter.",
         "I know each roof by its smoke. A useless talent, I'm aware.",
         "Someone asked me for a cure for pride. I haven't got one. Just as well.",
         "This village breathes better than it did. I usually choose my words.",
-        "Things grow here that didn't grow before. Who knows why.",
+        "Things grow here that didn't grow before.",
         "Look at it without trying to fix anything. That's an exercise too.",
         "The children have somewhere to run now. Worth all my ointments.",
         "I've watched villages disappear. This one isn't going anywhere.",
-        "You can stand there a while. It isn't wasted time."
+        "Stay a while. It heals as well as anything in my bottles."
       ],
       "guide_journal": [
         "Everything you've done is here. Not to judge you by — to see what's moving."
@@ -1055,13 +1055,13 @@
         "In the song, this pause lasts three seconds and is extremely heroic.",
         "I'm adding a verse. It'll make you sound far calmer than this.",
         "Heroes in songs never stop. Which is precisely why they die young.",
-        "I have the title already. The rest turns up at the last moment, as usual.",
+        "I've got the title already!",
         "Do you want the version where you're gasping, or the one where you aren't?",
         "Nobody sings about the pauses. An injustice I intend to correct.",
         "I'm writing all this down. One day it'll be sung in taverns you'll never see.",
         "The crowd, inside my head, is absolutely losing it. You can't hear them.",
         "Pick it up whenever. I'm paid by the verse, not by the hour.",
-        "I need a word for the noise you're making. Nothing quite fits.",
+        "I need a word for the noise you're making. “Groan”? No. “Gasp”? Limp.",
         "This is the part where the audience thinks it's over. They're wrong."
       ],
       "village_visit": [
@@ -1070,10 +1070,10 @@
         "I've seen capitals with less life in them than this patch of mud.",
         "This square needs a name. I suggest things. Nobody listens.",
         "Every building has a story. I invented half of them, but still.",
-        "Travellers ask who built all this. I do enjoy that moment.",
+        "Travellers ask who built all this. Guess who answers!",
         "One day this place will be sung elsewhere. I'll see to it personally.",
         "Look at the roofs. No, properly. There — that was the advice.",
-        "There's light in windows that used to be dark. You notice that.",
+        "Light in windows that used to be dark.",
         "I wrote three lines about that well. Three. Nobody asked me to.",
         "People settle here. They never ask me why. A shame, really.",
         "It's a fine place. I don't say that often, so write it down somewhere."
@@ -1082,39 +1082,39 @@
         "There you are! I kept the song warm. It's a little creased.",
         "Somebody's home! Nobody listens to me, but I say it anyway.",
         "I carried the story on without you. It was markedly worse.",
-        "The hero returns next chapter. That's always the best chapter.",
+        "The hero returns next chapter!",
         "Good timing — I was running out of material.",
         "People asked after you. I made things up, as usual.",
-        "The village is exactly as you left it. That's rather the point of a village.",
+        "The village is exactly as you left it, which is rather the point.",
         "Welcome back. I'll put that here, in the chorus. It'll do nicely."
       ]
     },
     "farmer": {
       "rest": [
-        "I carried sacks all morning. We sit down. Nobody dies of it.",
-        "A field that never rests gives less the next year. Same with you.",
+        "I carried sacks all morning, so we sit down and nobody dies of it.",
+        "A field that never rests gives less the next year, and you are a field.",
         "The work will still be here in two minutes. It's loyal that way.",
         "You don't harvest by sowing harder. Took me ten years to see that.",
         "How often do you do this? Doesn't matter. What matters is coming back.",
-        "People think the harvest is the hard part. It's every day before it.",
+        "The hard part is every day before the harvest, and nobody ever mentions those.",
         "Take a breath. My animals breathe too, and they know their business.",
-        "What you're doing isn't heroic. It's just done properly. That's better.",
+        "That's clean work, and it shows from a long way off.",
         "I've watched whole seasons go past. Nothing good ever went fast.",
         "Nobody is watching you. That's exactly when it counts.",
-        "There'll be days when it's worse than this. Those count too.",
+        "There'll be worse days and they'll count just the same.",
         "The body adapts. A body is stupid, but it is diligent."
       ],
       "village_visit": [
         "All this grew while you were training. That's how it works here.",
-        "The village grows slowly. It's the only pace I know.",
-        "Nobody bought anything here. Every plank was earned.",
+        "The village grows slowly, and it's the only pace I know.",
+        "Nobody bought anything here, every plank was earned.",
         "There are more roofs than there were. I couldn't tell you which.",
-        "We mend, rebuild, start again. It's a village, not a monument.",
-        "I come past every morning. It changes without anyone seeing it change.",
+        "We mend, we rebuild, we start again. That's how a village lives.",
+        "I come past every morning and it changes without anyone seeing it change.",
         "The timber comes from here. So does the rest, if you go back far enough.",
         "What stands is what got done twice rather than once.",
-        "You're looking at your own work. That's not vanity, it's bookkeeping.",
-        "A village is never finished. I find that fairly reassuring.",
+        "You're looking at your own work. Round here we call that doing the books.",
+        "A village is never finished, and I find that fairly reassuring.",
         "You can't see the foundations any more. They still hold up the rest.",
         "Nothing here arrived all at once. Nothing at all."
       ],
@@ -1124,17 +1124,17 @@
     },
     "champion": {
       "personal_record": [
-        "New ceiling. The next one is harder to reach. That's how it goes.",
-        "That wasn't luck. That was work coming due.",
+        "New ceiling, and the next one sits higher.",
+        "That's work coming due.",
         "Took me three winters to get past that notch. Well done anyway.",
         "Mark beaten. Keep the feeling, not the number — the feeling is what returns.",
-        "So that's what it feels like. You'll recognise it next time.",
+        "So that's what it feels like, and you'll know it next time.",
         "The body never does that by accident. There was room, and you took it.",
         "First time. There's only ever one, so stay in it a second.",
         "Clean. Come and find me when you want to go above it."
       ],
       "personal_record_beat": [
-        "{{delta}} more than your best. That's neither nothing nor an accident.",
+        "{{delta}} more than your best. Nobody finds that by accident.",
         "{{exercise}}: {{delta}} above. I know exactly what that costs.",
         "You beat yourself by {{delta}}. The only opponent that counts here.",
         "{{delta}} better. The next step up is higher. It always is.",
@@ -1146,24 +1146,24 @@
       "boss_defeated": [
         "It's over. Sit down before your legs work that out.",
         "I've watched bigger things go down. Not many.",
-        "Struck well right to the end. The end is the hard part, not the start.",
-        "The next one will have heard about you. It won't help.",
-        "You held the distance. That's rarer than strength.",
+        "Struck well right to the end. The end is where it's decided.",
+        "The next one will have heard about you.",
+        "You held the distance. Rarer than strength.",
         "There. It won't happen the same way twice, so look at it a second.",
-        "Stay standing a moment. The village likes to see who comes back.",
-        "Clean. Not elegant, but clean. Both of those comes later."
+        "Stay standing a moment, the village likes to see who comes back.",
+        "Clean. Not elegant, but clean. Both of those come later."
       ]
     },
     "watcher": {
       "boss_defeated": [
-        "It's down. Whatever it was, it isn't any more.",
-        "I watched it come over the ridge weeks ago. I'd not have bet on the outcome.",
-        "The east road is quiet tonight. You're the reason it's quiet.",
-        "From the tower you mostly see what's coming. Tonight, nothing is.",
+        "It's down. Doesn't matter what it was.",
+        "Spotted at the ridge weeks ago. I'd not have bet on the outcome.",
+        "East road: quiet. Thanks to you.",
+        "From the tower you see what's coming. Tonight, nothing.",
         "I've stood the watch down. They can sleep. That doesn't happen often.",
-        "Report's filed. It'll be written exactly as it happened, I promise.",
+        "Report filed, written exactly as it happened.",
         "That was the one nobody comes back from. Statistically, you cheated.",
-        "There'll be a story by morning. Wrong in most details, as they always are."
+        "There'll be a story by morning, wrong in most of its details."
       ],
       "guide_adventures": [
         "Adventures chain quests together and end on a boss. You can stop between two — it will wait."
@@ -1171,16 +1171,16 @@
       "menu_visit": [
         "I watch the road, you watch your options. Each to their post.",
         "Scout before you move. It's the only advice I give twice.",
-        "Distant things always look harder. That's a trick of the eye.",
+        "Distant things always look harder. Trick of the eye.",
         "You can go back on a decision. It isn't a peace treaty.",
-        "Nothing is coming just now. Use it to get ready without hurrying.",
+        "Nothing's coming. Use it.",
         "I'd rather watch you choose slowly than run the wrong way.",
         "The ground changes. What was impossible didn't stay impossible.",
-        "You see better from up here than down there. That's the point of stopping.",
+        "You see better from up here than down there.",
         "Good reconnaissance is worth two hours of walking saved.",
         "You're preparing. It doesn't show immediately, but it shows afterwards.",
         "I log what passes. You log what tempts you. Same trade, really.",
-        "There's nothing to fear in a list. I check. It's my job."
+        "Nothing to fear in a list. I check. It's my job."
       ]
     }
   }

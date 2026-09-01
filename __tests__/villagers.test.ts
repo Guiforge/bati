@@ -89,6 +89,53 @@ describe("villager pools", () => {
     }
   });
 
+  /**
+   * The metronome test.
+   *
+   * Every line in this layer was once built the same way: a statement, a full stop, and a second
+   * short sentence commenting on the first. 80% of the 201 French lines, and all seven villagers
+   * between 75% and 84% of it, which is why they read as one narrator wearing seven hats. Content
+   * cannot fix that, because a reader hears rhythm before they hear vocabulary.
+   *
+   * So the shape is capped rather than prescribed: no pool may be more than three quarters one
+   * shape. `constants/villagers.ts` says which shape each villager leans on; this only refuses
+   * the uniformity, in both languages, because English drifted into the same 76%.
+   *
+   * Guides are exempt by construction — a one-line pool is 100% of one shape and always will be.
+   * A ratchet: tighten it when the pools get more varied, never loosen it to land a batch.
+   */
+  const SHAPE_CAP = 0.75;
+  const sentenceCount = (line: string) =>
+    line
+      .trim()
+      .split(/(?<=[.!?…])\s+/)
+      .filter(Boolean).length;
+
+  test.each(PAIRS)("%s does not write every %s line the same shape", (villager, moment) => {
+    const tooUniform: string[] = [];
+
+    for (const [language, pools] of [
+      ["en", EN],
+      ["fr", FR],
+    ] as const) {
+      const lines = pools[villager]?.[moment] ?? [];
+      if (lines.length < MINIMUM_POOL.event) continue;
+
+      const shapes = new Map<number, number>();
+      for (const line of lines) {
+        const shape = sentenceCount(line);
+        shapes.set(shape, (shapes.get(shape) ?? 0) + 1);
+      }
+
+      const share = Math.max(...shapes.values()) / lines.length;
+      if (share > SHAPE_CAP) {
+        tooUniform.push(`${language}: ${Math.round(share * 100)}% of ${lines.length} lines`);
+      }
+    }
+
+    expect(tooUniform).toEqual([]);
+  });
+
   /** A pool nobody is cast to speak is content that can never appear. */
   test("no villager carries a pool for a moment they never speak", () => {
     const expected = new Set(PAIRS.map(([v, m]) => `${v}.${m}`));

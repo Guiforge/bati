@@ -20,7 +20,8 @@ jest.mock("expo-router", () => ({
     navigate: jest.fn(),
     dismissTo: jest.fn(),
   }),
-  useLocalSearchParams: () => ({ id: "5" }),
+  // Read at call time: one test puts a `?level=hard` on the route to prove an outing ignores it.
+  useLocalSearchParams: () => mockParams,
   // The screen loads on focus; in tests "focused" is simply "mounted".
   useFocusEffect: (effect: () => undefined | (() => void)) => {
     const { useEffect } = require("react");
@@ -40,7 +41,12 @@ jest.mock("@/stores/settings", () => ({
   },
 }));
 
-jest.mock("@/stores/session", () => ({ useSessionStore: () => ({ startSession: jest.fn() }) }));
+jest.mock("@/stores/session", () => ({
+  useSessionStore: () => ({ startSession: mockStartSession }),
+}));
+
+const mockParams: { id: string; level?: string } = { id: "5" };
+const mockStartSession = jest.fn().mockResolvedValue(undefined);
 
 jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn(), showInfo: jest.fn() }),
@@ -157,8 +163,11 @@ jest.mock("@/db", () => ({
   Difficulty: { Easy: "easy", Medium: "medium", Hard: "hard" },
   // Read at call time, so each test may set it before mounting.
   getQuestById: jest.fn(() => Promise.resolve(mockLoaded.quest)),
-  getQuestConfig: jest.fn().mockResolvedValue(null),
-  applyQuestConfig: (quest: unknown) => quest,
+  // Read at call time, like the quest above: a saved `hard` is what an outing has to ignore.
+  getQuestConfig: jest.fn(() => Promise.resolve(mockSaved.config)),
+  // Records the config it is handed, because the level in there is what retargets a swapped
+  // movement — generated at one level and retargeted at another is the trap this pins.
+  applyQuestConfig: jest.fn((quest: unknown) => quest),
   estimateQuestSeconds: jest.fn().mockReturnValue(900),
   estimateQuestXp: jest.fn().mockReturnValue(60),
   formatDurationEstimate: jest.fn().mockReturnValue("15 min"),
@@ -191,6 +200,19 @@ type QuestFixture =
   | ReturnType<typeof workoutQuest>;
 
 const mockLoaded: { quest: QuestFixture } = { quest: expeditionQuest() };
+const mockSaved: { config: { level: string } | null } = { config: null };
+
+beforeEach(() => {
+  mockLoaded.quest = expeditionQuest();
+  mockSaved.config = null;
+  mockParams.id = "5";
+  delete mockParams.level;
+  mockStartSession.mockClear();
+  const db = require("@/db");
+  db.getQuestById.mockClear();
+  db.applyQuestConfig.mockClear();
+  db.estimateQuestXp.mockClear();
+});
 
 async function mountQuest(quest: QuestFixture) {
   mockLoaded.quest = quest;
@@ -220,7 +242,11 @@ describe("an expedition on the quest screen", () => {
     // One movement, one round: this panel holds a single control, and on an outing that control
     // is the whole decision. Collapsed, setting a 45-minute run cost a scroll and two taps
     // behind a Start button that was already on screen.
-    expect(view.getByText("Rounds")).toBeTruthy();
+    //
+    // And the single control really is single now. "Rounds" used to sit above it asking how
+    // many times the hero meant to walk, a question an outing cannot answer: it is one round of
+    // one movement by definition.
+    expect(view.queryByText("Rounds")).toBeNull();
     // The control is labelled by its unit, not by the movement: on a one-movement quest the
     // screen has already named it twice above, and the name truncated in a 70 dp column. It now
     // also names the Duration/Distance toggle, so "Duration" appears exactly twice: the toggle
@@ -246,8 +272,8 @@ describe("an expedition on the quest screen", () => {
 
     expect(view.queryByText("Rest")).toBeNull();
     expect(view.queryByText("Round rest")).toBeNull();
-    // The controls that do something are untouched: rounds, and the outing's own length.
-    expect(view.getByText("Rounds")).toBeTruthy();
+    // Nor rounds: the only control left is the one that decides how far the hero is going.
+    expect(view.queryByText("Rounds")).toBeNull();
     expect(view.getAllByText("Duration")).toHaveLength(2);
   });
 
@@ -294,6 +320,57 @@ describe("an expedition on the quest screen", () => {
     expect(
       view.getByText("Bati reads your position while you are out. It stays on this phone."),
     ).toBeTruthy();
+  });
+
+  /**
+   * The level stretches an outing's duration (675 / 900 / 1125 s) and multiplies its payout
+   * (×0.9 / ×1 / ×1.2) for ground that is already paid by the metre. Offering the choice was
+   * offering to overwrite the duration the hero had just dialled by hand.
+   */
+  test("offers no level, because a walk has none to offer", async () => {
+    const view = await mountQuest(expeditionQuest());
+
+    expect(view.queryByText("Level")).toBeNull();
+    expect(view.queryByText("Easy")).toBeNull();
+    expect(view.queryByText("Medium")).toBeNull();
+    expect(view.queryByText("Hard")).toBeNull();
+    expect(view.queryByText("Baseline targets · XP ×1")).toBeNull();
+  });
+
+  test("loads and starts at medium even with a hard saved on it", async () => {
+    mockSaved.config = { level: "hard" };
+    const view = await mountQuest(expeditionQuest());
+    const db = require("@/db");
+
+    // The first read is what says this is an outing at all, so a saved level may reach
+    // `getQuestById` once. What must never happen is the screen settling on it.
+    await waitFor(() => {
+      const last = db.getQuestById.mock.calls.at(-1);
+      expect(last).toEqual([5, "medium"]);
+    });
+
+    // The trap the review named: `applyQuestConfig` reads `config.level` of its own for
+    // `retargetForMovement`, so a level that outranks the config out here has to outrank it in
+    // there too — otherwise a swapped slot is retargeted at a level the generation never used.
+    expect(db.applyQuestConfig.mock.calls.at(-1)?.[1]).toMatchObject({ level: "medium" });
+
+    await fireEvent.press(view.getByTestId("quest-start"));
+
+    // Started, not merely estimated: the estimate was already medium while the session ran hard.
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+    expect(mockStartSession.mock.calls[0]?.[1]).toBe("medium");
+  });
+
+  test("ignores a level handed to it by the route", async () => {
+    mockParams.level = "hard";
+    const view = await mountQuest(expeditionQuest());
+    const db = require("@/db");
+
+    await waitFor(() => expect(db.getQuestById.mock.calls.at(-1)).toEqual([5, "medium"]));
+
+    await fireEvent.press(view.getByTestId("quest-start"));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+    expect(mockStartSession.mock.calls[0]?.[1]).toBe("medium");
   });
 
   test("a quest with two outdoor movements shows one distance stepper, not one per slot", async () => {
@@ -347,6 +424,21 @@ describe("an ordinary workout keeps every control", () => {
     });
 
     expect(view.getByTestId("quest-location-notice")).toBeTruthy();
+  });
+
+  test("still chooses its level, and runs at the one it chose", async () => {
+    mockSaved.config = { level: "hard" };
+    const view = await mountQuest(workoutQuest());
+    const db = require("@/db");
+
+    expect(view.getByText("Level")).toBeTruthy();
+    expect(view.getByText("Targets +25% · XP ×1.2")).toBeTruthy();
+
+    await waitFor(() => expect(db.getQuestById.mock.calls.at(-1)).toEqual([5, "hard"]));
+
+    await fireEvent.press(view.getByTestId("quest-start"));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+    expect(mockStartSession.mock.calls[0]?.[1]).toBe("hard");
   });
 
   test("a workout offers no distance", async () => {

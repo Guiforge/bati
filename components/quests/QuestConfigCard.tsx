@@ -119,6 +119,77 @@ function OutingGoalControls({
   );
 }
 
+/**
+ * The steppers that answer to the quest's own shape: how many rounds, and the rests between.
+ *
+ * Lifted out of the card because each of them is a question the quest may or may not have, and
+ * three conditionals in a component that already branches on units, overrides and a fold is how
+ * a render function stops being readable.
+ */
+function ShapeSteppers({
+  quest,
+  config,
+  outing,
+  onChange,
+}: {
+  quest: Quest;
+  config: QuestConfig;
+  outing: boolean;
+  onChange: (config: QuestConfig) => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      {/* Rounds, but not on a walk. Three rounds of walking is not a thing anyone does,
+          and a control offered on a screen is a decision asked of the hero: this one asked
+          a question with no honest answer, sat above the only control that matters here,
+          and cost a scroll to get past. An outing is one round of one movement by
+          definition (`isOutingQuest`), so there was never a second value to pick. */}
+      {outing ? null : (
+        <Stepper
+          label={t("quests.config_rounds", "Rounds")}
+          value={quest.rounds}
+          min={ROUNDS_RANGE.min}
+          max={ROUNDS_RANGE.max}
+          onChange={(rounds) => onChange({ ...config, rounds })}
+        />
+      )}
+
+      {/* The label renders on one line, so which rest is which goes in the hint. Both
+          steppers answer to the quest's shape: see components/quests/questShape.ts. The
+          Rounds stepper above is what brings the round rest back, in the same breath, on
+          every quest that still has one. */}
+      {restsBetweenExercises(quest) ? (
+        <Stepper
+          label={t("quests.config_rest", "Rest")}
+          hint={t("quests.config_rest_hint", "Between exercises")}
+          value={quest.restSeconds}
+          min={REST_RANGE.min}
+          max={REST_RANGE.max}
+          step={REST_STEP}
+          suffix="s"
+          onChange={(restSeconds) => onChange({ ...config, restSeconds })}
+        />
+      ) : null}
+
+      {/* Null means the quest has no separate round rest, so the short one is what runs. */}
+      {restsBetweenRounds(quest) ? (
+        <Stepper
+          label={t("quests.config_round_rest", "Round rest")}
+          hint={t("quests.config_round_rest_hint", "Between rounds")}
+          value={quest.roundRestSeconds ?? quest.restSeconds}
+          min={REST_RANGE.min}
+          max={REST_RANGE.max}
+          step={REST_STEP}
+          suffix="s"
+          onChange={(roundRestSeconds) => onChange({ ...config, roundRestSeconds })}
+        />
+      ) : null}
+    </>
+  );
+}
+
 type Props = {
   /** The quest with the config already applied, so the steppers show what will actually run. */
   quest: Quest;
@@ -204,43 +275,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
               {t("quests.config_hint", "Saved for this quest. It comes back next time.")}
             </Text>
 
-            <Stepper
-              label={t("quests.config_rounds", "Rounds")}
-              value={quest.rounds}
-              min={ROUNDS_RANGE.min}
-              max={ROUNDS_RANGE.max}
-              onChange={(rounds) => onChange({ ...config, rounds })}
-            />
-
-            {/* The label renders on one line, so which rest is which goes in the hint. Both
-                steppers answer to the quest's shape: see components/quests/questShape.ts. The
-                Rounds stepper above is what brings the round rest back, in the same breath. */}
-            {restsBetweenExercises(quest) ? (
-              <Stepper
-                label={t("quests.config_rest", "Rest")}
-                hint={t("quests.config_rest_hint", "Between exercises")}
-                value={quest.restSeconds}
-                min={REST_RANGE.min}
-                max={REST_RANGE.max}
-                step={REST_STEP}
-                suffix="s"
-                onChange={(restSeconds) => onChange({ ...config, restSeconds })}
-              />
-            ) : null}
-
-            {/* Null means the quest has no separate round rest, so the short one is what runs. */}
-            {restsBetweenRounds(quest) ? (
-              <Stepper
-                label={t("quests.config_round_rest", "Round rest")}
-                hint={t("quests.config_round_rest_hint", "Between rounds")}
-                value={quest.roundRestSeconds ?? quest.restSeconds}
-                min={REST_RANGE.min}
-                max={REST_RANGE.max}
-                step={REST_STEP}
-                suffix="s"
-                onChange={(roundRestSeconds) => onChange({ ...config, roundRestSeconds })}
-              />
-            ) : null}
+            <ShapeSteppers quest={quest} config={config} outing={outing} onChange={onChange} />
 
             <Separator borderColor="$borderStrong" />
 

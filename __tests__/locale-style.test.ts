@@ -154,6 +154,47 @@ describe("locale typography", () => {
     expect(offending).toEqual([]);
   });
 
+  /**
+   * Seed content is the third surface, and it was invisible to all of the above: an exercise or
+   * quest description lives in a `drizzle/*.sql` string, reaches the hero through the database,
+   * and no locale scan can see it. `0041` shipped three movement instructions with a dash and a
+   * `vous` in them, on a branch whose whole point was the outing they describe.
+   *
+   * A ratchet, like `seed-migration-guard.test.ts`: the seven migrations below carry the same
+   * debt and are named rather than fixed, because their rows are already in every installed
+   * database. Editing those files changes nothing for a hero who has them; only a new migration
+   * would, and that is a copy pass in two languages, not a lint fix. Never add a file to this
+   * list. SQL line comments are code, and are skipped like every other comment in the repo.
+   */
+  const SEED_DEBT = [
+    "0006_content_expansion.sql",
+    "0016_seed_new_quests.sql",
+    "0017_seed_adventures.sql",
+    "0024_mobility_branch.sql",
+    "0029_fr_tutoiement.sql",
+    "0032_calisthenics_rungs.sql",
+    "0033_calisthenics_summits.sql",
+  ];
+
+  it("no seeded string uses an em dash", () => {
+    const dir = path.join(ROOT, "drizzle");
+    const offending = fs
+      .readdirSync(dir)
+      .filter((file) => file.endsWith(".sql") && !SEED_DEBT.includes(file))
+      .flatMap((file) => {
+        const body = fs
+          .readFileSync(path.join(dir, file), "utf8")
+          .split("\n")
+          .filter((line) => !line.trimStart().startsWith("--"))
+          .join("\n");
+        return [...body.matchAll(/'((?:[^']|'')*)'/g)]
+          .filter((match) => match[1]?.includes(EM_DASH))
+          .map(() => file);
+      });
+
+    expect(offending).toEqual([]);
+  });
+
   it("no reader-facing file uses an em dash", () => {
     const offending = readerFacingFiles()
       .map((file) => ({ file, text: fs.readFileSync(path.join(ROOT, file), "utf8") }))

@@ -509,7 +509,9 @@ export default function QuestDetails() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      {/* Clears the pinned bar below: 100 for the button and its padding, 40 more for the
+          two lines of location notice an outing adds above it. */}
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + (isOuting ? 140 : 100) }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
@@ -710,16 +712,6 @@ export default function QuestDetails() {
             />
           ) : null}
 
-          {/* The one promise made before the promise is needed. `stores/expedition` asks Android
-              for the location permission during the countdown, which is the worst moment to meet
-              a system dialog with no idea why it is there. Under the panel that sets the outing's
-              length, above the button that starts it: the last thing read before committing. */}
-          {isOuting ? (
-            <Text testID="quest-location-notice" fontSize={13} color="$textSecondary">
-              {t("quests.location_notice")}
-            </Text>
-          ) : null}
-
           {quest ? (
             <YStack gap="$3">
               <Text fontWeight="700" fontSize={18} color="$text">
@@ -878,8 +870,22 @@ export default function QuestDetails() {
           bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"
+          gap="$2"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         >
+          {/* The one promise made before the promise is needed. `stores/expedition` asks Android
+              for the location permission during the countdown, which is the worst moment to meet
+              a system dialog with no idea why it is there.
+
+              In the pinned bar rather than in the page: it lived under the config panel, and on a
+              Fairphone 6 that put it below the fold while this button stayed on screen the whole
+              time. A hero who tapped straight away never read it, which is the entire job it had. */}
+          {isOuting ? (
+            <Text testID="quest-location-notice" fontSize={13} color="$textSecondary">
+              {t("quests.location_notice")}
+            </Text>
+          ) : null}
+
           <AppButton
             testID="quest-start"
             height={60}

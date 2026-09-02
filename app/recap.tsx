@@ -323,19 +323,22 @@ export default function ExpeditionRecapScreen() {
             absence of measurement. */}
         {recap?.leaguesM ? (
           <XStack>
+            {/* The same three keys the victory screen reads. They were `recap.*` here and
+                `session.expedition_*` there, so one value wore "Distance" on one screen and
+                "Terrain parcouru" on the next, for the same walk, two taps apart. */}
             <Figure
               testID="recap-distance"
-              label={t("recap.distance")}
+              label={t("session.expedition_ground")}
               value={formatDistance(recap.leaguesM, distanceUnit)}
             />
             <Figure
               testID="recap-moving"
-              label={t("recap.moving_time")}
+              label={t("session.expedition_moving")}
               value={formatClock(track.movingMs)}
             />
             <Figure
               testID="recap-pace"
-              label={t("recap.pace")}
+              label={t("session.expedition_pace")}
               value={formatPace(recap.leaguesM, track.movingMs, distanceUnit)}
             />
           </XStack>

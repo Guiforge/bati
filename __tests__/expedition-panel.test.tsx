@@ -199,7 +199,7 @@ describe("ExpeditionPanel", () => {
   test("the status says the goal was reached, ahead of moving or standing still", async () => {
     setTrack({ startedAt: 1, distanceM: 3000, movingMs: 600_000 }, { goalReached: true });
     await mount();
-    expect(screen.getByText("Goal reached")).toBeTruthy();
+    expect(screen.getByText("Goal met")).toBeTruthy();
     expect(screen.queryByText("On the road")).toBeNull();
   });
 });

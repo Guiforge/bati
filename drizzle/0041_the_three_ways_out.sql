@@ -33,8 +33,8 @@ INSERT INTO `exercises` (
 VALUES (
         'Warden''s Walk',
         'Marche du Veilleur',
-        'Walk at a pace you could hold a conversation at, and keep it there. The point is the ground covered and the time on your feet, not the effort.',
-        'Marchez à une allure où vous pourriez tenir une conversation, et tenez-la. Ce qui compte est le terrain parcouru et le temps passé debout, pas l''effort.',
+        'Walk at a pace you could hold a conversation at, and keep it there. What counts is the ground covered and the time on your feet.',
+        'Marche à une allure où tu pourrais tenir une conversation, et tiens-la. Ce qui compte est le terrain parcouru et le temps passé debout.',
         'Admin', 'easy', 'none', 'expedition', 'locomotion', 'time', 1,
         'assets/images/exercises/wardens_walk.jpg',
         strftime('%s', 'now') * 1000, strftime('%s', 'now') * 1000
@@ -48,8 +48,8 @@ INSERT INTO `exercises` (
 VALUES (
         'Messenger''s Run',
         'Course du Messager',
-        'Run at a pace you can sustain to the end, not the one you can start with. Walk when you need to and pick it up again — the distance is what arrives, not the style.',
-        'Courez à une allure que vous pouvez tenir jusqu''au bout, pas à celle avec laquelle vous pouvez partir. Marchez quand il le faut et repartez — c''est la distance qui arrive, pas la manière.',
+        'Run at a pace you can keep to the end. Walk when you need to, then pick it up again. What counts is arriving.',
+        'Cours à une allure que tu peux tenir jusqu''au bout. Marche quand il le faut, puis repars. Ce qui compte est d''arriver.',
         'Admin', 'medium', 'none', 'expedition', 'locomotion', 'time', 1,
         'assets/images/exercises/messengers_run.jpg',
         strftime('%s', 'now') * 1000, strftime('%s', 'now') * 1000
@@ -64,7 +64,7 @@ VALUES (
         'Outrider''s Ride',
         'Chevauchée de l''Éclaireur',
         'Ride steadily rather than in bursts. A mount covers four times a walker''s ground in the same hour, which is the whole reason to take one.',
-        'Roulez régulièrement plutôt que par à-coups. Une monture couvre quatre fois le terrain d''un marcheur dans la même heure, et c''est toute la raison d''en prendre une.',
+        'Roule régulièrement plutôt que par à-coups. Une monture couvre quatre fois le terrain d''un marcheur dans la même heure, et c''est toute la raison d''en prendre une.',
         'Admin', 'easy', 'none', 'expedition', 'locomotion', 'time', 1,
         'assets/images/exercises/outriders_ride.jpg',
         strftime('%s', 'now') * 1000, strftime('%s', 'now') * 1000

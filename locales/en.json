@@ -443,7 +443,7 @@
     "expedition_status_moving": "On the road",
     "expedition_status_paused": "Standing still",
     "expedition_status_error": "No signal",
-    "expedition_reached": "Goal reached",
+    "expedition_reached": "Goal met",
     "expedition_accuracy": "within {{metres}} m",
     "expedition_acquiring": "Finding the sky",
     "expedition_tracking": "On the road",
@@ -533,7 +533,7 @@
     "expedition_status_denied": "Location is off for Bati",
     "expedition_open_settings": "Open settings",
     "expedition_acquiring_hint": "The first fix can take a few minutes outdoors. Set off anyway, the trace will catch up.",
-    "expedition_ground": "Ground covered",
+    "expedition_ground": "Ground",
     "expedition_moving": "Moving",
     "expedition_pace": "Pace",
     "expedition_road": "{{building}} · {{value}}/{{target}} leagues"
@@ -845,9 +845,6 @@
     "title": "The ground covered",
     "open": "See the ground covered",
     "no_trace": "This quest never left the walls.",
-    "distance": "Distance",
-    "moving_time": "Moving",
-    "pace": "Pace",
     "privacy": "Your route never leaves this phone. The map behind it is downloaded from OpenFreeMap.",
     "export": "Export the trace",
     "export_failed": "Could not write the file. Try again."

@@ -31,13 +31,16 @@ et c'est le parcours qui manque totalement.
   l'OS l'éteint, l'OS le verrouille, la notification est le tableau de bord. C'est le verrou de
   poche, gratuit, et c'est la décision « pas de carte pour la batterie » enfin tenue jusqu'au
   bout.
-- **Une lieue annoncée à voix haute** est le seul moment où le RPG existe pendant la sortie.
+- **Une lieue qui se signale toute seule**, avec le bip qui existe déjà, sans que le téléphone
+  sorte de la poche. C'est la v2.3, et la revue a montré que le compteur de lieues reste à
+  construire.
 - **Le pont.** Sur le récap d'une sortie libre, « En faire une quête ». C'est comme ça qu'on
   fabrique des préparés, sans jamais leur demander de se décider avant d'avoir couru.
 
 ## Constraints
 
-- Rien ne sort du téléphone. La voix est la TTS de la plateforme, pas un service.
+- Rien ne sort du téléphone. Pas de synthèse vocale dans ce plan : le son est `src/sounds.ts`,
+  ses deux cues et son réglage `soundEnabled`, rien de plus.
 - Pas de carte pendant la sortie (batterie). La carte du récap, ses couleurs d'allure et ses
   pastilles de lieue ne bougent pas.
 - Les lieues, le Grand Chemin et le serment en lieues restent la récompense.
@@ -50,34 +53,36 @@ et c'est le parcours qui manque totalement.
 
 Les huit du 31/08 restent acquises. Celles-ci s'y ajoutent, validées le 02/09.
 
-1. **La sortie libre est un état de données, pas un écran.** La porte rapide démarre avec
-   `free: true`, et `begin()` reçoit `null` à la place de `outingGoal(...)`. Aucune migration :
-   la seed garde sa fourchette de temps (0042), les 900 s sont ce que `generateTarget` tire au
-   niveau medium, et ils restent une suggestion visible seulement sur la porte préparée.
-   `free` vit dans `SessionState` jusqu'au `completeExercise` (ce que son entrée dans
-   `SavedSessionState` impose de toute façon) : sur une sortie libre, la ligne
-   `completed_exercises` s'écrit **sans `target`**. Les colonnes sont nullable (schema l. 497),
-   `CompletedExerciseInput.target` est optionnel, et le journal gère déjà `cex.target` null,
-   alors qu'il colorerait en vert un 900 s « atteint » sur une sortie qui n'en a jamais eu.
+1. **La sortie libre est un état de données, pas un écran.** *Forme révisée en revue :* le champ
+   `distanceGoalM` devient `goal: OutingGoal | null`, et « libre » **est** `goal === null`. Pas de
+   booléen `free`, pas de fonction pour réconcilier les deux : un état que le type porte partout
+   où il passe. Aucune migration non plus, la seed garde sa fourchette de temps (0042) et les
+   900 s restent ce que `generateTarget` tire au niveau medium, visible seulement sur la porte
+   préparée. Sur une sortie libre, la ligne `completed_exercises` s'écrit **sans `target`** : les
+   colonnes sont nullable (schema l. 497), `CompletedExerciseInput.target` est optionnel, et le
+   journal gère déjà `cex.target` null, alors qu'il colorerait en vert une cible que le héros n'a
+   jamais choisie.
 2. **Le clamp n'est plus le premier ticket.** `sessionClock` (`stores/session.ts:449`) prend déjà
    les secondes mesurées quand il y a des fixes. Le trou réel est le repli sans fix (permission
    refusée, ciel bouché) : une sortie prend les secondes mesurées, jamais l'estimation d'une
    quête.
-3. **XP et plancher sont déjà réglés.** L'XP d'une sortie se paie sur les secondes en mouvement
-   sans lire la cible (`db/xp.ts:129`). « C'était court » à 120 s existe pour toute séance et
-   jeter n'écrit aucune ligne, donc le serment est déjà protégé par le choix du héros. Pas de
-   plancher côté serment. **Vrai avec des fixes seulement** : sans fix, `effortCeilingSeconds`
-   retombe sur la durée moins le repos, donc le repli sans fix doit borner l'effort à part
-   (v2.1).
+3. **Le plancher est réglé, l'XP ne l'était pas.** *Révisée en revue.* « C'était court » à 120 s
+   existe pour toute séance et jeter n'écrit aucune ligne, donc le serment est protégé par le
+   choix du héros, rien à ajouter. Mais l'XP d'une sortie n'est pas réglée : elle se paie sur le
+   *résultat* écrit, et deux bornes le mutilent. `clampResultValue` plafonne tout résultat de
+   type temps à 3600 s, donc une sortie de deux heures est payée une heure ; et une sortie reprise
+   après un kill écrit le chrono d'après reprise, presque zéro. Les deux sont sur `main`, les deux
+   sont en tête de la v2.1.
 4. **La porte rapide vit sur l'Accueil.** Un tap sur Marche / Course / Vélo démarre, sans compte
    à rebours ni écran intermédiaire. Les deux permissions, position puis notification, se
    demandent à ce tap, avant `startSession`. `begin()` **garde** ses deux `requestPermission`,
    idempotents quand la permission est déjà accordée : c'est le seul appel que la porte préparée
    a, et le retirer recréerait la feature morte sur une vraie install que son commentaire
    raconte. Idempotent ne suffit pas pour la notification : refusée au tap avec `canAskAgain`
-   encore vrai, elle serait redemandée par `begin()` par-dessus le chrono. La bande stocke donc
-   les deux réponses, et `beginTrackingIfOuting` passe `askNotification: false` quand une
-   réponse existe déjà. Sur la porte rapide, `begin()` ne montre plus aucun dialogue.
+   encore vrai, elle serait redemandée par `begin()` par-dessus le chrono, donc la bande passe
+   `askNotification: false` quand elle a déjà une réponse. Cette réponse ne se **persiste** pas :
+   un refus stocké ne se mettrait jamais à jour quand le héros accorde la permission depuis les
+   réglages Android. Sur la porte rapide, `begin()` ne montre plus aucun dialogue.
 5. **Le niveau disparaît des sorties.** Il n'a pas d'effet honnête sur une marche et il effaçait
    la durée réglée à la main.
 6. **Le gros chiffre suit l'unité de l'objectif.** Chrono en mode libre, qui compte vers le haut ;
@@ -92,9 +97,12 @@ Les huit du 31/08 restent acquises. Celles-ci s'y ajoutent, validées le 02/09.
    accidentel alors que l'écran s'éteint déjà seul.
 8. **Les blocs sont un design à part.** Le fractionné (règle 7 de l'audit) et la réouverture de
    `distance` comme type de cible attendent que le partant ait sa porte.
-9. **Le son se conçoit.** Trois modes, Tout / Objectif / Silence. Voix par défaut, Silence
-   disponible, jamais de bips : OpenTracks a un ticket qui réclame des bips à la place de la
-   voix, ce qui dit que la voix est la norme et les bips la minorité.
+9. **Le son se réutilise, il ne s'invente pas.** *Révisée deux fois en revue.* Pas de voix : les
+   cues de `src/sounds.ts` suffisent et `soundEnabled` reste l'unique interrupteur. Mais ce n'est
+   pas gratuit pour autant, la revue d'ingénierie l'a vérifié : aucun événement « lieue franchie »
+   n'existe encore, le cue d'objectif n'a pas d'objet en mode libre puisque `goalReached(null)`
+   rend faux, et le mixage sous la musique rend un tick de 70 ms inaudible à allure de course.
+   La v2.3 est un vrai ticket, pas trois lignes de réutilisation.
 
 ## Cross-Model Perspective
 
@@ -108,9 +116,11 @@ refaire). Ce qu'il a apporté :
 - **Une sortie sans fix laissée ouverte toute la nuit** fait un journal de 9 h et prend le record
   « plus longue séance » : un plafond bête de 4 h sur le repli sans fix.
 - **L'objectif ne vit que dans la closure de `begin()`**, le panneau ne peut pas savoir dans
-  quelle unité afficher : un champ `goal: OutingGoal | null` dans `stores/expedition.ts`.
-- **La voix, c'est le service**, qui a déjà toutes ses chaînes localisées et connaît la distance.
-  `android.speech.tts.TextToSpeech`, zéro dépendance.
+  quelle unité afficher. Son champ stocké a été refusé en revue au profit d'une dérivation
+  partagée, mais le trou qu'il avait vu était réel.
+- **Écarté en revue** : sa proposition de faire parler le service. La voix sort entièrement du
+  plan, les bips existants la remplacent, et la question `expo-speech` contre TTS natif tombe
+  avec elle.
 - **Ce qui l'excite chez l'auteur** : la soustraction. « Vérifier que le code a déjà raison et que
   le produit est en retard sur lui. » Le risque nommé : sous-investir les surfaces neuves parce
   qu'elles ne sont « que » de l'UI.
@@ -129,129 +139,274 @@ stepper de 360 taps et le pont à l'état de dessin.
 ### Approach C: La sortie sans écran
 Widget 1x1, notification comme tableau de bord, voix par lieue, écran de séance réduit. Effort M.
 Pas choisie parce qu'elle ne traite pas la porte préparée et que le widget ouvre par deep link ;
-ses deux meilleures idées (action « Terminer », voix du service) sont dans B.
+sa meilleure idée, l'action « Terminer » sur la notification, est dans B. Sa voix par lieue a
+été refusée en revue et remplacée par les bips existants.
 
 ## Recommended Approach: B, deux portes, trois versions
 
-**v2.1, la porte rapide.** Tout est soustraction ou condition.
+**v2.1, la porte rapide.** Deux réparations d'abord, puis la porte. La revue d'ingénierie du
+02/09 a trouvé deux bugs d'XP qui existent sur `main` et que cette refonte rendrait fréquents :
+il serait absurde de débloquer les longues sorties sans les payer.
 
-- `stores/session.ts` : `startSession(quest, level, { free, skipCountdown, distanceGoalM })`.
-  `free` fait passer `null` à `begin()` à la place de `outingGoal(...)` et entre dans
-  `SavedSessionState`. `skipCountdown` fait ce que `finishCountdown` fait aujourd'hui (l. 808 :
-  `status: "running"`, `timerStartTimestamp`, `timerDuration` du premier slot) sans passer par
-  `countdown`, et pose `warmupSequence: []` pour qu'un snapshot restauré ne relance pas
-  l'échauffement. Extraire le corps de `finishCountdown`, l'appeler des deux endroits. Sans le
-  timer, `useSessionTimer` rend `IDLE_TIMER` et la sortie est payée 1 s.
+### Les deux réparations, en tête
+
+- **Une sortie de plus d'une heure est payée une heure.** `clampResultValue`
+  (`stores/session.ts:84`) borne tout résultat `time` à `TIME_TARGET_MAX = 3600`
+  (`db/targets.ts:60`), et l'XP se paie sur ce résultat. Un deux heures de vélo perd la moitié
+  de son XP aujourd'hui. Le plafond existe pour empêcher un résultat absurde d'atteindre la
+  volume musculaire, le village et les records ; une sortie a un témoin que les autres n'ont
+  pas, ses secondes en mouvement. Borner par style plutôt que par type de cible.
+- **Une sortie reprise après un kill ne paie presque rien.** `useSessionRecovery.ts:165` fait
+  `timerStartTimestamp = saved.timerStartTimestamp + pauseDuration`, et pour une sortie le
+  snapshot n'est écrit qu'une fois, au départ : le chrono repart de zéro, et `handleComplete`
+  enregistre cette valeur comme résultat. Le journal, lui, lit la trace et dit vrai. La ligne de
+  résultat doit lire la même règle que le journal, pas le chrono de l'écran.
+
+### Le chemin de données
+
+- **`distanceGoalM` devient `goal: OutingGoal | null`.** *Décidé en revue, contre le premier
+  jet.* Le champ existe déjà, vit déjà dans `SavedSessionState`, est déjà passé à
+  `beginTrackingIfOuting` et n'a que sept sites d'appel. Le généraliser fait disparaître le
+  booléen `free` et la fonction de dérivation qui allait avec : « libre » **est** `goal === null`,
+  un état que le type porte partout où il passe, plutôt qu'une règle à se rappeler. La reprise
+  le restaure par le spread existant, sans une ligne nouvelle, et le panneau n'a qu'un store à
+  lire. La porte rapide appelle `startSession(quest, "medium", { goal: null })`, la porte
+  préparée passe `outingGoal(quest, distanceM)`.
+- **Le compte à rebours se dérive, il ne se passe pas en paramètre.** Aucune sortie n'en a, sur
+  aucune des deux portes : `isOutingSession(quest)` le dit déjà, et trois secondes pour se mettre
+  en position avant de marcher n'ont de sens nulle part (constat 7 de l'audit). `startSession`
+  fait alors directement ce que `finishCountdown` fait aujourd'hui (l. 808 : `status: "running"`,
+  `timerStartTimestamp`, `timerDuration` du premier slot). Extraire le corps de `finishCountdown`,
+  l'appeler des deux endroits. Sans le timer, `useSessionTimer` rend `IDLE_TIMER` et la sortie est
+  payée 1 s. Rien à faire pour l'échauffement : `buildWarmup` (`constants/warmup.ts:250`) rend
+  déjà `[]` dès qu'un slot est `NON_REP_STYLE`.
 - **Le snapshot de la première seconde.** Le subscriber (l. 1439) refuse d'écrire pendant
-  `countdown` et prend `prev.status === "countdown"` comme premier progrès. Une sortie libre va
-  de `idle` à `running` : rien n'est écrit avant une pause, et le balayeur d'orphelins de
-  `useSessionRecovery` emporte la trace. Et après une victoire, `status` reste `finished` tant
+  `countdown` et prend `prev.status === "countdown"` comme premier progrès. Une sortie va
+  désormais de `idle` à `running` : rien n'est écrit avant une pause, et le balayeur d'orphelins
+  de `useSessionRecovery` emporte la trace. Après une victoire, `status` reste `finished` tant
   que `quitSession` n'a pas tourné : un tap sur la bande enchaîne `finished → running`. Ajouter
   à `hasProgressed` : `curr.status === "running" && (prev.status === "idle" || prev.status ===
   "finished" || prev.status === "countdown")`.
-- **La reprise porte `free`.** `useSessionRecovery.ts:207` appelle
-  `beginTrackingIfOuting(quest, uuid, distanceGoalM)` et recomposerait `outingGoal()`, donc
-  retrouverait les 900 s. Signature : `beginTrackingIfOuting(quest, uuid, { free, distanceGoalM })`,
-  lue du snapshot.
-- `sessionClock` : branche sans fix, une sortie prend `Math.min(measured, 4 * 3600)` pour le
-  journal (une sortie oubliée toute une nuit ne prend pas le record) et borne l'effort à
-  `Math.min(measured, 3600)` : sans témoin de mouvement, une heure d'XP est ce que la
-  prémisse 3 accepte de payer sur parole. Les quêtes gardent `estimateQuestSeconds(quest) * 2`.
-- `stores/expedition.ts` : `goal: OutingGoal | null` dans l'état, posé dans le **premier**
-  `set()` de `begin()`, avant les sorties anticipées `unavailable` et `permission` : le cas
-  sans fix est justement celui qui sort tôt.
+- `sessionClock` : branche sans fix, une sortie prend les secondes mesurées, bornées par
+  `UNWITNESSED_OUTING_MAX_SECONDS = 4 * 3600`, nommée à côté d'`OUTING_STOPPAGE_ALLOWANCE_SECONDS`
+  (l. 73). *Décidé en revue :* sans point GPS on croit le héros, c'est une app solo et personne ne
+  triche contre soi-même ; la borne existe pour qu'un téléphone oublié ne journalise pas
+  vingt-quatre heures de course et ne prenne pas le record. Pas de seconde constante pour
+  l'effort : `clampResultValue` borne déjà le résultat, et une fois la première réparation faite
+  c'est elle qui porte la règle. Les quêtes gardent `estimateQuestSeconds(quest) * 2`.
+- **Une sortie libre écrit sa ligne sans `target`.** Les colonnes sont nullable (schema l. 497),
+  `CompletedExerciseInput.target` est optionnel, et le journal gère déjà `cex.target` null,
+  alors qu'il colorerait en vert une cible que le héros n'a jamais choisie.
+
+### L'écran de séance
+
 - `components/session/ExpeditionPanel.tsx` : le 56 px suit `goal?.type`. `distance` → distance
-  dès le premier fix ; `time` ou `null` → chrono. Le chrono lit `useSessionTimer().elapsedSeconds`,
-  pas `Date.now() - startTime` : le panneau ne se re-rend que sur un fix, donc sans fix un
-  calcul depuis `startTime` serait figé, il courrait pendant une pause (`totalPausedTime` n'est
-  crédité qu'au resume), et par la porte préparée il compterait les 3 s de compte à rebours.
-  Le hook tique, gèle en pause, part de `finishCountdown`, et la reprise post-kill banque le
-  temps mort dans `totalPausedTime`, donc il continue là où il en était. Le journal, lui, lit
-  la trace (`sessionClock`) : les deux nombres peuvent différer, le récap montre le journal.
-  `movingMs` et la distance sur la ligne de 24 px ; pendant `acquiring`, chrono en 56 px,
-  distance absente, statut en texte sur un bandeau fin. L'auto-pause se dit en texte, pas en
-  couleur seule.
-- `components/session/ActiveExerciseView.tsx` : le prédicat est **par slot**, `isOutdoors(
-  currentEx.exercise.style)`, comme la vue le fait déjà ; sur une quête mixte, le slot marche a
-  l'appui long et le slot pompes garde son tap. Sur un slot dehors : `onLongPress=
-  {handleComplete}`, `delayLongPress={800}`, `onPress` fait un haptique et le libellé dit
-  « Maintiens pour terminer » ; verbe « Terminer la sortie ». « Remplacer » et « Je n'ai pas
-  pu » ne se montrent pas sur un slot dehors. La barre de progression du HUD ne se montre pas
-  sur une quête à une étape. Pause, quitter, confirmer (`Alert.alert`) : trois taps, et ça
-  **jette** la séance, ça ne la termine pas. La garde vise `handleComplete` seul.
+  dès le premier fix ; `time` ou `null` → **`recordedDurationSeconds()`**, la fonction que
+  `stores/session.ts` exporte déjà pour que la victoire et le journal ne racontent pas deux
+  durées. *Décidé en revue :* le hook de timer donne le tick, cette fonction donne la valeur.
+  Elle lit la trace quand il y en a une et l'horloge sinon, donc elle survit à une reprise, ce
+  que `useSessionTimer` ne fait pas. Une règle, trois lecteurs. `movingMs` et la distance sur la
+  ligne de 24 px ; pendant `acquiring`, chrono en 56 px, distance absente, statut en texte sur un
+  bandeau fin. L'auto-pause se dit en texte, pas en couleur seule.
+- `components/session/ActiveExerciseView.tsx` : le prédicat est **par slot**,
+  `isOutdoors(currentEx.exercise.style)`, comme la vue le fait déjà ; sur une quête mixte, le
+  slot marche a l'appui long et le slot pompes garde son tap. Sur un slot dehors :
+  `onLongPress`, `delayLongPress={800}`, `onPress` fait un haptique et le libellé dit
+  « Maintiens pour terminer » ; verbe « Terminer la sortie ». *Gardé en revue :* le verrou de
+  l'OS couvre la poche, pas l'écran allumé dans la main juste avant de la ranger, ni un téléphone
+  sans verrou sécurisé. « Remplacer » et « Je n'ai pas pu » ne se montrent pas sur un slot
+  dehors. La barre de progression du HUD ne se montre pas sur une quête à une étape. Pause,
+  quitter, confirmer (`Alert.alert`) : trois taps, et ça **jette** la séance.
+- **`completeOuting()` remonte en v2.1.** *Décidé en revue.* L'appui long change déjà le
+  déclencheur ; laisser le calcul de durée dans la vue ferait écrire la durée à deux endroits dès
+  que la notification saura terminer. Le store devient le seul calculateur, il lit la même règle
+  que le journal, et la vue l'appelle.
 - `app/session.tsx` : le prédicat est **par séance**, `isOutingSession(quest)`. `useKeepAwake()`
   est un hook, il ne se conditionne pas : un composant enfant `<KeepAwake />` monté sur
   `!isOutingSession(quest)`.
+- **Un bandeau « Annuler » de quelques secondes** en tête de l'écran de séance, sur une sortie
+  démarrée par la porte rapide. *Décidé en revue :* les trois secondes de compte à rebours
+  servaient aussi à défaire un tap raté, et sans elles annuler coûte quatre gestes. Le bandeau
+  disparaît tout seul ; celui qui voulait partir l'ignore et marche.
+
+### La notification, seule surface d'une sortie en poche
+
+- `progressLine` (`stores/expedition.ts:112`) n'envoie que la distance, et sur une sortie sans fix
+  elle répète « en quête du ciel » pendant toute la marche. *Décidé en revue :* le temps écoulé y
+  entre en v2.1, lu de la même règle que le panneau. C'est la seule chose qu'un héros peut lire
+  sans déverrouiller, et le plan la déclarait tableau de bord sans jamais y toucher.
+
+### Les portes
+
 - `components/home/OutsideBand.tsx` : la bande tient des `QuestTemplate`, `startSession` veut un
   `Quest`. Si `status` n'est ni `idle` ni `finished` (une sortie mise en pause par le retour
-  matériel est vivante dans le store), le tap fait `router.push("/session")` et ne démarre
-  rien : `startSession` écraserait la séance en pause et laisserait ses points orphelins.
-  Sinon le tap demande la position puis la notification, charge la quête par
-  `loadConfiguredQuest(id, "medium")` (le même config que l'écran de quête, sinon un mouvement
-  remplacé sur la porte préparée serait ignoré par la rapide, la dette d'AGENTS.md ; la
-  fonction prend aujourd'hui `questId` seul et tire le niveau de `config.level`, le paramètre
-  `level?` qui prime dessus est une ligne à ajouter), puis
-  `await startSession(quest, "medium", { free: true, skipCountdown: true })`, puis
-  `router.push("/session")`. Sans `await`, `app/session.tsx` redirige vers l'Accueil sur `quest`
-  null. Garde double tap `isStarting`, comme l'écran de quête. Refus de la position : le module
-  n'expose pas d'état de permission avant le tap, donc c'est la `PermissionResponse` du tap
-  refusé (`canAskAgain === false`) qui va dans un store, et la tuile le dit à partir de là au
-  lieu de démarrer une séance qui ne mesure rien. Un chevron en coin ouvre l'écran de quête (la
-  porte préparée) pour la même activité ; sur une tuile de 116×72, il garde 40 dp et laisse
-  ~70 dp au tap principal, à dessiner avant de coder. Si ça ne tient pas, la porte préparée
+  matériel est vivante dans le store), le tap rejoint l'écran et ne démarre rien : `startSession`
+  écraserait la séance et laisserait ses points orphelins. Sinon le tap demande la position puis
+  la notification, charge la quête, puis `await startSession(...)`, puis `router.push("/session")`.
+  Sans `await`, `app/session.tsx` redirige vers l'Accueil sur `quest` null. Garde double tap
+  `isStarting`. **La réponse de permission ne se persiste pas** : un refus stocké ne se met jamais
+  à jour quand le héros accorde la permission depuis les réglages Android, et la tuile dirait
+  « refusé » pour toujours. On demande au tap et on réagit à la réponse ; si la tuile doit parler
+  *avant* le tap un jour, c'est un `getPermissionStatus()` de cinq lignes dans le module natif,
+  pas un état dérivé côté JS. Un chevron en coin ouvre l'écran de quête pour la même activité ;
+  sur une tuile de 116×72 il garde 40 dp, à dessiner avant de coder, sinon la porte préparée
   passe sur un appui long de la tuile.
 - `app/(tabs)/quests/[id].tsx` : sur une sortie, pas de puces de niveau, pas de stepper
-  « Manches ». La sortie est **démarrée** en `medium`, pas seulement estimée : le niveau étire
-  la durée (675 / 900 / 1125 s) et pèse sur l'XP (×0,9 / ×1,1). La cible est générée au
-  chargement, `getQuestById(id, level)`, avec un `level` qui vient de `getQuestConfig` (un
-  `hard` sauvegardé avant 2.1 survit) ou de `?level=`. Trois lecteurs sur l'écran : le
-  chargement, `derived` (`estimateOutingXp`) et `proceedToSession` (`startSession(quest,
-  level)`). Une seule dérivation, `effectiveLevel = isOuting ? "medium" : config.level`,
-  consommée par les trois, et passée à `loadConfiguredQuest(id, effectiveLevel)`. On sait que
-  c'est une sortie avant de charger par `isOutingQuest(template, catalogue)` sur le cache des
-  templates.
-- Locales : « Sortie libre », « Maintiens pour terminer », « Terminer la sortie », en et fr.
-- Tests, un par règle : `sessionClock` sans fix sur une sortie prend les secondes mesurées et
-  borne l'effort à 3600 ; panneau chrono avec `goal: null`, distance avec `goal.type ===
-  "distance"` ; `startSession({ free: true, skipCountdown: true })` appelle `begin` avec `null`
-  et pose le timer ; un snapshot est écrit à la première seconde d'une sortie libre ; la reprise
-  d'un snapshot `free` rappelle `begin` avec `null` ; `SavedSessionState` porte `free`.
+  « Manches », et la sortie est **démarrée** en `medium`, pas seulement estimée (le niveau étire
+  la durée, 675 / 900 / 1125 s, et pèse sur l'XP : `LEVEL_MULTIPLIER` vaut 0,9 / 1,0 / **1,2**).
+  Attention à la forme réelle de cet écran : il **n'appelle pas** `loadConfiguredQuest`, il
+  compose `getQuestById(id, level)` + `getQuestConfig` + `applyQuestConfig` en state, ce qui est
+  exactement la dette listée dans AGENTS.md. Trois lecteurs du niveau, le chargement, `derived`
+  et `proceedToSession` : une seule dérivation `effectiveLevel = isOuting ? "medium" :
+  config.level`, consommée par les trois. Deux pièges nommés par la revue : `applyQuestConfig`
+  lit `config.level` en interne pour `retargetForMovement`, donc un niveau qui prime dessus doit
+  primer là aussi, sinon un swap retarge à un autre niveau que la génération ; et savoir qu'une
+  quête est une sortie avant de l'avoir chargée dépend du cache de templates, asynchrone à froid,
+  donc soit deux chargements soit un flash. À trancher en codant, pas ici.
+- Locales : « Sortie libre », « Maintiens pour terminer », « Terminer la sortie », « Annuler »,
+  en et fr.
+
+### Les tests
+
+**Tests, un par règle, écrits avec le code.** *Décidé en revue : les vingt-quatre, pas les six du
+premier jet.* La moitié porte sur des règles négatives, ne pas monter le keep-awake, ne pas
+terminer sur un tap, ne pas écraser une séance en pause, ne pas écrire de cible : une règle
+négative sans test disparaît au premier refactor sans que personne la voie partir.
+
+- `stores/session.ts` : `goal: null` fait passer `null` à `begin` ; une sortie ne passe jamais
+  par `countdown` et repart avec son timer posé ; `SavedSessionState` porte `goal` ; un snapshot
+  est écrit sur `idle → running` **et** sur `finished → running` ; `sessionClock` sans fix prend
+  les secondes mesurées et borne à 4 h ; une sortie libre écrit sa ligne sans `target` ;
+  `completeOuting()` donne la même durée que l'appui long ; **une sortie de deux heures paie deux
+  heures** ; **une sortie reprise après un kill paie sa durée de trace, pas celle du chrono**.
+- `db/expeditions.ts` : `outingGoal` avec et sans distance, et une quête sans slot dehors.
+- `hooks/useSessionRecovery.ts` : la reprise d'un snapshot sans objectif rappelle `begin` avec
+  `null`.
+- `components/session/ExpeditionPanel.tsx` : le 56 px est la distance en mode distance, la durée
+  enregistrée en mode libre et en mode durée, la même après une reprise, et la distance est
+  absente tant qu'aucun fix n'est arrivé.
+- `components/session/ActiveExerciseView.tsx` : l'appui long termine, le tap simple ne termine
+  pas, un slot dehors n'affiche ni « Remplacer » ni « Je n'ai pas pu », une quête à une étape
+  n'affiche pas la barre.
+- `app/session.tsx` : `KeepAwake` n'est pas monté sur une sortie.
+- `components/home/OutsideBand.tsx` : le tap demande les permissions puis démarre ; un double tap
+  ne démarre qu'une séance ; une séance vivante fait rejoindre l'écran ; le bandeau « Annuler »
+  jette la séance et ses points.
+- `app/(tabs)/quests/[id].tsx` : une sortie charge et démarre en `medium` même avec un `hard`
+  sauvegardé, et n'affiche ni puces de niveau ni stepper de manches.
 
 **v2.2, la porte préparée et le pont.**
 
 - Feuille d'objectif (Tamagui Sheet, `disableDrag`) à la place de la carte « Régler cette
   quête » : deux onglets Durée / Distance, presets 20 / 30 / 45 / 60 min et 5 / 10 / 21,1 km,
   réglage fin au clavier. Le stepper de 5 s disparaît des sorties.
-- Un seul objectif à la fois, et l'écran le dit : la cible affichée est celle que `outingGoal()`
-  renverra.
+- Un seul objectif à la fois, et l'écran le dit : la cible affichée est celle qui partira dans
+  `goal`.
 - Action « Terminer » sur la notification : `addAction` dans `BatiLocationService.kt`, broadcast
-  → événement `onEndRequested` dans `stores/expedition.ts` → un `completeOuting()` du store de
-  session, qui calcule les secondes depuis `timerStartTimestamp` (aujourd'hui c'est la vue qui
-  les calcule pour `completeExercise(resultValue)`, et l'événement natif n'a pas de vue). Ça
-  suppose un runtime JS vivant. Si l'OS a tué le process mais pas le service, « Terminer » arrête le service
-  et laisse le snapshot à la carte de reprise, qui finit la sortie au prochain lancement. C'est
-  ce scénario, process tué, qu'on vérifie sur appareil, pas seulement l'écran verrouillé.
+  → événement `onEndRequested` dans `stores/expedition.ts` → `completeOuting()`, qui existe
+  depuis la v2.1. Ça suppose un runtime JS vivant. **Le repli n'existe pas encore** : la revue a
+  vérifié que `recoverSession` reprend en `paused` et rend l'écran de séance, sans aucun chemin
+  « terminer » sur la carte de reprise, et que `SESSION_EXPIRY_MS = 4 h`
+  (`hooks/useSessionRecovery.ts:63`) jette le snapshot au-delà, points compris. Une randonnée
+  terminée le soir depuis la notification et rouverte le lendemain serait perdue. C'est un
+  troisième chemin à construire, budgété comme tel, pas un acquis.
 - Pont : « En faire une quête » sur le récap d'une sortie libre, via `createQuestTemplate`
   (`db/quests.ts`). Le template porte toujours une cible `time` (`questTargetTypes` ne change
   pas, prémisse 8) : la durée mesurée, arrondie à la grille. Pour une sortie en distance, la
-  distance mesurée va dans le `distanceM` du config de la quête créée, là où elle vit déjà.
-- Le mot « Terme atteint » qui reste affiché n'est pas dans ces deux portes : `setReached()`
-  côté Kotlin et `goalReached` côté store sont à sens unique par choix (« reached once per
-  session »). Ticket à part, avec la justification du renversement s'il y en a une.
+  distance mesurée va dans le config de la quête créée, là où elle vit déjà.
+- Le mot « Terme atteint » qui reste affiché n'est pas dans ce plan : `setReached()` côté Kotlin
+  et `goalReached` côté store sont à sens unique par choix. Ticket à part.
 
-**v2.3, les annonces.**
+**v2.3, les repères pendant la marche.** *Réécrite en revue : ce n'était pas trois lignes de
+réutilisation, et le premier jet ne pouvait pas fonctionner.* Trois choses vérifiées dans le
+code, à faire dans cet ordre.
 
-- TTS plateforme (`android.speech.tts`), zéro dépendance. Le service ne compose aucune phrase
-  aujourd'hui : JS formate `progressLine` et pousse `setProgress(text)`. Même découpe : JS
-  compose l'annonce dans l'unité et la langue du héros, un `speak(text, lang)` natif calqué sur
-  `setProgress` la dit, avec `setLanguage(Locale)` : un moteur en anglais lisant du français est
-  illisible. `TextToSpeech` s'initialise en asynchrone, donc une file d'un élément jusqu'à
-  `onInit`, sinon la première lieue est muette. Deux fonctions. Annoncer au franchissement, jamais en retard (règle
-  reprise du `VoiceAnnouncement` d'OpenTracks).
-- Sans moteur TTS installé (ROM dégooglée, le cas de l'auteur), `speak` ne fait rien et
-  l'haptique existante reste le seul retour. Le réglage le dit.
-- Chaque lieue : distance et temps de la lieue. Objectif atteint : une annonce, une fois.
-- Réglage Tout / Objectif / Silence, dans Réglages, passé au service au démarrage.
+1. **Il n'existe aucun événement « lieue franchie ».** `announceGoalReached`
+   (`stores/expedition.ts:120`) se déclenche une fois par séance, à l'objectif, et
+   `METRES_PER_LEAGUE` ne sert qu'au récap. Il faut suivre le franchissement d'un fix à l'autre
+   dans `onLocation`, et traiter la reprise : `priorFixes.reduce(accept, EMPTY)` rejouerait huit
+   lieues d'un coup. C'est le vrai travail de cette version.
+2. **Le bip d'objectif n'a pas d'objet en mode libre.** `goalReached(null, track)` rend `false`
+   par construction (`src/gps/track.ts:329`). Le cue `go` appartient donc à la porte préparée ;
+   le partant n'a que la lieue.
+3. **Le volume est une question ouverte, pas un détail.** `src/sounds.ts` passe
+   `interruptionMode: "mixWithOthers"` exprès, pour ne pas couper la musique du héros. Un tick de
+   70 ms mixé sous de la musique, à allure de course, ne s'entend pas. Le rendre audible veut dire
+   `duckOthers`, c'est-à-dire rouvrir la décision `expo-audio` dont l'en-tête du fichier raconte
+   le prix. À trancher avec une vraie écoute en courant, avant d'écrire la ligne.
+
+Pas de voix, ni ici ni plus tard dans ce plan. Le réglage reste `soundEnabled`, pas de troisième
+mode.
+
+## Ce qui existe déjà, et que le plan réutilise
+
+La v2.1 ne construit presque rien. Elle conditionne de l'existant, ce qui est la raison pour
+laquelle elle tient dans un week-end.
+
+| Besoin du plan | Ce qui le couvre déjà | Réutilisé tel quel |
+|---|---|---|
+| Objectif d'une sortie | `outingGoal` (`db/expeditions.ts`) | oui, appelé par la porte préparée |
+| Durée journalisée | `sessionClock` (`stores/session.ts:449`) | oui, une branche ajoutée |
+| XP sur le mouvement | branche sortie de `db/xp.ts:129` | oui, rien à changer |
+| Plancher de séance | « C'était court » à 120 s (`VictoryView`) | oui, rien à changer |
+| Chrono qui tique et gèle | `useSessionTimer` | oui, à la place d'un calcul maison |
+| Charger une quête configurée | `loadConfiguredQuest` (`db/questConfig.ts`) | oui, plus un paramètre `level?` |
+| Savoir si c'est une sortie | `isOutingSession`, `isOutdoors`, `isOutingQuest` | oui, un prédicat par surface |
+| Garder l'écran allumé | `expo-keep-awake`, `activateKeepAwakeAsync` | oui, monté conditionnellement |
+| Bips et réglage son | `src/sounds.ts`, `soundEnabled` | oui, les deux cues actuels |
+| Notification vivante | `setProgress`, `setReached`, `stop` | oui, plus une action en v2.2 |
+| Reprise après kill | `useSessionRecovery`, `SavedSessionState` | oui, plus le champ `free` |
+
+Rien n'est reconstruit en parallèle d'un chemin existant. Les trois seules surfaces neuves sont
+le champ `goal` généralisé, le bandeau « Annuler » et le chevron de la tuile.
+
+## Hors périmètre, et pourquoi
+
+- **Les blocs et le fractionné.** Le partant n'en a pas besoin, et ils rouvriraient `distance`
+  dans `questTargetTypes`, écarté pour de bonnes raisons le 31/08. Design à part.
+- **La synthèse vocale.** Refusée en revue : les deux bips existants disent la lieue et
+  l'objectif, et une voix coûterait une dépendance ou du Kotlin non testé.
+- **Le widget « Sortir ».** Deux apps réclament `bati://` sur un téléphone de dev, et la bande
+  sur l'Accueil fait le même travail sans deep link.
+- **Le glissement pour terminer et l'écran noir maison.** Remplacés par le verrou de l'OS, qui
+  est gratuit une fois le keep-awake conditionnel.
+- **Le mot « Terme atteint » qui reste collant.** `setReached()` et `goalReached` sont à sens
+  unique par choix ; renverser ça est un ticket avec sa propre justification.
+- **Un écouteur `AppState` pour geler le rendu en poche.** À mesurer d'abord, décidé en revue.
+- **La distribution.** Aucun artefact nouveau : le pipeline `npm run release`, `release.yml`,
+  F-Droid et la piste interne Play couvrent les trois versions sans un octet de configuration.
+
+## Modes de défaillance des nouveaux chemins
+
+| Chemin | Panne réaliste | Test | Erreur gérée | Ce que voit le héros |
+|---|---|---|---|---|
+| Tap sur la tuile | Permission refusée définitivement | oui | oui | La tuile le dit, rien ne démarre |
+| Tap sur la tuile | Une séance est déjà vivante | oui | oui | L'app rejoint cette séance |
+| `startSession` sans countdown | Timer non posé, sortie payée 1 s | oui | n/a | Rien, c'est le journal qui ment |
+| Snapshot première seconde | Trace balayée comme orpheline | oui | oui | La sortie a disparu au retour |
+| Reprise `free` | L'objectif de 900 s revient | oui | n/a | Un buzz au bout de 15 min |
+| Sortie sans fix | Journal de 9 h, record volé | oui | oui | Bornes 4 h et 1 h |
+| Panneau, mode distance | Distance à 0 avant le premier fix | oui | oui | Chiffre absent, pas faux |
+| Appui long | Tap accidentel termine la sortie | oui | n/a | Rien, il faut maintenir |
+| KeepAwake | Écran allumé une heure en poche | oui | n/a | Batterie |
+| Action notification (v2.2) | Process JS mort, service vivant | non, appareil | oui | Le service s'arrête, la carte de reprise finit la sortie |
+
+**Aucune faille critique** au sens du skill : chaque panne ci-dessus a un test ou une gestion
+d'erreur, et aucune n'est à la fois silencieuse, non testée et non gérée. La seule ligne sans
+test automatisé est l'action de notification, hors de portée de jest par nature ; elle se vérifie
+sur appareil, process tué.
+
+## Parallélisation
+
+| Lot | Modules touchés | Dépend de |
+|---|---|---|
+| 1. Chemin de données | `stores/`, `hooks/`, `db/expeditions.ts` | rien |
+| 2. Écran de séance | `components/session/`, `app/session.tsx` | 1 (pour le champ `goal`) |
+| 3. Portes | `components/home/`, `app/(tabs)/quests/`, `db/questConfig.ts` | 1 (pour le champ `goal`) |
+
+Lot 1 seul d'abord, c'est le tronc. Puis les lots 2 et 3 en parallèle : ils ne partagent aucun
+répertoire. C'est aussi la découpe en deux diffs choisie au Step 0, le lot 1 avec le lot 3 dans
+le premier commit, le lot 2 dans le second.
 
 ## Open Questions
 
@@ -264,26 +419,36 @@ ses deux meilleures idées (action « Terminer », voix du service) sont dans B.
 
 ## Reviewer Concerns
 
-Trois tours de revue adversariale, 38 points levés, 33 vérifiés corrigés au troisième tour.
-Les cinq du dernier tour sont appliqués ci-dessus sans quatrième relecture : la ligne sans
-`target` sur une sortie libre (prémisse 1), la réponse notification stockée et
-`askNotification: false` (prémisse 4), la tuile qui rejoint une séance en pause au lieu de
-l'écraser, `effectiveLevel` pour les trois lecteurs de l'écran de quête, et le paramètre
-`level?` de `loadConfiguredQuest`. À relire en codant, pas en planifiant.
+**Trois tours de revue adversariale sur le doc** (02/09) : 38 points levés, 33 vérifiés corrigés
+au troisième tour, les cinq derniers appliqués sans quatrième relecture.
+
+**Une revue d'ingénierie** (02/09, `/plan-eng-review`) : Step 0 a gardé le périmètre complet en le
+rangeant en deux diffs, sept constats ont été tranchés, et une voix extérieure a trouvé dix points
+de plus dont deux bugs réels sur `main`. Rien n'est laissé ouvert. Ce qui reste à vérifier en
+codant plutôt qu'en planifiant :
+
+- Les deux pièges de l'écran de quête, `applyQuestConfig` qui relit `config.level` en interne, et
+  le cache de templates asynchrone à froid quand il faut savoir qu'une quête est une sortie avant
+  de l'avoir chargée.
+- Le coût du rendu à 1 Hz écran éteint, à lire dans la même mesure que la prémisse 7.
+- Le volume du bip de lieue, qui se tranche à l'oreille en courant, pas ici.
 
 ## Success Criteria
 
-- Sur l'Accueil, un tap sur Marche démarre une séance dont `outingGoal()` est `null`, sans compte
-  à rebours, et la permission a été demandée avant.
-- Une sortie libre de 45 min sans fix GPS est journalisée à 45 min, pas à 30 (le slot garde sa
-  cible de 900 s, donc c'est le `× 2` de `estimateQuestSeconds` qui mordrait, pas le 2 s du plan
-  sans cible du 31/08).
+- Sur l'Accueil, un tap sur Marche démarre une séance dont le `goal` est `null`, sans compte à
+  rebours, et les permissions ont été demandées avant.
+- Une sortie de deux heures est payée deux heures, pas une.
+- Une sortie tuée par l'OS puis reprise est payée la durée que sa trace prouve, et le gros
+  chiffre affiche cette même durée au lieu de repartir de zéro.
+- Une sortie libre de 45 min sans fix GPS est journalisée à 45 min, et une sortie oubliée toute
+  une nuit ne dépasse pas 4 h.
 - Une sortie libre tuée par l'OS reprend sans objectif.
-- L'écran de séance s'éteint tout seul pendant une sortie ; `dumpsys batterystats` montre un temps
-  d'écran allumé très inférieur à la durée de la sortie.
-- Le gros chiffre est le chrono en mode libre, la distance en mode distance dès le premier fix,
-  le temps en mode durée ; un chiffre vrai est visible dès la première seconde, en tout mode.
-- Une sortie libre sans fix borne son XP à une heure.
+- L'écran de séance s'éteint tout seul pendant une sortie, et `dumpsys batterystats` montre un
+  temps d'écran allumé très inférieur à la durée de la sortie.
+- Le gros chiffre est la durée enregistrée en mode libre et en mode durée, la distance en mode
+  distance dès le premier fix, et un chiffre vrai est visible dès la première seconde.
+- La notification dit le temps écoulé, y compris avant le premier fix.
+- Un tap raté sur la bande s'annule en un geste.
 - `handleComplete` n'est jamais un tap simple sur une sortie.
 
 ## Distribution Plan
@@ -297,13 +462,87 @@ avant chaque tag, nommé par `versionCode`.
 1. **Mesurer avant de toucher** : 30 min sur `main`, téléphone en poche, puis
    `adb shell dumpsys batterystats --charged com.guiforge.bati`. Si le temps d'écran allumé vaut
    la durée de la sortie, la prémisse 7 révisée est prouvée et la condition sur le keep-awake
-   devient le premier commit.
+   devient le premier commit. La même mesure répond à la question du rendu à 1 Hz en poche :
+   lire la part CPU à côté de la part écran et de la part GPS.
 2. v2.1 dans l'ordre du samedi : `startSession` options + `SavedSessionState`, `sessionClock`,
    `goal` dans le store, le panneau, l'appui long, le keep-awake, la bande, l'écran de quête,
    les locales, les tests.
 3. Une release 2.1.0, une semaine de sorties dessus.
 4. v2.2, puis v2.3, chacune après une semaine de dogfood de la précédente.
 5. Un office-hours pour les blocs quand le préparé aura une porte.
+
+## Implementation Tasks
+
+Synthétisées depuis les constats de la revue d'ingénierie du 02/09. Chaque tâche vient d'un
+constat précis. Commit 1 : lots 1 et 3. Commit 2 : lot 2.
+
+- [ ] **T1 (P1, human ~1 h / CC ~10 min), mesure.** Sortir 30 min avec `main`, téléphone en poche.
+  - Surfacé par : prémisse 7 révisée, et la question du rendu à 1 Hz en poche
+  - Vérifier : `adb shell dumpsys batterystats --charged com.guiforge.bati`, comparer écran, GPS, CPU
+- [ ] **T2 (P1, human ~4 h / CC ~30 min), stores/session.ts.** Une sortie de deux heures paie deux heures.
+  - Surfacé par : voix extérieure, `clampResultValue` borne tout résultat temps à 3600 s
+  - Fichiers : `stores/session.ts`, `db/targets.ts`
+  - Vérifier : `npm test -- store-session`
+- [ ] **T3 (P1, human ~4 h / CC ~30 min), reprise.** Une sortie reprise paie sa durée de trace.
+  - Surfacé par : voix extérieure, la reprise repousse `timerStartTimestamp` et le résultat suit
+  - Fichiers : `hooks/useSessionRecovery.ts`, `stores/session.ts`
+  - Vérifier : `npm test -- session-recovery`, `npm test -- store-session`
+- [ ] **T4 (P1, human ~4 h / CC ~30 min), stores/session.ts.** `distanceGoalM` devient `goal: OutingGoal | null`.
+  - Surfacé par : voix extérieure, le booléen `free` et sa dérivation deviennent inutiles
+  - Fichiers : `stores/session.ts`, `hooks/useSessionRecovery.ts`, `app/(tabs)/quests/[id].tsx`
+  - Vérifier : `npm test -- store-session`, `npm test -- db-expeditions`
+- [ ] **T5 (P1, human ~2 h / CC ~15 min), stores/session.ts.** Countdown dérivé, timer posé, snapshot élargi.
+  - Surfacé par : le drapeau qui répétait ce que la quête sait, et le balayeur d'orphelins
+  - Fichiers : `stores/session.ts`
+  - Vérifier : `npm test -- store-session`
+- [ ] **T6 (P1, human ~1 h / CC ~10 min), stores/session.ts.** Borne 4 h sans fix, constante nommée.
+  - Surfacé par : D7, on croit le héros mais personne ne journalise vingt-quatre heures
+  - Fichiers : `stores/session.ts`
+  - Vérifier : `npm test -- store-session`
+- [ ] **T7 (P1, human ~2 h / CC ~15 min), sauvegarde.** Une sortie libre écrit sa ligne sans `target`.
+  - Surfacé par : revue adversariale tour 3, le journal colorait en vert une cible jamais choisie
+  - Fichiers : `stores/session.ts`, `db/completed.ts`
+  - Vérifier : `npm test -- store-session`
+- [ ] **T8 (P1, human ~3 h / CC ~20 min), OutsideBand.tsx.** La porte rapide, avec ses gardes.
+  - Surfacé par : prémisse 4, la séance vivante à ne pas écraser, la permission non persistée
+  - Fichiers : `components/home/OutsideBand.tsx`, `db/questConfig.ts`
+  - Vérifier : `npm test -- home-outside-band`
+- [ ] **T9 (P1, human ~3 h / CC ~20 min), écran de séance.** Bandeau « Annuler » après un départ rapide.
+  - Surfacé par : D16, sans compte à rebours un tap raté coûte quatre gestes à défaire
+  - Fichiers : `components/session/`, `app/session.tsx`
+  - Vérifier : `npm test -- session-outing-view`
+- [ ] **T10 (P1, human ~3 h / CC ~20 min), ExpeditionPanel.tsx.** Le gros chiffre suit l'unité, chrono depuis `recordedDurationSeconds()`.
+  - Surfacé par : prémisse 6, et D12 après la découverte que `useSessionTimer` ment à la reprise
+  - Fichiers : `components/session/ExpeditionPanel.tsx`
+  - Vérifier : `npm test -- expedition-panel`
+- [ ] **T11 (P1, human ~3 h / CC ~20 min), ActiveExerciseView.tsx.** Appui long, contrôles retirés, `completeOuting()`.
+  - Surfacé par : prémisse 7, D5 et D17, un seul propriétaire de la durée dès la v2.1
+  - Fichiers : `components/session/ActiveExerciseView.tsx`, `stores/session.ts`
+  - Vérifier : `npm test -- session-outing-view`
+- [ ] **T12 (P1, human ~30 min / CC ~5 min), app/session.tsx.** `KeepAwake` conditionnel.
+  - Surfacé par : prémisse 7, `useKeepAwake()` inconditionnel ligne 17
+  - Fichiers : `app/session.tsx`
+  - Vérifier : `npm test`, puis l'écran qui s'éteint seul en sortie
+- [ ] **T13 (P1, human ~2 h / CC ~15 min), notification.** Le temps écoulé entre dans `progressLine`.
+  - Surfacé par : D14, seule surface lisible sans déverrouiller
+  - Fichiers : `stores/expedition.ts`
+  - Vérifier : `npm test -- store-expedition`
+- [ ] **T14 (P2, human ~3 h / CC ~20 min), quests/[id].tsx.** `effectiveLevel` pour ses trois lecteurs.
+  - Surfacé par : revue adversariale tour 3, plus les deux pièges nommés par la voix extérieure
+  - Fichiers : `app/(tabs)/quests/[id].tsx`, `db/questConfig.ts`
+  - Vérifier : `npm test -- quest-details-expedition`
+- [ ] **T15 (P1, human ~1 j / CC ~1 h), tests.** Les vingt-quatre de la carte de couverture.
+  - Surfacé par : D8, six prévus, vingt-quatre nécessaires
+  - Fichiers : `__tests__/`
+  - Vérifier : `nvm exec 24 npm test`
+- [ ] **T16 (P3, human ~1 sem / CC ~4 h), v2.2.** Feuille d'objectif, action Terminer, pont, et son repli.
+  - Surfacé par : approche B, plus le repli inexistant que la voix extérieure a démonté
+  - Fichiers : `app/(tabs)/quests/[id].tsx`, `BatiLocationService.kt`, `hooks/useSessionRecovery.ts`, `db/quests.ts`
+  - Vérifier : sur appareil, écran verrouillé puis process tué
+- [ ] **T17 (P3, human ~3 j / CC ~2 h), v2.3.** Compteur de lieues en direct, puis la question du volume.
+  - Surfacé par : D15, aucun événement de lieue n'existe et le mixage rend le tick inaudible
+  - Fichiers : `stores/expedition.ts`, `src/sounds.ts`
+  - Vérifier : `npm test -- store-expedition`, puis une écoute en courant
 
 ## What I noticed about how you think
 

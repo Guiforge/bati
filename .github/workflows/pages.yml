@@ -69,7 +69,7 @@ jobs:
       # a manifest built by current Android build-tools and dies with "res1 must be zero!".
       # setuptools is pinned below 81 because fdroidserver still imports pkg_resources, which 81
       # dropped.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         if: steps.fdroid.outputs.ready == 'true'
         with:
           python-version: "3.12"

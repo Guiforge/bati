@@ -12,7 +12,7 @@ import { getQuestThumb } from "@/constants/assetMap";
 import { listOutings, type Outing } from "@/db/outings";
 import { loadConfiguredQuest } from "@/db/questConfig";
 import { Difficulty } from "@/db/targets";
-import { requestNotificationPermission, requestPermission } from "@/modules/bati-location";
+import { ensureNotificationPermission, requestPermission } from "@/modules/bati-location";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -111,9 +111,9 @@ export function OutsideBand() {
           return;
         }
         setDenied(false);
-        await requestNotificationPermission().catch((error: unknown) =>
-          reportError("home.outsideNotificationPermission", error),
-        );
+        // Once per process, and `begin()` calls the same helper: a hero who refused here used to
+        // get the system dialog again, over a chronometer already counting their walk.
+        await ensureNotificationPermission();
 
         // Loaded at `medium` whatever the quest screen was left on: a level stretches an outing's
         // duration and multiplies its XP, and the hero who taps here has chosen neither.

@@ -2,6 +2,7 @@
 // pins, and listing it in package.json to import one function would put a native module in the
 // dependency list for the version checker to argue about. `expo` re-exports it.
 import { type PermissionResponse, PermissionStatus, requireOptionalNativeModule } from "expo";
+import { reportError } from "@/src/reportError";
 
 /** One accepted fix. `distFromPrev` is `Location.distanceTo` against the previous accepted one. */
 export type LocationFix = {
@@ -112,6 +113,37 @@ export async function requestPermission(): Promise<PermissionResponse> {
  * silently did not exist. It is still only the *voice* of the feature, not the feature, so a
  * refusal must never stop a walk: callers fire this and ignore the answer.
  */
+/**
+ * The notification grant, asked at most once in the life of the process.
+ *
+ * Two doors now lead outside and each wants the grant before the walk starts: Home asks while the
+ * hero is still standing at the door, and `useExpeditionStore.begin` asks because the quest screen
+ * never did. Without this, a hero who refused at the tile met the system dialog a second time,
+ * over a chronometer already counting their walk.
+ *
+ * A module-level answer rather than a parameter threaded through two stores: there is nothing a
+ * third door could forget to pass. It lives here rather than in the expedition store because Home
+ * would otherwise import that store to reach it, and that store reaches the database: the band
+ * would drag the whole `db` barrel into the first screen the app mounts.
+ *
+ * The answer itself is never kept and never read. A hero who refuses still gets their walk
+ * measured, and the only reset that matters, a fresh process, is the one Android's own answer
+ * survives anyway.
+ */
+let notificationAsked = false;
+
+export async function ensureNotificationPermission(): Promise<void> {
+  if (notificationAsked) return;
+  notificationAsked = true;
+
+  // Never silently: a grant that stops being asked for is a notification that stops appearing,
+  // and the walk it was the only screen of would say nothing for an hour. Same context string
+  // the expedition store used when it owned this call.
+  await requestNotificationPermission().catch((e: unknown) =>
+    reportError("expedition.notificationPermission", e),
+  );
+}
+
 export async function requestNotificationPermission(): Promise<PermissionResponse> {
   return (await native?.requestNotificationPermission()) ?? DENIED;
 }

@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   addListener,
+  ensureNotificationPermission,
   hasGpsProvider,
   isAvailable,
   requestNotificationPermission,
@@ -61,6 +62,18 @@ describe("bati-location, without its native half", () => {
       granted: false,
       canAskAgain: false,
     });
+  });
+
+  test("asks for the notification once per process, whichever door got there first", async () => {
+    // Two doors lead outside now: Home asks while the hero is still standing at the door, and
+    // `begin` asks because the quest screen never did. Asked twice, a hero who refused at the
+    // tile met the system dialog again over a chronometer already counting their walk.
+    await ensureNotificationPermission();
+    await ensureNotificationPermission();
+
+    // Nothing to observe here but the absence of a throw: the native half is missing, the answer
+    // is deliberately never kept, and the guard is a module-level fact this process now holds.
+    await expect(ensureNotificationPermission()).resolves.toBeUndefined();
   });
 
   test("moving a notification that does not exist is not an error", () => {

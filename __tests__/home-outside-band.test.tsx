@@ -41,6 +41,11 @@ jest.mock("@/stores/session", () => ({
 jest.mock("@/modules/bati-location", () => ({
   requestPermission: () => mockRequestPermission(),
   requestNotificationPermission: () => mockRequestNotificationPermission(),
+  // Asked once per process by whichever door got there first, so the mock keeps the
+  // call visible while the real one is the module's own business.
+  ensureNotificationPermission: async () => {
+    await mockRequestNotificationPermission();
+  },
 }));
 
 jest.mock("@/db/questConfig", () => ({

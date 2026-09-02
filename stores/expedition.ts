@@ -7,9 +7,9 @@ import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import {
   addListener,
+  ensureNotificationPermission,
   isAvailable,
   type LocationFix,
-  requestNotificationPermission,
   requestPermission,
   setProgress,
   setReached,
@@ -208,14 +208,8 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       set({ error: "permission" });
       return false;
     }
-    // Asked after location and never bundled with it: from API 33 the ongoing notification is
-    // invisible without this grant, so the promise the feature makes — one tap out, one tap back,
-    // the rest said through a notification — silently did not exist on any recent phone. The
-    // answer is deliberately ignored. A hero who refuses the notification still gets their walk
-    // measured; bundling the two would have let one refusal veto the other.
-    await requestNotificationPermission().catch((e: unknown) =>
-      reportError("expedition.notificationPermission", e),
-    );
+    // Once per process, whichever door asked first. See `ensureNotificationPermission`.
+    await ensureNotificationPermission();
 
     /**
      * The ground already filed under this name.

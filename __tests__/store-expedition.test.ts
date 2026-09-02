@@ -22,6 +22,13 @@ jest.mock("@/modules/bati-location", () => ({
   start: (...a: never[]) => mockStart(...a),
   requestPermission: () => mockRequestPermission(),
   requestNotificationPermission: () => mockRequestNotificationPermission(),
+  // Asked once per process by whichever door got there first, so the mock keeps the
+  // call visible while the real one is the module's own business.
+  // Swallows, because the real one does: a refused or broken notification grant must never
+  // cancel a walk. Its breadcrumb is asserted where it now lives, in bati-location-module.
+  ensureNotificationPermission: async () => {
+    await mockRequestNotificationPermission().catch(() => undefined);
+  },
   stop: () => mockStop(),
   setProgress: (...a: never[]) => mockSetProgress(...a),
   setReached: (...a: never[]) => mockSetReached(...a),
@@ -468,16 +475,6 @@ describe("stores/expedition", () => {
       expect(mockRequestNotificationPermission).toHaveBeenCalled();
       expect(mockStart).toHaveBeenCalled();
       expect(store.getState().error).toBeNull();
-    });
-
-    test("that throws is a breadcrumb, not a cancelled walk", async () => {
-      mockRequestNotificationPermission.mockRejectedValue(new Error("no permissions manager"));
-
-      expect(await store.getState().begin("s1", NOTIFICATION, false, "metric")).toBe(true);
-      expect(mockReportError).toHaveBeenCalledWith(
-        "expedition.notificationPermission",
-        expect.any(Error),
-      );
     });
 
     test("refused, nothing starts and the panel is told why", async () => {

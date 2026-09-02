@@ -150,10 +150,10 @@ describe("db/village buildings", () => {
     walkLeagues(35);
 
     const built = await road();
-    // Floors are [1, 10, 30, 60, 100] leagues: 35 clears the third and not the fourth.
-    expect(built.level).toBe(3);
+    // Floors are [1, 15, 40, 90, 200] leagues: 35 clears the second and not the third.
+    expect(built.level).toBe(2);
     expect(built.metricValue).toBe(35);
-    expect(built.nextTarget).toBe(60);
+    expect(built.nextTarget).toBe(40);
   });
 
   test("leagues are metres, so a part-league is floored rather than rounded up", async () => {

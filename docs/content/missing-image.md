@@ -653,30 +653,19 @@ restore the ones you did not mean to touch.
 
 ### 9b. RESOLVED — the High Road has art (2026-09-02)
 
-Resolved: the three stages exist and are registered; see the bullet at the top.
+The High Road (`high_road`, "High Road" / "Grand Chemin", [db/village.ts](../../db/village.ts))
+was held without dedicated art pending a first real league total to tune its floors on. That
+measurement has arrived: one hour on foot is 4.58 km (test-gpx/bati-2026-09-01T15-47-17.gpx). The
+floors have been corrected (see the updated `ROAD_FLOORS` comment), and the three paintings now
+exist and are registered in `BUILDING_ICON_ASSETS` (2026-09-02).
 
-The building the leagues drive (`high_road`, "High Road" / "Grand Chemin",
-[db/village.ts](../../db/village.ts)) shipped with **no icon of its own**, which is the first
-time a building has done that since §0 closed. It is deliberate, not an oversight: the floors it
-levels on are a guess pending a first real league total, and commissioning three paintings for a
-building whose curve may be re-tuned is the wrong order.
+**The art:** three paintings in `assets/images/village/buildings/` — `high_road_rough` (the
+starting state: a rutted track leaving the gate), `high_road` (mid-game: a graded road with a
+waystone), and `high_road_grand` (end-game: a stone-laid road running to the horizon). Each is
+registered in the `BUILDING_ICON_ASSETS` map at `constants/assetMap.ts:401-404` as
+`{ rough, solid, grand }`. No migration is needed; village art is code-only (§0's wiring note).
 
-**What it renders today.** `getBuildingIconAsset(code, relatedMuscle, level)` looks the code up in
-`BUILDING_ICON_ASSETS`, misses, then tries the `relatedMuscle` sprite — and the road has no muscle
-either (an expedition has no `exercise_muscles` rows at all, §9 above and `0041`), so it falls all
-the way through to `placeholder.webp`. Nothing breaks and nothing needs a guard; the tile and the
-180px detail sheet both draw the placeholder. Village art is code-only, so there is **no migration
-to write** when it lands (§0's wiring note).
+**The scale:** the subject is reach, not a structure, so the cost is ~350 KB per landscape rather
+than ~80 KB per building emblem — three of those is 1 MB against the release workflow's 55 MiB ceiling.
 
-**What it needs when it is drawn**: three paintings — `high_road_rough`, `high_road`,
-`high_road_grand` — in `assets/images/village/buildings/`, one `BUILDING_ICON_ASSETS` entry, in
-the same commit as the files (Metro resolves `require()` at bundle time). It belongs to
-`scripts/generate-village.py buildings/*` and its two shared stage modifiers, like the other 14.
-
-The subject is *reach*, not a structure: a rutted track leaving the gate and dying in the grass →
-a graded road with a waystone → a stone-laid road running to the horizon. That is the same
-covers-register judgement §9 needed for the three movement scenes, so budget it at the ~350 KB a
-landscape costs rather than the ~80 KB a building emblem does — three of those is 1 MB against
-the release workflow's 55 MiB ceiling.
-
-Buildings with dedicated art: **20 of 21**.
+Buildings with dedicated art: **21 of 21**.

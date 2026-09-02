@@ -277,11 +277,17 @@ const VICTORY_FLOORS: readonly number[] = [3, 5, 8, 12, 20];
  */
 
 /**
- * The road's floors, in leagues. Corrected 2026-09-02 against the first real total: one hour on
- * foot measured 4.58 km (test-gpx/bati-2026-09-01T15-47-17.gpx), so an outing on foot is four to
- * five leagues, not one, and a ride is four times that. The first floor stays at one league so
- * the very first walk levels the road; the rest read as roughly 3, 9, 20 and 45 walks, or a
- * quarter of that on a mount.
+ * The road's floors, in leagues. Corrected 2026-09-02 against the first real total (measured: one
+ * hour on foot, 4.58 km, test-gpx/bati-2026-09-01T15-47-17.gpx). An outing on foot is four to
+ * five leagues, not one. A ride covers two to four times that distance in the same window
+ * (inferred from the old speed ratios, not from a recorded trace). The first floor stays at one
+ * league so the very first walk levels the road; the rest read as roughly 3, 9, 20 and 44 walks
+ * on foot, or a quarter of that on a mount.
+ *
+ * Once this floor table ships, raising a floor means any hero whose total sits between the old
+ * and new threshold loses a level — levelFromFloors is a pure function, no history is kept. This
+ * correction is cheap today (the High Road is not in any release tag), so a future re-tune is a
+ * different decision from this one.
  *
  * Re-tune here and nowhere else; nothing but this table and METRES_PER_LEAGUE knows the scale.
  */

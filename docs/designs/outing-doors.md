@@ -576,11 +576,11 @@ Step 0 a déjà refusé pour l'écran de quête.
   - Surfacé par : voix extérieure, la reprise repousse `timerStartTimestamp` et le résultat suit
   - Fichiers : `hooks/useSessionRecovery.ts`, `stores/session.ts`
   - Vérifier : `npm test -- session-recovery`, `npm test -- store-session`
-- [ ] **T4 (P1, human ~4 h / CC ~30 min), stores/session.ts.** `distanceGoalM` devient `goal: OutingGoal | null`.
+- [x] **T4 (P1), stores/session.ts.** `distanceGoalM` devient `goal: OutingGoal | null`. *Fait, 5c5cc9c2.*
   - Surfacé par : voix extérieure, le booléen `free` et sa dérivation deviennent inutiles
   - Fichiers : `stores/session.ts`, `hooks/useSessionRecovery.ts`, `app/(tabs)/quests/[id].tsx`
   - Vérifier : `npm test -- store-session`, `npm test -- db-expeditions`
-- [ ] **T5 (P1, human ~2 h / CC ~15 min), stores/session.ts.** Countdown dérivé, timer posé, snapshot élargi.
+- [x] **T5 (P1), stores/session.ts.** Countdown dérivé, timer posé, snapshot élargi. *Fait, 5c5cc9c2.*
   - Surfacé par : le drapeau qui répétait ce que la quête sait, et le balayeur d'orphelins
   - Fichiers : `stores/session.ts`
   - Vérifier : `npm test -- store-session`
@@ -588,63 +588,64 @@ Step 0 a déjà refusé pour l'écran de quête.
   - Surfacé par : D7, on croit le héros mais personne ne journalise vingt-quatre heures
   - Fichiers : `stores/session.ts`
   - Vérifier : `npm test -- store-session`
-- [ ] **T7 (P1, human ~2 h / CC ~15 min), sauvegarde.** Une sortie libre écrit sa ligne sans `target`.
+- [x] **T7 (P1), sauvegarde.** Une sortie libre écrit sa ligne sans `target`. *Fait, 5c5cc9c2.*
   - Surfacé par : revue adversariale tour 3, le journal colorait en vert une cible jamais choisie
   - Fichiers : `stores/session.ts`, `db/completed.ts`
   - Vérifier : `npm test -- store-session`
-- [ ] **T8 (P1, human ~3 h / CC ~20 min), OutsideBand.tsx.** La porte rapide, avec ses gardes.
+- [x] **T8 (P1), OutsideBand.tsx.** La porte rapide, avec ses gardes. *Fait, 0e96e9d8.*
   - Surfacé par : prémisse 4, la séance vivante à ne pas écraser, la permission non persistée
   - Fichiers : `components/home/OutsideBand.tsx`, `db/questConfig.ts`
   - Vérifier : `npm test -- home-outside-band`
-- [ ] **T9 (P1, human ~3 h / CC ~20 min), écran de séance.** Bandeau « Annuler » après un départ rapide.
+- [x] **T9 (P1), écran de séance.** Bandeau « Annuler » après un départ rapide. *Fait, 797bbad1.*
   - Surfacé par : D16, sans compte à rebours un tap raté coûte quatre gestes à défaire
   - Fichiers : `components/session/`, `app/session.tsx`
   - Vérifier : `npm test -- session-outing-view`
-- [ ] **T10 (P1, human ~3 h / CC ~20 min), ExpeditionPanel.tsx.** Le gros chiffre suit l'unité, chrono depuis `recordedDurationSeconds()`.
+- [x] **T10 (P1), ExpeditionPanel.tsx.** Le gros chiffre suit l'unité, chrono depuis `recordedDurationSeconds()`. *Fait, 6a557379.*
   - Surfacé par : prémisse 6, et D12 après la découverte que `useSessionTimer` ment à la reprise
   - Fichiers : `components/session/ExpeditionPanel.tsx`
   - Vérifier : `npm test -- expedition-panel`
-- [ ] **T11 (P1, human ~3 h / CC ~20 min), ActiveExerciseView.tsx.** Appui long, contrôles retirés, `completeOuting()`.
+- [x] **T11 (P1), ActiveExerciseView.tsx.** Appui long, contrôles retirés, `completeOuting()`. *Fait, 9b3fa765.*
   - Surfacé par : prémisse 7, D5 et D17, un seul propriétaire de la durée dès la v2.1
   - Fichiers : `components/session/ActiveExerciseView.tsx`, `stores/session.ts`
   - Vérifier : `npm test -- session-outing-view`
-- [ ] **T12 (P1, human ~30 min / CC ~5 min), app/session.tsx.** `KeepAwake` conditionnel.
+- [x] **T12 (P1), app/session.tsx.** `KeepAwake` conditionnel. *Fait, 797bbad1.*
   - Surfacé par : prémisse 7, `useKeepAwake()` inconditionnel ligne 17
   - Fichiers : `app/session.tsx`
   - Vérifier : `npm test`, puis l'écran qui s'éteint seul en sortie
-- [ ] **T13 (P1, human ~2 h / CC ~15 min), notification.** Le temps écoulé entre dans `progressLine`.
+- [x] **T13 (P1), notification.** Le temps écoulé entre dans `progressLine`. *Fait, 797bbad1.*
   - Surfacé par : D14, seule surface lisible sans déverrouiller
   - Fichiers : `stores/expedition.ts`
   - Vérifier : `npm test -- store-expedition`
-- [ ] **T14 (P2, human ~3 h / CC ~20 min), quests/[id].tsx.** `effectiveLevel` pour ses trois lecteurs.
+- [x] **T14 (P2), quests/[id].tsx.** `effectiveLevel` pour ses trois lecteurs. *Fait, 0e96e9d8.*
   - Surfacé par : revue adversariale tour 3, plus les deux pièges nommés par la voix extérieure
   - Fichiers : `app/(tabs)/quests/[id].tsx`, `db/questConfig.ts`
   - Vérifier : `npm test -- quest-details-expedition`
-- [ ] **T15 (P1, human ~1 j / CC ~1 h), tests.** Les vingt-quatre de la carte de couverture.
+- [x] **T15 (P1), tests.** Les vingt-quatre de la carte de couverture. *Fait, écrits avec chaque
+  unité plutôt qu'en lot à la fin, comme le plan le demandait : la suite passe de 1404 à 1439.*
   - Surfacé par : D8, six prévus, vingt-quatre nécessaires
   - Fichiers : `__tests__/`
   - Vérifier : `nvm exec 24 npm test`
-- [ ] **T18 (P1, human ~3 h / CC ~20 min), OutsideBand.tsx.** Une tuile, une cible, et elle dit qu'elle démarre.
+- [x] **T18 (P1), OutsideBand.tsx.** Une tuile, une cible, et elle dit qu'elle démarre. *Fait, 0e96e9d8.*
   - Surfacé par : revue design F1 et F2, 40 dp sous le plancher de `DESIGN.md:150`, et le commentaire de la bande qui porte la règle inverse
   - Fichiers : `components/home/OutsideBand.tsx`
   - Vérifier : `npm test -- home-outside-band`, puis viser le glyphe au pouce
-- [ ] **T19 (P1, human ~3 h / CC ~20 min), bandeau.** « Annuler le départ », cinq secondes, hauteur réservée.
+- [x] **T19 (P1), bandeau.** « Annuler le départ », cinq secondes, hauteur réservée. *Fait, 797bbad1.*
   - Surfacé par : revue design F6 à F10, dont le motif de l'issue #29 et la collision du mot « Annuler »
   - Fichiers : `components/session/`, `locales/`
   - Vérifier : `npm test -- session-outing-view`
-- [ ] **T20 (P1, human ~2 h / CC ~15 min), ExpeditionPanel.tsx.** La ligne de 24 px, mode par mode, et l'auto-pause qui gèle.
+- [x] **T20 (P1), ExpeditionPanel.tsx.** La ligne de 24 px, mode par mode, et l'auto-pause qui gèle. *Fait, 6a557379.*
   - Surfacé par : revue design F11 à F14, deux durées sans étiquette et un gros chiffre qui monte à l'arrêt
   - Fichiers : `components/session/ExpeditionPanel.tsx`
   - Vérifier : `npm test -- expedition-panel`
-- [ ] **T21 (P1, human ~3 h / CC ~20 min), appui long.** Un anneau pendant le maintien, une action d'accessibilité.
+- [x] **T21 (P1), appui long.** Un anneau pendant le maintien, une action d'accessibilité. *Fait, 9b3fa765.*
   - Surfacé par : revue design F15 à F17, un bouton mort 799 ms et TalkBack sans chemin pour finir
   - Fichiers : `components/session/ActiveExerciseView.tsx`
   - Vérifier : `npm test -- session-outing-view`, puis une sortie avec TalkBack
-- [ ] **T22 (P1, human ~2 h / CC ~15 min), copie qui devient fausse.** `privacy.permissions_body` et la phrase du téléphone qu'on range.
+- [x] **T22 (P1), copie qui devient fausse.** `privacy.permissions_body` et la phrase du téléphone qu'on range. *Fait, ea3a257c.*
   - Surfacé par : revue design F19 et F22, la politique promet un keep-awake que T12 supprime
   - Fichiers : `locales/fr.json`, `locales/en.json`
   - Vérifier : `npm test -- locale-style`, à faire dans le commit de T12
-- [ ] **T23 (P2, human ~3 h / CC ~20 min), locales.** La liste réelle des clés, écrite avant de coder.
+- [x] **T23 (P2), locales.** La liste réelle des clés, écrite avant de coder. *Fait, ea3a257c.*
   - Surfacé par : revue design F23 à F27, quatre chaînes annoncées pour une douzaine de surfaces
   - Fichiers : `locales/fr.json`, `locales/en.json`
   - Vérifier : `npm test -- locale-style`, `npm test -- villagers`

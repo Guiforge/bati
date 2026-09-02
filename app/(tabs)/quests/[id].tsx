@@ -42,6 +42,7 @@ import {
   hasOutdoorSlot,
   isMountedOuting,
   isOutingSession,
+  outingGoal,
 } from "@/db/expeditions";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
@@ -490,7 +491,10 @@ export default function QuestDetails() {
       // populates the store, and the session screen redirects home if it mounts on an empty one.
       await startSession(quest, level, {
         adventureRunStepId: runStepId,
-        distanceGoalM: config.distanceM ?? null,
+        // Derived here rather than in the store: this screen is the one that just let the hero
+        // edit the config, so it is the one that knows what they set out to do. The quick door
+        // on Home passes `null` instead, which is the whole of "no number on it".
+        goal: outingGoal(quest, config.distanceM ?? null),
       });
       router.push("/session" as never);
     } catch (error) {

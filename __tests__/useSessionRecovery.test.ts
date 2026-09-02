@@ -149,12 +149,16 @@ describe("the auto-save subscriber", () => {
   });
 
   it("banks progress when the hero moves to the next exercise", async () => {
+    // A session is written the moment it is live, not at its first change: an outing is one
+    // round of one movement, so it would otherwise never be written at all and its trace would
+    // be swept as an orphan. Cleared here so the next write is the one this case is about.
     liveSession();
-    expect(mockSavedSlot).toBeNull();
+    await waitFor(() => expect(mockSavedSlot).not.toBeNull());
+    const atStart = mockSavedSlot;
 
     useSessionStore.setState({ currentExerciseIndex: 3 });
 
-    await waitFor(() => expect(mockSavedSlot).not.toBeNull());
+    await waitFor(() => expect(mockSavedSlot).not.toBe(atStart));
     expect(JSON.parse(mockSavedSlot as string).currentExerciseIndex).toBe(3);
   });
 

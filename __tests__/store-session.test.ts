@@ -989,10 +989,10 @@ describe("useSessionStore", () => {
     });
   });
 
-  // The one uncovered link in the whole outing feature: `QuestConfigCard` writes
-  // `config.distanceM`, and `beginTrackingIfOuting` is what turns that into the goal
-  // `useExpeditionStore.begin` buzzes against. `begin` gained two positional params late
-  // (`goal`, then `haptics`), so the arguments are asserted by position, not merely presence.
+  // The one uncovered link in the whole outing feature: the door the hero came through decides
+  // the goal, and `beginTrackingIfOuting` is what carries it to the `begin` that buzzes against
+  // it. `begin` gained two positional params late (`goal`, then `haptics`), so the arguments are
+  // asserted by position, not merely presence.
   describe("beginTrackingIfOuting", () => {
     const outingQuest = {
       id: 9,
@@ -1013,10 +1013,12 @@ describe("useSessionStore", () => {
       jest.restoreAllMocks();
     });
 
-    test("a distance goal reaches begin by position, ahead of the slot's duration", async () => {
+    test("the goal reaches begin by position, exactly as the door handed it over", async () => {
       const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
 
-      await store.getState().startSession(outingQuest, "medium", { distanceGoalM: 3000 });
+      await store
+        .getState()
+        .startSession(outingQuest, "medium", { goal: { type: "distance", metres: 3000 } });
       await waitFor(() => expect(beginSpy).toHaveBeenCalled());
 
       const call = beginSpy.mock.calls[0];
@@ -1032,16 +1034,84 @@ describe("useSessionStore", () => {
       expect(haptics).toBe(true);
     });
 
-    test("with no distance goal, begin falls back to the slot's duration as a time goal", async () => {
+    test("a walk starts by walking, with its timer already running", async () => {
       const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
 
-      await store.getState().startSession(outingQuest, "medium", {});
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      // No 3..2..1: getting into position before a set of squats is what that screen is for.
+      expect(store.getState().status).toBe("running");
+      // And the timer of the slot itself, not the countdown's. Without it `useSessionTimer`
+      // returns its idle state and the view completes the walk with a single second.
+      expect(store.getState().timerStartTimestamp).not.toBeNull();
+      expect(store.getState().timerDuration).toBe(900);
+    });
+
+    /**
+     * The snapshot of the first second.
+     *
+     * The subscriber refuses to write during a countdown and treated leaving one as the first
+     * sign of progress, which is the only sign an outing ever gives: one round, one movement, no
+     * rest, so nothing else it watches ever moves. A walk now goes from `idle` straight to
+     * `running` and never passes through a countdown at all, so without this the snapshot would
+     * never be written, and `useSessionRecovery` would sweep the trace as an orphan.
+     */
+    test("a walk is written down as soon as it starts, not at its first pause", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.setSavedSession as jest.Mock).mockClear();
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      await waitFor(() => expect(preferences.setSavedSession).toHaveBeenCalled());
+      const written = JSON.parse(
+        (preferences.setSavedSession as jest.Mock).mock.calls[0]?.[0] as string,
+      ) as { goal: unknown; sessionUuid: string };
+      // With the goal it set out with, which for this door is none at all.
+      expect(written.goal).toBeNull();
+      // Filed under the name its points are already using.
+      expect(written.sessionUuid).toBe(store.getState().sessionUuid);
+    });
+
+    test("a workout indoors still counts down", async () => {
+      await store.getState().startSession(mockQuest, "medium");
+
+      expect(["countdown", "warmup"]).toContain(store.getState().status);
+    });
+
+    /**
+     * The walk with no number on it.
+     *
+     * The store used to build the goal itself, falling back to whatever the slots added up to, so
+     * "no goal" was a sentence it could not say: a hero who tapped a tile to go out was handed
+     * the fifteen minutes the seed happens to draw at medium, and buzzed at them. The fallback
+     * now lives with the door that knows the hero's answer, and `null` reaches the service whole.
+     */
+    test("a walk with no number on it reaches begin as a null goal", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
       await waitFor(() => expect(beginSpy).toHaveBeenCalled());
 
       const call = beginSpy.mock.calls[0];
       assert(call);
-      const goal = call[4];
-      expect(goal).toEqual({ type: "time", seconds: 900 });
+      expect(call[4]).toBeNull();
+      // And nothing rebuilt it on the way: the slot's own 900 seconds stayed a suggestion.
+      expect(store.getState().goal).toBeNull();
+    });
+
+    test("the goal is held in state, where the snapshot can reach it", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+
+      await store
+        .getState()
+        .startSession(outingQuest, "medium", { goal: { type: "time", seconds: 1800 } });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      // `SavedSessionState` is a `Pick`, so a goal that stopped being persisted would be a
+      // compile error rather than a walk that comes back buzzing at the wrong moment.
+      expect(store.getState().goal).toEqual({ type: "time", seconds: 1800 });
     });
   });
 
@@ -1145,6 +1215,33 @@ describe("useSessionStore", () => {
       expect(store.getState().results[0]?.result.value).toBe(4 * 3600);
     });
 
+    test("a walk with no number on it writes no target to compare itself to", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      await store.getState().startSession(outing, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+      walked(30 * 60);
+
+      store.getState().completeExercise(30 * 60);
+
+      // The slot's own 900 seconds are a suggestion the hero never saw. Written down, the
+      // journal would tick it green as a target met.
+      expect(store.getState().results[0]?.target).toBeUndefined();
+      expect(store.getState().results[0]?.result.value).toBe(30 * 60);
+    });
+
+    test("a walk that had a goal keeps it, to be measured against", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      await store
+        .getState()
+        .startSession(outing, "medium", { goal: { type: "time", seconds: 900 } });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+      walked(30 * 60);
+
+      store.getState().completeExercise(30 * 60);
+
+      expect(store.getState().results[0]?.target).toEqual({ type: "time", value: 900 });
+    });
+
     test("an indoor hold still stops at an hour", () => {
       store.setState({
         quest: mockQuest,
@@ -1189,7 +1286,7 @@ describe("useSessionStore", () => {
         quest: outing,
         userLevel: "medium",
         sessionUuid: "0192-walk",
-        distanceGoalM: 3000,
+        goal: { type: "distance", metres: 3000 },
         adventureRunStepId: null,
         bossFight: null,
         bossStartHp: null,

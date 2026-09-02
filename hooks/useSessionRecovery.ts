@@ -204,7 +204,7 @@ export function useSessionRecovery() {
       // kilometres already in `gps_points`. Same uuid, so the points land on the same session,
       // and the store folds those points back into the reading rather than restarting at zero.
       if (saved.quest) {
-        beginTrackingIfOuting(saved.quest, saved.sessionUuid ?? null, saved.distanceGoalM ?? null);
+        beginTrackingIfOuting(saved.quest, saved.sessionUuid ?? null, saved.goal ?? null);
       }
 
       // Clear saved session after recovery

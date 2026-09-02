@@ -1,10 +1,11 @@
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 import type { CompletedExerciseInput } from "@/db/completed";
+import { deletePoints } from "@/db/gps";
 import type { Quest } from "@/db/quests";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import type { LocationFix } from "@/modules/bati-location";
-import { accept, EMPTY } from "@/src/gps/track";
+import { accept, credited, EMPTY } from "@/src/gps/track";
 import { useSessionStore } from "@/stores/session";
 
 /**
@@ -59,7 +60,13 @@ const outing = {
   enTitle: "The Long Walk",
   frTitle: "La longue marche",
   rounds: 1,
-  exercises: [{ id: 30, exercise: { id: 30, style: "expedition" } }],
+  exercises: [
+    {
+      id: 30,
+      target: { type: "time", value: 900 },
+      exercise: { id: 30, style: "expedition", muscles: [], secondsPerRep: 1, difficulty: "easy" },
+    },
+  ],
 } as unknown as Quest;
 
 const NOW = 1_800_000_000_000;
@@ -380,6 +387,117 @@ describe("useSessionRecovery", () => {
       await result.current.discardSession();
     });
 
+    expect(mockSavedSlot).toBeNull();
+    expect(result.current.recoverableSession).toBeNull();
+  });
+});
+
+/**
+ * The third door: a walk the OS killed, concluded from Home.
+ *
+ * The notification's own "Finish" needs a live JS runtime, so the case left over is the one where
+ * the process died and the service did not: nothing ever ended the session. The card is what ends
+ * it, and the only reason it may is that the walk left a trace saying what it did. That is also
+ * why a workout gets neither the offer nor the longer window.
+ */
+describe("finishing an interrupted outing", () => {
+  /** Bank an outing, then come back `awayMs` later with its trace already in the table. */
+  async function walkKilledAt(awayMs: number, overrides: Record<string, unknown> = {}) {
+    mockPoints = tenMinutesOut();
+    await bankLiveSession({
+      quest: outing,
+      sessionUuid: "0192-walk",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      // A minute on the session's own clock, against ten on the trace: the two numbers have to
+      // disagree for the assertion below to mean anything.
+      startTime: NOW - 60_000,
+      ...overrides,
+    });
+    jest.spyOn(Date, "now").mockReturnValue(NOW + awayMs);
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.isChecking).toBe(false));
+    return result;
+  }
+
+  it("still offers a walk finished last night when the phone is opened in the morning", async () => {
+    const result = await walkKilledAt(6 * 60 * 60 * 1000);
+
+    expect(result.current.recoverableSession?.isOuting).toBe(true);
+    expect(mockSavedSlot).not.toBeNull();
+  });
+
+  it("throws away a workout of the same age, which has only its clock", async () => {
+    await bankLiveSession();
+    jest.spyOn(Date, "now").mockReturnValue(NOW + 6 * 60 * 60 * 1000);
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.isChecking).toBe(false));
+
+    expect(result.current.recoverableSession).toBeNull();
+    expect(mockSavedSlot).toBeNull();
+  });
+
+  it("does not offer to finish a workout, which has no witness of the hours it missed", async () => {
+    await bankLiveSession();
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+
+    expect(result.current.recoverableSession?.isOuting).toBe(false);
+
+    let finished: boolean | undefined;
+    await act(async () => {
+      finished = await result.current.finishSession();
+    });
+
+    // Refused at the hook too, not only hidden on the card: a workout must never be filed by a
+    // path that reads a trace it does not have.
+    expect(finished).toBe(false);
+    expect(useSessionStore.getState().status).not.toBe("finished");
+  });
+
+  /**
+   * The whole point of the third door. Recovery banks the downtime as pause, so the session's own
+   * clock reads the single minute before the kill; the trace reads the ten minutes that were
+   * actually walked. `recordOf` prices a timed outing with `recordedDurationSeconds()`, which
+   * reads `sessionClock`, which reads the trace. This asserts that path end to end.
+   */
+  it("writes the walk with the duration its trace proves, not the one its clock kept", async () => {
+    const result = await walkKilledAt(120_000);
+
+    let finished: boolean | undefined;
+    await act(async () => {
+      finished = await result.current.finishSession();
+    });
+
+    expect(finished).toBe(true);
+    const state = useSessionStore.getState();
+    // Finished, which is the victory view, which is the one writer of a session row.
+    expect(state.status).toBe("finished");
+    // The walk's own set, landed last. (`bankLiveSession` puts one there to make the subscriber
+    // fire, which is how every other case in this file banks a snapshot.)
+    const walked = state.results.at(-1);
+    expect(walked?.exerciseId).toBe(30);
+    expect(walked?.result?.value).toBe(
+      credited(tenMinutesOut().reduce(accept, EMPTY))?.elapsedSeconds,
+    );
+    // What the session's own clock would have said, had anyone asked it.
+    expect(walked?.result?.value).not.toBe(60);
+    // No target: nobody chose fifteen minutes, so the journal is not told the walk met one.
+    expect(walked?.target).toBeUndefined();
+    expect(mockSavedSlot).toBeNull();
+  });
+
+  it("still throws the walk's ground away when the hero declines instead", async () => {
+    const result = await walkKilledAt(120_000);
+
+    await act(async () => {
+      await result.current.discardSession();
+    });
+
+    expect(deletePoints).toHaveBeenCalledWith("0192-walk");
     expect(mockSavedSlot).toBeNull();
     expect(result.current.recoverableSession).toBeNull();
   });

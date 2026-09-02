@@ -17,7 +17,7 @@ import {
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
-import { isOutdoors } from "@/db/expeditions";
+import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
 import { formatTarget } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
@@ -49,6 +49,7 @@ export function ActiveExerciseView() {
   const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
   const completeExercise = useSessionStore((s) => s.completeExercise);
+  const completeOuting = useSessionStore((s) => s.completeOuting);
   const skipExercise = useSessionStore((s) => s.skipExercise);
   const swapCurrentExercise = useSessionStore((s) => s.swapCurrentExercise);
 
@@ -116,12 +117,24 @@ export function ActiveExerciseView() {
     // Heavy haptic feedback on exercise completion
     heavyImpact();
 
+    // An outing has one way to end, and the view is not it.
+    //
+    // The store times a walk by its trace, the same rule the journal reads, because the stopwatch
+    // on screen restarts at zero after the OS kills the app. The button here and the Finish
+    // action on the notification therefore call the same thing: the notification has no view to
+    // compute anything with, and two ways to end one walk would be two durations for it.
+    //
+    // Asked of the *session*, where the button below asks it of the slot. `completeOuting` is
+    // deaf to anything but a walk under way, because a broadcast can outlive the session that
+    // started it, so a walk slot inside a mixed quest keeps the ordinary path: the store has no
+    // per-slot span to read off the trace, which is the shortcut `recordOf` already marks.
+    if (isOutingSession(quest)) {
+      completeOuting();
+      return;
+    }
+
     // For time-based exercises, record actual elapsed time
     // For rep-based, record the adjusted value
-    //
-    // On an outing this number is handed over and then ignored: `recordOf` in the store times a
-    // walk by its trace, the same rule the journal reads, because the stopwatch on screen restarts
-    // at zero after the OS kills the app. The view stays out of the duration business, one writer.
     if (isTimeBased) {
       // DB constraints require resultValue > 0.
       completeExercise(Math.max(1, elapsedSeconds));

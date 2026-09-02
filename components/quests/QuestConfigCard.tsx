@@ -251,7 +251,14 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
             {quest.exercises.map((qex) => (
               <XStack key={qex.id} items="center" gap="$2">
                 <YStack flex={1}>
-                  {byDistance ? null : (
+                  {byDistance ? (
+                    // Distance mode drops the per-slot stepper, but the swap button still needs
+                    // a row of its own to sit beside — otherwise the icon floats next to nothing
+                    // and the movement it swaps is unnamed.
+                    <Text fontWeight="700" fontSize={15} color="$text" numberOfLines={2}>
+                      {language === "fr" ? qex.exercise.frName : qex.exercise.enName}
+                    </Text>
+                  ) : (
                     <SlotTargetStepper
                       qex={qex}
                       singleControl={singleControl}

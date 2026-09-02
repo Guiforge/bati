@@ -54,8 +54,12 @@ export function clampToRange(value: number, range: { min: number; max: number })
  * 999 is a generous rep count and sixteen minutes thirty-nine. Every seeded expedition targets
  * more than that at hard (`drizzle/0042_three_doors_out.sql` reaches 1200 s), so the shared range
  * silently shortened the quest on the way into SQLite, and the stepper could not be pushed back
- * up: an hour-long walk was one edit away and the edit did not exist. An hour is also exactly
- * what one set may ever record (`clampResultValue`), so a target above this could never be met.
+ * up: an hour-long walk was one edit away and the edit did not exist.
+ *
+ * It is no longer what a *set* may record. `clampResultValue` in `stores/session.ts` bounds an
+ * expedition by `OUTING_RESULT_MAX_SECONDS` instead, because an hour is a hold's ceiling and a
+ * two-hour ride was being written down as one. This stays the ceiling of a target a hero can
+ * *set*, which is a different question and still answered here.
  */
 export const TIME_TARGET_MAX = 3600;
 

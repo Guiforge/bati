@@ -30,7 +30,13 @@ import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
-import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
+import type {
+  DifficultyCode,
+  ExerciseStyle,
+  FeedbackCode,
+  MuscleCode,
+  QuestTargetType,
+} from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import { REST_RANGE, retargetForMovement, targetRangeFor } from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
@@ -42,6 +48,7 @@ import {
   type VillageGrowth,
   type VillageTierUp,
 } from "@/db/village";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
 import { i18n } from "@/i18n";
 import { credited } from "@/src/gps/track";
@@ -73,6 +80,31 @@ const PRE_START_COUNTDOWN_SECONDS = 3;
 const OUTING_STOPPAGE_ALLOWANCE_SECONDS = 20 * 60;
 
 /**
+ * How long a walk with no witness at all may claim to have lasted.
+ *
+ * No fix ever locked, so nothing but the hero's word says this happened: a refused permission, a
+ * phone under trees, a receiver that never saw the sky. The word is taken. This is a solo app and
+ * nobody cheats themselves, so the bound is not there to catch a liar, it is there so a phone left
+ * on a table overnight does not journal nine hours, take the "longest session" record and unlock
+ * two achievements on the way past. A quest bounds the same case against its own estimate; an
+ * outing has no estimate worth bounding against, which is the whole reason this constant exists.
+ */
+const UNWITNESSED_OUTING_MAX_SECONDS = 4 * 3600;
+
+/**
+ * The ceiling on one outing's recorded seconds, which is a walk's rather than a hold's.
+ *
+ * `TIME_TARGET_MAX` is an hour, and it is right for the thing it was written for: nobody planks
+ * for an hour, and a set that claims to would be a typo or a phone left face-up. Applied to an
+ * expedition it silently halved a two-hour ride, and XP is paid on what is recorded, so the
+ * longest outings were the worst paid. Nothing else is at risk from a large number here: an
+ * expedition converts to zero work units (`db/workUnits.ts`), so muscle volume, boss damage and
+ * the village cannot be inflated by it, and the "longest outing" record counts metres. Twelve
+ * hours is past any outing a person walks back from, and still short of a forgotten phone.
+ */
+const OUTING_RESULT_MAX_SECONDS = 12 * 3600;
+
+/**
  * What one set may claim.
  *
  * The database only demands `> 0`, so an absurd value used to flow straight into muscle volume,
@@ -81,10 +113,19 @@ const OUTING_STOPPAGE_ALLOWANCE_SECONDS = 20 * 60;
  * `max(1, ...)` guard the DB constraints already required lives, so every consumer of a result is
  * bounded by construction rather than by each caller remembering.
  */
-function clampResultValue(resultValue: number, type: QuestTargetType): number {
+function clampResultValue(
+  resultValue: number,
+  type: QuestTargetType,
+  style?: ExerciseStyle,
+): number {
   if (!Number.isFinite(resultValue)) return 1;
 
-  const ceiling = targetRangeFor(type).max;
+  // Bounded by what the movement is, not only by what it counts: an hour is the ceiling of a
+  // hold, and a walk is not a hold. See `OUTING_RESULT_MAX_SECONDS`.
+  const ceiling =
+    style === NON_REP_STYLE && type === "time"
+      ? OUTING_RESULT_MAX_SECONDS
+      : targetRangeFor(type).max;
   return Math.min(ceiling, Math.max(1, Math.floor(resultValue)));
 }
 
@@ -446,7 +487,12 @@ function sessionClock({
   const durationSeconds =
     moving !== null && onTheRoad !== null
       ? Math.min(onTheRoad, moving + OUTING_STOPPAGE_ALLOWANCE_SECONDS)
-      : Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
+      : isOutingSession(quest)
+        ? // No fix ever locked. A quest is bounded by twice its own estimate, which for an outing
+          // is a suggestion nobody chose: it turned a 45-minute walk against a 15-minute slot into
+          // half an hour. A walk with no witness keeps its clock, bounded by the forgotten phone.
+          Math.min(measuredSeconds, UNWITNESSED_OUTING_MAX_SECONDS)
+        : Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
 
   if (moving !== null && isOutingSession(quest)) {
     return { durationSeconds, effortCeilingSeconds: moving };
@@ -949,10 +995,26 @@ export const useSessionStore = create<SessionState>()(
       const currentEx = quest.exercises[currentExerciseIndex];
       if (!currentEx) return;
 
+      // What an outing records is not the stopwatch on screen.
+      //
+      // The view hands over `useSessionTimer`'s elapsed seconds, and recovery pushes
+      // `timerStartTimestamp` forward by the whole downtime — an outing writes its snapshot once,
+      // at the start, so the downtime *is* the walk. A walk killed at 45 minutes and resumed came
+      // back reading one, and one is what got written down and paid. The journal already knows
+      // better: it times a walk by its trace (`sessionClock`). One rule, and now three readers.
+      const measuredResult =
+        currentEx.target.type === "time" && isOutingSession(quest)
+          ? Math.max(1, recordedDurationSeconds())
+          : resultValue;
+
       // DB constraints (see migrations) require: resultValue > 0, roundIndex >= 0, sortOrder >= 0.
       // Guards accidental 0/NaN when users tap "DONE" immediately on time-based exercises, and
       // the ceiling above.
-      const safeResultValue = clampResultValue(resultValue, currentEx.target.type);
+      const safeResultValue = clampResultValue(
+        measuredResult,
+        currentEx.target.type,
+        currentEx.exercise.style,
+      );
 
       // Land the hit on the fight we hold, and bank it. Nothing reaches the database until
       // saveSession: see `pendingDamage`. This is pure maths now, so there is no failure to
@@ -1132,7 +1194,7 @@ export const useSessionStore = create<SessionState>()(
       if (!last) return;
 
       // DB constraints require resultValue > 0.
-      const safeResultValue = clampResultValue(resultValue, last.result.type);
+      const safeResultValue = clampResultValue(resultValue, last.result.type, last.pricing?.style);
       const updated = {
         ...last,
         result: { ...last.result, value: safeResultValue },

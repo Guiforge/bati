@@ -1046,6 +1046,121 @@ describe("useSessionStore", () => {
   });
 
   /**
+   * What a long walk is worth.
+   *
+   * Two findings of the engineering review of 2026-09-02, both true on main before it. A set may
+   * only ever record an hour (`clampResultValue` against `TIME_TARGET_MAX`), which is right for a
+   * plank and wrong for a walk: a two-hour ride was written down as one, and XP is paid on what
+   * is written down. And a walk the OS killed came back with a stopwatch reset to zero, because
+   * recovery pushes `timerStartTimestamp` forward by the whole downtime, so the view handed
+   * `completeExercise` the seconds since the resume and the hero was paid for those alone.
+   *
+   * Both are fixed in the same place: an outing's result is not the view's stopwatch, it is the
+   * duration the journal is about to write, and its ceiling is a walk's, not a hold's.
+   */
+  describe("an outing is paid for the whole of it", () => {
+    const outing = {
+      id: 9,
+      rounds: 1,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      enTitle: "The Long Walk",
+      frTitle: "La longue marche",
+      exercises: [
+        {
+          exercise: { id: 30, enName: "Warden's Walk", muscles: [], style: "expedition" },
+          target: { type: "time", value: 900 },
+        },
+      ],
+    } as unknown as Quest;
+
+    /** On the road for `seconds`, all of it moving, as the reducer would read it back. */
+    const walked = (seconds: number, startedAt = Date.now() - seconds * 1000) => {
+      useExpeditionStore.setState({
+        track: {
+          ...EMPTY,
+          startedAt,
+          lastAt: startedAt + seconds * 1000,
+          distanceM: seconds * 1.4,
+          movingMs: seconds * 1000,
+        },
+      });
+    };
+
+    // Swapped in rather than spied on, for the reason the resumed-walk case below spells out:
+    // these cases write to the expedition store, zustand hands `setState` a fresh state object,
+    // and a spy `restoreAllMocks` puts back on the old one rides along on the new one. The next
+    // case then sees a `begin` that was already called.
+    let realBegin: ReturnType<typeof useExpeditionStore.getState>["begin"];
+
+    beforeEach(() => {
+      realBegin = useExpeditionStore.getState().begin;
+      const begin = jest.fn<Promise<boolean>, unknown[]>().mockResolvedValue(true);
+      useExpeditionStore.setState({ begin: begin as unknown as typeof realBegin });
+    });
+
+    afterEach(() => {
+      useExpeditionStore.setState({ begin: realBegin, track: EMPTY });
+    });
+
+    test("two hours on a mount are recorded as two hours, not as the hour a hold stops at", async () => {
+      await store.getState().startSession(outing, "medium", {});
+      walked(7200);
+
+      store.getState().completeExercise(7200);
+
+      expect(store.getState().results[0]?.result.value).toBe(7200);
+    });
+
+    test("a walk the OS killed is recorded by its trace, not by the clock since the resume", async () => {
+      await store.getState().startSession(outing, "medium", {});
+      // What recovery leaves behind: the downtime banked as pause, so the session's own clock
+      // reads the minute since the hero pressed resume.
+      store.setState({ startTime: Date.now() - 60_000, totalPausedTime: 0 });
+      walked(45 * 60);
+
+      // The number the view's stopwatch would have handed over.
+      store.getState().completeExercise(60);
+
+      expect(store.getState().results[0]?.result.value).toBe(45 * 60);
+    });
+
+    test("with no fix at all it keeps what the clock measured", async () => {
+      await store.getState().startSession(outing, "medium", {});
+      store.setState({ startTime: Date.now() - 45 * 60_000, totalPausedTime: 0 });
+
+      store.getState().completeExercise(45 * 60);
+
+      // Not the 30 minutes twice the 15-minute slot would allow: a walk with no witness is
+      // still a walk, and the hero is believed.
+      expect(store.getState().results[0]?.result.value).toBe(45 * 60);
+    });
+
+    test("but a phone forgotten overnight does not record nine hours", async () => {
+      await store.getState().startSession(outing, "medium", {});
+      store.setState({ startTime: Date.now() - 9 * 3600_000, totalPausedTime: 0 });
+
+      store.getState().completeExercise(9 * 3600);
+
+      expect(store.getState().results[0]?.result.value).toBe(4 * 3600);
+    });
+
+    test("an indoor hold still stops at an hour", () => {
+      store.setState({
+        quest: mockQuest,
+        status: "running",
+        currentExerciseIndex: 1,
+        startTime: Date.now() - 7200_000,
+        results: [],
+      });
+
+      store.getState().completeExercise(7200);
+
+      expect(store.getState().results[0]?.result.value).toBe(3600);
+    });
+  });
+
+  /**
    * The interrupted walk.
    *
    * `startSession` was the only caller that ever started the tracking, so the OEM killing the app

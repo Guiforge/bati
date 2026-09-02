@@ -137,6 +137,25 @@ describe("stores/expedition", () => {
     expect(mockHaptic).toHaveBeenCalledTimes(1);
   });
 
+  test("a time goal stays unmet on elapsed wall clock alone, once the hero stops moving", async () => {
+    // A goal of 15 s of *moving* time. Walking stops at fix 10, 9.8 m from the anchor — short of
+    // the 10 m that would reset it — so under 10 s of credited moving time and the goal unmet.
+    await store.getState().begin("s1", NOTIFICATION, false, "metric", {
+      type: "time",
+      seconds: 15,
+    });
+    for (let i = 0; i < 11; i++) emit(walking(i));
+    expect(store.getState().goalReached).toBe(false);
+
+    // The hero stands still from here on: same spot as fix 10, one fix per second. The reducer
+    // still credits a few of these as moving — GPS noise takes a beat to call a stop a stop — but
+    // auto-pause catches up well under the goal, and forty more seconds of wall clock must not
+    // buzz a goal that moving time never reached.
+    for (let i = 11; i < 51; i++) emit({ ...walking(10), t: T0 + i * 1000, distFromPrev: 0 });
+    expect(store.getState().goalReached).toBe(false);
+    expect(mockHaptic).not.toHaveBeenCalled();
+  });
+
   test("haptics off means no buzz, the notification still says it", async () => {
     await store
       .getState()

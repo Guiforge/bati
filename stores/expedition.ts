@@ -106,6 +106,27 @@ function progressLine(track: TrackState, unit: DistanceUnit, reached: string | n
   return reached === null ? distance : `${reached} · ${distance}`;
 }
 
+/**
+ * The moment the goal flips from unmet to met, once. The phone is in a pocket right now, so the
+ * buzz is the whole message and the notification is what explains it when the hero looks.
+ * Haptics off is respected: a hero who turned them off for buttons did not ask for a walk to be
+ * silent, but the setting has one meaning in this app and this is not the place to give it a
+ * second.
+ */
+function announceGoalReached(
+  track: TrackState,
+  unit: DistanceUnit,
+  notification: Notification,
+  haptics: boolean,
+): void {
+  if (haptics) {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((e) =>
+      reportError("expedition.goalHaptic", e),
+    );
+  }
+  setProgress(progressLine(track, unit, notification.reached));
+}
+
 export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   sessionUuid: null,
   track: EMPTY,
@@ -164,18 +185,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         const reached = wasReached || goalReached(goal, track);
         set({ track, lastFix: fix, goalReached: reached });
 
-        // Once. The phone is in a pocket at this moment, so the buzz is the whole message and the
-        // notification is what explains it when the hero looks. Haptics off is respected: a hero
-        // who turned them off for buttons did not ask for a walk to be silent, but the setting
-        // has one meaning in this app and this is not the place to give it a second.
-        if (reached && !wasReached) {
-          if (haptics) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((e) =>
-              reportError("expedition.goalHaptic", e),
-            );
-          }
-          setProgress(progressLine(track, unit, notification.reached));
-        }
+        if (reached && !wasReached) announceGoalReached(track, unit, notification, haptics);
 
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.

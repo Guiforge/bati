@@ -43,6 +43,13 @@ async function mount(entry: JournalEntry) {
 }
 
 describe("SessionCard", () => {
+  beforeEach(() => {
+    // The imperial cases below mutate this shared mock; reset it so a test order that runs one
+    // of them first does not leave the next test reading distances in the wrong unit.
+    mockSettingsStore.language = "en";
+    mockSettingsStore.distanceUnit = "metric";
+  });
+
   const baseEntry: JournalEntry = {
     id: 1,
     questTitle: "Test Quest",
@@ -88,7 +95,7 @@ describe("SessionCard", () => {
 
   it("formats distance in imperial when distanceUnit is imperial", async () => {
     mockSettingsStore.distanceUnit = "imperial";
-    const distanceStr = formatDistance(4580, "imperial"); // "3.00 mi" (4580m ≈ 2.847 mi, rounds to 15029 ft > 5280)
+    const distanceStr = formatDistance(4580, "imperial"); // "2.85 mi" (4580 m / 1609.344, over the 5280 ft mile cut-over)
     const expectedLabel = `${distanceStr} · 5 min`;
 
     await mount({ ...baseEntry, leaguesM: 4580 });

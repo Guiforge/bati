@@ -35,10 +35,6 @@ export function decode(row: GpsPointRow): LocationFix {
     ele: row.eleCm === null ? null : row.eleCm / 100,
     acc: row.accDm / 10,
     speed: row.speedCms === null ? null : row.speedCms / 100,
-    // Bearing is not stored: nothing reads it, and a column nobody consumes is the thing this
-    // codebase deletes rather than carries. `LocationFix` still declares it, so it is filled
-    // with what a re-read can honestly say.
-    bearing: null,
     distFromPrev: row.distFromPrevCm / 100,
   };
 }
@@ -107,6 +103,42 @@ export async function totalLeaguesM(): Promise<number> {
     .select({ m: sql<number>`coalesce(sum(${completedQuest.leaguesM}), 0)` })
     .from(completedQuest);
   return rows[0]?.m ?? 0;
+}
+
+/** What the session that owns a trace says about itself: which quest, when, and how far. */
+export type OutingSession = {
+  questId: number | null;
+  performedAt: Date;
+  /** The reducer's metres, written once at save. Null on a session that measured no ground. */
+  leaguesM: number | null;
+};
+
+/**
+ * The session behind a trace, found by the name the points are filed under.
+ *
+ * The recap is reached by `uuid` from two places and knows nothing else about the run, so
+ * without this it had to re-derive the distance from the fixes — a third answer to "how far did
+ * I go", next to the panel's and the village's. `leaguesM` is the one the road was paid in, and
+ * it is what the recap prints.
+ */
+export async function outingSession(sessionId: string): Promise<OutingSession | null> {
+  const rows = await db
+    .select({
+      questId: completedQuest.questId,
+      performedAt: completedQuest.performedAt,
+      leaguesM: completedQuest.leaguesM,
+    })
+    .from(completedQuest)
+    .where(eq(completedQuest.uuid, sessionId))
+    .limit(1);
+
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    questId: row.questId ?? null,
+    performedAt: row.performedAt,
+    leaguesM: row.leaguesM ?? null,
+  };
 }
 
 /**

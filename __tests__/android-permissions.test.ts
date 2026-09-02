@@ -74,9 +74,9 @@ const ALLOWED: Record<string, string> = {
 
   // modules/bati-location — Google-free GPS. These four arrive from a manifest this repo owns
   // rather than from a dependency, which is the case the scan below could not see until it
-  // learned to read `modules/` too. BatiLocationService spends all four; what no test here can
-  // see is whether a session ever starts it, since no screen calls start() yet.
-  // See docs/designs/gps-without-google.md.
+  // learned to read `modules/` too. BatiLocationService spends all four, and it is spent for
+  // real: `stores/expedition.ts` calls start(), and the session screen starts an expedition
+  // through `stores/session.ts`. See docs/designs/gps-without-google.md.
   "android.permission.ACCESS_FINE_LOCATION":
     "modules/bati-location — the whole feature. Precise location from LocationManager's " +
     "GPS_PROVIDER at 1 Hz; coarse location cannot measure a run. Also declared by " +
@@ -236,6 +236,16 @@ describe("Android permissions", () => {
 
     for (const name of Object.keys(ALLOWED)) {
       expect(expected).toContain(name);
+    }
+    // And back the other way, which is the half that was missing: a line added to the gate's
+    // list shipped a permission the install screen shows and this file never explained.
+    // DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION is the one exemption, and the file says why —
+    // the Android build generates it from the applicationId, no dependency asks for it.
+    for (const name of expected) {
+      if (name === `${appJson.expo.android.package}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`) {
+        continue;
+      }
+      expect(Object.keys(ALLOWED)).toContain(name);
     }
     // Sorted, so a hand-edit lands where the gate's `sort -u` will put it and the diff a failing
     // release prints reads as one added line rather than a reshuffle.

@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { create } from "zustand";
 import { formatDistance } from "@/constants/distanceFormat";
-import { appendPoints } from "@/db/gps";
+import { appendPoints, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import { NON_REP_STYLE } from "@/db/workUnits";
@@ -45,7 +45,11 @@ type ExpeditionState = {
   track: TrackState;
   /** The most recent accepted fix, for an accuracy readout. */
   lastFix: LocationFix | null;
-  /** Set when the service refused to start, so a screen can say why rather than sit blank. */
+  /**
+   * Why the readout is not moving, in a code the panel turns into words: the service refused to
+   * start, the hero denied the prompt, or the trace went quiet mid-walk (`gps-off`, `no-fix`).
+   * The last two are transient and clear themselves the moment fixes come back.
+   */
   error: string | null;
   /** Flipped once, the moment the goal was met. Read by the panel's status line. */
   goalReached: boolean;
@@ -96,6 +100,14 @@ async function flush(sessionUuid: string): Promise<void> {
   }
 }
 
+/**
+ * The two errors that are only about silence: a fix arriving, or the provider coming back, ends
+ * them. A permission refusal or a service that would not start is not undone by a fix.
+ */
+function clearedTransient(error: string | null): string | null {
+  return error === "gps-off" || error === "no-fix" ? null : error;
+}
+
 /** The notification's second line: the ground covered, in the hero's own unit. */
 function progressLine(track: TrackState, unit: DistanceUnit): string {
   return formatDistance(track.distanceM, unit);
@@ -129,6 +141,16 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   goalReached: false,
 
   begin: async (sessionUuid, notification, mounted, unit, goal = null, haptics = true) => {
+    // The previous run is closed before this one can be refused. Both early exits below used to
+    // return with the last outing's reading still in state: permission revoked between two
+    // sorties in the same process, and DONE credited the first walk's kilometres a second time,
+    // with its pace on the victory screen. Never hold game state a session has not earned.
+    await get()
+      .end()
+      .catch((e) => reportError("expedition.restart", e));
+    buffer = [];
+    set({ track: EMPTY, lastFix: null, error: null, goalReached: false });
+
     if (!isAvailable()) {
       // No native half: iOS today, and jest. The quest still runs, it just measures nothing.
       set({ error: "unavailable" });
@@ -163,12 +185,28 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       reportError("expedition.notificationPermission", e),
     );
 
-    await get()
-      .end()
-      .catch((e) => reportError("expedition.restart", e));
+    /**
+     * The ground already filed under this name.
+     *
+     * A session the OS killed mid-walk resumes with the same uuid and its points still in
+     * `gps_points`, so the reading restarts from the terrain rather than from zero — otherwise
+     * the recap draws 2.4 km the tracker says never happened, and the road is never paid. The
+     * reducer is pure, so replaying the points *is* the state: no second rule to keep in step.
+     * Empty, and one cheap query, for a uuid minted a second ago.
+     */
+    const priorFixes = await pointsOf(sessionUuid).catch((e: unknown) => {
+      reportError("expedition.resumeTrack", e);
+      return [] as LocationFix[];
+    });
+    const resumed = priorFixes.reduce(accept, EMPTY);
 
-    buffer = [];
-    set({ sessionUuid, track: EMPTY, lastFix: null, error: null, goalReached: false });
+    set({
+      sessionUuid,
+      track: resumed,
+      lastFix: priorFixes[priorFixes.length - 1] ?? null,
+      error: null,
+      goalReached: goalReached(goal, resumed),
+    });
 
     subscriptions = [
       addListener("onLocation", (fix) => {
@@ -176,7 +214,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         const track = accept(get().track, fix);
         const wasReached = get().goalReached;
         const reached = wasReached || goalReached(goal, track);
-        set({ track, lastFix: fix, goalReached: reached });
+        set({ track, lastFix: fix, goalReached: reached, error: clearedTransient(get().error) });
 
         if (reached && !wasReached) announceGoalReached(track, unit, haptics);
 
@@ -191,21 +229,32 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         set({ error: error.code });
         reportError("expedition.native", new Error(`${error.code}: ${error.message}`));
       }),
-      // Both of these mean "the trace is broken, the hero may still be walking". The reducer
-      // decides what that costs; here they are only worth a breadcrumb, because a GPS that
-      // drops out on a de-Googled ROM is exactly the field report nobody can reproduce at a desk.
+      // Both of these mean "the trace is broken, the hero may still be walking". They reach the
+      // panel as well as the log: the figures freeze either way, and a hero who switched
+      // location off mid-walk was left reading "On the road" over numbers that had stopped
+      // moving, while the notification two swipes away said the GPS was off.
       addListener("onProviderEnabled", (event) => {
-        if (!event.enabled) reportError("expedition.providerOff", new Error("provider disabled"));
+        if (event.enabled) {
+          set({ error: clearedTransient(get().error) });
+          return;
+        }
+        set({ error: "gps-off" });
+        reportError("expedition.providerOff", new Error("provider disabled"));
       }),
       addListener("onNoFixTimeout", (event) => {
+        set({ error: "no-fix" });
         reportError("expedition.noFix", new Error(`no fix for ${event.sinceLastFixMs} ms`));
       }),
     ];
 
-    return startNative({
+    const started = startNative({
       notification,
       maxSpeedMs: mounted ? SPEED_CAP_MS.mounted : SPEED_CAP_MS.onFoot,
     });
+    // A refusal the service can explain arrives on `onError`; a bare `false` explained nothing,
+    // and the panel sat on "Finding the sky" for the length of a walk nothing was measuring.
+    if (!started) set({ error: "foreground-denied" });
+    return started;
   },
 
   end: async () => {

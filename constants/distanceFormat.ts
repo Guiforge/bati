@@ -51,3 +51,20 @@ export function formatPace(metres: number, movingMs: number, unit: DistanceUnit)
   const suffix = unit === "imperial" ? "/mi" : "/km";
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")} ${suffix}`;
 }
+
+/**
+ * Moving time, in the shape a stopwatch has: `m:ss`.
+ *
+ * The recap wrote it as "31 min 33s" through `formatDuration`, which is the estimate's shape and
+ * is built to be read in a sentence. At 22 px on a third of the screen it wrapped, and the panel
+ * the hero had been staring at for half an hour said "31:33" for the same run. Minutes are not
+ * wrapped into hours, for the same reason `formatPace` does not clamp them: a two-hour walk reads
+ * "120:14", which is long, where "0:14" would be wrong.
+ *
+ * Milliseconds in, because that is what the reducer's `movingMs` already is at every call site.
+ */
+export function formatClock(movingMs: number): string {
+  if (!Number.isFinite(movingMs) || movingMs < 0) return "—";
+  const total = Math.floor(movingMs / 1000);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}

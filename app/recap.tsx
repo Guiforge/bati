@@ -8,17 +8,20 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
+import { Skeleton } from "@/components/common/Skeleton";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Share2 } from "@/components/icons";
-import { formatDistance, formatPace } from "@/constants/distanceFormat";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
 import { MAP_ATTRIBUTION, mapStyle } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
-import { formatDuration } from "@/db/estimate";
-import { pointsOf } from "@/db/gps";
+import { outingSession, pointsOf } from "@/db/gps";
+import { listQuestTemplates } from "@/db/quests";
 import type { LocationFix } from "@/modules/bati-location";
 import { toTrace } from "@/src/gps/trace";
 import { accept, EMPTY } from "@/src/gps/track";
 import { flushTrack, shareTrack, trackFileFor } from "@/src/gps/trackFile";
+import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -31,10 +34,23 @@ import { useSettingsStore } from "@/stores/settings";
  * recap map you can pan is a map you can pan into the next town, which is where a road map lives.
  * Locked, it is a picture of this outing. See docs/designs/map-immersion.md.
  *
- * Nothing here recomputes anything. The fixes are folded through `accept`, the same reducer that
- * read them live, and every distance and pace goes through `constants/distanceFormat.ts` — the
- * two rules that keep one run from having two different lengths.
+ * Nothing here recomputes anything. The ground is `completed_sessions.leaguesM`, the metres the
+ * road was actually paid in; the fixes are folded through `accept` only to draw the line and to
+ * time it. Every distance and pace goes through `constants/distanceFormat.ts` — the two rules
+ * that keep one run from having two different lengths.
  */
+
+/** Everything this screen knows about one run, read in one pass. */
+type Recap = {
+  fixes: LocationFix[];
+  /** The quest's name in the hero's language, `null` when the row names no quest. */
+  title: string | null;
+  performedAt: Date | null;
+  /** The reducer's metres, `null` on an outing that measured no ground. */
+  leaguesM: number | null;
+};
+
+const NOTHING: Recap = { fixes: [], title: null, performedAt: null, leaguesM: null };
 
 /** Where the outing began and where it ended, as the map's only two other lit points. */
 function endpoints(
@@ -72,32 +88,49 @@ export default function ExpeditionRecapScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ session?: string | string[] }>();
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
+  const language = useSettingsStore((s) => s.language);
   const { showError } = useToast();
 
   const sessionUuid = Array.isArray(params.session) ? params.session[0] : params.session;
 
-  // `null` while the points are still on their way. An empty array is an answer — "this quest
+  // `null` while the read is still on its way. A recap with no fixes is an answer — "this quest
   // never left the walls" — and the two must not render the same thing.
-  const [fixes, setFixes] = useState<LocationFix[] | null>(null);
+  const [recap, setRecap] = useState<Recap | null>(null);
 
-  const load = useCallback(async (uuid: string) => {
-    setFixes(await pointsOf(uuid));
-  }, []);
+  const load = useCallback(
+    async (uuid: string) => {
+      const [fixes, session] = await Promise.all([pointsOf(uuid), outingSession(uuid)]);
+      // The same door the journal opens for the same fact, and `listQuestTemplates` is cached:
+      // naming the outing costs one query on a cold app and nothing after it.
+      const quest =
+        session?.questId == null
+          ? undefined
+          : (await listQuestTemplates()).find((q) => q.id === session.questId);
+      setRecap({
+        fixes,
+        title: quest ? localizedTitle(quest, language) : null,
+        performedAt: session?.performedAt ?? null,
+        leaguesM: session?.leaguesM ?? null,
+      });
+    },
+    [language],
+  );
 
   useEffect(() => {
     if (!sessionUuid) {
-      setFixes([]);
+      setRecap(NOTHING);
       return;
     }
     load(sessionUuid).catch((e) => {
       reportError("recap.points", e);
-      setFixes([]);
+      setRecap(NOTHING);
     });
   }, [sessionUuid, load]);
 
-  // The reducer is the only thing that knows what a stream of fixes means: which metres were
-  // walked and which were a phone drifting on a bench. Summing `distFromPrev` here would invent
-  // half a kilometre over a long stop and quietly disagree with the live screen.
+  const fixes = recap?.fixes ?? null;
+  // The fold is the geometry and the clock, never the distance: `leaguesM` is what the village
+  // was paid and what the panel showed, so it is what this screen prints. Summing `distFromPrev`
+  // here would invent half a kilometre over a long stop and give one run a third length.
   const track = (fixes ?? []).reduce(accept, EMPTY);
   const trace = toTrace(fixes ?? []);
 
@@ -120,7 +153,7 @@ export default function ExpeditionRecapScreen() {
     flushTrack(file, fixes, track.distanceM);
     shareTrack(file).catch((error: unknown) => {
       reportError("recap.share", error);
-      showError(t("recap.export_failed", "Could not write the file. Try again."));
+      showError(t("recap.export_failed"));
     });
   };
 
@@ -133,15 +166,34 @@ export default function ExpeditionRecapScreen() {
       >
         <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
       </AppIconButton>
-      <Text flex={1} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
-        {t("recap.title", "The ground covered")}
-      </Text>
+      {/* Which outing, and when. Two runs reached from the journal opened two identical cards
+          titled "The ground covered", which is the name of the screen rather than of the walk.
+          The generic title stays as the fallback for a session whose row names no quest. */}
+      <YStack flex={1} gap="$1">
+        {recap === null ? (
+          <Skeleton height={18} width="60%" bg="$surface" />
+        ) : (
+          <>
+            <Text fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
+              {recap.title ?? t("recap.title")}
+            </Text>
+            {recap.performedAt ? (
+              <Text testID="recap-date" fontSize={12} color="$textSecondary" numberOfLines={1}>
+                {getDateTimeFormat(language, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }).format(recap.performedAt)}
+              </Text>
+            ) : null}
+          </>
+        )}
+      </YStack>
       {fixes && fixes.length > 0 ? (
         <AppIconButton
           testID="recap-export"
           onPress={exportTrace}
           accessibilityRole="button"
-          accessibilityLabel={t("recap.export", "Export the trace")}
+          accessibilityLabel={t("recap.export")}
         >
           <Share2 size={20} color="$text" strokeWidth={2.5} />
         </AppIconButton>
@@ -157,7 +209,14 @@ export default function ExpeditionRecapScreen() {
       {header}
 
       <YStack flex={1}>
-        {trace.bounds === null ? (
+        {recap === null ? (
+          // The map's place, held open. "Chargement…" in the middle of the page is a sentence
+          // where a picture is about to be, and it reads as a verdict on the walk when the read
+          // then comes back empty.
+          <YStack testID="recap-loading" flex={1} px="$5" justify="center">
+            <Skeleton height={260} radius={16} bg="$surface" />
+          </YStack>
+        ) : trace.bounds === null ? (
           // No fixes, which is every strength quest ever logged. An empty basemap centred on
           // nowhere is worse than no map: it says the trace was lost when there never was one.
           <YStack flex={1} items="center" justify="center" px="$6">
@@ -167,9 +226,7 @@ export default function ExpeditionRecapScreen() {
               color="$textSecondary"
               style={{ textAlign: "center" }}
             >
-              {fixes === null
-                ? t("common.loading", "Loading...")
-                : t("recap.no_trace", "This quest never left the walls.")}
+              {t("recap.no_trace")}
             </Text>
           </YStack>
         ) : (
@@ -261,23 +318,28 @@ export default function ExpeditionRecapScreen() {
       </YStack>
 
       <YStack px="$5" pt="$2" pb={insets.bottom + 20} gap="$4">
-        <XStack>
-          <Figure
-            testID="recap-distance"
-            label={t("recap.distance", "Distance")}
-            value={formatDistance(track.distanceM, distanceUnit)}
-          />
-          <Figure
-            testID="recap-moving"
-            label={t("recap.moving_time", "Moving")}
-            value={formatDuration(track.movingMs / 1000)}
-          />
-          <Figure
-            testID="recap-pace"
-            label={t("recap.pace", "Pace")}
-            value={formatPace(track.distanceM, track.movingMs, distanceUnit)}
-          />
-        </XStack>
+        {/* Silence rather than three zeros. An outing whose service never started has no
+            `leaguesM`, and "0 m · 0:00 · —" reads as a verdict on the walk instead of as an
+            absence of measurement. */}
+        {recap?.leaguesM ? (
+          <XStack>
+            <Figure
+              testID="recap-distance"
+              label={t("recap.distance")}
+              value={formatDistance(recap.leaguesM, distanceUnit)}
+            />
+            <Figure
+              testID="recap-moving"
+              label={t("recap.moving_time")}
+              value={formatClock(track.movingMs)}
+            />
+            <Figure
+              testID="recap-pace"
+              label={t("recap.pace")}
+              value={formatPace(recap.leaguesM, track.movingMs, distanceUnit)}
+            />
+          </XStack>
+        ) : null}
 
         {/* ODbL requires the OSM credit and OpenFreeMap requires its line to be displayed once
             MapLibre's own attribution button is off. It is not decoration: see
@@ -288,7 +350,7 @@ export default function ExpeditionRecapScreen() {
           color="$muted"
           style={{ textAlign: "center" }}
         >
-          {MAP_ATTRIBUTION} {t("recap.privacy", "Your route never leaves this phone.")}
+          {MAP_ATTRIBUTION} {t("recap.privacy")}
         </Text>
       </YStack>
     </YStack>

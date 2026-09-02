@@ -75,9 +75,12 @@ MaintainerNotes: |-
   (.biome/plugins/noJsNetwork.grit) rejects fetch, XMLHttpRequest, WebSocket,
   EventSource and sendBeacon anywhere in the JS, and the build fails on one.
   Location comes from modules/bati-location, a local Expo module on Android's
-  LocationManager; nothing is uploaded. ACCESS_NETWORK_STATE and
-  ACCESS_WIFI_STATE stay blocked. fdroid/expected-permissions.txt is the full
-  list, and release.yml diffs it against aapt2 on the built APK.
+  LocationManager; nothing is uploaded. ACCESS_NETWORK_STATE ships with the same
+  release: MapLibre's connectivity receiver calls getActiveNetworkInfo() on mount
+  and the process dies without it. ACCESS_WIFI_STATE stays blocked, since a
+  network name is a location by another route.
+  fdroid/expected-permissions.txt is the full list, and release.yml diffs it
+  against aapt2 on the built APK.
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags

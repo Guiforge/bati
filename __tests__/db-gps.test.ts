@@ -7,7 +7,6 @@ const fix = (over: Partial<LocationFix> & { t: number }): LocationFix => ({
   ele: 114.6,
   acc: 3.79,
   speed: 1.42,
-  bearing: 90,
   distFromPrev: 0,
   ...over,
 });

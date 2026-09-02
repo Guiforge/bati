@@ -27,6 +27,9 @@ import expo.modules.kotlin.records.Record
  * leave the service measuring `distFromPrev` from fixes JS had already discarded.
  */
 class BatiLocationModule : Module() {
+  /** Held so [OnDestroy] can tell its own callback from a reloaded runtime's. */
+  private val emit: (String, Map<String, Any?>) -> Unit = { event, body -> sendEvent(event, body) }
+
   override fun definition() = ModuleDefinition {
     Name("BatiLocation")
 
@@ -41,11 +44,13 @@ class BatiLocationModule : Module() {
     // reload leaves a service holding a callback into a dead Hermes otherwise, and its absence
     // is also how a restarted service knows nobody is listening.
     OnCreate {
-      BatiLocationService.emitter = { event, body -> sendEvent(event, body) }
+      BatiLocationService.emitter = emit
     }
 
+    // Identity-checked: a reload creates the next module before destroying this one, and an
+    // unconditional null here would leave the new runtime subscribed to nothing.
     OnDestroy {
-      BatiLocationService.emitter = null
+      if (BatiLocationService.emitter === emit) BatiLocationService.emitter = null
     }
 
     /**
@@ -132,7 +137,20 @@ class BatiLocationModule : Module() {
         )
         return@Function false
       }
-      ContextCompat.startForegroundService(context, options.toIntent(context))
+      try {
+        ContextCompat.startForegroundService(context, options.toIntent(context))
+      } catch (error: RuntimeException) {
+        // From API 31 ForegroundServiceStartNotAllowedException lands *here*, on the caller: the
+        // service is never created, so the same catch inside enterForeground() never runs.
+        sendEvent(
+          BatiLocationService.EVENT_ERROR,
+          mapOf(
+            "code" to BatiLocationService.ERROR_FOREGROUND,
+            "message" to (error.message ?: error.javaClass.simpleName),
+          ),
+        )
+        return@Function false
+      }
       true
     }
 
@@ -167,14 +185,8 @@ class NotificationOptions : Record {
 class StartOptions : Record {
   @Field val notification: NotificationOptions = NotificationOptions()
 
-  /** Metres. Above this a fix is dropped before it can become the anchor of the next distance. */
-  @Field val maxAccuracyM: Double = 50.0
-
-  /** Metres per second — a parameter because a bike downhill is not a run. */
+  /** Metres per second, the one parameter, because a bike downhill is not a run. */
   @Field val maxSpeedMs: Double = 8.0
-
-  /** Milliseconds of silence after the first fix before the session is told the signal is gone. */
-  @Field val noFixTimeoutMs: Double = 30_000.0
 
   fun toIntent(context: Context): Intent =
     Intent(context, BatiLocationService::class.java).apply {
@@ -184,8 +196,6 @@ class StartOptions : Record {
       putExtra(BatiLocationService.EXTRA_PAUSED, notification.paused)
       putExtra(BatiLocationService.EXTRA_GPS_OFF, notification.gpsOff)
       putExtra(BatiLocationService.EXTRA_REACHED, notification.reached)
-      putExtra(BatiLocationService.EXTRA_MAX_ACCURACY, maxAccuracyM.toFloat())
       putExtra(BatiLocationService.EXTRA_MAX_SPEED, maxSpeedMs.toFloat())
-      putExtra(BatiLocationService.EXTRA_NO_FIX_TIMEOUT, noFixTimeoutMs.toLong())
     }
 }

@@ -143,8 +143,11 @@ export function PersonalRecordsCard() {
         </XStack>
 
         {/* Only once there is ground: two "--" tiles would tell a hero who lifts that they are
-            missing something, and the band on Home already offers the door. */}
-        {summary.totalLeaguesM > 0 ? (
+            missing something, and the band on Home already offers the door. The record is the
+            guard rather than the total, because the two come from one snapshot and a positive
+            sum of a never-negative column always has a positive maximum: guarding on the total
+            left the tile a `"--"` arm nothing could ever reach. */}
+        {summary.longestOuting ? (
           <XStack gap="$2">
             <RecordItem
               icon={<Footprints size={20} color="$primaryText" />}
@@ -154,9 +157,7 @@ export function PersonalRecordsCard() {
             <RecordItem
               icon={<MapIcon size={20} color="$secondary" />}
               label={t("journal.pr_longest_outing")}
-              value={
-                summary.longestOuting ? formatDistance(summary.longestOuting.value, unit) : "--"
-              }
+              value={formatDistance(summary.longestOuting.value, unit)}
             />
           </XStack>
         ) : null}

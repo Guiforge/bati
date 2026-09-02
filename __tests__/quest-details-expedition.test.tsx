@@ -282,6 +282,20 @@ describe("an expedition on the quest screen", () => {
     expect(view.queryByText("3.00 km")).toBeNull();
   });
 
+  /**
+   * `stores/expedition` asks Android for the location permission during the countdown, which is
+   * the worst possible moment to meet a system dialog with no idea what asked for it. The screen
+   * that commits to the walk is where the promise belongs, and it is only a promise on a walk.
+   */
+  test("says what it will read, and where it stays, before the button that starts it", async () => {
+    const view = await mountQuest(expeditionQuest());
+
+    expect(view.getByTestId("quest-location-notice")).toBeTruthy();
+    expect(
+      view.getByText("Bati reads your position while you are out. It stays on this phone."),
+    ).toBeTruthy();
+  });
+
   test("a quest with two outdoor movements shows one distance stepper, not one per slot", async () => {
     const view = await mountQuest(twoSlotOutingQuest());
     // Two slots, so the panel does not open by itself — the config it holds is no longer a
@@ -310,6 +324,12 @@ describe("an ordinary workout keeps every control", () => {
 
     expect(getByText("45s")).toBeTruthy();
     expect(getByText("12 reps")).toBeTruthy();
+  });
+
+  test("promises nothing about a position it will never read", async () => {
+    const view = await mountQuest(workoutQuest());
+
+    expect(view.queryByTestId("quest-location-notice")).toBeNull();
   });
 
   test("a workout offers no distance", async () => {

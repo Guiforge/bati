@@ -6,7 +6,10 @@ import config from "@/tamagui.config";
 
 // The panel needs the store's state, not its database half: importing @/db/gps would pull the
 // SQLite client into a renderer that has none.
-jest.mock("@/db/gps", () => ({ appendPoints: jest.fn().mockResolvedValue(undefined) }));
+jest.mock("@/db/gps", () => ({
+  appendPoints: jest.fn().mockResolvedValue(undefined),
+  pointsOf: jest.fn().mockResolvedValue([]),
+}));
 jest.mock("@/modules/bati-location", () => ({
   isAvailable: () => false,
   start: () => false,
@@ -150,6 +153,36 @@ describe("ExpeditionPanel", () => {
     setTrack({ startedAt: 1 }, { error: "foreground-denied" });
     await mount();
     expect(screen.getByText("Location is off for Bati")).toBeTruthy();
+  });
+
+  /**
+   * Location switched off mid-walk. The figures freeze, the notification two swipes away says
+   * "GPS off", and the panel used to keep saying "On the road" over numbers that had stopped.
+   */
+  test("says the GPS is off when the provider goes down mid-walk", async () => {
+    setTrack({ startedAt: 1, distanceM: 100 }, { error: "gps-off" });
+    await mount();
+
+    expect(screen.getByText("GPS off")).toBeTruthy();
+    expect(screen.queryByText("On the road")).toBeNull();
+  });
+
+  /**
+   * A refusal the app cannot ask about again is a dead end without this: the grant lives in
+   * Android's own settings, and docs/designs/gps-without-google.md promised the way there.
+   */
+  test("a refused permission offers the way to the setting that fixes it", async () => {
+    setTrack({ startedAt: 1 }, { error: "permission" });
+    await mount();
+
+    expect(screen.getByText("Open settings")).toBeTruthy();
+  });
+
+  test("and does not offer it when there is nothing to fix", async () => {
+    setTrack({ startedAt: 1, distanceM: 100 });
+    await mount();
+
+    expect(screen.queryByText("Open settings")).toBeNull();
   });
 
   // The codes the hero can do nothing about keep the honest name: from where they stand, the

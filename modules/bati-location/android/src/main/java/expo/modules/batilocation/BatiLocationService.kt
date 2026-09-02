@@ -15,6 +15,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -67,6 +68,7 @@ class BatiLocationService : Service(), LocationListener {
    * gives a met goal over moving or paused. Never cleared before [onDestroy]: a session has one
    * goal, met at most once.
    */
+  @Volatile
   private var reached = false
 
   /**
@@ -78,11 +80,10 @@ class BatiLocationService : Service(), LocationListener {
    * notification quoting the second one would be the app disagreeing with itself in the one
    * place the hero cannot check.
    */
+  @Volatile
   private var progressText = ""
 
-  private var maxAccuracy = 50f
   private var maxSpeed = 8f
-  private var noFixTimeoutMs = 30_000L
 
   override fun onBind(intent: Intent?): IBinder? = null
 
@@ -149,6 +150,9 @@ class BatiLocationService : Service(), LocationListener {
       stopSelf()
       return
     }
+    // The one string this module owns: the session's own localized words died with the process,
+    // so an empty, unswipeable notification is what the hero would otherwise read for two minutes.
+    pausedText = getString(R.string.bati_location_interrupted)
     state = State.PAUSED
     handler.postDelayed(orphanTimeout, ORPHAN_TIMEOUT_MS)
   }
@@ -160,15 +164,13 @@ class BatiLocationService : Service(), LocationListener {
     pausedText = intent.getStringExtra(EXTRA_PAUSED).orEmpty()
     gpsOffText = intent.getStringExtra(EXTRA_GPS_OFF).orEmpty()
     reachedText = intent.getStringExtra(EXTRA_REACHED).orEmpty()
-    maxAccuracy = intent.getFloatExtra(EXTRA_MAX_ACCURACY, maxAccuracy)
     maxSpeed = intent.getFloatExtra(EXTRA_MAX_SPEED, maxSpeed)
-    noFixTimeoutMs = intent.getLongExtra(EXTRA_NO_FIX_TIMEOUT, noFixTimeoutMs)
   }
 
   override fun onLocationChanged(location: Location) {
     // An unmeasured fix cannot be filtered, and this filter is the only thing between a bad
     // receiver and a distance nobody ran.
-    if (!location.hasAccuracy() || location.accuracy > maxAccuracy) return
+    if (!location.hasAccuracy() || location.accuracy > MAX_ACCURACY_M) return
     if (location.hasSpeed() && location.speed > maxSpeed) return
 
     val distFromPrev = previous?.distanceTo(location) ?: 0f
@@ -185,11 +187,16 @@ class BatiLocationService : Service(), LocationListener {
         "ele" to if (location.hasAltitude()) location.altitude else null,
         "acc" to location.accuracy.toDouble(),
         "speed" to if (location.hasSpeed()) location.speed.toDouble() else null,
-        "bearing" to if (location.hasBearing()) location.bearing.toDouble() else null,
         "distFromPrev" to distFromPrev.toDouble(),
       ),
     )
   }
+
+  // Empty, and it has to exist: the default implementation only arrived in API 30, so on API 24
+  // to 29 this is an abstract framework method and its absence is an AbstractMethodError on the
+  // main thread the first time the provider changes state mid-walk. Not dead code.
+  @Deprecated("Deprecated in Java")
+  override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
 
   override fun onProviderDisabled(provider: String) {
     if (provider != LocationManager.GPS_PROVIDER) return
@@ -212,12 +219,12 @@ class BatiLocationService : Service(), LocationListener {
    */
   private fun armNoFixTimeout() {
     handler.removeCallbacks(noFixTimeout)
-    handler.postDelayed(noFixTimeout, noFixTimeoutMs)
+    handler.postDelayed(noFixTimeout, NO_FIX_TIMEOUT_MS)
   }
 
   private fun onNoFix() {
     setState(State.PAUSED)
-    emit(EVENT_NO_FIX, mapOf("sinceLastFixMs" to noFixTimeoutMs.toDouble()))
+    emit(EVENT_NO_FIX, mapOf("sinceLastFixMs" to NO_FIX_TIMEOUT_MS.toDouble()))
   }
 
   private fun setState(next: State) {
@@ -277,8 +284,8 @@ class BatiLocationService : Service(), LocationListener {
     // same four words for an hour. The ground covered is the only thing about it that moves.
     val line = if (progressText.isEmpty()) text else "$text \u00b7 $progressText"
     return NotificationCompat.Builder(this, CHANNEL_ID)
-      // ponytail: a platform drawable, so the module ships no res/. Swap in a monochrome pin the
-      // day the notification is worth designing.
+      // ponytail: a platform drawable, so the module ships no drawable of its own. Swap in a
+      // monochrome pin the day the notification is worth designing.
       .setSmallIcon(android.R.drawable.ic_menu_mylocation)
       .setContentTitle(title)
       .setContentText(line)
@@ -320,7 +327,9 @@ class BatiLocationService : Service(), LocationListener {
   }
 
   override fun onDestroy() {
-    running = null
+    // Identity-checked: begin() stops then starts, and a late onDestroy from the outgoing
+    // instance would otherwise null out its replacement and freeze the notification for the walk.
+    if (running === this) running = null
     progressText = ""
     reached = false
     handler.removeCallbacksAndMessages(null)
@@ -360,14 +369,21 @@ class BatiLocationService : Service(), LocationListener {
     const val EXTRA_PAUSED = "paused"
     const val EXTRA_GPS_OFF = "gpsOff"
     const val EXTRA_REACHED = "reached"
-    const val EXTRA_MAX_ACCURACY = "maxAccuracyM"
     const val EXTRA_MAX_SPEED = "maxSpeedMs"
-    const val EXTRA_NO_FIX_TIMEOUT = "noFixTimeoutMs"
 
     private const val CHANNEL_ID = "bati-location"
     private const val NOTIFICATION_ID = 4711
     private const val WAKE_LOCK_TAG = "bati:location"
     private const val ORPHAN_TIMEOUT_MS = 2 * 60 * 1000L
+
+    /**
+     * Metres: above this a fix is dropped before it can become the anchor of the next distance.
+     * And milliseconds of silence after the first fix before the session is told the signal is
+     * gone. Constants rather than start() options: no caller ever passed anything else, and the
+     * same two numbers spelled in a Record, a service field and a JSDoc line drift apart.
+     */
+    private const val MAX_ACCURACY_M = 50f
+    private const val NO_FIX_TIMEOUT_MS = 30_000L
 
     /**
      * One implementation for both callers: the module refuses to start without it, the service

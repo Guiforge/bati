@@ -110,9 +110,12 @@ const expeditionQuest = {
 const strengthQuest = {
   ...expeditionQuest,
   exercises: [
+    // Thirty reps at three seconds: a quest whose own estimate is long enough that the duration
+    // the journal keeps is the measured one. A ten-rep set estimates at 30 s, and `sessionClock`
+    // caps a workout at twice its estimate — so every session of it would be filed as one minute.
     {
       exercise: { style: "strength", muscles: ["chest"], secondsPerRep: 3 },
-      target: { type: "reps", value: 10 },
+      target: { type: "reps", value: 30 },
     },
   ],
 } as unknown as Quest;
@@ -168,7 +171,7 @@ describe("VictoryView, the walk it just celebrated", () => {
     await mountVictory();
 
     expect(screen.getByTestId("victory-expedition-distance")).toHaveTextContent("2.50 km");
-    expect(screen.getByTestId("victory-expedition-moving")).toHaveTextContent("25 min");
+    expect(screen.getByTestId("victory-expedition-moving")).toHaveTextContent("25:00");
     expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("10:00 /km");
   });
 
@@ -212,6 +215,24 @@ describe("VictoryView, the walk it just celebrated", () => {
     await fireEvent.press(screen.getByTestId("victory-expedition-recap"));
 
     expect(mockPush).toHaveBeenCalledWith("/recap?session=0192-walk");
+  });
+
+  /**
+   * The screen must show the duration the journal is about to keep. `sessionClock` clamps a walk
+   * to its moving time plus twenty minutes of red lights, so twelve minutes of walking with forty
+   * minutes of stops is 32 min in the journal — and this screen said 52, one tap earlier.
+   */
+  test("reports the duration that gets recorded, not the wall clock", async () => {
+    // `startedAt` is what makes this a witnessed run: without it the reducer has no opinion and
+    // the clock decides, which is the workout path and a different rule.
+    useExpeditionStore.setState({
+      track: { ...EMPTY, startedAt: 1, distanceM: 1500, movingMs: 720_000 },
+    });
+
+    await mountVictory({ sessionSeconds: 52 * 60 });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(/32:00/);
+    expect(screen.queryByText("52:00")).toBeNull();
   });
 
   test("a quest that never left the walls says nothing about ground or pace", async () => {

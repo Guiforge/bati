@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { LocationFix } from "@/modules/bati-location";
-import { accept, EMPTY } from "@/src/gps/track";
+import { accept, EMPTY, RULES } from "@/src/gps/track";
 import { db, schema } from "./client";
 import { createCompletedSession } from "./completed";
 import { appendPoints } from "./gps";
@@ -49,7 +49,8 @@ const SAMPLE_MS = 1000;
  * elapsed time exactly — which is the one thing a real outing never does.
  */
 const STOP_AFTER_M = 3400;
-const STOP_SECONDS = 45;
+/** Long enough to outlast the reducer's pause window, whatever that window becomes. */
+const STOP_SECONDS = Math.round((RULES.pauseAfterMs / 1000) * 3);
 
 const METRES_PER_DEGREE = 111_320;
 
@@ -151,7 +152,6 @@ function syntheticFixes(startedAt: number): LocationFix[] {
       ele: 44 + 6 * Math.sin(covered / 600) + jitter(1.5),
       acc: 4.5 + random() * 4,
       speed: resting ? random() * 0.3 : PACE_MS + jitter(0.5),
-      bearing: null,
       distFromPrev: previous ? metresBetween(previous, point) : 0,
     });
     previous = point;

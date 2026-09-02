@@ -19,9 +19,6 @@ import { toGpx } from "./gpx";
  */
 const DIR = "gps-tracks";
 
-/** One flush per thirty fixes, so a kill costs at most thirty seconds of trace. */
-export const FLUSH_EVERY = 30;
-
 function tracksDir(): Directory {
   const dir = new Directory(Paths.document, DIR);
   if (!dir.exists) dir.create({ intermediates: true });

@@ -9,6 +9,7 @@ import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructi
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { reportError } from "@/src/reportError";
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -24,6 +25,10 @@ export function PausedOverlay() {
   const restartRound = useSessionStore((s) => s.restartRound);
   const quitSession = useSessionStore((s) => s.quitSession);
   const rounds = useSessionStore((s) => s.quest?.rounds ?? 1);
+  // The GPS is deliberately left running through a pause: stopping and restarting the service
+  // loses the lock and breaks the segment on the way back, and the reducer already credits
+  // nothing while the hero stands still. So the screen is what has to be honest about it.
+  const measuring = useExpeditionStore((s) => s.sessionUuid !== null);
   // Above the early return: hook order may not depend on the paused state.
   const instruction = useSessionInstructions();
 
@@ -119,6 +124,11 @@ export function PausedOverlay() {
           <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
             {t("session.paused_subtitle")}
           </Paragraph>
+          {measuring ? (
+            <Paragraph color="$textSecondary" size="$2" style={{ textAlign: "center" }}>
+              {t("session.paused_expedition_note")}
+            </Paragraph>
+          ) : null}
 
           {/* The one moment reading is free. A hero who does not know what a dead bug is was
               watching the clock run while they worked it out; here it is stopped. Same block the

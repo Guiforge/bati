@@ -24,7 +24,7 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
-import { localizedName } from "@/src/i18n/localized";
+import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -266,7 +266,12 @@ export function ActiveExerciseView() {
       <YStack position="absolute" t={insets.top + 8} l={0} r={0} px="$4" gap="$2" z={10}>
         <XStack items="center" justify="space-between" gap="$2">
           {/* 12px, not 13: "MANCHE 1 / 3 · EXERCICE 2 / 5" is the long form and it has to survive
-              a 320dp screen without ellipsing away the exercise counter. */}
+              a 320dp screen without ellipsing away the exercise counter.
+
+              An outing has one round and one movement, so that long form collapses to two counts
+              of one, and the percentage beside it measures a target the panel below already
+              refuses to print, because on an outing the target is a suggestion. The quest's own
+              name is the one thing the row can say that the hero does not already know. */}
           <Text
             color="$text"
             fontSize={12}
@@ -279,27 +284,29 @@ export function ActiveExerciseView() {
             textShadowOffset={{ width: 0, height: 1 }}
             textShadowRadius={6}
           >
-            {t("session.round_label", {
-              count: currentRoundIndex + 1,
-              total: quest.rounds,
-            })}
-            {" · "}
-            {t("session.exercise_label", {
-              count: currentExerciseIndex + 1,
-              total: exercisesPerRound,
-            })}
+            {isOuting
+              ? localizedTitle(quest, language)
+              : `${t("session.round_label", {
+                  count: currentRoundIndex + 1,
+                  total: quest.rounds,
+                })} · ${t("session.exercise_label", {
+                  count: currentExerciseIndex + 1,
+                  total: exercisesPerRound,
+                })}`}
           </Text>
           <XStack items="center" gap="$2">
-            <Text
-              fontSize={12}
-              fontWeight="700"
-              color="$textSecondary"
-              textShadowColor="rgba(6, 8, 18, 0.9)"
-              textShadowOffset={{ width: 0, height: 1 }}
-              textShadowRadius={6}
-            >
-              {Math.round(progressPercent)}%
-            </Text>
+            {isOuting ? null : (
+              <Text
+                fontSize={12}
+                fontWeight="700"
+                color="$textSecondary"
+                textShadowColor="rgba(6, 8, 18, 0.9)"
+                textShadowOffset={{ width: 0, height: 1 }}
+                textShadowRadius={6}
+              >
+                {Math.round(progressPercent)}%
+              </Text>
+            )}
             <Button
               testID="session-pause"
               size="$3"

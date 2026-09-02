@@ -100,6 +100,8 @@ const NOW = 1_700_000_000_000;
 function questWith(exercise: typeof mockWalk): Quest {
   return {
     id: 1,
+    enTitle: "The Warden's Round",
+    frTitle: "La Ronde du Veilleur",
     rounds: 1,
     restSeconds: 30,
     exercises: [
@@ -174,6 +176,22 @@ describe("a walk, on the screen a hero stares at while walking", () => {
     expect(screen.queryByText("Last time")).toBeNull();
   });
 
+  /**
+   * An outing is one round of one movement, so the HUD's long form collapsed to "ROUND 1 / 1 ·
+   * EXERCISE 1 / 1", and the percentage beside it measured a target the panel underneath already
+   * refuses to print because on an outing the target is only a suggestion. Three pieces of
+   * information, none of them one.
+   */
+  test("names the quest in the HUD instead of counting to one twice", async () => {
+    await mountRunning(mockWalk);
+
+    expect(screen.getByText("The Warden's Round")).toBeTruthy();
+    expect(screen.queryByText(/ROUND 1 \/ 1/)).toBeNull();
+    expect(screen.queryByText(/EXERCISE 1 \/ 1/)).toBeNull();
+    expect(screen.queryByText("11%")).toBeNull();
+    expect(screen.queryByText("100%")).toBeNull();
+  });
+
   // The cue fires from a phone in a pocket. Silence is the whole assertion.
   test("says nothing out loud three seconds before a mark it is not counting to", async () => {
     await mountRunning(mockWalk);
@@ -191,6 +209,14 @@ describe("a plain hold, which still has a duration to count", () => {
     expect(screen.getByText("Seconds")).toBeTruthy();
     expect(screen.getByText("Keep going! Timer continues after target.")).toBeTruthy();
     expect(screen.getByText("Last time")).toBeTruthy();
+  });
+
+  test("still counts its rounds and its way through them", async () => {
+    await mountRunning(mockPlank);
+
+    expect(screen.getByText("ROUND 1 / 1 · EXERCISE 1 / 1")).toBeTruthy();
+    expect(screen.getByText("100%")).toBeTruthy();
+    expect(screen.queryByText("The Warden's Round")).toBeNull();
   });
 
   test("still beeps its way to the mark", async () => {

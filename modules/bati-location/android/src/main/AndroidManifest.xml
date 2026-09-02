@@ -24,9 +24,16 @@
           Fully qualified on purpose: a leading dot in a library manifest resolves against the
           *merged* package, which is the app's, and would name a class that does not exist.
         -->
+        <!--
+          stopWithTask, because a swipe out of recents takes the JS runtime with it: nothing is
+          left to receive a fix or write one down, and what stayed behind was 1 Hz of GPS and a
+          PARTIAL_WAKE_LOCK that only reopening the app could release. The platform stops the
+          service for us here; onDestroy is still the single place the wake lock is given back.
+        -->
         <service
             android:name="expo.modules.batilocation.BatiLocationService"
             android:exported="false"
-            android:foregroundServiceType="location"/>
+            android:foregroundServiceType="location"
+            android:stopWithTask="true"/>
     </application>
 </manifest>

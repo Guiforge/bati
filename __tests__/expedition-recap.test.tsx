@@ -19,13 +19,24 @@ import config from "@/tamagui.config";
  */
 
 const mockPointsOf = jest.fn<Promise<LocationFix[]>, [string]>();
+const mockOutingSession = jest.fn<Promise<unknown>, [string]>();
+const mockQuestTemplates = jest.fn<Promise<unknown[]>, []>();
 const mockFlushTrack = jest.fn<void, [unknown, unknown, unknown]>();
 const mockShareTrack = jest.fn<Promise<void>, [unknown]>(() => Promise.resolve());
 
-jest.mock("@/db/gps", () => ({ pointsOf: (id: string) => mockPointsOf(id) }));
+jest.mock("@/db/gps", () => ({
+  pointsOf: (id: string) => mockPointsOf(id),
+  outingSession: (id: string) => mockOutingSession(id),
+}));
+jest.mock("@/db/quests", () => ({ listQuestTemplates: () => mockQuestTemplates() }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db", () => ({ preferences: {} }));
-jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
+
+// The real i18n, not a stub: this screen's strings live in `locales/*.json` and the inline
+// English defaults it used to carry had already drifted from them. A test reading the defaults
+// would have been blind to exactly that.
+import "@/i18n";
+
 jest.mock("@/src/widget", () => ({ requestWidgetsUpdate: jest.fn() }));
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
 jest.mock("@/src/gps/trackFile", () => ({
@@ -66,7 +77,6 @@ const fix = (over: Partial<LocationFix> & { t: number }): LocationFix => ({
   ele: 100,
   acc: 4,
   speed: 1.4,
-  bearing: null,
   distFromPrev: 0,
   ...over,
 });
@@ -133,11 +143,36 @@ async function mount() {
   return result;
 }
 
+/**
+ * What the reducer credited for `walkThenStand()`, which is what `leaguesM` holds on the row.
+ *
+ * Derived rather than written down: the reducer's rules are still moving, and a fixture pinned
+ * to yesterday's metre count fails for a reason that has nothing to do with this screen. What is
+ * written down below is the *shape* each figure takes and the constants it converts by, which is
+ * the part the screen is responsible for.
+ */
+const TRACK = walkThenStand().reduce(accept, EMPTY);
+const CREDITED_M = Math.round(TRACK.distanceM);
+const clock = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(Math.floor(seconds) % 60).padStart(2, "0")}`;
+const MOVING = clock(TRACK.movingMs / 1000);
+const KM_PACE = `${clock(Math.round((TRACK.movingMs / 1000) * (1000 / CREDITED_M)))} /km`;
+const FEET = Math.round(CREDITED_M / 0.3048);
+const MILE_PACE = `${clock(Math.round((TRACK.movingMs / 1000) * (1609.344 / CREDITED_M)))} /mi`;
+
 beforeEach(() => {
   mockPointsOf.mockReset();
   mockFlushTrack.mockClear();
   mockShareTrack.mockClear();
-  useSettingsStore.setState({ distanceUnit: "metric" });
+  mockOutingSession.mockResolvedValue({
+    questId: 7,
+    performedAt: new Date(T0),
+    leaguesM: CREDITED_M,
+  });
+  mockQuestTemplates.mockResolvedValue([
+    { id: 7, enTitle: "The Warden's Round", frTitle: "La Ronde du Veilleur" },
+  ]);
+  useSettingsStore.setState({ distanceUnit: "metric", language: "en" });
 });
 
 describe("a session that left the walls", () => {
@@ -148,22 +183,43 @@ describe("a session that left the walls", () => {
   test("draws the map and the three numbers", async () => {
     await mount();
     expect(await screen.findByTestId("recap-map")).toBeTruthy();
-    expect(screen.getByTestId("recap-distance")).toHaveTextContent("85 m");
-    expect(screen.getByTestId("recap-moving")).toHaveTextContent("1 min 5s");
-    expect(screen.getByTestId("recap-pace")).toHaveTextContent("12:45 /km");
+    expect(screen.getByTestId("recap-distance")).toHaveTextContent(`${CREDITED_M} m`);
+    // `m:ss`, the shape the panel the hero just left uses, never the estimate's "1 min 35s".
+    expect(screen.getByTestId("recap-moving")).toHaveTextContent(MOVING);
+    expect(screen.getByTestId("recap-pace")).toHaveTextContent(KM_PACE);
   });
 
-  test("the distance is the reducer's, not a fresh sum of the fixes", async () => {
+  /**
+   * The screen used to fold the fixes again and print that. Three derivations of one walk is how
+   * a hero reads 85 m here and pays the road 84: `leaguesM` is the column the road was paid in,
+   * and the recap prints the column.
+   */
+  test("the distance is the column the road was paid in, not a sum of the fixes", async () => {
     const fixes = walkThenStand();
     const naive = fixes.reduce((total, f) => total + f.distFromPrev, 0);
-    const reduced = fixes.reduce(accept, EMPTY).distanceM;
     // The fixture has to actually separate the two answers, or this test proves nothing.
-    expect(Math.round(naive)).not.toBe(Math.round(reduced));
+    expect(Math.round(naive)).not.toBe(CREDITED_M);
+    // And the column has to be able to disagree with the replay, or reading it proves nothing.
+    mockOutingSession.mockResolvedValue({
+      questId: 7,
+      performedAt: new Date(T0),
+      leaguesM: 512,
+    });
 
     await mount();
     const distance = await screen.findByTestId("recap-distance");
-    expect(distance).toHaveTextContent(`${Math.round(reduced)} m`);
+    expect(distance).toHaveTextContent("512 m");
     expect(distance).not.toHaveTextContent(`${Math.round(naive)} m`);
+    expect(distance).not.toHaveTextContent(`${CREDITED_M} m`);
+  });
+
+  test("names the outing and when it happened, so two of them are not the same card", async () => {
+    await mount();
+
+    expect(await screen.findByText("The Warden's Round")).toBeTruthy();
+    // The screen's own name is the fallback, never the title of a walk that has one.
+    expect(screen.queryByText("The ground covered")).toBeNull();
+    expect(screen.getByTestId("recap-date")).toBeTruthy();
   });
 
   test("the unit comes from the setting, which is only possible through the format helpers", async () => {
@@ -171,8 +227,8 @@ describe("a session that left the walls", () => {
     // pins `formatDistance`/`formatPace` as the thing rendering, rather than the screen.
     useSettingsStore.setState({ distanceUnit: "imperial" });
     await mount();
-    expect(await screen.findByTestId("recap-distance")).toHaveTextContent("279 ft");
-    expect(screen.getByTestId("recap-pace")).toHaveTextContent("20:31 /mi");
+    expect(await screen.findByTestId("recap-distance")).toHaveTextContent(`${FEET} ft`);
+    expect(screen.getByTestId("recap-pace")).toHaveTextContent(MILE_PACE);
   });
 
   test("credits OpenStreetMap and the tile host, which MapLibre's own widget is not doing", async () => {
@@ -181,10 +237,53 @@ describe("a session that left the walls", () => {
     expect(line).toHaveTextContent(/OpenStreetMap contributors/);
     expect(line).toHaveTextContent(/OpenMapTiles/);
     expect(line).toHaveTextContent(/OpenFreeMap/);
+    // Once, and in the hero's language: the constant used to name the tile host in English on
+    // top of the localised sentence that names it again.
+    expect(line.props.children.join("").match(/OpenFreeMap/g)).toHaveLength(1);
+  });
+
+  /**
+   * A walk whose service never started is saved with no `leaguesM`. Printing "0 m · 0:00 · —"
+   * there reads as a verdict on the walk rather than as an absence of measurement.
+   */
+  test("says nothing about the ground when the session measured none", async () => {
+    mockOutingSession.mockResolvedValue({
+      questId: 7,
+      performedAt: new Date(T0),
+      leaguesM: null,
+    });
+
+    await mount();
+
+    expect(await screen.findByTestId("recap-map")).toBeTruthy();
+    expect(screen.queryByTestId("recap-distance")).toBeNull();
+    expect(screen.queryByTestId("recap-moving")).toBeNull();
+    expect(screen.queryByTestId("recap-pace")).toBeNull();
+  });
+
+  test("reserves the map's place while the read is in flight, and claims nothing", async () => {
+    // Never resolves: the assertion is about the frame before the answer, which is the only
+    // frame a slow database ever shows.
+    mockPointsOf.mockReturnValue(new Promise<LocationFix[]>(() => undefined));
+
+    await mount();
+
+    expect(screen.getByTestId("recap-loading")).toBeTruthy();
+    expect(screen.queryByTestId("recap-no-trace")).toBeNull();
+    expect(screen.queryByTestId("recap-distance")).toBeNull();
   });
 });
 
 describe("a session that never left the walls", () => {
+  beforeEach(() => {
+    mockOutingSession.mockResolvedValue({
+      questId: null,
+      performedAt: new Date(T0),
+      leaguesM: null,
+    });
+    mockQuestTemplates.mockResolvedValue([]);
+  });
+
   test("offers no map at all, rather than an empty one", async () => {
     mockPointsOf.mockResolvedValue([]);
     await mount();

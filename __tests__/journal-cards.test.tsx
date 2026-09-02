@@ -157,6 +157,31 @@ describe("PersonalRecordsCard", () => {
     expect(screen.getByText("7.08 km")).toBeTruthy();
     expect(screen.getByText("4.58 km")).toBeTruthy();
   });
+
+  /**
+   * The row used to be gated on the total and to carry a `"--"` arm for a missing record, which
+   * nothing could reach: both numbers come from one snapshot, `leaguesM` is never negative, so a
+   * positive sum always has a positive maximum. The record is the gate now, and there is no arm
+   * left to print a dash into.
+   */
+  it("hides the ground row rather than dashing it when no outing holds the record", async () => {
+    mockGetPersonalRecordsSummary.mockResolvedValue({
+      records: [],
+      totalSessions: 3,
+      totalWorkUnits: 0,
+      longestSession: null,
+      mostXp: null,
+      longestOuting: null,
+      totalLeaguesM: 7080,
+    });
+    mockGetStreakInfo.mockResolvedValue({ current: 1, longest: 2, best: 5, isLit: true });
+
+    await mount(<PersonalRecordsCard />);
+
+    await waitFor(() => expect(screen.queryByText("Ground covered")).toBeNull());
+    expect(screen.queryByText("Longest outing")).toBeNull();
+    expect(screen.queryByText("7.08 km")).toBeNull();
+  });
 });
 
 describe("SuggestedQuestsCard", () => {

@@ -8,6 +8,7 @@ import { getTokens, Text, YStack } from "tamagui";
 import { Skeleton } from "@/components/common/Skeleton";
 import { getQuestThumb } from "@/constants/assetMap";
 import { listOutings, type Outing } from "@/db/outings";
+import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -133,7 +134,7 @@ export function OutsideBand() {
                 of floating at different heights across the row. */}
             <YStack position="absolute" l={0} r={0} b={0} px="$2" pb="$1.5">
               <Text fontSize={12} fontWeight="700" color="$text" numberOfLines={2} lineHeight={15}>
-                {language === "fr" ? exercise.frName : exercise.enName}
+                {localizedName(exercise, language)}
               </Text>
             </YStack>
           </YStack>

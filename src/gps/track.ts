@@ -27,9 +27,35 @@ export const RULES = {
    * from it, which is exactly the difference the rule is trying to name.
    */
   movingThresholdM: 10,
-  pauseAfterMs: 10_000,
+  /**
+   * How long the anchor may stay uncleared before the hero counts as stopped.
+   *
+   * This value and the one above are one number: a **floor pace of 0.25 m/s** (10 m in 40 s).
+   * Below it the anchor is never cleared in time, so every fix in between is credited neither
+   * distance nor moving time — and the pair started at 10 s, a floor of 1.0 m/s, which threw
+   * away 23 % of a half-hour walk at 0.8 m/s and 41 % at 0.6. That is the pace of the hill, the
+   * dog and the eighty-year-old "La Ronde du Veilleur" invites by name.
+   *
+   * The floor cannot go to zero: it has to stay above the 0.2 m/s of measured standing drift, or
+   * a phone on a table walks. 0.25 m/s is that margin, and its price is one window of doubt per
+   * stop — at most 40 s and 8 m of drift credited when the hero stops, never more, however long
+   * they stay stopped.
+   */
+  pauseAfterMs: 40_000,
   /** A gap larger than this is not a walk; it breaks the line and its length is not distance. */
   teleportM: 200,
+  /**
+   * The longest silence between two fixes that still describes a pace.
+   *
+   * The service emits at 1 Hz and already treats 30 s without a fix as an anomaly worth an event
+   * (`noFixTimeoutMs`). Past that, nothing witnessed what happened: ten minutes underground and
+   * 150 m from the mouth is not 150 m walked, and `fix.t` is `Location.getTime()` — the system
+   * clock, which an NTP sync moves by an hour in either direction while the hero walks. Forward,
+   * that hour lands in `movingMs` and the goal, the haptics and the XP ceiling all believe it;
+   * backward, it takes away time already earned. `modules/bati-location` says callers keep their
+   * own monotonic guard, and this is the caller: it is the one that holds the state.
+   */
+  maxGapMs: 30_000,
 } as const;
 
 /**
@@ -107,7 +133,10 @@ function openGate(state: TrackState, fix: LocationFix): TrackState {
   };
 }
 
-/** A gap this large is not a journey: it leaves the line broken and its length uncounted. */
+/**
+ * A hole, in space or in time: it leaves the line broken, its length uncounted and its duration
+ * unpaid, and the next fix starts a fresh anchor rather than resuming the old one.
+ */
 function teleport(state: TrackState, fix: LocationFix): TrackState {
   return {
     ...state,
@@ -122,9 +151,14 @@ function teleport(state: TrackState, fix: LocationFix): TrackState {
 /** Fold one fix into the session. */
 export function accept(state: TrackState, fix: LocationFix): TrackState {
   if (state.startedAt === null) return openGate(state, fix);
-  if (fix.distFromPrev > RULES.teleportM) return teleport(state, fix);
 
   const elapsed = state.lastAt === null ? 0 : fix.t - state.lastAt;
+  // Too far, or too long since the last word: a jump in space and a hole in time are the same
+  // thing here, an interval with no witness, and neither is worth distance or moving seconds.
+  if (fix.distFromPrev > RULES.teleportM || elapsed < 0 || elapsed > RULES.maxGapMs) {
+    return teleport(state, fix);
+  }
+
   const fromAnchorM = state.anchor === null ? 0 : metresBetween(state.anchor, fix);
   const stillFor = state.anchor === null ? 0 : fix.t - state.anchor.t;
 

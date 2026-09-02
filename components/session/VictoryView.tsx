@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Share, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
@@ -36,16 +36,36 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
-import { isTrivialSession } from "@/src/session/trivial";
 import { useChorusStore } from "@/stores/chorus";
 import { isExpedition } from "@/stores/expedition";
-import { useSessionStore } from "@/stores/session";
+import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { ExpeditionSummary } from "./ExpeditionSummary";
 import { ProgressionChart } from "./ProgressionChart";
 import { SessionRewards } from "./SessionRewards";
 
 type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
+
+/**
+ * Under this, the session is asked about rather than saved.
+ *
+ * A time-based set records `Math.max(1, elapsedSeconds)` and ends whenever the hero taps done,
+ * so starting an expedition and stopping after five seconds writes a real `completed_sessions`
+ * row — one that counts toward the streak and toward `weekly_sessions`, the eight-week oath.
+ * The hole is not new (a strength quest can be saved after one rep and a run of skips), but an
+ * expedition makes it a single accidental tap: go out, change your mind, and the week is
+ * credited.
+ *
+ * This does not try to police intent. It is an offline single-player app; a hero determined to
+ * cheat their own oath will, and nothing here should pretend otherwise. What it catches is the
+ * accident, and it catches it the way a sports watch does — by asking, because the hero is the
+ * only one who knows whether those ninety seconds were the whole outing or a false start.
+ *
+ * Deliberately about the clock and nothing else. A rule that reasoned about reps would need one
+ * definition per style, and two definitions of "did this count" is the drift this codebase
+ * already spends a lot of comments avoiding.
+ */
+const TRIVIAL_SESSION_SECONDS = 120;
 
 /**
  * The hero's own gauge, filling with what this session earned — the one number that makes
@@ -127,7 +147,6 @@ export function VictoryView() {
   const {
     quest,
     startTime,
-    totalPausedTime,
     saveSession,
     quitSession,
     adventureRunStepId,
@@ -159,10 +178,12 @@ export function VictoryView() {
   /** The monster this session felled, when it did — what the hero card shows instead of the quest. */
   const felledBoss = isBossDefeat ? bossFight : null;
 
-  const durationSeconds = useMemo(() => {
-    if (!startTime) return 0;
-    return Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
-  }, [startTime, totalPausedTime]);
+  // What the journal is about to record, not the raw clock. They are different numbers for an
+  // outing — `sessionClock` clamps a walk to its moving time plus twenty minutes of red lights —
+  // and this screen showed 52 min for the session the next screen filed as 32.
+  // Read once, when the screen opens: this is the session's final duration, and a value that
+  // recomputed per render would tick upward under the hero while they read it.
+  const [durationSeconds] = useState(recordedDurationSeconds);
 
   // Save once on mount, then reveal the real results. No preview, no two-tap flow. The retry below
   // is safe: `ensureSessionRow` makes `saveSession` idempotent.
@@ -178,10 +199,7 @@ export function VictoryView() {
     }
   }, [saveSession, success, showError, t]);
 
-  // Short enough to be a false start rather than an outing. A time set records whatever the
-  // clock said when the hero tapped done, so five seconds outside writes a row that counts for
-  // the streak and the eight-week oath. Asking is the whole rule: see src/session/trivial.ts.
-  const tooShort = isTrivialSession(durationSeconds) && keepShort !== true;
+  const tooShort = durationSeconds < TRIVIAL_SESSION_SECONDS && keepShort !== true;
 
   useEffect(() => {
     if (savedRef.current || tooShort) return;

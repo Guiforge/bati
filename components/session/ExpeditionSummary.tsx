@@ -5,8 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { ChevronRight, Map as MapIcon } from "@/components/icons";
-import { formatDistance, formatPace } from "@/constants/distanceFormat";
-import { formatDuration } from "@/db/estimate";
+import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -105,7 +104,7 @@ export function ExpeditionSummary({
         <Figure
           testID="victory-expedition-moving"
           label={t("session.expedition_moving")}
-          value={formatDuration(track.movingMs / 1000)}
+          value={formatClock(track.movingMs)}
         />
         <Figure
           testID="victory-expedition-pace"

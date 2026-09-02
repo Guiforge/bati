@@ -1,8 +1,11 @@
 import { useTranslation } from "react-i18next";
+import { Linking } from "react-native";
 import { Paragraph, Text, XStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { formatDistance, formatPace } from "@/constants/distanceFormat";
 import type { TrackState } from "@/src/gps/track";
+import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -17,9 +20,13 @@ import { useSettingsStore } from "@/stores/settings";
  */
 function statusKey(error: string | null, track: TrackState, goalReached: boolean): string {
   if (error !== null) {
-    return error === "permission" || error === "foreground-denied"
-      ? "session.expedition_status_denied"
-      : "session.expedition_status_error";
+    if (error === "permission" || error === "foreground-denied") {
+      return "session.expedition_status_denied";
+    }
+    // Location switched off mid-walk. The notification has always said this word; the panel used
+    // to keep saying "On the road" over figures that had stopped moving.
+    if (error === "gps-off") return "session.expedition_gps_off";
+    return "session.expedition_status_error";
   }
   if (track.startedAt === null) return "session.expedition_status_acquiring";
   // Ahead of paused: a hero who met the goal and stopped wants the first fact, not the second.
@@ -53,8 +60,11 @@ export function ExpeditionPanel() {
    * One line, and it never lies by omission. A blank readout while the sky is being found looks
    * exactly like a broken one, and on a de-Googled ROM the first fix can take minutes.
    */
-  const status = t(statusKey(error, track, goalReached));
+  const key = statusKey(error, track, goalReached);
+  const status = t(key);
   const acquiring = track.startedAt === null;
+  /** The one error the hero can undo, and only from a screen this app cannot draw. */
+  const denied = key === "session.expedition_status_denied";
 
   /**
    * Auto-pause is correct and, until this, unexplained: at a crossing the three figures freeze
@@ -123,6 +133,23 @@ export function ExpeditionPanel() {
           ) : null}
         </XStack>
       )}
+
+      {/* "Location is off for Bati" was the whole screen: true, and a dead end. The grant lives
+          in Android's own settings and nothing in the app can ask for it a second time once it
+          has been refused for good. */}
+      {denied ? (
+        <AppButton
+          variant="outline"
+          backgroundColor="$surface2"
+          onPress={() =>
+            Linking.openSettings().catch((e: unknown) => reportError("expedition.openSettings", e))
+          }
+          accessibilityRole="button"
+          accessibilityLabel={t("session.expedition_open_settings")}
+        >
+          {t("session.expedition_open_settings")}
+        </AppButton>
+      ) : null}
     </Card>
   );
 }

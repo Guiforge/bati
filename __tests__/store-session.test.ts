@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
-import { waitFor } from "@testing-library/react-native";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import { saveQuestConfig } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
+import { computeSessionXp } from "@/db/xp";
+import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { i18n } from "@/i18n";
+import { EMPTY } from "@/src/gps/track";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "../stores/session";
 
@@ -96,6 +99,14 @@ jest.mock("@/db/bossFights", () => ({
 }));
 jest.mock("@/db/personalRecords", () => ({
   checkForNewRecords: jest.fn().mockResolvedValue([]),
+}));
+// Every half of the outing path reads this module: the store deletes an abandoned trace, the
+// expedition store appends and replays points, the recovery hook sweeps orphans.
+jest.mock("@/db/gps", () => ({
+  deletePoints: jest.fn().mockResolvedValue(undefined),
+  sweepOrphanedPoints: jest.fn().mockResolvedValue(0),
+  appendPoints: jest.fn().mockResolvedValue(undefined),
+  pointsOf: jest.fn().mockResolvedValue([]),
 }));
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
 jest.mock("@/db/streaks", () => ({
@@ -988,6 +999,8 @@ describe("useSessionStore", () => {
       rounds: 1,
       restSeconds: 0,
       roundRestSeconds: null,
+      enTitle: "The Long Walk",
+      frTitle: "La longue marche",
       exercises: [
         {
           exercise: { id: 30, enName: "Warden's Walk", muscles: [], style: "expedition" },
@@ -1011,6 +1024,8 @@ describe("useSessionStore", () => {
       const [sessionUuid, notification, mounted, unit, goal, haptics] = call;
       expect(typeof sessionUuid).toBe("string");
       expect(notification.reached).toBe(i18n.t("session.expedition_reached"));
+      // The quest, not the app. This notification is the only screen an hour of walking has.
+      expect(notification.title).toBe("The Long Walk");
       expect(mounted).toBe(false);
       expect(unit).toBe("metric");
       expect(goal).toEqual({ type: "distance", metres: 3000 });
@@ -1028,5 +1043,189 @@ describe("useSessionStore", () => {
       const goal = call[4];
       expect(goal).toEqual({ type: "time", seconds: 900 });
     });
+  });
+
+  /**
+   * The interrupted walk.
+   *
+   * `startSession` was the only caller that ever started the tracking, so the OEM killing the app
+   * at 2.4 km and the hero tapping resume gave a session whose panel said "Finding the sky" for
+   * the rest of the way, whose reducer finished with no witness (`leaguesM: null`) and whose
+   * recap still drew the kilometres already in `gps_points`. One outing, two lengths.
+   */
+  describe("resuming an interrupted session", () => {
+    const outing = {
+      id: 9,
+      rounds: 1,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      enTitle: "The Long Walk",
+      frTitle: "La longue marche",
+      exercises: [
+        {
+          exercise: { id: 30, enName: "Warden's Walk", muscles: [], style: "expedition" },
+          target: { type: "time", value: 900 },
+        },
+      ],
+    } as unknown as Quest;
+
+    const snapshot = (over: Record<string, unknown> = {}) =>
+      JSON.stringify({
+        quest: outing,
+        userLevel: "medium",
+        sessionUuid: "0192-walk",
+        distanceGoalM: 3000,
+        adventureRunStepId: null,
+        bossFight: null,
+        bossStartHp: null,
+        pendingDamage: [],
+        lastDamageResult: null,
+        status: "running",
+        prePauseStatus: null,
+        warmupSequence: [],
+        warmupIndex: 0,
+        currentRoundIndex: 0,
+        currentExerciseIndex: 0,
+        startTime: Date.now() - 600_000,
+        totalPausedTime: 0,
+        restTakenSeconds: 0,
+        timerStartTimestamp: null,
+        timerDuration: 0,
+        results: [],
+        lastSetSkipped: false,
+        savedAt: Date.now(),
+        ...over,
+      });
+
+    afterEach(() => {
+      (preferences.getSavedSession as jest.Mock).mockResolvedValue(null);
+      jest.restoreAllMocks();
+    });
+
+    test("starts measuring again, on the name the points are already filed under", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getSavedSession as jest.Mock).mockResolvedValue(snapshot());
+
+      const { result } = await renderHook(() => useSessionRecovery());
+      await act(async () => {
+        await result.current.recoverSession();
+      });
+
+      const call = beginSpy.mock.calls[0];
+      assert(call);
+      // The same uuid: a second name would file the rest of the walk under a session nothing
+      // ever reads, and the sweep would take it.
+      expect(call[0]).toBe("0192-walk");
+      expect(useSessionStore.getState().sessionUuid).toBe("0192-walk");
+      // And the goal the hero set, which is in the snapshot for exactly this reason.
+      expect(call[4]).toEqual({ type: "distance", metres: 3000 });
+    });
+
+    test("a workout indoors starts nothing", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getSavedSession as jest.Mock).mockResolvedValue(snapshot({ quest: mockQuest }));
+
+      const { result } = await renderHook(() => useSessionRecovery());
+      await act(async () => {
+        await result.current.recoverSession();
+      });
+
+      expect(beginSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * The service, the wake lock and the 1 Hz GPS belong to the session, not to the victory
+   * screen's question. `saveSession` was the only end of that road and it sits behind "was that
+   * really a session?": a hero who quit after 30 s, tapped DONE and put the phone away without
+   * answering kept a permanent notification and a live trace until the process died — and every
+   * fix in between landed on the finished session, so "Keep" twenty minutes later credited the
+   * walk home.
+   */
+  test("the measure stops when the session ends, not when the question is answered", async () => {
+    const outing = {
+      id: 9,
+      rounds: 1,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      enTitle: "The Long Walk",
+      frTitle: "La longue marche",
+      exercises: [
+        {
+          exercise: { id: 30, enName: "Warden's Walk", muscles: [], style: "expedition" },
+          target: { type: "time", value: 900 },
+        },
+      ],
+    } as unknown as Quest;
+
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    const endSpy = jest.spyOn(useExpeditionStore.getState(), "end").mockResolvedValue(undefined);
+
+    await store.getState().startSession(outing, "medium", {});
+    store.getState().finishCountdown();
+    endSpy.mockClear();
+
+    store.getState().completeExercise(900);
+
+    expect(store.getState().status).toBe("finished");
+    await waitFor(() => expect(endSpy).toHaveBeenCalled());
+    jest.restoreAllMocks();
+  });
+
+  /**
+   * "Walk 5 min + push-ups" is a quest the editor allows, and `isExpedition` calls it an outing
+   * because one slot is. Measuring it is right; capping its effort at the walk's moving seconds
+   * is not — `computeSessionXp` scaled the whole session down to five minutes and ~70 % of the
+   * push-ups' XP vanished with nothing on screen to explain it. Two predicates, two questions.
+   */
+  test("a mixed quest is measured like an outing and paid like a workout", async () => {
+    const mixed = {
+      id: 12,
+      rounds: 1,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      enTitle: "Walk and push",
+      frTitle: "Marche et pompes",
+      exercises: [
+        {
+          exercise: {
+            id: 30,
+            enName: "Warden's Walk",
+            muscles: [],
+            style: "expedition",
+            secondsPerRep: 1,
+          },
+          target: { type: "time", value: 300 },
+        },
+        {
+          exercise: {
+            id: 31,
+            enName: "Pushups",
+            muscles: ["chest"],
+            style: "strength",
+            secondsPerRep: 3,
+          },
+          target: { type: "reps", value: 20 },
+        },
+      ],
+    } as unknown as Quest;
+
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    // Five minutes of walking, witnessed. The ground is measured either way: that half is right.
+    useExpeditionStore.setState({
+      track: { ...EMPTY, startedAt: 1, distanceM: 500, movingMs: 300_000 },
+    });
+    (computeSessionXp as jest.Mock).mockClear();
+
+    await store.getState().startSession(mixed, "medium", {});
+    store.setState({ startTime: Date.now() - 600_000, totalPausedTime: 0, restTakenSeconds: 0 });
+
+    await store.getState().saveSession(null);
+
+    const call = (computeSessionXp as jest.Mock).mock.calls[0];
+    assert(call);
+    // Ten minutes of session, not the walk's five: the push-ups happened in the other five.
+    expect(call[0].effortCeilingSeconds).toBe(600);
+    jest.restoreAllMocks();
   });
 });

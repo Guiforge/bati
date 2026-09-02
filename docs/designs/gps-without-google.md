@@ -93,13 +93,13 @@ permission ratchet would vouch for a dependency Bati does not control.
               ▼
  BatiLocationService (Kotlin, FGS type location, PARTIAL_WAKE_LOCK)
    ├─ permission guard before startForeground (typed error, no throw)
-   ├─ accuracy/speed thresholds (from start()), distFromPrev
+   ├─ speed threshold (from start()), fixed accuracy threshold, distFromPrev
    ├─ notification state: acquiring / tracking / paused / GPS off
    └─ self-stop 2 min after restart with no JS consumer
-              │ event {t, lat, lon, ele, acc, speed, bearing, distFromPrev}, 1 Hz
+              │ event {t, lat, lon, ele, acc, speed, distFromPrev}, 1 Hz
               ▼
  src/gps/track.ts (pure reducer)             src/gps/points.ts (codec)
-   ├─ monotonic guard (skip t ≤ lastT)          ▲ encode        │ decode
+   ├─ time gap or backwards clock breaks        ▲ encode        │ decode
    ├─ distance += distFromPrev                  │               ▼
    ├─ auto-pause / segment breaks               │      ┌─ recap map (MapLibre)
    └─ storage decimation ≥ 10 m ──────────► gps_points ┼─ GPX export
@@ -116,7 +116,7 @@ permission ratchet would vouch for a dependency Bati does not control.
 - Foreground service: `startForeground(id, notification, FOREGROUND_SERVICE_TYPE_LOCATION)`,
   `PARTIAL_WAKE_LOCK`, `START_STICKY`, restart receiver on process death (GPSLogger's
   `RestarterReceiver` pattern, rewritten).
-- Events to JS: `{ t, lat, lon, ele, acc, speed, bearing, distFromPrev }` per fix — the
+- Events to JS: `{ t, lat, lon, ele, acc, speed, distFromPrev }` per fix — the
   service computes `Location.distanceTo(prev)` natively, so JS never calls native for math
   (review 4A). The accuracy and speed rejection also lives in the service (thresholds passed
   to `start()`), otherwise `distFromPrev` would measure against fixes JS discarded; JS keeps

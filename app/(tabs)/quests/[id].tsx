@@ -710,6 +710,16 @@ export default function QuestDetails() {
             />
           ) : null}
 
+          {/* The one promise made before the promise is needed. `stores/expedition` asks Android
+              for the location permission during the countdown, which is the worst moment to meet
+              a system dialog with no idea why it is there. Under the panel that sets the outing's
+              length, above the button that starts it: the last thing read before committing. */}
+          {isOuting ? (
+            <Text testID="quest-location-notice" fontSize={13} color="$textSecondary">
+              {t("quests.location_notice")}
+            </Text>
+          ) : null}
+
           {quest ? (
             <YStack gap="$3">
               <Text fontWeight="700" fontSize={18} color="$text">

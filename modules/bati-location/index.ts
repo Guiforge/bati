@@ -14,7 +14,6 @@ export type LocationFix = {
   /** Metres. Never null: a fix without accuracy cannot be filtered and is dropped natively. */
   acc: number;
   speed: number | null;
-  bearing: number | null;
   /** Metres, 0 for the first fix of a session. */
   distFromPrev: number;
 };
@@ -42,12 +41,8 @@ export type StartOptions = {
     gpsOff: string;
     reached: string;
   };
-  /** Metres, default 50. Fixes worse than this never reach JS and never anchor a distance. */
-  maxAccuracyM?: number;
   /** Metres per second, default 8 (walking or running). 25 for riding. */
   maxSpeedMs?: number;
-  /** Milliseconds, default 30000. */
-  noFixTimeoutMs?: number;
 };
 
 /** Structurally an expo `EventSubscription`, spelled out so nothing but `expo` is imported. */

@@ -1,4 +1,4 @@
-import { formatDistance, formatPace } from "@/constants/distanceFormat";
+import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
 
 // The helper is the only converter in the app, so the numbers below are the contract: a mile is
 // 1609.344 m and a foot 0.3048 m, exactly, and nothing here may round its way past a threshold.
@@ -58,5 +58,33 @@ describe("formatPace", () => {
     expect(formatPace(0, 300_000, "metric")).toBe("—");
     expect(formatPace(1000, 0, "metric")).toBe("—");
     expect(formatPace(Number.NaN, 1, "metric")).toBe("—");
+  });
+});
+
+/**
+ * The recap printed "31 min 33s" through the estimate's formatter, wrapped it onto two lines at
+ * 22 px, and disagreed with the panel the hero had just spent half an hour reading, which said
+ * "31:33". One shape, one function.
+ */
+describe("formatClock", () => {
+  test("milliseconds in, m:ss out", () => {
+    expect(formatClock(0)).toBe("0:00");
+    expect(formatClock(5_000)).toBe("0:05");
+    expect(formatClock(65_000)).toBe("1:05");
+    expect(formatClock(1_893_000)).toBe("31:33");
+  });
+
+  test("the leftover second is floored, never rounded up past its own minute", () => {
+    expect(formatClock(59_999)).toBe("0:59");
+    expect(formatClock(119_999)).toBe("1:59");
+  });
+
+  test("minutes are not wrapped into hours", () => {
+    expect(formatClock(7_214_000)).toBe("120:14");
+  });
+
+  test("a clock that is not a number says so instead of printing NaN", () => {
+    expect(formatClock(Number.NaN)).toBe("—");
+    expect(formatClock(-1)).toBe("—");
   });
 });

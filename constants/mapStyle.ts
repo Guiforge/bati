@@ -209,8 +209,11 @@ export const mapStyle: MapStyle = {
  * OpenMapTiles Data from OpenStreetMap" and permits dropping its own name. MapLibre's built-in
  * attribution button is switched off on the recap (`attribution={false}`), and OpenFreeMap's rule
  * for non-standard clients is that the text must then be *explicitly displayed* — which is what
- * this line, rendered in the app's own type under the map, is for. The second sentence is not
- * required by anyone; it is the promise the manifest used to make.
+ * this line, rendered in the app's own type under the map, is for.
+ *
+ * The tile host is named by `recap.privacy`, in the hero's own language, on the line right
+ * underneath. This constant carried "Tiles from OpenFreeMap." as well, so the French app said
+ * OpenFreeMap twice, once in English. What is untranslatable lives here; what a reader reads
+ * lives in the locales.
  */
-export const MAP_ATTRIBUTION =
-  "© OpenMapTiles, © OpenStreetMap contributors. Tiles from OpenFreeMap.";
+export const MAP_ATTRIBUTION = "© OpenMapTiles, © OpenStreetMap contributors.";

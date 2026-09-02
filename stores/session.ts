@@ -22,7 +22,7 @@ import {
 } from "@/db/completed";
 import { estimateQuestSeconds } from "@/db/estimate";
 import { checkForNewRungs, type Exercise, type VariationStep } from "@/db/exercises";
-import { isMountedOuting, outingGoal } from "@/db/expeditions";
+import { isMountedOuting, isOutingSession, outingGoal } from "@/db/expeditions";
 import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
@@ -45,6 +45,8 @@ import {
 import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
 import { i18n } from "@/i18n";
 import { credited } from "@/src/gps/track";
+import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
+import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { isExpedition, useExpeditionStore } from "@/stores/expedition";
@@ -180,6 +182,15 @@ interface SessionState {
    * name its points were filed under — the Pick makes forgetting that a compile error.
    */
   sessionUuid: string | null;
+  /**
+   * The distance the hero set out to cover, when they chose one on the quest screen.
+   *
+   * In state, and in `SavedSessionState`, for one reason: a session resumed after the OS killed
+   * the app restarts its tracking, and a goal held only in `startSession`'s arguments would have
+   * come back as "whatever the slots add up to" — a walk that buzzes at the wrong distance, or
+   * never.
+   */
+  distanceGoalM: number | null;
   savedSessionId: number | null;
   /**
    * Whether this session already paid the Triumph bonus.
@@ -278,6 +289,7 @@ export type SavedSessionState = Pick<
   | "results"
   | "lastSetSkipped"
   | "sessionUuid"
+  | "distanceGoalM"
 > & { savedAt: number };
 
 /**
@@ -390,6 +402,13 @@ type Ground = { leaguesM: number | null; movingSeconds: number | null };
  * walk could never reach their own journal. Its effort ceiling is moving seconds alone, so a run
  * left open on a bus keeps accruing neither.
  *
+ * The two questions take two predicates, and that is the whole point of `isOutingSession` being
+ * imported here. *Measuring* asks the generous one (`isExpedition`): a home-made "Walk 5 min +
+ * push-ups" has outdoors in it, so its ground is measured. *Bounding the effort* asks the strict
+ * one: five minutes of moving time is a ceiling the push-ups never agreed to, and it took ~70 %
+ * of that quest's XP away with nothing on screen to explain it. A mixed quest keeps the clock
+ * the walk gives it and the workout's own ceiling.
+ *
  * ponytail: a real workout that genuinely runs past twice its estimate loses the surplus from its
  *           journal entry only; if anyone ever reports that, the fix is an AppState listener that
  *           banks background time as pause, not a bigger multiplier.
@@ -406,18 +425,38 @@ function sessionClock({
   restTakenSeconds: number;
 }): { durationSeconds: number; effortCeilingSeconds: number } {
   const moving = ground.movingSeconds;
-  if (moving !== null) {
-    return {
-      durationSeconds: Math.min(measuredSeconds, moving + OUTING_STOPPAGE_ALLOWANCE_SECONDS),
-      effortCeilingSeconds: moving,
-    };
+  const durationSeconds =
+    moving !== null
+      ? Math.min(measuredSeconds, moving + OUTING_STOPPAGE_ALLOWANCE_SECONDS)
+      : Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
+
+  if (moving !== null && isOutingSession(quest)) {
+    return { durationSeconds, effortCeilingSeconds: moving };
   }
 
-  const durationSeconds = Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
   return {
     durationSeconds,
     effortCeilingSeconds: Math.max(0, durationSeconds - restTakenSeconds),
   };
+}
+
+/**
+ * What the journal is about to record for the session in progress.
+ *
+ * Exported so the victory screen shows the duration that gets written rather than the raw clock:
+ * a walk of 12 moving minutes with 40 minutes of stops said 52 min on the victory screen and
+ * 32 min in the journal, for the same session, on two consecutive screens. One rule, two readers.
+ */
+export function recordedDurationSeconds(): number {
+  const { quest, startTime, totalPausedTime, restTakenSeconds } = useSessionStore.getState();
+  if (!quest || !startTime) return 0;
+
+  return sessionClock({
+    quest,
+    ground: measureGround(quest),
+    measuredSeconds: Math.floor((Date.now() - startTime - totalPausedTime) / 1000),
+    restTakenSeconds,
+  }).durationSeconds;
 }
 
 function toXpSets(quest: Quest, results: CompletedExerciseInput[]): XpSet[] {
@@ -568,8 +607,13 @@ async function dealFinalBlow(
  * different jobs, and because the notification's six strings are localized here: the native
  * half owns no words at all, which is what lets it follow the app's language without knowing
  * one exists.
+ *
+ * Exported for the one other place a session begins: `useSessionRecovery` resuming a walk the OS
+ * killed. It was the only path that never started the tracking, so a resumed outing measured
+ * nothing for the rest of the way. The store folds the points already on disk back into the
+ * reading, so the same uuid picks up the same total.
  */
-function beginTrackingIfOuting(
+export function beginTrackingIfOuting(
   quest: Quest,
   sessionUuid: string | null,
   distanceGoalM: number | null,
@@ -591,7 +635,9 @@ function beginTrackingIfOuting(
       useExpeditionStore.getState().begin(
         sessionUuid,
         {
-          title: i18n.t("session.expedition_notification_title"),
+          // The quest, not the app: this notification is the only screen an hour of walking has,
+          // and it spent that hour saying the name of the app the hero is already using.
+          title: localizedTitle(quest, resolveAppLanguage(i18n.language)),
           acquiring: i18n.t("session.expedition_acquiring"),
           tracking: i18n.t("session.expedition_tracking"),
           paused: i18n.t("session.expedition_paused"),
@@ -632,6 +678,7 @@ export const useSessionStore = create<SessionState>()(
     timerDuration: 0,
     results: [],
     lastSetSkipped: false,
+    distanceGoalM: null,
     savedSessionId: null,
     triumphBonusPaid: false,
 
@@ -686,6 +733,7 @@ export const useSessionStore = create<SessionState>()(
           : PRE_START_COUNTDOWN_SECONDS,
         results: [],
         lastSetSkipped: false,
+        distanceGoalM: options?.distanceGoalM ?? null,
         savedSessionId: null,
         triumphBonusPaid: false,
       });
@@ -861,6 +909,7 @@ export const useSessionStore = create<SessionState>()(
         results: [],
         lastSetSkipped: false,
         sessionUuid: null,
+        distanceGoalM: null,
         savedSessionId: null,
         triumphBonusPaid: false,
       });
@@ -1119,17 +1168,18 @@ export const useSessionStore = create<SessionState>()(
       // at, so the village would grow by a number the recap never showed. See `db/gps.ts`.
       const ground = measureGround(get().quest);
 
-      // The ground stops being covered here, not when the hero taps Continue.
+      // The ground stopped being covered when the session ended, which is earlier than this: the
+      // subscriber at the bottom of this file ends the tracking the moment `status` becomes
+      // "finished", because a save that sits behind the "too short to be a session?" question
+      // may never be reached at all. This is the belt: `end()` is idempotent, the victory screen
+      // retries `saveSession` on failure, and the flush it performs must have happened before
+      // the row below claims the run.
       //
-      // `end()` used to live only in `quitSession`, and finishing a session does not go through
-      // it: the last set sets `status: "finished"`, VictoryView mounts and saves, and quitting
-      // happens later or never. So between DONE and Continue the service kept its wake lock and
-      // its 1 Hz GPS, and every fix in that window was written under the finished session's uuid
-      // — the recap would draw the walk home as part of the outing, and `durationSeconds` and
-      // the map would disagree about the same run. Worse, "view the village" navigates away
-      // without quitting at all, so the service ran until the process died.
-      //
-      // Idempotent, which matters: the victory screen retries this on failure.
+      // What it is guarding against, historically: `end()` used to live only in `quitSession`,
+      // and finishing a session does not go through it, so between DONE and Continue the service
+      // kept its wake lock and its 1 Hz GPS and every fix in that window was written under the
+      // finished session's uuid — the recap drew the walk home as part of the outing, and
+      // `durationSeconds` and the map disagreed about the same run.
       await useExpeditionStore
         .getState()
         .end()
@@ -1336,6 +1386,16 @@ useSessionStore.subscribe(
     // Clear saved session when session ends or is idle
     if (curr.status === "idle" || curr.status === "finished") {
       if (prev.status !== "idle" && prev.status !== "finished") {
+        // The service, the wake lock and the 1 Hz GPS stop when the session is over, not when
+        // the victory screen's question is answered. `saveSession` used to be the only end of
+        // that road, and it sits behind the "too short to be a session?" prompt: a hero who
+        // abandoned after 30 s, tapped DONE and backgrounded the app without answering kept a
+        // permanent notification and a live trace until the process died, and "Keep" twenty
+        // minutes later credited the walk home.
+        await useExpeditionStore
+          .getState()
+          .end()
+          .catch((error: unknown) => reportError("session.endTracking", error));
         try {
           await preferences.clearSavedSession();
         } catch (error) {
@@ -1396,6 +1456,7 @@ useSessionStore.subscribe(
           timerDuration: state.timerDuration,
           results: state.results,
           lastSetSkipped: state.lastSetSkipped,
+          distanceGoalM: state.distanceGoalM,
           savedAt: Date.now(),
         };
         await preferences.setSavedSession(JSON.stringify(savedState));

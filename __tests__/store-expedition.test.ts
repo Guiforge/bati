@@ -12,7 +12,11 @@ const mockSetProgress = jest.fn();
 const mockSetReached = jest.fn();
 let mockAvailable = true;
 
-jest.mock("@/db/gps", () => ({ appendPoints: (...a: never[]) => mockAppendPoints(...a) }));
+const mockPointsOf = jest.fn().mockResolvedValue([]);
+jest.mock("@/db/gps", () => ({
+  appendPoints: (...a: never[]) => mockAppendPoints(...a),
+  pointsOf: (...a: never[]) => mockPointsOf(...a),
+}));
 jest.mock("@/modules/bati-location", () => ({
   isAvailable: () => mockAvailable,
   start: (...a: never[]) => mockStart(...a),
@@ -55,7 +59,6 @@ const walking = (i: number): LocationFix => ({
   ele: 110,
   acc: 4,
   speed: 1.4,
-  bearing: 0,
   distFromPrev: i === 0 ? 0 : 1.4,
 });
 
@@ -70,6 +73,8 @@ describe("stores/expedition", () => {
     jest.resetModules();
     mockListeners.clear();
     mockAppendPoints.mockClear();
+    mockPointsOf.mockClear();
+    mockPointsOf.mockResolvedValue([]);
     mockStart.mockClear();
     mockRequestPermission.mockClear();
     mockRequestNotificationPermission.mockClear();
@@ -141,20 +146,20 @@ describe("stores/expedition", () => {
   });
 
   test("a time goal stays unmet on elapsed wall clock alone, once the hero stops moving", async () => {
-    // A goal of 15 s of *moving* time. Walking stops at fix 10, 9.8 m from the anchor — short of
+    // A goal of 60 s of *moving* time. Walking stops at fix 10, 9.8 m from the anchor — short of
     // the 10 m that would reset it — so under 10 s of credited moving time and the goal unmet.
     await store.getState().begin("s1", NOTIFICATION, false, "metric", {
       type: "time",
-      seconds: 15,
+      seconds: 60,
     });
     for (let i = 0; i < 11; i++) emit(walking(i));
     expect(store.getState().goalReached).toBe(false);
 
     // The hero stands still from here on: same spot as fix 10, one fix per second. The reducer
-    // still credits a few of these as moving — GPS noise takes a beat to call a stop a stop — but
-    // auto-pause catches up well under the goal, and forty more seconds of wall clock must not
-    // buzz a goal that moving time never reached.
-    for (let i = 11; i < 51; i++) emit({ ...walking(10), t: T0 + i * 1000, distFromPrev: 0 });
+    // credits the window of doubt before auto-pause engages — `RULES.pauseAfterMs`, a floor pace
+    // rather than an instant verdict — and then stops, so three and a half minutes of wall clock
+    // must not buzz a goal that moving time never reached.
+    for (let i = 11; i < 211; i++) emit({ ...walking(10), t: T0 + i * 1000, distFromPrev: 0 });
     expect(store.getState().goalReached).toBe(false);
     expect(mockHaptic).not.toHaveBeenCalled();
   });
@@ -207,8 +212,97 @@ describe("stores/expedition", () => {
     emit(walking(0));
     await store.getState().end();
     mockAppendPoints.mockClear();
+    mockPointsOf.mockClear();
+    mockPointsOf.mockResolvedValue([]);
 
     expect(mockListeners.has("onLocation")).toBe(false);
+  });
+
+  /**
+   * The OEM kills the app at 2.4 km, the hero taps resume, and only `startSession` ever started
+   * the tracking - so the panel said "Finding the sky" for the rest of the walk and the reducer
+   * finished with no witness at all. The points are on disk under the same name and the reducer
+   * is pure, so replaying them is the reading; anything else is a second rule for the same walk.
+   */
+  test("a resumed outing picks the reading back up from the ground already measured", async () => {
+    const walked = Array.from({ length: 20 }, (_, i) => walking(i));
+    mockPointsOf.mockResolvedValue(walked);
+
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+
+    expect(mockPointsOf).toHaveBeenCalledWith("s1");
+    const { track, sessionUuid, lastFix } = store.getState();
+    expect(sessionUuid).toBe("s1");
+    expect(track.startedAt).not.toBeNull();
+    expect(track.distanceM).toBeGreaterThan(20);
+    expect(lastFix?.t).toBe(T0 + 19 * 1000);
+
+    // And it keeps going from there rather than from zero.
+    const before = store.getState().track.distanceM;
+    emit({ ...walking(20), t: T0 + 20_000 });
+    expect(store.getState().track.distanceM).toBeGreaterThan(before);
+  });
+
+  test("a resumed outing that already met its goal knows it", async () => {
+    mockPointsOf.mockResolvedValue(Array.from({ length: 20 }, (_, i) => walking(i)));
+
+    await store.getState().begin("s1", NOTIFICATION, false, "metric", {
+      type: "distance",
+      metres: 10,
+    });
+
+    expect(store.getState().goalReached).toBe(true);
+  });
+
+  // The reading is a convenience; the walk is the feature. A database that will not answer costs
+  // the resumed total, never the tracking.
+  test("a trace that cannot be read back still starts the walk", async () => {
+    mockPointsOf.mockRejectedValue(new Error("db went away"));
+
+    expect(await store.getState().begin("s1", NOTIFICATION, false, "metric")).toBe(true);
+    expect(mockReportError).toHaveBeenCalledWith("expedition.resumeTrack", expect.any(Error));
+    expect(store.getState().track.startedAt).toBeNull();
+    expect(store.getState().track.distanceM).toBe(0);
+  });
+
+  /**
+   * Two sorties in one process, the second refused. `begin` used to return on `permission`
+   * before it reset anything, so the first walk's five kilometres were still in state at DONE:
+   * credited to the High Road a second time, with the first run's pace on the victory screen.
+   */
+  test("a refused second outing never inherits the first one's ground", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    for (let i = 0; i < 20; i++) emit(walking(i));
+    expect(store.getState().track.distanceM).toBeGreaterThan(0);
+
+    mockRequestPermission.mockResolvedValue({ granted: false, status: "denied" });
+    expect(await store.getState().begin("s2", NOTIFICATION, false, "metric")).toBe(false);
+
+    expect(store.getState().track.distanceM).toBe(0);
+    expect(store.getState().track.startedAt).toBeNull();
+    expect(store.getState().lastFix).toBeNull();
+  });
+
+  test("and neither does one refused for having no native half", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    for (let i = 0; i < 20; i++) emit(walking(i));
+
+    mockAvailable = false;
+    expect(await store.getState().begin("s2", NOTIFICATION, false, "metric")).toBe(false);
+
+    expect(store.getState().track.distanceM).toBe(0);
+  });
+
+  /**
+   * `start()` returning false is the service saying no - on API 31+ that is
+   * ForegroundServiceStartNotAllowedException, and the panel used to sit on "Finding the sky"
+   * for the length of a walk nothing was measuring.
+   */
+  test("a service that refuses to start leaves a reason on screen", async () => {
+    mockStart.mockReturnValueOnce(false);
+
+    expect(await store.getState().begin("s1", NOTIFICATION, false, "metric")).toBe(false);
+    expect(store.getState().error).toBe("foreground-denied");
   });
 
   test("a native error is kept where a screen can read it", async () => {
@@ -257,6 +351,9 @@ describe("stores/expedition", () => {
         enabled: false,
       });
       expect(mockReportError).toHaveBeenCalledWith("expedition.providerOff", expect.any(Error));
+      // And says so where the hero is looking, not only in the log: the figures freeze either
+      // way, and the notification two swipes away already said the GPS was off.
+      expect(store.getState().error).toBe("gps-off");
 
       // Coming back is not news.
       mockReportError.mockClear();
@@ -264,6 +361,7 @@ describe("stores/expedition", () => {
         enabled: true,
       });
       expect(mockReportError).not.toHaveBeenCalled();
+      expect(store.getState().error).toBeNull();
     });
 
     test("leaves one when no fix has arrived for a while", async () => {
@@ -273,6 +371,23 @@ describe("stores/expedition", () => {
         sinceLastFixMs: 30_000,
       });
       expect(mockReportError).toHaveBeenCalledWith("expedition.noFix", expect.any(Error));
+      expect(store.getState().error).toBe("no-fix");
+
+      // A fix landing ends it: silence is the only thing either of these two errors is about.
+      emit(walking(0));
+      expect(store.getState().error).toBeNull();
+    });
+
+    // The pill must not un-say a refusal the hero has to fix in Android's settings.
+    test("a fix arriving does not clear a refused permission", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      (mockListeners.get("onError") as (e: { code: string; message: string }) => void)({
+        code: "permission",
+        message: "denied",
+      });
+
+      emit(walking(0));
+      expect(store.getState().error).toBe("permission");
     });
   });
 

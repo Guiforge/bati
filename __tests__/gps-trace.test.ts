@@ -12,7 +12,6 @@ const fix = (over: Partial<LocationFix> & { lat: number; lon: number }): Locatio
   ele: 110,
   acc: 4,
   speed: 1.4,
-  bearing: null,
   distFromPrev: 5,
   ...over,
 });

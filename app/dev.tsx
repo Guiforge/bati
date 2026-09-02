@@ -290,32 +290,6 @@ export default function DevScreen() {
 
         <Card p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
-            GPS harness
-          </Text>
-          <Paragraph fontSize="$2" color="$textSecondary">
-            Does a fix ever arrive from LocationManager on this ROM, and how long does the first one
-            take without SUPL. Nothing else answers that.
-          </Paragraph>
-          <AppButton variant="secondary" onPress={() => router.push("/dev-gps" as never)}>
-            Open GPS harness
-          </AppButton>
-        </Card>
-
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
-            MapLibre spike
-          </Text>
-          <Paragraph fontSize="$2" color="$textSecondary">
-            Does the map renderer work on this RN + Fabric build. No basemap until INTERNET is
-            unblocked; the polyline is the part that answers the question.
-          </Paragraph>
-          <AppButton variant="secondary" onPress={() => router.push("/dev-map" as never)}>
-            Open map spike
-          </AppButton>
-        </Card>
-
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
             Onboarding
           </Text>
           <AppButton

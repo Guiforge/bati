@@ -9,7 +9,6 @@ const fix = (over: Partial<LocationFix> & { t: number }): LocationFix => ({
   ele: 110,
   acc: 4,
   speed: 1.4,
-  bearing: 0,
   distFromPrev: 0,
   ...over,
 });
@@ -26,6 +25,36 @@ function started(): TrackState {
     fix({ t: T0 + 1000, acc: 5 }),
     fix({ t: T0 + 3000, acc: 5 }),
   ]);
+}
+
+/** Metres, as a difference in latitude — so a walk moves as far as it says it moved. */
+function northOf(metres: number): number {
+  return metres / 111_195;
+}
+
+/** The gate closes at T0 + 3000, so a walk of n seconds ends here. */
+const walkEnd = (seconds: number): number => T0 + 3000 + seconds * 1000;
+
+/**
+ * A sustained walk, one fix a second, straight north: displacement and path length agree.
+ *
+ * Every case in this file used to walk at 1.4 m/s, which was the one pace the pause rule was
+ * right about — the pair of values it is built from is a floor pace, and nothing below that floor
+ * was ever credited. A helper that takes the pace is what makes the floor visible.
+ */
+function walked(speedMs: number, seconds: number, from: TrackState = started()): TrackState {
+  let state = from;
+  for (let i = 1; i <= seconds; i++) {
+    state = accept(
+      state,
+      fix({
+        t: walkEnd(i),
+        distFromPrev: speedMs,
+        lat: 48.4728 + northOf(i * speedMs),
+      }),
+    );
+  }
+  return state;
 }
 
 describe("the start gate", () => {
@@ -73,7 +102,7 @@ describe("auto-pause, which is the rule this file exists for", () => {
       );
     }
     expect(state.paused).toBe(true);
-    // Ten seconds of doubt before the pause engages, then nothing.
+    // One window of doubt before the pause engages, then nothing.
     expect(state.distanceM).toBeLessThan(RULES.movingThresholdM);
     expect(state.distanceM).toBeGreaterThan(0);
   });
@@ -95,7 +124,7 @@ describe("auto-pause, which is the rule this file exists for", () => {
 
   test("walking again resumes on the first fix that clears the anchor", () => {
     let state = started();
-    for (let i = 1; i <= 30; i++) {
+    for (let i = 1; i <= 45; i++) {
       state = accept(
         state,
         fix({
@@ -107,7 +136,7 @@ describe("auto-pause, which is the rule this file exists for", () => {
     }
     expect(state.paused).toBe(true);
     // 0.0002 degrees of latitude is about 22 m: the hero has actually left.
-    state = accept(state, fix({ t: T0 + 34_000, distFromPrev: 12, lat: 48.473 }));
+    state = accept(state, fix({ t: T0 + 49_000, distFromPrev: 12, lat: 48.473 }));
     expect(state.paused).toBe(false);
     expect(state.distanceM).toBeGreaterThan(12);
   });
@@ -124,6 +153,127 @@ describe("auto-pause, which is the rule this file exists for", () => {
     expect(state.paused).toBe(false);
     expect(state.distanceM).toBeCloseTo(60 * 1.4, 1);
     expect(state.movingMs).toBe(60_000);
+  });
+});
+
+/**
+ * The pace floor, which is what the pause rule really is.
+ *
+ * `movingThresholdM / pauseAfterMs` is a speed: below it the anchor is never cleared before the
+ * stillness timer fires, and every fix in between is credited neither ground nor seconds. The
+ * first pair encoded 1.0 m/s and silently ate a quarter of a half-hour walk at 0.8 — the pace of
+ * the hill, the dog and the eighty-year-old that "La Ronde du Veilleur" invites by name.
+ */
+describe("slow walks", () => {
+  const HALF_HOUR = 1800;
+  const within5pc = (credited: number, real: number) =>
+    expect(Math.abs(credited - real) / real).toBeLessThan(0.05);
+
+  test("the floor pace the two values encode stays under a slow walk", () => {
+    expect((RULES.movingThresholdM / RULES.pauseAfterMs) * 1000).toBeLessThan(0.4);
+  });
+
+  test("half an hour at 0.8 m/s is credited as half an hour at 0.8 m/s", () => {
+    const state = walked(0.8, HALF_HOUR);
+    expect(state.paused).toBe(false);
+    within5pc(state.distanceM, 0.8 * HALF_HOUR);
+    within5pc(state.movingMs, HALF_HOUR * 1000);
+  });
+
+  test("0.4 m/s, which is a walking frame or a very old hero, does not collapse either", () => {
+    const state = walked(0.4, HALF_HOUR);
+    within5pc(state.distanceM, 0.4 * HALF_HOUR);
+    within5pc(state.movingMs, HALF_HOUR * 1000);
+  });
+
+  test("and the fast walk it was always right about is unchanged", () => {
+    const state = walked(1.4, HALF_HOUR);
+    within5pc(state.distanceM, 1.4 * HALF_HOUR);
+    expect(state.movingMs).toBe(HALF_HOUR * 1000);
+  });
+
+  test("drift on a table is still not a walk, three quarters of an hour later", () => {
+    let state = started();
+    for (let i = 1; i <= 2700; i++) {
+      state = accept(
+        state,
+        fix({
+          t: walkEnd(i),
+          distFromPrev: 0.2,
+          lat: 48.4728 + (i % 2 === 0 ? 0.00001 : -0.00001),
+        }),
+      );
+    }
+    expect(state.paused).toBe(true);
+    // One window of doubt, and the forty-four minutes after it cost nothing: 0.2 m/s of drift
+    // for `pauseAfterMs`, never the 540 m a raw sum would have invented.
+    expect(state.distanceM).toBeLessThan(0.2 * (RULES.pauseAfterMs / 1000) + 1);
+    expect(state.movingMs).toBeLessThanOrEqual(RULES.pauseAfterMs);
+  });
+
+  test("a ten-minute stop is a stop, and the clock does not run through it", () => {
+    let state = walked(1.4, 60);
+    const moving = state.movingMs;
+    const lat = 48.4728 + northOf(60 * 1.4);
+    for (let i = 1; i <= 600; i++) {
+      state = accept(state, fix({ t: walkEnd(60 + i), distFromPrev: 0, lat }));
+    }
+    expect(state.paused).toBe(true);
+    expect(state.movingMs - moving).toBeLessThanOrEqual(RULES.pauseAfterMs);
+  });
+});
+
+/**
+ * `fix.t` is `Location.getTime()`: the system clock, which NTP moves under a walk, and the module
+ * says in as many words that callers keep their own monotonic guard. This is the caller.
+ */
+describe("holes in time", () => {
+  const walkedTen = () => walked(1.4, 10);
+  // Twenty metres past the last fix, which clears the anchor: the guard has to be what refuses
+  // the gap, not the pause rule refusing it by accident on a fix that went nowhere.
+  const pastTheGap = (offsetMs: number) =>
+    fix({ t: walkEnd(10) + offsetMs, distFromPrev: 20, lat: 48.4728 + northOf(10 * 1.4 + 20) });
+
+  test("an NTP jump forward is not an hour of walking", () => {
+    const before = walkedTen();
+    const state = accept(before, pastTheGap(3_600_000));
+    expect(state.movingMs).toBe(before.movingMs);
+    expect(state.distanceM).toBe(before.distanceM);
+  });
+
+  test("a jump backwards takes away neither seconds nor metres already earned", () => {
+    const before = walkedTen();
+    const state = accept(before, pastTheGap(-3_600_000));
+    expect(state.movingMs).toBe(before.movingMs);
+    expect(state.distanceM).toBe(before.distanceM);
+  });
+
+  test("ten minutes underground is not ten minutes of walking, however short the jump", () => {
+    const before = walkedTen();
+    // 150 m from the mouth of the tunnel: under `teleportM`, so only the time guard sees it.
+    const state = accept(
+      before,
+      fix({ t: walkEnd(10) + 600_000, distFromPrev: 150, lat: 48.4728 + northOf(160) }),
+    );
+    expect(state.movingMs).toBe(before.movingMs);
+    expect(state.distanceM).toBe(before.distanceM);
+    expect(state.segments).toBe(2);
+  });
+
+  test("the next fix after the hole walks again, off the new anchor", () => {
+    let state = accept(walkedTen(), pastTheGap(600_000));
+    for (let i = 1; i <= 30; i++) {
+      state = accept(
+        state,
+        fix({
+          t: walkEnd(10) + 600_000 + i * 1000,
+          distFromPrev: 1.4,
+          lat: 48.4728 + northOf(10 * 1.4 + 20 + i * 1.4),
+        }),
+      );
+    }
+    expect(state.movingMs).toBe(10_000 + 30_000);
+    expect(state.paused).toBe(false);
   });
 });
 

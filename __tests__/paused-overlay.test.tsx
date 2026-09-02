@@ -5,6 +5,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { PausedOverlay } from "@/components/session/PausedOverlay";
 import type { Quest } from "@/db/quests";
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
@@ -123,6 +124,46 @@ describe("PausedOverlay", () => {
     const paused = await mountPaused();
 
     expect(paused.getByText(HOW_TO)).toBeTruthy();
+  });
+
+  /**
+   * Pause stops the game, not the walk: cutting the GPS and starting it again loses the lock and
+   * breaks the segment on the way back, and the reducer already credits nothing while the hero
+   * stands still. So the screen says it, rather than "Game paused" over a distance that keeps
+   * growing.
+   */
+  it("says the outing is still being measured while the game is paused", async () => {
+    useExpeditionStore.setState({ sessionUuid: "0192-walk" });
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      warmupSequence: [],
+      warmupIndex: 0,
+    });
+
+    const paused = await mountPaused();
+
+    expect(paused.getByText("session.paused_expedition_note")).toBeTruthy();
+  });
+
+  it("and says nothing of the sort in a room", async () => {
+    useExpeditionStore.setState({ sessionUuid: null });
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      warmupSequence: [],
+      warmupIndex: 0,
+    });
+
+    const paused = await mountPaused();
+
+    expect(paused.queryByText("session.paused_expedition_note")).toBeNull();
   });
 
   it("renders nothing but the buttons when the session has no quest to describe", async () => {

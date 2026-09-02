@@ -3,7 +3,7 @@ import { deletePoints, sweepOrphanedPoints } from "@/db/gps";
 import { preferences } from "@/db/preferences";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
-import { type SavedSessionState, useSessionStore } from "@/stores/session";
+import { beginTrackingIfOuting, type SavedSessionState, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -153,6 +153,17 @@ export function useSessionRecovery() {
           performedAt: r.performedAt ? new Date(r.performedAt) : new Date(),
         })),
       });
+
+      // An outing that was interrupted is still an outing.
+      //
+      // Only `startSession` ever started the tracking, so a resumed walk measured nothing from
+      // here on: the panel said "Finding the sky" for the rest of the way, and at DONE the
+      // reducer had no witness at all — `leaguesM: null` on a session whose recap draws the
+      // kilometres already in `gps_points`. Same uuid, so the points land on the same session,
+      // and the store folds those points back into the reading rather than restarting at zero.
+      if (saved.quest) {
+        beginTrackingIfOuting(saved.quest, saved.sessionUuid ?? null, saved.distanceGoalM ?? null);
+      }
 
       // Clear saved session after recovery
       await preferences.clearSavedSession();

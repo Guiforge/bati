@@ -148,12 +148,22 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
   const byDistance = outing && config.distanceM !== undefined;
   const unit = useSettingsStore((s) => s.distanceUnit);
 
+  // Both chips are no-ops on the unit already chosen. Without that guard, tapping "Distance"
+  // while already on distance rewrote `distanceM` with the default: a hero who had dialled
+  // 500 m, glanced away and tapped the chip they were already on lost it to 3 km, silently and
+  // persistently, because the write also saves. The default belongs to arriving at the unit,
+  // not to touching its chip. "Duration" gets the same treatment for the same reason, one step
+  // milder: the write was identical to the config it replaced, so it cost a save and no data.
   const chooseDuration = () => {
+    if (!byDistance) return;
     const next = { ...config };
     delete next.distanceM;
     onChange(next);
   };
-  const chooseDistance = () => onChange({ ...config, distanceM: DEFAULT_DISTANCE_GOAL_M });
+  const chooseDistance = () => {
+    if (byDistance) return;
+    onChange({ ...config, distanceM: DEFAULT_DISTANCE_GOAL_M });
+  };
 
   const unitWord = (type: "time" | "reps") =>
     type === "time" ? t("quests.config_duration", "Duration") : t("quests.config_reps", "Reps");

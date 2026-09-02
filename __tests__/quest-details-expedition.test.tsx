@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
@@ -256,6 +258,27 @@ describe("an expedition on the quest screen", () => {
     await fireEvent.press(view.getByText("Distance"));
     expect(view.getByText("3.00 km")).toBeTruthy();
     await fireEvent.press(view.getByText("Duration"));
+    expect(view.queryByText("3.00 km")).toBeNull();
+  });
+
+  test("tapping the unit already chosen keeps the distance the hero dialled", async () => {
+    const view = await mountQuest(expeditionQuest());
+    await fireEvent.press(view.getByText("Distance"));
+    // Five steps of 500 m down from the 3 km default lands on the range's floor.
+    for (let i = 0; i < 5; i++) {
+      await fireEvent.press(view.getByLabelText("Decrease Distance"));
+    }
+    expect(view.getByText("500 m")).toBeTruthy();
+
+    // In distance mode "Distance" names two things, the chip and the stepper's label, so the
+    // chip is taken by position: it is rendered above the control it switches to.
+    const [distanceChip] = view.getAllByText("Distance");
+    assert(distanceChip);
+
+    // The chip the hero is already on is a no-op. It used to rewrite the value with the
+    // default, so a stray tap silently threw away a dialled 500 m and saved 3 km over it.
+    await fireEvent.press(distanceChip);
+    expect(view.getByText("500 m")).toBeTruthy();
     expect(view.queryByText("3.00 km")).toBeNull();
   });
 

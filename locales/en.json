@@ -121,7 +121,7 @@
     "weekly_chip": "{{count}}× / week",
     "streak_hint": "Rest days count. The flame tracks consistency, not attendance.",
     "sworn_toast": "Oath sworn",
-    "error_target_unreachable": "A single set cannot be logged above {{max}}. Swear a lower one, or swear it on total volume instead."
+    "error_target_unreachable": "A single set cannot be logged above {{max}}. Swear a lower one, or swear it on total reps instead."
   },
   "settings": {
     "title": "Settings",
@@ -444,10 +444,7 @@
     "expedition_status_paused": "Standing still",
     "expedition_status_error": "No signal",
     "expedition_reached": "Goal met",
-    "expedition_accuracy": "within {{metres}} m",
-    "expedition_acquiring": "Finding the sky",
-    "expedition_tracking": "On the road",
-    "expedition_paused": "Standing still",
+    "expedition_accuracy": "within {{distance}}",
     "expedition_gps_off": "GPS off",
     "adjust_reps_hint": "Did you do more or less?",
     "adjust_reps_label": "Adjust Reps",
@@ -479,11 +476,10 @@
     "pause": "Pause session",
     "pause_accessibility": "Pause session",
     "paused_subtitle": "Catch your breath. Ready to jump back in?",
-    "paused_expedition_note": "The outing is still being measured.",
+    "paused_expedition_note": "The trace keeps running through the pause.",
     "paused_title": "Game Paused",
     "pr_exercise": "{{exercise}} PR",
     "pr_longest_session": "Longest Workout",
-    "pr_longest_outing": "Longest outing",
     "pr_more": "+{{count}} more records",
     "pr_most_xp": "Most XP Earned",
     "pr_new_record": "New Record",
@@ -530,9 +526,9 @@
     "crit_hint": "Every rep past the target is a chance to strike critical. {{percent}}% right now.",
     "ghost_last_label": "Last time",
     "ghost_best_label": "best",
-    "expedition_status_denied": "Location is off for Bati",
+    "expedition_status_denied": "Bati has no access to your location",
     "expedition_open_settings": "Open settings",
-    "expedition_acquiring_hint": "The first fix can take a few minutes outdoors. Set off anyway, the trace will catch up.",
+    "expedition_acquiring_hint": "The first fix can take a few minutes to arrive. Set off anyway, the trace will catch up.",
     "expedition_ground": "Ground",
     "expedition_moving": "Moving",
     "expedition_pace": "Pace",
@@ -767,6 +763,7 @@
     "detail_victories_driver": "{{count}} boss victories",
     "detail_leagues_driver_one": "{{count}} league covered beyond the walls",
     "detail_leagues_driver_other": "{{count}} leagues covered beyond the walls",
+    "league_unit": "A league of Bati is one kilometre.",
     "detail_unlock_muscle": "Train your {{muscle}} to raise this building",
     "detail_unlock_style": "Complete a {{style}} exercise to raise this building",
     "detail_progress": "{{current}}/{{target}}",
@@ -836,6 +833,7 @@
   "recovery": {
     "title": "Resume workout?",
     "description": "You have an unfinished session",
+    "ground": "{{distance}} already covered",
     "progress": "Progress: Round {{round}}/{{roundTotal}}, Exercise {{exercise}}/{{exerciseTotal}}",
     "elapsed": "Time: {{time}}",
     "resume": "Resume",
@@ -1191,6 +1189,36 @@
         "You're preparing. It doesn't show immediately, but it shows afterwards.",
         "I log what passes. You log what tempts you. Same trade, really.",
         "Nothing to fear in a list. I check. It's my job."
+      ],
+      "first_outing": [
+        "First time the gate's opened for something other than trade. Noted, and not quietly.",
+        "Seen from the tower: one figure going out, the same one coming back. The road counts from today.",
+        "Everything before today happened inside the walls, and today didn't.",
+        "New entry in the log. A road, where the map used to say nothing.",
+        "The gate guard asked who that was. I told him. He'll get used to it.",
+        "Outside the walls, on your own legs, and back. That's how the first league of every road gets drawn.",
+        "Report: the ground beyond the gate is now somewhere you've stood. It was a rumour this morning.",
+        "I watch the road for what comes in. Tonight I watched it for someone going out. Different job."
+      ],
+      "high_road": [
+        "The road's been pushed out a stretch further, in the same boots every time, and I've checked.",
+        "Milestone set. The masons don't do that for a path nobody walks.",
+        "From up here the road reads longer than it did last month, and nothing grew it but leagues.",
+        "Traders are using the new stretch already. They think it was always there. Let them.",
+        "Update to the map: the High Road runs further. Filed under leagues walked, not under miracles.",
+        "Longer road, wider view. The tower didn't move; what it can see did.",
+        "A road grows by being walked, and this one has been. Ask the mud on your boots.",
+        "Another stretch of the High Road laid, and I know exactly whose leagues paid for it."
+      ],
+      "longest_outing": [
+        "Furthest yet. I lost you past the ridge and had to trust the road.",
+        "Longest outing on record. The old mark held for a while; it doesn't any more.",
+        "Out of sight of the tower for a stretch, which is a first. I don't like it. I noted it anyway.",
+        "Farther than any outing before it, and back at your own pace, with nobody sent after you.",
+        "New mark for the longest road. The previous one is still in the log, crossed out neatly.",
+        "That's beyond the last milestone I could name. From here on, the map is yours to fill.",
+        "Record for distance, logged, and whatever was out there past the old turning point has been seen now.",
+        "Furthest you've gone, by my count and by the road's. Two ledgers, one line."
       ]
     }
   }

@@ -434,6 +434,19 @@ export const completedQuest = sqliteTable(
      */
     leaguesM: int(),
 
+    /**
+     * Moving seconds this outing was credited, from the same reading as `leaguesM` above and
+     * written by the same single writer at save.
+     *
+     * The recap used to fold `gps_points` back through the reducer to get it, which is a second
+     * answer to a question the reducer already answered once — and the two part company when a
+     * flush fails: `stores/expedition.ts` drops a batch of up to thirty fixes on a database
+     * error, the distance still holds them and the replayed clock does not, so the pace between
+     * them is wrong with nothing able to notice. Null on every outing saved before 0046, and on
+     * every strength quest.
+     */
+    movingSeconds: int(),
+
     // Which install wrote the row — provenance, not identity (`db/preferences.ts`). Null on
     // every session logged before 0038: nothing here recorded it.
     originDevice: text(),

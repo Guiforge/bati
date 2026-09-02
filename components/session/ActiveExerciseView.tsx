@@ -16,9 +16,9 @@ import {
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
+import { isOutdoors } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
 import { formatTarget } from "@/db/targets";
-import { NON_REP_STYLE } from "@/db/workUnits";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -79,7 +79,7 @@ export function ActiveExerciseView() {
   // need to know what kind of set this is before they are given a number to count down.
   const currentEx = quest?.exercises[currentExerciseIndex];
   /** An expedition measures ground rather than repetitions, and shows it. */
-  const isOuting = currentEx?.exercise.style === NON_REP_STYLE;
+  const isOuting = isOutdoors(currentEx?.exercise.style);
 
   const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
   // An outing has nothing to announce. Left on the real count, this fired three ticks and a "go"

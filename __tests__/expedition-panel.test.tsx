@@ -27,14 +27,24 @@ import { rawColors } from "@/constants/rawColors";
 import { EMPTY, type TrackState } from "@/src/gps/track";
 import { useExpeditionStore } from "@/stores/expedition";
 
+const aFix = (acc: number) => ({
+  lat: 48.4728,
+  lon: -2.4943,
+  ele: 110,
+  acc,
+  speed: 1.4,
+  distFromPrev: 1.4,
+  t: 1_800_000_000_000,
+});
+
 function setTrack(
   track: Partial<TrackState>,
-  extra: { error?: string | null; goalReached?: boolean } = {},
+  extra: { error?: string | null; goalReached?: boolean; accuracyM?: number } = {},
 ) {
   useExpeditionStore.setState({
     track: { ...EMPTY, ...track },
     error: extra.error ?? null,
-    lastFix: null,
+    lastFix: extra.accuracyM === undefined ? null : aFix(extra.accuracyM),
     goalReached: extra.goalReached ?? false,
   });
 }
@@ -81,6 +91,26 @@ describe("ExpeditionPanel", () => {
   });
 
   /**
+   * One line, one unit. The accuracy was printed in metres by the string itself while the
+   * distance a centimetre above it was in feet, so the same line read "1.00 mi · within 8 m" for
+   * a hero who never asked for a metre. Both halves go through `constants/distanceFormat.ts`.
+   */
+  test("says the accuracy in the hero's own unit, like everything else on the line", async () => {
+    mockUnit = "imperial";
+    setTrack({ startedAt: 1, distanceM: 1609.344, movingMs: 600_000 }, { accuracyM: 8 });
+    await mount();
+
+    expect(screen.getByText("within 26 ft")).toBeTruthy();
+  });
+
+  test("and in metres for a hero who walks in kilometres", async () => {
+    setTrack({ startedAt: 1, distanceM: 2500, movingMs: 900_000 }, { accuracyM: 8 });
+    await mount();
+
+    expect(screen.getByText("within 8 m")).toBeTruthy();
+  });
+
+  /**
    * A blank readout looks broken, and so does a confident one. Before the first fix there is no
    * distance to report, so `0 m` at 56px was a verdict in display type that a de-Googled phone
    * held for minutes. The status takes the slot and says what the wait is.
@@ -92,7 +122,7 @@ describe("ExpeditionPanel", () => {
     expect(screen.getByText("Finding the sky")).toBeTruthy();
     expect(
       screen.getByText(
-        "The first fix can take a few minutes outdoors. Set off anyway, the trace will catch up.",
+        "The first fix can take a few minutes to arrive. Set off anyway, the trace will catch up.",
       ),
     ).toBeTruthy();
   });
@@ -145,14 +175,14 @@ describe("ExpeditionPanel", () => {
   test("a refused permission names the permission, not the reception", async () => {
     setTrack({ startedAt: 1 }, { error: "permission" });
     await mount();
-    expect(screen.getByText("Location is off for Bati")).toBeTruthy();
+    expect(screen.getByText("Bati has no access to your location")).toBeTruthy();
     expect(screen.queryByText("No signal")).toBeNull();
   });
 
   test("a denied foreground service reads the same way", async () => {
     setTrack({ startedAt: 1 }, { error: "foreground-denied" });
     await mount();
-    expect(screen.getByText("Location is off for Bati")).toBeTruthy();
+    expect(screen.getByText("Bati has no access to your location")).toBeTruthy();
   });
 
   /**

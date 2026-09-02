@@ -1121,6 +1121,64 @@ describe("useSessionStore", () => {
       expect(call[4]).toEqual({ type: "distance", metres: 3000 });
     });
 
+    /**
+     * The half-hour a resumed walk used to lose.
+     *
+     * An expedition is one round of one movement, so the subscriber writes its snapshot once, at
+     * the countdown, and never again — `savedAt` is the *start* of the walk, not the moment it
+     * died. Recovery banks everything since as pause, so the session clock of a walk killed at 45
+     * minutes read the ten since the hero pressed resume, while the reducer, replaying the points
+     * from `gps_points`, read the whole thing. The victory screen printed "Total 10:00" over
+     * "Moving 45:xx" and the journal kept the ten.
+     */
+    test("times a resumed walk by its trace, not by the clock the downtime ate", async () => {
+      const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+      // Swapped in rather than spied on: this case writes to the expedition store, and zustand
+      // hands `setState` a fresh state object each time — a spy `restoreAllMocks` puts back on
+      // the old one is still on the new one, and the next case sees a `begin` that was already
+      // called. Put back by hand below, on whichever object is current by then.
+      const realBegin = useExpeditionStore.getState().begin;
+      const begin = jest.fn<Promise<boolean>, unknown[]>().mockResolvedValue(true);
+      useExpeditionStore.setState({ begin: begin as unknown as typeof realBegin });
+      const setOff = Date.now() - 55 * 60_000;
+      (preferences.getSavedSession as jest.Mock).mockResolvedValue(
+        snapshot({ startTime: setOff, savedAt: setOff + 3000 }),
+      );
+
+      const { result } = await renderHook(() => useSessionRecovery());
+      await act(async () => {
+        await result.current.recoverSession();
+      });
+      // Fire and forget in the hook, and it must land inside this case: the next one asserts
+      // that a workout starts nothing, and a stray resume arriving late is that test failing.
+      await waitFor(() => expect(begin).toHaveBeenCalled());
+      // The whole walk landed in `totalPausedTime`, which is what made the two halves disagree.
+      expect(useSessionStore.getState().totalPausedTime).toBeGreaterThan(54 * 60_000);
+
+      // What the reducer reads back from the points: 55 minutes on the road, 50 of them moving.
+      useExpeditionStore.setState({
+        track: {
+          ...EMPTY,
+          startedAt: setOff,
+          lastAt: setOff + 55 * 60_000,
+          distanceM: 5000,
+          movingMs: 50 * 60_000,
+        },
+      });
+      completed.createCompletedSession.mockClear();
+
+      await useSessionStore.getState().saveSession(null);
+
+      const row = completed.createCompletedSession.mock.calls[0]?.[0];
+      // The trace's own span, capped by moving time plus the stops it is allowed to hide.
+      expect(row.durationSeconds).toBe(55 * 60);
+      // And the two numbers the recap will print, both written here rather than replayed there.
+      expect(row.leaguesM).toBe(5000);
+      expect(row.movingSeconds).toBe(50 * 60);
+
+      useExpeditionStore.setState({ begin: realBegin });
+    });
+
     test("a workout indoors starts nothing", async () => {
       const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
       (preferences.getSavedSession as jest.Mock).mockResolvedValue(snapshot({ quest: mockQuest }));
@@ -1211,9 +1269,19 @@ describe("useSessionStore", () => {
     } as unknown as Quest;
 
     jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
-    // Five minutes of walking, witnessed. The ground is measured either way: that half is right.
+    // Five minutes of walking inside ten on the road, witnessed. The ground is measured either
+    // way: that half is right. `startedAt`/`lastAt` are the trace's own span, which is what
+    // `sessionClock` times an outing by — a state with a reading and no span is not one the
+    // reducer can produce.
+    const outsideAt = Date.now() - 600_000;
     useExpeditionStore.setState({
-      track: { ...EMPTY, startedAt: 1, distanceM: 500, movingMs: 300_000 },
+      track: {
+        ...EMPTY,
+        startedAt: outsideAt,
+        lastAt: outsideAt + 600_000,
+        distanceM: 500,
+        movingMs: 300_000,
+      },
     });
     (computeSessionXp as jest.Mock).mockClear();
 

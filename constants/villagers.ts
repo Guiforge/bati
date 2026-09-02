@@ -126,6 +126,9 @@ export const CUE_MOMENTS = [
   "personal_record_beat",
   "boss_defeated",
   "comeback",
+  "first_outing",
+  "high_road",
+  "longest_outing",
   "guide_home",
   "guide_quests",
   "guide_adventures",
@@ -189,6 +192,16 @@ export const MOMENT_CAST: Record<
   // documented reason people stop opening a fitness app, so a returning hero is greeted and the
   // absence is never mentioned. Not one line in this pool asks where you were.
   comeback: { speakers: ["sage", "minstrel"], priority: "event", pose: "talk" },
+  // The road is the watcher's: she owns the tower, and `boss_defeated` already has her reporting
+  // on it. Three signals the save emits, one villager, because a league is something the village
+  // sees from one place. All three fire on the victory screen of an outing, in this order of
+  // rarity: the first measured outing ever (`longest_outing` with nothing to compare it to,
+  // db/personalRecords.ts), the High Road rising a floor (`high_road` in `diffVillageGrowth`),
+  // and a longest-outing record with a previous mark. None of the lines quotes the distance:
+  // `NewRecordsBadge` and the village already show it, and the smith's rule holds here too.
+  first_outing: { speakers: ["watcher"], priority: "event", pose: "talk" },
+  high_road: { speakers: ["watcher"], priority: "event", pose: "cheer" },
+  longest_outing: { speakers: ["watcher"], priority: "event", pose: "cheer" },
   // One villager, one screen, one sentence, once ever. Who explains what follows who owns it.
   guide_home: { speakers: ["sage"], priority: "guide", pose: "talk" },
   guide_quests: { speakers: ["smith"], priority: "guide", pose: "talk" },

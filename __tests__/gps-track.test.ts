@@ -102,9 +102,9 @@ describe("auto-pause, which is the rule this file exists for", () => {
       );
     }
     expect(state.paused).toBe(true);
-    // One window of doubt before the pause engages, then nothing.
-    expect(state.distanceM).toBeLessThan(RULES.movingThresholdM);
-    expect(state.distanceM).toBeGreaterThan(0);
+    // Not even the window of doubt: what was credited under an anchor the hero never cleared is
+    // taken back when the window closes, so a phone that went nowhere is worth exactly nothing.
+    expect(state.distanceM).toBe(0);
   });
 
   test("moving time stops with it, so pace is not diluted by standing at a crossing", () => {
@@ -119,7 +119,7 @@ describe("auto-pause, which is the rule this file exists for", () => {
         }),
       );
     }
-    expect(state.movingMs).toBeLessThanOrEqual(RULES.pauseAfterMs);
+    expect(state.movingMs).toBe(0);
   });
 
   test("walking again resumes on the first fix that clears the anchor", () => {
@@ -138,7 +138,9 @@ describe("auto-pause, which is the rule this file exists for", () => {
     // 0.0002 degrees of latitude is about 22 m: the hero has actually left.
     state = accept(state, fix({ t: T0 + 49_000, distFromPrev: 12, lat: 48.473 }));
     expect(state.paused).toBe(false);
-    expect(state.distanceM).toBeGreaterThan(12);
+    // Twelve metres and not one more: the drift that came before them was refunded when the
+    // window closed, so the walk starts again from what the hero actually covered.
+    expect(state.distanceM).toBe(12);
   });
 
   test("a steady walk is never paused, and every metre is credited", () => {
@@ -205,10 +207,10 @@ describe("slow walks", () => {
       );
     }
     expect(state.paused).toBe(true);
-    // One window of doubt, and the forty-four minutes after it cost nothing: 0.2 m/s of drift
-    // for `pauseAfterMs`, never the 540 m a raw sum would have invented.
-    expect(state.distanceM).toBeLessThan(0.2 * (RULES.pauseAfterMs / 1000) + 1);
-    expect(state.movingMs).toBeLessThanOrEqual(RULES.pauseAfterMs);
+    // Three quarters of an hour of a receiver talking to itself, and the tally is a zero: not
+    // the 540 m a raw sum would have invented, and not the window of doubt either.
+    expect(state.distanceM).toBe(0);
+    expect(state.movingMs).toBe(0);
   });
 
   test("a ten-minute stop is a stop, and the clock does not run through it", () => {
@@ -219,7 +221,102 @@ describe("slow walks", () => {
       state = accept(state, fix({ t: walkEnd(60 + i), distFromPrev: 0, lat }));
     }
     expect(state.paused).toBe(true);
-    expect(state.movingMs - moving).toBeLessThanOrEqual(RULES.pauseAfterMs);
+    // Ten minutes standing adds nothing, and the window that decided it was standing gives back
+    // what it had advanced — so the clock can only have gone the other way.
+    expect(state.movingMs).toBeLessThanOrEqual(moving);
+  });
+});
+
+/**
+ * What a stop costs, which is what the window is really for.
+ *
+ * A fix is credited as it lands — the panel's figures have to move every second — so before the
+ * refund the whole window sat in `movingMs` by the time the pause engaged, and nothing took it
+ * back. At a floor pace of 0.25 m/s that is 40 s of standing per stop, and an urban walk stops
+ * at every crossing.
+ *
+ * These simulate the real reducer at 1 Hz, because that is the only way to see a rule that only
+ * exists across a run of fixes.
+ */
+describe("stops", () => {
+  /** Standing: the receiver keeps talking, the hero does not move. */
+  function stood(seconds: number, at: number, from: TrackState): TrackState {
+    let state = from;
+    const lat = 48.4728 + northOf(at);
+    const startedAt = state.lastAt ?? T0;
+    for (let i = 1; i <= seconds; i++) {
+      state = accept(
+        state,
+        fix({
+          t: startedAt + i * 1000,
+          distFromPrev: 0.2,
+          lat: lat + (i % 2 === 0 ? 0.00001 : -0.00001),
+        }),
+      );
+    }
+    return state;
+  }
+
+  /** Walking on from where the last fix left off, at a pace, for a number of seconds. */
+  function walkOn(speedMs: number, seconds: number, from: number, state0: TrackState): TrackState {
+    let state = state0;
+    const startedAt = state.lastAt ?? T0;
+    for (let i = 1; i <= seconds; i++) {
+      state = accept(
+        state,
+        fix({
+          t: startedAt + i * 1000,
+          distFromPrev: speedMs,
+          lat: 48.4728 + northOf(from + i * speedMs),
+        }),
+      );
+    }
+    return state;
+  }
+
+  test("a hard stop is not paid for, however the window falls around it", () => {
+    // Ten minutes out, two minutes at a level crossing, ten minutes home.
+    let state = walked(1.4, 600);
+    state = stood(120, 600 * 1.4, state);
+    state = walkOn(1.4, 600, 600 * 1.4, state);
+
+    const walking = 1200 * 1000;
+    // Not one second of the two minutes is in there. It used to be forty of them.
+    expect(state.movingMs).toBeLessThanOrEqual(walking);
+    // And the walk itself is still nearly all of it: what a stop costs now is the ramp that was
+    // in flight when it happened, at 1.4 m/s about seven seconds either side of it.
+    expect(walking - state.movingMs).toBeLessThan(20_000);
+    expect(state.distanceM).toBeLessThanOrEqual(1200 * 1.4);
+  });
+
+  test("half an hour of an urban walk credits no part of its fifteen stops", () => {
+    // 15 crossings of a minute each inside half an hour: 900 s walking, 900 s standing. The old
+    // rule paid ten of those fifteen minutes as movement, and about 120 m of drift as ground.
+    let state = started();
+    let covered = 0;
+    for (let i = 0; i < 15; i++) {
+      state = walkOn(1.4, 60, covered, state);
+      covered += 60 * 1.4;
+      state = stood(60, covered, state);
+    }
+
+    expect(state.movingMs).toBeLessThanOrEqual(900_000);
+    expect(state.distanceM).toBeLessThanOrEqual(900 * 1.4);
+    // Still recognisably the walk that happened, rather than a rule that refuses everything.
+    expect(state.movingMs).toBeGreaterThan(700_000);
+  });
+
+  test("a stop shorter than the window is still a stop the rule cannot see", () => {
+    // Written down because it is the ceiling of this pair, not an accident: a displacement test
+    // over 40 s cannot tell 30 s of standing from 40 s of walking at the floor pace. Shortening
+    // the window is what would find it, and the floor pace is what pays for that.
+    let state = walked(1.4, 600);
+    const moving = state.movingMs;
+    state = stood(30, 600 * 1.4, state);
+    state = walkOn(1.4, 60, 600 * 1.4, state);
+
+    expect(state.paused).toBe(false);
+    expect(state.movingMs - moving).toBeGreaterThan(60_000);
   });
 });
 
@@ -325,6 +422,19 @@ describe("what a run credits", () => {
     const credit = credited(started());
     expect(credit).not.toBeNull();
     expect(credit?.movingSeconds).toBe(0);
+  });
+
+  test("times the outing by its own trace, first fix to last", () => {
+    // The half this file owns of the bug the victory screen showed: a walk the OS killed at 45
+    // minutes and resumed for ten more has a session clock that reads ten — recovery banks the
+    // downtime as pause — and a trace that reads the whole thing. `saveSession` reads this.
+    const state = walked(1.4, 600);
+    expect(credited(state)?.elapsedSeconds).toBe(600);
+    // And it is the trace's own span, not the wall clock's: a session that started ten minutes
+    // before the first fix locked is not credited those ten minutes.
+    expect(credited(state)?.elapsedSeconds).toBe(
+      Math.floor(((state.lastAt ?? 0) - (state.startedAt ?? 0)) / 1000),
+    );
   });
 
   test("is metres and whole seconds once the hero is walking", () => {

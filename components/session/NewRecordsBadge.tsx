@@ -47,7 +47,9 @@ function RecordLabel({ record, language }: { record: NewRecordResult; language: 
     case "most_xp":
       return t("session.pr_most_xp");
     case "longest_outing":
-      return t("session.pr_longest_outing");
+      // One key for this record, the journal's: the badge and the records card name the same
+      // thing, and two keys with the same value drift the day one of them is reworded.
+      return t("journal.pr_longest_outing");
     case "exercise_max_reps":
     case "exercise_max_time": {
       const name = language === "fr" ? record.exerciseName?.fr : record.exerciseName?.en;

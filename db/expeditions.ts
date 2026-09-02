@@ -10,19 +10,36 @@ import { NON_REP_STYLE } from "./workUnits";
  * database is `listOutings`, in `db/quests.ts`, where the query belongs anyway.
  */
 
-/** Only what the two predicates read — `QuestTemplate` and `Quest` both satisfy it. */
-type Slotted = { exercises: { exerciseId: number }[] };
-
 /** As little of a movement as the rule needs. */
 type Styled = { style: Exercise["style"] };
 
+/** Either shape a quest's slots come in: an id into the catalogue, or the movement itself. */
+type Slot = { exerciseId: number } | { exercise: Styled };
+
+/** The rule, of one movement. Nothing else in the app compares a style to this constant. */
+export function isOutdoors(style: Exercise["style"] | undefined): boolean {
+  return style === NON_REP_STYLE;
+}
+
 /**
- * `every` on an empty array is true, and a quest with no exercises is exactly what the editor
- * holds while the hero is still writing it. A slot pointing at a row that is not in the
- * catalogue is not outdoors either - it is unknown, and unknown is not a door out.
+ * The adapter, and the reason there are two questions here rather than four.
+ *
+ * Two shapes reach them: the gallery holds slots by id next to a catalogue, the detail screen and
+ * the session store hold slots whose movement is already attached. Both become the one thing the
+ * questions read, a style per slot. Written as four predicates they drifted, and the divergence
+ * between two of them threw away 70 % of a mixed quest's XP.
+ *
+ * A slot pointing at a row that is not in the catalogue becomes `undefined`: unknown, and unknown
+ * is not a door out. Pass the catalogue whenever the slots carry ids; without it they all read
+ * unknown, which is the safe answer rather than the right one.
  */
-function allOutdoors(movements: (Styled | undefined)[]): boolean {
-  return movements.length > 0 && movements.every((m) => m?.style === NON_REP_STYLE);
+function stylesOf(
+  quest: { exercises: Slot[] },
+  exercisesById?: Record<number, Exercise>,
+): (Exercise["style"] | undefined)[] {
+  return quest.exercises.map((slot) =>
+    "exercise" in slot ? slot.exercise.style : exercisesById?.[slot.exerciseId]?.style,
+  );
 }
 
 /**
@@ -38,39 +55,38 @@ function allOutdoors(movements: (Styled | undefined)[]): boolean {
  * is the failure mode AGENTS.md names. Written as two, the gap is on screen.
  */
 export function hasOutdoorMovement(
-  quest: Slotted,
-  exercisesById: Record<number, Exercise>,
+  quest: { exercises: Slot[] },
+  exercisesById?: Record<number, Exercise>,
 ): boolean {
-  return quest.exercises.some((qex) => exercisesById[qex.exerciseId]?.style === NON_REP_STYLE);
-}
-
-/** A door out: every slot is an expedition, and there is at least one. */
-export function isOutingQuest(quest: Slotted, exercisesById: Record<number, Exercise>): boolean {
-  return allOutdoors(quest.exercises.map((qex) => exercisesById[qex.exerciseId]));
+  return stylesOf(quest, exercisesById).some(isOutdoors);
 }
 
 /**
- * The same question, of a quest whose slots already carry their movement.
+ * A door out: every slot is an expedition, and there is at least one.
  *
- * The gallery holds ids and a catalogue; the detail screen and the session store hold the
- * resolved rows. Two adapters over one rule rather than the rule written twice - the shapes
- * differ, the question does not.
+ * `every` on an empty array is true, and a quest with no exercises is exactly what the editor
+ * holds while the hero is still writing it.
  */
-export function isOutingSession(quest: { exercises: { exercise: Styled }[] }): boolean {
-  return allOutdoors(quest.exercises.map((qex) => qex.exercise));
+export function isOutingQuest(
+  quest: { exercises: Slot[] },
+  exercisesById?: Record<number, Exercise>,
+): boolean {
+  const styles = stylesOf(quest, exercisesById);
+  return styles.length > 0 && styles.every(isOutdoors);
 }
 
 /**
- * The generous question, of a resolved quest: is there any ground in here at all.
- *
- * The twin of `hasOutdoorMovement` for the shape the session and the detail screen hold, and the
- * one that decides whether the tracker starts, which is to say whether Android asks the hero for
- * their position. `stores/expedition.isExpedition` is the null-tolerant wrapper over it, and it
- * lives here rather than there so a screen can ask the question without importing a store that
- * opens the database on the way in.
+ * The same two questions, of a quest whose slots already carry their movement. One rule each,
+ * reached under the name the calling surface already uses: the generous one is what decides
+ * whether the tracker starts, which is to say whether Android asks the hero for their position.
+ * `stores/expedition.isExpedition` is the null-tolerant wrapper over it.
  */
 export function hasOutdoorSlot(quest: { exercises: { exercise: Styled }[] }): boolean {
-  return quest.exercises.some((qex) => qex.exercise.style === NON_REP_STYLE);
+  return hasOutdoorMovement(quest);
+}
+
+export function isOutingSession(quest: { exercises: { exercise: Styled }[] }): boolean {
+  return isOutingQuest(quest);
 }
 
 /**
@@ -93,7 +109,7 @@ export function hasOutdoorSlot(quest: { exercises: { exercise: Styled }[] }): bo
  */
 function timeGoal(exercises: { target: Target; exercise: Styled }[]): OutingGoal | null {
   const outdoorTimed = exercises.filter(
-    (qex) => qex.exercise.style === NON_REP_STYLE && qex.target.type === "time",
+    (qex) => isOutdoors(qex.exercise.style) && qex.target.type === "time",
   );
   if (outdoorTimed.length === 0) return null;
   const seconds = outdoorTimed.reduce((sum, qex) => sum + qex.target.value, 0);

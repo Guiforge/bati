@@ -36,10 +36,35 @@ export const RULES = {
    * away 23 % of a half-hour walk at 0.8 m/s and 41 % at 0.6. That is the pace of the hill, the
    * dog and the eighty-year-old "La Ronde du Veilleur" invites by name.
    *
-   * The floor cannot go to zero: it has to stay above the 0.2 m/s of measured standing drift, or
-   * a phone on a table walks. 0.25 m/s is that margin, and its price is one window of doubt per
-   * stop — at most 40 s and 8 m of drift credited when the hero stops, never more, however long
-   * they stay stopped.
+   * The pair is unchanged; **what the window costs is.** It used to be paid at every stop: a fix
+   * is credited as it lands, so the whole window was already in `movingMs` and `distanceM` by the
+   * time the pause engaged, and nothing took it back. Dropping the floor to 0.25 m/s quadrupled
+   * that bill — an urban walk with fifteen crossings banked up to ten minutes of standing as
+   * moving time and about 120 m of drift as ground, which is a 25-minute goal met seven minutes
+   * early and an XP ceiling paid for the sursis.
+   *
+   * So the credit is now **advanced, not given**: what is credited under an anchor is tracked
+   * (`advancedM` / `advancedMs`) and taken back the moment the window closes on a hero who never
+   * cleared it. A stop of any length costs zero credited standing time, where it used to cost a
+   * window of it, and the drift under it is refused with the same movement.
+   *
+   * The residual error changed direction with it: a stop now costs at most the ramp that was in
+   * flight when it happened, under-credited (about 7 s at 1.4 m/s, 25 s at 0.4), and nothing is
+   * ever over-credited. Under-counting an honest walk is the error this app is allowed to make;
+   * paying XP for standing at a light is not.
+   *
+   * Two things the refund does not fix, and neither is a bug so much as the shape of the pair:
+   *
+   * - **A stop shorter than the window is invisible.** Thirty seconds at a light clears no anchor
+   *   and closes no window, so it is credited exactly as forty seconds of walking at the floor
+   *   pace would be. Nothing that reads displacement over 40 s can tell those two apart. A
+   *   shorter window could, and the floor pace is the price it would be bought at — which is why
+   *   the pair did not move.
+   * - **The floor is a cliff now.** Below 0.25 m/s the window closes every time and takes its
+   *   advance with it, so half an hour at 0.22 m/s credits seconds where it used to leak 85 %
+   *   through. That leak and the paid-for stop were the same leak. 0.25 m/s is 0.9 km/h, a
+   *   walking frame does two to three, and refusing what is slower is what this pair has said it
+   *   did since it was written.
    */
   pauseAfterMs: 40_000,
   /** A gap larger than this is not a walk; it breaks the line and its length is not distance. */
@@ -95,6 +120,15 @@ export type TrackState = {
   anchor: { lat: number; lon: number; t: number } | null;
   /** Straight-line metres from the anchor to the last fix — never a path length. */
   fromAnchorM: number;
+  /**
+   * Credit advanced under the current anchor, and owed back if it is never cleared.
+   *
+   * Already inside `distanceM` and `movingMs`: the figures on the panel have to move every
+   * second, so a fix is credited as it lands rather than held until it is proven. These two are
+   * what makes that advance reversible — see `pauseAfterMs`.
+   */
+  advancedM: number;
+  advancedMs: number;
   firstGoodAt: number | null;
 };
 
@@ -108,6 +142,8 @@ export const EMPTY: TrackState = {
   lastAt: null,
   anchor: null,
   fromAnchorM: 0,
+  advancedM: 0,
+  advancedMs: 0,
   firstGoodAt: null,
 };
 
@@ -145,6 +181,10 @@ function teleport(state: TrackState, fix: LocationFix): TrackState {
     lastAt: fix.t,
     anchor: { lat: fix.lat, lon: fix.lon, t: fix.t },
     fromAnchorM: 0,
+    // The hole ends the old anchor's account: what it advanced is neither refunded nor owed on
+    // this side of the break, since the fix that would have proven it is the one that never came.
+    advancedM: 0,
+    advancedMs: 0,
   };
 }
 
@@ -179,7 +219,8 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
   const fromAnchorM = state.anchor === null ? 0 : metresBetween(state.anchor, fix);
   const stillFor = state.anchor === null ? 0 : fix.t - state.anchor.t;
 
-  // Far enough from the anchor to have gone somewhere: the anchor moves with the hero.
+  // Far enough from the anchor to have gone somewhere: the anchor moves with the hero, and
+  // everything advanced under the old one is now proven — the account closes at zero.
   if (fromAnchorM >= RULES.movingThresholdM) {
     return {
       ...state,
@@ -191,24 +232,53 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
       lastAt: fix.t,
       anchor: { lat: fix.lat, lon: fix.lon, t: fix.t },
       fromAnchorM: 0,
+      advancedM: 0,
+      advancedMs: 0,
     };
   }
 
-  const paused = state.paused || stillFor >= RULES.pauseAfterMs;
+  // The window closed on an anchor that was never cleared: the hero went nowhere, so the credit
+  // advanced under it comes back out. Already paused, `advanced` is zero and this is a no-op —
+  // one branch for the stop and for every second of it.
+  if (state.paused || stillFor >= RULES.pauseAfterMs) {
+    return {
+      ...state,
+      distanceM: state.distanceM - state.advancedM,
+      movingMs: state.movingMs - state.advancedMs,
+      advancedM: 0,
+      advancedMs: 0,
+      paused: true,
+      points: state.points + 1,
+      lastAt: fix.t,
+      fromAnchorM,
+    };
+  }
+
   return {
     ...state,
-    // Distance drifts while paused and none of it is credited: that is the whole rule.
-    distanceM: paused ? state.distanceM : state.distanceM + fix.distFromPrev,
-    movingMs: paused ? state.movingMs : state.movingMs + elapsed,
-    paused,
+    distanceM: state.distanceM + fix.distFromPrev,
+    movingMs: state.movingMs + elapsed,
+    advancedM: state.advancedM + fix.distFromPrev,
+    advancedMs: state.advancedMs + elapsed,
     points: state.points + 1,
     lastAt: fix.t,
     fromAnchorM,
   };
 }
 
-/** What a finished outing credited: ground for the road, moving seconds for the XP ceiling. */
-export type Credit = { leaguesM: number; movingSeconds: number };
+/**
+ * What a finished outing credited: ground for the road, moving seconds for the XP ceiling, and
+ * the span its own trace witnessed — first fix to last.
+ *
+ * `elapsedSeconds` is the outing's clock, and the definition is deliberate: **an outing lasted
+ * what its trace can prove it lasted**, not what the session's wall clock says. The two disagree
+ * the moment the process dies mid-walk. `useSessionRecovery` banks the whole downtime as pause,
+ * so the session clock of a walk killed at 45 minutes and resumed for 10 more reads 10 minutes —
+ * while the reducer, replaying the points from `gps_points`, reads 55 of moving time. One screen
+ * then said "Total 10:00" above "Moving 45:xx" for the same walk. The trace is the half that
+ * survived the kill, so the trace is what both halves read now.
+ */
+export type Credit = { leaguesM: number; movingSeconds: number; elapsedSeconds: number };
 
 /**
  * What this run is worth, or null when the run has no witness.
@@ -230,6 +300,13 @@ export function credited(track: TrackState): Credit | null {
   return {
     leaguesM: Math.round(track.distanceM),
     movingSeconds: Math.floor(track.movingMs / 1000),
+    // The minutes spent finding the sky are not in here: the gate opens on the first fix good
+    // enough to trust, and nothing before it was witnessed. Under-counting the wait is the same
+    // choice as under-counting the ramp out of a stop.
+    elapsedSeconds: Math.max(
+      0,
+      Math.floor(((track.lastAt ?? track.startedAt) - track.startedAt) / 1000),
+    ),
   };
 }
 

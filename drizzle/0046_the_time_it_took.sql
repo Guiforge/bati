@@ -1,0 +1,17 @@
+-- How long the hero was actually moving, kept beside the ground they covered.
+--
+-- `leaguesM` (0044) is written once by the reducer at save; the moving time was written nowhere,
+-- so the recap re-derived it by folding `gps_points` back through `src/gps/track.ts`. Two answers
+-- to one walk, and they part company the moment a write fails: `stores/expedition.ts` buffers
+-- thirty fixes between flushes, reports a failed batch and drops it, so up to half a minute of
+-- the trace never reaches the table. The distance still contains those fixes — it was decided
+-- live, before the flush — and the replayed clock does not. The pace printed under them is then
+-- wrong by whatever went missing, and nothing on the screen can tell.
+--
+-- Same rule as the column above it: one writer, `saveSession`, at the moment the session is
+-- banked. What the recap replays from here on is the shape of the line, which is the one thing
+-- the fixes are the only source of.
+--
+-- Null on every outing saved before this migration. The recap says nothing about their pace
+-- rather than inventing one from a trace it can no longer prove is whole.
+ALTER TABLE `completed_sessions` ADD `movingSeconds` integer;

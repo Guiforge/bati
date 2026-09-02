@@ -3,6 +3,8 @@ import { act, renderHook, waitFor } from "@testing-library/react-native";
 import type { CompletedExerciseInput } from "@/db/completed";
 import type { Quest } from "@/db/quests";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
+import type { LocationFix } from "@/modules/bati-location";
+import { accept, EMPTY } from "@/src/gps/track";
 import { useSessionStore } from "@/stores/session";
 
 /**
@@ -17,6 +19,15 @@ import { useSessionStore } from "@/stores/session";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
+
+// The points an interrupted outing had already filed. The card counts them; the sweep and the
+// discard read the same module, so stubbing it is also what keeps a database out of this suite.
+let mockPoints: LocationFix[] = [];
+jest.mock("@/db/gps", () => ({
+  pointsOf: jest.fn(async () => mockPoints),
+  deletePoints: jest.fn(async () => undefined),
+  sweepOrphanedPoints: jest.fn(async () => 0),
+}));
 
 // One in-memory slot standing in for the preferences row.
 let mockSavedSlot: string | null = null;
@@ -42,7 +53,38 @@ const quest = {
   exercises: [1, 2, 3, 4, 5].map((id) => ({ id, exercise: { id } })),
 } as unknown as Quest;
 
+/** One movement, outdoors: a walk, which is what the rounds-and-exercises line cannot describe. */
+const outing = {
+  id: 9,
+  enTitle: "The Long Walk",
+  frTitle: "La longue marche",
+  rounds: 1,
+  exercises: [{ id: 30, exercise: { id: 30, style: "expedition" } }],
+} as unknown as Quest;
+
 const NOW = 1_800_000_000_000;
+
+const T0 = NOW - 3_600_000;
+
+/** Ten minutes north at 1.4 m/s, past the start gate — about 840 m of ground. */
+function tenMinutesOut(): LocationFix[] {
+  const at = (over: Partial<LocationFix> & { t: number }): LocationFix => ({
+    lat: 48.4728,
+    lon: -2.4943,
+    ele: 110,
+    acc: 4,
+    speed: 1.4,
+    distFromPrev: 0,
+    ...over,
+  });
+  const fixes = [at({ t: T0, acc: 5 }), at({ t: T0 + 1000, acc: 5 }), at({ t: T0 + 3000, acc: 5 })];
+  for (let i = 1; i <= 600; i++) {
+    fixes.push(
+      at({ t: T0 + 3000 + i * 1000, distFromPrev: 1.4, lat: 48.4728 + (i * 1.4) / 111_195 }),
+    );
+  }
+  return fixes;
+}
 
 const aResult = { exerciseId: 1, roundIndex: 0, sortOrder: 0 } as unknown as CompletedExerciseInput;
 
@@ -85,6 +127,7 @@ async function bankLiveSession(overrides: Record<string, unknown> = {}) {
 }
 
 beforeEach(() => {
+  mockPoints = [];
   mockSavedSlot = null;
   jest.spyOn(Date, "now").mockReturnValue(NOW);
   useSessionStore.setState({ quest: null, status: "idle", results: [] });
@@ -169,6 +212,41 @@ describe("useSessionRecovery", () => {
     // assertion is what held it in place.
     expect(offer).toMatchObject({ round: 2, roundTotal: 3, exercise: 3, exerciseTotal: 5 });
     expect(offer?.elapsedTime).toBe(600);
+  });
+
+  /**
+   * A walk is one round of one movement, so the offer read "Round 1/1, exercise 1/1" over a
+   * clock counting from a snapshot an outing writes once, at the start: 0:03 for an hour on the
+   * road. Neither says anything about the walk. The ground is in `gps_points` whether or not the
+   * app was there to see the rest of it, and it is the only figure a walker recognises.
+   */
+  it("counts an interrupted outing in ground covered, not in rounds", async () => {
+    mockPoints = tenMinutesOut();
+    await bankLiveSession({
+      quest: outing,
+      sessionUuid: "0192-walk",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+    });
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+
+    // The reducer's metres, not a sum of `distFromPrev`: the card must not offer a bigger number
+    // than the walk it resumes can ever be paid.
+    expect(result.current.recoverableSession?.leaguesM).toBe(
+      Math.round(tenMinutesOut().reduce(accept, EMPTY).distanceM),
+    );
+  });
+
+  it("has no ground to count for a session that never left the walls", async () => {
+    mockPoints = tenMinutesOut();
+    await bankLiveSession({ sessionUuid: "0192-indoors" });
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+
+    expect(result.current.recoverableSession?.leaguesM).toBeNull();
   });
 
   it("drops a session left overnight instead of offering it", async () => {

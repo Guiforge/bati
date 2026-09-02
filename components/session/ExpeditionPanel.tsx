@@ -128,7 +128,10 @@ export function ExpeditionPanel() {
           )}
           {lastFix ? (
             <Paragraph fontSize={13} color="$textSecondary">
-              {t("session.expedition_accuracy", { metres: Math.round(lastFix.acc) })}
+              {/* Through the same formatter as the distance one line above, and for the same
+                  reason: a hero walking in feet was reading "1.2 mi" over "within 8 m", two
+                  units on one line, from the one file that is allowed to convert. */}
+              {t("session.expedition_accuracy", { distance: formatDistance(lastFix.acc, unit) })}
             </Paragraph>
           ) : null}
         </XStack>

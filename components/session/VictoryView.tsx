@@ -222,6 +222,28 @@ export function VictoryView() {
       return;
     }
 
+    /**
+     * The road, before the workshop's records.
+     *
+     * Three signals the session already carries, ordered by rarity. A first outing and the High
+     * Road's first level land together, because `ROAD_FLOORS` starts at one league, so the rarer
+     * of the two speaks. The Watcher owns all three: he has the tower and the road already, and
+     * before this the village encashed every league without a word about any of them.
+     */
+    const outing = result.newRecords.find((r) => r.recordType === "longest_outing");
+    if (outing && outing.previousValue == null) {
+      cue("first_outing");
+      return;
+    }
+    if (result.villageGrowth.some((g) => g.code === "high_road")) {
+      cue("high_road");
+      return;
+    }
+    if (outing) {
+      cue("longest_outing");
+      return;
+    }
+
     const earned = recordCue(result.newRecords, language);
     if (!earned) return;
     if (earned.moment === "personal_record") {

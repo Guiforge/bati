@@ -155,10 +155,11 @@ const TRACK = walkThenStand().reduce(accept, EMPTY);
 const CREDITED_M = Math.round(TRACK.distanceM);
 const clock = (seconds: number) =>
   `${Math.floor(seconds / 60)}:${String(Math.floor(seconds) % 60).padStart(2, "0")}`;
-const MOVING = clock(TRACK.movingMs / 1000);
-const KM_PACE = `${clock(Math.round((TRACK.movingMs / 1000) * (1000 / CREDITED_M)))} /km`;
+const MOVING_S = Math.floor(TRACK.movingMs / 1000);
+const MOVING = clock(MOVING_S);
+const KM_PACE = `${clock(Math.round(MOVING_S * (1000 / CREDITED_M)))} /km`;
 const FEET = Math.round(CREDITED_M / 0.3048);
-const MILE_PACE = `${clock(Math.round((TRACK.movingMs / 1000) * (1609.344 / CREDITED_M)))} /mi`;
+const MILE_PACE = `${clock(Math.round(MOVING_S * (1609.344 / CREDITED_M)))} /mi`;
 
 beforeEach(() => {
   mockPointsOf.mockReset();
@@ -168,6 +169,7 @@ beforeEach(() => {
     questId: 7,
     performedAt: new Date(T0),
     leaguesM: CREDITED_M,
+    movingSeconds: MOVING_S,
   });
   mockQuestTemplates.mockResolvedValue([
     { id: 7, enTitle: "The Warden's Round", frTitle: "La Ronde du Veilleur" },
@@ -204,6 +206,7 @@ describe("a session that left the walls", () => {
       questId: 7,
       performedAt: new Date(T0),
       leaguesM: 512,
+      movingSeconds: MOVING_S,
     });
 
     await mount();
@@ -231,6 +234,52 @@ describe("a session that left the walls", () => {
     expect(screen.getByTestId("recap-pace")).toHaveTextContent(MILE_PACE);
   });
 
+  /**
+   * The other half of the bug the distance case above covers: the clock was the only figure this
+   * screen still derived, by folding the fixes back through the reducer. `stores/expedition.ts`
+   * buffers thirty fixes between writes and drops the batch when one fails, so a run can reach
+   * the journal with its last half-minute missing from `gps_points` — the distance still holds
+   * those seconds, the replay does not, and the pace between them is wrong with nothing saying so.
+   */
+  test("the moving time is the column too, not a second fold of the fixes", async () => {
+    mockOutingSession.mockResolvedValue({
+      questId: 7,
+      performedAt: new Date(T0),
+      leaguesM: CREDITED_M,
+      // Half a minute the fixes on this screen cannot account for: exactly what a failed flush
+      // leaves behind, and the number the recap must print anyway.
+      movingSeconds: MOVING_S + 30,
+    });
+
+    await mount();
+
+    expect(await screen.findByTestId("recap-moving")).toHaveTextContent(clock(MOVING_S + 30));
+    expect(screen.getByTestId("recap-moving")).not.toHaveTextContent(MOVING);
+    expect(screen.getByTestId("recap-pace")).toHaveTextContent(
+      `${clock(Math.round((MOVING_S + 30) * (1000 / CREDITED_M)))} /km`,
+    );
+  });
+
+  /**
+   * Every outing saved before 0046 has metres and no seconds. Replaying its fixes to fill the
+   * gap would print a clock and a pace with the same confidence as the measured ones, off a
+   * trace nothing can prove is whole.
+   */
+  test("an outing from before the column says nothing about its pace", async () => {
+    mockOutingSession.mockResolvedValue({
+      questId: 7,
+      performedAt: new Date(T0),
+      leaguesM: CREDITED_M,
+      movingSeconds: null,
+    });
+
+    await mount();
+
+    expect(await screen.findByTestId("recap-distance")).toHaveTextContent(`${CREDITED_M} m`);
+    expect(screen.queryByTestId("recap-moving")).toBeNull();
+    expect(screen.queryByTestId("recap-pace")).toBeNull();
+  });
+
   test("credits OpenStreetMap and the tile host, which MapLibre's own widget is not doing", async () => {
     await mount();
     const line = await screen.findByTestId("recap-attribution");
@@ -251,6 +300,7 @@ describe("a session that left the walls", () => {
       questId: 7,
       performedAt: new Date(T0),
       leaguesM: null,
+      movingSeconds: null,
     });
 
     await mount();
@@ -280,6 +330,7 @@ describe("a session that never left the walls", () => {
       questId: null,
       performedAt: new Date(T0),
       leaguesM: null,
+      movingSeconds: null,
     });
     mockQuestTemplates.mockResolvedValue([]);
   });

@@ -1,5 +1,12 @@
 import type { Exercise } from "@/db/exercises";
-import { hasOutdoorMovement, isMountedOuting, isOutingQuest, outingGoal } from "@/db/expeditions";
+import {
+  hasOutdoorMovement,
+  hasOutdoorSlot,
+  isMountedOuting,
+  isOutingQuest,
+  isOutingSession,
+  outingGoal,
+} from "@/db/expeditions";
 import { listOutings } from "@/db/outings";
 import type { QuestTemplate } from "@/db/quests";
 
@@ -111,6 +118,31 @@ describe("the two questions about going outside", () => {
     const dangling = makeQuest(14, "Points at nothing", [99]);
     expect(hasOutdoorMovement(dangling, exercisesById)).toBe(false);
     expect(isOutingQuest(dangling, exercisesById)).toBe(false);
+  });
+
+  /**
+   * The drift guard. The same quest reaches the questions in two shapes - slots by id next to a
+   * catalogue in the gallery, slots carrying their movement everywhere else - and it was two
+   * shapes answered by four separate predicates that erased 70 % of a mixed quest's XP. One
+   * adapter now, so the shape can no longer change the answer.
+   */
+  it.each([
+    ["a mixed quest", mixed, true, false],
+    ["a pure outing", outing, true, true],
+    ["an indoor quest", indoors, false, false],
+    ["an empty quest", empty, false, false],
+  ] as const)("answers the same for %s in either shape", (_name, quest, generous, strict) => {
+    const resolved = {
+      exercises: quest.exercises.flatMap((slot) => {
+        const exercise = exercisesById[slot.exerciseId];
+        return exercise ? [{ exercise }] : [];
+      }),
+    };
+
+    expect(hasOutdoorMovement(quest, exercisesById)).toBe(generous);
+    expect(hasOutdoorSlot(resolved)).toBe(generous);
+    expect(isOutingQuest(quest, exercisesById)).toBe(strict);
+    expect(isOutingSession(resolved)).toBe(strict);
   });
 });
 

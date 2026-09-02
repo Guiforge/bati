@@ -46,6 +46,9 @@ import m0042 from "./0042_three_doors_out.sql";
 import m0043 from "./0043_the_ground_covered.sql";
 import m0044 from "./0044_the_ground_that_counted.sql";
 import m0045 from "./0045_the_story_and_the_instruction.sql";
+import m0046 from "./0046_the_time_it_took.sql";
+import m0047 from "./0047_the_catalogue_says_tu.sql";
+import m0048 from "./0048_word_must_travel.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -97,5 +100,8 @@ export default {
     m0043,
     m0044,
     m0045,
+    m0046,
+    m0047,
+    m0048,
   },
 };

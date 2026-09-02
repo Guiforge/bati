@@ -30,6 +30,41 @@ describe("db/gps", () => {
     return require("../db/gps") as typeof import("../db/gps");
   }
 
+  /**
+   * The recap reaches a run by the name its points are filed under and knows nothing else about
+   * it, so every figure it prints comes back through here. Both of them are columns: replaying
+   * the fixes for the clock was a second answer to a question the reducer already answered, and
+   * the two part company whenever a flush fails — a dropped batch is in the distance and not in
+   * the replay, and the pace between them is wrong with nothing able to notice.
+   */
+  describe("the session behind a trace", () => {
+    test("carries the ground and the moving time the reducer credited", async () => {
+      const { outingSession } = gps();
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt, leaguesM, movingSeconds) VALUES ('0192-walk', 'medium', 10, ?, ?, ?)",
+        )
+        .run(Math.floor(Date.now() / 1000), 4580, 2_700);
+
+      const session = await outingSession("0192-walk");
+      expect(session?.leaguesM).toBe(4580);
+      expect(session?.movingSeconds).toBe(2_700);
+    });
+
+    test("says null for an outing saved before the column existed", async () => {
+      const { outingSession } = gps();
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt, leaguesM) VALUES ('0191-older', 'medium', 10, ?, ?)",
+        )
+        .run(Math.floor(Date.now() / 1000), 4580);
+
+      const session = await outingSession("0191-older");
+      expect(session?.leaguesM).toBe(4580);
+      expect(session?.movingSeconds).toBeNull();
+    });
+  });
+
   // The reason the codec exists at all: four consumers, and one of them dividing by 1e6.
   test("a fix survives the round trip through scaled integers", () => {
     const { encode, decode } = gps();

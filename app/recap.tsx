@@ -16,6 +16,7 @@ import { formatClock, formatDistance, formatPace } from "@/constants/distanceFor
 import { MAP_ATTRIBUTION, mapStyle } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import { outingSession, pointsOf } from "@/db/gps";
+import type { DistanceUnit } from "@/db/preferences";
 import { listQuestTemplates } from "@/db/quests";
 import type { LocationFix } from "@/modules/bati-location";
 import { toTrace } from "@/src/gps/trace";
@@ -48,9 +49,20 @@ type Recap = {
   performedAt: Date | null;
   /** The reducer's metres, `null` on an outing that measured no ground. */
   leaguesM: number | null;
+  /**
+   * The reducer's moving seconds, `null` on an outing saved before 0046 — those rows never
+   * wrote one, and this screen would rather say nothing than replay a trace to invent it.
+   */
+  movingSeconds: number | null;
 };
 
-const NOTHING: Recap = { fixes: [], title: null, performedAt: null, leaguesM: null };
+const NOTHING: Recap = {
+  fixes: [],
+  title: null,
+  performedAt: null,
+  leaguesM: null,
+  movingSeconds: null,
+};
 
 /** Where the outing began and where it ended, as the map's only two other lit points. */
 function endpoints(
@@ -79,6 +91,55 @@ function Figure({ label, value, testID }: { label: string; value: string; testID
         {value}
       </Text>
     </YStack>
+  );
+}
+
+/**
+ * What the ground was worth, in the two columns the row carries.
+ *
+ * Nothing here is derived from the fixes. `leaguesM` is what the village was paid, `movingSeconds`
+ * is what the XP ceiling was paid, and both were decided once by the reducer at save — summing
+ * `distFromPrev` or folding the trace again on this screen is how one walk ends up with two
+ * lengths and a pace that belongs to neither.
+ */
+function Figures({
+  leaguesM,
+  movingSeconds,
+  unit,
+}: {
+  leaguesM: number;
+  movingSeconds: number | null;
+  unit: DistanceUnit;
+}) {
+  const { t } = useTranslation();
+  return (
+    <XStack>
+      {/* The same three keys the victory screen reads. They were `recap.*` here and
+          `session.expedition_*` there, so one value wore "Distance" on one screen and
+          "Terrain parcouru" on the next, for the same walk, two taps apart. */}
+      <Figure
+        testID="recap-distance"
+        label={t("session.expedition_ground")}
+        value={formatDistance(leaguesM, unit)}
+      />
+      {/* An outing saved before 0046 has metres and no seconds. Two thirds of a row is the honest
+          answer there: a clock replayed from the fixes, and a pace divided by it, would be
+          printed with the same confidence as the ones that were measured. */}
+      {movingSeconds === null ? null : (
+        <>
+          <Figure
+            testID="recap-moving"
+            label={t("session.expedition_moving")}
+            value={formatClock(movingSeconds * 1000)}
+          />
+          <Figure
+            testID="recap-pace"
+            label={t("session.expedition_pace")}
+            value={formatPace(leaguesM, movingSeconds * 1000, unit)}
+          />
+        </>
+      )}
+    </XStack>
   );
 }
 
@@ -111,6 +172,7 @@ export default function ExpeditionRecapScreen() {
         title: quest ? localizedTitle(quest, language) : null,
         performedAt: session?.performedAt ?? null,
         leaguesM: session?.leaguesM ?? null,
+        movingSeconds: session?.movingSeconds ?? null,
       });
     },
     [language],
@@ -128,9 +190,12 @@ export default function ExpeditionRecapScreen() {
   }, [sessionUuid, load]);
 
   const fixes = recap?.fixes ?? null;
-  // The fold is the geometry and the clock, never the distance: `leaguesM` is what the village
-  // was paid and what the panel showed, so it is what this screen prints. Summing `distFromPrev`
-  // here would invent half a kilometre over a long stop and give one run a third length.
+  // The fold is the line and the file it is written to, and nothing else. Both figures under the
+  // map are columns now: `leaguesM` since 0044, `movingSeconds` since 0046. Replaying the fixes
+  // for either was a second answer to a question the reducer had already answered once, and the
+  // two part company whenever a flush fails — `stores/expedition.ts` drops a batch of up to
+  // thirty fixes on a database error, so the distance still holds them and the replay does not.
+  // The pace between a kept distance and a replayed clock is wrong with nothing able to notice.
   const track = (fixes ?? []).reduce(accept, EMPTY);
   const trace = toTrace(fixes ?? []);
 
@@ -150,6 +215,8 @@ export default function ExpeditionRecapScreen() {
     if (!first || !fixes) return;
 
     const file = trackFileFor(first.t);
+    // The file's own fixes, measured the way the panel measured them: a GPX describes what is
+    // inside it, so a batch that never reached the table must not be in its header either.
     flushTrack(file, fixes, track.distanceM);
     shareTrack(file).catch((error: unknown) => {
       reportError("recap.share", error);
@@ -322,26 +389,11 @@ export default function ExpeditionRecapScreen() {
             `leaguesM`, and "0 m · 0:00 · —" reads as a verdict on the walk instead of as an
             absence of measurement. */}
         {recap?.leaguesM ? (
-          <XStack>
-            {/* The same three keys the victory screen reads. They were `recap.*` here and
-                `session.expedition_*` there, so one value wore "Distance" on one screen and
-                "Terrain parcouru" on the next, for the same walk, two taps apart. */}
-            <Figure
-              testID="recap-distance"
-              label={t("session.expedition_ground")}
-              value={formatDistance(recap.leaguesM, distanceUnit)}
-            />
-            <Figure
-              testID="recap-moving"
-              label={t("session.expedition_moving")}
-              value={formatClock(track.movingMs)}
-            />
-            <Figure
-              testID="recap-pace"
-              label={t("session.expedition_pace")}
-              value={formatPace(recap.leaguesM, track.movingMs, distanceUnit)}
-            />
-          </XStack>
+          <Figures
+            leaguesM={recap.leaguesM}
+            movingSeconds={recap.movingSeconds}
+            unit={distanceUnit}
+          />
         ) : null}
 
         {/* ODbL requires the OSM credit and OpenFreeMap requires its line to be displayed once

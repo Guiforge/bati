@@ -102,7 +102,7 @@ permission ratchet would vouch for a dependency Bati does not control.
    ├─ time gap or backwards clock breaks        ▲ encode        │ decode
    ├─ distance += distFromPrev                  │               ▼
    ├─ auto-pause / segment breaks               │      ┌─ recap map (MapLibre)
-   └─ storage decimation ≥ 10 m ──────────► gps_points ┼─ GPX export
+   └─ every accepted fix stored ──────────► gps_points ┼─ GPX export
               │                     (SQLite, WAL,      └─ orphan resume
               ▼                      INSERT OR IGNORE)    (recompute aggregates)
  session store (Zustand)
@@ -118,9 +118,9 @@ permission ratchet would vouch for a dependency Bati does not control.
   `RestarterReceiver` pattern, rewritten).
 - Events to JS: `{ t, lat, lon, ele, acc, speed, distFromPrev }` per fix — the
   service computes `Location.distanceTo(prev)` natively, so JS never calls native for math
-  (review 4A). The accuracy and speed rejection also lives in the service (thresholds passed
-  to `start()`), otherwise `distFromPrev` would measure against fixes JS discarded; JS keeps
-  session-level logic only: auto-pause, segments, storage decimation. Plus
+  (review 4A). The accuracy and speed rejection also lives in the service, otherwise
+  `distFromPrev` would measure against fixes JS discarded; JS keeps session-level logic only:
+  auto-pause and segments. Plus
   `{ providerEnabled }`, an `acquiring` state, and a `noFixTimeout` that only arms *after*
   the first fix — cold TTFF on de-Googled ROMs (no SUPL/PSDS assistance) is minutes, not
   seconds, and the pill must say "acquiring", never "GPS off", during warm-up. No satellite count: a reliable one needs a
@@ -152,22 +152,30 @@ permission ratchet would vouch for a dependency Bati does not control.
 - Write raw points, reject only accuracy > 50 m and implausible speed per mode: > 8 m/s
   walking or running, > 25 m/s riding (28.8 km/h is routine on a bike downhill; 8 m/s would
   drop legitimate fixes and sink the 3 % distance criterion on the ridden T5 loop). These
-  thresholds are enforced in the service, passed via `start()` (see the module section).
+  rejections are enforced in the service. Only the speed cap is passed via `start()`, because
+  only it depends on how the hero is moving; the accuracy ceiling and the no-fix timeout are
+  constants of the service itself (see the module section).
 - Monotonic guard (review 1A): JS keeps `lastT` per session and skips any fix with
   `t <= lastT` for storage (still counted for distance); `Location.getTime()` is the system
   clock on several ROMs, and an NTP step backwards must never be able to abort a batch.
 - Distance: `Location.distanceTo()` exposed by the module (WGS84, native). Distance sums the
-  gap between every pair of consecutive accepted fixes; a point is *stored* only when ≥ 10 m
-  from the last stored one (storage threshold, not a distance filter).
+  gap between every pair of consecutive accepted fixes. Every accepted fix is *stored*, raw and
+  undecimated: the reducer is tuned against real traces, and a thinned trace cannot be re-read
+  by a rule that changed after it was recorded.
 - Segment break on a jump > 200 m: the jump is excluded from distance and breaks the recap
   polyline; it does not touch the auto-pause state.
-- Auto-pause after 10 s without 10 m **of displacement from the anchor** — not of accumulated
-  path length, which is how this was first written and which does not work. Standing drift adds
-  to path length without bound: at the measured 0.2 m/s it crosses ten metres in fifty seconds
-  and un-pauses a phone lying on a table. Displacement does not, because drift wanders around a
-  point rather than away from it. Caught by `__tests__/gps-track.test.ts` before it ever ran on
-  a real walk. Resumes on the first accepted
-  fix ≥ 10 m from the pause anchor. Paused time is excluded from moving time and earns no
+- Auto-pause engages when the hero has not left their anchor for long enough, and lifts on the
+  first accepted fix that clears it. The distance and the delay are one pace, and they live in
+  `RULES` in [`src/gps/track.ts`](../../src/gps/track.ts), which is the only place either number
+  is written down: they were re-tuned once against real walks and will be again, so a figure
+  copied here would be wrong within a release.
+
+  What does not move is **displacement from the anchor**, not accumulated path length, which is
+  how this was first written and which does not work. Standing drift adds to path length without
+  bound: at the measured 0.2 m/s it crosses ten metres in fifty seconds and un-pauses a phone
+  lying on a table. Displacement does not, because drift wanders around a point rather than away
+  from it. Caught by `__tests__/gps-track.test.ts` before it ever ran on
+  a real walk. Paused time is excluded from moving time and earns no
   quest credit — a time-mode GPS quest counts moving time only.
 - `providerEnabled: false` mid-session: auto-pause engages, the status pill reads "GPS off",
   and the service updates its notification text. Same reaction on `noFixTimeout`.
@@ -205,9 +213,9 @@ permission ratchet would vouch for a dependency Bati does not control.
   survive process death.
 - Aggregates (distance, moving time, current pace) live in the session Zustand store,
   banked in memory and committed in `saveSession`, per the "never write game state before it
-  is earned" rule. Orphan resume recomputes them from the stored points — slightly lossy
-  (chord sum over ≥ 10 m decimation vs live accumulation), accepted: the alternative is
-  persisting aggregates mid-session, a second writer for earned state.
+  is earned" rule. Orphan resume recomputes them by replaying the stored points through the
+  same reducer, which is exact because nothing was thinned on the way in. The alternative would
+  have been persisting aggregates mid-session, a second writer for earned state.
 
 ### Screens
 - During the session: numbers only (distance, moving time, pace, GPS status pill). No map.
@@ -257,7 +265,8 @@ permission ratchet would vouch for a dependency Bati does not control.
 ## Success Criteria
 
 - A 45-minute outdoor session on a phone without Google Play Services, screen off, yields a
-  trace with no hole longer than 10 s absent process death, and a distance within 3 % of a
+  trace whose gaps all stay under the reducer's maximum (`RULES.maxGapMs` in
+  [`src/gps/track.ts`](../../src/gps/track.ts)) absent process death, and a distance within 3 % of a
   known loop. Hole frequency from process death, measured in T5, is the explicit gate to the
   Approach B upgrade (native writes).
 - `npm test` green including `android-permissions.test.ts` with every new permission justified.
@@ -337,7 +346,8 @@ Play internal track needs the Data Safety form updated before the next upload.
    **Stationary drift, measured the same day: 6 m in 30 s with the phone flat on a table.**
    That is ~0.2 m/s of pure noise summed straight out of `distFromPrev`, which over a
    45-minute stop would invent more than half a kilometre. It is the number the auto-pause
-   rule (10 s without 10 m) exists to kill, and until that rule is wired, any raw distance
+   rule (`RULES` in [`src/gps/track.ts`](../../src/gps/track.ts)) exists to kill, and until that
+   rule is wired, any raw distance
    Bati reports carries it. Expect it to be most of the gap against another app's figure.
 
    Still unproven, and still needing a walk rather than a desk:

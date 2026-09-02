@@ -107,9 +107,8 @@ one face the tile host serves. At recap zoom these are the names that fire, and 
 "CROIX-DAURADE" set in wide small caps reads like a waypoint on a chart. City, state and country
 labels are not written at all.
 
-**9. The trace is the only lit thing on the screen.** Drawn in TSX from a `GeoJSONSource`, the
-way [`app/dev-map.tsx`](../../app/dev-map.tsx) already draws it, so its colours come from
-`rawColors` with no new mechanism. Three layers: a wide `resourceGold` line at low opacity with
+**9. The trace is the only lit thing on the screen.** Drawn in TSX from a `GeoJSONSource`, so
+its colours come from `rawColors` with no new mechanism. Three layers: a wide `resourceGold` line at low opacity with
 a large `line-blur` for the glow, the `resourceGold` stroke itself with round caps and joins,
 and two circle pips, `$success` where the hero set out and `$resourceFire` where they stopped.
 Everything else on the map is between 4 % and 15 % lightness, so the gold does the work that a
@@ -259,8 +258,9 @@ was already planned in `gps-without-google.md` § Screens; the first is the obli
 ## What remains unverified
 
 Everything visual. `INTERNET` is in `blockedPermissions`, so no tile has ever arrived in this
-app and **not one pixel of this design has been seen**. `app/dev-map.tsx` proves the renderer
-runs and draws a polyline from the bundle; it proves nothing about a basemap. Treat every colour
+app and **not one pixel of this design has been seen**. A dev harness once proved the renderer
+runs and draws a polyline from the bundle, and nothing about a basemap; it has since been
+deleted along with the rest of the dev screens. Treat every colour
 below as a value chosen on a desktop monitor, to be re-judged on an OLED at arm's length.
 
 What *is* verified is narrow and worth separating out, because the rest of this section is

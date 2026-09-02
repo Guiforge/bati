@@ -105,12 +105,18 @@ export async function totalLeaguesM(): Promise<number> {
   return rows[0]?.m ?? 0;
 }
 
-/** What the session that owns a trace says about itself: which quest, when, and how far. */
+/** What the session that owns a trace says about itself: which quest, when, how far, how long. */
 export type OutingSession = {
   questId: number | null;
   performedAt: Date;
   /** The reducer's metres, written once at save. Null on a session that measured no ground. */
   leaguesM: number | null;
+  /**
+   * The reducer's moving seconds, written once at save beside the metres. Null on a session that
+   * measured no ground, and on every outing saved before 0046 — the recap says nothing about
+   * their pace rather than replaying a trace it cannot prove is whole.
+   */
+  movingSeconds: number | null;
 };
 
 /**
@@ -127,6 +133,7 @@ export async function outingSession(sessionId: string): Promise<OutingSession | 
       questId: completedQuest.questId,
       performedAt: completedQuest.performedAt,
       leaguesM: completedQuest.leaguesM,
+      movingSeconds: completedQuest.movingSeconds,
     })
     .from(completedQuest)
     .where(eq(completedQuest.uuid, sessionId))
@@ -138,6 +145,7 @@ export async function outingSession(sessionId: string): Promise<OutingSession | 
     questId: row.questId ?? null,
     performedAt: row.performedAt,
     leaguesM: row.leaguesM ?? null,
+    movingSeconds: row.movingSeconds ?? null,
   };
 }
 

@@ -66,6 +66,11 @@ export type CompletedSessionInput = {
    * fixes. Omitted by every caller that is not an outing.
    */
   leaguesM?: number | null;
+  /**
+   * Moving seconds this outing credited, from the same reading as `leaguesM`. Omitted by every
+   * caller that is not an outing.
+   */
+  movingSeconds?: number | null;
   questId?: number | null;
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
@@ -147,6 +152,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         performedAt,
         uuid: input.uuid ?? uuidv7(performedAt.getTime()),
         leaguesM: input.leaguesM ?? null,
+        movingSeconds: input.movingSeconds ?? null,
         tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
         originDevice,
       })

@@ -369,6 +369,10 @@ function advanceAfterSet(
  * - `movingSeconds` is what XP is paid in, and it is a witness a windowsill cannot fake: the
  *   auto-pause stops crediting the moment displacement does, so an outing can be paid for the
  *   time it actually took where a hold has to be clamped to its prescription.
+ * - `elapsedSeconds` is how long the outing lasted, first fix to last. The session's own clock
+ *   cannot answer that for a walk the OS killed: recovery banks the downtime as pause, so the
+ *   clock reads the ten minutes since the hero pressed resume while the trace reads the whole
+ *   hour. Both halves of `sessionClock` read the trace now. See `src/gps/track.ts`.
  */
 function measureGround(quest: Quest | null): Ground {
   if (!isExpedition(quest)) return NO_GROUND;
@@ -378,10 +382,14 @@ function measureGround(quest: Quest | null): Ground {
   return credited(useExpeditionStore.getState().track) ?? NO_GROUND;
 }
 
-const NO_GROUND: Ground = { leaguesM: null, movingSeconds: null };
+const NO_GROUND: Ground = { leaguesM: null, movingSeconds: null, elapsedSeconds: null };
 
-/** Null in both fields when the quest never left the walls. */
-type Ground = { leaguesM: number | null; movingSeconds: number | null };
+/** Null in every field when the quest never left the walls, or when no fix ever locked. */
+type Ground = {
+  leaguesM: number | null;
+  movingSeconds: number | null;
+  elapsedSeconds: number | null;
+};
 
 /**
  * How long this session may claim to have lasted, and how much of that could have been effort.
@@ -401,6 +409,15 @@ type Ground = { leaguesM: number | null; movingSeconds: number | null };
  * default expedition, so a real hour on the road was filed as half of one and the hero's longest
  * walk could never reach their own journal. Its effort ceiling is moving seconds alone, so a run
  * left open on a bus keeps accruing neither.
+ *
+ * And an outing is *measured* by its witness too, both halves from the same reading: **a walk
+ * lasted what its trace says it lasted**, first fix to last, capped by the moving time plus the
+ * stops that moving time is allowed to hide. The session's clock is not consulted, because it
+ * cannot answer for a walk the OS killed: `useSessionRecovery` banks the whole downtime as pause,
+ * so a walk killed at 45 minutes and resumed for 10 measured ten minutes on the clock and 55 on
+ * the trace — "Total 10:00" printed above "Moving 45:xx" on the victory screen, ten minutes
+ * written to the journal for 5 km, and the effort ceiling reading the other half. One definition,
+ * read twice.
  *
  * The two questions take two predicates, and that is the whole point of `isOutingSession` being
  * imported here. *Measuring* asks the generous one (`isExpedition`): a home-made "Walk 5 min +
@@ -425,9 +442,10 @@ function sessionClock({
   restTakenSeconds: number;
 }): { durationSeconds: number; effortCeilingSeconds: number } {
   const moving = ground.movingSeconds;
+  const onTheRoad = ground.elapsedSeconds;
   const durationSeconds =
-    moving !== null
-      ? Math.min(measuredSeconds, moving + OUTING_STOPPAGE_ALLOWANCE_SECONDS)
+    moving !== null && onTheRoad !== null
+      ? Math.min(onTheRoad, moving + OUTING_STOPPAGE_ALLOWANCE_SECONDS)
       : Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
 
   if (moving !== null && isOutingSession(quest)) {
@@ -638,9 +656,12 @@ export function beginTrackingIfOuting(
           // The quest, not the app: this notification is the only screen an hour of walking has,
           // and it spent that hour saying the name of the app the hero is already using.
           title: localizedTitle(quest, resolveAppLanguage(i18n.language)),
-          acquiring: i18n.t("session.expedition_acquiring"),
-          tracking: i18n.t("session.expedition_tracking"),
-          paused: i18n.t("session.expedition_paused"),
+          // The same three keys the panel's status pill reads. They were a second set with the
+          // same values, one for the notification and one for the screen, which is one reword
+          // away from the notification and the panel describing the walk differently.
+          acquiring: i18n.t("session.expedition_status_acquiring"),
+          tracking: i18n.t("session.expedition_status_moving"),
+          paused: i18n.t("session.expedition_status_paused"),
           gpsOff: i18n.t("session.expedition_gps_off"),
           reached: i18n.t("session.expedition_reached"),
         },
@@ -1242,6 +1263,11 @@ export const useSessionStore = create<SessionState>()(
         // belong to a session that, as far as any query is concerned, never happened.
         uuid: sessionUuid ?? undefined,
         leaguesM: ground.leaguesM,
+        // Beside the ground, and for the same reason: the recap replayed the fixes to time the
+        // walk, and a flush that failed leaves up to thirty of them out of the table — the
+        // distance still holds them, the replayed clock does not, and the pace between the two
+        // is wrong with nothing on screen saying so. One writer, at save, like `leaguesM`.
+        movingSeconds: ground.movingSeconds,
         durationSeconds,
         xpEarned,
         feedback,

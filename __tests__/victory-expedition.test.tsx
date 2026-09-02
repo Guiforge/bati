@@ -224,9 +224,18 @@ describe("VictoryView, the walk it just celebrated", () => {
    */
   test("reports the duration that gets recorded, not the wall clock", async () => {
     // `startedAt` is what makes this a witnessed run: without it the reducer has no opinion and
-    // the clock decides, which is the workout path and a different rule.
+    // the clock decides, which is the workout path and a different rule. `lastAt` is the other
+    // end of the same witness — an outing is timed by its trace, first fix to last, because the
+    // session's own clock cannot answer for the stretch a killed process was not there for.
+    const setOff = Date.now() - 52 * 60_000;
     useExpeditionStore.setState({
-      track: { ...EMPTY, startedAt: 1, distanceM: 1500, movingMs: 720_000 },
+      track: {
+        ...EMPTY,
+        startedAt: setOff,
+        lastAt: setOff + 52 * 60_000,
+        distanceM: 1500,
+        movingMs: 720_000,
+      },
     });
 
     await mountVictory({ sessionSeconds: 52 * 60 });

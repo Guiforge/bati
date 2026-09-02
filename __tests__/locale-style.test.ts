@@ -131,6 +131,24 @@ describe("locale typography", () => {
   });
 
   /**
+   * Rule 4. Two surfaces are allowed `vous`: the privacy policy and the safety notices. Every other
+   * French string is the game talking to a hero. A plural imperative at the start of a sentence
+   * ("Jurez plus bas") is the form that slipped through last, so it is matched alongside the
+   * pronouns; the three capitalised words that end in -ez without being verbs are named.
+   */
+  const VOUS_SURFACES = ["privacy.", "safety."];
+  const VOUS = /\b(vous|votre|vos)\b|(?:^|[.!?:] )(?!Chez\b|Assez\b|Nez\b)[A-ZÉ][a-zé]+ez\b/;
+
+  it("fr.json says tu everywhere but the policy and the safety notices", () => {
+    const drifted = entriesOf("fr.json")
+      .filter((e) => !VOUS_SURFACES.some((prefix) => e.key.startsWith(prefix)))
+      .filter((e) => VOUS.test(e.value))
+      .map((e) => `${e.key}: ${e.value.slice(0, 70)}`);
+
+    expect(drifted).toEqual([]);
+  });
+
+  /**
    * The blind spot the first sweep had: `t("key", "fallback")` puts an English string in a `.tsx`,
    * where neither the locale scan nor the reader-facing one can see it. Ten of them still carried
    * a dash after every locale file was clean, and a fallback is what a hero reads the moment a key
@@ -150,6 +168,36 @@ describe("locale typography", () => {
         if (fallback?.includes(EM_DASH)) offending.push(`${path.relative(ROOT, file)} → ${key}`);
       }
     }
+
+    expect(offending).toEqual([]);
+  });
+
+  /**
+   * The same blind spot, one directory over: `constants/` holds pools of prose the app draws
+   * from — the rest-day suggestion on Home, the empty-handed line on the victory screen, the
+   * village's flavour text — and twelve of those strings carried a dash while every scan above
+   * was green. They are literals in a `.ts`, so no locale file, no `t()` call and no reader-facing
+   * path could see them.
+   *
+   * Comments are stripped first: this file's own prose, and the repo's, is out of the ban.
+   */
+  it("no constant string uses an em dash", () => {
+    const dir = path.join(ROOT, "constants");
+    const offending = fs
+      .readdirSync(dir)
+      .filter((file) => file.endsWith(".ts"))
+      // `distanceFormat.ts` returns "—" as its null reading: a table glyph for a distance that
+      // does not exist, never a hinge inside a sentence. The only name on this list.
+      .filter((file) => file !== "distanceFormat.ts")
+      .flatMap((file) => {
+        const body = fs
+          .readFileSync(path.join(dir, file), "utf8")
+          .replace(/\/\*[\s\S]*?\*\//g, "")
+          .replace(/\/\/.*$/gm, "");
+        return [...body.matchAll(/"(?:[^"\\\n]|\\.)*"/g)]
+          .filter((match) => match[0].includes(EM_DASH))
+          .map((match) => `constants/${file}: ${match[0].slice(0, 70)}`);
+      });
 
     expect(offending).toEqual([]);
   });

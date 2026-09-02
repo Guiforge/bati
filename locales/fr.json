@@ -134,7 +134,7 @@
     "weekly_chip": "{{count}}× / semaine",
     "streak_hint": "Les jours de repos comptent. La flamme suit ta régularité.",
     "sworn_toast": "Serment prêté",
-    "error_target_unreachable": "Une seule série ne peut pas dépasser {{max}}. Jurez plus bas, ou jurez sur le volume total."
+    "error_target_unreachable": "Une seule série ne peut pas dépasser {{max}}. Jure moins haut, ou jure sur les reps totales."
   },
   "common": {
     "hero_badge": "À toi",
@@ -622,6 +622,7 @@
     "description": "Tu as une séance laissée en chemin.",
     "discard": "Abandonner",
     "elapsed": "Temps : {{time}}",
+    "ground": "{{distance}} déjà parcourus",
     "progress": "Progression : manche {{round}}/{{roundTotal}}, exercice {{exercise}}/{{exerciseTotal}}",
     "resume": "Reprendre",
     "title": "Reprendre ta séance ?"
@@ -636,15 +637,12 @@
     "title": "Planning hebdomadaire"
   },
   "session": {
-    "expedition_status_acquiring": "Cherche le ciel",
+    "expedition_status_acquiring": "En quête du ciel",
     "expedition_status_moving": "En chemin",
     "expedition_status_paused": "À l'arrêt",
     "expedition_status_error": "Aucun signal",
     "expedition_reached": "Terme atteint",
-    "expedition_accuracy": "à {{metres}} m près",
-    "expedition_acquiring": "Cherche le ciel",
-    "expedition_tracking": "En chemin",
-    "expedition_paused": "À l'arrêt",
+    "expedition_accuracy": "à {{distance}} près",
     "expedition_gps_off": "GPS coupé",
     "adjust_reps_hint": "En as-tu fait plus ou moins ?",
     "adjust_reps_label": "Ajuster les reps",
@@ -676,11 +674,10 @@
     "pause": "Mettre en pause",
     "pause_accessibility": "Mettre la session en pause",
     "paused_subtitle": "Respire un coup. On repart quand tu veux.",
-    "paused_expedition_note": "La sortie continue d'être mesurée.",
+    "paused_expedition_note": "Le tracé continue, même en pause.",
     "paused_title": "Jeu en pause",
     "pr_exercise": "Record {{exercise}}",
     "pr_longest_session": "Plus long entraînement",
-    "pr_longest_outing": "Plus longue sortie",
     "pr_more": "+{{count}} autres records",
     "pr_most_xp": "Plus d'XP gagnés",
     "pr_new_record": "Nouveau record",
@@ -701,8 +698,8 @@
     "sound_off": "Son coupé",
     "sound_on": "Son activé",
     "summary_too_short_title": "C'était court",
-    "summary_too_short_body": "Tu as tenu {{duration}}. Garde-la et elle compte pour ta série et ton serment, ou jette-la et il ne s'est rien passé.",
-    "summary_too_short_keep": "Je la garde",
+    "summary_too_short_body": "Tu as tenu {{duration}}. Garde cette séance et elle compte pour ta série et ton serment, ou jette-la, et il ne s'est rien passé.",
+    "summary_too_short_keep": "Garder",
     "summary_too_short_discard": "Jeter",
     "summary_saving": "Enregistrement de ta séance…",
     "target_reached": "Objectif atteint !",
@@ -727,9 +724,9 @@
     "crit_hint": "Chaque répétition au-delà de l'objectif est une chance de coup critique : {{percent}} % pour l'instant.",
     "ghost_last_label": "La dernière fois",
     "ghost_best_label": "record",
-    "expedition_status_denied": "Localisation coupée pour Bati",
+    "expedition_status_denied": "Bati n'a pas accès à ta position",
     "expedition_open_settings": "Ouvrir les réglages",
-    "expedition_acquiring_hint": "La première position peut prendre quelques minutes dehors. Pars quand même, le tracé te rattrapera.",
+    "expedition_acquiring_hint": "La première position peut mettre quelques minutes à venir. Pars quand même, le tracé te rattrapera.",
     "expedition_ground": "Terrain",
     "expedition_moving": "En mouvement",
     "expedition_pace": "Allure",
@@ -820,8 +817,9 @@
     "detail_bosses_driver": "{{count}} boss vaincus",
     "detail_adventures_driver": "{{count}} aventures terminées",
     "detail_victories_driver": "{{count}} victoires contre des boss",
-    "detail_leagues_driver_one": "{{count}} lieue parcourue au-delà des murs",
-    "detail_leagues_driver_other": "{{count}} lieues parcourues au-delà des murs",
+    "detail_leagues_driver_one": "{{count}} lieue parcourue hors des murs",
+    "detail_leagues_driver_other": "{{count}} lieues parcourues hors des murs",
+    "league_unit": "Une lieue de Bati fait un kilomètre.",
     "detail_unlock_muscle": "Entraîne {{muscle}} pour ériger ce bâtiment",
     "detail_unlock_style": "Fais un exercice de {{style}} pour ériger ce bâtiment",
     "detail_progress": "{{current}}/{{target}}",
@@ -870,7 +868,7 @@
     "never_title": "Ce que Bati ne fait jamais",
     "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. L'application n'envoie jamais rien. Elle ne touche au réseau qu'à un seul endroit : la carte du récap télécharge ses tuiles depuis tiles.openfreemap.org, qui voit en gros quels carrés de carte vous avez regardés, jamais votre trajet, votre entraînement ni qui vous êtes. Une règle de lint refuse tout autre appel réseau dans l'application.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar : elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une expédition, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'est envoyé nulle part. Une sortie affiche aussi une notification permanente et garde le téléphone éveillé, ce qui empêche Android de couper le suivi quand votre écran est éteint.",
+    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar, et elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une expédition, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'est envoyé nulle part. Une sortie affiche aussi une notification permanente et garde le téléphone éveillé, ce qui empêche Android de couper le suivi quand votre écran est éteint.",
     "crashes_title": "Rapports de crash",
     "crashes_body": "En cas de plantage, l'erreur est écrite uniquement sur votre appareil, et quand une fonction échoue sans plantage (une sauvegarde impossible à écrire, par exemple), son message d'erreur est conservé de la même façon ; ce message peut contenir le nom d'un dossier ou d'un fichier que vous avez choisi. Rien n'est envoyé automatiquement. « Signaler un bug » ouvre votre propre application e-mail avec le rapport pré-rempli : vous pouvez le lire, le modifier ou le supprimer avant envoi. Si vous ne l'envoyez jamais, il ne quitte jamais votre téléphone.",
     "children_title": "Enfants",
@@ -1193,6 +1191,36 @@
         "Tu prépares. Ça ne se voit pas tout de suite, mais ça se voit après.",
         "Je note ce qui passe. Toi ce qui te tente. Même métier, au fond.",
         "Rien à craindre dans une liste. Je vérifie, c'est mon travail."
+      ],
+      "first_outing": [
+        "Première fois que la porte s'ouvre pour autre chose qu'un marchand. Noté, et pas discrètement.",
+        "Vu de la tour : une silhouette qui sort, la même qui rentre. La route compte à partir d'aujourd'hui.",
+        "Tout ce qui s'est fait avant tenait entre les murs, et aujourd'hui non.",
+        "Nouvelle ligne au registre. Une route, là où la carte ne disait rien.",
+        "Le garde de la porte a demandé qui c'était. Je lui ai dit. Il s'habituera.",
+        "Hors des murs, sur tes propres jambes, et retour. C'est comme ça que se trace la première lieue de n'importe quelle route.",
+        "Rapport : le terrain derrière la porte est un endroit où tu as posé le pied. Ce matin c'était une rumeur.",
+        "Je surveille la route pour ce qui entre. Ce soir je l'ai surveillée pour quelqu'un qui sortait. Autre métier."
+      ],
+      "high_road": [
+        "La route a été poussée d'un tronçon de plus, avec les mêmes bottes à chaque fois, et j'ai vérifié.",
+        "Borne posée. Les maçons ne font pas ça pour un sentier que personne n'emprunte.",
+        "D'ici, la route se lit plus longue que le mois dernier, et rien ne l'a allongée sauf des lieues.",
+        "Les marchands prennent déjà le nouveau tronçon. Ils croient qu'il a toujours été là. Laissons-les croire.",
+        "Mise à jour de la carte : le Grand Chemin va plus loin. Classé sous lieues parcourues, pas sous miracles.",
+        "Route plus longue, vue plus large. La tour n'a pas bougé ; ce qu'elle voit, si.",
+        "Une route grandit en étant marchée, et celle-ci l'a été. Demande à la boue sur tes bottes.",
+        "Un tronçon de plus au Grand Chemin, et je sais exactement quelles lieues l'ont payé."
+      ],
+      "longest_outing": [
+        "La plus longue jusqu'ici. Après la crête, plus rien à voir, et j'ai dû faire confiance à la route.",
+        "La sortie la plus longue du registre. L'ancienne marque a tenu un moment ; plus maintenant.",
+        "Hors de vue de la tour pendant un bon moment, une première. Je n'aime pas ça. Je l'ai noté quand même.",
+        "Plus loin que toutes les sorties d'avant, et retour à ton allure, sans que personne soit envoyé derrière.",
+        "Nouvelle marque pour la plus longue route. L'ancienne est encore au registre, barrée proprement.",
+        "C'est au-delà de la dernière borne que je sais nommer. À partir de là, la carte est à toi.",
+        "Record de distance, consigné, et ce qu'il y avait après l'ancien point de demi-tour a été vu maintenant.",
+        "La plus longue que tu aies faite, à mon compte et à celui de la route. Deux registres, une ligne."
       ]
     }
   }

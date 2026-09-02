@@ -12,7 +12,11 @@ import { getQuestThumb } from "@/constants/assetMap";
 import { listOutings, type Outing } from "@/db/outings";
 import { loadConfiguredQuest } from "@/db/questConfig";
 import { Difficulty } from "@/db/targets";
-import { ensureNotificationPermission, requestPermission } from "@/modules/bati-location";
+import {
+  ensureNotificationPermission,
+  getPermissionStatus,
+  requestPermission,
+} from "@/modules/bati-location";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -24,6 +28,64 @@ import { useSettingsStore } from "@/stores/settings";
 // not a second gallery under the one scene Home is built around.
 const TILE_WIDTH = 116;
 const TILE_HEIGHT = 72;
+
+/**
+ * Whether the why has been said in this process.
+ *
+ * Once per process rather than once for ever, and the same reasoning as
+ * `ensureNotificationPermission`: what would make it permanent is a stored flag, and the only
+ * thing worth storing about a permission here is precisely what the band refuses to store. The
+ * preamble is not an answer, it is an explanation, so the cost of saying it a second time is one
+ * sentence, while the cost of a stored "already explained" is a hero who never hears it again
+ * after a reinstall of habit. In practice the repeat is near-invisible: the check below means the
+ * why is only ever said when the grant is missing, so a hero who granted it hears it exactly once
+ * in their life, and a hero who refused hears it again next launch, which is the one case where
+ * saying it twice is the right answer.
+ */
+let whySaid = false;
+
+/**
+ * The band's head notice: one sentence, one action, in the strip above the tiles.
+ *
+ * Two things speak there and never at the same time, why Android is about to ask and where the
+ * grant lives once it has been refused, so they share one shape rather than starting a second
+ * family. Not on a tile: the name already takes two lines there, and a sentence printed on a
+ * 72 dp thumbnail is a sentence nobody reads.
+ */
+function BandNotice({
+  text,
+  action,
+  onPress,
+}: {
+  text: string;
+  action: string;
+  onPress: () => void;
+}) {
+  return (
+    // Polite, never an alert: neither of the two is an error, and both appear under the thumb
+    // that just tapped, where a screen reader has to be told something changed.
+    <YStack gap="$2" pb="$1" accessibilityLiveRegion="polite">
+      <Text fontSize={13} color="$textSecondary">
+        {text}
+      </Text>
+      <AppButton
+        fullWidth={false}
+        variant="outline"
+        backgroundColor="$surface2"
+        size="$3"
+        // Size $3 lands under the 44×44 floor of DESIGN.md:150, and Yoga clamps a height to the
+        // larger minimum, so the button keeps its compact type and gains the hit area.
+        minH={44}
+        fontSize={15}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={action}
+      >
+        {action}
+      </AppButton>
+    </YStack>
+  );
+}
 
 /**
  * The door out of the village, on Home.
@@ -72,12 +134,15 @@ export function OutsideBand() {
   const [denied, setDenied] = useState(false);
   /** While on, a tile opens its quest instead of leaving. Per visit, cleared on every focus. */
   const [setup, setSetup] = useState(false);
+  /** The tile whose why is on screen, waiting for the tap that lets Android ask. */
+  const [whyFor, setWhyFor] = useState<number | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       // Coming back from the session must not leave the band stuck on a tap it already served.
       setIsStarting(false);
       setSetup(false);
+      setWhyFor(null);
       // Both reads underneath are cached and invalidated on write, so coming back from the
       // editor picks up a hero-authored outing without costing a query on every focus.
       listOutings()
@@ -99,6 +164,25 @@ export function OutsideBand() {
 
       setIsStarting(true);
       try {
+        // The why, before Android's dialog and only when a dialog is coming.
+        // `quests.location_notice` says it on the quest screen, which this door skips: an
+        // unprimed system dialog is refused more often, and a final refusal cannot be undone
+        // from inside the app. One sentence, one confirmation, then the same tap resumes here
+        // with the flag already set: no second screen, no navigation, nothing to come back from.
+        // Why, before Android's own dialog, and only when there is something to explain. The
+        // module answers without prompting, so a hero who granted months ago is never told about
+        // a dialog that will not appear, and one who granted from the settings is seen on the
+        // very next tap: the same reason a refusal is never persisted.
+        const already = await getPermissionStatus();
+        if (!whySaid && !already.granted) {
+          whySaid = true;
+          setDenied(false);
+          setWhyFor(questId);
+          setIsStarting(false);
+          return;
+        }
+        setWhyFor(null);
+
         // Position first, then the notification: from API 33 the ongoing notification is the only
         // surface an outing has in a pocket, and bundling the two would let one refusal veto the
         // other. `begin()` asks again and both are idempotent once granted.
@@ -174,28 +258,26 @@ export function OutsideBand() {
         </XStack>
       </XStack>
 
-      {/* Not on the tile: the name already takes two lines there, and a dead end printed on a
-          72 dp thumbnail is a dead end nobody can read. */}
-      {denied ? (
-        <YStack gap="$2" pb="$1">
-          <Text fontSize={13} color="$textSecondary">
-            {t("session.expedition_status_denied")}
-          </Text>
-          <AppButton
-            fullWidth={false}
-            variant="outline"
-            backgroundColor="$surface2"
-            size="$3"
-            fontSize={15}
-            onPress={() =>
-              Linking.openSettings().catch((e: unknown) => reportError("home.openSettings", e))
-            }
-            accessibilityRole="button"
-            accessibilityLabel={t("session.expedition_open_settings")}
-          >
-            {t("session.expedition_open_settings")}
-          </AppButton>
-        </YStack>
+      {/* One slot, one occupant: the why is a question still open, so it holds the strip until it
+          is answered, and the dead end only speaks once there is one. */}
+      {whyFor !== null ? (
+        <BandNotice
+          text={t("session.expedition_permission_why")}
+          action={t("common.continue")}
+          onPress={() => {
+            startOuting(whyFor).catch((error) => reportError("home.startOuting", error));
+          }}
+        />
+      ) : null}
+
+      {denied && whyFor === null ? (
+        <BandNotice
+          text={t("session.expedition_status_denied")}
+          action={t("session.expedition_open_settings")}
+          onPress={() => {
+            Linking.openSettings().catch((e: unknown) => reportError("home.openSettings", e));
+          }}
+        />
       ) : null}
 
       {/* Horizontal rather than a row of equal columns: the seeded three are not a promise.

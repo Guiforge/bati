@@ -14,7 +14,21 @@ import config from "@/tamagui.config";
  * test disappears at the first refactor with nobody watching it go: it does not overwrite a live
  * session, it does not start twice on a double tap, and it does not start a session that measures
  * nothing when the position was refused.
+ *
+ * The two preamble tests sit at the end of the file on purpose, in that order: the flag they
+ * exercise is module-scoped, which is to say per process, and a test written after them would
+ * find the why already said.
  */
+
+// The band asks the module what the grant already is before it explains anything, which is the
+// one question a request cannot answer: by the time a request resolves, the dialog the sentence
+// was meant to introduce has already been shown. Granted by default, so every test above reads as
+// the returning hero it describes: the why belongs to the phone that has not granted it yet.
+const mockPermissionStatus = jest.fn();
+
+/** `session.expedition_permission_why`, the sentence the system dialog used to arrive without. */
+const WHY =
+  "Bati reads your location during an outing, and it stays on this phone. Android is about to ask.";
 
 const mockPush = jest.fn();
 
@@ -40,6 +54,7 @@ jest.mock("@/stores/session", () => ({
 
 jest.mock("@/modules/bati-location", () => ({
   requestPermission: () => mockRequestPermission(),
+  getPermissionStatus: () => mockPermissionStatus(),
   requestNotificationPermission: () => mockRequestNotificationPermission(),
   // Asked once per process by whichever door got there first, so the mock keeps the
   // call visible while the real one is the module's own business.
@@ -86,6 +101,7 @@ function tile(name: string) {
 }
 
 beforeEach(() => {
+  mockPermissionStatus.mockReset().mockResolvedValue({ granted: true, canAskAgain: false });
   mockPush.mockClear();
   mockStartSession.mockClear();
   mockSession.status = "idle";
@@ -200,4 +216,53 @@ it("renders nothing at all when there is no way out to offer", async () => {
   // The whole subtree, not just the heading: an empty band that still reserved its height would
   // leave a gap on Home that no read is ever going to fill.
   await waitFor(() => expect(view.toJSON()).toBeNull());
+});
+
+it("explains nothing to a hero who already granted the position", async () => {
+  // The module's own read, asked before anything is said and prompting nothing. A hero who goes
+  // out every day does not need the reason for a dialog they will never see.
+  await renderBand();
+  await screen.findByText("Course du Messager");
+  await userEvent.press(tile("Course du Messager"));
+
+  await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+  expect(screen.queryByText(WHY)).toBeNull();
+  expect(mockPermissionStatus).toHaveBeenCalled();
+});
+
+it("says why before Android asks, and only for the first tap of the process", async () => {
+  // The phone that has not granted it yet: this is the tap that used to meet the system dialog
+  // with nothing in front of it, on a door that skips the screen `quests.location_notice` lives on.
+  mockPermissionStatus.mockResolvedValue({ granted: false, canAskAgain: true });
+  mockRequestPermission.mockResolvedValue({ granted: false });
+
+  await renderBand();
+  await screen.findByText("Course du Messager");
+  await userEvent.press(tile("Course du Messager"));
+
+  expect(await screen.findByText(WHY)).toBeTruthy();
+  // The order is the whole point: an unprimed dialog is refused more often, and a final refusal
+  // cannot be undone from inside the app.
+  expect(mockRequestPermission).not.toHaveBeenCalled();
+  expect(mockStartSession).not.toHaveBeenCalled();
+
+  // One confirmation, in the strip the band already uses, and the same tap carries on from there:
+  // no second screen, no navigation, nothing to come back from.
+  await userEvent.press(screen.getByLabelText("Continue"));
+  await waitFor(() => expect(mockRequestPermission).toHaveBeenCalledTimes(1));
+
+  // A why explains the dialog, it does not answer it: a refusal is exactly as final as it was,
+  // and the strip says where the grant lives instead.
+  await waitFor(() => expect(screen.getByText("Bati has no access to your location")).toBeTruthy());
+  expect(screen.getByText("Open settings")).toBeTruthy();
+  expect(screen.queryByText(WHY)).toBeNull();
+  expect(mockStartSession).not.toHaveBeenCalled();
+  expect(mockPush).not.toHaveBeenCalled();
+
+  // Second tap, same process, grant still missing: straight to Android. Saying it again would be
+  // one more tap between the hero and the door, for a reason already given.
+  await userEvent.press(tile("Course du Messager"));
+
+  await waitFor(() => expect(mockRequestPermission).toHaveBeenCalledTimes(2));
+  expect(screen.queryByText(WHY)).toBeNull();
 });

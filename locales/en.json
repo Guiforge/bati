@@ -860,7 +860,8 @@
     "resume": "Resume",
     "discard": "Discard",
     "finish_outing": "Finish the outing",
-    "finish_outing_description": "Your outing ran to its end without the app. Its trace knows what it did."
+    "finish_outing_description": "Your outing ran to its end without the app. Its trace knows what it did.",
+    "finish_outing_title": "Your outing came home without you"
   },
   "recap": {
     "title": "The ground covered",

@@ -747,7 +747,9 @@ Step 0 a déjà refusé pour l'écran de quête.
   - Surfacé par : décision 1 du 03/09, rien ne relit le Kotlin avant un tag
   - Fichiers : `scripts/ktlint.sh`, `.pre-commit-config.yaml`, `.github/workflows/kotlin.yml`
   - Vérifier : `npx prek run --all-files`, puis un push qui touche un `.kt`
-- [ ] **T23b (P1, human ~2 h / CC ~15 min), release 2.1.0.** Changelog fastlane par `versionCode`, puis le tag.
+- [~] **T23b, release 2.1.0.** Changelog écrit pour le `versionCode` 20100 (80e21df4), dans les
+  deux langues. Le reste attend `main` : `npm run release -- minor` refuse toute autre branche,
+  et c'est lui qui bumpe `package.json` et `app.json` ensemble, tague et pousse.
   - Surfacé par : AGENTS.md, un changelog manquant échoue en silence
   - Fichiers : `fastlane/metadata/android/*/changelogs/<versionCode>.txt`, `docs/`
   - Vérifier : `npx expo config --type public | grep versionCode` avant d'écrire le fichier

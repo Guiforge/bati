@@ -719,31 +719,31 @@ Step 0 a déjà refusé pour l'écran de quête.
   - Surfacé par : revue design F23 à F27, quatre chaînes annoncées pour une douzaine de surfaces
   - Fichiers : `locales/fr.json`, `locales/en.json`
   - Vérifier : `npm test -- locale-style`, `npm test -- villagers`
-- [ ] **T16 (P1, human ~1 j / CC ~45 min), feuille d'objectif.** Deux onglets, des presets, le stepper de 5 s sort.
+- [x] **T16 (P1), feuille d'objectif.** Deux onglets, des presets, le stepper de 5 s sort. *Fait, 7c7d2599.*
   - Surfacé par : constat 3 de l'audit, 360 taps pour passer de 15 à 45 minutes
   - Fichiers : nouveau composant sur le modèle d'`ExercisePickerSheet` (`disableDrag`), `components/quests/QuestConfigCard.tsx`, `app/(tabs)/quests/[id].tsx`
   - Vérifier : `npm test -- quest-details-expedition`
-- [ ] **T17 (P1, human ~1 j / CC ~45 min), pont.** « En faire une quête » sur le récap d'une sortie libre.
+- [x] **T17 (P1), pont.** « En faire une quête » sur le récap d'une sortie libre. *Fait, 41b8e981.*
   - Surfacé par : règle 8 de l'audit, on fabrique des préparés à partir des partants
   - Fichiers : `components/session/VictoryView.tsx`, `db/quests.ts` (`createQuestTemplate` existe)
   - Vérifier : `npm test -- victory-expedition`
-- [ ] **T18b (P1, human ~1 j / CC ~45 min), lieues.** Compteur en direct, vibration au franchissement.
+- [x] **T18b (P1), lieues.** Compteur en direct, vibration au franchissement. *Fait, eebeda78.*
   - Surfacé par : décision 3 du 03/09, aucun événement de lieue n'existe encore
   - Fichiers : `stores/expedition.ts`, et la reprise qui ne doit pas rejouer huit lieues d'un coup
   - Vérifier : `npm test -- store-expedition`
-- [ ] **T19b (P1, human ~2 j / CC ~1 h), action Terminer.** Kotlin, module, `completeOuting()`.
+- [x] **T19b (P1), action Terminer.** Kotlin, module, `completeOuting()`. *Fait, cf8db912.*
   - Surfacé par : prémisse 7, la fin la mieux protégée est celle qui marche écran verrouillé
   - Fichiers : `BatiLocationService.kt`, `modules/bati-location/index.ts`, `stores/session.ts`, plus cinq lignes dans `stores/expedition.ts`
   - Vérifier : la liste sur appareil de « Le Kotlin, et ce qui le garde »
-- [ ] **T20b (P1, human ~1 j / CC ~45 min), repli.** La carte de reprise sait finir une sortie.
+- [x] **T20b (P1), repli.** La carte de reprise sait finir une sortie. *Fait, 32cd5533.*
   - Surfacé par : décision 2 du 03/09, `SESSION_EXPIRY_MS` jette une randonnée finie le soir
   - Fichiers : `hooks/useSessionRecovery.ts`, `components/session/SessionRecoveryCard.tsx`
   - Vérifier : `npm test -- session-recovery-card`, `npm test -- useSessionRecovery`
-- [ ] **T21b (P2, human ~3 h / CC ~20 min), préambule de permission.** Dire pourquoi avant le dialogue.
+- [x] **T21b (P2), préambule de permission.** Dire pourquoi avant le dialogue. *Fait, 239fc6e3.*
   - Surfacé par : revue design F4, un dialogue non amorcé se refuse plus souvent et un refus définitif ne se rattrape pas
   - Fichiers : `components/home/OutsideBand.tsx`
   - Vérifier : `npm test -- home-outside-band`
-- [ ] **T22b (P1, human ~3 h / CC ~30 min), garde-fou Kotlin.** ktlint au commit, compilation filtrée au push.
+- [x] **T22b (P1), garde-fou Kotlin.** ktlint au commit, compilation filtrée au push. *Fait, 8c3e1fa9.*
   - Surfacé par : décision 1 du 03/09, rien ne relit le Kotlin avant un tag
   - Fichiers : `scripts/ktlint.sh`, `.pre-commit-config.yaml`, `.github/workflows/kotlin.yml`
   - Vérifier : `npx prek run --all-files`, puis un push qui touche un `.kt`

@@ -30,49 +30,20 @@ const REST_STEP = 5;
 
 type SlotStepperProps = {
   qex: Quest["exercises"][number];
-  byDistance: boolean;
-  distanceM: number;
-  unit: DistanceUnit;
   singleControl: boolean;
   label: string;
   hint?: string;
   onChangeTarget: (value: number) => void;
-  onChangeDistance: (value: number) => void;
 };
 
 /**
- * One slot's control, pulled out of the exercises map so the map itself stays a plain loop: on an
- * outing set by distance every slot shows the same distance goal, otherwise each shows its own
- * target. Split out of `QuestConfigCard` rather than left inline for the same reason — a ternary
- * this shaped, inside a `.map`, inside the card, is what tripped the cognitive-complexity budget.
+ * One slot's duration control. Split out of `QuestConfigCard` so the `.map` over slots stays a
+ * plain loop rather than a ternary — that ternary, inline, is what tripped the cognitive-complexity
+ * budget. Duration only: `config.distanceM` is one value for the whole quest, not one per slot, so
+ * the distance control is rendered once in `QuestConfigCard` itself, never inside this loop — a
+ * quest with two outdoor movements otherwise showed the same distance stepper twice.
  */
-function SlotTargetStepper({
-  qex,
-  byDistance,
-  distanceM,
-  unit,
-  singleControl,
-  label,
-  hint,
-  onChangeTarget,
-  onChangeDistance,
-}: SlotStepperProps) {
-  const { t } = useTranslation();
-
-  if (byDistance) {
-    return (
-      <Stepper
-        label={t("quests.config_distance", "Distance")}
-        value={distanceM}
-        min={DISTANCE_GOAL_RANGE.min}
-        max={DISTANCE_GOAL_RANGE.max}
-        step={DISTANCE_GOAL_STEP}
-        display={(value) => formatDistance(value, unit)}
-        onChange={onChangeDistance}
-      />
-    );
-  }
-
+function SlotTargetStepper({ qex, singleControl, label, hint, onChangeTarget }: SlotStepperProps) {
   return (
     <Stepper
       // The movement's name, unless it is the only one: on a one-movement quest
@@ -94,32 +65,56 @@ function SlotTargetStepper({
   );
 }
 
-type OutingGoalToggleProps = {
+type OutingGoalControlsProps = {
   byDistance: boolean;
+  distanceM: number;
+  unit: DistanceUnit;
   onChooseDuration: () => void;
   onChooseDistance: () => void;
+  onChangeDistance: (value: number) => void;
 };
 
-/** The Duration/Distance chip pair, pulled out for the same reason as `SlotTargetStepper` above. */
-function OutingGoalToggle({
+/**
+ * The Duration/Distance toggle, plus the distance stepper when that is the chosen unit. One
+ * component, and the distance stepper lives inside it rather than beside it in `QuestConfigCard`,
+ * so the card only ever writes one `outing ? ... : null` — that single call site is what keeps
+ * `config.distanceM` a value with exactly one control: rendered once here, never once per slot.
+ */
+function OutingGoalControls({
   byDistance,
+  distanceM,
+  unit,
   onChooseDuration,
   onChooseDistance,
-}: OutingGoalToggleProps) {
+  onChangeDistance,
+}: OutingGoalControlsProps) {
   const { t } = useTranslation();
   return (
-    <XStack gap="$2">
-      <Chip
-        label={t("quests.config_duration", "Duration")}
-        tone={byDistance ? "default" : "primary"}
-        onPress={onChooseDuration}
-      />
-      <Chip
-        label={t("quests.config_distance", "Distance")}
-        tone={byDistance ? "primary" : "default"}
-        onPress={onChooseDistance}
-      />
-    </XStack>
+    <YStack gap="$3">
+      <XStack gap="$2">
+        <Chip
+          label={t("quests.config_duration", "Duration")}
+          tone={byDistance ? "default" : "primary"}
+          onPress={onChooseDuration}
+        />
+        <Chip
+          label={t("quests.config_distance", "Distance")}
+          tone={byDistance ? "primary" : "default"}
+          onPress={onChooseDistance}
+        />
+      </XStack>
+      {byDistance ? (
+        <Stepper
+          label={t("quests.config_distance", "Distance")}
+          value={distanceM}
+          min={DISTANCE_GOAL_RANGE.min}
+          max={DISTANCE_GOAL_RANGE.max}
+          step={DISTANCE_GOAL_STEP}
+          display={(value) => formatDistance(value, unit)}
+          onChange={onChangeDistance}
+        />
+      ) : null}
+    </YStack>
   );
 }
 
@@ -243,27 +238,28 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
             <Separator borderColor="$borderStrong" />
 
             {outing ? (
-              <OutingGoalToggle
+              <OutingGoalControls
                 byDistance={byDistance}
+                distanceM={config.distanceM ?? DEFAULT_DISTANCE_GOAL_M}
+                unit={unit}
                 onChooseDuration={chooseDuration}
                 onChooseDistance={chooseDistance}
+                onChangeDistance={(value) => onChange({ ...config, distanceM: value })}
               />
             ) : null}
 
             {quest.exercises.map((qex) => (
               <XStack key={qex.id} items="center" gap="$2">
                 <YStack flex={1}>
-                  <SlotTargetStepper
-                    qex={qex}
-                    byDistance={byDistance}
-                    distanceM={config.distanceM ?? DEFAULT_DISTANCE_GOAL_M}
-                    unit={unit}
-                    singleControl={singleControl}
-                    label={slotLabel(qex)}
-                    hint={unitWord(qex.target.type)}
-                    onChangeTarget={(value) => setTarget(qex.id, value)}
-                    onChangeDistance={(value) => onChange({ ...config, distanceM: value })}
-                  />
+                  {byDistance ? null : (
+                    <SlotTargetStepper
+                      qex={qex}
+                      singleControl={singleControl}
+                      label={slotLabel(qex)}
+                      hint={unitWord(qex.target.type)}
+                      onChangeTarget={(value) => setTarget(qex.id, value)}
+                    />
+                  )}
                 </YStack>
                 <AppIconButton
                   accessibilityLabel={t("quests.swap_exercise", "Replace this movement")}

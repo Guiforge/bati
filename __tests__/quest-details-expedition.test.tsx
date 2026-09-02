@@ -89,6 +89,41 @@ function expeditionQuest() {
   };
 }
 
+/**
+ * A quest a hero could write in the editor: two outdoor movements, nothing stopping the
+ * combination (`docs/designs/expeditions.md` — "a hero can put a walk in a quest next to
+ * anything"). Distance mode must show one distance control here, not one per slot.
+ */
+function twoSlotOutingQuest() {
+  return {
+    ...expeditionQuest(),
+    enTitle: "The Twin Trail",
+    exercises: [
+      {
+        id: 11,
+        images: [],
+        substitutedFor: null,
+        ghost: null,
+        target: { type: "time", value: 900 },
+        exercise: movement({ style: "expedition" }),
+      },
+      {
+        id: 12,
+        images: [],
+        substitutedFor: null,
+        ghost: null,
+        target: { type: "time", value: 600 },
+        exercise: movement({
+          id: 22,
+          enName: "Messenger's Run",
+          frName: "Course du Messager",
+          style: "expedition",
+        }),
+      },
+    ],
+  };
+}
+
 /** An ordinary workout: three rounds, two movements — every control has something to change. */
 function workoutQuest() {
   return {
@@ -147,8 +182,11 @@ jest.mock("@/db/adventures-narrative", () => ({
   getAdventureStepNarrative: jest.fn().mockResolvedValue(null),
 }));
 
-/** The two fixtures differ in their slots (a ghost line, a rep target), so the mount takes both. */
-type QuestFixture = ReturnType<typeof expeditionQuest> | ReturnType<typeof workoutQuest>;
+/** The fixtures differ in their slots (a ghost line, a rep target), so the mount takes any of them. */
+type QuestFixture =
+  | ReturnType<typeof expeditionQuest>
+  | ReturnType<typeof twoSlotOutingQuest>
+  | ReturnType<typeof workoutQuest>;
 
 const mockLoaded: { quest: QuestFixture } = { quest: expeditionQuest() };
 
@@ -183,8 +221,9 @@ describe("an expedition on the quest screen", () => {
     expect(view.getByText("Rounds")).toBeTruthy();
     // The control is labelled by its unit, not by the movement: on a one-movement quest the
     // screen has already named it twice above, and the name truncated in a 70 dp column. It now
-    // also names the Duration/Distance toggle, so "Duration" appears twice.
-    expect(view.getAllByText("Duration").length).toBeGreaterThanOrEqual(1);
+    // also names the Duration/Distance toggle, so "Duration" appears exactly twice: the toggle
+    // chip, and this one slot's own stepper label.
+    expect(view.getAllByText("Duration")).toHaveLength(2);
   });
 
   test("the ghost line speaks the same unit as the target above it", async () => {
@@ -207,7 +246,7 @@ describe("an expedition on the quest screen", () => {
     expect(view.queryByText("Round rest")).toBeNull();
     // The controls that do something are untouched: rounds, and the outing's own length.
     expect(view.getByText("Rounds")).toBeTruthy();
-    expect(view.getAllByText("Duration").length).toBeGreaterThanOrEqual(1);
+    expect(view.getAllByText("Duration")).toHaveLength(2);
   });
 
   test("an outing can be set by distance instead of by duration", async () => {
@@ -218,6 +257,16 @@ describe("an expedition on the quest screen", () => {
     expect(view.getByText("3.00 km")).toBeTruthy();
     await fireEvent.press(view.getByText("Duration"));
     expect(view.queryByText("3.00 km")).toBeNull();
+  });
+
+  test("a quest with two outdoor movements shows one distance stepper, not one per slot", async () => {
+    const view = await mountQuest(twoSlotOutingQuest());
+    // Two slots, so the panel does not open by itself — the config it holds is no longer a
+    // single control the hero came here to set.
+    await fireEvent.press(view.getByLabelText("Adjust this quest"));
+    await fireEvent.press(view.getByText("Distance"));
+    // `config.distanceM` is one value for the whole quest: one control, however many movements.
+    expect(view.getAllByText("3.00 km")).toHaveLength(1);
   });
 });
 

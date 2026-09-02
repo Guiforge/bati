@@ -1,5 +1,5 @@
 import type { Exercise } from "@/db/exercises";
-import { hasOutdoorMovement, isOutingQuest } from "@/db/expeditions";
+import { hasOutdoorMovement, isMountedOuting, isOutingQuest, outingGoal } from "@/db/expeditions";
 import { listOutings } from "@/db/outings";
 import type { QuestTemplate } from "@/db/quests";
 
@@ -111,6 +111,33 @@ describe("the two questions about going outside", () => {
     const dangling = makeQuest(14, "Points at nothing", [99]);
     expect(hasOutdoorMovement(dangling, exercisesById)).toBe(false);
     expect(isOutingQuest(dangling, exercisesById)).toBe(false);
+  });
+});
+
+describe("outingGoal", () => {
+  const slot = (type: "time" | "reps", value: number) => ({
+    exercises: [{ target: { type, value } }],
+  });
+
+  test("a distance goal outranks the slot's duration", () => {
+    expect(outingGoal(slot("time", 900), 5000)).toEqual({ type: "distance", metres: 5000 });
+  });
+
+  test("without a distance the slot's duration is the goal", () => {
+    expect(outingGoal(slot("time", 900), null)).toEqual({ type: "time", seconds: 900 });
+    expect(outingGoal(slot("time", 900), undefined)).toEqual({ type: "time", seconds: 900 });
+  });
+
+  test("a rep slot is no goal for a walk", () => {
+    expect(outingGoal(slot("reps", 10), null)).toBeNull();
+  });
+});
+
+describe("isMountedOuting", () => {
+  test("only the ride is mounted", () => {
+    const named = (enName: string) => ({ exercises: [{ exercise: { enName } }] });
+    expect(isMountedOuting(named("Outrider's Ride"))).toBe(true);
+    expect(isMountedOuting(named("Warden's Walk"))).toBe(false);
   });
 });
 

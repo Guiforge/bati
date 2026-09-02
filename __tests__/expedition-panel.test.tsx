@@ -24,11 +24,15 @@ import { rawColors } from "@/constants/rawColors";
 import { EMPTY, type TrackState } from "@/src/gps/track";
 import { useExpeditionStore } from "@/stores/expedition";
 
-function setTrack(track: Partial<TrackState>, extra: { error?: string | null } = {}) {
+function setTrack(
+  track: Partial<TrackState>,
+  extra: { error?: string | null; goalReached?: boolean } = {},
+) {
   useExpeditionStore.setState({
     track: { ...EMPTY, ...track },
     error: extra.error ?? null,
     lastFix: null,
+    goalReached: extra.goalReached ?? false,
   });
 }
 
@@ -158,4 +162,11 @@ describe("ExpeditionPanel", () => {
       expect(screen.getByText("No signal")).toBeTruthy();
     },
   );
+
+  test("the status says the goal was reached, ahead of moving or standing still", async () => {
+    setTrack({ startedAt: 1, distanceM: 3000, movingMs: 600_000 }, { goalReached: true });
+    await mount();
+    expect(screen.getByText("Goal reached")).toBeTruthy();
+    expect(screen.queryByText("On the road")).toBeNull();
+  });
 });

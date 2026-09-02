@@ -1,4 +1,6 @@
+import type { OutingGoal } from "@/src/gps/track";
 import type { Exercise } from "./exercises";
+import type { Target } from "./targets";
 import { NON_REP_STYLE } from "./workUnits";
 
 /**
@@ -56,4 +58,28 @@ export function isOutingQuest(quest: Slotted, exercisesById: Record<number, Exer
  */
 export function isOutingSession(quest: { exercises: { exercise: Styled }[] }): boolean {
   return allOutdoors(quest.exercises.map((qex) => qex.exercise));
+}
+
+/**
+ * What the hero set out to do. A distance, when they chose one on the quest screen; otherwise the
+ * slot's duration, which is the number the stepper on that screen edits. A rep slot cannot be a
+ * walk's goal, and a quest with no slot has none.
+ */
+export function outingGoal(
+  quest: { exercises: { target: Target }[] },
+  distanceGoalM: number | null | undefined,
+): OutingGoal | null {
+  if (distanceGoalM != null && distanceGoalM > 0)
+    return { type: "distance", metres: distanceGoalM };
+  const target = quest.exercises[0]?.target;
+  return target?.type === "time" ? { type: "time", seconds: target.value } : null;
+}
+
+/**
+ * Whether this outing is on a mount. Read off the movement rather than asked, because the hero
+ * already chose it by choosing the quest. Moved here from the session store so the quest screen
+ * can estimate a ride from a distance with the same answer the speed cap uses.
+ */
+export function isMountedOuting(quest: { exercises: { exercise: { enName: string } }[] }): boolean {
+  return quest.exercises.some((slot) => slot.exercise.enName === "Outrider's Ride");
 }

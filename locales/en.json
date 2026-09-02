@@ -438,6 +438,7 @@
     "expedition_status_moving": "On the road",
     "expedition_status_paused": "Standing still",
     "expedition_status_error": "No signal",
+    "expedition_reached": "Goal reached",
     "expedition_accuracy": "within {{metres}} m",
     "expedition_notification_title": "Bati",
     "expedition_acquiring": "Finding the sky",

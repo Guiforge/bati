@@ -22,6 +22,7 @@ import {
 } from "@/db/completed";
 import { estimateQuestSeconds } from "@/db/estimate";
 import { checkForNewRungs, type Exercise, type VariationStep } from "@/db/exercises";
+import { isMountedOuting, outingGoal } from "@/db/expeditions";
 import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
@@ -197,6 +198,7 @@ interface SessionState {
     options?: {
       adventureRunStepId?: number | null;
       adventureId?: number | null;
+      distanceGoalM?: number | null;
     },
   ) => Promise<void>;
   nextWarmupStep: () => void;
@@ -560,40 +562,32 @@ async function dealFinalBlow(
 }
 
 /**
- * Whether this outing is on a mount, which is the only thing that changes the speed a fix may
- * plausibly carry: 8 m/s throws away a bicycle on any descent, and 25 m/s lets a walk keep a
- * fix no walker could have produced.
- *
- * Read off the movement rather than asked, because the hero already chose it by choosing the
- * quest, and a question whose answer is on screen is a question not worth asking.
- */
-function mountedExpedition(quest: Quest): boolean {
-  return quest.exercises.some((slot) => slot.exercise.enName === "Outrider's Ride");
-}
-
-/**
  * Start measuring the ground, if there is ground to measure.
  *
  * Its own function because setting up a session and starting a foreground service are two
- * different jobs, and because the notification's five strings are localized here: the native
+ * different jobs, and because the notification's six strings are localized here: the native
  * half owns no words at all, which is what lets it follow the app's language without knowing
  * one exists.
  */
-function beginTrackingIfOuting(quest: Quest, sessionUuid: string | null): void {
+function beginTrackingIfOuting(
+  quest: Quest,
+  sessionUuid: string | null,
+  distanceGoalM: number | null,
+): void {
   if (!isExpedition(quest) || sessionUuid === null) return;
 
   // Fire and forget: the permission dialog and the service start are the expedition store's
   // business, and a session must not wait on a system prompt before its own screen appears.
   // A refusal lands in that store's `error`, which the panel reads.
   //
-  // The unit is resolved here rather than inside that store, and only once the quest is known to
-  // be an outing: the store has no business importing settings, which would pull the whole `db`
-  // barrel into a module the session screen mounts. It only ever needs the word the notification
-  // prints.
-  preferences
-    .getDistanceUnit()
-    .catch((): DistanceUnit => "metric")
-    .then((unit) =>
+  // The unit and the haptics preference are resolved here rather than inside that store, and
+  // only once the quest is known to be an outing: the store has no business importing settings,
+  // which would pull the whole `db` barrel into a module the session screen mounts.
+  Promise.all([
+    preferences.getDistanceUnit().catch((): DistanceUnit => "metric"),
+    preferences.getHapticsEnabled().catch(() => true),
+  ])
+    .then(([unit, haptics]) =>
       useExpeditionStore.getState().begin(
         sessionUuid,
         {
@@ -602,9 +596,12 @@ function beginTrackingIfOuting(quest: Quest, sessionUuid: string | null): void {
           tracking: i18n.t("session.expedition_tracking"),
           paused: i18n.t("session.expedition_paused"),
           gpsOff: i18n.t("session.expedition_gps_off"),
+          reached: i18n.t("session.expedition_reached"),
         },
-        mountedExpedition(quest),
+        isMountedOuting(quest),
         unit,
+        outingGoal(quest, distanceGoalM),
+        haptics,
       ),
     )
     .catch((error: unknown) => reportError("session.beginTracking", error));
@@ -695,7 +692,7 @@ export const useSessionStore = create<SessionState>()(
 
       // An outing measures ground; a workout in a room does not. Called after the state is set
       // so the uuid the points are filed under is already the one the session will keep.
-      beginTrackingIfOuting(quest, get().sessionUuid);
+      beginTrackingIfOuting(quest, get().sessionUuid, options?.distanceGoalM ?? null);
     },
 
     nextWarmupStep: () => {

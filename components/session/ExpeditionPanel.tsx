@@ -15,13 +15,15 @@ import { useSettingsStore } from "@/stores/settings";
  * minutes being told their phone had no reception. The two the hero can fix say so; the rest
  * genuinely are no signal from where the hero stands.
  */
-function statusKey(error: string | null, track: TrackState): string {
+function statusKey(error: string | null, track: TrackState, goalReached: boolean): string {
   if (error !== null) {
     return error === "permission" || error === "foreground-denied"
       ? "session.expedition_status_denied"
       : "session.expedition_status_error";
   }
   if (track.startedAt === null) return "session.expedition_status_acquiring";
+  // Ahead of paused: a hero who met the goal and stopped wants the first fact, not the second.
+  if (goalReached) return "session.expedition_reached";
   return track.paused ? "session.expedition_status_paused" : "session.expedition_status_moving";
 }
 
@@ -41,6 +43,7 @@ export function ExpeditionPanel() {
   const track = useExpeditionStore((state) => state.track);
   const error = useExpeditionStore((state) => state.error);
   const lastFix = useExpeditionStore((state) => state.lastFix);
+  const goalReached = useExpeditionStore((state) => state.goalReached);
   const unit = useSettingsStore((state) => state.distanceUnit);
 
   const movingMinutes = Math.floor(track.movingMs / 60000);
@@ -50,7 +53,7 @@ export function ExpeditionPanel() {
    * One line, and it never lies by omission. A blank readout while the sky is being found looks
    * exactly like a broken one, and on a de-Googled ROM the first fix can take minutes.
    */
-  const status = t(statusKey(error, track));
+  const status = t(statusKey(error, track, goalReached));
   const acquiring = track.startedAt === null;
 
   /**

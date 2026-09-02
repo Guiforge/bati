@@ -46,8 +46,6 @@ type ExpeditionState = {
   lastFix: LocationFix | null;
   /** Set when the service refused to start, so a screen can say why rather than sit blank. */
   error: string | null;
-  /** What the hero set out to do, or null when they just went out. */
-  goal: OutingGoal | null;
   /** Flipped once, the moment the goal was met. Read by the panel's status line. */
   goalReached: boolean;
   begin: (
@@ -132,7 +130,6 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   track: EMPTY,
   lastFix: null,
   error: null,
-  goal: null,
   goalReached: false,
 
   begin: async (sessionUuid, notification, mounted, unit, goal = null, haptics = true) => {
@@ -175,7 +172,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       .catch((e) => reportError("expedition.restart", e));
 
     buffer = [];
-    set({ sessionUuid, track: EMPTY, lastFix: null, error: null, goal, goalReached: false });
+    set({ sessionUuid, track: EMPTY, lastFix: null, error: null, goalReached: false });
 
     subscriptions = [
       addListener("onLocation", (fix) => {

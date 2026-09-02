@@ -85,6 +85,12 @@ export async function hasPoints(sessionId: string): Promise<boolean> {
 }
 
 /**
+ * One league is a kilometre here. The one place that knows the scale: the road's floors, the
+ * oath's target and every "N leagues" a screen prints divide by this.
+ */
+export const METRES_PER_LEAGUE = 1000;
+
+/**
  * Leagues: the second currency, in metres.
  *
  * Summed over *sessions* rather than over fixes, and that is not a detail. A

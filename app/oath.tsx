@@ -42,6 +42,7 @@ const METRICS: OathMetric[] = [
   "exercise_volume",
   "sessions",
   "streak",
+  "leagues",
 ];
 
 /** Sessions per week offered in the custom form. Two is a real answer, not a lesser one. */
@@ -204,6 +205,7 @@ const DEFAULT_TARGET: Record<OathMetric, number> = {
   sessions: 50,
   streak: 30,
   weekly_sessions: 8, // weeks
+  leagues: 50,
 };
 
 /**

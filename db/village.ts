@@ -3,7 +3,7 @@ import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
 import { achievementDefinitions, getUnlockedAchievements } from "./achievements";
 import { listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
-import { totalLeaguesM } from "./gps";
+import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
 import { getMuscleBalance } from "./muscleBalance";
 import {
   type BuildingCode,
@@ -275,7 +275,6 @@ const VICTORY_FLOORS: readonly number[] = [3, 5, 8, 12, 20];
  * progress on the way there. A fantasy unit also sidesteps the metric/imperial preference the
  * village screen has no access to: nobody's settings turn a league into anything else.
  */
-const METRES_PER_LEAGUE = 1000;
 
 /**
  * The road's floors, in leagues. **Guessed, and meant to be corrected** against a first real run

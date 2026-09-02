@@ -221,9 +221,14 @@ describe("db/oaths", () => {
 
     for (const p of o.OATH_PRESETS) {
       expect(p.target).toBeGreaterThan(0);
-      expect(["exercise_pr", "exercise_volume", "sessions", "streak", "weekly_sessions"]).toContain(
-        p.metric,
-      );
+      expect([
+        "exercise_pr",
+        "exercise_volume",
+        "sessions",
+        "streak",
+        "weekly_sessions",
+        "leagues",
+      ]).toContain(p.metric);
       // The weekly metric is the one that needs a quota; the others must not carry one.
       expect(p.weeklyTarget !== undefined).toBe(o.oathNeedsWeeklyTarget(p.metric));
       // Exercise metrics must name a seed exercise so the screen can resolve an id.
@@ -303,6 +308,22 @@ describe("db/oaths", () => {
       expect(await o.getOath()).toBeNull();
       expect(await o.getOathProgress()).toBeNull();
     });
+  });
+
+  test("leagues count the ground written on sessions, in whole leagues", async () => {
+    const { swearOath, getOathProgress } = oaths();
+    const now = Math.floor(Date.now() / 1000);
+    const insert = t.sqlite.prepare(
+      "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, leaguesM) VALUES ('medium', 10, ?, ?)",
+    );
+    insert.run(now - 120, 2500);
+    insert.run(now - 60, 3000);
+    logSessionAt(1); // a workout, no ground
+
+    await swearOath({ metric: "leagues", target: 50, exerciseId: null });
+    const progress = await getOathProgress();
+    expect(progress?.current).toBe(5);
+    expect(progress?.isFulfilled).toBe(false);
   });
 
   describe("weekly_sessions", () => {

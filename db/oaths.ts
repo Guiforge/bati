@@ -1,5 +1,6 @@
 import { eq, gte, sql } from "drizzle-orm";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
+import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
 import { deletePreference, getPreference, setPreference } from "./preferences";
 import { getStreakInfo, invalidateStreakInfo } from "./streaks";
 import { repEquivalentSql } from "./workUnits";
@@ -19,6 +20,7 @@ export const oathMetrics = [
   "sessions", // total sessions logged
   "streak", // best flame ever reached
   "weekly_sessions", // weeks that hit a session quota ("3 a week, for 8 weeks")
+  "leagues", // ground covered beyond the walls, lifetime ("50 leagues")
 ] as const;
 
 export type OathMetric = (typeof oathMetrics)[number];
@@ -76,6 +78,9 @@ export const OATH_PRESETS: OathPreset[] = [
   // consistency (db/streaks.ts), so this asks for a month of holding the line, rest included.
   { id: "streak_30", metric: "streak", target: 30 },
   { id: "sessions_50", metric: "sessions", target: 50 },
+  // The one oath a hero who only walks can keep. Lifetime, like `sessions`: the road is paid
+  // the same way, and an oath that started counting at zero would disagree with it.
+  { id: "leagues_50", metric: "leagues", target: 50 },
   { id: "pushups_1000", metric: "exercise_volume", target: 1000, exerciseName: "Push-ups" },
   // Equipment-free pull, so a hero without a bar has a back oath they can actually chase.
   { id: "table_rows_15", metric: "exercise_pr", target: 15, exerciseName: "Table Row" },
@@ -230,6 +235,9 @@ async function measure(oath: Oath): Promise<number> {
       const info = await getStreakInfo();
       return info.best;
     }
+    case "leagues":
+      // Whole leagues, the unit the target is written in. Same column the road reads.
+      return Math.floor((await totalLeaguesM()) / METRES_PER_LEAGUE);
     case "weekly_sessions":
       return await countQualifyingWeeks(oath);
   }

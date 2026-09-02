@@ -812,10 +812,16 @@ export default function QuestDetails() {
                           <Text fontWeight="700" fontSize={17} color="$text" flex={1}>
                             {i + 1}. {exName}
                           </Text>
-                          <Tag
-                            label={targetLabel(qex.target)}
-                            tone={qex.target.type === "time" ? "secondary" : "primary"}
-                          />
+                          {/* On an outing set by distance the slot's seconds are the fallback
+                              `outingGoal` never reads, and a chip saying "15 min" beside a 5 km
+                              goal is the screen contradicting itself about what is going to run.
+                              The goal is named once, in the panel above. */}
+                          {isOuting && config.distanceM !== undefined ? null : (
+                            <Tag
+                              label={targetLabel(qex.target)}
+                              tone={qex.target.type === "time" ? "secondary" : "primary"}
+                            />
+                          )}
                         </XStack>
 
                         {/* A slot the hero is not on the rung for is served easier (issue #33).

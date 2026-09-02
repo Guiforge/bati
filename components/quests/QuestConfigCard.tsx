@@ -3,16 +3,14 @@ import { useTranslation } from "react-i18next";
 import { Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
 import { Stepper } from "@/components/common/Stepper";
 import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Repeat, RotateCcw, SlidersHorizontal } from "@/components/icons";
+import { OutingGoalSheet } from "@/components/quests/OutingGoalSheet";
 import { restsBetweenExercises, restsBetweenRounds } from "@/components/quests/questShape";
 import { formatDistance } from "@/constants/distanceFormat";
 import {
-  DEFAULT_DISTANCE_GOAL_M,
   DISTANCE_GOAL_RANGE,
-  DISTANCE_GOAL_STEP,
   hasQuestOverrides,
   type QuestConfig,
   REST_RANGE,
@@ -20,9 +18,10 @@ import {
   targetRangeFor,
 } from "@/db";
 import { formatDuration } from "@/db/estimate";
-import { isOutingSession } from "@/db/expeditions";
+import { isOutdoors, isOutingSession, outingGoal } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
+import type { OutingGoal } from "@/src/gps/track";
 import { localizedName } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -66,55 +65,40 @@ function SlotTargetStepper({ qex, singleControl, label, hint, onChangeTarget }: 
   );
 }
 
-type OutingGoalControlsProps = {
-  byDistance: boolean;
-  distanceM: number;
-  unit: DistanceUnit;
-  onChooseDuration: () => void;
-  onChooseDistance: () => void;
-  onChangeDistance: (value: number) => void;
-};
-
 /**
- * The Duration/Distance toggle, plus the distance stepper when that is the chosen unit. One
- * component, and the distance stepper lives inside it rather than beside it in `QuestConfigCard`,
- * so the card only ever writes one `outing ? ... : null` — that single call site is what keeps
- * `config.distanceM` a value with exactly one control: rendered once here, never once per slot.
+ * What the outing will actually go by, and the one control that changes it.
+ *
+ * The value is read straight off `outingGoal()` rather than off the config, so the screen shows
+ * the goal the session will start with — that rule says a distance beats a duration, and a card
+ * that displayed both would be showing one the hero is never going to run.
  */
-function OutingGoalControls({
-  byDistance,
-  distanceM,
+function OutingGoalRow({
+  goal,
   unit,
-  onChooseDuration,
-  onChooseDistance,
-  onChangeDistance,
-}: OutingGoalControlsProps) {
+  onOpen,
+}: {
+  goal: OutingGoal;
+  unit: DistanceUnit;
+  onOpen: () => void;
+}) {
   const { t } = useTranslation();
+  const byDistance = goal.type === "distance";
+
   return (
-    <YStack gap="$3">
-      <XStack gap="$2">
-        <Chip
-          label={t("quests.config_duration", "Duration")}
-          tone={byDistance ? "default" : "primary"}
-          onPress={onChooseDuration}
-        />
-        <Chip
-          label={t("quests.config_distance", "Distance")}
-          tone={byDistance ? "primary" : "default"}
-          onPress={onChooseDistance}
-        />
+    <YStack gap="$2">
+      <XStack items="center" justify="space-between" gap="$3">
+        <Text fontWeight="700" fontSize={15} color="$text">
+          {byDistance
+            ? t("quests.config_distance", "Distance")
+            : t("quests.config_duration", "Duration")}
+        </Text>
+        <Text fontWeight="700" fontSize={17} color="$primaryText">
+          {byDistance ? formatDistance(goal.metres, unit) : formatDuration(goal.seconds)}
+        </Text>
       </XStack>
-      {byDistance ? (
-        <Stepper
-          label={t("quests.config_distance", "Distance")}
-          value={distanceM}
-          min={DISTANCE_GOAL_RANGE.min}
-          max={DISTANCE_GOAL_RANGE.max}
-          step={DISTANCE_GOAL_STEP}
-          display={(value) => formatDistance(value, unit)}
-          onChange={onChangeDistance}
-        />
-      ) : null}
+      <AppButton variant="outline" fontSize={16} onPress={onOpen}>
+        {t("quests.goal_sheet_open", "Set up the outing")}
+      </AppButton>
     </YStack>
   );
 }
@@ -212,28 +196,52 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
   const [open, setOpen] = useState(singleControl);
   const modified = hasQuestOverrides(config);
 
-  // On an outing the one control is the goal, and the goal has two units. "Duration" keeps the
-  // slot's target; "Distance" writes `config.distanceM` and the target becomes the fallback the
-  // session never reads. Nothing about the quest row changes either way.
+  // On an outing the one control is the goal, and `outingGoal` is the rule that says which one
+  // that is: a distance beats a duration. Reading it here rather than re-deriving from the config
+  // is what stops the card from showing a target the session will not run. `null` means this
+  // quest has no goal to set at all — no outdoor timed slot — so its plain steppers stay.
   const outing = isOutingSession(quest);
-  const byDistance = outing && config.distanceM !== undefined;
+  const goal = outing ? outingGoal(quest, config.distanceM) : null;
   const unit = useSettingsStore((s) => s.distanceUnit);
+  const [goalOpen, setGoalOpen] = useState(false);
 
-  // Both chips are no-ops on the unit already chosen. Without that guard, tapping "Distance"
-  // while already on distance rewrote `distanceM` with the default: a hero who had dialled
-  // 500 m, glanced away and tapped the chip they were already on lost it to 3 km, silently and
-  // persistently, because the write also saves. The default belongs to arriving at the unit,
-  // not to touching its chip. "Duration" gets the same treatment for the same reason, one step
-  // milder: the write was identical to the config it replaced, so it cost a save and no data.
-  const chooseDuration = () => {
-    if (!byDistance) return;
-    const next = { ...config };
-    delete next.distanceM;
-    onChange(next);
-  };
-  const chooseDistance = () => {
-    if (byDistance) return;
-    onChange({ ...config, distanceM: DEFAULT_DISTANCE_GOAL_M });
+  /**
+   * One goal at a time, written the way `outingGoal` reads it: a distance is `config.distanceM`,
+   * a duration is the outdoor slots' targets *and* the removal of any distance, because a
+   * distance left behind would keep winning.
+   *
+   * The seconds are spread over the outdoor timed slots in proportion to what they hold now, so
+   * a two-leg outing whose goal is the sum still sums to the number the hero just picked. On the
+   * one-slot shape every outing ships with, that is simply "write it".
+   */
+  const setGoal = (next: OutingGoal) => {
+    const range = targetRangeFor("time");
+    if (next.type === "distance") {
+      const metres = Math.min(
+        Math.max(next.metres, DISTANCE_GOAL_RANGE.min),
+        DISTANCE_GOAL_RANGE.max,
+      );
+      onChange({ ...config, distanceM: metres });
+      return;
+    }
+
+    const timed = quest.exercises.filter(
+      (qex) => isOutdoors(qex.exercise.style) && qex.target.type === "time",
+    );
+    const current = timed.reduce((sum, qex) => sum + qex.target.value, 0) || 1;
+    const targets = { ...config.targets };
+    let left = Math.round(next.seconds);
+    timed.forEach((qex, index) => {
+      const share =
+        index === timed.length - 1 ? left : Math.round((next.seconds * qex.target.value) / current);
+      const value = Math.min(Math.max(share, range.min), range.max);
+      targets[String(qex.id)] = value;
+      left -= value;
+    });
+
+    const written = { ...config, targets };
+    delete written.distanceM;
+    onChange(written);
   };
 
   const unitWord = (type: "time" | "reps") =>
@@ -279,24 +287,34 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
 
             <Separator borderColor="$borderStrong" />
 
-            {outing ? (
-              <OutingGoalControls
-                byDistance={byDistance}
-                distanceM={config.distanceM ?? DEFAULT_DISTANCE_GOAL_M}
-                unit={unit}
-                onChooseDuration={chooseDuration}
-                onChooseDistance={chooseDistance}
-                onChangeDistance={(value) => onChange({ ...config, distanceM: value })}
-              />
+            {goal ? (
+              <>
+                <OutingGoalRow goal={goal} unit={unit} onOpen={() => setGoalOpen(true)} />
+                {/* Mounted only while it is open, unlike the picker sheet beside it: a closed
+                    Sheet still renders its frame into the tree, so its chips and its input stay
+                    reachable by a screen reader and by anything else that walks the page. The
+                    mount is also what sets the tab, so the sheet has no state to reset. */}
+                {goalOpen ? (
+                  <OutingGoalSheet
+                    open
+                    onOpenChange={setGoalOpen}
+                    goal={goal}
+                    unit={unit}
+                    onPick={setGoal}
+                  />
+                ) : null}
+              </>
             ) : null}
 
             {quest.exercises.map((qex) => (
               <XStack key={qex.id} items="center" gap="$2">
                 <YStack flex={1}>
-                  {byDistance ? (
-                    // Distance mode drops the per-slot stepper, but the swap button still needs
-                    // a row of its own to sit beside — otherwise the icon floats next to nothing
-                    // and the movement it swaps is unnamed.
+                  {goal ? (
+                    // The goal above is the outing's only control, in either unit: a five-second
+                    // stepper per slot would be a second way to say the same thing, and it was
+                    // 360 taps to go from 15 minutes to 45. The swap button still needs a row of
+                    // its own to sit beside — otherwise the icon floats next to nothing and the
+                    // movement it swaps is unnamed.
                     <Text fontWeight="700" fontSize={15} color="$text" numberOfLines={2}>
                       {localizedName(qex.exercise, language)}
                     </Text>

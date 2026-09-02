@@ -34,11 +34,14 @@ jest.mock(
   () => require("react-native-safe-area-context/jest/mock").default,
 );
 
+// The goal sheet animates; nothing here is about motion, and the picker's own tests mock it the
+// same way. Not the rule under test — the sheet's content is.
+jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => true }));
+
+// Read at call time, like the route params: one test runs the whole screen as an imperial hero.
 jest.mock("@/stores/settings", () => ({
-  useSettingsStore: (selector?: (s: { language: string; distanceUnit: string }) => unknown) => {
-    const state = { language: "en", distanceUnit: "metric" };
-    return selector ? selector(state) : state;
-  },
+  useSettingsStore: (selector?: (s: typeof mockSettings) => unknown) =>
+    selector ? selector(mockSettings) : mockSettings,
 }));
 
 jest.mock("@/stores/session", () => ({
@@ -46,6 +49,7 @@ jest.mock("@/stores/session", () => ({
 }));
 
 const mockParams: { id: string; level?: string } = { id: "5" };
+const mockSettings = { language: "en", distanceUnit: "metric" };
 const mockStartSession = jest.fn().mockResolvedValue(undefined);
 
 jest.mock("@/components/common/Toast", () => ({
@@ -177,10 +181,11 @@ jest.mock("@/db", () => ({
   hasQuestOverrides: jest.fn().mockReturnValue(false),
   ROUNDS_RANGE: { min: 1, max: 10 },
   REST_RANGE: { min: 0, max: 300 },
-  targetRangeFor: () => ({ min: 1, max: 999 }),
+  // The real ceilings: `TIME_TARGET_MAX` is what a 60-minute preset lands exactly on, so a mock
+  // that capped every type at 999 would have quietly turned an hour into sixteen minutes.
+  targetRangeFor: (type: string) =>
+    type === "time" ? { min: 1, max: 3600 } : { min: 1, max: 999 },
   DISTANCE_GOAL_RANGE: { min: 500, max: 200000 },
-  DISTANCE_GOAL_STEP: 500,
-  DEFAULT_DISTANCE_GOAL_M: 3000,
 }));
 
 jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue([]) }));
@@ -207,12 +212,27 @@ beforeEach(() => {
   mockSaved.config = null;
   mockParams.id = "5";
   delete mockParams.level;
+  mockSettings.distanceUnit = "metric";
   mockStartSession.mockClear();
   const db = require("@/db");
   db.getQuestById.mockClear();
   db.applyQuestConfig.mockClear();
   db.estimateQuestXp.mockClear();
+  db.saveQuestConfig.mockClear();
 });
+
+/**
+ * What the screen has decided to run, read off the write it persists.
+ *
+ * `applyQuestConfig` is mocked to the identity here, so a config change never comes back around
+ * as new text on screen: the saved config is the only honest witness to what a tap wrote.
+ */
+function lastSavedConfig(): Record<string, unknown> {
+  const db = require("@/db");
+  const call = db.saveQuestConfig.mock.calls.at(-1);
+  assert(call);
+  return call[1];
+}
 
 async function mountQuest(quest: QuestFixture) {
   mockLoaded.quest = quest;
@@ -247,11 +267,37 @@ describe("an expedition on the quest screen", () => {
     // many times the hero meant to walk, a question an outing cannot answer: it is one round of
     // one movement by definition.
     expect(view.queryByText("Rounds")).toBeNull();
-    // The control is labelled by its unit, not by the movement: on a one-movement quest the
-    // screen has already named it twice above, and the name truncated in a 70 dp column. It now
-    // also names the Duration/Distance toggle, so "Duration" appears exactly twice: the toggle
-    // chip, and this one slot's own stepper label.
-    expect(view.getAllByText("Duration")).toHaveLength(2);
+    // One line, naming the unit the outing will actually go by, and one way to change it.
+    expect(view.getAllByText("Duration")).toHaveLength(1);
+    expect(view.getByText("Set up the outing")).toBeTruthy();
+  });
+
+  /**
+   * Constat 3 of the audit: the goal was a stepper moving five seconds at a time, so 15 min to
+   * 45 min was 360 taps and 21.1 km was not on its grid at all. A stepper's own −/+ pair is what
+   * proves it is gone — the label alone survives on the row that names the goal.
+   */
+  test("its goal is a sheet, not a five-second stepper", async () => {
+    const view = await mountQuest(expeditionQuest());
+
+    expect(view.queryByLabelText("Decrease Duration")).toBeNull();
+    expect(view.queryByLabelText("Increase Duration")).toBeNull();
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    expect(view.getByText("How long, or how far")).toBeTruthy();
+    // Both units are reachable from the one sheet, and the presets are the numbers a hero says.
+    expect(view.getByText("30 min")).toBeTruthy();
+  });
+
+  test("a preset writes the duration the hero tapped", async () => {
+    const view = await mountQuest(expeditionQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("45 min"));
+
+    expect(lastSavedConfig()).toMatchObject({ targets: { "11": 2700 } });
+    // A duration is a duration: any distance left behind would keep winning in `outingGoal`.
+    expect(lastSavedConfig()).not.toHaveProperty("distanceM");
   });
 
   test("the ghost line speaks the same unit as the target above it", async () => {
@@ -274,38 +320,99 @@ describe("an expedition on the quest screen", () => {
     expect(view.queryByText("Round rest")).toBeNull();
     // Nor rounds: the only control left is the one that decides how far the hero is going.
     expect(view.queryByText("Rounds")).toBeNull();
-    expect(view.getAllByText("Duration")).toHaveLength(2);
+    expect(view.getAllByText("Duration")).toHaveLength(1);
   });
 
-  test("an outing can be set by distance instead of by duration", async () => {
+  test("the Distance tab writes metres, and a duration takes them back off", async () => {
     const view = await mountQuest(expeditionQuest());
+
     // fireEvent.press is async here (it wraps the handler in `act`), so the state update it
     // schedules is only guaranteed to have landed once this is awaited.
+    await fireEvent.press(view.getByText("Set up the outing"));
     await fireEvent.press(view.getByText("Distance"));
-    expect(view.getByText("3.00 km")).toBeTruthy();
+    await fireEvent.press(view.getByText("5.00 km"));
+
+    expect(lastSavedConfig()).toMatchObject({ distanceM: 5000 });
+    // `outingGoal` says a distance beats a duration, so the screen names the distance and stops
+    // naming the seconds — one goal, and it is the one that will actually start. The movement's
+    // own target chip goes with it: "15 min" beside a 5 km goal is a screen arguing with itself.
+    expect(view.getByText("5.00 km")).toBeTruthy();
+    expect(view.queryByText("15 min")).toBeNull();
+
+    await fireEvent.press(view.getByText("Set up the outing"));
     await fireEvent.press(view.getByText("Duration"));
-    expect(view.queryByText("3.00 km")).toBeNull();
+    await fireEvent.press(view.getByText("20 min"));
+
+    expect(lastSavedConfig()).not.toHaveProperty("distanceM");
+    expect(view.queryByText("5.00 km")).toBeNull();
   });
 
-  test("tapping the unit already chosen keeps the distance the hero dialled", async () => {
+  test("the sheet reopens on the unit that is going to run", async () => {
     const view = await mountQuest(expeditionQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
     await fireEvent.press(view.getByText("Distance"));
-    // Five steps of 500 m down from the 3 km default lands on the range's floor.
-    for (let i = 0; i < 5; i++) {
-      await fireEvent.press(view.getByLabelText("Decrease Distance"));
-    }
-    expect(view.getByText("500 m")).toBeTruthy();
+    await fireEvent.press(view.getByText("10.00 km"));
 
-    // In distance mode "Distance" names two things, the chip and the stepper's label, so the
-    // chip is taken by position: it is rendered above the control it switches to.
-    const [distanceChip] = view.getAllByText("Distance");
-    assert(distanceChip);
+    // Reopened, it offers distances: a hero who saved 10 km and came back would otherwise be
+    // editing minutes that `outingGoal` has already decided to ignore.
+    await fireEvent.press(view.getByText("Set up the outing"));
+    expect(view.getByText("21.10 km")).toBeTruthy();
+    expect(view.queryByText("30 min")).toBeNull();
+  });
 
-    // The chip the hero is already on is a no-op. It used to rewrite the value with the
-    // default, so a stray tap silently threw away a dialled 500 m and saved 3 km over it.
-    await fireEvent.press(distanceChip);
-    expect(view.getByText("500 m")).toBeTruthy();
-    expect(view.queryByText("3.00 km")).toBeNull();
+  /**
+   * The other half of constat 3: 21.1 km is not a multiple of the 500 m the stepper moved in, so
+   * a half marathon was unreachable however many taps the hero was willing to spend.
+   */
+  test("Other takes a value the presets never offered", async () => {
+    const view = await mountQuest(expeditionQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("Distance"));
+    // A comma is what a French keyboard puts under the thumb.
+    await fireEvent.changeText(view.getByPlaceholderText("Enter your own value"), "12,4");
+    await fireEvent.press(view.getByText("Done"));
+
+    expect(lastSavedConfig()).toMatchObject({ distanceM: 12_400 });
+  });
+
+  /**
+   * The presets have to be the numbers the hero's own system is written in. 5 km / 10 km / half
+   * marathon become 3 mi / 6 mi / 13.1 mi: the same three distances, named the way they are named
+   * over there, rather than a 5 km offered as "3.11 mi".
+   */
+  test("an imperial hero is offered miles, and gets metres in the config", async () => {
+    mockSettings.distanceUnit = "imperial";
+    const view = await mountQuest(expeditionQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("Distance"));
+    expect(view.getByText("3.00 mi")).toBeTruthy();
+    expect(view.queryByText("5.00 km")).toBeNull();
+    await fireEvent.press(view.getByText("13.10 mi"));
+
+    // Metres are the storage unit and the only storage unit, whatever the hero reads.
+    expect(lastSavedConfig()).toMatchObject({ distanceM: 21_082 });
+
+    // And what is typed is read in miles too: 2 mi, not 2 km.
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.changeText(view.getByPlaceholderText("Enter your own value"), "2");
+    await fireEvent.press(view.getByText("Done"));
+    expect(lastSavedConfig()).toMatchObject({ distanceM: 3219 });
+  });
+
+  test("switching tabs decides nothing until a value is picked", async () => {
+    const view = await mountQuest(expeditionQuest());
+    const db = require("@/db");
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("Distance"));
+
+    // The old chips wrote the default distance on every tap, so a hero who glanced away and
+    // tapped the unit they were already on lost the 500 m they had dialled — silently, and
+    // saved over. A tab is a view of the presets, and nothing is written until one is tapped.
+    expect(db.saveQuestConfig).not.toHaveBeenCalled();
   });
 
   /**
@@ -373,14 +480,32 @@ describe("an expedition on the quest screen", () => {
     expect(mockStartSession.mock.calls[0]?.[1]).toBe("medium");
   });
 
-  test("a quest with two outdoor movements shows one distance stepper, not one per slot", async () => {
+  test("a quest with two outdoor movements has one goal, not one per slot", async () => {
     const view = await mountQuest(twoSlotOutingQuest());
     // Two slots, so the panel does not open by itself — the config it holds is no longer a
     // single control the hero came here to set.
     await fireEvent.press(view.getByLabelText("Adjust this quest"));
+    // 900 s + 600 s: `outingGoal` sums the outdoor timed slots, so that sum is the goal.
+    expect(view.getByText("25 min")).toBeTruthy();
+
+    await fireEvent.press(view.getByText("Set up the outing"));
     await fireEvent.press(view.getByText("Distance"));
+    await fireEvent.press(view.getByText("5.00 km"));
+
     // `config.distanceM` is one value for the whole quest: one control, however many movements.
-    expect(view.getAllByText("3.00 km")).toHaveLength(1);
+    expect(view.getAllByText("5.00 km")).toHaveLength(1);
+  });
+
+  test("a duration on a two-leg outing still adds up to the one the hero picked", async () => {
+    const view = await mountQuest(twoSlotOutingQuest());
+    await fireEvent.press(view.getByLabelText("Adjust this quest"));
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("60 min"));
+
+    // Spread in proportion to what the legs held (900 / 600 of 1500), because `outingGoal` reads
+    // the sum: writing 3600 to one slot would have promised 70 minutes of walking.
+    const targets = lastSavedConfig().targets;
+    expect(targets).toEqual({ "11": 2160, "12": 1440 });
   });
 });
 
@@ -444,5 +569,19 @@ describe("an ordinary workout keeps every control", () => {
   test("a workout offers no distance", async () => {
     const view = await mountQuest(workoutQuest());
     expect(view.queryByText("Distance")).toBeNull();
+    expect(view.queryByText("Set up the outing")).toBeNull();
+  });
+
+  /**
+   * The five-second stepper leaves outings and nothing else. A hold is dialled in seconds by
+   * people who mean seconds, and 45 to 50 is one tap rather than 360.
+   */
+  test("a hold still moves five seconds at a time", async () => {
+    const view = await mountQuest(workoutQuest());
+    await fireEvent.press(view.getByLabelText("Adjust this quest"));
+
+    await fireEvent.press(view.getByLabelText("Increase Plank"));
+
+    expect(lastSavedConfig()).toMatchObject({ targets: { "12": 50 } });
   });
 });

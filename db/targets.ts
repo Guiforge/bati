@@ -73,8 +73,9 @@ export const TIME_TARGET_MAX = 3600;
  * table rebuild, not a fourth target type bolted on here.
  */
 export const DISTANCE_GOAL_RANGE = { min: 500, max: 200_000 };
-export const DISTANCE_GOAL_STEP = 500;
-export const DEFAULT_DISTANCE_GOAL_M = 3000;
+// The step and the default that used to sit here belonged to a stepper: 500 m at a time, starting
+// at 3 km, which is how 21.1 km came to be off the grid entirely. The goal sheet offers the
+// distances people actually name and a keyboard for the rest, so neither has a reader left.
 
 /** What a target may be, by what it counts. Reps and seconds are not the same magnitude. */
 export function targetRangeFor(type: QuestTargetType): { min: number; max: number } {

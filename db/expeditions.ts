@@ -61,9 +61,25 @@ export function isOutingSession(quest: { exercises: { exercise: Styled }[] }): b
 }
 
 /**
+ * The slots' combined duration, when every one of them is timed.
+ *
+ * A quest that walks then runs is two time targets, and the goal the hero set out to reach is
+ * both of them: buzzing at the first slot's minutes and never again left the second slot's
+ * ground uncounted. A quest that mixes a timed slot with a rep slot has no such number — the rep
+ * slot finishes on a count the GPS never sees, so summing only the timed slots would buzz at a
+ * fraction of the outing and call it done. That gets no goal at all, same as a lone rep slot
+ * always has.
+ */
+function timeGoal(exercises: { target: Target }[]): OutingGoal | null {
+  if (exercises.length === 0 || exercises.some((qex) => qex.target.type !== "time")) return null;
+  const seconds = exercises.reduce((sum, qex) => sum + qex.target.value, 0);
+  return { type: "time", seconds };
+}
+
+/**
  * What the hero set out to do. A distance, when they chose one on the quest screen; otherwise the
- * slot's duration, which is the number the stepper on that screen edits. A rep slot cannot be a
- * walk's goal, and a quest with no slot has none.
+ * slots' combined duration, which is the number the steppers on that screen edit. A quest with a
+ * rep slot in the mix, or no slot at all, has none.
  */
 export function outingGoal(
   quest: { exercises: { target: Target }[] },
@@ -71,8 +87,7 @@ export function outingGoal(
 ): OutingGoal | null {
   if (distanceGoalM != null && distanceGoalM > 0)
     return { type: "distance", metres: distanceGoalM };
-  const target = quest.exercises[0]?.target;
-  return target?.type === "time" ? { type: "time", seconds: target.value } : null;
+  return timeGoal(quest.exercises);
 }
 
 /**

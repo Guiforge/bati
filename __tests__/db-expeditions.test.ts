@@ -131,6 +131,36 @@ describe("outingGoal", () => {
   test("a rep slot is no goal for a walk", () => {
     expect(outingGoal(slot("reps", 10), null)).toBeNull();
   });
+
+  test("a two-slot outing's goal is the sum of both slots' minutes", () => {
+    const twoSlots = {
+      exercises: [
+        { target: { type: "time" as const, value: 900 } },
+        { target: { type: "time" as const, value: 600 } },
+      ],
+    };
+    expect(outingGoal(twoSlots, null)).toEqual({ type: "time", seconds: 1500 });
+  });
+
+  test("a distance goal still outranks a two-slot quest's summed duration", () => {
+    const twoSlots = {
+      exercises: [
+        { target: { type: "time" as const, value: 900 } },
+        { target: { type: "time" as const, value: 600 } },
+      ],
+    };
+    expect(outingGoal(twoSlots, 5000)).toEqual({ type: "distance", metres: 5000 });
+  });
+
+  test("a mixed quest — one timed slot, one rep slot — has no summed goal", () => {
+    const mixedSlots = {
+      exercises: [
+        { target: { type: "time" as const, value: 900 } },
+        { target: { type: "reps" as const, value: 10 } },
+      ],
+    };
+    expect(outingGoal(mixedSlots, null)).toBeNull();
+  });
 });
 
 describe("isMountedOuting", () => {

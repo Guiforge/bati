@@ -1,12 +1,15 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking } from "react-native";
 import { Paragraph, Text, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { formatDistance, formatPace } from "@/constants/distanceFormat";
+import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
+import { useSessionTimer } from "@/hooks/useSessionTimer";
 import type { TrackState } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
+import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -52,9 +55,7 @@ export function ExpeditionPanel() {
   const lastFix = useExpeditionStore((state) => state.lastFix);
   const goalReached = useExpeditionStore((state) => state.goalReached);
   const unit = useSettingsStore((state) => state.distanceUnit);
-
-  const movingMinutes = Math.floor(track.movingMs / 60000);
-  const movingSeconds = Math.floor(track.movingMs / 1000) % 60;
+  const goal = useSessionStore((state) => state.goal);
 
   /**
    * One line, and it never lies by omission. A blank readout while the sky is being found looks
@@ -67,75 +68,98 @@ export function ExpeditionPanel() {
   const denied = key === "session.expedition_status_denied";
 
   /**
-   * Auto-pause is correct and, until this, unexplained: at a crossing the three figures freeze
-   * and nothing says the clock stopped on purpose. Dimming them together is what the status line
+   * Auto-pause is correct and, until this, unexplained: at a crossing the figures freeze and
+   * nothing says the clock stopped on purpose. Dimming them together is what the status line
    * already did alone, and movement returning them to full colour is the un-pause.
    */
   const figureColor = track.paused ? "$textSecondary" : "$text";
 
+  /**
+   * How long the session will be *recorded* as, which is not what the session timer reads.
+   *
+   * `useSessionTimer` is only the pulse here. Its value restarts at zero after a resume, because
+   * `useSessionRecovery` pushes `timerStartTimestamp` forward by the whole dead time, so a hero
+   * who came back to a 45-minute walk would watch the panel say `0:12` while the victory screen
+   * and the journal both said 45 min. `recordedDurationSeconds()` reads the trace, and it is the
+   * one rule those two already read. One rule, three readers.
+   *
+   * Frozen while the auto-pause holds: `credited` counts elapsed time from the last fix, and a
+   * standing hero still gets fixes, so without this the big figure keeps climbing under the words
+   * "Standing still" and cancels them.
+   */
+  const { elapsedSeconds } = useSessionTimer();
+  const [recorded, setRecorded] = useState(recordedDurationSeconds);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the timer is the pulse, not the value, so the body deliberately never reads it
+  useEffect(() => {
+    if (!track.paused) setRecorded(recordedDurationSeconds());
+  }, [elapsedSeconds, track.paused]);
+
+  const clock = formatClock(recorded * 1000);
+  const distance = formatDistance(track.distanceM, unit);
+  const pace = formatPace(track.distanceM, track.movingMs, unit);
+
+  /**
+   * The big figure carries the unit the hero set out in: metres when the goal is metres, the
+   * clock otherwise. While the sky is being found there is no distance to carry, whatever the
+   * goal says, so the clock takes the slot for everyone. `0 m` at 56px is a verdict in display
+   * type, and on a phone with no SUPL it is a verdict the hero reads for minutes.
+   */
+  const distanceLeads = !acquiring && goal?.type === "distance";
+  const bigFigure = distanceLeads ? distance : clock;
+  const secondFigure = distanceLeads ? clock : distance;
+
   return (
     <Card p="$4" gap="$3">
-      {acquiring ? (
-        /* A loading state must not assert. `0 m` at 56px is a verdict in display type, and on a
-           phone with no SUPL it is a verdict the hero reads for minutes, so the figures wait
-           and the status takes the slot they had. */
-        <>
-          <Text fontSize={32} fontWeight="700" color="$text">
-            {status}
-          </Text>
-          {error === null ? (
-            <Paragraph fontSize={13} color="$textSecondary">
-              {t("session.expedition_acquiring_hint")}
-            </Paragraph>
-          ) : null}
-        </>
-      ) : (
-        <>
+      <Text
+        fontSize={56}
+        fontWeight="700"
+        color={figureColor}
+        style={{ fontVariant: ["tabular-nums"] }}
+      >
+        {bigFigure}
+      </Text>
+
+      {/* Two values, never three: the total in 56px and the moving time in 24 are two durations
+          with no label between them, minutes apart on an urban walk, and nothing on the card
+          says which one the journal will keep. Moving time lives on the recap. */}
+      {acquiring ? null : (
+        <XStack justify="space-between" items="baseline">
           <Text
-            fontSize={56}
+            fontSize={24}
             fontWeight="700"
             color={figureColor}
             style={{ fontVariant: ["tabular-nums"] }}
           >
-            {formatDistance(track.distanceM, unit)}
+            {secondFigure}
           </Text>
-
-          <XStack justify="space-between" items="baseline">
-            <Text
-              fontSize={24}
-              fontWeight="700"
-              color={figureColor}
-              style={{ fontVariant: ["tabular-nums"] }}
-            >
-              {movingMinutes}:{String(movingSeconds).padStart(2, "0")}
-            </Text>
-            <Text fontSize={20} fontWeight="700" color={figureColor}>
-              {formatPace(track.distanceM, track.movingMs, unit)}
-            </Text>
-          </XStack>
-        </>
-      )}
-
-      {/* Acquiring already said it above, in display type. What is left down here is the
-          accuracy, which is worth keeping while the sky is being found: it is the one thing on
-          screen that visibly improves. */}
-      {acquiring && lastFix === null ? null : (
-        <XStack items="center" gap="$2">
-          {acquiring ? null : (
-            <Text fontSize={13} color={track.paused || error !== null ? "$textSecondary" : "$text"}>
-              {status}
-            </Text>
-          )}
-          {lastFix ? (
-            <Paragraph fontSize={13} color="$textSecondary">
-              {/* Through the same formatter as the distance one line above, and for the same
-                  reason: a hero walking in feet was reading "1.2 mi" over "within 8 m", two
-                  units on one line, from the one file that is allowed to convert. */}
-              {t("session.expedition_accuracy", { distance: formatDistance(lastFix.acc, unit) })}
-            </Paragraph>
-          ) : null}
+          <Text fontSize={20} fontWeight="700" color={figureColor}>
+            {pace}
+          </Text>
         </XStack>
       )}
+
+      {/* The thin band: the status in words, and the accuracy beside it. Worth keeping while the
+          sky is being found, it is the one thing on screen that visibly improves. */}
+      <XStack items="center" gap="$2">
+        <Text fontSize={13} color={track.paused || error !== null ? "$textSecondary" : "$text"}>
+          {status}
+        </Text>
+        {lastFix ? (
+          <Paragraph fontSize={13} color="$textSecondary">
+            {/* Through the same formatter as the distance above, and for the same reason: a hero
+                walking in feet was reading "1.2 mi" over "within 8 m", two units on one line,
+                from the one file that is allowed to convert. */}
+            {t("session.expedition_accuracy", { distance: formatDistance(lastFix.acc, unit) })}
+          </Paragraph>
+        ) : null}
+      </XStack>
+
+      {/* The sentence that keeps a hero from deciding the app is broken while nothing moves. */}
+      {acquiring && error === null ? (
+        <Paragraph fontSize={13} color="$textSecondary">
+          {t("session.expedition_acquiring_hint")}
+        </Paragraph>
+      ) : null}
 
       {/* "Location is off for Bati" was the whole screen: true, and a dead end. The grant lives
           in Android's own settings and nothing in the app can ask for it a second time once it

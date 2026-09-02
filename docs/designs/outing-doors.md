@@ -206,8 +206,20 @@ il serait absurde de débloquer les longues sorties sans les payer.
   durées. *Décidé en revue :* le hook de timer donne le tick, cette fonction donne la valeur.
   Elle lit la trace quand il y en a une et l'horloge sinon, donc elle survit à une reprise, ce
   que `useSessionTimer` ne fait pas. Une règle, trois lecteurs. `movingMs` et la distance sur la
-  ligne de 24 px ; pendant `acquiring`, chrono en 56 px, distance absente, statut en texte sur un
-  bandeau fin. L'auto-pause se dit en texte, pas en couleur seule.
+  ligne de 24 px. *Précisé après la revue design, mode par mode, deux valeurs au plus :* en mode
+  libre, distance et allure ; en mode distance, la durée enregistrée et l'allure ; en mode durée,
+  distance et allure. **`movingMs` quitte le panneau** et reste au récap : deux durées sans
+  étiquette sur la même carte, le total en 56 px et le temps en mouvement en 24, se comptent en
+  minutes d'écart sur une marche urbaine et rien ne dit laquelle compte.
+- **L'auto-pause garde son atténuation et gagne ses mots.** La règle « pas en couleur seule »
+  était mal formulée : le code fait déjà texte plus couleur (`figureColor`), et retirer
+  l'atténuation serait une régression. Le vrai trou est ailleurs : avec le 56 px sur la durée
+  enregistrée, le gros chiffre continue de monter pendant une auto-pause. Un chiffre qui court
+  sous le mot « À l'arrêt » annule le mot. Le 56 px gèle avec elle.
+- Pendant `acquiring`, chrono en 56 px, distance absente, statut en texte sur un bandeau fin, et
+  `session.expedition_acquiring_hint` reste : c'est la phrase qui empêche le héros de croire que
+  c'est cassé. **Un seul emplacement de bande, un occupant à la fois**, priorité au bandeau
+  « Annuler le départ » tant qu'il vit.
 - `components/session/ActiveExerciseView.tsx` : le prédicat est **par slot**,
   `isOutdoors(currentEx.exercise.style)`, comme la vue le fait déjà ; sur une quête mixte, le
   slot marche a l'appui long et le slot pompes garde son tap. Sur un slot dehors :
@@ -215,8 +227,23 @@ il serait absurde de débloquer les longues sorties sans les payer.
   « Maintiens pour terminer » ; verbe « Terminer la sortie ». *Gardé en revue :* le verrou de
   l'OS couvre la poche, pas l'écran allumé dans la main juste avant de la ranger, ni un téléphone
   sans verrou sécurisé. « Remplacer » et « Je n'ai pas pu » ne se montrent pas sur un slot
-  dehors. La barre de progression du HUD ne se montre pas sur une quête à une étape. Pause,
-  quitter, confirmer (`Alert.alert`) : trois taps, et ça **jette** la séance.
+  dehors, et l'espace qu'ils libèrent revient au panneau plutôt que de rester en trou. La barre
+  de progression du HUD ne se montre pas sur une quête à une étape. Pause, quitter, confirmer
+  (`Alert.alert`) : trois taps, et ça **jette** la séance.
+- **Le maintien se voit pendant qu'il dure.** *Ajouté après la revue design.* Un bouton mort
+  pendant 799 ms est indiscernable d'un bouton cassé, et le plan ne prévoyait de retour que sur
+  l'échec, c'est-à-dire qu'il punissait avant d'enseigner. Un anneau ou un remplissage qui
+  progresse pendant le maintien, sous `useReducedMotion` comme le reste de l'écran, et
+  l'haptique lourde à l'aboutissement.
+- **L'appui long a besoin d'un second chemin.** Sous TalkBack un appui long n'est pas fiable, et
+  l'action de notification est en v2.2 : en v2.1 un héros en lecture d'écran ne pourrait terminer
+  sa sortie qu'en la jetant. `accessibilityActions` avec une action nommée, ou un tap avec
+  confirmation quand `AccessibilityInfo.isScreenReaderEnabled()` est vrai. Même remarque, plus
+  faible, pour des gants ou des doigts froids.
+- **Un seul verbe visible.** Le dépôt en a déjà trois voisins (`Terminé`, `Terminer`, plus les
+  libellés d'accessibilité). Le bouton porte « Terminer la sortie » et le mécanisme est porté par
+  l'anneau ; « Maintiens pour terminer » ne sert que d'`accessibilityLabel`, ou l'inverse, mais
+  pas les deux comme chaînes visibles.
 - **`completeOuting()` remonte en v2.1.** *Décidé en revue.* L'appui long change déjà le
   déclencheur ; laisser le calcul de durée dans la vue ferait écrire la durée à deux endroits dès
   que la notification saura terminer. Le store devient le seul calculateur, il lit la même règle
@@ -224,10 +251,23 @@ il serait absurde de débloquer les longues sorties sans les payer.
 - `app/session.tsx` : le prédicat est **par séance**, `isOutingSession(quest)`. `useKeepAwake()`
   est un hook, il ne se conditionne pas : un composant enfant `<KeepAwake />` monté sur
   `!isOutingSession(quest)`.
-- **Un bandeau « Annuler » de quelques secondes** en tête de l'écran de séance, sur une sortie
-  démarrée par la porte rapide. *Décidé en revue :* les trois secondes de compte à rebours
-  servaient aussi à défaire un tap raté, et sans elles annuler coûte quatre gestes. Le bandeau
-  disparaît tout seul ; celui qui voulait partir l'ignore et marche.
+- **Un bandeau « Annuler le départ », cinq secondes**, en tête de l'écran de séance, sur une
+  sortie démarrée par la porte rapide. *Décidé en revue, puis spécifié après la revue design.*
+  Les trois secondes de compte à rebours servaient aussi à défaire un tap raté, et sans elles
+  annuler coûte quatre gestes.
+  - Le compte part quand l'écran de séance est **visible et interactif**, pas à `startSession` :
+    sur une première sortie les deux dialogues de permission occupent l'écran et le bandeau
+    expirerait derrière eux.
+  - Croix de fermeture à 44 dp, plus l'expiration : le premier des deux qui arrive gagne.
+  - **Hauteur réservée pour toute la séance, ou position absolue par-dessus.** Jamais monté puis
+    démonté dans le flux : c'est le motif de l'issue #29 dans AGENTS.md, et il ferait sauter le
+    gros chiffre de vingt pixels au moment où le héros le lit.
+  - Vocabulaire visuel du Toast neutre, `bg="$surface2"`, `borderColor="$borderStrong"`, aucune
+    icône d'alerte, aucun rouge, action textuelle en ligne plutôt qu'un second bouton pleine
+    largeur (`DESIGN.md` interdit deux CTA primaires par écran). `accessibilityLiveRegion="polite"`,
+    jamais `role="alert"` : ce n'est pas une erreur.
+  - Le mot est **« Annuler le départ »**, pas « Annuler » : `common.cancel` veut dire « ne rien
+    faire » partout ailleurs dans l'app, et ici le geste jette une séance et ses points.
 
 ### La notification, seule surface d'une sortie en poche
 
@@ -235,6 +275,23 @@ il serait absurde de débloquer les longues sorties sans les payer.
   elle répète « en quête du ciel » pendant toute la marche. *Décidé en revue :* le temps écoulé y
   entre en v2.1, lu de la même règle que le panneau. C'est la seule chose qu'un héros peut lire
   sans déverrouiller, et le plan la déclarait tableau de bord sans jamais y toucher.
+- **La ligne s'écrit ici, pas en codant.** Le temps d'abord, parce que c'est le seul fait qui
+  existe toujours : `32:04 · 4,2 km`, et `32:04 · en quête du ciel` tant qu'aucun fix n'est
+  arrivé. Ongoing, silencieuse, et vérifiée lisible sur l'écran verrouillé de l'appareil de test.
+- **Le mot « Terme atteint » change de gravité.** Tant que la notification était secondaire, son
+  caractère collant était un ticket à part. Devenue la seule surface d'une sortie en poche, elle
+  annoncerait un objectif atteint pendant les quarante minutes suivantes. Soit il rentre en v2.1,
+  soit le doc dit explicitement que la ligne de progression continue de vivre sous ce statut, et
+  quelqu'un regarde à quoi ça ressemble.
+- **La politique de confidentialité devient fausse le jour où le keep-awake tombe.**
+  `privacy.permissions_body` promet aujourd'hui, en français et en anglais, que l'app « garde le
+  téléphone éveillé, ce qui empêche Android de couper le suivi quand votre écran est éteint ».
+  Les deux phrases se réécrivent dans le même commit que T12, et le suivi tient désormais par le
+  service au premier plan seul.
+- **Et l'écran qui s'éteint se dit une fois.** Sur toutes les autres séances il reste allumé ; un
+  écran noir pendant une sortie GPS se lit spontanément comme « le suivi s'est arrêté », et le
+  héros ressort le téléphone pour vérifier, ce qui annule le gain. Une phrase, une seule fois :
+  « Tu peux ranger le téléphone, la sortie continue. »
 
 ### Les portes
 
@@ -248,9 +305,26 @@ il serait absurde de débloquer les longues sorties sans les payer.
   à jour quand le héros accorde la permission depuis les réglages Android, et la tuile dirait
   « refusé » pour toujours. On demande au tap et on réagit à la réponse ; si la tuile doit parler
   *avant* le tap un jour, c'est un `getPermissionStatus()` de cinq lignes dans le module natif,
-  pas un état dérivé côté JS. Un chevron en coin ouvre l'écran de quête pour la même activité ;
-  sur une tuile de 116×72 il garde 40 dp, à dessiner avant de coder, sinon la porte préparée
-  passe sur un appui long de la tuile.
+  pas un état dérivé côté JS. Ce que dit un refus définitif est déjà écrit :
+  `session.expedition_status_denied` et `session.expedition_open_settings`, dans le bandeau de
+  tête, pas sur la tuile où le nom prend déjà deux lignes.
+- **Une tuile, une cible.** *Décidé après la revue design.* Pas de chevron dans le coin : 40 dp
+  est sous le plancher de `DESIGN.md:150` (44×44), et une cible de 44 dp mangerait 61 % de la
+  hauteur d'une tuile de 72, imbriquée dans une cible qui démarre un GPS. La porte préparée sort
+  de la tuile et devient une entrée « Régler » au niveau de la bande, à côté du titre « Sortir ».
+  Le repli « appui long sur la tuile » disparaît avec elle, et c'est tant mieux : il entrait en
+  collision avec l'appui long qui termine une sortie.
+- **La tuile doit dire qu'elle démarre.** Son propre commentaire porte la règle qu'on renverse,
+  « A tap opens the quest, it does not start the session », et il porte aussi la sortie de
+  secours : « A glyph would carry it, if the tiles ever need to be scannable without reading ».
+  C'est le cas maintenant. Un glyphe de départ en surimpression, plus un `accessibilityLabel`
+  qui dit « Démarrer » et pas seulement le nom du mouvement. Sans ça, deux versions de mémoire
+  gestuelle envoient le héros courir quand il voulait lire.
+- **La permission a besoin d'un préambule.** `quests.location_notice` explique aujourd'hui
+  pourquoi Android demande la position, et il vit sur l'écran de quête, que la porte rapide
+  saute. Le montrer une fois, avant le premier appel de permission déclenché par la tuile : un
+  dialogue système non amorcé se refuse plus souvent, et un refus définitif ne se rattrape pas
+  depuis l'app.
 - `app/(tabs)/quests/[id].tsx` : sur une sortie, pas de puces de niveau, pas de stepper
   « Manches », et la sortie est **démarrée** en `medium`, pas seulement estimée (le niveau étire
   la durée, 675 / 900 / 1125 s, et pèse sur l'XP : `LEVEL_MULTIPLIER` vaut 0,9 / 1,0 / **1,2**).
@@ -263,8 +337,16 @@ il serait absurde de débloquer les longues sorties sans les payer.
   primer là aussi, sinon un swap retarge à un autre niveau que la génération ; et savoir qu'une
   quête est une sortie avant de l'avoir chargée dépend du cache de templates, asynchrone à froid,
   donc soit deux chargements soit un flash. À trancher en codant, pas ici.
-- Locales : « Sortie libre », « Maintiens pour terminer », « Terminer la sortie », « Annuler »,
-  en et fr.
+- **Locales, la liste réelle.** *Corrigée après la revue design : quatre chaînes annoncées pour
+  une douzaine de surfaces neuves, et de la copie écrite en codant est celle qui échoue l'audit
+  de `docs/product/writing.md`.* Les clés, avant de coder, en français et en anglais :
+  « Terminer la sortie » / « Finish the outing », « Maintiens pour terminer » / « Hold to finish »,
+  « Annuler le départ » / « Cancel the start », « Démarrer » / « Start » (l'étiquette
+  d'accessibilité de la tuile), « Régler » / « Set up » (l'entrée de la bande), la phrase du
+  téléphone qu'on range, la ligne de notification, plus la réécriture de `privacy.permissions_body`
+  et du corps de `session.summary_too_short_body`, qui parle d'avoir « tenu » là où il s'agit
+  d'une marche de quatre-vingt-dix secondes. « Sortie libre » ne rentre que si une surface
+  l'affiche : sinon c'est une chaîne morte que ni knip ni la couverture ne verraient.
 
 ### Les tests
 
@@ -479,11 +561,11 @@ constat précis. Commit 1 : lots 1 et 3. Commit 2 : lot 2.
 - [ ] **T1 (P1, human ~1 h / CC ~10 min), mesure.** Sortir 30 min avec `main`, téléphone en poche.
   - Surfacé par : prémisse 7 révisée, et la question du rendu à 1 Hz en poche
   - Vérifier : `adb shell dumpsys batterystats --charged com.guiforge.bati`, comparer écran, GPS, CPU
-- [ ] **T2 (P1, human ~4 h / CC ~30 min), stores/session.ts.** Une sortie de deux heures paie deux heures.
+- [x] **T2 (P1), stores/session.ts.** Une sortie de deux heures paie deux heures. *Fait, b71934db.*
   - Surfacé par : voix extérieure, `clampResultValue` borne tout résultat temps à 3600 s
   - Fichiers : `stores/session.ts`, `db/targets.ts`
   - Vérifier : `npm test -- store-session`
-- [ ] **T3 (P1, human ~4 h / CC ~30 min), reprise.** Une sortie reprise paie sa durée de trace.
+- [x] **T3 (P1), reprise.** Une sortie reprise paie sa durée de trace. *Fait, b71934db.*
   - Surfacé par : voix extérieure, la reprise repousse `timerStartTimestamp` et le résultat suit
   - Fichiers : `hooks/useSessionRecovery.ts`, `stores/session.ts`
   - Vérifier : `npm test -- session-recovery`, `npm test -- store-session`
@@ -495,7 +577,7 @@ constat précis. Commit 1 : lots 1 et 3. Commit 2 : lot 2.
   - Surfacé par : le drapeau qui répétait ce que la quête sait, et le balayeur d'orphelins
   - Fichiers : `stores/session.ts`
   - Vérifier : `npm test -- store-session`
-- [ ] **T6 (P1, human ~1 h / CC ~10 min), stores/session.ts.** Borne 4 h sans fix, constante nommée.
+- [x] **T6 (P1), stores/session.ts.** Borne 4 h sans fix, constante nommée. *Fait, b71934db, avec T2 et T3 : même fonction.*
   - Surfacé par : D7, on croit le héros mais personne ne journalise vingt-quatre heures
   - Fichiers : `stores/session.ts`
   - Vérifier : `npm test -- store-session`
@@ -535,6 +617,30 @@ constat précis. Commit 1 : lots 1 et 3. Commit 2 : lot 2.
   - Surfacé par : D8, six prévus, vingt-quatre nécessaires
   - Fichiers : `__tests__/`
   - Vérifier : `nvm exec 24 npm test`
+- [ ] **T18 (P1, human ~3 h / CC ~20 min), OutsideBand.tsx.** Une tuile, une cible, et elle dit qu'elle démarre.
+  - Surfacé par : revue design F1 et F2, 40 dp sous le plancher de `DESIGN.md:150`, et le commentaire de la bande qui porte la règle inverse
+  - Fichiers : `components/home/OutsideBand.tsx`
+  - Vérifier : `npm test -- home-outside-band`, puis viser le glyphe au pouce
+- [ ] **T19 (P1, human ~3 h / CC ~20 min), bandeau.** « Annuler le départ », cinq secondes, hauteur réservée.
+  - Surfacé par : revue design F6 à F10, dont le motif de l'issue #29 et la collision du mot « Annuler »
+  - Fichiers : `components/session/`, `locales/`
+  - Vérifier : `npm test -- session-outing-view`
+- [ ] **T20 (P1, human ~2 h / CC ~15 min), ExpeditionPanel.tsx.** La ligne de 24 px, mode par mode, et l'auto-pause qui gèle.
+  - Surfacé par : revue design F11 à F14, deux durées sans étiquette et un gros chiffre qui monte à l'arrêt
+  - Fichiers : `components/session/ExpeditionPanel.tsx`
+  - Vérifier : `npm test -- expedition-panel`
+- [ ] **T21 (P1, human ~3 h / CC ~20 min), appui long.** Un anneau pendant le maintien, une action d'accessibilité.
+  - Surfacé par : revue design F15 à F17, un bouton mort 799 ms et TalkBack sans chemin pour finir
+  - Fichiers : `components/session/ActiveExerciseView.tsx`
+  - Vérifier : `npm test -- session-outing-view`, puis une sortie avec TalkBack
+- [ ] **T22 (P1, human ~2 h / CC ~15 min), copie qui devient fausse.** `privacy.permissions_body` et la phrase du téléphone qu'on range.
+  - Surfacé par : revue design F19 et F22, la politique promet un keep-awake que T12 supprime
+  - Fichiers : `locales/fr.json`, `locales/en.json`
+  - Vérifier : `npm test -- locale-style`, à faire dans le commit de T12
+- [ ] **T23 (P2, human ~3 h / CC ~20 min), locales.** La liste réelle des clés, écrite avant de coder.
+  - Surfacé par : revue design F23 à F27, quatre chaînes annoncées pour une douzaine de surfaces
+  - Fichiers : `locales/fr.json`, `locales/en.json`
+  - Vérifier : `npm test -- locale-style`, `npm test -- villagers`
 - [ ] **T16 (P3, human ~1 sem / CC ~4 h), v2.2.** Feuille d'objectif, action Terminer, pont, et son repli.
   - Surfacé par : approche B, plus le repli inexistant que la voix extérieure a démonté
   - Fichiers : `app/(tabs)/quests/[id].tsx`, `BatiLocationService.kt`, `hooks/useSessionRecovery.ts`, `db/quests.ts`
@@ -565,18 +671,21 @@ constat précis. Commit 1 : lots 1 et 3. Commit 2 : lot 2.
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | non lancée | rien |
 | Codex Review | `/codex review` | Independent 2nd opinion | 0 | non lancée | rien |
 | Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | CLEAR | 17 constats, 0 faille critique |
-| Design Review | `/plan-design-review` | UI/UX gaps | 0 | non lancée | rien |
+| Design Review | `/plan-design-review` | UI/UX gaps | 1 | ISSUES FOLDED | 27 constats, 6 axes notés de 3 à 5 sur 10 |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | non lancée | rien |
 
 **CROSS-MODEL :** la voix extérieure a tourné en repli sur un sous-agent Claude, Codex étant
-installé mais non authentifié (401). Contexte neuf, même famille de modèle, donc son accord
-compte moins qu'un vrai second modèle. Elle a produit dix points, dont quatre en tension directe
-avec la revue : la source du chrono, la forme de l'objectif, l'ordre entre notification et gros
-chiffre, et la faisabilité de la v2.3. Les quatre ont été tranchés par l'auteur, et la voix
-extérieure l'a emporté sur les quatre. Deux de ses constats étaient des bugs vérifiés sur `main`,
-pas des défauts du plan.
+installé mais non authentifié (401). Contexte neuf, même famille de modèle. Quatre tensions
+directes avec la revue, toutes tranchées en faveur de la voix extérieure, et deux de ses constats
+étaient des bugs vérifiés sur `main`.
 
-**VERDICT : ENG CLEARED, prêt à implémenter.** Périmètre complet gardé, rangé en deux diffs.
-Dix-sept tâches, dont deux réparations en tête de la v2.1.
+**DESIGN :** la revue design a noté six axes de 3 à 5 sur 10 et levé quatre constats vérifiés
+dans le code : la politique de confidentialité promet un keep-awake que T12 supprime, `DESIGN.md`
+impose 44×44 quand le plan écrivait 40 dp, le commentaire de la bande porte la règle exactement
+inverse de ce que la porte rapide fait, et « Annuler » veut déjà dire « ne rien faire » ailleurs
+dans l'app. Tout est plié dans le plan, six tâches ajoutées, T18 à T23.
+
+**VERDICT : ENG CLEARED et DESIGN FOLDED, prêt à implémenter.** Vingt-trois tâches, dont trois
+faites : les deux réparations d'XP et la borne sans fix (b71934db).
 
 NO UNRESOLVED DECISIONS

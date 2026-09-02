@@ -1,6 +1,12 @@
 // `Map` is MapLibre's map component and shadows the global of the same name; aliased rather than
 // ignored, because a file that redefines `Map` is a trap for whoever edits it next.
-import { Camera, GeoJSONSource, Layer, Map as MapLibreMap } from "@maplibre/maplibre-react-native";
+import {
+  Camera,
+  GeoJSONSource,
+  Layer,
+  Map as MapLibreMap,
+  type MapProps,
+} from "@maplibre/maplibre-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -78,6 +84,101 @@ function endpoints(
     type: "FeatureCollection",
     features: [...(start ? [pip(start, "start")] : []), ...(end ? [pip(end, "end")] : [])],
   };
+}
+
+/** MapLibre's own paint type, reached through the prop that consumes it rather than through a
+ * direct dependency on `@maplibre/maplibre-gl-style-spec`, which this project does not declare.
+ * Same trick, and same reason, as `constants/mapStyle.ts`. */
+type MapStyle = Exclude<MapProps["mapStyle"], string>;
+type LineColor = NonNullable<
+  NonNullable<Extract<MapStyle["layers"][number], { type: "line" }>["paint"]>["line-color"]
+>;
+
+/**
+ * The colour of the line, which is where this screen stops being a shape and starts being a walk.
+ *
+ * Two sentences in one expression. A stretch the reducer refused to credit is `muted`, never the
+ * bottom of the ramp: standing at a light and grinding up a hill are not the same thing, and the
+ * whole of `track.ts` exists to tell them apart. Everything else lands between ember and gold on
+ * this run's own scale.
+ *
+ * `null` is the third sentence, and it is the one that keeps every old outing working: a run with
+ * no gradient worth drawing, and every run recorded before the receiver's speed reached the
+ * table, gets the flat gold line this map had before any of this existed.
+ */
+function traceColor(range: [number, number] | null): LineColor {
+  if (range === null) return rawColors.resourceGold;
+  return [
+    "case",
+    ["get", "paused"],
+    rawColors.muted,
+    [
+      "interpolate",
+      ["linear"],
+      ["get", "speed"],
+      range[0],
+      rawColors.resourceFire,
+      range[1],
+      rawColors.resourceGold,
+    ],
+  ];
+}
+
+/**
+ * What the colours mean, in the two numbers that make them checkable.
+ *
+ * Without this the ramp is decoration: gold would mean "quicker than the ember end" with nothing
+ * saying how much quicker. Both ends go through `formatPace`, so a pace read off the legend and a
+ * pace read off the figures below are the same sentence in the same shape.
+ *
+ * The line's third colour, `muted` where the reducer credited nothing, has no entry here and that
+ * is deliberate. A stop has a duration and no length, so it is a twelve pixel dot on a six
+ * kilometre loop: a swatch explaining it sat beside the slow end of the ramp and was read as that
+ * end's own label, which made the legend say the stop's pace was 8:17 /km. Explaining an
+ * invisible thing is not worth mislabelling a visible one. Stops earn a mark on the map before
+ * they earn a word under it.
+ */
+function SpeedLegend({
+  range,
+  best,
+  unit,
+}: {
+  range: [number, number] | null;
+  best: { metres: number; ms: number } | null;
+  unit: DistanceUnit;
+}) {
+  const { t } = useTranslation();
+  if (range === null && best === null) return null;
+
+  // A speed, as the pace of one hour held at it. `formatPace` is the only thing in this app that
+  // turns ground and time into a pace, and an hour is far above the ten metres it refuses under.
+  const paceAt = (speed: number) => formatPace(speed * 3600, 3_600_000, unit);
+
+  return (
+    <YStack gap="$2" testID="recap-speed-legend">
+      {range === null ? null : (
+        <XStack items="center" gap="$3">
+          <Text testID="recap-pace-slow" fontSize={11} color="$textSecondary">
+            {paceAt(range[0])}
+          </Text>
+          <LinearGradient
+            colors={[rawColors.resourceFire, rawColors.resourceGold]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ flex: 1, height: 4, borderRadius: 2 }}
+          />
+          <Text testID="recap-pace-fast" fontSize={11} color="$textSecondary">
+            {paceAt(range[1])}
+          </Text>
+        </XStack>
+      )}
+      {best === null ? null : (
+        <Text testID="recap-best-league" fontSize={11} color="$textSecondary">
+          {t("recap.best_league", { pace: formatPace(best.metres, best.ms, unit) })}
+        </Text>
+      )}
+    </YStack>
+  );
 }
 
 function Figure({ label, value, testID }: { label: string; value: string; testID: string }) {
@@ -376,10 +477,14 @@ export default function ExpeditionRecapScreen() {
                 padding={{ top: 48, right: 24, bottom: 48, left: 24 }}
               />
 
+              {/* The glow reads the unbroken geometry, and the stroke reads the banded one. A
+                  wide layer drawn from the bands beads at every join with round caps and notches
+                  with flat ones; a 4 px stroke's own caps vanish into its own width. See
+                  `Trace.path`. */}
               {/* biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids
                   are its own style namespace, not DOM ids — a layer finds its source by this
                   exact string. */}
-              <GeoJSONSource id="trace" data={trace.line}>
+              <GeoJSONSource id="trace-path" data={trace.path}>
                 {/* The glow is the same gold at low opacity behind a wide blur, so it needs no
                     colour of its own. Everything else on this map sits between 4% and 15%
                     lightness; the trace is the only lit thing on the screen. */}
@@ -395,12 +500,54 @@ export default function ExpeditionRecapScreen() {
                     "line-blur": 12,
                   }}
                 />
+              </GeoJSONSource>
+
+              {/* The best league, as a cuff around the line rather than a colour in it. It has to
+                  sit under the stroke: painted *into* the ramp it would be gold on gold, since
+                  the quickest stretch of a run is usually already at the gold end. Under it, the
+                  gradient still reads and the stretch is visibly lit. */}
+              {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+              <GeoJSONSource id="trace-best" data={trace.bestLine}>
+                {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+                <Layer
+                  id="trace-best-cuff"
+                  type="line"
+                  layout={{ "line-cap": "round", "line-join": "round" }}
+                  paint={{
+                    "line-color": rawColors.resourceGold,
+                    "line-width": 9,
+                    "line-opacity": 0.35,
+                  }}
+                />
+              </GeoJSONSource>
+
+              {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+              <GeoJSONSource id="trace" data={trace.line}>
                 {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
                 <Layer
                   id="trace-line"
                   type="line"
                   layout={{ "line-cap": "round", "line-join": "round" }}
-                  paint={{ "line-color": rawColors.resourceGold, "line-width": 4 }}
+                  paint={{ "line-color": traceColor(trace.speedRange), "line-width": 4 }}
+                />
+              </GeoJSONSource>
+
+              {/* One ring per completed league. Circles and not numbers: the default basemap here
+                  is the one with no tiles and no `glyphs`, so a text layer would draw on a map
+                  with the tiles on and vanish on the map most heroes actually see. */}
+              {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+              <GeoJSONSource id="trace-leagues" data={trace.leagues}>
+                {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+                <Layer
+                  id="trace-league-pips"
+                  type="circle"
+                  paint={{
+                    "circle-radius": 3,
+                    "circle-color": rawColors.bgDark,
+                    "circle-stroke-width": 2,
+                    "circle-stroke-color": rawColors.resourceGold,
+                    "circle-opacity": 0.9,
+                  }}
                 />
               </GeoJSONSource>
 
@@ -447,6 +594,10 @@ export default function ExpeditionRecapScreen() {
         {/* Silence rather than three zeros. An outing whose service never started has no
             `leaguesM`, and "0 m · 0:00 · —" reads as a verdict on the walk instead of as an
             absence of measurement. */}
+        {/* No guard for "this quest never left the walls": a run with no fixes has no ramp and
+            no best league, and the legend already draws nothing when it has nothing to say. */}
+        <SpeedLegend range={trace.speedRange} best={trace.bestLeague} unit={distanceUnit} />
+
         {recap?.leaguesM ? (
           <Figures
             leaguesM={recap.leaguesM}

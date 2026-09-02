@@ -849,7 +849,8 @@
     "export": "Exporter la trace",
     "export_failed": "Le fichier n'a pas pu être écrit. Réessaie.",
     "map_offer": "La carte sous ton trajet est éteinte. Allume-la et cet écran demande à OpenFreeMap, sur tiles.openfreemap.org, les images de carte de cet endroit, ce qui lui dit à peu près où tu étais. Le tracé lui-même reste sur ce téléphone.",
-    "map_enable": "Afficher la carte"
+    "map_enable": "Afficher la carte",
+    "best_league": "Meilleure lieue, {{pace}}"
   },
   "safety": {
     "title": "S'entraîner en sécurité",

@@ -84,6 +84,15 @@ export const RULES = {
 } as const;
 
 /**
+ * One league is a kilometre here, in metres.
+ *
+ * Here rather than in `db/gps.ts`, which re-exports it: the road's floors, the oath's target and
+ * the recap's league markers all divide by this, and the markers are drawn by a module that must
+ * stay free of the database.
+ */
+export const METRES_PER_LEAGUE = 1000;
+
+/**
  * Metres between two coordinates, flat-earth over the distances this rule cares about.
  *
  * Equirectangular rather than haversine on purpose: at a few hundred metres the error is

@@ -83,8 +83,13 @@ export async function hasPoints(sessionId: string): Promise<boolean> {
 /**
  * One league is a kilometre here. The one place that knows the scale: the road's floors, the
  * oath's target and every "N leagues" a screen prints divide by this.
+ *
+ * It lives in `src/gps/track.ts` and is re-exported here, where its three readers already import
+ * it from. The recap's league markers need the same number and must not reach a drizzle client
+ * to get it: `src/gps/` is pure on purpose, and a copy of `1000` in the drawing code is exactly
+ * the second source this app keeps finding in its own bug reports.
  */
-export const METRES_PER_LEAGUE = 1000;
+export { METRES_PER_LEAGUE } from "@/src/gps/track";
 
 /**
  * Leagues: the second currency, in metres.

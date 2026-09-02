@@ -108,11 +108,45 @@ one face the tile host serves. At recap zoom these are the names that fire, and 
 labels are not written at all.
 
 **9. The trace is the only lit thing on the screen.** Drawn in TSX from a `GeoJSONSource`, so
-its colours come from `rawColors` with no new mechanism. Three layers: a wide `resourceGold` line at low opacity with
-a large `line-blur` for the glow, the `resourceGold` stroke itself with round caps and joins,
-and two circle pips, `$success` where the hero set out and `$resourceFire` where they stopped.
-Everything else on the map is between 4 % and 15 % lightness, so the gold does the work that a
-highlight colour is supposed to do and never gets to do on a normal basemap.
+its colours come from `rawColors` with no new mechanism. Everything else on the map is between
+4 % and 15 % lightness, so the trace does the work that a highlight colour is supposed to do and
+never gets to do on a normal basemap.
+
+Five layers, in this order, and the order is the design:
+
+1. a wide `resourceGold` line at low opacity behind a large `line-blur`, the glow;
+2. a 9 px `resourceGold` line at 0.35 opacity over the best league, a cuff under the trace rather
+   than a colour in it, because the quickest stretch of a run is usually already at the gold end
+   and gold on gold says nothing;
+3. the stroke itself, round caps and joins, coloured by pace;
+4. one hollow gold ring per completed league;
+5. two circle pips, `success` where the hero set out and `resourceFire` where they stopped.
+
+**Three sources, and that is not tidiness.** The stroke is cut into one feature per band of pace;
+the glow and the cuff read `Trace.path` and `Trace.bestLine`, which are the same ground unbroken.
+Drawing a wide layer from the banded features was tried on a phone twice: round caps put a 38 px
+bead of blurred gold at every join, and flat caps put a dark notch there instead, because two flat
+caps meeting at an angle leave the wedge between them unpainted. Only the 4 px stroke is narrow
+enough for its own caps to disappear into its own width.
+
+**The stroke is a ramp, not one colour.** `src/gps/trace.ts` cuts the line into one `LineString`
+per band of pace and each carries its own `speed`, so a `line-color` interpolation paints ember
+at this run's slowest and gold at its quickest. Three rules hold it up:
+
+- **The scale is the run's own tenth and ninetieth percentiles**, never an absolute one. An
+  absolute scale paints a steady walk in a single colour, which reads as a broken feature; the
+  percentiles keep one fix against a wall from spending the whole ramp on one second of the walk.
+  The legend under the map prints both ends through `formatPace`, so the colours stay checkable.
+- **A stop is `muted`, never the bottom of the ramp.** The stretch reads `accept`'s own `paused`,
+  so standing at a light and grinding up a hill are two colours. Deciding again here what counts
+  as movement would be a second answer to the question `track.ts` exists to answer.
+- **No gradient is a valid answer.** Under 0.3 m/s of spread, and on every outing recorded before
+  the receiver's speed reached the table, `speedRange` is `null` and the layer paints the flat
+  `resourceGold` line this map had before any of this existed.
+
+**The league rings are circles because the default basemap has no glyphs.** `mapStyleNoTiles` is
+what a hero sees until they switch the tiles on, and it drops `glyphs` on purpose. A numbered
+label would draw with tiles on and vanish with them off, which is the worse of the two failures.
 
 ### The paper texture, deliberately not shipped
 
@@ -214,8 +248,11 @@ Everything else is reuse, which is the point of having a palette:
 - roads: `borderStrong`, the app's own hairline colour
 - buildings: `surface`
 - place labels: `textSecondary`, halo `bgDark`
-- the trace: `resourceGold`, with `line-opacity` and `line-blur` for the glow, so the glow needs
-  no colour of its own
+- the trace: `resourceFire` to `resourceGold` across the run's own range of pace, with
+  `line-opacity` and `line-blur` for the glow and for the best league's cuff, so neither needs a
+  colour of its own
+- a stop on the trace: `muted`, the palette's own "switched off"
+- league rings: `resourceGold` stroke over a `bgDark` fill
 - start pip `success`, end pip `resourceFire`
 
 ## Licence and attribution

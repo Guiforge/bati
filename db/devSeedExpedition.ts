@@ -38,8 +38,18 @@ export const DEV_EXPEDITION_NOTE = "__dev_expedition";
 const CENTRE = { lat: 48.83, lon: 2.43 };
 const RADIUS_M = 1150;
 
-/** ~5:45 per kilometre, which is a run rather than a walk and shows a pace worth reading. */
+/** ~5:45 per kilometre on average, which is a run rather than a walk and shows a pace worth reading. */
 const PACE_MS = 2.9;
+/**
+ * How far the pace swings either side of that, in metres per second.
+ *
+ * A demo run held at one pace is the one run the recap map cannot demonstrate: `toTrace` refuses
+ * to stretch a colour ramp over less than 0.3 m/s of spread, so a constant-pace loop draws the
+ * flat gold line and the whole gradient is invisible to the only tool that can see this screen
+ * indoors. Two cycles round the loop gives two slow stretches and two quick ones, which is also
+ * what a real hour outside looks like.
+ */
+const PACE_SWING_MS = 0.9;
 const SAMPLE_MS = 1000;
 
 /**
@@ -132,8 +142,9 @@ function syntheticFixes(startedAt: number): LocationFix[] {
 
   for (let second = 0; covered < perimeter; second++) {
     const resting = covered >= STOP_AFTER_M && stopped < STOP_SECONDS;
+    const pace = PACE_MS + PACE_SWING_MS * Math.sin((covered / perimeter) * 4 * Math.PI - 0.8);
     if (resting) stopped += 1;
-    else covered = Math.min(perimeter, covered + PACE_MS);
+    else covered = Math.min(perimeter, covered + pace);
 
     const truth = at(covered);
     // Standing still still drifts, which is exactly what the reducer's pause rule is built to
@@ -151,7 +162,7 @@ function syntheticFixes(startedAt: number): LocationFix[] {
       lon: point.lon,
       ele: 44 + 6 * Math.sin(covered / 600) + jitter(1.5),
       acc: 4.5 + random() * 4,
-      speed: resting ? random() * 0.3 : PACE_MS + jitter(0.5),
+      speed: resting ? random() * 0.3 : pace + jitter(0.5),
       distFromPrev: previous ? metresBetween(previous, point) : 0,
     });
     previous = point;

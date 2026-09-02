@@ -849,7 +849,8 @@
     "export": "Export the trace",
     "export_failed": "Could not write the file. Try again.",
     "map_offer": "The map under your route is off. Turn it on and this screen asks OpenFreeMap, at tiles.openfreemap.org, for the map images of that place, which tells it roughly where you were. The trace itself stays on this phone.",
-    "map_enable": "Show the map"
+    "map_enable": "Show the map",
+    "best_league": "Best league, {{pace}}"
   },
   "safety": {
     "title": "Train safely",

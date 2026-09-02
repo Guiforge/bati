@@ -124,6 +124,32 @@ function walkThenStand(): LocationFix[] {
   return fixes;
 }
 
+/**
+ * A long outing whose pace really changes: slow out, quick back, over three kilometres.
+ *
+ * `walkThenStand()` is eighty-five metres held at one pace, which is the right fixture for the
+ * three figures and the wrong one for the legend: no league is completed and the ramp refuses to
+ * stretch over that little spread. The legend has two states and both need a walk of their own.
+ */
+function walkSlowThenQuick(): LocationFix[] {
+  const fixes: LocationFix[] = [fix({ t: T0, acc: 5 }), fix({ t: T0 + 3000, acc: 5 })];
+  let lat = 43.6;
+  for (let i = 1; i <= 2400; i++) {
+    const metres = i < 1200 ? 1 : 2.4;
+    lat += metres * 0.000009;
+    fixes.push({
+      t: T0 + 3000 + i * 1000,
+      lat,
+      lon: 1.44,
+      ele: 110,
+      acc: 4,
+      speed: metres,
+      distFromPrev: metres,
+    });
+  }
+  return fixes;
+}
+
 async function mount() {
   // `act` around the render, the same shape every other screen test here uses: the points
   // arrive on a resolved promise, and the first paint must not be asserted before it lands.
@@ -199,6 +225,15 @@ describe("a session that left the walls", () => {
     // `m:ss`, the shape the panel the hero just left uses, never the estimate's "1 min 35s".
     expect(screen.getByTestId("recap-moving")).toHaveTextContent(MOVING);
     expect(screen.getByTestId("recap-pace")).toHaveTextContent(KM_PACE);
+  });
+
+  // The ramp is only readable if the two paces it is stretched between are printed, and a walk
+  // that has neither a ramp nor a completed league must say nothing rather than print a dash.
+  test("says nothing about pace colours on a walk held at one pace", async () => {
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(screen.queryByTestId("recap-pace-slow")).toBeNull();
+    expect(screen.queryByTestId("recap-best-league")).toBeNull();
   });
 
   /**
@@ -331,6 +366,33 @@ describe("a session that left the walls", () => {
     expect(screen.getByTestId("recap-loading")).toBeTruthy();
     expect(screen.queryByTestId("recap-no-trace")).toBeNull();
     expect(screen.queryByTestId("recap-distance")).toBeNull();
+  });
+});
+
+describe("an outing long and varied enough to have a story", () => {
+  beforeEach(() => {
+    mockPointsOf.mockResolvedValue(walkSlowThenQuick());
+  });
+
+  test("prints both ends of the ramp and the best league", async () => {
+    await mount();
+    await screen.findByTestId("recap-map");
+
+    const slow = String(screen.getByTestId("recap-pace-slow").props.children);
+    const quick = String(screen.getByTestId("recap-pace-fast").props.children);
+    expect(slow).toContain("/km");
+    expect(quick).toContain("/km");
+    // Seconds, not the printed strings: "16:40" sorts *below* "6:56" and the first version of
+    // this test passed a screen that had them the right way round for the wrong reason.
+    const seconds = (pace: string) => {
+      const [minutes, rest] = pace.split(":");
+      return Number(minutes) * 60 + Number.parseInt(rest ?? "0", 10);
+    };
+    // The slow end reads higher than the quick one: a pace is minutes per kilometre, so it runs
+    // the other way round from the speed the ramp is built on. Printing it backwards is the whole
+    // way to get this screen wrong, and both numbers still look plausible when it happens.
+    expect(seconds(slow)).toBeGreaterThan(seconds(quick));
+    expect(screen.getByTestId("recap-best-league")).toBeTruthy();
   });
 });
 

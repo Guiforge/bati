@@ -1,9 +1,12 @@
+import assert from "node:assert/strict";
 import { waitFor } from "@testing-library/react-native";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import { saveQuestConfig } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
+import { i18n } from "@/i18n";
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "../stores/session";
 
 // Mock DB client to prevent actual SQLite initialization
@@ -77,6 +80,9 @@ jest.mock("@/db/preferences", () => ({
     // Off by default here so the existing cases start on the countdown; the warm-up has its
     // own cases below.
     getWarmupEnabled: jest.fn().mockResolvedValue(false),
+    // Read by beginTrackingIfOuting, only exercised by the outing cases below.
+    getDistanceUnit: jest.fn().mockResolvedValue("metric"),
+    getHapticsEnabled: jest.fn().mockResolvedValue(true),
   },
 }));
 // `computeDamage` stays real — it is pure maths and the store's damage behaviour is only
@@ -969,6 +975,58 @@ describe("useSessionStore", () => {
       store.getState().swapCurrentExercise(same as never);
 
       expect(store.getState().quest).toBe(before);
+    });
+  });
+
+  // The one uncovered link in the whole outing feature: `QuestConfigCard` writes
+  // `config.distanceM`, and `beginTrackingIfOuting` is what turns that into the goal
+  // `useExpeditionStore.begin` buzzes against. `begin` gained two positional params late
+  // (`goal`, then `haptics`), so the arguments are asserted by position, not merely presence.
+  describe("beginTrackingIfOuting", () => {
+    const outingQuest = {
+      id: 9,
+      rounds: 1,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      exercises: [
+        {
+          exercise: { id: 30, enName: "Warden's Walk", muscles: [], style: "expedition" },
+          target: { type: "time", value: 900 },
+        },
+      ],
+    } as unknown as Quest;
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test("a distance goal reaches begin by position, ahead of the slot's duration", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+
+      await store.getState().startSession(outingQuest, "medium", { distanceGoalM: 3000 });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      const call = beginSpy.mock.calls[0];
+      assert(call);
+      const [sessionUuid, notification, mounted, unit, goal, haptics] = call;
+      expect(typeof sessionUuid).toBe("string");
+      expect(notification.reached).toBe(i18n.t("session.expedition_reached"));
+      expect(mounted).toBe(false);
+      expect(unit).toBe("metric");
+      expect(goal).toEqual({ type: "distance", metres: 3000 });
+      expect(haptics).toBe(true);
+    });
+
+    test("with no distance goal, begin falls back to the slot's duration as a time goal", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+
+      await store.getState().startSession(outingQuest, "medium", {});
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      const call = beginSpy.mock.calls[0];
+      assert(call);
+      const goal = call[4];
+      expect(goal).toEqual({ type: "time", seconds: 900 });
     });
   });
 });

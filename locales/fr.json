@@ -619,7 +619,11 @@
     "exercises_other": "{{count}} exercices",
     "filter_outside": "Dehors",
     "favourite_add": "Épingler en tête",
-    "favourite_remove": "Retirer l'épingle"
+    "favourite_remove": "Retirer l'épingle",
+    "goal_sheet_title": "Combien de temps, ou combien de terrain",
+    "goal_sheet_custom": "Autre",
+    "goal_sheet_custom_hint": "Entre ta propre valeur",
+    "goal_sheet_open": "Régler la sortie"
   },
   "recovery": {
     "description": "Tu as une séance laissée en chemin.",
@@ -628,7 +632,9 @@
     "ground": "{{distance}} déjà parcourus",
     "progress": "Progression : manche {{round}}/{{roundTotal}}, exercice {{exercise}}/{{exerciseTotal}}",
     "resume": "Reprendre",
-    "title": "Reprendre ta séance ?"
+    "title": "Reprendre ta séance ?",
+    "finish_outing": "Terminer la sortie",
+    "finish_outing_description": "Ta sortie est allée jusqu'au bout sans l'app. Son tracé sait ce qu'elle a fait."
   },
   "scheduling": {
     "add_session": "Planifier un entraînement",
@@ -739,7 +745,13 @@
     "expedition_cancel_start": "Annuler le départ",
     "expedition_cancel_start_hint": "Tu viens de partir. Tu peux revenir en arrière.",
     "expedition_pocket_hint": "Tu peux ranger le téléphone, la sortie continue.",
-    "summary_too_short_body_outing": "Tu as marché {{duration}}. Garde cette sortie et elle compte pour ta série et ton serment, ou jette-la, et il ne s'est rien passé."
+    "summary_too_short_body_outing": "Tu as marché {{duration}}. Garde cette sortie et elle compte pour ta série et ton serment, ou jette-la, et il ne s'est rien passé.",
+    "expedition_notification_finish": "Terminer",
+    "expedition_make_quest": "En faire une quête",
+    "expedition_made_quest": "Rangée dans tes quêtes. Elle t'attend telle quelle.",
+    "expedition_league_reached": "{{count}} lieue franchie",
+    "expedition_league_reached_other": "{{count}} lieues franchies",
+    "expedition_permission_why": "Bati lit ta position pendant la sortie, et elle reste sur ce téléphone. Android va te le demander."
   },
   "settings": {
     "avatar": "AVATAR",

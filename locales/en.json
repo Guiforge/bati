@@ -308,7 +308,11 @@
     "exercises_other": "{{count}} exercises",
     "filter_outside": "Outside",
     "favourite_add": "Pin to the top",
-    "favourite_remove": "Unpin"
+    "favourite_remove": "Unpin",
+    "goal_sheet_title": "How long, or how far",
+    "goal_sheet_custom": "Other",
+    "goal_sheet_custom_hint": "Enter your own value",
+    "goal_sheet_open": "Set up the outing"
   },
   "adventures": {
     "gallery_title": "Adventures",
@@ -543,7 +547,13 @@
     "expedition_cancel_start": "Cancel the start",
     "expedition_cancel_start_hint": "You have just set off. You can still turn back.",
     "expedition_pocket_hint": "You can put the phone away, the outing carries on.",
-    "summary_too_short_body_outing": "You walked for {{duration}}. Keep this outing and it counts toward your streak and your oath, or discard it and nothing happened."
+    "summary_too_short_body_outing": "You walked for {{duration}}. Keep this outing and it counts toward your streak and your oath, or discard it and nothing happened.",
+    "expedition_notification_finish": "Finish",
+    "expedition_make_quest": "Make this a quest",
+    "expedition_made_quest": "Filed with your quests. It is waiting exactly as you left it.",
+    "expedition_league_reached": "{{count}} league covered",
+    "expedition_league_reached_other": "{{count}} leagues covered",
+    "expedition_permission_why": "Bati reads your location during an outing, and it stays on this phone. Android is about to ask."
   },
   "muscles": {
     "arms": "Arms",
@@ -848,7 +858,9 @@
     "progress": "Progress: Round {{round}}/{{roundTotal}}, Exercise {{exercise}}/{{exerciseTotal}}",
     "elapsed": "Time: {{time}}",
     "resume": "Resume",
-    "discard": "Discard"
+    "discard": "Discard",
+    "finish_outing": "Finish the outing",
+    "finish_outing_description": "Your outing ran to its end without the app. Its trace knows what it did."
   },
   "recap": {
     "title": "The ground covered",

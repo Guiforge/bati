@@ -277,21 +277,15 @@ const VICTORY_FLOORS: readonly number[] = [3, 5, 8, 12, 20];
  */
 
 /**
- * The road's floors, in leagues. **Guessed, and meant to be corrected** against a first real run
- * — docs/designs/expeditions.md defers exactly this number to real league totals.
- *
- * The arithmetic behind the guess: the three seeded expedition quests target 600-1200 s
- * (`drizzle/0042_three_doors_out.sql`), a walk is roughly 1.4 m/s, so one outing on foot covers
- * 0.8-1.7 km — call it one league. A run or a ride covers two to four times that in the same
- * window, which is the point of having three of them.
- *
- * So this is VOLUME_FLOORS' shape divided by ten, read as outings rather than work units: level 1
- * on the first walk, level 5 at around eighty of them. Three outings a week is half a year to max
- * the road, which is the same order as a muscle building's 1000 units.
+ * The road's floors, in leagues. Corrected 2026-09-02 against the first real total: one hour on
+ * foot measured 4.58 km (test-gpx/bati-2026-09-01T15-47-17.gpx), so an outing on foot is four to
+ * five leagues, not one, and a ride is four times that. The first floor stays at one league so
+ * the very first walk levels the road; the rest read as roughly 3, 9, 20 and 45 walks, or a
+ * quarter of that on a mount.
  *
  * Re-tune here and nowhere else; nothing but this table and METRES_PER_LEAGUE knows the scale.
  */
-const ROAD_FLOORS: readonly number[] = [1, 10, 30, 60, 100];
+const ROAD_FLOORS: readonly number[] = [1, 15, 40, 90, 200];
 
 /**
  * Where each tier-4 driver reads its tally. A map rather than the ternary chain this replaces:

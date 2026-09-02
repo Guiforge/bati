@@ -49,9 +49,9 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
   `drizzle/0010_seed_bodyweight_exercises.sql` now have dedicated character-pose art,
   assigned by `drizzle/0011_seed_bodyweight_exercise_images.sql` and registered in
   `EXERCISE_ASSETS`. See §4 below.
-- **§9b OPEN (2026-08-31)**: the 21st building, the `high_road` the leagues drive, has no art
-  and renders `placeholder.webp` through `getBuildingIconAsset`'s fallback. Deliberate — its
-  floors are a guess until a first real league total corrects them.
+- **§9b RESOLVED (2026-09-02)**: the `high_road` has its three stages
+  (`assets/images/village/buildings/high_road{_rough,,_grand}.webp`) registered in
+  `BUILDING_ICON_ASSETS`; its floors were corrected the same day against a measured walk.
 - **§0 RESOLVED (2026-07-21)**: all 20 village building icons of the day now have real art — 14
   generated (`scripts/generate-village.py buildings/*`, `assets/images/village/buildings/`)
   and registered as `BUILDING_ICON_ASSETS` / `getBuildingIconAsset(code, relatedMuscle)` in
@@ -651,7 +651,9 @@ One trap in that last line, worth knowing before the next batch: `thumb-exercise
 unchanged image. It produced 61 spurious modifications here. Check `git status` after running it and
 restore the ones you did not mean to touch.
 
-### 9b. OPEN — the High Road has no art (2026-08-31)
+### 9b. RESOLVED — the High Road has art (2026-09-02)
+
+Resolved: the three stages exist and are registered; see the bullet at the top.
 
 The building the leagues drive (`high_road`, "High Road" / "Grand Chemin",
 [db/village.ts](../../db/village.ts)) shipped with **no icon of its own**, which is the first

@@ -555,12 +555,19 @@ avant chaque tag, nommé par `versionCode`.
 
 ## Implementation Tasks
 
-Synthétisées depuis les constats de la revue d'ingénierie du 02/09. Chaque tâche vient d'un
-constat précis. Commit 1 : lots 1 et 3. Commit 2 : lot 2.
+Synthétisées depuis les constats de la revue d'ingénierie et de la revue design du 02/09. Chaque
+tâche vient d'un constat précis. Commit 1 : lots 1 et 3. Commit 2 : lot 2.
 
-- [ ] **T1 (P1, human ~1 h / CC ~10 min), mesure.** Sortir 30 min avec `main`, téléphone en poche.
-  - Surfacé par : prémisse 7 révisée, et la question du rendu à 1 Hz en poche
-  - Vérifier : `adb shell dumpsys batterystats --charged com.guiforge.bati`, comparer écran, GPS, CPU
+**Quatre paires se livrent ensemble**, la tâche d'ingénierie et celle de design touchant le même
+fichier : T8 avec T18 (la bande), T9 avec T19 (le bandeau), T10 avec T20 (le panneau), T11 avec
+T21 (l'appui long). Les séparer ferait éditer deux fois le même écran pour deux raisons, ce que le
+Step 0 a déjà refusé pour l'écran de quête.
+
+- [~] **T1, mesure. Sautée le 03/09.** La prémisse 7 tient sans elle : `useKeepAwake()` est
+  inconditionnel, c'est lu dans le fichier, pas déduit d'une mesure. Ce qu'on renonce à savoir,
+  c'est la part du rendu à 1 Hz écran éteint, donc l'écouteur `AppState` reste hors périmètre
+  faute de chiffre, et la thèse batterie reste un raisonnement plutôt qu'une preuve. À rouvrir
+  si une sortie vide la batterie plus vite qu'avant.
 - [x] **T2 (P1), stores/session.ts.** Une sortie de deux heures paie deux heures. *Fait, b71934db.*
   - Surfacé par : voix extérieure, `clampResultValue` borne tout résultat temps à 3600 s
   - Fichiers : `stores/session.ts`, `db/targets.ts`

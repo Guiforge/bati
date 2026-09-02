@@ -29,6 +29,8 @@ import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
 import { formatDuration } from "@/db/estimate";
+import { isOutingSession } from "@/db/expeditions";
+import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -154,6 +156,7 @@ export function VictoryView() {
     bossStartHp,
     felledByFinalBlow,
     sessionUuid,
+    goal,
   } = useSessionStore();
   const [bossExpanded, setBossExpanded] = useState(false);
   const cue = useChorusStore((s) => s.cue);
@@ -167,6 +170,11 @@ export function VictoryView() {
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
   const savedRef = useRef(false);
   const feedbackTouched = useRef(false);
+  /** The bridge, once crossed: the button goes, the sentence stays. */
+  const [madeQuest, setMadeQuest] = useState(false);
+  // A ref rather than `madeQuest` alone: two taps land in the same frame, before any state the
+  // first one sets has come back, and the hero would find two identical quests in their gallery.
+  const makingQuest = useRef(false);
 
   // Defeated *today*, not defeated ever. `currentHp <= 0` alone is true for every remaining
   // session of the campaign, so the sword, the boss copy and the 120-particle burst replayed on
@@ -301,6 +309,25 @@ export function VictoryView() {
     } catch {
       // Dismissing the share sheet rejects. That is the hero changing their mind, not a
       // failure — there is nothing to report and nothing to tell them.
+    }
+  };
+
+  /**
+   * The partant who just walked for 32 minutes without asking for anything is offered the same
+   * walk again, as a quest. Nothing navigates: the hero is reading their recap, and they came
+   * here to read it.
+   */
+  const handleMakeQuest = async () => {
+    if (makingQuest.current) return;
+    makingQuest.current = true;
+    selection();
+    try {
+      await createQuestFromOuting(quest, durationSeconds);
+      setMadeQuest(true);
+    } catch (e) {
+      makingQuest.current = false;
+      reportError("session.makeQuestFromOuting", e);
+      showError(t("errors.generic"));
     }
   };
 
@@ -445,6 +472,36 @@ export function VictoryView() {
             the cameo's band instead of underneath it — see cameoAnchor.ts. */}
         {!!result && isExpedition(quest) && (
           <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
+        )}
+
+        {/* The bridge (docs/designs/outing-doors.md, T17). Only after a *free* outing: a walk
+            that already had a goal is a quest the hero has, and one with an indoor slot is not
+            an outing at all. Held until the save lands, like everything else on this screen. */}
+        {!!result && goal === null && isOutingSession(quest) && (
+          <YStack width="100%" maxW={520} items="center">
+            {madeQuest ? (
+              <Text
+                testID="victory-made-quest"
+                fontFamily="$body"
+                color="$textSecondary"
+                fontSize={14}
+                style={{ textAlign: "center" }}
+              >
+                {t("session.expedition_made_quest")}
+              </Text>
+            ) : (
+              <AppButton
+                testID="victory-make-quest"
+                backgroundColor="$surface2"
+                height={48}
+                onPress={handleMakeQuest}
+              >
+                <Text color="$text" fontSize={16} fontWeight="700">
+                  {t("session.expedition_make_quest")}
+                </Text>
+              </AppButton>
+            )}
+          </YStack>
         )}
 
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}

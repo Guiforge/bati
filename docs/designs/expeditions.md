@@ -366,10 +366,11 @@ without knowing how far — the RPG justification for "no objective", at the cos
   `leagues`-driven building. The stopwatch (leaving with no target at all) and the
   anti-task-killer screen are v2.1: the first needs the duration clamp solved, and the second
   needs a field report before it knows what to say.
-6. `app/oath.tsx`'s custom form offers any non-retired exercise, so a hero can swear an
+6. ~~`app/oath.tsx`'s custom form offers any non-retired exercise, so a hero can swear an
    `exercise_volume` oath on a cardio movement and sit at 0 forever once the chokepoint returns
    0. Either exclude cardio from that picker for volume metrics, or give leagues an oath metric
-   of their own.
+   of their own.~~ **Settled 2026-09-02.** Leagues got the oath metric of their own:
+   `leagues` in `db/oaths.ts`, preset `leagues_50`. See "After the audit" below.
 7. ~~Do the three exercises declare `muscles` and a `pattern`?~~ **Settled 2026-08-31.**
    `pattern` is `locomotion` and `measure` is `time`; **no `exercise_muscles` rows at all**. A
    walk tagged `legs` would show the balance card a leg trained in N sessions for a volume of
@@ -409,6 +410,29 @@ tables, so no backup format changes.
 6. **v1.1** — the road: a `leagues`-driven building, with floors chosen against a few weeks of
    real totals.
 7. Then distance, which belongs to the GPS design, whose step 1 this was.
+
+### After the audit, 2026-09-02
+A product audit of the shipped feature found six gaps. All six landed on `v2-gps`:
+
+1. **The goal is real.** The duration the hero set was ignored by the session. Now the expedition
+   store checks it on every fix (the only clock that runs in a pocket), buzzes once and rewrites
+   the notification. `src/gps/track.ts` `goalReached`.
+2. **A distance goal**, as premise 3 promised. It lives in `QuestConfig.distanceM`, not in
+   `quest_exercises`: `0000_schema.sql` holds `targetType` to `('reps','time')` with a CHECK, and
+   the ground is already written once on `completed_sessions.leaguesM`. Premise 7's trap is
+   avoided by never adding the type at all.
+3. **The Journal** shows the distance on an outing's row, a "Ground covered" total and a
+   "Longest outing" record.
+4. **An oath in leagues** (`leagues_50` preset), lifetime like `sessions`. Home serves it with the
+   first door out, since the exercise chain and the muscle rule cannot. Open question 6 is closed.
+5. **The road's floors** are corrected against the first measured walk (4.58 km in an hour):
+   `[1, 15, 40, 90, 200]`. No gate was added; reach is still the reward, on purpose.
+6. **The product docs** say the feature exists: `docs/gameplay/expeditions.md`, the feature
+   overview and the user guide.
+
+Left where the audit found them, deliberately: the level chips and the "Done" verb on an
+outing's quest screen (not among the six), and the stopwatch with no goal at all (v2.1, the
+clamp is still owed).
 
 ## What I noticed about how you think
 

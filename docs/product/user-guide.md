@@ -94,6 +94,12 @@ After workouts, Bati rewards you with:
 - Swear one objective at a time — a ready-made challenge or a custom target.
 - Track its progress on Home; fulfilling it is celebrated with a bonus on the victory screen.
 
+### 7) Go outside (Expeditions)
+
+- Tap a tile in the "Head out" band on Home: a walk, a run or a ride.
+- Set a duration or a distance, then start. The phone buzzes once when you reach it.
+- Come back to the ground covered, your pace, a map of the route, and leagues on the High Road.
+
 ---
 
 ## Pages & navigation guide (what each page is for)
@@ -126,6 +132,7 @@ Preferences:
 - **[Home](../screens/home.md)** → continue adventure, quick links, progress snapshot.
 - **[Quests Gallery](../screens/quests.md)** → browse workouts, narrow choices, pick a quest.
 - **[Quest Details](../screens/quest-details.md)** → understand the workout, choose difficulty, start.
+- **Expedition (session)** → live distance, moving time, pace; buzzes at the goal; recap map after.
 - **[Adventures Gallery](../screens/adventures.md)** → browse campaigns (route/boss/event).
 - **[Adventure Details](../screens/adventure-details.md)** → see steps, progress, start/continue next quest.
 - **[Session](../screens/session.md)** → do the workout, rest/pause, finish and earn rewards.
@@ -159,6 +166,7 @@ Preferences:
     - your Oath and the rung of the ladder you are on,
     - visiting the village,
     - seeing a compact overview of stats.
+  - The "Head out" band under the stage opens a walk, a run or a ride.
 
 ### Quests (workouts)
 

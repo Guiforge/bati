@@ -52,6 +52,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | Doc | What it covers |
 | --- | --- |
 | [quests.md](gameplay/quests.md) | Workout templates |
+| [expeditions.md](gameplay/expeditions.md) | Walking, running, riding: the goal, the leagues, the road |
 | [adventures.md](gameplay/adventures.md) | Multi-quest campaigns |
 | [boss-fights.md](gameplay/boss-fights.md) | Boss fight mechanics |
 | [session-flow.md](gameplay/session-flow.md) | Active workout flow + implementation spec |

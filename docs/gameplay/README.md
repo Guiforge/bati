@@ -15,6 +15,7 @@ related: [../README.md, ../planning/roadmap.md]
 ## Pages
 
 - [quests.md](quests.md) — Workout templates
+- [expeditions.md](expeditions.md) — Walking, running, riding: the goal, the leagues, the road
 - [adventures.md](adventures.md) — Multi-quest narrative campaigns
 - [boss-fights.md](boss-fights.md) — Boss fight mechanics
 - [session-flow.md](session-flow.md) — Active workout screens + technical spec

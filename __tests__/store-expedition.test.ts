@@ -9,6 +9,7 @@ const mockRequestNotificationPermission = jest
   .mockResolvedValue({ granted: true, status: "granted" });
 const mockStop = jest.fn();
 const mockSetProgress = jest.fn();
+const mockSetReached = jest.fn();
 let mockAvailable = true;
 
 jest.mock("@/db/gps", () => ({ appendPoints: (...a: never[]) => mockAppendPoints(...a) }));
@@ -19,6 +20,7 @@ jest.mock("@/modules/bati-location", () => ({
   requestNotificationPermission: () => mockRequestNotificationPermission(),
   stop: () => mockStop(),
   setProgress: (...a: never[]) => mockSetProgress(...a),
+  setReached: (...a: never[]) => mockSetReached(...a),
   addListener: (event: string, fn: (payload: never) => void) => {
     mockListeners.set(event, fn);
     return { remove: () => mockListeners.delete(event) };
@@ -75,6 +77,7 @@ describe("stores/expedition", () => {
     mockRequestPermission.mockResolvedValue({ granted: true, status: "granted" });
     mockStop.mockClear();
     mockSetProgress.mockClear();
+    mockSetReached.mockClear();
     mockReportError.mockClear();
     mockHaptic.mockClear();
     mockAvailable = true;
@@ -122,7 +125,7 @@ describe("stores/expedition", () => {
 
     expect(store.getState().goalReached).toBe(true);
     expect(mockHaptic).toHaveBeenCalledTimes(1);
-    expect(mockSetProgress).toHaveBeenCalledWith(expect.stringContaining("r"));
+    expect(mockSetReached).toHaveBeenCalledTimes(1);
   });
 
   test("a time goal is measured in moving seconds", async () => {
@@ -163,7 +166,7 @@ describe("stores/expedition", () => {
     for (let i = 0; i < 20; i++) emit(walking(i));
     expect(store.getState().goalReached).toBe(true);
     expect(mockHaptic).not.toHaveBeenCalled();
-    expect(mockSetProgress).toHaveBeenCalledWith(expect.stringContaining("r"));
+    expect(mockSetReached).toHaveBeenCalledTimes(1);
   });
 
   test("no goal never reaches anything", async () => {
@@ -171,6 +174,7 @@ describe("stores/expedition", () => {
     for (let i = 0; i < 40; i++) emit(walking(i));
     expect(store.getState().goalReached).toBe(false);
     expect(mockHaptic).not.toHaveBeenCalled();
+    expect(mockSetReached).not.toHaveBeenCalled();
   });
 
   // The buffer is what a crash costs. Thirty seconds, never the run.

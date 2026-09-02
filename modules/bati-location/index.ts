@@ -40,6 +40,7 @@ export type StartOptions = {
     tracking: string;
     paused: string;
     gpsOff: string;
+    reached: string;
   };
   /** Metres, default 50. Fixes worse than this never reach JS and never anchor a distance. */
   maxAccuracyM?: number;
@@ -67,6 +68,7 @@ type BatiLocationNativeModule = {
   requestPermission(): Promise<PermissionResponse>;
   requestNotificationPermission(): Promise<PermissionResponse>;
   setProgress(text: string): void;
+  setReached(): void;
   // Every expo native module is an EventEmitter; spelling the one method used here beats
   // importing `NativeModule`, whose exported type is the constructor and carries no members.
   addListener<Event extends keyof BatiLocationEvents>(
@@ -137,6 +139,16 @@ export function start(options: StartOptions): boolean {
  */
 export function setProgress(text: string): void {
   native?.setProgress(text);
+}
+
+/**
+ * Mark the goal reached, once. The state word the notification shows switches from "on the
+ * road"/"paused"/etc. to the reached word given at `start()`, and stays there for the rest of
+ * the outing — a hero who keeps walking or later pauses does not un-reach a goal they already
+ * met, which is the same precedence `ExpeditionPanel` gives `goalReached` over moving or paused.
+ */
+export function setReached(): void {
+  native?.setReached();
 }
 
 /** Stops the service, releases the wake lock and takes the notification down. */

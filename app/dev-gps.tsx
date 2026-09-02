@@ -34,6 +34,7 @@ const NOTIFICATION = {
   tracking: "Tracking",
   paused: "Paused",
   gpsOff: "GPS off",
+  reached: "Goal reached",
 };
 
 /** Module scope so the effect below has no unstable dependency; React Compiler owns the rest. */

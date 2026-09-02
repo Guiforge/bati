@@ -57,6 +57,11 @@ class BatiLocationModule : Module() {
       BatiLocationService.setProgress(text)
     }
 
+    /** Marks the goal reached; see `BatiLocationService.setReached` for what that changes. */
+    Function("setReached") {
+      BatiLocationService.setReached()
+    }
+
     Function("hasGpsProvider") {
       val context = appContext.reactContext ?: return@Function false
       val manager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
@@ -155,6 +160,8 @@ class NotificationOptions : Record {
   @Field val paused: String = ""
 
   @Field val gpsOff: String = ""
+
+  @Field val reached: String = ""
 }
 
 class StartOptions : Record {
@@ -176,6 +183,7 @@ class StartOptions : Record {
       putExtra(BatiLocationService.EXTRA_TRACKING, notification.tracking)
       putExtra(BatiLocationService.EXTRA_PAUSED, notification.paused)
       putExtra(BatiLocationService.EXTRA_GPS_OFF, notification.gpsOff)
+      putExtra(BatiLocationService.EXTRA_REACHED, notification.reached)
       putExtra(BatiLocationService.EXTRA_MAX_ACCURACY, maxAccuracyM.toFloat())
       putExtra(BatiLocationService.EXTRA_MAX_SPEED, maxSpeedMs.toFloat())
       putExtra(BatiLocationService.EXTRA_NO_FIX_TIMEOUT, noFixTimeoutMs.toLong())

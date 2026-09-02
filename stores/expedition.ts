@@ -12,6 +12,7 @@ import {
   requestNotificationPermission,
   requestPermission,
   setProgress,
+  setReached,
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
@@ -95,13 +96,9 @@ async function flush(sessionUuid: string): Promise<void> {
   }
 }
 
-/**
- * The notification's second line. Once the goal is met it leads with that, because a phone
- * pulled out of a pocket at the buzz should answer "why did you buzz" before "how far".
- */
-function progressLine(track: TrackState, unit: DistanceUnit, reached: string | null): string {
-  const distance = formatDistance(track.distanceM, unit);
-  return reached === null ? distance : `${reached} · ${distance}`;
+/** The notification's second line: the ground covered, in the hero's own unit. */
+function progressLine(track: TrackState, unit: DistanceUnit): string {
+  return formatDistance(track.distanceM, unit);
 }
 
 /**
@@ -110,19 +107,18 @@ function progressLine(track: TrackState, unit: DistanceUnit, reached: string | n
  * Haptics off is respected: a hero who turned them off for buttons did not ask for a walk to be
  * silent, but the setting has one meaning in this app and this is not the place to give it a
  * second.
+ *
+ * The state word ("Goal reached") is native's to own from here on, via `setReached` — see
+ * `BatiLocationService.notification()`. This only ever pushes the figure.
  */
-function announceGoalReached(
-  track: TrackState,
-  unit: DistanceUnit,
-  notification: Notification,
-  haptics: boolean,
-): void {
+function announceGoalReached(track: TrackState, unit: DistanceUnit, haptics: boolean): void {
   if (haptics) {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((e) =>
       reportError("expedition.goalHaptic", e),
     );
   }
-  setProgress(progressLine(track, unit, notification.reached));
+  setReached();
+  setProgress(progressLine(track, unit));
 }
 
 export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
@@ -182,12 +178,12 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         const reached = wasReached || goalReached(goal, track);
         set({ track, lastFix: fix, goalReached: reached });
 
-        if (reached && !wasReached) announceGoalReached(track, unit, notification, haptics);
+        if (reached && !wasReached) announceGoalReached(track, unit, haptics);
 
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.
         if (buffer.length >= FLUSH_EVERY) {
-          setProgress(progressLine(track, unit, reached ? notification.reached : null));
+          setProgress(progressLine(track, unit));
           flush(sessionUuid).catch((e) => reportError("expedition.flush", e));
         }
       }),

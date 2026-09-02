@@ -7,6 +7,7 @@ import {
   requestNotificationPermission,
   requestPermission,
   setProgress,
+  setReached,
   start,
   stop,
 } from "@/modules/bati-location";
@@ -28,7 +29,14 @@ describe("bati-location, without its native half", () => {
   test("refuses to start, and says nothing started", () => {
     expect(
       start({
-        notification: { title: "Bati", acquiring: "…", tracking: "…", paused: "…", gpsOff: "…" },
+        notification: {
+          title: "Bati",
+          acquiring: "…",
+          tracking: "…",
+          paused: "…",
+          gpsOff: "…",
+          reached: "…",
+        },
       }),
     ).toBe(false);
   });
@@ -59,6 +67,10 @@ describe("bati-location, without its native half", () => {
     // Called from a flush that can race the hero tapping Done, and on every build with no
     // service at all.
     expect(() => setProgress("2.40 km")).not.toThrow();
+  });
+
+  test("reaching a goal that has no notification to reach is not an error", () => {
+    expect(() => setReached()).not.toThrow();
   });
 
   test("hands back a subscription that can still be removed", () => {

@@ -57,6 +57,17 @@ class BatiLocationService : Service(), LocationListener {
   private var trackingText = ""
   private var pausedText = ""
   private var gpsOffText = ""
+  private var reachedText = ""
+
+  /**
+   * Sticky, and deliberately not a fifth [State]: `state` is reassigned by every GPS fix, so a
+   * state value would be overwritten by the very next one. Once the goal is met the notification
+   * must keep saying so even as the hero keeps walking (state flips back to TRACKING) or later
+   * pauses (state flips to PAUSED) - the same precedence the JS side's `ExpeditionPanel` already
+   * gives a met goal over moving or paused. Never cleared before [onDestroy]: a session has one
+   * goal, met at most once.
+   */
+  private var reached = false
 
   /**
    * The one line the hero reads without unlocking, pushed from JS.
@@ -148,6 +159,7 @@ class BatiLocationService : Service(), LocationListener {
     trackingText = intent.getStringExtra(EXTRA_TRACKING).orEmpty()
     pausedText = intent.getStringExtra(EXTRA_PAUSED).orEmpty()
     gpsOffText = intent.getStringExtra(EXTRA_GPS_OFF).orEmpty()
+    reachedText = intent.getStringExtra(EXTRA_REACHED).orEmpty()
     maxAccuracy = intent.getFloatExtra(EXTRA_MAX_ACCURACY, maxAccuracy)
     maxSpeed = intent.getFloatExtra(EXTRA_MAX_SPEED, maxSpeed)
     noFixTimeoutMs = intent.getLongExtra(EXTRA_NO_FIX_TIMEOUT, noFixTimeoutMs)
@@ -246,12 +258,20 @@ class BatiLocationService : Service(), LocationListener {
   }
 
   private fun notification(): Notification {
+    // Once the goal is met, the reached word replaces the state word outright rather than sitting
+    // beside it - the JS side used to prepend its own "goal reached" onto the same progress
+    // figure this line already carries, which said the state twice: "On the road · Goal reached
+    // · 591 m". One state word, one figure.
     val text =
-      when (state) {
-        State.ACQUIRING -> acquiringText
-        State.TRACKING -> trackingText
-        State.PAUSED -> pausedText
-        State.GPS_OFF -> gpsOffText
+      if (reached) {
+        reachedText
+      } else {
+        when (state) {
+          State.ACQUIRING -> acquiringText
+          State.TRACKING -> trackingText
+          State.PAUSED -> pausedText
+          State.GPS_OFF -> gpsOffText
+        }
       }
     // "On the road" alone never changed once a walk had started, so the notification said the
     // same four words for an hour. The ground covered is the only thing about it that moves.
@@ -302,6 +322,7 @@ class BatiLocationService : Service(), LocationListener {
   override fun onDestroy() {
     running = null
     progressText = ""
+    reached = false
     handler.removeCallbacksAndMessages(null)
     (getSystemService(Context.LOCATION_SERVICE) as? LocationManager)?.removeUpdates(this)
     tracking = false
@@ -338,6 +359,7 @@ class BatiLocationService : Service(), LocationListener {
     const val EXTRA_TRACKING = "tracking"
     const val EXTRA_PAUSED = "paused"
     const val EXTRA_GPS_OFF = "gpsOff"
+    const val EXTRA_REACHED = "reached"
     const val EXTRA_MAX_ACCURACY = "maxAccuracyM"
     const val EXTRA_MAX_SPEED = "maxSpeedMs"
     const val EXTRA_NO_FIX_TIMEOUT = "noFixTimeoutMs"
@@ -361,6 +383,20 @@ class BatiLocationService : Service(), LocationListener {
       val service = running ?: return
       if (service.progressText == text) return
       service.progressText = text
+      service.renotify()
+    }
+
+    /**
+     * Flip the sticky reached flag and re-notify. A no-op when nothing is running, same as
+     * [setProgress], which is what makes it safe to call from a fix handler that raced the hero
+     * tapping Done - and a no-op when the flag is already set, since a goal is only ever reached
+     * once per session.
+     */
+    @JvmStatic
+    fun setReached() {
+      val service = running ?: return
+      if (service.reached) return
+      service.reached = true
       service.renotify()
     }
 

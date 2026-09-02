@@ -5,17 +5,30 @@ import { BackHandler } from "react-native";
 import { YStack } from "tamagui";
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
 import { BossTauntOverlay } from "@/components/session/BossTauntOverlay";
+import { CancelStartBanner } from "@/components/session/CancelStartBanner";
 import { CountdownView } from "@/components/session/CountdownView";
 import { PausedOverlay } from "@/components/session/PausedOverlay";
 import { RestView } from "@/components/session/RestView";
 import { VictoryView } from "@/components/session/VictoryView";
 import { WarmupView } from "@/components/session/WarmupView";
+import { isOutingSession } from "@/db/expeditions";
 import { useSessionStore } from "@/stores/session";
 
-export default function SessionScreen() {
-  // Prevent screen from dimming during workout
+/**
+ * The screen stays lit for a workout, and only for a workout.
+ *
+ * `useKeepAwake()` is a hook, so it cannot be put behind an `if`; a child that exists only when
+ * the session is indoors can. An outing has no screen worth looking at - the numbers are in the
+ * notification - and the phone spends the hour in a pocket, where a lit screen is battery and an
+ * unlocked handset against a thigh. Letting the OS lock it is the pocket lock (premise 7); the
+ * tracking is held up by the foreground service alone, which is what the privacy page now says.
+ */
+function KeepAwake() {
   useKeepAwake();
+  return null;
+}
 
+export default function SessionScreen() {
   const status = useSessionStore((s) => s.status);
   const prePauseStatus = useSessionStore((s) => s.prePauseStatus);
   const quest = useSessionStore((s) => s.quest);
@@ -54,6 +67,7 @@ export default function SessionScreen() {
 
   return (
     <YStack flex={1} bg="$background">
+      {quest !== null && !isOutingSession(quest) && <KeepAwake />}
       <BossTauntOverlay />
       {displayStatus === "warmup" && <WarmupView />}
       {displayStatus === "countdown" && <CountdownView />}
@@ -68,6 +82,9 @@ export default function SessionScreen() {
 
       {/* Overlay sits on top of the active view when paused */}
       <PausedOverlay />
+
+      {/* Absolute, so the five seconds it lives never move the figure underneath it. */}
+      <CancelStartBanner />
     </YStack>
   );
 }

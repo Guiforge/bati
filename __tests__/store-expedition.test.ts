@@ -35,6 +35,19 @@ jest.mock("@/src/reportError", () => ({
   reportError: (...a: never[]) => mockReportError(...a),
 }));
 
+/**
+ * The one thing this store now asks the session store for: how long the hero has been out.
+ *
+ * Mocked rather than run, for two reasons. The real function reads the session store, which
+ * would drag the SQLite client into a test that has none; and the import goes back into a module
+ * that already imports this one, so mocking it is also the cheapest place to notice if that
+ * cycle ever stops being harmless. The number itself is what the assertions are about.
+ */
+let mockElapsedSeconds = 0;
+jest.mock("@/stores/session", () => ({
+  recordedDurationSeconds: () => mockElapsedSeconds,
+}));
+
 const mockHaptic = jest.fn().mockResolvedValue(undefined);
 jest.mock("expo-haptics", () => ({
   notificationAsync: (...a: never[]) => mockHaptic(...a),
@@ -86,8 +99,16 @@ describe("stores/expedition", () => {
     mockReportError.mockClear();
     mockHaptic.mockClear();
     mockAvailable = true;
+    mockElapsedSeconds = 0;
     store = (require("@/stores/expedition") as typeof import("@/stores/expedition"))
       .useExpeditionStore;
+  });
+
+  // The notification's line is now driven by an interval, and `end()` is the only thing that
+  // clears it. A test that begins a run and never ends it would leave one ticking on a module
+  // `resetModules` can no longer reach.
+  afterEach(async () => {
+    await store.getState().end();
   });
 
   test("starting subscribes and hands the service the on-foot speed cap", async () => {
@@ -330,12 +351,46 @@ describe("stores/expedition", () => {
    * covered is the only thing about it that moves, and it is the only reason to look.
    */
   test("the notification is told the ground covered, in the hero's own words", async () => {
+    mockElapsedSeconds = 1924;
     await store.getState().begin("s1", NOTIFICATION, false, "metric");
     for (let i = 0; i < 30; i += 1) emit(walking(i));
 
     expect(mockSetProgress).toHaveBeenCalledTimes(1);
     // Twenty-nine steps of 1.4 m, minus the gate the reducer holds open for the first three.
-    expect(mockSetProgress.mock.calls[0]?.[0]).toMatch(/^\d+ m$/);
+    // Time first, because it is the only half that exists on every walk.
+    expect(mockSetProgress.mock.calls[0]?.[0]).toMatch(/^32:04 · \d+ m$/);
+  });
+
+  /**
+   * The line the whole feature is read through, on the walk that needs it most.
+   *
+   * A sortie whose sky never opens produces no fix, so nothing used to push the notification and
+   * it repeated "Finding the sky" for an hour - the one surface readable without unlocking,
+   * saying nothing about a walk that was happening. The clock is now what drives it, so the time
+   * shows up with or without a fix, and it comes from the session store's rule rather than a
+   * second one kept here.
+   */
+  test("the line carries the time before anything else, fix or no fix", async () => {
+    jest.useFakeTimers();
+    try {
+      mockElapsedSeconds = 65;
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+
+      jest.advanceTimersByTime(30_000);
+      expect(mockSetProgress).toHaveBeenLastCalledWith(`1:05 · ${NOTIFICATION.acquiring}`);
+
+      for (let i = 0; i < 5; i += 1) emit(walking(i));
+      mockElapsedSeconds = 95;
+      jest.advanceTimersByTime(30_000);
+      expect(mockSetProgress).toHaveBeenLastCalledWith(expect.stringMatching(/^1:35 · \d+ m$/));
+
+      await store.getState().end();
+      mockSetProgress.mockClear();
+      jest.advanceTimersByTime(60_000);
+      expect(mockSetProgress).not.toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   /**

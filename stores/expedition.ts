@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { create } from "zustand";
-import { formatDistance } from "@/constants/distanceFormat";
+import { formatClock, formatDistance } from "@/constants/distanceFormat";
 import { hasOutdoorSlot } from "@/db/expeditions";
 import { appendPoints, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
@@ -18,6 +18,7 @@ import {
 } from "@/modules/bati-location";
 import { accept, EMPTY, goalReached, type OutingGoal, type TrackState } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
+import { recordedDurationSeconds } from "@/stores/session";
 
 /**
  * The live half of an expedition: the fixes arriving while the hero is out.
@@ -34,6 +35,16 @@ import { reportError } from "@/src/reportError";
 
 /** Fixes buffered before a write. Thirty seconds at 1 Hz, so a kill costs half a minute. */
 const FLUSH_EVERY = 30;
+
+/**
+ * How often the notification's line is rewritten from the clock rather than from a fix.
+ *
+ * The same half-minute as the flush, and for the same reason: a pocket nobody looks at should
+ * cost one update every thirty seconds, not one a second. Without it the line only ever moved
+ * when a fix landed, so the walk that most needs a readout - the one where no fix ever lands -
+ * was the one that never got one.
+ */
+const PROGRESS_EVERY_MS = FLUSH_EVERY * 1000;
 
 /** Metres per second above which a fix is implausible, by how the hero is moving. */
 const SPEED_CAP_MS = { onFoot: 8, mounted: 25 } as const;
@@ -85,6 +96,10 @@ export function isExpedition(quest: Quest | null): boolean {
  */
 let subscriptions: { remove(): void }[] = [];
 let buffer: LocationFix[] = [];
+/** The wording the notification uses while no fix has landed, kept for `progressLine`. */
+let acquiringWord = "";
+/** The clock behind the notification's line, so it moves without a fix. Cleared by `end()`. */
+let progressTimer: ReturnType<typeof setInterval> | null = null;
 
 async function flush(sessionUuid: string): Promise<void> {
   if (buffer.length === 0) return;
@@ -108,9 +123,25 @@ function clearedTransient(error: string | null): string | null {
   return error === "gps-off" || error === "no-fix" ? null : error;
 }
 
-/** The notification's second line: the ground covered, in the hero's own unit. */
+/**
+ * The notification's second line, and the only surface an outing in a pocket has.
+ *
+ * The time comes first, because it is the only fact that always exists. The line used to be the
+ * distance alone, so a walk whose sky never opened repeated "Finding the sky" for its whole
+ * length - the one screen readable without unlocking, saying nothing about a walk that was
+ * happening.
+ *
+ * The seconds are `recordedDurationSeconds()`, the rule the panel and the journal already read,
+ * so the notification cannot tell a third story about how long the hero has been out. That is
+ * an import back into `stores/session`, which imports this store: a cycle on paper, never one at
+ * runtime, since neither side touches the other while its module is evaluating.
+ */
 function progressLine(track: TrackState, unit: DistanceUnit): string {
-  return formatDistance(track.distanceM, unit);
+  const elapsed = formatClock(recordedDurationSeconds() * 1000);
+  // `startedAt` is set by the first fix the gate accepts, so null is exactly "no sky yet" - the
+  // same test the panel's status line makes.
+  const ground = track.startedAt === null ? acquiringWord : formatDistance(track.distanceM, unit);
+  return `${elapsed} · ${ground}`;
 }
 
 /**
@@ -149,6 +180,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       .end()
       .catch((e) => reportError("expedition.restart", e));
     buffer = [];
+    acquiringWord = notification.acquiring;
     set({ track: EMPTY, lastFix: null, error: null, goalReached: false });
 
     if (!isAvailable()) {
@@ -254,12 +286,19 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     // A refusal the service can explain arrives on `onError`; a bare `false` explained nothing,
     // and the panel sat on "Finding the sky" for the length of a walk nothing was measuring.
     if (!started) set({ error: "foreground-denied" });
+    if (started) {
+      progressTimer = setInterval(() => {
+        setProgress(progressLine(get().track, unit));
+      }, PROGRESS_EVERY_MS);
+    }
     return started;
   },
 
   end: async () => {
     for (const subscription of subscriptions) subscription.remove();
     subscriptions = [];
+    if (progressTimer !== null) clearInterval(progressTimer);
+    progressTimer = null;
     stopNative();
     const { sessionUuid } = get();
     if (sessionUuid) await flush(sessionUuid);

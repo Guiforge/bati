@@ -760,6 +760,14 @@ function recordOf(
   slot: { target: Target; exercise: Exercise },
   resultValue: number,
 ): Pick<CompletedExerciseInput, "result" | "target"> {
+  // Per *session*, not per slot, and the two predicates disagree on purpose here.
+  // `recordedDurationSeconds()` times the whole session, which is the walk itself when the walk
+  // is all there is. On a mixed quest it would hand the walk slot the push-ups' minutes too.
+  //
+  // ponytail: a walk slot inside a mixed quest still records the view's stopwatch, so it reads
+  // near zero after the OS kills and the hero resumes. The real fix is a per-slot span read off
+  // the trace, which nothing measures today. Worth building when a mixed quest is something
+  // heroes actually write, rather than something the editor merely allows.
   const outing = isOutingSession(quest);
   const measured =
     slot.target.type === "time" && outing ? Math.max(1, recordedDurationSeconds()) : resultValue;

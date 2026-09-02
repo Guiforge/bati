@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -114,13 +114,24 @@ function questWith(exercise: typeof mockWalk): Quest {
   } as unknown as Quest;
 }
 
-async function mountRunning(exercise: typeof mockWalk) {
+/** A walk first, then a hold: one quest that proves the screen decides per slot, not per session. */
+function mixedQuest(): Quest {
+  return {
+    ...questWith(mockWalk),
+    exercises: [
+      { exercise: mockWalk, target: { type: "time", value: 900 } },
+      { exercise: mockPlank, target: { type: "time", value: 60 } },
+    ],
+  } as unknown as Quest;
+}
+
+async function mountRunning(quest: Quest) {
   // Reduced motion, because the screen's entry springs run on real timers here: React Native's
   // Animated keeps updating an Animated(View) after the test that mounted it, and the suite spent
   // most of its wall clock waiting on transitions no assertion looks at.
   useSettingsStore.setState({ soundEnabled: true, language: "en", reducedMotion: true });
   useSessionStore.setState({
-    quest: questWith(exercise),
+    quest,
     status: "running",
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
@@ -182,7 +193,7 @@ describe("a walk, on the screen a hero stares at while walking", () => {
   // the real screen inside a real Tamagui provider cost thirty seconds between them on a loaded
   // machine, which is how this suite started timing out on cadence rather than on behaviour.
   test("reads as an outing: a panel, no countdown, the quest named, and silence", async () => {
-    await mountRunning(mockWalk);
+    await mountRunning(questWith(mockWalk));
 
     // The panel is the readout, and it is there.
     expect(screen.getByText("Finding the sky")).toBeTruthy();
@@ -213,7 +224,7 @@ describe("a walk, on the screen a hero stares at while walking", () => {
 describe("a plain hold, which still has a duration to count", () => {
   // Same reason as above: one mount, and the three things a workout still owes the hero.
   test("keeps the countdown, its rounds and its beeps", async () => {
-    await mountRunning(mockPlank);
+    await mountRunning(questWith(mockPlank));
 
     expect(screen.queryByText("Finding the sky")).toBeNull();
     expect(screen.getByText("0:03")).toBeTruthy();
@@ -226,5 +237,62 @@ describe("a plain hold, which still has a duration to count", () => {
     expect(screen.queryByText("The Warden's Round")).toBeNull();
 
     expect(mockPlayCue).toHaveBeenCalledWith("tick");
+  });
+});
+
+/**
+ * The end of a walk, which is the one gesture that cannot be a mistake.
+ *
+ * The phone is in a pocket for an outing and the screen no longer stays awake, so a tap is what
+ * an accident produces, and the accident ends the session. Both halves are asserted, in both
+ * directions: the tap writes nothing, the hold writes the set. A gate that simply stopped the
+ * button from working would pass the first half alone.
+ */
+describe("finishing an outing", () => {
+  test("ends on a hold, never on a tap, with nothing to swap or skip beside it", async () => {
+    await mountRunning(questWith(mockWalk));
+
+    // One verb on screen, the other reserved for the screen reader.
+    expect(screen.getByText("Finish the outing")).toBeTruthy();
+    expect(screen.queryByText("Hold to finish the outing")).toBeNull();
+
+    // Neither offer means anything outside: there is no other movement to walk with, and a walk
+    // that did not happen is one the hero does not start.
+    expect(screen.queryByTestId("session-swap-exercise")).toBeNull();
+    expect(screen.queryByTestId("session-skip-exercise")).toBeNull();
+    expect(screen.queryByText("Replace")).toBeNull();
+    expect(screen.queryByText("I couldn't do this one")).toBeNull();
+
+    // One step, so the bar is full from the first second: a reading of nothing.
+    expect(screen.queryByTestId("session-progress-bar")).toBeNull();
+
+    const finish = screen.getByTestId("session-complete-exercise");
+
+    await fireEvent.press(finish);
+    expect(useSessionStore.getState().results).toHaveLength(0);
+    expect(useSessionStore.getState().status).toBe("running");
+
+    await fireEvent(finish, "longPress");
+    expect(useSessionStore.getState().results).toHaveLength(1);
+    expect(useSessionStore.getState().status).toBe("finished");
+  });
+
+  test("a screen reader ends it too, and a second slot brings the bar back", async () => {
+    await mountRunning(mixedQuest());
+
+    // Two steps, so the bar measures something. Asserted on the mixed quest rather than in the
+    // test above, so "no bar" is a statement about one-step quests and not about outings.
+    expect(screen.getByTestId("session-progress-bar")).toBeTruthy();
+
+    // Under TalkBack a long press is not reliable, and the notification's own Finish action is a
+    // version away: without this, a hero reading the screen could only end a walk by throwing it
+    // away. The action's name is what the handler matches on, so a rename that misses one half
+    // fails here.
+    await fireEvent(screen.getByTestId("session-complete-exercise"), "accessibilityAction", {
+      nativeEvent: { actionName: "finishOuting" },
+    });
+
+    expect(useSessionStore.getState().results).toHaveLength(1);
+    expect(useSessionStore.getState().currentExerciseIndex).toBe(1);
   });
 });

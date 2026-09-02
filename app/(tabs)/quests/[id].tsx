@@ -78,6 +78,26 @@ function targetLabel(target: Target): string {
   return target.type === "time" ? formatDuration(target.value) : formatTarget(target);
 }
 
+/**
+ * An outing's XP, priced at the same estimate the duration tag shows rather than at its slots'
+ * own targets.
+ *
+ * Duration and distance mode both produce an estimate, and only one of them — the duration
+ * branch, when the slots' seconds are left untouched — happens to already agree with what the
+ * slots themselves are worth. Scaling every slot's target to the estimate makes both modes true
+ * by construction instead of by coincidence, which is what let the distance branch drift: "≈ 36
+ * min" for 3 km while the XP tag still priced whatever the slot's seconds happened to be.
+ */
+function estimateOutingXp(quest: Quest, level: DifficultyCode, estimatedSeconds: number): number {
+  const targetSeconds = quest.exercises.reduce((sum, qex) => sum + qex.target.value, 0);
+  const scale = targetSeconds > 0 ? estimatedSeconds / targetSeconds : 1;
+  const exercises = quest.exercises.map((qex) => ({
+    exercise: qex.exercise,
+    target: { ...qex.target, value: qex.target.value * scale },
+  }));
+  return estimateQuestXp({ rounds: quest.rounds, exercises }, level);
+}
+
 /** Stable empty list, so the sheet's props do not change identity on every render. */
 const EMPTY_CANDIDATES: ReturnType<typeof rankSwapCandidates> = [];
 
@@ -367,11 +387,16 @@ export default function QuestDetails() {
   const derived = useMemo(() => {
     if (!state.quest) return null;
     const quest = applyQuestConfig(state.quest, config, indexExercises(catalogue));
-    // A distance goal is estimated from a nominal pace; a duration is its own estimate.
+    const outing = isOutingSession(quest);
+    // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
+    // way it is what the hero is about to run, so the XP tag below prices that same estimate
+    // rather than the slot's own target — the two numbers on this screen must describe one
+    // session, not two.
     const estimatedSeconds =
-      config.distanceM !== undefined && isOutingSession(quest)
+      config.distanceM !== undefined && outing
         ? estimateDistanceSeconds(config.distanceM, isMountedOuting(quest))
         : estimateQuestSeconds(quest);
+    const questLevel = level as unknown as DifficultyCode;
     return {
       quest,
       questTitle: localizedTitle(quest, language),
@@ -379,7 +404,9 @@ export default function QuestDetails() {
       questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
       estimate: formatDurationEstimate(estimatedSeconds),
-      xpReward: estimateQuestXp(quest, level as unknown as DifficultyCode),
+      xpReward: outing
+        ? estimateOutingXp(quest, questLevel, estimatedSeconds)
+        : estimateQuestXp(quest, questLevel),
     };
   }, [state.quest, config, language, level, catalogue]);
 

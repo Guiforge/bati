@@ -92,10 +92,15 @@ jest.mock("@/db/questConfig", () => ({
   loadConfiguredQuest: jest.fn(),
 }));
 
+jest.mock("@/db/outings", () => ({
+  listOutings: jest.fn().mockResolvedValue([]),
+}));
+
 const { getOathProgress } = require("@/db/oaths");
 const { getChainTo } = require("@/db/exercises");
 const { findQuestWithExercise } = require("@/db/quests");
 const { loadConfiguredQuest } = require("@/db/questConfig");
+const { listOutings } = require("@/db/outings");
 
 const questNamed = (id: number, title: string) => ({
   quest: {
@@ -118,6 +123,7 @@ describe("useSmartAction", () => {
     getOathProgress.mockClear().mockResolvedValue(null);
     getChainTo.mockClear().mockResolvedValue(null);
     findQuestWithExercise.mockClear().mockResolvedValue(null);
+    listOutings.mockClear().mockResolvedValue([]);
   });
 
   it("hands over the quest detail, and never a session route", async () => {
@@ -185,6 +191,52 @@ describe("useSmartAction", () => {
     await waitFor(() => expect(result.current.config).not.toBeNull());
 
     expect(findQuestWithExercise).not.toHaveBeenCalled();
+    expect(result.current.config?.scene?.title).toBe("Chest Day");
+  });
+
+  it("serves a leagues oath with the first way out, not a lifting quest", async () => {
+    getOathProgress.mockResolvedValue({
+      oath: { metric: "leagues", target: 50, exerciseId: null },
+      isFulfilled: false,
+      exerciseName: null,
+    });
+    listOutings.mockResolvedValue([{ quest: { id: 40 }, exercise: { enName: "Warden's Walk" } }]);
+    loadConfiguredQuest.mockResolvedValue(questNamed(40, "The Warden's Round"));
+
+    const { result } = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(result.current.config).not.toBeNull());
+
+    expect(loadConfiguredQuest).toHaveBeenCalledWith(40);
+    expect(result.current.config?.scene?.title).toBe("The Warden's Round");
+    expect(result.current.config?.subtext).toBe("Toward your oath: 50 leagues beyond the walls");
+  });
+
+  it("falls back to the weak areas when a leagues oath has no door out", async () => {
+    getOathProgress.mockResolvedValue({
+      oath: { metric: "leagues", target: 50, exerciseId: null },
+      isFulfilled: false,
+      exerciseName: null,
+    });
+    listOutings.mockResolvedValue([]);
+
+    const { result } = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(result.current.config).not.toBeNull());
+
+    expect(result.current.config?.scene?.title).toBe("Chest Day");
+  });
+
+  it("falls back to the weak areas when a leagues oath is already fulfilled", async () => {
+    getOathProgress.mockResolvedValue({
+      oath: { metric: "leagues", target: 50, exerciseId: null },
+      isFulfilled: true,
+      exerciseName: null,
+    });
+    listOutings.mockResolvedValue([{ quest: { id: 40 }, exercise: { enName: "Warden's Walk" } }]);
+
+    const { result } = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(result.current.config).not.toBeNull());
+
+    expect(listOutings).not.toHaveBeenCalled();
     expect(result.current.config?.scene?.title).toBe("Chest Day");
   });
 

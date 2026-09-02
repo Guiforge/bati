@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { create } from "zustand";
 import { formatDistance } from "@/constants/distanceFormat";
 import { appendPoints } from "@/db/gps";
@@ -14,7 +15,7 @@ import {
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
-import { accept, EMPTY, type TrackState } from "@/src/gps/track";
+import { accept, EMPTY, goalReached, type OutingGoal, type TrackState } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -45,11 +46,17 @@ type ExpeditionState = {
   lastFix: LocationFix | null;
   /** Set when the service refused to start, so a screen can say why rather than sit blank. */
   error: string | null;
+  /** What the hero set out to do, or null when they just went out. */
+  goal: OutingGoal | null;
+  /** Flipped once, the moment the goal was met. Read by the panel's status line. */
+  goalReached: boolean;
   begin: (
     sessionUuid: string,
     notification: Notification,
     mounted: boolean,
     unit: DistanceUnit,
+    goal?: OutingGoal | null,
+    haptics?: boolean,
   ) => Promise<boolean>;
   end: () => Promise<void>;
 };
@@ -60,6 +67,7 @@ type Notification = {
   tracking: string;
   paused: string;
   gpsOff: string;
+  reached: string;
 };
 
 /** Whether this quest is an outing rather than a workout. */
@@ -89,13 +97,24 @@ async function flush(sessionUuid: string): Promise<void> {
   }
 }
 
+/**
+ * The notification's second line. Once the goal is met it leads with that, because a phone
+ * pulled out of a pocket at the buzz should answer "why did you buzz" before "how far".
+ */
+function progressLine(track: TrackState, unit: DistanceUnit, reached: string | null): string {
+  const distance = formatDistance(track.distanceM, unit);
+  return reached === null ? distance : `${reached} · ${distance}`;
+}
+
 export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   sessionUuid: null,
   track: EMPTY,
   lastFix: null,
   error: null,
+  goal: null,
+  goalReached: false,
 
-  begin: async (sessionUuid, notification, mounted, unit) => {
+  begin: async (sessionUuid, notification, mounted, unit, goal = null, haptics = true) => {
     if (!isAvailable()) {
       // No native half: iOS today, and jest. The quest still runs, it just measures nothing.
       set({ error: "unavailable" });
@@ -135,17 +154,33 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       .catch((e) => reportError("expedition.restart", e));
 
     buffer = [];
-    set({ sessionUuid, track: EMPTY, lastFix: null, error: null });
+    set({ sessionUuid, track: EMPTY, lastFix: null, error: null, goal, goalReached: false });
 
     subscriptions = [
       addListener("onLocation", (fix) => {
         buffer.push(fix);
         const track = accept(get().track, fix);
-        set({ track, lastFix: fix });
+        const wasReached = get().goalReached;
+        const reached = wasReached || goalReached(goal, track);
+        set({ track, lastFix: fix, goalReached: reached });
+
+        // Once. The phone is in a pocket at this moment, so the buzz is the whole message and the
+        // notification is what explains it when the hero looks. Haptics off is respected: a hero
+        // who turned them off for buttons did not ask for a walk to be silent, but the setting
+        // has one meaning in this app and this is not the place to give it a second.
+        if (reached && !wasReached) {
+          if (haptics) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((e) =>
+              reportError("expedition.goalHaptic", e),
+            );
+          }
+          setProgress(progressLine(track, unit, notification.reached));
+        }
+
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.
         if (buffer.length >= FLUSH_EVERY) {
-          setProgress(formatDistance(track.distanceM, unit));
+          setProgress(progressLine(track, unit, reached ? notification.reached : null));
           flush(sessionUuid).catch((e) => reportError("expedition.flush", e));
         }
       }),

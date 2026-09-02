@@ -181,3 +181,16 @@ export function credited(track: TrackState): Credit | null {
     movingSeconds: Math.floor(track.movingMs / 1000),
   };
 }
+
+/**
+ * What the hero set out to do, in the unit they chose. Seconds are *moving* seconds, the same
+ * witness XP is paid in: a goal of "25 minutes" is not met by standing at a crossing.
+ */
+export type OutingGoal = { type: "time"; seconds: number } | { type: "distance"; metres: number };
+
+export function goalReached(goal: OutingGoal | null, track: TrackState): boolean {
+  if (goal === null) return false;
+  return goal.type === "time"
+    ? track.movingMs >= goal.seconds * 1000
+    : track.distanceM >= goal.metres;
+}

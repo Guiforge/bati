@@ -29,12 +29,19 @@ jest.mock("@/src/reportError", () => ({
   reportError: (...a: never[]) => mockReportError(...a),
 }));
 
+const mockHaptic = jest.fn().mockResolvedValue(undefined);
+jest.mock("expo-haptics", () => ({
+  notificationAsync: (...a: never[]) => mockHaptic(...a),
+  NotificationFeedbackType: { Success: "success" },
+}));
+
 const NOTIFICATION = {
   title: "Bati",
   acquiring: "a",
   tracking: "t",
   paused: "p",
   gpsOff: "o",
+  reached: "r",
 };
 
 const T0 = 1_760_000_000_000;
@@ -69,6 +76,7 @@ describe("stores/expedition", () => {
     mockStop.mockClear();
     mockSetProgress.mockClear();
     mockReportError.mockClear();
+    mockHaptic.mockClear();
     mockAvailable = true;
     store = (require("@/stores/expedition") as typeof import("@/stores/expedition"))
       .useExpeditionStore;
@@ -102,6 +110,48 @@ describe("stores/expedition", () => {
     expect(track.distanceM).toBeGreaterThan(0);
     expect(track.paused).toBe(false);
     expect(lastFix?.t).toBe(T0 + 19 * 1000);
+  });
+
+  test("a distance goal buzzes once when the ground is covered, and says so in the notification", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false, "metric", {
+      type: "distance",
+      metres: 10,
+    });
+    // 1.4 m per fix; the start gate eats the first three, so ten metres land around fix 11.
+    for (let i = 0; i < 20; i++) emit(walking(i));
+
+    expect(store.getState().goalReached).toBe(true);
+    expect(mockHaptic).toHaveBeenCalledTimes(1);
+    expect(mockSetProgress).toHaveBeenCalledWith(expect.stringContaining("r"));
+  });
+
+  test("a time goal is measured in moving seconds", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false, "metric", {
+      type: "time",
+      seconds: 10,
+    });
+    for (let i = 0; i < 8; i++) emit(walking(i));
+    expect(store.getState().goalReached).toBe(false);
+    for (let i = 8; i < 20; i++) emit(walking(i));
+    expect(store.getState().goalReached).toBe(true);
+    expect(mockHaptic).toHaveBeenCalledTimes(1);
+  });
+
+  test("haptics off means no buzz, the notification still says it", async () => {
+    await store
+      .getState()
+      .begin("s1", NOTIFICATION, false, "metric", { type: "distance", metres: 10 }, false);
+    for (let i = 0; i < 20; i++) emit(walking(i));
+    expect(store.getState().goalReached).toBe(true);
+    expect(mockHaptic).not.toHaveBeenCalled();
+    expect(mockSetProgress).toHaveBeenCalledWith(expect.stringContaining("r"));
+  });
+
+  test("no goal never reaches anything", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    for (let i = 0; i < 40; i++) emit(walking(i));
+    expect(store.getState().goalReached).toBe(false);
+    expect(mockHaptic).not.toHaveBeenCalled();
   });
 
   // The buffer is what a crash costs. Thirty seconds, never the run.

@@ -59,6 +59,19 @@ export function clampToRange(value: number, range: { min: number; max: number })
  */
 export const TIME_TARGET_MAX = 3600;
 
+/**
+ * A distance goal, in metres. Not a `QuestTargetType`: `0000_schema.sql` holds `targetType` and
+ * `resultType` to `('reps','time')` with a CHECK, and a walk's distance is already written once,
+ * on `completed_sessions.leaguesM`. So the goal lives in the hero's quest config and the session
+ * still records seconds. See docs/designs/expeditions.md, "After the audit".
+ *
+ * ponytail: a seeded quest cannot ship a distance goal; if content ever needs one, that is the
+ * table rebuild, not a fourth target type bolted on here.
+ */
+export const DISTANCE_GOAL_RANGE = { min: 500, max: 200_000 };
+export const DISTANCE_GOAL_STEP = 500;
+export const DEFAULT_DISTANCE_GOAL_M = 3000;
+
 /** What a target may be, by what it counts. Reps and seconds are not the same magnitude. */
 export function targetRangeFor(type: QuestTargetType): { min: number; max: number } {
   return type === "time" ? { min: TARGET_RANGE.min, max: TIME_TARGET_MAX } : TARGET_RANGE;

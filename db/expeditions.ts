@@ -83,3 +83,15 @@ export function outingGoal(
 export function isMountedOuting(quest: { exercises: { exercise: { enName: string } }[] }): boolean {
   return quest.exercises.some((slot) => slot.exercise.enName === "Outrider's Ride");
 }
+
+/** Nominal speeds for an estimate, in m/s. A brisk walk and a steady ride; a run sits between. */
+const NOMINAL_SPEED_MS = { onFoot: 1.4, mounted: 5.6 } as const;
+
+/**
+ * How long a distance goal is likely to take, for the "≈ 40 min" tag on the quest screen. An
+ * estimate and labelled as one; XP is paid on moving seconds, never on this.
+ */
+export function estimateDistanceSeconds(metres: number, mounted: boolean): number {
+  const speed = mounted ? NOMINAL_SPEED_MS.mounted : NOMINAL_SPEED_MS.onFoot;
+  return Math.max(1, Math.round(metres / speed));
+}

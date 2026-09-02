@@ -162,3 +162,12 @@ describe("listOutings", () => {
     expect((await listOutings()).map((o) => o.quest.id)).toEqual([16]);
   });
 });
+
+describe("estimateDistanceSeconds", () => {
+  test("a walker covers a kilometre in about twelve minutes, a mount in three", () => {
+    const { estimateDistanceSeconds } =
+      require("../db/expeditions") as typeof import("../db/expeditions");
+    expect(estimateDistanceSeconds(1000, false)).toBe(714);
+    expect(estimateDistanceSeconds(1000, true)).toBe(179);
+  });
+});

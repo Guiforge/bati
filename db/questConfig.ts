@@ -3,6 +3,7 @@ import { deletePreference, getAllPreferences, getPreference, setPreference } fro
 import { getQuestById, type Quest } from "./quests";
 import {
   clampToRange,
+  DISTANCE_GOAL_RANGE,
   Difficulty,
   REST_RANGE,
   ROUNDS_RANGE,
@@ -26,6 +27,12 @@ export type QuestConfig = {
   rounds?: number;
   restSeconds?: number;
   roundRestSeconds?: number;
+  /**
+   * A distance goal for an outing, in metres. Only read when every slot is an expedition; a
+   * workout ignores it. Outranks the slot's duration as the goal, never replaces the target: the
+   * session still records seconds, and the ground goes on `completed_sessions.leaguesM`.
+   */
+  distanceM?: number;
   /**
    * quest_exercises row id -> target value. Editing a quest rewrites those rows, so stale keys
    * are possible; `applyQuestConfig` simply ignores ids the quest no longer has.
@@ -110,6 +117,9 @@ export function parseQuestConfig(raw: string | null): QuestConfig | null {
   const roundRestSeconds = readNumber(record.roundRestSeconds, REST_RANGE);
   if (roundRestSeconds !== undefined) config.roundRestSeconds = roundRestSeconds;
 
+  const distanceM = readNumber(record.distanceM, DISTANCE_GOAL_RANGE);
+  if (distanceM !== undefined) config.distanceM = distanceM;
+
   const targets = readTargets(record.targets);
   if (targets !== undefined) config.targets = targets;
 
@@ -151,6 +161,7 @@ export function hasQuestOverrides(config: QuestConfig | null): boolean {
     config.rounds !== undefined ||
     config.restSeconds !== undefined ||
     config.roundRestSeconds !== undefined ||
+    config.distanceM !== undefined ||
     Object.keys(config.targets ?? {}).length > 0 ||
     Object.keys(config.swaps ?? {}).length > 0
   );

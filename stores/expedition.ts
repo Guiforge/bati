@@ -16,9 +16,16 @@ import {
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
-import { accept, EMPTY, goalReached, type OutingGoal, type TrackState } from "@/src/gps/track";
+import {
+  accept,
+  EMPTY,
+  goalReached,
+  METRES_PER_LEAGUE,
+  type OutingGoal,
+  type TrackState,
+} from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
-import { recordedDurationSeconds } from "@/stores/session";
+import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 
 /**
  * The live half of an expedition: the fixes arriving while the hero is out.
@@ -100,6 +107,15 @@ let buffer: LocationFix[] = [];
 let acquiringWord = "";
 /** The clock behind the notification's line, so it moves without a fix. Cleared by `end()`. */
 let progressTimer: ReturnType<typeof setInterval> | null = null;
+/**
+ * Whole leagues already announced, a high-water mark rather than a count. Seeded by `begin()`.
+ */
+let leaguesCrossed = 0;
+
+/** Whole leagues in a reading. The only place the counter and the recap agree by construction. */
+function leaguesOf(track: TrackState): number {
+  return Math.floor(track.distanceM / METRES_PER_LEAGUE);
+}
 
 async function flush(sessionUuid: string): Promise<void> {
   if (buffer.length === 0) return;
@@ -155,13 +171,35 @@ function progressLine(track: TrackState, unit: DistanceUnit): string {
  * `BatiLocationService.notification()`. This only ever pushes the figure.
  */
 function announceGoalReached(track: TrackState, unit: DistanceUnit, haptics: boolean): void {
-  if (haptics) {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((e) =>
-      reportError("expedition.goalHaptic", e),
-    );
-  }
+  if (haptics) buzz("expedition.goalHaptic");
   setReached();
   setProgress(progressLine(track, unit));
+}
+
+/** The one haptic call in this file, so a walk cannot end up with two ways of buzzing. */
+function buzz(context: string): void {
+  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((e) =>
+    reportError(context, e),
+  );
+}
+
+/**
+ * One buzz per league, the first time it is crossed and never again. Nothing on screen, no
+ * string: the phone is in a pocket, and a buzz per kilometre is the whole message.
+ *
+ * A vibration rather than a cue from `src/sounds.ts`, which mixes under the hero's music on
+ * purpose: a 70 ms tick is inaudible at running pace, and making it audible would reopen the
+ * `expo-audio` configuration that already cost a microphone and three permissions.
+ *
+ * `leaguesCrossed` is a high-water mark because credited distance can go *down*: closing a pause
+ * window takes back what it advanced (`RULES.pauseAfterMs`), so a hero who stops just past the
+ * ninth league would otherwise be buzzed a second time for the same kilometre on the way back up.
+ */
+function announceLeague(track: TrackState, haptics: boolean): void {
+  const leagues = leaguesOf(track);
+  if (leagues <= leaguesCrossed) return;
+  leaguesCrossed = leagues;
+  if (haptics) buzz("expedition.leagueHaptic");
 }
 
 export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
@@ -180,6 +218,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       .end()
       .catch((e) => reportError("expedition.restart", e));
     buffer = [];
+    leaguesCrossed = 0;
     acquiringWord = notification.acquiring;
     set({ track: EMPTY, lastFix: null, error: null, goalReached: false });
 
@@ -225,6 +264,9 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       return [] as LocationFix[];
     });
     const resumed = priorFixes.reduce(accept, EMPTY);
+    // The replayed ground is already behind the hero: seeding the mark from it is what keeps a
+    // walk the OS killed at eight kilometres from buzzing eight times on the way back in.
+    leaguesCrossed = leaguesOf(resumed);
 
     set({
       sessionUuid,
@@ -243,6 +285,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         set({ track, lastFix: fix, goalReached: reached, error: clearedTransient(get().error) });
 
         if (reached && !wasReached) announceGoalReached(track, unit, haptics);
+        announceLeague(track, haptics);
 
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.
@@ -270,6 +313,11 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       addListener("onNoFixTimeout", (event) => {
         set({ error: "no-fix" });
         reportError("expedition.noFix", new Error(`no fix for ${event.sinceLastFixMs} ms`));
+      }),
+      // La sortie que seul un écran verrouillé emprunte. Le service demande, le store de séance
+      // conclut : la durée, l'XP et la ligne du journal sont à lui, et lui seul sait les écrire.
+      addListener("onFinishRequested", () => {
+        useSessionStore.getState().completeOuting();
       }),
     ];
 

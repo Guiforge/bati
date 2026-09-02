@@ -485,4 +485,111 @@ describe("stores/expedition", () => {
       expect(store.getState().error).toBe("permission");
     });
   });
+
+  /**
+   * The league counter: one buzz per kilometre, in a pocket, with nothing on screen.
+   *
+   * The fixture walks 50 m every ten seconds rather than 1.4 m every second, because a league is
+   * 715 fixes at walking pace and this is a unit test, not a walk.
+   */
+  describe("leagues", () => {
+    const BASE_LAT = 48.4728;
+    /** Fix `i`: 50 m further north than `i - 1`, ten seconds later. The gate opens on fix 1. */
+    const striding = (i: number): LocationFix => ({
+      t: T0 + i * 10_000,
+      lat: BASE_LAT + i * 0.00045,
+      lon: -2.4943,
+      ele: 110,
+      acc: 4,
+      speed: 5,
+      distFromPrev: i === 0 ? 0 : 50,
+    });
+    /** Distance credited once fixes `0..i` have landed: the gate eats the first two. */
+    const groundAfter = (i: number) => (i - 1) * 50;
+
+    test("crossing a league buzzes once, and says nothing else", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      for (let i = 0; i <= 30; i++) emit(striding(i));
+
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(30));
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+      // The league is a buzz and only a buzz: the goal's word belongs to the goal.
+      expect(mockSetReached).not.toHaveBeenCalled();
+    });
+
+    test("two leagues buzz twice", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      for (let i = 0; i <= 45; i++) emit(striding(i));
+
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(45));
+      expect(mockHaptic).toHaveBeenCalledTimes(2);
+    });
+
+    /**
+     * The trap the whole counter is built around. `begin` replays `gps_points` through the
+     * reducer, so a walk the OS killed at three leagues comes back with three leagues of ground
+     * in one go. A naive counter would buzz three times at the moment the hero resumes - for
+     * kilometres already walked, in a pocket, with no way to tell what happened.
+     */
+    test("a resumed outing that already carried three leagues buzzes for the fourth, not the first three", async () => {
+      mockPointsOf.mockResolvedValue(Array.from({ length: 62 }, (_, i) => striding(i)));
+
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(61)); // 3050 m
+      expect(mockHaptic).not.toHaveBeenCalled();
+
+      // The fourth league is crossed on the fix that reaches 4000 m, and only that one.
+      for (let i = 62; i <= 81; i++) emit(striding(i));
+      expect(store.getState().track.distanceM).toBeCloseTo(4000);
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * A league is crossed once. Credited distance is not monotonic: what is advanced under an
+     * anchor is taken back when the pause window closes on a hero who never cleared it
+     * (`RULES.pauseAfterMs`), so the same kilometre is crossed, un-crossed and crossed again by
+     * someone who stopped at a crossing just past a league marker.
+     */
+    test("ground taken back by a closing pause does not buzz the same league twice", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      for (let i = 0; i <= 20; i++) emit(striding(i));
+      expect(store.getState().track.distanceM).toBeCloseTo(950);
+
+      // Standing at the light: a few metres of drift around the anchor, never ten from it. The
+      // reducer advances the credit, so the reading creeps past 1000 m and buzzes.
+      const drifting = (j: number): LocationFix => ({
+        t: T0 + 20 * 10_000 + j * 1000,
+        lat: BASE_LAT + 20 * 0.00045 + (j % 2) * 0.000027,
+        lon: -2.4943,
+        ele: 110,
+        acc: 4,
+        speed: 0.2,
+        distFromPrev: 3,
+      });
+      for (let j = 1; j <= 39; j++) emit(drifting(j));
+      expect(store.getState().track.distanceM).toBeGreaterThan(1000);
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+
+      // The window closes on an anchor that was never cleared: the drift is refunded and the
+      // reading falls back under the league.
+      emit(drifting(40));
+      expect(store.getState().track.paused).toBe(true);
+      expect(store.getState().track.distanceM).toBeCloseTo(950);
+
+      // The hero walks off again and crosses 1000 m a second time. That is not a new league.
+      for (let k = 1; k <= 13; k++) {
+        emit({ ...striding(20 + k), t: T0 + 240_000 + k * 10_000 });
+      }
+      expect(store.getState().track.distanceM).toBeCloseTo(1600);
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    test("haptics off means the leagues pass in silence", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric", null, false);
+      for (let i = 0; i <= 45; i++) emit(striding(i));
+
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(45));
+      expect(mockHaptic).not.toHaveBeenCalled();
+    });
+  });
 });

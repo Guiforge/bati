@@ -557,3 +557,26 @@ constat précis. Commit 1 : lots 1 et 3. Commit 2 : lot 2.
 - Tu as accepté la révision de la prémisse 7 sur une preuve dans le code, `useKeepAwake()`
   ligne 17, alors que l'audit avait une règle entière pour le verrou de poche. La règle était
   bonne, le problème qu'elle résolvait était fabriqué.
+
+## GSTACK REVIEW REPORT
+
+| Review | Trigger | Why | Runs | Status | Findings |
+|--------|---------|-----|------|--------|----------|
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | non lancée | rien |
+| Codex Review | `/codex review` | Independent 2nd opinion | 0 | non lancée | rien |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | CLEAR | 17 constats, 0 faille critique |
+| Design Review | `/plan-design-review` | UI/UX gaps | 0 | non lancée | rien |
+| DX Review | `/plan-devex-review` | Developer experience gaps | 0 | non lancée | rien |
+
+**CROSS-MODEL :** la voix extérieure a tourné en repli sur un sous-agent Claude, Codex étant
+installé mais non authentifié (401). Contexte neuf, même famille de modèle, donc son accord
+compte moins qu'un vrai second modèle. Elle a produit dix points, dont quatre en tension directe
+avec la revue : la source du chrono, la forme de l'objectif, l'ordre entre notification et gros
+chiffre, et la faisabilité de la v2.3. Les quatre ont été tranchés par l'auteur, et la voix
+extérieure l'a emporté sur les quatre. Deux de ses constats étaient des bugs vérifiés sur `main`,
+pas des défauts du plan.
+
+**VERDICT : ENG CLEARED, prêt à implémenter.** Périmètre complet gardé, rangé en deux diffs.
+Dix-sept tâches, dont deux réparations en tête de la v2.1.
+
+NO UNRESOLVED DECISIONS

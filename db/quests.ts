@@ -28,6 +28,7 @@ import {
   targetRangeFor,
   type UserLevel,
 } from "./targets";
+import { NON_REP_STYLE } from "./workUnits";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
 
@@ -465,7 +466,14 @@ function buildSlot(
   const effectiveId = ctx.servedId(r.exId);
 
   // A served rung runs in *its* unit, not the slot's: Squat's easier rung is Wall Sit, a hold.
-  const bestHold = ctx.history.get(ghostKey(effectiveId, "time"))?.best;
+  // Never for an outing, though: `generateTarget` treats a supplied best as a hold to work at a
+  // fraction of, and a walk is not one — twenty minutes on foot does not consume the way a
+  // maximal isometric does, so a hero's longest previous outing must not prescribe a fraction of
+  // itself for the next one.
+  const bestHold =
+    served?.style === NON_REP_STYLE
+      ? undefined
+      : ctx.history.get(ghostKey(effectiveId, "time"))?.best;
   const target = retargetForMovement(
     generateTarget(base, ctx.userLevel, bestHold),
     served ?? { measure: null },

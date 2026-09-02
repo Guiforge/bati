@@ -3,11 +3,16 @@ import { useTranslation } from "react-i18next";
 import { Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Chip } from "@/components/common/Chip";
 import { Stepper } from "@/components/common/Stepper";
 import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Repeat, RotateCcw, SlidersHorizontal } from "@/components/icons";
 import { restsBetweenExercises, restsBetweenRounds } from "@/components/quests/questShape";
+import { formatDistance } from "@/constants/distanceFormat";
 import {
+  DEFAULT_DISTANCE_GOAL_M,
+  DISTANCE_GOAL_RANGE,
+  DISTANCE_GOAL_STEP,
   hasQuestOverrides,
   type QuestConfig,
   REST_RANGE,
@@ -15,11 +20,108 @@ import {
   targetRangeFor,
 } from "@/db";
 import { formatDuration } from "@/db/estimate";
+import { isOutingSession } from "@/db/expeditions";
+import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
-import type { AppLanguage } from "@/stores/settings";
+import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 /** Seconds move in fives — one second of rest is not a decision anyone makes. */
 const REST_STEP = 5;
+
+type SlotStepperProps = {
+  qex: Quest["exercises"][number];
+  byDistance: boolean;
+  distanceM: number;
+  unit: DistanceUnit;
+  singleControl: boolean;
+  label: string;
+  hint?: string;
+  onChangeTarget: (value: number) => void;
+  onChangeDistance: (value: number) => void;
+};
+
+/**
+ * One slot's control, pulled out of the exercises map so the map itself stays a plain loop: on an
+ * outing set by distance every slot shows the same distance goal, otherwise each shows its own
+ * target. Split out of `QuestConfigCard` rather than left inline for the same reason — a ternary
+ * this shaped, inside a `.map`, inside the card, is what tripped the cognitive-complexity budget.
+ */
+function SlotTargetStepper({
+  qex,
+  byDistance,
+  distanceM,
+  unit,
+  singleControl,
+  label,
+  hint,
+  onChangeTarget,
+  onChangeDistance,
+}: SlotStepperProps) {
+  const { t } = useTranslation();
+
+  if (byDistance) {
+    return (
+      <Stepper
+        label={t("quests.config_distance", "Distance")}
+        value={distanceM}
+        min={DISTANCE_GOAL_RANGE.min}
+        max={DISTANCE_GOAL_RANGE.max}
+        step={DISTANCE_GOAL_STEP}
+        display={(value) => formatDistance(value, unit)}
+        onChange={onChangeDistance}
+      />
+    );
+  }
+
+  return (
+    <Stepper
+      // The movement's name, unless it is the only one: on a one-movement quest
+      // the whole screen is already about it, and repeating it here squeezes the
+      // label column to 70 dp, where "Course du Messager" truncates. Then the
+      // unit word is the label and there is no hint to add under it.
+      label={label}
+      {...(singleControl ? {} : { hint })}
+      value={qex.target.value}
+      min={targetRangeFor(qex.target.type).min}
+      max={targetRangeFor(qex.target.type).max}
+      step={qex.target.type === "time" ? REST_STEP : 1}
+      // The panel opens by itself on a one-movement quest, so this control is now
+      // the first thing an outing shows. It said "900s", which is the unit the
+      // stepper moves in and not the one a walk is measured in.
+      {...(qex.target.type === "time" ? { display: formatDuration } : {})}
+      onChange={onChangeTarget}
+    />
+  );
+}
+
+type OutingGoalToggleProps = {
+  byDistance: boolean;
+  onChooseDuration: () => void;
+  onChooseDistance: () => void;
+};
+
+/** The Duration/Distance chip pair, pulled out for the same reason as `SlotTargetStepper` above. */
+function OutingGoalToggle({
+  byDistance,
+  onChooseDuration,
+  onChooseDistance,
+}: OutingGoalToggleProps) {
+  const { t } = useTranslation();
+  return (
+    <XStack gap="$2">
+      <Chip
+        label={t("quests.config_duration", "Duration")}
+        tone={byDistance ? "default" : "primary"}
+        onPress={onChooseDuration}
+      />
+      <Chip
+        label={t("quests.config_distance", "Distance")}
+        tone={byDistance ? "primary" : "default"}
+        onPress={onChooseDistance}
+      />
+    </XStack>
+  );
+}
 
 type Props = {
   /** The quest with the config already applied, so the steppers show what will actually run. */
@@ -42,6 +144,20 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
   const singleControl = !restsBetweenExercises(quest) && !restsBetweenRounds(quest);
   const [open, setOpen] = useState(singleControl);
   const modified = hasQuestOverrides(config);
+
+  // On an outing the one control is the goal, and the goal has two units. "Duration" keeps the
+  // slot's target; "Distance" writes `config.distanceM` and the target becomes the fallback the
+  // session never reads. Nothing about the quest row changes either way.
+  const outing = isOutingSession(quest);
+  const byDistance = outing && config.distanceM !== undefined;
+  const unit = useSettingsStore((s) => s.distanceUnit);
+
+  const chooseDuration = () => {
+    const next = { ...config };
+    delete next.distanceM;
+    onChange(next);
+  };
+  const chooseDistance = () => onChange({ ...config, distanceM: DEFAULT_DISTANCE_GOAL_M });
 
   const unitWord = (type: "time" | "reps") =>
     type === "time" ? t("quests.config_duration", "Duration") : t("quests.config_reps", "Reps");
@@ -126,25 +242,27 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
 
             <Separator borderColor="$borderStrong" />
 
+            {outing ? (
+              <OutingGoalToggle
+                byDistance={byDistance}
+                onChooseDuration={chooseDuration}
+                onChooseDistance={chooseDistance}
+              />
+            ) : null}
+
             {quest.exercises.map((qex) => (
               <XStack key={qex.id} items="center" gap="$2">
                 <YStack flex={1}>
-                  <Stepper
-                    // The movement's name, unless it is the only one: on a one-movement quest
-                    // the whole screen is already about it, and repeating it here squeezes the
-                    // label column to 70 dp, where "Course du Messager" truncates. Then the
-                    // unit word is the label and there is no hint to add under it.
+                  <SlotTargetStepper
+                    qex={qex}
+                    byDistance={byDistance}
+                    distanceM={config.distanceM ?? DEFAULT_DISTANCE_GOAL_M}
+                    unit={unit}
+                    singleControl={singleControl}
                     label={slotLabel(qex)}
-                    {...(singleControl ? {} : { hint: unitWord(qex.target.type) })}
-                    value={qex.target.value}
-                    min={targetRangeFor(qex.target.type).min}
-                    max={targetRangeFor(qex.target.type).max}
-                    step={qex.target.type === "time" ? REST_STEP : 1}
-                    // The panel opens by itself on a one-movement quest, so this control is now
-                    // the first thing an outing shows. It said "900s", which is the unit the
-                    // stepper moves in and not the one a walk is measured in.
-                    {...(qex.target.type === "time" ? { display: formatDuration } : {})}
-                    onChange={(value) => setTarget(qex.id, value)}
+                    hint={unitWord(qex.target.type)}
+                    onChangeTarget={(value) => setTarget(qex.id, value)}
+                    onChangeDistance={(value) => onChange({ ...config, distanceM: value })}
                   />
                 </YStack>
                 <AppIconButton

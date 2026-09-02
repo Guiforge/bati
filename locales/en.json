@@ -265,6 +265,7 @@
     "config_reps": "Reps",
     "config_seconds": "Seconds",
     "config_duration": "Duration",
+    "config_distance": "Distance",
     "config_reset": "Back to defaults",
     "edit_quest": "Edit quest",
     "editor_new_title": "New quest",

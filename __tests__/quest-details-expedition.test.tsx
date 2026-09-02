@@ -32,8 +32,8 @@ jest.mock(
 );
 
 jest.mock("@/stores/settings", () => ({
-  useSettingsStore: (selector?: (s: { language: string }) => unknown) => {
-    const state = { language: "en" };
+  useSettingsStore: (selector?: (s: { language: string; distanceUnit: string }) => unknown) => {
+    const state = { language: "en", distanceUnit: "metric" };
     return selector ? selector(state) : state;
   },
 }));
@@ -132,6 +132,9 @@ jest.mock("@/db", () => ({
   ROUNDS_RANGE: { min: 1, max: 10 },
   REST_RANGE: { min: 0, max: 300 },
   targetRangeFor: () => ({ min: 1, max: 999 }),
+  DISTANCE_GOAL_RANGE: { min: 500, max: 200000 },
+  DISTANCE_GOAL_STEP: 500,
+  DEFAULT_DISTANCE_GOAL_M: 3000,
 }));
 
 jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue([]) }));
@@ -179,8 +182,9 @@ describe("an expedition on the quest screen", () => {
     // behind a Start button that was already on screen.
     expect(view.getByText("Rounds")).toBeTruthy();
     // The control is labelled by its unit, not by the movement: on a one-movement quest the
-    // screen has already named it twice above, and the name truncated in a 70 dp column.
-    expect(view.getByText("Duration")).toBeTruthy();
+    // screen has already named it twice above, and the name truncated in a 70 dp column. It now
+    // also names the Duration/Distance toggle, so "Duration" appears twice.
+    expect(view.getAllByText("Duration").length).toBeGreaterThanOrEqual(1);
   });
 
   test("the ghost line speaks the same unit as the target above it", async () => {
@@ -203,7 +207,17 @@ describe("an expedition on the quest screen", () => {
     expect(view.queryByText("Round rest")).toBeNull();
     // The controls that do something are untouched: rounds, and the outing's own length.
     expect(view.getByText("Rounds")).toBeTruthy();
-    expect(view.getByText("Duration")).toBeTruthy();
+    expect(view.getAllByText("Duration").length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("an outing can be set by distance instead of by duration", async () => {
+    const view = await mountQuest(expeditionQuest());
+    // fireEvent.press is async here (it wraps the handler in `act`), so the state update it
+    // schedules is only guaranteed to have landed once this is awaited.
+    await fireEvent.press(view.getByText("Distance"));
+    expect(view.getByText("3.00 km")).toBeTruthy();
+    await fireEvent.press(view.getByText("Duration"));
+    expect(view.queryByText("3.00 km")).toBeNull();
   });
 });
 
@@ -224,5 +238,10 @@ describe("an ordinary workout keeps every control", () => {
 
     expect(getByText("45s")).toBeTruthy();
     expect(getByText("12 reps")).toBeTruthy();
+  });
+
+  test("a workout offers no distance", async () => {
+    const view = await mountQuest(workoutQuest());
+    expect(view.queryByText("Distance")).toBeNull();
   });
 });

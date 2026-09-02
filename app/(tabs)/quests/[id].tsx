@@ -37,7 +37,7 @@ import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
-import { isOutingSession } from "@/db/expeditions";
+import { estimateDistanceSeconds, isMountedOuting, isOutingSession } from "@/db/expeditions";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
@@ -367,7 +367,11 @@ export default function QuestDetails() {
   const derived = useMemo(() => {
     if (!state.quest) return null;
     const quest = applyQuestConfig(state.quest, config, indexExercises(catalogue));
-    const estimatedSeconds = estimateQuestSeconds(quest);
+    // A distance goal is estimated from a nominal pace; a duration is its own estimate.
+    const estimatedSeconds =
+      config.distanceM !== undefined && isOutingSession(quest)
+        ? estimateDistanceSeconds(config.distanceM, isMountedOuting(quest))
+        : estimateQuestSeconds(quest);
     return {
       quest,
       questTitle: localizedTitle(quest, language),
@@ -442,7 +446,10 @@ export default function QuestDetails() {
     try {
       // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
       // populates the store, and the session screen redirects home if it mounts on an empty one.
-      await startSession(quest, level, { adventureRunStepId: runStepId });
+      await startSession(quest, level, {
+        adventureRunStepId: runStepId,
+        distanceGoalM: config.distanceM ?? null,
+      });
       router.push("/session" as never);
     } catch (error) {
       setIsStarting(false);

@@ -115,7 +115,10 @@ function questWith(exercise: typeof mockWalk): Quest {
 }
 
 async function mountRunning(exercise: typeof mockWalk) {
-  useSettingsStore.setState({ soundEnabled: true, language: "en" });
+  // Reduced motion, because the screen's entry springs run on real timers here: React Native's
+  // Animated keeps updating an Animated(View) after the test that mounted it, and the suite spent
+  // most of its wall clock waiting on transitions no assertion looks at.
+  useSettingsStore.setState({ soundEnabled: true, language: "en", reducedMotion: true });
   useSessionStore.setState({
     quest: questWith(exercise),
     status: "running",
@@ -148,19 +151,22 @@ async function mountRunning(exercise: typeof mockWalk) {
   });
 }
 
-// This file mounts the real session screen inside a real Tamagui provider, and every test pays
-// for it: six mounts, 46 s alone and 71 s sharing a machine with a hundred and twenty-nine other
-// suites. Thirty seconds per test was enough until this branch added two more, and then the first
-// walk test hit the ceiling on a pre-push run and passed on the next one, which is the worst
-// shape a gate can take.
+// This file mounts the real session screen inside a real Tamagui provider, and that costs about
+// 45 s here no matter what the tests do: measured at six mounts and at two, with animations on
+// and off, the number barely moves. It is the import graph and the provider, paid once, and the
+// first test in the file is the one that pays it.
 //
-// Sixty is headroom, not a fix. The fix is to stop re-mounting the same frame: the four tests in
-// the walk describe assert four things about one render, and could share it. That is a rewrite of
-// the suite's shape, and it does not belong in a release commit.
+// So the timeout is not a guess about the assertions, it is the ceiling on that fixed cost when
+// a hundred and twenty-nine other suites are sharing the machine, where the same suite has been
+// measured at 160 s. Thirty seconds was enough until this branch added two mounts; then a
+// pre-push run timed out and the next one passed, which is the worst shape a gate can take.
 //
-// ponytail: per-test timeout raised twice now; mount once per describe when this suite is next
-// opened for a real reason.
-jest.setTimeout(60_000);
+// Two things did help and are kept: six mounts became two, and reduced motion is on, which stops
+// React Native's Animated from updating a view after the test that mounted it.
+//
+// ponytail: the real fix is for this screen to be testable without the whole provider tree, and
+// that is a refactor of the screen, not of the test.
+jest.setTimeout(180_000);
 
 beforeEach(() => {
   mockPlayCue.mockClear();
@@ -172,7 +178,10 @@ afterEach(() => {
 });
 
 describe("a walk, on the screen a hero stares at while walking", () => {
-  test("shows the panel and nothing that counts a prescribed duration down", async () => {
+  // One mount, three statements about the same frame. They were three tests, and three mounts of
+  // the real screen inside a real Tamagui provider cost thirty seconds between them on a loaded
+  // machine, which is how this suite started timing out on cadence rather than on behaviour.
+  test("reads as an outing: a panel, no countdown, the quest named, and silence", async () => {
     await mountRunning(mockWalk);
 
     // The panel is the readout, and it is there.
@@ -183,34 +192,27 @@ describe("a walk, on the screen a hero stares at while walking", () => {
     expect(screen.queryByText("Seconds")).toBeNull();
     expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
     expect(screen.queryByText("Last time")).toBeNull();
-  });
 
-  /**
-   * An outing is one round of one movement, so the HUD's long form collapsed to "ROUND 1 / 1 ·
-   * EXERCISE 1 / 1", and the percentage beside it measured a target the panel underneath already
-   * refuses to print because on an outing the target is only a suggestion. Three pieces of
-   * information, none of them one.
-   */
-  test("names the quest in the HUD instead of counting to one twice", async () => {
-    await mountRunning(mockWalk);
-
+    /**
+     * An outing is one round of one movement, so the HUD's long form collapsed to "ROUND 1 / 1 ·
+     * EXERCISE 1 / 1", and the percentage beside it measured a target the panel underneath
+     * already refuses to print because on an outing the target is only a suggestion. Three pieces
+     * of information, none of them one.
+     */
     expect(screen.getByText("The Warden's Round")).toBeTruthy();
     expect(screen.queryByText(/ROUND 1 \/ 1/)).toBeNull();
     expect(screen.queryByText(/EXERCISE 1 \/ 1/)).toBeNull();
     expect(screen.queryByText("11%")).toBeNull();
     expect(screen.queryByText("100%")).toBeNull();
-  });
 
-  // The cue fires from a phone in a pocket. Silence is the whole assertion.
-  test("says nothing out loud three seconds before a mark it is not counting to", async () => {
-    await mountRunning(mockWalk);
-
+    // The cue fires from a phone in a pocket. Silence is the whole assertion.
     expect(mockPlayCue).not.toHaveBeenCalled();
   });
 });
 
 describe("a plain hold, which still has a duration to count", () => {
-  test("keeps the countdown, its hint and its ghost line", async () => {
+  // Same reason as above: one mount, and the three things a workout still owes the hero.
+  test("keeps the countdown, its rounds and its beeps", async () => {
     await mountRunning(mockPlank);
 
     expect(screen.queryByText("Finding the sky")).toBeNull();
@@ -218,18 +220,10 @@ describe("a plain hold, which still has a duration to count", () => {
     expect(screen.getByText("Seconds")).toBeTruthy();
     expect(screen.getByText("Keep going! Timer continues after target.")).toBeTruthy();
     expect(screen.getByText("Last time")).toBeTruthy();
-  });
-
-  test("still counts its rounds and its way through them", async () => {
-    await mountRunning(mockPlank);
 
     expect(screen.getByText("ROUND 1 / 1 · EXERCISE 1 / 1")).toBeTruthy();
     expect(screen.getByText("100%")).toBeTruthy();
     expect(screen.queryByText("The Warden's Round")).toBeNull();
-  });
-
-  test("still beeps its way to the mark", async () => {
-    await mountRunning(mockPlank);
 
     expect(mockPlayCue).toHaveBeenCalledWith("tick");
   });

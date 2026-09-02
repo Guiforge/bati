@@ -221,14 +221,7 @@ describe("db/oaths", () => {
 
     for (const p of o.OATH_PRESETS) {
       expect(p.target).toBeGreaterThan(0);
-      expect([
-        "exercise_pr",
-        "exercise_volume",
-        "sessions",
-        "streak",
-        "weekly_sessions",
-        "leagues",
-      ]).toContain(p.metric);
+      expect(o.oathMetrics).toContain(p.metric);
       // The weekly metric is the one that needs a quota; the others must not carry one.
       expect(p.weeklyTarget !== undefined).toBe(o.oathNeedsWeeklyTarget(p.metric));
       // Exercise metrics must name a seed exercise so the screen can resolve an id.

@@ -104,6 +104,29 @@ Les huit du 31/08 restent acquises. Celles-ci s'y ajoutent, validées le 02/09.
    rend faux, et le mixage sous la musique rend un tick de 70 ms inaudible à allure de course.
    La v2.3 est un vrai ticket, pas trois lignes de réutilisation.
 
+## Quatre décisions du 03/09, et une seule version
+
+Tout ce qui était prévu pour 2.2 et 2.3 entre dans la **2.1.0**, en une seule PR. Les quatre
+questions que ce regroupement a rouvertes sont tranchées.
+
+1. **Le Kotlin gagne un format et une compilation, pas des tests.** ktlint au commit, un workflow
+   filtré par chemin au push, et une liste de vérifications sur appareil à la place d'un
+   Robolectric que deux fichiers ne justifient pas. Voir « Le Kotlin, et ce qui le garde ».
+2. **La carte de reprise apprend à finir une sortie**, et l'expiration du snapshot s'allonge pour
+   elles. L'action « Terminer » de la notification a besoin d'un runtime JS vivant ; quand l'OS a
+   tué le process mais pas le service, c'est la carte qui doit conclure la marche, et une trace
+   dit encore la vérité le lendemain matin. L'alternative, faire écrire la séance par le service,
+   mettrait du Kotlin sur le chemin de SQLite, le seul du dépôt sans filet.
+3. **Une lieue franchie se signale par une vibration, pas par un bip.** `src/sounds.ts` mixe
+   exprès sous la musique, donc un tick de 70 ms est inaudible à allure de course, et le rendre
+   audible rouvrirait la configuration `expo-audio` qui a déjà coûté un micro et trois
+   permissions. Une vibration se sent dans une poche, qui est exactement l'endroit où le
+   téléphone se trouve.
+4. **La bascule « Régler » de l'Accueil reste telle quelle.** Elle se réinitialise à chaque focus,
+   donc elle ne survit pas à un aller-retour, et c'est le seul choix qui ne ressuscite pas la
+   chasse à quatre taps par la galerie. À revoir si un rapport de terrain montre un héros parti
+   sur un formulaire alors qu'il voulait marcher.
+
 ## Cross-Model Perspective
 
 Second avis d'un sous-agent Claude à contexte vierge (Codex a répondu 401, `codex login` à
@@ -420,6 +443,53 @@ code, à faire dans cet ordre.
 Pas de voix, ni ici ni plus tard dans ce plan. Le réglage reste `soundEnabled`, pas de troisième
 mode.
 
+## Le Kotlin, et ce qui le garde
+
+*Décidé le 03/09, en même temps que le choix de tout livrer dans une seule 2.1.0.*
+
+Les deux fichiers `.kt` du dépôt ne sont aujourd'hui ni formatés, ni lintés, ni testés, ni même
+compilés par la CI : `ci.yml` fait tourner biome, `tsc`, jest, knip, expo-doctor, les licences et
+un prebuild qu'il compare à l'arbre, et rien de tout ça ne lit une ligne de Kotlin. Le compilateur
+n'entre en scène qu'au build d'APK, c'est-à-dire sur un tag. Une faute de frappe dans le service
+passe donc toute la CI et casse une release, au moment le plus cher.
+
+La v2.1 ajoute du Kotlin, l'action « Terminer » sur la notification. Voici ce qui la garde.
+
+**Format, au commit.** ktlint, version épinglée, appelé par un hook prek local à côté de biome et
+de `tsc`. Le jar se récupère par un `scripts/ktlint.sh` qui le met en cache et vérifie sa somme de
+contrôle, exactement comme `ci.yml` épingle `actionlint` par tag docker et `license-checker` par
+version npx. Le script tombe sous `shellcheck`, que la CI passe déjà sur `scripts/*.sh`. Un hook
+qui reformate fait échouer le commit sans réindexer, comme les autres : `git add` puis recommit.
+
+**Compilation, au push, et seulement quand c'est utile.** Un workflow à part,
+`.github/workflows/kotlin.yml`, avec un filtre `on.push.paths` sur
+`modules/bati-location/android/**`. Un push qui ne touche aucun `.kt` ne paie pas une seconde de
+Gradle ; un push qui en touche un compile le module et échoue là plutôt que sur un tag. Deux
+choses à régler à la première exécution :
+
+- **Le nom du projet Gradle.** Le module est inclus par `expoAutolinking.useExpoModules()`, donc
+  son chemin n'est écrit nulle part dans `android/settings.gradle`. `./gradlew projects` le donne,
+  et c'est lui qui va dans la commande, pas une supposition.
+- **La version du JDK.** La machine de développement est sur Java 25, que l'Android Gradle Plugin
+  ne prend pas ; le workflow épingle un JDK 17 ou 21 par `actions/setup-java`, et il faudra le
+  dire ici quand ce sera vérifié plutôt que de laisser le lecteur le découvrir.
+
+**Tests : aucun, et c'est un choix.** Robolectric rendrait l'action de notification et le cycle de
+vie du service testables sans téléphone, pour une dépendance de test lourde, un jeu de sources
+neuf et une CI qui aurait besoin du SDK Android à chaque push. Deux fichiers qui bougent deux fois
+par an ne le paient pas. Ce qui remplace le filet, et qui doit être fait à la main sur un appareil
+avant de taguer :
+
+1. Sortir, verrouiller l'écran, terminer depuis l'action de la notification, vérifier la ligne au
+   journal.
+2. Recommencer en tuant le process (`adb shell am kill com.guiforge.bati.dev`) pendant la marche,
+   terminer depuis la notification, rouvrir l'app : la carte de reprise doit proposer de finir.
+3. Vérifier qu'aucune permission n'est apparue : `aapt2 dump permissions` sur un APK de release,
+   la leçon d'une dépendance native précédente.
+
+Si le Kotlin se met à grossir au-delà de ces deux fichiers, Robolectric redevient la bonne réponse
+et cette section est l'endroit où le dire.
+
 ## Ce qui existe déjà, et que le plan réutilise
 
 La v2.1 ne construit presque rien. Elle conditionne de l'existant, ce qui est la raison pour
@@ -649,14 +719,38 @@ Step 0 a déjà refusé pour l'écran de quête.
   - Surfacé par : revue design F23 à F27, quatre chaînes annoncées pour une douzaine de surfaces
   - Fichiers : `locales/fr.json`, `locales/en.json`
   - Vérifier : `npm test -- locale-style`, `npm test -- villagers`
-- [ ] **T16 (P3, human ~1 sem / CC ~4 h), v2.2.** Feuille d'objectif, action Terminer, pont, et son repli.
-  - Surfacé par : approche B, plus le repli inexistant que la voix extérieure a démonté
-  - Fichiers : `app/(tabs)/quests/[id].tsx`, `BatiLocationService.kt`, `hooks/useSessionRecovery.ts`, `db/quests.ts`
-  - Vérifier : sur appareil, écran verrouillé puis process tué
-- [ ] **T17 (P3, human ~3 j / CC ~2 h), v2.3.** Compteur de lieues en direct, puis la question du volume.
-  - Surfacé par : D15, aucun événement de lieue n'existe et le mixage rend le tick inaudible
-  - Fichiers : `stores/expedition.ts`, `src/sounds.ts`
-  - Vérifier : `npm test -- store-expedition`, puis une écoute en courant
+- [ ] **T16 (P1, human ~1 j / CC ~45 min), feuille d'objectif.** Deux onglets, des presets, le stepper de 5 s sort.
+  - Surfacé par : constat 3 de l'audit, 360 taps pour passer de 15 à 45 minutes
+  - Fichiers : nouveau composant sur le modèle d'`ExercisePickerSheet` (`disableDrag`), `components/quests/QuestConfigCard.tsx`, `app/(tabs)/quests/[id].tsx`
+  - Vérifier : `npm test -- quest-details-expedition`
+- [ ] **T17 (P1, human ~1 j / CC ~45 min), pont.** « En faire une quête » sur le récap d'une sortie libre.
+  - Surfacé par : règle 8 de l'audit, on fabrique des préparés à partir des partants
+  - Fichiers : `components/session/VictoryView.tsx`, `db/quests.ts` (`createQuestTemplate` existe)
+  - Vérifier : `npm test -- victory-expedition`
+- [ ] **T18b (P1, human ~1 j / CC ~45 min), lieues.** Compteur en direct, vibration au franchissement.
+  - Surfacé par : décision 3 du 03/09, aucun événement de lieue n'existe encore
+  - Fichiers : `stores/expedition.ts`, et la reprise qui ne doit pas rejouer huit lieues d'un coup
+  - Vérifier : `npm test -- store-expedition`
+- [ ] **T19b (P1, human ~2 j / CC ~1 h), action Terminer.** Kotlin, module, `completeOuting()`.
+  - Surfacé par : prémisse 7, la fin la mieux protégée est celle qui marche écran verrouillé
+  - Fichiers : `BatiLocationService.kt`, `modules/bati-location/index.ts`, `stores/session.ts`, plus cinq lignes dans `stores/expedition.ts`
+  - Vérifier : la liste sur appareil de « Le Kotlin, et ce qui le garde »
+- [ ] **T20b (P1, human ~1 j / CC ~45 min), repli.** La carte de reprise sait finir une sortie.
+  - Surfacé par : décision 2 du 03/09, `SESSION_EXPIRY_MS` jette une randonnée finie le soir
+  - Fichiers : `hooks/useSessionRecovery.ts`, `components/session/SessionRecoveryCard.tsx`
+  - Vérifier : `npm test -- session-recovery-card`, `npm test -- useSessionRecovery`
+- [ ] **T21b (P2, human ~3 h / CC ~20 min), préambule de permission.** Dire pourquoi avant le dialogue.
+  - Surfacé par : revue design F4, un dialogue non amorcé se refuse plus souvent et un refus définitif ne se rattrape pas
+  - Fichiers : `components/home/OutsideBand.tsx`
+  - Vérifier : `npm test -- home-outside-band`
+- [ ] **T22b (P1, human ~3 h / CC ~30 min), garde-fou Kotlin.** ktlint au commit, compilation filtrée au push.
+  - Surfacé par : décision 1 du 03/09, rien ne relit le Kotlin avant un tag
+  - Fichiers : `scripts/ktlint.sh`, `.pre-commit-config.yaml`, `.github/workflows/kotlin.yml`
+  - Vérifier : `npx prek run --all-files`, puis un push qui touche un `.kt`
+- [ ] **T23b (P1, human ~2 h / CC ~15 min), release 2.1.0.** Changelog fastlane par `versionCode`, puis le tag.
+  - Surfacé par : AGENTS.md, un changelog manquant échoue en silence
+  - Fichiers : `fastlane/metadata/android/*/changelogs/<versionCode>.txt`, `docs/`
+  - Vérifier : `npx expo config --type public | grep versionCode` avant d'écrire le fichier
 
 ## What I noticed about how you think
 

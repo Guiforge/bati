@@ -41,10 +41,13 @@ describe("db/devSeedExpedition", () => {
     expect(seeded.leaguesM).toBeLessThan(9000);
 
     const rows = t.sqlite
-      .prepare("SELECT uuid, leaguesM, durationSeconds, xpEarned FROM completed_sessions")
+      .prepare(
+        "SELECT uuid, leaguesM, movingSeconds, durationSeconds, xpEarned FROM completed_sessions",
+      )
       .all() as Array<{
       uuid: string;
       leaguesM: number;
+      movingSeconds: number | null;
       durationSeconds: number;
       xpEarned: number;
     }>;
@@ -54,6 +57,11 @@ describe("db/devSeedExpedition", () => {
     assert(row);
     expect(row.uuid).toBe(seeded.uuid);
     expect(row.leaguesM).toBe(seeded.leaguesM);
+    // Both halves of the ground reach the row, not just the distance. The recap reads
+    // `movingSeconds` and says nothing at all when it is null, so a seeder that writes one and
+    // not the other produces a demo screen with one figure where the app shows three. That is
+    // exactly what shipped into a store screenshot the day the column was added.
+    expect(row.movingSeconds).toBe(seeded.movingSeconds);
     expect(row.xpEarned).toBeGreaterThan(0);
 
     // The stop, which is the whole reason the demo has one: moving time is short of the clock.

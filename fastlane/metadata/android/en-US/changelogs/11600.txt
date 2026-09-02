@@ -1,0 +1,9 @@
+- Three ways out: walk, run or ride. Your phone measures the
+  ground, offline, and the map is drawn when you get back.
+- Leagues build the High Road in your village, and an oath can
+  be sworn on them.
+- The Journal totals the ground you have covered and remembers
+  your longest outing.
+- One notification, naming the quest, for the whole walk. Nothing
+  leaves the phone but the map tiles.
+- The Watcher has opinions about the road now.

@@ -238,6 +238,11 @@ export async function seedExpedition(): Promise<SeededExpedition> {
     uuid,
     questId: slot.questId,
     leaguesM: Math.round(track.distanceM),
+    // Both halves of the ground, or the recap goes quiet about the clock and the pace, which is
+    // what it is meant to do for a session recorded before the column existed and exactly wrong
+    // for a demo. This is the second writer of a completed session, and it drifted from the real
+    // one the day `movingSeconds` was added.
+    movingSeconds,
     durationSeconds: elapsedSeconds,
     xpEarned: computeSessionXp({
       sets: [set],

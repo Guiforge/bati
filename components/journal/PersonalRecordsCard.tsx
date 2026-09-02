@@ -3,15 +3,19 @@ import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Clock, Flame, Star, Trophy, Zap } from "@/components/icons";
+import { Clock, Flame, Footprints, Map as MapIcon, Star, Trophy, Zap } from "@/components/icons";
+import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
 import { getPersonalRecordsSummary, type PersonalRecord } from "@/db/personalRecords";
 import { getStreakInfo } from "@/db/streaks";
 import { reportError } from "@/src/reportError";
+import { useSettingsStore } from "@/stores/settings";
 
 type RecordsSummary = {
   longestSession: PersonalRecord | null;
   mostXp: PersonalRecord | null;
+  longestOuting: PersonalRecord | null;
+  totalLeaguesM: number;
   totalSessions: number;
   bestStreak: number;
 };
@@ -56,6 +60,7 @@ function RecordItem({
 
 export function PersonalRecordsCard() {
   const { t } = useTranslation();
+  const unit = useSettingsStore((s) => s.distanceUnit);
   const [summary, setSummary] = useState<RecordsSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -136,6 +141,25 @@ export function PersonalRecordsCard() {
             subLabel={t("journal.days")}
           />
         </XStack>
+
+        {/* Only once there is ground: two "--" tiles would tell a hero who lifts that they are
+            missing something, and the band on Home already offers the door. */}
+        {summary.totalLeaguesM > 0 ? (
+          <XStack gap="$2">
+            <RecordItem
+              icon={<Footprints size={20} color="$primaryText" />}
+              label={t("journal.pr_ground", "Ground covered")}
+              value={formatDistance(summary.totalLeaguesM, unit)}
+            />
+            <RecordItem
+              icon={<MapIcon size={20} color="$secondary" />}
+              label={t("journal.pr_longest_outing", "Longest outing")}
+              value={
+                summary.longestOuting ? formatDistance(summary.longestOuting.value, unit) : "--"
+              }
+            />
+          </XStack>
+        ) : null}
       </YStack>
     </Card>
   );

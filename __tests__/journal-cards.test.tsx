@@ -92,6 +92,9 @@ beforeEach(() => {
     totalSessions: 0,
     totalWorkUnits: 0,
     longestSession: null,
+    mostXp: null,
+    longestOuting: null,
+    totalLeaguesM: 0,
   });
   mockGetStreakInfo.mockResolvedValue({ current: 0, longest: 0, isLit: false });
   mockGetSuggestedQuestsForWeakAreas.mockResolvedValue([]);
@@ -131,6 +134,28 @@ describe("PersonalRecordsCard", () => {
     mockGetPersonalRecordsSummary.mockRejectedValue(new Error("db is gone"));
 
     await expect(mount(<PersonalRecordsCard />)).resolves.toBeDefined();
+  });
+
+  it("shows the ground covered once there is any", async () => {
+    mockGetPersonalRecordsSummary.mockResolvedValue({
+      records: [],
+      totalSessions: 3,
+      totalWorkUnits: 0,
+      longestSession: null,
+      mostXp: null,
+      longestOuting: { type: "longest_outing", value: 4580, achievedAt: new Date() },
+      totalLeaguesM: 7080,
+    });
+    // `best`, not just `current`/`longest`: the card reads `streakInfo.best` and calls
+    // `.toString()` on it. The other tests in this file dodge that by rendering the
+    // `totalSessions === 0` early return, which this one does not.
+    mockGetStreakInfo.mockResolvedValue({ current: 1, longest: 2, best: 5, isLit: true });
+
+    await mount(<PersonalRecordsCard />);
+
+    expect(await screen.findByText("Ground covered")).toBeTruthy();
+    expect(screen.getByText("7.08 km")).toBeTruthy();
+    expect(screen.getByText("4.58 km")).toBeTruthy();
   });
 });
 

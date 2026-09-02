@@ -9,7 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { Award, Clock, Star, TrendingUp } from "@/components/icons";
+import { Award, Clock, Footprints, Star, TrendingUp } from "@/components/icons";
 import type { NewRecordResult } from "@/db/personalRecords";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
@@ -28,6 +28,8 @@ function RecordIcon({ type }: { type: NewRecordResult["recordType"] }) {
       return <TrendingUp size={20} color="$secondary" />;
     case "exercise_max_time":
       return <Clock size={20} color="$secondary" />;
+    case "longest_outing":
+      return <Footprints size={20} color="$primaryText" />;
     default:
       return <Award size={20} color="$primaryText" />;
   }
@@ -41,6 +43,8 @@ function RecordLabel({ record, language }: { record: NewRecordResult; language: 
       return t("session.pr_longest_session");
     case "most_xp":
       return t("session.pr_most_xp");
+    case "longest_outing":
+      return t("session.pr_longest_outing");
     case "exercise_max_reps":
     case "exercise_max_time": {
       const name = language === "fr" ? record.exerciseName?.fr : record.exerciseName?.en;

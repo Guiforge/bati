@@ -195,6 +195,45 @@ describe("db/personalRecords", () => {
     expect(summary.mostXp?.value).toBe(200);
   });
 
+  function logOuting(leaguesM: number, secondsAgo: number): number {
+    const at = Math.floor(Date.now() / 1000) - secondsAgo;
+    const info = t.sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, leaguesM) VALUES ('medium', 10, ?, ?)",
+      )
+      .run(at, leaguesM);
+    return Number(info.lastInsertRowid);
+  }
+
+  test("the longest outing is the most ground in one session, and a workout is not one", async () => {
+    const { getLongestOuting, getPersonalRecordsSummary } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    expect(await getLongestOuting()).toBeNull();
+    logOuting(2500, 120);
+    logOuting(4580, 60);
+    expect((await getLongestOuting())?.value).toBe(4580);
+    const summary = await getPersonalRecordsSummary();
+    expect(summary.longestOuting?.value).toBe(4580);
+    expect(summary.totalLeaguesM).toBe(7080);
+  });
+
+  test("a longer outing is a new record, with the previous one to beat", async () => {
+    const { checkForNewRecords } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    logOuting(2500, 120);
+    const id = logOuting(4580, 60);
+    const records = await checkForNewRecords(id);
+    expect(records).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          recordType: "longest_outing",
+          newValue: 4580,
+          previousValue: 2500,
+        }),
+      ]),
+    );
+  });
+
   test("checkForNewRecords detects longest session PR", async () => {
     const { checkForNewRecords } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");

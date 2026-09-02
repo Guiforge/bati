@@ -1,5 +1,6 @@
 import { desc, eq, inArray, max, sql } from "drizzle-orm";
 import { db, schema } from "./client";
+import { totalLeaguesM } from "./gps";
 import type { QuestTargetType } from "./schema";
 
 const { completedQuest, completedExercises, exercises } = schema;
@@ -12,7 +13,8 @@ export type RecordType =
   | "most_xp" // Most XP in a single session
   | "highest_streak" // Highest streak achieved
   | "exercise_max_reps" // Most reps for a specific exercise
-  | "exercise_max_time"; // Longest hold/time for a specific exercise
+  | "exercise_max_time" // Longest hold/time for a specific exercise
+  | "longest_outing"; // Most ground covered in one outing, metres
 
 export type PersonalRecord = {
   type: RecordType;
@@ -54,6 +56,33 @@ export async function getLongestSession(): Promise<PersonalRecord | null> {
   return {
     type: "longest_session",
     value: best.durationSeconds,
+    achievedAt: best.performedAt,
+    sessionId: best.id,
+  };
+}
+
+/**
+ * The most ground in one outing. `leaguesM` is what the reducer credited at save (never a sum
+ * over `gps_points`), so this record and the road agree on every metre.
+ */
+export async function getLongestOuting(): Promise<PersonalRecord | null> {
+  const rows = await db
+    .select({
+      id: completedQuest.id,
+      leaguesM: completedQuest.leaguesM,
+      performedAt: completedQuest.performedAt,
+    })
+    .from(completedQuest)
+    .where(sql`${completedQuest.leaguesM} IS NOT NULL`)
+    .orderBy(desc(completedQuest.leaguesM))
+    .limit(1);
+
+  const best = rows[0];
+  if (best?.leaguesM == null || best.leaguesM <= 0) return null;
+
+  return {
+    type: "longest_outing",
+    value: best.leaguesM,
     achievedAt: best.performedAt,
     sessionId: best.id,
   };
@@ -186,17 +215,24 @@ export async function getExerciseHistory(
 export async function getPersonalRecordsSummary(): Promise<{
   longestSession: PersonalRecord | null;
   mostXp: PersonalRecord | null;
+  longestOuting: PersonalRecord | null;
+  /** Lifetime ground covered, metres. Zero until the first outing. */
+  totalLeaguesM: number;
   totalSessions: number;
 }> {
-  const [longestSession, mostXp, countResult] = await Promise.all([
+  const [longestSession, mostXp, longestOuting, totalLeagues, countResult] = await Promise.all([
     getLongestSession(),
     getMostXpSession(),
+    getLongestOuting(),
+    totalLeaguesM(),
     db.select({ count: sql<number>`COUNT(*)` }).from(completedQuest),
   ]);
 
   return {
     longestSession,
     mostXp,
+    longestOuting,
+    totalLeaguesM: totalLeagues,
     totalSessions: countResult[0]?.count ?? 0,
   };
 }
@@ -215,6 +251,7 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
       id: completedQuest.id,
       durationSeconds: completedQuest.durationSeconds,
       xpEarned: completedQuest.xpEarned,
+      leaguesM: completedQuest.leaguesM,
     })
     .from(completedQuest)
     .where(eq(completedQuest.id, sessionId))
@@ -260,6 +297,24 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
         isNewRecord: true,
         recordType: "most_xp",
         newValue: session.xpEarned,
+        previousValue: prevMax > 0 ? prevMax : null,
+      });
+    }
+  }
+
+  // Check longest outing. Metres, from the reducer's credit; a workout has null here and skips.
+  if (session.leaguesM != null && session.leaguesM > 0) {
+    const previousLongest = await db
+      .select({ maxM: max(completedQuest.leaguesM) })
+      .from(completedQuest)
+      .where(sql`${completedQuest.id} != ${sessionId}`);
+
+    const prevMax = previousLongest[0]?.maxM ?? 0;
+    if (session.leaguesM > prevMax) {
+      newRecords.push({
+        isNewRecord: true,
+        recordType: "longest_outing",
+        newValue: session.leaguesM,
         previousValue: prevMax > 0 ? prevMax : null,
       });
     }

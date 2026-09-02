@@ -1,4 +1,5 @@
 import type { DistanceUnit } from "@/db/preferences";
+import { RULES } from "@/src/gps/track";
 
 /**
  * Stored metres, turned into what a hero reads. The only place that converts.
@@ -40,9 +41,19 @@ export function formatDistance(metres: number, unit: DistanceUnit): string {
  *
  * Minutes are not clamped to 59 — an hour per kilometre is a real thing a stopped phone can
  * produce, and "1:03" would be a lie where "63:00" is merely surprising.
+ *
+ * Under the reducer's own moving threshold it says nothing at all. A few centimetres of receiver
+ * noise arrive before the anchor ever moves, and dividing a minute by them printed "20049:10 /km"
+ * on a panel that read "0 m" one line above. The two lines now agree on what going somewhere is,
+ * because they read the same rule.
  */
 export function formatPace(metres: number, movingMs: number, unit: DistanceUnit): string {
-  if (!Number.isFinite(metres) || !Number.isFinite(movingMs) || metres <= 0 || movingMs <= 0) {
+  if (
+    !Number.isFinite(metres) ||
+    !Number.isFinite(movingMs) ||
+    metres < RULES.movingThresholdM ||
+    movingMs <= 0
+  ) {
     return "—";
   }
 

@@ -1,4 +1,5 @@
 import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
+import { RULES } from "@/src/gps/track";
 
 // The helper is the only converter in the app, so the numbers below are the contract: a mile is
 // 1609.344 m and a foot 0.3048 m, exactly, and nothing here may round its way past a threshold.
@@ -58,6 +59,15 @@ describe("formatPace", () => {
     expect(formatPace(0, 300_000, "metric")).toBe("—");
     expect(formatPace(1000, 0, "metric")).toBe("—");
     expect(formatPace(Number.NaN, 1, "metric")).toBe("—");
+  });
+
+  // Live on a Fairphone 6, twenty-eight seconds into a walk that had not started: the panel read
+  // "0 m" and "20049:10 /km" on the line under it. Receiver noise arrives before the anchor moves,
+  // and a pace divided by centimetres is not surprising, it is nonsense.
+  test("receiver noise under the reducer's threshold is not a pace", () => {
+    expect(formatPace(0.02, 28_000, "metric")).toBe("—");
+    expect(formatPace(RULES.movingThresholdM - 0.01, 28_000, "metric")).toBe("—");
+    expect(formatPace(RULES.movingThresholdM, 28_000, "metric")).toBe("46:40 /km");
   });
 });
 

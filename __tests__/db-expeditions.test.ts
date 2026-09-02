@@ -115,8 +115,11 @@ describe("the two questions about going outside", () => {
 });
 
 describe("outingGoal", () => {
-  const slot = (type: "time" | "reps", value: number) => ({
-    exercises: [{ target: { type, value } }],
+  const outdoor = { style: "expedition" as const };
+  const indoor = { style: "calisthenics" as const };
+
+  const slot = (type: "time" | "reps", value: number, exercise = outdoor) => ({
+    exercises: [{ target: { type, value }, exercise }],
   });
 
   test("a distance goal outranks the slot's duration", () => {
@@ -132,11 +135,13 @@ describe("outingGoal", () => {
     expect(outingGoal(slot("reps", 10), null)).toBeNull();
   });
 
+  // R1 shape 3: an all-outdoor quest is unchanged by the style filter, because every slot it
+  // has already passes it.
   test("a two-slot outing's goal is the sum of both slots' minutes", () => {
     const twoSlots = {
       exercises: [
-        { target: { type: "time" as const, value: 900 } },
-        { target: { type: "time" as const, value: 600 } },
+        { target: { type: "time" as const, value: 900 }, exercise: outdoor },
+        { target: { type: "time" as const, value: 600 }, exercise: outdoor },
       ],
     };
     expect(outingGoal(twoSlots, null)).toEqual({ type: "time", seconds: 1500 });
@@ -145,21 +150,36 @@ describe("outingGoal", () => {
   test("a distance goal still outranks a two-slot quest's summed duration", () => {
     const twoSlots = {
       exercises: [
-        { target: { type: "time" as const, value: 900 } },
-        { target: { type: "time" as const, value: 600 } },
+        { target: { type: "time" as const, value: 900 }, exercise: outdoor },
+        { target: { type: "time" as const, value: 600 }, exercise: outdoor },
       ],
     };
     expect(outingGoal(twoSlots, 5000)).toEqual({ type: "distance", metres: 5000 });
   });
 
-  test("a mixed quest — one timed slot, one rep slot — has no summed goal", () => {
-    const mixedSlots = {
+  // R1 shape 1, the regression itself: Warden's Walk (outdoor, 900 s) plus Plank (indoor, 60 s)
+  // used to sum to 960 moving seconds, a number the GPS can never reach because the plank
+  // contributes no ground at all. The goal is the outdoor slot alone.
+  test("an indoor timed slot does not inflate an outdoor goal", () => {
+    const mixedTimed = {
       exercises: [
-        { target: { type: "time" as const, value: 900 } },
-        { target: { type: "reps" as const, value: 10 } },
+        { target: { type: "time" as const, value: 900 }, exercise: outdoor },
+        { target: { type: "time" as const, value: 60 }, exercise: indoor },
       ],
     };
-    expect(outingGoal(mixedSlots, null)).toBeNull();
+    expect(outingGoal(mixedTimed, null)).toEqual({ type: "time", seconds: 900 });
+  });
+
+  // R1 shape 2: an indoor rep slot is excluded for being indoors, the same reason an indoor
+  // timed slot is - its own target type never enters into it, and the outdoor slot still goals.
+  test("an indoor rep slot next to an outdoor timed slot still has a goal", () => {
+    const mixedStyles = {
+      exercises: [
+        { target: { type: "time" as const, value: 900 }, exercise: outdoor },
+        { target: { type: "reps" as const, value: 10 }, exercise: indoor },
+      ],
+    };
+    expect(outingGoal(mixedStyles, null)).toEqual({ type: "time", seconds: 900 });
   });
 });
 

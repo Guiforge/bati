@@ -23,6 +23,7 @@ import { formatDuration } from "@/db/estimate";
 import { isOutingSession } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
+import { localizedName } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 /** Seconds move in fives — one second of rest is not a decision anyone makes. */
@@ -158,11 +159,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
     type === "time" ? t("quests.config_duration", "Duration") : t("quests.config_reps", "Reps");
 
   const slotLabel = (qex: Quest["exercises"][number]) =>
-    singleControl
-      ? unitWord(qex.target.type)
-      : language === "fr"
-        ? qex.exercise.frName
-        : qex.exercise.enName;
+    singleControl ? unitWord(qex.target.type) : localizedName(qex.exercise, language);
 
   const setTarget = (questExerciseId: number, value: number) => {
     onChange({ ...config, targets: { ...config.targets, [questExerciseId]: value } });
@@ -256,7 +253,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                     // a row of its own to sit beside — otherwise the icon floats next to nothing
                     // and the movement it swaps is unnamed.
                     <Text fontWeight="700" fontSize={15} color="$text" numberOfLines={2}>
-                      {language === "fr" ? qex.exercise.frName : qex.exercise.enName}
+                      {localizedName(qex.exercise, language)}
                     </Text>
                   ) : (
                     <SlotTargetStepper

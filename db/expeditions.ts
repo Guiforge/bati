@@ -61,28 +61,40 @@ export function isOutingSession(quest: { exercises: { exercise: Styled }[] }): b
 }
 
 /**
- * The slots' combined duration, when every one of them is timed.
+ * The outdoor slots' combined duration, when at least one of them is timed.
  *
- * A quest that walks then runs is two time targets, and the goal the hero set out to reach is
- * both of them: buzzing at the first slot's minutes and never again left the second slot's
- * ground uncounted. A quest that mixes a timed slot with a rep slot has no such number — the rep
- * slot finishes on a count the GPS never sees, so summing only the timed slots would buzz at a
- * fraction of the outing and call it done. That gets no goal at all, same as a lone rep slot
- * always has.
+ * Only a slot whose movement is the outdoor style may contribute: the goal is a promise about
+ * ground and moving time, and the GPS never measures an indoor slot, whatever that slot's own
+ * target looks like. Three shapes decide this on purpose:
+ *
+ * - Warden's Walk (outdoor, 900 s) next to Plank (indoor, 60 s) now goals at 900, not 960 - the
+ *   plank never moved the hero an inch, so its seconds were never part of a moving-time promise.
+ *   This is the regression the fix wave introduced: it summed every timed slot regardless of
+ *   style, so a mixed quest buzzed late or never.
+ * - Warden's Walk next to an indoor *rep* slot goals the same 900. The indoor slot's own target
+ *   type does not matter once its style already disqualifies it - a rep slot excluded for being
+ *   indoors must not also revert the whole goal to null the way an all-slots-must-be-timed rule
+ *   would.
+ * - An all-outdoor quest is unchanged: every slot it has already passes the style filter, so two
+ *   outdoor timed slots still sum to both slots' minutes, exactly as before this fix.
  */
-function timeGoal(exercises: { target: Target }[]): OutingGoal | null {
-  if (exercises.length === 0 || exercises.some((qex) => qex.target.type !== "time")) return null;
-  const seconds = exercises.reduce((sum, qex) => sum + qex.target.value, 0);
+function timeGoal(exercises: { target: Target; exercise: Styled }[]): OutingGoal | null {
+  const outdoorTimed = exercises.filter(
+    (qex) => qex.exercise.style === NON_REP_STYLE && qex.target.type === "time",
+  );
+  if (outdoorTimed.length === 0) return null;
+  const seconds = outdoorTimed.reduce((sum, qex) => sum + qex.target.value, 0);
   return { type: "time", seconds };
 }
 
 /**
  * What the hero set out to do. A distance, when they chose one on the quest screen; otherwise the
- * slots' combined duration, which is the number the steppers on that screen edit. A quest with a
- * rep slot in the mix, or no slot at all, has none.
+ * outdoor slots' combined duration, which is the number the steppers on that screen edit for a
+ * pure outing. A quest with no outdoor timed slot at all - no slots, an indoor-only quest, or a
+ * lone outdoor rep slot - has none.
  */
 export function outingGoal(
-  quest: { exercises: { target: Target }[] },
+  quest: { exercises: { target: Target; exercise: Styled }[] },
   distanceGoalM: number | null | undefined,
 ): OutingGoal | null {
   if (distanceGoalM != null && distanceGoalM > 0)

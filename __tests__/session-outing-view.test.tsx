@@ -148,10 +148,19 @@ async function mountRunning(exercise: typeof mockWalk) {
   });
 }
 
-// This file mounts the real session screen inside a real Tamagui provider, and the first test to
-// do so pays for loading both. Alone that fits inside jest's five seconds; sharing a machine with
-// a hundred other suites it does not, and the suite failed on cadence rather than on behaviour.
-jest.setTimeout(30_000);
+// This file mounts the real session screen inside a real Tamagui provider, and every test pays
+// for it: six mounts, 46 s alone and 71 s sharing a machine with a hundred and twenty-nine other
+// suites. Thirty seconds per test was enough until this branch added two more, and then the first
+// walk test hit the ceiling on a pre-push run and passed on the next one, which is the worst
+// shape a gate can take.
+//
+// Sixty is headroom, not a fix. The fix is to stop re-mounting the same frame: the four tests in
+// the walk describe assert four things about one render, and could share it. That is a rewrite of
+// the suite's shape, and it does not belong in a release commit.
+//
+// ponytail: per-test timeout raised twice now; mount once per describe when this suite is next
+// opened for a real reason.
+jest.setTimeout(60_000);
 
 beforeEach(() => {
   mockPlayCue.mockClear();

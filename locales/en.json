@@ -154,7 +154,9 @@
     "replay_guides_done": "The guides will show again",
     "distance_unit": "Distance unit",
     "distance_metric": "Kilometres",
-    "distance_imperial": "Miles"
+    "distance_imperial": "Miles",
+    "map_tiles": "Recap map",
+    "map_tiles_note": "Off, Bati downloads nothing. On, the recap asks OpenFreeMap, at tiles.openfreemap.org, for the map of the place you went, which tells it roughly where you were. It is the app's only network call."
   },
   "credits": {
     "title": "Credits",
@@ -843,9 +845,11 @@
     "title": "The ground covered",
     "open": "See the ground covered",
     "no_trace": "This quest never left the walls.",
-    "privacy": "Your route never leaves this phone. The map behind it is downloaded from OpenFreeMap.",
+    "privacy": "The trace stays on this phone. The map comes from OpenFreeMap, which learns roughly where you were.",
     "export": "Export the trace",
-    "export_failed": "Could not write the file. Try again."
+    "export_failed": "Could not write the file. Try again.",
+    "map_offer": "The map under your route is off. Turn it on and this screen asks OpenFreeMap, at tiles.openfreemap.org, for the map images of that place, which tells it roughly where you were. The trace itself stays on this phone.",
+    "map_enable": "Show the map"
   },
   "safety": {
     "title": "Train safely",
@@ -860,22 +864,22 @@
   },
   "privacy": {
     "title": "Privacy",
-    "summary": "Bati collects nothing. Nothing you do in this app leaves your phone unless you send it yourself, deliberately, by email.",
+    "summary": "Bati collects nothing. It works offline, with one exception, off by default: the map behind an expedition. Switched on, the phone asks a map host for the area where you went, which tells that host roughly where you were. Everything else you do here stays on your phone unless you send it yourself, deliberately, by email.",
     "storage_title": "Where your training lives",
     "storage_body": "Every session, set, quest, adventure, achievement and setting is written to a database inside this app's private storage on your device. It is never uploaded and never synced. There is no server to upload it to, and no account to attach it to. Deleting the app deletes all of it.",
     "backups_title": "Backups you make",
     "backups_body": "Two rows write your database to a file: Share my backup hands it to your system's share sheet, Save a file writes it into a folder you choose on the device. Either way the app sends it nowhere. That file is not encrypted: anyone who opens it can read your training history, so keep it the way you would keep a personal photo. Restoring replaces everything; the database you had is kept on the device as a recovery copy.",
     "never_title": "What Bati never does",
-    "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. The app uploads nothing, ever. It reaches the network in one place only: the recap map downloads its tiles from tiles.openfreemap.org, which sees roughly which map squares you looked at and never your route, your training or who you are. A lint rule refuses any other network call in the app.",
+    "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. Nothing in the database is ever sent anywhere. The app reaches the network in one place only, and only if you allow it: the map behind an expedition's route is off until you switch it on in Settings. Switched on, the phone asks OpenFreeMap (OpenStreetMap data, served from tiles.openfreemap.org) for tiles, the square images a map is made of, covering the place where the outing happened. That request tells the host roughly where you were, with your IP address and the time. Not the route to the metre, not the pace, not the training, not who you are, but the area, yes. Left off, or switched off again with one tap, the app makes no network request at all and the route is drawn on a plain background. A lint rule refuses any other network call in the app.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos: only if you pick one as your avatar, and it stays on your device. The Android widget reads your streak from the same local database. Location: only while an expedition is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and sent nowhere. An outing also posts an ongoing notification and holds the phone awake, which is what stops Android killing the tracking while your screen is off.",
+    "permissions_body": "Photos: only if you pick one as your avatar, and it stays on your device. The Android widget reads your streak from the same local database. Location: only while an expedition is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and sent nowhere. An outing also posts an ongoing notification and holds the phone awake, which is what stops Android killing the tracking while your screen is off. Internet: only for the map, and only while it is switched on in Settings; it starts off, and what the request reveals is written above.",
     "crashes_title": "Crash reports",
     "crashes_body": "If the app crashes, the error is written to your device only. When a feature fails without crashing (a backup that could not be written, say), its error message is kept the same way; that message may include the name of a folder or file you chose. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
     "children_title": "Children",
     "children_body": "Bati is a general-audience fitness app and is not directed at children under 13. It collects no personal data from anyone, of any age.",
     "contact_title": "Questions",
     "contact_body": "Write to feedback.bati@proton.me about this policy, and about a bug, an idea, or a feature you wish existed. Since the app holds no data about you, there is nothing for us to export or delete on your behalf: uninstalling erases every record it ever made.",
-    "updated": "Last updated 31 July 2026"
+    "updated": "Last updated 2 September 2026"
   },
   "feedback": {
     "subject": "Bati {{version}}: feedback",

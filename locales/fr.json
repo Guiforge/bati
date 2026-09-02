@@ -763,7 +763,9 @@
     "replay_guides_done": "Les guides reviendront",
     "distance_unit": "Unité de distance",
     "distance_metric": "Kilomètres",
-    "distance_imperial": "Miles"
+    "distance_imperial": "Miles",
+    "map_tiles": "Carte du récap",
+    "map_tiles_note": "Éteinte, Bati ne télécharge rien. Allumée, le récap demande à OpenFreeMap, sur tiles.openfreemap.org, la carte de l'endroit où tu es allé, ce qui lui dit à peu près où tu étais. C'est le seul appel réseau de l'application."
   },
   "splash": {
     "loading": "Construction du village…"
@@ -843,9 +845,11 @@
     "title": "Le terrain parcouru",
     "open": "Voir le terrain parcouru",
     "no_trace": "Cette quête n'a jamais quitté les murs.",
-    "privacy": "Ton trajet ne quitte jamais ce téléphone. La carte derrière lui est téléchargée depuis OpenFreeMap.",
+    "privacy": "Le tracé reste sur ce téléphone. La carte vient d'OpenFreeMap, qui apprend à peu près où tu étais.",
     "export": "Exporter la trace",
-    "export_failed": "Le fichier n'a pas pu être écrit. Réessaie."
+    "export_failed": "Le fichier n'a pas pu être écrit. Réessaie.",
+    "map_offer": "La carte sous ton trajet est éteinte. Allume-la et cet écran demande à OpenFreeMap, sur tiles.openfreemap.org, les images de carte de cet endroit, ce qui lui dit à peu près où tu étais. Le tracé lui-même reste sur ce téléphone.",
+    "map_enable": "Afficher la carte"
   },
   "safety": {
     "title": "S'entraîner en sécurité",
@@ -860,22 +864,22 @@
   },
   "privacy": {
     "title": "Confidentialité",
-    "summary": "Bati ne collecte rien. Rien de ce que vous faites ici ne quitte votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail.",
+    "summary": "Bati ne collecte rien. L'application fonctionne hors ligne, avec une exception, désactivée par défaut : la carte derrière une expédition. Activée, le téléphone demande à un hôte de cartes la zone où vous êtes allé, ce qui lui dit à peu près où vous étiez. Tout le reste de ce que vous faites ici reste sur votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail.",
     "storage_title": "Où vivent vos entraînements",
     "storage_body": "Chaque séance, série, quête, aventure, haut fait et réglage est écrit dans une base de données située dans le stockage privé de l'application, sur votre appareil. Rien n'est envoyé, rien n'est synchronisé. Il n'existe aucun serveur où l'envoyer, ni aucun compte auquel le rattacher. Désinstaller l'application supprime l'ensemble.",
     "backups_title": "Les sauvegardes que vous faites",
     "backups_body": "Deux lignes écrivent votre base dans un fichier : « Partager ma sauvegarde » la remet au partage de votre système, « Enregistrer un fichier » l'écrit dans un dossier que vous choisissez sur l'appareil. Dans les deux cas l'application ne l'envoie nulle part. Ce fichier n'est pas chiffré : quiconque l'ouvre lit votre historique d'entraînement, alors rangez-le comme une photo personnelle. Restaurer remplace tout ; la base que vous aviez est conservée sur l'appareil comme copie de secours.",
     "never_title": "Ce que Bati ne fait jamais",
-    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. L'application n'envoie jamais rien. Elle ne touche au réseau qu'à un seul endroit : la carte du récap télécharge ses tuiles depuis tiles.openfreemap.org, qui voit en gros quels carrés de carte vous avez regardés, jamais votre trajet, votre entraînement ni qui vous êtes. Une règle de lint refuse tout autre appel réseau dans l'application.",
+    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. Rien de la base de données n'est jamais envoyé nulle part. L'application ne touche au réseau qu'à un seul endroit, et seulement si vous l'y autorisez : la carte derrière le tracé d'une expédition est désactivée tant que vous ne l'activez pas dans les réglages. Une fois activée, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit où la sortie a eu lieu. Cette demande dit donc à cet hôte à peu près où vous étiez, avec votre adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui vous êtes, mais la zone, oui. Laissée désactivée, ou coupée d'une pression, l'application ne fait aucune requête réseau et le tracé se dessine sur un fond uni. Une règle de lint refuse tout autre appel réseau dans l'application.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar, et elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une expédition, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'est envoyé nulle part. Une sortie affiche aussi une notification permanente et garde le téléphone éveillé, ce qui empêche Android de couper le suivi quand votre écran est éteint.",
+    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar, et elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une expédition, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'est envoyé nulle part. Une sortie affiche aussi une notification permanente et garde le téléphone éveillé, ce qui empêche Android de couper le suivi quand votre écran est éteint. Internet : uniquement pour la carte, et uniquement tant qu'elle est activée dans les réglages ; elle démarre désactivée, et ce que la demande révèle est écrit plus haut.",
     "crashes_title": "Rapports de crash",
     "crashes_body": "En cas de plantage, l'erreur est écrite uniquement sur votre appareil, et quand une fonction échoue sans plantage (une sauvegarde impossible à écrire, par exemple), son message d'erreur est conservé de la même façon ; ce message peut contenir le nom d'un dossier ou d'un fichier que vous avez choisi. Rien n'est envoyé automatiquement. « Signaler un bug » ouvre votre propre application e-mail avec le rapport pré-rempli : vous pouvez le lire, le modifier ou le supprimer avant envoi. Si vous ne l'envoyez jamais, il ne quitte jamais votre téléphone.",
     "children_title": "Enfants",
     "children_body": "Bati est une application de sport tout public, non destinée aux enfants de moins de 13 ans. Elle ne collecte aucune donnée personnelle, quel que soit l'âge.",
     "contact_title": "Questions",
     "contact_body": "Écrivez à feedback.bati@proton.me pour cette politique, et pour un bug, une idée ou une fonctionnalité qui vous manque. Comme l'application ne détient aucune donnée vous concernant, nous n'avons rien à exporter ni à supprimer pour vous : la désinstallation efface chaque enregistrement qu'elle a produit.",
-    "updated": "Dernière mise à jour : 31 juillet 2026"
+    "updated": "Dernière mise à jour : 2 septembre 2026"
   },
   "feedback": {
     "errors_header": "Erreurs récentes",

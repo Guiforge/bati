@@ -17,11 +17,11 @@ CE QUE TU TROUVES DEDANS
 TON ENTRAÎNEMENT RESTE SUR TON TÉLÉPHONE
 Aucun compte. Aucune inscription. Aucun serveur à nous. Ni analytics, ni publicité, ni pistage d'aucune sorte. Tes séances, tes records et la trace GPS d'une expédition vivent dans une base de données sur ton appareil et nulle part ailleurs. Désinstaller l'app détruit chaque enregistrement qu'elle a produit.
 
-Bati demande l'accès à Internet pour une seule chose : les tuiles de la carte derrière le tracé d'une expédition, récupérées sur tiles.openfreemap.org. Cet hôte voit une adresse IP et les carrés de carte demandés, ce que coûte n'importe quelle carte. Il ne voit jamais ton tracé, et aucune autre partie de l'app n'a le droit d'ouvrir une connexion : une règle de lint fait échouer la compilation si un appel réseau apparaît quelque part dans le code.
+Une exception, éteinte par défaut : la carte derrière le tracé d'une expédition. Allumée dans les réglages, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit où tu es allé. Cette demande dit donc à l'hôte à peu près où tu étais, avec ton adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui tu es, mais la zone, oui. Éteinte, ou coupée d'une pression, le tracé se dessine sur un fond uni et l'app ne fait aucune requête réseau. Aucune autre partie de l'app n'a le droit d'ouvrir une connexion : une règle de lint fait échouer la compilation si un appel réseau apparaît quelque part dans le code.
 
 La position n'est lue que pendant une expédition, par un module GPS écrit pour cette app sur le service de localisation d'Android. Pas de services Google Play, pas de SDK tiers, rien qui téléphone ailleurs.
 
-Ce n'est pas un réglage à aller chercher. C'est toute l'architecture.
+La carte est le seul interrupteur, et il démarre éteint. Tout le reste ci-dessus est l'architecture, vérifiée à la compilation.
 
 AU POIDS DU CORPS D'ABORD
 Le catalogue d'exercices est construit autour de ce qui se fait sans matériel, et s'adapte si tu en possèdes. Les échauffements sont dynamiques et calibrés sur la séance qui suit : un échauffement de cinq minutes devant un entraînement de six, personne ne le fait deux fois.

@@ -21,6 +21,9 @@ import {
   HeartPulse,
   ImagePlus,
   Languages,
+  // Aliased: an unqualified `Map` shadows the global of the same name, which is a trap for
+  // whoever edits this file next. Same reason `app/recap.tsx` renames MapLibre's component.
+  Map as MapIcon,
   MessagesSquare,
   RotateCcw,
   Ruler,
@@ -212,6 +215,7 @@ export default function SettingsScreen() {
     soundEnabled,
     villagersEnabled,
     distanceUnit,
+    mapTilesEnabled,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
@@ -219,6 +223,7 @@ export default function SettingsScreen() {
     setSoundEnabled,
     setVillagersEnabled,
     setDistanceUnit,
+    setMapTilesEnabled,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -503,6 +508,26 @@ export default function SettingsScreen() {
               });
             }}
           />
+
+          {/* The app's only network call, and it is off until this row is tapped. The host is
+              named on the line below rather than in the policy, because "somewhere in Privacy"
+              is where a hero finds out after the fact. */}
+          <SettingRow
+            testID="settings-map-tiles"
+            icon={<MapIcon size={22} color="$text" />}
+            label={t("settings.map_tiles", "Recap map")}
+            value={mapTilesEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            onPress={() => {
+              haptics.selection();
+              setMapTilesEnabled(!mapTilesEnabled).catch((error) => {
+                reportError("settings.mapTilesWrite", error);
+              });
+            }}
+          />
+
+          <Text testID="settings-map-tiles-note" fontSize="$2" color="$textSecondary" px="$3">
+            {t("settings.map_tiles_note")}
+          </Text>
 
           <SettingRow
             icon={<Dumbbell size={22} color="$text" />}

@@ -15,10 +15,13 @@ database, and uninstalling the app destroys them.
 
 Two paths cross the network boundary, and both are worth knowing before you write a report.
 
-- **Map tiles.** The app carries `android.permission.INTERNET` since expeditions landed. MapLibre
-  fetches vector tiles natively from `tiles.openfreemap.org`, and that host sees an IP address and
-  which squares of the world were asked for, which is what a map costs. It never sees a route: the
-  points stay in the database. Nothing else in the app may open a connection, and that is enforced
+- **Map tiles.** The app carries `android.permission.INTERNET` since expeditions landed. The map
+  is a setting, off by default; once you switch it on, MapLibre fetches vector tiles (the square
+  images a map is made of) natively from `tiles.openfreemap.org`, OpenStreetMap data served by
+  OpenFreeMap. The tiles requested are the ones covering the place where the outing happened, so
+  that request tells the host roughly where you were, with your IP address and the time. It does
+  not carry the route to the metre, the pace, the training or an identity: the points stay in the
+  database. With the map off, the app makes no request at all. Nothing else in the app may open a connection, and that is enforced
   rather than promised: [`.biome/plugins/noJsNetwork.grit`](.biome/plugins/noJsNetwork.grit)
   fails the build on `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource` or `sendBeacon`
   anywhere in the JavaScript.

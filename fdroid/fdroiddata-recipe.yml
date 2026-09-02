@@ -69,9 +69,16 @@ MaintainerNotes: |-
   scanner's false positives (legitimate local `maven { url }` lines); everything else
   under node_modules is scandelete'd. No Firebase, no Play Services, no install
   referrer. INTERNET was stripped via blockedPermissions from 1.2.4 until the
-  expeditions release, which added outdoor sessions: MapLibre now fetches vector
-  map tiles natively from tiles.openfreemap.org, and that is the app's only
-  network destination. No network code of our own: a Biome GritQL plugin
+  expeditions release, which added outdoor sessions: MapLibre fetches vector
+  map tiles natively from tiles.openfreemap.org (OpenStreetMap data served by
+  OpenFreeMap), and that is the app's only network destination. The tiles
+  requested cover the area of the outing, so that request discloses an
+  approximate location, plus IP address and time, to the tile host; the
+  privacy policy and the store listing say so in those words. The map is opt-in: a preference, off by default, picks
+  the map style (constants/mapStyle.ts), and the default style has no sources
+  and no glyphs URL, so a fresh install makes no network request until the
+  user switches the map on in Settings; with it off the recap draws the GPS
+  trace on a plain background. No network code of our own: a Biome GritQL plugin
   (.biome/plugins/noJsNetwork.grit) rejects fetch, XMLHttpRequest, WebSocket,
   EventSource and sendBeacon anywhere in the JS, and the build fails on one.
   Location comes from modules/bati-location, a local Expo module on Android's

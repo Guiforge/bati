@@ -254,6 +254,24 @@ export const preferences = {
     await setPreference("distanceUnit", unit);
   },
 
+  /**
+   * Whether the recap may draw a basemap under the trace, which is the only thing in this app
+   * that touches a network. Off until the hero says yes, out loud, on a screen that names the
+   * host before the first byte moves.
+   *
+   * `=== "true"` and not the `!== "false"` every other boolean here uses, and that asymmetry is
+   * the whole point: those default to on, and a database that has never seen this key is a hero
+   * who has never been asked. An update that read "unset" as "yes" would start downloading from
+   * a third party on behalf of someone who was never given the chance to refuse.
+   */
+  async getMapTilesEnabled(): Promise<boolean> {
+    return (await getPreference("mapTiles")) === "true";
+  },
+
+  async setMapTilesEnabled(enabled: boolean): Promise<void> {
+    await setPreference("mapTiles", String(enabled));
+  },
+
   async getHapticsEnabled(): Promise<boolean> {
     const value = await getPreference("hapticsEnabled");
     // Default to true if not set

@@ -492,6 +492,36 @@ And the screen side, which is where the trace and the framing live:
 </MapLibreMap>
 ```
 
+## The map is opt-in, and the refused state is a design
+
+Added 2026-09-02, after the style above shipped. This branch put `INTERNET` back in the manifest
+for the first time since 1.2.4, and a permission that arrives with an update is a permission
+nobody agreed to. So the basemap is **off by default** and stays off until the hero taps a row
+that names the host.
+
+- `mapTiles` in `db/preferences.ts` reads `=== "true"`, not the `!== "false"` every other boolean
+  there uses. Those default to on; this one defaults to a refusal, and an installed app updating
+  into this version arrives with a populated database and no such key. That is a hero who was
+  never asked, and it has to read as no.
+- Settings § PREFERENCES carries the row and, under it, the sentence that names
+  `tiles.openfreemap.org` and says it is the app's only network call. Naming the host only in the
+  privacy policy is naming it where a hero finds out afterwards.
+- `mapStyleNoTiles` in [`constants/mapStyle.ts`](../../constants/mapStyle.ts) is derived from
+  `mapStyle` by dropping every layer with a `source`, and it drops `glyphs` with them: that URL is
+  on the same host, so a surviving label layer would still fetch a font. What is left is the
+  `background` layer, which was already painted `rawColors.bgDark` to make the map edgeless. The
+  refused state is therefore the trace, its glow and its two pips on the app's own ground, which
+  is the picture this whole design says the screen is about.
+- The recap offers the map instead of the attribution when it is refused: one sentence naming
+  what will be fetched and from whom, and one button. The sentence is the confirmation, so there
+  is no dialog. The ODbL and OpenFreeMap credits appear only in the allowed state, because a
+  credit for data that was never fetched is a claim rather than a courtesy.
+
+The assertion that holds all of it is in `__tests__/expedition-recap.test.tsx`: the style handed
+to MapLibre in the refused state is stringified and matched against `/https?:\/\//`, not against
+the host name. Rebranching a source by mistake means writing a URL back in, whichever host it
+points at.
+
 ## Next steps
 
 1. Answer open question 1 in `gps-without-google.md` (OpenFreeMap or VersaTiles). The style

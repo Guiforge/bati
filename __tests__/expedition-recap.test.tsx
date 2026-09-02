@@ -23,6 +23,8 @@ const mockOutingSession = jest.fn<Promise<unknown>, [string]>();
 const mockQuestTemplates = jest.fn<Promise<unknown[]>, []>();
 const mockFlushTrack = jest.fn<void, [unknown, unknown, unknown]>();
 const mockShareTrack = jest.fn<Promise<void>, [unknown]>(() => Promise.resolve());
+/** Every style handed to MapLibre, in order. The refusal is asserted on the JSON of the last. */
+const mockMapStyle = jest.fn<void, [unknown]>();
 
 jest.mock("@/db/gps", () => ({
   pointsOf: (id: string) => mockPointsOf(id),
@@ -30,7 +32,7 @@ jest.mock("@/db/gps", () => ({
 }));
 jest.mock("@/db/quests", () => ({ listQuestTemplates: () => mockQuestTemplates() }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
-jest.mock("@/db", () => ({ preferences: {} }));
+jest.mock("@/db", () => ({ preferences: { setMapTilesEnabled: jest.fn() } }));
 
 // The real i18n, not a stub: this screen's strings live in `locales/*.json` and the inline
 // English defaults it used to carry had already drifted from them. A test reading the defaults
@@ -62,7 +64,12 @@ jest.mock("@maplibre/maplibre-react-native", () => {
     (testID: string) =>
     ({ children }: { children?: React.ReactNode }) => <View testID={testID}>{children}</View>;
   return {
-    Map: passthrough("maplibre"),
+    // The one prop this suite reads: what MapLibre is asked to draw is the only place a network
+    // request can be declared, and `passthrough` was throwing it away.
+    Map: ({ children, mapStyle }: { children?: React.ReactNode; mapStyle?: unknown }) => {
+      mockMapStyle(mapStyle);
+      return <View testID="maplibre">{children}</View>;
+    },
     Camera: passthrough("maplibre-camera"),
     GeoJSONSource: passthrough("maplibre-source"),
     Layer: passthrough("maplibre-layer"),
@@ -174,7 +181,10 @@ beforeEach(() => {
   mockQuestTemplates.mockResolvedValue([
     { id: 7, enTitle: "The Warden's Round", frTitle: "La Ronde du Veilleur" },
   ]);
-  useSettingsStore.setState({ distanceUnit: "metric", language: "en" });
+  mockMapStyle.mockClear();
+  // Accepted, because everything else in this file is about a screen with a basemap on it. The
+  // refusal is the default in the app and has its own describe block below.
+  useSettingsStore.setState({ distanceUnit: "metric", language: "en", mapTilesEnabled: true });
 });
 
 describe("a session that left the walls", () => {
@@ -383,5 +393,82 @@ describe("a session that never left the walls", () => {
     await mount();
     expect(await screen.findByTestId("recap-no-trace")).toBeTruthy();
     expect(screen.queryByTestId("recap-export")).toBeNull();
+  });
+});
+
+/**
+ * The map is the only thing in this app that touches a network, and it is off until the hero
+ * says otherwise. What is asserted here is not "a flag flipped" but the thing the flag exists to
+ * guarantee: the style handed to MapLibre, which is where every URL this app fetches is
+ * declared, has none in it.
+ */
+describe("a hero who has not allowed the basemap", () => {
+  beforeEach(() => {
+    mockPointsOf.mockResolvedValue(walkThenStand());
+    useSettingsStore.setState({ mapTilesEnabled: false });
+  });
+
+  /**
+   * Written against *any* URL rather than against the host: rebranching a source by mistake
+   * means writing `TILES` or `GLYPHS` back in, and both are `https://`. A test that only looked
+   * for "openfreemap" would pass the day someone points the refused style at a mirror.
+   */
+  test("hands MapLibre a style with nothing to fetch in it", async () => {
+    await mount();
+    expect(await screen.findByTestId("recap-map")).toBeTruthy();
+
+    const style = JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0]);
+    expect(style).not.toMatch(/openfreemap/i);
+    expect(style).not.toMatch(/https?:\/\//);
+    // Not by handing over an empty style either: the ground the trace is drawn on is still there.
+    expect(style).toContain('"background"');
+    expect(style).toContain('"sources":{}');
+  });
+
+  test("the whole style comes back once the hero has said yes", async () => {
+    useSettingsStore.setState({ mapTilesEnabled: true });
+    await mount();
+    expect(await screen.findByTestId("recap-map")).toBeTruthy();
+
+    const style = JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0]);
+    expect(style).toContain("https://tiles.openfreemap.org/planet");
+    expect(style).toContain("https://tiles.openfreemap.org/fonts");
+    expect(style).toContain('"source-layer":"water"');
+  });
+
+  /**
+   * The offer says what will be fetched and from whom, so the sentence is the confirmation and
+   * the tap is the answer. It only exists in the refused state, and the credit only exists in
+   * the accepted one: naming OpenStreetMap under a map that fetched nothing is a claim.
+   */
+  test("offers the map, naming the host, and one tap is the whole answer", async () => {
+    await mount();
+
+    const offer = await screen.findByTestId("recap-map-offer");
+    expect(offer).toHaveTextContent(/tiles\.openfreemap\.org/);
+    expect(screen.queryByTestId("recap-attribution")).toBeNull();
+
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("recap-map-enable"));
+    });
+
+    expect(useSettingsStore.getState().mapTilesEnabled).toBe(true);
+    expect(screen.queryByTestId("recap-map-offer")).toBeNull();
+    expect(screen.getByTestId("recap-attribution")).toBeTruthy();
+    expect(JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0])).toContain("openfreemap");
+  });
+
+  test("offers nothing to switch on when there is no map to switch on", async () => {
+    mockPointsOf.mockResolvedValue([]);
+    mockOutingSession.mockResolvedValue({
+      questId: null,
+      performedAt: new Date(T0),
+      leaguesM: null,
+      movingSeconds: null,
+    });
+    await mount();
+
+    expect(await screen.findByTestId("recap-no-trace")).toBeTruthy();
+    expect(screen.queryByTestId("recap-map-offer")).toBeNull();
   });
 });

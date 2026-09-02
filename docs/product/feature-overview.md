@@ -205,8 +205,12 @@ Every workout works with the phone in flight mode.
 - Local SQLite database
 - All content stored on device
 - No account required
-- One network destination, download only: `tiles.openfreemap.org`, for the map behind an
-  expedition's route. Nothing is ever uploaded, and
+- One exception, off by default: the map behind an expedition's route, fetched from
+  `tiles.openfreemap.org` (OpenStreetMap data served by OpenFreeMap). The tiles requested cover
+  the area of the outing, so switching the map on tells that host roughly where the outing
+  happened, with the IP address and the time; not the route, the pace, the training or an
+  identity. Until it is switched on the app makes no network request at all, and the recap draws
+  the route on a plain background. Nothing from the database is ever uploaded, and
   [`.biome/plugins/noJsNetwork.grit`](../../.biome/plugins/noJsNetwork.grit) fails the build on any
   network call written in the app's own code.
 

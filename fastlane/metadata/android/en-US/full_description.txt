@@ -17,11 +17,11 @@ WHAT YOU GET
 YOUR TRAINING STAYS ON YOUR PHONE
 No account. No sign-up. No server of ours. No analytics, no ads, no tracking of any kind. Your sessions, your records and the GPS trace of an expedition live in a database on your device and nowhere else. Uninstalling the app destroys every record it ever made.
 
-Bati asks for internet access for exactly one thing: the map tiles behind an expedition's route, fetched from tiles.openfreemap.org. That host sees an IP address and which squares of the map were asked for, which is what any map costs. It never sees your route, and no other part of the app is allowed to open a connection: a lint rule fails the build if a network call appears anywhere in the code.
+One exception, off by default: the map behind an expedition's route. Switched on in Settings, the phone asks OpenFreeMap (OpenStreetMap data, served from tiles.openfreemap.org) for tiles, the square images a map is made of, covering the place where you went. That request tells the host roughly where you were, with your IP address and the time. Not the route to the metre, not the pace, not the training, not who you are, but the area, yes. Off, or switched off again with one tap, the route is drawn on a plain background and the app makes no network request at all. No other part of the app is allowed to open a connection: a lint rule fails the build if a network call appears anywhere in the code.
 
 Location is read only while an expedition is running, by a GPS module written for this app against Android's own location service. No Google Play Services, no third-party SDK, nothing that phones home.
 
-That is not a setting you have to find. It is the whole architecture.
+The map is the one switch, and it starts off. Everything else above is the architecture, checked at build time.
 
 BODYWEIGHT FIRST
 The exercise catalogue is built around what you can do with no equipment, and adapts if you own some. Warm-ups are dynamic and scaled to the session in front of you, because a five-minute warm-up before a six-minute workout is a warm-up nobody does twice.

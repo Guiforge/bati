@@ -38,11 +38,15 @@ town. No coach, no feed, no leaderboard, nobody to compare yourself to. The only
 score is a village that can only be built by showing up.
 
 **Your training stays on your phone.** No account, no servers, no analytics, no ads. Your history
-lives in a database on the device and is never uploaded. Bati asks for internet access for exactly
-one thing: the map tiles behind an expedition's route, fetched from `tiles.openfreemap.org`. No
-other part of the app is allowed to open a connection: a lint rule rejects every network call
-written in JavaScript, so a second destination cannot arrive by accident. That is the architecture,
-not a setting you have to find.
+lives in a database on the device and is never uploaded. One exception, off by default: the map
+behind an expedition's route. Switched on in Settings, the phone asks OpenFreeMap (OpenStreetMap
+data, served from `tiles.openfreemap.org`) for tiles, the square images a map is made of, covering
+the place where you went. That request tells the host roughly where you were, with your IP address
+and the time. Not the route to the metre, not the pace, not the training, not who you are, but the
+area, yes. Off, the route is drawn on a plain background and the app makes no network request at
+all. No other part of the app is allowed to open a connection: a lint rule rejects every network
+call written in JavaScript, so a second destination cannot arrive by accident. The map is the one
+switch; everything else is the architecture.
 
 > **Early days.** The app works end to end and is published through F-Droid, which is where its
 > first users came from. It is not on Google Play: that account exists and has never left its
@@ -92,9 +96,10 @@ level.
 finished, read from a database on your phone, with nothing to log in to.
 
 **No account, and one network destination.** There is no server to leak, no analytics to opt out
-of, and no cloud copy of your training. The only thing Bati ever fetches is map tiles, from
-`tiles.openfreemap.org`; nothing travels the other way, and the trace of your route stays in the
-database on your phone. [Privacy policy](https://guiforge.github.io/bati/privacy/).
+of, and no cloud copy of your training. The only thing Bati ever fetches is the map behind an
+expedition, from `tiles.openfreemap.org`, and only once you have switched the map on in Settings;
+that request tells the host roughly where the outing happened, and nothing else leaves the phone.
+The trace itself stays in the database on your phone. [Privacy policy](https://guiforge.github.io/bati/privacy/).
 
 ## Install it
 

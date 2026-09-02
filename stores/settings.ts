@@ -28,6 +28,8 @@ interface SettingsState {
   villagersEnabled: boolean;
   /** How distances are drawn. Storage is metres either way — constants/distanceFormat.ts. */
   distanceUnit: DistanceUnit;
+  /** Whether the recap may fetch its basemap. The app's only network call, and it starts off. */
+  mapTilesEnabled: boolean;
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
@@ -37,6 +39,7 @@ interface SettingsState {
   setSoundEnabled: (enabled: boolean) => Promise<void>;
   setVillagersEnabled: (enabled: boolean) => Promise<void>;
   setDistanceUnit: (unit: DistanceUnit) => Promise<void>;
+  setMapTilesEnabled: (enabled: boolean) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
 }
@@ -72,6 +75,9 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   soundEnabled: true,
   villagersEnabled: true,
   distanceUnit: "metric",
+  // Off, and the same default the DB read returns for a key nobody has written: the map is the
+  // one thing here that reaches a third party, so an unanswered question is a no.
+  mapTilesEnabled: false,
   isLoaded: false,
 
   setLanguage: async (language) => {
@@ -119,6 +125,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setDistanceUnit(unit);
   },
 
+  setMapTilesEnabled: async (enabled) => {
+    set({ mapTilesEnabled: enabled });
+    await preferences.setMapTilesEnabled(enabled);
+  },
+
   loadFromDatabase: async () => {
     try {
       const [
@@ -130,6 +141,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         villagersEnabled,
         soundEnabled,
         distanceUnit,
+        mapTilesEnabled,
       ] = await Promise.all([
         preferences.getLanguage(),
         preferences.getAvatarId(),
@@ -139,6 +151,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getVillagersEnabled(),
         preferences.getSoundEnabled(),
         preferences.getDistanceUnit(),
+        preferences.getMapTilesEnabled(),
       ]);
 
       const normalizedLanguage = resolveAppLanguage(language);
@@ -159,6 +172,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         villagersEnabled,
         soundEnabled,
         distanceUnit,
+        mapTilesEnabled,
         isLoaded: true,
       });
 

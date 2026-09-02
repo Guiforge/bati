@@ -98,7 +98,10 @@ After workouts, Bati rewards you with:
 
 - Tap a tile in the "Head out" band on Home: a walk, a run or a ride.
 - Set a duration or a distance, then start. The phone buzzes once when you reach it.
-- Come back to the ground covered, your pace, a map of the route, and leagues on the High Road.
+- Come back to the ground covered, your pace, the route drawn on screen, and leagues on the High Road.
+- The map behind the route is a switch in Settings, off by default: the app makes no network
+  request until you turn it on, and the route is drawn on a plain background without it. On, the
+  map host learns roughly where you went, and the privacy policy spells out exactly what that means.
 
 ---
 

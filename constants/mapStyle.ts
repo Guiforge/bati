@@ -203,6 +203,26 @@ export const mapStyle: MapStyle = {
 };
 
 /**
+ * The same screen with nothing to fetch, and it is the default until the hero says otherwise.
+ *
+ * Derived from `mapStyle` rather than written out beside it: two hand-kept styles is two places
+ * to forget, and the one that gets forgotten is this one — a layer added upstairs would quietly
+ * carry its source down here and put a request on the wire in the state whose whole promise is
+ * that there is none. Every layer that names a `source` goes, which is every layer that reads
+ * the vector tiles; what is left is the `background`, the app's own ground, which the trace and
+ * its two pips are drawn on top of by `app/recap.tsx`.
+ *
+ * No `glyphs` either. That URL is on the same host, so a label layer surviving this filter would
+ * still fetch a font to draw its text; the labels are source-bound and leave with the rest, and
+ * dropping the declaration means nothing can ask for one by accident.
+ */
+export const mapStyleNoTiles: MapStyle = {
+  version: 8,
+  sources: {},
+  layers: mapStyle.layers.filter((layer) => !("source" in layer)),
+};
+
+/**
  * The credit, and it is an obligation rather than a courtesy.
  *
  * OSM data is ODbL and must name its contributors; OpenFreeMap asks for "OpenFreeMap ©

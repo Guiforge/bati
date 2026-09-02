@@ -7,13 +7,13 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
-import { AppIconButton } from "@/components/common/AppButton";
+import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Skeleton } from "@/components/common/Skeleton";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Share2 } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
-import { MAP_ATTRIBUTION, mapStyle } from "@/constants/mapStyle";
+import { MAP_ATTRIBUTION, mapStyle, mapStyleNoTiles } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import { outingSession, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
@@ -143,6 +143,41 @@ function Figures({
   );
 }
 
+/**
+ * The line under the map, and which of the two lines it is says what actually happened.
+ *
+ * Allowed, it is the credit: ODbL requires the OSM one and OpenFreeMap requires its own to be
+ * displayed once MapLibre's attribution button is off, which it is here. Refused, that credit
+ * would be a claim rather than a courtesy, because nothing of theirs was ever fetched, so its
+ * place is taken by the offer.
+ *
+ * The offer's sentence is the confirmation. It names the host and says what leaves before a
+ * single byte does, which is the whole of what a dialog would have asked twice; the tap is the
+ * answer, and the basemap arrives under the trace that is already on screen.
+ */
+function MapFootnote({ enabled, onEnable }: { enabled: boolean; onEnable: () => void }) {
+  const { t } = useTranslation();
+
+  if (enabled) {
+    return (
+      <Text testID="recap-attribution" fontSize={11} color="$muted" style={{ textAlign: "center" }}>
+        {MAP_ATTRIBUTION} {t("recap.privacy")}
+      </Text>
+    );
+  }
+
+  return (
+    <YStack testID="recap-map-offer" gap="$3">
+      <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+        {t("recap.map_offer")}
+      </Text>
+      <AppButton testID="recap-map-enable" variant="outline" fontSize={16} onPress={onEnable}>
+        {t("recap.map_enable")}
+      </AppButton>
+    </YStack>
+  );
+}
+
 export default function ExpeditionRecapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -150,6 +185,10 @@ export default function ExpeditionRecapScreen() {
   const params = useLocalSearchParams<{ session?: string | string[] }>();
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const language = useSettingsStore((s) => s.language);
+  // Off unless the hero has said yes. The whole map branch below reads this, and the style it
+  // picks is what decides whether this screen touches a network at all.
+  const mapTilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
+  const setMapTilesEnabled = useSettingsStore((s) => s.setMapTilesEnabled);
   const { showError } = useToast();
 
   const sessionUuid = Array.isArray(params.session) ? params.session[0] : params.session;
@@ -196,8 +235,9 @@ export default function ExpeditionRecapScreen() {
   // two part company whenever a flush fails — `stores/expedition.ts` drops a batch of up to
   // thirty fixes on a database error, so the distance still holds them and the replay does not.
   // The pace between a kept distance and a replayed clock is wrong with nothing able to notice.
-  const track = (fixes ?? []).reduce(accept, EMPTY);
-  const trace = toTrace(fixes ?? []);
+  const drawn = fixes ?? [];
+  const track = drawn.reduce(accept, EMPTY);
+  const trace = toTrace(drawn);
 
   /**
    * The trace, as a file the hero owns.
@@ -223,6 +263,25 @@ export default function ExpeditionRecapScreen() {
       showError(t("recap.export_failed"));
     });
   };
+
+  // The refused style has no vector source and no `glyphs`, so MapLibre has nothing to fetch:
+  // the trace is drawn on the app's own ground and that is the whole picture. See
+  // constants/mapStyle.ts.
+  const basemap = mapTilesEnabled ? mapStyle : mapStyleNoTiles;
+
+  // Neither line belongs under a screen that never drew a map: there is no credit to give and
+  // nothing to switch on.
+  const footnote =
+    trace.bounds === null ? null : (
+      <MapFootnote
+        enabled={mapTilesEnabled}
+        onEnable={() => {
+          setMapTilesEnabled(true).catch((error) => {
+            reportError("recap.mapTilesWrite", error);
+          });
+        }}
+      />
+    );
 
   const header = (
     <XStack items="center" gap="$3" px="$5" pt={insets.top + 12} pb="$3">
@@ -300,7 +359,7 @@ export default function ExpeditionRecapScreen() {
           <YStack flex={1} testID="recap-map">
             <MapLibreMap
               style={{ flex: 1 }}
-              mapStyle={mapStyle}
+              mapStyle={basemap}
               // The credit is our own line under the map, in the app's type — which is exactly
               // what OpenFreeMap asks of a client that switches its widget off.
               attribution={false}
@@ -396,17 +455,7 @@ export default function ExpeditionRecapScreen() {
           />
         ) : null}
 
-        {/* ODbL requires the OSM credit and OpenFreeMap requires its line to be displayed once
-            MapLibre's own attribution button is off. It is not decoration: see
-            constants/mapStyle.ts. */}
-        <Text
-          testID="recap-attribution"
-          fontSize={11}
-          color="$muted"
-          style={{ textAlign: "center" }}
-        >
-          {MAP_ATTRIBUTION} {t("recap.privacy")}
-        </Text>
+        {footnote}
       </YStack>
     </YStack>
   );

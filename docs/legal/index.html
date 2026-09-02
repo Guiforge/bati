@@ -52,8 +52,8 @@ permalink: /
       </div>
 
       <p class="spec">
-        <span lang="en">Android · Offline · No account</span>
-        <span lang="fr">Android · Hors-ligne · Sans compte</span>
+        <span lang="en">Android · Offline first · No account</span>
+        <span lang="fr">Android · Hors ligne d'abord · Sans compte</span>
       </p>
 
       <p class="note">
@@ -394,19 +394,25 @@ permalink: /
       <span lang="en"
         >No account. No sign-up. No server of ours. Your sessions, your records and the GPS trace of
         an expedition live in a database on your device and nowhere else, and uninstalling the app
-        destroys every one of them. Bati asks for internet access for exactly one thing: the map
-        tiles behind an expedition's route, fetched from tiles.openfreemap.org. That host sees an IP
-        address and which squares of the map were asked for; it never sees your route. Nothing else
-        in the app may open a connection, and a lint rule fails the build if anything tries.</span
+        destroys every one of them. One exception, off by default: the map behind an expedition's
+        route. Switched on in Settings, the phone asks OpenFreeMap (OpenStreetMap data) for tiles,
+        the square images a map is made of, covering the place where you went, and that request
+        tells the host roughly where you were, with your IP address and the time. Not the route to
+        the metre, not the pace, not who you are, but the area, yes. Off, the route is drawn on a
+        plain background and the app makes no network request at all. Nothing else in the app may
+        open a connection, and a lint rule fails the build if anything tries.</span
       >
       <span lang="fr"
         >Aucun compte. Aucune inscription. Aucun serveur à nous. Tes séances, tes records et la trace
         GPS d'une expédition vivent dans une base de données sur ton appareil et nulle part ailleurs,
-        et désinstaller l'app les détruit tous. Bati demande l'accès à Internet pour une seule
-        chose : les tuiles de la carte derrière le tracé d'une expédition, récupérées sur
-        tiles.openfreemap.org. Cet hôte voit une adresse IP et les carrés de carte demandés ; il ne
-        voit jamais ton tracé. Rien d'autre dans l'app n'a le droit d'ouvrir une connexion, et une
-        règle de lint fait échouer la compilation si quoi que ce soit essaie.</span
+        et désinstaller l'app les détruit tous. Une exception, éteinte par défaut : la carte derrière
+        le tracé d'une expédition. Allumée dans les réglages, le téléphone demande à OpenFreeMap
+        (des données OpenStreetMap) des tuiles, les carrés d'image qui composent une carte,
+        couvrant l'endroit où tu es allé, et cette demande dit à l'hôte à peu près où tu étais, avec
+        ton adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas qui tu es, mais la
+        zone, oui. Éteinte, le tracé se dessine sur un fond uni et l'app ne fait aucune requête
+        réseau. Rien d'autre dans l'app n'a le droit d'ouvrir une connexion, et une règle de lint
+        fait échouer la compilation si quoi que ce soit essaie.</span
       >
     </p>
 

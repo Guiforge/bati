@@ -37,32 +37,19 @@ export const SECONDS_PER_REP_EQUIVALENT = 3;
 export const NON_REP_STYLE: ExerciseStyle = "expedition";
 
 /**
- * One rule per target type, in one place, in both languages the aggregates speak.
+ * One rule per target type, in one place.
  *
  * A `Record` keyed by `QuestTargetType` rather than a pair of hand-written branches: adding a
  * member to `questTargetTypes` — `distance`, when expeditions learn to measure kilometres —
- * fails `tsc` here, at the one spot that knows what the unit means, and joins the SQL chain
- * below for free. The old shape was `if (type !== "time") return resultValue`, which is not
- * exhaustive and would have turned 5000 metres into 5000 reps of boss damage without a word.
- * Prefer a type over a test.
+ * fails `tsc` here, at the one spot that knows what the unit means. The old shape was
+ * `if (type !== "time") return resultValue`, which is not exhaustive and would have turned 5000
+ * metres into 5000 reps of boss damage without a word. Prefer a type over a test.
+ *
+ * `repEquivalentSql` below says the same thing to SQLite, and is the other half to edit.
  */
-const CONVERSIONS: Record<
-  QuestTargetType,
-  { of: (value: number) => number; sqlOf: (value: SQLiteColumn) => SQL }
-> = {
-  reps: {
-    of: (value) => value,
-    sqlOf: (value) => sql`${value}`,
-  },
-  // SQLite's ROUND rounds half away from zero for positive numbers, exactly like Math.round,
-  // and the two-argument MAX is the scalar form, so a one-second hold still lands on 1 rather
-  // than 0. The `* 1.0` is what forces float division — the divisor arrives as a bound
-  // parameter, so a `3.0` literal cannot be spliced in.
-  time: {
-    of: (value) => Math.max(1, Math.round(value / SECONDS_PER_REP_EQUIVALENT)),
-    sqlOf: (value) =>
-      sql`MAX(1, CAST(ROUND(${value} * 1.0 / ${SECONDS_PER_REP_EQUIVALENT}) AS INTEGER))`,
-  },
+const CONVERSIONS: Record<QuestTargetType, (value: number) => number> = {
+  reps: (value) => value,
+  time: (value) => Math.max(1, Math.round(value / SECONDS_PER_REP_EQUIVALENT)),
 };
 
 export function toRepEquivalent(
@@ -73,7 +60,7 @@ export function toRepEquivalent(
   if (style === NON_REP_STYLE) return 0;
   // Null is "the row predates the column": it meant reps then and it means reps now.
   if (type === null || type === undefined) return resultValue;
-  return CONVERSIONS[type].of(resultValue);
+  return CONVERSIONS[type](resultValue);
 }
 
 /**
@@ -89,11 +76,15 @@ export function repEquivalentSql(
   type: SQLiteColumn,
   style: SQLiteColumn,
 ): SQL {
-  const byType = Object.entries(CONVERSIONS).reduce<SQL>(
-    (fallback, [name, conversion]) =>
-      sql`CASE WHEN ${type} = ${name} THEN ${conversion.sqlOf(value)} ELSE ${fallback} END`,
-    // A row whose type predates the column falls through every arm, and reads as reps.
-    sql`${value}`,
-  );
-  return sql`(CASE WHEN ${style} = ${NON_REP_STYLE} THEN 0 ELSE ${byType} END)`;
+  // SQLite's ROUND rounds half away from zero for positive numbers, exactly like Math.round, and
+  // the two-argument MAX is the scalar form, so a one-second hold still lands on 1 rather than 0.
+  // The `* 1.0` is what forces float division — the divisor arrives as a bound parameter, so a
+  // `3.0` literal cannot be spliced in.
+  //
+  // `reps`, and a row whose type predates the column, both read as the raw value.
+  return sql`(CASE
+    WHEN ${style} = ${NON_REP_STYLE} THEN 0
+    WHEN ${type} = 'time' THEN MAX(1, CAST(ROUND(${value} * 1.0 / ${SECONDS_PER_REP_EQUIVALENT}) AS INTEGER))
+    ELSE ${value}
+  END)`;
 }

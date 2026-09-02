@@ -277,9 +277,8 @@ const VICTORY_FLOORS: readonly number[] = [3, 5, 8, 12, 20];
  */
 
 /**
- * The road's floors, in leagues. Corrected 2026-09-02 against the first real total (measured: one
- * hour on foot, 4.58 km, test-gpx/bati-2026-09-01T15-47-17.gpx). An outing on foot is four to
- * five leagues, not one. A ride covers two to four times that distance in the same window
+ * The road's floors, in leagues. Corrected 2026-09-02 against the first real total: one hour on
+ * foot, 4.58 km, recorded 2026-09-01. An outing on foot is four to five leagues, not one. A ride covers two to four times that distance in the same window
  * (inferred from the old speed ratios, not from a recorded trace). The first floor stays at one
  * league so the very first walk levels the road; the rest read as roughly 3, 9, 20 and 44 walks
  * on foot, or a quarter of that on a mount.

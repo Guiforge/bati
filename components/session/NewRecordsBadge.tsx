@@ -10,7 +10,10 @@ import Animated, {
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Award, Clock, Footprints, Star, TrendingUp } from "@/components/icons";
+import { formatDistance } from "@/constants/distanceFormat";
+import { formatDuration } from "@/db/estimate";
 import type { NewRecordResult } from "@/db/personalRecords";
+import type { DistanceUnit } from "@/db/preferences";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -55,11 +58,33 @@ function RecordLabel({ record, language }: { record: NewRecordResult; language: 
   }
 }
 
+/**
+ * The figure beside each record, in the unit the rest of the app already shows it in — never a
+ * bare number, which for `longest_outing` said the same 603 whether the hero reads metres or
+ * feet, and for `longest_session` printed raw seconds (283 for 4 min 43 s).
+ */
+function formatRecordValue(record: NewRecordResult, unit: DistanceUnit): string {
+  switch (record.recordType) {
+    // Unchanged: this is how a hold's target already reads everywhere else (`formatTarget` in
+    // db/targets.ts), so it stays raw seconds with an "s" rather than switching to
+    // `formatDuration`'s "4 min 43s" shape.
+    case "exercise_max_time":
+      return `${record.newValue}s`;
+    case "longest_session":
+      return formatDuration(record.newValue);
+    case "longest_outing":
+      return formatDistance(record.newValue, unit);
+    default:
+      return `${record.newValue}`;
+  }
+}
+
 const AnimatedView = Animated.View;
 
 export function NewRecordsBadge({ records }: Props) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
 
@@ -114,9 +139,7 @@ export function NewRecordsBadge({ records }: Props) {
                   <RecordLabel record={record} language={language} />
                 </Text>
                 <Text fontWeight="700" fontSize={14} color="$primaryText">
-                  {record.recordType === "exercise_max_time"
-                    ? `${record.newValue}s`
-                    : record.newValue}
+                  {formatRecordValue(record, distanceUnit)}
                 </Text>
               </XStack>
             ))}

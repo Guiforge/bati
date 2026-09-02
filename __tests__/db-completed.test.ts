@@ -74,4 +74,25 @@ describe("db/completed", () => {
     const completed = require("../db/completed") as typeof import("../db/completed");
     expect(await completed.getCompletedSessionById(999999)).toBeNull();
   });
+
+  test("the list carries the ground an outing covered, and null for a workout", async () => {
+    const { listCompletedSessions } =
+      require("../db/completed") as typeof import("../db/completed");
+    t.sqlite.exec("DELETE FROM completed_exercises");
+    t.sqlite.exec("DELETE FROM completed_sessions");
+    const now = Math.floor(Date.now() / 1000);
+    t.sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, leaguesM) VALUES ('medium', 10, ?, ?)",
+      )
+      .run(now, 4580);
+    t.sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, ?)",
+      )
+      .run(now - 60);
+
+    const rows = await listCompletedSessions();
+    expect(new Set(rows.map((r) => r.leaguesM))).toEqual(new Set([4580, null]));
+  });
 });

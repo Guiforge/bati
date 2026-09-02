@@ -7,6 +7,7 @@ import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { Calendar, Star, Trophy } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
 import type { DifficultyCode } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
@@ -26,6 +27,7 @@ export interface JournalEntry {
   cover?: ImageSourcePropType | null;
   performedAt: Date;
   durationSeconds: number | null;
+  leaguesM: number | null;
   userLevel: DifficultyCode;
   hasNewRecords?: boolean;
 }
@@ -50,6 +52,7 @@ const SESSION_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
 export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: SessionCardProps) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const unit = useSettingsStore((s) => s.distanceUnit);
   const onPress = onPressEntry ? () => onPressEntry(entry.id) : undefined;
 
   const dateLabel = getDateTimeFormat(language, SESSION_DATE_OPTIONS).format(
@@ -57,6 +60,11 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
   );
 
   const durationLabel = entry.durationSeconds ? formatDuration(entry.durationSeconds) : "--";
+  // An outing's row leads with the ground, which is the one number a walk is remembered by.
+  const metaLabel =
+    entry.leaguesM !== null && entry.leaguesM > 0
+      ? `${formatDistance(entry.leaguesM, unit)} · ${durationLabel}`
+      : durationLabel;
 
   return (
     <Card flat testID="journal-session-card" onPress={onPress}>
@@ -120,7 +128,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
           </XStack>
 
           <XStack gap="$2" mt="$1" flexWrap="wrap">
-            <Tag label={durationLabel} tone="secondary" />
+            <Tag label={metaLabel} tone="secondary" />
             <Tag label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
           </XStack>
         </YStack>

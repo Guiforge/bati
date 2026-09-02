@@ -248,6 +248,8 @@ export async function updateSessionFeedback(
 // a trace. The screen that does re-reads the session by id.
 export type CompletedSessionListItem = Omit<CompletedSession, "exercises" | "uuid"> & {
   hasNewRecords: boolean;
+  /** Ground covered, in metres, on an outing; null on a workout. */
+  leaguesM: number | null;
 };
 
 export async function listCompletedSessions(limit = 20): Promise<CompletedSessionListItem[]> {
@@ -262,6 +264,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
       feedback: completedQuest.feedback,
       performedAt: completedQuest.performedAt,
       hasNewRecords: completedQuest.hasNewRecords,
+      leaguesM: completedQuest.leaguesM,
     })
     .from(completedQuest)
     .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
@@ -277,6 +280,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
     feedback: (r.feedback as FeedbackCode | null) ?? null,
     performedAt: r.performedAt,
     hasNewRecords: r.hasNewRecords === 1,
+    leaguesM: r.leaguesM ?? null,
   }));
 }
 

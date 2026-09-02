@@ -136,6 +136,7 @@ export default function JournalScreen() {
           cover: getQuestThumb(quest?.imagePath),
           performedAt: s.performedAt,
           durationSeconds: s.durationSeconds,
+          leaguesM: s.leaguesM,
           userLevel: s.userLevel,
           hasNewRecords: s.hasNewRecords,
         };

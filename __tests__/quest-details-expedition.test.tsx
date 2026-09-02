@@ -162,10 +162,25 @@ async function mountQuest(quest: QuestFixture) {
 
 describe("an expedition on the quest screen", () => {
   test("its target reads as a duration, not as a three-digit second count", async () => {
-    const { getByText, queryByText } = await mountQuest(expeditionQuest());
+    const { getAllByText, queryByText } = await mountQuest(expeditionQuest());
 
-    expect(getByText("15 min")).toBeTruthy();
+    // Twice now, and both have to read the same way: the chip on the movement's row, and the
+    // stepper in the config panel, which opens by itself on a quest this shape. The stepper is
+    // where "900s" came back, because seconds are the unit it *moves* in.
+    expect(getAllByText("15 min").length).toBeGreaterThanOrEqual(2);
     expect(queryByText("900s")).toBeNull();
+  });
+
+  test("the panel that sets its length is already open", async () => {
+    const view = await mountQuest(expeditionQuest());
+
+    // One movement, one round: this panel holds a single control, and on an outing that control
+    // is the whole decision. Collapsed, setting a 45-minute run cost a scroll and two taps
+    // behind a Start button that was already on screen.
+    expect(view.getByText("Rounds")).toBeTruthy();
+    // The control is labelled by its unit, not by the movement: on a one-movement quest the
+    // screen has already named it twice above, and the name truncated in a 70 dp column.
+    expect(view.getByText("Duration")).toBeTruthy();
   });
 
   test("the ghost line speaks the same unit as the target above it", async () => {
@@ -184,13 +199,11 @@ describe("an expedition on the quest screen", () => {
   test("neither rest stepper is offered — one movement, one round", async () => {
     const view = await mountQuest(expeditionQuest());
 
-    await fireEvent.press(view.getByLabelText("Adjust this quest"));
-
     expect(view.queryByText("Rest")).toBeNull();
     expect(view.queryByText("Round rest")).toBeNull();
     // The controls that do something are untouched: rounds, and the outing's own length.
     expect(view.getByText("Rounds")).toBeTruthy();
-    expect(view.getByText("Warden's Walk")).toBeTruthy();
+    expect(view.getByText("Duration")).toBeTruthy();
   });
 });
 

@@ -131,6 +131,7 @@ the permissions test: the fix is always to write the string correctly, never to 
 | No participle agreed with the hero | `villagers.test.ts` | same |
 | Ambient lines cite no data | `villagers.test.ts` | same |
 | Contrastive negation | **nothing, and nothing ever will** | |
+| Every rule above, applied to the **seeded catalogue** | **nothing** | measured 2026-09-01: 29 of 65 movement descriptions say `vous`, and 13 rows carry an em dash. `locale-style.test.ts` reads `locales/*.json` and has never been able to open a database row, so the largest body of prose a hero reads is the one body nothing checks |
 | Sentence case | **nothing** | |
 | Dash *density* once the dash is gone | **nothing** | a page of nothing but short sentences reads as generated too |
 

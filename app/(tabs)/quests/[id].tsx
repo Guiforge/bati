@@ -37,6 +37,7 @@ import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
+import { isOutingSession } from "@/db/expeditions";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
@@ -429,6 +430,9 @@ export default function QuestDetails() {
   const estimate = derived?.estimate ?? null;
   const xpReward = derived?.xpReward ?? null;
 
+  // Every slot is an outing, so the screen is presenting a way out rather than a workout.
+  const isOuting = quest ? isOutingSession(quest) : false;
+
   const proceedToSession = async () => {
     // The isStarting guard is what stops a double-tap from starting two sessions while the
     // boss fight loads; it resets on the next focus (coming back from the session).
@@ -584,19 +588,29 @@ export default function QuestDetails() {
                 </Paragraph>
 
                 <XStack gap="$2" flexWrap="wrap" pt="$2">
-                  <Tag
-                    label={t("quests.rounds", {
-                      count: quest.rounds,
-                      defaultValue: `${quest.rounds} rounds`,
-                    })}
-                  />
-                  <Tag
-                    label={t("quests.exercises", {
-                      count: quest.exercises.length,
-                      defaultValue: `${quest.exercises.length} exercises`,
-                    })}
-                    tone="primary"
-                  />
+                  {/* A count of one is not information. "1 round" and "1 exercise" were the
+                      first two things an outing said about itself, and they said nothing: the
+                      screen lists its one movement right below. Same knowledge the rest chips
+                      below already act on (components/quests/questShape.ts), stated as counts
+                      rather than as rests, which is why it is spelled out here and not reused
+                      from there. */}
+                  {quest.rounds > 1 ? (
+                    <Tag
+                      label={t("quests.rounds", {
+                        count: quest.rounds,
+                        defaultValue: `${quest.rounds} rounds`,
+                      })}
+                    />
+                  ) : null}
+                  {quest.exercises.length > 1 ? (
+                    <Tag
+                      label={t("quests.exercises", {
+                        count: quest.exercises.length,
+                        defaultValue: `${quest.exercises.length} exercises`,
+                      })}
+                      tone="primary"
+                    />
+                  ) : null}
                   {/* One movement means every gap is a round boundary, so this rest is never
                       taken — components/quests/questShape.ts. */}
                   {restsBetweenExercises(quest) ? (
@@ -618,9 +632,11 @@ export default function QuestDetails() {
                   ) : null}
                   {xpReward != null ? (
                     <Tag
-                      label={t("quests.reward_xp_estimate", {
+                      // "Up to" is a ceiling, and an outing has none: it is paid for the ground
+                      // it covers with no target overhead it. See `setEffortSeconds` in db/xp.ts.
+                      label={t(isOuting ? "quests.reward_xp_open" : "quests.reward_xp_estimate", {
                         count: xpReward,
-                        defaultValue: `up to +${xpReward} XP`,
+                        defaultValue: `+${xpReward} XP`,
                       })}
                       tone="secondary"
                     />

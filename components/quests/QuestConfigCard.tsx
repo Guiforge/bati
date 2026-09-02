@@ -14,6 +14,7 @@ import {
   ROUNDS_RANGE,
   targetRangeFor,
 } from "@/db";
+import { formatDuration } from "@/db/estimate";
 import type { Quest } from "@/db/quests";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -33,8 +34,24 @@ type Props = {
 
 export function QuestConfigCard({ quest, config, language, onChange, onReset, onSwap }: Props) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  // Open on a quest that is one movement in one round, closed on everything else. On such a
+  // quest this panel holds a single control, the target, and on an outing that target is the
+  // whole decision the hero came here to make: how long they are going out for. Collapsed, it
+  // cost a scroll, a tap to expand and a tap to set, behind a "Start" button that was already
+  // on screen. `useState` initialiser, so a hero who folds it away keeps it folded.
+  const singleControl = !restsBetweenExercises(quest) && !restsBetweenRounds(quest);
+  const [open, setOpen] = useState(singleControl);
   const modified = hasQuestOverrides(config);
+
+  const unitWord = (type: "time" | "reps") =>
+    type === "time" ? t("quests.config_duration", "Duration") : t("quests.config_reps", "Reps");
+
+  const slotLabel = (qex: Quest["exercises"][number]) =>
+    singleControl
+      ? unitWord(qex.target.type)
+      : language === "fr"
+        ? qex.exercise.frName
+        : qex.exercise.enName;
 
   const setTarget = (questExerciseId: number, value: number) => {
     onChange({ ...config, targets: { ...config.targets, [questExerciseId]: value } });
@@ -113,17 +130,20 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
               <XStack key={qex.id} items="center" gap="$2">
                 <YStack flex={1}>
                   <Stepper
-                    label={language === "fr" ? qex.exercise.frName : qex.exercise.enName}
-                    hint={
-                      qex.target.type === "time"
-                        ? t("quests.config_seconds", "Seconds")
-                        : t("quests.config_reps", "Reps")
-                    }
+                    // The movement's name, unless it is the only one: on a one-movement quest
+                    // the whole screen is already about it, and repeating it here squeezes the
+                    // label column to 70 dp, where "Course du Messager" truncates. Then the
+                    // unit word is the label and there is no hint to add under it.
+                    label={slotLabel(qex)}
+                    {...(singleControl ? {} : { hint: unitWord(qex.target.type) })}
                     value={qex.target.value}
                     min={targetRangeFor(qex.target.type).min}
                     max={targetRangeFor(qex.target.type).max}
                     step={qex.target.type === "time" ? REST_STEP : 1}
-                    suffix={qex.target.type === "time" ? "s" : ""}
+                    // The panel opens by itself on a one-movement quest, so this control is now
+                    // the first thing an outing shows. It said "900s", which is the unit the
+                    // stepper moves in and not the one a walk is measured in.
+                    {...(qex.target.type === "time" ? { display: formatDuration } : {})}
                     onChange={(value) => setTarget(qex.id, value)}
                   />
                 </YStack>

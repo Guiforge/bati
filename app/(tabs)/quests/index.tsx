@@ -41,13 +41,13 @@ import {
 } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
+import { hasOutdoorMovement, isOutingQuest } from "@/db/expeditions";
 import { getFavouriteQuestIds, toggleFavouriteQuest } from "@/db/favourites";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
-import { NON_REP_STYLE } from "@/db/workUnits";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -109,7 +109,7 @@ type QuestMeta = {
   focusLabel: string;
   /** "≈ 12 min" — worn as a chip over the cover banner. */
   durationLabel: string;
-  /** "4 exercises" — one Text instead of bordered Chips. */
+  /** "4 exercises" — one Text instead of bordered Chips. Empty when there is only one. */
   metaLabel: string;
   /** "+45 XP" — the reward, in gold. */
   xpLabel: string;
@@ -133,14 +133,13 @@ function buildQuestMeta(
   favourite: boolean,
 ): QuestMeta {
   const equipment = new Set<EquipmentCode>();
-  let outside = false;
-
   for (const qex of q.exercises) {
     const ex = exercisesById[qex.exerciseId];
-    if (!ex) continue;
-    equipment.add(ex.equipment);
-    if (ex.style === NON_REP_STYLE) outside = true;
+    if (ex) equipment.add(ex.equipment);
   }
+  // The generous half of `db/expeditions.ts`: the chip asks for anything that happens out
+  // there, where Home's band asks for quests that are nothing else.
+  const outside = hasOutdoorMovement(q, exercisesById);
 
   // Same numbers as the detail screen: the saved level and structure overrides feed the
   // estimate. ponytail: target/swap overrides are not folded in — the detail's
@@ -159,6 +158,9 @@ function buildQuestMeta(
   // and the two it touches once say nothing — "back" matched 28 of 34 seed quests that way,
   // and the filter looked broken. The card's focus line and the filter read the same list.
   const focus = trainingFocus([q], exercisesById);
+  // Undefined when a slot points at a row that is not in the catalogue, which is the same
+  // hole `hasOutdoorMovement` steps around rather than guessing at.
+  const soleMovement = exercisesById[q.exercises[0]?.exerciseId ?? -1];
 
   return {
     quest: q,
@@ -174,18 +176,36 @@ function buildQuestMeta(
     description: language === "fr" ? q.frDescription : q.enDescription,
     // The archetype leads it — what kind of session this is, then what it works. Absent on
     // user-authored quests, which declare no archetype, so their line starts on the muscles.
-    focusLabel: [
-      focus.archetype ? t(`quests.archetype_${focus.archetype}`) : null,
-      ...focus.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
-    ]
-      .filter(Boolean)
-      .join(" · "),
+    // An outing's archetype is `metabolic`, which this line printed as "Cardio" - the one word
+    // drizzle/0041_the_three_ways_out.sql spends a paragraph refusing, because cardio is what
+    // leaves you breathless and an expedition is what leaves the walls. It carries no muscles
+    // either, so the whole line was that single wrong word. On an outing the line names the
+    // movement instead, which is what a one-movement quest actually trains.
+    focusLabel:
+      isOutingQuest(q, exercisesById) && soleMovement
+        ? localizedName(soleMovement, language)
+        : [
+            focus.archetype ? t(`quests.archetype_${focus.archetype}`) : null,
+            ...focus.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
+          ]
+            .filter(Boolean)
+            .join(" · "),
     durationLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
-    metaLabel: t("quests.exercises", {
-      count: q.exercises.length,
-      defaultValue: `${q.exercises.length} exercises`,
-    }),
-    xpLabel: t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
+    // Empty on a one-movement quest, the same silence the detail screen keeps: "1 exercice"
+    // under a card whose focus line has just named that one movement is a count doing no work.
+    // The `flex={1}` on its Text keeps the reward on the right when the string is empty.
+    metaLabel:
+      q.exercises.length > 1
+        ? t("quests.exercises", {
+            count: q.exercises.length,
+            defaultValue: `${q.exercises.length} exercises`,
+          })
+        : "",
+    // "Up to" is a claim about a maximum, and an outing has none: its XP follows the ground
+    // covered with no target overhead it. See the outing branch in `setEffortSeconds`.
+    xpLabel: isOutingQuest(q, exercisesById)
+      ? t("quests.reward_xp_open", { count: xp, defaultValue: `+${xp} XP` })
+      : t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
     heroLabel: isUserQuest(q) ? t("common.hero_badge") : null,
     // The archetype line above reads "Metabolic" on all three outings, which is true of their
     // shape and says nothing about where they happen. This is the word that does.

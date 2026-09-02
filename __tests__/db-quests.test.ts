@@ -99,7 +99,8 @@ describe("db/quests", () => {
     if (!third) throw new Error("Expected quest exercise #3");
     expect(third.exercise.enName).toBe("Plank");
     expect(third.target.type).toBe("time");
-    expect(third.target.value).toBe(29);
+    // 30 rather than 29: time targets are snapped to the stepper's five-second grid.
+    expect(third.target.value).toBe(30);
   });
 
   /**

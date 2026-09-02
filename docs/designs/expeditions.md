@@ -238,6 +238,73 @@ lives in their quest config, which is theirs and is not content.
 What this defers: the stopwatch half of D1 — leaving with no target at all. A quest always
 carries one, and the clamp below is exactly why the untargeted case is its own piece of work.
 
+### The door, landed 2026-09-01
+Three seeded quests made the outings *reachable*, and nobody reached them. Home's one
+suggestion comes from `useSmartAction`, whose two content rules follow the oath's exercise chain
+and the muscles the last thirty days went light on — and an expedition carries no muscles, on
+purpose (0041). So the surface that offers something every night could not offer these, by
+construction rather than by oversight. What was left was the "Outside" chip, last in a
+horizontally scrolling filter rail, in the third tab: four taps and a hunt to go running.
+
+`components/home/OutsideBand.tsx` is the door, under the stage and quieter than it: art and a
+name, no primary-blue button, because two commanding actions in one viewport is neither of them
+commanding. A tap opens the quest rather than starting the session, which is the stage's rule and
+the right one here — the duration is the thing the hero wants to set before walking out.
+
+The tile names the **movement**, not the quest. "Course du Messager" says which one is the run;
+"La Parole Doit Passer" makes you tap to find out.
+
+**Home holds the stage and one thing more, and the device is what said so.** The first build put
+the name under the art, a 122 dp tile in a 148 dp band, and on a 372x828 phone that pushed the
+oath card entirely under the fold, which sits at 685 dp. The oath is what `useSmartAction` calls
+the whole spine; burying it to surface a shortcut is a bad trade. Three numbers came back from
+measuring rather than arguing: the stage's cover went 196 to 156 and its action block 160 to 156
+(the block was reserving air the adventure variant never used), the village strip 64 to 52 (it
+is fixed chrome, so its height is subtracted from every Home ever drawn, and its two lines need
+38), and the tile's name moved **onto** the art behind a gradient, 122 down to 72. The oath is
+back above the fold with the band still there. Nothing was cut but empty space.
+
+On a 360x640 screen the band still only shows its title and the top of its tiles. So does
+everything else below the stage, on that screen, including the oath.
+
+`db/expeditions.ts` holds two predicates side by side rather than one, because the gallery and
+the band ask different questions of the same word. The chip is generous — anything that happens
+out there, a walk followed by push-ups in the yard included. The band is strict — every slot is
+an expedition, so a tap on a door out is a tap on going out and nothing else. That second case is
+reachable content, not a hypothetical: the editor's picker is `pickableExercises()`, which hides
+retired movements and nothing else, so a hero can put a walk in a quest next to anything.
+
+### What a design review of the door found, 2026-09-01
+Seven things, none of them the band itself, all of them the generic quest screen worn by a quest
+that is one movement long.
+
+- Home's adventure card said **"Step 4 of 4" and "3/4" on one line**, from `min(done + 1, total)`
+  and `done` of the same adventure. The sentence carries both numbers and says which is which, so
+  the ratio is gone.
+- **"1 round" and "1 exercise"** were the first two things an outing said about itself, on the
+  detail screen and again on its gallery card. A count of one is not information.
+- **The gallery's focus line read "Cardio"** on an expedition, the one word 0041 spends a
+  paragraph refusing. On an outing it now names the movement, which is what a one-movement quest
+  trains.
+- **The target was 781 s, printed "13 min 1s"**, and the stepper that sets it moves in fives, so
+  the prescribed value was one the hero could not have dialled and could not return to.
+  `generateTarget` snaps time targets to that grid.
+- **The panel that sets the length was collapsed** and below the fold: a 45-minute run cost a
+  scroll and two taps behind a Start button already on screen. It opens by itself when the quest
+  is one movement in one round, and the target then reads "13 min" rather than "900s", labelled
+  by its unit rather than by a movement name the screen has already given twice.
+- **The quest and the movement gave the same pace advice twice**, in two phrasings, a hundred
+  pixels apart. `drizzle/0045_the_story_and_the_instruction.sql` leaves the instruction to the
+  movement and the story to the quest.
+- The band's third tile was **cut mid-word inside the page margin**. The row now bleeds to the
+  screen edge, so the cut reads as "there is more".
+
+Two things the review claimed and then had to withdraw, both worth knowing. `StatsOverview` is
+not unreachable, it is simply last in a scroll; nobody had scrolled. And the tile names were not
+failing contrast at 4.28:1 - that reading was the antialiased edges of the glyphs. Measured in
+the padding gutter, where only the scrim shows, the same tiles are at 12.98:1. **Measure a scrim
+where the text is not.**
+
 ### The clamp, still owed by the stopwatch
 An ad-hoc, untargeted session: one round, one exercise, no target.
 

@@ -10,7 +10,10 @@ import { getVillageTier, TIER_NAMES, type VillageTier } from "@/db/village";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
-const BAND_HEIGHT = 64;
+// 64 until 2026-09-01. This strip is fixed chrome, so its height is subtracted from every screen
+// Home ever shows, and 12 dp of it was pure margin: the two lines inside need 38. A wider crop of
+// the village art is still the village.
+const BAND_HEIGHT = 52;
 
 /**
  * The bottom chrome of the HUD frame: the world the training built, pinned
@@ -51,7 +54,9 @@ export function VillageTeaser() {
   return (
     <XStack
       height={BAND_HEIGHT + 1}
-      bg="$surface"
+      // $surface2 rather than the header's $surface: one step up (#151A2E against #101322),
+      // enough to tell the two strips apart without breaking the frame they make together.
+      bg="$surface2"
       borderTopWidth={1}
       borderColor="$borderStrong"
       items="center"

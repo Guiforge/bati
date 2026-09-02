@@ -140,6 +140,13 @@ export function generateTarget(
   const scaledMin = Math.max(1, Math.round(min * m));
   const scaledMax = Math.max(1, Math.round(max * m));
 
+  // Time targets land on the same five-second grid the stepper moves in. Without it the
+  // generator produced values the hero could not have chosen and could not return to - a
+  // 13-minute outing was prescribed as 781 s, shown as "13 min 1s", and one tap on the stepper
+  // moved it to 786. Reps are already whole and are left alone.
+  const grid = (value: number) =>
+    base.type === "time" ? Math.max(1, Math.round(value / 5) * 5) : value;
+
   if (base.type === "time" && personalBestSeconds != null && personalBestSeconds > 0) {
     // Clamped to the quest's own window on both ends. Down, because `resultValue` records what
     // the hero *did*, which is usually the target they were given rather than their ceiling —
@@ -147,9 +154,9 @@ export function generateTarget(
     // one heroic hold should not turn a warm quest into a ladder nobody finishes.
     const fromRecord = Math.round(personalBestSeconds * HOLD_FRACTION_OF_MAX);
     const value = Math.min(scaledMax, Math.max(scaledMin, fromRecord));
-    return { type: base.type, value };
+    return { type: base.type, value: grid(value) };
   }
 
   const value = Math.max(1, Math.round((scaledMin + scaledMax) / 2));
-  return { type: base.type, value };
+  return { type: base.type, value: grid(value) };
 }

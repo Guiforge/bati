@@ -125,6 +125,27 @@ export type ComputeSessionXpInput = {
  */
 function setEffortSeconds({ exercise, target, result }: XpSet): number {
   const done = Math.max(0, estimateExerciseSeconds(exercise, result));
+
+  // An outing is paid for what it did, with no reference to what it was asked for.
+  //
+  // Its clock has a witness the others do not: the caller passes the reducer's *moving* seconds
+  // as the effort ceiling, so a phone on a windowsill accrues none of them and a bus ride
+  // accrues none of them. The set-level brake exists to stop a result the hero typed, or a
+  // phone left face-up, from outrunning the prescription; neither is possible here.
+  //
+  // It went in two steps and the first was half a fix. Clamping outright made every walk past
+  // nineteen minutes worth exactly the same as the nineteenth, so three short walks beat one
+  // long one at the one thing the feature is named after. The decaying tail that replaced it
+  // still charged 75% on the surplus, which meant a hero who went out for forty minutes against
+  // a suggested thirteen kept 55% of their own time — a penalty for not having picked a number
+  // they had no reason to pick. The target on an outing is a suggestion on the session screen
+  // (`ActiveExerciseView` shows it no countdown at all); this is the same sentence in the
+  // ledger. Going out with no objective is now a thing the app can be told by doing it.
+  //
+  // The brake is still there, one storey up where it protects instead of punishing: moving
+  // seconds bound the session, `MAX_SESSION_XP` bounds the day.
+  if (exercise.style === NON_REP_STYLE) return done;
+
   const allowed = Math.max(0, estimateExerciseSeconds(exercise, target)) * OVERSHOOT_ALLOWANCE;
 
   // A hold's result *is* a clock: `ActiveExerciseView` records the elapsed seconds and overtime
@@ -132,19 +153,9 @@ function setEffortSeconds({ exercise, target, result }: XpSet): number {
   // lying. Reps are typed by a hero who is present, so their overshoot earns the decaying tail;
   // a hold's does not. The `longest_hold` record still keeps the true value — XP pays for the
   // work prescribed, the record celebrates the feat.
-  //
-  // An outing is the exception, and it is the reason this branch reads the style at all. Its
-  // clock has a witness: the caller passes the reducer's *moving* seconds as the effort ceiling,
-  // and a phone that sits on a windowsill accrues none of them. So the argument for clamping a
-  // hold does not hold here, and clamping anyway is what made every walk past nineteen minutes
-  // worth exactly the same as the nineteenth — three short walks beating one long one at the one
-  // thing the feature is named after.
-  const clocked = result.type === "time" && exercise.style !== NON_REP_STYLE;
-  const credited = clocked
+  return result.type === "time"
     ? Math.min(done, allowed)
     : Math.min(done, allowed) + Math.max(0, done - allowed) * OVERSHOOT_DECAY;
-
-  return credited;
 }
 
 /** What that set is worth, once the movement it trained is taken into account. */
@@ -203,7 +214,17 @@ export function estimateQuestXp(quest: EstimateQuestXpInput, userLevel: Difficul
       setWeightedSeconds({
         exercise: qex.exercise,
         target: qex.target,
-        result: { type: qex.target.type, value: qex.target.value * OVERSHOOT_ALLOWANCE },
+        // The allowance is what "up to" means: a hero who beats the target by a quarter is paid
+        // in full, and that is the ceiling this number quotes. An outing has no such ceiling
+        // any more, so quoting one would be quoting a maximum that does not exist. Its estimate
+        // is what the suggested duration is worth, and walking further is worth more.
+        result: {
+          type: qex.target.type,
+          value:
+            qex.exercise.style === NON_REP_STYLE
+              ? qex.target.value
+              : qex.target.value * OVERSHOOT_ALLOWANCE,
+        },
       }),
     0,
   );

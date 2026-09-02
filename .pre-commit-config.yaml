@@ -40,6 +40,16 @@ repos:
         pass_filenames: false
         files: \.(ts|tsx)$
 
+      # Biome for the JavaScript, ktlint for the Kotlin, and the same bargain: the hook rewrites,
+      # CI only reports. Everything else in this repo reads TypeScript, so until this existed the
+      # two `.kt` files were first compiled when an APK was built, which is to say on a tag.
+      - id: ktlint
+        name: ktlint --format
+        entry: ./scripts/ktlint.sh --format
+        language: system
+        pass_filenames: false
+        files: \.kt$
+
       - id: jest
         name: npm test
         entry: npm test

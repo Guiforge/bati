@@ -89,7 +89,7 @@ export default function FirstSessionStep() {
     } catch (error) {
       // The single highest-value tap of the funnel must not fail into silence.
       reportError("onboarding.firstSession", error);
-      showError(t("onboarding.save_error", "Could not save — try again"));
+      showError(t("onboarding.save_error", "Could not save. Try again"));
       return;
     }
     router.replace("/session" as never);

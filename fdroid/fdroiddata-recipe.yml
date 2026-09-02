@@ -67,9 +67,27 @@ MaintainerNotes: |-
   the bundled prebuilt local-maven-repo AARs and the expo-dev-* dev tooling instead
   of sed-editing package.json, which would break `npm ci`. scanignore lists only the
   scanner's false positives (legitimate local `maven { url }` lines); everything else
-  under node_modules is scandelete'd. No Firebase and no network code in the app;
-  since 1.2.4 the INTERNET permission itself is stripped via blockedPermissions,
-  so the manifest carries no network permissions at all.
+  under node_modules is scandelete'd. No Firebase, no Play Services, no install
+  referrer. INTERNET was stripped via blockedPermissions from 1.2.4 until the
+  expeditions release, which added outdoor sessions: MapLibre fetches vector
+  map tiles natively from tiles.openfreemap.org (OpenStreetMap data served by
+  OpenFreeMap), and that is the app's only network destination. The tiles
+  requested cover the area of the outing, so that request discloses an
+  approximate location, plus IP address and time, to the tile host; the
+  privacy policy and the store listing say so in those words. The map is opt-in: a preference, off by default, picks
+  the map style (constants/mapStyle.ts), and the default style has no sources
+  and no glyphs URL, so a fresh install makes no network request until the
+  user switches the map on in Settings; with it off the recap draws the GPS
+  trace on a plain background. No network code of our own: a Biome GritQL plugin
+  (.biome/plugins/noJsNetwork.grit) rejects fetch, XMLHttpRequest, WebSocket,
+  EventSource and sendBeacon anywhere in the JS, and the build fails on one.
+  Location comes from modules/bati-location, a local Expo module on Android's
+  LocationManager; nothing is uploaded. ACCESS_NETWORK_STATE ships with the same
+  release: MapLibre's connectivity receiver calls getActiveNetworkInfo() on mount
+  and the process dies without it. ACCESS_WIFI_STATE stays blocked, since a
+  network name is a location by another route.
+  fdroid/expected-permissions.txt is the full list, and release.yml diffs it
+  against aapt2 on the built APK.
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags

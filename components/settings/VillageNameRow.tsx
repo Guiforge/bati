@@ -23,7 +23,7 @@ export function VillageNameRow() {
     if (next.length < VILLAGE_NAME_MIN_LENGTH || next === villageName) return;
     setVillageName(next).catch((error) => {
       reportError("settings.villageName", error);
-      showError(t("onboarding.save_error", "Could not save — try again"));
+      showError(t("onboarding.save_error", "Could not save. Try again"));
     });
   };
 

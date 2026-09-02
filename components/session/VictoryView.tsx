@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Share, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
@@ -14,6 +14,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
+import { cameoTopEdge } from "@/components/chorus/cameoAnchor";
 import { recordCue } from "@/components/chorus/recordCue";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
@@ -27,6 +28,7 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
+import { formatDuration } from "@/db/estimate";
 import type { FeedbackCode } from "@/db/schema";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -35,12 +37,35 @@ import { formatTime } from "@/hooks/useSessionTimer";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useChorusStore } from "@/stores/chorus";
-import { useSessionStore } from "@/stores/session";
+import { isExpedition } from "@/stores/expedition";
+import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { ExpeditionSummary } from "./ExpeditionSummary";
 import { ProgressionChart } from "./ProgressionChart";
 import { SessionRewards } from "./SessionRewards";
 
 type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
+
+/**
+ * Under this, the session is asked about rather than saved.
+ *
+ * A time-based set records `Math.max(1, elapsedSeconds)` and ends whenever the hero taps done,
+ * so starting an expedition and stopping after five seconds writes a real `completed_sessions`
+ * row — one that counts toward the streak and toward `weekly_sessions`, the eight-week oath.
+ * The hole is not new (a strength quest can be saved after one rep and a run of skips), but an
+ * expedition makes it a single accidental tap: go out, change your mind, and the week is
+ * credited.
+ *
+ * This does not try to police intent. It is an offline single-player app; a hero determined to
+ * cheat their own oath will, and nothing here should pretend otherwise. What it catches is the
+ * accident, and it catches it the way a sports watch does — by asking, because the hero is the
+ * only one who knows whether those ninety seconds were the whole outing or a false start.
+ *
+ * Deliberately about the clock and nothing else. A rule that reasoned about reps would need one
+ * definition per style, and two definitions of "did this count" is the drift this codebase
+ * already spends a lot of comments avoiding.
+ */
+const TRIVIAL_SESSION_SECONDS = 120;
 
 /**
  * The hero's own gauge, filling with what this session earned — the one number that makes
@@ -109,28 +134,34 @@ function HeroLevelBar({
 export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
   const { success, selection } = useHaptics();
   const { showError } = useToast();
+  // Whether the villager cameo (app/_layout.tsx, VillagerCameo) is on screen right now: it draws
+  // over the bottom of every screen it appears on, victory included, and this one's summary must
+  // never be permanently stuck behind it.
+  const cameoActive = useChorusStore((s) => s.current !== null);
   const {
     quest,
     startTime,
-    totalPausedTime,
     saveSession,
     quitSession,
     adventureRunStepId,
     bossFight,
     bossStartHp,
     felledByFinalBlow,
+    sessionUuid,
   } = useSessionStore();
   const [bossExpanded, setBossExpanded] = useState(false);
   const cue = useChorusStore((s) => s.cue);
 
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saveError, setSaveError] = useState(false);
+  /** Null until a short session is decided; the auto-save waits on it. */
+  const [keepShort, setKeepShort] = useState<boolean | null>(null);
   const [feedback, setFeedback] = useState<FeedbackCode | null>(null);
   const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
@@ -147,10 +178,12 @@ export function VictoryView() {
   /** The monster this session felled, when it did — what the hero card shows instead of the quest. */
   const felledBoss = isBossDefeat ? bossFight : null;
 
-  const durationSeconds = useMemo(() => {
-    if (!startTime) return 0;
-    return Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
-  }, [startTime, totalPausedTime]);
+  // What the journal is about to record, not the raw clock. They are different numbers for an
+  // outing — `sessionClock` clamps a walk to its moving time plus twenty minutes of red lights —
+  // and this screen showed 52 min for the session the next screen filed as 32.
+  // Read once, when the screen opens: this is the session's final duration, and a value that
+  // recomputed per render would tick upward under the hero while they read it.
+  const [durationSeconds] = useState(recordedDurationSeconds);
 
   // Save once on mount, then reveal the real results. No preview, no two-tap flow. The retry below
   // is safe: `ensureSessionRow` makes `saveSession` idempotent.
@@ -166,11 +199,13 @@ export function VictoryView() {
     }
   }, [saveSession, success, showError, t]);
 
+  const tooShort = durationSeconds < TRIVIAL_SESSION_SECONDS && keepShort !== true;
+
   useEffect(() => {
-    if (savedRef.current) return;
+    if (savedRef.current || tooShort) return;
     savedRef.current = true;
     runSave().catch((e) => reportError("session.save", e));
-  }, [runSave]);
+  }, [runSave, tooShort]);
 
   // The feeling can be tapped while the save is still in flight, but persisting it needs a
   // session id that only exists once `result` lands. Writing it from the tap handler meant the
@@ -184,6 +219,28 @@ export function VictoryView() {
     if (!result) return;
     if (isBossDefeat) {
       cue("boss_defeated");
+      return;
+    }
+
+    /**
+     * The road, before the workshop's records.
+     *
+     * Three signals the session already carries, ordered by rarity. A first outing and the High
+     * Road's first level land together, because `ROAD_FLOORS` starts at one league, so the rarer
+     * of the two speaks. The Watcher owns all three: he has the tower and the road already, and
+     * before this the village encashed every league without a word about any of them.
+     */
+    const outing = result.newRecords.find((r) => r.recordType === "longest_outing");
+    if (outing && outing.previousValue == null) {
+      cue("first_outing");
+      return;
+    }
+    if (result.villageGrowth.some((g) => g.code === "high_road")) {
+      cue("high_road");
+      return;
+    }
+    if (outing) {
+      cue("longest_outing");
       return;
     }
 
@@ -284,7 +341,14 @@ export function VictoryView() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: insets.bottom + 96,
+          // The sticky action row's own band, or — while a cameo is drawn over it — the taller
+          // band its top edge marks (cameoAnchor.ts), so scrolling to the end always clears the
+          // figure instead of leaving the last of the summary peeking out from behind it. Only
+          // reserved while a cameo is actually up: an ordinary victory must not carry a dead
+          // strip of padding for a figure that never appears.
+          paddingBottom: cameoActive
+            ? height - cameoTopEdge(width, height, insets.bottom)
+            : insets.bottom + 96,
           alignItems: "center",
           gap: 20,
         }}
@@ -375,8 +439,16 @@ export function VictoryView() {
           />
         )}
 
+        {/* What the walk was worth. Held until the save lands for the same reason the rewards
+            are: the leagues it reports are the ones `saveSession` has just credited. Rendered
+            before the stat row (rather than at the bottom, with the rewards) so it lands above
+            the cameo's band instead of underneath it — see cameoAnchor.ts. */}
+        {!!result && isExpedition(quest) && (
+          <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
+        )}
+
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
-        <XStack width="100%" maxW={520} gap="$3">
+        <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
           <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
             <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
               {t("session.total_time")}
@@ -471,8 +543,38 @@ export function VictoryView() {
           </XStack>
         </Card>
 
+        {tooShort ? (
+          <YStack width="100%" maxW={520} items="center" gap="$3" py="$4">
+            <Text color="$text" fontSize={18} fontWeight="700">
+              {t("session.summary_too_short_title")}
+            </Text>
+            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+              {t("session.summary_too_short_body", { duration: formatDuration(durationSeconds) })}
+            </Text>
+            <AppButton onPress={() => setKeepShort(true)}>
+              <Text color="$text" fontSize={16} fontWeight="700">
+                {t("session.summary_too_short_keep")}
+              </Text>
+            </AppButton>
+            <AppButton
+              backgroundColor="$surface2"
+              onPress={() => {
+                // Discard is the existing quit path: nothing was written, so there is nothing
+                // to undo, and the session state has to be cleared either way. Home rather than
+                // back, because back from here is the session that just ended.
+                quitSession();
+                router.replace("/");
+              }}
+            >
+              <Text color="$text" fontSize={16} fontWeight="700">
+                {t("session.summary_too_short_discard")}
+              </Text>
+            </AppButton>
+          </YStack>
+        ) : null}
+
         {/* Saving / error / rewards */}
-        {!result && !saveError && (
+        {!result && !saveError && !tooShort && (
           <YStack items="center" gap="$3" py="$6">
             <ActivityIndicator />
             <Text color="$textSecondary" fontSize={14}>

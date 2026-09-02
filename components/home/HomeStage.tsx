@@ -3,16 +3,23 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Button, H3, Text, XStack, YStack } from "tamagui";
+import { Button, H3, Text, YStack } from "tamagui";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
 import { ADVENTURE_ASSETS, getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
 import { type SmartActionConfig, useSmartAction } from "./useSmartAction";
 
-const COVER_HEIGHT = 196;
+// 196 until 2026-09-01, and 40 dp of that was costing the screen its second door: on a 360x800
+// phone the outside band's tiles were cut by the village strip, and on a 360x640 one the whole
+// band sat under the fold. A scene is still a scene at 156 - the crop is wider, the title still
+// has its ground - and nothing above the fold is a scene competing with the art below it.
+const COVER_HEIGHT = 156;
 // The block under the cover: two content rows, the button, padding. Fixed so the adventure and
-// quest scenes reserve the same space and the skeleton matches both.
-const ACTION_HEIGHT = 160;
+// quest scenes reserve the same space and the skeleton matches both. 156 is what the taller of
+// the two needs: 32 padding, a 19 meta row, a 36 two-line subtitle, a 50 button, two 8 gaps.
+// The adventure scene needs 123 of it and spreads the rest as air under its progress bar, which
+// is the price of one height for two variants and the reason this number is not smaller.
+const ACTION_HEIGHT = 156;
 const STAGE_HEIGHT = COVER_HEIGHT + ACTION_HEIGHT;
 
 /** The stage is always a scene. With nothing running, the on-ramp route's art stands in. */
@@ -99,14 +106,14 @@ export function HomeStage() {
 
         {progress ? (
           <YStack gap="$2">
-            <XStack justify="space-between" items="center">
-              <Text fontSize={14} fontWeight="700" color="$textSecondary">
-                {subtitle}
-              </Text>
-              <Text fontSize={14} fontWeight="700" color="$resourceGold">
-                {`${progress.done}/${progress.total}`}
-              </Text>
-            </XStack>
+            {/* One count, not two. The gold ratio here read `done/total` while the line beside
+                it read `min(done + 1, total)` of the same adventure, so a hero on the last of
+                four steps was told "Step 4 of 4" and "3/4" on the same line, 40 px apart. The
+                sentence already carries both numbers and says which is which; the bar shows how
+                much of it is behind them. */}
+            <Text fontSize={14} fontWeight="700" color="$textSecondary">
+              {subtitle}
+            </Text>
             <ProgressBar progress={stepProgress} height={6} color="$resourceGold" />
           </YStack>
         ) : (

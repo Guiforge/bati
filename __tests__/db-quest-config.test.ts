@@ -286,4 +286,18 @@ describe("db/questConfig", () => {
 
     await clearQuestConfig(seeded.id);
   });
+
+  test("a distance goal is read, clamped to its own range, and counts as an override", () => {
+    expect(parseQuestConfig('{"level":"medium","distanceM":5000}')?.distanceM).toBe(5000);
+    expect(parseQuestConfig('{"level":"medium","distanceM":100}')?.distanceM).toBe(500);
+    expect(parseQuestConfig('{"level":"medium","distanceM":"far"}')?.distanceM).toBeUndefined();
+    expect(hasQuestOverrides({ level: Difficulty.Medium, distanceM: 5000 })).toBe(true);
+  });
+
+  test("a distance goal survives a save and a read", async () => {
+    await saveQuestConfig(1, { level: Difficulty.Medium, distanceM: 4500 });
+    const { getQuestConfig } = require("../db/questConfig") as typeof import("../db/questConfig");
+    expect((await getQuestConfig(1))?.distanceM).toBe(4500);
+    await clearQuestConfig(1);
+  });
 });

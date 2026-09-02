@@ -39,7 +39,7 @@ type BossArenaProps = {
     weaknessBonus: boolean;
     resistancePenalty?: boolean;
   } | null;
-  /** Painted on the scrim over the art's base: the exercise while running, nothing while resting. */
+  /** Painted on the scrim over the art's base: the exercise being performed. */
   children?: ReactNode;
 };
 

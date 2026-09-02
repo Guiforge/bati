@@ -5,6 +5,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { PausedOverlay } from "@/components/session/PausedOverlay";
 import type { Quest } from "@/db/quests";
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
@@ -125,6 +126,46 @@ describe("PausedOverlay", () => {
     expect(paused.getByText(HOW_TO)).toBeTruthy();
   });
 
+  /**
+   * Pause stops the game, not the walk: cutting the GPS and starting it again loses the lock and
+   * breaks the segment on the way back, and the reducer already credits nothing while the hero
+   * stands still. So the screen says it, rather than "Game paused" over a distance that keeps
+   * growing.
+   */
+  it("says the outing is still being measured while the game is paused", async () => {
+    useExpeditionStore.setState({ sessionUuid: "0192-walk" });
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      warmupSequence: [],
+      warmupIndex: 0,
+    });
+
+    const paused = await mountPaused();
+
+    expect(paused.getByText("session.paused_expedition_note")).toBeTruthy();
+  });
+
+  it("and says nothing of the sort in a room", async () => {
+    useExpeditionStore.setState({ sessionUuid: null });
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      warmupSequence: [],
+      warmupIndex: 0,
+    });
+
+    const paused = await mountPaused();
+
+    expect(paused.queryByText("session.paused_expedition_note")).toBeNull();
+  });
+
   it("renders nothing but the buttons when the session has no quest to describe", async () => {
     useSessionStore.setState({
       quest: null,
@@ -190,7 +231,8 @@ describe("restarting a round", () => {
 
   function pauseWithTwoSets() {
     useSessionStore.setState({
-      quest: mockQuest,
+      // Three rounds, because the button only exists where there is a round to go back to.
+      quest: { ...mockQuest, rounds: 3 },
       status: "paused",
       prePauseStatus: "running",
       currentRoundIndex: 0,
@@ -202,6 +244,21 @@ describe("restarting a round", () => {
       bossFight: null,
     });
   }
+
+  /**
+   * A quest of one round has no round to go back to: "Redo the round" there restarts the session
+   * itself, under a word that promises less than it does. The three expeditions are one round of
+   * one movement, so this showed there first, but any one-round quest written in the editor had
+   * it too - which is why the guard is quest shape rather than an expedition check.
+   */
+  it("is not offered at all when the quest has only one round", async () => {
+    pauseWithTwoSets();
+    useSessionStore.setState({ quest: { ...mockQuest, rounds: 1 } });
+    const paused = await mountPaused();
+
+    expect(paused.queryByTestId("session-restart-round")).toBeNull();
+    expect(paused.getByTestId("session-resume")).toBeTruthy();
+  });
 
   it("keeps every logged set until the hero confirms", async () => {
     const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);

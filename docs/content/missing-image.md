@@ -2,7 +2,7 @@
 title: Missing Images — inventory
 type: content
 status: active
-updated: 2026-08-17
+updated: 2026-08-31
 related: [missing-covers.md, ../planning/roadmap.md]
 sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
@@ -49,7 +49,10 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
   `drizzle/0010_seed_bodyweight_exercises.sql` now have dedicated character-pose art,
   assigned by `drizzle/0011_seed_bodyweight_exercise_images.sql` and registered in
   `EXERCISE_ASSETS`. See §4 below.
-- **§0 RESOLVED (2026-07-21)**: all 20 village building icons now have real art — 14
+- **§9b RESOLVED (2026-09-02)**: the `high_road` has its three stages
+  (`assets/images/village/buildings/high_road{_rough,,_grand}.webp`) registered in
+  `BUILDING_ICON_ASSETS`; its floors were corrected the same day against a measured walk.
+- **§0 RESOLVED (2026-07-21)**: all 20 village building icons of the day now have real art — 14
   generated (`scripts/generate-village.py buildings/*`, `assets/images/village/buildings/`)
   and registered as `BUILDING_ICON_ASSETS` / `getBuildingIconAsset(code, relatedMuscle)` in
   `assetMap.ts`; the other 6 (the tier-2 muscle buildings) reuse the existing `sport_*`
@@ -171,7 +174,7 @@ npx tsc --noEmit && npx jest __tests__/assetMap.test.ts
 
 ---
 
-## 0. RESOLVED — village building icons (20/20 have art)
+## 0. RESOLVED — village building icons (20 of the 20 that existed then; see §9b)
 
 `VillageScene.tsx` still renders the building grid from the `emoji` field on
 `buildingDefinitions` today — that UI wiring is unchanged. What changed is that real art now
@@ -540,3 +543,129 @@ at bundle time, so a key pointing at a missing file breaks the build instead of 
 
 - [missing-covers.md](missing-covers.md) — the prior (resolved) cover gap + generation pipeline
 - [../planning/roadmap.md](../planning/roadmap.md) — what is still open, art included
+
+## 9. The expeditions (`0041`/`0042`) — 6 of 6 delivered
+
+All six are drawn, converted, thumbed and wired. Nothing in this section falls back to the
+placeholder any more, and unlike §8 there is nothing left open: eight generations produced six
+usable images, one of which was a re-roll.
+
+**Three movements** (`assets/images/exercises/`, keyed without the extension, so the migration's
+`.jpg` and a delivered `.webp` are the same asset):
+
+| key | movement | what it shows |
+|---|---|---|
+| `wardens_walk` | Warden's Walk | a lantern-carrying walker seen from behind on the track beside a village wall at dusk, brazier burning at the far turn, moor falling away on the other side |
+| `messengers_run` | Messenger's Run | a runner mid-stride on a rutted road at last light, satchel strapped across the back, the lights of the next village small on the plain ahead |
+| `outriders_ride` | Outrider's Ride | a cloaked scout riding a black horse at a canter along a downland track at golden hour, hooves throwing turf, leagues of empty country either side |
+
+**Three quest covers** (`assets/images/quests/`): `wardens_round` (an empty rampart walk above the
+village roofs), `word_must_travel` (a road running down out of the hills toward a village's
+lights), `long_reach` (a saddled horse waiting inside an open gate, the track beyond running out
+into unmapped country).
+
+### The judgement these needed, which was not the one §8 needed
+
+Every other illustration in the catalogue is a body doing a movement against a plain ground, and
+these are *places* — a road, a wall, a horizon. So all six were written in the covers register,
+including the three that live in `assets/images/exercises/`: shot type first, the emptiness stated
+positively at the end, edges falling into darkness.
+
+That meant `generate-exercises.py`'s shared `STYLE` could not be appended to them. It says, in
+order, that the background is an unbroken void holding "no scenery, no floor line and no horizon",
+and that there is one athlete in fitted training clothes with nothing else in frame — three
+sentences that describe the exact opposite of an expedition. The three scenes therefore sit in
+their own `EXPEDITIONS` list under an `EXPEDITION_STYLE` constant in the same file, and the
+`__main__` block concatenates the two lists. They stay **square at 1280 and in the exercise
+folder**, because they land in the same six render slots as every other movement, five of which
+are square, and `thumb-exercises.py` reads that directory.
+
+The figure in two of them is the size of a merlon. That is deliberate: an instructional diagram of
+a stride would be absurd, and what these have to say is *where*, not *how*.
+
+### The bicycle, which is the whole point
+
+`outriders_ride` is a bicycle in the real world and this world has no bicycles — it is why the
+catalogue renames movements at all. It came back right on the first draw: a real horse, four
+hooves, one hind hoof still driving off the turf, saddle and stirrups and reins, and nothing
+mechanical anywhere in the frame. `long_reach`, its quest cover, is a saddled horse at a gate, so
+the two reinforce each other.
+
+Two of §8's four rules were applied at once to get there, and the prompt is written to be read that
+way. A countable fact beats an adjective, so the animal is given four legs and four hooves rather
+than being called a horse and left there. And *add, never forbid*: the anatomy is described in full
+— arched neck, streaming mane, full tail, bit and bridle — so the model has nothing left to
+substitute. One blunt negative stayed anyway ("no wheel, no cart, no machine, no vehicle of any
+kind"), against this page's own rule 3, because this is the one failure worth discarding a paid
+draw over rather than shipping. It did not have to earn its keep.
+
+### One reject, caught by looking
+
+`word_must_travel` came back with two lines of hallucinated gibberish lettering on the roadside
+signpost — the failure §5 warns is only ever caught by a person opening the file. The fix was not a
+ban on text: the board is now described as a thing with a surface, "a plain slab of weathered grey
+timber worn perfectly smooth and bare, its lettering long since gone". Rule 3 again — give the
+empty space something to draw. Regenerated at the same seed, correct, and the signpost survived.
+
+**Reviewed.** All six opened and looked at. Corner-pixel check on all four corners of each: darkest
+`srgb(0,0,0)`, lightest `srgb(47,55,66)`, no white-background and no coloured-border failures. No
+baked-in captions, no UI chrome, no bicycle. Two notes for whoever reads these next:
+
+- `messengers_run` carries a thin painted black frame at all four edges (hence the `srgb(0,0,0)`
+  corners). It is *darker* than the `#0B0F19` the art fades into rather than lighter, so it reads as
+  vignette on a dark screen and was accepted rather than re-rolled.
+- `wardens_walk` has a second small figure at the wall's gate that the prompt did not ask for. At
+  that scale it is scenery, like the crows in `crows_ascent`.
+
+**Wired**: 3 keys in `EXERCISE_ASSETS`, 3 in `EXERCISE_THUMB_ASSETS`, 3 in `QUEST_ASSETS`. No
+migration needed — `0041` and `0042` already wrote the intended `imagePath` for all six rows.
+
+### What they cost, which is more than a pose does
+
+**1.41 MB of new bundle** for nine files (six renders plus three thumbnails), against roughly
+4.8 MiB of headroom under the release workflow's 55 MiB ceiling. **That is about 28 % of the
+remaining budget for six images**, and it is worth saying out loud before the next batch of scenes
+is commissioned.
+
+The quest covers are ordinary — 104, 117 and 120 KB, against a median of 104 KB and a previous
+maximum of 189 KB across the other 34. The three movement scenes are not: 287, 343 and 425 KB, the
+three largest files in `assets/images/exercises/` by some distance, where the median pose is 81 KB
+and the previous maximum was 218 KB. Nothing went wrong. A pose is a figure on a flat void, which
+is the case WebP compresses best; a landscape is high-frequency detail edge to edge at 1280², which
+is the case it compresses worst. Any future expedition scene should be budgeted at ~350 KB, not at
+the ~80 KB a movement costs.
+
+They were left at the pipeline's own `cwebp -q 85` rather than hand-tuned down. `provenance.json`
+records that quality for every file, and a tree that `to-webp.py` cannot reproduce is the one thing
+that ledger exists to prevent. If the ceiling ever gets close, lower the quality **in the script**,
+for every asset, and re-run.
+
+```bash
+python3 scripts/generate-exercises.py wardens_walk messengers_run outriders_ride
+python3 scripts/generate-covers.py wardens_round word_must_travel long_reach
+python3 scripts/to-webp.py && python3 scripts/thumb-exercises.py
+```
+
+One trap in that last line, worth knowing before the next batch: `thumb-exercises.py` rewrites
+**every** thumbnail in the folder, and a different libwebp version writes different bytes for an
+unchanged image. It produced 61 spurious modifications here. Check `git status` after running it and
+restore the ones you did not mean to touch.
+
+### 9b. RESOLVED — the High Road has art (2026-09-02)
+
+The High Road (`high_road`, "High Road" / "Grand Chemin", [db/village.ts](../../db/village.ts))
+was held without dedicated art pending a first real league total to tune its floors on. That
+measurement has arrived: one hour on foot is 4.58 km (test-gpx/bati-2026-09-01T15-47-17.gpx). The
+floors have been corrected (see the updated `ROAD_FLOORS` comment), and the three paintings now
+exist and are registered in `BUILDING_ICON_ASSETS` (2026-09-02).
+
+**The art:** three paintings in `assets/images/village/buildings/` — `high_road_rough` (the
+starting state: a rutted track leaving the gate), `high_road` (mid-game: a graded road with a
+waystone), and `high_road_grand` (end-game: a stone-laid road running to the horizon). Each is
+registered in the `BUILDING_ICON_ASSETS` map at `constants/assetMap.ts:401-404` as
+`{ rough, solid, grand }`. No migration is needed; village art is code-only (§0's wiring note).
+
+**The scale:** the subject is reach, not a structure, so the cost is ~350 KB per landscape rather
+than ~80 KB per building emblem — three of those is 1 MB against the release workflow's 55 MiB ceiling.
+
+Buildings with dedicated art: **21 of 21**.

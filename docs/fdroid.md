@@ -23,9 +23,14 @@ once in the F-Droid client and get update notifications from then on. That is th
 option, and it is strictly better than handing out APK links — the whole point is that an update
 arrives without anyone re-downloading anything by hand.
 
-## What it needs that we do not have yet
+## What it needed, and how each piece was found
 
-**A stable APK signing key.** This is the blocker, and it is the same one Play has
+**All three of these exist now**: the release keystore since 2026-07-31, the public repository and
+Pages since the site went up, and the index key since the first `fdroid init`. The section is kept
+because each paragraph explains *why* the thing is shaped the way it is, which is what you need
+when one of them has to be replaced.
+
+**A stable APK signing key.** This was the blocker, and it is the same one Play has
 (see `docs/planning/roadmap.md` §1). Android will only install an update over an existing app if both
 are signed with the same key. Today `android/app/build.gradle` signs release builds with Expo's
 **debug** keystore, which is fine for handing someone a one-off APK and useless for a repository
@@ -148,13 +153,9 @@ It lives in the Pages workflow rather than its own because **a GitHub Pages site
 deployment**: two workflows each uploading their own artefact do not merge, the second wipes the
 first. So the privacy policy and the F-Droid index are assembled together or not at all.
 
-**It has run, and the repository is live.** The index is served and signed, and currently offers:
-
-```
-com.guiforge.bati   versionName 1.0.2   versionCode 10002   112 MB
-```
-
-Read it back yourself rather than trusting this page — it is the only statement of what
+**It has run, and the repository is live.** The index is served and signed. The version it offers
+is whatever the last release published, so this page deliberately does not name one. Read it back
+yourself rather than trusting a number typed here, because the index is the only statement of what
 subscribers actually see:
 
 ```bash
@@ -305,6 +306,15 @@ git push -u origin com.guiforge.bati
 
 Then open the merge request against `fdroid/fdroiddata`. Review is done by people, so expect
 questions and a wait measured in weeks; publication follows 24–48 h after it is accepted.
+
+**A release that changes the permission list changes the listing.** F-Droid prints every
+permission on the app's page, so the expeditions release (`INTERNET`, fine and coarse location,
+`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `WAKE_LOCK` and `POST_NOTIFICATIONS`) is
+visible to anyone who reads that page before installing. [`fdroid/expected-permissions.txt`](../fdroid/expected-permissions.txt)
+is the list the release workflow diffs against `aapt2 dump permissions` on the real APK, so the
+listing can never quietly gain one. The `MaintainerNotes` in
+[`fdroid/fdroiddata-recipe.yml`](../fdroid/fdroiddata-recipe.yml) say what each is for, and the
+privacy policy names the one host the app talks to.
 
 **Merged on 2026-08-19, live at <https://f-droid.org/packages/com.guiforge.bati/>.** The README
 and site badges point there now; the `fdroid.link/#…` repository link stays beside them because of

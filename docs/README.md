@@ -26,7 +26,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [vision.md](product/vision.md) | Product philosophy, core loop |
 | [positioning.md](product/positioning.md) | Register, platform, positioning, principles |
 | [roadmap.md](planning/roadmap.md) | ⭐ North star, guardrails, and everything still unfinished |
-| [../.github/CONTRIBUTING.md](../.github/CONTRIBUTING.md) | How to contribute to the codebase |
+| [../CONTRIBUTING.md](../CONTRIBUTING.md) | How to contribute to the codebase |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute to **this docs wiki** |
 
 ---
@@ -39,6 +39,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [positioning.md](product/positioning.md) | Product doc (register / platform / principles) |
 | [user-guide.md](product/user-guide.md) | Non-technical product guide + navigation map |
 | [feature-overview.md](product/feature-overview.md) | Features overview |
+| [writing.md](product/writing.md) | How a sentence is built: punctuation, register, and which rules a test holds |
 
 ## 🗺️ Planning & Roadmap — [planning/](planning/README.md)
 
@@ -51,6 +52,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | Doc | What it covers |
 | --- | --- |
 | [quests.md](gameplay/quests.md) | Workout templates |
+| [expeditions.md](gameplay/expeditions.md) | Walking, running, riding: the goal, the leagues, the road |
 | [adventures.md](gameplay/adventures.md) | Multi-quest campaigns |
 | [boss-fights.md](gameplay/boss-fights.md) | Boss fight mechanics |
 | [session-flow.md](gameplay/session-flow.md) | Active workout flow + implementation spec |
@@ -76,6 +78,18 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [exercise-ownership.md](architecture/exercise-ownership.md) | Seed content vs hero content in one table: name partition, retirement, migration rule |
 | [wiki-protocol.md](meta/wiki-protocol.md) | How this docs folder is maintained as an LLM wiki |
 
+## 📐 Feature Designs — [designs/](designs/)
+
+One page per feature that needed deciding before it needed writing. They record the approaches
+refused as well as the one taken, which is the half a commit message never keeps.
+
+| Doc | What it covers |
+| --- | --- |
+| [expeditions.md](designs/expeditions.md) | Walking, running, riding: two currencies that cannot be exchanged, and the road they build |
+| [gps-without-google.md](designs/gps-without-google.md) | The local Expo module on Android's `LocationManager`, and why `INTERNET` came back |
+| [map-immersion.md](designs/map-immersion.md) | The map style, and the one tile host |
+| [error-breadcrumbs.md](designs/error-breadcrumbs.md) | `reportError` and what reaches a feedback mail |
+
 ## 🖼️ Content & Assets — [content/](content/README.md)
 
 | Doc | What it covers |
@@ -100,5 +114,8 @@ See [`screens/`](screens/README.md) — one spec per screen (home, quests, sessi
 | **Session** | Active workout |
 | **Boss** | Epic challenge with HP |
 | **Village** | Your fitness fingerprint (derived, read-only — see [progression.md](gameplay/progression.md)) |
+| **Expedition** | A session that leaves the walls: walking, running or riding, measured in ground covered |
+| **League** | 1000 m of ground covered on an expedition. Never a rep, never a work unit, never boss damage |
+| **High Road** | The village building leagues raise, and the only one no amount of lifting can level |
 | **Flame** | Consistency streak — days the weekly quota held, rest days included |
 | **XP** | Experience points |

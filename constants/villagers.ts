@@ -23,7 +23,7 @@
  * both react to a record and say completely different things about it, because a voice is not a
  * label on a shared sentence.
  *
- * ## The two writing rules
+ * ## The three writing rules
  *
  * **Ambient never cites data. An event speaks only about its data.** villageFlavour.ts found the
  * first half for the weather line — "nothing may name a number, a muscle or a streak — the moment
@@ -34,6 +34,27 @@
  *
  * `__tests__/villagers.test.ts` enforces what a machine can: no digits in an ambient pool, the
  * length caps, and `en`/`fr` the same length in every pool. The rest is on whoever writes a line.
+ *
+ * **A villager is a sentence shape before they are a subject.** The third rule arrived from a
+ * count rather than a reading: 80% of the 201 lines here were once exactly two sentences, the
+ * second commenting on the first, and all seven villagers sat between 75% and 84% of it, in both
+ * languages. Seven characters can be given seven vocabularies and still speak with one mouth,
+ * because what a reader hears as a voice is the rhythm, not the nouns. So each of them owns a
+ * shape, and the shape is what a new line has to match:
+ *
+ * | id | dominant shape |
+ * |---|---|
+ * | `smith` | blunt and short. Often one sentence, sometimes no verb at all. |
+ * | `sage` | one long breath carried by a subordinate clause, rather than two flat sentences. |
+ * | `herbalist` | an imperative, then the clinical reason for it. |
+ * | `minstrel` | performing: exclamations, questions, self-interruption, wildly uneven lengths. |
+ * | `farmer` | one run-on chained with `et` / `alors`, never stopping in the middle. |
+ * | `champion` | a verdict. Nominal, two or three words, no commentary. |
+ * | `watcher` | report register: the first clause has no verb. |
+ *
+ * Dominant, not exclusive: a shape applied to twelve consecutive lines is a new metronome. The
+ * test enforces the only part a machine can see, which is that no pool goes back to being mostly
+ * one shape, and it is a ratchet like the rest of them.
  *
  * ## The cast
  *
@@ -105,6 +126,9 @@ export const CUE_MOMENTS = [
   "personal_record_beat",
   "boss_defeated",
   "comeback",
+  "first_outing",
+  "high_road",
+  "longest_outing",
   "guide_home",
   "guide_quests",
   "guide_adventures",
@@ -168,6 +192,16 @@ export const MOMENT_CAST: Record<
   // documented reason people stop opening a fitness app, so a returning hero is greeted and the
   // absence is never mentioned. Not one line in this pool asks where you were.
   comeback: { speakers: ["sage", "minstrel"], priority: "event", pose: "talk" },
+  // The road is the watcher's: she owns the tower, and `boss_defeated` already has her reporting
+  // on it. Three signals the save emits, one villager, because a league is something the village
+  // sees from one place. All three fire on the victory screen of an outing, in this order of
+  // rarity: the first measured outing ever (`longest_outing` with nothing to compare it to,
+  // db/personalRecords.ts), the High Road rising a floor (`high_road` in `diffVillageGrowth`),
+  // and a longest-outing record with a previous mark. None of the lines quotes the distance:
+  // `NewRecordsBadge` and the village already show it, and the smith's rule holds here too.
+  first_outing: { speakers: ["watcher"], priority: "event", pose: "talk" },
+  high_road: { speakers: ["watcher"], priority: "event", pose: "cheer" },
+  longest_outing: { speakers: ["watcher"], priority: "event", pose: "cheer" },
   // One villager, one screen, one sentence, once ever. Who explains what follows who owns it.
   guide_home: { speakers: ["sage"], priority: "guide", pose: "talk" },
   guide_quests: { speakers: ["smith"], priority: "guide", pose: "talk" },

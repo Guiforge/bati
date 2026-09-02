@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { sessionArtHeight } from "@/components/session/sessionArt";
+import { REST_HEADER_HEIGHT, sessionArtHeight } from "@/components/session/sessionArt";
 import { bossVoice } from "@/constants/bosses";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionStore } from "@/stores/session";
@@ -19,6 +20,7 @@ export function BossTauntOverlay() {
   const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [taunt, setTaunt] = useState<string | null>(null);
 
   const isActive = status === "running" || status === "resting";
@@ -66,7 +68,18 @@ export function BossTauntOverlay() {
       transition={reducedMotion ? undefined : "bouncy"}
       enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
       exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
-      style={{ top: sessionArtHeight(width, height, "boss") - 8, right: 20, zIndex: 1000 }}
+      style={{
+        // Under whatever the screen puts above it, which is not the same thing on the two
+        // screens the boss speaks on: the arena while the set runs, the flame header once it is
+        // over, because a rest looks the same whether or not a boss is being fought. Neither is
+        // measured; both are fixed by construction in `sessionArt.ts`.
+        top:
+          status === "resting"
+            ? insets.top + REST_HEADER_HEIGHT - 8
+            : sessionArtHeight(width, height, "boss") - 8,
+        right: 20,
+        zIndex: 1000,
+      }}
     >
       {/* The arena already shows the boss's real art — the bubble only needs its voice, and its
           tail points back up at the portrait. */}

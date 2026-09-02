@@ -1,11 +1,16 @@
-import type { DifficultyCode } from "@/db/schema";
+import type { DifficultyCode, ExerciseStyle } from "@/db/schema";
 import { computeSessionXp, estimateQuestXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
 
-const MEDIUM: XpSet["exercise"] = { secondsPerRep: 3, difficulty: "medium" };
+const MEDIUM: XpSet["exercise"] = { secondsPerRep: 3, difficulty: "medium", style: "strength" };
 
-const movement = (difficulty: DifficultyCode, secondsPerRep = 3): XpSet["exercise"] => ({
+const movement = (
+  difficulty: DifficultyCode,
+  secondsPerRep = 3,
+  style: ExerciseStyle = "strength",
+): XpSet["exercise"] => ({
   secondsPerRep,
   difficulty,
+  style,
 });
 
 /** One rep-based set: what was asked, what was done. Default tempo, so 1 rep ≈ 1 XP. */
@@ -28,6 +33,71 @@ function hold(target: number, result = target, exercise = MEDIUM): XpSet {
 /** A plausible session: 15 sets of 12 reps, 540 seconds of effort. */
 const HONEST_SETS = Array.from({ length: 15 }, () => reps(12));
 const HONEST_ELAPSED = 30 * 60;
+
+const WALK = movement("medium", 3, "expedition");
+
+/**
+ * The target on an outing is a suggestion everywhere else - the session screen shows it no
+ * countdown at all - and since 2026-09-01 it is a suggestion in the ledger too. It went in two
+ * steps and the first was half a fix: clamping outright made every walk past the target worth
+ * exactly the same as the target, and the decaying tail that replaced it still charged 75% on
+ * the surplus, so a hero out for forty minutes against a suggested thirteen kept 55% of their
+ * own time. What keeps the claim honest is one storey up: moving seconds are what the caller
+ * passes as the ceiling, and a phone on a windowsill accrues none of them.
+ */
+describe("an outing is paid for what it did", () => {
+  test("twice the suggested time is worth twice as much", () => {
+    const ceiling = 40 * 60;
+    const long = computeSessionXp({
+      sets: [hold(780, ceiling, WALK)],
+      effortCeilingSeconds: ceiling,
+      userLevel: "medium",
+    });
+    const asked = computeSessionXp({
+      sets: [hold(780, 780, WALK)],
+      effortCeilingSeconds: 780,
+      userLevel: "medium",
+    });
+
+    expect(long / asked).toBeCloseTo(ceiling / 780, 1);
+  });
+
+  test("a hold that is not an outing is still held to its prescription", () => {
+    const plank = movement("medium", 3, "calisthenics");
+    const overrun = computeSessionXp({
+      sets: [hold(60, 3600, plank)],
+      effortCeilingSeconds: 3600,
+      userLevel: "medium",
+    });
+    const asked = computeSessionXp({
+      sets: [hold(60, 60, plank)],
+      effortCeilingSeconds: 60,
+      userLevel: "medium",
+    });
+
+    // 1.25 and no more: a phone face-up on a plank must not declare an hour.
+    expect(overrun / asked).toBeCloseTo(1.25, 1);
+  });
+
+  test("the witness still bounds it - seconds nobody moved for are not paid", () => {
+    const claimed = 40 * 60;
+    const moving = 10 * 60;
+
+    const onFoot = computeSessionXp({
+      sets: [hold(780, claimed, WALK)],
+      effortCeilingSeconds: claimed,
+      userLevel: "medium",
+    });
+    const onABus = computeSessionXp({
+      sets: [hold(780, claimed, WALK)],
+      effortCeilingSeconds: moving,
+      userLevel: "medium",
+    });
+
+    expect(onABus).toBeLessThan(onFoot);
+    expect(onABus / onFoot).toBeCloseTo(moving / claimed, 1);
+  });
+});
 
 describe("db/xp", () => {
   test("no session is wasted — there is always a floor", () => {

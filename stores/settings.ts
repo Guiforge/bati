@@ -2,6 +2,7 @@ import { AccessibilityInfo } from "react-native";
 import { create } from "zustand";
 import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
+import type { DistanceUnit } from "@/db/preferences";
 import { i18n } from "@/i18n";
 import {
   type AppLanguage,
@@ -25,6 +26,10 @@ interface SettingsState {
   reducedMotion: boolean;
   soundEnabled: boolean;
   villagersEnabled: boolean;
+  /** How distances are drawn. Storage is metres either way — constants/distanceFormat.ts. */
+  distanceUnit: DistanceUnit;
+  /** Whether the recap may fetch its basemap. The app's only network call, and it starts off. */
+  mapTilesEnabled: boolean;
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
@@ -33,6 +38,8 @@ interface SettingsState {
   setHapticsEnabled: (enabled: boolean) => Promise<void>;
   setSoundEnabled: (enabled: boolean) => Promise<void>;
   setVillagersEnabled: (enabled: boolean) => Promise<void>;
+  setDistanceUnit: (unit: DistanceUnit) => Promise<void>;
+  setMapTilesEnabled: (enabled: boolean) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
 }
@@ -67,6 +74,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   reducedMotion: false,
   soundEnabled: true,
   villagersEnabled: true,
+  distanceUnit: "metric",
+  // Off, and the same default the DB read returns for a key nobody has written: the map is the
+  // one thing here that reaches a third party, so an unanswered question is a no.
+  mapTilesEnabled: false,
   isLoaded: false,
 
   setLanguage: async (language) => {
@@ -109,6 +120,16 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setVillagersEnabled(enabled);
   },
 
+  setDistanceUnit: async (unit) => {
+    set({ distanceUnit: unit });
+    await preferences.setDistanceUnit(unit);
+  },
+
+  setMapTilesEnabled: async (enabled) => {
+    set({ mapTilesEnabled: enabled });
+    await preferences.setMapTilesEnabled(enabled);
+  },
+
   loadFromDatabase: async () => {
     try {
       const [
@@ -119,6 +140,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         reducedMotion,
         villagersEnabled,
         soundEnabled,
+        distanceUnit,
+        mapTilesEnabled,
       ] = await Promise.all([
         preferences.getLanguage(),
         preferences.getAvatarId(),
@@ -127,6 +150,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         deviceReducedMotionWithin(ACCESSIBILITY_PROBE_MS),
         preferences.getVillagersEnabled(),
         preferences.getSoundEnabled(),
+        preferences.getDistanceUnit(),
+        preferences.getMapTilesEnabled(),
       ]);
 
       const normalizedLanguage = resolveAppLanguage(language);
@@ -146,6 +171,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         reducedMotion,
         villagersEnabled,
         soundEnabled,
+        distanceUnit,
+        mapTilesEnabled,
         isLoaded: true,
       });
 

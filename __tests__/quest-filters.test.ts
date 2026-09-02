@@ -1,4 +1,5 @@
 import {
+  galleryOrder,
   matchesFilters,
   NO_FILTERS,
   type QuestFilters,
@@ -14,12 +15,23 @@ const quest = (
   equipment: EquipmentCode[],
   durationSeconds: number,
   archetype: QuestArchetype | null = null,
+  outside = false,
 ) => ({
   muscles,
   equipment,
   durationSeconds,
   archetype,
+  outside,
 });
+
+// The three seeded outings, as `matchesFilters` sees them: no muscles at all (an expedition
+// converts to zero rep-equivalents, so tagging it `legs` would lie to the balance card), the
+// same `metabolic` archetype every continuous-effort quest declares, and no equipment.
+const expedition = (durationSeconds: number) =>
+  quest([], ["none"], durationSeconds, "metabolic", true);
+const wardensRound = expedition(15 * 60);
+const messengersRoad = expedition(15 * 60);
+const outridersWay = expedition(20 * 60);
 
 const filters = (over: Partial<QuestFilters> = {}): QuestFilters => ({
   ...NO_FILTERS,
@@ -101,4 +113,83 @@ test("toggleInSet adds then removes, without mutating the original", () => {
   expect([...withChest]).toEqual(["chest"]);
   expect(empty.size).toBe(0);
   expect([...toggleInSet(withChest, "chest")]).toEqual([]);
+});
+
+describe("the Outside dimension", () => {
+  const outside = filters({ outside: true });
+  const indoors = [chestDumbbell10min, backNone45min, quest(["legs"], ["none"], 600, "metabolic")];
+
+  test("returns exactly the expeditions and excludes everything else", () => {
+    expect(
+      [wardensRound, messengersRoad, outridersWay, ...indoors].filter((q) =>
+        matchesFilters(q, outside),
+      ),
+    ).toEqual([wardensRound, messengersRoad, outridersWay]);
+  });
+
+  test("off means 'not asked', never 'indoors only'", () => {
+    // The chip is one boolean, so its off state has to leave the outings in the gallery — the
+    // failure mode is a filter that hides three quests nobody asked it to hide.
+    for (const q of [wardensRound, ...indoors]) {
+      expect(matchesFilters(q, NO_FILTERS)).toBe(true);
+    }
+  });
+
+  test("intersects the other dimensions like every rail before it", () => {
+    expect(matchesFilters(wardensRound, filters({ outside: true, duration: "short" }))).toBe(true);
+    expect(matchesFilters(outridersWay, filters({ outside: true, duration: "short" }))).toBe(false);
+    // A metabolic archetype is shared with indoor circuits, which is the whole problem the chip
+    // exists to solve: asking for both must not widen either.
+    expect(
+      matchesFilters(
+        quest(["legs"], ["none"], 600, "metabolic"),
+        filters({ outside: true, archetypes: new Set<QuestArchetype>(["metabolic"]) }),
+      ),
+    ).toBe(false);
+  });
+
+  test("a muscle filter still hides them, which is why the chip had to exist", () => {
+    // Deliberately unchanged: "Chest" must mean chest, exactly as "Strength" must mean strength.
+    // Pinned so nobody makes muscle-less quests match every muscle to fix discovery — Outside is
+    // the fix, and this asserts the two are not confused.
+    expect(matchesFilters(wardensRound, filters({ muscles: new Set<MuscleCode>(["legs"]) }))).toBe(
+      false,
+    );
+  });
+});
+
+/**
+ * The gallery's order, and mostly what it leaves alone.
+ *
+ * Seed order is authored: the gallery opens on a curated first card, and the catalogue below it
+ * is a sequence someone chose. Pinning is the hero's own thumb on that sequence, and it must lift
+ * exactly what they pinned without shuffling anything else on the way past.
+ */
+describe("galleryOrder", () => {
+  const q = (id: number) => ({ id });
+  const seed = [q(1), q(2), q(3), q(4), q(5)];
+  const mine = (x: { id: number }) => x.id === 4;
+  const ids = (list: { id: number }[]) => list.map((x) => x.id);
+
+  test("with nothing pinned, the hero's own quests lead and seed order is untouched", () => {
+    expect(ids(galleryOrder(seed, mine, new Set()))).toEqual([4, 1, 2, 3, 5]);
+  });
+
+  test("a pinned quest goes to the very top, above the hero's own", () => {
+    expect(ids(galleryOrder(seed, mine, new Set([3])))).toEqual([3, 4, 1, 2, 5]);
+  });
+
+  test("several pins keep their order relative to each other", () => {
+    expect(ids(galleryOrder(seed, mine, new Set([5, 2])))).toEqual([2, 5, 4, 1, 3]);
+  });
+
+  test("a pin on an id no quest has changes nothing", () => {
+    expect(ids(galleryOrder(seed, mine, new Set([999])))).toEqual([4, 1, 2, 3, 5]);
+  });
+
+  test("does not mutate the list it was handed", () => {
+    const original = [...seed];
+    galleryOrder(seed, mine, new Set([5]));
+    expect(seed).toEqual(original);
+  });
 });

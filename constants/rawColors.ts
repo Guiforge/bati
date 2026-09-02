@@ -68,6 +68,23 @@ export const rawColors = {
   bossPhase3: "#1F0E18",
   bossPhase4: "#280B12",
 
+  // --- The recap map ---
+  // Two colours the basemap needs and the palette cannot lend it (docs/designs/map-immersion.md
+  // § Where the colours live). Everything else the style draws — ground, roads, buildings,
+  // labels — reuses a token above, which is the point of having a palette.
+  /**
+   * Water must read as *depth* against `bgDark` (#0B0F19), never as the blue every mapping app
+   * uses. `shadowColor` is too close to bgDark to read at all, and `surface2` is a UI surface:
+   * a lake painted in it looks like a card lying on the map.
+   */
+  mapWater: "#0E1730",
+  /**
+   * Wood and park, one wash. The only green in the palette is `success`, which means a *state*,
+   * and `pastelGreen` is a legacy safety-net entry. A wood at recap zoom is a texture, not a
+   * status.
+   */
+  mapWood: "#101E1B",
+
   // --- Legacy mapping (safety net) ---
   bgLight: "#101322",
   pastelBlue: "#1A2633", // Mapped to dark

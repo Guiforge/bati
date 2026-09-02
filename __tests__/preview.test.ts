@@ -16,7 +16,7 @@ describe("db/preview", () => {
     };
 
     const exercisesById = {
-      1: { secondsPerRep: 2, difficulty: "medium" as const },
+      1: { secondsPerRep: 2, difficulty: "medium" as const, style: "strength" as const },
     };
 
     const medium = estimateQuestTemplateSeconds({
@@ -47,7 +47,9 @@ describe("db/preview", () => {
    * effort, so the two templates below differ only in a column the XP estimate must not read.
    */
   test("the XP estimate does not move when the rest slider does", () => {
-    const exercisesById = { 1: { secondsPerRep: 3, difficulty: "medium" as const } };
+    const exercisesById = {
+      1: { secondsPerRep: 3, difficulty: "medium" as const, style: "strength" as const },
+    };
     const base = {
       rounds: 10,
       exercises: [

@@ -1,0 +1,11 @@
+- Trois façons de sortir : marcher, courir, chevaucher. Le
+  téléphone mesure le terrain hors ligne, le tracé se dessine au
+  retour.
+- Les lieues bâtissent le Grand Chemin du village, et un serment
+  peut s'y jurer.
+- Le Journal totalise le terrain parcouru et retient ta plus
+  longue sortie.
+- Une notification, au nom de la quête, pour toute la marche.
+  La carte est un réglage, éteint par défaut : allumée, un hôte
+  apprend à peu près où tu étais.
+- Le Veilleur a un avis sur la route.

@@ -28,6 +28,8 @@ import {
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
+import { targetRangeFor } from "@/db/targets";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { useHaptics } from "@/hooks/useHaptics";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -40,6 +42,7 @@ const METRICS: OathMetric[] = [
   "exercise_volume",
   "sessions",
   "streak",
+  "leagues",
 ];
 
 /** Sessions per week offered in the custom form. Two is a real answer, not a lesser one. */
@@ -202,6 +205,7 @@ const DEFAULT_TARGET: Record<OathMetric, number> = {
   sessions: 50,
   streak: 30,
   weekly_sessions: 8, // weeks
+  leagues: 50,
 };
 
 /**
@@ -272,12 +276,18 @@ export default function OathScreen() {
 
   const visibleExercises = useMemo(() => {
     const needle = filter.trim().toLowerCase();
+    // An expedition converts to zero rep-equivalents by design (db/workUnits.ts), so a volume
+    // oath sworn on one would sit at 0/1000 for as long as the hero kept it — a target with a
+    // bar that cannot move. Only *this* metric is affected: `exercise_pr` reads the best raw
+    // result, so "my longest walk in one go" already works and stays offered.
+    const swearable =
+      metric === "exercise_volume" ? exercises.filter((e) => e.style !== NON_REP_STYLE) : exercises;
     const matching = needle
-      ? exercises.filter((e) => exerciseLabel(e).toLowerCase().includes(needle))
-      : exercises;
+      ? swearable.filter((e) => exerciseLabel(e).toLowerCase().includes(needle))
+      : swearable;
     // Long list on a phone mid-session: cap it and let the filter do the work.
     return matching.slice(0, 30);
-  }, [exercises, filter, exerciseLabel]);
+  }, [exercises, filter, exerciseLabel, metric]);
 
   // Exercise presets need a real id; drop any whose seed exercise isn't loaded yet/present.
   const presetRows = useMemo(() => {
@@ -400,8 +410,22 @@ export default function OathScreen() {
       return;
     }
 
+    // A promise nothing could ever fulfil.
+    //
+    // `exercise_pr` fills from `MAX(resultValue)` over single sets, and a single set is clamped
+    // at `targetRangeFor(type).max` before it is ever written. For reps that ceiling is far past
+    // anything a hero types. For a held or walked movement it is one hour, which is exactly the
+    // first number someone swears an oath about a walk on: "one hour" and "ninety minutes" were
+    // both permanently stuck oaths with no way back.
+    const measure = exercises.find((e) => e.id === exerciseId)?.measure ?? null;
+    const ceiling = measure === null ? null : targetRangeFor(measure).max;
+    if (metric === "exercise_pr" && ceiling !== null && parsed > ceiling) {
+      setError(t("oath.error_target_unreachable", { max: ceiling }));
+      return;
+    }
+
     confirmThenSwear({ metric, target: parsed, exerciseId, weeklyTarget });
-  }, [metric, target, exerciseId, weeklyTarget, confirmThenSwear, t]);
+  }, [metric, target, exerciseId, weeklyTarget, confirmThenSwear, t, exercises]);
 
   const abandon = useCallback(() => {
     Alert.alert(

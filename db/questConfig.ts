@@ -1,7 +1,18 @@
 import { type Exercise, listExercises } from "./exercises";
 import { deletePreference, getAllPreferences, getPreference, setPreference } from "./preferences";
 import { getQuestById, type Quest } from "./quests";
-import { Difficulty, retargetForMovement, type UserLevel } from "./targets";
+import {
+  clampToRange,
+  DISTANCE_GOAL_RANGE,
+  Difficulty,
+  REST_RANGE,
+  ROUNDS_RANGE,
+  retargetForMovement,
+  TARGET_RANGE,
+  TIME_TARGET_MAX,
+  targetRangeFor,
+  type UserLevel,
+} from "./targets";
 
 /**
  * What the hero changed on a quest and wants back next time: the level they train it at, plus
@@ -17,6 +28,12 @@ export type QuestConfig = {
   restSeconds?: number;
   roundRestSeconds?: number;
   /**
+   * A distance goal for an outing, in metres. Only read when every slot is an expedition; a
+   * workout ignores it. Outranks the slot's duration as the goal, never replaces the target: the
+   * session still records seconds, and the ground goes on `completed_sessions.leaguesM`.
+   */
+  distanceM?: number;
+  /**
    * quest_exercises row id -> target value. Editing a quest rewrites those rows, so stale keys
    * are possible; `applyQuestConfig` simply ignores ids the quest no longer has.
    */
@@ -29,26 +46,12 @@ export type QuestConfig = {
   swaps?: Record<string, number>;
 };
 
-export const ROUNDS_RANGE = { min: 1, max: 10 };
-export const REST_RANGE = { min: 0, max: 300 };
-export const TARGET_RANGE = { min: 1, max: 999 };
-
-const configKey = (questId: number) => `quest:${questId}:config`;
-
-/**
- * Exported because the ranges above were UI-only for a long time: the steppers refused to go past
- * them and every writer below `db/` took whatever it was handed. A quest saved by an editor that
- * skipped its own stepper — or by a future screen that forgets one — reached SQLite unbounded, and
- * the schema has no CHECK on any of these columns. Writers clamp with this now.
- */
-export function clampToRange(value: number, range: { min: number; max: number }): number {
-  if (!Number.isFinite(value)) return range.min;
-  return Math.min(range.max, Math.max(range.min, Math.round(value)));
-}
-
+/** The private alias the readers below use; the clamp itself lives with the ranges. */
 function clamp(value: number, range: { min: number; max: number }): number {
   return clampToRange(value, range);
 }
+
+const configKey = (questId: number) => `quest:${questId}:config`;
 
 function isLevel(value: unknown): value is UserLevel {
   return value === Difficulty.Easy || value === Difficulty.Medium || value === Difficulty.Hard;
@@ -79,7 +82,9 @@ function readTargets(value: unknown): Record<string, number> | undefined {
 
   const targets: Record<string, number> = {};
   for (const [key, raw] of Object.entries(value)) {
-    const target = readNumber(raw, TARGET_RANGE);
+    // The slot's unit is not in the config, so the permissive ceiling here and the real
+    // per-type one in `applyQuestConfig`, which has the quest.
+    const target = readNumber(raw, { min: TARGET_RANGE.min, max: TIME_TARGET_MAX });
     if (target !== undefined) targets[key] = target;
   }
 
@@ -111,6 +116,9 @@ export function parseQuestConfig(raw: string | null): QuestConfig | null {
 
   const roundRestSeconds = readNumber(record.roundRestSeconds, REST_RANGE);
   if (roundRestSeconds !== undefined) config.roundRestSeconds = roundRestSeconds;
+
+  const distanceM = readNumber(record.distanceM, DISTANCE_GOAL_RANGE);
+  if (distanceM !== undefined) config.distanceM = distanceM;
 
   const targets = readTargets(record.targets);
   if (targets !== undefined) config.targets = targets;
@@ -153,6 +161,7 @@ export function hasQuestOverrides(config: QuestConfig | null): boolean {
     config.rounds !== undefined ||
     config.restSeconds !== undefined ||
     config.roundRestSeconds !== undefined ||
+    config.distanceM !== undefined ||
     Object.keys(config.targets ?? {}).length > 0 ||
     Object.keys(config.swaps ?? {}).length > 0
   );
@@ -217,7 +226,8 @@ export function applyQuestConfig(
       const key = String(qex.id);
       const swappedId = swaps[key];
       const substitute = swappedId === undefined ? undefined : exercisesById[swappedId];
-      const value = targets[key];
+      const raw = targets[key];
+      const value = raw === undefined ? undefined : clamp(raw, targetRangeFor(qex.target.type));
 
       if (substitute === undefined && value === undefined) return qex;
 

@@ -7,7 +7,7 @@ import { estimateQuestXp } from "./xp";
 
 type PreviewInput = {
   template: Pick<QuestTemplate, "rounds" | "restSeconds" | "roundRestSeconds" | "exercises">;
-  exercisesById: Record<number, Pick<Exercise, "secondsPerRep" | "difficulty">>;
+  exercisesById: Record<number, Pick<Exercise, "secondsPerRep" | "difficulty" | "style">>;
   userLevel: DifficultyCode;
 };
 
@@ -44,7 +44,7 @@ function resolveTemplateExercises(input: PreviewInput) {
       );
 
       return {
-        exercise: { secondsPerRep: ex.secondsPerRep, difficulty: ex.difficulty },
+        exercise: { secondsPerRep: ex.secondsPerRep, difficulty: ex.difficulty, style: ex.style },
         target,
       };
     })

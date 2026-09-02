@@ -881,6 +881,17 @@
       "licence": "restyle of the render above — same licence, no new source introduced"
     }
   },
+  "assets/images/exercises/messengers_run.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot at last light of a rutted dirt road crossing open country between two places, wooded hills behind and the small warm lights of a village showing far ahead on the plain, a leaning wooden waymarker at the roadside and mist gathering in the fields. Small in the middle distance, one lone messenger runs along the road towards those lights, seen from behind and slightly to the side, mid-stride with one foot clear of the ground, a sealed leather satchel strapped across the back and a thin plume of dust hanging where they have just passed. The distance is the subject, not the runner. The road holds nobody else. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with cold rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A square 1:1 landscape composition filling the entire frame edge to edge, cinematic and immersive, the sky and the ground both given room. The artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2841281318,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 85, from messengers_run.jpg"
+  },
   "assets/images/exercises/mountain_climber.webp": {
     "model": "flux-2-pro",
     "provider": "Black Forest Labs (direct API)",
@@ -930,6 +941,17 @@
       "seed": 1234,
       "licence": "restyle of the render above — same licence, no new source introduced"
     }
+  },
+  "assets/images/exercises/outriders_ride.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot at golden hour of a grass track running across rolling open downland toward far blue ridges, the country falling away for leagues on either side and a low sun raking long shadows across the turf. Along that track, seen from the side at a middle distance, a lone scout rides a real horse at a steady even canter: a large muscular animal with four legs and four hooves, a long mane streaming back off its arched neck, a full tail flowing behind, leather saddle and stirrups and bridle, reins running from the bit to the rider's hands, the forelegs reaching forward and one hind hoof still driving off the ground and throwing up turf. The rider sits deep and upright in the saddle in a plain travelling cloak, unhurried, covering ground. The horse is the only thing that carries them. There is nothing mechanical anywhere in this picture: no wheel, no cart, no machine, no vehicle of any kind. The downland is otherwise empty, no other riders and no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with cold rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A square 1:1 landscape composition filling the entire frame edge to edge, cinematic and immersive, the sky and the ground both given room. The artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1864812608,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 85, from outriders_ride.jpg"
   },
   "assets/images/exercises/pigeon_pose.webp": {
     "model": "flux-2-pro",
@@ -1386,6 +1408,17 @@
       "licence": "restyle of the render above — same licence, no new source introduced"
     }
   },
+  "assets/images/exercises/wardens_walk.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot at dusk along a long stretch of village wall, the worn earth track that runs beside it leading away from the camera past the merlons and out into open moorland, one brazier burning far ahead where the wall turns, the last cold light draining out of the sky. Small in the middle distance, seen from behind and no taller than the merlons beside them, one lone walker in a plain travelling cloak carries a lantern down the track at an easy conversational pace, both feet on the ground, going nowhere in a hurry. Nothing is happening: the track simply carries on out of the frame, and the walk is the whole subject. Beyond that one small figure the wall and the moor are deserted. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with cold rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A square 1:1 landscape composition filling the entire frame edge to edge, cinematic and immersive, the sky and the ground both given room. The artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2446096826,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 85, from wardens_walk.jpg"
+  },
   "assets/images/exercises/warrior_pose.webp": {
     "model": "flux-2-pro",
     "provider": "Black Forest Labs (direct API)",
@@ -1685,6 +1718,17 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from knight_push.jpg"
   },
+  "assets/images/quests/long_reach.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot at dawn of an open village gate with a saddled horse waiting just inside it, reins looped over a post, its breath steaming in the cold, and beyond the gate a track running out across rolling grassland toward ridge after ridge of unmapped blue country. The saddle is empty and the yard is deserted — no rider, no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2707938751,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 85, from long_reach.jpg"
+  },
   "assets/images/quests/masons_footing.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
@@ -1827,6 +1871,28 @@
     "height": 768,
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from tower_climb.jpg"
+  },
+  "assets/images/quests/wardens_round.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot along the top of a village rampart at dusk, worn flagstones running away from the camera between the merlons, the sleeping roofs and smoking chimneys of the village on one side and open moorland falling away into blue distance on the other, a single brazier burning far ahead where the wall turns. Unhurried and ordinary — the walk is deserted, no watchmen and no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 2862507526,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 85, from wardens_round.jpg"
+  },
+  "assets/images/quests/word_must_travel.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A wide shot of a rutted dirt road at last light running down out of wooded hills toward the small warm lights of a village on the plain, a low mist gathering in the fields and the sun already gone behind the far ridge. A leaning wooden waymarker stands at the roadside, its board a plain slab of weathered grey timber worn perfectly smooth and bare, its lettering long since gone: blank wood grain and nothing else. There is no writing, no lettering and no text anywhere in this picture. Something has to arrive before dark — the road is empty, no travellers and no people. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is anchored in deep obsidian blue (#0B0F19) with electric-blue rim light and high-contrast volumetric lighting; the edges of the frame fall off into darkness like a soft vignette so the art blends into a dark app background. A full-bleed widescreen 4:3 landscape composition that fills the entire frame edge to edge, cinematic and immersive.",
+    "seed": 132392251,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 85, from word_must_travel.jpg"
   },
   "assets/images/rest/rest_campfire.webp": {
     "model": "flux-2-pro-preview",
@@ -2216,6 +2282,42 @@
     "height": 1024,
     "generated": "2026-08-03",
     "reencoded": "cwebp -q 90, from heroes_hall_rough.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/high_road.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized weathered wooden crossroads signpost with two carved arm boards pointing opposite ways, planted in a low cairn of mossy flagstones with a few loose cobbles at its foot, a small cool pale-blue waystone lantern hanging from the post. No outer glow, aura or halo around the object. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 1937532537,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 90, from high_road.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/high_road_grand.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized weathered wooden crossroads signpost with two carved arm boards pointing opposite ways, planted in a low cairn of mossy flagstones with a few loose cobbles at its foot, a small cool pale-blue waystone lantern hanging from the post. No outer glow, aura or halo around the object. This is its final and most accomplished form: larger and richly detailed, with carved ornament, banners and polished metal fittings, standing on a worked stone base, and its glow strong, radiant and clearly brighter. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 327912829,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 90, from high_road_grand.png",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/village/buildings/high_road_rough.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "A single stylized weathered wooden crossroads signpost with two carved arm boards pointing opposite ways, planted in a low cairn of mossy flagstones with a few loose cobbles at its foot, a small cool pale-blue waystone lantern hanging from the post. No outer glow, aura or halo around the object. This is its earliest and roughest form: smaller and plainly made from unfinished materials, weathered, patched and slightly crooked, with no ornament, and its glow reduced to a faint low ember. Rendered as a small dark-fantasy comic-book emblem: one object, isolated and centered on a deep obsidian blue (#0B0F19) void background, thick black ink outlines, flat cel-shaded fills, a soft glowing rim light in the object's energy color. Full-bleed square 1:1 composition, no text, no characters, no scenery — just the glowing emblem.",
+    "seed": 3668174339,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-08-31",
+    "reencoded": "cwebp -q 90, from high_road_rough.png",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/village/buildings/observatory.webp": {

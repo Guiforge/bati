@@ -17,6 +17,7 @@ related: [../README.md]
 - [positioning.md](positioning.md) — Register, platform, principles
 - [user-guide.md](user-guide.md) — Non-technical walkthrough + navigation map
 - [feature-overview.md](feature-overview.md) — Feature catalog with links to system docs
+- [writing.md](writing.md) — Sentence-level copy rules, measured rather than preferred
 
 ## Related
 

@@ -4,6 +4,7 @@ import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
 import { OathCard } from "@/components/home/OathCard";
+import { OutsideBand } from "@/components/home/OutsideBand";
 import { RestNote } from "@/components/home/RestNote";
 import { StatsOverview } from "@/components/home/StatsOverview";
 import { VillageTeaser } from "@/components/home/VillageTeaser";
@@ -43,6 +44,10 @@ export default function HomeScreen() {
 
           {/* Center stage: tonight's scene, one action that starts it */}
           <HomeStage />
+
+          {/* The door out. The stage's waterfall can never reach an expedition - it follows
+              muscles and the oath's chain, and an outing carries neither. */}
+          <OutsideBand />
 
           {/* Advice, never a gate: the stage still offers a session underneath it */}
           <RestNote />

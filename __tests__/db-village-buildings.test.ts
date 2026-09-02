@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/village buildings", () => {
@@ -15,6 +17,7 @@ describe("db/village buildings", () => {
   beforeEach(() => {
     t.sqlite.exec(`DELETE FROM completed_exercises`);
     t.sqlite.exec(`DELETE FROM completed_sessions`);
+    t.sqlite.exec(`DELETE FROM gps_points`);
     const { clearShortLivedQueries } =
       require("../db/queryCache") as typeof import("../db/queryCache");
     clearShortLivedQueries();
@@ -24,7 +27,7 @@ describe("db/village buildings", () => {
     const { getVillageBuildings } = require("../db/village") as typeof import("../db/village");
     const buildings = await getVillageBuildings();
 
-    expect(buildings).toHaveLength(20);
+    expect(buildings).toHaveLength(21);
     for (const b of buildings) {
       expect(b.level).toBe(b.tier === 1 ? 1 : 0);
     }
@@ -64,6 +67,135 @@ describe("db/village buildings", () => {
     // Tier 3 unlocks at prerequisite level 3, two rungs behind.
     expect(buildings.find((b) => b.code === "armory")?.level).toBe(1);
     expect(buildings.find((b) => b.code === "castle_wall")?.level).toBe(0);
+  });
+
+  // ------------------------------------------------------------
+  // The High Road, and the two currencies it exists to keep apart
+  // ------------------------------------------------------------
+
+  /**
+   * One league is 1000 m, and the road reads the metres the reducer credited rather than a sum
+   * over the fixes: drift while the hero stood still is in `gps_points` and must never be here.
+   */
+  let outings = 0;
+  const walkLeagues = (leagues: number) => {
+    outings += 1;
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt, leaguesM)
+        VALUES (${10 + outings}, ${Math.floor(Date.now() / 1000)}, ${Math.round(leagues * 1000)});
+    `);
+  };
+
+  /** A strength session: push-ups, which reach the forge through their muscles. */
+  const liftReps = (reps: number) => {
+    const pushupId = (
+      t.sqlite.prepare("SELECT id FROM exercises WHERE enName = 'Push-ups'").get() as { id: number }
+    ).id;
+    const now = Math.floor(Date.now() / 1000);
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder)
+        VALUES (1, ${pushupId}, 'reps', ${reps}, ${now}, 0);
+    `);
+  };
+
+  /** An expedition session: the walk itself, logged in seconds like every other timed row. */
+  const walkSeconds = (seconds: number) => {
+    const walkId = (
+      t.sqlite.prepare("SELECT id FROM exercises WHERE enName = ?").get("Warden's Walk") as {
+        id: number;
+      }
+    ).id;
+    const now = Math.floor(Date.now() / 1000);
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (2, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder)
+        VALUES (2, ${walkId}, 'time', ${seconds}, ${now}, 0);
+    `);
+  };
+
+  const road = async () => {
+    const { getVillageBuildings } = require("../db/village") as typeof import("../db/village");
+    const found = (await getVillageBuildings()).find((b) => b.code === "high_road");
+    assert(found);
+    return found;
+  };
+
+  test("the road is locked until the first league, and says how far that is", async () => {
+    const locked = await road();
+
+    expect(locked.level).toBe(0);
+    expect(locked.driver).toBe("leagues");
+    expect(locked.metricValue).toBe(0);
+    expect(locked.nextTarget).toBe(1);
+  });
+
+  // The same rule the deed counters get: a locked road counts, because "0/1 leagues" is a tally
+  // the hero can act on. A locked forge does not, because "train your chest" is not a number.
+  test("a locked road still shows how far along it is", async () => {
+    const { getBuildingProgress } = require("../db/village") as typeof import("../db/village");
+
+    // Half a league: real ground, not yet a rung. The tally is whole leagues, because "0.5
+    // leagues covered beyond the walls" is not a sentence — but the bar has to move, or the
+    // first outing a hero ever takes leaves the one building it feeds sitting at zero.
+    walkLeagues(0.5);
+
+    const partial = await road();
+    expect(partial.level).toBe(0);
+    expect(partial.metricValue).toBe(0);
+    expect(getBuildingProgress(partial)).toBe(50);
+  });
+
+  test("walking raises the road", async () => {
+    walkLeagues(35);
+
+    const built = await road();
+    // Floors are [1, 15, 40, 90, 200] leagues: 35 clears the second and not the third.
+    expect(built.level).toBe(2);
+    expect(built.metricValue).toBe(35);
+    expect(built.nextTarget).toBe(40);
+  });
+
+  test("leagues are metres, so a part-league is floored rather than rounded up", async () => {
+    walkLeagues(9.99);
+
+    const built = await road();
+    expect(built.metricValue).toBe(9);
+    expect(built.level).toBe(1);
+  });
+
+  // The two currencies, made checkable. Nothing converts between them in either direction: an
+  // hour of lifting must never move the road, and an hour of walking must never move anything
+  // else — which is what stops a 60-minute walk from maxing a building on day one
+  // (db/workUnits.ts, NON_REP_STYLE).
+  describe("the two currencies never cross", () => {
+    test("strength work does not raise the road", async () => {
+      liftReps(350);
+
+      const { getVillageBuildings } = require("../db/village") as typeof import("../db/village");
+      const buildings = await getVillageBuildings();
+
+      // The lift landed where it should.
+      expect(buildings.find((b) => b.code === "forge")?.level).toBe(3);
+      // And nowhere near the road.
+      expect(buildings.find((b) => b.code === "high_road")?.level).toBe(0);
+      expect(buildings.find((b) => b.code === "high_road")?.metricValue).toBe(0);
+    });
+
+    test("expedition work raises nothing but the road", async () => {
+      // Twenty minutes on foot: 1200 s logged, and 1.5 leagues of ground under them.
+      walkSeconds(1200);
+      walkLeagues(1.5);
+
+      const { getVillageBuildings } = require("../db/village") as typeof import("../db/village");
+      const buildings = await getVillageBuildings();
+
+      // 1200 s would be 400 rep-equivalents through the shared conversion — level 4 on any
+      // volume-driven building. Every one of them is untouched.
+      const raised = buildings.filter((b) => b.tier !== 1 && b.level > 0).map((b) => b.code);
+      expect(raised).toEqual(["high_road"]);
+      expect(buildings.find((b) => b.code === "high_road")?.metricValue).toBe(1);
+    });
   });
 
   test("a building's growth is only visible once the short-lived memos are dropped", async () => {

@@ -34,7 +34,7 @@ related: [../README.md, ../CONTRIBUTING.md]
 
 | Folder | Covers |
 | :--- | :--- |
-| `product/` | Vision, positioning, user guide, feature overview |
+| `product/` | Vision, positioning, writing rules, user guide, feature overview |
 | `planning/` | The roadmap, and only the roadmap (⭐ north star, open work, parking lot, closed decisions) |
 | `gameplay/` | Quests, adventures, boss fights, session flow, progression, stats, coach |
 | `design/` | Design system tokens, UI guide, checklist, exercise colors, mobile reference |

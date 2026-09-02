@@ -8,19 +8,19 @@ type EmptyVariant = { title: string; subtitle: string };
 /** Non-empty by contract: `pickSessionEmptyVariant` promises a variant, never `undefined`. */
 export const SESSION_EMPTY_VARIANTS = {
   en: [
-    { title: "Nice work!", subtitle: "Session logged — keep your streak alive." },
+    { title: "Nice work!", subtitle: "Session logged. Keep the streak alive." },
     { title: "Solid session.", subtitle: "Every rep still counts toward the next one." },
     {
       title: "In the books!",
-      subtitle: "No fireworks today — the streak doesn't care, it just grows.",
+      subtitle: "No fireworks today. The streak doesn't care, it just grows.",
     },
   ],
   fr: [
-    { title: "Beau boulot !", subtitle: "Séance enregistrée — garde ta série en vie." },
+    { title: "Beau boulot !", subtitle: "Séance enregistrée. Garde ta série en vie." },
     { title: "Séance solide.", subtitle: "Chaque répétition compte pour la suivante." },
     {
       title: "C'est noté !",
-      subtitle: "Pas de feu d'artifice aujourd'hui — la série s'en fiche, elle grandit quand même.",
+      subtitle: "Pas de feu d'artifice aujourd'hui. La série s'en fiche, elle grandit quand même.",
     },
   ],
 };

@@ -22,6 +22,62 @@ export type Target = {
 export const DEFAULT_TARGET_VALUE: Record<QuestTargetType, number> = { reps: 10, time: 30 };
 
 /**
+ * What a target, a round count and a rest may be, and the clamp every writer runs them through.
+ *
+ * Here rather than in `questConfig`, which is where they used to live, because `db/quests` needs
+ * them to write a quest and `questConfig` needs `db/quests` to read one: a cycle that fallow
+ * names and that this repo has already been bitten by. `store-session.test.ts` failed to load
+ * with "Cannot read properties of undefined (reading 'TARGET_RANGE')" - the two modules were
+ * initialising each other, and whichever lost the race saw the other as `undefined`. Nothing in
+ * this file imports anything that could close a loop; that is the point of it.
+ */
+/** What a rep target may be. Seconds have their own ceiling below. */
+export const TARGET_RANGE = { min: 1, max: 999 };
+
+export const ROUNDS_RANGE = { min: 1, max: 10 };
+export const REST_RANGE = { min: 0, max: 300 };
+
+/**
+ * Exported because the ranges above were UI-only for a long time: the steppers refused to go past
+ * them and every writer below `db/` took whatever it was handed. A quest saved by an editor that
+ * skipped its own stepper — or by a future screen that forgets one — reached SQLite unbounded, and
+ * the schema has no CHECK on any of these columns. Writers clamp with this now.
+ */
+export function clampToRange(value: number, range: { min: number; max: number }): number {
+  if (!Number.isFinite(value)) return range.min;
+  return Math.min(range.max, Math.max(range.min, Math.round(value)));
+}
+
+/**
+ * A time target's ceiling, and it is not `TARGET_RANGE.max`.
+ *
+ * 999 is a generous rep count and sixteen minutes thirty-nine. Every seeded expedition targets
+ * more than that at hard (`drizzle/0042_three_doors_out.sql` reaches 1200 s), so the shared range
+ * silently shortened the quest on the way into SQLite, and the stepper could not be pushed back
+ * up: an hour-long walk was one edit away and the edit did not exist. An hour is also exactly
+ * what one set may ever record (`clampResultValue`), so a target above this could never be met.
+ */
+export const TIME_TARGET_MAX = 3600;
+
+/**
+ * A distance goal, in metres. Not a `QuestTargetType`: `0000_schema.sql` holds `targetType` and
+ * `resultType` to `('reps','time')` with a CHECK, and a walk's distance is already written once,
+ * on `completed_sessions.leaguesM`. So the goal lives in the hero's quest config and the session
+ * still records seconds. See docs/designs/expeditions.md, "After the audit".
+ *
+ * ponytail: a seeded quest cannot ship a distance goal; if content ever needs one, that is the
+ * table rebuild, not a fourth target type bolted on here.
+ */
+export const DISTANCE_GOAL_RANGE = { min: 500, max: 200_000 };
+export const DISTANCE_GOAL_STEP = 500;
+export const DEFAULT_DISTANCE_GOAL_M = 3000;
+
+/** What a target may be, by what it counts. Reps and seconds are not the same magnitude. */
+export function targetRangeFor(type: QuestTargetType): { min: number; max: number } {
+  return type === "time" ? { min: TARGET_RANGE.min, max: TIME_TARGET_MAX } : TARGET_RANGE;
+}
+
+/**
  * The target a movement actually runs in when it lands in a slot written for another one.
  *
  * Every substitution — a hero swap, or the easier rung `getQuestById` serves — keeps the slot's
@@ -97,6 +153,13 @@ export function generateTarget(
   const scaledMin = Math.max(1, Math.round(min * m));
   const scaledMax = Math.max(1, Math.round(max * m));
 
+  // Time targets land on the same five-second grid the stepper moves in. Without it the
+  // generator produced values the hero could not have chosen and could not return to - a
+  // 13-minute outing was prescribed as 781 s, shown as "13 min 1s", and one tap on the stepper
+  // moved it to 786. Reps are already whole and are left alone.
+  const grid = (value: number) =>
+    base.type === "time" ? Math.max(1, Math.round(value / 5) * 5) : value;
+
   if (base.type === "time" && personalBestSeconds != null && personalBestSeconds > 0) {
     // Clamped to the quest's own window on both ends. Down, because `resultValue` records what
     // the hero *did*, which is usually the target they were given rather than their ceiling —
@@ -104,9 +167,9 @@ export function generateTarget(
     // one heroic hold should not turn a warm quest into a ladder nobody finishes.
     const fromRecord = Math.round(personalBestSeconds * HOLD_FRACTION_OF_MAX);
     const value = Math.min(scaledMax, Math.max(scaledMin, fromRecord));
-    return { type: base.type, value };
+    return { type: base.type, value: grid(value) };
   }
 
   const value = Math.max(1, Math.round((scaledMin + scaledMax) / 2));
-  return { type: base.type, value };
+  return { type: base.type, value: grid(value) };
 }

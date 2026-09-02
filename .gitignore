@@ -2,11 +2,17 @@
 
 # dependencies
 node_modules/
+node_modules
 
 # Expo
 .expo/
 dist/
 web-build/
+
+# Gradle output for local Expo modules. android/.gitignore covers android/build, but a module
+# under modules/ builds into its own tree and nothing was watching that one — 97 files of R.jar
+# and merged manifests walked into the first commit that added one.
+modules/*/android/build/
 coverage/
 expo-env.d.ts
 
@@ -78,3 +84,7 @@ app-example
 # Raw device captures: an input to the store shots, not an artefact worth versioning.
 fastlane/raw*/
 .gbrain-source
+
+# Personal GPS traces and screenshots used to tune the expedition maths by hand. Real outings,
+# not fixtures: they stay on the machine that recorded them.
+test-gpx/

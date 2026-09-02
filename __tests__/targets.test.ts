@@ -84,6 +84,8 @@ describe("retargetForMovement", () => {
       type: "time",
       value: 30,
     });
-    expect(retargetForMovement(repSlot, { measure: "time" }, Difficulty.Easy).value).toBe(23);
+    // 25 rather than 23: time targets land on the five-second grid the stepper moves in, so a
+    // prescription is always a value the hero could have dialled themselves.
+    expect(retargetForMovement(repSlot, { measure: "time" }, Difficulty.Easy).value).toBe(25);
   });
 });

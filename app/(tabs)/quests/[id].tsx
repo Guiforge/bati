@@ -13,9 +13,10 @@ import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
-import { ChevronLeft, Dumbbell, Pencil, Repeat, Sparkles } from "@/components/icons";
+import { ChevronLeft, Dumbbell, Footprints, Pencil, Repeat, Sparkles } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
+import { restsBetweenExercises } from "@/components/quests/questShape";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
@@ -34,13 +35,21 @@ import {
 } from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
+import { formatDuration } from "@/db/estimate";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
+import {
+  estimateDistanceSeconds,
+  hasOutdoorSlot,
+  isMountedOuting,
+  isOutingSession,
+} from "@/db/expeditions";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
-import { formatTarget } from "@/db/targets";
+import { formatTarget, type Target } from "@/db/targets";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -60,6 +69,38 @@ function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
 function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
   if (!path) return null;
   return path.startsWith("http") ? { uri: path } : getExerciseThumb(path);
+}
+
+/**
+ * A target in the words the hero reads it in.
+ *
+ * `formatTarget` prints seconds raw, which is fine at plank length and unreadable past a minute:
+ * an expedition asks for 900, and "900s" is not a number anybody converts. Time targets go
+ * through `formatDuration`, the app's own exact form — "15 min" above the minute, still "30s"
+ * below it, so nothing shorter than a round changes. Reps stay `formatTarget`'s job.
+ */
+function targetLabel(target: Target): string {
+  return target.type === "time" ? formatDuration(target.value) : formatTarget(target);
+}
+
+/**
+ * An outing's XP, priced at the same estimate the duration tag shows rather than at its slots'
+ * own targets.
+ *
+ * Duration and distance mode both produce an estimate, and only one of them — the duration
+ * branch, when the slots' seconds are left untouched — happens to already agree with what the
+ * slots themselves are worth. Scaling every slot's target to the estimate makes both modes true
+ * by construction instead of by coincidence, which is what let the distance branch drift: "≈ 36
+ * min" for 3 km while the XP tag still priced whatever the slot's seconds happened to be.
+ */
+function estimateOutingXp(quest: Quest, level: DifficultyCode, estimatedSeconds: number): number {
+  const targetSeconds = quest.exercises.reduce((sum, qex) => sum + qex.target.value, 0);
+  const scale = targetSeconds > 0 ? estimatedSeconds / targetSeconds : 1;
+  const exercises = quest.exercises.map((qex) => ({
+    exercise: qex.exercise,
+    target: { ...qex.target, value: qex.target.value * scale },
+  }));
+  return estimateQuestXp({ rounds: quest.rounds, exercises }, level);
 }
 
 /** Stable empty list, so the sheet's props do not change identity on every render. */
@@ -188,6 +229,8 @@ export default function QuestDetails() {
   const [narrative, setNarrative] = useState<string | null>(null);
   const [showNarrative, setShowNarrative] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  /** Height of the pinned start bar, so the scroll reserves exactly what the bar takes. */
+  const [startBarHeight, setStartBarHeight] = useState(0);
   // Whether the route's level has already been applied once. A route level (an adventure step
   // picks one) should win on the first load, but not re-win on every later refocus — opening an
   // exercise sheet and coming back must not snap a hero's own choice back to it.
@@ -351,7 +394,16 @@ export default function QuestDetails() {
   const derived = useMemo(() => {
     if (!state.quest) return null;
     const quest = applyQuestConfig(state.quest, config, indexExercises(catalogue));
-    const estimatedSeconds = estimateQuestSeconds(quest);
+    const outing = isOutingSession(quest);
+    // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
+    // way it is what the hero is about to run, so the XP tag below prices that same estimate
+    // rather than the slot's own target — the two numbers on this screen must describe one
+    // session, not two.
+    const estimatedSeconds =
+      config.distanceM !== undefined && outing
+        ? estimateDistanceSeconds(config.distanceM, isMountedOuting(quest))
+        : estimateQuestSeconds(quest);
+    const questLevel = level as unknown as DifficultyCode;
     return {
       quest,
       questTitle: localizedTitle(quest, language),
@@ -359,7 +411,9 @@ export default function QuestDetails() {
       questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
       estimate: formatDurationEstimate(estimatedSeconds),
-      xpReward: estimateQuestXp(quest, level as unknown as DifficultyCode),
+      xpReward: outing
+        ? estimateOutingXp(quest, questLevel, estimatedSeconds)
+        : estimateQuestXp(quest, questLevel),
     };
   }, [state.quest, config, language, level, catalogue]);
 
@@ -414,6 +468,17 @@ export default function QuestDetails() {
   const estimate = derived?.estimate ?? null;
   const xpReward = derived?.xpReward ?? null;
 
+  // Every slot is an outing, so the screen is presenting a way out rather than a workout.
+  const isOuting = quest ? isOutingSession(quest) : false;
+  /**
+   * Not `isOuting`. The notice answers "will Android ask me for my position", and what decides
+   * that is `hasOutdoorSlot`, the generous predicate the session store starts the tracker on: a
+   * quest that walks ten minutes and then does push-ups in the yard is measured, so it asks, so
+   * it has to say so first. Gated on the strict predicate, that hero met the system dialog during
+   * the countdown with nothing having warned them, which is the whole job this line has.
+   */
+  const willReadPosition = quest ? hasOutdoorSlot(quest) : false;
+
   const proceedToSession = async () => {
     // The isStarting guard is what stops a double-tap from starting two sessions while the
     // boss fight loads; it resets on the next focus (coming back from the session).
@@ -423,7 +488,10 @@ export default function QuestDetails() {
     try {
       // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
       // populates the store, and the session screen redirects home if it mounts on an empty one.
-      await startSession(quest, level, { adventureRunStepId: runStepId });
+      await startSession(quest, level, {
+        adventureRunStepId: runStepId,
+        distanceGoalM: config.distanceM ?? null,
+      });
       router.push("/session" as never);
     } catch (error) {
       setIsStarting(false);
@@ -456,7 +524,10 @@ export default function QuestDetails() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      {/* Measured, not guessed. The bar below is taller on an outing (it carries the location
+          notice) and taller again at a large system font size, and the hand-counted 140 it used
+          to reserve left two pixels of margin. Same pattern as the editor's save bar. */}
+      <ScrollView contentContainerStyle={{ paddingBottom: startBarHeight + 24 }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
@@ -569,25 +640,39 @@ export default function QuestDetails() {
                 </Paragraph>
 
                 <XStack gap="$2" flexWrap="wrap" pt="$2">
-                  <Tag
-                    label={t("quests.rounds", {
-                      count: quest.rounds,
-                      defaultValue: `${quest.rounds} rounds`,
-                    })}
-                  />
-                  <Tag
-                    label={t("quests.exercises", {
-                      count: quest.exercises.length,
-                      defaultValue: `${quest.exercises.length} exercises`,
-                    })}
-                    tone="primary"
-                  />
-                  <Tag
-                    label={t("quests.rest", {
-                      count: quest.restSeconds,
-                      defaultValue: `Rest ${quest.restSeconds}s`,
-                    })}
-                  />
+                  {/* A count of one is not information. "1 round" and "1 exercise" were the
+                      first two things an outing said about itself, and they said nothing: the
+                      screen lists its one movement right below. Same knowledge the rest chips
+                      below already act on (components/quests/questShape.ts), stated as counts
+                      rather than as rests, which is why it is spelled out here and not reused
+                      from there. */}
+                  {quest.rounds > 1 ? (
+                    <Tag
+                      label={t("quests.rounds", {
+                        count: quest.rounds,
+                        defaultValue: `${quest.rounds} rounds`,
+                      })}
+                    />
+                  ) : null}
+                  {quest.exercises.length > 1 ? (
+                    <Tag
+                      label={t("quests.exercises", {
+                        count: quest.exercises.length,
+                        defaultValue: `${quest.exercises.length} exercises`,
+                      })}
+                      tone="primary"
+                    />
+                  ) : null}
+                  {/* One movement means every gap is a round boundary, so this rest is never
+                      taken — components/quests/questShape.ts. */}
+                  {restsBetweenExercises(quest) ? (
+                    <Tag
+                      label={t("quests.rest", {
+                        count: quest.restSeconds,
+                        defaultValue: `Rest ${quest.restSeconds}s`,
+                      })}
+                    />
+                  ) : null}
                   {estimate ? (
                     <Tag
                       label={t("quests.estimate", {
@@ -599,9 +684,11 @@ export default function QuestDetails() {
                   ) : null}
                   {xpReward != null ? (
                     <Tag
-                      label={t("quests.reward_xp_estimate", {
+                      // "Up to" is a ceiling, and an outing has none: it is paid for the ground
+                      // it covers with no target overhead it. See `setEffortSeconds` in db/xp.ts.
+                      label={t(isOuting ? "quests.reward_xp_open" : "quests.reward_xp_estimate", {
                         count: xpReward,
-                        defaultValue: `up to +${xpReward} XP`,
+                        defaultValue: `+${xpReward} XP`,
                       })}
                       tone="secondary"
                     />
@@ -672,7 +759,13 @@ export default function QuestDetails() {
                         justify="center"
                         items="center"
                       >
-                        <Dumbbell size={24} color="$text" strokeWidth={2.5} />
+                        {/* An outing is not a dumbbell. `Footprints` is already in
+                            components/icons.ts, so this costs the bundle nothing. */}
+                        {qex.exercise.style === NON_REP_STYLE ? (
+                          <Footprints size={24} color="$text" strokeWidth={2.5} />
+                        ) : (
+                          <Dumbbell size={24} color="$text" strokeWidth={2.5} />
+                        )}
                       </YStack>
 
                       <YStack flex={1} gap="$1">
@@ -681,7 +774,7 @@ export default function QuestDetails() {
                             {i + 1}. {exName}
                           </Text>
                           <Tag
-                            label={formatTarget(qex.target)}
+                            label={targetLabel(qex.target)}
                             tone={qex.target.type === "time" ? "secondary" : "primary"}
                           />
                         </XStack>
@@ -733,7 +826,7 @@ export default function QuestDetails() {
                           {qex.ghost ? (
                             <Tag
                               label={t("quests.ghost_last", {
-                                value: formatTarget({
+                                value: targetLabel({
                                   type: qex.target.type,
                                   value: qex.ghost.last,
                                 }),
@@ -793,8 +886,23 @@ export default function QuestDetails() {
           bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"
+          gap="$2"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+          onLayout={(e) => setStartBarHeight(e.nativeEvent.layout.height)}
         >
+          {/* The one promise made before the promise is needed. `stores/expedition` asks Android
+              for the location permission during the countdown, which is the worst moment to meet
+              a system dialog with no idea why it is there.
+
+              In the pinned bar rather than in the page: it lived under the config panel, and on a
+              Fairphone 6 that put it below the fold while this button stayed on screen the whole
+              time. A hero who tapped straight away never read it, which is the entire job it had. */}
+          {willReadPosition ? (
+            <Text testID="quest-location-notice" fontSize={13} color="$textSecondary">
+              {t("quests.location_notice")}
+            </Text>
+          ) : null}
+
           <AppButton
             testID="quest-start"
             height={60}

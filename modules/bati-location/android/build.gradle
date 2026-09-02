@@ -1,0 +1,17 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.guiforge.bati'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.batilocation"
+  defaultConfig {
+    // Not the APK's version, and not ignorable either: expo-module-gradle-plugin reads this one
+    // as the maven artifact version and fails configuration without it. versionCode sat beside it
+    // and was the ignored half: AGP has no use for one in a library.
+    versionName '0.1.0'
+  }
+}

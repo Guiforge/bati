@@ -2,7 +2,7 @@
   tu viens de gagner, et « C'était comment ? » passe au-dessus des
   récompenses pour que la réponse qui ajuste ta prochaine séance soit vue.
 - Le sélecteur de difficulté dit ce que chaque niveau fait : objectifs
-  ×0,75/1/1,25, XP ×0,9/1/1,2 — fini de choisir à l'aveugle.
+  ×0,75/1/1,25, XP ×0,9/1/1,2, fini de choisir à l'aveugle.
 - Les boutons principaux passent à l'indigo profond, en accord avec
   l'univers nocturne au lieu de le transpercer.
 - Les widgets s'adaptent à la cellule que le lanceur leur donne, la semaine

@@ -21,8 +21,12 @@ import {
   HeartPulse,
   ImagePlus,
   Languages,
+  // Aliased: an unqualified `Map` shadows the global of the same name, which is a trap for
+  // whoever edits this file next. Same reason `app/recap.tsx` renames MapLibre's component.
+  Map as MapIcon,
   MessagesSquare,
   RotateCcw,
+  Ruler,
   ScrollText,
   ShieldCheck,
   Swords,
@@ -210,12 +214,16 @@ export default function SettingsScreen() {
     hapticsEnabled,
     soundEnabled,
     villagersEnabled,
+    distanceUnit,
+    mapTilesEnabled,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
     setHapticsEnabled,
     setSoundEnabled,
     setVillagersEnabled,
+    setDistanceUnit,
+    setMapTilesEnabled,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -267,7 +275,7 @@ export default function SettingsScreen() {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         // A silently-declined permission used to make this row do nothing, forever.
-        showError(t("settings.photos_denied", "Photo access is off — allow it in system settings"));
+        showError(t("settings.photos_denied", "Photo access is off. Allow it in system settings"));
         return;
       }
 
@@ -481,6 +489,45 @@ export default function SettingsScreen() {
               });
             }}
           />
+
+          {/* Draws distances, stores nothing new: every metre stays a metre in the database and
+              in every GPX, and constants/distanceFormat.ts is the only place that converts. */}
+          <SettingRow
+            testID="settings-distance-unit"
+            icon={<Ruler size={22} color="$text" />}
+            label={t("settings.distance_unit", "Distance unit")}
+            value={
+              distanceUnit === "metric"
+                ? t("settings.distance_metric", "Kilometres")
+                : t("settings.distance_imperial", "Miles")
+            }
+            onPress={() => {
+              haptics.selection();
+              setDistanceUnit(distanceUnit === "metric" ? "imperial" : "metric").catch((error) => {
+                reportError("settings.distanceUnitWrite", error);
+              });
+            }}
+          />
+
+          {/* The app's only network call, and it is off until this row is tapped. The host is
+              named on the line below rather than in the policy, because "somewhere in Privacy"
+              is where a hero finds out after the fact. */}
+          <SettingRow
+            testID="settings-map-tiles"
+            icon={<MapIcon size={22} color="$text" />}
+            label={t("settings.map_tiles", "Recap map")}
+            value={mapTilesEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            onPress={() => {
+              haptics.selection();
+              setMapTilesEnabled(!mapTilesEnabled).catch((error) => {
+                reportError("settings.mapTilesWrite", error);
+              });
+            }}
+          />
+
+          <Text testID="settings-map-tiles-note" fontSize="$2" color="$textSecondary" px="$3">
+            {t("settings.map_tiles_note")}
+          </Text>
 
           <SettingRow
             icon={<Dumbbell size={22} color="$text" />}

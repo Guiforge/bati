@@ -7,6 +7,7 @@ import { getChainTo } from "@/db/exercises";
 import { getSuggestedQuestsForWeakAreas } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getOathProgress, oathNeedsExercise } from "@/db/oaths";
+import { listOutings } from "@/db/outings";
 import { loadConfiguredQuest } from "@/db/questConfig";
 import { findQuestWithExercise } from "@/db/quests";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -161,6 +162,26 @@ export function useSmartAction() {
                 : t("home.oath_focus_simple", { goal });
 
             const action = await questAction(questId, subtext);
+            if (action && !isCancelled()) {
+              setConfig(action);
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
+
+        // 2b. An oath in leagues names no exercise, so the chain above cannot serve it, and the
+        //     muscle rule below never will: an outing carries no muscles by design (0041). The
+        //     first door out is the answer; the hero picks the duration on the quest screen.
+        if (oath && !oath.isFulfilled && oath.oath.metric === "leagues" && !isCancelled()) {
+          const outing = (await listOutings())[0];
+          if (outing) {
+            const action = await questAction(
+              outing.quest.id,
+              t("home.oath_focus_simple", {
+                goal: t("oath.metric_leagues", { count: oath.oath.target }),
+              }),
+            );
             if (action && !isCancelled()) {
               setConfig(action);
               setIsLoading(false);

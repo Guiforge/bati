@@ -12,6 +12,12 @@ export type QuestFilters = {
   muscles: Set<MuscleCode>;
   equipment: Set<EquipmentCode>;
   archetypes: Set<QuestArchetype>;
+  /**
+   * "Show me the ones that happen outdoors." A boolean rather than a set: there is one word to
+   * say here, so there is one chip, and an off chip has to mean "not asked" and never "indoors
+   * only" — a hero who has not chosen still wants the walks in the list.
+   */
+  outside: boolean;
   duration: DurationBucket | null;
 };
 
@@ -19,6 +25,7 @@ export const NO_FILTERS: QuestFilters = {
   muscles: new Set(),
   equipment: new Set(),
   archetypes: new Set(),
+  outside: false,
   duration: null,
 };
 
@@ -28,6 +35,8 @@ type Filterable = {
   equipment: EquipmentCode[];
   /** Null on user-authored quests, which declare no archetype. */
   archetype: QuestArchetype | null;
+  /** True when any of the quest's movements is an expedition — `NON_REP_STYLE`. */
+  outside: boolean;
   durationSeconds: number;
 };
 
@@ -59,6 +68,10 @@ export function matchesFilters(quest: Filterable, filters: QuestFilters): boolea
   if (filters.archetypes.size > 0) {
     if (quest.archetype === null || !filters.archetypes.has(quest.archetype)) return false;
   }
+  // The only chip that says "leave the house". An expedition declares `metabolic` like every
+  // other continuous-effort session and carries no muscles at all, so every other dimension
+  // either files it under Cardio or drops it — three quests out of 41 with no way to ask for them.
+  if (filters.outside && !quest.outside) return false;
   return matchesDuration(quest.durationSeconds, filters.duration);
 }
 
@@ -66,4 +79,23 @@ export function toggleInSet<T>(set: Set<T>, value: T): Set<T> {
   const next = new Set(set);
   if (!next.delete(value)) next.add(value);
   return next;
+}
+
+/**
+ * The gallery's own order: pinned first, then the hero's own quests, then seed order.
+ *
+ * Pure and here rather than inline in the screen, because the interesting part is what it does
+ * *not* do. Seed order is authored - the gallery opens on a curated first card - so both passes
+ * are stable sorts over a copy, and everything the hero has not touched keeps the order content
+ * gave it. One comparator with two terms would read as a single ranking; these are two separate
+ * claims, and "pinned beats authored" is about the hero rather than about the content.
+ */
+export function galleryOrder<T extends { id: number }>(
+  quests: readonly T[],
+  isMine: (quest: T) => boolean,
+  pinned: ReadonlySet<number>,
+): T[] {
+  return [...quests]
+    .sort((a, b) => Number(isMine(b)) - Number(isMine(a)))
+    .sort((a, b) => Number(pinned.has(b.id)) - Number(pinned.has(a.id)));
 }

@@ -7,7 +7,7 @@ import { SpaceGrotesk_300Light } from "@expo-google-fonts/space-grotesk/300Light
 import { SpaceGrotesk_400Regular } from "@expo-google-fonts/space-grotesk/400Regular";
 import { SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk/700Bold";
 import { useFonts } from "expo-font";
-import { DefaultTheme, Slot, ThemeProvider, useRouter, useSegments } from "expo-router";
+import { DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
@@ -152,7 +152,20 @@ export default function RootLayout() {
                 <ToastProvider>
                   <ErrorBoundary onError={(error) => recordCrash("render", error)}>
                     <AppBackground />
-                    <Slot />
+                    {/*
+                      A Stack, not a Slot.
+                      `Slot` renders the matched route with no navigator, so the root had no
+                      history: every screen that lives outside `(tabs)` - the recap, settings,
+                      the oath, an exercise, the credits - was pushed onto nothing, and its back
+                      button had nothing to pop and landed on Home. Back *inside* a tab always
+                      worked, because `(tabs)/quests`, `journal` and `adventures` each mount
+                      their own Stack, which is exactly why this looked like a bug in one screen
+                      rather than in the root.
+
+                      `headerShown: false` because every screen here draws its own header, with
+                      its own chevron; a native header would sit on top of them.
+                    */}
+                    <Stack screenOptions={{ headerShown: false }} />
                     {/* Above every route, mounted once. See components/chorus/VillagerCameo.tsx. */}
                     <VillagerCameo />
                   </ErrorBoundary>

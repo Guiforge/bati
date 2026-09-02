@@ -18,6 +18,7 @@ import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
+import { getQuestThumb } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import { listCompletedSessions } from "@/db/completed";
 import { listQuestTemplates } from "@/db/quests";
@@ -132,8 +133,10 @@ export default function JournalScreen() {
         return {
           id: s.id,
           questTitle: title,
+          cover: getQuestThumb(quest?.imagePath),
           performedAt: s.performedAt,
           durationSeconds: s.durationSeconds,
+          leaguesM: s.leaguesM,
           userLevel: s.userLevel,
           hasNewRecords: s.hasNewRecords,
         };

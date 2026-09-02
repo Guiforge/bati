@@ -281,6 +281,69 @@
       "when": 1787126400000,
       "tag": "0039_exercise_measure",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "6",
+      "when": 1787212800000,
+      "tag": "0040_the_plan_nobody_read",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1787299200000,
+      "tag": "0041_the_three_ways_out",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "6",
+      "when": 1787385600000,
+      "tag": "0042_three_doors_out",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "6",
+      "when": 1787472000000,
+      "tag": "0043_the_ground_covered",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "6",
+      "when": 1787558400000,
+      "tag": "0044_the_ground_that_counted",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "6",
+      "when": 1787644800000,
+      "tag": "0045_the_story_and_the_instruction",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "6",
+      "when": 1787731200000,
+      "tag": "0046_the_time_it_took",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "6",
+      "when": 1787817600000,
+      "tag": "0047_the_catalogue_says_tu",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "6",
+      "when": 1787904000000,
+      "tag": "0048_word_must_travel",
+      "breakpoints": true
     }
   ]
 }

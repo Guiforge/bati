@@ -49,6 +49,15 @@ The workout execution experience.
 - **Contains**: Exercise view, rest screen, pause, completion
 - **Doc**: [SESSION.md](../gameplay/session-flow.md)
 
+### Expeditions (Outings)
+
+Walking, running and riding, measured by GPS, offline.
+
+- **What**: A quest whose every movement is a walk, a run or a ride, with a duration or a distance goal
+- **Contains**: Live distance, moving time and pace; a buzz at the goal; a recap map; GPX export
+- **Pays**: XP on moving time, and leagues that raise the High Road
+- **Doc**: [EXPEDITIONS.md](../gameplay/expeditions.md)
+
 ---
 
 ## 🏰 RPG Systems
@@ -58,7 +67,8 @@ The workout execution experience.
 Visual representation of your fitness journey.
 
 - **What**: One illustrated scene whose tier and overlays are a pure function of your training
-- **Contains**: Automatic visual progression from workouts — no buildings, no resources
+- **Contains**: Automatic visual progression from workouts — no resource spending, no build menu
+- **High Road**: the one building leagues raise, and no amount of lifting can
 - **Status**: Derived/read-only reward layer (rebuild pending — see doc)
 - **Doc**: [progression.md](../gameplay/progression.md)
 
@@ -190,11 +200,19 @@ Visual design guidelines.
 
 ### Offline-First
 
-Works without internet connection.
+Every workout works with the phone in flight mode.
 
 - Local SQLite database
 - All content stored on device
 - No account required
+- One exception, off by default: the map behind an expedition's route, fetched from
+  `tiles.openfreemap.org` (OpenStreetMap data served by OpenFreeMap). The tiles requested cover
+  the area of the outing, so switching the map on tells that host roughly where the outing
+  happened, with the IP address and the time; not the route, the pace, the training or an
+  identity. Until it is switched on the app makes no network request at all, and the recap draws
+  the route on a plain background. Nothing from the database is ever uploaded, and
+  [`.biome/plugins/noJsNetwork.grit`](../../.biome/plugins/noJsNetwork.grit) fails the build on any
+  network call written in the app's own code.
 
 ### Performance
 

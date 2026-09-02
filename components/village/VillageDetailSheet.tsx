@@ -223,6 +223,11 @@ function BuildingDetail({
         return t("village.detail_adventures_driver", { count: building.metricValue });
       case "boss_victories":
         return t("village.detail_victories_driver", { count: building.metricValue });
+      case "leagues":
+        // The one place the unit gets named. A league is the only measure Bati invents, and until
+        // this line it arrived unexplained: "2,50 km" on the victory screen and "2 leagues" under
+        // it, with nothing in between, and a hero in miles never told what either was worth.
+        return `${t("village.detail_leagues_driver", { count: building.metricValue })} ${t("village.league_unit")}`;
       default:
         return t("village.detail_bosses_driver", { count: building.metricValue });
     }

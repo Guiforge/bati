@@ -2,7 +2,7 @@
   Modifie ou supprime. Ce que tu as écrit ouvre chaque liste.
 - L'XP compte l'effort, plus l'horloge. Attendre ne rapporte plus
   davantage que s'entraîner.
-- Une quête te donne l'échelon où tu es — pompes au mur plutôt que
+- Une quête te donne l'échelon où tu es : pompes au mur plutôt que
   pompes classiques. Trop dur ? Échange en pleine séance, ou déclare
   la série non faite plutôt que taper 1.
 - Choisis un dossier de sauvegarde : Bati y écrit un instantané

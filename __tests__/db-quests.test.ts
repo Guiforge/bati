@@ -99,7 +99,8 @@ describe("db/quests", () => {
     if (!third) throw new Error("Expected quest exercise #3");
     expect(third.exercise.enName).toBe("Plank");
     expect(third.target.type).toBe("time");
-    expect(third.target.value).toBe(29);
+    // 30 rather than 29: time targets are snapped to the stepper's five-second grid.
+    expect(third.target.value).toBe(30);
   });
 
   /**
@@ -171,6 +172,46 @@ describe("db/quests", () => {
 
     t.sqlite.exec(`DELETE FROM completed_exercises WHERE sessionId = 9001`);
     t.sqlite.exec(`DELETE FROM completed_sessions WHERE id = 9001`);
+  });
+
+  /**
+   * A hold is worked at a fraction of the hero's max on purpose (see db/targets.ts,
+   * HOLD_FRACTION_OF_MAX). An outing shares the same "time" measure but not that reasoning: a
+   * one-hour walk does not exhaust the way a maximal isometric does, so it must never prescribe
+   * the next one at a fraction of itself.
+   */
+  test("an outing's own previous best never becomes a fraction-of-max target, unlike a hold", async () => {
+    const quests = require("../db/quests") as typeof import("../db/quests");
+
+    const templates = await quests.listQuestTemplates();
+    const warden = templates.find((q) => q.enTitle === "The Warden's Round");
+    assert(warden);
+
+    const walk = t.sqlite
+      .prepare("SELECT id FROM exercises WHERE enName = 'Warden''s Walk' AND creator = 'Admin'")
+      .get() as { id: number } | undefined;
+    assert(walk);
+
+    const now = Math.floor(Date.now() / 1000);
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (9201, ${now});
+      INSERT INTO completed_exercises
+        (sessionId, exerciseId, resultType, resultValue, targetType, targetValue, performedAt, sortOrder)
+        VALUES (9201, ${walk.id}, 'time', 3600, 'time', 1200, ${now}, 0);
+    `);
+    quests.invalidateQuestTemplates();
+
+    const quest = await quests.getQuestById(warden.id, quests.Difficulty.Medium);
+    assert(quest);
+    const slot = quest.exercises[0];
+    assert(slot);
+    // A submaximal read of the one-hour walk (2412s) clamped to the band's own 1200s ceiling
+    // would still be wrong — the band's medium-level midpoint, 900s, is what the quest itself
+    // prescribes and what a hero must still get.
+    expect(slot.target.value).toBe(900);
+
+    t.sqlite.exec(`DELETE FROM completed_exercises WHERE sessionId = 9201`);
+    t.sqlite.exec(`DELETE FROM completed_sessions WHERE id = 9201`);
   });
 
   test("create/update/set/delete quest template", async () => {

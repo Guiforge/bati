@@ -6,7 +6,6 @@ import { isMuscleCode } from "./muscles";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
-import { clampToRange, REST_RANGE, ROUNDS_RANGE, TARGET_RANGE } from "./questConfig";
 import {
   ADMIN_CREATOR,
   type ContentOwner,
@@ -19,12 +18,17 @@ import {
   type QuestTargetType,
 } from "./schema";
 import {
+  clampToRange,
   Difficulty,
   generateTarget,
+  REST_RANGE,
+  ROUNDS_RANGE,
   retargetForMovement,
   type Target,
+  targetRangeFor,
   type UserLevel,
 } from "./targets";
+import { NON_REP_STYLE } from "./workUnits";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
 
@@ -238,8 +242,8 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
         exerciseId: qex.exerciseId,
         sortOrder: i,
         targetType: qex.baseTarget.type,
-        targetMin: clampToRange(qex.baseTarget.min, TARGET_RANGE),
-        targetMax: clampToRange(qex.baseTarget.max, TARGET_RANGE),
+        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type)),
+        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type)),
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );
@@ -462,7 +466,14 @@ function buildSlot(
   const effectiveId = ctx.servedId(r.exId);
 
   // A served rung runs in *its* unit, not the slot's: Squat's easier rung is Wall Sit, a hold.
-  const bestHold = ctx.history.get(ghostKey(effectiveId, "time"))?.best;
+  // Never for an outing, though: `generateTarget` treats a supplied best as a hold to work at a
+  // fraction of, and a walk is not one — twenty minutes on foot does not consume the way a
+  // maximal isometric does, so a hero's longest previous outing must not prescribe a fraction of
+  // itself for the next one.
+  const bestHold =
+    served?.style === NON_REP_STYLE
+      ? undefined
+      : ctx.history.get(ghostKey(effectiveId, "time"))?.best;
   const target = retargetForMovement(
     generateTarget(base, ctx.userLevel, bestHold),
     served ?? { measure: null },
@@ -687,8 +698,8 @@ export async function setQuestExercises(
         exerciseId: qex.exerciseId,
         sortOrder: i,
         targetType: qex.baseTarget.type,
-        targetMin: clampToRange(qex.baseTarget.min, TARGET_RANGE),
-        targetMax: clampToRange(qex.baseTarget.max, TARGET_RANGE),
+        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type)),
+        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type)),
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );

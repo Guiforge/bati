@@ -47,6 +47,7 @@ COPY = {
         "6-victory": ("VICTORY", "The loot drops\nwhen the work is done."),
         "7-village": ("YOUR VILLAGE", "Your reps\nbuilt all of this."),
         "8-journal": ("PROGRESS", "Years of training,\non one screen."),
+        "9-recap": ("EXPEDITIONS", "Some quests\nleave the walls."),
     },
     "fr-FR": {
         "0-onboarding": ("BIENVENUE", "Ton entraînement,\nen aventure."),
@@ -58,6 +59,7 @@ COPY = {
         "6-victory": ("VICTOIRE", "Le butin tombe\nquand le travail est fait."),
         "7-village": ("TON VILLAGE", "Tes séances\nont bâti tout ça."),
         "8-journal": ("PROGRESSION", "Des années de sport,\nsur un seul écran."),
+        "9-recap": ("EXPÉDITIONS", "Certaines quêtes\nsortent des murs."),
     },
 }
 

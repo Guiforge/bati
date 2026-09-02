@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.10/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.11/schema.json",
   "files": {
     "ignoreUnknown": false,
     "includes": [
@@ -37,7 +37,8 @@
   "plugins": [
     "./.biome/plugins/noRawHexColor.grit",
     "./.biome/plugins/noIdenticalTernaryArms.grit",
-    "./.biome/plugins/noDynamicEnvAccess.grit"
+    "./.biome/plugins/noDynamicEnvAccess.grit",
+    "./.biome/plugins/noJsNetwork.grit"
   ],
   "linter": {
     "enabled": true,

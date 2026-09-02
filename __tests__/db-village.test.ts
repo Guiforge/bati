@@ -242,7 +242,7 @@ describe("db/village", () => {
     expect(scene.flame).toBe(0);
     expect(scene.dominantSport).toBeNull();
     expect(scene.trophies).toEqual([]);
-    expect(scene.buildings).toHaveLength(20);
+    expect(scene.buildings).toHaveLength(21);
   });
 
   // Used to assert the boss arrived "as both a banner and a trophy". The banner half was never

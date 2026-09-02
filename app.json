@@ -9,8 +9,7 @@
       "package": "com.guiforge.bati",
       "versionCode": 11500,
       "blockedPermissions": [
-        "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_WIFI_STATE",
         "android.permission.RECEIVE_BOOT_COMPLETED"
       ]
     },

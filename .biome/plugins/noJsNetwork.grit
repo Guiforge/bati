@@ -1,0 +1,32 @@
+// The manifest used to be the promise. Now this file is.
+//
+// `INTERNET` sat in `blockedPermissions` since the app shipped, and that one line was the whole
+// enforcement behind "nothing leaves your phone": expo-file-system and expo-image both declare
+// the permission, and the manifest is what kept it out of the build. The recap map needs tiles,
+// so the line is gone — and a promise enforced by nothing is a claim.
+//
+// What replaces it is narrower than the manifest and says the same thing. MapLibre fetches its
+// tiles natively, from one host named in the privacy policy; **no JavaScript in this app has any
+// business opening a socket**, and none ever has — this plugin was written against a codebase
+// where the grep found zero calls. The first `fetch` in a future PR is the one that turns one
+// host into two without anyone deciding to.
+//
+// If a feature ever genuinely needs a request from JS, delete this file in the same commit that
+// adds it and say in the message which host and why. Do not add an exemption: an exemption list
+// is how a rule stops being read.
+//
+// `language js` like the other three plugins here, which is also why the tile URL lives in a
+// `.ts` style module rather than a `.json` one — see docs/designs/map-immersion.md.
+language js
+
+`$fn($...)` where {
+  $fn <: or {
+    `fetch`,
+    `XMLHttpRequest`,
+    `WebSocket`,
+    `EventSource`,
+    `navigator.sendBeacon`
+  },
+  $filename <: not r".*__tests__.*",
+  register_diagnostic(span=$fn, message="No network from JavaScript. Map tiles are fetched natively by MapLibre from the one host in the privacy policy; anything else breaks the promise the manifest used to enforce. See .biome/plugins/noJsNetwork.grit.")
+}

@@ -1,0 +1,10 @@
+<resources>
+    <!--
+      The only string this module owns. Every other word the notification says is pushed from JS,
+      localized there, and cannot be pushed on the one path that needs this one: the OS replaying
+      START_STICKY after the process died brings the service back with no intent and no session.
+      Device locale rather than the app's chosen language, because nothing that knows the app's
+      language is alive at that point.
+    -->
+    <string name="bati_location_interrupted">Expedition interrupted</string>
+</resources>

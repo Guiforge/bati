@@ -240,6 +240,14 @@ outlived it.
   [`docs/architecture/exercise-ownership.md`](docs/architecture/exercise-ownership.md).
 - **Mark a deliberate shortcut with a `ponytail:` comment** naming its ceiling and what would
   trigger the real fix. "Refactor planned" tells the next reader nothing.
+- **Copy has rules, and most of them are measured.** No em dash reaches a reader, in either
+  language and on any surface: a comma, a colon, a full stop or brackets say the same thing. The
+  app says `tu` and only the policy says `vous`. A screen whose strings all have the same shape is
+  the shape's problem, not the words'. Removing a "not X, it's Y" means finding what the sentence
+  is about without the opposition, and compressing it keeps it.
+  `__tests__/locale-style.test.ts` and `__tests__/villagers.test.ts` hold what a machine can;
+  [`docs/product/writing.md`](docs/product/writing.md) holds the rest and says which is which.
+  The ban stops at what a reader sees: `docs/` and code comments are out of it on purpose.
 
 ### Known debt
 

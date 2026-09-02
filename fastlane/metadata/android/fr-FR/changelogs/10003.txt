@@ -1,5 +1,5 @@
 Fini les notifications, et les permissions qui allaient avec.
 
-Le rappel du serment disparaît. Il réclamait une bibliothèque de push Google qui voulait aussi lire les réglages de ton lanceur et savoir quelle pub t'avait amené — pour un message trois jours plus tard. En le retirant, l'app passe de 33 permissions Android à 11.
+Le rappel du serment disparaît. Il réclamait une bibliothèque de push Google qui voulait aussi lire les réglages de ton lanceur et savoir quelle pub t'avait amené, pour un message trois jours plus tard. En le retirant, l'app passe de 33 permissions Android à 11.
 
 Le serment t'attend désormais sur l'écran d'accueil, là où tu regardes de toute façon.

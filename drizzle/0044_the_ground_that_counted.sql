@@ -1,0 +1,16 @@
+-- What the reducer said, kept beside the session that earned it.
+--
+-- Leagues were a `SUM(gps_points.distFromPrevCm)`, and that is the sum `src/gps/track.ts` exists
+-- to refuse. It counts drift while the hero was standing still — measured at 6 m in 30 s on a
+-- phone lying flat on a desk, half a kilometre over a 45-minute stop — and it counts the length
+-- of a GPS teleport, which the reducer breaks the line at and does not credit. So one outing had
+-- two lengths: the one on the panel and in the recap, and a larger one that grew the High Road.
+--
+-- It also summed points no session owned: a run in progress, and a run the hero discarded before
+-- the next launch swept it. The village grew from walks that had not finished or had been thrown
+-- away.
+--
+-- One column, written once by the function that already decided the number, at save. Leagues are
+-- now a sum over sessions rather than over fixes, which is the same rule this codebase applies
+-- everywhere else: one source per value.
+ALTER TABLE `completed_sessions` ADD `leaguesM` integer;

@@ -23,12 +23,16 @@ const prefs = {
   getHapticsEnabled: jest.fn<Promise<boolean>, []>(),
   getVillagersEnabled: jest.fn<Promise<boolean>, []>(),
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
+  getDistanceUnit: jest.fn<Promise<"metric" | "imperial">, []>(),
+  getMapTilesEnabled: jest.fn<Promise<boolean>, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
   setVillagersEnabled: jest.fn().mockResolvedValue(undefined),
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
+  setDistanceUnit: jest.fn().mockResolvedValue(undefined),
+  setMapTilesEnabled: jest.fn().mockResolvedValue(undefined),
 };
 
 beforeAll(() => {
@@ -67,6 +71,8 @@ function storedSettings() {
   prefs.getHapticsEnabled.mockResolvedValue(false);
   prefs.getVillagersEnabled.mockResolvedValue(false);
   prefs.getSoundEnabled.mockResolvedValue(false);
+  prefs.getDistanceUnit.mockResolvedValue("imperial");
+  prefs.getMapTilesEnabled.mockResolvedValue(true);
 }
 
 const DEFAULTS = {
@@ -76,6 +82,10 @@ const DEFAULTS = {
   reducedMotion: false,
   villagersEnabled: true,
   soundEnabled: true,
+  distanceUnit: "metric" as const,
+  // Off, and it is the only boolean here whose default is a refusal: it is what decides whether
+  // the app makes a network request at all.
+  mapTilesEnabled: false,
   isLoaded: false,
 };
 
@@ -98,6 +108,8 @@ describe("useSettingsStore", () => {
       hapticsEnabled: false,
       villagersEnabled: false,
       soundEnabled: false,
+      distanceUnit: "imperial",
+      mapTilesEnabled: true,
       isLoaded: true,
     });
   });
@@ -178,6 +190,8 @@ describe("useSettingsStore", () => {
     await s().setCustomAvatarUri("file:///picked.jpg");
     await s().setVillagersEnabled(false);
     await s().setSoundEnabled(false);
+    await s().setDistanceUnit("imperial");
+    await s().setMapTilesEnabled(true);
 
     expect(s()).toMatchObject({
       language: "fr",
@@ -186,6 +200,8 @@ describe("useSettingsStore", () => {
       customAvatarUri: "file:///picked.jpg",
       villagersEnabled: false,
       soundEnabled: false,
+      distanceUnit: "imperial",
+      mapTilesEnabled: true,
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
@@ -194,6 +210,34 @@ describe("useSettingsStore", () => {
     expect(prefs.setCustomAvatarUri).toHaveBeenCalledWith("file:///picked.jpg");
     expect(prefs.setVillagersEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
+    expect(prefs.setDistanceUnit).toHaveBeenCalledWith("imperial");
+    expect(prefs.setMapTilesEnabled).toHaveBeenCalledWith(true);
+  });
+
+  /**
+   * The store's own default is the refusal, not just the database's. `loadFromDatabase` failing
+   * halfway leaves every field on its initial value, and the one field where that matters is
+   * this one: a store that woke up saying "the map is allowed" would have the recap fetching
+   * tiles off a read that never completed.
+   */
+  /**
+   * The store's *own* initial value, read before any test has written one. Every other assertion
+   * in this file starts from `DEFAULTS`, which is a copy — and a copy is exactly what would keep
+   * saying "off" the day the store said "on". This is the one field where that difference is a
+   * network request nobody asked for, so it is read from the module.
+   */
+  test("the map starts refused in the store the app actually creates", () => {
+    expect(settingsStore().getInitialState().mapTilesEnabled).toBe(false);
+  });
+
+  test("a failed load leaves the map refused", async () => {
+    storedSettings();
+    prefs.getMapTilesEnabled.mockRejectedValue(new Error("db is gone"));
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().mapTilesEnabled).toBe(false);
+    expect(settingsStore().getState().isLoaded).toBe(true);
   });
 
   /**

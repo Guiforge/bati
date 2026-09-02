@@ -36,7 +36,7 @@ export const VILLAGE_FLAVOUR: { en: string[]; fr: string[] } = {
     "Mist to the knees at dawn, gone by the time anyone looked.",
     "A shutter banged loose and was fixed before noon.",
     "The old road is quiet. It usually is, this time of year.",
-    "Lamps lit early — the dark came on faster than expected.",
+    "Lamps lit early. The dark came on faster than expected.",
     "Nothing happened here today, and that is its own kind of news.",
   ],
   fr: [
@@ -56,7 +56,7 @@ export const VILLAGE_FLAVOUR: { en: string[]; fr: string[] } = {
     "Brume jusqu'aux genoux à l'aube, dissipée avant qu'on la regarde.",
     "Un volet s'est décroché et fut réparé avant midi.",
     "La vieille route est calme. Elle l'est souvent, en cette saison.",
-    "Lampes allumées tôt — la nuit est tombée plus vite que prévu.",
+    "Lampes allumées tôt. La nuit est tombée plus vite que prévu.",
     "Il ne s'est rien passé ici aujourd'hui, et c'est une nouvelle en soi.",
   ],
 };

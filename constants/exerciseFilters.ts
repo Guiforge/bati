@@ -7,6 +7,7 @@ import {
   type MovementPattern,
   type MuscleCode,
 } from "@/db/schema";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -183,30 +184,38 @@ export function rankSwapCandidates(
     return null;
   };
 
-  return exercises
-    .filter((e) => e.id !== current.id)
-    .map((e) => ({ exercise: e, tier: tier(e), reason: reason(e) }))
-    .sort((a, b) => {
-      if (a.tier !== b.tier) return a.tier - b.tier;
+  return (
+    exercises
+      .filter((e) => e.id !== current.id)
+      // An outing and a set of push-ups are never substitutes for each other, in either direction.
+      // Swapping a walk into a boss quest's slot gave the hero a thirty-second stroll worth one
+      // damage, no volume and no muscle balance, with no warning; swapping push-ups into an
+      // expedition's only slot left a session whose foreground service and GPS had already
+      // started tracking a workout happening indoors.
+      .filter((e) => (e.style === NON_REP_STYLE) === (current.style === NON_REP_STYLE))
+      .map((e) => ({ exercise: e, tier: tier(e), reason: reason(e) }))
+      .sort((a, b) => {
+        if (a.tier !== b.tier) return a.tier - b.tier;
 
-      // A hold offered for a rep slot runs in its own unit now, but the slot was written for
-      // reps: the movements measured the same way are the closer substitutes.
-      const sameUnit =
-        Number(b.exercise.measure === current.measure) -
-        Number(a.exercise.measure === current.measure);
-      if (sameUnit !== 0) return sameUnit;
+        // A hold offered for a rep slot runs in its own unit now, but the slot was written for
+        // reps: the movements measured the same way are the closer substitutes.
+        const sameUnit =
+          Number(b.exercise.measure === current.measure) -
+          Number(a.exercise.measure === current.measure);
+        if (sameUnit !== 0) return sameUnit;
 
-      const affordable =
-        Number(isAffordable(b.exercise, owned)) - Number(isAffordable(a.exercise, owned));
-      if (affordable !== 0) return affordable;
+        const affordable =
+          Number(isAffordable(b.exercise, owned)) - Number(isAffordable(a.exercise, owned));
+        if (affordable !== 0) return affordable;
 
-      const closeness =
-        Math.abs(DIFFICULTY_RANK[a.exercise.difficulty] - DIFFICULTY_RANK[current.difficulty]) -
-        Math.abs(DIFFICULTY_RANK[b.exercise.difficulty] - DIFFICULTY_RANK[current.difficulty]);
-      if (closeness !== 0) return closeness;
+        const closeness =
+          Math.abs(DIFFICULTY_RANK[a.exercise.difficulty] - DIFFICULTY_RANK[current.difficulty]) -
+          Math.abs(DIFFICULTY_RANK[b.exercise.difficulty] - DIFFICULTY_RANK[current.difficulty]);
+        if (closeness !== 0) return closeness;
 
-      // Last resort so the order is stable between renders rather than dependent on input order.
-      return a.exercise.id - b.exercise.id;
-    })
-    .map(({ exercise, reason: why }) => ({ exercise, reason: why }));
+        // Last resort so the order is stable between renders rather than dependent on input order.
+        return a.exercise.id - b.exercise.id;
+      })
+      .map(({ exercise, reason: why }) => ({ exercise, reason: why }))
+  );
 }

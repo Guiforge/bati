@@ -6,6 +6,7 @@ import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
 import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
+import "@/i18n";
 import config from "@/tamagui.config";
 
 // Every card in the journal follows the same shape: fetch on mount, show a skeleton, then either
@@ -18,7 +19,6 @@ jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn(), back: jes
 // reportError writes to the crash log, which needs the real database; the cards under test are
 // about what the *screen* does when a query fails, not about how the failure is recorded.
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
-jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("expo-localization", () => ({
   getLocales: () => [{ languageCode: "en", languageTag: "en-US" }],
 }));
@@ -92,6 +92,9 @@ beforeEach(() => {
     totalSessions: 0,
     totalWorkUnits: 0,
     longestSession: null,
+    mostXp: null,
+    longestOuting: null,
+    totalLeaguesM: 0,
   });
   mockGetStreakInfo.mockResolvedValue({ current: 0, longest: 0, isLit: false });
   mockGetSuggestedQuestsForWeakAreas.mockResolvedValue([]);
@@ -131,6 +134,53 @@ describe("PersonalRecordsCard", () => {
     mockGetPersonalRecordsSummary.mockRejectedValue(new Error("db is gone"));
 
     await expect(mount(<PersonalRecordsCard />)).resolves.toBeDefined();
+  });
+
+  it("shows the ground covered once there is any", async () => {
+    mockGetPersonalRecordsSummary.mockResolvedValue({
+      records: [],
+      totalSessions: 3,
+      totalWorkUnits: 0,
+      longestSession: null,
+      mostXp: null,
+      longestOuting: { type: "longest_outing", value: 4580, achievedAt: new Date() },
+      totalLeaguesM: 7080,
+    });
+    // `best`, not just `current`/`longest`: the card reads `streakInfo.best` and calls
+    // `.toString()` on it. The other tests in this file dodge that by rendering the
+    // `totalSessions === 0` early return, which this one does not.
+    mockGetStreakInfo.mockResolvedValue({ current: 1, longest: 2, best: 5, isLit: true });
+
+    await mount(<PersonalRecordsCard />);
+
+    expect(await screen.findByText("Ground covered")).toBeTruthy();
+    expect(screen.getByText("7.08 km")).toBeTruthy();
+    expect(screen.getByText("4.58 km")).toBeTruthy();
+  });
+
+  /**
+   * The row used to be gated on the total and to carry a `"--"` arm for a missing record, which
+   * nothing could reach: both numbers come from one snapshot, `leaguesM` is never negative, so a
+   * positive sum always has a positive maximum. The record is the gate now, and there is no arm
+   * left to print a dash into.
+   */
+  it("hides the ground row rather than dashing it when no outing holds the record", async () => {
+    mockGetPersonalRecordsSummary.mockResolvedValue({
+      records: [],
+      totalSessions: 3,
+      totalWorkUnits: 0,
+      longestSession: null,
+      mostXp: null,
+      longestOuting: null,
+      totalLeaguesM: 7080,
+    });
+    mockGetStreakInfo.mockResolvedValue({ current: 1, longest: 2, best: 5, isLit: true });
+
+    await mount(<PersonalRecordsCard />);
+
+    await waitFor(() => expect(screen.queryByText("Ground covered")).toBeNull());
+    expect(screen.queryByText("Longest outing")).toBeNull();
+    expect(screen.queryByText("7.08 km")).toBeNull();
   });
 });
 

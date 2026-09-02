@@ -9,8 +9,14 @@ type StepperProps = {
   min: number;
   max: number;
   step?: number;
-  /** Appended to the displayed value, e.g. "s" for a duration. */
+  /** Appended to the displayed value, e.g. "s" for a duration. Ignored when `display` is given. */
   suffix?: string;
+  /**
+   * How the value reads, when the raw number is not how a person says it. The stepper still
+   * *moves* in `step` units: a 15-minute outing steps five seconds at a time and says "15 min",
+   * because "900s" is a number nobody has ever used to describe a walk.
+   */
+  display?: (value: number) => string;
   onChange: (value: number) => void;
 };
 
@@ -23,6 +29,7 @@ export function Stepper({
   max,
   step = 1,
   suffix = "",
+  display,
   onChange,
 }: StepperProps) {
   const { t } = useTranslation();
@@ -30,7 +37,10 @@ export function Stepper({
   return (
     <XStack items="center" justify="space-between" gap="$3">
       <YStack flex={1}>
-        <Text fontWeight="700" fontSize={15} color="$text" numberOfLines={1}>
+        {/* Two lines, since a label here can be a movement name: "Course du Messager" next to a
+            value reading "13 min" rather than "900s" no longer fits on one, and truncating the
+            movement is worse than wrapping it. */}
+        <Text fontWeight="700" fontSize={15} color="$text" numberOfLines={2}>
           {label}
         </Text>
         {hint ? (
@@ -54,10 +64,9 @@ export function Stepper({
           fontWeight="700"
           fontSize={18}
           color="$text"
-          style={{ minWidth: 52, textAlign: "center" }}
+          style={{ minWidth: 64, textAlign: "center" }}
         >
-          {value}
-          {suffix}
+          {display ? display(value) : `${value}${suffix}`}
         </Text>
         <Button
           size="$3"

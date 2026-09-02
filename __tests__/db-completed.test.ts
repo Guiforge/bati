@@ -70,8 +70,76 @@ describe("db/completed", () => {
     expect(ex.exercise.enName).toBe("Squat");
   });
 
+  /**
+   * The reducer decides both numbers once, at save. The recap used to re-derive the clock from
+   * `gps_points`, which is a second answer that goes wrong exactly when a flush failed and took
+   * half a minute of fixes with it.
+   */
+  test("an outing's moving seconds are written beside its ground", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const squat = (await exercises.listExercises()).find((e) => e.enName === "Squat");
+    if (!squat) throw new Error("Seeded exercise 'Squat' not found");
+
+    const id = await completed.createCompletedSession({
+      userLevel: "medium",
+      uuid: "0192-walk-row",
+      leaguesM: 4580,
+      movingSeconds: 2_700,
+      durationSeconds: 3_000,
+      xpEarned: 10,
+      exercises: [{ exerciseId: squat.id, sortOrder: 0, result: { type: "time", value: 3000 } }],
+    });
+
+    const row = t.sqlite
+      .prepare("SELECT leaguesM, movingSeconds FROM completed_sessions WHERE id = ?")
+      .get(id) as { leaguesM: number | null; movingSeconds: number | null };
+    expect(row.leaguesM).toBe(4580);
+    expect(row.movingSeconds).toBe(2_700);
+  });
+
+  test("a workout writes neither, rather than a zero that means nothing", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const squat = (await exercises.listExercises()).find((e) => e.enName === "Squat");
+    if (!squat) throw new Error("Seeded exercise 'Squat' not found");
+
+    const id = await completed.createCompletedSession({
+      userLevel: "medium",
+      xpEarned: 10,
+      exercises: [{ exerciseId: squat.id, sortOrder: 0, result: { type: "reps", value: 10 } }],
+    });
+
+    const row = t.sqlite
+      .prepare("SELECT leaguesM, movingSeconds FROM completed_sessions WHERE id = ?")
+      .get(id) as { leaguesM: number | null; movingSeconds: number | null };
+    expect(row.leaguesM).toBeNull();
+    expect(row.movingSeconds).toBeNull();
+  });
+
   test("getCompletedSessionById returns null for missing", async () => {
     const completed = require("../db/completed") as typeof import("../db/completed");
     expect(await completed.getCompletedSessionById(999999)).toBeNull();
+  });
+
+  test("the list carries the ground an outing covered, and null for a workout", async () => {
+    const { listCompletedSessions } =
+      require("../db/completed") as typeof import("../db/completed");
+    t.sqlite.exec("DELETE FROM completed_exercises");
+    t.sqlite.exec("DELETE FROM completed_sessions");
+    const now = Math.floor(Date.now() / 1000);
+    t.sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, leaguesM) VALUES ('medium', 10, ?, ?)",
+      )
+      .run(now, 4580);
+    t.sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, ?)",
+      )
+      .run(now - 60);
+
+    const rows = await listCompletedSessions();
+    expect(new Set(rows.map((r) => r.leaguesM))).toEqual(new Set([4580, null]));
   });
 });

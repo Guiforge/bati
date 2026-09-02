@@ -189,7 +189,8 @@ villager comments on what was done, never on what the hero is.
 **Autonomy-supportive, never controlling.** "You could", "whenever you like", a plain observation
 — never "you must", "come on, one more!". Controlling language produces reactance, which lowers
 exactly the autonomous motivation the layer exists to support. No villager ever commands effort.
-The herbalist's "Drink. Not because I said so —" is the pattern: the disclaimer is the point.
+The herbalist's "Drink. You'll regret it in an hour otherwise." is the pattern: the reason
+belongs to the hero's body, never to the speaker's authority.
 
 **Specific beats generic.** Externally-sourced motivation drops off sharply after six to eight
 weeks when it is decoration; what keeps working is tied to something real. This is the whole
@@ -218,8 +219,28 @@ number in an ambient line is either invented or contradicts the counter beside i
 holds too: a `_beat` line without its `{{delta}}` is a comparison to nothing.
 
 `__tests__/villagers.test.ts` enforces what it can: no digits in an ambient pool, `{{delta}}`
-present in every beat line, the length caps (90 characters ambient, 140 for guides and events),
-`en`/`fr` the same length everywhere, and no orphan pool nobody is cast to speak.
+present in every beat line, the length caps (90 characters ambient, 140 for events, 200 for
+guides), `en`/`fr` the same length everywhere, and no orphan pool nobody is cast to speak.
+
+### The one that was found by counting
+
+Seven villagers were written with seven vocabularies and still spoke with one mouth. The count
+says why: 80% of the 201 French lines were exactly two sentences, the second commenting on the
+first, and every villager sat between 75% and 84% of it. English had drifted to the same 76%. A
+reader hears rhythm before vocabulary, so seven subjects on one rhythm is one narrator in seven
+hats, and no amount of smithing metaphors fixes that.
+
+So each villager owns a **sentence shape**, and it is the shape a new line has to match. The
+table is in `constants/villagers.ts`, beside the cast it describes: the smith is blunt and often
+verbless, the sage takes one long breath on a subordinate clause, the herbalist commands and then
+gives the clinical reason, the minstrel performs, the farmer runs one sentence on with *et* and
+*alors*, the champion delivers a verdict, the watcher files a report.
+
+Dominant, not exclusive: a shape applied to twelve consecutive lines is a new metronome. The test
+checks the only part a machine can see, which is that **no pool may be more than three quarters
+one shape**, in either language. The pools now sit at 59% (fr) and 56% (en) two-sentence, worst
+pool 67%. A ratchet like the others: tighten it as the pools get more varied, never loosen it to
+land a batch.
 
 ### And one that only French needs
 

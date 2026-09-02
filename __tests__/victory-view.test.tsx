@@ -88,11 +88,19 @@ const mockQuest = {
   enTitle: "Quest",
   frTitle: "Quête",
   imagePath: "assets/placeholder.jpg",
-  exercises: [],
+  // A real slot, because the screen now shows the duration the journal will keep and that is
+  // clamped by what the quest asks for. A quest with no exercises estimates at zero seconds, so
+  // every session of it would be filed as zero and questioned as a false start.
+  exercises: [
+    {
+      exercise: { id: 1, enName: "Plank", muscles: ["abs"], style: "strength", secondsPerRep: 3 },
+      target: { type: "time", value: 600 },
+    },
+  ],
 } as unknown as Quest;
 
 /** Mount with the save deliberately left in flight; call the returned fn to let it land. */
-async function mountWithPendingSave(campaign: Campaign = null) {
+async function mountWithPendingSave(campaign: Campaign = null, sessionSeconds = 12 * 60) {
   let release!: () => void;
   const pending = new Promise((resolve) => {
     release = () => resolve({ ...saveResult, campaign });
@@ -102,7 +110,11 @@ async function mountWithPendingSave(campaign: Campaign = null) {
   useSessionStore.setState({
     quest: mockQuest,
     status: "finished",
-    startTime: Date.now() - 60_000,
+    // Twelve minutes by default, which is a session by the design window every seeded quest is
+    // held to. It was a flat 60 s, an arbitrary stand-in for "a workout happened", and once
+    // VictoryView learned to ask about anything under two minutes (TRIVIAL_SESSION_SECONDS) that
+    // stand-in was a false start: every test here sat on the prompt instead of the save.
+    startTime: Date.now() - sessionSeconds * 1000,
     totalPausedTime: 0,
     adventureRunStepId: null,
     bossFight: null,
@@ -245,5 +257,46 @@ describe("VictoryView continue navigation", () => {
     await fireEvent.press(view.getByTestId("session-victory-continue"));
 
     expect(mockReplace).toHaveBeenCalledWith("/adventures/7", { withAnchor: true });
+  });
+});
+
+describe("VictoryView, a session too short to be one", () => {
+  beforeEach(() => {
+    mockQuitSession.mockClear();
+  });
+
+  // A time set records whatever the clock said when the hero tapped done, so five seconds
+  // outside writes a row that counts toward the streak and toward the eight-week oath. The
+  // save is held back and the hero is asked, because they are the only one who knows whether
+  // that was the outing or a false start.
+  it("asks instead of saving, and saves nothing until the hero says to", async () => {
+    const { view } = await mountWithPendingSave(null, 5);
+
+    expect(view.getByText("session.summary_too_short_title")).toBeTruthy();
+    // The spinner belongs to a save that is happening; nothing is happening yet.
+    expect(view.queryByText("session.summary_saving")).toBeNull();
+  });
+
+  it("discarding takes the quit path, which writes nothing at all", async () => {
+    const { view } = await mountWithPendingSave(null, 5);
+
+    await fireEvent.press(view.getByText("session.summary_too_short_discard"));
+
+    expect(mockQuitSession).toHaveBeenCalled();
+  });
+
+  it("keeping it lets the save through", async () => {
+    const { view } = await mountWithPendingSave(null, 5);
+
+    await fireEvent.press(view.getByText("session.summary_too_short_keep"));
+
+    expect(view.getByText("session.summary_saving")).toBeTruthy();
+  });
+
+  it("a real session is never questioned", async () => {
+    const { view } = await mountWithPendingSave();
+
+    expect(view.queryByText("session.summary_too_short_title")).toBeNull();
+    expect(view.getByText("session.summary_saving")).toBeTruthy();
   });
 });

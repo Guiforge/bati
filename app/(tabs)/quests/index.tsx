@@ -5,7 +5,7 @@ import type { TFunction } from "i18next";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Platform } from "react-native";
+import { Platform, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
@@ -14,7 +14,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Dumbbell, Map as MapIcon, Plus } from "@/components/icons";
+import { Dumbbell, Map as MapIcon, Plus, Star } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
@@ -23,11 +23,13 @@ import {
 import {
   DURATION_BUCKETS,
   type DurationBucket,
+  galleryOrder,
   matchesFilters,
   NO_FILTERS,
   type QuestFilters,
   toggleInSet,
 } from "@/constants/questFilters";
+import { rawColors } from "@/constants/rawColors";
 import {
   estimateQuestTemplateSeconds,
   estimateQuestTemplateXp,
@@ -39,11 +41,13 @@ import {
 } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
+import { hasOutdoorMovement, isOutingQuest } from "@/db/expeditions";
+import { getFavouriteQuestIds, toggleFavouriteQuest } from "@/db/favourites";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import type { QuestTemplate } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -64,6 +68,19 @@ function questEmoji(rounds: number, exerciseCount: number) {
 }
 
 const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
+/**
+ * The pin sits on the art, so it needs its own ground to stay legible over a bright cover.
+ * A plain object rather than Tamagui props: this is a bare `Pressable`, deliberately, because a
+ * Tamagui `Button` inside the card's own press target swallows the card's tap on Android.
+ */
+const FAVOURITE_STYLE = {
+  position: "absolute",
+  right: 12,
+  bottom: 12,
+  padding: 8,
+  borderRadius: 999,
+  backgroundColor: rawColors.bgOverlay,
+} as const;
 
 /** No path means no cover: the muscle tint carries the banner instead. Anything else — a bundled
  *  key, a seeded path, a hero's `data:` photo — `getQuestAsset` already knows. */
@@ -77,6 +94,8 @@ type QuestMeta = {
   muscles: MuscleCode[];
   equipment: EquipmentCode[];
   archetype: QuestArchetype | null;
+  /** Any movement in this quest happens outdoors — what `matchesFilters` reads for the chip. */
+  outside: boolean;
   // Precomputed once per data load — recomputing these in renderItem made every
   // recycled row rebuild color maps, re-run the duration estimator, and re-interpolate
   // i18next strings while scrolling.
@@ -90,13 +109,19 @@ type QuestMeta = {
   focusLabel: string;
   /** "≈ 12 min" — worn as a chip over the cover banner. */
   durationLabel: string;
-  /** "4 exercises" — one Text instead of bordered Chips. */
+  /** "4 exercises" — one Text instead of bordered Chips. Empty when there is only one. */
   metaLabel: string;
   /** "+45 XP" — the reward, in gold. */
   xpLabel: string;
   /** "Yours" on a hero-written quest, null on seed content. Resolved here because `QuestRow`
    *  deliberately has no `useTranslation` of its own. */
   heroLabel: string | null;
+  /** "Outside" on an expedition, null otherwise. Same reason as `heroLabel` for living here. */
+  outsideLabel: string | null;
+  /** Whether the hero pinned this quest to the top of their own gallery. */
+  favourite: boolean;
+  /** What the star's screen reader says, which is the *action*, not the state. */
+  favouriteLabel: string;
 };
 
 function buildQuestMeta(
@@ -105,13 +130,16 @@ function buildQuestMeta(
   language: AppLanguage,
   t: TFunction,
   config: QuestConfig | null,
+  favourite: boolean,
 ): QuestMeta {
   const equipment = new Set<EquipmentCode>();
-
   for (const qex of q.exercises) {
     const ex = exercisesById[qex.exerciseId];
     if (ex) equipment.add(ex.equipment);
   }
+  // The generous half of `db/expeditions.ts`: the chip asks for anything that happens out
+  // there, where Home's band asks for quests that are nothing else.
+  const outside = hasOutdoorMovement(q, exercisesById);
 
   // Same numbers as the detail screen: the saved level and structure overrides feed the
   // estimate. ponytail: target/swap overrides are not folded in — the detail's
@@ -130,12 +158,16 @@ function buildQuestMeta(
   // and the two it touches once say nothing — "back" matched 28 of 34 seed quests that way,
   // and the filter looked broken. The card's focus line and the filter read the same list.
   const focus = trainingFocus([q], exercisesById);
+  // Undefined when a slot points at a row that is not in the catalogue, which is the same
+  // hole `hasOutdoorMovement` steps around rather than guessing at.
+  const soleMovement = exercisesById[q.exercises[0]?.exerciseId ?? -1];
 
   return {
     quest: q,
     muscles: focus.muscles,
     equipment: [...equipment],
     archetype: q.archetype,
+    outside,
     tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
     durationSeconds,
     xp,
@@ -144,25 +176,60 @@ function buildQuestMeta(
     description: language === "fr" ? q.frDescription : q.enDescription,
     // The archetype leads it — what kind of session this is, then what it works. Absent on
     // user-authored quests, which declare no archetype, so their line starts on the muscles.
-    focusLabel: [
-      focus.archetype ? t(`quests.archetype_${focus.archetype}`) : null,
-      ...focus.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
-    ]
-      .filter(Boolean)
-      .join(" · "),
+    // An outing's archetype is `metabolic`, which this line printed as "Cardio" - the one word
+    // drizzle/0041_the_three_ways_out.sql spends a paragraph refusing, because cardio is what
+    // leaves you breathless and an expedition is what leaves the walls. It carries no muscles
+    // either, so the whole line was that single wrong word. On an outing the line names the
+    // movement instead, which is what a one-movement quest actually trains.
+    focusLabel:
+      isOutingQuest(q, exercisesById) && soleMovement
+        ? localizedName(soleMovement, language)
+        : [
+            focus.archetype ? t(`quests.archetype_${focus.archetype}`) : null,
+            ...focus.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
+          ]
+            .filter(Boolean)
+            .join(" · "),
     durationLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
-    metaLabel: t("quests.exercises", {
-      count: q.exercises.length,
-      defaultValue: `${q.exercises.length} exercises`,
-    }),
-    xpLabel: t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
+    // Empty on a one-movement quest, the same silence the detail screen keeps: "1 exercice"
+    // under a card whose focus line has just named that one movement is a count doing no work.
+    // The `flex={1}` on its Text keeps the reward on the right when the string is empty.
+    metaLabel:
+      q.exercises.length > 1
+        ? t("quests.exercises", {
+            count: q.exercises.length,
+            defaultValue: `${q.exercises.length} exercises`,
+          })
+        : "",
+    // "Up to" is a claim about a maximum, and an outing has none: its XP follows the ground
+    // covered with no target overhead it. See the outing branch in `setEffortSeconds`.
+    xpLabel: isOutingQuest(q, exercisesById)
+      ? t("quests.reward_xp_open", { count: xp, defaultValue: `+${xp} XP` })
+      : t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
     heroLabel: isUserQuest(q) ? t("common.hero_badge") : null,
+    // The archetype line above reads "Metabolic" on all three outings, which is true of their
+    // shape and says nothing about where they happen. This is the word that does.
+    outsideLabel: outside ? t("quests.filter_outside", "Outside") : null,
+    favourite,
+    // The action, not the state: a screen reader announcing "pinned" on a button leaves the hero
+    // guessing what pressing it does. `accessibilityState.selected` carries the state.
+    favouriteLabel: favourite
+      ? t("quests.favourite_remove", "Unpin")
+      : t("quests.favourite_add", "Pin to the top"),
   };
 }
 
 // No manual memo/useCallback: the React Compiler (app.json experiments.reactCompiler)
 // memoizes components and closures automatically.
-function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: number) => void }) {
+function QuestRow({
+  meta,
+  onPressQuest,
+  onToggleFavourite,
+}: {
+  meta: QuestMeta;
+  onPressQuest: (id: number) => void;
+  onToggleFavourite: (id: number) => void;
+}) {
   const q = meta.quest;
   const handlePress = () => onPressQuest(q.id);
 
@@ -195,13 +262,34 @@ function QuestRow({ meta, onPressQuest }: { meta: QuestMeta; onPressQuest: (id: 
           <XStack position="absolute" t="$3" l="$3">
             <Chip label={meta.durationLabel} />
           </XStack>
-          {/* Opposite the duration, so a hero's own quest is legible from the gallery rather
-            than only once opened. Same word the movement rows wear. */}
-          {meta.heroLabel ? (
-            <XStack position="absolute" t="$3" r="$3">
-              <Chip label={meta.heroLabel} tone="primary" />
+          {/* Opposite the duration, so a hero's own quest — and a quest that starts by leaving
+            the house — is legible from the gallery rather than only once opened. Same words the
+            movement rows and the filter rail wear. */}
+          {meta.outsideLabel || meta.heroLabel ? (
+            <XStack position="absolute" t="$3" r="$3" gap="$2">
+              {meta.outsideLabel ? <Chip label={meta.outsideLabel} tone="secondary" /> : null}
+              {meta.heroLabel ? <Chip label={meta.heroLabel} tone="primary" /> : null}
             </XStack>
           ) : null}
+
+          {/* Bottom-right of the banner, clear of both chip stacks. Its own Pressable inside the
+              card's: tapping the star must never open the quest, which is the whole point of
+              being able to pin one without leaving the gallery. */}
+          <Pressable
+            onPress={() => onToggleFavourite(q.id)}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={meta.favouriteLabel}
+            accessibilityState={{ selected: meta.favourite }}
+            style={FAVOURITE_STYLE}
+          >
+            <Star
+              size={20}
+              color={meta.favourite ? "$resourceGold" : "$text"}
+              fill={meta.favourite ? rawColors.resourceGold : "transparent"}
+              strokeWidth={2.5}
+            />
+          </Pressable>
         </YStack>
 
         <YStack gap="$2" p="$4">
@@ -361,6 +449,7 @@ export default function QuestsGallery() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   // One bulk read alongside the templates — never per card, the list renders ~34 of them.
   const [configs, setConfigs] = useState<Map<number, QuestConfig>>(new Map());
+  const [favourites, setFavourites] = useState<ReadonlySet<number>>(new Set<number>());
 
   // Handlers below are plain closures on purpose: the React Compiler
   // (app.json experiments.reactCompiler) stabilizes them automatically.
@@ -379,6 +468,8 @@ export default function QuestsGallery() {
   const toggleArchetype = (a: QuestArchetype) =>
     applyFilters((f) => ({ ...f, archetypes: toggleInSet(f.archetypes, a) }));
 
+  const toggleOutside = () => applyFilters((f) => ({ ...f, outside: !f.outside }));
+
   // Single-select: you only ever have one amount of time. Tapping the active one clears it.
   const toggleDuration = (d: DurationBucket) =>
     applyFilters((f) => ({ ...f, duration: f.duration === d ? null : d }));
@@ -394,12 +485,14 @@ export default function QuestsGallery() {
         : { status: "loading", quests: s.quests, exercisesById: s.exercisesById },
     );
     try {
-      const [quests, exercises, questConfigs] = await Promise.all([
+      const [quests, exercises, questConfigs, pinned] = await Promise.all([
         listQuestTemplates(),
         listExercises(),
         getAllQuestConfigs(),
+        getFavouriteQuestIds(),
       ]);
       setConfigs(questConfigs);
+      setFavourites(pinned);
       setState((s) => {
         // listQuestTemplates/listExercises are promise-cached: a warm cache returns the same
         // array identity. Bail so a tab refocus doesn't invalidate questMeta → filtered → list.
@@ -431,14 +524,21 @@ export default function QuestsGallery() {
   const quests = state.quests;
   const exercisesById = state.exercisesById;
 
-  // Hero quests lead. Seed order is authored — the gallery opens on a curated first card — so
-  // the rest keeps it rather than being re-sorted around them.
+  // Pinned quests lead, then the hero's own, then seed order. The rule itself lives in
+  // `constants/questFilters` beside `matchesFilters`, where it is pure and tested.
   const questMeta = useMemo(
     () =>
-      [...quests]
-        .sort((a, b) => Number(isUserQuest(b)) - Number(isUserQuest(a)))
-        .map((q) => buildQuestMeta(q, exercisesById, language, t, configs.get(q.id) ?? null)),
-    [exercisesById, quests, language, t, configs],
+      galleryOrder(quests, isUserQuest, favourites).map((q) =>
+        buildQuestMeta(
+          q,
+          exercisesById,
+          language,
+          t,
+          configs.get(q.id) ?? null,
+          favourites.has(q.id),
+        ),
+      ),
+    [exercisesById, quests, language, t, configs, favourites],
   );
 
   const availableMuscles = useMemo(() => {
@@ -458,6 +558,9 @@ export default function QuestsGallery() {
     for (const m of questMeta) if (m.archetype) s.add(m.archetype);
     return [...s];
   }, [questMeta]);
+
+  // Same rule as the archetypes above: never offer a chip that can only empty the list.
+  const hasOutside = useMemo(() => questMeta.some((m) => m.outside), [questMeta]);
 
   const filtered = useMemo(
     () => questMeta.filter((m) => matchesFilters(m, filters)),
@@ -481,12 +584,26 @@ export default function QuestsGallery() {
     {
       key: "type",
       label: t("quests.filter_group_type", "Type"),
-      chips: availableArchetypes.map((a) => ({
-        key: `a-${a}`,
-        label: t(`quests.archetype_${a}`),
-        active: filters.archetypes.has(a),
-        onPress: () => toggleArchetype(a),
-      })),
+      chips: [
+        ...availableArchetypes.map((a) => ({
+          key: `a-${a}`,
+          label: t(`quests.archetype_${a}`),
+          active: filters.archetypes.has(a),
+          onPress: () => toggleArchetype(a),
+        })),
+        // Last in the same rail rather than a rail of its own: "outside" is a kind of session,
+        // and it is the only kind no archetype names — all three outings declare `metabolic`.
+        ...(hasOutside
+          ? [
+              {
+                key: "outside",
+                label: t("quests.filter_outside", "Outside"),
+                active: filters.outside,
+                onPress: toggleOutside,
+              },
+            ]
+          : []),
+      ],
     },
     {
       key: "muscle",
@@ -522,8 +639,23 @@ export default function QuestsGallery() {
 
   const onPressQuest = (id: number) => router.push(`/quests/${id}` as never);
 
+  // The card moves to the top as the star fills: `favourites` feeds `galleryOrder` through the
+  // same memo, so pinning re-sorts at once rather than on the next visit.
+  //
+  // That is the feedback, and it is why the star is on the card rather than on the quest screen -
+  // the hero sees the thing they asked for happen to the thing they asked it of. The cost is that
+  // whatever was above it slides down under their thumb, which is survivable here because the
+  // pinned card is the one that moves and it moves somewhere visible. Verified on device: the
+  // order also survives leaving the tab and a cold start, because it is a preference row and not
+  // component state.
+  const onToggleFavourite = useCallback((id: number) => {
+    toggleFavouriteQuest(id)
+      .then(setFavourites)
+      .catch((e: unknown) => reportError("quests.toggleFavourite", e));
+  }, []);
+
   const renderItem = ({ item }: { item: QuestMeta }) => (
-    <QuestRow meta={item} onPressQuest={onPressQuest} />
+    <QuestRow meta={item} onPressQuest={onPressQuest} onToggleFavourite={onToggleFavourite} />
   );
 
   return (
@@ -577,7 +709,7 @@ export default function QuestsGallery() {
           </XStack>
         </XStack>
         <Text color="$textSecondary" fontSize={13}>
-          {t("quests.gallery_subtitle", "Single workouts — pick one and go")}
+          {t("quests.gallery_subtitle", "Single workouts. Pick one and go")}
         </Text>
       </YStack>
 

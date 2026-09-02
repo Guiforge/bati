@@ -48,10 +48,29 @@ export type CompletedExerciseInput = {
    * a `hard` movement on the last round would re-price every set already logged, inflating the
    * whole workout. The price belongs to the moment, like `target` beside it.
    */
-  pricing?: { secondsPerRep: number; difficulty: DifficultyCode };
+  pricing?: { secondsPerRep: number; difficulty: DifficultyCode; style: ExerciseStyle };
 };
 
 export type CompletedSessionInput = {
+  /**
+   * The name this session already had before it was saved.
+   *
+   * Minted at `startSession` rather than here, because an expedition writes its GPS points while
+   * it is still running and needs something to key them on long before a row exists. Omitted, a
+   * uuid is minted below as it always was — every caller that does not track a live session is
+   * unchanged.
+   */
+  uuid?: string;
+  /**
+   * Ground this session credited, in metres, from the reducer rather than from a raw sum of
+   * fixes. Omitted by every caller that is not an outing.
+   */
+  leaguesM?: number | null;
+  /**
+   * Moving seconds this outing credited, from the same reading as `leaguesM`. Omitted by every
+   * caller that is not an outing.
+   */
+  movingSeconds?: number | null;
   questId?: number | null;
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
@@ -76,6 +95,12 @@ export type CompletedExercise = {
 
 export type CompletedSession = {
   id: number;
+  /**
+   * The name this session was given at `startSession`, and the key its GPS points are written
+   * under — `gps_points.session_id` is this string, not the integer `id`. Null for every row
+   * logged before 0038 backfilled the column.
+   */
+  uuid: string | null;
   questId: number | null;
   userLevel: DifficultyCode;
   durationSeconds: number | null;
@@ -125,7 +150,9 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         notes: input.notes ?? "",
         feedback: input.feedback ?? null,
         performedAt,
-        uuid: uuidv7(performedAt.getTime()),
+        uuid: input.uuid ?? uuidv7(performedAt.getTime()),
+        leaguesM: input.leaguesM ?? null,
+        movingSeconds: input.movingSeconds ?? null,
         tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
         originDevice,
       })
@@ -223,8 +250,12 @@ export async function updateSessionFeedback(
   await db.update(completedQuest).set({ feedback }).where(eq(completedQuest.id, sessionId));
 }
 
-export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
+// `uuid` is dropped as well as `exercises`: the list is a scroll of cards, and none of them opens
+// a trace. The screen that does re-reads the session by id.
+export type CompletedSessionListItem = Omit<CompletedSession, "exercises" | "uuid"> & {
   hasNewRecords: boolean;
+  /** Ground covered, in metres, on an outing; null on a workout. */
+  leaguesM: number | null;
 };
 
 export async function listCompletedSessions(limit = 20): Promise<CompletedSessionListItem[]> {
@@ -239,6 +270,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
       feedback: completedQuest.feedback,
       performedAt: completedQuest.performedAt,
       hasNewRecords: completedQuest.hasNewRecords,
+      leaguesM: completedQuest.leaguesM,
     })
     .from(completedQuest)
     .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
@@ -254,6 +286,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
     feedback: (r.feedback as FeedbackCode | null) ?? null,
     performedAt: r.performedAt,
     hasNewRecords: r.hasNewRecords === 1,
+    leaguesM: r.leaguesM ?? null,
   }));
 }
 
@@ -297,6 +330,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
   const rows = await db
     .select({
       sessionId: completedQuest.id,
+      sessionUuid: completedQuest.uuid,
       questId: completedQuest.questId,
       userLevel: completedQuest.userLevel,
       durationSeconds: completedQuest.durationSeconds,
@@ -344,6 +378,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
   if (!first) return null;
   const session: CompletedSession = {
     id: first.sessionId,
+    uuid: first.sessionUuid,
     questId: first.questId ?? null,
     userLevel: first.userLevel,
     durationSeconds: first.durationSeconds ?? null,
@@ -495,7 +530,7 @@ export async function getRecentContributingSessions(
   filter: { muscle: MuscleCode } | { style: ExerciseStyle },
   limit = 3,
 ): Promise<ContributingSession[]> {
-  const volume = sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType)}), 0)`;
+  const volume = sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`;
 
   const base = db
     .select({

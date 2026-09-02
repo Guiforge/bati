@@ -3,6 +3,7 @@ import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
 import { achievementDefinitions, getUnlockedAchievements } from "./achievements";
 import { listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
+import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
 import { getMuscleBalance } from "./muscleBalance";
 import {
   type BuildingCode,
@@ -208,6 +209,7 @@ export const BUILDING_LABELS: Record<BuildingCode, { en: string; fr: string }> =
   dragon_lair: { en: "Dragon Lair", fr: "Antre du dragon" },
   heroes_hall: { en: "Hall of Heroes", fr: "Hall des héros" },
   champion_arena: { en: "Champion Arena", fr: "Arène des champions" },
+  high_road: { en: "High Road", fr: "Grand Chemin" },
 };
 
 /** What raises a building, so the detail sheet can answer "why is it at this level". */
@@ -218,7 +220,8 @@ export type BuildingDriver =
   | "prereq"
   | "bosses"
   | "adventures"
-  | "boss_victories";
+  | "boss_victories"
+  | "leagues";
 
 export type VillageBuilding = {
   code: BuildingCode;
@@ -235,6 +238,18 @@ export type VillageBuilding = {
   metricValue: number;
   /** What the driver must reach for the next level; null once the building is maxed. */
   nextTarget: number | null;
+  /**
+   * The same tally before it was rounded down to a whole unit, when those differ.
+   *
+   * Only the road has one. Leagues are stored in metres and shown as whole leagues, so a first
+   * outing of 900 m reads "0/1" and its bar sat at zero for the entire walk — under a comment in
+   * `getBuildingProgress` promising the road counts from the first metre. The tally stays whole,
+   * because "0.9 leagues covered beyond the walls" is not a sentence; the bar reads this.
+   *
+   * Optional rather than nullable everywhere: only one driver has ever needed it, and every
+   * other branch of `deriveLevel` would otherwise carry a `null` that says nothing.
+   */
+  exactValue?: number;
 };
 
 // The shared ladder from schema.ts, with level 1 at "any work at all" — a building appears
@@ -251,12 +266,54 @@ const BOSS_FLOORS: readonly number[] = [1, 2, 3, 4, 5];
 const ADVENTURE_FLOORS: readonly number[] = [1, 3, 6, 10, 15];
 const VICTORY_FLOORS: readonly number[] = [3, 5, 8, 12, 20];
 
+/**
+ * Bati's league is a kilometre.
+ *
+ * Leagues are stored in metres (`totalLeaguesM`), but a floor table in metres reads as a phone
+ * number and the detail sheet's "3421/10000" says nothing. A historical league is about 4.8 km,
+ * which is an hour of walking per tick — a unit that only moves once a session cannot show
+ * progress on the way there. A fantasy unit also sidesteps the metric/imperial preference the
+ * village screen has no access to: nobody's settings turn a league into anything else.
+ */
+
+/**
+ * The road's floors, in leagues. Corrected 2026-09-02 against the first real total: one hour on
+ * foot, 4.58 km, recorded 2026-09-01. An outing on foot is four to five leagues, not one. A ride covers two to four times that distance in the same window
+ * (inferred from the old speed ratios, not from a recorded trace). The first floor stays at one
+ * league so the very first walk levels the road; the rest read as roughly 3, 9, 20 and 44 walks
+ * on foot, or a quarter of that on a mount.
+ *
+ * Once this floor table ships, raising a floor means any hero whose total sits between the old
+ * and new threshold loses a level — levelFromFloors is a pure function, no history is kept. This
+ * correction is cheap today (the High Road is not in any release tag), so a future re-tune is a
+ * different decision from this one.
+ *
+ * Re-tune here and nowhere else; nothing but this table and METRES_PER_LEAGUE knows the scale.
+ */
+const ROAD_FLOORS: readonly number[] = [1, 15, 40, 90, 200];
+
+/**
+ * Where each tier-4 driver reads its tally. A map rather than the ternary chain this replaces:
+ * the chain had to be edited in a second place every time a driver was added, and the road was
+ * the edit that made that cost visible. Adding a member here is the whole change.
+ */
+const TIER_4_VALUES = {
+  bosses: (i: LevelInputs) => i.bossesDefeated,
+  adventures: (i: LevelInputs) => i.finishedRuns,
+  boss_victories: (i: LevelInputs) => i.bossVictories,
+  leagues: (i: LevelInputs) => i.leagues,
+} satisfies Partial<Record<BuildingDriver, (inputs: LevelInputs) => number>>;
+
+/** A tier-4 building answers to a deed tally, never to volume. */
+type DeedDriver = keyof typeof TIER_4_VALUES;
+
 const TIER_4_DRIVERS: Partial<
-  Record<BuildingCode, { driver: BuildingDriver; floors: readonly number[] }>
+  Record<BuildingCode, { driver: DeedDriver; floors: readonly number[] }>
 > = {
   dragon_lair: { driver: "bosses", floors: BOSS_FLOORS },
   heroes_hall: { driver: "adventures", floors: ADVENTURE_FLOORS },
   champion_arena: { driver: "boss_victories", floors: VICTORY_FLOORS },
+  high_road: { driver: "leagues", floors: ROAD_FLOORS },
 };
 
 // A tier-3 upgrade trails two rungs behind the building it extends, which tops out at 5.
@@ -281,7 +338,7 @@ async function getStyleVolumes(): Promise<Partial<Record<ExerciseStyle, number>>
   const rows = await db
     .select({
       style: exercises.style,
-      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType)}), 0)`,
+      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -296,11 +353,18 @@ type LevelInputs = {
   bossesDefeated: number;
   finishedRuns: number;
   bossVictories: number;
+  /** Ground covered outside the walls, in leagues. Never a work unit, never a rep. */
+  leagues: number;
+  /** Leagues before the floor, so the road's bar can move inside its first one. */
+  leaguesExact: number;
   volumeByMuscle: Map<MuscleCode, number>;
   styleVolumes: Partial<Record<ExerciseStyle, number>>;
 };
 
-type DerivedLevel = Pick<VillageBuilding, "level" | "driver" | "metricValue" | "nextTarget">;
+type DerivedLevel = Pick<
+  VillageBuilding,
+  "level" | "driver" | "metricValue" | "nextTarget" | "exactValue"
+>;
 
 /** Level for everything except tier 3, which needs its prerequisite resolved first. */
 function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
@@ -328,18 +392,15 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
 
   if (def.tier === 4) {
     const spec = TIER_4_DRIVERS[code] ?? { driver: "bosses" as const, floors: BOSS_FLOORS };
-    const value =
-      spec.driver === "adventures"
-        ? inputs.finishedRuns
-        : spec.driver === "boss_victories"
-          ? inputs.bossVictories
-          : inputs.bossesDefeated;
+    const value = TIER_4_VALUES[spec.driver](inputs);
     const level = levelFromFloors(value, spec.floors);
     return {
       level,
       driver: spec.driver,
       metricValue: value,
       nextTarget: nextFloor(level, spec.floors),
+      // Deeds are counted, not measured: only the road arrives already rounded down.
+      ...(spec.driver === "leagues" ? { exactValue: inputs.leaguesExact } : {}),
     };
   }
 
@@ -368,12 +429,13 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
  * still showing a village that grows building by building.
  */
 export async function getVillageBuildings(): Promise<VillageBuilding[]> {
-  const [balance, styleVolumes, banners, levelInfo, tally] = await Promise.all([
+  const [balance, styleVolumes, banners, levelInfo, tally, leaguesM] = await Promise.all([
     getMuscleBalance("all"),
     getStyleVolumes(),
     getBossBanners(),
     getUserLevelInfo(),
     tallyFinishedRuns(),
+    totalLeaguesM(),
   ]);
 
   const volumeByMuscle = new Map(balance.muscles.map((m) => [m.muscle, m.volume]));
@@ -390,6 +452,8 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
         bossesDefeated: banners.length,
         finishedRuns: tally.finishedRuns,
         bossVictories: tally.bossVictories,
+        leagues: Math.floor(leaguesM / METRES_PER_LEAGUE),
+        leaguesExact: leaguesM / METRES_PER_LEAGUE,
         volumeByMuscle,
         styleVolumes,
       }),
@@ -430,6 +494,7 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
       driver: derived?.driver ?? "tier",
       metricValue: derived?.metricValue ?? 0,
       nextTarget: derived?.nextTarget ?? null,
+      ...(derived?.exactValue === undefined ? {} : { exactValue: derived.exactValue }),
     };
   });
 }
@@ -449,11 +514,15 @@ export function getBuildingProgress(building: VillageBuilding): number | null {
   const countsWhileLocked =
     building.driver === "bosses" ||
     building.driver === "adventures" ||
-    building.driver === "boss_victories";
+    building.driver === "boss_victories" ||
+    // The road counts from the first metre: "0/1 leagues" is a tally the hero can act on, not
+    // the "train your back" of a qualitative unlock.
+    building.driver === "leagues";
   if (building.level === 0 && !countsWhileLocked) return null;
 
   if (building.nextTarget <= 0) return 0;
-  return Math.max(0, Math.min(100, (building.metricValue / building.nextTarget) * 100));
+  const value = building.exactValue ?? building.metricValue;
+  return Math.max(0, Math.min(100, (value / building.nextTarget) * 100));
 }
 
 export type VillageGrowth = {

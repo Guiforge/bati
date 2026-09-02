@@ -1,9 +1,9 @@
 Le village avait un plafond, et il arrivait vite.
 
-La scène s'arrêtait de changer au niveau 20 — soit deux ou trois mois pour quelqu'un de régulier — alors que ton héros, lui, continuait de monter. Il y a maintenant douze paliers au lieu de cinq, dont quatre glissés entre les premiers, là où l'on passe ses premières semaines.
+La scène s'arrêtait de changer au niveau 20 (soit deux ou trois mois pour quelqu'un de régulier) alors que ton héros, lui, continuait de monter. Il y a maintenant douze paliers au lieu de cinq, dont quatre glissés entre les premiers, là où l'on passe ses premières semaines.
 
 Chaque bâtiment a désormais trois formes : rustique, solide, légendaire. Une forge au niveau 5 ne ressemble plus à la même image un peu plus vive, c'est un autre bâtiment.
 
-Un quart de chaque illustration était rogné à l'affichage sans que rien ne le signale — le faisceau qui couronne le palais, par exemple, n'a jamais été visible. Touche la scène pour l'ouvrir en entier.
+Un quart de chaque illustration était rogné à l'affichage sans que rien ne le signale : le faisceau qui couronne le palais, par exemple, n'a jamais été visible. Touche la scène pour l'ouvrir en entier.
 
 Aussi : le muscle que tu délaisses est nommé, la progression de chaque bâtiment se voit sans avoir à taper dessus, et l'app pèse la moitié de son poids malgré quarante-sept nouvelles illustrations.

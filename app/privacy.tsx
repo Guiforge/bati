@@ -7,9 +7,10 @@ import { Card } from "@/components/common/Card";
 import { ChevronLeft, ShieldCheck } from "@/components/icons";
 
 /**
- * The privacy policy, readable without a network — which is the whole point, since the claim
- * being made is that the app never uses one. The same text is published at the URL both stores
- * require (docs/legal/privacy.md); this screen is what a hero can actually reach mid-flight.
+ * The privacy policy, readable without a network, which is the whole point: the claim being made
+ * is that the app never touches one until the hero switches the map on. The same text is
+ * published at the URL both stores require (docs/legal/privacy.md); this screen is what a hero
+ * can actually reach mid-flight.
  *
  * Sections are listed rather than hand-written so adding one is a locale change, not a JSX one.
  */

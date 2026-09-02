@@ -4,21 +4,22 @@
   "home_continue_adventure_title": "Continue your adventure",
   "home_continue_adventure_subtitle": "Pick up where you left off.",
   "home": {
-    "stats_a11y_one": "{{count}} quest done, {{xp}} XP — open the journal",
-    "stats_a11y_other": "{{count}} quests done, {{xp}} XP — open the journal",
+    "stats_a11y_one": "{{count}} quest done, {{xp}} XP. Open the journal",
+    "stats_a11y_other": "{{count}} quests done, {{xp}} XP. Open the journal",
     "quests_done_one": "Quest",
     "quests_done_other": "Quests",
     "continue_adventure_label": "Continue Adventure",
     "resume_journey": "Resume your journey",
     "pick_quest_label": "Pick a quest",
     "see_quest": "See the quest",
-    "oath_focus_chain": "Toward your oath: {{goal}} — rung {{position}} of {{total}}, tonight: {{name}}",
+    "oath_focus_chain": "Toward your oath: {{goal}}, rung {{position}} of {{total}}, tonight: {{name}}",
     "oath_focus_simple": "Toward your oath: {{goal}}",
     "focus_on": "Strengthens your weak points: {{muscles}}",
     "quick_workout": "Quick Workout",
     "start_adventure": "Start Adventure",
     "no_active_adventure": "Choose your path",
     "start_journey": "Start your journey",
+    "outside_band": "Head out",
     "play": "Play",
     "level_line": "Level {{level}} • {{title}}",
     "step_progress": "Step {{current}} of {{total}}",
@@ -42,7 +43,7 @@
   },
   "onboarding": {
     "chars_min": "chars min",
-    "save_error": "Could not save — try again",
+    "save_error": "Could not save. Try again",
     "finish": "Start my training journey",
     "kingdom_founded": "KINGDOM FOUNDED",
     "language_selection": "Pick your language",
@@ -112,11 +113,15 @@
     "empty_cta": "Swear an oath",
     "empty_hint": "Set a goal to work toward",
     "metric_label_weekly_sessions": "Every week",
+    "metric_label_leagues": "Leagues",
     "metric_weekly_sessions": "{{weekly}} sessions a week, for {{count}} weeks",
+    "metric_leagues_one": "{{count}} league beyond the walls",
+    "metric_leagues": "{{count}} leagues beyond the walls",
     "pick_weekly": "SESSIONS PER WEEK",
     "weekly_chip": "{{count}}× / week",
-    "streak_hint": "Rest days count — the flame tracks consistency, not attendance.",
-    "sworn_toast": "Oath sworn"
+    "streak_hint": "Rest days count. The flame tracks consistency, not attendance.",
+    "sworn_toast": "Oath sworn",
+    "error_target_unreachable": "A single set cannot be logged above {{max}}. Swear a lower one, or swear it on total reps instead."
   },
   "settings": {
     "title": "Settings",
@@ -142,11 +147,16 @@
     "report_bug_count_other": "{{count}} crashes",
     "report_bug_empty": "Nothing recorded",
     "no_mail_client": "No email app found on this device",
-    "photos_denied": "Photo access is off — allow it in system settings",
+    "photos_denied": "Photo access is off. Allow it in system settings",
     "sound": "Countdown beeps",
     "villagers": "Villagers",
     "replay_guides": "Review the guides",
-    "replay_guides_done": "The guides will show again"
+    "replay_guides_done": "The guides will show again",
+    "distance_unit": "Distance unit",
+    "distance_metric": "Kilometres",
+    "distance_imperial": "Miles",
+    "map_tiles": "Recap map",
+    "map_tiles_note": "Off, Bati downloads nothing. On, the recap asks OpenFreeMap, at tiles.openfreemap.org, for the map of the place you went, which tells it roughly where you were. It is the app's only network call."
   },
   "credits": {
     "title": "Credits",
@@ -172,7 +182,7 @@
     "workout_guide": "workout-guide",
     "workout_guide_subtitle": "Frames and normalisation by Bryl Lim",
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
-    "cc_by_sa_40_subtitle": "Licence terms — share-alike"
+    "cc_by_sa_40_subtitle": "Licence terms: share-alike"
   },
   "system": "System",
   "theme": "Theme",
@@ -185,7 +195,7 @@
     "chain_position": "Rung {{position}}/{{total}} · {{name}}",
     "ladder_title": "Your next rung",
     "difficulty_title": "Adjust the difficulty",
-    "step_earned": "You have mastered {{name}} — this is the next step.",
+    "step_earned": "You have mastered {{name}}. This is the next step.",
     "step_progress_one": "Hit your target {{count}} more time on {{name}} to earn it.",
     "step_progress_other": "Hit your target {{count}} more times on {{name}} to earn it.",
     "new_rung": "New rung unlocked",
@@ -194,20 +204,18 @@
   },
   "quests": {
     "gallery_title": "Quests",
-    "gallery_subtitle": "Single workouts — pick one and go",
+    "gallery_subtitle": "Single workouts. Pick one and go",
     "details_title": "Quest",
     "count": "{{count}} quests",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "load_error": "Failed to load",
     "retry": "Retry",
     "start_error": "Could not start the quest",
     "starting": "Starting…",
     "empty_title": "No quests yet",
-    "empty_subtitle": "Come back soon — new quests are being forged.",
+    "empty_subtitle": "Come back soon. New quests are being forged.",
     "empty_filters_title": "No quests match",
     "empty_filters_subtitle": "Try removing filters.",
-    "rounds": "{{count}} rounds",
-    "exercises": "{{count}} exercises",
     "exercises_list": "Exercises",
     "filters_clear": "Clear filters",
     "filter_clear_all": "Clear",
@@ -222,6 +230,7 @@
     "estimate": "≈ {{duration}}",
     "reward_xp": "+{{count}} XP",
     "reward_xp_estimate": "up to +{{count}} XP",
+    "reward_xp_open": "+{{count}} XP",
     "seconds_per_rep": "tempo {{count}}s/rep",
     "ghost_last": "Last: {{value}}",
     "served_easier_rung": "Working up to {{name}}",
@@ -243,6 +252,7 @@
     "home_overview_title": "Pick a quest",
     "see_all": "See all",
     "start_button": "Start Quest",
+    "location_notice": "Bati reads your position while you are out. It stays on this phone.",
     "archetype_strength": "Strength",
     "archetype_skill": "Skill",
     "archetype_hypertrophy": "Muscle",
@@ -251,7 +261,7 @@
     "archetype_core": "Core",
     "archetype_mobility": "Mobility",
     "config_title": "Adjust this quest",
-    "config_hint": "Saved for this quest — it comes back next time.",
+    "config_hint": "Saved for this quest. It comes back next time.",
     "config_modified": "Custom",
     "config_rounds": "Rounds",
     "config_rest": "Rest",
@@ -260,6 +270,8 @@
     "config_round_rest_hint": "Between rounds",
     "config_reps": "Reps",
     "config_seconds": "Seconds",
+    "config_duration": "Duration",
+    "config_distance": "Distance",
     "config_reset": "Back to defaults",
     "edit_quest": "Edit quest",
     "editor_new_title": "New quest",
@@ -286,7 +298,14 @@
     "editor_discard_title": "Discard changes?",
     "editor_delete_body": "This cannot be undone.",
     "editor_saved": "Quest saved",
-    "filter_remove": "Remove {{label}}"
+    "filter_remove": "Remove {{label}}",
+    "rounds_one": "{{count}} round",
+    "rounds_other": "{{count}} rounds",
+    "exercises_one": "{{count}} exercise",
+    "exercises_other": "{{count}} exercises",
+    "filter_outside": "Outside",
+    "favourite_add": "Pin to the top",
+    "favourite_remove": "Unpin"
   },
   "adventures": {
     "gallery_title": "Adventures",
@@ -318,7 +337,7 @@
     "kind_event": "EVENT",
     "kind_boss": "BOSS",
     "empty_title": "No adventures yet",
-    "empty_subtitle": "Come back soon — the village is preparing adventures."
+    "empty_subtitle": "Come back soon. The village is preparing adventures."
   },
   "boss": {
     "hp": "HP",
@@ -329,14 +348,14 @@
     "damage_dealt": "Damage Dealt",
     "critical_hit": "CRITICAL HIT!",
     "weakness_bonus": "Weakness!",
-    "resistance_penalty": "Resisted...",
+    "resistance_penalty": "Resisted…",
     "fight_intro": "A powerful foe blocks your path.",
     "weakness": "Weakness",
     "resistance": "Resistance",
     "threat": "Threat level {{rank}} of 4",
     "final_blow": "Felled by your final blow!",
-    "triumph_subtitle": "Triumph! Felled by your own blows — +{{xp}} XP",
-    "matchup_hint": "Strike its weakness for 1.5× damage — its resistance halves yours."
+    "triumph_subtitle": "Triumph! Felled by your own blows. +{{xp}} XP",
+    "matchup_hint": "Strike its weakness for 1.5× damage; its resistance halves yours."
   },
   "exercise_editor": {
     "title_new": "New movement",
@@ -386,7 +405,7 @@
     "delete_confirm_body": "You have never used it, so nothing else changes.",
     "delete_failed": "Could not delete the movement.",
     "details_title": "Exercise",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "load_error": "Failed to load exercise",
     "retry": "Retry",
     "not_found": "Exercise not found",
@@ -394,7 +413,7 @@
     "go_back": "Go back",
     "seconds_per_rep": "tempo {{count}}s/rep",
     "next_step": "Next rung",
-    "next_step_earned": "You have earned it — give it a try.",
+    "next_step_earned": "You have earned it. Give it a try.",
     "next_step_progress_one": "Hit your target {{count}} more time to earn it.",
     "next_step_progress_other": "Hit your target {{count}} more times to earn it.",
     "catalogue_title": "Exercises",
@@ -422,6 +441,13 @@
     "path_you_are_here": "You are here."
   },
   "session": {
+    "expedition_status_acquiring": "Finding the sky",
+    "expedition_status_moving": "On the road",
+    "expedition_status_paused": "Standing still",
+    "expedition_status_error": "No signal",
+    "expedition_reached": "Goal met",
+    "expedition_accuracy": "within {{distance}}",
+    "expedition_gps_off": "GPS off",
     "adjust_reps_hint": "Did you do more or less?",
     "adjust_reps_label": "Adjust Reps",
     "adjust_seconds_hint": "Held it longer or shorter?",
@@ -452,6 +478,7 @@
     "pause": "Pause session",
     "pause_accessibility": "Pause session",
     "paused_subtitle": "Catch your breath. Ready to jump back in?",
+    "paused_expedition_note": "The trace keeps running through the pause.",
     "paused_title": "Game Paused",
     "pr_exercise": "{{exercise}} PR",
     "pr_longest_session": "Longest Workout",
@@ -474,6 +501,10 @@
     "skip_rest_accessibility": "Skip rest and start next exercise",
     "sound_off": "Sound off",
     "sound_on": "Sound on",
+    "summary_too_short_title": "That was a short one",
+    "summary_too_short_body": "You trained for {{duration}}. Keep it and it counts toward your streak and your oath, or discard it and nothing happened.",
+    "summary_too_short_keep": "Keep it",
+    "summary_too_short_discard": "Discard",
     "summary_saving": "Saving your workout…",
     "target_reached": "Target reached!",
     "total_time": "Total Time",
@@ -493,10 +524,17 @@
     "warmup_prev_accessibility": "Previous movement",
     "warmup_next_accessibility": "Next movement",
     "countdown_subtitle": "Time to move.",
-    "reserve_hint": "Stop with 1-2 reps left in the tank — not at failure.",
-    "crit_hint": "Every rep past the target is a chance to strike critical — {{percent}}% right now.",
+    "reserve_hint": "Stop with 1-2 reps left in the tank, not at failure.",
+    "crit_hint": "Every rep past the target is a chance to strike critical. {{percent}}% right now.",
     "ghost_last_label": "Last time",
-    "ghost_best_label": "best"
+    "ghost_best_label": "best",
+    "expedition_status_denied": "Bati has no access to your location",
+    "expedition_open_settings": "Open settings",
+    "expedition_acquiring_hint": "The first fix can take a few minutes to arrive. Set off anyway, the trace will catch up.",
+    "expedition_ground": "Ground",
+    "expedition_moving": "Moving",
+    "expedition_pace": "Pace",
+    "expedition_road": "{{building}} · {{value}}/{{target}} leagues"
   },
   "muscles": {
     "arms": "Arms",
@@ -566,7 +604,6 @@
     "session_not_found": "Session not found",
     "invalid_session": "Session not found",
     "quest_completed": "Quest Completed",
-    "rounds_completed": "{{count}} rounds",
     "round": "Round",
     "result": "Result",
     "target": "Target",
@@ -598,7 +635,7 @@
     "balance_good": "Balanced!",
     "balance_needs_work": "Needs Work",
     "pull_deficit_title": "Your pulling is behind",
-    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first — towel rows or a doorway bar.",
+    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first: towel rows or a doorway bar.",
     "suggested_quests": "Your weak spots",
     "suggested_quests_desc": "Quests to strengthen your weak areas",
     "personal_records": "Personal Records",
@@ -606,6 +643,8 @@
     "pr_longest": "Longest",
     "pr_most_xp": "Most XP",
     "pr_best_streak": "Best Streak",
+    "pr_ground": "Ground covered",
+    "pr_longest_outing": "Longest outing",
     "pr_badge": "PR",
     "rest_suggestion_title": "Rest Day Recommended",
     "user_level": "Level {{level}}",
@@ -625,7 +664,9 @@
     "prev_month": "Previous month",
     "next_month": "Next month",
     "unclassified_volume_one": "{{count}} result comes from an exercise with no muscles set, so it isn't counted here.",
-    "unclassified_volume_other": "{{count}} results come from exercises with no muscles set, so they aren't counted here."
+    "unclassified_volume_other": "{{count}} results come from exercises with no muscles set, so they aren't counted here.",
+    "rounds_completed_one": "{{count}} round",
+    "rounds_completed_other": "{{count}} rounds"
   },
   "achievements": {
     "title": "Achievements",
@@ -641,7 +682,7 @@
     "new_unlocks": "{{count}} Achievements Unlocked!"
   },
   "chart": {
-    "loading": "Loading chart...",
+    "loading": "Loading chart…",
     "error": "Failed to load chart",
     "no_data": "No data yet",
     "complete_more": "Complete more workouts to see your progress!",
@@ -665,8 +706,8 @@
     "increase": "Increase {{label}}",
     "language_en": "English",
     "language_fr": "French",
-    "saving": "Saving...",
-    "loading": "Loading...",
+    "saving": "Saving…",
+    "loading": "Loading…",
     "error": "Something went wrong",
     "retry": "Retry",
     "go_back": "Go back",
@@ -680,7 +721,7 @@
     "off": "Off"
   },
   "splash": {
-    "loading": "Building your village..."
+    "loading": "Building your village…"
   },
   "village": {
     "title": "My Village",
@@ -697,7 +738,7 @@
     "next_level": "Next Level",
     "level_line": "Level {{level}}",
     "dominant_sport": "Training focus: {{muscle}}",
-    "neglected_muscle": "Least trained: {{muscle}} — its building has stopped rising.",
+    "neglected_muscle": "Least trained: {{muscle}}. Its building has stopped rising.",
     "banners_title": "Banners",
     "buildings_title": "Buildings",
     "built_title": "Built",
@@ -708,7 +749,7 @@
     "flame_3": "Blaze",
     "flame_4": "Inferno",
     "flame_5": "Eternal",
-    "detail_tier_driver": "Grows with your hero — level {{level}}",
+    "detail_tier_driver": "Grows with your hero, level {{level}}",
     "detail_tier_next": "Hero level {{target}} raises the whole village",
     "detail_muscle_driver": "{{volume}} work units of {{muscle}} training",
     "detail_style_driver": "{{volume}} work units of {{style}}",
@@ -718,10 +759,13 @@
     "detail_recent_units": "{{volume}} units",
     "detail_prereq_driver": "Grows with the {{building}}, currently level {{level}}",
     "detail_prereq_next": "Rises again when the {{building}} reaches level {{target}}",
-    "detail_prereq_locked": "Appears when the {{building}} reaches level {{target}} — it is at level {{level}}",
+    "detail_prereq_locked": "Appears when the {{building}} reaches level {{target}}. It is at level {{level}}",
     "detail_bosses_driver": "{{count}} bosses defeated",
     "detail_adventures_driver": "{{count}} adventures completed",
     "detail_victories_driver": "{{count}} boss victories",
+    "detail_leagues_driver_one": "{{count}} league covered beyond the walls",
+    "detail_leagues_driver_other": "{{count}} leagues covered beyond the walls",
+    "league_unit": "A league of Bati is one kilometre.",
     "detail_unlock_muscle": "Train your {{muscle}} to raise this building",
     "detail_unlock_style": "Complete a {{style}} exercise to raise this building",
     "detail_progress": "{{current}}/{{target}}",
@@ -737,7 +781,7 @@
     "close_scene": "Close",
     "tap_to_close": "Tap anywhere to close",
     "open_scene": "See the whole scene",
-    "loop_hint": "Every muscle you train raises a building — tap one to see what feeds it.",
+    "loop_hint": "Every muscle you train raises a building. Tap one to see what feeds it.",
     "trophies_empty": "Achievements and defeated bosses land on this shelf."
   },
   "goals": {
@@ -776,7 +820,7 @@
     "preview_confirm": "Start This Plan",
     "preview_regenerate": "Generate New Plan",
     "preview_empty": "No sessions planned",
-    "generating_plan": "Creating your plan..."
+    "generating_plan": "Creating your plan…"
   },
   "errors": {
     "save_session_failed": "Failed to save workout. Please try again.",
@@ -791,17 +835,29 @@
   "recovery": {
     "title": "Resume workout?",
     "description": "You have an unfinished session",
+    "ground": "{{distance}} already covered",
     "progress": "Progress: Round {{round}}/{{roundTotal}}, Exercise {{exercise}}/{{exerciseTotal}}",
     "elapsed": "Time: {{time}}",
     "resume": "Resume",
     "discard": "Discard"
+  },
+  "recap": {
+    "title": "The ground covered",
+    "open": "See the ground covered",
+    "no_trace": "This quest never left the walls.",
+    "privacy": "The trace stays on this phone. The map comes from OpenFreeMap, which learns roughly where you were.",
+    "export": "Export the trace",
+    "export_failed": "Could not write the file. Try again.",
+    "map_offer": "The map under your route is off. Turn it on and this screen asks OpenFreeMap, at tiles.openfreemap.org, for the map images of that place, which tells it roughly where you were. The trace itself stays on this phone.",
+    "map_enable": "Show the map",
+    "best_league": "Best league, {{pace}}"
   },
   "safety": {
     "title": "Train safely",
     "before_title": "Before you start",
     "before_body": "If you are pregnant, recovering from an injury or surgery, live with a heart, joint or blood-pressure condition, or have been inactive for a long time, talk to a doctor before starting this or any training programme.",
     "during_title": "While you train",
-    "during_body": "Sharp pain is not effort — stop. Dizziness, chest pain or shortness of breath mean stop and seek medical advice. Every target here is a suggestion: end a set with a rep or two left in you rather than chasing a number with broken form.",
+    "during_body": "Sharp pain is not effort. Stop. Dizziness, chest pain or shortness of breath mean stop and seek medical advice. Every target here is a suggestion: end a set with a rep or two left in you rather than chasing a number with broken form.",
     "not_a_coach_title": "Bati is not a coach",
     "not_a_coach_body": "This app counts what you do and tells a story about it. It cannot see your technique, and it is not medical advice. For a diagnosis, an injury or a plan built around your body, see a qualified professional.",
     "onboarding_line": "Train within your limits. If you have a health condition, an injury, or you are pregnant, talk to a doctor first.",
@@ -809,26 +865,26 @@
   },
   "privacy": {
     "title": "Privacy",
-    "summary": "Bati collects nothing. Nothing you do in this app leaves your phone unless you send it yourself, deliberately, by email.",
+    "summary": "Bati collects nothing. It works offline, with one exception, off by default: the map behind an expedition. Switched on, the phone asks a map host for the area where you went, which tells that host roughly where you were. Everything else you do here stays on your phone unless you send it yourself, deliberately, by email.",
     "storage_title": "Where your training lives",
     "storage_body": "Every session, set, quest, adventure, achievement and setting is written to a database inside this app's private storage on your device. It is never uploaded and never synced. There is no server to upload it to, and no account to attach it to. Deleting the app deletes all of it.",
     "backups_title": "Backups you make",
     "backups_body": "Two rows write your database to a file: Share my backup hands it to your system's share sheet, Save a file writes it into a folder you choose on the device. Either way the app sends it nowhere. That file is not encrypted: anyone who opens it can read your training history, so keep it the way you would keep a personal photo. Restoring replaces everything; the database you had is kept on the device as a recovery copy.",
     "never_title": "What Bati never does",
-    "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. The app makes no network requests at all, at any point.",
+    "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. Nothing in the database is ever sent anywhere. The app reaches the network in one place only, and only if you allow it: the map behind an expedition's route is off until you switch it on in Settings. Switched on, the phone asks OpenFreeMap (OpenStreetMap data, served from tiles.openfreemap.org) for tiles, the square images a map is made of, covering the place where the outing happened. That request tells the host roughly where you were, with your IP address and the time. Not the route to the metre, not the pace, not the training, not who you are, but the area, yes. Left off, or switched off again with one tap, the app makes no network request at all and the route is drawn on a plain background. A lint rule refuses any other network call in the app.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos: only if you pick one as your avatar — it stays on your device. The Android widget reads your streak from the same local database. The app sends no notifications at all.",
+    "permissions_body": "Photos: only if you pick one as your avatar, and it stays on your device. The Android widget reads your streak from the same local database. Location: only while an expedition is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and sent nowhere. An outing also posts an ongoing notification and holds the phone awake, which is what stops Android killing the tracking while your screen is off. Internet: only for the map, and only while it is switched on in Settings; it starts off, and what the request reveals is written above.",
     "crashes_title": "Crash reports",
-    "crashes_body": "If the app crashes, the error is written to your device only — and when a feature fails without crashing (a backup that could not be written, say), its error message is kept the same way; that message may include the name of a folder or file you chose. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
+    "crashes_body": "If the app crashes, the error is written to your device only. When a feature fails without crashing (a backup that could not be written, say), its error message is kept the same way; that message may include the name of a folder or file you chose. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
     "children_title": "Children",
     "children_body": "Bati is a general-audience fitness app and is not directed at children under 13. It collects no personal data from anyone, of any age.",
     "contact_title": "Questions",
-    "contact_body": "Write to feedback.bati@proton.me — for this policy, and for a bug, an idea, or a feature you wish existed. Since the app holds no data about you, there is nothing for us to export or delete on your behalf: uninstalling erases every record it ever made.",
-    "updated": "Last updated 31 July 2026"
+    "contact_body": "Write to feedback.bati@proton.me about this policy, and about a bug, an idea, or a feature you wish existed. Since the app holds no data about you, there is nothing for us to export or delete on your behalf: uninstalling erases every record it ever made.",
+    "updated": "Last updated 2 September 2026"
   },
   "feedback": {
-    "subject": "Bati {{version}} — feedback",
-    "prompt": "Tell me anything — there are no wrong answers. If you are stuck, these help:\n\n1. What made you open the app today?\n2. What annoyed you?\n3. What did you almost look for and not find?\n",
+    "subject": "Bati {{version}}: feedback",
+    "prompt": "Tell me anything. There are no wrong answers. If you are stuck, these help:\n\n1. What made you open the app today?\n2. What annoyed you?\n3. What did you almost look for and not find?\n",
     "technical_header": "Technical details (edit or delete anything below)",
     "no_crash": "No crash was recorded on this device.",
     "errors_header": "Recent errors",
@@ -846,15 +902,15 @@
     "autoMessage": "Bati saves a copy into {{folder}} once a day and before every update. You can point it somewhere else, or stop.",
     "autoChangeCta": "Change folder",
     "autoOffCta": "Turn off",
-    "autoOnDone": "Automatic backup on — a first copy is already in {{folder}}",
+    "autoOnDone": "Automatic backup on. A first copy is already in {{folder}}",
     "autoOffDone": "Automatic backup off",
     "import": "Restore a backup",
     "importHint": "Replaces everything",
-    "exportDone": "Backup ready — choose where to keep it",
+    "exportDone": "Backup ready. Choose where to keep it",
     "exportFailed": "The backup could not be created",
     "importFailed": "That file could not be read",
     "confirmTitle": "Restore this backup?",
-    "confirmMessage": "Everything on this device — history, village, oaths — is replaced by the backup. Your current data is kept on the device as a recovery copy, but only the backup will be visible.",
+    "confirmMessage": "Everything on this device (history, village, oaths) is replaced by the backup. Your current data is kept on the device as a recovery copy, but only the backup will be visible.",
     "confirmCta": "Restore",
     "onboardingCta": "I already have a backup",
     "restoreTitle": "Restoring",
@@ -862,7 +918,7 @@
     "phase": {
       "restoring": "Putting your data in place. Do not close Bati.",
       "restartRequired": "Done. Close Bati and open it again to continue.",
-      "failed": "Nothing was replaced — your data is untouched. Close Bati and open it again, then try another file."
+      "failed": "Nothing was replaced. Your data is untouched. Close Bati and open it again, then try another file."
     },
     "rejected": {
       "notSqlite": "That file is not a Bati backup.",
@@ -884,37 +940,37 @@
     "smith": {
       "rest": [
         "Iron cools between blows too. Nobody ever complained about that.",
-        "You're breathing hard. That's the sound work makes once it's been done.",
+        "You're breathing hard. Good sign.",
         "I've seen anvils give out sooner than you have.",
-        "Nothing gets forged in one blow. That's more or less the definition.",
+        "Nothing gets forged in one blow.",
         "Take your time. The work isn't going anywhere in a hurry.",
         "An arm that shakes is an arm that got used.",
         "I sit down between pieces. Nobody has ever said a word about it.",
         "Hardest part of this trade is stopping at the right moment.",
-        "Start again whenever you like. I'm in no rush.",
+        "Start again when you like. I'm in no rush.",
         "Thirty years hitting metal. I've learned to respect a pause.",
         "What you just did shows in the hands before it shows anywhere else.",
-        "Breathe. The rest follows on its own, or it doesn't. We'll see."
+        "Breathe. The rest follows, or it doesn't. We'll see."
       ],
       "personal_record": [
-        "New mark on the post. I cut it myself — that doesn't happen on its own.",
-        "First time that's been done here. It counts, even with nobody watching.",
+        "New mark on the post. I cut it myself.",
+        "First time that's been done here.",
         "Well. The metal gave before you did, for once.",
         "That's clean work. I don't say it often, so take it while it's going.",
-        "You found one more notch. It was there the whole time.",
-        "I'm writing it down. Not for you — for the next one who says it can't be done.",
-        "The form held all the way through. That's what did it, not the strength.",
+        "You found one more notch, and it was there the whole time.",
+        "I'm writing it down. The next one who says it can't be done will have a line to read.",
+        "The form held all the way through. That's where it came from.",
         "There. Nothing magic, nothing spectacular. Just done."
       ],
       "personal_record_beat": [
         "{{exercise}}: {{delta}} more than last time. I keep count.",
-        "You added {{delta}}. Not found, not lucky — added.",
-        "{{delta}} better. That's the exact amount of work it represents.",
+        "You added {{delta}}. Nobody adds that by accident.",
+        "{{delta}} better. That's work, to the gram.",
         "Last time you let go {{delta}} sooner. Not today.",
         "{{delta}} more. Sounds like nothing out loud. In the arms it's something else.",
         "{{exercise}}: {{delta}} better. That goes on the post with the rest.",
-        "{{delta}} above your mark. Your body will remember it before you do.",
-        "You pushed {{delta}} further than before. That didn't happen by itself."
+        "{{delta}} above your mark, and your body will remember it before you do.",
+        "You pushed {{delta}} further than before."
       ],
       "guide_quests": ["Quests are your workouts. Pick one, and I'll see to the rest."],
       "menu_visit": [
@@ -923,90 +979,88 @@
         "I never understood these tables. I have hands, not eyes.",
         "I decide by hitting things. You get to think first. That's a luxury.",
         "Look at all of it, pick one. That's how you avoid scattering yourself.",
-        "There are no bad choices here. Only choices not made, which is different.",
+        "The bad choice here is the one you don't make.",
         "You can stand there a while. The forge will wait. It always waits.",
-        "The best tool is the one you pick up. Not the one you admire.",
+        "The best tool is the one you pick up.",
         "I've watched people choose for an hour. They never forged a thing.",
-        "It isn't decided by weight. It's decided by what you want to become.",
-        "None of this is urgent. It's rather the opposite of urgent.",
+        "You choose what you want to become, the weight follows.",
+        "None of this is urgent.",
         "You already know what you'll take. You're looking to reassure yourself."
       ]
     },
     "sage": {
       "rest": [
-        "Rest is not the opposite of effort. It's the half you don't see.",
+        "Rest is the half of the effort that nobody sees.",
         "Nobody ever climbed a hill without catching their breath halfway up.",
         "I have read a great deal about patience. None of it made me patient.",
-        "What is built quickly comes apart quickly. Tedious, but there it is.",
-        "You are between two things. That is a perfectly honourable place to be.",
+        "What is built quickly comes apart quickly, which is tedious and has always been true.",
+        "You are between two things, which is a perfectly honourable place to be.",
         "Starlight takes centuries to arrive. It doesn't appear to be in a hurry.",
         "People ask me for the secret. The secret is coming back.",
         "A quiet moment never cost anyone what they had already earned.",
-        "There is nothing to prove in the gaps. Only to breathe.",
+        "There is nothing to prove in the gaps, only to breathe.",
         "Forty years of notes. Progress reads in months, never in days.",
         "You will begin again when you like. The world waits very well.",
         "Impatience is an excellent engine and a very poor guide."
       ],
       "comeback": [
         "There you are. The village hasn't moved, and it had no need to.",
-        "The door wasn't locked. It never is — that's rather the point of it.",
-        "We pick up where it was. There's no slate to wipe clean.",
+        "The door wasn't locked. It never is, which is rather the point of it.",
+        "We pick up where it was, and there's no slate to wipe clean.",
         "Time passes for everyone, including the people who train.",
-        "Nothing you built has come undone. These things are patient.",
+        "Nothing you built has come undone; these things are patient.",
         "Welcome. That's all I have to say, and it's already a great deal.",
         "The hard part was pushing the door. That's done.",
         "What you know, you still know. The body sulks longer; it will settle."
       ],
       "guide_home": [
-        "This is where the app offers you the next thing. You can always pick something else — it's an opinion, not an order."
+        "This is where the app offers you the next thing. You can always pick something else, because it is an opinion rather than an order."
       ],
       "menu_visit": [
         "Looking before choosing is already choosing, a little.",
-        "There is no correct order. There is the order you'll actually follow.",
-        "Lists are reassuring. That's their real function, and it isn't nothing.",
+        "The right order is the one you'll actually follow.",
+        "Lists are reassuring, which is their real function.",
         "What you don't do today will still exist tomorrow.",
-        "We think we choose between options. Mostly we choose to begin.",
+        "We think we're choosing between options when mostly we're choosing to begin.",
         "Take the one that frightens you least. The others will wait their turn.",
         "I spent my life sorting things. Nothing ever stayed sorted.",
         "A plan too precise breaks on the first surprise. Keep it loose.",
         "You don't have to understand all of it to begin something.",
         "Curiosity is a good reason. It's worth a great many others.",
-        "What's written there isn't a debt. They're possibilities.",
+        "Nothing written there is waiting for you with a bill.",
         "Choose, or don't. Both are valid answers."
       ]
     },
     "herbalist": {
       "rest": [
-        "Drink. Not because I said so — because you'll regret it otherwise.",
+        "Drink. You'll regret it in an hour otherwise.",
         "Breath comes back before the legs do. Always that order. Don't worry.",
         "I have remedies for a great many things. For impatience I've found none.",
         "The body repairs while you do nothing. Badly distributed, I'm aware.",
-        "Sit down if you want. People think it's cheating. It isn't.",
-        "Pain that shouts is usually lying. The kind that whispers — listen to that.",
+        "Sit down if you want. People think it's cheating. They're wrong.",
+        "Pain that shouts is usually lying. Listen to the one that whispers.",
         "I've watched far bigger people go down from not knowing when to stop.",
         "Sleep does more for your muscles than anything I keep in a bottle.",
-        "You're sweating. That's the machinery running, nothing more sinister.",
-        "Breathe through your nose. It isn't superstition, it's plumbing.",
+        "You're sweating. Normal machinery.",
+        "Breathe through your nose. That's plumbing.",
         "Nobody has ever thanked me for advising rest. Everybody comes back.",
-        "What you're feeling has a name, and it isn't a problem."
+        "What you're feeling has a name, and I know it."
       ],
       "village_visit": [
         "My garden has doubled. I'm not complaining, but I weed twice as much.",
-        "There's room for a drying shed now. I've wanted one for a long time.",
-        "People fall ill less in a well-built village. That's checkable.",
+        "There's room for a drying shed now.",
+        "People fall ill less in a well-built village, and that's checkable.",
         "Every extra wall is one less draught. That counts, in winter.",
         "I know each roof by its smoke. A useless talent, I'm aware.",
         "Someone asked me for a cure for pride. I haven't got one. Just as well.",
         "This village breathes better than it did. I usually choose my words.",
-        "Things grow here that didn't grow before. Who knows why.",
+        "Things grow here that didn't grow before.",
         "Look at it without trying to fix anything. That's an exercise too.",
         "The children have somewhere to run now. Worth all my ointments.",
         "I've watched villages disappear. This one isn't going anywhere.",
-        "You can stand there a while. It isn't wasted time."
+        "Stay a while. It heals as well as anything in my bottles."
       ],
-      "guide_journal": [
-        "Everything you've done is here. Not to judge you by — to see what's moving."
-      ]
+      "guide_journal": ["Everything you've done is here, so you can see what is moving."]
     },
     "minstrel": {
       "rest": [
@@ -1014,25 +1068,25 @@
         "In the song, this pause lasts three seconds and is extremely heroic.",
         "I'm adding a verse. It'll make you sound far calmer than this.",
         "Heroes in songs never stop. Which is precisely why they die young.",
-        "I have the title already. The rest turns up at the last moment, as usual.",
+        "I've got the title already!",
         "Do you want the version where you're gasping, or the one where you aren't?",
         "Nobody sings about the pauses. An injustice I intend to correct.",
         "I'm writing all this down. One day it'll be sung in taverns you'll never see.",
         "The crowd, inside my head, is absolutely losing it. You can't hear them.",
         "Pick it up whenever. I'm paid by the verse, not by the hour.",
-        "I need a word for the noise you're making. Nothing quite fits.",
+        "I need a word for the noise you're making. “Groan”? No. “Gasp”? Limp.",
         "This is the part where the audience thinks it's over. They're wrong."
       ],
       "village_visit": [
         "I know a song for every roof here. Some of them are even good.",
-        "It's prettier than when I arrived. Not flattery. Well — a little.",
+        "It's prettier than when I arrived. Not flattery. Well, a little.",
         "I've seen capitals with less life in them than this patch of mud.",
         "This square needs a name. I suggest things. Nobody listens.",
         "Every building has a story. I invented half of them, but still.",
-        "Travellers ask who built all this. I do enjoy that moment.",
+        "Travellers ask who built all this. Guess who answers!",
         "One day this place will be sung elsewhere. I'll see to it personally.",
-        "Look at the roofs. No, properly. There — that was the advice.",
-        "There's light in windows that used to be dark. You notice that.",
+        "Look at the roofs. No, properly. There. That was the advice.",
+        "Light in windows that used to be dark.",
         "I wrote three lines about that well. Three. Nobody asked me to.",
         "People settle here. They never ask me why. A shame, really.",
         "It's a fine place. I don't say that often, so write it down somewhere."
@@ -1041,59 +1095,59 @@
         "There you are! I kept the song warm. It's a little creased.",
         "Somebody's home! Nobody listens to me, but I say it anyway.",
         "I carried the story on without you. It was markedly worse.",
-        "The hero returns next chapter. That's always the best chapter.",
-        "Good timing — I was running out of material.",
+        "The hero returns next chapter!",
+        "Good timing, I was running out of material.",
         "People asked after you. I made things up, as usual.",
-        "The village is exactly as you left it. That's rather the point of a village.",
+        "The village is exactly as you left it, which is rather the point.",
         "Welcome back. I'll put that here, in the chorus. It'll do nicely."
       ]
     },
     "farmer": {
       "rest": [
-        "I carried sacks all morning. We sit down. Nobody dies of it.",
-        "A field that never rests gives less the next year. Same with you.",
+        "I carried sacks all morning, so we sit down and nobody dies of it.",
+        "A field that never rests gives less the next year, and you are a field.",
         "The work will still be here in two minutes. It's loyal that way.",
         "You don't harvest by sowing harder. Took me ten years to see that.",
         "How often do you do this? Doesn't matter. What matters is coming back.",
-        "People think the harvest is the hard part. It's every day before it.",
+        "The hard part is every day before the harvest, and nobody ever mentions those.",
         "Take a breath. My animals breathe too, and they know their business.",
-        "What you're doing isn't heroic. It's just done properly. That's better.",
+        "That's clean work, and it shows from a long way off.",
         "I've watched whole seasons go past. Nothing good ever went fast.",
         "Nobody is watching you. That's exactly when it counts.",
-        "There'll be days when it's worse than this. Those count too.",
+        "There'll be worse days and they'll count just the same.",
         "The body adapts. A body is stupid, but it is diligent."
       ],
       "village_visit": [
         "All this grew while you were training. That's how it works here.",
-        "The village grows slowly. It's the only pace I know.",
-        "Nobody bought anything here. Every plank was earned.",
+        "The village grows slowly, and it's the only pace I know.",
+        "Nobody bought anything here, every plank was earned.",
         "There are more roofs than there were. I couldn't tell you which.",
-        "We mend, rebuild, start again. It's a village, not a monument.",
-        "I come past every morning. It changes without anyone seeing it change.",
+        "We mend, we rebuild, we start again. That's how a village lives.",
+        "I come past every morning and it changes without anyone seeing it change.",
         "The timber comes from here. So does the rest, if you go back far enough.",
         "What stands is what got done twice rather than once.",
-        "You're looking at your own work. That's not vanity, it's bookkeeping.",
-        "A village is never finished. I find that fairly reassuring.",
+        "You're looking at your own work. Round here we call that doing the books.",
+        "A village is never finished, and I find that fairly reassuring.",
         "You can't see the foundations any more. They still hold up the rest.",
         "Nothing here arrived all at once. Nothing at all."
       ],
       "guide_village": [
-        "Nothing is bought here. What you see, you built by training — one building per muscle."
+        "Nothing is bought here. What you see, you built by training: one building per muscle."
       ]
     },
     "champion": {
       "personal_record": [
-        "New ceiling. The next one is harder to reach. That's how it goes.",
-        "That wasn't luck. That was work coming due.",
+        "New ceiling, and the next one sits higher.",
+        "That's work coming due.",
         "Took me three winters to get past that notch. Well done anyway.",
-        "Mark beaten. Keep the feeling, not the number — the feeling is what returns.",
-        "So that's what it feels like. You'll recognise it next time.",
+        "Mark beaten. Keep the feeling, not the number. The feeling is what returns.",
+        "So that's what it feels like, and you'll know it next time.",
         "The body never does that by accident. There was room, and you took it.",
         "First time. There's only ever one, so stay in it a second.",
         "Clean. Come and find me when you want to go above it."
       ],
       "personal_record_beat": [
-        "{{delta}} more than your best. That's neither nothing nor an accident.",
+        "{{delta}} more than your best. Nobody finds that by accident.",
         "{{exercise}}: {{delta}} above. I know exactly what that costs.",
         "You beat yourself by {{delta}}. The only opponent that counts here.",
         "{{delta}} better. The next step up is higher. It always is.",
@@ -1105,41 +1159,71 @@
       "boss_defeated": [
         "It's over. Sit down before your legs work that out.",
         "I've watched bigger things go down. Not many.",
-        "Struck well right to the end. The end is the hard part, not the start.",
-        "The next one will have heard about you. It won't help.",
-        "You held the distance. That's rarer than strength.",
+        "Struck well right to the end. The end is where it's decided.",
+        "The next one will have heard about you.",
+        "You held the distance. Rarer than strength.",
         "There. It won't happen the same way twice, so look at it a second.",
-        "Stay standing a moment. The village likes to see who comes back.",
-        "Clean. Not elegant, but clean. Both of those comes later."
+        "Stay standing a moment, the village likes to see who comes back.",
+        "Clean. Not elegant, but clean. Both of those come later."
       ]
     },
     "watcher": {
       "boss_defeated": [
-        "It's down. Whatever it was, it isn't any more.",
-        "I watched it come over the ridge weeks ago. I'd not have bet on the outcome.",
-        "The east road is quiet tonight. You're the reason it's quiet.",
-        "From the tower you mostly see what's coming. Tonight, nothing is.",
+        "It's down. Doesn't matter what it was.",
+        "Spotted at the ridge weeks ago. I'd not have bet on the outcome.",
+        "East road: quiet. Thanks to you.",
+        "From the tower you see what's coming. Tonight, nothing.",
         "I've stood the watch down. They can sleep. That doesn't happen often.",
-        "Report's filed. It'll be written exactly as it happened, I promise.",
+        "Report filed, written exactly as it happened.",
         "That was the one nobody comes back from. Statistically, you cheated.",
-        "There'll be a story by morning. Wrong in most details, as they always are."
+        "There'll be a story by morning, wrong in most of its details."
       ],
       "guide_adventures": [
-        "Adventures chain quests together and end on a boss. You can stop between two — it will wait."
+        "Adventures chain quests together and end on a boss. You can stop between two. It will wait."
       ],
       "menu_visit": [
         "I watch the road, you watch your options. Each to their post.",
         "Scout before you move. It's the only advice I give twice.",
-        "Distant things always look harder. That's a trick of the eye.",
+        "Distant things always look harder. Trick of the eye.",
         "You can go back on a decision. It isn't a peace treaty.",
-        "Nothing is coming just now. Use it to get ready without hurrying.",
+        "Nothing's coming. Use it.",
         "I'd rather watch you choose slowly than run the wrong way.",
         "The ground changes. What was impossible didn't stay impossible.",
-        "You see better from up here than down there. That's the point of stopping.",
+        "You see better from up here than down there.",
         "Good reconnaissance is worth two hours of walking saved.",
         "You're preparing. It doesn't show immediately, but it shows afterwards.",
         "I log what passes. You log what tempts you. Same trade, really.",
-        "There's nothing to fear in a list. I check. It's my job."
+        "Nothing to fear in a list. I check. It's my job."
+      ],
+      "first_outing": [
+        "First time the gate's opened for something other than trade. Noted, and not quietly.",
+        "Seen from the tower: one figure going out, the same one coming back. The road counts from today.",
+        "Everything before today happened inside the walls, and today didn't.",
+        "New entry in the log. A road, where the map used to say nothing.",
+        "The gate guard asked who that was. I told him. He'll get used to it.",
+        "Outside the walls, on your own legs, and back. That's how the first league of every road gets drawn.",
+        "Report: the ground beyond the gate is now somewhere you've stood. It was a rumour this morning.",
+        "I watch the road for what comes in. Tonight I watched it for someone going out. Different job."
+      ],
+      "high_road": [
+        "The road's been pushed out a stretch further, in the same boots every time, and I've checked.",
+        "Milestone set. The masons don't do that for a path nobody walks.",
+        "From up here the road reads longer than it did last month, and nothing grew it but leagues.",
+        "Traders are using the new stretch already. They think it was always there. Let them.",
+        "Update to the map: the High Road runs further. Filed under leagues walked, not under miracles.",
+        "Longer road, wider view. The tower didn't move; what it can see did.",
+        "A road grows by being walked, and this one has been. Ask the mud on your boots.",
+        "Another stretch of the High Road laid, and I know exactly whose leagues paid for it."
+      ],
+      "longest_outing": [
+        "Furthest yet. I lost you past the ridge and had to trust the road.",
+        "Longest outing on record. The old mark held for a while; it doesn't any more.",
+        "Out of sight of the tower for a stretch, which is a first. I don't like it. I noted it anyway.",
+        "Farther than any outing before it, and back at your own pace, with nobody sent after you.",
+        "New mark for the longest road. The previous one is still in the log, crossed out neatly.",
+        "That's beyond the last milestone I could name. From here on, the map is yours to fill.",
+        "Record for distance, logged, and whatever was out there past the old turning point has been seen now.",
+        "Furthest you've gone, by my count and by the road's. Two ledgers, one line."
       ]
     }
   }

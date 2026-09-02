@@ -60,7 +60,12 @@ export type QuestTargetType = (typeof questTargetTypes)[number];
 export const feedbackCodes = ["easy", "good", "hard"] as const;
 export type FeedbackCode = (typeof feedbackCodes)[number];
 
-export const exerciseStyles = ["strength", "calisthenics", "yoga", "cardio"] as const;
+// `expedition` is not a synonym for `cardio`, and the difference is load-bearing: cardio is
+// what leaves you breathless — burpees, jumping jacks, mountain climbers, eight movements in
+// eleven slots of six shipped quests — and it earns rep-equivalents like anything else.
+// An expedition is what happens outside the walls, is measured in ground covered rather than
+// repetitions, and converts to nothing in `db/workUnits.ts`. See docs/designs/expeditions.md.
+export const exerciseStyles = ["strength", "calisthenics", "yoga", "cardio", "expedition"] as const;
 export type ExerciseStyle = (typeof exerciseStyles)[number];
 
 /**
@@ -415,6 +420,33 @@ export const completedQuest = sqliteTable(
     // which is what the 0038 backfill wrote and what keeps `ORDER BY uuid` sorting the journal.
     uuid: text().$defaultFn(() => uuidv7()),
 
+    /**
+     * Metres of ground this session actually credited, or null for a session that covered none.
+     *
+     * The reducer's answer (`src/gps/track.ts`), not a sum of `gps_points.distFromPrevCm`. Those
+     * differ on purpose and the difference is the whole point of the reducer: a raw sum counts
+     * drift while the hero stood still (6 m in 30 s on a phone flat on a desk) and counts the
+     * length of a GPS teleport. Summing the raw column for leagues gave one run two lengths, the
+     * one the hero read and a larger one that grew the village.
+     *
+     * Written once, by the one function that already decided it, at the moment the session is
+     * saved. Null for every strength quest, and for a walk whose service never started.
+     */
+    leaguesM: int(),
+
+    /**
+     * Moving seconds this outing was credited, from the same reading as `leaguesM` above and
+     * written by the same single writer at save.
+     *
+     * The recap used to fold `gps_points` back through the reducer to get it, which is a second
+     * answer to a question the reducer already answered once — and the two part company when a
+     * flush fails: `stores/expedition.ts` drops a batch of up to thirty fixes on a database
+     * error, the distance still holds them and the replayed clock does not, so the pace between
+     * them is wrong with nothing able to notice. Null on every outing saved before 0046, and on
+     * every strength quest.
+     */
+    movingSeconds: int(),
+
     // Which install wrote the row — provenance, not identity (`db/preferences.ts`). Null on
     // every session logged before 0038: nothing here recorded it.
     originDevice: text(),
@@ -637,10 +669,11 @@ export const buildingCodes = [
   "fountain", // abs upgrade
   "observatory", // shoulders upgrade
   "barn", // legs upgrade
-  // Tier 4 - Legendary (boss rewards)
+  // Tier 4 - Legendary (deeds, not volume)
   "dragon_lair",
   "heroes_hall",
   "champion_arena",
+  "high_road", // leagues -> the village's reach
 ] as const;
 export type BuildingCode = (typeof buildingCodes)[number];
 
@@ -858,6 +891,21 @@ export const buildingDefinitions: Record<
     prerequisiteBuilding: null,
     prerequisiteLevel: null,
   },
+  // The only building that is not a bigger number: it upgrades the village's *reach*.
+  //
+  // `relatedStyle` is deliberately null even though `expedition` is the style that feeds it. A
+  // `relatedStyle` here means "levelled by that style's work units", and expedition work units
+  // are zero forever by design (db/workUnits.ts, NON_REP_STYLE). The road answers to leagues,
+  // the second currency, and nothing converts between the two — docs/designs/expeditions.md.
+  high_road: {
+    tier: 4,
+    emoji: "🧭",
+    relatedMuscle: null,
+    relatedStyle: null,
+    unlockCondition: "Cover your first league beyond the walls",
+    prerequisiteBuilding: null,
+    prerequisiteLevel: null,
+  },
 };
 
 // XP thresholds for building levels
@@ -896,111 +944,46 @@ export const villageStats = sqliteTable("village_stats", {
 });
 
 // ------------------------------------------------------------
-// Goals & Planning System (Phase 3)
+// Expeditions: the ground covered
 // ------------------------------------------------------------
 
-// Goal types for different training focuses
-export const goalTypeCodes = ["strength", "endurance", "flexibility", "balanced"] as const;
-export type GoalTypeCode = (typeof goalTypeCodes)[number];
-
-// Goal status
-export const goalStatusCodes = ["active", "paused", "completed", "abandoned"] as const;
-export type GoalStatusCode = (typeof goalStatusCodes)[number];
-
-// User goals table - tracks fitness objectives
-export const goals = sqliteTable("goals", {
-  id: int().primaryKey({ autoIncrement: true }),
-
-  // Goal configuration
-  goalType: text().notNull().$type<GoalTypeCode>(),
-  daysPerWeek: int().notNull().default(3), // 1-7
-  sessionMinutes: int().notNull().default(20), // Preferred session duration
-
-  // Status tracking
-  status: text().notNull().default("active").$type<GoalStatusCode>(),
-  startDate: int({ mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  endDate: int({ mode: "timestamp" }), // Optional end date for time-bound goals
-
-  // Timestamps
-  createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
-});
-
-// Weekly goal progress tracking
-export const goalProgress = sqliteTable(
-  "goal_progress",
+/**
+ * One accepted GPS fix, as it came off the receiver.
+ *
+ * Raw on purpose. The filters in `src/gps/track.ts` are a reading of this table, not a gate in
+ * front of it: a rule tuned against real data cannot be re-tuned once the data was recorded
+ * through it. So a teleport, a paused stretch and a drifting stop are all in here, and it is
+ * the reducer's job to say what they meant.
+ *
+ * `WITHOUT ROWID` with `(sessionId, t)` as the key: this is the one table in the app that grows
+ * per second rather than per set, and the rows are only ever read in time order for one session.
+ * About 180 kB an hour at 1 Hz, against roughly 450 kB for the same rows in a table with an
+ * autoincrement id and a secondary index nothing would use.
+ *
+ * Scaled integers, and the scale is in the column name so nothing has to remember it. Floats
+ * were the alternative and were refused for the reason `lat_e7` exists everywhere else in this
+ * business: 1e-7 degrees is about a centimetre, which is far finer than any consumer receiver,
+ * and an integer cannot quietly lose the last digit on the way through a JSON bridge.
+ */
+export const gpsPoints = sqliteTable(
+  "gps_points",
   {
-    id: int().primaryKey({ autoIncrement: true }),
-    goalId: int()
-      .notNull()
-      .references(() => goals.id, { onDelete: "cascade" }),
-
-    // Week identifier (ISO week: YYYY-WW format stored as text)
-    weekKey: text().notNull(),
-
-    // Progress data
-    targetSessions: int().notNull(), // Based on daysPerWeek
-    completedSessions: int().notNull().default(0),
-    totalMinutes: int().notNull().default(0),
-    totalXp: int().notNull().default(0),
-
-    // Timestamps
-    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+    /** The session's uuid, minted at session start — see `SavedSessionState`. */
+    sessionId: text().notNull(),
+    /** Epoch milliseconds from `Location.getTime()`, the system clock. */
+    t: int().notNull(),
+    latE7: int().notNull(),
+    lonE7: int().notNull(),
+    /** Centimetres. Null when the fix carried no altitude, which is common indoors. */
+    eleCm: int(),
+    /** Decimetres of horizontal accuracy. Never null: a fix without it is dropped natively. */
+    accDm: int().notNull(),
+    /** Centimetres per second. Null when the fix carried no speed. */
+    speedCms: int(),
+    /** Metres from the previous accepted fix, as `Location.distanceTo` measured it. */
+    distFromPrevCm: int().notNull(),
   },
   (table) => ({
-    goalWeekUnique: uniqueIndex("goal_progress_goal_week_unique").on(table.goalId, table.weekKey),
-    goalIdx: index("goal_progress_goal_idx").on(table.goalId),
-  }),
-);
-
-// ------------------------------------------------------------
-// Scheduled Sessions (Phase 3 - Scheduling)
-// ------------------------------------------------------------
-
-// Status of a scheduled session
-export const scheduledSessionStatusCodes = ["pending", "completed", "skipped", "missed"] as const;
-export type ScheduledSessionStatusCode = (typeof scheduledSessionStatusCodes)[number];
-
-// Scheduled sessions table - planned workouts for the future
-export const scheduledSessions = sqliteTable(
-  "scheduled_sessions",
-  {
-    id: int().primaryKey({ autoIncrement: true }),
-
-    // What to do
-    questId: int()
-      .notNull()
-      .references(() => quests.id, { onDelete: "cascade" }),
-
-    // Optional: link to goal/plan
-    goalId: int().references(() => goals.id, { onDelete: "set null" }),
-
-    // When to do it (date only, as timestamp at midnight)
-    scheduledDate: int({ mode: "timestamp" }).notNull(),
-
-    // Optional: preferred time of day (hours 0-23)
-    preferredHour: int(),
-
-    // Status tracking
-    status: text().notNull().default("pending").$type<ScheduledSessionStatusCode>(),
-
-    // Link to completed session if done
-    completedSessionId: int().references(() => completedQuest.id, {
-      onDelete: "set null",
-    }),
-
-    // Optional note from user
-    note: text(),
-
-    // Timestamps
-    createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
-    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
-  },
-  (table) => ({
-    dateIdx: index("scheduled_sessions_date_idx").on(table.scheduledDate),
-    statusIdx: index("scheduled_sessions_status_idx").on(table.status),
-    goalIdx: index("scheduled_sessions_goal_idx").on(table.goalId),
+    pk: primaryKey({ columns: [table.sessionId, table.t] }),
   }),
 );

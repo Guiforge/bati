@@ -43,8 +43,9 @@ export function HomeHeader() {
   const flameLevel = getFlameLevel(currentStreak);
 
   return (
-    /* Same surface + hairline as the village band: the two strips read as one
-       frame around the stage, which is what makes the screen a HUD and not a list.
+    /* Same hairline as the village band, one shade under its surface: the two strips read as
+       one frame around the stage, which is what makes the screen a HUD and not a list, and the
+       step between them keeps the bottom one from reading as a second header.
        Owns the top inset so the notch area is chrome-colored too, with no seam. */
     <XStack
       px="$4"

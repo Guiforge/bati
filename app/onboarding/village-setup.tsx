@@ -48,7 +48,7 @@ export default function VillageSetup() {
     } catch (error) {
       // Without this, a failed write left the hero stuck on step 2 with a mute button.
       reportError("onboarding.villageName", error);
-      showError(t("onboarding.save_error", "Could not save — try again"));
+      showError(t("onboarding.save_error", "Could not save. Try again"));
       return;
     }
     router.push("/onboarding/training-level");

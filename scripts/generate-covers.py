@@ -209,6 +209,31 @@ COVERS = [
      "A wide shot of a cursed moor at night: a pale narrow track running away between black "
      "twisted trees and drifting fog, cold blue witch-lights hovering off the path, the horizon "
      "swallowed in darkness. The moor is empty of figures, no people."),
+    # The three expedition quests of 0042. Each one is a way *out*, so each scene is a route
+    # leaving somewhere rather than a place to stand: the wall, the road, the horizon.
+    ("wardens_round", "quests",
+     "A wide shot along the top of a village rampart at dusk, worn flagstones running away from "
+     "the camera between the merlons, the sleeping roofs and smoking chimneys of the village on "
+     "one side and open moorland falling away into blue distance on the other, a single brazier "
+     "burning far ahead where the wall turns. Unhurried and ordinary — the walk is deserted, no "
+     "watchmen and no people."),
+    # The first draw put two lines of hallucinated gibberish on the signpost's board, which is the
+    # failure §5 of docs/content/missing-image.md says only a person looking will catch. The board
+    # is now described as a thing with a surface — weathered bare timber, its lettering long gone —
+    # rather than left as an object whose whole purpose is to carry words.
+    ("word_must_travel", "quests",
+     "A wide shot of a rutted dirt road at last light running down out of wooded hills toward the "
+     "small warm lights of a village on the plain, a low mist gathering in the fields and the sun "
+     "already gone behind the far ridge. A leaning wooden waymarker stands at the roadside, its "
+     "board a plain slab of weathered grey timber worn perfectly smooth and bare, its lettering "
+     "long since gone: blank wood grain and nothing else. There is no writing, no lettering and no "
+     "text anywhere in this picture. Something has to arrive before dark — the road is empty, no "
+     "travellers and no people."),
+    ("long_reach", "quests",
+     "A wide shot at dawn of an open village gate with a saddled horse waiting just inside it, "
+     "reins looped over a post, its breath steaming in the cold, and beyond the gate a track "
+     "running out across rolling grassland toward ridge after ridge of unmapped blue country. The "
+     "saddle is empty and the yard is deserted — no rider, no people."),
     ("guardian_oath", "adventures",
      "A wide shot of a solemn oath-hall at night: a great stone shield mounted on the far wall "
      "beneath a shaft of moonlight, a kneeling-stone worn smooth on the floor before it, candles "

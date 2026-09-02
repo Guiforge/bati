@@ -234,6 +234,26 @@ describe("db/personalRecords", () => {
     );
   });
 
+  test("a workout has no ground, so it never claims the outing record", async () => {
+    const { checkForNewRecords } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+
+    // A prior outing, so there is a record on the books to (not) beat.
+    logOuting(4580, 3600);
+
+    // A workout: no leaguesM at all.
+    const info = t.sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, durationSeconds) VALUES ('medium', 10, ?, 600)",
+      )
+      .run(now);
+    const id = Number(info.lastInsertRowid);
+
+    const records = await checkForNewRecords(id);
+    expect(records.find((r) => r.recordType === "longest_outing")).toBeUndefined();
+  });
+
   test("checkForNewRecords detects longest session PR", async () => {
     const { checkForNewRecords } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");

@@ -148,12 +148,12 @@ export function PersonalRecordsCard() {
           <XStack gap="$2">
             <RecordItem
               icon={<Footprints size={20} color="$primaryText" />}
-              label={t("journal.pr_ground", "Ground covered")}
+              label={t("journal.pr_ground")}
               value={formatDistance(summary.totalLeaguesM, unit)}
             />
             <RecordItem
               icon={<MapIcon size={20} color="$secondary" />}
-              label={t("journal.pr_longest_outing", "Longest outing")}
+              label={t("journal.pr_longest_outing")}
               value={
                 summary.longestOuting ? formatDistance(summary.longestOuting.value, unit) : "--"
               }

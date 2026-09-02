@@ -6,6 +6,7 @@ import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
 import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
+import "@/i18n";
 import config from "@/tamagui.config";
 
 // Every card in the journal follows the same shape: fetch on mount, show a skeleton, then either
@@ -18,7 +19,6 @@ jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn(), back: jes
 // reportError writes to the crash log, which needs the real database; the cards under test are
 // about what the *screen* does when a query fails, not about how the failure is recorded.
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
-jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("expo-localization", () => ({
   getLocales: () => [{ languageCode: "en", languageTag: "en-US" }],
 }));

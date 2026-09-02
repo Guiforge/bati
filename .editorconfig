@@ -1,0 +1,15 @@
+# ktlint reads this file, and only this file, to know what the Kotlin here looks like.
+#
+# The two modules under `modules/bati-location/android` are indented two spaces, which is what
+# `expo-module-gradle-plugin` scaffolds and what every Expo module ships. ktlint's own default is
+# four, so without this line it reports several hundred indent errors on code that is perfectly
+# consistent with itself and with every neighbour it was copied from.
+#
+# Deliberately scoped to Kotlin. Everything else in this repo is Biome's, and a second formatter
+# with an opinion about JavaScript is how two tools start fighting over the same file.
+root = true
+
+[*.kt]
+indent_style = space
+indent_size = 2
+max_line_length = 120

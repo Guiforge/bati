@@ -220,6 +220,20 @@ describe("VictoryView, the walk it just celebrated", () => {
     expect(screen.queryByTestId("victory-expedition")).toBeNull();
     expect(mockGetVillageBuildings).not.toHaveBeenCalled();
   });
+
+  // The villager cameo draws over the bottom of this screen (VillagerCameo.tsx). Anything below
+  // the stat tiles used to land in its band; the summary has to render first so it clears it.
+  test("renders above the stat tiles, so the cameo does not land on top of it", async () => {
+    await mountVictory();
+
+    const tree = JSON.stringify(screen.toJSON());
+    const summaryIndex = tree.indexOf('"victory-expedition"');
+    const statRowIndex = tree.indexOf('"victory-stat-row"');
+
+    expect(summaryIndex).toBeGreaterThan(-1);
+    expect(statRowIndex).toBeGreaterThan(-1);
+    expect(summaryIndex).toBeLessThan(statRowIndex);
+  });
 });
 
 /**

@@ -399,8 +399,16 @@ export function VictoryView() {
           />
         )}
 
+        {/* What the walk was worth. Held until the save lands for the same reason the rewards
+            are: the leagues it reports are the ones `saveSession` has just credited. Rendered
+            before the stat row (rather than at the bottom, with the rewards) so it lands above
+            the cameo's band instead of underneath it — see cameoAnchor.ts. */}
+        {!!result && isExpedition(quest) && (
+          <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
+        )}
+
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
-        <XStack width="100%" maxW={520} gap="$3">
+        <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
           <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
             <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
               {t("session.total_time")}
@@ -546,12 +554,6 @@ export function VictoryView() {
               </Text>
             </AppButton>
           </YStack>
-        )}
-
-        {/* What the walk was worth. Held until the save lands for the same reason the rewards
-            are: the leagues it reports are the ones `saveSession` has just credited. */}
-        {!!result && isExpedition(quest) && (
-          <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
         )}
 
         {!!result && (

@@ -1242,6 +1242,38 @@ describe("useSessionStore", () => {
       expect(store.getState().results[0]?.target).toEqual({ type: "time", value: 900 });
     });
 
+    // The notification's own way out, which is the only one a locked phone in a pocket has.
+    // It reaches a store rather than a component: nothing is mounted, and nothing has a
+    // stopwatch to hand over.
+    test("finishing from the notification records the same duration as the button on screen", async () => {
+      await store.getState().startSession(outing, "medium", {});
+      store.setState({ startTime: Date.now() - 60_000, totalPausedTime: 0 });
+      walked(45 * 60);
+
+      store.getState().completeOuting();
+
+      expect(store.getState().results[0]?.result.value).toBe(45 * 60);
+      expect(store.getState().status).toBe("finished");
+    });
+
+    test("the same tap arriving during a workout indoors writes nothing", async () => {
+      await store.getState().startSession(mockQuest, "medium");
+      store.getState().finishCountdown();
+
+      store.getState().completeOuting();
+
+      expect(store.getState().results).toHaveLength(0);
+      expect(store.getState().status).toBe("running");
+    });
+
+    test("and arriving with no session at all is not a crash", () => {
+      // A service the OS restarted can outlive the session that started it: the tap is late,
+      // the store is idle, and the honest answer is nothing.
+      expect(() => store.getState().completeOuting()).not.toThrow();
+      expect(store.getState().results).toHaveLength(0);
+      expect(store.getState().status).toBe("idle");
+    });
+
     test("an indoor hold still stops at an hour", () => {
       store.setState({
         quest: mockQuest,

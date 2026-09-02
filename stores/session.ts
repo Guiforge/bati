@@ -52,6 +52,7 @@ import {
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
 import { i18n } from "@/i18n";
+import type { StartOptions } from "@/modules/bati-location";
 import type { OutingGoal } from "@/src/gps/track";
 import { credited } from "@/src/gps/track";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
@@ -280,6 +281,8 @@ interface SessionState {
 
   // Progression
   completeExercise: (resultValue: number) => void;
+  /** Ends an outing from outside any view. See the implementation for why it exists. */
+  completeOuting: () => void;
   skipExercise: () => void;
   swapCurrentExercise: (exercise: Exercise) => void;
   updateLastResult: (resultValue: number) => void;
@@ -798,31 +801,34 @@ export function beginTrackingIfOuting(
   // The unit and the haptics preference are resolved here rather than inside that store, and
   // only once the quest is known to be an outing: the store has no business importing settings,
   // which would pull the whole `db` barrel into a module the session screen mounts.
+  // Typed as what the service reads rather than as what the expedition store declares: that
+  // store retypes these strings as its own `Notification`, which does not name the button, and
+  // an object literal carrying a field its target has never heard of is an error. Named here,
+  // the label is simply carried through - one hop, no second copy of six keys to keep in step.
+  const notification: StartOptions["notification"] = {
+    // The quest, not the app: this notification is the only screen an hour of walking has,
+    // and it spent that hour saying the name of the app the hero is already using.
+    title: localizedTitle(quest, resolveAppLanguage(i18n.language)),
+    // The same three keys the panel's status pill reads. They were a second set with the
+    // same values, one for the notification and one for the screen, which is one reword
+    // away from the notification and the panel describing the walk differently.
+    acquiring: i18n.t("session.expedition_status_acquiring"),
+    tracking: i18n.t("session.expedition_status_moving"),
+    paused: i18n.t("session.expedition_status_paused"),
+    gpsOff: i18n.t("session.expedition_gps_off"),
+    reached: i18n.t("session.expedition_reached"),
+    // The one way out of a walk that survives a locked screen.
+    finish: i18n.t("session.expedition_notification_finish"),
+  };
+
   Promise.all([
     preferences.getDistanceUnit().catch((): DistanceUnit => "metric"),
     preferences.getHapticsEnabled().catch(() => true),
   ])
     .then(([unit, haptics]) =>
-      useExpeditionStore.getState().begin(
-        sessionUuid,
-        {
-          // The quest, not the app: this notification is the only screen an hour of walking has,
-          // and it spent that hour saying the name of the app the hero is already using.
-          title: localizedTitle(quest, resolveAppLanguage(i18n.language)),
-          // The same three keys the panel's status pill reads. They were a second set with the
-          // same values, one for the notification and one for the screen, which is one reword
-          // away from the notification and the panel describing the walk differently.
-          acquiring: i18n.t("session.expedition_status_acquiring"),
-          tracking: i18n.t("session.expedition_status_moving"),
-          paused: i18n.t("session.expedition_status_paused"),
-          gpsOff: i18n.t("session.expedition_gps_off"),
-          reached: i18n.t("session.expedition_reached"),
-        },
-        isMountedOuting(quest),
-        unit,
-        goal,
-        haptics,
-      ),
+      useExpeditionStore
+        .getState()
+        .begin(sessionUuid, notification, isMountedOuting(quest), unit, goal, haptics),
     )
     .catch((error: unknown) => reportError("session.beginTracking", error));
 }
@@ -1152,13 +1158,30 @@ export const useSessionStore = create<SessionState>()(
     },
 
     /**
-     * The hero could not do this movement, and says so instead of typing a number.
+     * End the walk from somewhere that has no view: the notification's "Finish" action.
      *
-     * Writes nothing. `CHECK (resultValue > 0)` made "1" the only way past a movement out of
-     * reach, and that 1 then fed muscle volume, the weak-area read and the targets it generates —
-     * issue #33's second half, where the app taught its own journal a lie. A set that left no row
-     * is counted by nothing, with no reader having to remember to filter it out.
+     * It is the same ending, not a second one. `recordOf` already times an outing by its trace
+     * and ignores whatever number the screen hands over, so this is `completeExercise` with the
+     * duration the journal was going to write anyway - one writer of a walk's length, which is
+     * the rule that survived the OS killing a session at 45 minutes.
+     *
+     * Deaf to anything that is not a walk under way. The service is a broadcast receiver that
+     * can outlive the session it was started for, and a stale tap must not end a workout indoors
+     * or wake an idle store into writing a row.
+     *
+     * Paused counts as under way, and that is not a technicality: standing still and then ending
+     * from the notification is what a hero does at their front door, and the recovery card
+     * concludes a killed walk from exactly that state. Only `idle`, `finished` and the two
+     * pre-start statuses are refused, which is the whole of what the guard was written for.
      */
+    completeOuting: () => {
+      const { quest, status } = get();
+      const underWay = status === "running" || status === "paused";
+      if (!quest || !underWay || !isOutingSession(quest)) return;
+
+      get().completeExercise(Math.max(1, recordedDurationSeconds()));
+    },
+
     /**
      * Change the movement in front of the hero, mid-set.
      *
@@ -1217,6 +1240,14 @@ export const useSessionStore = create<SessionState>()(
       // Costing them a tap next session is the cheaper mistake; the quest screen still pins.
     },
 
+    /**
+     * The hero could not do this movement, and says so instead of typing a number.
+     *
+     * Writes nothing. `CHECK (resultValue > 0)` made "1" the only way past a movement out of
+     * reach, and that 1 then fed muscle volume, the weak-area read and the targets it generates —
+     * issue #33's second half, where the app taught its own journal a lie. A set that left no row
+     * is counted by nothing, with no reader having to remember to filter it out.
+     */
     skipExercise: () => {
       const { quest, currentRoundIndex, currentExerciseIndex, results } = get();
       if (!quest) return;

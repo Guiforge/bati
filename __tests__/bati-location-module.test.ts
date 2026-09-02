@@ -86,6 +86,25 @@ describe("bati-location, without its native half", () => {
     expect(() => setReached()).not.toThrow();
   });
 
+  test("carries the finish button's word, and hands back its event", () => {
+    // The label is JS's, like the other six: native owns no strings. An empty one is how a
+    // build with no button says so, which is the orphan restart's case.
+    expect(() =>
+      start({
+        notification: {
+          title: "Bati",
+          acquiring: "…",
+          tracking: "…",
+          paused: "…",
+          gpsOff: "…",
+          reached: "…",
+          finish: "Finish",
+        },
+      }),
+    ).not.toThrow();
+    expect(() => addListener("onFinishRequested", () => {}).remove()).not.toThrow();
+  });
+
   test("hands back a subscription that can still be removed", () => {
     // Callers unsubscribe in a cleanup they do not get to make conditional.
     expect(() => addListener("onLocation", () => {}).remove()).not.toThrow();
@@ -111,6 +130,22 @@ describe("bati-location, as something autolinking can find", () => {
       `${declared?.replace(/\./g, "/")}.kt`,
     );
     expect(fs.existsSync(source)).toBe(true);
+  });
+
+  test("the finish action is named the same on both sides of the bridge", () => {
+    // Nothing compiles this Kotlin before a release tag, and `sendEvent` throws at runtime on a
+    // name the module never declared. Three strings have to agree, so three strings are read.
+    const kotlin = (file: string) =>
+      fs.readFileSync(
+        path.join(MODULE_ROOT, "android/src/main/java/expo/modules/batilocation", file),
+        "utf8",
+      );
+
+    expect(kotlin("BatiLocationService.kt")).toContain(
+      'const val EVENT_FINISH = "onFinishRequested"',
+    );
+    expect(kotlin("BatiLocationModule.kt")).toContain("BatiLocationService.EVENT_FINISH");
+    expect(kotlin("BatiLocationModule.kt")).toContain("BatiLocationService.EXTRA_FINISH");
   });
 
   test("its Gradle namespace matches the package the class lives in", () => {

@@ -219,7 +219,7 @@ jobs:
           fi
           echo "Permissions: $(wc -l < got.txt), all declared" >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ${{ steps.artefacts.outputs.apk_path }}

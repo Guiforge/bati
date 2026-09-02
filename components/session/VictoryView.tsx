@@ -14,6 +14,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
+import { cameoTopEdge } from "@/components/chorus/cameoAnchor";
 import { recordCue } from "@/components/chorus/recordCue";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
@@ -113,12 +114,16 @@ function HeroLevelBar({
 export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
   const { success, selection } = useHaptics();
   const { showError } = useToast();
+  // Whether the villager cameo (app/_layout.tsx, VillagerCameo) is on screen right now: it draws
+  // over the bottom of every screen it appears on, victory included, and this one's summary must
+  // never be permanently stuck behind it.
+  const cameoActive = useChorusStore((s) => s.current !== null);
   const {
     quest,
     startTime,
@@ -296,7 +301,14 @@ export function VictoryView() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: insets.bottom + 96,
+          // The sticky action row's own band, or — while a cameo is drawn over it — the taller
+          // band its top edge marks (cameoAnchor.ts), so scrolling to the end always clears the
+          // figure instead of leaving the last of the summary peeking out from behind it. Only
+          // reserved while a cameo is actually up: an ordinary victory must not carry a dead
+          // strip of padding for a figure that never appears.
+          paddingBottom: cameoActive
+            ? height - cameoTopEdge(width, height, insets.bottom)
+            : insets.bottom + 96,
           alignItems: "center",
           gap: 20,
         }}

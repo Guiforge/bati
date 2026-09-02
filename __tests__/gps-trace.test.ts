@@ -25,6 +25,24 @@ describe("toTrace", () => {
     expect(trace.line.geometry.coordinates).toEqual([]);
   });
 
+  // The reducer refuses a hole in time as firmly as a jump in space, and for the same reason:
+  // an interval with no witness. It learned that before this file did, and for one commit a
+  // ten minute tunnel cost the hero their credit while the map drew a straight gold line over
+  // the hill they had walked around.
+  test("a hole in time breaks the line, exactly like a jump in space", () => {
+    const trace = toTrace([
+      fix({ lat: 43.6, lon: 1.44, t: 0, distFromPrev: 0 }),
+      fix({ lat: 43.601, lon: 1.441, t: 1000 }),
+      // out of the tunnel: near in space, ten minutes away in time
+      fix({ lat: 43.6015, lon: 1.4415, t: 1000 + 10 * 60_000, distFromPrev: 150 }),
+      fix({ lat: 43.602, lon: 1.4421, t: 2000 + 10 * 60_000 }),
+    ]);
+
+    expect(trace.line.geometry.coordinates).toHaveLength(2);
+    expect(trace.line.geometry.coordinates[0]).toHaveLength(2);
+    expect(trace.line.geometry.coordinates[1]).toHaveLength(2);
+  });
+
   test("coordinates are [lon, lat], which is the order MapLibre reads and the opposite of ours", () => {
     const trace = toTrace([fix({ lat: 43.6045, lon: 1.4437, distFromPrev: 0 })]);
     expect(trace.line.geometry.coordinates[0]?.[0]).toEqual([1.4437, 43.6045]);

@@ -148,14 +148,31 @@ function teleport(state: TrackState, fix: LocationFix): TrackState {
   };
 }
 
+/**
+ * Whether the run is broken between the previous fix and this one.
+ *
+ * Too far, or too long since the last word: a jump in space and a hole in time are the same thing
+ * here, an interval with no witness, and neither is worth distance or moving seconds.
+ *
+ * Exported because the reducer is not the only reader. `src/gps/trace.ts` draws the line and
+ * `src/gps/gpx.ts` writes the file, and a picture that runs straight through a gap the reducer
+ * refused to count tells the hero they went through it. One rule, three callers: when this was
+ * two conditions in two files, the tunnel that cost ten minutes of credit still drew a gold line
+ * across the hill.
+ */
+export function breaksRun(fix: LocationFix, previousAt: number | null): boolean {
+  if (fix.distFromPrev > RULES.teleportM) return true;
+  if (previousAt === null) return false;
+  const elapsed = fix.t - previousAt;
+  return elapsed < 0 || elapsed > RULES.maxGapMs;
+}
+
 /** Fold one fix into the session. */
 export function accept(state: TrackState, fix: LocationFix): TrackState {
   if (state.startedAt === null) return openGate(state, fix);
 
   const elapsed = state.lastAt === null ? 0 : fix.t - state.lastAt;
-  // Too far, or too long since the last word: a jump in space and a hole in time are the same
-  // thing here, an interval with no witness, and neither is worth distance or moving seconds.
-  if (fix.distFromPrev > RULES.teleportM || elapsed < 0 || elapsed > RULES.maxGapMs) {
+  if (breaksRun(fix, state.lastAt)) {
     return teleport(state, fix);
   }
 

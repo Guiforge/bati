@@ -1,4 +1,5 @@
 import type { LocationFix } from "@/modules/bati-location";
+import { breaksRun } from "./track";
 
 /**
  * A track, as GPX 1.1.
@@ -63,13 +64,27 @@ export function toGpx(fixes: readonly LocationFix[], meta: TrackMeta): string {
     meta.totalDistanceM === undefined
       ? ""
       : `\n    <desc>Bati distance: ${Math.round(meta.totalDistanceM)} m</desc>`;
+  // One <trkseg> per stretch the reducer was willing to count, split on the same rule the map
+  // draws with. A single segment across a ten-minute tunnel is a claim, in every app that opens
+  // this file, that the hero walked through the hill.
+  const segments: string[][] = [];
+  let current: string[] = [];
+  let previousAt: number | null = null;
+  for (const fix of fixes) {
+    if (breaksRun(fix, previousAt) && current.length > 0) {
+      segments.push(current);
+      current = [];
+    }
+    current.push(point(fix));
+    previousAt = fix.t;
+  }
+  if (current.length > 0) segments.push(current);
+
   return [
     GPX_OPEN,
     "  <trk>",
     `    <name>${escapeXml(meta.name)}</name>${distance}`,
-    "    <trkseg>",
-    ...fixes.map(point),
-    "    </trkseg>",
+    ...segments.flatMap((seg) => ["    <trkseg>", ...seg, "    </trkseg>"]),
     "  </trk>",
     "</gpx>",
     "",

@@ -13,6 +13,22 @@ const fix = (over: Partial<LocationFix> = {}): LocationFix => ({
 });
 
 describe("src/gps/gpx", () => {
+  // Same rule as the drawn trace: a single <trkseg> across a ten minute hole claims, in every
+  // app that opens this file, that the hero walked through it.
+  test("a hole in time opens a new track segment", () => {
+    const xml = toGpx(
+      [
+        fix({ t: 0, distFromPrev: 0 }),
+        fix({ t: 1000 }),
+        fix({ t: 1000 + 10 * 60_000, distFromPrev: 150 }),
+      ],
+      { name: "tunnel" },
+    );
+
+    expect(xml.match(/<trkseg>/g)).toHaveLength(2);
+    expect(xml.match(/<\/trkseg>/g)).toHaveLength(2);
+  });
+
   test("every trkpt carries a time — a file without them imports as a shape with no pace", () => {
     const xml = toGpx([fix(), fix({ t: Date.UTC(2026, 7, 31, 15, 2, 53) })], { name: "t" });
     const points = xml.match(/<trkpt/g) ?? [];

@@ -1,10 +1,10 @@
 import * as Haptics from "expo-haptics";
 import { create } from "zustand";
 import { formatDistance } from "@/constants/distanceFormat";
+import { hasOutdoorSlot } from "@/db/expeditions";
 import { appendPoints, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
-import { NON_REP_STYLE } from "@/db/workUnits";
 import {
   addListener,
   isAvailable,
@@ -73,9 +73,9 @@ type Notification = {
   reached: string;
 };
 
-/** Whether this quest is an outing rather than a workout. */
+/** Whether anything in this quest happens outdoors, null-tolerant. The rule is in `db/expeditions`. */
 export function isExpedition(quest: Quest | null): boolean {
-  return quest?.exercises.some((slot) => slot.exercise.style === NON_REP_STYLE) ?? false;
+  return quest ? hasOutdoorSlot(quest) : false;
 }
 
 /**

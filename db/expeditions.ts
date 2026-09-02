@@ -61,6 +61,19 @@ export function isOutingSession(quest: { exercises: { exercise: Styled }[] }): b
 }
 
 /**
+ * The generous question, of a resolved quest: is there any ground in here at all.
+ *
+ * The twin of `hasOutdoorMovement` for the shape the session and the detail screen hold, and the
+ * one that decides whether the tracker starts, which is to say whether Android asks the hero for
+ * their position. `stores/expedition.isExpedition` is the null-tolerant wrapper over it, and it
+ * lives here rather than there so a screen can ask the question without importing a store that
+ * opens the database on the way in.
+ */
+export function hasOutdoorSlot(quest: { exercises: { exercise: Styled }[] }): boolean {
+  return quest.exercises.some((qex) => qex.exercise.style === NON_REP_STYLE);
+}
+
+/**
  * The outdoor slots' combined duration, when at least one of them is timed.
  *
  * Only a slot whose movement is the outdoor style may contribute: the goal is a promise about

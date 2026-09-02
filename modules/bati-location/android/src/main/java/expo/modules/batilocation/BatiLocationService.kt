@@ -146,14 +146,23 @@ class BatiLocationService : Service(), LocationListener {
    */
   private fun awaitConsumer() {
     if (tracking) return
-    if (!hasLocationPermission(this) || !enterForeground()) {
+    if (!hasLocationPermission(this)) {
       stopSelf()
       return
     }
     // The one string this module owns: the session's own localized words died with the process,
     // so an empty, unswipeable notification is what the hero would otherwise read for two minutes.
+    //
+    // Both lines go in *before* enterForeground(), because that call builds and posts the
+    // notification once and nothing on this path ever refreshes it: `state` is assigned rather
+    // than passed through setState(), which is the only thing that renotifies. Written the other
+    // way round, as it first was, the strings below exist and are never seen.
     pausedText = getString(R.string.bati_location_interrupted)
     state = State.PAUSED
+    if (!enterForeground()) {
+      stopSelf()
+      return
+    }
     handler.postDelayed(orphanTimeout, ORPHAN_TIMEOUT_MS)
   }
 
@@ -386,11 +395,6 @@ class BatiLocationService : Service(), LocationListener {
     private const val NO_FIX_TIMEOUT_MS = 30_000L
 
     /**
-     * One implementation for both callers: the module refuses to start without it, the service
-     * refuses to go foreground without it, and Android 14+ crashes a location-type service that
-     * skips the question.
-     */
-    /**
      * Move the notification's second half. A no-op when nothing is running, which is what makes
      * it safe to call from a JS flush that raced the hero tapping Done.
      */
@@ -416,6 +420,11 @@ class BatiLocationService : Service(), LocationListener {
       service.renotify()
     }
 
+    /**
+     * One implementation for both callers: the module refuses to start without it, the service
+     * refuses to go foreground without it, and Android 14+ crashes a location-type service that
+     * skips the question.
+     */
     @JvmStatic
     fun hasLocationPermission(context: Context): Boolean =
       ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==

@@ -37,7 +37,12 @@ import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
-import { estimateDistanceSeconds, isMountedOuting, isOutingSession } from "@/db/expeditions";
+import {
+  estimateDistanceSeconds,
+  hasOutdoorSlot,
+  isMountedOuting,
+  isOutingSession,
+} from "@/db/expeditions";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
@@ -224,6 +229,8 @@ export default function QuestDetails() {
   const [narrative, setNarrative] = useState<string | null>(null);
   const [showNarrative, setShowNarrative] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  /** Height of the pinned start bar, so the scroll reserves exactly what the bar takes. */
+  const [startBarHeight, setStartBarHeight] = useState(0);
   // Whether the route's level has already been applied once. A route level (an adventure step
   // picks one) should win on the first load, but not re-win on every later refocus — opening an
   // exercise sheet and coming back must not snap a hero's own choice back to it.
@@ -463,6 +470,14 @@ export default function QuestDetails() {
 
   // Every slot is an outing, so the screen is presenting a way out rather than a workout.
   const isOuting = quest ? isOutingSession(quest) : false;
+  /**
+   * Not `isOuting`. The notice answers "will Android ask me for my position", and what decides
+   * that is `hasOutdoorSlot`, the generous predicate the session store starts the tracker on: a
+   * quest that walks ten minutes and then does push-ups in the yard is measured, so it asks, so
+   * it has to say so first. Gated on the strict predicate, that hero met the system dialog during
+   * the countdown with nothing having warned them, which is the whole job this line has.
+   */
+  const willReadPosition = quest ? hasOutdoorSlot(quest) : false;
 
   const proceedToSession = async () => {
     // The isStarting guard is what stops a double-tap from starting two sessions while the
@@ -509,9 +524,10 @@ export default function QuestDetails() {
 
   return (
     <YStack flex={1} bg="$background">
-      {/* Clears the pinned bar below: 100 for the button and its padding, 40 more for the
-          two lines of location notice an outing adds above it. */}
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + (isOuting ? 140 : 100) }}>
+      {/* Measured, not guessed. The bar below is taller on an outing (it carries the location
+          notice) and taller again at a large system font size, and the hand-counted 140 it used
+          to reserve left two pixels of margin. Same pattern as the editor's save bar. */}
+      <ScrollView contentContainerStyle={{ paddingBottom: startBarHeight + 24 }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$3">
@@ -872,6 +888,7 @@ export default function QuestDetails() {
           borderColor="$borderStrong"
           gap="$2"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+          onLayout={(e) => setStartBarHeight(e.nativeEvent.layout.height)}
         >
           {/* The one promise made before the promise is needed. `stores/expedition` asks Android
               for the location permission during the countdown, which is the worst moment to meet
@@ -880,7 +897,7 @@ export default function QuestDetails() {
               In the pinned bar rather than in the page: it lived under the config panel, and on a
               Fairphone 6 that put it below the fold while this button stayed on screen the whole
               time. A hero who tapped straight away never read it, which is the entire job it had. */}
-          {isOuting ? (
+          {willReadPosition ? (
             <Text testID="quest-location-notice" fontSize={13} color="$textSecondary">
               {t("quests.location_notice")}
             </Text>

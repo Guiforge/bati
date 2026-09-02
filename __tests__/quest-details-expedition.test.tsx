@@ -332,6 +332,23 @@ describe("an ordinary workout keeps every control", () => {
     expect(view.queryByTestId("quest-location-notice")).toBeNull();
   });
 
+  /**
+   * A walk that ends in push-ups is not an outing by the strict predicate, and the session store
+   * starts the tracker on the generous one, so Android asks. Gated on `isOutingSession`, as it
+   * first was, this hero met the system dialog during the countdown with nothing having said why.
+   */
+  test("a quest that only starts outdoors still says what it will read", async () => {
+    const mixed = workoutQuest();
+    const [first, ...rest] = mixed.exercises;
+    assert(first);
+    const view = await mountQuest({
+      ...mixed,
+      exercises: [{ ...first, exercise: { ...first.exercise, style: "expedition" } }, ...rest],
+    });
+
+    expect(view.getByTestId("quest-location-notice")).toBeTruthy();
+  });
+
   test("a workout offers no distance", async () => {
     const view = await mountQuest(workoutQuest());
     expect(view.queryByText("Distance")).toBeNull();

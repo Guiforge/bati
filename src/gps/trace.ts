@@ -1,5 +1,5 @@
 import type { LocationFix } from "@/modules/bati-location";
-import { RULES } from "./track";
+import { breaksRun } from "./track";
 
 /**
  * The stored fixes, as the two things a map needs: a line to draw and a box to frame it in.
@@ -7,10 +7,11 @@ import { RULES } from "./track";
  * Pure, so the shape of a run is testable without a phone, a tile or a renderer — which matters
  * more here than usual, because nothing in this file has ever been seen on a device.
  *
- * It reads `RULES.teleportM` rather than owning a threshold of its own: `accept` refuses to count
- * a jump larger than that as distance, and a picture that then draws a straight line across the
- * gap tells the hero they ran through it. The reducer and the trace break the run in the same
- * places or they are two answers to one question.
+ * It calls `breaksRun` rather than owning a threshold of its own: `accept` refuses to count what
+ * that rule rejects, and a picture that then draws a straight line across the gap tells the hero
+ * they ran through it. The reducer and the trace break the run in the same places or they are two
+ * answers to one question, which is what happened the day the reducer learned about holes in time
+ * and this file only knew about jumps in space.
  */
 
 /** `[longitude, latitude]`, MapLibre's order — never the other way round. */
@@ -43,11 +44,13 @@ export function toTrace(fixes: readonly LocationFix[]): Trace {
   let east = Number.NEGATIVE_INFINITY;
   let north = Number.NEGATIVE_INFINITY;
 
+  let previousAt: number | null = null;
   for (const fix of fixes) {
-    if (fix.distFromPrev > RULES.teleportM && current.length > 0) {
+    if (breaksRun(fix, previousAt) && current.length > 0) {
       segments.push(current);
       current = [];
     }
+    previousAt = fix.t;
     current.push([fix.lon, fix.lat]);
     west = Math.min(west, fix.lon);
     east = Math.max(east, fix.lon);

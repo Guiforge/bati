@@ -25,7 +25,7 @@ const FEET_PER_MILE = 5280;
  * the unit that is about to be printed.
  */
 export function formatDistance(metres: number, unit: DistanceUnit): string {
-  if (!Number.isFinite(metres) || metres < 0) return "—";
+  if (!Number.isFinite(metres) || metres < 0) return "...";
 
   if (unit === "imperial") {
     const feet = Math.round(metres / M_PER_FOOT);
@@ -54,7 +54,7 @@ export function formatPace(metres: number, movingMs: number, unit: DistanceUnit)
     metres < RULES.movingThresholdM ||
     movingMs <= 0
   ) {
-    return "—";
+    return "...";
   }
 
   const perUnitM = unit === "imperial" ? M_PER_MILE : 1000;

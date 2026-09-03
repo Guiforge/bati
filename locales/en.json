@@ -551,8 +551,6 @@
     "expedition_notification_finish": "Finish",
     "expedition_make_quest": "Make this a quest",
     "expedition_made_quest": "Filed with your quests. It is waiting exactly as you left it.",
-    "expedition_league_reached": "{{count}} league covered",
-    "expedition_league_reached_other": "{{count}} leagues covered",
     "expedition_permission_why": "Bati reads your location during an outing, and it stays on this phone. Android is about to ask."
   },
   "muscles": {

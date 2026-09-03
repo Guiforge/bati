@@ -33,6 +33,15 @@ export function SessionRecoveryCard({
   onDiscard,
 }: SessionRecoveryCardProps) {
   const { t } = useTranslation();
+
+  // Offered only when the walk left a witness behind.
+  //
+  // Being an outing is not enough. With no fix ever locked there is no trace to read, so the
+  // clock decides, and recovery has banked the whole absence as pause: a walk killed under trees
+  // and "finished" here would go to the journal at a couple of seconds, while resuming it and
+  // ending on screen would have written the honest clock. The most prominent path was the worst
+  // of the two. `leaguesM` is null in exactly that case, and already computed.
+  const witnessed = session.isOuting && session.leaguesM !== null;
   const router = useRouter();
   const haptics = useHaptics();
   const reducedMotion = useReducedMotion();
@@ -72,7 +81,7 @@ export function SessionRecoveryCard({
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primaryText" />
           <Text fontSize={18} fontWeight="bold" color="$text">
-            {t(session.isOuting ? "recovery.finish_outing_title" : "recovery.title")}
+            {t(witnessed ? "recovery.finish_outing_title" : "recovery.title")}
           </Text>
         </XStack>
 
@@ -80,7 +89,7 @@ export function SessionRecoveryCard({
             the app missed, and the card says so rather than asking the hero to guess what
             "unfinished" means for a hike they already came home from. */}
         <Text color="$text" opacity={0.8}>
-          {t(session.isOuting ? "recovery.finish_outing_description" : "recovery.description")}
+          {t(witnessed ? "recovery.finish_outing_description" : "recovery.description")}
         </Text>
 
         <YStack gap="$1" bg="$background" p="$2" rounded="$3">
@@ -116,7 +125,7 @@ export function SessionRecoveryCard({
         {/* Three actions on an outing, and the walk's own ending is the one the hero came back
             for: it gets the width and the colour, and resuming drops to the same weight as
             throwing the walk away. A workout has two, unchanged. */}
-        {session.isOuting ? (
+        {witnessed ? (
           <AppButton height={44} icon={<Check size={18} />} onPress={handleFinish}>
             {t("recovery.finish_outing")}
           </AppButton>

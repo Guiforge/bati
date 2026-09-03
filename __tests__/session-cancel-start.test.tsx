@@ -47,18 +47,30 @@ jest.mock("@/stores/expedition", () => ({
 
 import SessionScreen from "@/app/session";
 
-function setSession(quest: unknown, goal: unknown) {
+function setSession(quest: unknown, goal: unknown, startedMsAgo = 0) {
   mockSession = {
     status: "running",
     prePauseStatus: null,
     quest,
     goal,
+    // The banner only claims a walk this screen started. Fresh by default, because that is what
+    // every case below is about; the one that resumes an old walk says so.
+    startTime: Date.now() - startedMsAgo,
     pauseSession: jest.fn(),
     quitSession: mockQuit,
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
   };
 }
+
+/**
+ * The forty minutes this banner must never offer to throw away.
+ *
+ * It deletes the session and its GPS points on one tap, which is the right price for a mistap and
+ * a catastrophe for a walk in progress. Both the recovery card and the tile on Home push this
+ * screen afresh on a session that is already running, so a rule read from the store alone would
+ * meet a hero resuming a long walk with "you have just set off" and a button that ends it.
+ */
 
 /** Without these the provider renders nothing at all until a layout pass that never comes. */
 const METRICS = {
@@ -113,6 +125,25 @@ describe("the session screen, on an outing", () => {
    */
   test("offers the way back on a free outing", async () => {
     await mount();
+    expect(screen.getByText("session.expedition_cancel_start")).toBeTruthy();
+  });
+
+  test("says nothing on a walk that was already under way when this screen opened", async () => {
+    // Resumed from the recovery card, or rejoined from Home after the back button: both push this
+    // screen on a session that has been running for a while. The offer here deletes the walk and
+    // its ground on one tap, under a sentence that says the hero has just set off.
+    setSession(OUTING, null, 40 * 60_000);
+    await mount();
+
+    expect(screen.queryByText("session.expedition_cancel_start")).toBeNull();
+  });
+
+  test("still offers it when the permission dialogs ate a few seconds", async () => {
+    // The countdown starts once the prompts are answered, so a first outing is a good deal older
+    // than the five seconds the banner lives for by the time anyone can read it.
+    setSession(OUTING, null, 20_000);
+    await mount();
+
     expect(screen.getByText("session.expedition_cancel_start")).toBeTruthy();
   });
 

@@ -742,6 +742,18 @@ function openingState(quest: Quest, warmupFirst: boolean, warmupSequence: Warmup
 }
 
 /**
+ * One movement, one round, all of it outdoors: the shape every seeded outing ships with.
+ *
+ * The three walks, runs and rides in the catalogue are this, and it is the only shape whose
+ * duration the trace can answer for on its own. The editor lets a hero write a two-leg outing or
+ * a walk over three rounds; both are outings by style, and neither can have its legs told apart
+ * by a single line drawn on a map.
+ */
+function isTheWholeWalk(quest: Quest): boolean {
+  return isOutingSession(quest) && quest.exercises.length === 1 && Math.round(quest.rounds) === 1;
+}
+
+/**
  * What a finished set writes down: the number, and the number it was measured against.
  *
  * **The result of an outing is not the stopwatch on screen.** The view hands over
@@ -763,15 +775,18 @@ function recordOf(
   slot: { target: Target; exercise: Exercise },
   resultValue: number,
 ): Pick<CompletedExerciseInput, "result" | "target"> {
-  // Per *session*, not per slot, and the two predicates disagree on purpose here.
-  // `recordedDurationSeconds()` times the whole session, which is the walk itself when the walk
-  // is all there is. On a mixed quest it would hand the walk slot the push-ups' minutes too.
+  // Not "is this an outing" but "is this walk the whole session".
   //
-  // ponytail: a walk slot inside a mixed quest still records the view's stopwatch, so it reads
-  // near zero after the OS kills and the hero resumes. The real fix is a per-slot span read off
-  // the trace, which nothing measures today. Worth building when a mixed quest is something
-  // heroes actually write, rather than something the editor merely allows.
-  const outing = isOutingSession(quest);
+  // `recordedDurationSeconds()` times the session, which is the walk itself only when the walk is
+  // all there is. A mixed quest would hand the walk slot the push-ups' minutes; a two-leg outing,
+  // or one walked over three rounds, would hand *every* leg the whole duration and bill the hero
+  // three times for one hour. The editor allows both shapes, so the question has to be asked of
+  // the shape rather than of the style.
+  //
+  // ponytail: those shapes therefore keep the view's stopwatch, which reads near zero after the
+  // OS kills and the hero resumes. The real fix is a per-slot span read off the trace, and
+  // nothing measures one today. Worth building when a hero actually writes such a quest.
+  const outing = isTheWholeWalk(quest);
   const measured =
     slot.target.type === "time" && outing ? Math.max(1, recordedDurationSeconds()) : resultValue;
 
@@ -1177,7 +1192,10 @@ export const useSessionStore = create<SessionState>()(
     completeOuting: () => {
       const { quest, status } = get();
       const underWay = status === "running" || status === "paused";
-      if (!quest || !underWay || !isOutingSession(quest)) return;
+      // The same shape `recordOf` reads a trace for. On a two-leg outing this would advance to
+      // the next leg rather than end anything, which is not what a button called Finish on a
+      // lock screen can mean.
+      if (!quest || !underWay || !isTheWholeWalk(quest)) return;
 
       get().completeExercise(Math.max(1, recordedDurationSeconds()));
     },

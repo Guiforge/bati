@@ -55,7 +55,7 @@ export type StartOptions = {
      * own `Notification` and would stop compiling the day this became required. The label rides
      * through that store as an extra property. Make it required when that type names it.
      */
-    finish?: string;
+    finish: string;
   };
   /** Metres per second, default 8 (walking or running). 25 for riding. */
   maxSpeedMs?: number;

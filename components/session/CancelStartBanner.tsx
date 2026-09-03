@@ -11,6 +11,12 @@ import { useSessionStore } from "@/stores/session";
  * How long the way back stays open. The three seconds of countdown a quest gets served the same
  * purpose for a mistap; an outing has no countdown, so it gets this instead.
  */
+/** How recently a session must have started for this screen to claim it started it. */
+const FRESH_START_MS = 60_000;
+
+/** What the session HUD occupies at the top of the screen: its own row plus the gap under it. */
+const HUD_HEIGHT = 56;
+
 const OPEN_MS = 5000;
 
 /**
@@ -44,8 +50,22 @@ export function CancelStartBanner() {
   const settled = useExpeditionStore((s) => s.sessionUuid !== null || s.error !== null);
   const [gone, setGone] = useState(false);
 
+  // Was this walk started by *this* screen, or merely joined by it?
+  //
+  // Decided once, at mount, and that is the whole point. The offer here deletes the session and
+  // its GPS points on one tap, which is right for a mistap five seconds old and catastrophic for
+  // the walk a hero resumed from the recovery card or came back to from Home: both push this
+  // screen afresh, so a rule read from the store alone offers to throw away forty minutes under
+  // a sentence that says "you have just set off".
+  //
+  // A minute rather than the five the banner lives for: the countdown only starts once the
+  // permission dialogs are answered, and answering two of them takes longer than five seconds
+  // the first time. Nothing older than a minute was started by the tap that opened this screen.
+  const startTime = useSessionStore((s) => s.startTime);
+  const [fresh] = useState(() => startTime !== null && Date.now() - startTime < FRESH_START_MS);
+
   // A free outing is `goal === null` (premise 1), and only the quick gate starts one.
-  const offered = quest !== null && goal === null && isOutingSession(quest);
+  const offered = fresh && quest !== null && goal === null && isOutingSession(quest);
 
   useEffect(() => {
     if (!offered || !settled || gone) return;
@@ -59,7 +79,10 @@ export function CancelStartBanner() {
     <XStack
       testID="cancel-start-banner"
       position="absolute"
-      t={insets.top + 8}
+      // Below the HUD, not on top of it. Both were anchored at `insets.top + 8`, and this one is
+      // opaque with the higher z: for five seconds the quest's name and the pause button were
+      // painted over and untappable. Floating still, so nothing in the flow moves when it goes.
+      t={insets.top + 8 + HUD_HEIGHT}
       l="$3"
       r="$3"
       z={50}

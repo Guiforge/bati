@@ -806,8 +806,18 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
   return (
     <Pressable
       testID="session-complete-exercise"
+      // The fill travels even under reduced motion, and takes exactly as long either way.
+      //
+      // It is not decoration: it is the only thing that says the thumb is being counted, and a
+      // button that does nothing for 799 ms is indistinguishable from a broken one. Jumping
+      // straight to full on press was worse than nothing, painting the button in the colour that
+      // means "done" everywhere else on this screen, at the moment nothing had been done.
+      //
+      // Reduced motion asks for no travel that carries no information. This one carries the only
+      // information there is, so what it drops instead is the springy retreat: releasing puts it
+      // back at once rather than gliding.
       onPressIn={() => {
-        fill.value = reducedMotion ? 1 : withTiming(1, { duration: HOLD_TO_FINISH_MS });
+        fill.value = withTiming(1, { duration: HOLD_TO_FINISH_MS });
       }}
       onPressOut={() => {
         fill.value = reducedMotion ? 0 : withTiming(0, { duration: 150 });

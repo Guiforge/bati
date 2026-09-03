@@ -606,7 +606,14 @@ export function VictoryView() {
               {t("session.summary_too_short_title")}
             </Text>
             <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
-              {t("session.summary_too_short_body", { duration: formatDuration(durationSeconds) })}
+              {/* A walk is not held, it is walked. The shared line says "you held out for", the
+                  verb of a plank, which reads as faint praise after ninety seconds outdoors. */}
+              {t(
+                isOutingSession(quest)
+                  ? "session.summary_too_short_body_outing"
+                  : "session.summary_too_short_body",
+                { duration: formatDuration(durationSeconds) },
+              )}
             </Text>
             <AppButton onPress={() => setKeepShort(true)}>
               <Text color="$text" fontSize={16} fontWeight="700">

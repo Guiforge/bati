@@ -750,8 +750,6 @@
     "expedition_notification_finish": "Terminer",
     "expedition_make_quest": "En faire une quête",
     "expedition_made_quest": "Rangée dans tes quêtes. Elle t'attend telle quelle.",
-    "expedition_league_reached": "{{count}} lieue franchie",
-    "expedition_league_reached_other": "{{count}} lieues franchies",
     "expedition_permission_why": "Bati lit ta position pendant la sortie, et elle reste sur ce téléphone. Android va te le demander."
   },
   "settings": {

@@ -11,6 +11,7 @@ import {
   isAvailable,
   type LocationFix,
   requestPermission,
+  type StartOptions,
   setProgress,
   setReached,
   start as startNative,
@@ -82,14 +83,15 @@ type ExpeditionState = {
   end: () => Promise<void>;
 };
 
-type Notification = {
-  title: string;
-  acquiring: string;
-  tracking: string;
-  paused: string;
-  gpsOff: string;
-  reached: string;
-};
+/**
+ * The strings the service says on the hero's behalf, taken from the module rather than retyped.
+ *
+ * Written out by hand once, and the copy went stale the moment the notification learned a sixth
+ * thing to say: the Finish action's label rode through here as an excess property, so forgetting
+ * to pass it would have removed the button with nothing failing to compile. A type instead of a
+ * test, which is the cheaper of the two and cannot rot.
+ */
+type Notification = NonNullable<StartOptions["notification"]>;
 
 /** Whether anything in this quest happens outdoors, null-tolerant. The rule is in `db/expeditions`. */
 export function isExpedition(quest: Quest | null): boolean {
@@ -314,8 +316,8 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         set({ error: "no-fix" });
         reportError("expedition.noFix", new Error(`no fix for ${event.sinceLastFixMs} ms`));
       }),
-      // La sortie que seul un écran verrouillé emprunte. Le service demande, le store de séance
-      // conclut : la durée, l'XP et la ligne du journal sont à lui, et lui seul sait les écrire.
+      // The way out that only a locked screen takes. The service asks, the session store
+      // concludes: the duration, the XP and the journal row are its business, and its alone.
       addListener("onFinishRequested", () => {
         useSessionStore.getState().completeOuting();
       }),

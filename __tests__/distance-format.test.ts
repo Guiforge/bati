@@ -89,12 +89,18 @@ describe("formatClock", () => {
     expect(formatClock(119_999)).toBe("1:59");
   });
 
-  test("minutes are not wrapped into hours", () => {
-    expect(formatClock(7_214_000)).toBe("120:14");
+  test("minutes wrap into hours, but only once there is an hour", () => {
+    // The rule below the hour is unchanged: "0:14" for fourteen minutes would be wrong.
+    expect(formatClock(3_599_000)).toBe("59:59");
+    // Past it, hours. This is the 56 px figure of the session screen and the first thing the
+    // ongoing notification says, and a two-hour ride used to read "127:34" in both places.
+    expect(formatClock(3_600_000)).toBe("1:00:00");
+    expect(formatClock(7_214_000)).toBe("2:00:14");
+    expect(formatClock(7_654_000)).toBe("2:07:34");
   });
 
   test("a clock that is not a number says so instead of printing NaN", () => {
-    expect(formatClock(Number.NaN)).toBe("—");
-    expect(formatClock(-1)).toBe("—");
+    expect(formatClock(Number.NaN)).toBe("...");
+    expect(formatClock(-1)).toBe("...");
   });
 });

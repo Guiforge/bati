@@ -40,6 +40,10 @@ export const rawColors = {
   // --- Immersive backgrounds ---
   bgDark: "#0B0F19", // The Void
   bgOverlay: "rgba(11, 15, 25, 0.92)",
+  // Lighter than the one above, for a disc that has to sit on artwork and still let it through:
+  // the start glyph on an outing tile. Here rather than inline because the lint plugin only
+  // catches hex, so an rgba typed at a call site is a colour nobody can find again.
+  bgOverlaySoft: "rgba(11, 15, 25, 0.72)",
 
   // --- Surfaces (glass & tech) ---
   surface: "#101322",

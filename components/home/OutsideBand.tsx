@@ -9,6 +9,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Play, SlidersHorizontal } from "@/components/icons";
 import { getQuestThumb } from "@/constants/assetMap";
+import { rawColors } from "@/constants/rawColors";
 import { listOutings, type Outing } from "@/db/outings";
 import { loadConfiguredQuest } from "@/db/questConfig";
 import { Difficulty } from "@/db/targets";
@@ -351,7 +352,7 @@ export function OutsideBand() {
                   width={22}
                   height={22}
                   rounded={11}
-                  bg="rgba(11,15,25,0.72)"
+                  bg={rawColors.bgOverlaySoft}
                   justify="center"
                   items="center"
                   pointerEvents="none"

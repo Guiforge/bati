@@ -171,7 +171,21 @@ jest.mock("@/db", () => ({
   getQuestConfig: jest.fn(() => Promise.resolve(mockSaved.config)),
   // Records the config it is handed, because the level in there is what retargets a swapped
   // movement — generated at one level and retargeted at another is the trap this pins.
-  applyQuestConfig: jest.fn((quest: unknown) => quest),
+  // Not identity: the targets a config carries are exactly what this screen then hands to
+  // `startSession` as the goal, so a stub that drops them would let a duration chosen in the
+  // sheet vanish between the sheet and the walk without a single test moving. Keyed the way the
+  // real one keys, on the quest exercise id.
+  applyQuestConfig: jest.fn((quest: unknown, config: unknown) => {
+    const q = quest as { exercises: { id: number; target: { value: number } }[] };
+    const targets = (config as { targets?: Record<string, number> }).targets ?? {};
+    return {
+      ...q,
+      exercises: q.exercises.map((qex) => {
+        const value = targets[String(qex.id)];
+        return value === undefined ? qex : { ...qex, target: { ...qex.target, value } };
+      }),
+    };
+  }),
   estimateQuestSeconds: jest.fn().mockReturnValue(900),
   estimateQuestXp: jest.fn().mockReturnValue(60),
   formatDurationEstimate: jest.fn().mockReturnValue("15 min"),
@@ -466,6 +480,36 @@ describe("an expedition on the quest screen", () => {
     // Started, not merely estimated: the estimate was already medium while the session ran hard.
     await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
     expect(mockStartSession.mock.calls[0]?.[1]).toBe("medium");
+  });
+
+  test("the goal the hero set is what the session sets out with", async () => {
+    // The whole point of the sheet, and nothing was watching the argument that carries it: with
+    // `goal` left null the session starts free, so a hero who chose 5 km gets no buzz at 5 km, no
+    // "goal reached", and a journal row written with no target. The sheet would be decoration.
+    const view = await mountQuest(expeditionQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("Distance"));
+    await fireEvent.press(view.getByText("5.00 km"));
+    await fireEvent.press(view.getByTestId("quest-start"));
+
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+    expect(mockStartSession.mock.calls[0]?.[2]).toMatchObject({
+      goal: { type: "distance", metres: 5000 },
+    });
+  });
+
+  test("and a duration travels the same way", async () => {
+    const view = await mountQuest(expeditionQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("45 min"));
+    await fireEvent.press(view.getByTestId("quest-start"));
+
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+    expect(mockStartSession.mock.calls[0]?.[2]).toMatchObject({
+      goal: { type: "time", seconds: 2700 },
+    });
   });
 
   test("ignores a level handed to it by the route", async () => {

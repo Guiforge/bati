@@ -1074,6 +1074,24 @@ describe("useSessionStore", () => {
       expect(written.sessionUuid).toBe(store.getState().sessionUuid);
     });
 
+    /**
+     * The second walk of the evening, started before the first one was put away.
+     *
+     * The victory screen leaves `status` at `finished` until the hero quits it, and the tile on
+     * Home starts a session from there without complaint. That transition writes no snapshot
+     * either, unless it is named: an outing gives no other sign of progress.
+     */
+    test("a walk started from the victory screen is written down too", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      store.setState({ status: "finished" });
+      (preferences.setSavedSession as jest.Mock).mockClear();
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      await waitFor(() => expect(preferences.setSavedSession).toHaveBeenCalled());
+    });
+
     test("a workout indoors still counts down", async () => {
       await store.getState().startSession(mockQuest, "medium");
 
@@ -1274,6 +1292,30 @@ describe("useSessionStore", () => {
       expect(store.getState().status).toBe("idle");
     });
 
+    /**
+     * The two-leg outing the editor allows and the trace cannot answer for.
+     *
+     * A single line on a map cannot say which of its metres were the walk and which were the run,
+     * so handing each leg the session's whole duration would bill an hour twice. And a Finish
+     * action that advances to the next leg is not a Finish action.
+     */
+    test("a walk in two legs keeps the view's own number, and cannot be finished blind", async () => {
+      const twoLegs = {
+        ...outing,
+        exercises: [outing.exercises[0], { ...outing.exercises[0] }],
+      } as unknown as Quest;
+
+      await store.getState().startSession(twoLegs, "medium", { goal: null });
+      walked(45 * 60);
+
+      store.getState().completeExercise(120);
+      expect(store.getState().results[0]?.result.value).toBe(120);
+
+      const before = store.getState().results.length;
+      store.getState().completeOuting();
+      expect(store.getState().results).toHaveLength(before);
+    });
+
     test("an indoor hold still stops at an hour", () => {
       store.setState({
         quest: mockQuest,
@@ -1421,6 +1463,28 @@ describe("useSessionStore", () => {
       expect(row.movingSeconds).toBe(50 * 60);
 
       useExpeditionStore.setState({ begin: realBegin });
+    });
+
+    /**
+     * The walk that came back with a number nobody chose.
+     *
+     * A resumed outing rebuilds its tracking from the snapshot, and the goal is in there for
+     * exactly this reason: rebuilt from the quest instead, it would come back as whatever the
+     * slots add up to, so a hero who set out with no number would be buzzed at fifteen minutes by
+     * a target the seed drew for them. `?? null` is the whole of it, and nothing was watching it.
+     */
+    test("a resumed walk with no goal comes back with no goal", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getSavedSession as jest.Mock).mockResolvedValue(snapshot({ goal: null }));
+
+      const { result } = await renderHook(() => useSessionRecovery());
+      await act(async () => {
+        await result.current.recoverSession();
+      });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      expect(beginSpy.mock.calls[0]?.[4]).toBeNull();
+      expect(useSessionStore.getState().goal).toBeNull();
     });
 
     test("a workout indoors starts nothing", async () => {

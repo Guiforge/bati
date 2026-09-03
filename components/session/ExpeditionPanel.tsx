@@ -48,6 +48,9 @@ function statusKey(error: string | null, track: TrackState, goalReached: boolean
  * fix through the reducer as it lands, and a second derivation on this screen would be a second
  * answer to "how far have I gone".
  */
+/** How long the "you can put the phone away" line stays, in seconds of recorded walking. */
+const POCKET_HINT_SECONDS = 30;
+
 export function ExpeditionPanel() {
   const { t } = useTranslation();
   const track = useExpeditionStore((state) => state.track);
@@ -158,6 +161,19 @@ export function ExpeditionPanel() {
       {acquiring && error === null ? (
         <Paragraph fontSize={13} color="$textSecondary">
           {t("session.expedition_acquiring_hint")}
+        </Paragraph>
+      ) : null}
+
+      {/* And the one that keeps them from deciding it broke when the screen goes dark.
+
+          Every other session in this app holds the screen awake; an outing deliberately does not,
+          so the phone sleeps in a pocket and Android locks it. Unannounced, a black screen during
+          a GPS walk reads as "the tracking stopped", the hero takes the phone out to check, and
+          the battery this was all for is spent on looking. Said once, early, and gone by the time
+          it would be clutter. */}
+      {!acquiring && error === null && recorded < POCKET_HINT_SECONDS ? (
+        <Paragraph fontSize={13} color="$textSecondary">
+          {t("session.expedition_pocket_hint")}
         </Paragraph>
       ) : null}
 

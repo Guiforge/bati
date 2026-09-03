@@ -51,8 +51,10 @@ jest.mock("@/src/reportError", () => ({
  * cycle ever stops being harmless. The number itself is what the assertions are about.
  */
 let mockElapsedSeconds = 0;
+const mockCompleteOuting = jest.fn();
 jest.mock("@/stores/session", () => ({
   recordedDurationSeconds: () => mockElapsedSeconds,
+  useSessionStore: { getState: () => ({ completeOuting: mockCompleteOuting }) },
 }));
 
 const mockHaptic = jest.fn().mockResolvedValue(undefined);
@@ -68,6 +70,7 @@ const NOTIFICATION = {
   paused: "p",
   gpsOff: "o",
   reached: "r",
+  finish: "f",
 };
 
 const T0 = 1_760_000_000_000;
@@ -492,6 +495,18 @@ describe("stores/expedition", () => {
    * The fixture walks 50 m every ten seconds rather than 1.4 m every second, because a league is
    * 715 fixes at walking pace and this is a unit test, not a walk.
    */
+  test("the notification's Finish action hands the walk to the session store", async () => {
+    // The one path a locked screen has. The service only knows that a thumb landed on a button;
+    // how long the walk was, what it pays and what the journal says are the session store's to
+    // answer, which is why this listener carries nothing and decides nothing.
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    mockCompleteOuting.mockClear();
+
+    (mockListeners.get("onFinishRequested") as () => void)();
+
+    expect(mockCompleteOuting).toHaveBeenCalledTimes(1);
+  });
+
   describe("leagues", () => {
     const BASE_LAT = 48.4728;
     /** Fix `i`: 50 m further north than `i - 1`, ten seconds later. The gate opens on fix 1. */

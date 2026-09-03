@@ -134,9 +134,19 @@ describe("SessionRecoveryCard, finishing an outing", () => {
     expect(screen.getByText("You have an unfinished session")).toBeTruthy();
   });
 
+  test("does not offer to finish a walk that left no trace behind", async () => {
+    // An outing with no fix ever locked has nothing to read: the clock is all there is, and
+    // recovery banked the whole absence as pause, so finishing from here would file a hike as a
+    // couple of seconds. Resuming it and ending on screen still writes the honest clock.
+    await mount(session({ isOuting: true, leaguesM: null }));
+
+    expect(screen.queryByText("Finish the outing")).toBeNull();
+    expect(screen.getByText("Resume")).toBeTruthy();
+  });
+
   test("a finish that did not take stays on Home", async () => {
     const finish = jest.fn(async () => false);
-    await mount(session({ isOuting: true }), finish);
+    await mount(session({ isOuting: true, leaguesM: 1800 }), finish);
 
     await fireEvent.press(screen.getByText("Finish the outing"));
     await waitFor(() => {

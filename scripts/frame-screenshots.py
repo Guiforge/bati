@@ -14,6 +14,7 @@ stores draw too.
 
 import argparse
 import pathlib
+import re
 import sys
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -193,6 +194,33 @@ def compose(shot: pathlib.Path, eyebrow: str, headline: str, dest: pathlib.Path)
     canvas.convert("RGB").save(dest, "PNG", optimize=True)
 
 
+# ---------------------------------------------------------------------------------------------
+# The public page shows the same screens, undressed: no frame, no headline, 440 px wide and webp,
+# because a 1.3 MB store PNG has no business on a landing page. Nothing regenerated that copy
+# until now, so it sat three weeks behind the listing and showed an app that no longer existed.
+# The page's own <img> tags say which shots it wants, so adding one there is the whole change.
+# ---------------------------------------------------------------------------------------------
+WEB_PAGE = pathlib.Path("docs/legal/index.html")
+WEB_DIR = pathlib.Path("docs/legal/assets/shots")
+WEB_WIDTH = 440
+WEB_QUALITY = 75
+
+
+def web_shots(shots: list[pathlib.Path], lang: str) -> None:
+    if not WEB_PAGE.exists():
+        return
+    wanted = set(re.findall(r"shots/[a-z]{2}/([\w-]+)\.webp", WEB_PAGE.read_text()))
+    out = WEB_DIR / lang
+    out.mkdir(parents=True, exist_ok=True)
+    for shot in shots:
+        if shot.stem not in wanted:
+            continue
+        im = Image.open(shot).convert("RGB")
+        im = im.resize((WEB_WIDTH, round(WEB_WIDTH * im.height / im.width)), Image.LANCZOS)
+        im.save(out / f"{shot.stem}.webp", "WEBP", quality=WEB_QUALITY, method=6)
+        print(f"  {shot.name} -> {out / f'{shot.stem}.webp'}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--locale", default="en-US")
@@ -221,6 +249,8 @@ def main() -> int:
             continue
         compose(shot, entry[0], entry[1], out / f"{shot.stem}.png")
         print(f"  {shot.name} -> {out / f'{shot.stem}.png'}")
+
+    web_shots(shots, args.locale.split("-")[0])
     return 0
 
 

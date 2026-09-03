@@ -634,8 +634,8 @@
     "resume": "Reprendre",
     "title": "Reprendre ta séance ?",
     "finish_outing": "Terminer la sortie",
-    "finish_outing_description": "Ta sortie est allée jusqu'au bout sans l'app. Son tracé sait ce qu'elle a fait.",
-    "finish_outing_title": "Ta sortie est rentrée sans toi"
+    "finish_outing_description": "Elle a tourné pendant que l'app était partie. Son tracé dit ce qui s'est passé.",
+    "finish_outing_title": "Ta sortie a continué sans toi"
   },
   "scheduling": {
     "add_session": "Planifier un entraînement",

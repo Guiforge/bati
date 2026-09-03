@@ -365,10 +365,13 @@ describe("stores/expedition", () => {
     await store.getState().begin("s1", NOTIFICATION, false, "metric");
     for (let i = 0; i < 30; i += 1) emit(walking(i));
 
-    expect(mockSetProgress).toHaveBeenCalledTimes(1);
+    // Twice: once the moment the service starts, so the notification carries a number from the
+    // first glance rather than a bare status word for half a minute, and once on the flush.
+    expect(mockSetProgress).toHaveBeenCalledTimes(2);
+    expect(mockSetProgress.mock.calls[0]?.[0]).toMatch(/^32:04 · /);
     // Twenty-nine steps of 1.4 m, minus the gate the reducer holds open for the first three.
     // Time first, because it is the only half that exists on every walk.
-    expect(mockSetProgress.mock.calls[0]?.[0]).toMatch(/^32:04 · \d+ m$/);
+    expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^32:04 · \d+ m$/);
   });
 
   /**

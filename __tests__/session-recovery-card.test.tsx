@@ -114,7 +114,7 @@ describe("SessionRecoveryCard, finishing an outing", () => {
 
     expect(screen.getByText("Finish the outing")).toBeTruthy();
     expect(
-      screen.getByText("Your outing ran to its end without the app. Its trace knows what it did."),
+      screen.getByText("It kept running while the app was gone. Its trace says what happened."),
     ).toBeTruthy();
 
     await fireEvent.press(screen.getByText("Finish the outing"));

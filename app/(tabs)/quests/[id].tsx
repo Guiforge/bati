@@ -370,7 +370,10 @@ export default function QuestDetails() {
     // out rather than a visit to a quest. Both backs agree, which is the rule `0b41d318` set;
     // only the destination changes, and only for this one door.
     if (fromHome) {
-      router.dismissTo("/");
+      // `navigate`, not `dismissTo`: Home is not on this tab's stack, so there is nothing here to
+      // unwind to and `dismissTo` simply does nothing. Same reason the adventure case above uses
+      // it, and the same mistake the comment there was already warning about.
+      router.navigate("/");
       return;
     }
     router.dismissTo("/quests");
@@ -382,7 +385,7 @@ export default function QuestDetails() {
   useEffect(() => {
     if (!fromHome) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      router.dismissTo("/");
+      router.navigate("/");
       return true;
     });
     return () => sub.remove();

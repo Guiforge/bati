@@ -154,8 +154,11 @@ describe("quests/[id] chevron", () => {
 
     await fireEvent.press(getByLabelText("Go back"));
 
-    expect(mockDismissTo).toHaveBeenCalledWith("/");
-    expect(mockNavigate).not.toHaveBeenCalled();
+    // `navigate`, because Home is not on this tab's stack: `dismissTo` unwinds the stack it is
+    // called on and does nothing at all when the target is not in it. Verified on a device, where
+    // the screen simply did not move.
+    expect(mockNavigate).toHaveBeenCalledWith("/");
+    expect(mockDismissTo).not.toHaveBeenCalled();
   });
 
   test("and so does the hardware back, so the two never disagree", async () => {
@@ -166,7 +169,7 @@ describe("quests/[id] chevron", () => {
 
     const press = backHandlerSpy.mock.calls.at(-1)?.[1] as () => boolean;
     expect(press()).toBe(true);
-    expect(mockDismissTo).toHaveBeenCalledWith("/");
+    expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
   test("an adventure step still beats the origin, both ways", async () => {

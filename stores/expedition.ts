@@ -331,9 +331,12 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     // and the panel sat on "Finding the sky" for the length of a walk nothing was measuring.
     if (!started) set({ error: "foreground-denied" });
     if (started) {
-      progressTimer = setInterval(() => {
-        setProgress(progressLine(get().track, unit));
-      }, PROGRESS_EVERY_MS);
+      // Once immediately, then on the clock. Waiting for the first tick left the notification
+      // saying only "on the road" for half a minute, which is the half minute a hero is most
+      // likely to look at it: they have just set off and want to see that something started.
+      const tick = () => setProgress(progressLine(get().track, unit));
+      tick();
+      progressTimer = setInterval(tick, PROGRESS_EVERY_MS);
     }
     return started;
   },

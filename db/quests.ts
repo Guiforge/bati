@@ -253,6 +253,65 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
   return questId;
 }
 
+/**
+ * The five-second grid a time target lands on.
+ *
+ * `generateTarget` (`db/targets.ts`) rounds to the same five so the value it prescribes is one
+ * the stepper can walk back to, and the bridge below rounds for the same reason: a walk measured
+ * at 1937 s filed as a quest of 1937 s is a target the hero could never have chosen and can never
+ * return to.
+ *
+ * ponytail: the fourth copy of this five, after `generateTarget` and the two `REST_STEP`s in the
+ * editor and the config card. One exported constant in `db/targets.ts` is the fix, and the moment
+ * to make it is when the goal sheet (T16) adds the fifth.
+ */
+const TIME_TARGET_GRID = 5;
+
+/**
+ * The bridge: the outing that just ended, filed as a quest the hero can run again.
+ *
+ * The target is `time`, and only ever `time`. `questTargetTypes` is `('reps','time')` with a
+ * CHECK in `0000_schema.sql`, and a distance goal is not a target at all — it lives in the hero's
+ * quest config (`DISTANCE_GOAL_RANGE` in `db/targets.ts`), which is where an outing measured in
+ * metres would put its distance. Nothing about that is invented here.
+ *
+ * One round and no rest, rather than the source quest's shape: a free outing measured one
+ * uninterrupted stretch, and dividing it across three rounds would prescribe a session the hero
+ * never actually ran.
+ */
+export async function createQuestFromOuting(
+  quest: Pick<Quest, "enTitle" | "frTitle" | "enDescription" | "frDescription"> & {
+    /** Widened from `Quest`, where readers have already defaulted it: null is "no cover". */
+    imagePath: string | null;
+    exercises: { exercise: { id: number } }[];
+  },
+  seconds: number,
+): Promise<number> {
+  const exerciseId = quest.exercises[0]?.exercise.id;
+  if (exerciseId == null) throw new Error("An outing with no movement cannot become a quest");
+
+  // `createQuestTemplate` clamps too, but the grid has to be applied to the measured value
+  // first: clamping a 3612 s walk to 3600 and *then* rounding would be the same number twice.
+  const value = clampToRange(
+    Math.round(seconds / TIME_TARGET_GRID) * TIME_TARGET_GRID,
+    targetRangeFor("time"),
+  );
+
+  return await createQuestTemplate({
+    enTitle: quest.enTitle,
+    frTitle: quest.frTitle,
+    enDescription: quest.enDescription,
+    frDescription: quest.frDescription,
+    author: USER_QUEST_AUTHOR,
+    archetype: null,
+    imagePath: quest.imagePath,
+    rounds: 1,
+    restSeconds: 0,
+    roundRestSeconds: null,
+    exercises: [{ exerciseId, images: [], baseTarget: { type: "time", min: value, max: value } }],
+  });
+}
+
 // The gallery is read far more often than it is written, so every screen that mounts it shares one
 // fetch instead of refetching on every navigation. Authoring writes go through the helpers below,
 // which all call `invalidateQuestTemplates`.

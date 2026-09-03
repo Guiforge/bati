@@ -6,7 +6,7 @@ import { VictoryView } from "@/components/session/VictoryView";
 import type { Quest } from "@/db/quests";
 import type { VillageBuilding } from "@/db/village";
 import "@/i18n";
-import { EMPTY } from "@/src/gps/track";
+import { EMPTY, type OutingGoal } from "@/src/gps/track";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -37,7 +37,11 @@ jest.mock("@/db/completed", () => ({ updateSessionFeedback: jest.fn() }));
 jest.mock("@/db/adventures-narrative", () => ({
   getAdventureStepOutroNarrative: jest.fn().mockResolvedValue(null),
 }));
-jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
+const mockCreateQuestFromOuting = jest.fn<Promise<number>, [unknown, number]>();
+jest.mock("@/db/quests", () => ({
+  isDailyQuest: () => false,
+  createQuestFromOuting: (...args: [unknown, number]) => mockCreateQuestFromOuting(...args),
+}));
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),
@@ -98,10 +102,12 @@ const expeditionQuest = {
   restSeconds: 0,
   enTitle: "The Long Walk",
   frTitle: "La longue marche",
+  enDescription: "Out and back",
+  frDescription: "Aller et retour",
   imagePath: "assets/placeholder.jpg",
   exercises: [
     {
-      exercise: { style: "expedition", muscles: ["legs"], secondsPerRep: 1 },
+      exercise: { id: 7, style: "expedition", muscles: ["legs"], secondsPerRep: 1 },
       target: { type: "time", value: 1800 },
     },
   ],
@@ -123,12 +129,16 @@ const strengthQuest = {
 async function mountVictory({
   quest = expeditionQuest,
   sessionSeconds = 25 * 60,
+  goal = null,
 }: {
   quest?: Quest;
   sessionSeconds?: number;
+  /** What the hero asked for before setting off. `null` is a free outing, and only that. */
+  goal?: OutingGoal | null;
 } = {}) {
   useSessionStore.setState({
     quest,
+    goal,
     status: "finished",
     startTime: Date.now() - sessionSeconds * 1000,
     totalPausedTime: 0,
@@ -282,5 +292,67 @@ describe("VictoryView, the session too short to be one", () => {
 
     expect(screen.getByText(/You trained for 1 min 55s\./)).toBeTruthy();
     expect(screen.queryByText(/115 seconds/)).toBeNull();
+  });
+});
+
+/**
+ * The bridge (docs/designs/outing-doors.md, T17, and rule 8 of the audit).
+ *
+ * The hero who walked for thirty-two minutes without asking for anything is offered that walk
+ * again, as a quest. Three of the four tests below are negative: the offer must not appear after
+ * a workout, must not appear after an outing that already had a goal, and must not file twice.
+ * A rule that only says "yes" to one case is a rule nothing keeps honest.
+ */
+describe("VictoryView, the bridge from a free outing to a quest", () => {
+  beforeEach(() => {
+    mockCreateQuestFromOuting.mockReset();
+    mockCreateQuestFromOuting.mockResolvedValue(99);
+    mockGetVillageBuildings.mockReset();
+    mockGetVillageBuildings.mockResolvedValue([road({})]);
+    useSettingsStore.setState({ language: "en", distanceUnit: "metric" });
+    useExpeditionStore.setState({ track: { ...EMPTY, distanceM: 2500, movingMs: 1_500_000 } });
+  });
+
+  test("a quest that never left the walls is not offered as an outing", async () => {
+    await mountVictory({ quest: strengthQuest });
+
+    expect(screen.queryByTestId("victory-make-quest")).toBeNull();
+  });
+
+  test("an outing the hero had already set a goal for is not offered again", async () => {
+    await mountVictory({ goal: { type: "time", seconds: 1800 } });
+
+    expect(screen.queryByTestId("victory-make-quest")).toBeNull();
+  });
+
+  test("a free outing is filed with the duration it measured, and says so on the spot", async () => {
+    await mountVictory();
+
+    await fireEvent.press(screen.getByTestId("victory-make-quest"));
+
+    expect(mockCreateQuestFromOuting).toHaveBeenCalledTimes(1);
+    const [filedQuest, seconds] = mockCreateQuestFromOuting.mock.calls[0] ?? [];
+    expect(filedQuest).toMatchObject({ id: 1, enTitle: "The Long Walk" });
+    // The measured duration, to the second the clock happened to land on.
+    expect(seconds).toBeGreaterThanOrEqual(25 * 60 - 2);
+    expect(seconds).toBeLessThanOrEqual(25 * 60);
+
+    // It says it is done, and it stays where the hero is: no navigation away from the recap.
+    expect(screen.getByTestId("victory-made-quest")).toBeTruthy();
+    expect(screen.queryByTestId("victory-make-quest")).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  test("a double tap files one quest, not two", async () => {
+    await mountVictory();
+
+    const button = screen.getByTestId("victory-make-quest");
+    // Both taps in one act, unawaited between: a hero's second tap lands before the first one's
+    // promise has come back, which is exactly the frame the guard exists for.
+    await act(async () => {
+      await Promise.all([fireEvent.press(button), fireEvent.press(button)]);
+    });
+
+    expect(mockCreateQuestFromOuting).toHaveBeenCalledTimes(1);
   });
 });

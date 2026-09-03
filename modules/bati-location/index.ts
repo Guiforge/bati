@@ -2,6 +2,7 @@
 // pins, and listing it in package.json to import one function would put a native module in the
 // dependency list for the version checker to argue about. `expo` re-exports it.
 import { type PermissionResponse, PermissionStatus, requireOptionalNativeModule } from "expo";
+import { reportError } from "@/src/reportError";
 
 /** One accepted fix. `distFromPrev` is `Location.distanceTo` against the previous accepted one. */
 export type LocationFix = {
@@ -28,6 +29,12 @@ type BatiLocationEvents = {
   onProviderEnabled: (event: { enabled: boolean }) => void;
   /** Only ever after a first fix: cold TTFF without SUPL or PSDS is minutes, not seconds. */
   onNoFixTimeout: (event: { sinceLastFixMs: number }) => void;
+  /**
+   * The hero pressed "Finish" on the notification, which is how a walk ends with the phone
+   * locked in a pocket. No body: the service knows the button was pressed and nothing else, and
+   * the duration is the session store's to read off the trace, never native's to measure.
+   */
+  onFinishRequested: () => void;
   onError: (error: LocationError) => void;
 };
 
@@ -40,6 +47,15 @@ export type StartOptions = {
     paused: string;
     gpsOff: string;
     reached: string;
+    /**
+     * The word on the notification's one button. Absent means no button at all, which is what
+     * the native half does with an empty string.
+     *
+     * ponytail: optional only because `stores/expedition.ts` retypes these six strings as its
+     * own `Notification` and would stop compiling the day this became required. The label rides
+     * through that store as an extra property. Make it required when that type names it.
+     */
+    finish: string;
   };
   /** Metres per second, default 8 (walking or running). 25 for riding. */
   maxSpeedMs?: number;
@@ -61,6 +77,7 @@ type BatiLocationNativeModule = {
   start(options: StartOptions): boolean;
   stop(): void;
   requestPermission(): Promise<PermissionResponse>;
+  getPermissionStatus(): Promise<PermissionResponse>;
   requestNotificationPermission(): Promise<PermissionResponse>;
   setProgress(text: string): void;
   setReached(): void;
@@ -101,6 +118,52 @@ export function hasGpsProvider(): boolean {
  */
 export async function requestPermission(): Promise<PermissionResponse> {
   return (await native?.requestPermission()) ?? DENIED;
+}
+
+/**
+ * What the location permission already is, without asking for it.
+ *
+ * Home says why the position is needed before Android's own dialog, and that sentence has two
+ * ways of being a lie: in front of a hero who granted months ago it explains something already
+ * settled, and in front of one who refused twice it announces a dialog that will never appear
+ * again. Requesting cannot answer either question, since the answer arrives after the dialog.
+ *
+ * Denied and unaskable where the native module is absent: not knowing is a reason to explain
+ * rather than a reason to stay quiet, and a caller branches on one shape either way.
+ */
+export async function getPermissionStatus(): Promise<PermissionResponse> {
+  return (await native?.getPermissionStatus()) ?? DENIED;
+}
+
+/**
+ * The notification grant, asked at most once in the life of the process.
+ *
+ * Two doors now lead outside and each wants the grant before the walk starts: Home asks while the
+ * hero is still standing at the door, and `useExpeditionStore.begin` asks because the quest screen
+ * never did. Without this, a hero who refused at the tile met the system dialog a second time,
+ * over a chronometer already counting their walk.
+ *
+ * A module-level answer rather than a parameter threaded through two stores: there is nothing a
+ * third door could forget to pass. It lives here rather than in the expedition store because Home
+ * would otherwise import that store to reach it, and that store reaches the database: the band
+ * would drag the whole `db` barrel into the first screen the app mounts.
+ *
+ * The answer itself is never kept and never read. A hero who refuses still gets their walk
+ * measured, and the only reset that matters, a fresh process, is the one Android's own answer
+ * survives anyway.
+ */
+let notificationAsked = false;
+
+export async function ensureNotificationPermission(): Promise<void> {
+  if (notificationAsked) return;
+  notificationAsked = true;
+
+  // Never silently: a grant that stops being asked for is a notification that stops appearing,
+  // and the walk it was the only screen of would say nothing for an hour. Same context string
+  // the expedition store used when it owned this call.
+  await requestNotificationPermission().catch((e: unknown) =>
+    reportError("expedition.notificationPermission", e),
+  );
 }
 
 /**

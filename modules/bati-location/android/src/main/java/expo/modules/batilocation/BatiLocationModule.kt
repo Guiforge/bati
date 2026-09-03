@@ -30,137 +30,161 @@ class BatiLocationModule : Module() {
   /** Held so [OnDestroy] can tell its own callback from a reloaded runtime's. */
   private val emit: (String, Map<String, Any?>) -> Unit = { event, body -> sendEvent(event, body) }
 
-  override fun definition() = ModuleDefinition {
-    Name("BatiLocation")
+  override fun definition() =
+    ModuleDefinition {
+      Name("BatiLocation")
 
-    Events(
-      BatiLocationService.EVENT_LOCATION,
-      BatiLocationService.EVENT_PROVIDER,
-      BatiLocationService.EVENT_NO_FIX,
-      BatiLocationService.EVENT_ERROR,
-    )
-
-    // The service's only route back to JS, opened and closed with the runtime it points at: a
-    // reload leaves a service holding a callback into a dead Hermes otherwise, and its absence
-    // is also how a restarted service knows nobody is listening.
-    OnCreate {
-      BatiLocationService.emitter = emit
-    }
-
-    // Identity-checked: a reload creates the next module before destroying this one, and an
-    // unconditional null here would leave the new runtime subscribed to nothing.
-    OnDestroy {
-      if (BatiLocationService.emitter === emit) BatiLocationService.emitter = null
-    }
-
-    /**
-     * The ground covered, as the hero's own screen phrases it: unit preference, language, and the
-     * reducer's distance rather than a native sum of every fix. Native owns no strings here for
-     * the same reason it owns none in the notification's four states.
-     */
-    Function("setProgress") { text: String ->
-      BatiLocationService.setProgress(text)
-    }
-
-    /** Marks the goal reached; see `BatiLocationService.setReached` for what that changes. */
-    Function("setReached") {
-      BatiLocationService.setReached()
-    }
-
-    Function("hasGpsProvider") {
-      val context = appContext.reactContext ?: return@Function false
-      val manager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-      manager?.allProviders?.contains(LocationManager.GPS_PROVIDER) == true
-    }
-
-    AsyncFunction("requestPermission") { promise: Promise ->
-      // Both, together: from API 31 Android refuses a FINE-only request outright. A hero who
-      // answers "approximate" grants COARSE alone, which the resolved status reports as
-      // undetermined rather than granted — precise location is the feature.
-      Permissions.askForPermissionsWithPermissionsManager(
-        appContext.permissions,
-        promise,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
+      Events(
+        BatiLocationService.EVENT_LOCATION,
+        BatiLocationService.EVENT_PROVIDER,
+        BatiLocationService.EVENT_NO_FIX,
+        BatiLocationService.EVENT_ERROR,
+        // Declared or `sendEvent` throws, and nothing here compiles this file before a release tag.
+        BatiLocationService.EVENT_FINISH,
       )
-    }
 
-    /**
-     * The notification permission, asked for on its own and never bundled with the location pair.
-     *
-     * From API 33 the foreground-service notification is invisible without it, and the whole
-     * pocket promise is that an expedition says the rest through that notification. But a hero who
-     * refuses it has still granted the thing the feature needs, so a combined request would have
-     * one refusal veto the other. Below API 33 there is nothing to ask and the manager resolves
-     * granted.
-     */
-    AsyncFunction("requestNotificationPermission") { promise: Promise ->
-      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-        promise.resolve(
-          bundleOf(
-            "status" to "granted",
-            "expires" to "never",
-            "granted" to true,
-            "canAskAgain" to true,
-          ),
-        )
-        return@AsyncFunction
+      // The service's only route back to JS, opened and closed with the runtime it points at: a
+      // reload leaves a service holding a callback into a dead Hermes otherwise, and its absence
+      // is also how a restarted service knows nobody is listening.
+      OnCreate {
+        BatiLocationService.emitter = emit
       }
-      Permissions.askForPermissionsWithPermissionsManager(
-        appContext.permissions,
-        promise,
-        Manifest.permission.POST_NOTIFICATIONS,
-      )
-    }
 
-    /**
-     * False plus an `onError` event rather than a throw: on Android 14+ a location-type
-     * foreground service started without the grant raises SecurityException, and a session
-     * screen has somewhere to put an error event and nowhere to put an exception.
-     */
-    Function("start") { options: StartOptions ->
-      val context = appContext.reactContext
-      if (context == null) {
-        sendEvent(
-          BatiLocationService.EVENT_ERROR,
-          mapOf("code" to ERROR_NO_CONTEXT, "message" to "no React context to start the service from"),
-        )
-        return@Function false
+      // Identity-checked: a reload creates the next module before destroying this one, and an
+      // unconditional null here would leave the new runtime subscribed to nothing.
+      OnDestroy {
+        if (BatiLocationService.emitter === emit) BatiLocationService.emitter = null
       }
-      if (!BatiLocationService.hasLocationPermission(context)) {
-        sendEvent(
-          BatiLocationService.EVENT_ERROR,
-          mapOf(
-            "code" to BatiLocationService.ERROR_PERMISSION,
-            "message" to "ACCESS_FINE_LOCATION is not granted",
-          ),
-        )
-        return@Function false
-      }
-      try {
-        ContextCompat.startForegroundService(context, options.toIntent(context))
-      } catch (error: RuntimeException) {
-        // From API 31 ForegroundServiceStartNotAllowedException lands *here*, on the caller: the
-        // service is never created, so the same catch inside enterForeground() never runs.
-        sendEvent(
-          BatiLocationService.EVENT_ERROR,
-          mapOf(
-            "code" to BatiLocationService.ERROR_FOREGROUND,
-            "message" to (error.message ?: error.javaClass.simpleName),
-          ),
-        )
-        return@Function false
-      }
-      true
-    }
 
-    Function("stop") {
-      val context = appContext.reactContext
-      // stopService rather than a stop action: it is allowed from the background whatever the
-      // service's state, and onDestroy is the single place that releases the wake lock.
-      context?.stopService(Intent(context, BatiLocationService::class.java))
+      /**
+       * The ground covered, as the hero's own screen phrases it: unit preference, language, and the
+       * reducer's distance rather than a native sum of every fix. Native owns no strings here for
+       * the same reason it owns none in the notification's four states.
+       */
+      Function("setProgress") { text: String ->
+        BatiLocationService.setProgress(text)
+      }
+
+      /** Marks the goal reached; see `BatiLocationService.setReached` for what that changes. */
+      Function("setReached") {
+        BatiLocationService.setReached()
+      }
+
+      Function("hasGpsProvider") {
+        val context = appContext.reactContext ?: return@Function false
+        val manager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+        manager?.allProviders?.contains(LocationManager.GPS_PROVIDER) == true
+      }
+
+      /**
+       * The same answer as `requestPermission`, without asking anything.
+       *
+       * Home explains why the position is needed *before* Android's dialog appears, and a sentence
+       * that says "Android is about to ask" must not appear in front of a hero who granted the
+       * permission months ago, nor in front of one who refused twice and will never see a dialog
+       * again. Neither question can be answered by requesting: by the time the answer comes back,
+       * the dialog the sentence was meant to introduce has already been shown.
+       *
+       * It reads exactly what `requestPermission` asks for, so the two can never drift into
+       * describing different grants.
+       */
+      AsyncFunction("getPermissionStatus") { promise: Promise ->
+        Permissions.getPermissionsWithPermissionsManager(
+          appContext.permissions,
+          promise,
+          Manifest.permission.ACCESS_FINE_LOCATION,
+          Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+      }
+
+      AsyncFunction("requestPermission") { promise: Promise ->
+        // Both, together: from API 31 Android refuses a FINE-only request outright. A hero who
+        // answers "approximate" grants COARSE alone, which the resolved status reports as
+        // undetermined rather than granted — precise location is the feature.
+        Permissions.askForPermissionsWithPermissionsManager(
+          appContext.permissions,
+          promise,
+          Manifest.permission.ACCESS_FINE_LOCATION,
+          Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+      }
+
+      /**
+       * The notification permission, asked for on its own and never bundled with the location pair.
+       *
+       * From API 33 the foreground-service notification is invisible without it, and the whole
+       * pocket promise is that an expedition says the rest through that notification. But a hero who
+       * refuses it has still granted the thing the feature needs, so a combined request would have
+       * one refusal veto the other. Below API 33 there is nothing to ask and the manager resolves
+       * granted.
+       */
+      AsyncFunction("requestNotificationPermission") { promise: Promise ->
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+          promise.resolve(
+            bundleOf(
+              "status" to "granted",
+              "expires" to "never",
+              "granted" to true,
+              "canAskAgain" to true,
+            ),
+          )
+          return@AsyncFunction
+        }
+        Permissions.askForPermissionsWithPermissionsManager(
+          appContext.permissions,
+          promise,
+          Manifest.permission.POST_NOTIFICATIONS,
+        )
+      }
+
+      /**
+       * False plus an `onError` event rather than a throw: on Android 14+ a location-type
+       * foreground service started without the grant raises SecurityException, and a session
+       * screen has somewhere to put an error event and nowhere to put an exception.
+       */
+      Function("start") { options: StartOptions ->
+        val context = appContext.reactContext
+        if (context == null) {
+          sendEvent(
+            BatiLocationService.EVENT_ERROR,
+            mapOf("code" to ERROR_NO_CONTEXT, "message" to "no React context to start the service from"),
+          )
+          return@Function false
+        }
+        if (!BatiLocationService.hasLocationPermission(context)) {
+          sendEvent(
+            BatiLocationService.EVENT_ERROR,
+            mapOf(
+              "code" to BatiLocationService.ERROR_PERMISSION,
+              "message" to "ACCESS_FINE_LOCATION is not granted",
+            ),
+          )
+          return@Function false
+        }
+        try {
+          ContextCompat.startForegroundService(context, options.toIntent(context))
+        } catch (error: RuntimeException) {
+          // From API 31 ForegroundServiceStartNotAllowedException lands *here*, on the caller: the
+          // service is never created, so the same catch inside enterForeground() never runs.
+          sendEvent(
+            BatiLocationService.EVENT_ERROR,
+            mapOf(
+              "code" to BatiLocationService.ERROR_FOREGROUND,
+              "message" to (error.message ?: error.javaClass.simpleName),
+            ),
+          )
+          return@Function false
+        }
+        true
+      }
+
+      Function("stop") {
+        val context = appContext.reactContext
+        // stopService rather than a stop action: it is allowed from the background whatever the
+        // service's state, and onDestroy is the single place that releases the wake lock.
+        context?.stopService(Intent(context, BatiLocationService::class.java))
+      }
     }
-  }
 
   companion object {
     const val ERROR_NO_CONTEXT = "no-context"
@@ -180,6 +204,9 @@ class NotificationOptions : Record {
   @Field val gpsOff: String = ""
 
   @Field val reached: String = ""
+
+  /** The notification's one button. Empty means no button, which is what a build without it sends. */
+  @Field val finish: String = ""
 }
 
 class StartOptions : Record {
@@ -196,6 +223,7 @@ class StartOptions : Record {
       putExtra(BatiLocationService.EXTRA_PAUSED, notification.paused)
       putExtra(BatiLocationService.EXTRA_GPS_OFF, notification.gpsOff)
       putExtra(BatiLocationService.EXTRA_REACHED, notification.reached)
+      putExtra(BatiLocationService.EXTRA_FINISH, notification.finish)
       putExtra(BatiLocationService.EXTRA_MAX_SPEED, maxSpeedMs.toFloat())
     }
 }

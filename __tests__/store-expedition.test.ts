@@ -22,6 +22,13 @@ jest.mock("@/modules/bati-location", () => ({
   start: (...a: never[]) => mockStart(...a),
   requestPermission: () => mockRequestPermission(),
   requestNotificationPermission: () => mockRequestNotificationPermission(),
+  // Asked once per process by whichever door got there first, so the mock keeps the
+  // call visible while the real one is the module's own business.
+  // Swallows, because the real one does: a refused or broken notification grant must never
+  // cancel a walk. Its breadcrumb is asserted where it now lives, in bati-location-module.
+  ensureNotificationPermission: async () => {
+    await mockRequestNotificationPermission().catch(() => undefined);
+  },
   stop: () => mockStop(),
   setProgress: (...a: never[]) => mockSetProgress(...a),
   setReached: (...a: never[]) => mockSetReached(...a),
@@ -33,6 +40,21 @@ jest.mock("@/modules/bati-location", () => ({
 const mockReportError = jest.fn();
 jest.mock("@/src/reportError", () => ({
   reportError: (...a: never[]) => mockReportError(...a),
+}));
+
+/**
+ * The one thing this store now asks the session store for: how long the hero has been out.
+ *
+ * Mocked rather than run, for two reasons. The real function reads the session store, which
+ * would drag the SQLite client into a test that has none; and the import goes back into a module
+ * that already imports this one, so mocking it is also the cheapest place to notice if that
+ * cycle ever stops being harmless. The number itself is what the assertions are about.
+ */
+let mockElapsedSeconds = 0;
+const mockCompleteOuting = jest.fn();
+jest.mock("@/stores/session", () => ({
+  recordedDurationSeconds: () => mockElapsedSeconds,
+  useSessionStore: { getState: () => ({ completeOuting: mockCompleteOuting }) },
 }));
 
 const mockHaptic = jest.fn().mockResolvedValue(undefined);
@@ -48,6 +70,7 @@ const NOTIFICATION = {
   paused: "p",
   gpsOff: "o",
   reached: "r",
+  finish: "f",
 };
 
 const T0 = 1_760_000_000_000;
@@ -86,8 +109,16 @@ describe("stores/expedition", () => {
     mockReportError.mockClear();
     mockHaptic.mockClear();
     mockAvailable = true;
+    mockElapsedSeconds = 0;
     store = (require("@/stores/expedition") as typeof import("@/stores/expedition"))
       .useExpeditionStore;
+  });
+
+  // The notification's line is now driven by an interval, and `end()` is the only thing that
+  // clears it. A test that begins a run and never ends it would leave one ticking on a module
+  // `resetModules` can no longer reach.
+  afterEach(async () => {
+    await store.getState().end();
   });
 
   test("starting subscribes and hands the service the on-foot speed cap", async () => {
@@ -330,12 +361,49 @@ describe("stores/expedition", () => {
    * covered is the only thing about it that moves, and it is the only reason to look.
    */
   test("the notification is told the ground covered, in the hero's own words", async () => {
+    mockElapsedSeconds = 1924;
     await store.getState().begin("s1", NOTIFICATION, false, "metric");
     for (let i = 0; i < 30; i += 1) emit(walking(i));
 
-    expect(mockSetProgress).toHaveBeenCalledTimes(1);
+    // Twice: once the moment the service starts, so the notification carries a number from the
+    // first glance rather than a bare status word for half a minute, and once on the flush.
+    expect(mockSetProgress).toHaveBeenCalledTimes(2);
+    expect(mockSetProgress.mock.calls[0]?.[0]).toMatch(/^32:04 · /);
     // Twenty-nine steps of 1.4 m, minus the gate the reducer holds open for the first three.
-    expect(mockSetProgress.mock.calls[0]?.[0]).toMatch(/^\d+ m$/);
+    // Time first, because it is the only half that exists on every walk.
+    expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^32:04 · \d+ m$/);
+  });
+
+  /**
+   * The line the whole feature is read through, on the walk that needs it most.
+   *
+   * A sortie whose sky never opens produces no fix, so nothing used to push the notification and
+   * it repeated "Finding the sky" for an hour - the one surface readable without unlocking,
+   * saying nothing about a walk that was happening. The clock is now what drives it, so the time
+   * shows up with or without a fix, and it comes from the session store's rule rather than a
+   * second one kept here.
+   */
+  test("the line carries the time before anything else, fix or no fix", async () => {
+    jest.useFakeTimers();
+    try {
+      mockElapsedSeconds = 65;
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+
+      jest.advanceTimersByTime(30_000);
+      expect(mockSetProgress).toHaveBeenLastCalledWith(`1:05 · ${NOTIFICATION.acquiring}`);
+
+      for (let i = 0; i < 5; i += 1) emit(walking(i));
+      mockElapsedSeconds = 95;
+      jest.advanceTimersByTime(30_000);
+      expect(mockSetProgress).toHaveBeenLastCalledWith(expect.stringMatching(/^1:35 · \d+ m$/));
+
+      await store.getState().end();
+      mockSetProgress.mockClear();
+      jest.advanceTimersByTime(60_000);
+      expect(mockSetProgress).not.toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   /**
@@ -415,22 +483,131 @@ describe("stores/expedition", () => {
       expect(store.getState().error).toBeNull();
     });
 
-    test("that throws is a breadcrumb, not a cancelled walk", async () => {
-      mockRequestNotificationPermission.mockRejectedValue(new Error("no permissions manager"));
-
-      expect(await store.getState().begin("s1", NOTIFICATION, false, "metric")).toBe(true);
-      expect(mockReportError).toHaveBeenCalledWith(
-        "expedition.notificationPermission",
-        expect.any(Error),
-      );
-    });
-
     test("refused, nothing starts and the panel is told why", async () => {
       mockRequestPermission.mockResolvedValue({ granted: false, status: "denied" });
 
       expect(await store.getState().begin("s1", NOTIFICATION, false, "metric")).toBe(false);
       expect(mockStart).not.toHaveBeenCalled();
       expect(store.getState().error).toBe("permission");
+    });
+  });
+
+  /**
+   * The league counter: one buzz per kilometre, in a pocket, with nothing on screen.
+   *
+   * The fixture walks 50 m every ten seconds rather than 1.4 m every second, because a league is
+   * 715 fixes at walking pace and this is a unit test, not a walk.
+   */
+  test("the notification's Finish action hands the walk to the session store", async () => {
+    // The one path a locked screen has. The service only knows that a thumb landed on a button;
+    // how long the walk was, what it pays and what the journal says are the session store's to
+    // answer, which is why this listener carries nothing and decides nothing.
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    mockCompleteOuting.mockClear();
+
+    (mockListeners.get("onFinishRequested") as () => void)();
+
+    expect(mockCompleteOuting).toHaveBeenCalledTimes(1);
+  });
+
+  describe("leagues", () => {
+    const BASE_LAT = 48.4728;
+    /** Fix `i`: 50 m further north than `i - 1`, ten seconds later. The gate opens on fix 1. */
+    const striding = (i: number): LocationFix => ({
+      t: T0 + i * 10_000,
+      lat: BASE_LAT + i * 0.00045,
+      lon: -2.4943,
+      ele: 110,
+      acc: 4,
+      speed: 5,
+      distFromPrev: i === 0 ? 0 : 50,
+    });
+    /** Distance credited once fixes `0..i` have landed: the gate eats the first two. */
+    const groundAfter = (i: number) => (i - 1) * 50;
+
+    test("crossing a league buzzes once, and says nothing else", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      for (let i = 0; i <= 30; i++) emit(striding(i));
+
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(30));
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+      // The league is a buzz and only a buzz: the goal's word belongs to the goal.
+      expect(mockSetReached).not.toHaveBeenCalled();
+    });
+
+    test("two leagues buzz twice", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      for (let i = 0; i <= 45; i++) emit(striding(i));
+
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(45));
+      expect(mockHaptic).toHaveBeenCalledTimes(2);
+    });
+
+    /**
+     * The trap the whole counter is built around. `begin` replays `gps_points` through the
+     * reducer, so a walk the OS killed at three leagues comes back with three leagues of ground
+     * in one go. A naive counter would buzz three times at the moment the hero resumes - for
+     * kilometres already walked, in a pocket, with no way to tell what happened.
+     */
+    test("a resumed outing that already carried three leagues buzzes for the fourth, not the first three", async () => {
+      mockPointsOf.mockResolvedValue(Array.from({ length: 62 }, (_, i) => striding(i)));
+
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(61)); // 3050 m
+      expect(mockHaptic).not.toHaveBeenCalled();
+
+      // The fourth league is crossed on the fix that reaches 4000 m, and only that one.
+      for (let i = 62; i <= 81; i++) emit(striding(i));
+      expect(store.getState().track.distanceM).toBeCloseTo(4000);
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * A league is crossed once. Credited distance is not monotonic: what is advanced under an
+     * anchor is taken back when the pause window closes on a hero who never cleared it
+     * (`RULES.pauseAfterMs`), so the same kilometre is crossed, un-crossed and crossed again by
+     * someone who stopped at a crossing just past a league marker.
+     */
+    test("ground taken back by a closing pause does not buzz the same league twice", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      for (let i = 0; i <= 20; i++) emit(striding(i));
+      expect(store.getState().track.distanceM).toBeCloseTo(950);
+
+      // Standing at the light: a few metres of drift around the anchor, never ten from it. The
+      // reducer advances the credit, so the reading creeps past 1000 m and buzzes.
+      const drifting = (j: number): LocationFix => ({
+        t: T0 + 20 * 10_000 + j * 1000,
+        lat: BASE_LAT + 20 * 0.00045 + (j % 2) * 0.000027,
+        lon: -2.4943,
+        ele: 110,
+        acc: 4,
+        speed: 0.2,
+        distFromPrev: 3,
+      });
+      for (let j = 1; j <= 39; j++) emit(drifting(j));
+      expect(store.getState().track.distanceM).toBeGreaterThan(1000);
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+
+      // The window closes on an anchor that was never cleared: the drift is refunded and the
+      // reading falls back under the league.
+      emit(drifting(40));
+      expect(store.getState().track.paused).toBe(true);
+      expect(store.getState().track.distanceM).toBeCloseTo(950);
+
+      // The hero walks off again and crosses 1000 m a second time. That is not a new league.
+      for (let k = 1; k <= 13; k++) {
+        emit({ ...striding(20 + k), t: T0 + 240_000 + k * 10_000 });
+      }
+      expect(store.getState().track.distanceM).toBeCloseTo(1600);
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    test("haptics off means the leagues pass in silence", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric", null, false);
+      for (let i = 0; i <= 45; i++) emit(striding(i));
+
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(45));
+      expect(mockHaptic).not.toHaveBeenCalled();
     });
   });
 });

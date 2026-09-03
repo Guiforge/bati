@@ -1,0 +1,74 @@
+# The only thing in this repo that reads Kotlin before a tag.
+#
+# ci.yml runs biome, tsc, jest, knip, expo-doctor, the licence check and a prebuild diff, and not
+# one of them looks at a `.kt` file. The compiler only turns up when release.yml builds an APK,
+# which is to say on a tag, so a typo in the location service passed every gate and broke a
+# release at the most expensive possible moment.
+#
+# Its own workflow rather than a job in ci.yml, for the path filter: a push that touches no Kotlin
+# does not pay a second of Gradle, and Gradle here is not cheap (`expo.autolinking.buildFromSource`
+# compiles every Expo module from source).
+name: Kotlin
+
+on:
+  push:
+    paths:
+      - "modules/bati-location/android/**"
+      - ".editorconfig"
+      - "scripts/ktlint.sh"
+      - ".github/workflows/kotlin.yml"
+  pull_request:
+    paths:
+      - "modules/bati-location/android/**"
+      - ".editorconfig"
+      - "scripts/ktlint.sh"
+      - ".github/workflows/kotlin.yml"
+
+jobs:
+  kotlin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The style, before the compiler: a formatting failure should not wait behind a Gradle
+      # download. Check only, never `--format`: the hook rewrites, CI reports.
+      - name: Format
+        run: ./scripts/ktlint.sh
+
+      # AGP does not accept the JDK the developer machine happens to have (25 at the time of
+      # writing). 21 is what the Expo SDK builds against.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+
+      # android/ is committed, but it is generated: prebuild first so the Gradle project on disk
+      # is the one app.json and the plugins describe, exactly as ci.yml does before its own diff.
+      - run: npx expo prebuild -p android --clean
+
+      # Compiling the module alone rather than the app: this gate exists for the two files above,
+      # and assembling the whole APK here would duplicate what release.yml already does on a tag.
+      #
+      # The project path is not written in settings.gradle, which includes local modules through
+      # `expoAutolinking.useExpoModules()`. `./gradlew projects` prints the real one; the fallback
+      # keeps the job honest rather than green when the name changes under it.
+      - name: Compile
+        working-directory: android
+        run: |
+          set -euo pipefail
+          ./gradlew projects --console=plain | tee /tmp/projects.txt
+          target=$(grep -oE "Project ':[^']*bati-location[^']*'" /tmp/projects.txt | head -1 |
+            sed -E "s/Project '(.*)'/\1/")
+          if [ -z "$target" ]; then
+            echo "Could not find the bati-location Gradle project. It is included by" >&2
+            echo "expoAutolinking.useExpoModules(), so its path can change with the SDK." >&2
+            exit 1
+          fi
+          echo "Compiling $target"
+          ./gradlew "$target:compileDebugKotlin" --console=plain

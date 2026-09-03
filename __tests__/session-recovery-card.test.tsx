@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 import { SessionRecoveryCard } from "@/components/session/SessionRecoveryCard";
 import type { RecoverableSession } from "@/hooks/useSessionRecovery";
@@ -20,7 +20,8 @@ jest.mock("@/db/gps", () => ({
   deletePoints: jest.fn(),
   sweepOrphanedPoints: jest.fn(),
 }));
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
+const mockPush = jest.fn();
+jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock("@/hooks/useHaptics", () => ({
   useHaptics: () => ({ mediumImpact: jest.fn(), lightImpact: jest.fn() }),
 }));
@@ -42,17 +43,19 @@ const session = (over: Partial<RecoverableSession> = {}): RecoverableSession => 
   savedAt: new Date(1_800_000_000_000),
   elapsedTime: 4,
   leaguesM: null,
+  isOuting: false,
   ...over,
 });
 
 // Awaited, always: RNTL's `render` is async here and `screen` throws "render function has not
 // been called" on every query if it is not.
-async function mount(offer: RecoverableSession) {
+async function mount(offer: RecoverableSession, onFinish = async () => true) {
   return await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <SessionRecoveryCard
         session={offer}
         onRecover={async () => true}
+        onFinish={onFinish}
         onDiscard={async () => undefined}
       />
     </TamaguiProvider>,
@@ -62,6 +65,7 @@ async function mount(offer: RecoverableSession) {
 describe("SessionRecoveryCard", () => {
   beforeEach(() => {
     mockUnit = "metric";
+    mockPush.mockClear();
   });
 
   test("counts an interrupted walk in ground, not in rounds and seconds", async () => {
@@ -87,5 +91,67 @@ describe("SessionRecoveryCard", () => {
 
     expect(screen.getByText("Progress: Round 2/3, Exercise 3/5")).toBeTruthy();
     expect(screen.queryByText(/already covered/)).toBeNull();
+  });
+});
+
+/**
+ * The third door, and the one thing that decides whether it is there.
+ *
+ * The notification's own "Finish" needs a live JS runtime; the case this covers is the one where
+ * the OS took the process and left the service, so nothing concluded the walk. The card is the
+ * only thing left that can — but only for a walk. A set of squats interrupted by a kill has no
+ * witness of the hours in between, and offering to file it would be offering to invent it.
+ */
+describe("SessionRecoveryCard, finishing an outing", () => {
+  beforeEach(() => {
+    mockUnit = "metric";
+    mockPush.mockClear();
+  });
+
+  test("a killed outing can be finished from the card", async () => {
+    const finish = jest.fn(async () => true);
+    await mount(session({ isOuting: true, leaguesM: 1800 }), finish);
+
+    expect(screen.getByText("Finish the outing")).toBeTruthy();
+    expect(
+      screen.getByText("It kept running while the app was gone. Its trace says what happened."),
+    ).toBeTruthy();
+
+    await fireEvent.press(screen.getByText("Finish the outing"));
+    await waitFor(() => {
+      expect(finish).toHaveBeenCalled();
+    });
+    // The victory view is where a session is written, and it is on the session screen.
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/session");
+    });
+  });
+
+  test("a workout is never offered a finish it has no witness for", async () => {
+    await mount(session({ isOuting: false, round: 2, roundTotal: 3 }));
+
+    expect(screen.queryByText("Finish the outing")).toBeNull();
+    expect(screen.getByText("You have an unfinished session")).toBeTruthy();
+  });
+
+  test("does not offer to finish a walk that left no trace behind", async () => {
+    // An outing with no fix ever locked has nothing to read: the clock is all there is, and
+    // recovery banked the whole absence as pause, so finishing from here would file a hike as a
+    // couple of seconds. Resuming it and ending on screen still writes the honest clock.
+    await mount(session({ isOuting: true, leaguesM: null }));
+
+    expect(screen.queryByText("Finish the outing")).toBeNull();
+    expect(screen.getByText("Resume")).toBeTruthy();
+  });
+
+  test("a finish that did not take stays on Home", async () => {
+    const finish = jest.fn(async () => false);
+    await mount(session({ isOuting: true, leaguesM: 1800 }), finish);
+
+    await fireEvent.press(screen.getByText("Finish the outing"));
+    await waitFor(() => {
+      expect(finish).toHaveBeenCalled();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

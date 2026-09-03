@@ -269,16 +269,27 @@ export function applyQuestConfig(
  * "this quest" means. They agree by reading the same saved config — the quest screen composes these
  * same three calls in React state instead, because there the hero can still change them before
  * pressing start.
+ *
+ * `level` outranks the saved one, for the quick door on Home: an outing has no level the hero ever
+ * chose, so it always leaves at `medium` however the quest screen was left. It is threaded into the
+ * config rather than only into `getQuestById`, because `applyQuestConfig` reads `config.level` of
+ * its own to retarget a swapped movement — generated at one level and retargeted at another, a
+ * swapped slot came out asking for a length nothing on screen had ever said.
  */
 export async function loadConfiguredQuest(
   questId: number,
+  level?: UserLevel,
 ): Promise<{ quest: Quest; level: UserLevel } | null> {
   // `listExercises()` is promise-cached, so the catalogue is free after the first read anywhere
   // in the app — and it is what lets a swap resolve without this function knowing about screens.
-  const [config, exercises] = await Promise.all([getQuestConfig(questId), listExercises()]);
-  const level = config?.level ?? Difficulty.Medium;
-  const quest = await getQuestById(questId, level);
+  const [saved, exercises] = await Promise.all([getQuestConfig(questId), listExercises()]);
+  const effective = level ?? saved?.level ?? Difficulty.Medium;
+  const config = saved === null ? null : { ...saved, level: effective };
+  const quest = await getQuestById(questId, effective);
   if (!quest) return null;
 
-  return { quest: applyQuestConfig(quest, config, indexExercises(exercises)), level };
+  return {
+    quest: applyQuestConfig(quest, config, indexExercises(exercises)),
+    level: effective,
+  };
 }

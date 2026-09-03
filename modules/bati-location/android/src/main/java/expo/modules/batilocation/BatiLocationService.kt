@@ -7,8 +7,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.location.Location
@@ -33,7 +35,9 @@ import androidx.core.content.ContextCompat
  * accuracy and speed rejection, and `distanceTo` against the last *accepted* fix. A filter in JS
  * would leave `distFromPrev` measuring from fixes JS had already thrown away.
  */
-class BatiLocationService : Service(), LocationListener {
+class BatiLocationService :
+  Service(),
+  LocationListener {
   /** The four things the notification can truthfully say. JS supplies the words, localized. */
   private enum class State {
     ACQUIRING,
@@ -59,6 +63,24 @@ class BatiLocationService : Service(), LocationListener {
   private var pausedText = ""
   private var gpsOffText = ""
   private var reachedText = ""
+
+  /**
+   * The word on the notification's one button, or empty when JS gave none - a service restarted
+   * by the OS has no words of its own, and must not offer a way out it cannot see through.
+   */
+  private var finishText = ""
+
+  /**
+   * The button's other half. Registered for the life of the service and never exported: the
+   * PendingIntent below names this package, so nothing outside it can end a hero's walk.
+   */
+  private val finishReceiver =
+    object : BroadcastReceiver() {
+      override fun onReceive(
+        context: Context?,
+        intent: Intent?,
+      ) = onFinishRequested()
+    }
 
   /**
    * Sticky, and deliberately not a fifth [State]: `state` is reassigned by every GPS fix, so a
@@ -93,9 +115,19 @@ class BatiLocationService : Service(), LocationListener {
     // orphan restart below still has something honest to put in a notification.
     title = applicationInfo.loadLabel(packageManager).toString()
     running = this
+    ContextCompat.registerReceiver(
+      this,
+      finishReceiver,
+      IntentFilter(ACTION_FINISH),
+      ContextCompat.RECEIVER_NOT_EXPORTED,
+    )
   }
 
-  override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+  override fun onStartCommand(
+    intent: Intent?,
+    flags: Int,
+    startId: Int,
+  ): Int {
     // A null intent is the OS replaying START_STICKY after the process died. Nothing in JS asked
     // for it, and this build buffers nothing, so it must not spend GPS or a wake lock on it.
     if (intent == null) awaitConsumer() else startTracking(intent)
@@ -173,6 +205,7 @@ class BatiLocationService : Service(), LocationListener {
     pausedText = intent.getStringExtra(EXTRA_PAUSED).orEmpty()
     gpsOffText = intent.getStringExtra(EXTRA_GPS_OFF).orEmpty()
     reachedText = intent.getStringExtra(EXTRA_REACHED).orEmpty()
+    finishText = intent.getStringExtra(EXTRA_FINISH).orEmpty()
     maxSpeed = intent.getFloatExtra(EXTRA_MAX_SPEED, maxSpeed)
   }
 
@@ -205,7 +238,11 @@ class BatiLocationService : Service(), LocationListener {
   // to 29 this is an abstract framework method and its absence is an AbstractMethodError on the
   // main thread the first time the provider changes state mid-walk. Not dead code.
   @Deprecated("Deprecated in Java")
-  override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+  override fun onStatusChanged(
+    provider: String?,
+    status: Int,
+    extras: Bundle?,
+  ) {}
 
   override fun onProviderDisabled(provider: String) {
     if (provider != LocationManager.GPS_PROVIDER) return
@@ -292,17 +329,54 @@ class BatiLocationService : Service(), LocationListener {
     // "On the road" alone never changed once a walk had started, so the notification said the
     // same four words for an hour. The ground covered is the only thing about it that moves.
     val line = if (progressText.isEmpty()) text else "$text \u00b7 $progressText"
-    return NotificationCompat.Builder(this, CHANNEL_ID)
-      // ponytail: a platform drawable, so the module ships no drawable of its own. Swap in a
-      // monochrome pin the day the notification is worth designing.
-      .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-      .setContentTitle(title)
-      .setContentText(line)
-      .setContentIntent(launchIntent())
-      .setOngoing(true)
-      .setOnlyAlertOnce(true)
-      .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-      .build()
+    val builder =
+      NotificationCompat
+        .Builder(this, CHANNEL_ID)
+        // ponytail: a platform drawable, so the module ships no drawable of its own. Swap in a
+        // monochrome pin the day the notification is worth designing.
+        .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+        .setContentTitle(title)
+        .setContentText(line)
+        .setContentIntent(launchIntent())
+        .setOngoing(true)
+        .setOnlyAlertOnce(true)
+        .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+    // The only way out that works through a locked screen, which is where a walk actually ends:
+    // the hero reads the line, the thumb is already on the notification, and the app never has
+    // to be reopened. No icon on purpose - a notification action shows its label, and the icon
+    // is ignored on every surface this app reaches.
+    if (finishText.isNotEmpty()) builder.addAction(0, finishText, finishIntent())
+    return builder.build()
+  }
+
+  /**
+   * Broadcast rather than an activity: tapping the body of this notification already reopens the
+   * session, and finishing must not have to. Immutable, and addressed to this package alone.
+   */
+  private fun finishIntent(): PendingIntent =
+    PendingIntent.getBroadcast(
+      this,
+      1,
+      Intent(ACTION_FINISH).setPackage(packageName),
+      PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+    )
+
+  /**
+   * The button was pressed. Who ends the walk depends on who is still alive.
+   *
+   * With a JS runtime listening, it ends it: the duration, the XP and the row in the journal are
+   * its business, and the one thing this side must never do is write game state. With none - the
+   * OS took the process and left the service - there is nobody to tell, so the service takes
+   * itself and its notification down rather than holding a wake lock over a walk that is over.
+   * The points are already on disk, and the recovery card is what concludes the walk at the next
+   * launch (see docs/designs/outing-doors.md, decision 2 of 03/09).
+   */
+  private fun onFinishRequested() {
+    if (emitter != null) {
+      emit(EVENT_FINISH, emptyMap())
+      return
+    }
+    stopSelf()
   }
 
   /** Tapping the one notification that says the phone is tracking should return to the session. */
@@ -326,12 +400,18 @@ class BatiLocationService : Service(), LocationListener {
     wakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG).apply { acquire() }
   }
 
-  private fun fail(code: String, message: String) {
+  private fun fail(
+    code: String,
+    message: String,
+  ) {
     emit(EVENT_ERROR, mapOf("code" to code, "message" to message))
     stopSelf()
   }
 
-  private fun emit(event: String, body: Map<String, Any?>) {
+  private fun emit(
+    event: String,
+    body: Map<String, Any?>,
+  ) {
     emitter?.invoke(event, body)
   }
 
@@ -339,7 +419,9 @@ class BatiLocationService : Service(), LocationListener {
     // Identity-checked: begin() stops then starts, and a late onDestroy from the outgoing
     // instance would otherwise null out its replacement and freeze the notification for the walk.
     if (running === this) running = null
+    unregisterReceiver(finishReceiver)
     progressText = ""
+    finishText = ""
     reached = false
     handler.removeCallbacksAndMessages(null)
     (getSystemService(Context.LOCATION_SERVICE) as? LocationManager)?.removeUpdates(this)
@@ -368,6 +450,9 @@ class BatiLocationService : Service(), LocationListener {
     const val EVENT_NO_FIX = "onNoFixTimeout"
     const val EVENT_ERROR = "onError"
 
+    /** The hero pressed "Finish" on the notification. No body: there is nothing to say but this. */
+    const val EVENT_FINISH = "onFinishRequested"
+
     const val ERROR_PERMISSION = "permission"
     const val ERROR_NO_PROVIDER = "provider-missing"
     const val ERROR_FOREGROUND = "foreground-denied"
@@ -378,7 +463,11 @@ class BatiLocationService : Service(), LocationListener {
     const val EXTRA_PAUSED = "paused"
     const val EXTRA_GPS_OFF = "gpsOff"
     const val EXTRA_REACHED = "reached"
+    const val EXTRA_FINISH = "finish"
     const val EXTRA_MAX_SPEED = "maxSpeedMs"
+
+    /** Namespaced and package-local: an implicit action is still an action somebody else can send. */
+    private const val ACTION_FINISH = "expo.modules.batilocation.FINISH"
 
     private const val CHANNEL_ID = "bati-location"
     private const val NOTIFICATION_ID = 4711

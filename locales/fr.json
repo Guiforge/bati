@@ -383,7 +383,10 @@
     "level_line": "Niveau {{level}} • {{title}}",
     "step_progress": "Étape {{current}} sur {{total}}",
     "streak_a11y": "Flamme de {{count}} jours",
-    "open_settings_a11y": "Ouvrir les réglages"
+    "open_settings_a11y": "Ouvrir les réglages",
+    "outside_start_a11y": "Démarrer : {{quest}}",
+    "outside_setup": "Régler",
+    "outside_setup_a11y": "Régler une sortie avant de partir"
   },
   "home_continue_adventure_subtitle": "Reprends là où tu t'es arrêté.",
   "home_continue_adventure_title": "Continuer ton aventure",
@@ -616,7 +619,11 @@
     "exercises_other": "{{count}} exercices",
     "filter_outside": "Dehors",
     "favourite_add": "Épingler en tête",
-    "favourite_remove": "Retirer l'épingle"
+    "favourite_remove": "Retirer l'épingle",
+    "goal_sheet_title": "Combien de temps, ou combien de terrain",
+    "goal_sheet_custom": "Autre",
+    "goal_sheet_custom_hint": "Entre ta propre valeur",
+    "goal_sheet_open": "Régler la sortie"
   },
   "recovery": {
     "description": "Tu as une séance laissée en chemin.",
@@ -625,7 +632,10 @@
     "ground": "{{distance}} déjà parcourus",
     "progress": "Progression : manche {{round}}/{{roundTotal}}, exercice {{exercise}}/{{exerciseTotal}}",
     "resume": "Reprendre",
-    "title": "Reprendre ta séance ?"
+    "title": "Reprendre ta séance ?",
+    "finish_outing": "Terminer la sortie",
+    "finish_outing_description": "Elle a tourné pendant que l'app était partie. Son tracé dit ce qui s'est passé.",
+    "finish_outing_title": "Ta sortie a continué sans toi"
   },
   "scheduling": {
     "add_session": "Planifier un entraînement",
@@ -730,7 +740,17 @@
     "expedition_ground": "Terrain",
     "expedition_moving": "En mouvement",
     "expedition_pace": "Allure",
-    "expedition_road": "{{building}} · {{value}}/{{target}} lieues"
+    "expedition_road": "{{building}} · {{value}}/{{target}} lieues",
+    "expedition_finish": "Terminer la sortie",
+    "expedition_hold_to_finish_a11y": "Maintiens pour terminer la sortie",
+    "expedition_cancel_start": "Annuler le départ",
+    "expedition_cancel_start_hint": "Tu viens de partir. Tu peux revenir en arrière.",
+    "expedition_pocket_hint": "Tu peux ranger le téléphone, la sortie continue.",
+    "summary_too_short_body_outing": "Tu as marché {{duration}}. Garde cette sortie et elle compte pour ta série et ton serment, ou jette-la, et il ne s'est rien passé.",
+    "expedition_notification_finish": "Terminer",
+    "expedition_make_quest": "En faire une quête",
+    "expedition_made_quest": "Rangée dans tes quêtes. Elle t'attend telle quelle.",
+    "expedition_permission_why": "Bati lit ta position pendant la sortie, et elle reste sur ce téléphone. Android va te le demander."
   },
   "settings": {
     "avatar": "AVATAR",
@@ -873,7 +893,7 @@
     "never_title": "Ce que Bati ne fait jamais",
     "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. Rien de la base de données n'est jamais envoyé nulle part. L'application ne touche au réseau qu'à un seul endroit, et seulement si vous l'y autorisez : la carte derrière le tracé d'une expédition est désactivée tant que vous ne l'activez pas dans les réglages. Une fois activée, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit où la sortie a eu lieu. Cette demande dit donc à cet hôte à peu près où vous étiez, avec votre adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui vous êtes, mais la zone, oui. Laissée désactivée, ou coupée d'une pression, l'application ne fait aucune requête réseau et le tracé se dessine sur un fond uni. Une règle de lint refuse tout autre appel réseau dans l'application.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar, et elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une expédition, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'est envoyé nulle part. Une sortie affiche aussi une notification permanente et garde le téléphone éveillé, ce qui empêche Android de couper le suivi quand votre écran est éteint. Internet : uniquement pour la carte, et uniquement tant qu'elle est activée dans les réglages ; elle démarre désactivée, et ce que la demande révèle est écrit plus haut.",
+    "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar, et elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une expédition, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'est envoyé nulle part. Une sortie affiche aussi une notification permanente : c'est elle qui tient le suivi en vie, et c'est pour ça que votre écran peut s'éteindre pendant la marche sans rien interrompre. Internet : uniquement pour la carte, et uniquement tant qu'elle est activée dans les réglages ; elle démarre désactivée, et ce que la demande révèle est écrit plus haut.",
     "crashes_title": "Rapports de crash",
     "crashes_body": "En cas de plantage, l'erreur est écrite uniquement sur votre appareil, et quand une fonction échoue sans plantage (une sauvegarde impossible à écrire, par exemple), son message d'erreur est conservé de la même façon ; ce message peut contenir le nom d'un dossier ou d'un fichier que vous avez choisi. Rien n'est envoyé automatiquement. « Signaler un bug » ouvre votre propre application e-mail avec le rapport pré-rempli : vous pouvez le lire, le modifier ou le supprimer avant envoi. Si vous ne l'envoyez jamais, il ne quitte jamais votre téléphone.",
     "children_title": "Enfants",

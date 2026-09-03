@@ -273,6 +273,75 @@ describe("db/quests", () => {
     expect(await quests.getQuestTemplateById(id)).toBeNull();
   });
 
+  /**
+   * The bridge (docs/designs/outing-doors.md, T17): what the hero just walked, filed as a quest.
+   * A distance never becomes a target here — `questTargetTypes` is reps and time, and a walk's
+   * metres live in the quest config.
+   */
+  test("an outing becomes a quest with a time target on the five-second grid", async () => {
+    const quests = require("../db/quests") as typeof import("../db/quests");
+
+    const walk = t.sqlite
+      .prepare("SELECT id FROM exercises WHERE enName = 'Warden''s Walk' AND creator = 'Admin'")
+      .get() as { id: number } | undefined;
+    assert(walk);
+
+    const id = await quests.createQuestFromOuting(
+      {
+        enTitle: "The Long Walk",
+        frTitle: "La longue marche",
+        enDescription: "Out and back",
+        frDescription: "Aller et retour",
+        imagePath: "assets/placeholder.jpg",
+        exercises: [{ exercise: { id: walk.id } }],
+      },
+      1937,
+    );
+
+    const created = await quests.getQuestTemplateById(id);
+    assert(created);
+    expect(created.author).toBe("hero");
+    expect(created.enTitle).toBe("The Long Walk");
+    // One round, no rest: a free outing measured one uninterrupted stretch.
+    expect(created.rounds).toBe(1);
+    expect(created.restSeconds).toBe(0);
+    expect(created.roundRestSeconds).toBeNull();
+    expect(created.exercises.length).toBe(1);
+    expect(created.exercises[0]?.exerciseId).toBe(walk.id);
+    // 1937 rounded to the grid the stepper moves in, so the hero can walk the number back.
+    expect(created.exercises[0]?.baseTarget).toEqual({ type: "time", min: 1935, max: 1935 });
+
+    await quests.deleteQuest(id);
+  });
+
+  // `TIME_TARGET_MAX` is the ceiling of a target a hero may *set*, and it is not the ceiling of
+  // what they may walk: a two-hour ride is recorded in full and offered again as an hour.
+  test("an outing past the target ceiling is filed at the ceiling, not above it", async () => {
+    const quests = require("../db/quests") as typeof import("../db/quests");
+
+    const walk = t.sqlite
+      .prepare("SELECT id FROM exercises WHERE enName = 'Warden''s Walk' AND creator = 'Admin'")
+      .get() as { id: number } | undefined;
+    assert(walk);
+
+    const id = await quests.createQuestFromOuting(
+      {
+        enTitle: "The Ride",
+        frTitle: "La sortie",
+        enDescription: "",
+        frDescription: "",
+        imagePath: null,
+        exercises: [{ exercise: { id: walk.id } }],
+      },
+      2 * 3600,
+    );
+
+    const created = await quests.getQuestTemplateById(id);
+    expect(created?.exercises[0]?.baseTarget.max).toBe(3600);
+
+    await quests.deleteQuest(id);
+  });
+
   test("a hero quest keeps 'no cover' as a real state, and can be given one later", async () => {
     const { createQuestTemplate, getQuestTemplateById, updateQuestMeta } =
       require("../db/quests") as typeof import("../db/quests");

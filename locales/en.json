@@ -24,7 +24,10 @@
     "level_line": "Level {{level}} • {{title}}",
     "step_progress": "Step {{current}} of {{total}}",
     "streak_a11y": "{{count}} day streak",
-    "open_settings_a11y": "Open settings"
+    "open_settings_a11y": "Open settings",
+    "outside_start_a11y": "Start: {{quest}}",
+    "outside_setup": "Set up",
+    "outside_setup_a11y": "Set up an outing before heading out"
   },
   "language": "Language",
   "light": "Light",
@@ -305,7 +308,11 @@
     "exercises_other": "{{count}} exercises",
     "filter_outside": "Outside",
     "favourite_add": "Pin to the top",
-    "favourite_remove": "Unpin"
+    "favourite_remove": "Unpin",
+    "goal_sheet_title": "How long, or how far",
+    "goal_sheet_custom": "Other",
+    "goal_sheet_custom_hint": "Enter your own value",
+    "goal_sheet_open": "Set up the outing"
   },
   "adventures": {
     "gallery_title": "Adventures",
@@ -534,7 +541,17 @@
     "expedition_ground": "Ground",
     "expedition_moving": "Moving",
     "expedition_pace": "Pace",
-    "expedition_road": "{{building}} · {{value}}/{{target}} leagues"
+    "expedition_road": "{{building}} · {{value}}/{{target}} leagues",
+    "expedition_finish": "Finish the outing",
+    "expedition_hold_to_finish_a11y": "Hold to finish the outing",
+    "expedition_cancel_start": "Cancel the start",
+    "expedition_cancel_start_hint": "You have just set off. You can still turn back.",
+    "expedition_pocket_hint": "You can put the phone away, the outing carries on.",
+    "summary_too_short_body_outing": "You walked for {{duration}}. Keep this outing and it counts toward your streak and your oath, or discard it and nothing happened.",
+    "expedition_notification_finish": "Finish",
+    "expedition_make_quest": "Make this a quest",
+    "expedition_made_quest": "Filed with your quests. It is waiting exactly as you left it.",
+    "expedition_permission_why": "Bati reads your location during an outing, and it stays on this phone. Android is about to ask."
   },
   "muscles": {
     "arms": "Arms",
@@ -839,7 +856,10 @@
     "progress": "Progress: Round {{round}}/{{roundTotal}}, Exercise {{exercise}}/{{exerciseTotal}}",
     "elapsed": "Time: {{time}}",
     "resume": "Resume",
-    "discard": "Discard"
+    "discard": "Discard",
+    "finish_outing": "Finish the outing",
+    "finish_outing_description": "It kept running while the app was gone. Its trace says what happened.",
+    "finish_outing_title": "Your outing carried on without you"
   },
   "recap": {
     "title": "The ground covered",
@@ -873,7 +893,7 @@
     "never_title": "What Bati never does",
     "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. Nothing in the database is ever sent anywhere. The app reaches the network in one place only, and only if you allow it: the map behind an expedition's route is off until you switch it on in Settings. Switched on, the phone asks OpenFreeMap (OpenStreetMap data, served from tiles.openfreemap.org) for tiles, the square images a map is made of, covering the place where the outing happened. That request tells the host roughly where you were, with your IP address and the time. Not the route to the metre, not the pace, not the training, not who you are, but the area, yes. Left off, or switched off again with one tap, the app makes no network request at all and the route is drawn on a plain background. A lint rule refuses any other network call in the app.",
     "permissions_title": "Permissions",
-    "permissions_body": "Photos: only if you pick one as your avatar, and it stays on your device. The Android widget reads your streak from the same local database. Location: only while an expedition is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and sent nowhere. An outing also posts an ongoing notification and holds the phone awake, which is what stops Android killing the tracking while your screen is off. Internet: only for the map, and only while it is switched on in Settings; it starts off, and what the request reveals is written above.",
+    "permissions_body": "Photos: only if you pick one as your avatar, and it stays on your device. The Android widget reads your streak from the same local database. Location: only while an expedition is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and sent nowhere. An outing also posts an ongoing notification: that is what keeps the tracking alive, and it is why your screen can go dark mid-walk without anything stopping. Internet: only for the map, and only while it is switched on in Settings; it starts off, and what the request reveals is written above.",
     "crashes_title": "Crash reports",
     "crashes_body": "If the app crashes, the error is written to your device only. When a feature fails without crashing (a backup that could not be written, say), its error message is kept the same way; that message may include the name of a folder or file you chose. Nothing is sent automatically. \"Report a bug\" below opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
     "children_title": "Children",

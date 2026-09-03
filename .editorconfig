@@ -1,0 +1,23 @@
+# ktlint reads this file, and only this file, to know what the Kotlin here looks like.
+#
+# The two modules under `modules/bati-location/android` are indented two spaces, which is what
+# `expo-module-gradle-plugin` scaffolds and what every Expo module ships. ktlint's own default is
+# four, so without this line it reports several hundred indent errors on code that is perfectly
+# consistent with itself and with every neighbour it was copied from.
+#
+# Deliberately scoped to Kotlin. Everything else in this repo is Biome's, and a second formatter
+# with an opinion about JavaScript is how two tools start fighting over the same file.
+root = true
+
+[*.kt]
+indent_style = space
+indent_size = 2
+max_line_length = 120
+
+# A KDoc inside a block is not documentation, says ktlint, because it attaches to no declaration.
+# True of ordinary Kotlin, and false of an Expo module: its whole surface is declared inside one
+# `ModuleDefinition { }` block, so every function this app can call from JavaScript lives exactly
+# where the rule forbids explaining it. This repo writes down why a thing exists next to the thing,
+# and the alternative here is either undocumented native entry points or the same prose demoted to
+# `//` for a reason no reader would guess.
+ktlint_standard_kdoc = disabled

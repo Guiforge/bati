@@ -35,8 +35,8 @@ describe("formatDistance", () => {
   });
 
   test("a distance that is not a number says so instead of printing NaN", () => {
-    expect(formatDistance(Number.NaN, "metric")).toBe("—");
-    expect(formatDistance(-1, "imperial")).toBe("—");
+    expect(formatDistance(Number.NaN, "metric")).toBe("...");
+    expect(formatDistance(-1, "imperial")).toBe("...");
   });
 });
 
@@ -56,17 +56,17 @@ describe("formatPace", () => {
   });
 
   test("nothing covered, or no time on the clock, is not a pace", () => {
-    expect(formatPace(0, 300_000, "metric")).toBe("—");
-    expect(formatPace(1000, 0, "metric")).toBe("—");
-    expect(formatPace(Number.NaN, 1, "metric")).toBe("—");
+    expect(formatPace(0, 300_000, "metric")).toBe("...");
+    expect(formatPace(1000, 0, "metric")).toBe("...");
+    expect(formatPace(Number.NaN, 1, "metric")).toBe("...");
   });
 
   // Live on a Fairphone 6, twenty-eight seconds into a walk that had not started: the panel read
   // "0 m" and "20049:10 /km" on the line under it. Receiver noise arrives before the anchor moves,
   // and a pace divided by centimetres is not surprising, it is nonsense.
   test("receiver noise under the reducer's threshold is not a pace", () => {
-    expect(formatPace(0.02, 28_000, "metric")).toBe("—");
-    expect(formatPace(RULES.movingThresholdM - 0.01, 28_000, "metric")).toBe("—");
+    expect(formatPace(0.02, 28_000, "metric")).toBe("...");
+    expect(formatPace(RULES.movingThresholdM - 0.01, 28_000, "metric")).toBe("...");
     expect(formatPace(RULES.movingThresholdM, 28_000, "metric")).toBe("46:40 /km");
   });
 });
@@ -89,12 +89,18 @@ describe("formatClock", () => {
     expect(formatClock(119_999)).toBe("1:59");
   });
 
-  test("minutes are not wrapped into hours", () => {
-    expect(formatClock(7_214_000)).toBe("120:14");
+  test("minutes wrap into hours, but only once there is an hour", () => {
+    // The rule below the hour is unchanged: "0:14" for fourteen minutes would be wrong.
+    expect(formatClock(3_599_000)).toBe("59:59");
+    // Past it, hours. This is the 56 px figure of the session screen and the first thing the
+    // ongoing notification says, and a two-hour ride used to read "127:34" in both places.
+    expect(formatClock(3_600_000)).toBe("1:00:00");
+    expect(formatClock(7_214_000)).toBe("2:00:14");
+    expect(formatClock(7_654_000)).toBe("2:07:34");
   });
 
   test("a clock that is not a number says so instead of printing NaN", () => {
-    expect(formatClock(Number.NaN)).toBe("—");
-    expect(formatClock(-1)).toBe("—");
+    expect(formatClock(Number.NaN)).toBe("...");
+    expect(formatClock(-1)).toBe("...");
   });
 });

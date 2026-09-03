@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, useWindowDimensions } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
@@ -16,7 +17,7 @@ import {
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
-import { isOutdoors } from "@/db/expeditions";
+import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
 import { formatTarget } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
@@ -48,6 +49,7 @@ export function ActiveExerciseView() {
   const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
   const completeExercise = useSessionStore((s) => s.completeExercise);
+  const completeOuting = useSessionStore((s) => s.completeOuting);
   const skipExercise = useSessionStore((s) => s.skipExercise);
   const swapCurrentExercise = useSessionStore((s) => s.swapCurrentExercise);
 
@@ -114,6 +116,22 @@ export function ActiveExerciseView() {
   const handleComplete = () => {
     // Heavy haptic feedback on exercise completion
     heavyImpact();
+
+    // An outing has one way to end, and the view is not it.
+    //
+    // The store times a walk by its trace, the same rule the journal reads, because the stopwatch
+    // on screen restarts at zero after the OS kills the app. The button here and the Finish
+    // action on the notification therefore call the same thing: the notification has no view to
+    // compute anything with, and two ways to end one walk would be two durations for it.
+    //
+    // Asked of the *session*, where the button below asks it of the slot. `completeOuting` is
+    // deaf to anything but a walk under way, because a broadcast can outlive the session that
+    // started it, so a walk slot inside a mixed quest keeps the ordinary path: the store has no
+    // per-slot span to read off the trace, which is the shortcut `recordOf` already marks.
+    if (isOutingSession(quest)) {
+      completeOuting();
+      return;
+    }
 
     // For time-based exercises, record actual elapsed time
     // For rep-based, record the adjusted value
@@ -324,16 +342,28 @@ export function ActiveExerciseView() {
         </XStack>
 
         {/* Overall progress as a hairline: the bar was already the subtle element, a frame around
-            it was never doing any work. */}
-        <YStack height={3} rounded="$10" bg="$bgOverlay" overflow="hidden">
+            it was never doing any work.
+
+            A quest of one step has no progress to draw: the bar is full from the first second to
+            the last, which is a full bar that means nothing. That is every outing, and the few
+            single-movement quests besides. */}
+        {totalSteps > 1 ? (
           <YStack
+            testID="session-progress-bar"
             height={3}
-            width={`${progressPercent}%`}
-            bg="$text"
-            opacity={0.55}
-            transition={reducedMotion ? undefined : "bouncy"}
-          />
-        </YStack>
+            rounded="$10"
+            bg="$bgOverlay"
+            overflow="hidden"
+          >
+            <YStack
+              height={3}
+              width={`${progressPercent}%`}
+              bg="$text"
+              opacity={0.55}
+              transition={reducedMotion ? undefined : "bouncy"}
+            />
+          </YStack>
+        ) : null}
       </YStack>
 
       {/* Content-sized on purpose — no flex. The hero above is the only elastic child, so this
@@ -626,74 +656,85 @@ export function ActiveExerciseView() {
           Stacked, they were two full-width rows and ~100dp of link between the counter and the
           button that ends the set — the two things that have to read as one gesture. Side by
           side they are half that, and they finally look like what they are: siblings. The swap
-          gets its short label here; the sheet it opens still carries the full sentence. */}
-        <XStack items="center" justify="center" gap="$3" opacity={0.7}>
-          <Pressable
-            testID="session-swap-exercise"
-            hitSlop={12}
-            onPress={() => {
-              selection();
-              setSwapOpen(true);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={t("quests.swap_exercise")}
-          >
-            <Text
-              py="$2"
-              fontSize={13}
-              fontWeight="700"
-              color="$textSecondary"
-              fontFamily="$body"
-              numberOfLines={1}
-            >
-              {t("session.swap_short", "Replace")}
-            </Text>
-          </Pressable>
+          gets its short label here; the sheet it opens still carries the full sentence.
 
-          <Text fontSize={13} color="$textSecondary" opacity={0.5}>
-            ·
-          </Text>
-
-          <Pressable
-            testID="session-skip-exercise"
-            hitSlop={12}
-            onPress={handleSkip}
-            accessibilityRole="button"
-            accessibilityLabel={t("session.skip_exercise")}
-          >
-            <Text
-              py="$2"
-              fontSize={13}
-              fontWeight="700"
-              color="$textSecondary"
-              fontFamily="$body"
-              numberOfLines={1}
+          Neither offer means anything on a slot the hero is outside for: there is no other
+          movement to walk with, and a walk that did not happen is a walk the hero simply does not
+          start. The row is not rendered at all rather than emptied, so the column closes over it
+          instead of keeping a hole where two words used to be. */}
+        {isOuting ? null : (
+          <XStack items="center" justify="center" gap="$3" opacity={0.7}>
+            <Pressable
+              testID="session-swap-exercise"
+              hitSlop={12}
+              onPress={() => {
+                selection();
+                setSwapOpen(true);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t("quests.swap_exercise")}
             >
-              {t("session.skip_exercise")}
+              <Text
+                py="$2"
+                fontSize={13}
+                fontWeight="700"
+                color="$textSecondary"
+                fontFamily="$body"
+                numberOfLines={1}
+              >
+                {t("session.swap_short", "Replace")}
+              </Text>
+            </Pressable>
+
+            <Text fontSize={13} color="$textSecondary" opacity={0.5}>
+              ·
             </Text>
-          </Pressable>
-        </XStack>
+
+            <Pressable
+              testID="session-skip-exercise"
+              hitSlop={12}
+              onPress={handleSkip}
+              accessibilityRole="button"
+              accessibilityLabel={t("session.skip_exercise")}
+            >
+              <Text
+                py="$2"
+                fontSize={13}
+                fontWeight="700"
+                color="$textSecondary"
+                fontFamily="$body"
+                numberOfLines={1}
+              >
+                {t("session.skip_exercise")}
+              </Text>
+            </Pressable>
+          </XStack>
+        )}
 
         {/* Footer Action */}
-        <Button
-          testID="session-complete-exercise"
-          size="$6"
-          bg={isPastTarget ? "$success" : "$primary"}
-          pressStyle={{ opacity: 0.8 }}
-          onPress={handleComplete}
-          borderWidth={0}
-          rounded="$6"
-          accessibilityLabel={
-            isPastTarget
-              ? t("session.finish_exercise_accessibility")
-              : t("session.complete_exercise_accessibility")
-          }
-          accessibilityRole="button"
-        >
-          <Text color="$text" fontSize={24} fontWeight="700">
-            {isPastTarget ? t("session.complete_overtime") : t("session.complete_button")}
-          </Text>
-        </Button>
+        {isOuting ? (
+          <OutingFinishButton onFinish={handleComplete} />
+        ) : (
+          <Button
+            testID="session-complete-exercise"
+            size="$6"
+            bg={isPastTarget ? "$success" : "$primary"}
+            pressStyle={{ opacity: 0.8 }}
+            onPress={handleComplete}
+            borderWidth={0}
+            rounded="$6"
+            accessibilityLabel={
+              isPastTarget
+                ? t("session.finish_exercise_accessibility")
+                : t("session.complete_exercise_accessibility")
+            }
+            accessibilityRole="button"
+          >
+            <Text color="$text" fontSize={24} fontWeight="700">
+              {isPastTarget ? t("session.complete_overtime") : t("session.complete_button")}
+            </Text>
+          </Button>
+        )}
       </YStack>
 
       <ExerciseInstructionsModal
@@ -718,5 +759,99 @@ export function ActiveExerciseView() {
         pickAction={null}
       />
     </YStack>
+  );
+}
+
+/** How long the hero holds before a walk is over. */
+const HOLD_TO_FINISH_MS = 800;
+
+/**
+ * The name TalkBack announces in its actions menu, and the string the handler matches on. Custom
+ * accessibility actions are matched by name, so the two have to be the same constant.
+ */
+const FINISH_ACTION = "finishOuting";
+
+/**
+ * How a walk ends: held, not tapped.
+ *
+ * The phone spends an outing in a pocket, against a leg, screen off but not locked on a device
+ * with no secure lock, and the session screen no longer keeps it awake. A tap is what a pocket
+ * produces by accident, and the accident here throws away the walk. So the button ends the outing
+ * on a hold, and a tap only buzzes.
+ *
+ * A button that does nothing for 799 ms is indistinguishable from a broken one, so the hold is
+ * drawn while it lasts: the finish colour fills the button left to right, and lands with the same
+ * heavy haptic every completed set gets. Under reduced motion the fill jumps rather than travels,
+ * which is what every other animation on this screen does.
+ *
+ * TalkBack is the reason there are two ways in. A long press is not reliable under a screen
+ * reader, and the notification's own "Finish" action is a version away: without a second path a
+ * hero reading the screen could only end a walk by throwing it away. A named accessibility action
+ * costs three props and no extra state, which the alternative - a tap plus a confirmation, gated
+ * on `AccessibilityInfo.isScreenReaderEnabled()` - does not.
+ *
+ * One visible verb: the button says "Finish the outing", and "Hold to finish" is what the screen
+ * reader says. Both on screen at once would be two labels for one control.
+ */
+function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
+  const { t } = useTranslation();
+  const { selection } = useHaptics();
+  const reducedMotion = useReducedMotion();
+
+  const fill = useSharedValue(0);
+  const fillStyle = useAnimatedStyle(() => ({ width: `${fill.value * 100}%` }));
+
+  const label = t("session.expedition_finish");
+
+  return (
+    <Pressable
+      testID="session-complete-exercise"
+      // The fill travels even under reduced motion, and takes exactly as long either way.
+      //
+      // It is not decoration: it is the only thing that says the thumb is being counted, and a
+      // button that does nothing for 799 ms is indistinguishable from a broken one. Jumping
+      // straight to full on press was worse than nothing, painting the button in the colour that
+      // means "done" everywhere else on this screen, at the moment nothing had been done.
+      //
+      // Reduced motion asks for no travel that carries no information. This one carries the only
+      // information there is, so what it drops instead is the springy retreat: releasing puts it
+      // back at once rather than gliding.
+      onPressIn={() => {
+        fill.value = withTiming(1, { duration: HOLD_TO_FINISH_MS });
+      }}
+      onPressOut={() => {
+        fill.value = reducedMotion ? 0 : withTiming(0, { duration: 150 });
+      }}
+      // A tap is the wrong gesture, not a failed one: it answers, and the fill it starts is the
+      // lesson. Nothing is written.
+      onPress={() => selection()}
+      onLongPress={onFinish}
+      delayLongPress={HOLD_TO_FINISH_MS}
+      accessibilityRole="button"
+      accessibilityLabel={t("session.expedition_hold_to_finish_a11y")}
+      accessibilityActions={[{ name: FINISH_ACTION, label }]}
+      onAccessibilityAction={(event) => {
+        if (event.nativeEvent.actionName === FINISH_ACTION) onFinish();
+      }}
+    >
+      <YStack
+        height={60}
+        rounded="$6"
+        bg="$primary"
+        overflow="hidden"
+        items="center"
+        justify="center"
+      >
+        <Animated.View
+          style={[{ position: "absolute", left: 0, top: 0, bottom: 0 }, fillStyle]}
+          pointerEvents="none"
+        >
+          <YStack flex={1} bg="$success" />
+        </Animated.View>
+        <Text color="$text" fontSize={24} fontWeight="700">
+          {label}
+        </Text>
+      </YStack>
+    </Pressable>
   );
 }

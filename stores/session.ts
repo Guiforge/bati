@@ -22,7 +22,7 @@ import {
 } from "@/db/completed";
 import { estimateQuestSeconds } from "@/db/estimate";
 import { checkForNewRungs, type Exercise, type VariationStep } from "@/db/exercises";
-import { isMountedOuting, isOutingSession, outingGoal } from "@/db/expeditions";
+import { isMountedOuting, isOutingSession } from "@/db/expeditions";
 import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
@@ -30,8 +30,15 @@ import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
-import type { DifficultyCode, FeedbackCode, MuscleCode, QuestTargetType } from "@/db/schema";
+import type {
+  DifficultyCode,
+  ExerciseStyle,
+  FeedbackCode,
+  MuscleCode,
+  QuestTargetType,
+} from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
+import type { Target } from "@/db/targets";
 import { REST_RANGE, retargetForMovement, targetRangeFor } from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { uuidv7 } from "@/db/uuid";
@@ -42,8 +49,11 @@ import {
   type VillageGrowth,
   type VillageTierUp,
 } from "@/db/village";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
 import { i18n } from "@/i18n";
+import type { StartOptions } from "@/modules/bati-location";
+import type { OutingGoal } from "@/src/gps/track";
 import { credited } from "@/src/gps/track";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -73,6 +83,31 @@ const PRE_START_COUNTDOWN_SECONDS = 3;
 const OUTING_STOPPAGE_ALLOWANCE_SECONDS = 20 * 60;
 
 /**
+ * How long a walk with no witness at all may claim to have lasted.
+ *
+ * No fix ever locked, so nothing but the hero's word says this happened: a refused permission, a
+ * phone under trees, a receiver that never saw the sky. The word is taken. This is a solo app and
+ * nobody cheats themselves, so the bound is not there to catch a liar, it is there so a phone left
+ * on a table overnight does not journal nine hours, take the "longest session" record and unlock
+ * two achievements on the way past. A quest bounds the same case against its own estimate; an
+ * outing has no estimate worth bounding against, which is the whole reason this constant exists.
+ */
+const UNWITNESSED_OUTING_MAX_SECONDS = 4 * 3600;
+
+/**
+ * The ceiling on one outing's recorded seconds, which is a walk's rather than a hold's.
+ *
+ * `TIME_TARGET_MAX` is an hour, and it is right for the thing it was written for: nobody planks
+ * for an hour, and a set that claims to would be a typo or a phone left face-up. Applied to an
+ * expedition it silently halved a two-hour ride, and XP is paid on what is recorded, so the
+ * longest outings were the worst paid. Nothing else is at risk from a large number here: an
+ * expedition converts to zero work units (`db/workUnits.ts`), so muscle volume, boss damage and
+ * the village cannot be inflated by it, and the "longest outing" record counts metres. Twelve
+ * hours is past any outing a person walks back from, and still short of a forgotten phone.
+ */
+const OUTING_RESULT_MAX_SECONDS = 12 * 3600;
+
+/**
  * What one set may claim.
  *
  * The database only demands `> 0`, so an absurd value used to flow straight into muscle volume,
@@ -81,10 +116,19 @@ const OUTING_STOPPAGE_ALLOWANCE_SECONDS = 20 * 60;
  * `max(1, ...)` guard the DB constraints already required lives, so every consumer of a result is
  * bounded by construction rather than by each caller remembering.
  */
-function clampResultValue(resultValue: number, type: QuestTargetType): number {
+function clampResultValue(
+  resultValue: number,
+  type: QuestTargetType,
+  style?: ExerciseStyle,
+): number {
   if (!Number.isFinite(resultValue)) return 1;
 
-  const ceiling = targetRangeFor(type).max;
+  // Bounded by what the movement is, not only by what it counts: an hour is the ceiling of a
+  // hold, and a walk is not a hold. See `OUTING_RESULT_MAX_SECONDS`.
+  const ceiling =
+    style === NON_REP_STYLE && type === "time"
+      ? OUTING_RESULT_MAX_SECONDS
+      : targetRangeFor(type).max;
   return Math.min(ceiling, Math.max(1, Math.floor(resultValue)));
 }
 
@@ -189,8 +233,14 @@ interface SessionState {
    * the app restarts its tracking, and a goal held only in `startSession`'s arguments would have
    * come back as "whatever the slots add up to" — a walk that buzzes at the wrong distance, or
    * never.
+   *
+   * It holds the goal itself rather than the metres it might be built from, and that is the whole
+   * of "free outing": `null` here *is* a hero who set out without a number, an answer the type
+   * carries everywhere it goes. Written first as a metre count beside a `free` boolean, which was
+   * two notions and a function to reconcile them for one idea, in the one store whose state has
+   * to survive being rebuilt from disk.
    */
-  distanceGoalM: number | null;
+  goal: OutingGoal | null;
   savedSessionId: number | null;
   /**
    * Whether this session already paid the Triumph bonus.
@@ -209,7 +259,15 @@ interface SessionState {
     options?: {
       adventureRunStepId?: number | null;
       adventureId?: number | null;
-      distanceGoalM?: number | null;
+      /**
+       * What the hero set out to do, or `null` for a walk with no number on it.
+       *
+       * Derived by the caller, not here: the prepared door reads the config it has just let the
+       * hero edit (`outingGoal(quest, config.distanceM)`), and the quick door passes `null`
+       * because that is the whole of what it means. Absent means `null` too, which is right for
+       * every workout indoors and is the one thing to remember when a third door is written.
+       */
+      goal?: OutingGoal | null;
     },
   ) => Promise<void>;
   nextWarmupStep: () => void;
@@ -223,6 +281,8 @@ interface SessionState {
 
   // Progression
   completeExercise: (resultValue: number) => void;
+  /** Ends an outing from outside any view. See the implementation for why it exists. */
+  completeOuting: () => void;
   skipExercise: () => void;
   swapCurrentExercise: (exercise: Exercise) => void;
   updateLastResult: (resultValue: number) => void;
@@ -289,7 +349,7 @@ export type SavedSessionState = Pick<
   | "results"
   | "lastSetSkipped"
   | "sessionUuid"
-  | "distanceGoalM"
+  | "goal"
 > & { savedAt: number };
 
 /**
@@ -446,7 +506,12 @@ function sessionClock({
   const durationSeconds =
     moving !== null && onTheRoad !== null
       ? Math.min(onTheRoad, moving + OUTING_STOPPAGE_ALLOWANCE_SECONDS)
-      : Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
+      : isOutingSession(quest)
+        ? // No fix ever locked. A quest is bounded by twice its own estimate, which for an outing
+          // is a suggestion nobody chose: it turned a 45-minute walk against a 15-minute slot into
+          // half an hour. A walk with no witness keeps its clock, bounded by the forgotten phone.
+          Math.min(measuredSeconds, UNWITNESSED_OUTING_MAX_SECONDS)
+        : Math.min(measuredSeconds, estimateQuestSeconds(quest) * 2);
 
   if (moving !== null && isOutingSession(quest)) {
     return { durationSeconds, effortCeilingSeconds: moving };
@@ -631,10 +696,116 @@ async function dealFinalBlow(
  * nothing for the rest of the way. The store folds the points already on disk back into the
  * reading, so the same uuid picks up the same total.
  */
+/**
+ * The state a session is in the moment it starts running, timer and all.
+ *
+ * Two doors reach it now, and they must not drift: the 3..2..1 that a workout counts down, and an
+ * outing, which has none. Three seconds to get into position before a set of squats is the whole
+ * point of that countdown; three seconds before walking is ceremony at the door, so a walk goes
+ * straight to running. Written as a flag on `startSession` first, which repeated something the
+ * quest already knows, and a flag that repeats a fact is a flag that can contradict it.
+ *
+ * The timer matters as much as the status: without it `useSessionTimer` returns its idle state,
+ * and the view then hands `completeExercise` a single second.
+ */
+function runningFrom(quest: Quest, currentExerciseIndex: number) {
+  const firstEx = quest.exercises[currentExerciseIndex];
+  const isTimeBased = firstEx?.target.type === "time";
+
+  return {
+    status: "running" as const,
+    timerStartTimestamp: isTimeBased ? Date.now() : null,
+    timerDuration: isTimeBased ? firstEx.target.value : 0,
+  };
+}
+
+/**
+ * How a session opens: what it is doing, and what its timer is counting.
+ *
+ * A walk starts by walking. `buildWarmup` already returns nothing for an outing, so the only
+ * ceremony left to remove was the full-screen 3..2..1, and it goes for both doors: the hero who
+ * set a distance on the quest screen is no more in need of getting into position than the one
+ * who tapped a tile. Written first as a flag on `startSession`, which repeated something the
+ * quest already knows, and a flag that repeats a fact is a flag that can contradict it.
+ */
+function openingState(quest: Quest, warmupFirst: boolean, warmupSequence: WarmupStep[]) {
+  if (isOutingSession(quest)) return runningFrom(quest, 0);
+
+  return {
+    status: warmupFirst ? ("warmup" as const) : ("countdown" as const),
+    // Warm-up step, or the full-screen 3..2..1. Exercise timers start after the countdown.
+    timerStartTimestamp: Date.now(),
+    timerDuration: warmupFirst
+      ? (warmupSequence[0]?.seconds ?? PRE_START_COUNTDOWN_SECONDS)
+      : PRE_START_COUNTDOWN_SECONDS,
+  };
+}
+
+/**
+ * One movement, one round, all of it outdoors: the shape every seeded outing ships with.
+ *
+ * The three walks, runs and rides in the catalogue are this, and it is the only shape whose
+ * duration the trace can answer for on its own. The editor lets a hero write a two-leg outing or
+ * a walk over three rounds; both are outings by style, and neither can have its legs told apart
+ * by a single line drawn on a map.
+ */
+function isTheWholeWalk(quest: Quest): boolean {
+  return isOutingSession(quest) && quest.exercises.length === 1 && Math.round(quest.rounds) === 1;
+}
+
+/**
+ * What a finished set writes down: the number, and the number it was measured against.
+ *
+ * **The result of an outing is not the stopwatch on screen.** The view hands over
+ * `useSessionTimer`'s elapsed seconds, and recovery pushes `timerStartTimestamp` forward by the
+ * whole downtime — an outing writes its snapshot once, at the start, so the downtime *is* the
+ * walk. A walk killed at 45 minutes and resumed came back reading one, and one is what got
+ * written down and paid. The journal already knows better: it times a walk by its trace
+ * (`sessionClock`). One rule, and now three readers.
+ *
+ * **A walk with no number on it writes no target.** The slot still carries one, the seed draws
+ * fifteen minutes at medium, but it is a suggestion the hero never saw, let alone chose, and the
+ * journal renders a target as a thing that was met or missed: it would tick green on a walk that
+ * had nothing to meet. The column is nullable and the journal already reads it as optional, so
+ * the honest row is the one that says only what was done.
+ */
+function recordOf(
+  quest: Quest,
+  goal: OutingGoal | null,
+  slot: { target: Target; exercise: Exercise },
+  resultValue: number,
+): Pick<CompletedExerciseInput, "result" | "target"> {
+  // Not "is this an outing" but "is this walk the whole session".
+  //
+  // `recordedDurationSeconds()` times the session, which is the walk itself only when the walk is
+  // all there is. A mixed quest would hand the walk slot the push-ups' minutes; a two-leg outing,
+  // or one walked over three rounds, would hand *every* leg the whole duration and bill the hero
+  // three times for one hour. The editor allows both shapes, so the question has to be asked of
+  // the shape rather than of the style.
+  //
+  // ponytail: those shapes therefore keep the view's stopwatch, which reads near zero after the
+  // OS kills and the hero resumes. The real fix is a per-slot span read off the trace, and
+  // nothing measures one today. Worth building when a hero actually writes such a quest.
+  const outing = isTheWholeWalk(quest);
+  const measured =
+    slot.target.type === "time" && outing ? Math.max(1, recordedDurationSeconds()) : resultValue;
+
+  return {
+    result: {
+      type: slot.target.type,
+      // DB constraints (see migrations) require resultValue > 0. Guards accidental 0/NaN when
+      // users tap "DONE" immediately on time-based exercises, and the ceiling above.
+      value: clampResultValue(measured, slot.target.type, slot.exercise.style),
+    },
+    target:
+      goal === null && outing ? undefined : { type: slot.target.type, value: slot.target.value },
+  };
+}
+
 export function beginTrackingIfOuting(
   quest: Quest,
   sessionUuid: string | null,
-  distanceGoalM: number | null,
+  goal: OutingGoal | null,
 ): void {
   if (!isExpedition(quest) || sessionUuid === null) return;
 
@@ -645,31 +816,34 @@ export function beginTrackingIfOuting(
   // The unit and the haptics preference are resolved here rather than inside that store, and
   // only once the quest is known to be an outing: the store has no business importing settings,
   // which would pull the whole `db` barrel into a module the session screen mounts.
+  // Typed as what the service reads rather than as what the expedition store declares: that
+  // store retypes these strings as its own `Notification`, which does not name the button, and
+  // an object literal carrying a field its target has never heard of is an error. Named here,
+  // the label is simply carried through - one hop, no second copy of six keys to keep in step.
+  const notification: StartOptions["notification"] = {
+    // The quest, not the app: this notification is the only screen an hour of walking has,
+    // and it spent that hour saying the name of the app the hero is already using.
+    title: localizedTitle(quest, resolveAppLanguage(i18n.language)),
+    // The same three keys the panel's status pill reads. They were a second set with the
+    // same values, one for the notification and one for the screen, which is one reword
+    // away from the notification and the panel describing the walk differently.
+    acquiring: i18n.t("session.expedition_status_acquiring"),
+    tracking: i18n.t("session.expedition_status_moving"),
+    paused: i18n.t("session.expedition_status_paused"),
+    gpsOff: i18n.t("session.expedition_gps_off"),
+    reached: i18n.t("session.expedition_reached"),
+    // The one way out of a walk that survives a locked screen.
+    finish: i18n.t("session.expedition_notification_finish"),
+  };
+
   Promise.all([
     preferences.getDistanceUnit().catch((): DistanceUnit => "metric"),
     preferences.getHapticsEnabled().catch(() => true),
   ])
     .then(([unit, haptics]) =>
-      useExpeditionStore.getState().begin(
-        sessionUuid,
-        {
-          // The quest, not the app: this notification is the only screen an hour of walking has,
-          // and it spent that hour saying the name of the app the hero is already using.
-          title: localizedTitle(quest, resolveAppLanguage(i18n.language)),
-          // The same three keys the panel's status pill reads. They were a second set with the
-          // same values, one for the notification and one for the screen, which is one reword
-          // away from the notification and the panel describing the walk differently.
-          acquiring: i18n.t("session.expedition_status_acquiring"),
-          tracking: i18n.t("session.expedition_status_moving"),
-          paused: i18n.t("session.expedition_status_paused"),
-          gpsOff: i18n.t("session.expedition_gps_off"),
-          reached: i18n.t("session.expedition_reached"),
-        },
-        isMountedOuting(quest),
-        unit,
-        outingGoal(quest, distanceGoalM),
-        haptics,
-      ),
+      useExpeditionStore
+        .getState()
+        .begin(sessionUuid, notification, isMountedOuting(quest), unit, goal, haptics),
     )
     .catch((error: unknown) => reportError("session.beginTracking", error));
 }
@@ -699,7 +873,7 @@ export const useSessionStore = create<SessionState>()(
     timerDuration: 0,
     results: [],
     lastSetSkipped: false,
-    distanceGoalM: null,
+    goal: null,
     savedSessionId: null,
     triumphBonusPaid: false,
 
@@ -725,6 +899,8 @@ export const useSessionStore = create<SessionState>()(
       const warmupSequence = buildWarmup(quest, totalSessions);
       const warmupFirst = warmupEnabled && warmupSequence.length > 0;
 
+      const opening = openingState(quest, warmupFirst, warmupSequence);
+
       set({
         quest,
         userLevel,
@@ -734,7 +910,7 @@ export const useSessionStore = create<SessionState>()(
         felledByFinalBlow: false,
         pendingDamage: [],
         lastDamageResult: null,
-        status: warmupFirst ? "warmup" : "countdown",
+        ...opening,
         prePauseStatus: null,
         warmupSequence,
         warmupIndex: 0,
@@ -747,21 +923,16 @@ export const useSessionStore = create<SessionState>()(
         totalPausedTime: 0,
         restTakenSeconds: 0,
         lastPauseTimestamp: null,
-        // Warm-up step, or the full-screen 3..2..1. Exercise timers start after the countdown.
-        timerStartTimestamp: Date.now(),
-        timerDuration: warmupFirst
-          ? (warmupSequence[0]?.seconds ?? PRE_START_COUNTDOWN_SECONDS)
-          : PRE_START_COUNTDOWN_SECONDS,
         results: [],
         lastSetSkipped: false,
-        distanceGoalM: options?.distanceGoalM ?? null,
+        goal: options?.goal ?? null,
         savedSessionId: null,
         triumphBonusPaid: false,
       });
 
       // An outing measures ground; a workout in a room does not. Called after the state is set
       // so the uuid the points are filed under is already the one the session will keep.
-      beginTrackingIfOuting(quest, get().sessionUuid, options?.distanceGoalM ?? null);
+      beginTrackingIfOuting(quest, get().sessionUuid, options?.goal ?? null);
     },
 
     nextWarmupStep: () => {
@@ -809,14 +980,7 @@ export const useSessionStore = create<SessionState>()(
       const { quest, currentExerciseIndex } = get();
       if (!quest) return;
 
-      const firstEx = quest.exercises[currentExerciseIndex];
-      const isTimeBased = firstEx?.target.type === "time";
-
-      set({
-        status: "running",
-        timerStartTimestamp: isTimeBased ? Date.now() : null,
-        timerDuration: isTimeBased ? firstEx.target.value : 0,
-      });
+      set(runningFrom(quest, currentExerciseIndex));
     },
 
     pauseSession: () => {
@@ -930,7 +1094,7 @@ export const useSessionStore = create<SessionState>()(
         results: [],
         lastSetSkipped: false,
         sessionUuid: null,
-        distanceGoalM: null,
+        goal: null,
         savedSessionId: null,
         triumphBonusPaid: false,
       });
@@ -943,16 +1107,14 @@ export const useSessionStore = create<SessionState>()(
     },
 
     completeExercise: (resultValue) => {
-      const { quest, currentRoundIndex, currentExerciseIndex, results, bossFight } = get();
+      const { quest, currentRoundIndex, currentExerciseIndex, results, bossFight, goal } = get();
       if (!quest) return;
 
       const currentEx = quest.exercises[currentExerciseIndex];
       if (!currentEx) return;
 
-      // DB constraints (see migrations) require: resultValue > 0, roundIndex >= 0, sortOrder >= 0.
-      // Guards accidental 0/NaN when users tap "DONE" immediately on time-based exercises, and
-      // the ceiling above.
-      const safeResultValue = clampResultValue(resultValue, currentEx.target.type);
+      const { result, target } = recordOf(quest, goal, currentEx, resultValue);
+      const safeResultValue = result.value;
 
       // Land the hit on the fight we hold, and bank it. Nothing reaches the database until
       // saveSession: see `pendingDamage`. This is pure maths now, so there is no failure to
@@ -994,8 +1156,8 @@ export const useSessionStore = create<SessionState>()(
         exerciseId: currentEx.exercise.id,
         roundIndex: currentRoundIndex,
         sortOrder: currentExerciseIndex,
-        result: { type: currentEx.target.type, value: safeResultValue },
-        target: { type: currentEx.target.type, value: currentEx.target.value },
+        result,
+        target,
         pricing: {
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
@@ -1011,13 +1173,33 @@ export const useSessionStore = create<SessionState>()(
     },
 
     /**
-     * The hero could not do this movement, and says so instead of typing a number.
+     * End the walk from somewhere that has no view: the notification's "Finish" action.
      *
-     * Writes nothing. `CHECK (resultValue > 0)` made "1" the only way past a movement out of
-     * reach, and that 1 then fed muscle volume, the weak-area read and the targets it generates —
-     * issue #33's second half, where the app taught its own journal a lie. A set that left no row
-     * is counted by nothing, with no reader having to remember to filter it out.
+     * It is the same ending, not a second one. `recordOf` already times an outing by its trace
+     * and ignores whatever number the screen hands over, so this is `completeExercise` with the
+     * duration the journal was going to write anyway - one writer of a walk's length, which is
+     * the rule that survived the OS killing a session at 45 minutes.
+     *
+     * Deaf to anything that is not a walk under way. The service is a broadcast receiver that
+     * can outlive the session it was started for, and a stale tap must not end a workout indoors
+     * or wake an idle store into writing a row.
+     *
+     * Paused counts as under way, and that is not a technicality: standing still and then ending
+     * from the notification is what a hero does at their front door, and the recovery card
+     * concludes a killed walk from exactly that state. Only `idle`, `finished` and the two
+     * pre-start statuses are refused, which is the whole of what the guard was written for.
      */
+    completeOuting: () => {
+      const { quest, status } = get();
+      const underWay = status === "running" || status === "paused";
+      // The same shape `recordOf` reads a trace for. On a two-leg outing this would advance to
+      // the next leg rather than end anything, which is not what a button called Finish on a
+      // lock screen can mean.
+      if (!quest || !underWay || !isTheWholeWalk(quest)) return;
+
+      get().completeExercise(Math.max(1, recordedDurationSeconds()));
+    },
+
     /**
      * Change the movement in front of the hero, mid-set.
      *
@@ -1076,6 +1258,14 @@ export const useSessionStore = create<SessionState>()(
       // Costing them a tap next session is the cheaper mistake; the quest screen still pins.
     },
 
+    /**
+     * The hero could not do this movement, and says so instead of typing a number.
+     *
+     * Writes nothing. `CHECK (resultValue > 0)` made "1" the only way past a movement out of
+     * reach, and that 1 then fed muscle volume, the weak-area read and the targets it generates —
+     * issue #33's second half, where the app taught its own journal a lie. A set that left no row
+     * is counted by nothing, with no reader having to remember to filter it out.
+     */
     skipExercise: () => {
       const { quest, currentRoundIndex, currentExerciseIndex, results } = get();
       if (!quest) return;
@@ -1132,7 +1322,7 @@ export const useSessionStore = create<SessionState>()(
       if (!last) return;
 
       // DB constraints require resultValue > 0.
-      const safeResultValue = clampResultValue(resultValue, last.result.type);
+      const safeResultValue = clampResultValue(resultValue, last.result.type, last.pricing?.style);
       const updated = {
         ...last,
         result: { ...last.result, value: safeResultValue },
@@ -1395,6 +1585,23 @@ export const useSessionStore = create<SessionState>()(
   })),
 );
 
+/**
+ * The first second of a session, which counts as progress.
+ *
+ * Everything else the subscriber watches is a *change* to a session already written down, so a
+ * run that never reached its second exercise was never written down at all: an expedition is one
+ * round of one movement with no rest, nothing else ever moves, and a walk the app was killed
+ * during could not be resumed — its trace, having no snapshot to name it, swept as an orphan by
+ * the very hook that exists to save it. Strength quests had the same hole for their opening set.
+ *
+ * Every door into running counts, not only the countdown. An outing goes straight from `idle`,
+ * having no countdown to leave, and a session started from Home while the victory screen is
+ * still up goes from `finished`.
+ */
+function justStarted(curr: SessionStatus, prev: SessionStatus): boolean {
+  return curr === "running" && (prev === "idle" || prev === "finished" || prev === "countdown");
+}
+
 // Subscribe to session state changes and auto-save for crash recovery
 useSessionStore.subscribe(
   (state) => ({
@@ -1443,13 +1650,7 @@ useSessionStore.subscribe(
 
     // Debounce saves - only save when exercise/round changes or on pause
     const hasProgressed =
-      // The first second counts as progress. Everything below is a *change* to a session that
-      // was already written down, so a run that never reaches its second exercise was never
-      // written down at all: an expedition is one round of one movement with no rest, so nothing
-      // here ever fired for it and a walk the app was killed during could not be resumed — and
-      // its trace, having no snapshot to name it, was swept as an orphan by the very hook that
-      // exists to save it. Strength quests had the same hole for their opening set.
-      prev.status === "countdown" ||
+      justStarted(curr.status, prev.status) ||
       curr.currentRoundIndex !== prev.currentRoundIndex ||
       curr.currentExerciseIndex !== prev.currentExerciseIndex ||
       curr.resultsCount !== prev.resultsCount ||
@@ -1482,7 +1683,7 @@ useSessionStore.subscribe(
           timerDuration: state.timerDuration,
           results: state.results,
           lastSetSkipped: state.lastSetSkipped,
-          distanceGoalM: state.distanceGoalM,
+          goal: state.goal,
           savedAt: Date.now(),
         };
         await preferences.setSavedSession(JSON.stringify(savedState));

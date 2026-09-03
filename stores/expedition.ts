@@ -1,23 +1,32 @@
 import * as Haptics from "expo-haptics";
 import { create } from "zustand";
-import { formatDistance } from "@/constants/distanceFormat";
+import { formatClock, formatDistance } from "@/constants/distanceFormat";
 import { hasOutdoorSlot } from "@/db/expeditions";
 import { appendPoints, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import {
   addListener,
+  ensureNotificationPermission,
   isAvailable,
   type LocationFix,
-  requestNotificationPermission,
   requestPermission,
+  type StartOptions,
   setProgress,
   setReached,
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
-import { accept, EMPTY, goalReached, type OutingGoal, type TrackState } from "@/src/gps/track";
+import {
+  accept,
+  EMPTY,
+  goalReached,
+  METRES_PER_LEAGUE,
+  type OutingGoal,
+  type TrackState,
+} from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
+import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 
 /**
  * The live half of an expedition: the fixes arriving while the hero is out.
@@ -34,6 +43,16 @@ import { reportError } from "@/src/reportError";
 
 /** Fixes buffered before a write. Thirty seconds at 1 Hz, so a kill costs half a minute. */
 const FLUSH_EVERY = 30;
+
+/**
+ * How often the notification's line is rewritten from the clock rather than from a fix.
+ *
+ * The same half-minute as the flush, and for the same reason: a pocket nobody looks at should
+ * cost one update every thirty seconds, not one a second. Without it the line only ever moved
+ * when a fix landed, so the walk that most needs a readout - the one where no fix ever lands -
+ * was the one that never got one.
+ */
+const PROGRESS_EVERY_MS = FLUSH_EVERY * 1000;
 
 /** Metres per second above which a fix is implausible, by how the hero is moving. */
 const SPEED_CAP_MS = { onFoot: 8, mounted: 25 } as const;
@@ -64,14 +83,15 @@ type ExpeditionState = {
   end: () => Promise<void>;
 };
 
-type Notification = {
-  title: string;
-  acquiring: string;
-  tracking: string;
-  paused: string;
-  gpsOff: string;
-  reached: string;
-};
+/**
+ * The strings the service says on the hero's behalf, taken from the module rather than retyped.
+ *
+ * Written out by hand once, and the copy went stale the moment the notification learned a sixth
+ * thing to say: the Finish action's label rode through here as an excess property, so forgetting
+ * to pass it would have removed the button with nothing failing to compile. A type instead of a
+ * test, which is the cheaper of the two and cannot rot.
+ */
+type Notification = NonNullable<StartOptions["notification"]>;
 
 /** Whether anything in this quest happens outdoors, null-tolerant. The rule is in `db/expeditions`. */
 export function isExpedition(quest: Quest | null): boolean {
@@ -85,6 +105,19 @@ export function isExpedition(quest: Quest | null): boolean {
  */
 let subscriptions: { remove(): void }[] = [];
 let buffer: LocationFix[] = [];
+/** The wording the notification uses while no fix has landed, kept for `progressLine`. */
+let acquiringWord = "";
+/** The clock behind the notification's line, so it moves without a fix. Cleared by `end()`. */
+let progressTimer: ReturnType<typeof setInterval> | null = null;
+/**
+ * Whole leagues already announced, a high-water mark rather than a count. Seeded by `begin()`.
+ */
+let leaguesCrossed = 0;
+
+/** Whole leagues in a reading. The only place the counter and the recap agree by construction. */
+function leaguesOf(track: TrackState): number {
+  return Math.floor(track.distanceM / METRES_PER_LEAGUE);
+}
 
 async function flush(sessionUuid: string): Promise<void> {
   if (buffer.length === 0) return;
@@ -108,9 +141,25 @@ function clearedTransient(error: string | null): string | null {
   return error === "gps-off" || error === "no-fix" ? null : error;
 }
 
-/** The notification's second line: the ground covered, in the hero's own unit. */
+/**
+ * The notification's second line, and the only surface an outing in a pocket has.
+ *
+ * The time comes first, because it is the only fact that always exists. The line used to be the
+ * distance alone, so a walk whose sky never opened repeated "Finding the sky" for its whole
+ * length - the one screen readable without unlocking, saying nothing about a walk that was
+ * happening.
+ *
+ * The seconds are `recordedDurationSeconds()`, the rule the panel and the journal already read,
+ * so the notification cannot tell a third story about how long the hero has been out. That is
+ * an import back into `stores/session`, which imports this store: a cycle on paper, never one at
+ * runtime, since neither side touches the other while its module is evaluating.
+ */
 function progressLine(track: TrackState, unit: DistanceUnit): string {
-  return formatDistance(track.distanceM, unit);
+  const elapsed = formatClock(recordedDurationSeconds() * 1000);
+  // `startedAt` is set by the first fix the gate accepts, so null is exactly "no sky yet" - the
+  // same test the panel's status line makes.
+  const ground = track.startedAt === null ? acquiringWord : formatDistance(track.distanceM, unit);
+  return `${elapsed} · ${ground}`;
 }
 
 /**
@@ -124,13 +173,35 @@ function progressLine(track: TrackState, unit: DistanceUnit): string {
  * `BatiLocationService.notification()`. This only ever pushes the figure.
  */
 function announceGoalReached(track: TrackState, unit: DistanceUnit, haptics: boolean): void {
-  if (haptics) {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((e) =>
-      reportError("expedition.goalHaptic", e),
-    );
-  }
+  if (haptics) buzz("expedition.goalHaptic");
   setReached();
   setProgress(progressLine(track, unit));
+}
+
+/** The one haptic call in this file, so a walk cannot end up with two ways of buzzing. */
+function buzz(context: string): void {
+  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((e) =>
+    reportError(context, e),
+  );
+}
+
+/**
+ * One buzz per league, the first time it is crossed and never again. Nothing on screen, no
+ * string: the phone is in a pocket, and a buzz per kilometre is the whole message.
+ *
+ * A vibration rather than a cue from `src/sounds.ts`, which mixes under the hero's music on
+ * purpose: a 70 ms tick is inaudible at running pace, and making it audible would reopen the
+ * `expo-audio` configuration that already cost a microphone and three permissions.
+ *
+ * `leaguesCrossed` is a high-water mark because credited distance can go *down*: closing a pause
+ * window takes back what it advanced (`RULES.pauseAfterMs`), so a hero who stops just past the
+ * ninth league would otherwise be buzzed a second time for the same kilometre on the way back up.
+ */
+function announceLeague(track: TrackState, haptics: boolean): void {
+  const leagues = leaguesOf(track);
+  if (leagues <= leaguesCrossed) return;
+  leaguesCrossed = leagues;
+  if (haptics) buzz("expedition.leagueHaptic");
 }
 
 export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
@@ -149,6 +220,8 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       .end()
       .catch((e) => reportError("expedition.restart", e));
     buffer = [];
+    leaguesCrossed = 0;
+    acquiringWord = notification.acquiring;
     set({ track: EMPTY, lastFix: null, error: null, goalReached: false });
 
     if (!isAvailable()) {
@@ -176,14 +249,8 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       set({ error: "permission" });
       return false;
     }
-    // Asked after location and never bundled with it: from API 33 the ongoing notification is
-    // invisible without this grant, so the promise the feature makes — one tap out, one tap back,
-    // the rest said through a notification — silently did not exist on any recent phone. The
-    // answer is deliberately ignored. A hero who refuses the notification still gets their walk
-    // measured; bundling the two would have let one refusal veto the other.
-    await requestNotificationPermission().catch((e: unknown) =>
-      reportError("expedition.notificationPermission", e),
-    );
+    // Once per process, whichever door asked first. See `ensureNotificationPermission`.
+    await ensureNotificationPermission();
 
     /**
      * The ground already filed under this name.
@@ -199,6 +266,9 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       return [] as LocationFix[];
     });
     const resumed = priorFixes.reduce(accept, EMPTY);
+    // The replayed ground is already behind the hero: seeding the mark from it is what keeps a
+    // walk the OS killed at eight kilometres from buzzing eight times on the way back in.
+    leaguesCrossed = leaguesOf(resumed);
 
     set({
       sessionUuid,
@@ -217,6 +287,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         set({ track, lastFix: fix, goalReached: reached, error: clearedTransient(get().error) });
 
         if (reached && !wasReached) announceGoalReached(track, unit, haptics);
+        announceLeague(track, haptics);
 
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.
@@ -245,6 +316,11 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         set({ error: "no-fix" });
         reportError("expedition.noFix", new Error(`no fix for ${event.sinceLastFixMs} ms`));
       }),
+      // The way out that only a locked screen takes. The service asks, the session store
+      // concludes: the duration, the XP and the journal row are its business, and its alone.
+      addListener("onFinishRequested", () => {
+        useSessionStore.getState().completeOuting();
+      }),
     ];
 
     const started = startNative({
@@ -254,12 +330,22 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     // A refusal the service can explain arrives on `onError`; a bare `false` explained nothing,
     // and the panel sat on "Finding the sky" for the length of a walk nothing was measuring.
     if (!started) set({ error: "foreground-denied" });
+    if (started) {
+      // Once immediately, then on the clock. Waiting for the first tick left the notification
+      // saying only "on the road" for half a minute, which is the half minute a hero is most
+      // likely to look at it: they have just set off and want to see that something started.
+      const tick = () => setProgress(progressLine(get().track, unit));
+      tick();
+      progressTimer = setInterval(tick, PROGRESS_EVERY_MS);
+    }
     return started;
   },
 
   end: async () => {
     for (const subscription of subscriptions) subscription.remove();
     subscriptions = [];
+    if (progressTimer !== null) clearInterval(progressTimer);
+    progressTimer = null;
     stopNative();
     const { sessionUuid } = get();
     if (sessionUuid) await flush(sessionUuid);

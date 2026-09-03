@@ -1,10 +1,10 @@
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { ScrollView } from "react-native";
+import { BackHandler, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
@@ -42,6 +42,7 @@ import {
   hasOutdoorSlot,
   isMountedOuting,
   isOutingSession,
+  outingGoal,
 } from "@/db/expeditions";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
@@ -188,6 +189,7 @@ export default function QuestDetails() {
     level?: string;
     runStepId?: string;
     adventureId?: string | string[];
+    from?: string | string[];
   }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -219,6 +221,26 @@ export default function QuestDetails() {
     const cached = questId != null ? getCached<Quest>(`quest:${questId}:${initialLevel}`) : null;
     return cached ? { status: "ready", quest: cached } : { status: "loading", quest: null };
   });
+  /**
+   * Every slot is an outing, so the screen is presenting a way out rather than a workout.
+   *
+   * Read off the *unconfigured* quest, and that is what breaks the circle: the level decides which
+   * template is fetched, so it cannot wait for the configured quest that the level builds. Only a
+   * swap can change a slot's style, and one that swaps the last outdoor slot for push-ups is rare
+   * enough to be worth a level that stays at medium until the next focus.
+   */
+  const isOuting = state.quest ? isOutingSession(state.quest) : false;
+  /**
+   * The level this screen loads, prices and starts at — one derivation for its three readers,
+   * because they used to be three copies of `config.level` and a mismatch between any two of them
+   * is a session that runs at a length the screen never showed.
+   *
+   * An outing has no level: it stretches the duration the hero set by hand (675 / 900 / 1125 s)
+   * and multiplies the payout (×0.9 / ×1 / ×1.2) for a walk that is paid for its ground anyway.
+   * The route's `?level=` is ignored with it — there is nothing for it to choose.
+   */
+  const effectiveLevel = isOuting ? Difficulty.Medium : config.level;
+
   // The catalogue and the hero's kit: what a substitution picks from, and how it is ordered.
   // Loaded with the quest rather than in their own effect, so a swapped slot never paints its
   // original movement for a frame first.
@@ -278,10 +300,13 @@ export default function QuestDetails() {
   useFocusEffect(
     useCallback(() => {
       if (!questId) return;
-      load(questId, level).catch(() => {
+      // `effectiveLevel`, so an outing saved at hard is fetched at medium. On a cold cache that
+      // costs a second read: the first load is what says this is an outing at all, and the effect
+      // re-runs once on the answer. A flash of hard targets, then the level a walk actually runs.
+      load(questId, effectiveLevel).catch(() => {
         // Error already handled
       });
-    }, [questId, level, load]),
+    }, [questId, effectiveLevel, load]),
   );
 
   // What the hero last set on this quest. Re-read on focus, not just on mount: editing a quest
@@ -328,6 +353,10 @@ export default function QuestDetails() {
   // expo-router downgrades a cross-tab `push` to a `navigate` at the tab boundary regardless of
   // which call is used here, so `push` would behave identically. Not `dismissTo` either — the
   // adventure isn't on this tab's stack to begin with, it lives on the adventures tab's own stack.
+  // Where the hero came from, when it changes where "back" means. Only the band's Set up
+  // shortcut sets it; every other door leaves it absent and keeps the gallery.
+  const fromHome = (Array.isArray(params.from) ? params.from[0] : params.from) === "home";
+
   const goToGallery = useCallback(() => {
     const raw = Array.isArray(params.adventureId) ? params.adventureId[0] : params.adventureId;
     const adventureId = Number(raw);
@@ -337,8 +366,30 @@ export default function QuestDetails() {
       router.navigate(`/adventures/${adventureId}` as never);
       return;
     }
+    // The band's Set up shortcut: the hero was on Home a tap ago, and it is a detour on the way
+    // out rather than a visit to a quest. Both backs agree, which is the rule `0b41d318` set;
+    // only the destination changes, and only for this one door.
+    if (fromHome) {
+      // `navigate`, not `dismissTo`: Home is not on this tab's stack, so there is nothing here to
+      // unwind to and `dismissTo` simply does nothing. Same reason the adventure case above uses
+      // it, and the same mistake the comment there was already warning about.
+      router.navigate("/");
+      return;
+    }
     router.dismissTo("/quests");
-  }, [router, params.adventureId]);
+  }, [router, params.adventureId, fromHome]);
+
+  // Hardware back, which is structural: the stack is anchored on the gallery
+  // (`app/(tabs)/quests/_layout.tsx`), so popping lands there whatever the chevron does. Left
+  // alone the two would disagree again, which is the exact bug the anchor was added to fix.
+  useEffect(() => {
+    if (!fromHome) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      router.navigate("/");
+      return true;
+    });
+    return () => sub.remove();
+  }, [fromHome, router]);
 
   const updateConfig = useCallback(
     (next: QuestConfig) => {
@@ -393,17 +444,22 @@ export default function QuestDetails() {
   // and re-ran the color/duration/XP pipeline.
   const derived = useMemo(() => {
     if (!state.quest) return null;
-    const quest = applyQuestConfig(state.quest, config, indexExercises(catalogue));
-    const outing = isOutingSession(quest);
+    // The effective level, not the saved one: `applyQuestConfig` reads `config.level` of its own
+    // to retarget a swapped movement, so a level that outranks the config here has to outrank it
+    // in there too — otherwise an outing generated at medium retargets a swap at hard.
+    const quest = applyQuestConfig(
+      state.quest,
+      { ...config, level: effectiveLevel },
+      indexExercises(catalogue),
+    );
     // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
     // way it is what the hero is about to run, so the XP tag below prices that same estimate
     // rather than the slot's own target — the two numbers on this screen must describe one
     // session, not two.
     const estimatedSeconds =
-      config.distanceM !== undefined && outing
+      config.distanceM !== undefined && isOuting
         ? estimateDistanceSeconds(config.distanceM, isMountedOuting(quest))
         : estimateQuestSeconds(quest);
-    const questLevel = level as unknown as DifficultyCode;
     return {
       quest,
       questTitle: localizedTitle(quest, language),
@@ -411,11 +467,11 @@ export default function QuestDetails() {
       questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
       estimate: formatDurationEstimate(estimatedSeconds),
-      xpReward: outing
-        ? estimateOutingXp(quest, questLevel, estimatedSeconds)
-        : estimateQuestXp(quest, questLevel),
+      xpReward: isOuting
+        ? estimateOutingXp(quest, effectiveLevel, estimatedSeconds)
+        : estimateQuestXp(quest, effectiveLevel),
     };
-  }, [state.quest, config, language, level, catalogue]);
+  }, [state.quest, config, language, effectiveLevel, isOuting, catalogue]);
 
   // The slot being replaced, and what can go in it. Ranked here rather than inside the sheet:
   // the sheet renders the order it is given, which is what lets the editor and this screen share
@@ -468,8 +524,6 @@ export default function QuestDetails() {
   const estimate = derived?.estimate ?? null;
   const xpReward = derived?.xpReward ?? null;
 
-  // Every slot is an outing, so the screen is presenting a way out rather than a workout.
-  const isOuting = quest ? isOutingSession(quest) : false;
   /**
    * Not `isOuting`. The notice answers "will Android ask me for my position", and what decides
    * that is `hasOutdoorSlot`, the generous predicate the session store starts the tracker on: a
@@ -488,9 +542,12 @@ export default function QuestDetails() {
     try {
       // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
       // populates the store, and the session screen redirects home if it mounts on an empty one.
-      await startSession(quest, level, {
+      await startSession(quest, effectiveLevel, {
         adventureRunStepId: runStepId,
-        distanceGoalM: config.distanceM ?? null,
+        // Derived here rather than in the store: this screen is the one that just let the hero
+        // edit the config, so it is the one that knows what they set out to do. The quick door
+        // on Home passes `null` instead, which is the whole of "no number on it".
+        goal: outingGoal(quest, config.distanceM ?? null),
       });
       router.push("/session" as never);
     } catch (error) {
@@ -553,7 +610,9 @@ export default function QuestDetails() {
               {quest && isUserQuest(quest) ? (
                 <Tag label={t("common.hero_badge")} tone="primary" />
               ) : null}
-              <Tag label={levelLabel(level, t)} tone="secondary" />
+              {/* Nothing on an outing: it is started at medium and the chips below are gone
+                  with it, so a badge naming a level would name a decision nobody made. */}
+              {isOuting ? null : <Tag label={levelLabel(level, t)} tone="secondary" />}
               {/* Only quests written in the app may be edited: seed content is shared. */}
               {quest && isUserQuest(quest) ? (
                 <AppIconButton
@@ -602,7 +661,7 @@ export default function QuestDetails() {
                   fullWidth={false}
                   variant="secondary"
                   onPress={() => {
-                    load(questId, level).catch(() => {
+                    load(questId, effectiveLevel).catch(() => {
                       // Error already handled
                     });
                   }}
@@ -695,24 +754,31 @@ export default function QuestDetails() {
                   ) : null}
                 </XStack>
 
-                <XStack gap="$2" flexWrap="wrap" pt="$2">
-                  <Text fontWeight="700" color="$textSecondary">
-                    {t("quests.level", "Level")}
-                  </Text>
-                  <LevelChip value={Difficulty.Easy} level={level} onSelect={selectLevel} />
-                  <LevelChip value={Difficulty.Medium} level={level} onSelect={selectLevel} />
-                  <LevelChip value={Difficulty.Hard} level={level} onSelect={selectLevel} />
-                </XStack>
-                {/* What the selected level actually does — the chips above already re-derive
-                    every number, but nothing said so (2026-08 audit, §06-C). The multipliers are
-                    USER_LEVEL_MULTIPLIER (targets) and computeSessionXp (payout). */}
-                <Text fontSize={13} color="$textSecondary" pt="$1">
-                  {level === Difficulty.Easy
-                    ? t("quests.level_effect_easy", "Targets −25% · XP ×0.9")
-                    : level === Difficulty.Hard
-                      ? t("quests.level_effect_hard", "Targets +25% · XP ×1.2")
-                      : t("quests.level_effect_medium", "Baseline targets · XP ×1")}
-                </Text>
+                {/* No level on an outing. It has no honest effect on a walk — it stretches the
+                    duration the hero set by hand and pays ×1.2 for the same ground — and the one
+                    number that matters here is the goal, two cards down. */}
+                {isOuting ? null : (
+                  <>
+                    <XStack gap="$2" flexWrap="wrap" pt="$2">
+                      <Text fontWeight="700" color="$textSecondary">
+                        {t("quests.level", "Level")}
+                      </Text>
+                      <LevelChip value={Difficulty.Easy} level={level} onSelect={selectLevel} />
+                      <LevelChip value={Difficulty.Medium} level={level} onSelect={selectLevel} />
+                      <LevelChip value={Difficulty.Hard} level={level} onSelect={selectLevel} />
+                    </XStack>
+                    {/* What the selected level actually does — the chips above already re-derive
+                        every number, but nothing said so (2026-08 audit, §06-C). The multipliers
+                        are USER_LEVEL_MULTIPLIER (targets) and computeSessionXp (payout). */}
+                    <Text fontSize={13} color="$textSecondary" pt="$1">
+                      {level === Difficulty.Easy
+                        ? t("quests.level_effect_easy", "Targets −25% · XP ×0.9")
+                        : level === Difficulty.Hard
+                          ? t("quests.level_effect_hard", "Targets +25% · XP ×1.2")
+                          : t("quests.level_effect_medium", "Baseline targets · XP ×1")}
+                    </Text>
+                  </>
+                )}
               </YStack>
             </Card>
           ) : null}
@@ -773,10 +839,16 @@ export default function QuestDetails() {
                           <Text fontWeight="700" fontSize={17} color="$text" flex={1}>
                             {i + 1}. {exName}
                           </Text>
-                          <Tag
-                            label={targetLabel(qex.target)}
-                            tone={qex.target.type === "time" ? "secondary" : "primary"}
-                          />
+                          {/* On an outing set by distance the slot's seconds are the fallback
+                              `outingGoal` never reads, and a chip saying "15 min" beside a 5 km
+                              goal is the screen contradicting itself about what is going to run.
+                              The goal is named once, in the panel above. */}
+                          {isOuting && config.distanceM !== undefined ? null : (
+                            <Tag
+                              label={targetLabel(qex.target)}
+                              tone={qex.target.type === "time" ? "secondary" : "primary"}
+                            />
+                          )}
                         </XStack>
 
                         {/* A slot the hero is not on the rung for is served easier (issue #33).

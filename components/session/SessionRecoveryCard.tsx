@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { AlertTriangle, Play, X } from "@/components/icons";
+import { AlertTriangle, Check, Play, X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -13,14 +14,34 @@ import { useSettingsStore } from "@/stores/settings";
 interface SessionRecoveryCardProps {
   session: RecoverableSession;
   onRecover: () => Promise<boolean | undefined>;
+  /**
+   * Close the walk from here, without resuming it. Offered only for an outing — see
+   * `RecoverableSession.isOuting` — because only an outing left a witness of the hours the app
+   * was not there for.
+   */
+  onFinish: () => Promise<boolean>;
   onDiscard: () => Promise<void>;
 }
 
 /**
  * Card displayed on home screen when there's a recoverable session
  */
-export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRecoveryCardProps) {
+export function SessionRecoveryCard({
+  session,
+  onRecover,
+  onFinish,
+  onDiscard,
+}: SessionRecoveryCardProps) {
   const { t } = useTranslation();
+
+  // Offered only when the walk left a witness behind.
+  //
+  // Being an outing is not enough. With no fix ever locked there is no trace to read, so the
+  // clock decides, and recovery has banked the whole absence as pause: a walk killed under trees
+  // and "finished" here would go to the journal at a couple of seconds, while resuming it and
+  // ending on screen would have written the honest clock. The most prominent path was the worst
+  // of the two. `leaguesM` is null in exactly that case, and already computed.
+  const witnessed = session.isOuting && session.leaguesM !== null;
   const router = useRouter();
   const haptics = useHaptics();
   const reducedMotion = useReducedMotion();
@@ -33,6 +54,15 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
     // no-quest guard bounced straight back — a navigation round trip the hero sees as a flicker.
     const recovered = await onRecover();
     if (recovered) router.push("/session");
+  };
+
+  const handleFinish = async () => {
+    haptics.mediumImpact();
+    // Same rule as resuming: the session screen is only worth reaching if the session came back.
+    // It lands there on "finished", which is the victory view — the walk is written from there,
+    // by the one function that writes a session.
+    const finished = await onFinish();
+    if (finished) router.push("/session");
   };
 
   const handleDiscard = async () => {
@@ -51,12 +81,15 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primaryText" />
           <Text fontSize={18} fontWeight="bold" color="$text">
-            {t("recovery.title")}
+            {t(witnessed ? "recovery.finish_outing_title" : "recovery.title")}
           </Text>
         </XStack>
 
+        {/* A walk that was killed is not a walk that was abandoned: the trace covers the hours
+            the app missed, and the card says so rather than asking the hero to guess what
+            "unfinished" means for a hike they already came home from. */}
         <Text color="$text" opacity={0.8}>
-          {t("recovery.description")}
+          {t(witnessed ? "recovery.finish_outing_description" : "recovery.description")}
         </Text>
 
         <YStack gap="$1" bg="$background" p="$2" rounded="$3">
@@ -89,9 +122,19 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
           )}
         </YStack>
 
+        {/* Three actions on an outing, and the walk's own ending is the one the hero came back
+            for: it gets the width and the colour, and resuming drops to the same weight as
+            throwing the walk away. A workout has two, unchanged. */}
+        {witnessed ? (
+          <AppButton height={44} icon={<Check size={18} />} onPress={handleFinish}>
+            {t("recovery.finish_outing")}
+          </AppButton>
+        ) : null}
+
         <XStack gap="$3" justify="flex-end">
           <Button
             size="$3"
+            height={44}
             hitSlop={8}
             bg="$bgLight"
             borderWidth={1}
@@ -105,8 +148,9 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
           </Button>
           <Button
             size="$3"
+            height={44}
             hitSlop={8}
-            bg="$primary"
+            bg={session.isOuting ? "$bgLight" : "$primary"}
             borderWidth={1}
             borderColor="$borderStrong"
             rounded="$6"
@@ -114,7 +158,7 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
             onPress={handleResume}
             pressStyle={{ opacity: 0.9, scale: 0.98 }}
           >
-            <Button.Text color="white" fontWeight="700">
+            <Button.Text color={session.isOuting ? "$text" : "white"} fontWeight="700">
               {t("recovery.resume")}
             </Button.Text>
           </Button>
@@ -128,7 +172,8 @@ export function SessionRecoveryCard({ session, onRecover, onDiscard }: SessionRe
  * Wrapper that handles the recovery logic internally
  */
 export function SessionRecoveryBanner() {
-  const { recoverableSession, isChecking, recoverSession, discardSession } = useSessionRecovery();
+  const { recoverableSession, isChecking, recoverSession, finishSession, discardSession } =
+    useSessionRecovery();
 
   if (isChecking || !recoverableSession) {
     return null;
@@ -138,6 +183,7 @@ export function SessionRecoveryBanner() {
     <SessionRecoveryCard
       session={recoverableSession}
       onRecover={recoverSession}
+      onFinish={finishSession}
       onDiscard={discardSession}
     />
   );

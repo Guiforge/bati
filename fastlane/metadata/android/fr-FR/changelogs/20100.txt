@@ -1,0 +1,16 @@
+- Un tap sur l'Accueil et tu es dehors : marche, course ou
+  monture, sans réglage ni décompte. Le chrono répond à la seule
+  question du départ, combien de temps j'ai tenu.
+- Le téléphone peut dormir dans ta poche. L'écran s'éteint,
+  Android verrouille, et la notification mène la sortie en disant
+  le temps écoulé.
+- Terminer demande un pouce maintenu, ou l'action de la
+  notification, écran verrouillé. Un tap raté s'annule en un
+  geste.
+- Chaque lieue franchie se signale d'une vibration.
+- Régler une sortie prend quatre taps : les durées et les
+  distances qu'on nomme vraiment, le semi compris.
+- Sur le récap d'une sortie libre, tu peux en faire une quête et
+  la rejouer.
+- Une sortie de deux heures vaut enfin deux heures, et une sortie
+  que le téléphone a interrompue vaut ce que son tracé prouve.

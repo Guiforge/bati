@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   addListener,
+  getPermissionStatus,
   hasGpsProvider,
   isAvailable,
   requestNotificationPermission,
@@ -36,6 +37,7 @@ describe("bati-location, without its native half", () => {
           paused: "…",
           gpsOff: "…",
           reached: "…",
+          finish: "…",
         },
       }),
     ).toBe(false);
@@ -63,6 +65,71 @@ describe("bati-location, without its native half", () => {
     });
   });
 
+  test("asks for the notification once per process, whichever door got there first", async () => {
+    // Two doors lead outside now: Home asks while the hero is still standing at the door, and
+    // `begin` asks because the quest screen never did. Asked twice, a hero who refused at the tile
+    // met the system dialog again over a chronometer already counting their walk.
+    //
+    // Rebuilt around a native that answers, because with none at all the guard is invisible: the
+    // call resolves either way and only the count tells the two apart.
+    jest.resetModules();
+    const asked = jest.fn().mockResolvedValue({ granted: true });
+    jest.doMock("expo", () => ({
+      ...jest.requireActual("expo"),
+      requireOptionalNativeModule: () => ({ requestNotificationPermission: asked }),
+    }));
+
+    const mod = require("@/modules/bati-location") as typeof import("@/modules/bati-location");
+    await mod.ensureNotificationPermission();
+    await mod.ensureNotificationPermission();
+    await mod.ensureNotificationPermission();
+
+    expect(asked).toHaveBeenCalledTimes(1);
+
+    jest.dontMock("expo");
+    jest.resetModules();
+  });
+
+  test("reports the location permission it already has, without asking for it", async () => {
+    // The question a request cannot answer: by the time a request resolves, the dialog the
+    // caller wanted to introduce has already been shown. Denied and unaskable with no native
+    // half, so Home explains rather than staying quiet.
+    await expect(getPermissionStatus()).resolves.toMatchObject({
+      granted: false,
+      canAskAgain: false,
+    });
+  });
+
+  test("a notification grant that throws is a breadcrumb, not a cancelled walk", async () => {
+    // It used to live in the expedition store and moved here with the call. A grant that stops
+    // being asked for is a notification that stops appearing, and the walk it is the only screen
+    // of would then say nothing for an hour.
+    //
+    // The only case where the native half is present *and* fails, so the module is rebuilt around
+    // a native that rejects: with none at all, `requestNotificationPermission` resolves denied and
+    // this path cannot be reached.
+    jest.resetModules();
+    const reportError = jest.fn();
+    jest.doMock("@/src/reportError", () => ({ reportError }));
+    jest.doMock("expo", () => ({
+      ...jest.requireActual("expo"),
+      requireOptionalNativeModule: () => ({
+        requestNotificationPermission: () => Promise.reject(new Error("no permissions manager")),
+      }),
+    }));
+
+    const mod = require("@/modules/bati-location") as typeof import("@/modules/bati-location");
+    await expect(mod.ensureNotificationPermission()).resolves.toBeUndefined();
+    expect(reportError).toHaveBeenCalledWith(
+      "expedition.notificationPermission",
+      expect.any(Error),
+    );
+
+    jest.dontMock("expo");
+    jest.dontMock("@/src/reportError");
+    jest.resetModules();
+  });
+
   test("moving a notification that does not exist is not an error", () => {
     // Called from a flush that can race the hero tapping Done, and on every build with no
     // service at all.
@@ -71,6 +138,25 @@ describe("bati-location, without its native half", () => {
 
   test("reaching a goal that has no notification to reach is not an error", () => {
     expect(() => setReached()).not.toThrow();
+  });
+
+  test("carries the finish button's word, and hands back its event", () => {
+    // The label is JS's, like the other six: native owns no strings. An empty one is how a
+    // build with no button says so, which is the orphan restart's case.
+    expect(() =>
+      start({
+        notification: {
+          title: "Bati",
+          acquiring: "…",
+          tracking: "…",
+          paused: "…",
+          gpsOff: "…",
+          reached: "…",
+          finish: "…",
+        },
+      }),
+    ).not.toThrow();
+    expect(() => addListener("onFinishRequested", () => {}).remove()).not.toThrow();
   });
 
   test("hands back a subscription that can still be removed", () => {
@@ -98,6 +184,22 @@ describe("bati-location, as something autolinking can find", () => {
       `${declared?.replace(/\./g, "/")}.kt`,
     );
     expect(fs.existsSync(source)).toBe(true);
+  });
+
+  test("the finish action is named the same on both sides of the bridge", () => {
+    // Nothing compiles this Kotlin before a release tag, and `sendEvent` throws at runtime on a
+    // name the module never declared. Three strings have to agree, so three strings are read.
+    const kotlin = (file: string) =>
+      fs.readFileSync(
+        path.join(MODULE_ROOT, "android/src/main/java/expo/modules/batilocation", file),
+        "utf8",
+      );
+
+    expect(kotlin("BatiLocationService.kt")).toContain(
+      'const val EVENT_FINISH = "onFinishRequested"',
+    );
+    expect(kotlin("BatiLocationModule.kt")).toContain("BatiLocationService.EVENT_FINISH");
+    expect(kotlin("BatiLocationModule.kt")).toContain("BatiLocationService.EXTRA_FINISH");
   });
 
   test("its Gradle namespace matches the package the class lives in", () => {

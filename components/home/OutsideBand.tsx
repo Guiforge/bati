@@ -303,7 +303,12 @@ export function OutsideBand() {
               overflow="hidden"
               onPress={() => {
                 if (setup) {
-                  router.push(`/quests/${quest.id}` as never);
+                  // `from=home`, and the quest screen sends both its backs here rather than to
+                  // the gallery. A quest belongs to the gallery and that is where every other
+                  // door returns (`0b41d318`), but this one is a detour on the way out: the hero
+                  // tapped Set up while standing at the door, and a gallery they never opened is
+                  // not where they were.
+                  router.push(`/quests/${quest.id}?from=home` as never);
                   return;
                 }
                 startOuting(quest.id).catch((error) => reportError("home.startOuting", error));

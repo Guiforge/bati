@@ -205,7 +205,9 @@ it("hands the prepared door to the band rather than to a second target inside th
   await userEvent.press(screen.getByLabelText("Set up an outing before heading out"));
   await userEvent.press(screen.getByText("Course du Messager"));
 
-  expect(mockPush).toHaveBeenCalledWith("/quests/2");
+  // With where the hero came from, because the quest screen sends both its backs to the gallery
+  // otherwise, and a gallery they never opened is not where they were a tap ago.
+  expect(mockPush).toHaveBeenCalledWith("/quests/2?from=home");
   expect(mockStartSession).not.toHaveBeenCalled();
 });
 

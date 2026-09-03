@@ -11,7 +11,11 @@ import config from "@/tamagui.config";
 
 const mockNavigate = jest.fn();
 const mockDismissTo = jest.fn();
-let mockParams: { id?: string; adventureId?: string } = { id: "5" };
+const backHandlerSpy = jest.spyOn(
+  require("react-native").BackHandler,
+  "addEventListener",
+) as jest.SpyInstance;
+let mockParams: { id?: string; adventureId?: string; from?: string } = { id: "5" };
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
@@ -109,6 +113,7 @@ describe("quests/[id] chevron", () => {
   beforeEach(() => {
     mockNavigate.mockClear();
     mockDismissTo.mockClear();
+    backHandlerSpy.mockClear();
   });
 
   test("with an adventureId, the chevron navigates back to that adventure", async () => {
@@ -139,5 +144,37 @@ describe("quests/[id] chevron", () => {
 
     expect(mockDismissTo).toHaveBeenCalledWith("/quests");
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+  test("coming from the band's Set up, the chevron goes back to Home", async () => {
+    // A quest belongs to the gallery and every other door returns there. This one is a detour on
+    // the way out: the hero tapped Set up on Home a moment ago, and a gallery they never opened
+    // is not where they were.
+    mockParams = { id: "5", from: "home" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+
+    expect(mockDismissTo).toHaveBeenCalledWith("/");
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  test("and so does the hardware back, so the two never disagree", async () => {
+    // The stack is anchored on the gallery, so popping lands there whatever the chevron says.
+    // Two back affordances with two destinations is the exact bug the anchor was added to fix.
+    mockParams = { id: "5", from: "home" };
+    await renderQuestDetails();
+
+    const press = backHandlerSpy.mock.calls.at(-1)?.[1] as () => boolean;
+    expect(press()).toBe(true);
+    expect(mockDismissTo).toHaveBeenCalledWith("/");
+  });
+
+  test("an adventure step still beats the origin, both ways", async () => {
+    mockParams = { id: "5", from: "home", adventureId: "12" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
   });
 });

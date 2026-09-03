@@ -1,10 +1,10 @@
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { ScrollView } from "react-native";
+import { BackHandler, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
@@ -189,6 +189,7 @@ export default function QuestDetails() {
     level?: string;
     runStepId?: string;
     adventureId?: string | string[];
+    from?: string | string[];
   }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -352,6 +353,10 @@ export default function QuestDetails() {
   // expo-router downgrades a cross-tab `push` to a `navigate` at the tab boundary regardless of
   // which call is used here, so `push` would behave identically. Not `dismissTo` either — the
   // adventure isn't on this tab's stack to begin with, it lives on the adventures tab's own stack.
+  // Where the hero came from, when it changes where "back" means. Only the band's Set up
+  // shortcut sets it; every other door leaves it absent and keeps the gallery.
+  const fromHome = (Array.isArray(params.from) ? params.from[0] : params.from) === "home";
+
   const goToGallery = useCallback(() => {
     const raw = Array.isArray(params.adventureId) ? params.adventureId[0] : params.adventureId;
     const adventureId = Number(raw);
@@ -361,8 +366,27 @@ export default function QuestDetails() {
       router.navigate(`/adventures/${adventureId}` as never);
       return;
     }
+    // The band's Set up shortcut: the hero was on Home a tap ago, and it is a detour on the way
+    // out rather than a visit to a quest. Both backs agree, which is the rule `0b41d318` set;
+    // only the destination changes, and only for this one door.
+    if (fromHome) {
+      router.dismissTo("/");
+      return;
+    }
     router.dismissTo("/quests");
-  }, [router, params.adventureId]);
+  }, [router, params.adventureId, fromHome]);
+
+  // Hardware back, which is structural: the stack is anchored on the gallery
+  // (`app/(tabs)/quests/_layout.tsx`), so popping lands there whatever the chevron does. Left
+  // alone the two would disagree again, which is the exact bug the anchor was added to fix.
+  useEffect(() => {
+    if (!fromHome) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      router.dismissTo("/");
+      return true;
+    });
+    return () => sub.remove();
+  }, [fromHome, router]);
 
   const updateConfig = useCallback(
     (next: QuestConfig) => {

@@ -1,15 +1,10 @@
 - One tap on Home and you are out: walk, run or ride, with no
-  setting and no countdown. The clock answers the only question a
-  departure has, how long did I keep going.
-- Your phone can sleep in your pocket. The screen goes dark,
-  Android locks it, and the notification runs the outing, elapsed
-  time first.
-- Finishing takes a held thumb, or the notification's own action
-  from the lock screen. A mistap undoes in one gesture.
+  setting and no countdown.
+- Your phone sleeps in your pocket. The notification runs the
+  outing and says the elapsed time.
+- Finishing takes a held thumb, or the notification from the
+  lock screen. A mistap undoes in one gesture.
 - Every league you cross is a buzz.
-- Setting up an outing takes four taps: the durations and
-  distances people actually name, half marathon included.
-- On the recap of a free outing, you can turn it into a quest and
-  run it again.
-- A two hour outing is finally worth two hours, and an outing your
-  phone interrupted is worth what its trace proves.
+- Setting up an outing takes four taps, half marathon included.
+- A free outing can become a quest.
+- A two hour outing is finally worth two hours.

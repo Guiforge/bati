@@ -1,0 +1,3 @@
+- Seeing the ground covered no longer closes the app. The
+  F-Droid build was leaving without its map engine, so the
+  recap of an outing had nothing to draw with.

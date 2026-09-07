@@ -357,3 +357,34 @@ holds class metadata rather than objects. Fixed by `plugins/withAndroidGradleMem
 so lint never re-ran and the machine never hit the limit — the failure was CI-only, and looked
 like a CI-only problem. When checking a build-system change, `--rerun-tasks` or a `clean`, or the
 cache hides exactly what you are looking for.
+
+### A third: a green build that shipped an amputated APK
+
+Version 2.0.0 reached the catalogue 4 MiB lighter than the GitHub APK of the same commit, with no
+`libmaplibre.so`, no maplibre class in any dex, and a recap screen that closed the app on
+`TurboModuleRegistry.getEnforcing('MLRNCameraModule')` (issue #64). The build said
+`BUILD SUCCESSFUL in 4m 45s`.
+
+One line of their log, 65 lines above the Gradle output, is the whole story:
+
+```
+INFO: Removing usual suspect 'com.google.android.gms(?!…)' at
+      node_modules/@maplibre/maplibre-react-native/android/build.gradle
+```
+
+MapLibre's Gradle file names `com.google.android.gms:play-services-location` inside
+`if (locationEngine == "google")`, a branch this app never takes. The scanner reads the line
+anyway, and `scandelete: node_modules` turns an objection into a deletion. With no
+`android/build.gradle`, autolinking stops seeing a native module there and links nothing, which is
+not an error to Gradle. The JS bundle kept its import.
+
+The lesson is the shape rather than the package: **the scanner deleting a file is an INFO line, and
+losing a native module is not a build failure.** So the check has to happen before the APK exists.
+`__tests__/fdroid-scanignore.test.ts` reads every dependency's `android/build.gradle` against
+`fdroid/suss-gradle-signatures.txt` — F-Droid's own signature list, vendored as data — and against
+the local-maven-url rule that had already cost us `react-native-screens`.
+
+The fix itself lives in this repo, not in the recipe: `scripts/strip-play-services.mjs` takes the
+line out on postinstall, and the scanner runs long after `npm ci`. That placement is deliberate.
+F-Droid's bot recopies the previous build block on every release, so a recipe-side fix has to be
+re-argued in a merge request, while a fix here travels with the commit the bot pins.

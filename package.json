@@ -164,6 +164,7 @@
     "format": "biome check --write .",
     "ios": "expo run:ios",
     "maestro": "bash scripts/maestro.sh",
+    "postinstall": "node scripts/strip-play-services.mjs",
     "prepare": "prek install",
     "release": "bash scripts/release.sh",
     "screenshots": "bash scripts/screenshots.sh",

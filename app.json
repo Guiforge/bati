@@ -75,7 +75,7 @@
           "widgets": [
             {
               "name": "Flame",
-              "label": "Bati — Flame",
+              "label": "Bati: Flame",
               "description": "Your training flame.",
               "minWidth": "110dp",
               "minHeight": "110dp",
@@ -87,7 +87,7 @@
             },
             {
               "name": "Weekly",
-              "label": "Bati — Week",
+              "label": "Bati: Week",
               "description": "Sessions this week against your oath.",
               "minWidth": "110dp",
               "minHeight": "110dp",

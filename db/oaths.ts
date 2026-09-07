@@ -1,7 +1,10 @@
+import { differenceInCalendarWeeks, startOfWeek } from "date-fns";
 import { eq, gte, sql } from "drizzle-orm";
+import { getWeekStart } from "@/constants/dateFormatters";
+import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
-import { deletePreference, getPreference, setPreference } from "./preferences";
+import { deletePreference, getPreference, preferences, setPreference } from "./preferences";
 import { getStreakInfo, invalidateStreakInfo } from "./streaks";
 import { repEquivalentSql } from "./workUnits";
 
@@ -34,6 +37,12 @@ export type Oath = {
   target: number;
   /** Sessions per week that make a week count. Only read by `weekly_sessions`. */
   weeklyTarget?: number;
+  /**
+   * Which weekday the oath's weeks turn over on, frozen at swear time from the hero's
+   * language (`getWeekStart`). Stored rather than resolved live so switching language
+   * mid-oath cannot re-bucket eight weeks of history under the hero's feet.
+   */
+  weekStartsOn?: 0 | 1;
   swornAt: string; // ISO
   fulfilledAt: string | null; // ISO once reached, null while in progress
 };
@@ -170,6 +179,7 @@ export async function swearOath(input: {
 
   if (oathNeedsWeeklyTarget(input.metric)) {
     oath.weeklyTarget = Math.max(1, Math.floor(input.weeklyTarget ?? DEFAULT_WEEKLY_TARGET));
+    oath.weekStartsOn = getWeekStart(resolveAppLanguage(await preferences.getLanguage()));
   }
   await setPreference(OATH_KEY, JSON.stringify(oath));
   // The oath sets the flame's weekly quota — a memoized streak would be stale.
@@ -250,25 +260,39 @@ async function measure(oath: Oath): Promise<number> {
  * whole point: a missed week costs that week and nothing else. Nothing resets, nothing is
  * forfeited, and last week's miss cannot undo the eight weeks before it — the forgiveness a
  * strict consecutive-day streak cannot offer, expressed as a promise instead of a punishment.
+ *
+ * A week is the hero's **calendar** week, the one the journal already draws. It used to be a
+ * rolling 7-day window anchored on the swear instant, which is a week no surface in the app
+ * shows: three sessions on Monday, Tuesday and Saturday split 2+1 across two of those windows
+ * and neither reached the quota, so the journal said "3 sessions this week" while the oath said
+ * 0/8 — for the oath's whole life, since the offset never moves (issue #65). Five of the seven
+ * possible swear weekdays made the lead preset unfulfillable that way.
+ *
+ * The window opens at the start of the week the oath was sworn in, not at the instant: swearing
+ * on Wednesday evening keeps the Monday and Tuesday the hero had already logged, which is what
+ * "this week" means to them and to every chart they can look at.
  */
 async function countQualifyingWeeks(oath: Oath): Promise<number> {
   const weeklyTarget = Math.max(1, oath.weeklyTarget ?? DEFAULT_WEEKLY_TARGET);
   const sworn = new Date(oath.swornAt);
   if (Number.isNaN(sworn.getTime())) return 0;
 
+  // Frozen at swear time. An oath sworn before the field existed, or carrying a value from a
+  // hand-edited blob, falls back to the week the journal is drawing right now.
+  const weekStartsOn =
+    oath.weekStartsOn === 0 || oath.weekStartsOn === 1
+      ? oath.weekStartsOn
+      : getWeekStart(resolveAppLanguage(await preferences.getLanguage()));
+
   const rows = await db
     .select({ performedAt: completedQuest.performedAt })
     .from(completedQuest)
-    .where(gte(completedQuest.performedAt, sworn));
+    .where(gte(completedQuest.performedAt, startOfWeek(sworn, { weekStartsOn })));
 
-  // Weeks are counted from the day the oath was sworn, not from Monday: the hero's week starts
-  // when they made the promise.
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
   const sessionsByWeek = new Map<number, number>();
 
   for (const row of rows) {
-    const week = Math.floor((row.performedAt.getTime() - sworn.getTime()) / msPerWeek);
-    if (week < 0) continue;
+    const week = differenceInCalendarWeeks(row.performedAt, sworn, { weekStartsOn });
     sessionsByWeek.set(week, (sessionsByWeek.get(week) ?? 0) + 1);
   }
 

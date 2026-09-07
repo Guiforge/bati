@@ -320,8 +320,43 @@ describe("db/oaths", () => {
   });
 
   describe("weekly_sessions", () => {
-    /** Swear the oath as if it had been made `daysAgo` days ago. */
-    async function swearWeeksAgo(target: number, weeklyTarget: number, daysAgo: number) {
+    /**
+     * Absolute dates, not `daysAgo` offsets. Weeks are calendar weeks now, so an offset-based
+     * test asserts a different bucketing depending on the weekday the suite happens to run on:
+     * both forgiveness tests below return the wrong count on a Friday when written that way.
+     * Nothing here reads the clock, so pinning the dates costs nothing and removes the flake.
+     *
+     * The reference week is Sun 2026-08-23 to Sat 2026-08-29.
+     */
+    const MON = "2026-08-24T18:00:00";
+    const TUE = "2026-08-25T18:00:00";
+    const SAT = "2026-08-29T10:00:00";
+
+    /** `performedAt` is `mode: "timestamp"`, i.e. seconds. Milliseconds land in year 57000. */
+    function logSessionOn(iso: string): void {
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, ?)",
+        )
+        .run(Math.floor(new Date(iso).getTime() / 1000));
+    }
+
+    function setLanguage(language: string): void {
+      t.sqlite
+        .prepare("INSERT OR REPLACE INTO user_preferences (key, value) VALUES ('language', ?)")
+        .run(language);
+    }
+
+    /**
+     * Swear the oath as if it had been made on `iso`. `weekStartsOn` overrides the anchor
+     * `swearOath` froze; `"legacy"` strips it, as on an oath sworn before the field existed.
+     */
+    async function swearOn(
+      iso: string,
+      weeklyTarget: number,
+      target = 8,
+      weekStartsOn?: 0 | 1 | "legacy",
+    ) {
       const o = oaths();
       await o.swearOath({ metric: "weekly_sessions", target, weeklyTarget });
 
@@ -329,30 +364,49 @@ describe("db/oaths", () => {
         .prepare("SELECT value FROM user_preferences WHERE key = 'oath'")
         .get() as { value: string };
       const stored = JSON.parse(raw.value);
-      stored.swornAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
+      stored.swornAt = new Date(iso).toISOString();
+      if (weekStartsOn === "legacy") delete stored.weekStartsOn;
+      else if (weekStartsOn !== undefined) stored.weekStartsOn = weekStartsOn;
       t.sqlite
         .prepare("UPDATE user_preferences SET value = ? WHERE key = 'oath'")
         .run(JSON.stringify(stored));
     }
 
-    test("a week only counts once it hits the quota", async () => {
-      await swearWeeksAgo(8, 3, 21);
+    // English weeks (Sunday) unless a test says otherwise, so the anchor never depends on
+    // whatever `expo-localization` answers inside jest.
+    beforeEach(() => setLanguage("en"));
 
-      // Week 0: three sessions -> counts. Week 1: two -> does not.
-      logSessionAt(20);
-      logSessionAt(19);
-      logSessionAt(18);
-      logSessionAt(13);
-      logSessionAt(12);
+    test("a week only counts once it hits the quota", async () => {
+      await swearOn("2026-08-02T09:00:00", 3);
+
+      // Week of Aug 2: three sessions -> counts. Week of Aug 9: two -> does not.
+      for (const day of [
+        "2026-08-03T18:00:00",
+        "2026-08-04T18:00:00",
+        "2026-08-05T18:00:00",
+        "2026-08-10T18:00:00",
+        "2026-08-11T18:00:00",
+      ]) {
+        logSessionOn(day);
+      }
 
       expect((await oaths().getOathProgress())?.current).toBe(1);
     });
 
     test("a missed week costs one week and nothing else", async () => {
-      await swearWeeksAgo(8, 2, 28);
+      await swearOn("2026-08-02T09:00:00", 2);
 
-      // Weeks 0, 1 and 3 qualify; week 2 is skipped entirely.
-      for (const day of [27, 26, 20, 19, 6, 5]) logSessionAt(day);
+      // Weeks of Aug 2, Aug 9 and Aug 23 qualify; the week of Aug 16 is skipped entirely.
+      for (const day of [
+        "2026-08-03T18:00:00",
+        "2026-08-04T18:00:00",
+        "2026-08-10T18:00:00",
+        "2026-08-11T18:00:00",
+        "2026-08-24T18:00:00",
+        "2026-08-25T18:00:00",
+      ]) {
+        logSessionOn(day);
+      }
 
       const progress = await oaths().getOathProgress();
       // Three good weeks survive the gap: nothing resets, the miss is just not counted.
@@ -361,13 +415,76 @@ describe("db/oaths", () => {
     });
 
     test("it fulfils once enough weeks have qualified", async () => {
-      await swearWeeksAgo(2, 2, 14);
+      await swearOn("2026-08-16T09:00:00", 2, 2);
 
-      for (const day of [13, 12, 6, 5]) logSessionAt(day);
+      for (const day of [
+        "2026-08-17T18:00:00",
+        "2026-08-18T18:00:00",
+        "2026-08-24T18:00:00",
+        "2026-08-25T18:00:00",
+      ]) {
+        logSessionOn(day);
+      }
 
       const fulfilled = await oaths().checkOathFulfilled();
       expect(fulfilled?.isFulfilled).toBe(true);
       expect(fulfilled?.current).toBe(2);
+    });
+
+    /**
+     * Issue #65. The hero trained Monday, Tuesday and Saturday, the journal said "3 sessions
+     * this week", and the card said 0/8. Weeks used to be rolling 7-day windows anchored on the
+     * swear instant, so those three sessions split 2+1 across two buckets and neither reached
+     * the quota. Five of the seven possible swear weekdays did that, for the oath's whole life:
+     * the lead preset was unfulfillable depending on the day it happened to be sworn.
+     */
+    test.each([
+      ["Sunday", "2026-08-16T09:00:00"],
+      ["Monday", "2026-08-17T09:00:00"],
+      ["Tuesday", "2026-08-18T09:00:00"],
+      ["Wednesday", "2026-08-19T09:00:00"],
+      ["Thursday", "2026-08-20T09:00:00"],
+      ["Friday", "2026-08-21T09:00:00"],
+      ["Saturday", "2026-08-22T09:00:00"],
+    ])("three sessions in a week count whatever weekday it was sworn on (%s)", async (_d, iso) => {
+      await swearOn(iso, 3);
+      for (const day of [MON, TUE, SAT]) logSessionOn(day);
+
+      expect((await oaths().getOathProgress())?.current).toBe(1);
+    });
+
+    test("the week the oath was sworn in keeps the sessions already logged in it", async () => {
+      // Sworn on the Wednesday, after Monday and Tuesday were already in the journal.
+      await swearOn("2026-08-26T09:00:00", 3);
+      for (const day of [MON, TUE, SAT]) logSessionOn(day);
+
+      expect((await oaths().getOathProgress())?.current).toBe(1);
+    });
+
+    /**
+     * Fri/Sat/Sun is one week to a Monday hero and two to a Sunday one, which is the whole
+     * reason the anchor is frozen on the oath instead of read from the current language.
+     */
+    const STRADDLES_SUNDAY = ["2026-08-21T18:00:00", "2026-08-22T18:00:00", "2026-08-23T18:00:00"];
+
+    test("the week start frozen at swear time is the one that counts", async () => {
+      await swearOn("2026-08-19T09:00:00", 3, 8, 1);
+      for (const day of STRADDLES_SUNDAY) logSessionOn(day);
+      expect((await oaths().getOathProgress())?.current).toBe(1);
+
+      await swearOn("2026-08-19T09:00:00", 3, 8, 0);
+      expect((await oaths().getOathProgress())?.current).toBe(0);
+    });
+
+    test("an oath sworn before the anchor existed falls back to the language", async () => {
+      setLanguage("fr");
+      await swearOn("2026-08-19T09:00:00", 3, 8, "legacy");
+      for (const day of STRADDLES_SUNDAY) logSessionOn(day);
+      // French weeks start on Monday, so the three sessions are one week.
+      expect((await oaths().getOathProgress())?.current).toBe(1);
+
+      setLanguage("en");
+      expect((await oaths().getOathProgress())?.current).toBe(0);
     });
 
     test("the weekly quota defaults rather than dividing by zero", async () => {

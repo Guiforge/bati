@@ -115,7 +115,11 @@ android {
         }
     }
     lint {
-        disable 'ExtraTranslation'
+        disable 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
+        warningsAsErrors = true
+        informational 'LintBaseline', 'LintBaselineFixed'
+        baseline = file("$rootDir/../android-lint-baseline.xml")
+        textReport = true
     }
     buildTypes {
         debug {

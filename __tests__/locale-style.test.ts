@@ -36,8 +36,16 @@ const LOCALES = path.join(ROOT, "locales");
 
 /**
  * Every file outside `locales/` that a person actually reads: the front page, the policy, the
- * repository's own pages, and the store listing including its published release notes. Add a
- * file here the day a new one starts carrying prose, because nothing else will notice.
+ * repository's own pages, the store listing including its published release notes, and
+ * `app.json`. Add a file here the day a new one starts carrying prose, because nothing else
+ * will notice.
+ *
+ * `app.json` is on the list for the two widget entries: their `label` is inlined straight into
+ * `AndroidManifest.xml` as `android:label` and their `description` becomes a `translatable="false"`
+ * string resource, so both are read by anyone opening the Android widget picker and neither
+ * passes through `locales/`. Both shipped a dash for months. Checking the source rather than the
+ * prebuild output is deliberate: `app.json` is the single writer, it is what a person edits, and
+ * `ci.yml`'s prebuild-and-diff step is what proves the committed manifest still matches it.
  */
 function sourceFiles(...roots: string[]): string[] {
   const out: string[] = [];
@@ -69,6 +77,7 @@ function readerFacingFiles(): string[] {
     });
 
   return [
+    "app.json",
     "README.md",
     "CONTRIBUTING.md",
     "SECURITY.md",

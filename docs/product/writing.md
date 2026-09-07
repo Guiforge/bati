@@ -124,7 +124,7 @@ the permissions test: the fix is always to write the string correctly, never to 
 
 | Rule | Held by | Blind to |
 | :--- | :--- | :--- |
-| No em dash, either language | `locale-style.test.ts` | `locales/*.json`, the README, both legal pages, the whole store listing and its changelogs. Not `docs/`, and not code comments |
+| No em dash, either language | `locale-style.test.ts` | `locales/*.json`, the README, both legal pages, the whole store listing and its changelogs, and `app.json`, whose two widget entries are the labels the Android widget picker shows. Not `docs/`, and not code comments |
 | One apostrophe, one ellipsis | `locale-style.test.ts` | anything outside `locales/*.json` |
 | `tu` outside the legal pages | `locale-style.test.ts` | English, which has no such distinction |
 | No sentence shape over three quarters of a pool | [`__tests__/villagers.test.ts`](../../__tests__/villagers.test.ts) | every string that is not a villager line |
@@ -138,9 +138,11 @@ the permissions test: the fix is always to write the string correctly, never to 
 ### The blind spots are the point
 
 The dash rule reaches every reader-facing file, the store listing and its published release notes
-included. The others stop at `locales/*.json`, so **the apostrophe, the ellipsis and the register
-are unchecked everywhere else**, and a new page that starts carrying prose is a blind spot until
-someone adds it to `readerFacingFiles()` in the test.
+included, plus `app.json`: a widget `label` is inlined into `AndroidManifest.xml` and a widget
+`description` becomes an untranslatable string resource, so the widget picker is a reader surface
+that no locale file can see. The others stop at `locales/*.json`, so **the apostrophe, the
+ellipsis and the register are unchecked everywhere else**, and a new page that starts carrying
+prose is a blind spot until someone adds it to `readerFacingFiles()` in the test.
 
 And the rules at the bottom of the table are not oversights. A machine can count dashes; it cannot
 tell an antithesis that earns its place from the thirty-fourth one in a row. That judgement is the

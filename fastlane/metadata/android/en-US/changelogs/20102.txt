@@ -1,0 +1,5 @@
+- Oaths count your weeks the way the journal shows them. A
+  weekly oath used to cut time into rolling 7-day windows
+  anchored on the moment you swore, so three sessions in the
+  same week could land in two of them and neither one reach
+  the quota.

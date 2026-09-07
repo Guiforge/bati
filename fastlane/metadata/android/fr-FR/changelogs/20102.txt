@@ -1,0 +1,5 @@
+- Les serments comptent tes semaines comme le journal les
+  affiche. Un serment hebdomadaire découpait le temps en
+  tranches de 7 jours calées sur l'heure du serment, si bien
+  que trois séances de la même semaine pouvaient tomber dans
+  deux tranches sans qu'aucune atteigne le quota.

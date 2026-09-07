@@ -1,0 +1,3 @@
+- Voir le terrain couvert ne ferme plus l'app. La version
+  F-Droid partait sans son moteur de carte, et le bilan d'une
+  sortie n'avait rien pour dessiner.

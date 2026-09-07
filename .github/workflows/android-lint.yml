@@ -1,0 +1,69 @@
+# Android lint, before a tag rather than during one.
+#
+# Lint runs today only as `lintVitalRelease` inside `assembleRelease`, which is to say on a tag,
+# and `lintVital` looks at nothing but `fatal` issues. That is how an `ExtraTranslation` failure
+# came to block the very first release assemble, with the diagnosis happening at the most
+# expensive possible moment. `plugins/withAndroidLint.js` turns warnings into errors; this
+# workflow is the only place that setting is ever felt, and it is felt on a push.
+#
+# Its own workflow rather than a job in ci.yml, for the path filter, exactly as kotlin.yml argues:
+# a push that touches nothing Android does not pay a second of Gradle, and Gradle here is not
+# cheap (`expo.autolinking.buildFromSource` compiles every Expo module from source).
+name: Android lint
+
+on:
+  push:
+    paths:
+      - "app.json"
+      - "plugins/**"
+      - "android/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/android-lint.yml"
+  pull_request:
+    paths:
+      - "app.json"
+      - "plugins/**"
+      - "android/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/android-lint.yml"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # AGP does not accept the JDK the developer machine happens to have (25 at the time of
+      # writing). 21 is what the Expo SDK builds against.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+
+      # android/ is committed, but it is generated: prebuild first so the Gradle project on disk
+      # is the one app.json and the plugins describe, exactly as ci.yml does before its own diff.
+      - run: npx expo prebuild -p android --clean
+
+      # The release variant, not the default one: since AGP 7 the bare `lint` task is an alias
+      # for the default variant, which is debug, and debug is not what ships.
+      #
+      # `reactNativeArchitectures` is the difference between a job and an ordeal. Lint pulls in
+      # the whole release pipeline up to the merged resources, which with
+      # `expo.autolinking.buildFromSource` means CMake compiles expo-modules-core, sqlite,
+      # reanimated and worklets, once per ABI. One ABI is enough: nothing lint reads is
+      # architecture-specific, and release.yml ships arm64-v8a anyway.
+      #
+      # A failure here is either a real new warning or a baseline that has drifted. Neither is
+      # fixed by widening `android-lint-baseline.xml`: regenerate it with
+      # `./gradlew :app:updateLintBaseline` only after the warning itself is understood.
+      - name: Lint
+        working-directory: android
+        run: ./gradlew :app:lintRelease --console=plain -PreactNativeArchitectures=arm64-v8a

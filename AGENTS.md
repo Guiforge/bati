@@ -111,7 +111,7 @@ first one to be slow: `expo.autolinking.buildFromSource` compiles every Expo mod
   by `expo/bundledNativeModules.json` on purpose, F-Droid rebuilds them from source against the
   SDK's React Native, and a version the SDK does not expect is their build error, not ours.
 
-- Two gates run only in CI, so run them by hand if a change plausibly moves either:
+- Three gates run only in CI, so run them by hand if a change plausibly moves one:
   **dependency licences** (`npx license-checker-rseidelsohn --production --excludePrivatePackages
   --summary --failOn "…"` in [`ci.yml`](.github/workflows/ci.yml)) blocks GPL/AGPL/LGPL/SSPL/BUSL
   in the shipped tree, because F-Droid rejects what it cannot redistribute and does so a release
@@ -120,6 +120,17 @@ first one to be slow: `expo.autolinking.buildFromSource` compiles every Expo mod
   55 MiB — a ratchet, lower it after a release that measures under, never raise it. The measured
   breakdown of where those megabytes are is in
   [`docs/architecture/performance.md`](docs/architecture/performance.md) § Binary size.
+
+- **Android lint** runs in [`android-lint.yml`](.github/workflows/android-lint.yml), on any push
+  that touches `app.json`, `plugins/`, `android/` or the lockfile:
+  `cd android && ./gradlew :app:lintRelease`. It is the only place strictness is felt.
+  `lintVitalRelease` inside `assembleRelease` looks at `fatal` issues alone, and the whole
+  configuration, with the reason behind each `disable`, lives in
+  [`plugins/withAndroidLint.js`](plugins/withAndroidLint.js) rather than in a hand-edited
+  `build.gradle` that prebuild would erase. `android-lint-baseline.xml` sits at the repo root
+  because `prebuild --clean` deletes `android/` outright; regenerate it with
+  `./gradlew :app:updateLintBaseline`, never by hand, and treat it like the coverage thresholds:
+  shrink it, never widen it to make a build pass.
 
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.
@@ -221,6 +232,17 @@ outlived it.
   is back for the session countdown beeps, and none of what got it thrown out came with it —
   because its `app.json` entry passes options instead of being a bare string, which the fourth
   test in that file is the only thing holding in place.
+- **The platform tells you what it deprecated once, in a console, after you shipped.** The Play
+  Console reported both a deprecated edge-to-edge parameter and an orientation restriction, and
+  both were generated XML nobody in this repo had written: `expo prebuild` puts
+  `android:statusBarColor` and `android:navigationBarColor` into `AppTheme` unconditionally, and
+  `orientation: "portrait"` in `app.json` becomes `android:screenOrientation`. Neither has an
+  `app.json` switch and neither survives being hand-edited, so both answers are config plugins.
+  Only one of the two has a lint check behind it: there is none for the window attributes, which
+  is why `__tests__/android-adaptive.test.ts` reads the committed prebuild output instead. The
+  portrait lock stays, deliberately, and `plugins/withAndroidLint.js` is where the reason is
+  written rather than in a silent baseline entry. Android 16 already ignores it on large screens,
+  so a tablet resizes the app today whichever way that decision goes.
 - **Never write game state before the thing that earned it exists.** Boss damage written during
   a session survived quitting and was double-counted when a round restarted. Bank it in memory,
   commit it in `saveSession`.

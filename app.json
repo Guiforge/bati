@@ -100,7 +100,8 @@
           ]
         }
       ],
-      "./plugins/withAndroidLintExtraTranslation",
+      "./plugins/withAndroidLint",
+      "./plugins/withAndroidEdgeToEdgeTheme",
       "./plugins/withAndroidReleaseSigning",
       "./plugins/withAndroidGradleMemory",
       "./plugins/withAndroidReleaseFlags",

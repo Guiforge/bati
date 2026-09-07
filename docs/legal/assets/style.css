@@ -601,6 +601,18 @@ html[data-lang="fr"] [lang="en"] {
   display: block;
 }
 
+.village > figcaption {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+.village > figcaption strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 /* The last tier carries the same gold as the last node of the loop: same claim, two places. */
 .village__strip figure:last-child img {
   border-color: rgba(255, 215, 0, 0.4);
@@ -622,18 +634,6 @@ html[data-lang="fr"] [lang="en"] {
 
 .village__strip figure:last-child figcaption {
   color: var(--gold);
-}
-
-.village > figcaption {
-  margin-top: 1.5rem;
-  font-size: 1rem;
-  color: var(--muted);
-  max-width: 62ch;
-}
-
-.village > figcaption strong {
-  color: var(--text);
-  font-weight: 600;
 }
 
 /* Two muted paragraphs of the same measure read as one block otherwise. */

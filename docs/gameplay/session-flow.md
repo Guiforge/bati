@@ -188,6 +188,11 @@ was there for it.
 
 **Purpose**: Take a break, options to continue or quit
 
+**Two doors into it.** The pause button, and opening a movement's how-to from the running screen
+or the rest: reading what a movement is stops the clock and closing it starts it again, so nobody
+pays for not knowing the movement. The mockup below predates both the sound toggle and the
+movement's art and description that the overlay now draws.
+
 ```
 ┌─────────────────────────────────────────────┐
 │                                             │

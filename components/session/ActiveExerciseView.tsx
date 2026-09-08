@@ -74,6 +74,7 @@ export function ActiveExerciseView() {
     };
   }, []);
   const pauseSession = useSessionStore((s) => s.pauseSession);
+  const resumeSession = useSessionStore((s) => s.resumeSession);
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
 
@@ -108,9 +109,24 @@ export function ActiveExerciseView() {
   const currentStep = currentRoundIndex * exercisesPerRound + currentExerciseIndex + 1;
   const progressPercent = (currentStep / totalSteps) * 100;
 
+  // Reading the movement stops the clock, and closing starts it again. The pause was already the
+  // one moment reading is free — it draws this same block — so a modal that answered "what is a
+  // dead bug?" without stopping the timer charged the hero for not knowing. Paired here rather
+  // than left to the paused screen's Resume: the hero asked to read, not to pause, so the way out
+  // of reading has to be the way back into the set.
+  //
+  // The paused overlay renders underneath, invisible: two stacked `$bgOverlay` at 0.92 leave it
+  // under a percent of a percent. Both calls are batched with the visibility flag, so no render
+  // ever shows one without the other.
   const handleShowHowTo = () => {
     selection();
+    pauseSession();
     setShowHowTo(true);
+  };
+
+  const handleCloseHowTo = () => {
+    resumeSession();
+    setShowHowTo(false);
   };
 
   const handleComplete = () => {
@@ -740,7 +756,7 @@ export function ActiveExerciseView() {
       <ExerciseInstructionsModal
         instruction={instruction}
         visible={showHowTo}
-        onClose={() => setShowHowTo(false)}
+        onClose={handleCloseHowTo}
       />
 
       <ExercisePickerSheet

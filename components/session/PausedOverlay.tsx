@@ -130,9 +130,9 @@ export function PausedOverlay() {
             </Paragraph>
           ) : null}
 
-          {/* The one moment reading is free. A hero who does not know what a dead bug is was
-              watching the clock run while they worked it out; here it is stopped. Same block the
-              running screen opens as a modal — see ExerciseInstructions.tsx. */}
+          {/* Reading is free here, and it is free from the running screen and the rest too: the
+              how-to modal pauses on the way in. This is what the hero lands on if they pause by
+              hand instead. Same block either way — see ExerciseInstructions.tsx. */}
           {instruction ? (
             <YStack pt="$2">
               <ExerciseInstructionsBody instruction={instruction} artSize={120} />

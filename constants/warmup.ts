@@ -242,8 +242,19 @@ function stepCount(quest: WarmupQuest): number {
  *
  * A quest whose exercises carry no pattern — user-authored content, where the column is nullable
  * on purpose — matches no family and falls through to the default pools.
+ *
+ * `unavailable` names the movements this hero cannot do, which today means the kit they said they
+ * do not own (`unavailableMovements()`). Two of the pull movements need a bar, and nothing here
+ * used to ask: a hero who answered "no equipment" in Settings was warmed up with scapular
+ * pull-ups anyway, session after session, while the quest gate that reads the same answer kept
+ * the quests themselves out of sight. It is a filter rather than a branch because every pool
+ * carries a bodyweight answer behind the one that needs kit, so the phase still fills.
  */
-export function buildWarmup(quest: WarmupQuest, sessionCount = 0): WarmupStep[] {
+export function buildWarmup(
+  quest: WarmupQuest,
+  sessionCount = 0,
+  unavailable: ReadonlySet<string> = new Set(),
+): WarmupStep[] {
   // An outing warms up by leaving. Eight indoor steps of star jumps and high knees in front of a
   // quest whose whole point is the door is the wrong protocol and the wrong story, and it was the
   // first thing every expedition showed.
@@ -271,7 +282,8 @@ export function buildWarmup(quest: WarmupQuest, sessionCount = 0): WarmupStep[] 
   // stepCount() only ever returns a key of PHASE_BUDGET; the index signature does not know it.
   const [raise, mobilise, activate, potentiate] = PHASE_BUDGET[stepCount(quest)] ?? [1, 1, 1, 1];
   const offset = Math.max(0, Math.trunc(sessionCount));
-  const used = new Set<string>();
+  // `take` skips whatever is already in here, so what the hero cannot do is simply pre-used.
+  const used = new Set<string>(unavailable);
 
   // Wrists go after activation and before the work-specific movement — closest to what is about
   // to load them. Outside the budget on purpose: it is a safety step, so a short quest shortens

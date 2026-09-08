@@ -42,6 +42,10 @@ jest.mock("@/db/completed", () => ({
 // behaviour — what it banks, commits and clears — is what these cases actually measure.
 jest.mock("@/db/exercises", () => ({
   checkForNewRungs: jest.fn().mockResolvedValue([]),
+  // The warm-up asks what the hero cannot do before it picks anything. A hero who owns
+  // everything is the shape these tests are written against; the filter itself is proved in
+  // warmup-build and against the real catalogue in content-invariants.
+  unavailableMovements: jest.fn().mockResolvedValue(new Set<string>()),
 }));
 jest.mock("@/db/oaths", () => ({
   checkOathFulfilled: jest.fn().mockResolvedValue(null),

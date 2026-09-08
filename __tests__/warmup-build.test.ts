@@ -29,8 +29,11 @@ function quest(
 const longQuest = (patterns: (MovementPattern | null)[], archetype: QuestArchetype | null = null) =>
   quest(patterns, archetype, { rounds: 3, reps: 20, restSeconds: 45 });
 
-const names = (q: WarmupQuest, sessionCount = 0) =>
-  buildWarmup(q, sessionCount).map((s) => s.exerciseName);
+const names = (q: WarmupQuest, sessionCount = 0, unavailable?: ReadonlySet<string>) =>
+  buildWarmup(q, sessionCount, unavailable).map((s) => s.exerciseName);
+
+/** What a hero who answered "no equipment" cannot do: the two warm-up movements needing a bar. */
+const NO_BAR: ReadonlySet<string> = new Set(["Scapular Pull-Up", "Inverted Row"]);
 
 /** Held stretches belong after training, never before it. */
 const STATIC_HOLDS = ["Pigeon Pose", "Standing Forward Fold", "Warrior Pose", "Cobra Stretch"];
@@ -199,6 +202,35 @@ describe("buildWarmup", () => {
       expect(names(quest(["pull_vertical", "pull_horizontal", "core"]))).toContain(
         "Scapular Pull-Up",
       );
+    });
+
+    it("prepares the scapula without a bar when the hero has no bar", () => {
+      // Scapular Pull-Up and Inverted Row are the only two warm-up movements that need kit, and
+      // both sit in the pull pools. Excluded, the phase still fills: the pools carry a
+      // bodyweight answer behind each of them, which is why this is a filter and not a branch.
+      const built = names(quest(["pull_vertical", "pull_horizontal", "core"]), 0, NO_BAR);
+
+      expect(built).not.toContain("Scapular Pull-Up");
+      expect(built).not.toContain("Inverted Row");
+      expect(built.length).toBeGreaterThanOrEqual(4);
+    });
+
+    it("keeps offering them to a hero who owns the bar", () => {
+      expect(names(quest(["pull_vertical", "pull_horizontal", "core"]))).toContain(
+        "Scapular Pull-Up",
+      );
+    });
+
+    it("excludes an unavailable movement at every rotation, not just the first", () => {
+      for (let sessionCount = 0; sessionCount < 12; sessionCount++) {
+        const built = names(
+          quest(["pull_vertical", "pull_horizontal", "core"]),
+          sessionCount,
+          NO_BAR,
+        );
+        expect(built).not.toContain("Scapular Pull-Up");
+        expect(built).not.toContain("Inverted Row");
+      }
     });
 
     it("prepares several families when the session emphasises several", () => {

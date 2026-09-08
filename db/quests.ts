@@ -1,6 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "./client";
 import { dayKey } from "./dates";
+import { canDo } from "./equipment";
 import { currentRungFor, type Exercise, listExercises, type MovementRef } from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
@@ -868,19 +869,25 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
       .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId)),
   ]);
 
-  const byQuest = new Map<number, { difficulties: DifficultyCode[]; equipment: Set<string> }>();
+  const byQuest = new Map<
+    number,
+    { difficulties: DifficultyCode[]; equipment: Set<EquipmentCode> }
+  >();
   for (const row of rows) {
-    const entry = byQuest.get(row.questId) ?? { difficulties: [], equipment: new Set<string>() };
+    const entry = byQuest.get(row.questId) ?? {
+      difficulties: [],
+      equipment: new Set<EquipmentCode>(),
+    };
     entry.difficulties.push(row.difficulty);
-    if (row.equipment !== "none") entry.equipment.add(row.equipment);
+    entry.equipment.add(row.equipment);
     byQuest.set(row.questId, entry);
   }
 
-  const owned = ownedEquipment === null ? null : new Set<string>(ownedEquipment);
+  const owned = ownedEquipment === null ? null : new Set<EquipmentCode>(ownedEquipment);
   const eligible = new Set<number>();
 
   for (const [questId, entry] of byQuest) {
-    const hasKit = owned === null || [...entry.equipment].every((code) => owned.has(code));
+    const hasKit = [...entry.equipment].every((code) => canDo(code, owned));
     const tooHard =
       trainingLevel === "beginner" && questTrainingLevel(entry.difficulties) === "advanced";
 

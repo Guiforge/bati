@@ -526,6 +526,49 @@ describe("content invariants", () => {
     expect(WARMUP_MOVEMENTS.filter((name) => !catalogue.has(name))).toEqual([]);
   });
 
+  /**
+   * The report: two days of "Traction scapulaire" in the warm-up of a hero who answered "sans
+   * matériel" in Settings. `buildWarmup` had never read that answer, so the pull pools offered
+   * Scapular Pull-Up and Inverted Row to everyone, and the quest gate that does read it
+   * (`getEligibleQuestIds`) only ever guarded the quest, never the four minutes before it.
+   *
+   * Driven from the catalogue rather than from a list of the two names known today: a movement
+   * added to a pool with a piece of kit behind it fails here, which is the only way this stays
+   * true.
+   */
+  test("a hero who owns nothing is never warmed up with equipment", async () => {
+    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
+    const { listExercises, unavailableMovements } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    t.sqlite
+      .prepare("INSERT OR REPLACE INTO user_preferences (key, value) VALUES (?, ?)")
+      .run("ownedEquipment", "[]");
+
+    const byName = new Map((await listExercises()).map((e) => [e.enName, e]));
+    const unavailable = await unavailableMovements();
+    // The guard is worth nothing if the hero could do everything anyway.
+    expect(unavailable.size).toBeGreaterThan(0);
+
+    const offenders = new Set<string>();
+    for (const quest of await loadQuests()) {
+      // Every rotation, not just the first: the offset is what decides which movement a phase
+      // gets, and the reported one only surfaced on some of them.
+      for (let sessionCount = 0; sessionCount < 12; sessionCount++) {
+        for (const stepName of buildWarmup(quest, sessionCount, unavailable)) {
+          const equipment = byName.get(stepName.exerciseName)?.equipment;
+          if (equipment !== undefined && equipment !== "none") {
+            offenders.add(`${stepName.exerciseName} (${equipment})`);
+          }
+        }
+      }
+    }
+
+    expect([...offenders]).toEqual([]);
+
+    t.sqlite.exec("DELETE FROM user_preferences");
+  });
+
   // A warm-up prepares; it does not train. Anything hard enough to cost the session is not a
   // warm-up movement, however well it fits the pattern the quest is about to load.
   test("no warm-up movement is a hard exercise", async () => {

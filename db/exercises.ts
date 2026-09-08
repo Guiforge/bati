@@ -1,8 +1,8 @@
 import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db, schema } from "./client";
-import { isEquipmentCode } from "./equipment";
+import { canDo, isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
-import { getAllPreferences } from "./preferences";
+import { getAllPreferences, preferences } from "./preferences";
 import {
   ADMIN_CREATOR,
   type DifficultyCode,
@@ -165,6 +165,24 @@ export function listExercises(): Promise<Exercise[]> {
     });
   }
   return exercisesCache;
+}
+
+/**
+ * The names of the movements this hero cannot do, because they need kit that was not declared in
+ * Settings. Names rather than ids: the warm-up names its movements as strings and resolves them
+ * against the catalogue at render time, so this is the shape its caller needs.
+ *
+ * Hero-authored movements are in scope too. Someone who writes down a movement, tags it with a
+ * barbell and then says they own none has answered the question twice; the second answer wins.
+ */
+export async function unavailableMovements(): Promise<Set<string>> {
+  const [catalogue, ownedEquipment] = await Promise.all([
+    listExercises(),
+    preferences.getOwnedEquipment(),
+  ]);
+  const owned = ownedEquipment === null ? null : new Set(ownedEquipment);
+
+  return new Set(catalogue.filter((ex) => !canDo(ex.equipment, owned)).map((ex) => ex.enName));
 }
 
 export async function getExerciseById(id: number): Promise<Exercise | null> {

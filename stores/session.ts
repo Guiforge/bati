@@ -21,7 +21,12 @@ import {
   markSessionWithNewRecords,
 } from "@/db/completed";
 import { estimateQuestSeconds } from "@/db/estimate";
-import { checkForNewRungs, type Exercise, type VariationStep } from "@/db/exercises";
+import {
+  checkForNewRungs,
+  type Exercise,
+  unavailableMovements,
+  type VariationStep,
+} from "@/db/exercises";
 import { isMountedOuting, isOutingSession } from "@/db/expeditions";
 import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
@@ -896,7 +901,11 @@ export const useSessionStore = create<SessionState>()(
       // Rotates which movement fills each phase, so the warm-up is not the same four every
       // session. A failed read costs variety, never the warm-up itself.
       const { totalSessions } = await getSessionAggregates().catch(() => ({ totalSessions: 0 }));
-      const warmupSequence = buildWarmup(quest, totalSessions);
+      // What the hero said they do not own. A failed read costs the filter, never the warm-up:
+      // an unfiltered warm-up is the old behaviour, and no warm-up is a worse answer than a
+      // scapular pull-up someone skips.
+      const unavailable = await unavailableMovements().catch(() => new Set<string>());
+      const warmupSequence = buildWarmup(quest, totalSessions, unavailable);
       const warmupFirst = warmupEnabled && warmupSequence.length > 0;
 
       const opening = openingState(quest, warmupFirst, warmupSequence);

@@ -13,6 +13,7 @@ import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, ChevronRight, PenLine } from "@/components/icons";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { canDo } from "@/db/equipment";
 import { type Exercise, listExercises, officialByName, pickableExercises } from "@/db/exercises";
 import {
   breakOath,
@@ -291,6 +292,7 @@ export default function OathScreen() {
 
   // Exercise presets need a real id; drop any whose seed exercise isn't loaded yet/present.
   const presetRows = useMemo(() => {
+    const owned = ownedEquipment === null ? null : new Set(ownedEquipment);
     const rows: { preset: OathPreset; label: string }[] = [];
     for (const p of OATH_PRESETS) {
       if (!oathNeedsExercise(p.metric)) {
@@ -307,13 +309,7 @@ export default function OathScreen() {
       const ex = presetExercise(p, exercises);
       // Drop presets whose exercise is absent, and any that need kit the hero does not own —
       // an oath you cannot move is worse than no oath at all.
-      if (
-        !ex ||
-        (ownedEquipment !== null &&
-          ex.equipment !== "none" &&
-          !ownedEquipment.includes(ex.equipment))
-      )
-        continue;
+      if (!ex || !canDo(ex.equipment, owned)) continue;
       // ponytail: `metric_exercise_pr` reads as "N reps in a row", true for every exercise_pr
       // preset except this one hold — L-Sit's PR is seconds. One special case rather than a
       // unit field on OathPreset, since it's the only hold-type preset today; give the field a

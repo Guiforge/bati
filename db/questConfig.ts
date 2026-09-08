@@ -226,25 +226,29 @@ export function applyQuestConfig(
       const key = String(qex.id);
       const swappedId = swaps[key];
       const substitute = swappedId === undefined ? undefined : exercisesById[swappedId];
+      // The unit is resolved first, then the hero's number lands in it. `applySwap` drops the
+      // override when the movement changes, so `targets[id]` is only ever a value for the movement
+      // standing in the slot now — after a swap that flipped the unit, a value in the *new* unit.
+      // Retargeting second discarded exactly those: a slot swapped from a hold onto a counted
+      // movement showed the level's default reps and every step of the field was thrown away on
+      // the next render, which read as a frozen control. The clamp follows the resolved unit too;
+      // on the old order it measured reps against the range for seconds.
+      const base =
+        substitute === undefined
+          ? qex.target
+          : retargetForMovement(qex.target, substitute, config.level);
       const raw = targets[key];
-      const value = raw === undefined ? undefined : clamp(raw, targetRangeFor(qex.target.type));
+      const value = raw === undefined ? undefined : clamp(raw, targetRangeFor(base.type));
 
       if (substitute === undefined && value === undefined) return qex;
 
       return {
         ...qex,
-        ...(value === undefined ? {} : { target: { ...qex.target, value } }),
+        target: value === undefined ? base : { ...base, value },
         ...(substitute === undefined
           ? {}
           : {
               exercise: substitute,
-              // The value override above is dropped by `applySwap` when the movement changes; the
-              // *unit* was never in the config at all, so it is resolved here, from the movement.
-              target: retargetForMovement(
-                value === undefined ? qex.target : { ...qex.target, value },
-                substitute,
-                config.level,
-              ),
               // `images` is the quest's own art *of the movement that used to be here*, off
               // `quest_exercises.imagesJson`. Kept, the card illustrates the wrong exercise.
               images: [],

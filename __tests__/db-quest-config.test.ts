@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import type { Quest } from "@/db/quests";
-import { Difficulty } from "@/db/targets";
+import { Difficulty, targetRangeFor } from "@/db/targets";
 import { clientMock, createTestDb, ownEveryRung } from "./helpers/testDb";
 
 // questConfig reaches the preferences table, which pulls in the native client: the same
@@ -213,7 +213,7 @@ describe("db/questConfig", () => {
     const superman = { ...dip, id: 3, enName: "Superman", measure: "time" as const };
     const out = applyQuestConfig(
       makeQuest(),
-      { level: Difficulty.Medium, targets: { 11: 22 }, swaps: { 11: 3 } },
+      { level: Difficulty.Medium, swaps: { 11: 3 } },
       indexExercises([superman]),
     );
 
@@ -221,6 +221,39 @@ describe("db/questConfig", () => {
     expect(out.exercises[0]?.target).toEqual({ type: "time", value: 30 });
     // The slot next to it, untouched, keeps its own unit.
     expect(out.exercises[1]?.target).toEqual({ type: "time", value: 30 });
+  });
+
+  /**
+   * The second report on the same slot: the field went dead. A target written *after* a swap is
+   * a value in the movement's own unit, and retargeting used to run last and overwrite it with
+   * the level's default, on every render — so the stepper snapped back on every tap and the hero
+   * was left holding whatever number the flip had produced.
+   */
+  test("a target set after a unit-flipping swap is the one that runs", () => {
+    const pushUp = { ...dip, id: 4, enName: "Push-Up", measure: "reps" as const };
+    // Slot 12 is authored in seconds; Push-Up is counted, so the swap flips the unit.
+    const out = applyQuestConfig(
+      makeQuest(),
+      { level: Difficulty.Medium, targets: { 12: 25 }, swaps: { 12: 4 } },
+      indexExercises([pushUp]),
+    );
+
+    expect(out.exercises[1]?.exercise.enName).toBe("Push-Up");
+    expect(out.exercises[1]?.target).toEqual({ type: "reps", value: 25 });
+  });
+
+  test("a target set after a swap is clamped in the unit that actually runs", () => {
+    const pushUp = { ...dip, id: 4, enName: "Push-Up", measure: "reps" as const };
+    // 300 is inside the range for seconds and far outside the one for reps. Read against the
+    // slot's old unit it would have sailed through as 300 push-ups.
+    const out = applyQuestConfig(
+      makeQuest(),
+      { level: Difficulty.Medium, targets: { 12: 300 }, swaps: { 12: 4 } },
+      indexExercises([pushUp]),
+    );
+
+    expect(out.exercises[1]?.target.type).toBe("reps");
+    expect(out.exercises[1]?.target.value).toBeLessThanOrEqual(targetRangeFor("reps").max);
   });
 
   test("a swap naming an exercise the catalogue does not have is ignored", () => {

@@ -50,7 +50,13 @@ export function ExerciseInstructionsBody({
   );
 }
 
-/** The same block, opened from the running screen without stopping the set. */
+/**
+ * The same block, opened from the running screen and from the rest, over a session it stops.
+ *
+ * It did not stop it at first, which was the wrong half of the trade it was built to fix: the
+ * answer to "what is a dead bug?" arrived without a pause, and the clock ran while the hero read
+ * it. Both callers pause on the way in and resume on the way out.
+ */
 export function ExerciseInstructionsModal({
   instruction,
   visible,

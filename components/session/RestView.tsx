@@ -47,6 +47,7 @@ export function RestView() {
   const lastSetSkipped = useSessionStore((s) => s.lastSetSkipped);
   const status = useSessionStore((s) => s.status);
   const pauseSession = useSessionStore((s) => s.pauseSession);
+  const resumeSession = useSessionStore((s) => s.resumeSession);
   const { remainingSeconds, progress } = useSessionTimer();
   // Declared above the auto-advance effect below on purpose: on the render where the rest hits
   // zero, this one runs first, so the "go" starts before skipRest() unmounts the screen.
@@ -98,6 +99,21 @@ export function RestView() {
   // Same rule as the running screen: during a fight the room's colour is the boss's, and it
   // darkens as the fight turns.
   const screenBg = getQuestColorTokensFromQuest(quest).bg;
+
+  // Reading the movement stops the clock, and closing starts it again. Same pairing as the
+  // running screen, and the same reason: the rest is the one moment reading was already free, so
+  // a modal that let the countdown run through it took that back. See ActiveExerciseView for the
+  // note on the paused overlay rendering underneath.
+  const handleShowHowTo = () => {
+    selection();
+    pauseSession();
+    setShowHowTo(true);
+  };
+
+  const handleCloseHowTo = () => {
+    resumeSession();
+    setShowHowTo(false);
+  };
 
   const handleSkipRest = () => {
     mediumImpact();
@@ -309,10 +325,7 @@ export function RestView() {
               borderWidth={1}
               borderColor="$borderStrong"
               gap="$2"
-              onPress={() => {
-                selection();
-                setShowHowTo(true);
-              }}
+              onPress={handleShowHowTo}
               pressStyle={{ opacity: 0.9 }}
               accessibilityRole="button"
               accessibilityLabel={t("session.how_to_do_it")}
@@ -377,7 +390,7 @@ export function RestView() {
       <ExerciseInstructionsModal
         instruction={instruction}
         visible={showHowTo}
-        onClose={() => setShowHowTo(false)}
+        onClose={handleCloseHowTo}
       />
     </YStack>
   );

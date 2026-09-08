@@ -11,7 +11,8 @@ import config from "@/tamagui.config";
 /**
  * The paused screen was the only place the movement was ever *drawn* and explained, which meant
  * the answer to "what is a dead bug?" cost a pause. The running screen now opens the same block
- * as a modal, from the art or from the row that names it.
+ * as a modal, from the art or from the row that names it — and stops the clock behind it, which
+ * is the half the modal did not have at first.
  *
  * Asserted on the text and the trigger, not on a state flag: the accordion this replaced showed
  * the description with no picture, and a test that only checked "some panel opened" would have
@@ -160,6 +161,57 @@ describe("the movement's instructions, mid-set", () => {
 
     expect(screen.getByTestId("session-instructions")).toBeTruthy();
     expect(screen.getByText(HOW_TO)).toBeTruthy();
+  });
+
+  /**
+   * Reading the movement used to cost whatever the clock ran while you read. The pause was
+   * already the one moment reading is free — it draws the same block — so the modal that made it
+   * reachable mid-set inherited the wrong half of that trade: the answer came without stopping
+   * the timer, and a hero who did not know the movement paid for finding out.
+   *
+   * Asserted on `prePauseStatus` as well as `status`: a pause that forgets what it interrupted
+   * resumes into "running", which would end a rest early and start a set nobody was ready for.
+   */
+  it("stops the clock while the movement is being read", async () => {
+    await mountRunning();
+
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("session-how-to"));
+    });
+
+    expect(useSessionStore.getState().status).toBe("paused");
+    expect(useSessionStore.getState().prePauseStatus).toBe("running");
+  });
+
+  it("gives the rest its own clock back too, not the set's", async () => {
+    await mountResting();
+
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("rest-up-next"));
+    });
+
+    expect(useSessionStore.getState().status).toBe("paused");
+    expect(useSessionStore.getState().prePauseStatus).toBe("resting");
+
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("session-instructions-close"));
+    });
+
+    expect(useSessionStore.getState().status).toBe("resting");
+  });
+
+  it("starts the clock again on the way out, so nothing has to be tapped twice", async () => {
+    await mountRunning();
+
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("session-how-to"));
+    });
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("session-instructions-close"));
+    });
+
+    expect(useSessionStore.getState().status).toBe("running");
+    expect(useSessionStore.getState().prePauseStatus).toBeNull();
   });
 
   it("closes again, so the set is never trapped behind it", async () => {

@@ -7,6 +7,7 @@ import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
+import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
@@ -44,6 +45,12 @@ export function WarmupView() {
   const skipWarmup = useSessionStore((s) => s.skipWarmup);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const { remainingSeconds, progress } = useSessionTimer();
+  // Declared above the auto-advance effect below, the same way `RestView` does it: on the render
+  // where a movement hits zero, this one runs first, so the "go" starts before `nextWarmupStep()`
+  // resets the timer under it. Without it this screen was the one timed view that never counted,
+  // so all four of its countdowns ran silent and the first sound of a session was the pre-start
+  // countdown that follows the warm-up, which reads as "only the last movement beeps".
+  useCountdownCues(remainingSeconds);
 
   const [catalogue, setCatalogue] = useState<Exercise[]>([]);
 

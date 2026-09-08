@@ -5,6 +5,7 @@ import { TamaguiProvider } from "tamagui";
 import { WarmupView } from "@/components/session/WarmupView";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
 import { listExercises } from "@/db/exercises";
+import { playCue } from "@/src/sounds";
 import { useSessionStore } from "@/stores/session";
 import config from "@/tamagui.config";
 
@@ -35,6 +36,7 @@ jest.mock("@/db/preferences", () => ({
 jest.mock("@/db", () => ({ preferences: {} }));
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
+jest.mock("@/src/sounds", () => ({ playCue: jest.fn(), warm: jest.fn() }));
 
 async function mountWarmup() {
   let result!: ReturnType<typeof render>;
@@ -87,6 +89,45 @@ describe("WarmupView", () => {
     });
 
     expect(useSessionStore.getState().warmupIndex).toBe(1);
+  });
+
+  /**
+   * The report: no beep on any warm-up movement, only on the last one. The beep heard at the end
+   * is the pre-start countdown that follows the warm-up, not the last movement announcing itself:
+   * this screen was the one timed view that never called `useCountdownCues`, so all four of its
+   * countdowns ran silent and the first sound of a session came after the warm-up was over.
+   *
+   * Driven across two movements rather than one, because "only the last one" is a claim about the
+   * ones before it.
+   */
+  it("counts the last three seconds of every movement, not just the one before the session", async () => {
+    const mockedPlayCue = playCue as jest.MockedFunction<typeof playCue>;
+    mockedPlayCue.mockClear();
+
+    await mountWarmup();
+
+    // One second per act(): React batches inside a single act, so a jump would render once with
+    // the final value and only the zero would ever be observable. See the same note in
+    // __tests__/rest-view.test.tsx.
+    const stepSeconds = WARMUP_SEQUENCE[0].seconds;
+    for (let second = 0; second < stepSeconds; second++) {
+      await act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    }
+
+    expect(mockedPlayCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "go"]);
+    // The second movement is a countdown too, and it was the silent case.
+    expect(useSessionStore.getState().warmupIndex).toBe(1);
+
+    mockedPlayCue.mockClear();
+    for (let second = 0; second < stepSeconds; second++) {
+      await act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    }
+
+    expect(mockedPlayCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "go"]);
   });
 
   it("shows the movement's description, so the hero knows what to do", async () => {

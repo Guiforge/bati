@@ -22,6 +22,12 @@ listing commit — and unless the caller is account admin, the error reads as a 
 `PERMISSION_DENIED` with no mention of screenshots, which cost a day of permission archaeology
 on 2026-08-14. F-Droid has no such cap, but this directory feeds both stores, so 8 is the law.
 
+Prose held it for three weeks. The directory reached 10 and `fastlane supply` failed on every
+release from v2.1.0, with the count named out loud once the service account could see it: on
+v2.1.3 the APK was built and published on GitHub and the AAB never reached the internal track,
+because the listing commit is atomic and takes the binary down with it.
+`__tests__/play-screenshot-cap.test.ts` counts the files now.
+
 ## Screenshots
 
 **Take them after the device pass, not before** — they are the one asset that has to show the

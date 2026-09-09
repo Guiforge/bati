@@ -1,0 +1,8 @@
+- L'échauffement ne propose que ce que tu peux faire. Sans
+  barre, il en demandait une sur toute quête de tirage.
+- Chaque mouvement d'échauffement annonce ses dernières
+  secondes, pas seulement le compte à rebours qui suit.
+- Lire ce qu'est un mouvement arrête le chrono, depuis
+  l'écran en cours, un repos ou la carte "à suivre".
+- Un mouvement échangé garde les reps que tu règles. Passer
+  des secondes aux reps jetait chaque tap.

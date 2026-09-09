@@ -1,0 +1,8 @@
+- The warm-up only prescribes movements you can do. Without
+  a bar it was still asking for one, on any pulling quest.
+- Every warm-up movement counts its last seconds out loud,
+  not only the countdown that follows the warm-up.
+- Reading what a movement is stops the clock, from the
+  running screen, a rest, or the warm-up's "up next" card.
+- A swapped movement keeps the reps you set. Trading seconds
+  for reps threw every tap away.

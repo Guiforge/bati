@@ -9,10 +9,12 @@ import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
+import { describeExercise } from "@/hooks/useSessionInstructions";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 
 /**
  * The dynamic warm-up, before the countdown (roadmap §14 H2).
@@ -44,6 +46,7 @@ export function WarmupView() {
   const previousWarmupStep = useSessionStore((s) => s.previousWarmupStep);
   const skipWarmup = useSessionStore((s) => s.skipWarmup);
   const pauseSession = useSessionStore((s) => s.pauseSession);
+  const resumeSession = useSessionStore((s) => s.resumeSession);
   const { remainingSeconds, progress } = useSessionTimer();
   // Declared above the auto-advance effect below, the same way `RestView` does it: on the render
   // where a movement hits zero, this one runs first, so the "go" starts before `nextWarmupStep()`
@@ -53,6 +56,7 @@ export function WarmupView() {
   useCountdownCues(remainingSeconds);
 
   const [catalogue, setCatalogue] = useState<Exercise[]>([]);
+  const [showNextHowTo, setShowNextHowTo] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,6 +109,24 @@ export function WarmupView() {
 
   const nextStep = warmupSequence[warmupIndex + 1];
   const nextExercise = nextStep ? officialByName(catalogue, nextStep.exerciseName) : undefined;
+  const nextInstruction = nextExercise ? describeExercise(nextExercise, language) : null;
+
+  // Same trade as the rest screen: reading what a movement is stops the clock, closing starts it
+  // again. A warm-up step is thirty seconds, so letting it run through the description would
+  // spend the whole step on reading it.
+  const handleShowNextHowTo = () => {
+    // The catalogue arrives asynchronously, so early in a warm-up the card has a name and
+    // nothing to open yet. Pausing for an empty modal would strand the hero on the overlay.
+    if (!nextInstruction) return;
+    selection();
+    pauseSession();
+    setShowNextHowTo(true);
+  };
+
+  const handleCloseNextHowTo = () => {
+    resumeSession();
+    setShowNextHowTo(false);
+  };
 
   const isFirst = warmupIndex === 0;
 
@@ -216,6 +238,7 @@ export function WarmupView() {
 
       {nextStep ? (
         <XStack
+          testID="warmup-up-next"
           bg="$surface"
           p="$3"
           rounded="$6"
@@ -223,6 +246,10 @@ export function WarmupView() {
           borderColor="$borderStrong"
           gap="$3"
           items="center"
+          onPress={handleShowNextHowTo}
+          pressStyle={{ opacity: 0.9 }}
+          accessibilityRole="button"
+          accessibilityLabel={t("session.how_to_do_it")}
         >
           <YStack
             width={50}
@@ -271,6 +298,12 @@ export function WarmupView() {
           {t("session.warmup_skip", "Skip warm-up")}
         </Text>
       </Button>
+
+      <ExerciseInstructionsModal
+        instruction={nextInstruction}
+        visible={showNextHowTo}
+        onClose={handleCloseNextHowTo}
+      />
     </YStack>
   );
 }

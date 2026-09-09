@@ -4,7 +4,7 @@ import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
-import { useSettingsStore } from "@/stores/settings";
+import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 /**
  * What movement the session is on, in the shape a screen renders it.
@@ -22,6 +22,20 @@ export type SessionInstruction = {
   name: string;
   description: string;
 };
+
+/**
+ * A catalogue row in the shape a screen renders it.
+ *
+ * Exported because the warm-up's "up next" card describes a step this hook does not point at:
+ * the hook answers "which movement is the session on", and that card is about the one after.
+ */
+export function describeExercise(ex: Exercise, language: AppLanguage): SessionInstruction {
+  return {
+    imagePath: ex.imagePath,
+    name: localizedName(ex, language),
+    description: language === "fr" ? ex.frDescription : ex.enDescription,
+  };
+}
 
 export function useSessionInstructions(): SessionInstruction | null {
   const language = useSettingsStore((s) => s.language);
@@ -54,17 +68,11 @@ export function useSessionInstructions(): SessionInstruction | null {
     };
   }, [warmupName]);
 
-  const describe = (ex: Exercise): SessionInstruction => ({
-    imagePath: ex.imagePath,
-    name: localizedName(ex, language),
-    description: language === "fr" ? ex.frDescription : ex.enDescription,
-  });
-
   if (warmupName) {
     const found = officialByName(catalogue, warmupName);
-    return found ? describe(found) : null;
+    return found ? describeExercise(found, language) : null;
   }
 
   const current = quest?.exercises[currentExerciseIndex];
-  return current ? describe(current.exercise) : null;
+  return current ? describeExercise(current.exercise, language) : null;
 }

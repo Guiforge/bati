@@ -1,6 +1,7 @@
 import { estimateExerciseSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
-import type { DifficultyCode } from "./schema";
+import { cheapestLocomotion } from "./expeditions";
+import type { DifficultyCode, Locomotion } from "./schema";
 import type { Target } from "./targets";
 import { NON_REP_STYLE, SECONDS_PER_REP_EQUIVALENT } from "./workUnits";
 
@@ -86,6 +87,53 @@ const DIFFICULTY_WEIGHT: Record<DifficultyCode, number> = {
   hard: 2.5,
 };
 
+/**
+ * What a minute in motion is worth, in minutes of effort.
+ *
+ * Decided, not derived. The ordering follows the Compendium of Physical Activities (walking 3.8
+ * MET, cycling 6.8, running 8.5, a bodyweight circuit 6.0), but the values are three times below
+ * what MET ÷ 6 gives and no rounding of that division reaches them, so anyone citing the
+ * division to justify a fourth entry will be citing arithmetic that was never done. What the
+ * numbers actually encode is that Bati is a strengthening game and a walk does none of it, plus
+ * how much of each the phone can witness.
+ *
+ * `ride` is not above `walk` even though the effort is, and that is the deliberate part. The
+ * mounted speed cap is 25 m/s (`stores/expedition.ts`), which is 90 km/h, so an hour on a
+ * motorway credits an hour of moving time. At ⅓ that paid 400 XP against 300 for an hour of
+ * genuine walking, which inverts the one thing the phone does know. Lowering the speed cap is
+ * the better fix and it belongs to the GPS reducer, not here.
+ *
+ * A hero's own expedition is written `walk` and cannot be anything else: see `UserExerciseDraft`
+ * in `db/exercises.ts` for why a picker here would be a free doubling.
+ */
+const LOCOMOTION_RATE: Record<Locomotion, number> = {
+  walk: 1 / 4,
+  ride: 1 / 4,
+  run: 1 / 2,
+};
+
+/** The band the full rate is paid over, and the width of every band after it. */
+const OUTING_BAND_SECONDS = 3600;
+
+/**
+ * The first hour outside pays in full, the second at half, everything after at a quarter. Never
+ * zero: a walk that goes on is worth less per minute and never worth nothing, the same shape
+ * `OVERSHOOT_DECAY` gives a rep past its target.
+ *
+ * Read over the **day**, not the session, which is the whole reason `computeSessionXp` takes
+ * what the day already credited. Per session it is dodged by stopping and starting: six hours
+ * cut into six paid 1800 against 750 in one piece, no cheating required, and that is the same
+ * class of discoverable hole as the rest slider `0037` closed.
+ */
+function creditedOutingSeconds(seconds: number): number {
+  const total = Math.max(0, seconds);
+  const first = Math.min(total, OUTING_BAND_SECONDS);
+  const second = Math.min(Math.max(0, total - OUTING_BAND_SECONDS), OUTING_BAND_SECONDS);
+  const rest = Math.max(0, total - 2 * OUTING_BAND_SECONDS);
+
+  return first + second * 0.5 + rest * 0.25;
+}
+
 /** The hero's chosen level. Distinct from `USER_LEVEL_MULTIPLIER`, which scales targets. */
 const LEVEL_MULTIPLIER: Record<DifficultyCode, number> = {
   easy: 0.9,
@@ -100,7 +148,21 @@ export type XpSet = {
   result: Target;
 };
 
+/**
+ * The ground this session covered, priced once for the whole session.
+ *
+ * Once, not per slot: a quest with six outdoor slots, or six rounds, priced each leg against a
+ * fresh day and paid 1800 for the six hours that are worth 750. `seconds` is therefore the
+ * session's, already bounded by its witness before it gets here — see `outingSeconds` in
+ * `stores/session.ts`, which is the only place that knows both the results and the trace.
+ */
+export type OutingLeg = { seconds: number; locomotion: Locomotion };
+
 export type ComputeSessionXpInput = {
+  /**
+   * The sets that were counted or held. Locomotion slots are not among them: they are not
+   * priced a set at a time, and `toXpSets` drops them.
+   */
   sets: XpSet[];
   /**
    * The session's elapsed time minus explicit pauses **and minus the rest actually taken** — the
@@ -109,8 +171,20 @@ export type ComputeSessionXpInput = {
    * Rest has to come out, or camping the rest screen would inflate the very ceiling that
    * fabricated results then fill. Rest *taken*, not rest *prescribed*: subtracting the prescription
    * would push an honest hero who skips their rests below their own effort and floor them.
+   *
+   * It bounds the sets above and nothing else. The ground has its own witness.
    */
   effortCeilingSeconds: number;
+  /** What this session covered on foot or on a mount, or null when it never left the walls. */
+  outing?: OutingLeg | null;
+  /**
+   * What the day's earlier outings already credited, in the same seconds `outing.seconds` is in.
+   *
+   * This is what makes the decay a property of the day rather than of the session, and it is
+   * the difference between a rule and a suggestion: without it, stopping and starting pays 2.4×
+   * for the same walk. Zero on the first outing of the day, and zero for every workout.
+   */
+  priorOutingSecondsToday?: number;
   userLevel: DifficultyCode;
 };
 
@@ -125,27 +199,6 @@ export type ComputeSessionXpInput = {
  */
 function setEffortSeconds({ exercise, target, result }: XpSet): number {
   const done = Math.max(0, estimateExerciseSeconds(exercise, result));
-
-  // An outing is paid for what it did, with no reference to what it was asked for.
-  //
-  // Its clock has a witness the others do not: the caller passes the reducer's *moving* seconds
-  // as the effort ceiling, so a phone on a windowsill accrues none of them and a bus ride
-  // accrues none of them. The set-level brake exists to stop a result the hero typed, or a
-  // phone left face-up, from outrunning the prescription; neither is possible here.
-  //
-  // It went in two steps and the first was half a fix. Clamping outright made every walk past
-  // nineteen minutes worth exactly the same as the nineteenth, so three short walks beat one
-  // long one at the one thing the feature is named after. The decaying tail that replaced it
-  // still charged 75% on the surplus, which meant a hero who went out for forty minutes against
-  // a suggested thirteen kept 55% of their own time — a penalty for not having picked a number
-  // they had no reason to pick. The target on an outing is a suggestion on the session screen
-  // (`ActiveExerciseView` shows it no countdown at all); this is the same sentence in the
-  // ledger. Going out with no objective is now a thing the app can be told by doing it.
-  //
-  // The brake is still there, one storey up where it protects instead of punishing: moving
-  // seconds bound the session, `MAX_SESSION_XP` bounds the day.
-  if (exercise.style === NON_REP_STYLE) return done;
-
   const allowed = Math.max(0, estimateExerciseSeconds(exercise, target)) * OVERSHOOT_ALLOWANCE;
 
   // A hold's result *is* a clock: `ActiveExerciseView` records the elapsed seconds and overtime
@@ -163,17 +216,48 @@ function setWeightedSeconds(set: XpSet): number {
   return setEffortSeconds(set) * DIFFICULTY_WEIGHT[set.exercise.difficulty];
 }
 
-/** Weighted effort seconds → XP. The tail every entry point shares. */
-function effortToXp(effortSeconds: number, userLevel: DifficultyCode): number {
-  const xp =
-    (Math.max(0, effortSeconds) / SECONDS_PER_REP_EQUIVALENT) * LEVEL_MULTIPLIER[userLevel];
+/**
+ * What a session's ground is worth, in the same effort seconds a rep is measured in.
+ *
+ * The marginal band, not the whole: the day's earlier outings already spent the cheap hours, so
+ * this session is paid for the part of the curve it actually sits on. Six one-hour walks and one
+ * six-hour walk therefore come to the same total, to within one rounding each.
+ *
+ * No level multiplier. A walk is neither easy nor hard, it is a walk, and the rate is the whole
+ * judgement — the same reason the quest screen shows an outing no level line.
+ */
+function outingEffortSeconds(outing: OutingLeg, priorSeconds: number): number {
+  const prior = Math.max(0, priorSeconds);
+  const credited =
+    creditedOutingSeconds(prior + Math.max(0, outing.seconds)) - creditedOutingSeconds(prior);
 
-  return Math.min(MAX_SESSION_XP, Math.max(XP_FLOOR, Math.round(xp)));
+  return credited * LOCOMOTION_RATE[outing.locomotion];
+}
+
+/**
+ * Effort seconds → XP, and the two bounds every entry point shares.
+ *
+ * The floor is "no session is wasted", and it stops applying to an outing once the day has
+ * already paid for one. It has to: at 1.25 XP a minute a one-minute walk floors to 10, an
+ * eightfold uplift, and 120 of them paid 1200 XP against 450 for the same two hours in one
+ * piece. The day decay above is only a rule while the floor cannot be used to walk around it.
+ * A workout still floors, whatever the hero did outside first.
+ */
+function boundXp(xp: number, floored: boolean): number {
+  const rounded = Math.round(Math.max(0, xp));
+  return Math.min(MAX_SESSION_XP, floored ? Math.max(XP_FLOOR, rounded) : rounded);
+}
+
+/** Weighted rep-effort seconds → XP, at the hero's chosen level. */
+function repXp(effortSeconds: number, userLevel: DifficultyCode): number {
+  return (Math.max(0, effortSeconds) / SECONDS_PER_REP_EQUIVALENT) * LEVEL_MULTIPLIER[userLevel];
 }
 
 export function computeSessionXp({
   sets,
   effortCeilingSeconds,
+  outing = null,
+  priorOutingSecondsToday = 0,
   userLevel,
 }: ComputeSessionXpInput): number {
   const rawSeconds = sets.reduce((sum, set) => sum + setEffortSeconds(set), 0);
@@ -188,46 +272,80 @@ export function computeSessionXp({
       ? weightedSeconds * (ceiling / rawSeconds)
       : weightedSeconds;
 
-  return effortToXp(credited, userLevel);
+  // Two legs, two units of judgement, one total. The sets are worth what the movement was worth
+  // per second; the ground is worth what the way out is worth per second. Neither converts into
+  // the other, and a mixed quest is simply a session that has both.
+  const outingSeconds = outing === null ? 0 : outingEffortSeconds(outing, priorOutingSecondsToday);
+
+  return boundXp(
+    repXp(credited, userLevel) + outingSeconds / SECONDS_PER_REP_EQUIVALENT,
+    outing === null || priorOutingSecondsToday <= 0,
+  );
 }
 
 export type EstimateQuestXpInput = {
   rounds: number;
-  exercises: Array<{ exercise: XpSet["exercise"]; target: Target }>;
+  exercises: Array<{
+    exercise: XpSet["exercise"] & Pick<Exercise, "locomotion">;
+    target: Target;
+  }>;
 };
 
 /**
- * What a quest is worth to a hero who beats every target by the full allowance — the "up to +N XP"
- * the gallery and the quest screen advertise.
+ * What a quest is worth before it is run — the number the gallery and the quest screen advertise.
+ *
+ * Two sentences, because a quest is two kinds of thing. For sets it is "up to": a hero who beats
+ * every target by the full allowance, which is the ceiling the tag quotes. For ground there is
+ * no ceiling to quote, so it is what the suggested duration pays and walking further pays more,
+ * which is why the outing tag says `+N XP` and not `up to +N XP`.
  *
  * It reads targets only, so it no longer moves when the rest slider does. That tag was how the
  * rest exploit was found in the first place: dragging rest to 300s advertised +2940 XP, and the
  * screen was telling the truth about a formula that should never have paid for waiting.
  *
- * No effort ceiling — an estimate has no clock yet, and this is an upper bound by construction.
+ * No effort ceiling and no prior day — an estimate has no clock yet and no history, so it quotes
+ * the first hour's rate. A hero who has already walked today earns less than the tag says, which
+ * is the one direction an estimate is allowed to be wrong in.
  */
 export function estimateQuestXp(quest: EstimateQuestXpInput, userLevel: DifficultyCode): number {
   const rounds = Math.max(1, Math.round(quest.rounds));
-  const perRound = quest.exercises.reduce(
+  const sets = quest.exercises.filter((qex) => qex.exercise.style !== NON_REP_STYLE);
+  const ground = quest.exercises.filter((qex) => qex.exercise.style === NON_REP_STYLE);
+
+  const perRound = sets.reduce(
     (sum, qex) =>
       sum +
       setWeightedSeconds({
         exercise: qex.exercise,
         target: qex.target,
         // The allowance is what "up to" means: a hero who beats the target by a quarter is paid
-        // in full, and that is the ceiling this number quotes. An outing has no such ceiling
-        // any more, so quoting one would be quoting a maximum that does not exist. Its estimate
-        // is what the suggested duration is worth, and walking further is worth more.
-        result: {
-          type: qex.target.type,
-          value:
-            qex.exercise.style === NON_REP_STYLE
-              ? qex.target.value
-              : qex.target.value * OVERSHOOT_ALLOWANCE,
-        },
+        // in full, and that is the ceiling this number quotes.
+        result: { type: qex.target.type, value: qex.target.value * OVERSHOOT_ALLOWANCE },
       }),
     0,
   );
 
-  return effortToXp(rounds * perRound, userLevel);
+  const locomotion = cheapestLocomotion(ground.map((qex) => qex.exercise));
+  const outing: OutingLeg | null =
+    locomotion === null
+      ? null
+      : {
+          seconds: rounds * ground.reduce((sum, qex) => sum + estimateSlotSeconds(qex), 0),
+          locomotion,
+        };
+
+  return boundXp(
+    repXp(rounds * perRound, userLevel) +
+      (outing === null ? 0 : outingEffortSeconds(outing, 0) / SECONDS_PER_REP_EQUIVALENT),
+    true,
+  );
+}
+
+/**
+ * A locomotion slot's suggested seconds. A time target says them outright; a rep target on a
+ * movement that covers ground is a shape nothing seeds and the editor cannot make, so it falls
+ * back to the catalogue's tempo the way every other estimate does.
+ */
+function estimateSlotSeconds(qex: { exercise: XpSet["exercise"]; target: Target }): number {
+  return Math.max(0, estimateExerciseSeconds(qex.exercise, qex.target));
 }

@@ -19,6 +19,7 @@ import {
   createCompletedSession,
   getSessionAggregates,
   markSessionWithNewRecords,
+  outingSecondsToday,
 } from "@/db/completed";
 import { estimateQuestSeconds } from "@/db/estimate";
 import {
@@ -27,7 +28,12 @@ import {
   unavailableMovements,
   type VariationStep,
 } from "@/db/exercises";
-import { isMountedOuting, isOutingSession, outingLocomotion } from "@/db/expeditions";
+import {
+  isMountedOuting,
+  isOutingSession,
+  outingLocomotion,
+  pricedLocomotion,
+} from "@/db/expeditions";
 import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
@@ -55,7 +61,7 @@ import {
   type VillageTierUp,
 } from "@/db/village";
 import { NON_REP_STYLE } from "@/db/workUnits";
-import { computeSessionXp, MAX_SESSION_XP, type XpSet } from "@/db/xp";
+import { computeSessionXp, MAX_SESSION_XP, type OutingLeg, type XpSet } from "@/db/xp";
 import { i18n } from "@/i18n";
 import type { StartOptions } from "@/modules/bati-location";
 import type { OutingGoal } from "@/src/gps/track";
@@ -547,15 +553,21 @@ export function recordedDurationSeconds(): number {
   }).durationSeconds;
 }
 
-function toXpSets(quest: Quest, results: CompletedExerciseInput[]): XpSet[] {
+/**
+ * A logged set, priced by the movement it was done on rather than the one the slot now holds.
+ *
+ * `r.pricing` before `slot.exercise`, for the same reason `r.target` comes before `slot.target`:
+ * a slot can change mid-session, and a set is priced by what it was. Without this, swapping to a
+ * `hard` movement on the last round re-prices every set already logged.
+ */
+function pricedSets(
+  quest: Quest,
+  results: CompletedExerciseInput[],
+): { exercise: XpSet["exercise"]; target: Target; result: Target }[] {
   return results.flatMap((r) => {
     const slot = quest.exercises[r.sortOrder];
     if (!slot) return [];
 
-    // `r.pricing` before `slot.exercise`, for the same reason `r.target` comes before
-    // `slot.target`: a slot can change mid-session now, and a set is priced by what it was, not
-    // by what the slot became. Without this, swapping to a `hard` movement on the last round
-    // re-prices every set already logged and inflates the whole workout.
     return [
       {
         exercise: r.pricing ?? slot.exercise,
@@ -564,6 +576,86 @@ function toXpSets(quest: Quest, results: CompletedExerciseInput[]): XpSet[] {
       },
     ];
   });
+}
+
+/** The sets XP prices one at a time. Ground is not among them — see `outingLegSeconds`. */
+function toXpSets(quest: Quest, results: CompletedExerciseInput[]): XpSet[] {
+  return pricedSets(quest, results).filter((set) => set.exercise.style !== NON_REP_STYLE);
+}
+
+/**
+ * How many seconds of ground this session may claim: what its outdoor slots recorded, bounded by
+ * what moved.
+ *
+ * One number for the whole session, not one per slot. Per slot, a quest with six outdoor slots
+ * or six rounds priced each leg against a fresh day and paid 1800 for six hours worth 750 — the
+ * editor allows both shapes, so it was reachable without writing a line of code.
+ *
+ * The trace is the answer, not a bound on one. A recorded outdoor result is the *view's*
+ * stopwatch (`ActiveExerciseView` records elapsed seconds), which counts a bus and a bench;
+ * `movingSeconds` is the reducer's, which counts neither. So when there is a witness the witness
+ * is what is paid, and the hero's slots are not consulted at all.
+ */
+function outingLegSeconds(
+  quest: Quest,
+  results: CompletedExerciseInput[],
+  movingSeconds: number | null,
+  effortCeilingSeconds: number,
+): number {
+  if (movingSeconds !== null) return Math.max(0, movingSeconds);
+
+  // No fix ever locked, so there is no witness and what the hero's slots recorded is what there
+  // is — a declaration, like a rep count, bounded by a clock `sessionClock` has already capped at
+  // four hours. It is paid at a quarter of a minute of effort, which is what the declaration is
+  // worth without anything to check it against.
+  const declared = pricedSets(quest, results)
+    .filter((set) => set.exercise.style === NON_REP_STYLE)
+    .reduce((sum, set) => sum + Math.max(0, set.result.value), 0);
+
+  return Math.min(declared, Math.max(0, effortCeilingSeconds));
+}
+
+/**
+ * Everything the ledger needs to know about this session's ground: what it covered, what it was
+ * asked to cover, and what the day had already paid for.
+ *
+ * Assembled here rather than inline in `saveSession` because it is three questions with one
+ * answer between them, and because `saveSession` is already at the complexity ceiling.
+ */
+async function outingLedger(
+  quest: Quest,
+  results: CompletedExerciseInput[],
+  ground: Ground,
+  effortCeilingSeconds: number,
+  savedSessionId: number | null,
+): Promise<{ outing: OutingLeg | null; atTarget: OutingLeg | null; prior: number }> {
+  const locomotion = pricedLocomotion(quest);
+  if (locomotion === null) return { outing: null, atTarget: null, prior: 0 };
+
+  return {
+    outing: {
+      seconds: outingLegSeconds(quest, results, ground.movingSeconds, effortCeilingSeconds),
+      locomotion,
+    },
+    atTarget: { seconds: outingGoalSeconds(quest), locomotion },
+    // Excludes this session: a retry finds the row the first attempt wrote, and would otherwise
+    // read it as its own predecessor and pay the second band for the first band's work.
+    prior: await outingSecondsToday(savedSessionId),
+  };
+}
+
+/**
+ * What the outing was *asked* for — the suggested duration, summed over the outdoor slots.
+ *
+ * The victory screen's "for beating your targets" line is the difference between what the
+ * session paid and what it would have paid at its targets, and on an outing the target is a
+ * suggestion the session screen shows no countdown for. Quoting the recorded ground on both
+ * sides would make that difference zero and hide the one number the line exists to show.
+ */
+function outingGoalSeconds(quest: Quest): number {
+  return quest.exercises
+    .filter((slot) => slot.exercise.style === NON_REP_STYLE && slot.target.type === "time")
+    .reduce((sum, slot) => sum + Math.max(0, slot.target.value), 0);
 }
 
 /**
@@ -1428,7 +1520,23 @@ export const useSessionStore = create<SessionState>()(
       });
 
       const sets = toXpSets(quest, results);
-      let xpEarned = computeSessionXp({ sets, effortCeilingSeconds, userLevel });
+
+      // The ground, priced once for the whole session and against what the day already paid for.
+      const { outing, atTarget, prior } = await outingLedger(
+        quest,
+        results,
+        ground,
+        effortCeilingSeconds,
+        get().savedSessionId,
+      );
+
+      let xpEarned = computeSessionXp({
+        sets,
+        effortCeilingSeconds,
+        outing,
+        priorOutingSecondsToday: prior,
+        userLevel,
+      });
 
       // What the same session would have paid for hitting every target exactly. The difference is
       // the reward for going past them — surfaced on the victory screen, because an allowance the
@@ -1436,6 +1544,8 @@ export const useSessionStore = create<SessionState>()(
       const xpAtTarget = computeSessionXp({
         sets: sets.map((set) => ({ ...set, result: set.target })),
         effortCeilingSeconds,
+        outing: atTarget,
+        priorOutingSecondsToday: prior,
         userLevel,
       });
       let overshootXp = Math.max(0, xpEarned - xpAtTarget);

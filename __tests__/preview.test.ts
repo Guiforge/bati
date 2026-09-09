@@ -16,7 +16,12 @@ describe("db/preview", () => {
     };
 
     const exercisesById = {
-      1: { secondsPerRep: 2, difficulty: "medium" as const, style: "strength" as const },
+      1: {
+        secondsPerRep: 2,
+        difficulty: "medium" as const,
+        style: "strength" as const,
+        locomotion: null,
+      },
     };
 
     const medium = estimateQuestTemplateSeconds({
@@ -48,7 +53,12 @@ describe("db/preview", () => {
    */
   test("the XP estimate does not move when the rest slider does", () => {
     const exercisesById = {
-      1: { secondsPerRep: 3, difficulty: "medium" as const, style: "strength" as const },
+      1: {
+        secondsPerRep: 3,
+        difficulty: "medium" as const,
+        style: "strength" as const,
+        locomotion: null,
+      },
     };
     const base = {
       rounds: 10,

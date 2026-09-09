@@ -97,25 +97,50 @@ export function isOutingSession(quest: { exercises: { exercise: Styled }[] }): b
  */
 const BY_RATE: readonly Locomotion[] = ["walk", "ride", "run"];
 
-/**
- * How this session covered its ground, or null when it never left the walls — the value written
- * to `completed_sessions.outing` and the one its minutes are priced by.
- *
- * The strict predicate, so a mixed quest reads null: it holds real work, its minutes belong in
- * the training average, and its reps are priced the way reps always were.
- *
- * A quest holding two ways out is paid at the cheaper, which is why this returns the movement
- * rather than the first slot's. Marker and rate are then the same answer by construction; the
- * first slot would have made a walk-then-run quest a `run` in the journal and a `walk` in the
- * ledger. Null on a slot means a movement that never said, and unknown is not a door out.
- */
-export function outingLocomotion(quest: {
-  exercises: { exercise: Styled & { locomotion: Locomotion | null } }[];
-}): Locomotion | null {
-  if (!isOutingSession(quest)) return null;
+/** A movement, as little of one as the two questions below need. */
+type Moving = Styled & { locomotion: Locomotion | null };
 
-  const present = new Set(quest.exercises.map((slot) => slot.exercise.locomotion ?? "walk"));
+/**
+ * The cheaper of whatever ways out these movements hold, or null when they hold none.
+ *
+ * Cheaper rather than first: a walk-then-run quest priced by its first slot would be a `run` in
+ * the ledger and a `walk` in the journal the moment the hero reordered it, and the two must be
+ * one answer. Null on a movement is one that never said, and unknown is not a door out.
+ *
+ * Takes movements rather than slots because `db/xp.ts` has movements and no slots, and one rule
+ * with two callers beats two rules that agree until they do not.
+ */
+export function cheapestLocomotion(movements: Moving[]): Locomotion | null {
+  const present = new Set(
+    movements.filter((m) => isOutdoors(m.style)).map((m) => m.locomotion ?? "walk"),
+  );
+  if (present.size === 0) return null;
   return BY_RATE.find((l) => present.has(l)) ?? "walk";
+}
+
+const movementsOf = (quest: { exercises: { exercise: Moving }[] }): Moving[] =>
+  quest.exercises.map((slot) => slot.exercise);
+
+/**
+ * The same two questions the rest of this file asks, of the same word, one more time — and the
+ * difference between them is again the whole reason both exist.
+ *
+ * `outingLocomotion` is strict and answers *what kind of session was this*: it is written to
+ * `completed_sessions.outing`, and a mixed quest reads null because it holds real work, its
+ * minutes belong in the training average and its reps are priced the way reps always were.
+ *
+ * `pricedLocomotion` is generous and answers *what is a minute of this worth*: the ten minutes a
+ * mixed quest spends walking are still walking, and paying them at a movement's difficulty
+ * weight is exactly the mistake the whole outing rework exists to end. A mixed quest therefore
+ * has no marker and does have a rate, which reads like a contradiction and is not: one names the
+ * session, the other prices a leg of it.
+ */
+export function outingLocomotion(quest: { exercises: { exercise: Moving }[] }): Locomotion | null {
+  return isOutingSession(quest) ? cheapestLocomotion(movementsOf(quest)) : null;
+}
+
+export function pricedLocomotion(quest: { exercises: { exercise: Moving }[] }): Locomotion | null {
+  return cheapestLocomotion(movementsOf(quest));
 }
 
 /**

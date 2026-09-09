@@ -8,7 +8,7 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns";
-import { count, countDistinct, desc, eq, gte, sql, sum } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, gte, ne, sql, sum } from "drizzle-orm";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { dayKey } from "./dates";
@@ -324,6 +324,55 @@ export async function getSessionAggregates(): Promise<{
     totalXp: Number(row?.totalXp ?? 0),
     uniqueQuests: Number(row?.uniqueQuests ?? 0),
   };
+}
+
+/**
+ * The start of today where the hero is standing.
+ *
+ * In JS, never `strftime('%s','now','start of day')`, which is UTC: for anyone east or west of
+ * Greenwich that names a boundary hours from their midnight, and midnight-in-the-wrong-timezone
+ * is the bug `db/dates.ts` exists to end. Same rule as `dayKey`, one line rather than an import
+ * of a second one.
+ */
+function startOfLocalDay(now = new Date()): Date {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+/**
+ * Seconds of ground the day's earlier outings already credited — what the outing decay is
+ * measured against (`creditedOutingSeconds`, `db/xp.ts`).
+ *
+ * `COALESCE(movingSeconds, durationSeconds)` because an outing with no GPS fix has no moving
+ * time and still happened; `sessionClock` has already bounded its clock at four hours.
+ *
+ * `excludeSessionId` is not an optimisation. `saveSession` recomputes XP from the top on a retry
+ * and `ensureSessionRow` hands back the row the first attempt wrote, so without it a retried
+ * outing counts as its own predecessor and pays the second band for the first band's work.
+ *
+ * `performedAt` is the session's *start*, so a walk begun at 23:58 is counted against the day it
+ * set out on. ponytail: one seam a night, and crossing it deliberately pays twice; attributing
+ * seconds to the day they actually happened means cutting the trace, which is a bigger change
+ * than the hole is worth.
+ */
+export async function outingSecondsToday(excludeSessionId: number | null): Promise<number> {
+  const [row] = await db
+    .select({
+      seconds: sum(
+        sql`COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds})`,
+      ),
+    })
+    .from(completedQuest)
+    .where(
+      and(
+        sql`${completedQuest.outing} IS NOT NULL`,
+        gte(completedQuest.performedAt, startOfLocalDay()),
+        excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
+      ),
+    );
+
+  return Number(row?.seconds ?? 0);
 }
 
 /**

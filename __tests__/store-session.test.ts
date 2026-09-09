@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
+import { outingSecondsToday } from "@/db/completed";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import { saveQuestConfig } from "@/db/questConfig";
@@ -37,6 +38,13 @@ jest.mock("@/db/completed", () => ({
   // Only the warm-up reads this, to rotate which movement fills each phase. Pinned to 0 so the
   // sequence these cases walk is stable.
   getSessionAggregates: jest.fn().mockResolvedValue({ totalSessions: 0 }),
+  // What the day's earlier outings already credited. Zero, so every case here is the first
+  // outing of its day and the decay does not enter the numbers it asserts.
+  //
+  // This factory is flat on purpose — no `requireActual` spread — so anything `saveSession`
+  // starts calling has to be added by hand. Forget one and fifteen cases die on
+  // "is not a function", which is exactly how this line came to exist.
+  outingSecondsToday: jest.fn().mockResolvedValue(0),
 }));
 // The rest of what saveSession touches on its way through. Stubbed so the store's own
 // behaviour — what it banks, commits and clears — is what these cases actually measure.
@@ -1606,6 +1614,117 @@ describe("useSessionStore", () => {
     assert(call);
     // Ten minutes of session, not the walk's five: the push-ups happened in the other five.
     expect(call[0].effortCeilingSeconds).toBe(600);
+    // And the walk is a walk. It has no marker — the session holds real work, so its minutes
+    // belong in the training average — and it does have a rate, because the five minutes spent
+    // walking are still walking and pricing them at a movement's difficulty weight is the
+    // mistake this whole rework exists to end.
+    expect(call[0].outing).toEqual({ seconds: 300, locomotion: "walk" });
     jest.restoreAllMocks();
+  });
+});
+
+/**
+ * How many seconds of ground a session may claim. The rule lives here rather than in `db/xp.ts`
+ * because here is the only place that holds both the recorded results and the GPS trace.
+ */
+describe("what a session may claim it walked", () => {
+  const legOf = (): { seconds: number; locomotion: string } | null =>
+    (computeSessionXp as jest.Mock).mock.calls[0]?.[0]?.outing ?? null;
+
+  function outingQuest(slots: number, rounds = 1): Quest {
+    return {
+      id: 40,
+      rounds,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      enTitle: "The long way",
+      frTitle: "Le long chemin",
+      exercises: Array.from({ length: slots }, (_, i) => ({
+        exercise: {
+          id: 30 + i,
+          enName: "Warden's Walk",
+          muscles: [],
+          style: "expedition",
+          secondsPerRep: 1,
+          locomotion: "walk",
+        },
+        target: { type: "time", value: 3600 },
+      })),
+    } as unknown as Quest;
+  }
+
+  /** A trace of `movingSeconds` moving inside `elapsedSeconds` on the road. */
+  function witnessed(movingSeconds: number, elapsedSeconds: number): void {
+    const startedAt = Date.now() - elapsedSeconds * 1000;
+    useExpeditionStore.setState({
+      track: {
+        ...EMPTY,
+        startedAt,
+        lastAt: startedAt + elapsedSeconds * 1000,
+        distanceM: movingSeconds * 1.4,
+        movingMs: movingSeconds * 1000,
+      },
+    });
+  }
+
+  beforeEach(() => {
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    (computeSessionXp as jest.Mock).mockClear();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("the trace bounds it - forty minutes on a bus is ten minutes of walking", async () => {
+    witnessed(600, 2400);
+    await useSessionStore.getState().startSession(outingQuest(1), "medium", {});
+    useSessionStore.setState({
+      startTime: Date.now() - 2_400_000,
+      totalPausedTime: 0,
+      restTakenSeconds: 0,
+    });
+    await useSessionStore.getState().saveSession(null);
+
+    expect(legOf()).toEqual({ seconds: 600, locomotion: "walk" });
+  });
+
+  /**
+   * Six slots, one leg. Priced a slot at a time each would have started from a fresh day and
+   * paid six first hours: 1800 XP for six hours worth 750, on a quest shape the editor already
+   * allows (`app/(tabs)/quests/edit.tsx` has a rounds stepper and no style filter on its picker).
+   */
+  test("a quest with six ways out still covers one session's ground", async () => {
+    witnessed(6 * 3600, 6 * 3600);
+    await useSessionStore.getState().startSession(outingQuest(6), "medium", {});
+    useSessionStore.setState({
+      startTime: Date.now() - 6 * 3600 * 1000,
+      totalPausedTime: 0,
+      restTakenSeconds: 0,
+    });
+    await useSessionStore.getState().saveSession(null);
+
+    const leg = legOf();
+    assert(leg);
+    expect(leg.seconds).toBe(6 * 3600);
+  });
+
+  /**
+   * A retry runs `saveSession` from the top, and `ensureSessionRow` hands back the row the first
+   * attempt wrote. Without the exclusion the session reads as its own predecessor and is paid the
+   * second band for the first band's work.
+   */
+  test("a retry does not count itself as the day's earlier outing", async () => {
+    witnessed(1800, 1800);
+    await useSessionStore.getState().startSession(outingQuest(1), "medium", {});
+    useSessionStore.setState({
+      startTime: Date.now() - 1_800_000,
+      totalPausedTime: 0,
+      restTakenSeconds: 0,
+      savedSessionId: 77,
+    });
+    await useSessionStore.getState().saveSession(null);
+
+    expect(outingSecondsToday).toHaveBeenCalledWith(77);
   });
 });

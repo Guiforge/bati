@@ -261,9 +261,13 @@ export async function seedExpedition(): Promise<SeededExpedition> {
     // and take the longest-session record, which is the bug 0049 exists to end.
     outing: slot.locomotion ?? "walk",
     durationSeconds: elapsedSeconds,
+    // The walk goes in as ground, not as a set. Handed to `sets` it would be priced by its
+    // movement's difficulty weight, which is the whole thing 0049 and the rate table exist to
+    // stop, and the seeded demo would read three times what the same walk pays in the app.
     xpEarned: computeSessionXp({
-      sets: [set],
+      sets: [],
       effortCeilingSeconds: elapsedSeconds,
+      outing: { seconds: movingSeconds, locomotion: slot.locomotion ?? "walk" },
       userLevel: "medium",
     }),
     notes: DEV_EXPEDITION_NOTE,

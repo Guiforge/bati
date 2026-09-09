@@ -3,7 +3,7 @@ layout: default
 prose: true
 title: Privacy Policy
 head_title: "Privacy policy for Bati"
-description: Bati collects nothing about you. No account, no server, no analytics. Offline first, with one exception, off by default: the map, which tells a tile host roughly where an outing happened.
+description: "Bati collects nothing about you. No account, no server, no analytics. Offline first, with one exception, off by default: the map, which tells a tile host roughly where an outing happened."
 type: legal
 status: active
 updated: 2026-09-02

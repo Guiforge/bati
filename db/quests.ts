@@ -84,7 +84,12 @@ export type QuestTemplateExercise = {
   };
 };
 
-export type QuestTemplate = {
+/**
+ * Everything a quest is apart from its slots. The written template and the quest resolved for a
+ * hero differ in exactly one field, so they share the other twelve rather than repeating them:
+ * a column added to one shape is a column added to both, or it is a compile error.
+ */
+export type QuestHead = {
   id: number;
   enTitle: string;
   frTitle: string;
@@ -98,23 +103,13 @@ export type QuestTemplate = {
   /** What kind of session this is. Null for user-authored quests. */
   archetype: QuestArchetype | null;
   imagePath: string;
+};
+
+export type QuestTemplate = QuestHead & {
   exercises: QuestTemplateExercise[];
 };
 
-export type Quest = {
-  id: number;
-  enTitle: string;
-  frTitle: string;
-  enDescription: string;
-  frDescription: string;
-  author: ContentOwner;
-  rounds: number;
-  restSeconds: number;
-  /** Rest between rounds. Null = no separate round rest, `restSeconds` applies there too. */
-  roundRestSeconds: number | null;
-  /** What kind of session this is. Null for user-authored quests. */
-  archetype: QuestArchetype | null;
-  imagePath: string;
+export type Quest = QuestHead & {
   exercises: QuestExercise[];
 };
 
@@ -313,6 +308,101 @@ export async function createQuestFromOuting(
   });
 }
 
+/**
+ * The quest columns every read of the table selects, and the fold that turns the first row into a
+ * quest. Written once: the list, the detail and the configured quest all reach the same three
+ * screens, and a column added to `quests` but to only one of the three projections is how the
+ * gallery and the quest screen end up describing two different quests.
+ *
+ * A function, not a constant: several suites mock `schema` as `{}` and never run a query, so the
+ * table objects must not be read at import time.
+ */
+const questColumns = () => ({
+  questId: quests.id,
+  enTitle: quests.enTitle,
+  frTitle: quests.frTitle,
+  enDescription: quests.enDescription,
+  frDescription: quests.frDescription,
+  author: quests.author,
+  rounds: quests.rounds,
+  restSeconds: quests.restSeconds,
+  roundRestSeconds: quests.roundRestSeconds,
+  archetype: quests.archetype,
+  imagePath: quests.imagePath,
+});
+
+type QuestHeadRow = {
+  questId: number;
+  enTitle: string;
+  frTitle: string;
+  enDescription: string;
+  frDescription: string;
+  author: ContentOwner;
+  rounds: number;
+  restSeconds: number;
+  roundRestSeconds: number | null;
+  archetype: QuestArchetype | null;
+  imagePath: string | null;
+};
+
+/**
+ * The `quest_exercises` columns the two template readers share, and the fold that turns one of
+ * their rows into a slot. Left-joined, so a quest with no slots yet still returns its head and
+ * every slot column arrives nullable: the guard below is what says "this row opened no slot".
+ */
+const questSlotColumns = () => ({
+  questExerciseId: questExercises.id,
+  sortOrder: questExercises.sortOrder,
+  exerciseId: questExercises.exerciseId,
+  targetType: questExercises.targetType,
+  targetMin: questExercises.targetMin,
+  targetMax: questExercises.targetMax,
+  imagesJson: questExercises.imagesJson,
+});
+
+function templateSlot(r: {
+  questExerciseId: number | null;
+  exerciseId: number | null;
+  targetType: QuestTargetType | null;
+  targetMin: number | null;
+  targetMax: number | null;
+  imagesJson: string | null;
+}): QuestTemplateExercise | null {
+  if (
+    r.questExerciseId == null ||
+    r.exerciseId == null ||
+    r.targetType == null ||
+    r.targetMin == null ||
+    r.targetMax == null ||
+    r.imagesJson == null
+  ) {
+    return null;
+  }
+
+  return {
+    exerciseId: r.exerciseId,
+    images: safeParseImages(r.imagesJson),
+    baseTarget: { type: r.targetType, min: r.targetMin, max: r.targetMax },
+  };
+}
+
+/** A quest without its slots, from any row a `questColumns` read returned. */
+function questHead(r: QuestHeadRow): QuestHead {
+  return {
+    id: r.questId,
+    enTitle: r.enTitle,
+    frTitle: r.frTitle,
+    enDescription: r.enDescription,
+    frDescription: r.frDescription,
+    author: r.author,
+    rounds: r.rounds,
+    restSeconds: r.restSeconds,
+    roundRestSeconds: r.roundRestSeconds,
+    archetype: r.archetype ?? null,
+    imagePath: r.imagePath ?? "assets/placeholder.jpg",
+  };
+}
+
 // The gallery is read far more often than it is written, so every screen that mounts it shares one
 // fetch instead of refetching on every navigation. Authoring writes go through the helpers below,
 // which all call `invalidateQuestTemplates`.
@@ -327,25 +417,8 @@ export function invalidateQuestTemplates(questId?: number): void {
 async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
   const rows = await db
     .select({
-      questId: quests.id,
-      enTitle: quests.enTitle,
-      frTitle: quests.frTitle,
-      enDescription: quests.enDescription,
-      frDescription: quests.frDescription,
-      author: quests.author,
-      rounds: quests.rounds,
-      restSeconds: quests.restSeconds,
-      roundRestSeconds: quests.roundRestSeconds,
-      archetype: quests.archetype,
-      imagePath: quests.imagePath,
-
-      questExerciseId: questExercises.id,
-      sortOrder: questExercises.sortOrder,
-      exerciseId: questExercises.exerciseId,
-      targetType: questExercises.targetType,
-      targetMin: questExercises.targetMin,
-      targetMax: questExercises.targetMax,
-      imagesJson: questExercises.imagesJson,
+      ...questColumns(),
+      ...questSlotColumns(),
     })
     .from(quests)
     .leftJoin(questExercises, eq(questExercises.questId, quests.id))
@@ -355,42 +428,11 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
 
   for (const r of rows) {
     if (!byId.has(r.questId)) {
-      byId.set(r.questId, {
-        id: r.questId,
-        enTitle: r.enTitle,
-        frTitle: r.frTitle,
-        enDescription: r.enDescription,
-        frDescription: r.frDescription,
-        author: r.author,
-        rounds: r.rounds,
-        restSeconds: r.restSeconds,
-        roundRestSeconds: r.roundRestSeconds,
-        archetype: r.archetype ?? null,
-        imagePath: r.imagePath ?? "assets/placeholder.jpg",
-        exercises: [],
-      });
+      byId.set(r.questId, { ...questHead(r), exercises: [] });
     }
 
-    if (
-      r.questExerciseId == null ||
-      r.exerciseId == null ||
-      r.targetType == null ||
-      r.targetMin == null ||
-      r.targetMax == null ||
-      r.imagesJson == null
-    ) {
-      continue;
-    }
-
-    byId.get(r.questId)?.exercises.push({
-      exerciseId: r.exerciseId,
-      images: safeParseImages(r.imagesJson),
-      baseTarget: {
-        type: r.targetType,
-        min: r.targetMin,
-        max: r.targetMax,
-      },
-    });
+    const slot = templateSlot(r);
+    if (slot) byId.get(r.questId)?.exercises.push(slot);
   }
 
   return [...byId.values()];
@@ -409,25 +451,8 @@ export function listQuestTemplates(): Promise<QuestTemplate[]> {
 export async function getQuestTemplateById(id: number): Promise<QuestTemplate | null> {
   const rows = await db
     .select({
-      questId: quests.id,
-      enTitle: quests.enTitle,
-      frTitle: quests.frTitle,
-      enDescription: quests.enDescription,
-      frDescription: quests.frDescription,
-      author: quests.author,
-      rounds: quests.rounds,
-      restSeconds: quests.restSeconds,
-      roundRestSeconds: quests.roundRestSeconds,
-      archetype: quests.archetype,
-      imagePath: quests.imagePath,
-
-      questExerciseId: questExercises.id,
-      sortOrder: questExercises.sortOrder,
-      exerciseId: questExercises.exerciseId,
-      targetType: questExercises.targetType,
-      targetMin: questExercises.targetMin,
-      targetMax: questExercises.targetMax,
-      imagesJson: questExercises.imagesJson,
+      ...questColumns(),
+      ...questSlotColumns(),
     })
     .from(quests)
     .leftJoin(questExercises, eq(questExercises.questId, quests.id))
@@ -438,41 +463,13 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
   if (!first) return null;
 
   const quest: QuestTemplate = {
-    id: first.questId,
-    enTitle: first.enTitle,
-    frTitle: first.frTitle,
-    enDescription: first.enDescription,
-    frDescription: first.frDescription,
-    author: first.author,
-    rounds: first.rounds,
-    restSeconds: first.restSeconds,
-    roundRestSeconds: first.roundRestSeconds,
-    archetype: first.archetype ?? null,
-    imagePath: first.imagePath ?? "assets/placeholder.jpg",
+    ...questHead(first),
     exercises: [],
   };
 
   for (const r of rows) {
-    if (
-      r.questExerciseId == null ||
-      r.exerciseId == null ||
-      r.targetType == null ||
-      r.targetMin == null ||
-      r.targetMax == null ||
-      r.imagesJson == null
-    ) {
-      continue;
-    }
-
-    quest.exercises.push({
-      exerciseId: r.exerciseId,
-      images: safeParseImages(r.imagesJson),
-      baseTarget: {
-        type: r.targetType,
-        min: r.targetMin,
-        max: r.targetMax,
-      },
-    });
+    const slot = templateSlot(r);
+    if (slot) quest.exercises.push(slot);
   }
 
   return quest;
@@ -579,17 +576,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   // Join quests -> quest_exercises -> exercises -> exercise_muscles and aggregate.
   const rows = await db
     .select({
-      questId: quests.id,
-      enTitle: quests.enTitle,
-      frTitle: quests.frTitle,
-      enDescription: quests.enDescription,
-      frDescription: quests.frDescription,
-      author: quests.author,
-      rounds: quests.rounds,
-      restSeconds: quests.restSeconds,
-      roundRestSeconds: quests.roundRestSeconds,
-      archetype: quests.archetype,
-      imagePath: quests.imagePath,
+      ...questColumns(),
 
       qexId: questExercises.id,
       sortOrder: questExercises.sortOrder,
@@ -654,17 +641,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   );
 
   const quest: Quest = {
-    id: first.questId,
-    enTitle: first.enTitle,
-    frTitle: first.frTitle,
-    enDescription: first.enDescription,
-    frDescription: first.frDescription,
-    author: first.author,
-    rounds: first.rounds,
-    restSeconds: first.restSeconds,
-    roundRestSeconds: first.roundRestSeconds,
-    archetype: first.archetype ?? null,
-    imagePath: first.imagePath ?? "assets/placeholder.jpg",
+    ...questHead(first),
     exercises: [],
   };
 

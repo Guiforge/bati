@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Figure } from "@/components/common/Figure";
 import { Skeleton } from "@/components/common/Skeleton";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Share2 } from "@/components/icons";
@@ -177,20 +178,6 @@ function SpeedLegend({
           {t("recap.best_league", { pace: formatPace(best.metres, best.ms, unit) })}
         </Text>
       )}
-    </YStack>
-  );
-}
-
-function Figure({ label, value, testID }: { label: string; value: string; testID: string }) {
-  return (
-    <YStack flex={1} gap="$1" items="center">
-      {/* DESIGN.md's "label" recipe: short, uppercase, wide tracking — never body text. */}
-      <Text fontSize={11} letterSpacing={2} color="$textSecondary" textTransform="uppercase">
-        {label}
-      </Text>
-      <Text testID={testID} fontSize={22} fontWeight="700" color="$text">
-        {value}
-      </Text>
     </YStack>
   );
 }

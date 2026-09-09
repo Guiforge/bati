@@ -2,8 +2,9 @@ import { useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, XStack, YStack } from "tamagui";
+import { Text, XStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Figure } from "@/components/common/Figure";
 import { ChevronRight, Map as MapIcon } from "@/components/icons";
 import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
@@ -24,22 +25,6 @@ import { type AppLanguage, useSettingsStore } from "@/stores/settings";
  * `track` — so this is the same distance and the same moving time `saveSession` paid the road
  * and the XP from. Summing `gps_points` here would be a third answer to "how far did I go".
  */
-
-/** Recap's `Figure` recipe: DESIGN.md's uppercase label over a number, one third of the row. */
-function Figure({ label, value, testID }: { label: string; value: string; testID: string }) {
-  return (
-    <YStack flex={1} gap="$1" items="center">
-      <Text fontSize={11} letterSpacing={2} color="$textSecondary" textTransform="uppercase">
-        {label}
-      </Text>
-      {/* 22, where the XP beside it is 26. This block reports the outing; it does not out-shout
-          the reward. */}
-      <Text testID={testID} fontSize={22} fontWeight="700" color="$text">
-        {value}
-      </Text>
-    </YStack>
-  );
-}
 
 /**
  * The one line about the High Road, in the two shapes the road can be in.

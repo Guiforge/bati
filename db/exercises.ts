@@ -97,28 +97,80 @@ export function officialByName(catalogue: Exercise[], enName: string): Exercise 
 // The list still includes retired rows on purpose: db/adventures.ts, db/questConfig.ts and the
 // quest screen all resolve a quest's exercise ids against it, and a quest holding a retired
 // movement has to keep working. Hiding belongs at the moment of choosing — `pickableExercises`.
+/**
+ * The exercise columns every read of the table selects, and the fold that turns a row into an
+ * `Exercise`. Written once: the catalogue and the single-movement read answer the same screens,
+ * and the defaults below (`none`, `strength`, three seconds a rep) are what a hero row that
+ * predates a column falls back to, and two copies of them is two catalogues.
+ *
+ * A function, not a constant: several suites mock `schema` as `{}` and never run a query, so the
+ * table objects must not be read at import time.
+ */
+const exerciseColumns = () => ({
+  id: exercises.id,
+  enName: exercises.enName,
+  frName: exercises.frName,
+  enDescription: exercises.enDescription,
+  frDescription: exercises.frDescription,
+  imagePath: exercises.imagePath,
+  creator: exercises.creator,
+  difficulty: exercises.difficulty,
+  equipment: exercises.equipment,
+  style: exercises.style,
+  secondsPerRep: exercises.secondsPerRep,
+  pattern: exercises.pattern,
+  measure: exercises.measure,
+  prerequisiteExerciseId: exercises.prerequisiteExerciseId,
+  retiredAt: exercises.retiredAt,
+  muscle: exerciseMuscles.muscle,
+});
+
+type ExerciseRow = {
+  id: number;
+  enName: string;
+  frName: string;
+  enDescription: string;
+  frDescription: string;
+  imagePath: string;
+  creator: string;
+  difficulty: DifficultyCode;
+  equipment: EquipmentCode;
+  style: ExerciseStyle;
+  secondsPerRep: number;
+  pattern: MovementPattern | null;
+  measure: QuestTargetType | null;
+  prerequisiteExerciseId: number | null;
+  retiredAt: Date | null;
+};
+
+/** A movement with no muscles yet, from any row an `exerciseColumns` read returned. */
+function exerciseFromRow(r: ExerciseRow): Exercise {
+  return {
+    id: r.id,
+    enName: r.enName,
+    frName: r.frName,
+    enDescription: r.enDescription,
+    frDescription: r.frDescription,
+    imagePath: r.imagePath,
+    creator: r.creator,
+    difficulty: r.difficulty,
+    equipment: isEquipmentCode(r.equipment) ? r.equipment : "none",
+    style: isExerciseStyle(r.style) ? r.style : "strength",
+    secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
+    pattern: r.pattern ?? null,
+    measure: isQuestTargetType(r.measure) ? r.measure : null,
+    prerequisiteExerciseId: r.prerequisiteExerciseId,
+    retiredAt: r.retiredAt,
+    muscles: [],
+  };
+}
+
 let exercisesCache: Promise<Exercise[]> | null = null;
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Exercise list includes muscle groups and equipment filtering
 async function fetchExercises(): Promise<Exercise[]> {
   const rows = await db
     .select({
-      id: exercises.id,
-      enName: exercises.enName,
-      frName: exercises.frName,
-      enDescription: exercises.enDescription,
-      frDescription: exercises.frDescription,
-      imagePath: exercises.imagePath,
-      creator: exercises.creator,
-      difficulty: exercises.difficulty,
-      equipment: exercises.equipment,
-      style: exercises.style,
-      secondsPerRep: exercises.secondsPerRep,
-      pattern: exercises.pattern,
-      measure: exercises.measure,
-      prerequisiteExerciseId: exercises.prerequisiteExerciseId,
-      retiredAt: exercises.retiredAt,
-      muscle: exerciseMuscles.muscle,
+      ...exerciseColumns(),
     })
     .from(exercises)
     .leftJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id));
@@ -128,24 +180,7 @@ async function fetchExercises(): Promise<Exercise[]> {
   for (const r of rows) {
     const current = byId.get(r.id);
     if (!current) {
-      byId.set(r.id, {
-        id: r.id,
-        enName: r.enName,
-        frName: r.frName,
-        enDescription: r.enDescription,
-        frDescription: r.frDescription,
-        imagePath: r.imagePath,
-        creator: r.creator,
-        difficulty: r.difficulty,
-        equipment: isEquipmentCode(r.equipment) ? r.equipment : "none",
-        style: isExerciseStyle(r.style) ? r.style : "strength",
-        secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
-        pattern: r.pattern ?? null,
-        measure: isQuestTargetType(r.measure) ? r.measure : null,
-        prerequisiteExerciseId: r.prerequisiteExerciseId,
-        retiredAt: r.retiredAt,
-        muscles: [],
-      });
+      byId.set(r.id, exerciseFromRow(r));
     }
 
     if (isMuscleCode(r.muscle)) {
@@ -188,22 +223,7 @@ export async function unavailableMovements(): Promise<Set<string>> {
 export async function getExerciseById(id: number): Promise<Exercise | null> {
   const rows = await db
     .select({
-      id: exercises.id,
-      enName: exercises.enName,
-      frName: exercises.frName,
-      enDescription: exercises.enDescription,
-      frDescription: exercises.frDescription,
-      imagePath: exercises.imagePath,
-      creator: exercises.creator,
-      difficulty: exercises.difficulty,
-      equipment: exercises.equipment,
-      style: exercises.style,
-      secondsPerRep: exercises.secondsPerRep,
-      pattern: exercises.pattern,
-      measure: exercises.measure,
-      prerequisiteExerciseId: exercises.prerequisiteExerciseId,
-      retiredAt: exercises.retiredAt,
-      muscle: exerciseMuscles.muscle,
+      ...exerciseColumns(),
     })
     .from(exercises)
     .leftJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
@@ -211,24 +231,7 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
 
   const first = rows[0];
   if (!first) return null;
-  const ex: Exercise = {
-    id: first.id,
-    enName: first.enName,
-    frName: first.frName,
-    enDescription: first.enDescription,
-    frDescription: first.frDescription,
-    imagePath: first.imagePath,
-    creator: first.creator,
-    difficulty: first.difficulty,
-    equipment: isEquipmentCode(first.equipment) ? first.equipment : "none",
-    style: isExerciseStyle(first.style) ? first.style : "strength",
-    secondsPerRep: typeof first.secondsPerRep === "number" ? first.secondsPerRep : 3,
-    pattern: first.pattern ?? null,
-    measure: isQuestTargetType(first.measure) ? first.measure : null,
-    prerequisiteExerciseId: first.prerequisiteExerciseId,
-    retiredAt: first.retiredAt,
-    muscles: [],
-  };
+  const ex = exerciseFromRow(first);
 
   for (const r of rows) {
     if (isMuscleCode(r.muscle) && !ex.muscles.includes(r.muscle)) ex.muscles.push(r.muscle);

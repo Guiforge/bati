@@ -71,6 +71,31 @@ export function getExerciseColorTokens(key: ExerciseColorKey): ExerciseColorToke
   };
 }
 
+/**
+ * The colour a set of weighted keys resolves to. A quest coloured from its template and the same
+ * quest coloured from what the hero will actually run go through this, so the threshold below is
+ * one number: two copies of it is one quest wearing two colours, two screens apart.
+ */
+const DOMINANT_SHARE = 0.45;
+
+function dominantKey(weights: Map<ExerciseColorKey, number>): ExerciseColorKey {
+  let total = 0;
+  let bestKey: ExerciseColorKey = "default";
+  let best = -1;
+
+  for (const [k, v] of weights) {
+    total += v;
+    if (v > best) {
+      best = v;
+      bestKey = k;
+    }
+  }
+
+  // Nothing clearly dominant is its own answer, not the least-bad key.
+  if (total > 0 && best / total < DOMINANT_SHARE) return "mixed";
+  return bestKey;
+}
+
 export function getQuestColorKeyFromQuest(quest: Pick<Quest, "exercises">): ExerciseColorKey {
   if (quest.exercises.length === 0) return "default";
 
@@ -90,21 +115,7 @@ export function getQuestColorKeyFromQuest(quest: Pick<Quest, "exercises">): Exer
     weights.set(key, (weights.get(key) ?? 0) + w);
   }
 
-  // Pick the most dominant color. If nothing is clearly dominant, use "mixed".
-  let total = 0;
-  let bestKey: ExerciseColorKey = "default";
-  let best = -1;
-
-  for (const [k, v] of weights) {
-    total += v;
-    if (v > best) {
-      best = v;
-      bestKey = k;
-    }
-  }
-
-  if (total > 0 && best / total < 0.45) return "mixed";
-  return bestKey;
+  return dominantKey(weights);
 }
 
 export function getQuestColorTokensFromQuest(quest: Pick<Quest, "exercises">): ExerciseColorTokens {
@@ -146,20 +157,7 @@ export function getQuestColorKeyFromTemplateWithExercises(input: {
     weights.set(key, (weights.get(key) ?? 0) + w);
   }
 
-  let total = 0;
-  let bestKey: ExerciseColorKey = "default";
-  let best = -1;
-
-  for (const [k, v] of weights) {
-    total += v;
-    if (v > best) {
-      best = v;
-      bestKey = k;
-    }
-  }
-
-  if (total > 0 && best / total < 0.45) return "mixed";
-  return bestKey;
+  return dominantKey(weights);
 }
 
 export function getQuestColorTokensFromTemplateWithExercises(input: {

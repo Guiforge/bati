@@ -69,6 +69,16 @@ export const exerciseStyles = ["strength", "calisthenics", "yoga", "cardio", "ex
 export type ExerciseStyle = (typeof exerciseStyles)[number];
 
 /**
+ * How an expedition covers its ground (0049), and the only thing a minute outside is priced by.
+ *
+ * `difficulty` cannot answer this: easy/medium/hard is a judgement about one repetition, and a
+ * road has none. Three ways out, three efforts per minute — see `LOCOMOTION_RATE` in `db/xp.ts`.
+ * Null on every movement that is not an expedition.
+ */
+export const locomotionCodes = ["walk", "run", "ride"] as const;
+export type Locomotion = (typeof locomotionCodes)[number];
+
+/**
  * The two populations `exercises.creator` and `quests.author` tell apart, next to the columns
  * that hold them so nothing has to import the database client to know what "mine" means.
  *
@@ -120,6 +130,12 @@ export const exercises = sqliteTable(
 
     // Movement family. Null only for user-authored content.
     pattern: text().$type<MovementPattern>(),
+
+    // How this movement covers ground (0049). Null on everything that is not an `expedition`,
+    // and `walk` on every hero-authored one: the editor does not offer the choice, because the
+    // rate is read off this column and a hero picking `run` for a walk would be a free doubling
+    // on identical GPS traces.
+    locomotion: text().$type<Locomotion>(),
 
     // How this movement is measured — counted or held (0039). Null means the movement never said
     // (a hero's own, from before the column) and the quest slot's unit is trusted, as it always
@@ -446,6 +462,20 @@ export const completedQuest = sqliteTable(
      * every strength quest.
      */
     movingSeconds: int(),
+
+    /**
+     * Which kind of session this was, and how it covered its ground (0049). **Null means a
+     * workout**, which is what every row written before that migration was.
+     *
+     * The rule is `isOutingQuest` in `db/expeditions.ts`, the strict one: every slot outdoors.
+     * A mixed session — a walk and then push-ups in the yard — is null, because it contains
+     * real work and its minutes belong in the training average.
+     *
+     * `leaguesM IS NOT NULL` was the nearest thing before this column and it is wrong twice: a
+     * walk whose service never started writes null and reads as a workout, and a mixed session
+     * writes leagues. Every aggregate that means *training* filters on this instead.
+     */
+    outing: text().$type<Locomotion>(),
 
     // Which install wrote the row — provenance, not identity (`db/preferences.ts`). Null on
     // every session logged before 0038: nothing here recorded it.

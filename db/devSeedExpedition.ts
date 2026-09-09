@@ -180,6 +180,7 @@ async function anExpeditionSlot() {
       secondsPerRep: schema.exercises.secondsPerRep,
       difficulty: schema.exercises.difficulty,
       style: schema.exercises.style,
+      locomotion: schema.exercises.locomotion,
       targetType: schema.questExercises.targetType,
       targetMin: schema.questExercises.targetMin,
     })
@@ -254,6 +255,11 @@ export async function seedExpedition(): Promise<SeededExpedition> {
     // for a demo. This is the second writer of a completed session, and it drifted from the real
     // one the day `movingSeconds` was added.
     movingSeconds,
+    // Third column of the same reading, and the third time this writer has had to be told: it
+    // is the second writer of a completed session and it drifts every time the real one gains a
+    // field. A seeded outing that read as a workout would land in the journal's training average
+    // and take the longest-session record, which is the bug 0049 exists to end.
+    outing: slot.locomotion ?? "walk",
     durationSeconds: elapsedSeconds,
     xpEarned: computeSessionXp({
       sets: [set],

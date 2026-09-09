@@ -13,6 +13,7 @@ import {
   type DifficultyCode,
   type EquipmentCode,
   type ExerciseStyle,
+  type Locomotion,
   type MovementPattern,
   type MuscleCode,
   type QuestArchetype,
@@ -494,6 +495,7 @@ type SlotRow = {
   exSecondsPerRep: number;
   exPattern: MovementPattern | null;
   exMeasure: QuestTargetType | null;
+  exLocomotion: Locomotion | null;
   exPrerequisiteId: number | null;
   exRetiredAt: Date | null;
 };
@@ -553,6 +555,7 @@ function buildSlot(
       secondsPerRep: r.exSecondsPerRep,
       pattern: r.exPattern ?? null,
       measure: r.exMeasure,
+      locomotion: r.exLocomotion,
       prerequisiteExerciseId: r.exPrerequisiteId,
       retiredAt: r.exRetiredAt,
       muscles: [],
@@ -598,6 +601,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exSecondsPerRep: exercises.secondsPerRep,
       exPattern: exercises.pattern,
       exMeasure: exercises.measure,
+      exLocomotion: exercises.locomotion,
       exPrerequisiteId: exercises.prerequisiteExerciseId,
       exRetiredAt: exercises.retiredAt,
 

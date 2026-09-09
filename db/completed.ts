@@ -20,6 +20,7 @@ import type {
   DifficultyCode,
   ExerciseStyle,
   FeedbackCode,
+  Locomotion,
   MuscleCode,
   QuestTargetType,
 } from "./schema";
@@ -71,6 +72,15 @@ export type CompletedSessionInput = {
    * caller that is not an outing.
    */
   movingSeconds?: number | null;
+  /**
+   * Which kind of session this was (`0049`). Undefined and null both mean a workout, which is
+   * what the column says and what every caller that is not an outing leaves it at.
+   *
+   * The one rule that decides it is `isOutingQuest` (`db/expeditions.ts`), the strict one, read
+   * by the caller because only the caller still has the quest. Every aggregate that means
+   * *training* filters on the column rather than joining back to the movements.
+   */
+  outing?: Locomotion | null;
   questId?: number | null;
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
@@ -153,6 +163,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         uuid: input.uuid ?? uuidv7(performedAt.getTime()),
         leaguesM: input.leaguesM ?? null,
         movingSeconds: input.movingSeconds ?? null,
+        outing: input.outing ?? null,
         tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
         originDevice,
       })
@@ -361,6 +372,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       exSecondsPerRep: exercises.secondsPerRep,
       exPattern: exercises.pattern,
       exMeasure: exercises.measure,
+      exLocomotion: exercises.locomotion,
       exPrerequisiteId: exercises.prerequisiteExerciseId,
       exRetiredAt: exercises.retiredAt,
       exStyle: exercises.style,
@@ -419,6 +431,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
           secondsPerRep: r.exSecondsPerRep,
           pattern: r.exPattern ?? null,
           measure: r.exMeasure,
+          locomotion: r.exLocomotion,
           prerequisiteExerciseId: r.exPrerequisiteId,
           retiredAt: r.exRetiredAt,
           style: parseExerciseStyle(r.exStyle),

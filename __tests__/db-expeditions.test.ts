@@ -46,6 +46,7 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
     muscles: [],
     pattern: null,
     measure: null,
+    locomotion: null,
     prerequisiteExerciseId: null,
     retiredAt: null,
     ...over,

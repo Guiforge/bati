@@ -27,7 +27,7 @@ import {
   unavailableMovements,
   type VariationStep,
 } from "@/db/exercises";
-import { isMountedOuting, isOutingSession } from "@/db/expeditions";
+import { isMountedOuting, isOutingSession, outingLocomotion } from "@/db/expeditions";
 import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
 import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
@@ -1467,6 +1467,11 @@ export const useSessionStore = create<SessionState>()(
         // distance still holds them, the replayed clock does not, and the pace between the two
         // is wrong with nothing on screen saying so. One writer, at save, like `leaguesM`.
         movingSeconds: ground.movingSeconds,
+        // Which kind of session this was, decided here because here is the last place the quest
+        // exists. `leaguesM` was the nearest thing to this before 0049 and it answered a
+        // different question: a walk whose service never started has no ground and is still a
+        // walk, and a mixed quest has ground and is still a workout.
+        outing: outingLocomotion(quest),
         durationSeconds,
         xpEarned,
         feedback,

@@ -9,6 +9,8 @@ import {
   type EquipmentCode,
   type ExerciseStyle,
   exerciseStyles,
+  type Locomotion,
+  locomotionCodes,
   type MovementPattern,
   type MuscleCode,
   type QuestTargetType,
@@ -26,6 +28,10 @@ function isExerciseStyle(value: unknown): value is ExerciseStyle {
 
 function isQuestTargetType(value: unknown): value is QuestTargetType {
   return typeof value === "string" && (questTargetTypes as readonly string[]).includes(value);
+}
+
+function isLocomotion(value: unknown): value is Locomotion {
+  return typeof value === "string" && (locomotionCodes as readonly string[]).includes(value);
 }
 
 export type Exercise = {
@@ -48,6 +54,12 @@ export type Exercise = {
    * case the quest slot's unit stands. Seed rows always have one.
    */
   measure: QuestTargetType | null;
+  /**
+   * How this movement covers ground (`0049`). Null on everything that is not an `expedition`,
+   * `walk` on every hero-authored one — the price of a minute outside is read from here, and the
+   * editor deliberately does not offer the choice.
+   */
+  locomotion: Locomotion | null;
   /**
    * The easier variation this one is built on (`0022`). Carried on the list row so the
    * catalogue can derive the whole ladder from the cached list instead of one query per row —
@@ -120,6 +132,7 @@ const exerciseColumns = () => ({
   secondsPerRep: exercises.secondsPerRep,
   pattern: exercises.pattern,
   measure: exercises.measure,
+  locomotion: exercises.locomotion,
   prerequisiteExerciseId: exercises.prerequisiteExerciseId,
   retiredAt: exercises.retiredAt,
   muscle: exerciseMuscles.muscle,
@@ -139,6 +152,7 @@ type ExerciseRow = {
   secondsPerRep: number;
   pattern: MovementPattern | null;
   measure: QuestTargetType | null;
+  locomotion: Locomotion | null;
   prerequisiteExerciseId: number | null;
   retiredAt: Date | null;
 };
@@ -159,6 +173,7 @@ function exerciseFromRow(r: ExerciseRow): Exercise {
     secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
     pattern: r.pattern ?? null,
     measure: isQuestTargetType(r.measure) ? r.measure : null,
+    locomotion: isLocomotion(r.locomotion) ? r.locomotion : null,
     prerequisiteExerciseId: r.prerequisiteExerciseId,
     retiredAt: r.retiredAt,
     muscles: [],
@@ -712,9 +727,16 @@ export async function getReadyStep(): Promise<VariationStep | null> {
 /**
  * What a hero owns on an exercise.
  *
- * `Pick`ed from `Exercise` rather than spelled out, so a new column on the table is a compile
- * error here until someone decides whether the hero sets it — the same trick `SavedSessionState`
- * plays on the session store.
+ * `Pick`ed from `Exercise` rather than spelled out so the field *types* cannot drift from the
+ * table's. It is an explicit key list, though, not `Omit`: a new column produces no error here,
+ * and the comment that used to promise one was read as a guarantee by a plan that then skipped
+ * the decision. Adding a column means coming here on purpose.
+ *
+ * `locomotion` is deliberately absent, and that is the decision rather than an omission. The
+ * price of a minute outside is read off it (`LOCOMOTION_RATE`, `db/xp.ts`), so a hero who marked
+ * their walk `run` would double their XP on identical GPS traces — a lie the phone cannot catch,
+ * unlike the reps it also trusts, because the trace says the same thing either way. Every
+ * hero-authored expedition is written `walk`, the lowest rate, by the writers below.
  */
 export type UserExerciseDraft = {
   /** One name for both locales — the row is bilingual, the hero is not. */
@@ -763,6 +785,16 @@ function clampSecondsPerRep(value: number): number {
 }
 
 const DEFAULT_SECONDS_PER_REP = 3;
+
+/**
+ * How a hero's own movement covers ground, when it covers any.
+ *
+ * Not a field on the draft: see `UserExerciseDraft`. A movement that stops being an expedition
+ * gives its locomotion back, so a row cannot keep a rate its style no longer earns.
+ */
+function locomotionFor(style: ExerciseStyle): Locomotion | null {
+  return style === "expedition" ? "walk" : null;
+}
 
 export const DEFAULT_USER_EXERCISE_DRAFT: Omit<UserExerciseDraft, "name" | "description"> = {
   muscles: [],
@@ -841,6 +873,7 @@ export async function createUserExercise(draft: UserExerciseDraft): Promise<numb
       equipment: draft.equipment,
       style: draft.style,
       pattern: draft.pattern,
+      locomotion: locomotionFor(draft.style),
       measure: draft.measure,
       secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       createdAt: new Date(),
@@ -871,6 +904,7 @@ export async function updateUserExercise(id: number, draft: UserExerciseDraft): 
       equipment: draft.equipment,
       style: draft.style,
       pattern: draft.pattern,
+      locomotion: locomotionFor(draft.style),
       measure: draft.measure,
       secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       updatedAt: new Date(),

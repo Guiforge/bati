@@ -1,5 +1,6 @@
 import type { OutingGoal } from "@/src/gps/track";
 import type { Exercise } from "./exercises";
+import type { Locomotion } from "./schema";
 import type { Target } from "./targets";
 import { NON_REP_STYLE } from "./workUnits";
 
@@ -87,6 +88,34 @@ export function hasOutdoorSlot(quest: { exercises: { exercise: Styled }[] }): bo
 
 export function isOutingSession(quest: { exercises: { exercise: Styled }[] }): boolean {
   return isOutingQuest(quest);
+}
+
+/**
+ * Cheapest first. Not an alphabet and not a display order: it is the order
+ * `LOCOMOTION_RATE` (`db/xp.ts`) pays, and the reason `outingLocomotion` below can settle a
+ * quest that mixes two of them without asking the price.
+ */
+const BY_RATE: readonly Locomotion[] = ["walk", "ride", "run"];
+
+/**
+ * How this session covered its ground, or null when it never left the walls — the value written
+ * to `completed_sessions.outing` and the one its minutes are priced by.
+ *
+ * The strict predicate, so a mixed quest reads null: it holds real work, its minutes belong in
+ * the training average, and its reps are priced the way reps always were.
+ *
+ * A quest holding two ways out is paid at the cheaper, which is why this returns the movement
+ * rather than the first slot's. Marker and rate are then the same answer by construction; the
+ * first slot would have made a walk-then-run quest a `run` in the journal and a `walk` in the
+ * ledger. Null on a slot means a movement that never said, and unknown is not a door out.
+ */
+export function outingLocomotion(quest: {
+  exercises: { exercise: Styled & { locomotion: Locomotion | null } }[];
+}): Locomotion | null {
+  if (!isOutingSession(quest)) return null;
+
+  const present = new Set(quest.exercises.map((slot) => slot.exercise.locomotion ?? "walk"));
+  return BY_RATE.find((l) => present.has(l)) ?? "walk";
 }
 
 /**

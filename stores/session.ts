@@ -18,6 +18,7 @@ import {
   type CompletedExerciseInput,
   createCompletedSession,
   getSessionAggregates,
+  hasSessionForQuestToday,
   markSessionWithNewRecords,
   outingSecondsToday,
 } from "@/db/completed";
@@ -304,7 +305,11 @@ interface SessionState {
   saveSession: (feedback?: FeedbackCode | null) => Promise<{
     sessionId: number;
     xpEarned: number;
-    dailyBonusApplied: boolean;
+    /**
+     * What the day's quest paid on top, or zero. One field rather than a flag beside a number:
+     * two of those can disagree, and only the number has a reader.
+     */
+    dailyBonusXp: number;
     newRecords: NewRecordResult[];
     newRungs: VariationStep[];
     newAchievements: NewAchievementResult[];
@@ -613,6 +618,16 @@ function outingLegSeconds(
     .reduce((sum, set) => sum + Math.max(0, set.result.value), 0);
 
   return Math.min(declared, Math.max(0, effortCeilingSeconds));
+}
+
+/**
+ * Whether this save earns the day's bonus: it is the quest the day suggested, and it is the
+ * first time today. Two questions rather than one because `isDailyQuest` only answers the first,
+ * which is how the same quest run three times came to pay three bonuses.
+ */
+async function earnsDailyBonus(questId: number, savedSessionId: number | null): Promise<boolean> {
+  if (!(await isDailyQuest(questId))) return false;
+  return !(await hasSessionForQuestToday(questId, savedSessionId));
 }
 
 /**
@@ -1545,7 +1560,12 @@ export const useSessionStore = create<SessionState>()(
         sets: sets.map((set) => ({ ...set, result: set.target })),
         effortCeilingSeconds,
         outing: atTarget,
-        priorOutingSecondsToday: prior,
+        // Undecayed on purpose. This is what the quest asked for, and the daily bonus below is
+        // half of it: a hero who already walked this morning is still owed the bonus the day's
+        // quest advertises. The one thing it costs is the "beat your targets" line on a second
+        // outing of the same day, which then reads zero rather than a number measured against a
+        // baseline the hero never saw.
+        priorOutingSecondsToday: 0,
         userLevel,
       });
       let overshootXp = Math.max(0, xpEarned - xpAtTarget);
@@ -1554,11 +1574,20 @@ export const useSessionStore = create<SessionState>()(
       // end reflects exactly what this save changed.
       const beforeBuildings = await getVillageBuildings();
 
-      const dailyBonusApplied = await isDailyQuest(quest.id);
-      if (dailyBonusApplied) {
-        xpEarned = Math.round(xpEarned * 1.5);
-        overshootXp = Math.round(overshootXp * 1.5);
-      }
+      // Half of what the quest *proposed*, not half of what the hero did.
+      //
+      // `xpEarned × 1.5` was fine while every quest was bounded by its own prescription: target
+      // and result hold each other within a quarter, so the two readings agree. An outing has no
+      // such bound, so the multiplier compounded with a duration nobody set — an hour's run on
+      // the daily quest paid 1200 where the quest suggested thirty minutes. Reading the target
+      // instead makes the bonus what it says it is: you did the thing the day asked for.
+      //
+      // Once a day. `isDailyQuest` only asks whether this is the id the day picked, so the same
+      // quest run three times paid three bonuses.
+      const dailyBonusXp = (await earnsDailyBonus(quest.id, get().savedSessionId))
+        ? Math.round(0.5 * xpAtTarget)
+        : 0;
+      xpEarned += dailyBonusXp;
 
       // Calculate level before saving (current state)
       const oldTotalXp = await getTotalXp();
@@ -1692,7 +1721,7 @@ export const useSessionStore = create<SessionState>()(
       return {
         sessionId,
         xpEarned,
-        dailyBonusApplied,
+        dailyBonusXp,
         newRecords,
         newRungs,
         newAchievements,

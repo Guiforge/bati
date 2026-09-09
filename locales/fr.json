@@ -145,7 +145,7 @@
     "continue": "Continuer",
     "crit": "CRIT !",
     "done": "Terminé",
-    "daily_xp_bonus": "+50% XP",
+    "daily_xp_bonus": "dont +{{count}} pour la quête du jour",
     "decrease": "Diminuer {{label}}",
     "error": "Un problème est survenu",
     "exercises_short": "ex",

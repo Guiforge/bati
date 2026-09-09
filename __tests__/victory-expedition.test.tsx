@@ -71,7 +71,7 @@ const saveResult = {
   sessionId: 42,
   xpEarned: 100,
   levelUp: null,
-  dailyBonusApplied: false,
+  dailyBonusXp: 0,
   heroXp: { before: 50, after: 150 },
   villageGrowth: [],
   campaign: null,

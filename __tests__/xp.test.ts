@@ -146,6 +146,14 @@ describe("the ground a session covered", () => {
     expect(overOneDay(120, 2 * 3600, "walk")).toBeLessThan(outing(2 * 3600, "walk") * 1.1);
   });
 
+  test("what the day's quest pays half of", () => {
+    // `stores/session.ts` gives the daily bonus as half of the at-target reading, which for an
+    // outing is the suggested duration. The seeded round suggests 45 minutes; two hours of
+    // walking earns more and is worth no more bonus.
+    expect(outing(45 * 60, "walk") / 2).toBe(112.5);
+    expect(outing(30 * 60, "run") / 2).toBe(150);
+  });
+
   test("a workout still floors, whatever the hero did outside first", () => {
     expect(
       computeSessionXp({

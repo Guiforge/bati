@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { WARMUP_SEQUENCE } from "@/constants/warmup";
-import { outingSecondsToday } from "@/db/completed";
+import { hasSessionForQuestToday, outingSecondsToday } from "@/db/completed";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import { saveQuestConfig } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
+import { isDailyQuest } from "@/db/quests";
 import { computeSessionXp } from "@/db/xp";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { i18n } from "@/i18n";
@@ -45,6 +46,7 @@ jest.mock("@/db/completed", () => ({
   // starts calling has to be added by hand. Forget one and fifteen cases die on
   // "is not a function", which is exactly how this line came to exist.
   outingSecondsToday: jest.fn().mockResolvedValue(0),
+  hasSessionForQuestToday: jest.fn().mockResolvedValue(false),
 }));
 // The rest of what saveSession touches on its way through. Stubbed so the store's own
 // behaviour — what it banks, commits and clears — is what these cases actually measure.
@@ -1627,6 +1629,80 @@ describe("useSessionStore", () => {
  * How many seconds of ground a session may claim. The rule lives here rather than in `db/xp.ts`
  * because here is the only place that holds both the recorded results and the GPS trace.
  */
+/**
+ * The day's quest pays half of what it *proposed*, once.
+ *
+ * `xpEarned × 1.5` held while every quest was bounded by its own prescription. An outing is not:
+ * the multiplier compounded with a duration nobody set, so an hour's run on the daily quest paid
+ * 1200 where the quest suggested thirty minutes.
+ */
+describe("the day's quest", () => {
+  const bonusOf = async (): Promise<number> => {
+    const walk = {
+      id: 41,
+      rounds: 1,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      enTitle: "The round",
+      frTitle: "La ronde",
+      exercises: [
+        {
+          exercise: {
+            id: 30,
+            enName: "Warden's Walk",
+            muscles: [],
+            style: "expedition",
+            secondsPerRep: 1,
+            locomotion: "walk",
+          },
+          // Suggested 45 minutes; the hero walks two hours.
+          target: { type: "time", value: 2700 },
+        },
+      ],
+    } as unknown as Quest;
+
+    const startedAt = Date.now() - 7_200_000;
+    useExpeditionStore.setState({
+      track: { ...EMPTY, startedAt, lastAt: Date.now(), distanceM: 10_000, movingMs: 7_200_000 },
+    });
+    await useSessionStore.getState().startSession(walk, "medium", {});
+    useSessionStore.setState({ startTime: startedAt, totalPausedTime: 0, restTakenSeconds: 0 });
+
+    const result = await useSessionStore.getState().saveSession(null);
+    return result.dailyBonusXp;
+  };
+
+  beforeEach(() => {
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    (isDailyQuest as jest.Mock).mockResolvedValue(true);
+    (hasSessionForQuestToday as jest.Mock).mockResolvedValue(false);
+    (computeSessionXp as jest.Mock).mockClear();
+  });
+
+  afterEach(() => {
+    (isDailyQuest as jest.Mock).mockReturnValue(false);
+    jest.restoreAllMocks();
+  });
+
+  test("is priced on the suggested duration, not on the two hours actually walked", async () => {
+    // `computeSessionXp` is mocked in this file, so what is measured here is what the store
+    // *asks* it: the at-target reading quotes the quest's 45 minutes and no part of the day.
+    // What 45 minutes is worth is `__tests__/xp.test.ts`'s job, and the bonus is half of it.
+    const bonus = await bonusOf();
+
+    const atTarget = (computeSessionXp as jest.Mock).mock.calls[1];
+    assert(atTarget);
+    expect(atTarget[0].outing).toEqual({ seconds: 2700, locomotion: "walk" });
+    expect(atTarget[0].priorOutingSecondsToday).toBe(0);
+    expect(bonus).toBe(50); // half of the mocked at-target reading
+  });
+
+  test("pays once, however many times the same quest is run", async () => {
+    (hasSessionForQuestToday as jest.Mock).mockResolvedValue(true);
+    expect(await bonusOf()).toBe(0);
+  });
+});
+
 describe("what a session may claim it walked", () => {
   const legOf = (): { seconds: number; locomotion: string } | null =>
     (computeSessionXp as jest.Mock).mock.calls[0]?.[0]?.outing ?? null;

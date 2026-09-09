@@ -376,6 +376,34 @@ export async function outingSecondsToday(excludeSessionId: number | null): Promi
 }
 
 /**
+ * Whether today's suggested quest has already been logged today.
+ *
+ * `isDailyQuest` only asks whether an id is the one the day picked, so without this the same
+ * quest run three times paid the bonus three times. Once a day is what the bonus is for: it
+ * rewards having done what the game proposed, not having done it repeatedly.
+ *
+ * `excludeSessionId` for the same reason as `outingSecondsToday`: a retry finds the row the
+ * first attempt wrote and would otherwise decide the bonus had already been paid.
+ */
+export async function hasSessionForQuestToday(
+  questId: number,
+  excludeSessionId: number | null,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ n: count() })
+    .from(completedQuest)
+    .where(
+      and(
+        eq(completedQuest.questId, questId),
+        gte(completedQuest.performedAt, startOfLocalDay()),
+        excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
+      ),
+    );
+
+  return Number(row?.n ?? 0) > 0;
+}
+
+/**
  * Distinct workout day keys, one column instead of the whole session list — the calendar
  * only needs "was there a workout that day".
  */

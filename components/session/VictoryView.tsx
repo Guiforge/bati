@@ -521,9 +521,9 @@ export function VictoryView() {
             <Text fontWeight="700" fontSize={26} color="$primaryText" fontFamily="$body">
               {result ? t("quests.reward_xp", { count: result.xpEarned }) : "…"}
             </Text>
-            {!!result?.dailyBonusApplied && (
+            {!!result?.dailyBonusXp && (
               <Text fontWeight="700" fontSize={11} color="$success">
-                {t("common.daily_xp_bonus")}
+                {t("common.daily_xp_bonus", { count: result.dailyBonusXp })}
               </Text>
             )}
             {!!result?.overshootXp && (

@@ -1,0 +1,9 @@
+- La marche, la course et le vélo paient le terrain
+  parcouru, à l'heure et sur la journée. Une rando de
+  six heures ne vaut plus un mois de séances.
+- Les trois sorties partent sur une vraie sortie, pas
+  sur un aller au pain de quinze minutes.
+- Tes chiffres d'entraînement parlent d'entraînement :
+  les sorties sont comptées à part.
+- Le journal dessine le tracé de chaque sortie.
+- Les réglages expliquent le calcul de l'XP.

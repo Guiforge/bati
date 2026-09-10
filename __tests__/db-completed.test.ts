@@ -122,6 +122,37 @@ describe("db/completed", () => {
     expect(await completed.getCompletedSessionById(999999)).toBeNull();
   });
 
+  /**
+   * The journal listed a row the detail screen then refused to open: the head was carried on
+   * every exercise row, so a session with none came back as "Session not found" while its card
+   * was still on screen. A session that lost its quest keeps its date, its duration and its
+   * difficulty, and one that lost its exercises keeps all three too.
+   */
+  test("a session with nothing left under it still opens", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    t.sqlite.exec("DELETE FROM completed_exercises");
+    t.sqlite.exec("DELETE FROM completed_sessions");
+    const now = Math.floor(Date.now() / 1000);
+
+    // A null `questId` is what deleting a quest leaves behind: the column is ON DELETE SET NULL,
+    // so the session outlives the template it was generated from.
+    t.sqlite
+      .prepare(
+        `INSERT INTO completed_sessions (id, questId, userLevel, durationSeconds, xpEarned, performedAt)
+         VALUES (4242, NULL, 'hard', 1500, 80, ?)`,
+      )
+      .run(now);
+
+    const session = await completed.getCompletedSessionById(4242);
+
+    expect(session).not.toBeNull();
+    expect(session?.userLevel).toBe("hard");
+    expect(session?.durationSeconds).toBe(1500);
+    expect(session?.performedAt.getTime()).toBe(now * 1000);
+    expect(session?.questId).toBeNull();
+    expect(session?.exercises).toEqual([]);
+  });
+
   test("the list carries the ground an outing covered, and null for a workout", async () => {
     const { listCompletedSessions } =
       require("../db/completed") as typeof import("../db/completed");

@@ -66,7 +66,8 @@ function makeQuest(id: number, enTitle: string, exerciseIds: number[]): QuestTem
     roundRestSeconds: null,
     archetype: "metabolic",
     imagePath: "assets/images/quests/wardens_round.jpg",
-    exercises: exerciseIds.map((exerciseId) => ({
+    exercises: exerciseIds.map((exerciseId, i) => ({
+      id: i + 1,
       exerciseId,
       images: [],
       baseTarget: { type: "time" as const, min: 600, max: 1200 },

@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BackHandler } from "react-native";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 
 import { AchievementIcon } from "@/components/common/AchievementIcon";
@@ -117,6 +118,19 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
     };
   }, [selected]);
 
+  // One press of Android back was doing two things: the sheet closed *and* the router popped,
+  // so the village unmounted while the sheet was still sliding shut and what it left behind
+  // swallowed every tap afterwards. Registered last while the sheet is open, so it runs first
+  // and the router never sees the press.
+  useEffect(() => {
+    if (!selected) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      onClose();
+      return true;
+    });
+    return () => sub.remove();
+  }, [selected, onClose]);
+
   const formatDate = (date: Date) => getDateTimeFormat(language, DATE_OPTIONS).format(date);
 
   return (
@@ -157,7 +171,7 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
             />
           ) : null}
 
-          <AppButton variant="outline" onPress={onClose}>
+          <AppButton testID="village-detail-close" variant="outline" onPress={onClose}>
             {t("village.close", "Close")}
           </AppButton>
         </YStack>

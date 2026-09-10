@@ -240,13 +240,17 @@ export default function SessionDetailScreen() {
                       label={t(`quests.level_${session.userLevel}`, session.userLevel)}
                       tone="primary"
                     />
-                    <Tag
-                      icon={<Repeat size={12} color="$text" />}
-                      label={t("journal.rounds_completed", {
-                        count: roundNumbers.length,
-                        defaultValue: `${roundNumbers.length} rounds`,
-                      })}
-                    />
+                    {/* A session whose exercises did not survive still has a date, a duration
+                        and a difficulty; "0 rounds" is the one tag that would be a claim. */}
+                    {roundNumbers.length > 0 && (
+                      <Tag
+                        icon={<Repeat size={12} color="$text" />}
+                        label={t("journal.rounds_completed", {
+                          count: roundNumbers.length,
+                          defaultValue: `${roundNumbers.length} rounds`,
+                        })}
+                      />
+                    )}
                   </XStack>
                 </YStack>
               </Card>

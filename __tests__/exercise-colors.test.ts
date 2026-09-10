@@ -87,11 +87,13 @@ describe("exerciseColors", () => {
     const template = {
       exercises: [
         {
+          id: 1,
           exerciseId: 1,
           images: [],
           baseTarget: { type: "reps" as const, min: 10, max: 10 },
         },
         {
+          id: 2,
           exerciseId: 2,
           images: [],
           baseTarget: { type: "time" as const, min: 60, max: 60 },

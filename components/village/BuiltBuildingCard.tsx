@@ -66,6 +66,7 @@ export function BuiltBuildingCard({ building, language, justGrew, onPress }: Pro
   return (
     <Animated.View style={[TILE_WIDTH, pulse]}>
       <Card
+        testID="village-built-card"
         flat
         bg="$surface"
         width="100%"

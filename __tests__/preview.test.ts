@@ -1,4 +1,31 @@
+// The preview reads the saved config through `applyConfigToSlots`, whose module reaches the
+// database for the *other* functions it exports. Stubbed the way `quest-gallery-meta.test.ts`
+// stubs it, so the pure projection under test loads without expo-sqlite.
+jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+
+import type { Exercise } from "@/db/exercises";
 import { estimateQuestTemplateSeconds, estimateQuestTemplateXp } from "@/db/preview";
+
+const exercise = (id: number, over: Partial<Exercise> = {}): Exercise => ({
+  id,
+  enName: `ex-${id}`,
+  frName: `ex-${id}`,
+  enDescription: "",
+  frDescription: "",
+  imagePath: "",
+  creator: "Admin",
+  difficulty: "medium",
+  equipment: "none",
+  style: "strength",
+  secondsPerRep: 2,
+  muscles: [],
+  pattern: null,
+  measure: "reps",
+  locomotion: null,
+  prerequisiteExerciseId: null,
+  retiredAt: null,
+  ...over,
+});
 
 describe("db/preview", () => {
   test("estimateQuestTemplateSeconds accounts for rounds + rest + generated targets", () => {
@@ -8,6 +35,7 @@ describe("db/preview", () => {
       roundRestSeconds: null,
       exercises: [
         {
+          id: 1,
           exerciseId: 1,
           images: [],
           baseTarget: { type: "reps" as const, min: 10, max: 10 },
@@ -15,14 +43,7 @@ describe("db/preview", () => {
       ],
     };
 
-    const exercisesById = {
-      1: {
-        secondsPerRep: 2,
-        difficulty: "medium" as const,
-        style: "strength" as const,
-        locomotion: null,
-      },
-    };
+    const exercisesById = { 1: exercise(1) };
 
     const medium = estimateQuestTemplateSeconds({
       template,
@@ -52,18 +73,16 @@ describe("db/preview", () => {
    * effort, so the two templates below differ only in a column the XP estimate must not read.
    */
   test("the XP estimate does not move when the rest slider does", () => {
-    const exercisesById = {
-      1: {
-        secondsPerRep: 3,
-        difficulty: "medium" as const,
-        style: "strength" as const,
-        locomotion: null,
-      },
-    };
+    const exercisesById = { 1: exercise(1, { secondsPerRep: 3 }) };
     const base = {
       rounds: 10,
       exercises: [
-        { exerciseId: 1, images: [], baseTarget: { type: "reps" as const, min: 12, max: 12 } },
+        {
+          id: 1,
+          exerciseId: 1,
+          images: [],
+          baseTarget: { type: "reps" as const, min: 12, max: 12 },
+        },
       ],
     };
 
@@ -92,5 +111,70 @@ describe("db/preview", () => {
       userLevel: "medium",
     });
     expect(glacialSeconds).toBeGreaterThan(briskSeconds);
+  });
+
+  /**
+   * One quest, one duration, one reward.
+   *
+   * The gallery card priced the pristine template while the quest's own screen priced the hero's
+   * config, so the same quest at the same level read "≈ 12 min, up to +140 XP" on the card and
+   * "≈ 10 min, up to +70 XP" one tap later. The template slot had no row id to file an override
+   * under, so there was nothing for `targets` and `swaps` to attach to here.
+   */
+  describe("the saved config reaches the card, not just the screen behind it", () => {
+    const template = {
+      rounds: 2,
+      restSeconds: 30,
+      roundRestSeconds: null,
+      exercises: [
+        {
+          id: 7,
+          exerciseId: 1,
+          images: [],
+          baseTarget: { type: "reps" as const, min: 20, max: 20 },
+        },
+      ],
+    };
+    const exercisesById = { 1: exercise(1), 2: exercise(2, { secondsPerRep: 6 }) };
+
+    test("a target the hero lowered lowers both numbers", () => {
+      const written = {
+        template,
+        exercisesById,
+        userLevel: "medium" as const,
+        config: { level: "medium" as const },
+      };
+      const halved = { ...written, config: { level: "medium" as const, targets: { 7: 10 } } };
+
+      // 20 reps * 2s * 2 rounds + 30s rest = 110s, against 10 reps * 2s * 2 + 30 = 70s.
+      expect(estimateQuestTemplateSeconds(written)).toBe(110);
+      expect(estimateQuestTemplateSeconds(halved)).toBe(70);
+      expect(estimateQuestTemplateXp(halved)).toBeLessThan(estimateQuestTemplateXp(written));
+    });
+
+    test("a movement the hero swapped in is the one that gets priced", () => {
+      const swapped = {
+        template,
+        exercisesById,
+        userLevel: "medium" as const,
+        config: { level: "medium" as const, swaps: { 7: 2 } },
+      };
+
+      // The substitute costs 6s a rep against the written movement's 2.
+      expect(estimateQuestTemplateSeconds(swapped)).toBe(20 * 6 * 2 + 30);
+    });
+
+    test("a config that only remembers a level changes nothing", () => {
+      const bare = {
+        template,
+        exercisesById,
+        userLevel: "medium" as const,
+        config: { level: "medium" as const },
+      };
+
+      expect(estimateQuestTemplateSeconds(bare)).toBe(
+        estimateQuestTemplateSeconds({ template, exercisesById, userLevel: "medium" }),
+      );
+    });
   });
 });

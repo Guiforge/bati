@@ -76,6 +76,15 @@ export interface QuestExercise {
 }
 
 export type QuestTemplateExercise = {
+  /**
+   * quest_exercises row id, the key every saved override in `QuestConfig` is filed under.
+   *
+   * Dropped here once, and that alone is what let the gallery price a card off the pristine
+   * template while the detail screen priced the same quest off the hero's config: with no slot
+   * id there was nothing for `targets`/`swaps` to attach to, so the gallery could only ever read
+   * the level and the structure. One quest showed two durations and two rewards.
+   */
+  id: number;
   exerciseId: number;
   images: string[];
   baseTarget: {
@@ -194,10 +203,17 @@ export function isUserQuest(quest: Pick<QuestTemplate, "author">): boolean {
   return quest.author === USER_QUEST_AUTHOR;
 }
 
+/**
+ * A slot on its way *into* the database, before `quest_exercises` has given it a row id. Every
+ * writer takes this; every reader hands back the full `QuestTemplateExercise`, id included.
+ */
+export type QuestSlotDraft = Omit<QuestTemplateExercise, "id">;
+
 export type CreateQuestTemplateInput = Omit<
   QuestTemplate,
-  "id" | "author" | "imagePath" | "archetype"
+  "id" | "author" | "imagePath" | "archetype" | "exercises"
 > & {
+  exercises: QuestSlotDraft[];
   /** Seed quests carry authored art; a hero picks theirs, and null falls back to the placeholder. */
   imagePath?: string | null;
   author?: ContentOwner;
@@ -399,6 +415,7 @@ function templateSlot(r: {
   }
 
   return {
+    id: r.questExerciseId,
     exerciseId: r.exerciseId,
     images: safeParseImages(r.imagesJson),
     baseTarget: { type: r.targetType, min: r.targetMin, max: r.targetMax },
@@ -745,10 +762,7 @@ export async function updateQuestMeta(
   invalidateQuestTemplates(id);
 }
 
-export async function setQuestExercises(
-  questId: number,
-  next: QuestTemplateExercise[],
-): Promise<void> {
+export async function setQuestExercises(questId: number, next: QuestSlotDraft[]): Promise<void> {
   type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
   type TransactionTx = Parameters<TransactionCallback>[0];
 

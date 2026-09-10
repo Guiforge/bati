@@ -141,15 +141,15 @@ function buildQuestMeta(
   // there, where Home's band asks for quests that are nothing else.
   const outside = hasOutdoorMovement(q, exercisesById);
 
-  // Same numbers as the detail screen: the saved level and structure overrides feed the
-  // estimate. ponytail: target/swap overrides are not folded in — the detail's
-  // estimateQuestSeconds sees them, so a target-overridden quest can still drift by
-  // a few seconds; fold them in if anyone notices.
+  // The same numbers as the detail screen, off the same saved config: the level and the
+  // structure here, the per-slot targets and swaps inside `resolveTemplateExercises`. Left out,
+  // the card advertised one duration and one reward and the screen behind it another.
   const level = config?.level ?? "medium";
   const previewInput = {
     template: { ...q, ...resolveTemplateOverrides(q, config) },
     exercisesById,
     userLevel: level,
+    config,
   };
   const durationSeconds = estimateQuestTemplateSeconds(previewInput);
   const xp = estimateQuestTemplateXp(previewInput);

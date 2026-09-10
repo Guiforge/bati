@@ -8,7 +8,7 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns";
-import { and, count, countDistinct, desc, eq, gte, ne, sql, sum } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, gte, ne, type SQL, sql, sum } from "drizzle-orm";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { dayKey } from "./dates";
@@ -340,6 +340,106 @@ export async function getSessionAggregates(): Promise<{
 }
 
 /**
+ * Everything the stats tab calls a total, over the whole table.
+ *
+ * It used to be reduced in JS out of `listCompletedSessions(100)`, which is a window and not a
+ * history: a hero with 547 sessions read "100 Total Workouts", "2908 Total Minutes" and a
+ * difficulty split summing to exactly 100. The list keeps its pagination; the totals stop
+ * borrowing from it. Same place as `getSessionAggregates` above, and the same reason.
+ *
+ * `weekStartsOn` and `today` are parameters, not reads of the locale and the clock, for the
+ * reason `buildMonthGrid` takes them: the boundaries are the answer's inputs, and both are
+ * computed in JS on purpose. `strftime('%s', ..., 'start of day')` is UTC, which names a moment
+ * hours away from the hero's midnight, the bug `db/dates.ts` exists to end.
+ */
+export type JournalStatsSummary = {
+  totalWorkouts: number;
+  totalMinutes: number;
+  avgMinutes: number;
+  levels: { easy: number; medium: number; hard: number };
+  thisWeekCount: number;
+  thisWeekMinutes: number;
+  thisMonthCount: number;
+  /** Null until the first outing, so a hero who only lifts is never shown three empty tiles. */
+  outings: { count: number; leaguesM: number; avgMinutes: number } | null;
+};
+
+/** Whole minutes of a column, rounded per row exactly as the JS reducer did before it. */
+const minutesOf = (seconds: SQL) => sql`CAST(ROUND(COALESCE(${seconds}, 0) / 60.0) AS INTEGER)`;
+
+const sumWhen = (when: SQL, value: SQL | number) =>
+  sql<number>`SUM(CASE WHEN ${when} THEN ${value} ELSE 0 END)`;
+
+export async function getJournalStats(
+  weekStartsOn: 0 | 1,
+  today: Date = new Date(),
+): Promise<JournalStatsSummary> {
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - ((today.getDay() - weekStartsOn + 7) % 7));
+  weekStart.setHours(0, 0, 0, 0);
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  // Seconds, not a `Date`: `performedAt` is `int({ mode: "timestamp" })`, and a raw fragment
+  // binds what it is handed rather than going through the column's own codec.
+  const epoch = (d: Date) => Math.floor(d.getTime() / 1000);
+
+  const workout = isWorkout();
+  const walk = sql`(${completedQuest.outing} IS NOT NULL)`;
+  // An outing's own minutes are its moving ones; a workout has none and falls back to the clock.
+  const outingMinutes = minutesOf(
+    sql`COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds})`,
+  );
+  const sessionMinutes = minutesOf(sql`${completedQuest.durationSeconds}`);
+
+  const [row] = await db
+    .select({
+      totalWorkouts: sumWhen(workout, 1),
+      totalMinutes: sumWhen(workout, sessionMinutes),
+      easy: sumWhen(sql`${workout} AND ${completedQuest.userLevel} = 'easy'`, 1),
+      hard: sumWhen(sql`${workout} AND ${completedQuest.userLevel} = 'hard'`, 1),
+      // Recent activity is deliberately not split: that block asks what the hero did this week,
+      // and a walk is something they did. Same answer the flame gives (`countsAsSession`).
+      thisWeekCount: sumWhen(sql`${completedQuest.performedAt} >= ${epoch(weekStart)}`, 1),
+      thisWeekMinutes: sumWhen(
+        sql`${completedQuest.performedAt} >= ${epoch(weekStart)}`,
+        sessionMinutes,
+      ),
+      thisMonthCount: sumWhen(sql`${completedQuest.performedAt} >= ${epoch(monthStart)}`, 1),
+      outingCount: sumWhen(walk, 1),
+      outingLeaguesM: sumWhen(walk, sql`COALESCE(${completedQuest.leaguesM}, 0)`),
+      outingMinutes: sumWhen(walk, outingMinutes),
+    })
+    .from(completedQuest);
+
+  const num = (value: unknown) => Number(value ?? 0);
+  const totalWorkouts = num(row?.totalWorkouts);
+  const totalMinutes = num(row?.totalMinutes);
+  const easy = num(row?.easy);
+  const hard = num(row?.hard);
+  const outingCount = num(row?.outingCount);
+
+  return {
+    totalWorkouts,
+    totalMinutes,
+    avgMinutes: totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0,
+    // Anything that is neither easy nor hard is medium, the way the JS reducer read it: a level
+    // that never made it into `Difficulty` still has to land in one of the three chips.
+    levels: { easy, medium: totalWorkouts - easy - hard, hard },
+    thisWeekCount: num(row?.thisWeekCount),
+    thisWeekMinutes: num(row?.thisWeekMinutes),
+    thisMonthCount: num(row?.thisMonthCount),
+    outings:
+      outingCount === 0
+        ? null
+        : {
+            count: outingCount,
+            leaguesM: num(row?.outingLeaguesM),
+            avgMinutes: Math.round(num(row?.outingMinutes) / outingCount),
+          },
+  };
+}
+
+/**
  * The two questions a query can ask about a row now that a session says which kind it is, and
  * the difference between them is the whole reason there are two.
  *
@@ -470,8 +570,17 @@ export async function listWorkoutDayKeys(): Promise<Set<string>> {
   return days;
 }
 
+/**
+ * One session, whatever is left of it.
+ *
+ * Two reads rather than one join, and that is the whole fix: the head used to be carried on
+ * every exercise row, so a session with no exercise rows to carry it came back `null` and the
+ * detail screen answered "Session not found" for a row the journal was listing one tap earlier.
+ * A session that lost its exercises still has a date, a duration and a difficulty, and one that
+ * lost its quest still has all three. The screen degrades, it does not error.
+ */
 export async function getCompletedSessionById(id: number): Promise<CompletedSession | null> {
-  const rows = await db
+  const [head] = await db
     .select({
       sessionId: completedQuest.id,
       sessionUuid: completedQuest.uuid,
@@ -482,7 +591,28 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       sessionNotes: completedQuest.notes,
       sessionFeedback: completedQuest.feedback,
       sessionPerformedAt: completedQuest.performedAt,
+    })
+    .from(completedQuest)
+    .where(eq(completedQuest.id, id))
+    .limit(1);
 
+  if (!head) return null;
+
+  const session: CompletedSession = {
+    id: head.sessionId,
+    uuid: head.sessionUuid,
+    questId: head.questId ?? null,
+    userLevel: head.userLevel,
+    durationSeconds: head.durationSeconds ?? null,
+    xpEarned: head.xpEarned,
+    notes: head.sessionNotes,
+    feedback: (head.sessionFeedback as FeedbackCode | null) ?? null,
+    performedAt: head.sessionPerformedAt,
+    exercises: [],
+  };
+
+  const rows = await db
+    .select({
       cexId: completedExercises.id,
       roundIndex: completedExercises.roundIndex,
       sortOrder: completedExercises.sortOrder,
@@ -512,27 +642,11 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
 
       muscle: exerciseMuscles.muscle,
     })
-    .from(completedQuest)
-    .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
+    .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
     .leftJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
-    .where(eq(completedQuest.id, id))
+    .where(eq(completedExercises.sessionId, id))
     .orderBy(completedExercises.roundIndex, completedExercises.sortOrder, completedExercises.id);
-
-  const first = rows[0];
-  if (!first) return null;
-  const session: CompletedSession = {
-    id: first.sessionId,
-    uuid: first.sessionUuid,
-    questId: first.questId ?? null,
-    userLevel: first.userLevel,
-    durationSeconds: first.durationSeconds ?? null,
-    xpEarned: first.xpEarned,
-    notes: first.sessionNotes,
-    feedback: (first.sessionFeedback as FeedbackCode | null) ?? null,
-    performedAt: first.sessionPerformedAt,
-    exercises: [],
-  };
 
   const byCompletedExercise = new Map<number, CompletedExercise>();
 

@@ -101,6 +101,10 @@ export function VillageScene() {
   const [sheetMounted, setSheetMounted] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
 
+  // Stable: the sheet subscribes to hardware back on it, and a fresh identity every render
+  // would resubscribe every render.
+  const closeDetail = useCallback(() => setSelected(null), []);
+
   const openDetail = (selection: VillageSelection) => {
     // Every other tappable surface in the app answers (session, onboarding); the village was the
     // one screen where taps were silent. `selection` is the lightest tick, not a reward buzz.
@@ -507,7 +511,7 @@ export function VillageScene() {
       {sheetMounted ? (
         <VillageDetailSheet
           selected={selected}
-          onClose={() => setSelected(null)}
+          onClose={closeDetail}
           language={language}
           bottomInset={insets.bottom}
         />

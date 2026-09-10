@@ -695,7 +695,6 @@
     "trends_weekly": "Weekly",
     "trends_monthly": "Monthly",
     "trends_sessions": "Sessions",
-    "trends_minutes": "Minutes",
     "trends_xp": "XP Earned",
     "trends_vs_last_week": "vs last week",
     "trends_up": "↑ {{change}}%",

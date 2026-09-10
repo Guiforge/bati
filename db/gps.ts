@@ -120,22 +120,6 @@ export async function previewPathsFor(
 }
 
 /**
- * Whether a session recorded any ground at all.
- *
- * The journal's door to the recap, and the reason it is `limit(1)` rather than `pointsOf().length`:
- * every strength quest in the app has no points, and asking that question must not read a
- * 45-minute trace to answer "none".
- */
-export async function hasPoints(sessionId: string): Promise<boolean> {
-  const rows = await db
-    .select({ t: gpsPoints.t })
-    .from(gpsPoints)
-    .where(eq(gpsPoints.sessionId, sessionId))
-    .limit(1);
-  return rows.length > 0;
-}
-
-/**
  * One league is a kilometre here. The one place that knows the scale: the road's floors, the
  * oath's target and every "N leagues" a screen prints divide by this.
  *

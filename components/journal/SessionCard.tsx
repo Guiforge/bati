@@ -11,7 +11,9 @@ import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
 import { hasGround } from "@/db/expeditions";
 import type { DifficultyCode, Locomotion } from "@/db/schema";
+import type { LngLat } from "@/src/gps/trace";
 import { useSettingsStore } from "@/stores/settings";
+import { TraceThumb } from "./TraceThumb";
 
 export interface JournalEntry {
   id: number;
@@ -33,6 +35,11 @@ export interface JournalEntry {
   movingSeconds: number | null;
   /** Which kind of session this was (`0049`). Null is a workout. */
   outing: Locomotion | null;
+  /**
+   * A few dozen points of this run, thinned for a thumbnail (`previewPathsFor`, `db/gps.ts`).
+   * Empty on a workout, and on an outing whose service never started.
+   */
+  tracePoints: readonly LngLat[];
   userLevel: DifficultyCode;
   hasNewRecords?: boolean;
 }
@@ -85,7 +92,12 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
           justify="center"
           overflow="hidden"
         >
-          {entry.cover ? (
+          {/* The run itself, when there is one. The three seeded outings share three pictures, so
+              a page of walks was a column of identical thumbnails - the same complaint the
+              trophy below records, one row further in. A line is never the same twice. */}
+          {entry.tracePoints.length > 1 ? (
+            <TraceThumb points={entry.tracePoints} size={50} />
+          ) : entry.cover ? (
             <Image
               source={entry.cover}
               recyclingKey={String(entry.id)}

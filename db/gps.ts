@@ -1,5 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import type { LocationFix } from "@/modules/bati-location";
+import type { LngLat } from "@/src/gps/trace";
 import { db, schema } from "./client";
 
 const { gpsPoints, completedQuest } = schema;
@@ -62,6 +63,60 @@ export async function pointsOf(sessionId: string): Promise<LocationFix[]> {
     .where(eq(gpsPoints.sessionId, sessionId))
     .orderBy(gpsPoints.t);
   return rows.map(decode);
+}
+
+/**
+ * How many points a thumbnail is drawn from.
+ *
+ * A 50 px tile shows the *shape* of a run and nothing finer: at that size two points a second
+ * apart are the same pixel. Forty-eight is enough for a loop to read as a loop and an
+ * out-and-back as an out-and-back, and it is what keeps a six-hour walk's 21 600 fixes from
+ * reaching a list that scrolls.
+ */
+const PREVIEW_POINTS = 48;
+
+/**
+ * A handful of points per session, for the journal's trace thumbnails.
+ *
+ * One query for the whole visible page rather than one per row: the history is a virtualized
+ * list, and a read per card is the pattern `docs/architecture/performance.md` exists to forbid.
+ * The thinning happens in SQLite — `ROW_NUMBER` against the session's own total, so every run is
+ * reduced to about the same number of points whatever its length — because carrying every fix
+ * into JS to throw 99 % of it away is the same cost with extra steps.
+ *
+ * Keyed by `uuid`, which is what `gps_points` is filed under: the integer `id` names the row in
+ * the journal, the uuid names the run.
+ */
+export async function previewPathsFor(
+  sessionIds: readonly string[],
+): Promise<Map<string, LngLat[]>> {
+  const paths = new Map<string, LngLat[]>();
+  if (sessionIds.length === 0) return paths;
+
+  const ids = sql.join(
+    sessionIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
+
+  const rows = await db.all<{ sessionId: string; latE7: number; lonE7: number }>(sql`
+    SELECT sessionId, latE7, lonE7 FROM (
+      SELECT sessionId, latE7, lonE7,
+             ROW_NUMBER() OVER (PARTITION BY sessionId ORDER BY t) - 1 AS n,
+             COUNT(*)     OVER (PARTITION BY sessionId)             AS total
+      FROM gps_points
+      WHERE sessionId IN (${ids})
+    )
+    WHERE n % MAX(1, total / ${PREVIEW_POINTS}) = 0
+    ORDER BY sessionId, n
+  `);
+
+  for (const row of rows) {
+    const points = paths.get(row.sessionId) ?? [];
+    points.push([row.lonE7 / 1e7, row.latE7 / 1e7]);
+    paths.set(row.sessionId, points);
+  }
+
+  return paths;
 }
 
 /**

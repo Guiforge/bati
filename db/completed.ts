@@ -261,9 +261,11 @@ export async function updateSessionFeedback(
   await db.update(completedQuest).set({ feedback }).where(eq(completedQuest.id, sessionId));
 }
 
-// `uuid` is dropped as well as `exercises`: the list is a scroll of cards, and none of them opens
-// a trace. The screen that does re-reads the session by id.
-export type CompletedSessionListItem = Omit<CompletedSession, "exercises" | "uuid"> & {
+// `exercises` is dropped: the list is a scroll of cards and none of them lists a set. `uuid` is
+// kept, and used to be dropped for the same reason — until the cards started drawing the run.
+// `gps_points` is filed under the uuid, not the integer id, so a row that wants its own line has
+// to carry the name the line was written under.
+export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
   hasNewRecords: boolean;
   /** Ground covered, in metres, on an outing; null on a workout. */
   leaguesM: number | null;
@@ -277,6 +279,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
   const rows = await db
     .select({
       id: completedQuest.id,
+      uuid: completedQuest.uuid,
       questId: completedQuest.questId,
       userLevel: completedQuest.userLevel,
       durationSeconds: completedQuest.durationSeconds,
@@ -295,6 +298,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
 
   return rows.map((r) => ({
     id: r.id,
+    uuid: r.uuid ?? null,
     questId: r.questId ?? null,
     userLevel: r.userLevel,
     durationSeconds: r.durationSeconds ?? null,

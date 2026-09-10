@@ -21,6 +21,7 @@ import { UserLevelCard } from "@/components/journal/UserLevelCard";
 import { getQuestThumb } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import { listCompletedSessions } from "@/db/completed";
+import { previewPathsFor } from "@/db/gps";
 import { listQuestTemplates } from "@/db/quests";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -122,6 +123,12 @@ export default function JournalScreen() {
         listQuestTemplates(),
       ]);
 
+      // One read for the whole page's runs, not one per card. Only the outings are asked for:
+      // every workout in the journal has no points, and `previewPathsFor` would scan for them.
+      const traces = await previewPathsFor(
+        sessions.flatMap((s) => (s.outing !== null && s.uuid ? [s.uuid] : [])),
+      );
+
       const questMap = new Map(quests.map((q) => [q.id, q]));
 
       const entries: JournalEntry[] = sessions.map((s) => {
@@ -139,6 +146,7 @@ export default function JournalScreen() {
           leaguesM: s.leaguesM,
           movingSeconds: s.movingSeconds,
           outing: s.outing,
+          tracePoints: (s.uuid && traces.get(s.uuid)) || [],
           userLevel: s.userLevel,
           hasNewRecords: s.hasNewRecords,
         };

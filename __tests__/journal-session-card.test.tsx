@@ -59,6 +59,7 @@ describe("SessionCard", () => {
     leaguesM: null,
     movingSeconds: null,
     outing: null,
+    tracePoints: [],
   };
 
   it("renders duration alone for a workout with leaguesM null", async () => {

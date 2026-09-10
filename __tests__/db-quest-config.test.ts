@@ -64,7 +64,7 @@ function makeQuest(): Quest {
         // Quest-specific art *of this movement* — the thing a substitution has to drop.
         images: ["assets/squat_a.webp"],
         target: { type: "reps", value: 10 },
-        ghost: { last: 18, best: 25 },
+        ghost: { last: 18, best: 25, at: 0 },
       },
       { id: 12, exercise, images: [], target: { type: "time", value: 30 } },
     ],

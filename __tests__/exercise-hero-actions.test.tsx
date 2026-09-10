@@ -52,6 +52,13 @@ jest.mock("@/db", () => ({
   deleteUserExercise: jest.fn(),
 }));
 
+// The screen reads the hero's own numbers for this movement now, and `db/personalRecords` opens
+// the database at import time. This file is about the hero's own actions, so the journal is empty.
+jest.mock("@/db/personalRecords", () => ({
+  getExerciseHistory: jest.fn().mockResolvedValue(new Map()),
+  ghostKey: (id: number, type: string) => `${id}:${type}`,
+}));
+
 jest.mock("@/db/exercises", () => ({
   getChainTo: () => Promise.resolve(null),
   getNextProgression: () => Promise.resolve(null),

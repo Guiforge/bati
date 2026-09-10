@@ -42,6 +42,13 @@ jest.mock("@/db", () => ({
   retireUserExercise: jest.fn(),
   deleteUserExercise: jest.fn(),
 }));
+// The screen reads the hero's own numbers for this movement now, and `db/personalRecords` opens
+// the database at import time. The ladder is what this file is about, so the journal is empty.
+jest.mock("@/db/personalRecords", () => ({
+  getExerciseHistory: jest.fn().mockResolvedValue(new Map()),
+  ghostKey: (id: number, type: string) => `${id}:${type}`,
+}));
+
 jest.mock("@/db/exercises", () => ({
   getChainTo: (id: number) => mockGetChainTo(id),
   getNextProgression: (id: number) => mockGetNextProgression(id),

@@ -111,8 +111,8 @@ describe("db/personalRecords", () => {
     `);
 
     const history = await getExerciseHistory([exerciseId]);
-    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({ last: 12, best: 12 });
-    expect(history.get(ghostKey(exerciseId, "time"))).toEqual({ last: 90, best: 90 });
+    expect(history.get(ghostKey(exerciseId, "reps"))).toMatchObject({ last: 12, best: 12 });
+    expect(history.get(ghostKey(exerciseId, "time"))).toMatchObject({ last: 90, best: 90 });
   });
 
   /**
@@ -136,7 +136,10 @@ describe("db/personalRecords", () => {
     `);
 
     const history = await getExerciseHistory([exerciseId]);
-    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({ last: 18, best: 25 });
+    expect(history.get(ghostKey(exerciseId, "reps"))).toMatchObject({ last: 18, best: 25 });
+    // The date rides along with `last`, not with `best`: it is when the hero last did this, which
+    // is what the exercise page prints beside the number.
+    expect(history.get(ghostKey(exerciseId, "reps"))?.at).toBe(now * 1000);
   });
 
   test("getExerciseHistory reports the best round of the last session, not its last row", async () => {
@@ -156,7 +159,7 @@ describe("db/personalRecords", () => {
     `);
 
     const history = await getExerciseHistory([exerciseId]);
-    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({ last: 12, best: 12 });
+    expect(history.get(ghostKey(exerciseId, "reps"))).toMatchObject({ last: 12, best: 12 });
   });
 
   test("getExerciseHistory breaks a same-second tie on the session id", async () => {
@@ -175,7 +178,7 @@ describe("db/personalRecords", () => {
     `);
 
     const history = await getExerciseHistory([exerciseId]);
-    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({ last: 14, best: 20 });
+    expect(history.get(ghostKey(exerciseId, "reps"))).toMatchObject({ last: 14, best: 20 });
   });
 
   test("getPersonalRecordsSummary returns all records and session count", async () => {

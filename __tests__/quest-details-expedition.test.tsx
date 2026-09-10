@@ -93,7 +93,7 @@ function expeditionQuest() {
         id: 11,
         images: [],
         substitutedFor: null,
-        ghost: { last: 720, best: 900 },
+        ghost: { last: 720, best: 900, at: 0 },
         target: { type: "time", value: 900 },
         exercise: movement({ style: "expedition" }),
       },

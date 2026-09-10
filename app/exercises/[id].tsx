@@ -14,6 +14,7 @@ import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
   deleteUserExercise,
   getExerciseById,
@@ -26,6 +27,9 @@ import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { readPath } from "@/db/paths";
+import { type ExerciseGhost, getExerciseHistory, ghostKey } from "@/db/personalRecords";
+import type { QuestTargetType } from "@/db/schema";
+import { formatTarget } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -385,14 +389,36 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
 
   const [progression, setProgression] = useState<NextProgression | null>(null);
   const [chain, setChain] = useState<Chain | null>(null);
+  /**
+   * What the hero has already done on this movement, in the units they did it in.
+   *
+   * The same map the session screen reads for its "Last time / best" line, and the same one a
+   * quest reads when it opens: one query, already written, already indexed. Until this call
+   * existed, the page for a movement someone had trained for three years held the art, the form
+   * cues and the ladder, and not one number that came from their own journal (audit 2026-09-10).
+   *
+   * Keyed by unit, because reps and seconds share `resultValue` and a movement can have been
+   * logged as both: a plank held for 60 and a plank done for 12 reps are two different records.
+   */
+  const [history, setHistory] = useState<Map<string, ExerciseGhost> | null>(null);
+  // Both units, because a movement can have been logged as a hold and as reps, and the two are
+  // different records. `getExerciseHistory` simply omits what has never been done.
+  const loggedHere = (["reps", "time"] as const)
+    .map((type) => ({ type, ghost: history?.get(ghostKey(exercise.id, type)) }))
+    .filter((entry): entry is { type: QuestTargetType; ghost: ExerciseGhost } => !!entry.ghost);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getNextProgression(exercise.id), getChainTo(exercise.id)])
-      .then(([next, path]) => {
+    Promise.all([
+      getNextProgression(exercise.id),
+      getChainTo(exercise.id),
+      getExerciseHistory([exercise.id]),
+    ])
+      .then(([next, path, logged]) => {
         if (cancelled) return;
         setProgression(next);
         setChain(path);
+        setHistory(logged);
       })
       .catch((error) => {
         // The ladder is a hint; its absence changes nothing about the screen.
@@ -442,6 +468,45 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               />
             )}
           </XStack>
+
+          {/* What the hero has done here, in the same shape and the same colours the session
+              screen uses for it: the number they are trying to beat is the gold one, wherever
+              they meet it. */}
+          {loggedHere.length > 0 && (
+            <YStack gap="$2">
+              <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
+                {t("exercises.your_numbers", "Your numbers").toUpperCase()}
+              </Text>
+              {loggedHere.map(({ type, ghost }) => (
+                <XStack key={type} items="baseline" gap="$2" flexWrap="wrap">
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("session.ghost_last_label", "Last time")}
+                  </Text>
+                  <Text fontSize={15} fontWeight="700" color="$text">
+                    {formatTarget({ type, value: ghost.last })}
+                  </Text>
+                  <Text fontSize={12} color="$textSecondary">
+                    {getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
+                      new Date(ghost.at),
+                    )}
+                  </Text>
+                  {ghost.best > ghost.last ? (
+                    <>
+                      <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                        ·
+                      </Text>
+                      <Text fontSize={12} color="$textSecondary">
+                        {t("session.ghost_best_label", "best")}
+                      </Text>
+                      <Text fontSize={15} fontWeight="700" color="$resourceGold">
+                        {formatTarget({ type, value: ghost.best })}
+                      </Text>
+                    </>
+                  ) : null}
+                </XStack>
+              ))}
+            </YStack>
+          )}
 
           {/* Muscles */}
           {exercise.muscles.length > 0 && (

@@ -131,7 +131,8 @@ export async function getMostXpSession(): Promise<PersonalRecord | null> {
  * round 3 against last time's round 3, which is truer and doubles the fold; do it if anyone
  * reports the round-1 number feeling unreachable.
  */
-export type ExerciseGhost = { last: number; best: number };
+/** `at` is when the *last* set was logged, in ms — the best's own date is not tracked. */
+export type ExerciseGhost = { last: number; best: number; at: number };
 
 /**
  * Reps and seconds share `resultValue` and nothing in the column says which one it holds, so a
@@ -210,7 +211,7 @@ export async function getExerciseHistory(
     }
   }
 
-  return new Map([...byKey].map(([key, v]) => [key, { last: v.last, best: v.best }]));
+  return new Map([...byKey].map(([key, v]) => [key, { last: v.last, best: v.best, at: v.at }]));
 }
 
 /**

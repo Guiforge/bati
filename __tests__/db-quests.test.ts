@@ -161,13 +161,13 @@ describe("db/quests", () => {
     // the same movement, which is what a pooled max would have handed it.
     const squat = after.exercises[0];
     expect(squat?.target.type).toBe("reps");
-    expect(squat?.ghost).toEqual({ last: 22, best: 22 });
+    expect(squat?.ghost).toMatchObject({ last: 22, best: 22 });
 
     // The plank slot asks for a hold, so its ghost is in seconds — and the same record still
     // drives the prescription, which is the behaviour this read replaced `getMaxHoldSeconds` for.
     const plank = after.exercises[2];
     expect(plank?.target.type).toBe("time");
-    expect(plank?.ghost).toEqual({ last: 600, best: 600 });
+    expect(plank?.ghost).toMatchObject({ last: 600, best: 600 });
     expect(plank?.target.value ?? 0).toBeGreaterThan(29);
 
     t.sqlite.exec(`DELETE FROM completed_exercises WHERE sessionId = 9001`);

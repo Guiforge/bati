@@ -120,6 +120,59 @@ describe("db/personalRecords", () => {
    * the last session, "your record" is all time, and the two are different numbers whenever the
    * hero has had a better day earlier.
    */
+  /**
+   * The six records this file used to compute were all about a session, and a hero settles those
+   * in the first month. A movement's best moves, and names something to do tomorrow.
+   */
+  test("getMovementRecords lists what can still be beaten, most recently trained first", async () => {
+    const { getMovementRecords } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const ids = t.sqlite.prepare("SELECT id FROM exercises ORDER BY id LIMIT 2").all() as {
+      id: number;
+    }[];
+    const [first, second] = ids;
+    assert(first);
+    assert(second);
+
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES
+        (1, ${now - 7200}), (2, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${first.id}, 'reps', 25, ${now - 7200}, 0),
+        (2, ${first.id}, 'reps', 18, ${now}, 0),
+        (1, ${second.id}, 'time', 40, ${now - 7200}, 1);
+    `);
+
+    const records = await getMovementRecords();
+
+    // Most recently trained first, and each carries the standing best beside what the last
+    // session actually did, which is the pair the exercise page prints.
+    expect(records.map((r) => r.exerciseId)).toEqual([first.id, second.id]);
+    expect(records[0]).toMatchObject({ type: "reps", best: 25, last: 18 });
+    expect(records[1]).toMatchObject({ type: "time", best: 40, last: 40 });
+  });
+
+  test("getMovementRecords keeps a movement's reps and its holds apart", async () => {
+    const { getMovementRecords } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const row = t.sqlite.prepare("SELECT id FROM exercises ORDER BY id LIMIT 1").get() as {
+      id: number;
+    };
+
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${row.id}, 'reps', 12, ${now}, 0),
+        (1, ${row.id}, 'time', 90, ${now}, 1);
+    `);
+
+    // A plank held for 90 and a plank done for 12 are two records, not one of 90.
+    const records = await getMovementRecords();
+    expect(records.map((r) => `${r.type}:${r.best}`).sort()).toEqual(["reps:12", "time:90"]);
+  });
+
   test("getExerciseHistory separates the last session from the all-time best", async () => {
     const { getExerciseHistory, ghostKey } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");

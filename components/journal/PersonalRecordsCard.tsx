@@ -3,11 +3,18 @@ import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Clock, Flame, Footprints, Map as MapIcon, Star, Trophy, Zap } from "@/components/icons";
+import { Clock, Footprints, Map as MapIcon, Star, Trophy } from "@/components/icons";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
-import { getPersonalRecordsSummary, type PersonalRecord } from "@/db/personalRecords";
-import { getStreakInfo } from "@/db/streaks";
+import {
+  getMovementRecords,
+  getPersonalRecordsSummary,
+  type MovementRecord,
+  type PersonalRecord,
+} from "@/db/personalRecords";
+import { formatTarget } from "@/db/targets";
+import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -17,7 +24,6 @@ type RecordsSummary = {
   longestOuting: PersonalRecord | null;
   totalLeaguesM: number;
   totalSessions: number;
-  bestStreak: number;
 };
 
 function RecordItem({
@@ -61,20 +67,19 @@ function RecordItem({
 export function PersonalRecordsCard() {
   const { t } = useTranslation();
   const unit = useSettingsStore((s) => s.distanceUnit);
+  const language = useSettingsStore((s) => s.language);
   const [summary, setSummary] = useState<RecordsSummary | null>(null);
+  const [movements, setMovements] = useState<MovementRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const [data, streakInfo] = await Promise.all([
-          getPersonalRecordsSummary(),
-          getStreakInfo(),
-        ]);
-        setSummary({
-          ...data,
-          bestStreak: streakInfo.best,
-        });
+        // The streak is not read here any more: "Best 1092" beside a current streak of 1092 was
+        // the card comparing a number to itself, and the flame card above already carries both.
+        const [data, wall] = await Promise.all([getPersonalRecordsSummary(), getMovementRecords()]);
+        setSummary(data);
+        setMovements(wall);
       } catch (error) {
         // A card that failed to load looks exactly like a card with nothing to show.
         reportError("journal.personalRecords", error);
@@ -117,31 +122,49 @@ export function PersonalRecordsCard() {
           </Text>
         </XStack>
 
+        {/* What can still be beaten, before what cannot.
+            Every record under this one is about a *session*: its length, its XP, the longest
+            walk. A hero settles those in the first month and they never move again, which is how
+            a journal with three years in it grows a records card nobody opens. A movement's best
+            moves, there is one for every movement, and it names something to do tomorrow. */}
+        {movements.length > 0 && (
+          <YStack gap="$2">
+            {movements.map((record) => (
+              <XStack key={`${record.exerciseId}:${record.type}`} items="baseline" gap="$2">
+                <Text flex={1} fontSize={14} fontWeight="700" color="$text" numberOfLines={1}>
+                  {localizedName(record, language)}
+                </Text>
+                <Text fontSize={15} fontWeight="700" color="$resourceGold">
+                  {formatTarget({ type: record.type, value: record.best })}
+                </Text>
+                {record.last < record.best ? (
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("session.ghost_last_label", "Last time")}{" "}
+                    {formatTarget({ type: record.type, value: record.last })}
+                  </Text>
+                ) : (
+                  <Text fontSize={12} color="$textSecondary">
+                    {getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
+                      record.at,
+                    )}
+                  </Text>
+                )}
+              </XStack>
+            ))}
+          </YStack>
+        )}
+
         <XStack gap="$2">
-          <RecordItem
-            icon={<Flame size={20} color="$primaryText" />}
-            label={t("journal.pr_total_sessions")}
-            value={summary.totalSessions.toString()}
-          />
           <RecordItem
             icon={<Clock size={20} color="$secondary" />}
             label={t("journal.pr_longest")}
             value={longestDuration}
           />
-        </XStack>
-
-        <XStack gap="$2">
           <RecordItem
             icon={<Star size={20} color="$pastelYellow" />}
             label={t("journal.pr_most_xp")}
             value={mostXp}
             subLabel={t("common.xp")}
-          />
-          <RecordItem
-            icon={<Zap size={20} color="$success" />}
-            label={t("journal.pr_best_streak")}
-            value={summary.bestStreak.toString()}
-            subLabel={t("journal.days")}
           />
         </XStack>
 

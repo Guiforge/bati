@@ -214,6 +214,72 @@ export async function getExerciseHistory(
   return new Map([...byKey].map(([key, v]) => [key, { last: v.last, best: v.best, at: v.at }]));
 }
 
+/** One movement's standing best, and what the hero last did on it. */
+export type MovementRecord = {
+  exerciseId: number;
+  enName: string;
+  frName: string;
+  /** Reps and seconds are different records on the same movement, so the unit is part of one. */
+  type: QuestTargetType;
+  best: number;
+  last: number;
+  /** When the last set was logged. The best's own date is not tracked. */
+  at: Date;
+};
+
+/**
+ * The movements with something to beat, most recently trained first.
+ *
+ * The six records this file computed before this were all about a *session*: its length, its XP,
+ * the longest outing. A hero settles those in the first month and they are never beatable again,
+ * which is how a journal with three years in it ends up with a records card nobody reads. A
+ * movement's best is the opposite: there is one for every movement, it moves, and it names
+ * something to do tomorrow.
+ *
+ * Two queries rather than one: this picks the movements and their bests, `getExerciseHistory`
+ * says what the last session did on each, and it is already the tested answer to that question
+ * for the session screen and for a quest about to start. One more grouped read on an indexed
+ * column is cheaper than a second implementation of the same fold.
+ */
+export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
+  const rows = await db
+    .select({
+      exerciseId: completedExercises.exerciseId,
+      type: completedExercises.resultType,
+      best: max(completedExercises.resultValue),
+      at: max(completedExercises.performedAt),
+      enName: exercises.enName,
+      frName: exercises.frName,
+    })
+    .from(completedExercises)
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    .groupBy(completedExercises.exerciseId, completedExercises.resultType)
+    .orderBy(desc(max(completedExercises.performedAt)))
+    .limit(limit);
+
+  const history = await getExerciseHistory(rows.map((r) => r.exerciseId));
+
+  return rows.flatMap((row) => {
+    const best = row.best;
+    if (best == null || best <= 0) return [];
+    const ghost = history.get(ghostKey(row.exerciseId, row.type));
+    // An aggregate does not go through the column's timestamp mapper on every driver, the same
+    // caveat `getExerciseHistory` documents about its own `max(performedAt)`.
+    const at = row.at instanceof Date ? row.at : new Date(Number(row.at ?? 0));
+    return [
+      {
+        exerciseId: row.exerciseId,
+        enName: row.enName,
+        frName: row.frName,
+        type: row.type,
+        best,
+        last: ghost?.last ?? best,
+        at,
+      },
+    ];
+  });
+}
+
 /**
  * Get all personal records summary
  */

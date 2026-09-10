@@ -1,6 +1,6 @@
 import { type Exercise, listExercises } from "./exercises";
 import { deletePreference, getAllPreferences, getPreference, setPreference } from "./preferences";
-import { getQuestById, type Quest } from "./quests";
+import { getQuestById, type Quest, type QuestExercise } from "./quests";
 import {
   clampToRange,
   DISTANCE_GOAL_RANGE,
@@ -216,58 +216,76 @@ export function applyQuestConfig(
 ): Quest {
   if (!hasQuestOverrides(config) || !config) return quest;
 
-  const targets = config.targets ?? {};
-  const swaps = config.swaps ?? {};
-
   return {
     ...quest,
     ...resolveTemplateOverrides(quest, config),
-    exercises: quest.exercises.map((qex) => {
-      const key = String(qex.id);
-      const swappedId = swaps[key];
-      const substitute = swappedId === undefined ? undefined : exercisesById[swappedId];
-      // The unit is resolved first, then the hero's number lands in it. `applySwap` drops the
-      // override when the movement changes, so `targets[id]` is only ever a value for the movement
-      // standing in the slot now — after a swap that flipped the unit, a value in the *new* unit.
-      // Retargeting second discarded exactly those: a slot swapped from a hold onto a counted
-      // movement showed the level's default reps and every step of the field was thrown away on
-      // the next render, which read as a frozen control. The clamp follows the resolved unit too;
-      // on the old order it measured reps against the range for seconds.
-      const base =
-        substitute === undefined
-          ? qex.target
-          : retargetForMovement(qex.target, substitute, config.level);
-      const raw = targets[key];
-      // The style follows the resolved unit, for the same reason the unit follows the swap: an
-      // hour is a hold's ceiling and a walk is not a hold, so a slot standing on an expedition
-      // may be set past it.
-      const movement = substitute ?? qex.exercise;
-      const value =
-        raw === undefined ? undefined : clamp(raw, targetRangeFor(base.type, movement.style));
-
-      if (substitute === undefined && value === undefined) return qex;
-
-      return {
-        ...qex,
-        target: value === undefined ? base : { ...base, value },
-        ...(substitute === undefined
-          ? {}
-          : {
-              exercise: substitute,
-              // `images` is the quest's own art *of the movement that used to be here*, off
-              // `quest_exercises.imagesJson`. Kept, the card illustrates the wrong exercise.
-              images: [],
-              // The ghost belongs to the slot's old movement too, and the substitute's own
-              // history is not in this object — better silent than wrong.
-              ghost: undefined,
-              // An explicit swap outranks the rung substitution `getQuestById` may have made, so
-              // the "we served you an easier rung" caption has to go with it. Left behind, the
-              // screen would explain a substitution that is no longer on the slot.
-              substitutedFor: undefined,
-            }),
-      };
-    }),
+    exercises: applyConfigToSlots(quest.exercises, config, exercisesById),
   };
+}
+
+/**
+ * The hero's per-slot overrides, applied to slots that are already resolved for their level.
+ *
+ * Split out of `applyQuestConfig` so the gallery's synchronous preview reads the saved config
+ * through the same projection the session runs on, rather than through a second copy of it: two
+ * readers of one config is how the same quest came to advertise "≈ 12 min, up to +140 XP" on its
+ * card and "≈ 10 min, up to +70 XP" on its own detail screen.
+ */
+export function applyConfigToSlots(
+  slots: readonly QuestExercise[],
+  config: QuestConfig | null,
+  exercisesById: Record<number, Exercise>,
+): QuestExercise[] {
+  if (!hasQuestOverrides(config) || !config) return [...slots];
+
+  const targets = config.targets ?? {};
+  const swaps = config.swaps ?? {};
+
+  return slots.map((qex) => {
+    const key = String(qex.id);
+    const swappedId = swaps[key];
+    const substitute = swappedId === undefined ? undefined : exercisesById[swappedId];
+    // The unit is resolved first, then the hero's number lands in it. `applySwap` drops the
+    // override when the movement changes, so `targets[id]` is only ever a value for the movement
+    // standing in the slot now — after a swap that flipped the unit, a value in the *new* unit.
+    // Retargeting second discarded exactly those: a slot swapped from a hold onto a counted
+    // movement showed the level's default reps and every step of the field was thrown away on
+    // the next render, which read as a frozen control. The clamp follows the resolved unit too;
+    // on the old order it measured reps against the range for seconds.
+    const base =
+      substitute === undefined
+        ? qex.target
+        : retargetForMovement(qex.target, substitute, config.level);
+    const raw = targets[key];
+    // The style follows the resolved unit, for the same reason the unit follows the swap: an
+    // hour is a hold's ceiling and a walk is not a hold, so a slot standing on an expedition
+    // may be set past it.
+    const movement = substitute ?? qex.exercise;
+    const value =
+      raw === undefined ? undefined : clamp(raw, targetRangeFor(base.type, movement.style));
+
+    if (substitute === undefined && value === undefined) return qex;
+
+    return {
+      ...qex,
+      target: value === undefined ? base : { ...base, value },
+      ...(substitute === undefined
+        ? {}
+        : {
+            exercise: substitute,
+            // `images` is the quest's own art *of the movement that used to be here*, off
+            // `quest_exercises.imagesJson`. Kept, the card illustrates the wrong exercise.
+            images: [],
+            // The ghost belongs to the slot's old movement too, and the substitute's own
+            // history is not in this object — better silent than wrong.
+            ghost: undefined,
+            // An explicit swap outranks the rung substitution `getQuestById` may have made, so
+            // the "we served you an easier rung" caption has to go with it. Left behind, the
+            // screen would explain a substitution that is no longer on the slot.
+            substitutedFor: undefined,
+          }),
+    };
+  });
 }
 
 /**

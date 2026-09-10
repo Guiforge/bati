@@ -14,6 +14,7 @@ flows:
   - adventure-journey.yaml
   - oath-flow.yaml
   - session-interruptions.yaml
+  - village-sheet-check.yaml
 
 # subflows/ holds reusable fragments (e.g. complete-onboarding.yaml) pulled in
 # via `runFlow:` — they are not standalone entries here.

@@ -98,6 +98,7 @@ function buildAdventureRow(
     template: { ...q, ...resolveTemplateOverrides(q, config) },
     exercisesById,
     userLevel: level,
+    config,
   };
   const durationSeconds = estimateQuestTemplateSeconds(previewInput);
   const xp = estimateQuestTemplateXp(previewInput);

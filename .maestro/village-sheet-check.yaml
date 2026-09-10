@@ -1,0 +1,86 @@
+# Maestro E2E Test - closing the village detail sheet, three ways
+#
+# The sheet has three exits: the hardware back button, its own Close button, and a tap on the
+# dimmed backdrop. Only one of them used to leave the app usable.
+#
+# Android back reached both the sheet and the router, so one press closed the sheet *and* popped
+# the stack: the hero landed on Home instead of the village, and what the village left behind
+# while the sheet was still animating swallowed every tap afterwards. The tab bar registered the
+# press and nothing navigated. Only a full restart got out of it.
+#
+# So the assertion is deliberately not "the sheet closed", which was always true, and is what
+# made the bug look like something else. Each exit is followed by a real navigation, to the
+# Journal, and the screenshot after it is the proof. Three shots, all three of the journal.
+#
+# testID only, so an emulator in fr_FR passes too.
+
+appId: com.guiforge.bati.dev
+---
+- launchApp:
+    clearState: true
+
+- runFlow: subflows/complete-onboarding.yaml
+
+- tapOn:
+    id: "tab-village"
+- assertVisible:
+    id: "village-screen"
+
+# --- 1. hardware back -------------------------------------------------------------
+- tapOn:
+    id: "village-built-card"
+    index: 0
+- assertVisible:
+    id: "village-detail"
+
+- back
+- assertVisible:
+    id: "village-screen"
+
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+- takeScreenshot: village-sheet-back-hardware
+
+# --- 2. the sheet's own Close button -----------------------------------------------
+- tapOn:
+    id: "tab-village"
+- tapOn:
+    id: "village-built-card"
+    index: 0
+- assertVisible:
+    id: "village-detail"
+
+- tapOn:
+    id: "village-detail-close"
+- assertVisible:
+    id: "village-screen"
+
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+- takeScreenshot: village-sheet-back-close
+
+# --- 3. a tap on the dimmed backdrop ------------------------------------------------
+- tapOn:
+    id: "tab-village"
+- tapOn:
+    id: "village-built-card"
+    index: 0
+- assertVisible:
+    id: "village-detail"
+
+# Above the sheet, which is anchored to the bottom: the top eighth of the screen is backdrop
+# whatever the sheet's content height turns out to be.
+- tapOn:
+    point: "50%,8%"
+- assertVisible:
+    id: "village-screen"
+
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+- takeScreenshot: village-sheet-back-backdrop

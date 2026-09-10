@@ -20,12 +20,20 @@ import { TrendsCard } from "@/components/journal/TrendsCard";
 import { formatDistance } from "@/constants/distanceFormat";
 import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
 import { formatDurationEstimate } from "@/db";
+import type { JournalStatsSummary } from "@/db/completed";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { useSettingsStore } from "@/stores/settings";
-import { buildJournalStats, buildWeekdayBars, type JournalSession } from "./journalGrids";
+import { buildWeekdayBars, type JournalSession } from "./journalGrids";
 
 interface JournalStatsProps {
+  /**
+   * The page the journal list is already holding. Only the weekday histogram reads it: "when you
+   * usually train" is a shape rather than a total, and the recent hundred answer it better than
+   * five years would. Every number that says "Total" comes from `stats`.
+   */
   sessions: JournalSession[];
+  /** The whole table's totals, counted in SQL. Null while the read is in flight. */
+  stats: JournalStatsSummary | null;
 }
 
 function StatCard({
@@ -80,16 +88,11 @@ function StatCard({
   );
 }
 
-export function JournalStats({ sessions }: JournalStatsProps) {
+export function JournalStats({ sessions, stats }: JournalStatsProps) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const { width } = useWindowDimensions();
-
-  const stats = useMemo(
-    () => (sessions.length === 0 ? null : buildJournalStats(sessions, language)),
-    [sessions, language],
-  );
 
   const streak = useStreakInfo();
 

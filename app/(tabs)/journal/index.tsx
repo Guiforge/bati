@@ -19,8 +19,9 @@ import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { UserLevelCard } from "@/components/journal/UserLevelCard";
 import { getQuestThumb } from "@/constants/assetMap";
+import { getWeekStart } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
-import { listCompletedSessions } from "@/db/completed";
+import { getJournalStats, type JournalStatsSummary, listCompletedSessions } from "@/db/completed";
 import { previewPathsFor } from "@/db/gps";
 import { listQuestTemplates } from "@/db/quests";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -96,6 +97,9 @@ export default function JournalScreen() {
   const language = useSettingsStore((s) => s.language);
 
   const [history, setHistory] = useState<JournalEntry[]>([]);
+  // Read apart from the list, and over the whole table: every tile on the stats tab says
+  // "Total", and the list is one page of a history that can be years long.
+  const [stats, setStats] = useState<JournalStatsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("stats");
   // The stats tab mounts 8 cards that each fire their own DB query. Defer that burst until after
@@ -118,10 +122,12 @@ export default function JournalScreen() {
     try {
       setLoading(true);
       // Fetch sessions and quest templates to resolve titles
-      const [sessions, quests] = await Promise.all([
+      const [sessions, quests, totals] = await Promise.all([
         listCompletedSessions(100),
         listQuestTemplates(),
+        getJournalStats(getWeekStart(language)),
       ]);
+      setStats(totals);
 
       // One read for the whole page's runs, not one per card. Only the outings are asked for:
       // every workout in the journal has no points, and `previewPathsFor` would scan for them.
@@ -280,7 +286,7 @@ export default function JournalScreen() {
             // Ordered by the journal's three questions: am I consistent (streak, calendar),
             // am I progressing (level, records, achievements), what next (balance, quests).
             <Fragment key={refreshKey}>
-              <JournalStats sessions={history} />
+              <JournalStats sessions={history} stats={stats} />
               <MonthlyCalendarCard />
               <UserLevelCard />
               <PersonalRecordsCard />

@@ -226,6 +226,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
     }
 
     adv.coverQuest.exercises.push({
+      id: r.questExerciseId,
       exerciseId: r.exerciseId,
       images: safeParseImages(r.imagesJson),
       baseTarget: {

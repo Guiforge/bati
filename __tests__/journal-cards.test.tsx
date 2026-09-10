@@ -25,6 +25,7 @@ jest.mock("expo-localization", () => ({
 
 const mockGetUserLevelInfo = jest.fn();
 const mockGetPersonalRecordsSummary = jest.fn();
+const mockGetMovementRecords = jest.fn().mockResolvedValue([]);
 const mockGetStreakInfo = jest.fn();
 const mockGetSuggestedQuestsForWeakAreas = jest.fn();
 const mockGetAllAchievementsWithProgress = jest.fn();
@@ -41,6 +42,7 @@ jest.mock("@/db/userLevel", () => ({
 }));
 jest.mock("@/db/personalRecords", () => ({
   getPersonalRecordsSummary: () => mockGetPersonalRecordsSummary(),
+  getMovementRecords: () => mockGetMovementRecords(),
 }));
 jest.mock("@/db/streaks", () => ({ getStreakInfo: () => mockGetStreakInfo() }));
 jest.mock("@/db/muscleBalance", () => ({
@@ -156,6 +158,38 @@ describe("PersonalRecordsCard", () => {
     expect(await screen.findByText("Ground covered")).toBeTruthy();
     expect(screen.getByText("7.08 km")).toBeTruthy();
     expect(screen.getByText("4.58 km")).toBeTruthy();
+  });
+
+  /**
+   * The card's other records are all about a session, and a hero settles those in the first
+   * month. This is the only part of it that can be beaten tomorrow.
+   */
+  test("puts what can still be beaten above what cannot", async () => {
+    mockGetPersonalRecordsSummary.mockResolvedValueOnce({
+      longestSession: { value: 3600 },
+      mostXp: { value: 120 },
+      longestOuting: null,
+      totalLeaguesM: 0,
+      totalSessions: 12,
+    });
+    mockGetMovementRecords.mockResolvedValueOnce([
+      {
+        exerciseId: 1,
+        enName: "Wall Push-Up",
+        frName: "Pompe au mur",
+        type: "reps",
+        best: 25,
+        last: 18,
+        at: new Date("2026-09-10T10:00:00Z"),
+      },
+    ]);
+
+    await mount(<PersonalRecordsCard />);
+
+    expect(await screen.findByText("Wall Push-Up")).toBeTruthy();
+    // The standing best, and what the last session did, which is the pair to beat.
+    expect(screen.getByText("25 reps")).toBeTruthy();
+    expect(screen.getByText(/18 reps/)).toBeTruthy();
   });
 
   /**

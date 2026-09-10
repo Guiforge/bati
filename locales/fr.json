@@ -274,6 +274,7 @@
     "save_failed": "Impossible d'enregistrer le mouvement."
   },
   "exercises": {
+    "your_numbers": "Tes chiffres",
     "mine": "Les miens",
     "filter_group_mine": "À toi",
     "retired": "Retirés",
@@ -724,7 +725,7 @@
     "restart_round_button": "Refaire la manche",
     "resume_button": "Reprendre",
     "round_label": "MANCHE {{count}} / {{total}}",
-    "seconds": "Secondes",
+    "seconds_left_of": "restantes sur {{target}}",
     "skip_rest": "On y va",
     "skip_rest_accessibility": "Passer le repos et commencer le prochain exercice",
     "sound_off": "Son coupé",

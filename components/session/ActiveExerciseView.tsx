@@ -527,8 +527,14 @@ export function ActiveExerciseView() {
                         >
                           {formatTime(remainingSeconds)}
                         </H1>
+                        {/* Not "Seconds". The number counts *down* to the target, and the hint
+                            below it talks about carrying on past that target, so a caption that
+                            only named the unit left the two readings of 0:24 (elapsed? left?)
+                            equally available. The audit of 2026-09-10 read it as counting up. */}
                         <Paragraph fontWeight="700" color="$textSecondary">
-                          {t("session.seconds")}
+                          {t("session.seconds_left_of", {
+                            target: formatTarget(currentEx.target),
+                          })}
                         </Paragraph>
                       </>
                     )}

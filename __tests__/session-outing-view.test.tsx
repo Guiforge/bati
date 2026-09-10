@@ -108,7 +108,7 @@ function questWith(exercise: typeof mockWalk): Quest {
       {
         exercise,
         target: { type: "time", value: 900 },
-        ghost: { last: 900, best: 1200 },
+        ghost: { last: 900, best: 1200, at: 0 },
       },
     ],
   } as unknown as Quest;
@@ -200,7 +200,7 @@ describe("a walk, on the screen a hero stares at while walking", () => {
 
     // The 72px numeral, its unit label, the hint under it, and the ghost line are all gone.
     expect(screen.queryByText("0:03")).toBeNull();
-    expect(screen.queryByText("Seconds")).toBeNull();
+    expect(screen.queryByText(/left of/)).toBeNull();
     expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
     expect(screen.queryByText("Last time")).toBeNull();
 
@@ -228,7 +228,9 @@ describe("a plain hold, which still has a duration to count", () => {
 
     expect(screen.queryByText("Finding the sky")).toBeNull();
     expect(screen.getByText("0:03")).toBeTruthy();
-    expect(screen.getByText("Seconds")).toBeTruthy();
+    // The caption names the target rather than the unit: the number counts down to it, and
+    // "Seconds" left "0:03" as readable as an elapsed count. See docs/design/audits/2026-09-10.md.
+    expect(screen.getByText(/^left of \d+s$/)).toBeTruthy();
     expect(screen.getByText("Keep going! Timer continues after target.")).toBeTruthy();
     expect(screen.getByText("Last time")).toBeTruthy();
 

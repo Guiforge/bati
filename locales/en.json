@@ -399,6 +399,7 @@
     "save_failed": "Could not save the movement."
   },
   "exercises": {
+    "your_numbers": "Your numbers",
     "mine": "Mine",
     "filter_group_mine": "Yours",
     "retired": "Retired",
@@ -505,7 +506,7 @@
     "restart_round_button": "Restart Round",
     "resume_button": "Resume",
     "round_label": "ROUND {{count}} / {{total}}",
-    "seconds": "Seconds",
+    "seconds_left_of": "left of {{target}}",
     "skip_rest": "I'm ready",
     "skip_rest_accessibility": "Skip rest and start next exercise",
     "sound_off": "Sound off",

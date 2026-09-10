@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
+import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
@@ -291,7 +292,7 @@ export function SessionRewards({
                   items="center"
                   justify="center"
                 >
-                  <Text fontSize={26}>{a.definition.icon}</Text>
+                  <AchievementIcon icon={a.definition.icon} size={26} color="$text" />
                 </YStack>
                 <YStack flex={1}>
                   <Text fontWeight="700" fontSize={15} color="$text">

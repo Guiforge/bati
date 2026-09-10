@@ -12,18 +12,22 @@ import {
   ChevronRight,
   Clock,
   Dumbbell,
-  Map as MapIcon,
+  Footprints,
   Repeat,
   Target,
 } from "@/components/icons";
+import { TraceThumb } from "@/components/journal/TraceThumb";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration, getCompletedSessionById } from "@/db";
 import type { CompletedSession } from "@/db/completed";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { hasPoints } from "@/db/gps";
+import { hasGround } from "@/db/expeditions";
+import { previewPathsFor } from "@/db/gps";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getCached, setCached } from "@/db/queryCache";
 import { listQuestTemplates } from "@/db/quests";
+import type { LngLat } from "@/src/gps/trace";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -36,12 +40,30 @@ const parseId = (raw?: string | string[]): number | null => {
   return Number.isFinite(num) ? num : null;
 };
 
+/**
+ * The run's own line, or nothing.
+ *
+ * The points themselves rather than `hasPoints`: one query answers both "is there a door" and
+ * "what is behind it", and until 2026-09-11 the door was the only thing on this screen that knew
+ * the hero had been outside. Never allowed to fail the screen either: a missing trace is not
+ * worth losing the session over, and a swallowed failure is not allowed.
+ */
+async function traceFor(uuid: string | null): Promise<readonly LngLat[]> {
+  if (!uuid) return [];
+  const paths = await previewPathsFor([uuid]).catch((error) => {
+    reportError("journal.trace", error);
+    return null;
+  });
+  return paths?.get(uuid) ?? [];
+}
+
 export default function SessionDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const distanceUnit = useSettingsStore((s) => s.distanceUnit);
 
   const sessionId = parseId(params.id);
 
@@ -53,7 +75,7 @@ export default function SessionDetailScreen() {
   );
   // Whether this session left a trace. Every strength quest has none, and a door onto an empty
   // map is worse than no door — see app/recap.tsx.
-  const [hasTrace, setHasTrace] = useState(false);
+  const [trace, setTrace] = useState<readonly LngLat[]>([]);
   const [questTitle, setQuestTitle] = useState<string>(() =>
     sessionId != null ? (getCached<string>(`sessionTitle:${sessionId}:${language}`) ?? "") : "",
   );
@@ -73,16 +95,7 @@ export default function SessionDetailScreen() {
           return;
         }
         setSession(data);
-        // Never allowed to fail the screen: whether a door appears is not worth losing the
-        // session over, and a swallowed failure is not allowed either.
-        setHasTrace(
-          data.uuid
-            ? await hasPoints(data.uuid).catch((e) => {
-                reportError("journal.hasTrace", e);
-                return false;
-              })
-            : false,
-        );
+        setTrace(await traceFor(data.uuid));
 
         // Fetch quest title
         if (data.questId) {
@@ -236,6 +249,16 @@ export default function SessionDetailScreen() {
                       label={durationLabel}
                       tone="secondary"
                     />
+                    {/* An outing's own unit, next to its duration, the way the history row it was
+                        tapped from already shows it. Without it this screen described a walk with
+                        a duration and a difficulty and nothing else. */}
+                    {hasGround(session) && (
+                      <Tag
+                        icon={<Footprints size={12} color="$text" />}
+                        label={formatDistance(session.leaguesM, distanceUnit)}
+                        tone="secondary"
+                      />
+                    )}
                     <Tag
                       label={t(`quests.level_${session.userLevel}`, session.userLevel)}
                       tone="primary"
@@ -256,7 +279,7 @@ export default function SessionDetailScreen() {
               </Card>
 
               {/* The way out to the map. Only for a session that actually recorded ground. */}
-              {hasTrace && !!session.uuid && (
+              {trace.length > 0 && !!session.uuid && (
                 <Card
                   bg="$surface"
                   onPress={() =>
@@ -265,10 +288,21 @@ export default function SessionDetailScreen() {
                   accessibilityLabel={t("recap.open", "See the ground covered")}
                 >
                   <XStack items="center" gap="$3">
-                    <MapIcon size={20} color="$resourceGold" strokeWidth={2.5} />
-                    <Text flex={1} fontWeight="700" fontSize={16} color="$text">
-                      {t("recap.open", "See the ground covered")}
-                    </Text>
+                    {/* The run's own shape, not a map pin: the trace is already loaded and the
+                        door might as well show what is behind it. Same drawing and same gold as
+                        the history row this screen was tapped from. */}
+                    <TraceThumb points={trace} size={56} />
+                    <YStack flex={1} gap="$1">
+                      <Text fontWeight="700" fontSize={16} color="$text">
+                        {t("recap.open", "See the ground covered")}
+                      </Text>
+                      {session.movingSeconds ? (
+                        <Text fontSize={13} color="$textSecondary">
+                          {t("session.expedition_moving", "Moving")}{" "}
+                          {formatDuration(session.movingSeconds)}
+                        </Text>
+                      ) : null}
+                    </YStack>
                     <ChevronRight size={20} color="$textSecondary" />
                   </XStack>
                 </Card>

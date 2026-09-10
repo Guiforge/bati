@@ -118,6 +118,15 @@ export type CompletedSession = {
   notes: string;
   feedback: FeedbackCode | null;
   performedAt: Date;
+  /**
+   * The three an outing is made of, on the same row as everything above and left out of this
+   * query until 2026-09-11: the detail screen showed a walk as a dumbbell exercise that lasted
+   * 45 minutes, with no ground and no route, because it never learned outings exist. The history
+   * list has always selected them.
+   */
+  leaguesM: number | null;
+  movingSeconds: number | null;
+  outing: Locomotion | null;
   exercises: CompletedExercise[];
 };
 
@@ -591,6 +600,9 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       sessionNotes: completedQuest.notes,
       sessionFeedback: completedQuest.feedback,
       sessionPerformedAt: completedQuest.performedAt,
+      leaguesM: completedQuest.leaguesM,
+      movingSeconds: completedQuest.movingSeconds,
+      outing: completedQuest.outing,
     })
     .from(completedQuest)
     .where(eq(completedQuest.id, id))
@@ -608,6 +620,9 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
     notes: head.sessionNotes,
     feedback: (head.sessionFeedback as FeedbackCode | null) ?? null,
     performedAt: head.sessionPerformedAt,
+    leaguesM: head.leaguesM,
+    movingSeconds: head.movingSeconds,
+    outing: head.outing,
     exercises: [],
   };
 

@@ -362,6 +362,22 @@ describe("useSessionStore", () => {
       bossMock.getOrCreateBossFight.mockResolvedValue(null);
     });
 
+    test("never starts over a live session, because its name is what the fixes are filed under", async () => {
+      // An outing paused by the hardware back button still holds its uuid, and every GPS point
+      // written so far is filed under it. `startSession` used to overwrite both unconditionally,
+      // and the guard lived on the Home tile alone: the hero going back to change a walk's goal,
+      // through the quest screen, lost the walk. Now the store refuses, and the caller lands the
+      // hero on the session that is already running.
+      await store.getState().startSession(mockQuest, "medium");
+      const live = store.getState().sessionUuid;
+      store.setState({ status: "running" });
+
+      await store.getState().startSession(mockQuest, "hard");
+
+      expect(store.getState().sessionUuid).toBe(live);
+      expect(store.getState().userLevel).toBe("medium");
+    });
+
     test("resolves the adventure from the run step alone", async () => {
       await store.getState().startSession(mockQuest, "medium", { adventureRunStepId: 5 });
 
@@ -645,6 +661,11 @@ describe("useSessionStore", () => {
 
       // Through the real door, not the fixture: the point is that starting a session is what
       // mints the name, and that the same one survives to the row.
+      //
+      // Idle first, because this describe's setup leaves a session running and the store now
+      // refuses to start one over a live one: overwriting `sessionUuid` orphans every GPS fix
+      // filed under it. Nothing in this test is about that guard, so it starts from a clean one.
+      store.setState({ status: "idle" });
       await store.getState().startSession(mockQuest, "medium");
       const atStart = store.getState().sessionUuid;
       expect(atStart).toEqual(expect.any(String));
@@ -1199,6 +1220,10 @@ describe("useSessionStore", () => {
       realBegin = useExpeditionStore.getState().begin;
       const begin = jest.fn<Promise<boolean>, unknown[]>().mockResolvedValue(true);
       useExpeditionStore.setState({ begin: begin as unknown as typeof realBegin });
+      // This describe sits outside `useSessionStore`'s own reset, so it inherits whatever status
+      // the previous file left behind, and the store now refuses to start a session over a live
+      // one. Idle is the state a hero opening a quest is actually in.
+      useSessionStore.setState({ status: "idle" });
     });
 
     afterEach(() => {
@@ -1677,6 +1702,9 @@ describe("the day's quest", () => {
     (isDailyQuest as jest.Mock).mockResolvedValue(true);
     (hasSessionForQuestToday as jest.Mock).mockResolvedValue(false);
     (computeSessionXp as jest.Mock).mockClear();
+    // Outside `useSessionStore`'s own reset, so the status is whatever the last test left, and
+    // the store now refuses to start a session over a live one.
+    useSessionStore.setState({ status: "idle" });
   });
 
   afterEach(() => {

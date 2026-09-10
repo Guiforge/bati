@@ -1021,6 +1021,25 @@ export const useSessionStore = create<SessionState>()(
     triumphBonusPaid: false,
 
     startSession: async (quest, userLevel, options) => {
+      /**
+       * Never over a live one.
+       *
+       * A session that is neither idle nor finished holds a `sessionUuid`, and on an outing that
+       * name is what every GPS fix written so far is filed under. Overwriting it mints a fresh
+       * uuid and orphans the lot, which is a walk deleted without being asked.
+       *
+       * The guard used to live in `OutsideBand`, on the one-tap door only, with the reason
+       * written next to it. The other door, "Set up", went through the quest screen instead,
+       * whose only guard is against a double tap, so the hero most likely to have a walk paused,
+       * the one going back to change its goal, was the one who lost it. It belongs here, where
+       * every caller routes through.
+       *
+       * Returning without touching the store is the whole refusal: each caller pushes
+       * `/session` next, which is where a live session already is.
+       */
+      const live = get().status;
+      if (live !== "idle" && live !== "finished") return;
+
       // Load boss fight if this is a boss adventure. Callers only ever hold the run step id —
       // it is what the adventure screen puts in the URL and what the victory screen chains to —
       // so resolve the adventure here rather than threading a second param through three

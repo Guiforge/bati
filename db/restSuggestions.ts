@@ -1,5 +1,6 @@
-import { desc, gte } from "drizzle-orm";
+import { and, desc, gte } from "drizzle-orm";
 import { db, schema } from "./client";
+import { isWorkout } from "./completed";
 import { dayKey } from "./dates";
 
 const { completedQuest } = schema;
@@ -35,7 +36,7 @@ async function countHeavyWeeks(now: Date): Promise<number> {
   const rows = await db
     .select({ performedAt: completedQuest.performedAt })
     .from(completedQuest)
-    .where(gte(completedQuest.performedAt, horizon));
+    .where(and(gte(completedQuest.performedAt, horizon), isWorkout()));
 
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
   const perWeek = new Map<number, number>();
@@ -75,7 +76,9 @@ export async function getRestSuggestion(): Promise<RestSuggestion> {
       durationSeconds: completedQuest.durationSeconds,
     })
     .from(completedQuest)
-    .where(gte(completedQuest.performedAt, sevenDaysAgo))
+    // Training only. This counts days in a row and sessions per week to decide the hero is
+    // overreaching, and a daily walk is the opposite of that: it read as seven hard days.
+    .where(and(gte(completedQuest.performedAt, sevenDaysAgo), isWorkout()))
     .orderBy(desc(completedQuest.performedAt));
 
   if (recentSessions.length === 0) {

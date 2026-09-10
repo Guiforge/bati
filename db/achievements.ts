@@ -2,7 +2,9 @@ import { eq } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
 import { getSessionAggregates } from "./completed";
 import { countClimbedPaths } from "./exercises";
+import type { Locomotion } from "./schema";
 import { getStreakInfo } from "./streaks";
+import { getTotalXp } from "./userLevel";
 
 const { userPreferences } = schema;
 
@@ -41,6 +43,11 @@ export const achievementCodes = [
   // Skill. Thirty-four achievements counted sessions, flames, XP, hours and quest variety — the
   // most worked-on progression system in the app was the only one its reward system ignored.
   "path_climbed", // Own every rung of one path on the variation ladder
+  // Ground. Every other badge here says "workout", and 0049 stopped a walk from claiming any of
+  // them — which leaves a hero who mostly goes outside with a shelf that never fills. These two
+  // are the ones a walk can take, and the only ones it can.
+  "first_outing", // Go outside once
+  "hour_outside", // An hour of moving in one outing
 ] as const;
 
 export type AchievementCode = (typeof achievementCodes)[number];
@@ -281,6 +288,24 @@ export const achievementDefinitions: AchievementDefinition[] = [
     category: "special",
   },
   {
+    code: "first_outing",
+    icon: "Footprints",
+    enTitle: "Out the Gate",
+    frTitle: "Hors les murs",
+    enDescription: "Finish one outing",
+    frDescription: "Termine une sortie",
+    category: "special",
+  },
+  {
+    code: "hour_outside",
+    icon: "TreePine",
+    enTitle: "An Hour on the Road",
+    frTitle: "Une heure sur la route",
+    enDescription: "Spend an hour moving in one outing",
+    frDescription: "Passe une heure en mouvement sur une seule sortie",
+    category: "special",
+  },
+  {
     code: "variety_3_quests",
     icon: "Drama",
     enTitle: "Variety Seeker",
@@ -389,8 +414,12 @@ export async function getAllAchievementsWithProgress(): Promise<AchievementProgr
   const unlocked = await getUnlockedAchievements();
   const unlockedMap = new Map(unlocked.map((a) => [a.code, a]));
 
-  // Get stats for progress calculation
-  const { totalSessions, totalXp, uniqueQuests } = await getSessionAggregates();
+  // Two totals, on purpose. `getSessionAggregates` counts *training* since 0049, which is what
+  // the session and variety milestones are about. The XP milestones are about the number on the
+  // hero's own level bar, so they read `getTotalXp` — otherwise a hero who walked to level 12
+  // would be shown "0 / 500 XP" beside it.
+  const { totalSessions, uniqueQuests } = await getSessionAggregates();
+  const totalXp = await getTotalXp();
 
   // Get streak info
   const streakInfo = await getStreakInfo();
@@ -494,6 +523,8 @@ export async function getAllAchievementsWithProgress(): Promise<AchievementProgr
         targetValue = 1;
         break;
       // Special achievements - binary (either done or not)
+      case "first_outing":
+      case "hour_outside":
       case "long_session_30min":
       case "long_session_60min":
       case "early_bird":
@@ -532,13 +563,21 @@ export async function checkForNewAchievements(sessionInfo: {
   xpEarned: number;
   performedAt: Date;
   questId: number | null;
+  /**
+   * Which kind of session this was (`completed_sessions.outing`). Null is a workout.
+   *
+   * Every one of the 25 achievement strings says "workout" / "entraînement", and two of them say
+   * it about a duration: an hour of walking unlocked "Iron Will · Complete a 60+ minute workout".
+   */
+  outing: Locomotion | null;
 }): Promise<NewAchievementResult[]> {
   const unlocked = await getUnlockedAchievements();
   const unlockedCodes = new Set(unlocked.map((a) => a.code));
   const newlyUnlocked: NewAchievementResult[] = [];
 
-  // Get current stats
-  const { totalSessions, totalXp, uniqueQuests } = await getSessionAggregates();
+  // Get current stats. Two totals — see `getAllAchievementsWithProgress` above.
+  const { totalSessions, uniqueQuests } = await getSessionAggregates();
+  const totalXp = await getTotalXp();
 
   // Get streak info
   const streakInfo = await getStreakInfo();
@@ -620,8 +659,9 @@ export async function checkForNewAchievements(sessionInfo: {
     }
   }
 
-  // Check session duration achievements
-  const durationMinutes = sessionInfo.durationSeconds / 60;
+  // Check session duration achievements. A walk is not a long workout, and the two badges that
+  // depend on this say so in both locales.
+  const durationMinutes = sessionInfo.outing === null ? sessionInfo.durationSeconds / 60 : 0;
   if (durationMinutes >= 30 && !unlockedCodes.has("long_session_30min")) {
     const def = getAchievementDefinition("long_session_30min");
     if (def && (await unlockAchievement("long_session_30min"))) {
@@ -637,8 +677,26 @@ export async function checkForNewAchievements(sessionInfo: {
     }
   }
 
-  // Check time-based achievements
-  const hour = sessionInfo.performedAt.getHours();
+  // The two a walk can take. `durationSeconds` on an outing is what its trace can prove, which
+  // is moving time plus the stops moving time is allowed to hide — the same number the journal
+  // shows, so a badge and a row cannot disagree about the same hour.
+  if (sessionInfo.outing !== null) {
+    for (const [code, seconds] of [
+      ["first_outing", 0],
+      ["hour_outside", 3600],
+    ] as const) {
+      if (sessionInfo.durationSeconds < seconds || unlockedCodes.has(code)) continue;
+      const def = getAchievementDefinition(code);
+      if (def && (await unlockAchievement(code))) {
+        newlyUnlocked.push({ code, definition: def });
+        unlockedCodes.add(code);
+      }
+    }
+  }
+
+  // Check time-based achievements. Same rule: "Complete a workout before 7am" is about training,
+  // and a dawn walk is a different thing worth a different badge.
+  const hour = sessionInfo.outing === null ? sessionInfo.performedAt.getHours() : 12;
   if (hour < 7 && !unlockedCodes.has("early_bird")) {
     const def = getAchievementDefinition("early_bird");
     if (def && (await unlockAchievement("early_bird"))) {

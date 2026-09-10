@@ -1,5 +1,6 @@
-import { count, sum } from "drizzle-orm";
+import { sql, sum } from "drizzle-orm";
 import { db, schema } from "./client";
+import { isWorkout } from "./completed";
 import { shortLivedQuery } from "./queryCache";
 
 const { completedQuest } = schema;
@@ -166,10 +167,15 @@ export async function getTotalStats(): Promise<{
 }> {
   // One aggregate query — this used to SELECT * over the whole table on every Home focus
   // and reduce in JS.
+  //
+  // Conditional sums rather than a `WHERE`, because the three numbers do not agree on what a
+  // session is. The count and the seconds mean *training*: a walk is not a quest and a hike is
+  // not a long workout. The XP is the hero's total, the one the level is derived from, and it
+  // has to include everything or the trophy on Home would disagree with the level bar above it.
   const [row] = await db
     .select({
-      totalSessions: count(),
-      totalSeconds: sum(completedQuest.durationSeconds),
+      totalSessions: sql<number>`COUNT(CASE WHEN ${isWorkout()} THEN 1 END)`,
+      totalSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${isWorkout()} THEN ${completedQuest.durationSeconds} END), 0)`,
       totalXp: sum(completedQuest.xpEarned),
     })
     .from(completedQuest);

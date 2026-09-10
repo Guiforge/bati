@@ -1661,6 +1661,9 @@ export const useSessionStore = create<SessionState>()(
         xpEarned,
         performedAt: new Date(startTime),
         questId: quest?.id ?? null,
+        // The same marker the row carries. Two of the badges are about a *workout* lasting an
+        // hour, and an hour of walking was unlocking them.
+        outing: outingLocomotion(quest),
       });
 
       // Oath progress is derived; this only catches the moment it tips over. The bonus

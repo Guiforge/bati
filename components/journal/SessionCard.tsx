@@ -9,7 +9,7 @@ import { Calendar, Star, Trophy } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
-import type { DifficultyCode } from "@/db/schema";
+import type { DifficultyCode, Locomotion } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
 
 export interface JournalEntry {
@@ -28,6 +28,10 @@ export interface JournalEntry {
   performedAt: Date;
   durationSeconds: number | null;
   leaguesM: number | null;
+  /** Moving seconds, on an outing. Null on a workout and on an outing saved before 0046. */
+  movingSeconds: number | null;
+  /** Which kind of session this was (`0049`). Null is a workout. */
+  outing: Locomotion | null;
   userLevel: DifficultyCode;
   hasNewRecords?: boolean;
 }

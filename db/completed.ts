@@ -267,6 +267,10 @@ export type CompletedSessionListItem = Omit<CompletedSession, "exercises" | "uui
   hasNewRecords: boolean;
   /** Ground covered, in metres, on an outing; null on a workout. */
   leaguesM: number | null;
+  /** Moving seconds credited, on an outing; null on a workout and on one saved before 0046. */
+  movingSeconds: number | null;
+  /** Which kind of session this was (`0049`); null on a workout. */
+  outing: Locomotion | null;
 };
 
 export async function listCompletedSessions(limit = 20): Promise<CompletedSessionListItem[]> {
@@ -282,6 +286,8 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
       performedAt: completedQuest.performedAt,
       hasNewRecords: completedQuest.hasNewRecords,
       leaguesM: completedQuest.leaguesM,
+      movingSeconds: completedQuest.movingSeconds,
+      outing: completedQuest.outing,
     })
     .from(completedQuest)
     .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
@@ -298,6 +304,8 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
     performedAt: r.performedAt,
     hasNewRecords: r.hasNewRecords === 1,
     leaguesM: r.leaguesM ?? null,
+    movingSeconds: r.movingSeconds ?? null,
+    outing: r.outing ?? null,
   }));
 }
 
@@ -317,7 +325,8 @@ export async function getSessionAggregates(): Promise<{
       // countDistinct skips NULL questIds, matching the old filter(s => s.questId).
       uniqueQuests: countDistinct(completedQuest.questId),
     })
-    .from(completedQuest);
+    .from(completedQuest)
+    .where(isWorkout());
 
   return {
     totalSessions: Number(row?.totalSessions ?? 0),
@@ -325,6 +334,46 @@ export async function getSessionAggregates(): Promise<{
     uniqueQuests: Number(row?.uniqueQuests ?? 0),
   };
 }
+
+/**
+ * The two questions a query can ask about a row now that a session says which kind it is, and
+ * the difference between them is the whole reason there are two.
+ *
+ * `isWorkout` means **training**. It is what "average duration", "longest session", "most XP",
+ * the calendar dots, the weekly trends and the overtraining warning are about, and a walk is not
+ * one of them: a tester's six-hour hike put his average training duration at 77 minutes and took
+ * the longest-session record for good.
+ *
+ * `countsAsSession` means **you showed up**. The flame and the oaths ask this one, and a walk of
+ * ten minutes or more is a yes — the flame is about consistency, not about barbells. Ten minutes
+ * of *moving*; a walk that never left the doorstep is a logged session and not an appearance.
+ * Both oath metrics use it, so a hero who walks daily cannot watch `weekly_sessions` tick while
+ * `sessions` stands still on the same screen.
+ *
+ * Functions, not constants: this module destructures `schema` at import and a score of suites
+ * mock it as `{}`, so reading a column at module scope throws before a test runs. Same reason
+ * `exerciseColumns` is a function (`db/exercises.ts`).
+ *
+ * Parenthesised, and that is not cosmetic: drizzle's `and()` does not bracket its operands and
+ * SQLite binds `AND` tighter than `OR`, so an unwrapped `countsAsSession` composed inside
+ * `countQualifyingWeeks` would read as `(performedAt >= ? AND outing IS NULL) OR moving >= 600`
+ * and pull every outing ever logged into one oath's weekly count.
+ */
+export const isWorkout = () => sql`(${completedQuest.outing} IS NULL)`;
+
+/**
+ * How long a walk has to be before it counts as having shown up.
+ *
+ * The app already refuses to bank a session under two minutes (`TRIVIAL_SESSION_SECONDS`,
+ * `components/session/VictoryView.tsx`), which is the right floor for a workout and far too low
+ * for a walk: two minutes on the road is walking to the car. Ten is a walk.
+ */
+const OUTING_COUNTS_AFTER_SECONDS = 10 * 60;
+
+/** Ten minutes on the road, or any workout at all. See `isWorkout` above. */
+export const countsAsSession = () =>
+  sql`(${completedQuest.outing} IS NULL
+    OR COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds}) >= ${OUTING_COUNTS_AFTER_SECONDS})`;
 
 /**
  * The start of today where the hero is standing.
@@ -408,7 +457,10 @@ export async function hasSessionForQuestToday(
  * only needs "was there a workout that day".
  */
 export async function listWorkoutDayKeys(): Promise<Set<string>> {
-  const rows = await db.select({ performedAt: completedQuest.performedAt }).from(completedQuest);
+  const rows = await db
+    .select({ performedAt: completedQuest.performedAt })
+    .from(completedQuest)
+    .where(isWorkout());
   const days = new Set<string>();
   for (const r of rows) days.add(dayKey(r.performedAt));
   return days;
@@ -589,6 +641,7 @@ export async function getRecentSessionHistory(limit = 30): Promise<SessionSummar
       feedback: completedQuest.feedback,
     })
     .from(completedQuest)
+    .where(isWorkout())
     .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
     .limit(limit);
 
@@ -702,7 +755,7 @@ function selectTrendRows(cutoff: Date) {
       performedAt: completedQuest.performedAt,
     })
     .from(completedQuest)
-    .where(gte(completedQuest.performedAt, cutoff));
+    .where(and(gte(completedQuest.performedAt, cutoff), isWorkout()));
 }
 
 /**

@@ -240,6 +240,7 @@ describe("db/exercises — variation ladder", () => {
         xpEarned: 50,
         performedAt: new Date(new Date().setHours(12, 0, 0, 0)),
         questId: null,
+        outing: null,
       });
 
       expect(earned.map((a) => a.code)).toContain("path_climbed");

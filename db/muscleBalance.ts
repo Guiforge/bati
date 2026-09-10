@@ -1,5 +1,6 @@
 import { and, count, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 import { db, schema } from "./client";
+import { isWorkout } from "./completed";
 import { MUSCLE_LABELS } from "./muscles";
 import { isMovementPattern, PATTERN_LABELS, PULL_PATTERNS, PUSH_PATTERNS } from "./patterns";
 import { shortLivedQuery } from "./queryCache";
@@ -92,11 +93,10 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
     .innerJoin(completedExercises, sql`${completedExercises.sessionId} = ${completedQuest.id}`)
     .innerJoin(exercises, sql`${exercises.id} = ${completedExercises.exerciseId}`)
     .leftJoin(exerciseMuscles, sql`${exerciseMuscles.exerciseId} = ${exercises.id}`)
-    .where(
-      whereClause
-        ? and(whereClause, isNull(exerciseMuscles.muscle))
-        : isNull(exerciseMuscles.muscle),
-    );
+    // `isWorkout` because an expedition carries no muscle rows on purpose (`drizzle/0041`), so
+    // every walk fell into this count and reported the balance card a growing pile of work it
+    // was not counting. It is right that it is not counted; it is wrong to call it unclassified.
+    .where(and(whereClause, isNull(exerciseMuscles.muscle), isWorkout()));
 
   // Aggregate volume by muscle
   const muscleVolumes = new Map<MuscleCode, { volume: number; sessions: Set<number> }>();

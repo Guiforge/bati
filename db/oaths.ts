@@ -1,8 +1,9 @@
 import { differenceInCalendarWeeks, startOfWeek } from "date-fns";
-import { eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { getWeekStart } from "@/constants/dateFormatters";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
+import { countsAsSession } from "./completed";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
 import { deletePreference, getPreference, preferences, setPreference } from "./preferences";
 import { getStreakInfo, invalidateStreakInfo } from "./streaks";
@@ -236,7 +237,13 @@ async function measure(oath: Oath): Promise<number> {
       return rows[0]?.value ?? 0;
     }
     case "sessions": {
-      const rows = await db.select({ value: sql<number>`COUNT(*)` }).from(completedQuest);
+      // The same definition `weekly_sessions` below uses, and the same one the flame uses. Two
+      // presets sit on one swear screen: a hero who walks daily must not watch one of them tick
+      // while the other stands still.
+      const rows = await db
+        .select({ value: sql<number>`COUNT(*)` })
+        .from(completedQuest)
+        .where(countsAsSession());
       return rows[0]?.value ?? 0;
     }
     case "streak": {
@@ -287,7 +294,9 @@ async function countQualifyingWeeks(oath: Oath): Promise<number> {
   const rows = await db
     .select({ performedAt: completedQuest.performedAt })
     .from(completedQuest)
-    .where(gte(completedQuest.performedAt, startOfWeek(sworn, { weekStartsOn })));
+    .where(
+      and(gte(completedQuest.performedAt, startOfWeek(sworn, { weekStartsOn })), countsAsSession()),
+    );
 
   const sessionsByWeek = new Map<number, number>();
 

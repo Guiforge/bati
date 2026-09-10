@@ -95,7 +95,10 @@ export function PersonalRecordsCard() {
     );
   }
 
-  if (!summary || summary.totalSessions === 0) {
+  // `totalSessions` counts *training* since 0049, so a hero who only ever walks reads zero here
+  // and would lose the whole card — including the two tiles that are about their walking. The
+  // question is whether there is anything to show, not whether they lifted.
+  if (!summary || (summary.totalSessions === 0 && summary.longestOuting === null)) {
     return null;
   }
 

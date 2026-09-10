@@ -137,6 +137,8 @@ export default function JournalScreen() {
           performedAt: s.performedAt,
           durationSeconds: s.durationSeconds,
           leaguesM: s.leaguesM,
+          movingSeconds: s.movingSeconds,
+          outing: s.outing,
           userLevel: s.userLevel,
           hasNewRecords: s.hasNewRecords,
         };

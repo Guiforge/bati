@@ -392,6 +392,9 @@
   "home_continue_adventure_title": "Continuer ton aventure",
   "journal": {
     "avg_duration": "Durée moy.",
+    "outings": "Sorties",
+    "minutes_moving": "Min en mouvement",
+    "ground_covered": "Terrain",
     "balance_good": "Équilibré !",
     "balance_needs_work": "À travailler",
     "pull_deficit_title": "Ton tirage est en retard",

@@ -1,6 +1,7 @@
 import { startOfDay } from "date-fns";
 import { desc, sql } from "drizzle-orm";
 import { db, schema } from "./client";
+import { countsAsSession } from "./completed";
 import { dayKey } from "./dates";
 
 const { completedQuest, userPreferences } = schema;
@@ -212,6 +213,9 @@ export async function calculateAndCacheStreak(): Promise<StreakInfo> {
     db
       .select({ performedAt: completedQuest.performedAt })
       .from(completedQuest)
+      // A walk holds the flame from ten minutes of moving. The flame is about showing up, and
+      // going out is showing up; a walk to the letterbox is not.
+      .where(countsAsSession())
       .orderBy(desc(completedQuest.performedAt)),
   ]);
 
@@ -262,7 +266,10 @@ export function getStreakInfo(): Promise<StreakInfo> {
 export async function getWeeklyProgress(): Promise<{ done: number; quota: number }> {
   const [quota, rows] = await Promise.all([
     getWeeklyQuota(),
-    db.select({ performedAt: completedQuest.performedAt }).from(completedQuest),
+    db
+      .select({ performedAt: completedQuest.performedAt })
+      .from(completedQuest)
+      .where(countsAsSession()),
   ]);
 
   const byDay = groupByDay(rows.map((r) => r.performedAt));

@@ -1,5 +1,6 @@
-import { desc, eq, inArray, max, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
 import { db, schema } from "./client";
+import { isWorkout } from "./completed";
 import { totalLeaguesM } from "./gps";
 import type { QuestTargetType } from "./schema";
 
@@ -45,6 +46,7 @@ export async function getLongestSession(): Promise<PersonalRecord | null> {
       performedAt: completedQuest.performedAt,
     })
     .from(completedQuest)
+    .where(isWorkout())
     .orderBy(desc(completedQuest.durationSeconds))
     .limit(1);
 
@@ -99,6 +101,7 @@ export async function getMostXpSession(): Promise<PersonalRecord | null> {
       performedAt: completedQuest.performedAt,
     })
     .from(completedQuest)
+    .where(isWorkout())
     .orderBy(desc(completedQuest.xpEarned))
     .limit(1);
 
@@ -225,7 +228,7 @@ export async function getPersonalRecordsSummary(): Promise<{
     getMostXpSession(),
     getLongestOuting(),
     totalLeaguesM(),
-    db.select({ count: sql<number>`COUNT(*)` }).from(completedQuest),
+    db.select({ count: sql<number>`COUNT(*)` }).from(completedQuest).where(isWorkout()),
   ]);
 
   return {
@@ -252,6 +255,7 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
       durationSeconds: completedQuest.durationSeconds,
       xpEarned: completedQuest.xpEarned,
       leaguesM: completedQuest.leaguesM,
+      outing: completedQuest.outing,
     })
     .from(completedQuest)
     .where(eq(completedQuest.id, sessionId))
@@ -262,14 +266,16 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
     return newRecords;
   }
 
-  // Check longest session
-  if (session.durationSeconds != null) {
+  // Check longest session. An outing neither sets this record nor is compared against it: an
+  // hour of walking is not a longer workout than forty minutes of training, and until 0049 the
+  // journal had no way to say so. "Longest outing", below, is the record a walk can take.
+  if (session.durationSeconds != null && session.outing === null) {
     const previousLongest = await db
       .select({
         maxDuration: max(completedQuest.durationSeconds),
       })
       .from(completedQuest)
-      .where(sql`${completedQuest.id} != ${sessionId}`);
+      .where(and(sql`${completedQuest.id} != ${sessionId}`, isWorkout()));
 
     const prevMax = previousLongest[0]?.maxDuration ?? 0;
     if (session.durationSeconds > prevMax) {
@@ -282,14 +288,15 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
     }
   }
 
-  // Check most XP
-  if (session.xpEarned != null) {
+  // Check most XP. Same rule and the same reason: this is the trophy `0037` reached backwards
+  // to protect, and a walk taking it is the shape that migration was written about.
+  if (session.xpEarned != null && session.outing === null) {
     const previousMostXp = await db
       .select({
         maxXp: max(completedQuest.xpEarned),
       })
       .from(completedQuest)
-      .where(sql`${completedQuest.id} != ${sessionId}`);
+      .where(and(sql`${completedQuest.id} != ${sessionId}`, isWorkout()));
 
     const prevMax = previousMostXp[0]?.maxXp ?? 0;
     if (session.xpEarned > prevMax) {

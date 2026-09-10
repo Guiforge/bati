@@ -6,11 +6,13 @@ import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Flame, Target, Timer, TrendingUp, Trophy, Zap } from "@/components/icons";
+import { Flame, Footprints, Target, Timer, TrendingUp, Trophy, Zap } from "@/components/icons";
 import { TrendsCard } from "@/components/journal/TrendsCard";
 import { getWeekStart } from "@/constants/dateFormatters";
+import { formatDistance } from "@/constants/distanceFormat";
 import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
 import { formatDurationEstimate } from "@/db";
+import type { Locomotion } from "@/db/schema";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { useSettingsStore } from "@/stores/settings";
 import { buildWeekdayBars } from "./journalGrids";
@@ -21,6 +23,12 @@ interface JournalStatsProps {
     performedAt: Date;
     durationSeconds: number | null;
     userLevel: string;
+    /** Which kind of session this was (`0049`). Null is a workout. */
+    outing: Locomotion | null;
+    /** Moving seconds on an outing; null on a workout. */
+    movingSeconds: number | null;
+    /** Ground covered in metres on an outing; null on a workout. */
+    leaguesM: number | null;
   }[];
 }
 
@@ -76,21 +84,38 @@ function StatCard({
 export function JournalStats({ sessions }: JournalStatsProps) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const { width } = useWindowDimensions();
 
   const stats = useMemo(() => {
     if (sessions.length === 0) return null;
 
-    const totalWorkouts = sessions.length;
-    const totalMinutes = sessions.reduce(
+    // Everything below this line is about *training*. A tester's six-hour hike put his average
+    // training duration at 77 minutes, which is the complaint this whole card was rebuilt for:
+    // the numbers were true about the journal and false about the thing they are labelled.
+    // What the outings did has its own block, in its own units, further down.
+    const workouts = sessions.filter((s) => s.outing === null);
+    const outings = sessions.filter((s) => s.outing !== null);
+
+    const totalWorkouts = workouts.length;
+    const totalMinutes = workouts.reduce(
       (acc, s) => acc + (s.durationSeconds ? Math.round(s.durationSeconds / 60) : 0),
       0,
     );
     const avgMinutes = totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
 
+    // Minutes *moving*, not minutes out: an outing's own figures are what its trace can prove,
+    // and standing at a crossing is not time on the road. Metres, because leagues are the unit
+    // the village and the records already count ground in.
+    const outsideMinutes = outings.reduce(
+      (acc, s) => acc + Math.round((s.movingSeconds ?? s.durationSeconds ?? 0) / 60),
+      0,
+    );
+    const outsideMetres = outings.reduce((acc, s) => acc + (s.leaguesM ?? 0), 0);
+
     // Level distribution
     const levels = { easy: 0, medium: 0, hard: 0 };
-    sessions.forEach((s) => {
+    workouts.forEach((s) => {
       if (s.userLevel === "easy") levels.easy++;
       else if (s.userLevel === "hard") levels.hard++;
       else levels.medium++;
@@ -102,7 +127,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
     startOfWeek.setDate(today.getDate() - ((today.getDay() - getWeekStart(language) + 7) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const thisWeekSessions = sessions.filter((s) => new Date(s.performedAt) >= startOfWeek);
+    const thisWeekSessions = workouts.filter((s) => new Date(s.performedAt) >= startOfWeek);
     const thisWeekMinutes = thisWeekSessions.reduce(
       (acc, s) => acc + (s.durationSeconds ? Math.round(s.durationSeconds / 60) : 0),
       0,
@@ -110,7 +135,7 @@ export function JournalStats({ sessions }: JournalStatsProps) {
 
     // This month stats
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const thisMonthSessions = sessions.filter((s) => new Date(s.performedAt) >= startOfMonth);
+    const thisMonthSessions = workouts.filter((s) => new Date(s.performedAt) >= startOfMonth);
 
     return {
       totalWorkouts,
@@ -120,15 +145,19 @@ export function JournalStats({ sessions }: JournalStatsProps) {
       thisWeekCount: thisWeekSessions.length,
       thisWeekMinutes,
       thisMonthCount: thisMonthSessions.length,
+      outsideCount: outings.length,
+      outsideMinutes,
+      outsideMetres,
     };
   }, [sessions, language]);
 
   const streak = useStreakInfo();
 
+  // "When you usually train", so training only — the card says so under its own title.
   const weekdayData = useMemo(
     () =>
       buildWeekdayBars(
-        sessions.map((s) => s.performedAt),
+        sessions.filter((s) => s.outing === null).map((s) => s.performedAt),
         language,
       ),
     [sessions, language],
@@ -227,6 +256,31 @@ export function JournalStats({ sessions }: JournalStatsProps) {
           color="$secondary"
         />
       </XStack>
+
+      {/* Outside, in its own units. Only once there is something to say: a hero who has never
+          gone out is told nothing rather than shown three zeros. */}
+      {stats.outsideCount > 0 && (
+        <XStack gap="$3">
+          <StatCard
+            icon={<Footprints size={18} color="$white" />}
+            value={stats.outsideCount}
+            label={t("journal.outings", "Outings")}
+            color="$primary"
+          />
+          <StatCard
+            icon={<Timer size={18} color="$white" />}
+            value={stats.outsideMinutes}
+            label={t("journal.minutes_moving", "Mins Moving")}
+            color="$success"
+          />
+          <StatCard
+            icon={<TrendingUp size={18} color="$white" />}
+            value={formatDistance(stats.outsideMetres, distanceUnit)}
+            label={t("journal.ground_covered", "Ground")}
+            color="$secondary"
+          />
+        </XStack>
+      )}
 
       {/* This Week/Month Stats */}
       <Card>

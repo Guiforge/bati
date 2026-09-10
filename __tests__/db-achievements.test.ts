@@ -146,6 +146,7 @@ describe("db/achievements", () => {
         xpEarned: 50,
         performedAt: neutralTime(),
         questId: null,
+        outing: null,
       });
 
       // Should have unlocked sessions_10 (and possibly xp_100 with 500 total XP)
@@ -165,6 +166,7 @@ describe("db/achievements", () => {
         xpEarned: 50,
         performedAt: earlyMorning,
         questId: null,
+        outing: null,
       });
 
       const hasEarlyBird = newAchievements.some((a) => a.code === "early_bird");
@@ -179,6 +181,7 @@ describe("db/achievements", () => {
         xpEarned: 100,
         performedAt: neutralTime(),
         questId: null,
+        outing: null,
       });
 
       const hasLongSession = newAchievements.some((a) => a.code === "long_session_30min");

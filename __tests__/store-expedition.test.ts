@@ -411,6 +411,54 @@ describe("stores/expedition", () => {
    * that costs; here they are worth a breadcrumb, because a GPS that drops out on a de-Googled
    * ROM is exactly the field report nobody can reproduce at a desk.
    */
+  /**
+   * The panel used to print the whole outing's average and call it pace, which after an hour a
+   * hard four hundred metres moves by six seconds per kilometre. The receiver has been reporting
+   * a speed on every fix the whole time.
+   */
+  describe("how fast the hero is going now", () => {
+    test("means the last twenty seconds, so one jittery fix does not move the figure", async () => {
+      const store = require("@/stores/expedition")
+        .useExpeditionStore as typeof import("@/stores/expedition").useExpeditionStore;
+      await store.getState().begin("s-speed", NOTIFICATION, false, "metric");
+
+      for (let i = 0; i < 5; i++) emit(walking(i));
+      expect(store.getState().recentSpeedMps).toBeCloseTo(1.4, 5);
+
+      // One fix at a sprint, four seconds of walking around it: the mean moves, the reading does
+      // not jump to the sprint.
+      emit({ ...walking(5), speed: 5.6 });
+      const mean = store.getState().recentSpeedMps;
+      expect(mean).toBeGreaterThan(1.4);
+      expect(mean).toBeLessThan(2.5);
+    });
+
+    test("forgets what is older than the window, so a walk after a run reads as a walk", async () => {
+      const store = require("@/stores/expedition")
+        .useExpeditionStore as typeof import("@/stores/expedition").useExpeditionStore;
+      await store.getState().begin("s-window", NOTIFICATION, false, "metric");
+
+      emit({ ...walking(0), speed: 5.6 });
+      // Thirty seconds later, past the twenty second window, at a walk.
+      emit({ ...walking(30), speed: 1.4 });
+
+      expect(store.getState().recentSpeedMps).toBeCloseTo(1.4, 5);
+    });
+
+    test("says nothing rather than zero when the receiver reports no speed at all", async () => {
+      const store = require("@/stores/expedition")
+        .useExpeditionStore as typeof import("@/stores/expedition").useExpeditionStore;
+      await store.getState().begin("s-none", NOTIFICATION, false, "metric");
+
+      emit({ ...walking(0), speed: null });
+      emit({ ...walking(1), speed: null });
+
+      // Null, not 0: a receiver that omits the field is not a hero standing still, and the panel
+      // falls back to the outing's average rather than printing a standstill.
+      expect(store.getState().recentSpeedMps).toBeNull();
+    });
+  });
+
   describe("a trace that goes quiet", () => {
     test("leaves a breadcrumb when the provider is switched off", async () => {
       await store.getState().begin("s1", NOTIFICATION, false, "metric");

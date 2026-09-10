@@ -47,6 +47,21 @@ export function formatDistance(metres: number, unit: DistanceUnit): string {
  * on a panel that read "0 m" one line above. The two lines now agree on what going somewhere is,
  * because they read the same rule.
  */
+/**
+ * The pace of one instant, from a speed the receiver reported.
+ *
+ * `formatPace` below answers "how fast has this outing been", which is a number a hard four
+ * hundred metres moves by six seconds per kilometre after an hour. This one answers "how fast am
+ * I going", which is the question a hero asks mid-run, and it is a different figure entirely.
+ *
+ * An hour of that speed, in metres, over an hour: the same division, so both readings round the
+ * same way and neither can disagree with the other about what a kilometre is. The recap's colour
+ * ramp has been doing exactly this inline since it was written.
+ */
+export function formatSpeedAsPace(metresPerSecond: number, unit: DistanceUnit): string {
+  return formatPace(metresPerSecond * 3600, 3_600_000, unit);
+}
+
 export function formatPace(metres: number, movingMs: number, unit: DistanceUnit): string {
   if (
     !Number.isFinite(metres) ||

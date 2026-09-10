@@ -81,6 +81,7 @@ jest.mock("@/db/exercises", () => ({
 
 jest.mock("@/db/quests", () => ({
   findQuestWithExercise: jest.fn().mockResolvedValue(null),
+  listQuestTemplates: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock("@/db/estimate", () => ({
@@ -98,9 +99,11 @@ jest.mock("@/db/outings", () => ({
 
 const { getOathProgress } = require("@/db/oaths");
 const { getChainTo } = require("@/db/exercises");
-const { findQuestWithExercise } = require("@/db/quests");
+const { findQuestWithExercise, listQuestTemplates } = require("@/db/quests");
 const { loadConfiguredQuest } = require("@/db/questConfig");
 const { listOutings } = require("@/db/outings");
+
+const { FIRST_QUEST_TITLE } = require("@/constants/onboarding");
 
 const questNamed = (id: number, title: string) => ({
   quest: {
@@ -123,6 +126,7 @@ describe("useSmartAction", () => {
     getOathProgress.mockClear().mockResolvedValue(null);
     getChainTo.mockClear().mockResolvedValue(null);
     findQuestWithExercise.mockClear().mockResolvedValue(null);
+    listQuestTemplates.mockClear().mockResolvedValue([]);
     listOutings.mockClear().mockResolvedValue([]);
   });
 
@@ -240,9 +244,34 @@ describe("useSmartAction", () => {
     expect(result.current.config?.scene?.title).toBe("Chest Day");
   });
 
-  it("offers the gallery, honestly labelled, when there is nothing to go on", async () => {
+  // Day one, which is the whole retention question: the hero agreed to an eight minute session
+  // one screen ago, and Home used to answer with an empty card and a trip to the catalogue.
+  it("offers back the session onboarding just offered, when there is no history at all", async () => {
     const { getSuggestedQuestsForWeakAreas } = require("@/db/muscleBalance");
     getSuggestedQuestsForWeakAreas.mockResolvedValueOnce([]);
+    listQuestTemplates.mockResolvedValueOnce([
+      { id: 3, enTitle: "Something else" },
+      { id: 9, enTitle: FIRST_QUEST_TITLE },
+    ]);
+    loadConfiguredQuest.mockImplementation(async (id: number) =>
+      questNamed(id, "The Squire's Awakening"),
+    );
+
+    const { result } = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(result.current.config).not.toBeNull());
+
+    // The quest itself, so the card can name it and show its art and its minutes.
+    expect(loadConfiguredQuest).toHaveBeenCalledWith(9);
+    expect(result.current.config?.variant).toBe("quest");
+    expect(result.current.config?.scene?.title).toBe("The Squire's Awakening");
+  });
+
+  it("offers the gallery, honestly labelled, when even the on-ramp quest is gone", async () => {
+    const { getSuggestedQuestsForWeakAreas } = require("@/db/muscleBalance");
+    getSuggestedQuestsForWeakAreas.mockResolvedValueOnce([]);
+    // The seed quest is keyed on a title written by an immutable migration. If it ever goes
+    // missing, the catalogue is still an honest answer.
+    listQuestTemplates.mockResolvedValueOnce([{ id: 3, enTitle: "Something else" }]);
 
     const { result } = await renderHook(() => useSmartAction());
     await waitFor(() => expect(result.current.config).not.toBeNull());

@@ -8,6 +8,7 @@ import { Button, H1, Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
+import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import { rawColors } from "@/constants/rawColors";
 import { Difficulty, getQuestById, listQuestTemplates, type Quest } from "@/db/quests";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -16,14 +17,6 @@ import { useSessionStore } from "@/stores/session";
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 4;
-
-/**
- * The on-ramp quest authored for exactly this moment: 8 minutes, four movements, no equipment.
- * The title is the identifier on purpose: the quest is seeded by an immutable migration
- * (drizzle/0016_seed_new_quests.sql) that keys on this exact string. If it ever goes missing,
- * the load below reports it instead of silently killing the offer.
- */
-const FIRST_QUEST_TITLE = "The Squire's Awakening";
 
 /**
  * The last onboarding step, and the only one that matters to retention: completing a first real

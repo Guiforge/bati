@@ -1,6 +1,7 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db/adventures";
 import { estimateQuestSeconds, formatDurationEstimate } from "@/db/estimate";
 import { getChainTo } from "@/db/exercises";
@@ -9,7 +10,7 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import { getOathProgress, oathNeedsExercise } from "@/db/oaths";
 import { listOutings } from "@/db/outings";
 import { loadConfiguredQuest } from "@/db/questConfig";
-import { findQuestWithExercise } from "@/db/quests";
+import { findQuestWithExercise, listQuestTemplates } from "@/db/quests";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -209,7 +210,24 @@ export function useSmartAction() {
           }
         }
 
-        // 4. Nothing to go on — a day-one hero. Say so honestly and open the gallery.
+        // 4. Nothing to go on — a day-one hero. Offer back the session onboarding just offered:
+        //    eight minutes, four movements, no equipment. It goes through `questAction` like every
+        //    other case, so the card names the quest, shows its art and its minutes instead of the
+        //    empty band a hero met here before, one screen after agreeing to do exactly this.
+        const templates = await listQuestTemplates();
+        const onRamp = templates.find((tpl) => tpl.enTitle === FIRST_QUEST_TITLE);
+        if (onRamp && !isCancelled()) {
+          // The onboarding step's own title, not a second copy of it: the hero met these words
+          // one screen ago, and the offer is the same offer.
+          const action = await questAction(onRamp.id, t("onboarding.first_session_title"));
+          if (action && !isCancelled()) {
+            setConfig(action);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // 5. The seed is gone, or it would not load. The gallery is still an honest answer.
         if (!isCancelled()) {
           setConfig({
             label: t("home.pick_quest_label", "Pick a quest"),

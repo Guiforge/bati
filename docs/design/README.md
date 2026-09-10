@@ -17,6 +17,9 @@ related: [../README.md]
 - [exercise-colors.md](exercise-colors.md) — Muscle group → color mapping
 - [audit-protocol.md](audit-protocol.md) — Capturing every screen, then judging it with adversarial personas
 - [audits/2026-09-10.md](audits/2026-09-10.md) — ⚠️ 55 findings from four personas, 12 blockers, 4 confirmed in the code
+- [audits/2026-09-10-home-and-outings.md](audits/2026-09-10-home-and-outings.md) — Moves between opening the app and being under way
+- [audits/2026-09-10-outings.md](audits/2026-09-10-outings.md) — The live outing, its speed, and where the trace stops being drawn
+- [audits/2026-09-10-stats.md](audits/2026-09-10-stats.md) — Which stats cards earn their place
 
 ## Consistency contract
 

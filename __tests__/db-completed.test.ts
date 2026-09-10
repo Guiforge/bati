@@ -98,6 +98,33 @@ describe("db/completed", () => {
     expect(row.movingSeconds).toBe(2_700);
   });
 
+  /**
+   * The columns are on the row the detail screen already reads. Leaving them out of its query is
+   * how that screen came to describe a walk as a dumbbell exercise that lasted 45 minutes, with
+   * no ground on it and no route: it never knew it was looking at an outing.
+   */
+  test("the detail of an outing carries its ground, its moving time and its kind", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const squat = (await exercises.listExercises()).find((e) => e.enName === "Squat");
+    if (!squat) throw new Error("Seeded exercise 'Squat' not found");
+
+    const id = await completed.createCompletedSession({
+      userLevel: "medium",
+      uuid: "0192-walk-detail",
+      leaguesM: 5700,
+      movingSeconds: 1_982,
+      outing: "walk",
+      xpEarned: 30,
+      exercises: [{ exerciseId: squat.id, sortOrder: 0, result: { type: "time", value: 1_982 } }],
+    });
+
+    const session = await completed.getCompletedSessionById(id);
+    expect(session?.leaguesM).toBe(5700);
+    expect(session?.movingSeconds).toBe(1_982);
+    expect(session?.outing).toBe("walk");
+  });
+
   test("a workout writes neither, rather than a zero that means nothing", async () => {
     const completed = require("../db/completed") as typeof import("../db/completed");
     const exercises = require("../db/exercises") as typeof import("../db/exercises");

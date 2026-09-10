@@ -61,7 +61,10 @@ function StatCard({
       >
         {icon}
       </YStack>
-      <Text fontWeight="700" fontSize={20} color="$text">
+      {/* One line, always. A third of the screen holds "3" and "20 min" comfortably and "25.00 km"
+          not at all: it wrapped onto two lines and pushed the label into the card below. The tile
+          is a fixed third of a row, so the value is what has to give. */}
+      <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
       <Text

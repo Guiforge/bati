@@ -392,7 +392,7 @@
   "home_continue_adventure_subtitle": "Reprends là où tu t'es arrêté.",
   "home_continue_adventure_title": "Continuer ton aventure",
   "xp": {
-    "title": "Comment l'XP est comptée",
+    "title": "Le calcul de l'XP",
     "summary": "L'XP mesure l'effort que ton corps a fourni. Sept règles, et rien d'autre ne la fait bouger.",
     "unit_title": "Une seule unité : la minute d'effort",
     "unit_body": "Une répétition vaut 1 XP, et trois secondes d'effort valent une répétition. Une minute d'effort vaut donc 20 XP. Tout ce qui suit est une fraction de cette minute, et les lieues ne s'y convertissent jamais : elles comptent du terrain, pas de l'effort.",

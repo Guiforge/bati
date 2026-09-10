@@ -21,12 +21,16 @@ jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("@/src/widget", () => ({ requestWidgetsUpdate: jest.fn().mockResolvedValue(undefined) }));
 
 const mockSegments = jest.fn(() => ["(tabs)", "index"]);
-jest.mock("expo-router", () => ({ useSegments: () => mockSegments() }));
+const mockPathname = jest.fn(() => "/quests");
+jest.mock("expo-router", () => ({
+  useSegments: () => mockSegments(),
+  usePathname: () => mockPathname(),
+}));
 
 const WINDOW = { width: 390, height: 844 };
 
-function renderCameo() {
-  return render(
+function cameoTree() {
+  return (
     <SafeAreaProvider
       initialMetrics={{
         frame: { x: 0, y: 0, ...WINDOW },
@@ -36,8 +40,12 @@ function renderCameo() {
       <TamaguiProvider config={config} defaultTheme="dark">
         <VillagerCameo />
       </TamaguiProvider>
-    </SafeAreaProvider>,
+    </SafeAreaProvider>
   );
+}
+
+function renderCameo() {
+  return render(cameoTree());
 }
 
 function speakGuide(line: string) {
@@ -72,6 +80,36 @@ describe("VillagerCameo", () => {
   // pointing at. `beforeEach` already clears it.
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it("leaves when the hero leaves the screen that called it", async () => {
+    mockPathname.mockReturnValue("/quests");
+    const { queryByTestId, rerender } = await renderCameo();
+    await act(() => {
+      speakGuide("Quests are your workouts.");
+    });
+    expect(queryByTestId("villager-cameo")).toBeTruthy();
+
+    // The gallery's guide was still standing on the quest screen, drawn across "Start Quest" and
+    // the level chips, and the figure takes a tap: the left third of the primary button dismissed
+    // a villager instead of starting the session.
+    mockPathname.mockReturnValue("/quests/17");
+    await act(async () => {
+      await rerender(cameoTree());
+    });
+
+    expect(queryByTestId("villager-cameo")).toBeNull();
+  });
+
+  it("stays for a line the screen it arrived on raised itself", async () => {
+    // A guide raised *by* the screen being navigated to lands in the same commit as the change,
+    // so dismissing on any pathname change at all would send it away before its first character.
+    mockPathname.mockReturnValue("/quests/17");
+    const { queryByTestId } = await renderCameo();
+    await act(() => {
+      speakGuide("Pick a level, then start.");
+    });
+    expect(queryByTestId("villager-cameo")).toBeTruthy();
   });
 
   it("draws nothing at all when nobody is speaking", async () => {

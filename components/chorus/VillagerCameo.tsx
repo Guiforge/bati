@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
+import { usePathname } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, XStack, YStack } from "tamagui";
@@ -42,6 +43,7 @@ export function VillagerCameo() {
   const reducedMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
+  const pathname = usePathname();
 
   const line = current?.line ?? "";
   const priority = current ? MOMENT_CAST[current.moment].priority : "ambient";
@@ -71,6 +73,31 @@ export function VillagerCameo() {
   }, [current, types, line]);
 
   const finished = revealed >= line.length;
+
+  // A villager belongs to the screen that called them.
+  //
+  // This layer outlives every route: one host above the router, a store, and a linger measured in
+  // seconds. So a guide raised on the quest gallery was still standing when the hero opened a
+  // quest, where it drew across "Start Quest" and the level chips, and the figure is tappable —
+  // so the left third of the primary button dismissed a villager instead of starting the session.
+  // The audit of 2026-09-10 found it on two screens and could not tell from a still whether the
+  // tap was eaten; it was.
+  //
+  // The pathname at the moment of the cue, not the pathname of the effect: a cue raised *by* the
+  // screen being navigated to lands in the same commit as the change, and dismissing on any
+  // change would send that one away before its first character.
+  const shownAt = useRef<string | null>(null);
+  useEffect(() => {
+    if (!current) {
+      shownAt.current = null;
+      return;
+    }
+    if (shownAt.current === null) {
+      shownAt.current = pathname;
+      return;
+    }
+    if (shownAt.current !== pathname) dismiss(current.id);
+  }, [current, pathname, dismiss]);
 
   useEffect(() => {
     if (!(current && finished)) return;

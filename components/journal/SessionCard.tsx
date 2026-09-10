@@ -9,6 +9,7 @@ import { Calendar, Star, Trophy } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
+import { hasGround } from "@/db/expeditions";
 import type { DifficultyCode, Locomotion } from "@/db/schema";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -65,10 +66,9 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
 
   const durationLabel = entry.durationSeconds ? formatDuration(entry.durationSeconds) : "--";
   // An outing's row leads with the ground, which is the one number a walk is remembered by.
-  const metaLabel =
-    entry.leaguesM !== null && entry.leaguesM > 0
-      ? `${formatDistance(entry.leaguesM, unit)} · ${durationLabel}`
-      : durationLabel;
+  const metaLabel = hasGround(entry)
+    ? `${formatDistance(entry.leaguesM, unit)} · ${durationLabel}`
+    : durationLabel;
 
   return (
     <Card flat testID="journal-session-card" onPress={onPress}>

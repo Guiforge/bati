@@ -205,3 +205,21 @@ export function estimateDistanceSeconds(metres: number, mounted: boolean): numbe
   const speed = mounted ? NOMINAL_SPEED_MS.mounted : NOMINAL_SPEED_MS.onFoot;
   return Math.max(1, Math.round(metres / speed));
 }
+
+/**
+ * Whether a logged session covered any ground, read off the row rather than off the quest.
+ *
+ * Three places carried their own copy of this comparison — the journal card's meta line, the
+ * "longest outing" record and the check that awards it — and a fourth was about to be written.
+ *
+ * It asks about *ground*, not about kind, and that distinction is the whole reason it is not
+ * called `isOuting`. `completed_sessions.outing` (0049) is what says a session was a walk, and
+ * the two disagree exactly where it matters: a walk whose service never started is an outing with
+ * no ground, and a mixed quest has ground and is not one. Use this to decide whether to *show* a
+ * distance; use `outing` to decide what kind of session it was.
+ */
+export function hasGround<T extends { leaguesM: number | null }>(
+  session: T,
+): session is T & { leaguesM: number } {
+  return session.leaguesM != null && session.leaguesM > 0;
+}

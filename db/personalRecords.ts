@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
+import { hasGround } from "./expeditions";
 import { totalLeaguesM } from "./gps";
 import type { QuestTargetType } from "./schema";
 
@@ -80,7 +81,7 @@ export async function getLongestOuting(): Promise<PersonalRecord | null> {
     .limit(1);
 
   const best = rows[0];
-  if (best?.leaguesM == null || best.leaguesM <= 0) return null;
+  if (!best || !hasGround(best)) return null;
 
   return {
     type: "longest_outing",
@@ -310,7 +311,7 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
   }
 
   // Check longest outing. Metres, from the reducer's credit; a workout has null here and skips.
-  if (session.leaguesM != null && session.leaguesM > 0) {
+  if (hasGround(session)) {
     const previousLongest = await db
       .select({ maxM: max(completedQuest.leaguesM) })
       .from(completedQuest)

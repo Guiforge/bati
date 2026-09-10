@@ -1,4 +1,8 @@
-import { buildMonthGrid, buildWeekdayBars } from "@/components/journal/journalGrids";
+import {
+  buildJournalStats,
+  buildMonthGrid,
+  buildWeekdayBars,
+} from "@/components/journal/journalGrids";
 
 // Both of these were pure functions buried in 300-line screens with no test. Every failure mode
 // they have is *plausible output*: the calendar still draws 42 cells, the histogram still has
@@ -106,5 +110,92 @@ describe("buildWeekdayBars", () => {
       expect(bar.day.length).toBeGreaterThan(0);
       expect(bar.day[0]).toBe(bar.day[0]?.toUpperCase());
     }
+  });
+});
+
+describe("buildJournalStats", () => {
+  // A hero who trains 20 minutes three times a week and walks an hour on Sunday. Averaged
+  // together that is the 77 min the stats tab used to call their usual workout.
+  const monday = new Date(2026, 7, 17, 18, 0);
+  const tuesday = new Date(2026, 7, 18, 18, 0);
+  const wednesday = new Date(2026, 7, 19, 18, 0);
+  const sunday = new Date(2026, 7, 23, 10, 0);
+  const today = new Date(2026, 7, 23, 20, 0);
+
+  const workout = (performedAt: Date, minutes: number) => ({
+    performedAt,
+    durationSeconds: minutes * 60,
+    userLevel: "medium",
+    outing: null,
+    movingSeconds: null,
+    leaguesM: null,
+  });
+  const outing = (performedAt: Date, minutes: number, leaguesM: number, movingMinutes = minutes) =>
+    ({
+      performedAt,
+      durationSeconds: minutes * 60,
+      userLevel: "medium",
+      outing: "walk",
+      movingSeconds: movingMinutes * 60,
+      leaguesM,
+    }) as const;
+
+  const week = [
+    workout(monday, 20),
+    workout(tuesday, 20),
+    workout(wednesday, 20),
+    outing(sunday, 65, 5200),
+  ];
+
+  it("averages workouts alone, so a walk cannot inflate the training duration", () => {
+    const stats = buildJournalStats(week, "fr", today);
+
+    expect(stats.totalWorkouts).toBe(3);
+    expect(stats.totalMinutes).toBe(60);
+    expect(stats.avgMinutes).toBe(20);
+  });
+
+  it("counts the outings apart, with their own ground and average", () => {
+    const stats = buildJournalStats([...week, outing(monday, 45, 3800)], "fr", today);
+
+    expect(stats.outings).toEqual({ count: 2, leaguesM: 9000, avgMinutes: 55 });
+  });
+
+  /**
+   * `outing` on the row, not `leaguesM`. The two disagree exactly where it matters, and a walk
+   * whose service never started is the case that proves it: no ground, still a walk. Counting it
+   * as a workout would put an hour on the road back into the average this function exists to fix.
+   */
+  it("a walk with no ground is still a walk", () => {
+    const stats = buildJournalStats([workout(monday, 20), outing(sunday, 65, 0, 60)], "fr", today);
+
+    expect(stats.totalWorkouts).toBe(1);
+    expect(stats.avgMinutes).toBe(20);
+    expect(stats.outings).toEqual({ count: 1, leaguesM: 0, avgMinutes: 60 });
+  });
+
+  it("has no outings block at all until the hero goes out", () => {
+    expect(buildJournalStats([workout(monday, 20)], "fr", today).outings).toBeNull();
+  });
+
+  /** Moving minutes, which is what an outing's trace can prove and what its XP was paid on. */
+  it("times an outing by what moved, not by how long the hero was out", () => {
+    const stats = buildJournalStats([outing(sunday, 90, 4000, 45)], "fr", today);
+
+    expect(stats.outings?.avgMinutes).toBe(45);
+  });
+
+  it("splits difficulty over workouts alone", () => {
+    const stats = buildJournalStats(week, "fr", today);
+
+    expect(stats.levels).toEqual({ easy: 0, medium: 3, hard: 0 });
+  });
+
+  it("still counts a walk as recent activity, which is what that block asks", () => {
+    const stats = buildJournalStats(week, "fr", today);
+
+    expect(stats.thisWeekCount).toBe(4);
+    expect(stats.thisWeekMinutes).toBe(125);
+    expect(stats.thisMonthCount).toBe(4);
   });
 });

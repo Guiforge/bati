@@ -65,6 +65,20 @@ type ExpeditionState = {
   /** The most recent accepted fix, for an accuracy readout. */
   lastFix: LocationFix | null;
   /**
+   * How fast the hero is going *now*, in metres per second, meaned over the last twenty seconds.
+   * Null until the window has something in it.
+   *
+   * The receiver reports a speed on every fix, once a second, and until 2026-09-11 the only
+   * figure the panel could print was the whole outing's average, which a hard four hundred metres
+   * moves by six seconds per kilometre after an hour. So the screen answered "how fast has this
+   * walk been" to a hero asking "how fast am I going".
+   *
+   * Meaned rather than raw: a single fix's speed jitters by a metre per second on a good
+   * receiver, and a figure that flickers is one nobody reads. Twenty seconds is the window
+   * `src/gps/trace.ts` already chose against a real device for the same reason.
+   */
+  recentSpeedMps: number | null;
+  /**
    * Why the readout is not moving, in a code the panel turns into words: the service refused to
    * start, the hero denied the prompt, or the trace went quiet mid-walk (`gps-off`, `no-fix`).
    * The last two are transient and clear themselves the moment fixes come back.
@@ -113,6 +127,24 @@ let progressTimer: ReturnType<typeof setInterval> | null = null;
  * Whole leagues already announced, a high-water mark rather than a count. Seeded by `begin()`.
  */
 let leaguesCrossed = 0;
+
+/** The last `SPEED_WINDOW_MS` of reported speeds, newest last. Cleared with the buffer. */
+let speedWindow: { t: number; v: number }[] = [];
+
+/** Same twenty seconds `src/gps/trace.ts` smooths over, and for the same receiver. */
+const SPEED_WINDOW_MS = 20_000;
+
+/**
+ * The mean of what the receiver reported over the window, or null when it reported nothing.
+ *
+ * A fix with no speed is not a fix at zero: some receivers omit the field entirely, and counting
+ * those as stopped drags the mean towards a standstill the hero is not at.
+ */
+function meanSpeed(now: number): number | null {
+  speedWindow = speedWindow.filter((s) => now - s.t <= SPEED_WINDOW_MS);
+  if (speedWindow.length === 0) return null;
+  return speedWindow.reduce((sum, s) => sum + s.v, 0) / speedWindow.length;
+}
 
 /** Whole leagues in a reading. The only place the counter and the recap agree by construction. */
 function leaguesOf(track: TrackState): number {
@@ -208,6 +240,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   sessionUuid: null,
   track: EMPTY,
   lastFix: null,
+  recentSpeedMps: null,
   error: null,
   goalReached: false,
 
@@ -221,8 +254,9 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       .catch((e) => reportError("expedition.restart", e));
     buffer = [];
     leaguesCrossed = 0;
+    speedWindow = [];
     acquiringWord = notification.acquiring;
-    set({ track: EMPTY, lastFix: null, error: null, goalReached: false });
+    set({ track: EMPTY, lastFix: null, recentSpeedMps: null, error: null, goalReached: false });
 
     if (!isAvailable()) {
       // No native half: iOS today, and jest. The quest still runs, it just measures nothing.
@@ -281,10 +315,17 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     subscriptions = [
       addListener("onLocation", (fix) => {
         buffer.push(fix);
+        if (fix.speed != null) speedWindow.push({ t: fix.t, v: fix.speed });
         const track = accept(get().track, fix);
         const wasReached = get().goalReached;
         const reached = wasReached || goalReached(goal, track);
-        set({ track, lastFix: fix, goalReached: reached, error: clearedTransient(get().error) });
+        set({
+          track,
+          lastFix: fix,
+          recentSpeedMps: meanSpeed(fix.t),
+          goalReached: reached,
+          error: clearedTransient(get().error),
+        });
 
         if (reached && !wasReached) announceGoalReached(track, unit, haptics);
         announceLeague(track, haptics);

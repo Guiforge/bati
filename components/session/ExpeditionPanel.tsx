@@ -4,7 +4,12 @@ import { Linking } from "react-native";
 import { Paragraph, Text, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
+import {
+  formatClock,
+  formatDistance,
+  formatPace,
+  formatSpeedAsPace,
+} from "@/constants/distanceFormat";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
 import type { TrackState } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
@@ -56,6 +61,7 @@ export function ExpeditionPanel() {
   const track = useExpeditionStore((state) => state.track);
   const error = useExpeditionStore((state) => state.error);
   const lastFix = useExpeditionStore((state) => state.lastFix);
+  const recentSpeedMps = useExpeditionStore((state) => state.recentSpeedMps);
   const goalReached = useExpeditionStore((state) => state.goalReached);
   const unit = useSettingsStore((state) => state.distanceUnit);
   const goal = useSessionStore((state) => state.goal);
@@ -99,7 +105,19 @@ export function ExpeditionPanel() {
 
   const clock = formatClock(recorded * 1000);
   const distance = formatDistance(track.distanceM, unit);
-  const pace = formatPace(track.distanceM, track.movingMs, unit);
+  /**
+   * The pace of the last twenty seconds, not of the whole outing.
+   *
+   * The average is a figure that stops moving: after an hour, a hard four hundred metres shifts
+   * it by six seconds per kilometre, so the panel answered "how fast has this walk been" to a
+   * hero asking "how fast am I going". The average is still what the recap prints, where looking
+   * back is the point. Falls back to it while the window is empty, which is the first few
+   * seconds and any receiver that reports no speed at all.
+   */
+  const pace =
+    recentSpeedMps === null
+      ? formatPace(track.distanceM, track.movingMs, unit)
+      : formatSpeedAsPace(recentSpeedMps, unit);
 
   /**
    * The big figure carries the unit the hero set out in: metres when the goal is metres, the

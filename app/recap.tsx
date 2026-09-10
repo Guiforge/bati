@@ -19,7 +19,12 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Share2 } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
-import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
+import {
+  formatClock,
+  formatDistance,
+  formatPace,
+  formatSpeedAsPace,
+} from "@/constants/distanceFormat";
 import { MAP_ATTRIBUTION, mapStyle, mapStyleNoTiles } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import { outingSession, pointsOf } from "@/db/gps";
@@ -151,9 +156,8 @@ function SpeedLegend({
   const { t } = useTranslation();
   if (range === null && best === null) return null;
 
-  // A speed, as the pace of one hour held at it. `formatPace` is the only thing in this app that
-  // turns ground and time into a pace, and an hour is far above the ten metres it refuses under.
-  const paceAt = (speed: number) => formatPace(speed * 3600, 3_600_000, unit);
+  // A speed, as the pace of one hour held at it. One conversion, in constants/distanceFormat.
+  const paceAt = (speed: number) => formatSpeedAsPace(speed, unit);
 
   return (
     <YStack gap="$2" testID="recap-speed-legend">

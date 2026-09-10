@@ -91,6 +91,7 @@
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
       "!**/node_modules/**",
+      "!**/.claude/**",
       "!**/__tests__/**",
       "!**/.expo/**",
       "!**/coverage/**",

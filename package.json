@@ -198,7 +198,7 @@
     "jest-environment-node": "30.4.1",
     "jest-environment-jsdom": "30.4.1"
   },
-  "version": "2.1.3",
+  "version": "2.2.0",
   "license": "MIT",
   "expo": {
     "autolinking": {

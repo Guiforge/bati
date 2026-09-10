@@ -110,6 +110,14 @@ const OUTING_STOPPAGE_ALLOWANCE_SECONDS = 20 * 60;
  * on a table overnight does not journal nine hours, take the "longest session" record and unlock
  * two achievements on the way past. A quest bounds the same case against its own estimate; an
  * outing has no estimate worth bounding against, which is the whole reason this constant exists.
+ *
+ * ponytail: bounds one session and not the day. Six declarations of four hours is twenty-four
+ *           hours of walking nobody did and about 2100 XP, because the day decay
+ *           (`creditedOutingSeconds`, `db/xp.ts`) never reaches zero. That is the ceiling of a
+ *           declaration and the same class as typing 999 reps, and it is already down from
+ *           ~2000 *per session* before the rate existed. The fix, if anyone is ever seen doing
+ *           it, is a daily cap on outings with no trace - not a smaller number here, which would
+ *           only shorten the honest walk under trees this constant was written for.
  */
 const UNWITNESSED_OUTING_MAX_SECONDS = 4 * 3600;
 

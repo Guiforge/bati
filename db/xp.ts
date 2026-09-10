@@ -105,6 +105,13 @@ const DIFFICULTY_WEIGHT: Record<DifficultyCode, number> = {
  *
  * A hero's own expedition is written `walk` and cannot be anything else: see `UserExerciseDraft`
  * in `db/exercises.ts` for why a picker here would be a free doubling.
+ *
+ * ponytail: the ¼ on `walk` is the one value here nobody has measured against real use. It was
+ *           chosen so an hour on foot is 300 XP, which is two and a half of the catalogue's
+ *           median quests, and the tester who reported the six-hour hike has not walked a month
+ *           under it yet. If a regular walker still outpaces someone who trains, ⅕ puts the hour
+ *           at 240 - two median quests exactly - and nothing else has to move. Do that on a
+ *           month of real journals, not on an argument.
  */
 const LOCOMOTION_RATE: Record<Locomotion, number> = {
   walk: 1 / 4,

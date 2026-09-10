@@ -24,7 +24,7 @@ function TrendsCardComponent() {
   const [weeklyTrends, setWeeklyTrends] = useState<WeeklyTrend[]>([]);
   const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
   const [sessionsAnalysis, setSessionsAnalysis] = useState<TrendAnalysis | null>(null);
-  const [minutesAnalysis, setMinutesAnalysis] = useState<TrendAnalysis | null>(null);
+  const [xpAnalysis, setXpAnalysis] = useState<TrendAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -33,7 +33,7 @@ function TrendsCardComponent() {
       setWeeklyTrends(summary.weeklyTrends);
       setMonthlyTrends(summary.monthlyTrends);
       setSessionsAnalysis(summary.sessionsAnalysis);
-      setMinutesAnalysis(summary.minutesAnalysis);
+      setXpAnalysis(summary.xpAnalysis);
     } catch (error) {
       // A card that failed to load looks exactly like a card with nothing to show.
       reportError("journal.trends", error);
@@ -67,14 +67,14 @@ function TrendsCardComponent() {
       return getDateTimeFormat(language, { month: "short" }).format(item.monthStart);
     };
     const maxSessions = Math.max(1, ...currentData.map((d) => d.sessionCount));
-    const maxMinutes = Math.max(1, ...currentData.map((d) => d.totalMinutes));
+    const maxXp = Math.max(1, ...currentData.map((d) => d.totalXp));
     return currentData.slice(-8).map((item) => ({
       key: "weekKey" in item ? item.weekKey : item.monthKey,
       label: formatPeriodLabel(item),
       sessionCount: item.sessionCount,
-      totalMinutes: item.totalMinutes,
+      totalXp: item.totalXp,
       sessionHeight: (item.sessionCount / maxSessions) * 100,
-      minutesHeight: (item.totalMinutes / maxMinutes) * 100,
+      xpHeight: (item.totalXp / maxXp) * 100,
     }));
   }, [currentData, language]);
 
@@ -174,7 +174,7 @@ function TrendsCardComponent() {
         ) : (
           <>
             {/* Trend Badges */}
-            {viewMode === "weekly" && (sessionsAnalysis || minutesAnalysis) && (
+            {viewMode === "weekly" && (sessionsAnalysis || xpAnalysis) && (
               <XStack gap="$2" flexWrap="wrap">
                 {!!sessionsAnalysis && (
                   <XStack items="center" gap="$1">
@@ -184,12 +184,12 @@ function TrendsCardComponent() {
                     {renderTrendBadge(sessionsAnalysis)}
                   </XStack>
                 )}
-                {!!minutesAnalysis && (
+                {!!xpAnalysis && (
                   <XStack items="center" gap="$1">
                     <Text fontSize={12} color="$text" opacity={0.6}>
-                      {t("journal.trends_minutes")}:
+                      {t("journal.trends_xp")}:
                     </Text>
-                    {renderTrendBadge(minutesAnalysis)}
+                    {renderTrendBadge(xpAnalysis)}
                   </XStack>
                 )}
               </XStack>
@@ -227,25 +227,30 @@ function TrendsCardComponent() {
               </XStack>
             </YStack>
 
-            {/* Minutes Bar Chart */}
+            {/* What the effort was worth, not how long it took.
+                XP is priced off reps, tempo and difficulty, so it is the only effort-weighted
+                number the journal owns; minutes went *up* when the hero was slower on a quest of
+                fixed prescription, which is the opposite of what a progress card should say. The
+                series, its analysis and both translations already existed and were dropped at
+                this card's boundary. */}
             <YStack gap="$2">
               <Text fontSize={12} fontWeight="700" color="$text" opacity={0.7}>
-                {t("journal.trends_minutes")}
+                {t("journal.trends_xp")}
               </Text>
               <XStack
                 gap="$1"
                 items="flex-end"
                 height={60}
                 accessible
-                accessibilityLabel={`${t("journal.trends_minutes")}: ${bars
-                  .map((b) => `${b.label} ${b.totalMinutes}`)
+                accessibilityLabel={`${t("journal.trends_xp")}: ${bars
+                  .map((b) => `${b.label} ${b.totalXp}`)
                   .join(", ")}`}
               >
                 {bars.map((bar) => (
                   <YStack key={bar.key} flex={1} items="center" gap="$1">
                     <YStack
                       width="100%"
-                      height={`${Math.max(4, bar.minutesHeight)}%`}
+                      height={`${Math.max(4, bar.xpHeight)}%`}
                       bg="$secondary"
                       rounded="$2"
                       borderWidth={1}

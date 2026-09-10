@@ -97,11 +97,13 @@ describe("db/devSeedExpedition", () => {
 
   test("clearing takes the points with it, which no foreign key would", async () => {
     const { uuid } = await seeder().seedExpedition();
-    expect(await gps().hasPoints(uuid)).toBe(true);
+    // `previewPathsFor`, because that is what the journal calls: it wants the line, not just the
+    // fact that there is one, and `hasPoints` went with the door that used to draw a map pin.
+    expect((await gps().previewPathsFor([uuid])).get(uuid)?.length).toBeGreaterThan(0);
 
     await seeder().clearSeededExpeditions();
 
-    expect(await gps().hasPoints(uuid)).toBe(false);
+    expect((await gps().previewPathsFor([uuid])).get(uuid)).toBeUndefined();
     expect(t.sqlite.prepare("SELECT COUNT(*) AS c FROM gps_points").get() as { c: number }).toEqual(
       { c: 0 },
     );

@@ -15,6 +15,8 @@ related: [../README.md]
 - [design-system.md](design-system.md) — ⭐ Single source of truth: tokens, rules, decision order
 - [ui-checklist.md](ui-checklist.md) — PR merge gate (checks the rules in design-system.md)
 - [exercise-colors.md](exercise-colors.md) — Muscle group → color mapping
+- [audit-protocol.md](audit-protocol.md) — Capturing every screen, then judging it with adversarial personas
+- [audits/2026-09-10.md](audits/2026-09-10.md) — ⚠️ 55 findings from four personas, 12 blockers, 4 confirmed in the code
 
 ## Consistency contract
 

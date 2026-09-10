@@ -17,74 +17,18 @@ appId: com.guiforge.bati.dev
 tags:
   - screenshots
 ---
-# No `clearState` here on purpose: on a debug build it also wipes the dev-client's saved server
-# URL, and the app boots to the "Development servers" menu instead of itself. scripts/screenshots.sh
-# clears the data and re-points the client before this runs.
-- launchApp
-
-# A debug build fetches its bundle from Metro, which takes noticeably longer than a release build
-# reading it off disk, and `pm clear` also resets Expo's "developer menu already seen" flag — so
-# the menu opens over the app and covers the onboarding button. Both are waited out here: poll
-# until the button is reachable, dismissing the sheet whenever it is the thing in the way.
-- repeat:
-    times: 30
-    while:
-      notVisible:
-        id: "onboarding-presentation-continue"
-    commands:
-      - runFlow:
-          when:
-            visible: "This is the developer menu.*"
-          commands:
-            # Its backdrop, not its button: the app's own "Continuer" would match a text
-            # selector for "Continue" just as well, and tapping that skips a screen.
-            - tapOn:
-                point: "50%,12%"
-      - waitForAnimationToEnd:
-          timeout: 3000
-
+- runFlow: subflows/boot-dev-client.yaml
 - extendedWaitUntil:
     visible:
       id: "onboarding-presentation-continue"
-    timeout: 90000
+    timeout: 120000
 
 # --- 0. The first thing anyone ever sees ------------------------------------
 # Photographed before the subflow clicks through it: this screen only exists once per install.
 - takeScreenshot: 0-onboarding
 
 - runFlow: subflows/complete-onboarding.yaml
-
-# --- Seed a hero worth photographing ---------------------------------------
-# The dev screen has no testIDs and no i18n — its labels are stable English, so text is the only
-# selector available and the safest one here.
-- tapOn:
-    id: "home-settings"
-- extendedWaitUntil:
-    visible:
-      id: "settings-screen"
-    timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: "settings-dev"
-    direction: DOWN
-- tapOn:
-    id: "settings-dev"
-
-- scrollUntilVisible:
-    element:
-      text: "3y"
-    direction: DOWN
-- tapOn: "3y"           # ~550 sessions: streaks, records, achievements, muscle balance
-# No "Max out village" step: the button is gone, the village derives from the seeded history.
-- scrollUntilVisible:
-    element:
-      text: "+5"
-    direction: UP
-- tapOn: "+5"
-- tapOn: "+5"
-
-- back
-- back
+- runFlow: subflows/seed-hero.yaml
 
 # --- 1. Home ----------------------------------------------------------------
 - tapOn:

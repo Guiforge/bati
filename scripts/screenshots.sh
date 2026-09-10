@@ -14,6 +14,13 @@ locale="${1:-en-US}"
 raw="fastlane/raw"
 [ "$locale" = "en-US" ] || raw="fastlane/raw-${locale%%-*}"
 
+# The same device dance serves the UX audit, which wants other flows, another destination, no
+# store framing, and the shots even when a step drifted. Three env vars rather than a second copy
+# of the demo-mode, DND and dev-client preamble below — that preamble is where every
+# device-specific trap already lives.
+flow="${FLOW:-.maestro/screenshots.yaml}"
+raw="${RAW:-$raw}"
+
 export PATH="$PATH:$HOME/.maestro/bin"
 
 if ! adb get-state >/dev/null 2>&1; then
@@ -74,20 +81,59 @@ done
 sleep 8
 adb shell am force-stop com.guiforge.bati.dev >/dev/null 2>&1 || true
 
+# The dev-client's floating "Tools" button lands exactly where this app puts its own top-right
+# controls, and it wins every tap: it opened the dev menu on top of a session instead of pausing
+# it, and it photographs as a grey gear glued to the corner of every shot. Its preference is app
+# data, so `pm clear` above resets it. It has to be written here rather than next to the clear:
+# the first launch writes the whole preference map from its own defaults, so a file written
+# before it is silently replaced. Debug build, hence `run-as`.
+devmenu_prefs="$(mktemp)"
+cat > "$devmenu_prefs" <<'XML'
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="showsAtLaunch" value="false" />
+    <boolean name="showFab" value="false" />
+</map>
+XML
+adb push "$devmenu_prefs" /data/local/tmp/devmenu.xml >/dev/null 2>&1 || true
+adb shell run-as com.guiforge.bati.dev sh -c \
+  'mkdir -p shared_prefs && cp /data/local/tmp/devmenu.xml shared_prefs/expo.modules.devmenu.sharedpreferences.xml' \
+  >/dev/null 2>&1 || true
+rm -f "$devmenu_prefs"
+
 rm -rf "$raw"
 mkdir -p "$raw"
 
-maestro test .maestro/screenshots.yaml
+# A marker to collect against, rather than "the newest run directory wins". Maestro leaves a
+# directory behind when it tears the driver down, so the newest one after a run is sometimes an
+# empty one made a minute after the shots — and the collector below reported zero while eight
+# screenshots sat in the directory before it.
+run_marker="$(mktemp)"
+
+# An audit keeps whatever it managed to photograph: twenty-five good screens are worth more than
+# a red run. A store run still aborts, because a half-captured listing must never get framed.
+maestro test "$flow" || [ -n "${AUDIT:-}" ]
 
 # Maestro resolves takeScreenshot paths against its own artefact directory, not the project, so
-# the flow uses plain names and the files are collected here. Newest run wins.
-shots_dir="$(find "$HOME/.maestro/tests" -maxdepth 3 -type d -name screenshots -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)"
-if [ -z "$shots_dir" ]; then
-  echo "No Maestro screenshot directory found." >&2
-  exit 1
+# the flow uses plain names and the files are collected here.
+#
+# Everything this run wrote, wherever it wrote it. Two guesses were wrong before this: a
+# subdirectory named `screenshots` (Maestro moved the named shots to `<run>/<flow>/takeScreenshot/`
+# and kept `screenshots/` for the ones it takes when a step fails), then the newest run directory
+# (Maestro leaves an empty one behind when it tears the driver down). Both collected zero and said
+# so only in a count nobody reads. `step-*.png` is excluded by the leading digit, the failure
+# shots are the other kind.
+find "$HOME/.maestro/tests" -name '[0-9]*-*.png' -newer "$run_marker" -exec cp {} "$raw"/ \;
+rm -f "$run_marker"
+collected="$(find "$raw" -type f | wc -l)"
+echo "  Collected $collected shots"
+[ "$collected" -gt 0 ] || echo "  Nothing collected. The flow died before its first takeScreenshot." >&2
+
+if [ -n "${AUDIT:-}" ]; then
+  echo
+  echo "  Shots: $raw/"
+  exit 0
 fi
-find "$shots_dir" -name '[0-9]-*.png' -exec cp {} "$raw"/ \;
-echo "  Collected $(find "$raw" -type f | wc -l) shots from $shots_dir"
 
 python3 scripts/frame-screenshots.py --locale "$locale" --src "$raw"
 

@@ -1,0 +1,414 @@
+# Photograph every screen a hero with history actually sees, for a UX audit.
+#
+#   npm run audit:shots              # en, seeded + fresh, into .audit/en/
+#   npm run audit:shots -- fr
+#
+# Same contract as screenshots.yaml: nothing is asserted, so a drifting step yields a wrong
+# picture to look at rather than a red run to debug. Every step that can be skipped is
+# `optional`, because one unreachable screen must not cost the other twenty-five.
+#
+# The empty app is a separate run — audit-fresh.yaml — since a seeded hero can never show it.
+appId: com.guiforge.bati.dev
+tags:
+  - audit
+---
+- runFlow: subflows/boot-dev-client.yaml
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-presentation-continue"
+    timeout: 120000
+- runFlow: subflows/complete-onboarding.yaml
+- runFlow: subflows/seed-hero.yaml
+
+# --- Home -------------------------------------------------------------------
+- tapOn:
+    id: "tab-home"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "home-start-session"
+    timeout: 30000
+    optional: true
+- takeScreenshot: 01-home-top
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 02-home-scrolled
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 03-home-bottom
+
+# --- The oath ---------------------------------------------------------------
+- scrollUntilVisible:
+    element:
+      id: "home-oath-card"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "home-oath-card"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "oath-screen"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 04-oath
+- runFlow: subflows/back-to-tabs.yaml
+
+# --- Adventures -------------------------------------------------------------
+- tapOn:
+    id: "tab-adventures"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "adventures-screen"
+    timeout: 30000
+    optional: true
+- takeScreenshot: 05-adventures
+- tapOn:
+    id: "adventures-adventure-card"
+    index: 0
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 06-adventure-detail
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 07-adventure-steps
+- runFlow: subflows/back-to-tabs.yaml
+
+# --- Quests -----------------------------------------------------------------
+- tapOn:
+    id: "tab-quests"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "quests-quest-card"
+    timeout: 30000
+    optional: true
+- takeScreenshot: 08-quests
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "quest-start"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 09-quest-detail
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 10-quest-detail-scrolled
+# A plain `back`, not back-to-tabs: a quest lives inside the tab group, so the tab bar never
+# left the screen and the subflow's "am I on the tab bar yet" question answers yes without
+# moving. Three shots of a quest detail went out under catalogue names before this line.
+- back
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# The exercise catalogue, reached the only way a hero can reach it. The wait is not decoration:
+# coming back from a quest, the list remounts and the header's icon buttons arrive a beat late.
+- extendedWaitUntil:
+    visible:
+      id: "quests-quest-card"
+    timeout: 15000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: "quests-catalogue"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 11-exercises
+- tapOn:
+    id: "exercises-row"
+    index: 0
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 12-exercise-detail
+- runFlow: subflows/back-to-tabs.yaml
+- tapOn:
+    id: "tab-quests"
+    optional: true
+
+# The quest editor, empty — the screen that asks the most of a beginner.
+- tapOn:
+    id: "quests-new"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 13-quest-editor
+- runFlow: subflows/back-to-tabs.yaml
+
+# --- Village ----------------------------------------------------------------
+- tapOn:
+    id: "tab-village"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "village-screen"
+    timeout: 30000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 14-village
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 15-village-scrolled
+- tapOn:
+    id: "village-built"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "village-detail"
+    timeout: 8000
+    optional: true
+- takeScreenshot: 16-village-detail
+# Closing this sheet leaves the app deaf: the tab bar still answers a hierarchy query, so every
+# following tap "succeeds" and changes nothing, and six screens went out under journal names.
+# Relaunching is the only recovery the flow has, and it is a workaround for a product bug, not
+# a device quirk — see docs/design/audits/ for the finding.
+- back
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow: subflows/relaunch.yaml
+
+# --- Journal ----------------------------------------------------------------
+- tapOn:
+    id: "tab-journal"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "journal-screen"
+    timeout: 30000
+    optional: true
+- tapOn:
+    id: "journal-tab-stats"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: 17-journal-stats
+- scroll
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 18-journal-stats-scrolled
+- scroll
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 19-journal-stats-bottom
+- tapOn:
+    id: "journal-tab-history"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 20-journal-history
+- tapOn:
+    id: "journal-session-card"
+    index: 0
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-details-screen"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 21-session-details
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 22-session-details-scrolled
+- runFlow: subflows/back-to-tabs.yaml
+
+# --- Settings ---------------------------------------------------------------
+- tapOn:
+    id: "tab-home"
+    optional: true
+- tapOn:
+    id: "home-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 30000
+    optional: true
+- takeScreenshot: 23-settings-top
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 24-settings-middle
+- scrollUntilVisible:
+    element:
+      id: "settings-version"
+    direction: DOWN
+    optional: true
+- takeScreenshot: 25-settings-bottom
+
+# --- An expedition's recap ---------------------------------------------------
+# `seedHistory` writes strength sessions and knows nothing about GPS: `dev-seed-expedition` is
+# the only way to photograph this without walking a loop with the phone. The basemap wants the
+# network; without it the trace still draws and the shot is merely plainer.
+- scrollUntilVisible:
+    element:
+      id: "settings-dev"
+    direction: DOWN
+- tapOn:
+    id: "settings-dev"
+- scrollUntilVisible:
+    element:
+      id: "dev-seed-expedition"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "dev-seed-expedition"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "expedition-recap-screen"
+    timeout: 30000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: 26-recap-map
+- scroll
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 27-recap-scrolled
+- runFlow: subflows/back-to-tabs.yaml
+
+# --- A session, end to end --------------------------------------------------
+# Last: there is no coming back to the tabs from a session without quitting it.
+- tapOn:
+    id: "tab-quests"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "quests-quest-card"
+    timeout: 30000
+    optional: true
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+- tapOn:
+    id: "quest-start"
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 28-session-warmup
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 20000
+    optional: true
+- takeScreenshot: 29-session-active
+- tapOn:
+    id: "session-how-to"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 30-session-instructions
+- tapOn:
+    id: "session-instructions-close"
+    optional: true
+- tapOn:
+    id: "session-pause"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 31-session-paused
+- tapOn:
+    id: "session-resume"
+    optional: true
+- tapOn:
+    id: "session-complete-exercise"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 32-session-rest
+
+# --- Victory ----------------------------------------------------------------
+- repeat:
+    times: 40
+    while:
+      notVisible:
+        id: "session-victory-continue"
+    commands:
+      - tapOn:
+          id: "session-complete-exercise"
+          optional: true
+      - tapOn:
+          id: "session-skip-rest"
+          optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-continue"
+    timeout: 25000
+    optional: true
+- takeScreenshot: 33-victory
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 34-victory-scrolled
+- tapOn:
+    id: "session-victory-continue"
+    optional: true
+
+# --- The boss arena ---------------------------------------------------------
+- tapOn:
+    id: "tab-home"
+    optional: true
+- tapOn:
+    id: "home-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-dev"
+    direction: DOWN
+- tapOn:
+    id: "settings-dev"
+- scrollUntilVisible:
+    element:
+      text: "Jump to boss fight"
+    direction: DOWN
+    optional: true
+- tapOn:
+    text: "Jump to boss fight"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "quest-start"
+    timeout: 20000
+    optional: true
+- tapOn:
+    id: "quest-start"
+    optional: true
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+- takeScreenshot: 35-boss-narrative
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 25000
+    optional: true
+# One completed exercise, so the arena shows damage landing rather than a boss at full health:
+# the bar moving is the whole point of the screen.
+- tapOn:
+    id: "session-complete-exercise"
+    optional: true
+- tapOn:
+    id: "session-skip-rest"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 36-boss

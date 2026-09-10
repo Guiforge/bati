@@ -1,0 +1,39 @@
+# Reusable: turn a blank install into a hero worth photographing — three years of history, a
+# maxed village and ten extra levels. Assumes onboarding is done and the home tab is showing.
+#
+# An empty village sells nothing and a level 1 journal with one session in it sells less; an
+# audit of empty screens is a different run (audit-fresh.yaml), on purpose.
+#
+# The dev screen has no testIDs and no i18n — its labels are stable English, so text is the only
+# selector available and the safest one here. **Needs a debug build**: the screen is behind __DEV__.
+appId: com.guiforge.bati.dev
+---
+- tapOn:
+    id: "home-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "settings-dev"
+    direction: DOWN
+- tapOn:
+    id: "settings-dev"
+
+- scrollUntilVisible:
+    element:
+      text: "3y"
+    direction: DOWN
+- tapOn: "3y"           # ~550 sessions: streaks, records, achievements, muscle balance
+# No "Max out village" step: the button is gone, the village derives from the seeded history.
+
+- scrollUntilVisible:
+    element:
+      text: "+5"
+    direction: UP
+- tapOn: "+5"
+- tapOn: "+5"
+
+- back
+- back

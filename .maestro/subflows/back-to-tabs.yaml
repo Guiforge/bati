@@ -1,0 +1,16 @@
+# Reusable: leave whatever detour we are in and land back on the tab bar.
+#
+# Counting `back` presses is how an audit flow loses its place: one optional tap that did not
+# happen leaves the stack one screen shallower, the next `back` exits the app, and every shot
+# after it is of the wrong thing. This presses until the tab bar answers.
+appId: com.guiforge.bati.dev
+---
+- repeat:
+    times: 4
+    while:
+      notVisible:
+        id: "tab-home"
+    commands:
+      - back
+      - waitForAnimationToEnd:
+          timeout: 2000

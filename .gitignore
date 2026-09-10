@@ -88,3 +88,6 @@ fastlane/raw*/
 # Personal GPS traces and screenshots used to tune the expedition maths by hand. Real outings,
 # not fixtures: they stay on the machine that recorded them.
 test-gpx/
+
+# UX audit screenshots, throwaway by design
+.audit/

@@ -327,7 +327,7 @@ export default function ExerciseCatalogue() {
     const nextName = next ? localizedName(next, language) : null;
 
     return (
-      <YStack px="$5">
+      <YStack px="$5" testID="exercises-row">
         <ExerciseRow
           exercise={item}
           language={language}

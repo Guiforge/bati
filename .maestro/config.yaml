@@ -16,6 +16,9 @@ flows:
   - session-interruptions.yaml
   - village-sheet-check.yaml
 
+# screenshots.yaml, audit.yaml and audit-fresh.yaml are absent on purpose: they assert nothing
+# and take minutes each. They are run by name, by scripts/screenshots.sh and scripts/audit-shots.sh.
+#
 # subflows/ holds reusable fragments (e.g. complete-onboarding.yaml) pulled in
 # via `runFlow:` — they are not standalone entries here.
 

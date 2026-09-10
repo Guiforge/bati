@@ -690,6 +690,7 @@ export default function QuestsGallery() {
               width={36}
               height={36}
               rounded={18}
+              testID="quests-catalogue"
               onPress={() => router.push("/exercises" as never)}
               accessibilityRole="button"
               accessibilityLabel={t("exercises.catalogue_title", "Exercises")}
@@ -700,6 +701,7 @@ export default function QuestsGallery() {
               width={36}
               height={36}
               rounded={18}
+              testID="quests-new"
               onPress={() => router.push("/quests/edit" as never)}
               accessibilityRole="button"
               accessibilityLabel={t("quests.editor_new_title", "New quest")}

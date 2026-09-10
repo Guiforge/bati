@@ -16,7 +16,6 @@
     "expo": "~57.0.21",
     "expo-asset": "~57.0.15",
     "expo-audio": "~57.0.4",
-    "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.15",
     "expo-file-system": "~57.0.6",
     "expo-font": "~57.0.1",
@@ -84,6 +83,10 @@
     ],
     "testMatch": [
       "**/__tests__/**/*.(spec|test).(js|jsx|ts|tsx)"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.claude/worktrees/"
     ],
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
@@ -157,6 +160,7 @@
   "scripts": {
     "android": "expo run:android",
     "android:release": "cd android && ./gradlew installRelease -PbatiLocalId=.perf -PreactNativeArchitectures=arm64-v8a",
+    "audit:shots": "bash scripts/audit-shots.sh",
     "check": "biome check --write --error-on-warnings . && npx tsc -p tsconfig.json --noEmit",
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",

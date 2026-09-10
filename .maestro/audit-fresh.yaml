@@ -1,0 +1,90 @@
+# Photograph the app as a stranger meets it: onboarding step by step, then every tab with
+# nothing in it yet.
+#
+# The seeded run (audit.yaml) can never show these screens, and they are the ones that decide
+# whether anyone gets to session two. Empty states are the audit, not an afterthought.
+appId: com.guiforge.bati.dev
+tags:
+  - audit
+---
+- runFlow: subflows/boot-dev-client.yaml
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-presentation-continue"
+    timeout: 120000
+
+- takeScreenshot: 40-onboarding-presentation
+- tapOn:
+    id: "onboarding-presentation-continue"
+
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-village-name"
+    timeout: 15000
+- takeScreenshot: 41-onboarding-village-empty
+- tapOn:
+    id: "onboarding-village-name"
+- inputText: "Testville"
+- hideKeyboard
+- takeScreenshot: 42-onboarding-village-filled
+- tapOn:
+    id: "onboarding-village-continue"
+
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-level-skip"
+    timeout: 15000
+- takeScreenshot: 43-onboarding-level
+- tapOn:
+    id: "onboarding-level-skip"
+
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-first-session-skip"
+    timeout: 15000
+- takeScreenshot: 44-onboarding-first-session
+- tapOn:
+    id: "onboarding-first-session-skip"
+
+# --- Day one ----------------------------------------------------------------
+- extendedWaitUntil:
+    visible:
+      id: "tab-home"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: 45-home-day-one
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 46-home-day-one-scrolled
+
+- tapOn:
+    id: "tab-adventures"
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 47-adventures-day-one
+
+- tapOn:
+    id: "tab-quests"
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 48-quests-day-one
+
+- tapOn:
+    id: "tab-village"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 49-village-day-one
+
+- tapOn:
+    id: "tab-journal"
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 50-journal-day-one-stats
+- tapOn:
+    id: "journal-tab-history"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 51-journal-day-one-history

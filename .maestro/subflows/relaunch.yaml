@@ -1,0 +1,16 @@
+# Reusable: restart the app and land back on the tab bar.
+#
+# The one recovery a flow has when the app stops answering taps. On a dev build a restart is not
+# instant — the bundle comes back over HTTP and the dev-client can decide to show its own screen
+# instead — so the rescue in boot-dev-client runs on the way back up.
+appId: com.guiforge.bati.dev
+---
+- stopApp
+- runFlow: boot-dev-client.yaml
+- extendedWaitUntil:
+    visible:
+      id: "tab-home"
+    timeout: 90000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000

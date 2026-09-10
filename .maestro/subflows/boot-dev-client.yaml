@@ -1,0 +1,38 @@
+# Reusable: get the dev build's own JS on screen, whatever the dev-client is showing instead.
+#
+# Two things stand between `launchApp` and the app: the "Development servers" screen, when the
+# deep link that re-points the client did not take (Metro is up and `adb reverse` is set, but
+# discovery is a broadcast the phone does not always hear, so the URL is typed instead), and the
+# developer menu, which `pm clear` re-arms by resetting Expo's "already seen" flag.
+#
+# It does not wait for any particular screen: the caller knows whether it expects onboarding or
+# a tab bar, and the bundle can take a minute to arrive over HTTP. No `clearState` either — on a
+# debug build it wipes the saved server URL too, and the calling script has already cleared the
+# data and re-pointed the client.
+appId: com.guiforge.bati.dev
+---
+- launchApp
+
+- repeat:
+    times: 20
+    while:
+      visible: "DEVELOPMENT SERVERS"
+    commands:
+      - tapOn: "http://"
+      - inputText: "localhost:8081"
+      - hideKeyboard
+      - tapOn: "Connect"
+      - waitForAnimationToEnd:
+          timeout: 15000
+
+- repeat:
+    times: 10
+    while:
+      visible: "This is the developer menu.*"
+    commands:
+      # Its backdrop, not its button: the app's own "Continuer" would match a text selector for
+      # "Continue" just as well, and tapping that skips a screen.
+      - tapOn:
+          point: "50%,12%"
+      - waitForAnimationToEnd:
+          timeout: 3000

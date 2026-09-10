@@ -21,6 +21,7 @@ import { formatDuration } from "@/db/estimate";
 import { isOutdoors, isOutingSession, outingGoal } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import type { OutingGoal } from "@/src/gps/track";
 import { localizedName } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -53,8 +54,8 @@ function SlotTargetStepper({ qex, singleControl, label, hint, onChangeTarget }: 
       label={label}
       {...(singleControl ? {} : { hint })}
       value={qex.target.value}
-      min={targetRangeFor(qex.target.type).min}
-      max={targetRangeFor(qex.target.type).max}
+      min={targetRangeFor(qex.target.type, qex.exercise.style).min}
+      max={targetRangeFor(qex.target.type, qex.exercise.style).max}
       step={qex.target.type === "time" ? REST_STEP : 1}
       // The panel opens by itself on a one-movement quest, so this control is now
       // the first thing an outing shows. It said "900s", which is the unit the
@@ -215,7 +216,9 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
    * one-slot shape every outing ships with, that is simply "write it".
    */
   const setGoal = (next: OutingGoal) => {
-    const range = targetRangeFor("time");
+    // The sheet only opens on an outing, so this is the twelve-hour ceiling rather than a hold's
+    // hour: the goal it writes is the walk the hero is about to take.
+    const range = targetRangeFor("time", NON_REP_STYLE);
     if (next.type === "distance") {
       const metres = Math.min(
         Math.max(next.metres, DISTANCE_GOAL_RANGE.min),

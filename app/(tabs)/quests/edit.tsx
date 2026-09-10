@@ -532,8 +532,8 @@ export default function QuestEditor() {
                   <Stepper
                     label={t("quests.editor_target", "Target")}
                     value={p.value}
-                    min={targetRangeFor(p.type).min}
-                    max={targetRangeFor(p.type).max}
+                    min={targetRangeFor(p.type, exercise?.style).min}
+                    max={targetRangeFor(p.type, exercise?.style).max}
                     step={p.type === "time" ? REST_STEP : 1}
                     suffix={p.type === "time" ? "s" : ""}
                     onChange={(value) => patchExercise(p.uid, { value })}

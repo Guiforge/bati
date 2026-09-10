@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { eq } from "drizzle-orm";
 
 import { type DifficultyCode, movementPatterns, type QuestArchetype } from "../db/schema";
@@ -44,6 +45,18 @@ const MOVEMENT_PATTERNS = [...movementPatterns];
 const MIN_SECONDS = 8 * 60;
 const MAX_SECONDS = 25 * 60;
 const MOBILITY_MIN_SECONDS = 5 * 60;
+
+/**
+ * A way out has a window of its own, because the one above was written about circuits.
+ *
+ * Eight to twenty-five minutes is a sensible session of push-ups and it made the seeded walk
+ * fifteen minutes, which a tester summed up as "he does that going to fetch his bread". Twenty
+ * is the shortest outing worth putting shoes on for; sixty is as far as *shipped content* should
+ * suggest to someone who opened the app yesterday. A hero may set themselves twelve hours
+ * (`OUTING_TARGET_MAX`), which is a different question and answered elsewhere.
+ */
+const OUTING_MIN_SECONDS = 20 * 60;
+const OUTING_MAX_SECONDS = 60 * 60;
 const MAX_SETS_PER_MUSCLE = 12;
 
 /** A seeded quest always has one; the fallback only keeps the helpers total. */
@@ -102,6 +115,7 @@ describe("content invariants", () => {
 
   test("estimated duration stays inside the design window", async () => {
     const { estimateQuestSeconds } = require("../db/estimate") as typeof import("../db/estimate");
+    const { isOutingQuest } = require("../db/expeditions") as typeof import("../db/expeditions");
     const all = await loadQuests();
 
     const outOfWindow = all
@@ -112,8 +126,17 @@ describe("content invariants", () => {
           roundRestSeconds: q.roundRestSeconds,
           exercises: q.exercises.map((qex) => ({ exercise: qex.exercise, target: qex.target })),
         });
-        const min = archetypeOf(q) === "mobility" ? MOBILITY_MIN_SECONDS : MIN_SECONDS;
-        return { title: q.enTitle, seconds, ok: seconds >= min && seconds <= MAX_SECONDS };
+        // Which window this quest answers to. `isOutingQuest` is the strict predicate, the same
+        // one the journal uses to decide a session was a walk: every slot outdoors. A mixed
+        // quest is a workout with a walk in it and keeps the workout window.
+        const outing = isOutingQuest(q);
+        const min = outing
+          ? OUTING_MIN_SECONDS
+          : archetypeOf(q) === "mobility"
+            ? MOBILITY_MIN_SECONDS
+            : MIN_SECONDS;
+        const max = outing ? OUTING_MAX_SECONDS : MAX_SECONDS;
+        return { title: q.enTitle, seconds, ok: seconds >= min && seconds <= max };
       })
       .filter((r) => !r.ok);
 
@@ -325,6 +348,11 @@ describe("content invariants", () => {
       "Warden's Walk",
     ]);
 
+    // How each covers its ground (0049), and it is the only thing the price of a minute outside
+    // is read from. Asserted by name because a walk seeded as a `run` would pay double on
+    // identical GPS traces, and nothing else in the app would notice.
+    expect(cardio.map((e) => e.locomotion)).toEqual(["run", "ride", "walk"]);
+
     for (const movement of cardio) {
       // Held, not counted: a substitution onto one of these runs in its own unit (0039).
       expect(movement.measure).toBe("time");
@@ -332,6 +360,28 @@ describe("content invariants", () => {
       // No muscle rows, on purpose: an expedition converts to zero rep-equivalents, so a walk
       // tagged `legs` would show the balance card a leg trained for a volume of nothing.
       expect(movement.muscles).toEqual([]);
+    }
+  });
+
+  /**
+   * The three ways out, at the durations they are now seeded with (0050).
+   *
+   * The window test above only bounds them; these are the numbers themselves, because "45
+   * minutes" is a content decision and a band whose midpoint drifts is a quest that quietly
+   * changes what it asks for. `generateTarget` is deterministic — the midpoint of the band,
+   * snapped to the stepper's five-second grid — so there is exactly one right answer per quest.
+   */
+  test("a way out suggests a walk, not an errand", async () => {
+    const byTitle = new Map((await loadQuests()).map((q) => [q.enTitle, q]));
+
+    for (const [title, minutes] of [
+      ["The Warden's Round", 45],
+      ["Word Must Travel", 30],
+      ["The Long Reach", 45],
+    ] as const) {
+      const quest = byTitle.get(title);
+      assert(quest, `${title} is not in the catalogue`);
+      expect(quest.exercises[0]?.target).toEqual({ type: "time", value: minutes * 60 });
     }
   });
 

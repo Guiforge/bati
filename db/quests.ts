@@ -83,6 +83,14 @@ export type QuestTemplateExercise = {
     min: number;
     max: number;
   };
+  /**
+   * What kind of movement fills the slot, when the caller knows. It decides one thing here: how
+   * long a time target may be, an hour for a hold and twelve for a walk (`targetRangeFor`).
+   *
+   * Optional, and its absence is the narrow answer. A writer that forgets it clamps an outing to
+   * an hour, which is a shortened walk; the other way round would let a two-hour plank through.
+   */
+  style?: ExerciseStyle;
 };
 
 /**
@@ -239,8 +247,8 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
         exerciseId: qex.exerciseId,
         sortOrder: i,
         targetType: qex.baseTarget.type,
-        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type)),
-        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type)),
+        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type, qex.style)),
+        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type, qex.style)),
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );
@@ -291,7 +299,9 @@ export async function createQuestFromOuting(
   // first: clamping a 3612 s walk to 3600 and *then* rounding would be the same number twice.
   const value = clampToRange(
     Math.round(seconds / TIME_TARGET_GRID) * TIME_TARGET_GRID,
-    targetRangeFor("time"),
+    // This is an outing by construction, and until `targetRangeFor` learned about styles it
+    // silently cut a ninety-minute walk to sixty on the way into the quest it was saved as.
+    targetRangeFor("time", NON_REP_STYLE),
   );
 
   return await createQuestTemplate({
@@ -305,7 +315,15 @@ export async function createQuestFromOuting(
     rounds: 1,
     restSeconds: 0,
     roundRestSeconds: null,
-    exercises: [{ exerciseId, images: [], baseTarget: { type: "time", min: value, max: value } }],
+    exercises: [
+      {
+        exerciseId,
+        images: [],
+        baseTarget: { type: "time", min: value, max: value },
+        // The clamp above already used it; `createQuestTemplate` clamps again on its own way in.
+        style: NON_REP_STYLE,
+      },
+    ],
   });
 }
 
@@ -533,10 +551,16 @@ function buildSlot(
     served?.style === NON_REP_STYLE
       ? undefined
       : ctx.history.get(ghostKey(effectiveId, "time"))?.best;
+  // A walk is neither easy nor hard, it is a walk, so the hero's level does not scale it. The
+  // level scales a *prescription* — how much of a band you are asked for — and an outing's band
+  // is a suggested duration whose XP is paid on the ground actually covered, at a rate the level
+  // does not touch either (`LOCOMOTION_RATE`, `db/xp.ts`). Scaling it made the same walk read as
+  // 34, 45 or 56 minutes for three heroes, and paid all three the same for the same hour.
+  const level = served?.style === NON_REP_STYLE ? Difficulty.Medium : ctx.userLevel;
   const target = retargetForMovement(
-    generateTarget(base, ctx.userLevel, bestHold),
+    generateTarget(base, level, bestHold),
     served ?? { measure: null },
-    ctx.userLevel,
+    level,
   );
 
   return {
@@ -739,8 +763,8 @@ export async function setQuestExercises(
         exerciseId: qex.exerciseId,
         sortOrder: i,
         targetType: qex.baseTarget.type,
-        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type)),
-        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type)),
+        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type, qex.style)),
+        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type, qex.style)),
         imagesJson: JSON.stringify(qex.images ?? []),
       })),
     );

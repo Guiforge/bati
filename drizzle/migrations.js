@@ -50,6 +50,7 @@ import m0046 from "./0046_the_time_it_took.sql";
 import m0047 from "./0047_the_catalogue_says_tu.sql";
 import m0048 from "./0048_word_must_travel.sql";
 import m0049 from "./0049_a_walk_is_not_a_workout.sql";
+import m0050 from "./0050_thirty_minutes_is_a_walk.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -105,5 +106,6 @@ export default {
     m0047,
     m0048,
     m0049,
+    m0050,
   },
 };

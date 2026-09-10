@@ -205,10 +205,11 @@ describe("db/quests", () => {
     assert(quest);
     const slot = quest.exercises[0];
     assert(slot);
-    // A submaximal read of the one-hour walk (2412s) clamped to the band's own 1200s ceiling
-    // would still be wrong — the band's medium-level midpoint, 900s, is what the quest itself
-    // prescribes and what a hero must still get.
-    expect(slot.target.value).toBe(900);
+    // A submaximal read of the one-hour walk (2412s) would still be wrong wherever it landed:
+    // the band's own midpoint is what the quest prescribes and what a hero must still get. 2700s
+    // since `0050` reseeded the round to 30-60 minutes, and no longer scaled by the hero's level
+    // either — a walk is neither easy nor hard.
+    expect(slot.target.value).toBe(2700);
 
     t.sqlite.exec(`DELETE FROM completed_exercises WHERE sessionId = 9201`);
     t.sqlite.exec(`DELETE FROM completed_sessions WHERE id = 9201`);
@@ -314,9 +315,17 @@ describe("db/quests", () => {
     await quests.deleteQuest(id);
   });
 
-  // `TIME_TARGET_MAX` is the ceiling of a target a hero may *set*, and it is not the ceiling of
-  // what they may walk: a two-hour ride is recorded in full and offered again as an hour.
-  test("an outing past the target ceiling is filed at the ceiling, not above it", async () => {
+  /**
+   * A walk saved as a quest is offered again at the length it was.
+   *
+   * `TIME_TARGET_MAX` is an hour, and it is right for the thing it was written for: nobody
+   * planks for an hour. Applied to a walk it made this bridge lossy in the one direction that
+   * matters — a two-hour ride came back as a one-hour quest, and the hero could not push the
+   * stepper back up to ask for what they had just done. `targetRangeFor` takes a style now, and
+   * an expedition's ceiling is twelve hours, which is past any outing a person walks back from
+   * and still short of a forgotten phone.
+   */
+  test("a two-hour walk is offered again as two hours, and a forgotten phone is not", async () => {
     const quests = require("../db/quests") as typeof import("../db/quests");
 
     const walk = t.sqlite
@@ -337,9 +346,26 @@ describe("db/quests", () => {
     );
 
     const created = await quests.getQuestTemplateById(id);
-    expect(created?.exercises[0]?.baseTarget.max).toBe(3600);
-
+    expect(created?.exercises[0]?.baseTarget.max).toBe(2 * 3600);
     await quests.deleteQuest(id);
+
+    // And there is still a ceiling, twelve hours up rather than one.
+    const absurd = await quests.createQuestFromOuting(
+      {
+        enTitle: "The Forgotten Phone",
+        frTitle: "Le téléphone oublié",
+        enDescription: "",
+        frDescription: "",
+        imagePath: null,
+        exercises: [{ exercise: { id: walk.id } }],
+      },
+      30 * 3600,
+    );
+    expect((await quests.getQuestTemplateById(absurd))?.exercises[0]?.baseTarget.max).toBe(
+      12 * 3600,
+    );
+
+    await quests.deleteQuest(absurd);
   });
 
   test("a hero quest keeps 'no cover' as a real state, and can be given one later", async () => {

@@ -238,7 +238,12 @@ export function applyQuestConfig(
           ? qex.target
           : retargetForMovement(qex.target, substitute, config.level);
       const raw = targets[key];
-      const value = raw === undefined ? undefined : clamp(raw, targetRangeFor(base.type));
+      // The style follows the resolved unit, for the same reason the unit follows the swap: an
+      // hour is a hold's ceiling and a walk is not a hold, so a slot standing on an expedition
+      // may be set past it.
+      const movement = substitute ?? qex.exercise;
+      const value =
+        raw === undefined ? undefined : clamp(raw, targetRangeFor(base.type, movement.style));
 
       if (substitute === undefined && value === undefined) return qex;
 

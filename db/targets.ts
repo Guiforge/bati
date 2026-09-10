@@ -1,4 +1,5 @@
-import type { DifficultyCode, QuestTargetType } from "./schema";
+import type { DifficultyCode, ExerciseStyle, QuestTargetType } from "./schema";
+import { NON_REP_STYLE } from "./workUnits";
 
 // A plain object rather than an `enum`: `erasableSyntaxOnly` keeps every TS construct strippable
 // by tools that only erase types (Metro's Babel handles enums, oxc/Node type-stripping do not).
@@ -64,6 +65,22 @@ export function clampToRange(value: number, range: { min: number; max: number })
 export const TIME_TARGET_MAX = 3600;
 
 /**
+ * The same ceiling for a movement that covers ground, which is a different question.
+ *
+ * An hour is a hold's ceiling and a walk is not a hold. It is also `clampResultValue`'s bound on
+ * what an outing may *record* (`stores/session.ts`), and the two were the same number written
+ * twice until a stepper that refused to pass an hour met a session that could log twelve: a hero
+ * could walk for ninety minutes and not ask for it, and saving that walk as a quest
+ * (`createQuestFromOuting`) silently cut it to sixty.
+ *
+ * Twelve hours is past any outing a person walks back from, and still short of a forgotten
+ * phone. Nothing else is at risk from a large number here: an expedition converts to zero work
+ * units (`db/workUnits.ts`), so muscle volume, boss damage and the village cannot be inflated by
+ * it, and XP pays the ground's own witness rather than the target.
+ */
+export const OUTING_TARGET_MAX = 12 * 3600;
+
+/**
  * A distance goal, in metres. Not a `QuestTargetType`: `0000_schema.sql` holds `targetType` and
  * `resultType` to `('reps','time')` with a CHECK, and a walk's distance is already written once,
  * on `completed_sessions.leaguesM`. So the goal lives in the hero's quest config and the session
@@ -77,9 +94,23 @@ export const DISTANCE_GOAL_RANGE = { min: 500, max: 200_000 };
 // at 3 km, which is how 21.1 km came to be off the grid entirely. The goal sheet offers the
 // distances people actually name and a keyboard for the rest, so neither has a reader left.
 
-/** What a target may be, by what it counts. Reps and seconds are not the same magnitude. */
-export function targetRangeFor(type: QuestTargetType): { min: number; max: number } {
-  return type === "time" ? { min: TARGET_RANGE.min, max: TIME_TARGET_MAX } : TARGET_RANGE;
+/**
+ * What a target may be, by what it counts and by what does the counting. Reps and seconds are not
+ * the same magnitude, and neither are a plank's seconds and a walk's.
+ *
+ * `style` is optional because most callers hold a target and no movement, and because leaving it
+ * out has to be the *narrow* answer: a writer that forgets it clamps an outing to an hour, which
+ * is a shortened walk, while the other way round it would let a two-hour plank through.
+ */
+export function targetRangeFor(
+  type: QuestTargetType,
+  style?: ExerciseStyle,
+): { min: number; max: number } {
+  if (type !== "time") return TARGET_RANGE;
+  return {
+    min: TARGET_RANGE.min,
+    max: style === NON_REP_STYLE ? OUTING_TARGET_MAX : TIME_TARGET_MAX,
+  };
 }
 
 /**

@@ -28,7 +28,7 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
-import { formatDuration } from "@/db/estimate";
+import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession } from "@/db/expeditions";
 import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
@@ -526,6 +526,17 @@ export function VictoryView() {
                 {t("common.daily_xp_bonus", { count: result.dailyBonusXp })}
               </Text>
             )}
+            {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
+                know why, and a number with no rule behind it is the thing the research calls
+                controlling rather than informative. This is the rule, in the hero's own numbers. */}
+            {result?.outing ? (
+              <Text fontWeight="700" fontSize={11} color="$textSecondary">
+                {t("session.xp_outing_rate", {
+                  moving: formatDurationEstimate(result.outing.seconds),
+                  effort: formatDurationEstimate(result.outing.effortSeconds),
+                })}
+              </Text>
+            ) : null}
             {!!result?.overshootXp && (
               <Text
                 fontWeight="700"

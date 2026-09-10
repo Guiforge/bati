@@ -46,6 +46,7 @@ import type {
   DifficultyCode,
   ExerciseStyle,
   FeedbackCode,
+  Locomotion,
   MuscleCode,
   QuestTargetType,
 } from "@/db/schema";
@@ -62,7 +63,13 @@ import {
   type VillageTierUp,
 } from "@/db/village";
 import { NON_REP_STYLE } from "@/db/workUnits";
-import { computeSessionXp, MAX_SESSION_XP, type OutingLeg, type XpSet } from "@/db/xp";
+import {
+  computeSessionXp,
+  MAX_SESSION_XP,
+  type OutingLeg,
+  outingEffortSeconds,
+  type XpSet,
+} from "@/db/xp";
 import { i18n } from "@/i18n";
 import type { StartOptions } from "@/modules/bati-location";
 import type { OutingGoal } from "@/src/gps/track";
@@ -317,6 +324,12 @@ interface SessionState {
     oathBonusXp: number;
     /** Of `xpEarned`, how much came from beating targets rather than meeting them. */
     overshootXp: number;
+    /**
+     * The ground this session covered and what it was worth, or null when it never left the
+     * walls. `effortSeconds` is already decayed by whatever the day had paid for, so the victory
+     * screen can show the conversion that actually happened rather than the tariff.
+     */
+    outing: { seconds: number; effortSeconds: number; locomotion: Locomotion } | null;
     campaign: {
       adventureId: number;
       runId: number;
@@ -643,19 +656,29 @@ async function outingLedger(
   ground: Ground,
   effortCeilingSeconds: number,
   savedSessionId: number | null,
-): Promise<{ outing: OutingLeg | null; atTarget: OutingLeg | null; prior: number }> {
+): Promise<{
+  outing: OutingLeg | null;
+  atTarget: OutingLeg | null;
+  prior: number;
+  /** The same leg with what it was actually worth, for the victory screen's conversion line. */
+  priced: (OutingLeg & { effortSeconds: number }) | null;
+}> {
   const locomotion = pricedLocomotion(quest);
-  if (locomotion === null) return { outing: null, atTarget: null, prior: 0 };
+  if (locomotion === null) return { outing: null, atTarget: null, prior: 0, priced: null };
+
+  const outing: OutingLeg = {
+    seconds: outingLegSeconds(quest, results, ground.movingSeconds, effortCeilingSeconds),
+    locomotion,
+  };
+  // Excludes this session: a retry finds the row the first attempt wrote, and would otherwise
+  // read it as its own predecessor and pay the second band for the first band's work.
+  const prior = await outingSecondsToday(savedSessionId);
 
   return {
-    outing: {
-      seconds: outingLegSeconds(quest, results, ground.movingSeconds, effortCeilingSeconds),
-      locomotion,
-    },
+    outing,
     atTarget: { seconds: outingGoalSeconds(quest), locomotion },
-    // Excludes this session: a retry finds the row the first attempt wrote, and would otherwise
-    // read it as its own predecessor and pay the second band for the first band's work.
-    prior: await outingSecondsToday(savedSessionId),
+    prior,
+    priced: { ...outing, effortSeconds: Math.round(outingEffortSeconds(outing, prior)) },
   };
 }
 
@@ -1537,7 +1560,7 @@ export const useSessionStore = create<SessionState>()(
       const sets = toXpSets(quest, results);
 
       // The ground, priced once for the whole session and against what the day already paid for.
-      const { outing, atTarget, prior } = await outingLedger(
+      const { outing, atTarget, prior, priced } = await outingLedger(
         quest,
         results,
         ground,
@@ -1725,6 +1748,7 @@ export const useSessionStore = create<SessionState>()(
         sessionId,
         xpEarned,
         dailyBonusXp,
+        outing: priced,
         newRecords,
         newRungs,
         newAchievements,

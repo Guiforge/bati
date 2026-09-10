@@ -226,7 +226,7 @@ function setWeightedSeconds(set: XpSet): number {
  * No level multiplier. A walk is neither easy nor hard, it is a walk, and the rate is the whole
  * judgement — the same reason the quest screen shows an outing no level line.
  */
-function outingEffortSeconds(outing: OutingLeg, priorSeconds: number): number {
+export function outingEffortSeconds(outing: OutingLeg, priorSeconds: number): number {
   const prior = Math.max(0, priorSeconds);
   const credited =
     creditedOutingSeconds(prior + Math.max(0, outing.seconds)) - creditedOutingSeconds(prior);
@@ -348,4 +348,17 @@ export function estimateQuestXp(quest: EstimateQuestXpInput, userLevel: Difficul
  */
 function estimateSlotSeconds(qex: { exercise: XpSet["exercise"]; target: Target }): number {
   return Math.max(0, estimateExerciseSeconds(qex.exercise, qex.target));
+}
+
+/**
+ * What a minute of this way out is worth, in XP, before the day's decay — the tariff an outing
+ * shows where a quest shows "up to +N XP".
+ *
+ * A quest can quote a maximum because its targets bound it. An outing has none: it is paid for
+ * the ground actually covered, so what there is to advertise is a price per minute, and walking
+ * further is worth more. The first hour's price, which is the one a hero who has not been out
+ * today will get.
+ */
+export function outingXpPerMinute(locomotion: Locomotion): number {
+  return (60 * LOCOMOTION_RATE[locomotion]) / SECONDS_PER_REP_EQUIVALENT;
 }

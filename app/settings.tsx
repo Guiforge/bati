@@ -33,6 +33,7 @@ import {
   Vibrate,
   Volume2,
   Wrench,
+  Zap,
 } from "@/components/icons";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
@@ -606,6 +607,12 @@ export default function SettingsScreen() {
                 : t("settings.feedback_hint", "Write to me")
             }
             onPress={openBugReport}
+          />
+
+          <SettingRow
+            icon={<Zap size={22} color="$text" />}
+            label={t("xp.title", "How XP is counted")}
+            onPress={() => router.push("/xp" as never)}
           />
 
           <SettingRow

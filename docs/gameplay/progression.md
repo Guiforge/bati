@@ -2,7 +2,7 @@
 title: Progression (XP, Village, Flame)
 type: system
 status: active
-updated: 2026-08-26
+updated: 2026-09-10
 related:
   [
     ../planning/roadmap.md,
@@ -48,6 +48,14 @@ what the hero logged, at each movement's own `secondsPerRep`, then weighted by h
 movement is: **easy 0.8 · medium 1.0 · hard 2.5**. The hero's chosen level scales the payout on top
 of that (×0.9 / ×1.0 / ×1.2), as the quest screen advertises.
 
+A session has two legs and they are priced in different units. The above is the one for sets. The
+other is [ground](#ground-is-priced-by-the-way-out-not-by-the-movement), and a session that has
+both — a walk and then push-ups in the yard — gets both.
+
+The seven rules the hero can read are on the in-app page (`app/xp.tsx`, `xp.*` in the locales).
+They are the same rules, in the same order the code applies them: when one changes, it changes in
+three places or it is wrong in one.
+
 The hard weight is wide because a narrow one was measured against the seeded catalogue and found
 to punish the two archetypes it should reward. `skill` and `strength` quests are 80-87% rest *by
 protocol* — ten seconds of front lever, two minutes of recovery — so a volume metric undervalues
@@ -68,6 +76,50 @@ Three bounds, each answering a different question (`db/xp.ts`):
 | `MAX_SESSION_XP` | 2000 | The only bound no hero input can raise. Rounds, targets, tempo and results are all typed in, so a cap derived from them caps nothing. |
 
 Rest is not effort, and does not appear on either side: not in the payout, and not in the ceiling.
+
+### Ground is priced by the way out, not by the movement
+
+A minute in motion is worth a fraction of a minute of effort: **walk ¼ · ride ¼ · run ½**. That
+fraction replaces both the difficulty weight and the hero's level — a walk is neither easy nor
+hard, it is a walk. Which fraction is read off `exercises.locomotion` (`0049`), and a
+hero-authored expedition is always `walk`: the rate is the whole judgement, so a picker would be a
+free doubling on identical GPS traces.
+
+`ride` is not above `walk` even though the effort is. The mounted speed cap is 90 km/h
+(`stores/expedition.ts`), so an hour on a motorway credits an hour of moving time, and paying that
+above an hour of genuine walking inverts the one thing the trace does know. Lowering that cap is
+the better fix and it belongs to the reducer.
+
+Three bounds again, and each closes a hole the others could not see:
+
+| Bound | Value | What it answers |
+| --- | --- | --- |
+| The witness | the trace's moving seconds | An outing is paid for what moved. Not a bound on what the slots recorded — the recorded value is the view's stopwatch, which counts a bus and a bench. |
+| Decay | 1st hour full, 2nd ½, then ¼ | Going on is worth less per minute and never nothing. Measured over the **day**: per session it is undone by pressing stop and start, which paid 1800 for six hours worth 750. |
+| The floor | 10 XP, not on the day's second outing | A one-minute walk is 1.25 XP and floors to 10, an eightfold uplift. 120 of them paid 1200 against 450 for the same two hours in one piece. |
+
+One leg per session, never one per slot: a quest with six outdoor slots or six rounds — both of
+which the editor allows — priced six first hours.
+
+#### Why it changed
+
+A walk paid 16 XP a minute, because a minute of it went through the formula above. What makes that
+formula honest indoors is that rest comes out of it, and a walk has no rest to remove: 25 minutes
+of watch paid 6 minutes of effort indoors and 25 outdoors. `MAX_SESSION_XP` was reached in 2 h 05
+of walking and by nothing else — the best quest in the catalogue pays 383 at its targets — so a
+tester's six-hour hike took him to level 5 on a journal holding three short real sessions. His
+words: it devalues the real sessions.
+
+Nothing was recalculated. `0049` gave a session a column saying which kind it was, and the records
+a walk had taken stopped looking at walks, which settles the trophy without moving a journalled
+number. See [statistics-progress.md](statistics-progress.md#outings-are-counted-apart).
+
+### What the day's quest pays
+
+Half of what the quest **proposed**, added flat, once a day. `xpEarned × 1.5` held while every
+quest was bounded by its own prescription; an outing is not, so the multiplier compounded with a
+duration nobody set and an hour's run on the daily quest paid 1200. Reading the target instead
+makes the bonus what it says it is: you did the thing the day asked for.
 
 #### Why it changed
 

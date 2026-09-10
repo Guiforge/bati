@@ -43,6 +43,7 @@ import {
   isMountedOuting,
   isOutingSession,
   outingGoal,
+  pricedLocomotion,
 } from "@/db/expeditions";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
@@ -51,6 +52,7 @@ import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatTarget, type Target } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
+import { outingXpPerMinute } from "@/db/xp";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -523,6 +525,10 @@ export default function QuestDetails() {
   const questTokens = derived?.questTokens ?? null;
   const estimate = derived?.estimate ?? null;
   const xpReward = derived?.xpReward ?? null;
+  // The tariff behind that number, when there is one. `pricedLocomotion` rather than the strict
+  // predicate above: a mixed quest has no marker and still pays its walking at a walk's rate.
+  const outingLoco = state.quest ? pricedLocomotion(state.quest) : null;
+  const outingRate = outingLoco === null ? null : outingXpPerMinute(outingLoco);
 
   /**
    * Not `isOuting`. The notice answers "will Android ask me for my position", and what decides
@@ -744,7 +750,7 @@ export default function QuestDetails() {
                   {xpReward != null ? (
                     <Tag
                       // "Up to" is a ceiling, and an outing has none: it is paid for the ground
-                      // it covers with no target overhead it. See `setEffortSeconds` in db/xp.ts.
+                      // it covers, with no target over it. See `outingEffortSeconds` in db/xp.ts.
                       label={t(isOuting ? "quests.reward_xp_open" : "quests.reward_xp_estimate", {
                         count: xpReward,
                         defaultValue: `+${xpReward} XP`,
@@ -752,6 +758,12 @@ export default function QuestDetails() {
                       tone="secondary"
                     />
                   ) : null}
+                  {/* What an outing has instead of a maximum. The number above is what the
+                      suggested duration pays; this is what a minute pays, so a hero who goes
+                      further can see that further is worth more. */}
+                  {outingRate === null ? null : (
+                    <Tag label={t("quests.reward_xp_per_minute", { count: outingRate })} />
+                  )}
                 </XStack>
 
                 {/* No level on an outing. It has no honest effect on a walk — it stretches the

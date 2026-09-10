@@ -130,11 +130,14 @@ async function mountVictory({
   quest = expeditionQuest,
   sessionSeconds = 25 * 60,
   goal = null,
+  outing = null,
 }: {
   quest?: Quest;
   sessionSeconds?: number;
   /** What the hero asked for before setting off. `null` is a free outing, and only that. */
   goal?: OutingGoal | null;
+  /** The ground the save priced, as `saveSession` reports it back. */
+  outing?: { seconds: number; effortSeconds: number; locomotion: "walk" | "run" | "ride" } | null;
 } = {}) {
   useSessionStore.setState({
     quest,
@@ -146,7 +149,7 @@ async function mountVictory({
     bossFight: null,
     results: [],
     sessionUuid: "0192-walk",
-    saveSession: (async () => saveResult) as unknown as StoreState["saveSession"],
+    saveSession: (async () => ({ ...saveResult, outing })) as unknown as StoreState["saveSession"],
     quitSession: jest.fn() as unknown as StoreState["quitSession"],
   } as unknown as Partial<StoreState>);
 
@@ -252,6 +255,26 @@ describe("VictoryView, the walk it just celebrated", () => {
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(/32:00/);
     expect(screen.queryByText("52:00")).toBeNull();
+  });
+
+  /**
+   * The rate, said out loud. A hero who walks an hour and reads "+300" has no way to know why,
+   * and the research this app's progression is built on is explicit that a reward read as
+   * controlling erodes the motivation a reward read as informative builds. So the conversion is
+   * on screen: this much moving, counted as this much effort.
+   */
+  test("says what the walk was counted as, not just what it paid", async () => {
+    await mountVictory({ outing: { seconds: 3600, effortSeconds: 900, locomotion: "walk" } });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
+      /60 min moving · counted as 15 min of effort/,
+    );
+  });
+
+  test("a workout is not told what it was counted as - it was counted as itself", async () => {
+    await mountVictory({ quest: strengthQuest });
+
+    expect(screen.queryByText(/counted as/)).toBeNull();
   });
 
   test("a quest that never left the walls says nothing about ground or pace", async () => {

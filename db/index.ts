@@ -8,6 +8,7 @@ export type {
   AdventureStepTemplate,
 } from "./adventures";
 export {
+  adventureOrder,
   completeAdventureRunStep,
   getActiveAdventureRun,
   getAdventureDetails,

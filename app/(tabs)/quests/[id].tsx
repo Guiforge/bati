@@ -13,12 +13,13 @@ import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
-import { ChevronLeft, Dumbbell, Footprints, Pencil, Repeat, Sparkles } from "@/components/icons";
+import { ChevronLeft, Pencil, Repeat, Sparkles } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
+import { QuestExerciseRow } from "@/components/quests/QuestExerciseRow";
 import { restsBetweenExercises } from "@/components/quests/questShape";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
-import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
+import { getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import {
@@ -35,8 +36,6 @@ import {
   saveQuestConfig,
 } from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
-import { formatDuration } from "@/db/estimate";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import {
   estimateDistanceSeconds,
@@ -46,15 +45,12 @@ import {
   outingGoal,
   pricedLocomotion,
 } from "@/db/expeditions";
-import { MUSCLE_LABELS } from "@/db/muscles";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
-import { formatTarget, type Target } from "@/db/targets";
-import { NON_REP_STYLE } from "@/db/workUnits";
 import { outingXpPerMinute } from "@/db/xp";
-import { localizedName, localizedTitle } from "@/src/i18n/localized";
+import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -68,23 +64,6 @@ type LoadState =
  *  a hero's `data:` photo, `getQuestAsset` resolves. */
 function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
   return path ? getQuestAsset(path) : null;
-}
-
-function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
-  if (!path) return null;
-  return path.startsWith("http") ? { uri: path } : getExerciseThumb(path);
-}
-
-/**
- * A target in the words the hero reads it in.
- *
- * `formatTarget` prints seconds raw, which is fine at plank length and unreadable past a minute:
- * an expedition asks for 900, and "900s" is not a number anybody converts. Time targets go
- * through `formatDuration`, the app's own exact form — "15 min" above the minute, still "30s"
- * below it, so nothing shorter than a round changes. Reps stay `formatTarget`'s job.
- */
-function targetLabel(target: Target): string {
-  return target.type === "time" ? formatDuration(target.value) : formatTarget(target);
 }
 
 /**
@@ -487,26 +466,6 @@ export default function QuestDetails() {
     : EMPTY_CANDIDATES;
   const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
 
-  // Thumbnails resolved once per quest — resolveExerciseImage (a split+regex asset lookup)
-  // used to run twice per thumb on every render: once to filter, once to display.
-  const thumbsByExercise = useMemo(() => {
-    const map = new Map<number, { key: string; source: ImageSourcePropType }[]>();
-    for (const qex of derived?.quest.exercises ?? []) {
-      const paths = Array.from(new Set([qex.exercise.imagePath, ...qex.images].filter(Boolean)));
-      const thumbs: { key: string; source: ImageSourcePropType }[] = [];
-      for (const p of paths) {
-        // A handful of 42px tiles reads fine; past 4 it was a nested horizontal ScrollView.
-        if (thumbs.length >= 4) break;
-        const source = resolveExerciseImage(p);
-        // Only keep thumbs that actually resolve to a real image; a row of
-        // fallback-emoji tiles is noise, not content.
-        if (source != null && typeof p === "string") thumbs.push({ key: p, source });
-      }
-      map.set(qex.id, thumbs);
-    }
-    return map;
-  }, [derived]);
-
   if (!questId) {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
@@ -817,140 +776,16 @@ export default function QuestDetails() {
                 {t("quests.exercises_list", "Exercises")}
               </Text>
 
-              {/* ponytail: nested conditional rendering; extract a subcomponent when a fourth branch lands. */}
-              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above */}
-              {quest.exercises.map((qex, i) => {
-                const exName = language === "fr" ? qex.exercise.frName : qex.exercise.enName;
-                const exDesc =
-                  language === "fr" ? qex.exercise.frDescription : qex.exercise.enDescription;
-
-                const thumbs = thumbsByExercise.get(qex.id) ?? [];
-
-                return (
-                  <Card
-                    key={qex.id}
-                    onPress={() => router.push(`/exercises/${qex.exercise.id}` as never)}
-                  >
-                    <XStack gap="$3" items="flex-start">
-                      <YStack
-                        width={52}
-                        height={52}
-                        rounded={26}
-                        bg="$surface"
-                        borderWidth={1}
-                        borderColor="$borderStrong"
-                        justify="center"
-                        items="center"
-                      >
-                        {/* An outing is not a dumbbell. `Footprints` is already in
-                            components/icons.ts, so this costs the bundle nothing. */}
-                        {qex.exercise.style === NON_REP_STYLE ? (
-                          <Footprints size={24} color="$text" strokeWidth={2.5} />
-                        ) : (
-                          <Dumbbell size={24} color="$text" strokeWidth={2.5} />
-                        )}
-                      </YStack>
-
-                      <YStack flex={1} gap="$1">
-                        <XStack items="center" justify="space-between" gap="$2">
-                          <Text fontWeight="700" fontSize={17} color="$text" flex={1}>
-                            {i + 1}. {exName}
-                          </Text>
-                          {/* On an outing set by distance the slot's seconds are the fallback
-                              `outingGoal` never reads, and a chip saying "15 min" beside a 5 km
-                              goal is the screen contradicting itself about what is going to run.
-                              The goal is named once, in the panel above. */}
-                          {isOuting && config.distanceM !== undefined ? null : (
-                            <Tag
-                              label={targetLabel(qex.target)}
-                              tone={qex.target.type === "time" ? "secondary" : "primary"}
-                            />
-                          )}
-                        </XStack>
-
-                        {/* A slot the hero is not on the rung for is served easier (issue #33).
-                          Said out loud, or the card disagrees with the quest for no visible
-                          reason — and the movement it names stays one tap away through swap. */}
-                        {qex.substitutedFor ? (
-                          <Text fontSize={12} color="$textSecondary" fontFamily="$body">
-                            {t("quests.served_easier_rung", {
-                              name: localizedName(qex.substitutedFor, language),
-                              defaultValue: `Working up to ${localizedName(qex.substitutedFor, language)}`,
-                            })}
-                          </Text>
-                        ) : null}
-
-                        {thumbs.length > 0 ? (
-                          <XStack gap="$2" pt="$2" pb="$1">
-                            {thumbs.map((thumb) => (
-                              <YStack
-                                key={thumb.key}
-                                width={42}
-                                height={42}
-                                rounded={12}
-                                overflow="hidden"
-                                bg="$surface"
-                                borderWidth={1}
-                                borderColor="$borderStrong"
-                              >
-                                <Image
-                                  source={thumb.source}
-                                  style={{ width: "100%", height: "100%" }}
-                                  contentFit="cover"
-                                  transition={0}
-                                />
-                              </YStack>
-                            ))}
-                          </XStack>
-                        ) : null}
-
-                        <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>
-                          {exDesc}
-                        </Paragraph>
-
-                        <XStack gap="$2" flexWrap="wrap" pt="$2">
-                          {/* What the hero did on this movement last time, in the slot's own unit.
-                              Here rather than in the config card's steppers: that card is folded
-                              shut by default, and this is the row the hero is already reading. */}
-                          {qex.ghost ? (
-                            <Tag
-                              label={t("quests.ghost_last", {
-                                value: targetLabel({
-                                  type: qex.target.type,
-                                  value: qex.ghost.last,
-                                }),
-                                defaultValue: `Last: ${qex.ghost.last}`,
-                              })}
-                              tone="secondary"
-                            />
-                          ) : null}
-                          <Tag
-                            label={
-                              EQUIPMENT_LABELS[qex.exercise.equipment]?.[language] ??
-                              qex.exercise.equipment
-                            }
-                          />
-                          {qex.target.type === "reps" ? (
-                            <Tag
-                              label={t("quests.seconds_per_rep", {
-                                count: qex.exercise.secondsPerRep,
-                                defaultValue: `${qex.exercise.secondsPerRep}s/rep`,
-                              })}
-                              tone="secondary"
-                            />
-                          ) : null}
-                          {qex.exercise.muscles.slice(0, 4).map((m) => (
-                            <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
-                          ))}
-                          {qex.exercise.muscles.length > 4 ? (
-                            <Tag label={`+${qex.exercise.muscles.length - 4}`} />
-                          ) : null}
-                        </XStack>
-                      </YStack>
-                    </XStack>
-                  </Card>
-                );
-              })}
+              {quest.exercises.map((qex, i) => (
+                <QuestExerciseRow
+                  key={qex.id}
+                  qex={qex}
+                  index={i}
+                  language={language}
+                  showTarget={!(isOuting && config.distanceM !== undefined)}
+                  onOpenExercise={() => router.push(`/exercises/${qex.exercise.id}` as never)}
+                />
+              ))}
             </YStack>
           ) : null}
         </YStack>

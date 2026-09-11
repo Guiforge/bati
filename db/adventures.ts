@@ -71,6 +71,13 @@ export type Adventure = {
   stepsCount: number;
   imagePath: string | null;
   focus: TrainingFocus;
+  /**
+   * The boss's pool as the content tunes it, at medium, before any rematch tier. Null on a route,
+   * which has no fight. Read from the adventure rather than from `boss_fights`, because that row
+   * only exists once a session has swung at it — and the gallery's whole job is to say which
+   * campaign is worth the trip *before* the hero starts one.
+   */
+  bossTotalHp: number | null;
 };
 
 export type AdventureDetails = {
@@ -117,6 +124,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
       sortOrder: adventures.sortOrder,
       kind: adventures.kind,
       isActive: adventures.isActive,
+      bossTotalHp: adventures.bossTotalHp,
 
       advAuthor: adventures.author,
 
@@ -204,6 +212,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
         coverQuest: quest,
         stepsCount: stepQuestIds.length,
         imagePath: r.advImagePath,
+        bossTotalHp: r.bossTotalHp,
         focus: trainingFocus(
           stepQuestIds.flatMap((id) => templatesById.get(id) ?? []),
           exercisesById,
@@ -239,6 +248,38 @@ async function fetchAdventures(): Promise<Adventure[]> {
 
   // Adventures are campaigns: only return multi-step content.
   return [...byAdventureId.values()].filter((a) => a.stepsCount >= 2);
+}
+
+/**
+ * The gallery's own order: the campaign under way first, then the ones never beaten, then the
+ * ones that are.
+ *
+ * Not the quest gallery's order, and adventures are not that kind of list. A quest is a shelf
+ * item: it means the same thing on the day you finish it as on the day before, so
+ * `galleryOrder` leaves the authored sequence alone and only lets the hero's own pins and
+ * authorship move it. A campaign is a *run*. One is active at a time, it is beaten or it is
+ * not, and a poster for a campaign already felled three times is a poster for a thing that is
+ * behind the hero. That is the one fact this screen holds and the quest gallery does not.
+ *
+ * What it deliberately does not do is rank by threat, which the audit of 2026-09-10 asked for.
+ * The seeded `sortOrder` is a ramp, and its first card is the tutorial on purpose ("The
+ * Squire's Path", four marches, no equipment); threat does not follow it (821 HP at position 3,
+ * 1115 at 5, 770 at 6), so a threat-first list hands a fresh install the Ranger. Saying how
+ * dangerous each one is belongs on the card, and it is there now; deciding that a level 44 hero
+ * has outgrown the ramp is a balance rule nobody has written.
+ *
+ * Two stable passes over a copy rather than one comparator, same as `galleryOrder`: these are
+ * two separate claims, and everything neither of them touches keeps the order content gave it.
+ */
+export function adventureOrder<T extends { id: number }>(
+  adventures: readonly T[],
+  activeAdventureId: number | null,
+  finishedCounts: ReadonlyMap<number, number>,
+): T[] {
+  const isBeaten = (a: T) => (finishedCounts.get(a.id) ?? 0) > 0;
+  return [...adventures]
+    .sort((a, b) => Number(isBeaten(a)) - Number(isBeaten(b)))
+    .sort((a, b) => Number(b.id === activeAdventureId) - Number(a.id === activeAdventureId));
 }
 
 export function listAdventures(): Promise<Adventure[]> {

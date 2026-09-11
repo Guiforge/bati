@@ -3,24 +3,18 @@ import { YStack } from "tamagui";
 import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
-import { OathCard } from "@/components/home/OathCard";
-import { OutsideBand } from "@/components/home/OutsideBand";
-import { RestNote } from "@/components/home/RestNote";
-import { StatsOverview } from "@/components/home/StatsOverview";
-import { VillageTeaser } from "@/components/home/VillageTeaser";
+import { QuickActions } from "@/components/home/QuickActions";
 import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard";
 
 /**
- * THESIS: Home is the hero's HUD — fixed chrome frames a living center stage.
- * Refused default: a scrolling stack of same-size stat cards under a greeting.
- * OWN-WORLD: void ground, hairline-framed chrome strips, electric blue for the
- * one action, gold for all progression, adventure art as the only scene.
- * STORY: where I am (top strip), tonight's quest (stage, one tap to PLAY),
- * what my effort built (village band).
- * FIRST VIEWPORT: status strip pinned top; adventure scene + PLAY commanding
- * the center; oath and lifetime legend below; village band pinned bottom.
- * FORM: HUD frame — candidate 3 of the grounded list, seed 8f3d5359;
- * challengers discarded (none beat it without breaking the committed identity).
+ * THESIS: Home is the hero's HUD. One strip of status, one scene to walk into, one row of doors.
+ * The chrome is a 52 dp strip and the tab bar; the scene takes everything else, full bleed, with
+ * the only filled button on the screen. Gold only for what progresses: XP, flame, the oath's rungs.
+ * FIRST VIEWPORT: all of it, without scrolling, down to 360x640.
+ * SOURCE: the "Bati Home Redesign" design, direction 2d (scene and thumb row from B, the strip
+ * that absorbs the village from C).
+ * GONE, on purpose: the village band (the tab under it said the same; the strip keeps a crest) and
+ * the lifetime stats line (a journal fact, neither an action nor a direction).
  */
 export default function HomeScreen() {
   useScreenGuide("guide_home");
@@ -29,39 +23,27 @@ export default function HomeScreen() {
 
   return (
     <YStack flex={1} bg="$background">
-      {/* HUD top chrome: identity, level, XP, streak — owns the top inset, never scrolls */}
+      {/* The whole top chrome: identity, level, XP, streak, village. Owns the top inset. */}
       <HomeHeader />
 
+      {/* Grows to the viewport and scrolls only past it: the scene takes what the strip and the
+          quick actions leave, and a recovery card above it pushes the column rather than crushing
+          the scene. */}
       <ScrollView
         style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
       >
-        <YStack px="$4" pt="$3" gap="$4">
-          {/* An interrupted session outranks any suggestion — it renders nothing when there is
-              none to resume. Without it, quitting mid-quest left no trace anywhere. */}
-          <SessionRecoveryBanner />
+        {/* An interrupted session outranks any suggestion. It renders nothing when there is none
+            to resume. Without it, quitting mid-quest left no trace anywhere. */}
+        <SessionRecoveryBanner />
 
-          {/* Center stage: tonight's scene, one action that starts it */}
-          <HomeStage />
+        {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
+        <HomeStage />
 
-          {/* The door out. The stage's waterfall can never reach an expedition - it follows
-              muscles and the oath's chain, and an outing carries neither. */}
-          <OutsideBand />
-
-          {/* Advice, never a gate: the stage still offers a session underneath it */}
-          <RestNote />
-
-          {/* Chosen objective (shows a swear-CTA when none is active) */}
-          <OathCard />
-
-          {/* Lifetime legend: one line, not a stat-card grid */}
-          <StatsOverview />
-        </YStack>
+        {/* The doors out, and the last quest again, in the thumb's reach */}
+        <QuickActions />
       </ScrollView>
-
-      {/* HUD bottom chrome: the world the training built — never scrolls */}
-      <VillageTeaser />
     </YStack>
   );
 }

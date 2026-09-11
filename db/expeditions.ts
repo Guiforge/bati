@@ -1,7 +1,8 @@
 import type { OutingGoal } from "@/src/gps/track";
 import type { Exercise } from "./exercises";
+import type { QuestConfig } from "./questConfig";
 import type { Locomotion } from "./schema";
-import type { Target } from "./targets";
+import { DISTANCE_GOAL_RANGE, type Target, targetRangeFor } from "./targets";
 import { NON_REP_STYLE } from "./workUnits";
 
 /**
@@ -183,6 +184,53 @@ export function outingGoal(
   if (distanceGoalM != null && distanceGoalM > 0)
     return { type: "distance", metres: distanceGoalM };
   return timeGoal(quest.exercises);
+}
+
+/**
+ * The config with one goal written into it, the way `outingGoal` above reads it back: a distance
+ * is `distanceM`, a duration is the outdoor slots' targets *and* the removal of any distance,
+ * because a distance left behind would keep winning.
+ *
+ * The seconds are spread over the outdoor timed slots in proportion to what they hold now, so a
+ * two-leg outing whose goal is the sum still sums to the number the hero just picked. On the
+ * one-slot shape every outing ships with, that is simply "write it".
+ *
+ * The one writer for both doors that set a goal, the quest screen's card and Home's goal chip, and
+ * here rather than beside the config store so both screens' tests run it for real.
+ */
+export function withOutingGoal(
+  quest: { exercises: { id: number; target: Target; exercise: Styled }[] },
+  config: QuestConfig,
+  goal: OutingGoal,
+): QuestConfig {
+  if (goal.type === "distance") {
+    const metres = Math.min(
+      Math.max(goal.metres, DISTANCE_GOAL_RANGE.min),
+      DISTANCE_GOAL_RANGE.max,
+    );
+    return { ...config, distanceM: metres };
+  }
+
+  // Only ever an outing, so this is the twelve-hour ceiling rather than a hold's hour: the goal it
+  // writes is the walk the hero is about to take.
+  const range = targetRangeFor("time", NON_REP_STYLE);
+  const timed = quest.exercises.filter(
+    (qex) => isOutdoors(qex.exercise.style) && qex.target.type === "time",
+  );
+  const current = timed.reduce((sum, qex) => sum + qex.target.value, 0) || 1;
+  const targets = { ...config.targets };
+  let left = Math.round(goal.seconds);
+  timed.forEach((qex, index) => {
+    const share =
+      index === timed.length - 1 ? left : Math.round((goal.seconds * qex.target.value) / current);
+    const value = Math.min(Math.max(share, range.min), range.max);
+    targets[String(qex.id)] = value;
+    left -= value;
+  });
+
+  const written = { ...config, targets };
+  delete written.distanceM;
+  return written;
 }
 
 /**

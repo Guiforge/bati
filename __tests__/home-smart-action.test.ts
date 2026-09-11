@@ -105,14 +105,17 @@ const { listOutings } = require("@/db/outings");
 
 const { FIRST_QUEST_TITLE } = require("@/constants/onboarding");
 
-const questNamed = (id: number, title: string) => ({
+const questNamed = (id: number, title: string, style = "strength") => ({
   quest: {
     id,
     enTitle: title,
     frTitle: title,
     imagePath: "quests/x.jpg",
     archetype: "strength",
-    exercises: [{ id: 1 }, { id: 2 }],
+    exercises: [
+      { id: 1, exercise: { style } },
+      { id: 2, exercise: { style } },
+    ],
   },
   level: "medium",
 });
@@ -144,10 +147,28 @@ describe("useSmartAction", () => {
     expect(mockPush).not.toHaveBeenCalledWith("/session");
   });
 
-  it("labels the button with what it does, not with the detail screen's verb", async () => {
+  it("starts the quest itself, and names the one it starts", async () => {
     const { result } = await renderHook(() => useSmartAction());
     await waitFor(() => expect(result.current.config).not.toBeNull());
 
+    // The stage's Start runs this id through `useStartQuest`; the detail screen is Details now,
+    // no longer a toll on the way to the session.
+    expect(result.current.config?.label).toBe("Start");
+    expect(result.current.config?.startQuestId).toBe(12);
+  });
+
+  it("sends a quest that reads the position to its screen, where the notice is", async () => {
+    const { NON_REP_STYLE } = require("@/db/workUnits");
+    loadConfiguredQuest.mockImplementation(async (id: number) =>
+      questNamed(id, "The Warden's Round", NON_REP_STYLE),
+    );
+
+    const { result } = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(result.current.config).not.toBeNull());
+
+    // A system dialog over a countdown, with nothing having warned the hero, is what the quest
+    // screen's location notice exists to prevent. The button says it only opens that screen.
+    expect(result.current.config?.startQuestId).toBeNull();
     expect(result.current.config?.label).toBe("See the quest");
   });
 

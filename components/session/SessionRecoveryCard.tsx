@@ -71,9 +71,12 @@ export function SessionRecoveryCard({
   };
 
   return (
+    // Its own margin: Home's scene is full bleed, so the column around this has none to lend it.
     <Card
       bg="$pastelOrange"
       rounded="$6"
+      mx="$4"
+      mt="$3"
       transition={reducedMotion ? undefined : "quick"}
       enterStyle={reducedMotion ? undefined : { opacity: 0, y: -10 }}
     >

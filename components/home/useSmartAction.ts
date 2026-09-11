@@ -5,6 +5,7 @@ import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "@/db/adventures";
 import { estimateQuestSeconds, formatDurationEstimate } from "@/db/estimate";
 import { getChainTo } from "@/db/exercises";
+import { hasOutdoorSlot } from "@/db/expeditions";
 import { getSuggestedQuestsForWeakAreas } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getOathProgress, oathNeedsExercise } from "@/db/oaths";
@@ -23,14 +24,23 @@ export type SmartScene = {
   progress?: { done: number; total: number };
   /** Quests only: "4 exercises · Strength · ≈ 20 min". */
   meta?: string;
+  /** Why this scene when it is not the usual one: "Day one", "Adventure". */
+  kicker?: string;
 };
 
 export type SmartActionConfig = {
   label: string;
   subtext: string;
+  /** Where the scene leads: the adventure, the gallery, or the quest screen (Details). */
   onPress: () => void;
   variant: "adventure" | "quest" | "gallery";
   scene: SmartScene | null;
+  /**
+   * The quest the stage's Start runs itself, or null when its button only navigates. Null for a
+   * quest that reads the position: its location notice lives on the quest screen, and a system
+   * dialog arriving over a countdown with nothing having warned the hero is what that notice is for.
+   */
+  startQuestId: number | null;
 };
 
 export function useSmartAction() {
@@ -46,32 +56,35 @@ export function useSmartAction() {
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above
     async (isCancelled: () => boolean) => {
       /**
-       * A quest turned into the one thing on Home: the scene announces it, the button opens it.
+       * A quest turned into the one thing on Home: the scene announces it, the button starts it.
        *
        * The quest is loaded here rather than on tap, so the scene can name what it is offering
-       * instead of a generic illustration. Only the detail screen starts a session — Home never
-       * pushes a session route, it hands over the quest and lets the hero commit there.
+       * instead of a generic illustration. This hook never starts anything itself: it says which
+       * quest, `useStartQuest` runs it, and `onPress` opens it for the hero who wants to look.
        */
       const questAction = async (
         questId: number,
         subtext: string,
+        kicker?: string,
       ): Promise<SmartActionConfig | null> => {
         const loaded = await loadConfiguredQuest(questId);
         if (!loaded) return null;
 
         const { quest } = loaded;
         const seconds = estimateQuestSeconds(quest);
+        const startable = !hasOutdoorSlot(quest);
 
         return {
-          // Not "Start Quest": the detail screen owns that verb, and two synonymous buttons
-          // across two screens is what made the old flow unreadable. This one only promises
-          // what it does — it shows you the quest.
-          label: t("home.see_quest", "See the quest"),
+          // "Start" when the tap starts, "See the quest" when it only opens the screen that does:
+          // one verb per button, and the verb says what the tap does.
+          label: startable ? t("home.start", "Start") : t("home.see_quest", "See the quest"),
           subtext,
           variant: "quest",
+          startQuestId: startable ? questId : null,
           scene: {
             title: localizedTitle(quest, language),
             imagePath: quest.imagePath,
+            kicker,
             meta: [
               t("quests.exercises", {
                 count: quest.exercises.length,
@@ -114,11 +127,14 @@ export function useSmartAction() {
               defaultValue: `Step ${currentStep} of ${steps.length}`,
             }),
             variant: "adventure",
+            // The step's own screen starts it: it has a narrative to tell first.
+            startQuestId: null,
             onPress: () => router.push(`/adventures/${active.adventureId}` as never),
             scene: {
               title,
               imagePath: details?.adventure.imagePath ?? null,
               progress: { done: stepsDone, total: steps.length },
+              kicker: t("home.kicker_adventure", "Adventure"),
             },
           });
           setIsLoading(false);
@@ -219,7 +235,11 @@ export function useSmartAction() {
         if (onRamp && !isCancelled()) {
           // The onboarding step's own title, not a second copy of it: the hero met these words
           // one screen ago, and the offer is the same offer.
-          const action = await questAction(onRamp.id, t("onboarding.first_session_title"));
+          const action = await questAction(
+            onRamp.id,
+            t("onboarding.first_session_title"),
+            t("home.kicker_day_one", "Day one"),
+          );
           if (action && !isCancelled()) {
             setConfig(action);
             setIsLoading(false);
@@ -234,6 +254,7 @@ export function useSmartAction() {
             subtext: t("home.quick_workout", "Quick Workout"),
             variant: "gallery",
             scene: null,
+            startQuestId: null,
             onPress: () => router.push("/(tabs)/quests" as never),
           });
         }

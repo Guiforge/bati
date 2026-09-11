@@ -96,8 +96,9 @@ After workouts, Bati rewards you with:
 
 ### 7) Go outside (Expeditions)
 
-- Tap a tile in the "Head out" band on Home: a walk, a run or a ride.
-- Set a duration or a distance, then start. The phone buzzes once when you reach it.
+- Tap a tile in the Quick actions row on Home: a walk, a run or a ride. It starts at once.
+- The goal is written on the tile. Tap it, or long-press the tile, to pick a duration or a
+  distance. The phone buzzes once when you reach it.
 - Come back to the ground covered, your pace, the route drawn on screen, and leagues on the High Road.
 - The map behind the route is a switch in Settings, off by default: the app makes no network
   request until you turn it on, and the route is drawn on a plain background without it. On, the
@@ -163,13 +164,11 @@ Preferences:
 **Purpose:** the dashboard to jump back into training.
 
 - **Home** (`/`)
-  - Shows your current status at a glance (progress highlights).
-  - Quick access to:
-    - the one session on offer tonight — one tap to start it,
-    - your Oath and the rung of the ladder you are on,
-    - visiting the village,
-    - seeing a compact overview of stats.
-  - The "Head out" band under the stage opens a walk, a run or a ride.
+  - One strip at the top: your level, XP, flame, and the village's crest (tap it to visit).
+  - The one session on offer tonight, full screen: one tap on Start, or Details to look first.
+  - Your Oath along the foot of the scene, with the rung of the ladder you are on.
+  - Quick actions under it: a walk, a run or a ride with its goal on the tile, and your last
+    quest again. Lifetime stats live in the Journal.
 
 ### Quests (workouts)
 
@@ -229,7 +228,7 @@ Preferences:
   else the gallery.
 - The button starts the session; the scene above it shows what you are about to train.
 - A rest suggestion, when one applies, is a line under it — advice, never a gate.
-- Your chosen objective lives in the Oath card. Home serves it; it does not replace it.
+- Your chosen objective lives in the oath strip. Home serves it; it does not replace it.
 
 ### Settings
 

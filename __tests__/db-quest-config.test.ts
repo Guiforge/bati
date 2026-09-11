@@ -361,4 +361,39 @@ describe("db/questConfig", () => {
     expect((await getQuestConfig(1))?.distanceM).toBe(4500);
     await clearQuestConfig(1);
   });
+
+  // The one writer behind both goal doors, the quest screen's card and Home's goal chip.
+  test("an outing goal is written one kind at a time, the way outingGoal reads it back", () => {
+    const { NON_REP_STYLE } = require("../db/workUnits") as typeof import("../db/workUnits");
+    const { outingGoal, withOutingGoal } =
+      require("../db/expeditions") as typeof import("../db/expeditions");
+    const base = makeQuest();
+    const slot = base.exercises[0];
+    assert(slot);
+    const quest: Quest = {
+      ...base,
+      exercises: [
+        {
+          ...slot,
+          exercise: { ...slot.exercise, style: NON_REP_STYLE },
+          target: { type: "time", value: 900 },
+        },
+      ],
+    };
+
+    // A duration drops any distance, or the distance left behind would keep winning.
+    const timed = withOutingGoal(
+      quest,
+      { level: Difficulty.Medium, distanceM: 5000 },
+      { type: "time", seconds: 1800 },
+    );
+    expect(timed.distanceM).toBeUndefined();
+    expect(timed.targets).toEqual({ "11": 1800 });
+
+    // A distance is clamped to its own range, and outranks the slot it leaves alone.
+    const far = withOutingGoal(quest, timed, { type: "distance", metres: 100 });
+    expect(far.distanceM).toBe(500);
+    expect(far.targets).toEqual({ "11": 1800 });
+    expect(outingGoal(quest, far.distanceM)).toEqual({ type: "distance", metres: 500 });
+  });
 });

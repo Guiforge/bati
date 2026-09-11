@@ -1,17 +1,17 @@
-import { render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
-import { OutsideBand } from "@/components/home/OutsideBand";
+import { QuickActions } from "@/components/home/QuickActions";
+import { NON_REP_STYLE } from "@/db/workUnits";
 import "@/i18n";
 import config from "@/tamagui.config";
 
 /**
- * The band exists because Home could not reach an expedition at all: `useSmartAction` follows
- * the oath's exercise chain or the muscles the last thirty days went light on, and an outing
- * carries no muscles. Asserted here is what the hero reads and where the tap goes, not that it
- * rendered — "it still renders" is what let the old four-tap hunt stand.
+ * The row exists because Home could not reach an expedition at all: `useSmartAction` follows the
+ * oath's exercise chain or the muscles the last thirty days went light on, and an outing carries
+ * no muscles. Asserted here is what the hero reads and where the tap goes, not that it rendered.
  *
- * The tap now *starts*, which puts three negative rules on this file, and a negative rule with no
- * test disappears at the first refactor with nobody watching it go: it does not overwrite a live
+ * The tap *starts*, which puts three negative rules on this file, and a negative rule with no test
+ * disappears at the first refactor with nobody watching it go: it does not overwrite a live
  * session, it does not start twice on a double tap, and it does not start a session that measures
  * nothing when the position was refused.
  *
@@ -20,7 +20,7 @@ import config from "@/tamagui.config";
  * find the why already said.
  */
 
-// The band asks the module what the grant already is before it explains anything, which is the
+// The row asks the module what the grant already is before it explains anything, which is the
 // one question a request cannot answer: by the time a request resolves, the dialog the sentence
 // was meant to introduce has already been shown. Granted by default, so every test above reads as
 // the returning hero it describes: the why belongs to the phone that has not granted it yet.
@@ -41,8 +41,8 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/stores/settings", () => ({
-  useSettingsStore: (selector?: (s: { language: string }) => unknown) => {
-    const state = { language: "fr" };
+  useSettingsStore: (selector?: (s: { language: string; distanceUnit: string }) => unknown) => {
+    const state = { language: "fr", distanceUnit: "metric" };
     return selector ? selector(state) : state;
   },
 }));
@@ -63,8 +63,19 @@ jest.mock("@/modules/bati-location", () => ({
   },
 }));
 
+// The goal sheet pads itself by the bottom inset; there is no device edge in a test. The rest of
+// the module stays real: Tamagui's Sheet reads its context directly.
+jest.mock("react-native-safe-area-context", () => ({
+  ...jest.requireActual("react-native-safe-area-context"),
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
+// The store, not the writer: `withOutingGoal` runs for real, so what is asserted below is the
+// config the quest screen will read back, not what a stub was handed.
 jest.mock("@/db/questConfig", () => ({
   loadConfiguredQuest: (questId: number, level?: string) => mockLoadConfiguredQuest(questId, level),
+  getQuestConfig: () => Promise.resolve(null),
+  saveQuestConfig: (...args: unknown[]) => mockSaveQuestConfig(...args),
 }));
 
 const mockListOutings = jest.fn();
@@ -73,13 +84,20 @@ jest.mock("@/db/outings", () => ({
   listOutings: () => mockListOutings(),
 }));
 
+const mockRecentSessions = jest.fn();
+
+jest.mock("@/db/completed", () => ({
+  getRecentSessionHistory: () => mockRecentSessions(),
+}));
+
 const mockStartSession = jest.fn().mockResolvedValue(undefined);
 const mockSession = { status: "idle", startSession: mockStartSession };
 const mockRequestPermission = jest.fn();
 const mockRequestNotificationPermission = jest.fn();
 const mockLoadConfiguredQuest = jest.fn();
+const mockSaveQuestConfig = jest.fn().mockResolvedValue(undefined);
 
-/** The Warden's Round as the band holds it: a template and the movement it is made of. */
+/** The Warden's Round as the row holds it: a template and the movement it is made of. */
 function outing(id: number, frName: string, frTitle: string) {
   return {
     quest: { id, frTitle, enTitle: frTitle, imagePath: "assets/images/quests/wardens_round.jpg" },
@@ -87,23 +105,48 @@ function outing(id: number, frName: string, frTitle: string) {
   };
 }
 
-function renderBand() {
+/** A one-slot outing of fifteen minutes, the shape every seeded way out ships with. */
+const WALK = {
+  id: 2,
+  exercises: [{ id: 5, target: { type: "time", value: 900 }, exercise: { style: NON_REP_STYLE } }],
+};
+
+/** An indoor workout, the only kind the Replay tile offers. */
+const CHOP = {
+  id: 7,
+  enTitle: "Chop Wood",
+  frTitle: "Chop Wood",
+  exercises: [{ id: 1, target: { type: "reps", value: 10 }, exercise: { style: "strength" } }],
+};
+
+function renderRow() {
   return render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <OutsideBand />
+      <QuickActions />
     </TamaguiProvider>,
   );
 }
 
-/** The tile, taken by the label it now wears — the label is half of what this file pins. */
+/** The tile, taken by the label it wears — the label is half of what this file pins. */
 function tile(name: string) {
   return screen.getByLabelText(`Start: ${name}`);
+}
+
+/**
+ * A tap on a tile as one synchronous press. The tile also answers a long press, and
+ * `userEvent.press` releases on a real 130 ms timer: at the start of a full run, with every worker
+ * starved, this file failed four runs out of four and never once alone. The double-tap test keeps
+ * `userEvent`, because the gap between its two taps is what it pins.
+ */
+function tapTile(name: string) {
+  return fireEvent.press(tile(name));
 }
 
 beforeEach(() => {
   mockPermissionStatus.mockReset().mockResolvedValue({ granted: true, canAskAgain: false });
   mockPush.mockClear();
   mockStartSession.mockClear();
+  mockSaveQuestConfig.mockClear();
   mockSession.status = "idle";
   mockRequestPermission.mockReset().mockResolvedValue({ granted: true });
   mockRequestNotificationPermission.mockReset().mockResolvedValue({ granted: true });
@@ -111,6 +154,7 @@ beforeEach(() => {
     .mockReset()
     .mockResolvedValue({ quest: { id: 2, exercises: [] }, level: "medium" });
   mockListOutings.mockResolvedValue([outing(2, "Course du Messager", "La Parole Doit Passer")]);
+  mockRecentSessions.mockReset().mockResolvedValue([]);
 });
 
 it("names the movement, so the hero can see which one is the run", async () => {
@@ -119,7 +163,7 @@ it("names the movement, so the hero can see which one is the run", async () => {
     outing(2, "Course du Messager", "La Parole Doit Passer"),
   ]);
 
-  await renderBand();
+  await renderRow();
 
   expect(await screen.findByText("Course du Messager")).toBeTruthy();
   expect(screen.getByText("Marche du Veilleur")).toBeTruthy();
@@ -128,16 +172,16 @@ it("names the movement, so the hero can see which one is the run", async () => {
 });
 
 it("says it starts, rather than wearing the label it had when it only opened a screen", async () => {
-  await renderBand();
+  await renderRow();
 
   // Two versions of one gesture is how a hero ends up running when they meant to read.
   expect(await screen.findByLabelText("Start: Course du Messager")).toBeTruthy();
 });
 
 it("starts the outing with no goal on it, position asked before notification", async () => {
-  await renderBand();
+  await renderRow();
   await screen.findByText("Course du Messager");
-  await userEvent.press(tile("Course du Messager"));
+  await tapTile("Course du Messager");
 
   await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
   // Medium whatever the quest screen was left on: a level stretches an outing's duration and
@@ -162,9 +206,9 @@ it("rejoins a live session instead of overwriting it", async () => {
   // would overwrite the lot and orphan every fix already written.
   mockSession.status = "paused";
 
-  await renderBand();
+  await renderRow();
   await screen.findByText("Course du Messager");
-  await userEvent.press(tile("Course du Messager"));
+  await tapTile("Course du Messager");
 
   expect(mockPush).toHaveBeenCalledWith("/session");
   expect(mockStartSession).not.toHaveBeenCalled();
@@ -172,7 +216,7 @@ it("rejoins a live session instead of overwriting it", async () => {
 });
 
 it("starts one session on a double tap, not two", async () => {
-  await renderBand();
+  await renderRow();
   await screen.findByText("Course du Messager");
 
   await userEvent.press(tile("Course du Messager"));
@@ -184,9 +228,9 @@ it("starts one session on a double tap, not two", async () => {
 it("starts nothing when the position is refused, and says where the grant lives", async () => {
   mockRequestPermission.mockResolvedValue({ granted: false });
 
-  await renderBand();
+  await renderRow();
   await screen.findByText("Course du Messager");
-  await userEvent.press(tile("Course du Messager"));
+  await tapTile("Course du Messager");
 
   // No fix means no ground, and a session that measures nothing is not what the tile promised.
   await waitFor(() => expect(screen.getByText("Bati has no access to your location")).toBeTruthy());
@@ -196,26 +240,52 @@ it("starts nothing when the position is refused, and says where the grant lives"
   expect(screen.getByText("Open settings")).toBeTruthy();
 });
 
-it("hands the prepared door to the band rather than to a second target inside the tile", async () => {
-  await renderBand();
-  await screen.findByText("Course du Messager");
+it("writes the goal on the tile, and changes it from the tile without leaving", async () => {
+  mockLoadConfiguredQuest.mockResolvedValue({ quest: WALK, level: "medium", config: null });
 
-  // 40 dp is under DESIGN.md's 44×44 floor, and a 44 dp chevron would take 61% of a 72 dp tile
-  // that starts a GPS. The way to the screen that can still set a duration is here instead.
-  await userEvent.press(screen.getByLabelText("Set up an outing before heading out"));
-  await userEvent.press(screen.getByText("Course du Messager"));
+  await renderRow();
 
-  // With where the hero came from, because the quest screen sends both its backs to the gallery
-  // otherwise, and a gallery they never opened is not where they were a tap ago.
-  expect(mockPush).toHaveBeenCalledWith("/quests/2?from=home");
+  // The slot's fifteen minutes, which is what the tap is about to run: said before it runs.
+  await userEvent.press(
+    await screen.findByLabelText("Goal for Course du Messager: 15 min. Change it"),
+  );
+  await userEvent.press(await screen.findByText("30 min"));
+
+  // On a quest with nothing saved, the base is a bare medium, never the config the chip was
+  // loaded with: that one carries a level the hero did not choose. And the half hour lands on
+  // the slot, keyed the way the quest screen reads it back.
+  await waitFor(() =>
+    expect(mockSaveQuestConfig).toHaveBeenCalledWith(2, {
+      level: "medium",
+      targets: { "5": 1800 },
+    }),
+  );
+  // Setting the goal is not leaving: the chip sits inside a tile that starts a GPS.
   expect(mockStartSession).not.toHaveBeenCalled();
 });
 
-it("renders nothing at all when there is no way out to offer", async () => {
+it("replays the last workout in one tap, at the level it was saved at", async () => {
+  mockRecentSessions.mockResolvedValue([{ questId: 7 }]);
+  mockLoadConfiguredQuest.mockImplementation(async (id: number) =>
+    id === 7
+      ? { quest: CHOP, level: "hard", config: null }
+      : { quest: { id, exercises: [] }, level: "medium" },
+  );
+
+  await renderRow();
+  await userEvent.press(await screen.findByLabelText("Replay Chop Wood"));
+
+  await waitFor(() => expect(mockStartSession).toHaveBeenCalledWith(CHOP, "hard"));
+  expect(mockPush).toHaveBeenCalledWith("/session");
+  // A workout, so no position is asked for.
+  expect(mockRequestPermission).not.toHaveBeenCalled();
+});
+
+it("renders nothing at all when there is nothing to start", async () => {
   mockListOutings.mockResolvedValue([]);
 
-  const view = await renderBand();
-  // The whole subtree, not just the heading: an empty band that still reserved its height would
+  const view = await renderRow();
+  // The whole subtree, not just the heading: an empty row that still reserved its height would
   // leave a gap on Home that no read is ever going to fill.
   await waitFor(() => expect(view.toJSON()).toBeNull());
 });
@@ -223,9 +293,9 @@ it("renders nothing at all when there is no way out to offer", async () => {
 it("explains nothing to a hero who already granted the position", async () => {
   // The module's own read, asked before anything is said and prompting nothing. A hero who goes
   // out every day does not need the reason for a dialog they will never see.
-  await renderBand();
+  await renderRow();
   await screen.findByText("Course du Messager");
-  await userEvent.press(tile("Course du Messager"));
+  await tapTile("Course du Messager");
 
   await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
   expect(screen.queryByText(WHY)).toBeNull();
@@ -238,9 +308,9 @@ it("says why before Android asks, and only for the first tap of the process", as
   mockPermissionStatus.mockResolvedValue({ granted: false, canAskAgain: true });
   mockRequestPermission.mockResolvedValue({ granted: false });
 
-  await renderBand();
+  await renderRow();
   await screen.findByText("Course du Messager");
-  await userEvent.press(tile("Course du Messager"));
+  await tapTile("Course du Messager");
 
   expect(await screen.findByText(WHY)).toBeTruthy();
   // The order is the whole point: an unprimed dialog is refused more often, and a final refusal
@@ -248,7 +318,7 @@ it("says why before Android asks, and only for the first tap of the process", as
   expect(mockRequestPermission).not.toHaveBeenCalled();
   expect(mockStartSession).not.toHaveBeenCalled();
 
-  // One confirmation, in the strip the band already uses, and the same tap carries on from there:
+  // One confirmation, in the strip the row already uses, and the same tap carries on from there:
   // no second screen, no navigation, nothing to come back from.
   await userEvent.press(screen.getByLabelText("Continue"));
   await waitFor(() => expect(mockRequestPermission).toHaveBeenCalledTimes(1));
@@ -263,7 +333,7 @@ it("says why before Android asks, and only for the first tap of the process", as
 
   // Second tap, same process, grant still missing: straight to Android. Saying it again would be
   // one more tap between the hero and the door, for a reason already given.
-  await userEvent.press(tile("Course du Messager"));
+  await tapTile("Course du Messager");
 
   await waitFor(() => expect(mockRequestPermission).toHaveBeenCalledTimes(2));
   expect(screen.queryByText(WHY)).toBeNull();

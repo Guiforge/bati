@@ -44,18 +44,3 @@ export function isGameIconName(name: string): name is GameIconName {
 export function useGameIcon(iconName: GameIconName) {
   return ICONS[iconName];
 }
-
-/**
- * Get multiple game icons at once
- * @param iconNames - Array of icon names to load
- * @returns Object with icon sources keyed by name
- */
-export function useGameIcons<T extends GameIconName>(iconNames: T[]) {
-  const result = {} as Record<T, (typeof ICONS)[T]>;
-
-  for (const name of iconNames) {
-    result[name] = ICONS[name];
-  }
-
-  return result;
-}

@@ -59,7 +59,6 @@ export { Ruler } from "@tamagui/lucide-icons/icons/Ruler";
 export { Scroll } from "@tamagui/lucide-icons/icons/Scroll";
 export { ScrollText } from "@tamagui/lucide-icons/icons/ScrollText";
 export { Search } from "@tamagui/lucide-icons/icons/Search";
-export { Settings } from "@tamagui/lucide-icons/icons/Settings";
 export { Share2 } from "@tamagui/lucide-icons/icons/Share2";
 export { Shield } from "@tamagui/lucide-icons/icons/Shield";
 export { ShieldCheck } from "@tamagui/lucide-icons/icons/ShieldCheck";

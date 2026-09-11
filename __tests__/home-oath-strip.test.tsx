@@ -1,22 +1,24 @@
-import { act, render, screen } from "@testing-library/react-native";
+import { act, render, screen, userEvent } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
-import { OathCard } from "@/components/home/OathCard";
+import { OathStrip } from "@/components/home/OathStrip";
 import "@/i18n";
 import config from "@/tamagui.config";
 
 /**
  * A beginner who swears "Pull-ups x15" has never logged a pull-up, so `exercise_pr` measures 0 and
- * the gold bar sat at 0/15 for months on the most visible card in the app — while the climb under
- * it moved every three sessions, in 13px grey. The card now leads with the climb.
+ * a gold bar would sit at 0/15 for months at the foot of the one scene Home is built around, while
+ * the climb under it moved every three sessions. The strip leads with the climb.
  *
  * The assertion that matters is the second one in each test: that the *other* gauge is gone. Two
- * bars on one card is two notions of progress fighting for the same eye, and nothing but a test
+ * gauges on one line is two notions of progress fighting for the same eye, and nothing but a test
  * stops the pair from creeping back.
  */
 
+const mockPush = jest.fn();
+
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useFocusEffect: (cb: () => void) => {
     const { useEffect } = require("react");
     useEffect(cb, [cb]);
@@ -74,13 +76,15 @@ async function mount() {
   await act(async () => {
     const tree = render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <OathCard />
+        <OathStrip />
       </TamaguiProvider>,
     );
     await Promise.resolve();
     return tree;
   });
 }
+
+const strip = () => screen.getByTestId("home-oath-card");
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -99,12 +103,10 @@ beforeEach(() => {
 test("a sworn movement on a path shows the climb, not a bar frozen at zero", async () => {
   await mount();
 
-  expect(screen.getByText(/PATH OF THE PULL · RUNG 3\/9/i)).toBeTruthy();
-  // The strip *replaces* the bar — this is the assertion that keeps the pair from creeping back.
+  expect(strip()).toHaveTextContent(/Path\sof\sthe\sPull\s·\sRung\s3\/9/i);
+  // The rungs *replace* the bar and its counter — this is what keeps the pair from creeping back.
   expect(screen.queryByTestId("oath-progress-bar")).toBeNull();
-  // The counter stays, demoted: the strip measures the distance to the movement, the counter the
-  // distance to fifteen reps of it.
-  expect(screen.getByText("0 / 15")).toBeTruthy();
+  expect(strip()).not.toHaveTextContent(/0\s\/\s15/);
 });
 
 test("an oath with no path keeps the plain bar", async () => {
@@ -115,9 +117,9 @@ test("an oath with no path keeps the plain bar", async () => {
 
   await mount();
 
-  expect(screen.queryByText(/PATH OF/i)).toBeNull();
+  expect(strip()).not.toHaveTextContent(/Path\sof/i);
   expect(screen.getByTestId("oath-progress-bar")).toBeTruthy();
-  expect(screen.getByText("0 / 15")).toBeTruthy();
+  expect(strip()).toHaveTextContent(/0\s\/\s15/);
 });
 
 test("a fulfilled oath is about its number again, not the path behind it", async () => {
@@ -125,7 +127,18 @@ test("a fulfilled oath is about its number again, not the path behind it", async
 
   await mount();
 
-  expect(screen.getByText("Oath fulfilled.")).toBeTruthy();
-  expect(screen.queryByText(/PATH OF/i)).toBeNull();
+  expect(strip()).toHaveTextContent(/Oath\sfulfilled\./);
+  expect(strip()).not.toHaveTextContent(/Path\sof/i);
   expect(screen.getByTestId("oath-progress-bar")).toBeTruthy();
+});
+
+test("with no oath sworn, the same strip is the way to swear one", async () => {
+  // The only entry to the feature from Home: it must hold the same place, not disappear.
+  mockGetOathProgress.mockResolvedValue(null);
+
+  await mount();
+
+  expect(strip()).toHaveTextContent(/Swear an oath/);
+  await userEvent.press(strip());
+  expect(mockPush).toHaveBeenCalledWith("/oath");
 });

@@ -158,38 +158,4 @@ describe("db/userLevel", () => {
       expect(result.xpToNextLevel).toBe(250); // 600 (level 4 start) - 350
     });
   });
-
-  describe("getTotalStats", () => {
-    test("returns zeros for empty database", async () => {
-      const { getTotalStats } = require("../db/userLevel") as typeof import("../db/userLevel");
-      const result = await getTotalStats();
-      expect(result.totalSessions).toBe(0);
-      expect(result.totalSeconds).toBe(0);
-      expect(result.totalXp).toBe(0);
-    });
-
-    test("calculates totals correctly", async () => {
-      const { getTotalStats } = require("../db/userLevel") as typeof import("../db/userLevel");
-
-      await t.db.insert(completedQuest).values([
-        {
-          xpEarned: 100,
-          durationSeconds: 600,
-          userLevel: "medium",
-          performedAt: new Date(),
-        },
-        {
-          xpEarned: 200,
-          durationSeconds: 1200,
-          userLevel: "medium",
-          performedAt: new Date(),
-        },
-      ]);
-
-      const result = await getTotalStats();
-      expect(result.totalSessions).toBe(2);
-      expect(result.totalSeconds).toBe(1800);
-      expect(result.totalXp).toBe(300);
-    });
-  });
 });

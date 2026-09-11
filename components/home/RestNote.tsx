@@ -1,7 +1,7 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Text, XStack } from "tamagui";
-import { GameIcon } from "@/components/common/GameIcon";
+import { Text, XStack, YStack } from "tamagui";
+import { Moon } from "@/components/icons";
 import { pickDailyVariant, REST_SUGGESTION_MESSAGES } from "@/constants/restMessages";
 import { dayKey } from "@/db/dates";
 import { getRestSuggestion, type RestSuggestion } from "@/db/restSuggestions";
@@ -54,9 +54,11 @@ export function RestNote() {
   const text = variant.replace("{{count}}", String(count));
 
   return (
-    <XStack gap="$2" items="flex-start" px="$1">
-      <GameIcon name="heart" size={16} color="$textSecondary" />
-      <Text fontSize={13} color="$textSecondary" flex={1} lineHeight={18}>
+    <XStack gap="$2" items="flex-start" px="$4" pt="$2.5">
+      <YStack pt={1}>
+        <Moon size={13} color="$textSecondary" />
+      </YStack>
+      <Text fontSize={11} color="$textSecondary" flex={1} lineHeight={15}>
         {text}
       </Text>
     </XStack>

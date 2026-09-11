@@ -7,6 +7,7 @@ import { TrendsCard } from "@/components/journal/TrendsCard";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDurationEstimate } from "@/db";
 import type { JournalStatsSummary } from "@/db/completed";
+import type { StreakInfo } from "@/db/streaks";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { useSettingsStore } from "@/stores/settings";
 import type { JournalSession } from "./journalGrids";
@@ -74,6 +75,55 @@ function StatCard({
   );
 }
 
+/**
+ * The second figure on the flame card: the bar it is judged against.
+ *
+ * It used to read "Best 1092" beside a current streak of 1092, so the only comparison on the card
+ * was a number against itself, and it never stated the quota that keeps the thing alive. Sessions
+ * in the last seven days against the hero's own promise is the figure they can act on today.
+ * "Best" comes back when it is not simply today's number, and a cache written before the window
+ * existed says nothing rather than a zero, which would read as "you have trained nothing".
+ *
+ * Its own component so the card's own function keeps one branch instead of three.
+ */
+function FlameSecond({ streak }: { streak: StreakInfo }) {
+  const { t } = useTranslation();
+
+  if (streak.inWindow !== null && streak.quota !== null) {
+    return (
+      <YStack items="center">
+        <Text fontSize={12} color="$textSecondary">
+          {t("journal.streak_week", "This week")}
+        </Text>
+        <Text
+          fontWeight="700"
+          fontSize={20}
+          color={streak.inWindow >= streak.quota ? "$success" : "$secondary"}
+        >
+          {t("journal.streak_quota", {
+            done: streak.inWindow,
+            quota: streak.quota,
+            defaultValue: `${streak.inWindow} / ${streak.quota}`,
+          })}
+        </Text>
+      </YStack>
+    );
+  }
+
+  if (streak.best <= streak.current) return <YStack items="center" />;
+
+  return (
+    <YStack items="center">
+      <Text fontSize={12} color="$textSecondary">
+        {t("journal.best_streak", "Best")}
+      </Text>
+      <Text fontWeight="700" fontSize={20} color="$secondary">
+        {streak.best}
+      </Text>
+    </YStack>
+  );
+}
+
 export function JournalStats({ sessions, stats }: JournalStatsProps) {
   const { t } = useTranslation();
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
@@ -116,14 +166,7 @@ export function JournalStats({ sessions, stats }: JournalStatsProps) {
                 </Text>
               </YStack>
             </XStack>
-            <YStack items="center">
-              <Text fontSize={12} color="$textSecondary">
-                {t("journal.best_streak", "Best")}
-              </Text>
-              <Text fontWeight="700" fontSize={20} color="$secondary">
-                {streak.best}
-              </Text>
-            </YStack>
+            <FlameSecond streak={streak} />
           </XStack>
         </Card>
       ) : (

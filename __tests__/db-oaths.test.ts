@@ -319,6 +319,49 @@ describe("db/oaths", () => {
     expect(progress?.isFulfilled).toBe(false);
   });
 
+  /**
+   * The ready-made deck against a journal that has already been past it. Hard-coded targets are
+   * how "50 sessions" reached a hero at 547: an oath fulfilled by the tap that swore it.
+   */
+  describe("standingForPreset", () => {
+    const sessions50 = { id: "sessions_50", metric: "sessions", target: 50 } as const;
+
+    test("a target still ahead is left exactly as written", async () => {
+      for (let i = 0; i < 12; i++) logSessionAt(i);
+
+      expect(await oaths().standingForPreset(sessions50, null)).toEqual({
+        current: 12,
+        target: 50,
+      });
+    });
+
+    test("a target already passed climbs to the next step of the preset's own size", async () => {
+      for (let i = 0; i < 60; i++) logSessionAt(i);
+
+      expect(await oaths().standingForPreset(sessions50, null)).toEqual({
+        current: 60,
+        target: 100,
+      });
+    });
+
+    test("standing exactly on the target still gets a target ahead of it", async () => {
+      for (let i = 0; i < 50; i++) logSessionAt(i);
+
+      expect((await oaths().standingForPreset(sessions50, null)).target).toBe(100);
+    });
+
+    test("the weekly promise has no standing to show: its weeks start at the swear", async () => {
+      for (let i = 0; i < 60; i++) logSessionAt(i);
+
+      expect(
+        await oaths().standingForPreset(
+          { id: "weekly_3x_8w", metric: "weekly_sessions", target: 8, weeklyTarget: 3 },
+          null,
+        ),
+      ).toEqual({ current: null, target: 8 });
+    });
+  });
+
   describe("weekly_sessions", () => {
     /**
      * Absolute dates, not `daysAgo` offsets. Weeks are calendar weeks now, so an offset-based

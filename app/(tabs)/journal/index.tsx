@@ -177,6 +177,7 @@ export default function JournalScreen() {
           cover: getQuestThumb(quest?.imagePath),
           performedAt: s.performedAt,
           durationSeconds: s.durationSeconds,
+          xpEarned: s.xpEarned,
           leaguesM: s.leaguesM,
           movingSeconds: s.movingSeconds,
           outing: s.outing,

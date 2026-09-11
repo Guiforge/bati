@@ -1,9 +1,10 @@
 /**
- * Where each building's dot sits on a village tier painting.
+ * Where each building stands on a village tier painting.
  *
  * An anchor is a fixed spot (x, y in percent of the square painting, from its top-left)
- * on a visible structure: a roof, a door, a tower top, a fire. A built building lights its
- * anchor, an unbuilt one draws a dashed ring there. Every position was placed by eye on the
+ * on a visible structure: a roof, a door, a tower top, a fire. Nothing is drawn there any
+ * more (the gold dots were taken off the painting): the anchor is only where the painting
+ * leans in when that building has just risen. Every position was placed by eye on the
  * painting it belongs to, so re-painting a tier means re-placing its anchors. Tiers 1 and 3
  * are wider than tall: their anchors assume the square `cover` crop, sides trimmed evenly.
  * y stays above 72, below that the screen's title covers the art.

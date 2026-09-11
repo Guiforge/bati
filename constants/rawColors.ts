@@ -40,10 +40,9 @@ export const rawColors = {
   bgDark: "#0B0F19", // The Void
   bgOverlay: "rgba(11, 15, 25, 0.92)",
   // Lighter than the one above, for what has to sit on artwork and still let it through: the
-  // unbuilt plots on the village painting, and the scrim that keeps the status bar readable over
-  // it. Removed with the outing tile it was first made for (#90), back for these. Here rather than
-  // inline because the lint plugin only catches hex, so an rgba typed at a call site is a colour
-  // nobody can find again.
+  // scrim that keeps the status bar readable over the village painting. Removed with the outing
+  // tile it was first made for (#90), back for this. Here rather than inline because the lint
+  // plugin only catches hex, so an rgba typed at a call site is a colour nobody can find again.
   bgOverlaySoft: "rgba(11, 15, 25, 0.72)",
 
   // --- Surfaces (glass & tech) ---

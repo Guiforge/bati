@@ -19,7 +19,6 @@ import { AppButton } from "@/components/common/AppButton";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
 import { groupFamilies } from "@/components/village/rows";
-import { VillageAnchors } from "@/components/village/VillageAnchors";
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import { VillageEmbers } from "@/components/village/VillageEmbers";
 import {
@@ -161,6 +160,8 @@ export function VillageScene() {
   );
 
   const ready = scene !== null;
+  // Where the painting leans in. Nothing is drawn there: the gold dots that used to mark every
+  // building were taken off the painting, and the anchors only say which part of it to zoom on.
   const focus = scene ? VILLAGE_ANCHORS[scene.tier].find((a) => risen.has(a.code)) : undefined;
   const hasFocus = focus !== undefined;
 
@@ -282,8 +283,8 @@ export function VillageScene() {
           accessibilityRole="button"
           accessibilityLabel={t("village.open_scene", "See the whole scene")}
         >
-          {/* The painting and its spots move as one: they parallax together and lean in together
-              on the building that just rose. The scrims and the title stay anchored. */}
+          {/* Only the painting moves: it parallaxes, and leans in on the building that just rose.
+              The scrims and the title stay anchored. */}
           <Animated.View
             style={[
               {
@@ -302,13 +303,6 @@ export function VillageScene() {
               style={{ width: "100%", height: "100%" }}
               contentFit="cover"
               transition={300}
-            />
-            <VillageAnchors
-              tier={scene.tier}
-              buildings={scene.buildings}
-              risen={risen}
-              language={language}
-              reducedMotion={reducedMotion}
             />
           </Animated.View>
 

@@ -24,11 +24,8 @@ row can be read without a tap.
 
 ## Layout, top to bottom
 
-1. **The painting**, square, edge to edge, with the tier's **anchors** on it
-   (`VillageAnchors.tsx`, spots from `constants/villageAnchors.ts`). A building that stands lights
-   its spot (gold, a slow flicker), one that has not been built is a dashed plot, the Forge and
-   the Campfire smoke once built, and one that just rose pulses a gold ring twice and carries its
-   name. Tap anywhere on it for the full painting (`VillageSceneViewer`), uncropped.
+1. **The painting**, square, edge to edge, with nothing drawn on it but the embers. Tap anywhere
+   on it for the full painting (`VillageSceneViewer`), uncropped.
 2. **Over the painting's foot**: the 7-day focus line (sport emblem at 20 px plus "7-day focus ·
    Legs"), the village's name, "Tier · Level N · Title", and the flame chip with its day count.
 3. **The panel**, riding up over the painting's last 14 dp:
@@ -61,8 +58,8 @@ The victory screen's "View Village" passes `grown=farm:3:4,barn:1:2` (`formatGro
 plays once: the painting leans in on the first risen building's anchor (if this tier has one), the
 return card rises with that building's before and after paintings, and after about five seconds
 everything settles. Tapping the card dismisses it. It is keyed on the param string, so a revisit of
-the tab never replays it, and a plain tab visit never plays it. Under reduced motion: no lean, no
-ring, no smoke, the card is simply there.
+the tab never replays it, and a plain tab visit never plays it. Under reduced motion: no lean, the
+card is simply there.
 
 No villager in the card: VictoryView already picked the one villager a victory gets, and
 `VillagerCameo` is the only place a villager is drawn.
@@ -79,6 +76,7 @@ No villager in the card: VictoryView already picked the one villager a victory g
 | Five pips on upgrades that stop at 3 | Pips on the real ceiling, here and on the victory screen |
 | Trophy wall | Defeated bosses: the Journal's `BossesCard`. Achievements were already in `AchievementsCard`. |
 | A tile that pulsed once | The return sequence above |
+| Gold dots on the painting, one per building (shipped in #92) | Removed the same day at the hero's request: the painting stays clean, and the anchors only aim the lean-in |
 
 ## Implementation notes
 
@@ -91,15 +89,15 @@ comes from `components/village/rows.ts`, so the rows, "Next to rise", the return
 detail sheet cannot phrase the same building two ways. `getBuildingProgress()` is still the single
 source for "how far to the next level".
 
-**Anchors were placed by eye**, 6 to 12 per tier, on the square `cover` crop the screen shows.
-Re-painting a tier means re-placing its anchors. No tier holds all 21 buildings (the Fountain has
-no spot on any), and a building with no spot is simply not drawn on the painting. The weakest
-placements: tier 8 (`tent` on a sail, `farm` on crates in a boat), tier 10 (`dragon_lair` on the
-rock face), tier 12 (the starters on unnamed spires). The phase-1 art the design lists (halos,
-smoke plumes, banners, scaffolding) does not exist yet: the anchors are drawn in code.
+**Anchors** (`constants/villageAnchors.ts`) are data only: where each building stands on each
+painting, 6 to 12 per tier, placed by eye on the square `cover` crop the screen shows. They aim the
+lean-in of the return sequence and draw nothing. Re-painting a tier means re-placing its anchors.
+No tier holds all 21 buildings (the Fountain has no spot on any), and a building with no spot gets
+no lean, only the card. The weakest placements: tier 8 (`tent` on a sail, `farm` on crates in a
+boat), tier 10 (`dragon_lair` on the rock face), tier 12 (the starters on unnamed spires).
 
-The painting and its anchors share one `Animated.View`, so they parallax and lean together; the
-scrims and the title do not move. Ambient motes are still `VillageEmbers.tsx`. Everything is
+The painting parallaxes and leans in inside one `Animated.View`; the scrims and the title do not
+move. Ambient motes are still `VillageEmbers.tsx`. Everything is
 transform and opacity on the UI thread, and all of it stops under reduced motion.
 
 The emblems carry an alpha channel, cut by [`scripts/cutout.py`](../../scripts/cutout.py); an

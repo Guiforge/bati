@@ -181,7 +181,16 @@ export function BossArena({
   // Felled mid-session (the last set landed the kill): the fight is over but the arena is still
   // on screen — the monster goes down instead of standing at 0 HP as if nothing happened.
   const isDown = currentHp <= 0;
-  const hpColor = isEnraged || isDown ? "$error" : hpPercent < 50 ? "$secondary" : "$success";
+  /**
+   * Never green.
+   *
+   * `$success` is what this app paints "you are fine" in, and it was on a hostile creature's
+   * health for the whole first half of every fight: a serpent at 422 of 425 read as a healthy
+   * status row rather than as something that had barely been scratched. The phase palette is the
+   * register the arena already speaks in, a red rim and a darkening room, so the numeral and the
+   * bar live in it too: fire while the monster is whole, the error red once it is losing.
+   */
+  const hpColor = isEnraged || isDown || hpPercent < 50 ? "$error" : "$resourceFire";
 
   const trailHp = useDamageTrail(currentHp, reducedMotion);
   const { showDamage, flinching } = useHitReaction(lastDamage, reducedMotion);

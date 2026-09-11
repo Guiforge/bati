@@ -219,6 +219,22 @@ export function ActiveExerciseView() {
   const heroMinHeight = Math.round(sessionArtHeight(width, height) * 0.6);
   const targetMuscle = currentEx.exercise.muscles[0];
 
+  /**
+   * What this set is worth against this monster, in words.
+   *
+   * The screen already knew: a target ring on one muscle and a shield on another, at the top of
+   * the arena, two unlabelled glyphs with nothing connecting them to the movement in progress.
+   * So a hero holding a Wall Sit against a boss that resists legs was told "Keep going!" while
+   * the set was quietly worth half. The rule is `db/bossFights.ts`'s, 1.5x on a weakness and
+   * 0.5x on a resistance, and this says which one is happening now (audit 2026-09-10, blocker 6).
+   */
+  const setStanding =
+    bossFight && targetMuscle && bossFight.weaknessMuscle === targetMuscle
+      ? t("session.boss_weak_point", { muscle: t(`muscles.${targetMuscle}`) })
+      : bossFight && targetMuscle && bossFight.resistanceMuscle === targetMuscle
+        ? t("session.boss_resisted", { muscle: t(`muscles.${targetMuscle}`) })
+        : null;
+
   return (
     <YStack
       flex={1}
@@ -615,12 +631,38 @@ export function ActiveExerciseView() {
               </YStack>
             )}
 
-            {/* Hint for time-based exercises */}
-            {isTimeBased && !isOvertime && !isOuting && (
+            {/* Hint for time-based exercises. In a fight the same overshoot rule applies to a
+                hold as to a rep, and the seconds past the target are exactly the moment the hero
+                is deciding about: the crit line replaces the generic one there. */}
+            {isTimeBased && !isOuting && (
               <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {t("session.keep_going_hint")}
+                {bossFight
+                  ? t("session.crit_hint_time", {
+                      percent: Math.round(
+                        critChance(
+                          currentEx.target.value - remainingSeconds,
+                          currentEx.target.value,
+                        ) * 100,
+                      ),
+                    })
+                  : t("session.keep_going_hint")}
               </Text>
             )}
+
+            {/* Which way this set lands, when the monster cares. One line, in the colour of what
+                it does: gold for a weak point, the warning colour for armour. */}
+            {setStanding ? (
+              <Text
+                fontSize={12}
+                fontWeight="700"
+                color={
+                  bossFight?.weaknessMuscle === targetMuscle ? "$resourceGold" : "$textSecondary"
+                }
+                style={{ textAlign: "center" }}
+              >
+                {setStanding}
+              </Text>
+            ) : null}
 
             {/* What the hero already did on this movement. Outside the reps/time ternary above so
                 one line serves both units, and read straight off the quest — `getQuestById` put it

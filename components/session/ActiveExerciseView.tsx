@@ -10,11 +10,8 @@ import { Crosshair, Pause } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
-import {
-  getExerciseBgForSessionStep,
-  getExerciseBgRawForSessionStep,
-} from "@/constants/exerciseColors";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
+import { rawColors } from "@/constants/rawColors";
 import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
@@ -200,18 +197,21 @@ export function ActiveExerciseView() {
   const phaseLook = bossFight
     ? getPhaseLook(getPhaseFromHp(getHpPercent(bossFight.currentHp, bossFight.totalHp)))
     : null;
-  const screenBg =
-    phaseLook?.bgToken ??
-    getExerciseBgForSessionStep({
-      exercise: currentEx.exercise,
-      targetType: currentEx.target.type,
-    });
-  const screenBgRaw =
-    phaseLook?.bgRaw ??
-    getExerciseBgRawForSessionStep({
-      exercise: currentEx.exercise,
-      targetType: currentEx.target.type,
-    });
+  /**
+   * The room is dark, whatever the muscle.
+   *
+   * The screen used to take the exercise's own pastel as its ground, so a leg day painted the
+   * lower half of the session khaki and an arm day pink. On a card that is a tint; across a whole
+   * screen, in a dark-mode-only game whose anti-references rule out "flat white dashboards", it
+   * is the one place the app stops looking like itself, and the audit's player said so of the
+   * screen he spends ninety percent of his time on.
+   *
+   * The boss keeps its phase colour: a room that reddens as the monster enrages is the register
+   * this game *does* want, and it is the arena's own doing rather than a property of the muscle
+   * being trained.
+   */
+  const screenBg = phaseLook?.bgToken ?? "$bgDark";
+  const screenBgRaw = phaseLook?.bgRaw ?? rawColors.bgDark;
 
   // The hero is the elastic part of the column: the counter and the CTA take their own height
   // and the picture gets everything left over, so nothing below it is ever clipped and a tall
@@ -461,28 +461,78 @@ export function ActiveExerciseView() {
                   is already on screen but cropped into a hero, and an accordion could not show
                   it. Tapping the art itself does the same thing; this row is what makes that
                   discoverable. */}
-              {instruction?.description ? (
-                <Pressable
-                  testID="session-how-to"
-                  onPress={handleShowHowTo}
-                  hitSlop={12}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("session.how_to_do_it")}
-                >
-                  <XStack
-                    items="center"
-                    justify="center"
-                    gap="$2"
-                    py="$2"
-                    opacity={0.7}
-                    hoverStyle={{ opacity: 1 }}
+              {/* Three links about the movement, on one row under its name.
+                  "Replace" and "I couldn't do this one" used to sit one line above the
+                  full-width Done button, in the landing zone of the thumb that hammers Done
+                  between two sets: a mis-tap there swapped the exercise or wrote a failure. They
+                  belong with "How to do it", which is the other thing a hero asks about the
+                  movement rather than about the set, and the counter now stands between all
+                  three and the button. */}
+              <XStack items="center" justify="center" gap="$3" opacity={0.7} flexWrap="wrap">
+                {instruction?.description ? (
+                  <Pressable
+                    testID="session-how-to"
+                    onPress={handleShowHowTo}
+                    hitSlop={12}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("session.how_to_do_it")}
                   >
-                    <Text fontSize={12} fontWeight="700" color="$textSecondary">
+                    <Text py="$2" fontSize={12} fontWeight="700" color="$textSecondary">
                       {t("session.how_to_do_it")}
                     </Text>
-                  </XStack>
-                </Pressable>
-              ) : null}
+                  </Pressable>
+                ) : null}
+
+                {/* Not on an outing: a walk has no movement to swap and no set to fail. */}
+                {isOuting ? null : (
+                  <>
+                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                      ·
+                    </Text>
+                    <Pressable
+                      testID="session-swap-exercise"
+                      hitSlop={12}
+                      onPress={() => {
+                        selection();
+                        setSwapOpen(true);
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("quests.swap_exercise")}
+                    >
+                      <Text
+                        py="$2"
+                        fontSize={12}
+                        fontWeight="700"
+                        color="$textSecondary"
+                        numberOfLines={1}
+                      >
+                        {t("session.swap_short", "Replace")}
+                      </Text>
+                    </Pressable>
+
+                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                      ·
+                    </Text>
+                    <Pressable
+                      testID="session-skip-exercise"
+                      hitSlop={12}
+                      onPress={handleSkip}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("session.skip_exercise")}
+                    >
+                      <Text
+                        py="$2"
+                        fontSize={12}
+                        fontWeight="700"
+                        color="$textSecondary"
+                        numberOfLines={1}
+                      >
+                        {t("session.skip_exercise")}
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
+              </XStack>
             </YStack>
 
             {/* Big Counter — the loudest thing on the screen. The numerals set their own
@@ -708,72 +758,6 @@ export function ActiveExerciseView() {
             ) : null}
           </YStack>
         </YStack>
-
-        {/* One decision at two intensities — "I cannot do this set as prescribed" — so one row.
-          Out of reach is not always "I cannot": often it is "not this variation", and the sheet
-          the quest screen has always had is reachable at the moment it is actually needed. The
-          other is the honest way past a movement, deliberately quiet next to the primary action;
-          it is a release valve, not a choice being offered. Before it existed, `CHECK
-          (resultValue > 0)` made "1" the only way through, and that 1 went on to feed muscle
-          volume, the weak-area read and every target generated from them (issue #33).
-
-          Stacked, they were two full-width rows and ~100dp of link between the counter and the
-          button that ends the set — the two things that have to read as one gesture. Side by
-          side they are half that, and they finally look like what they are: siblings. The swap
-          gets its short label here; the sheet it opens still carries the full sentence.
-
-          Neither offer means anything on a slot the hero is outside for: there is no other
-          movement to walk with, and a walk that did not happen is a walk the hero simply does not
-          start. The row is not rendered at all rather than emptied, so the column closes over it
-          instead of keeping a hole where two words used to be. */}
-        {isOuting ? null : (
-          <XStack items="center" justify="center" gap="$3" opacity={0.7}>
-            <Pressable
-              testID="session-swap-exercise"
-              hitSlop={12}
-              onPress={() => {
-                selection();
-                setSwapOpen(true);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={t("quests.swap_exercise")}
-            >
-              <Text
-                py="$2"
-                fontSize={13}
-                fontWeight="700"
-                color="$textSecondary"
-                fontFamily="$body"
-                numberOfLines={1}
-              >
-                {t("session.swap_short", "Replace")}
-              </Text>
-            </Pressable>
-
-            <Text fontSize={13} color="$textSecondary" opacity={0.5}>
-              ·
-            </Text>
-
-            <Pressable
-              testID="session-skip-exercise"
-              hitSlop={12}
-              onPress={handleSkip}
-              accessibilityRole="button"
-              accessibilityLabel={t("session.skip_exercise")}
-            >
-              <Text
-                py="$2"
-                fontSize={13}
-                fontWeight="700"
-                color="$textSecondary"
-                fontFamily="$body"
-                numberOfLines={1}
-              >
-                {t("session.skip_exercise")}
-              </Text>
-            </Pressable>
-          </XStack>
-        )}
 
         {/* Footer Action */}
         {isOuting ? (

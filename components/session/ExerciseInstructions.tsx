@@ -78,7 +78,13 @@ export function ExerciseInstructionsModal({
       animationType={reducedMotion ? "none" : "fade"}
       onRequestClose={onClose}
     >
-      <YStack flex={1} bg="$bgOverlay" justify="center" items="center" p="$4">
+      {/* Opaque, not a scrim.
+          The paused screen renders underneath this one, and the comment that put it there said
+          two stacked `$bgOverlay` left it "under a percent of a percent". They do not: the audit's
+          screenshot reads "Game Paused", "Restart Round" and "Quit Quest" straight through the
+          card. A hero who asked what a dead bug is should not be one stray tap from ending their
+          session. Reading is its own moment, so it gets its own ground. */}
+      <YStack flex={1} bg="$bgDark" justify="center" items="center" p="$4">
         <Card testID="session-instructions" width="100%" maxW={420} bg="$surface" gap="$3">
           <ExerciseInstructionsBody instruction={instruction} artSize={220} />
           <Button

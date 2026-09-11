@@ -91,14 +91,19 @@ devmenu_prefs="$(mktemp)"
 cat > "$devmenu_prefs" <<'XML'
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
+    <boolean name="isOnboardingFinished" value="true" />
     <boolean name="showsAtLaunch" value="false" />
     <boolean name="showFab" value="false" />
 </map>
 XML
+# Readable by the app's uid: mktemp makes the file 0600 and `adb push` keeps the mode.
+chmod 644 "$devmenu_prefs"
 adb push "$devmenu_prefs" /data/local/tmp/devmenu.xml >/dev/null 2>&1 || true
-adb shell run-as com.guiforge.bati.dev sh -c \
-  'mkdir -p shared_prefs && cp /data/local/tmp/devmenu.xml shared_prefs/expo.modules.devmenu.sharedpreferences.xml' \
-  >/dev/null 2>&1 || true
+# One string, and not silenced. `adb shell` joins its arguments, so the separately quoted
+# `sh -c '…'` this used to be reached the device as `sh -c mkdir …`: the copy never ran, the
+# redirect hid it, and the floating gear sat over Home's top-right corner in every store shot.
+# `isOnboardingFinished` is kept because the first launch wrote it and this file replaces that one.
+adb shell "run-as com.guiforge.bati.dev sh -c 'mkdir -p shared_prefs && cp /data/local/tmp/devmenu.xml shared_prefs/expo.modules.devmenu.sharedpreferences.xml'"
 rm -f "$devmenu_prefs"
 
 rm -rf "$raw"
